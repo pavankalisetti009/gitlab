@@ -28,16 +28,6 @@ RSpec.describe CodeSuggestions::ModelDetails, feature_category: :code_suggestion
   end
 
   describe '#base_url' do
-    include_context 'when loading 1_settings initializer'
-
-    # Reload settings to ensure a consistent state
-    # for Settings.cloud_connector base_url
-    # and isolate tests to reduce the risk of flaky tests
-    # due to shared state with other specs
-    before do
-      load_settings
-    end
-
     it 'returns correct URL' do
       expect(completions_model_details.base_url).to eql('https://cloud.gitlab.com/ai')
     end

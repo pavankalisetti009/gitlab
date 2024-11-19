@@ -61,11 +61,20 @@ RSpec.describe '1_settings', feature_category: :shared do
   end
 
   describe 'duo_workflow' do
+    let(:default_base_url) { "https://cloud.gitlab.com" }
+    let(:config) { {} }
+    let(:base_url) { default_base_url }
+
     before do
       Settings.duo_workflow = config
+      stub_env("CLOUD_CONNECTOR_BASE_URL", base_url)
+      load_settings
     end
 
-    let(:config) { {} }
+    after do
+      stub_env("CLOUD_CONNECTOR_BASE_URL", default_base_url)
+      load_settings
+    end
 
     context 'when service_url is set' do
       let(:config) do
@@ -76,8 +85,6 @@ RSpec.describe '1_settings', feature_category: :shared do
       end
 
       it 'uses provided config' do
-        load_settings
-
         expect(Settings.duo_workflow.service_url).to eq('duo-workflow-service.example.com:50052')
         expect(Settings.duo_workflow.secure).to eq(false)
       end
@@ -90,28 +97,27 @@ RSpec.describe '1_settings', feature_category: :shared do
         }
       end
 
-      it 'defaults to cloud connector config' do
-        stub_env("CLOUD_CONNECTOR_BASE_URL", 'https://www.cloud.example.com')
+      context 'with https cloud connector' do
+        let(:base_url) { 'https://www.cloud.example.com' }
 
-        load_settings
-        expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:443')
-        expect(Settings.duo_workflow.secure).to eq(true)
+        it 'defaults to cloud connector config' do
+          expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:443')
+          expect(Settings.duo_workflow.secure).to eq(true)
+        end
       end
 
-      it 'infers secure and port from scheme' do
-        stub_env("CLOUD_CONNECTOR_BASE_URL", 'http://www.cloud.example.com')
+      context 'with http cloud connector' do
+        let(:base_url) { 'http://www.cloud.example.com' }
 
-        load_settings
-
-        expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:80')
-        expect(Settings.duo_workflow.secure).to eq(false)
+        it 'infers secure and port from scheme' do
+          expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:80')
+          expect(Settings.duo_workflow.secure).to eq(false)
+        end
       end
     end
 
     it 'reads executor details from DUO_WORKFLOW_EXECUTOR_VERSION file' do
       version = Rails.root.join('DUO_WORKFLOW_EXECUTOR_VERSION').read.chomp
-
-      load_settings
 
       expect(Settings.duo_workflow.executor_binary_url).to eq("https://gitlab.com/api/v4/projects/58711783/packages/generic/duo-workflow-executor/#{version}/duo-workflow-executor.tar.gz")
       expect(Settings.duo_workflow.executor_version).to eq(version)
