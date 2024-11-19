@@ -1,5 +1,7 @@
 import { safeLoad } from 'js-yaml';
 import { isBoolean, isEqual } from 'lodash';
+import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { addIdsToPolicy, hasInvalidKey, isValidPolicy } from '../../utils';
 import { PRIMARY_POLICY_KEYS } from '../../constants';
 import { OPEN, CLOSED } from '../advanced_settings/constants';
@@ -15,7 +17,16 @@ import {
 */
 export const fromYaml = ({ manifest, validateRuleMode = false }) => {
   try {
-    const policy = addIdsToPolicy(safeLoad(manifest, { json: true }));
+    const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
+    const payload = securityPoliciesNewYamlFormat
+      ? extractPolicyContent({
+          manifest,
+          type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+          withType: true,
+        })
+      : safeLoad(manifest, { json: true });
+
+    const policy = addIdsToPolicy(payload);
 
     if (validateRuleMode) {
       /**

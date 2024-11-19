@@ -27,6 +27,7 @@ import {
   DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE,
   getInvalidBranches,
   REQUIRE_APPROVAL_TYPE,
+  DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
 import {
@@ -925,6 +926,63 @@ describe('EditorComponent', () => {
           fallback_behavior: { fail: OPEN },
         }),
       );
+    });
+  });
+
+  describe('new yaml format with type as a wrapper', () => {
+    beforeEach(() => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesNewYamlFormat: true,
+          },
+        },
+      });
+
+      window.gon.features = {
+        securityPoliciesNewYamlFormat: true,
+      };
+    });
+
+    it('renders default yaml in new format', () => {
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
+        DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT,
+      );
+    });
+
+    it('converts new policy format to old policy format when saved', async () => {
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      expect(wrapper.emitted('save')).toEqual([
+        [
+          {
+            action: undefined,
+            isActiveRuleMode: false,
+            policy: `name: ''
+description: ''
+enabled: true
+rules:
+  - type: ''
+actions:
+  - type: require_approval
+    approvals_required: 1
+  - type: send_bot_message
+    enabled: true
+approval_settings:
+  block_branch_modification: true
+  prevent_pushing_and_force_pushing: true
+  prevent_approval_by_author: true
+  prevent_approval_by_commit_author: true
+  remove_approvals_with_new_commit: true
+  require_password_to_approve: false
+fallback_behavior:
+  fail: closed
+type: approval_policy
+`,
+          },
+        ],
+      ]);
     });
   });
 });
