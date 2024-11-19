@@ -3,6 +3,7 @@ import { GlLink, GlSprintf, GlForm, GlAlert, GlButton } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { AVAILABILITY_OPTIONS } from '../constants';
 import DuoAvailability from './duo_availability_form.vue';
 import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
@@ -18,6 +19,7 @@ export default {
     SettingsBlock,
     DuoAvailability,
     DuoExperimentBetaFeatures,
+    PageHeading,
   },
   i18n: {
     confirmButtonText: __('Save changes'),
@@ -31,8 +33,9 @@ export default {
     settingsBlockDescription: s__(
       'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
     ),
+    configurationPageTitle: s__('AiPowered|Configuration'),
   },
-  inject: ['duoAvailability', 'experimentFeaturesEnabled'],
+  inject: ['duoAvailability', 'experimentFeaturesEnabled', 'onGeneralSettingsPage'],
   props: {
     hasParentFormChanged: {
       type: Boolean,
@@ -105,15 +108,50 @@ export default {
 };
 </script>
 <template>
-  <settings-block :title="$options.i18n.settingsBlockTitle">
-    <template #description>
-      <gl-sprintf :message="$options.i18n.settingsBlockDescription">
-        <template #link="{ content }">
-          <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
+  <div>
+    <template v-if="onGeneralSettingsPage">
+      <settings-block class="gl-mb-5 !gl-pt-5" :title="$options.i18n.settingsBlockTitle">
+        <template #description>
+          <gl-sprintf :message="$options.i18n.settingsBlockDescription">
+            <template #link="{ content }">
+              <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
+            </template>
+          </gl-sprintf>
         </template>
-      </gl-sprintf>
+        <template #default>
+          <gl-form @submit.prevent="submitForm">
+            <slot name="ai-common-settings-top"></slot>
+            <duo-availability :duo-availability="availability" @change="onRadioChanged" />
+            <duo-experiment-beta-features
+              :experiment-features-enabled="experimentsEnabled"
+              :disabled-checkbox="disableExperimentCheckbox"
+              @change="onCheckboxChanged"
+            />
+            <slot name="ai-common-settings-bottom"></slot>
+            <gl-alert v-if="showWarning" :dismissible="false" variant="warning">{{
+              warningMessage
+            }}</gl-alert>
+            <div class="gl-mt-6">
+              <gl-button type="submit" variant="confirm" :disabled="!hasFormChanged">
+                {{ $options.i18n.confirmButtonText }}
+              </gl-button>
+            </div>
+          </gl-form>
+        </template>
+      </settings-block>
     </template>
-    <template #default>
+    <template v-else>
+      <page-heading :heading="$options.i18n.configurationPageTitle">
+        <template #description>
+          <span data-testid="configuration-page-subtitle">
+            <gl-sprintf :message="$options.i18n.settingsBlockDescription">
+              <template #link="{ content }">
+                <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
+              </template>
+            </gl-sprintf>
+          </span>
+        </template>
+      </page-heading>
       <gl-form @submit.prevent="submitForm">
         <slot name="ai-common-settings-top"></slot>
         <duo-availability :duo-availability="availability" @change="onRadioChanged" />
@@ -133,5 +171,5 @@ export default {
         </div>
       </gl-form>
     </template>
-  </settings-block>
+  </div>
 </template>

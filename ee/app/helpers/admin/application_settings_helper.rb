@@ -43,7 +43,8 @@ module Admin
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         self_hosted_models_enabled: self_hosted_models_enabled.to_s,
         ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
-        redirect_path: general_admin_application_settings_path
+        redirect_path: general_admin_application_settings_path,
+        on_general_settings_page: "true"
       }
     end
 

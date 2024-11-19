@@ -33,6 +33,38 @@ RSpec.describe EE::Groups::SettingsHelper do
     end
   end
 
+  describe '#group_ai_general_settings_helper_data' do
+    subject(:group_ai_general_settings_helper_data) { helper.group_ai_general_settings_helper_data }
+
+    before do
+      allow(helper).to receive(:group_ai_settings_helper_data).and_return({ base_data: 'data' })
+    end
+
+    it 'returns the expected data' do
+      expect(group_ai_general_settings_helper_data).to include(
+        on_general_settings_page: 'true',
+        redirect_path: edit_group_path(group),
+        base_data: 'data'
+      )
+    end
+  end
+
+  describe '#group_ai_configuration_settings_helper_data' do
+    subject(:group_ai_configuration_settings_helper_data) { helper.group_ai_configuration_settings_helper_data }
+
+    before do
+      allow(helper).to receive(:group_ai_settings_helper_data).and_return({ base_data: 'data' })
+    end
+
+    it 'returns the expected data' do
+      expect(group_ai_configuration_settings_helper_data).to include(
+        on_general_settings_page: 'false',
+        redirect_path: group_settings_gitlab_duo_path(group),
+        base_data: 'data'
+      )
+    end
+  end
+
   describe 'group_ai_settings_helper_data' do
     subject { helper.group_ai_settings_helper_data }
 
@@ -49,7 +81,6 @@ RSpec.describe EE::Groups::SettingsHelper do
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
           are_experiment_settings_allowed: group.experiment_settings_allowed?.to_s,
           show_early_access_banner: "true",
-          redirect_path: edit_group_path(group),
           early_access_path: group_early_access_opt_in_path(group),
           update_id: group.id
         }

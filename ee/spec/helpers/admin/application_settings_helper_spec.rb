@@ -52,7 +52,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
             redirect_path: general_admin_application_settings_path,
             self_hosted_models_enabled: terms_accepted.to_s,
             ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
-            duo_pro_visible: expected_duo_pro_visible_value
+            duo_pro_visible: expected_duo_pro_visible_value,
+            on_general_settings_page: "true"
           }
         end
 
