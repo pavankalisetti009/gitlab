@@ -4,6 +4,8 @@ key_path: redis_hll_counters.search.i_search_paid_monthly
 description: Calculated unique users to perform a search with a paid license enabled
   by month
 product_group: global_search
+product_categories:
+- global_search
 value_type: number
 status: active
 time_frame: 28d
