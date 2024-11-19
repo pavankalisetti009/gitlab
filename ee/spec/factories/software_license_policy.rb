@@ -5,6 +5,7 @@ FactoryBot.define do
     classification { :allowed }
     project
     software_license
+    approval_policy_rule
     custom_software_license { nil }
 
     trait :allowed do

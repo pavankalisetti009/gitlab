@@ -54,6 +54,8 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
       allow(repository).to receive(:blob_data_at).and_return(policies.to_yaml)
       allow(repository).to receive(:last_commit_for_path)
     end
+
+    stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
   end
 
   describe '#perform' do
@@ -347,6 +349,19 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
         worker.perform(configuration.project_id, configuration.id)
 
         expect(ApprovalMergeRequestRule.find(approval_merge_request_rule.id).scan_result_policy_id).to be_nil
+      end
+    end
+
+    context 'when use_approval_policy_rules_for_approval_rules is enabled' do
+      before do
+        stub_feature_flags(use_approval_policy_rules_for_approval_rules: true)
+      end
+
+      it 'does not call service' do
+        expect(Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyService).not_to receive(:execute)
+        expect(Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsService).not_to receive(:execute)
+
+        worker.perform(configuration.project_id, configuration.id)
       end
     end
   end

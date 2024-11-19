@@ -466,4 +466,96 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       expect { policy.delete_scan_execution_policy_rules }.not_to change { other_policy_rule.reload }
     end
   end
+
+  describe '#delete_approval_policy_rules_for_project' do
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:policy) do
+      create(:security_policy, :approval_policy, security_orchestration_policy_configuration: policy_configuration)
+    end
+
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
+    let_it_be(:other_approval_policy_rule) { create(:approval_policy_rule) }
+
+    let_it_be(:rules) { policy.approval_policy_rules }
+
+    let_it_be(:approval_project_rule) do
+      create(:approval_project_rule,
+        project: project,
+        security_orchestration_policy_configuration: policy_configuration,
+        approval_policy_rule: approval_policy_rule
+      )
+    end
+
+    let_it_be(:merge_request_rule) do
+      create(:approval_merge_request_rule,
+        approval_project_rule: approval_project_rule,
+        merge_request: merge_request,
+        security_orchestration_policy_configuration: policy_configuration,
+        approval_policy_rule: approval_policy_rule
+      )
+    end
+
+    let_it_be(:violation) do
+      create(:scan_result_policy_violation,
+        project: project,
+        approval_policy_rule: approval_policy_rule)
+    end
+
+    let_it_be(:license_policy) do
+      create(:software_license_policy,
+        project: project,
+        approval_policy_rule: approval_policy_rule
+      )
+    end
+
+    let_it_be(:other_approval_project_rule) do
+      create(:approval_project_rule,
+        project: project,
+        security_orchestration_policy_configuration: policy_configuration,
+        approval_policy_rule: other_approval_policy_rule
+      )
+    end
+
+    let_it_be(:other_merge_request_rule) do
+      create(:approval_merge_request_rule,
+        approval_project_rule: approval_project_rule,
+        merge_request: merge_request,
+        security_orchestration_policy_configuration: policy_configuration,
+        approval_policy_rule: other_approval_policy_rule
+      )
+    end
+
+    let_it_be(:other_violation) do
+      create(:scan_result_policy_violation,
+        project: project,
+        approval_policy_rule: other_approval_policy_rule)
+    end
+
+    let_it_be(:other_license_policy) do
+      create(:software_license_policy,
+        project: project,
+        approval_policy_rule: other_approval_policy_rule
+      )
+    end
+
+    it 'removes all associated records' do
+      expect do
+        policy.delete_approval_policy_rules_for_project(project, rules)
+      end.to change { ApprovalProjectRule.count }.by(-1)
+        .and change { ApprovalMergeRequestRule.count }.by(-1)
+        .and change { SoftwareLicensePolicy.count }.by(-1)
+        .and change { Security::ScanResultPolicyViolation.count }.by(-1)
+    end
+
+    it 'does not delete records from other approval policy rules' do
+      policy.delete_approval_policy_rules_for_project(project, rules)
+
+      expect(project.approval_rules).to include(other_approval_project_rule)
+      expect(project.approval_merge_request_rules).to include(other_merge_request_rule)
+      expect(project.software_license_policies).to include(other_license_policy)
+      expect(project.scan_result_policy_violations).to include(other_violation)
+    end
+  end
 end

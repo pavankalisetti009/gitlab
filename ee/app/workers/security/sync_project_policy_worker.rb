@@ -6,6 +6,10 @@ module Security
 
     data_consistency :sticky
     idempotent!
+    deduplicate :until_executed
+
+    concurrency_limit -> { 200 }
+
     feature_category :security_policy_management
 
     def perform(project_id, security_policy_id, policy_changes)

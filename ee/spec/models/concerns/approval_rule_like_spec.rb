@@ -405,12 +405,56 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
     let_it_be(:code_coverage) { create(:approval_project_rule, :code_coverage, project: project) }
     let_it_be(:scan_finding) { create(:approval_project_rule, :scan_finding, project: project) }
     let_it_be(:any_merge_request) { create(:approval_project_rule, :any_merge_request, project: project) }
-    # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
     subject { project.approval_rules.exportable }
 
     it 'does not include rules created from scan result policies' do
       is_expected.to match_array([any_approver_rule, code_coverage])
+    end
+  end
+
+  describe '.for_approval_policy_rules' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:security_policy) { create(:security_policy) }
+    let_it_be(:other_security_policy) { create(:security_policy) }
+    let_it_be(:policy_rule1) { create(:approval_policy_rule, security_policy: security_policy) }
+    let_it_be(:policy_rule2) { create(:approval_policy_rule, security_policy: security_policy) }
+
+    let_it_be(:approval_rule1) { create(:approval_project_rule, project: project, approval_policy_rule: policy_rule1) }
+    let_it_be(:approval_rule2) { create(:approval_project_rule, project: project, approval_policy_rule: policy_rule2) }
+    let_it_be(:approval_rule3) { create(:approval_project_rule, project: project, approval_policy_rule: nil) }
+    # rubocop:enable RSpec/FactoryBot/AvoidCreate
+
+    it 'returns approval rules associated with the given policy rules' do
+      result = project.approval_rules.for_approval_policy_rules(security_policy.approval_policy_rules)
+
+      expect(result).to include(approval_rule1, approval_rule2)
+      expect(result).not_to include(approval_rule3)
+    end
+
+    it 'returns empty when no matching policy rules exist' do
+      result = project.approval_rules.for_approval_policy_rules(other_security_policy.approval_policy_rules)
+
+      expect(result).to be_empty
+    end
+
+    it 'handles empty policy rules relation' do
+      result = project.approval_rules.for_approval_policy_rules(Security::ApprovalPolicyRule.none)
+
+      expect(result).to be_empty
+    end
+
+    it 'handles empty policy rules array' do
+      result = project.approval_rules.for_approval_policy_rules([])
+
+      expect(result).to be_empty
+    end
+
+    it 'returns approval rules associated with the given policy rules passed as array' do
+      result = project.approval_rules.for_approval_policy_rules([policy_rule1, policy_rule2])
+
+      expect(result).to include(approval_rule1, approval_rule2)
+      expect(result).not_to include(approval_rule3)
     end
   end
 end

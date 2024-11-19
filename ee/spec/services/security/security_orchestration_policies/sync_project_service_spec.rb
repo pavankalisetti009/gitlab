@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feature_category: :security_policy_management do
   let_it_be(:project) { create(:project) }
-  let_it_be_with_refind(:security_policy) { create(:security_policy) }
+  let_it_be_with_refind(:security_policy) { create(:security_policy, :require_approval) }
   let_it_be_with_refind(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
 
   let(:policy_changes) { { diff: {}, rules_diff: {} } }
@@ -40,15 +40,53 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
           end
         end
 
-        it 'links policy and rules toproject' do
+        it 'links policy and rules to project' do
           expect { service.execute }.to change { Security::PolicyProjectLink.count }.from(0).to(1)
             .and change { Security::ApprovalPolicyRuleProjectLink.count }.from(0).to(1)
+        end
+
+        it 'create project approval_rule' do
+          expect { service.execute }.to change { project.approval_rules.count }.by(1)
+        end
+
+        context 'when use_approval_policy_rules_for_approval_rules is disabled' do
+          before do
+            stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
+          end
+
+          it 'does not create project approval_rules' do
+            expect { service.execute }.not_to change { project.approval_rules.count }
+          end
         end
       end
     end
 
     context 'when policy_changes exists' do
       let(:policy_changes) { { diff: { enabled: { from: false, to: true } }, rules_diff: {} } }
+
+      shared_context 'when project approval_rules already exists' do
+        let_it_be(:project_approval_rule) do
+          create(:approval_project_rule, :scan_finding,
+            project: project,
+            approval_policy_rule: approval_policy_rule,
+            security_orchestration_policy_configuration: security_policy.security_orchestration_policy_configuration
+          )
+        end
+
+        it 'deletes project approval_rules' do
+          expect { service.execute }.to change { project.approval_rules.count }.by(-1)
+        end
+
+        context 'when use_approval_policy_rules_for_approval_rules is disabled' do
+          before do
+            stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
+          end
+
+          it 'does not delete project approval_rules' do
+            expect { service.execute }.not_to change { project.approval_rules.count }
+          end
+        end
+      end
 
       context 'when policy is disabled' do
         let(:policy_changes) { { diff: { enabled: { from: true, to: false } }, rules_diff: {} } }
@@ -66,6 +104,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
         it 'unlinks policy rules project if it is an approval policy' do
           expect { service.execute }.to change { Security::ApprovalPolicyRuleProjectLink.count }.from(1).to(0)
         end
+
+        include_context 'when project approval_rules already exists'
       end
 
       context 'when policy is unscoped' do
@@ -101,6 +141,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
           it 'unlinks policy rules project' do
             expect { service.execute }.to change { Security::ApprovalPolicyRuleProjectLink.count }.from(1).to(0)
           end
+
+          include_context 'when project approval_rules already exists'
         end
 
         context 'with created policy rules' do
@@ -113,6 +155,79 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
 
           it 'links policy rules project' do
             expect { service.execute }.to change { Security::ApprovalPolicyRuleProjectLink.count }.from(1).to(2)
+          end
+        end
+
+        context 'with updated policy rules' do
+          let(:updated_rule_content) do
+            {
+              type: 'scan_finding',
+              branches: [],
+              scanners: %w[dependency_scanning],
+              vulnerabilities_allowed: 0,
+              severity_levels: %w[critical],
+              vulnerability_states: %w[detected]
+            }
+          end
+
+          let(:policy_changes) do
+            {
+              diff: { enabled: { from: false, to: true } },
+              rules_diff: {
+                updated: [{
+                  id: approval_policy_rule.id,
+                  from: {
+                    type: 'scan_finding',
+                    branches: [],
+                    scanners: %w[container_scanning],
+                    vulnerabilities_allowed: 0,
+                    severity_levels: %w[critical],
+                    vulnerability_states: %w[detected]
+                  },
+                  to: updated_rule_content
+                }]
+              }
+            }
+          end
+
+          let_it_be(:scan_result_policy_read) do
+            create(:scan_result_policy_read,
+              project: project,
+              security_orchestration_policy_configuration: security_policy.security_orchestration_policy_configuration,
+              orchestration_policy_idx: security_policy.policy_index,
+              rule_idx: approval_policy_rule.rule_index
+            )
+          end
+
+          let_it_be(:project_approval_rule) do
+            create(:approval_project_rule, :scan_finding,
+              project: project,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              security_orchestration_policy_configuration: security_policy.security_orchestration_policy_configuration
+            )
+          end
+
+          before do
+            approval_policy_rule.update!(content: updated_rule_content)
+          end
+
+          it 'updates project approval_rules' do
+            service.execute
+
+            expect(project_approval_rule.reload.scanners).to contain_exactly('dependency_scanning')
+          end
+
+          context 'when use_approval_policy_rules_for_approval_rules is disabled' do
+            before do
+              stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
+            end
+
+            it 'does not update project approval_rules' do
+              service.execute
+
+              expect(project_approval_rule.reload.scanners).not_to contain_exactly('dependency_scanning')
+            end
           end
         end
       end

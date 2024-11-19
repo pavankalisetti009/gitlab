@@ -111,6 +111,26 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
     end
 
+    context 'when policy actions is changed' do
+      let(:event_payload) do
+        {
+          security_policy_id: policy.id,
+          diff: { actions: {
+            from: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }],
+            to: [{ type: 'require_approval', approvals_required: 1, role_approvers: %w[owner] }]
+          } },
+          rules_diff: { created: [], updated: [], deleted: [] }
+        }
+      end
+
+      it 'calls Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
+          event_payload.deep_stringify_keys)
+
+        described_class.new.handle_event(policy_updated_event)
+      end
+    end
+
     context 'when policy changes does not need refresh' do
       let(:event_payload) do
         {

@@ -68,6 +68,10 @@ module ApprovalRuleLike
     scope :for_policy_configuration, ->(configuration_id) do
       where(security_orchestration_policy_configuration_id: configuration_id)
     end
+    scope :for_approval_policy_rules, ->(policy_rules) do
+      where(approval_policy_rule: policy_rules)
+    end
+
     scope :by_report_types, ->(report_types) { where(report_type: report_types) }
   end
 

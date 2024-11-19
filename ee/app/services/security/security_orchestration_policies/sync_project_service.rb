@@ -2,22 +2,21 @@
 
 module Security
   module SecurityOrchestrationPolicies
-    class SyncProjectService
-      include Gitlab::Utils::StrongMemoize
-
+    class SyncProjectService < BaseProjectPolicyService
       def initialize(security_policy:, project:, policy_changes:)
-        @security_policy = security_policy
-        @project = project
+        super(security_policy: security_policy, project: project)
         @policy_changes = policy_changes
       end
 
       def execute
-        return handle_policy_changes if policy_diff.any_changes?
+        return sync_policy_changes if policy_diff.any_changes?
 
-        link_project_policy
+        link_policy
       end
 
       private
+
+      attr_reader :policy_changes
 
       def policy_diff
         Security::SecurityOrchestrationPolicies::PolicyDiff::Diff.from_json(
@@ -26,32 +25,15 @@ module Security
       end
       strong_memoize_attr :policy_diff
 
-      def handle_policy_changes
-        if policy_disabled? || policy_unscoped?
-          security_policy.unlink_project!(project)
-        else
-          update_project_approval_policy_rule_links
-        end
+      def sync_policy_changes
+        return unlink_policy if should_unlink_policy?
+        return unless security_policy.type_approval_policy?
+
+        sync_project_approval_policy_rules_service.sync_policy_diff(policy_diff)
       end
 
-      def link_project_policy
-        return unless security_policy.enabled
-        return unless security_policy.scope_applicable?(project)
-
-        security_policy.link_project!(project)
-      end
-
-      def update_project_approval_policy_rule_links
-        deleted_rules = find_policy_rules(policy_diff.rules_diff.deleted.map(&:id))
-        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- created is an array of objects
-        created_rules = find_policy_rules(policy_diff.rules_diff.created.pluck(:id))
-        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
-
-        security_policy.update_project_approval_policy_rule_links(project, created_rules, deleted_rules)
-      end
-
-      def find_policy_rules(policy_rule_ids)
-        security_policy.approval_policy_rules.id_in(policy_rule_ids)
+      def should_unlink_policy?
+        policy_disabled? || policy_unscoped?
       end
 
       def policy_disabled?
@@ -61,8 +43,6 @@ module Security
       def policy_unscoped?
         policy_diff.scope_changed? && !security_policy.scope_applicable?(project)
       end
-
-      attr_accessor :security_policy, :project, :policy_changes
     end
   end
 end

@@ -632,6 +632,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           allow_next_instance_of(Repository) do |repository|
             allow(repository).to receive(:blob_data_at).and_return({ scan_result_policy: [policy] }.to_yaml)
           end
+
+          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
         end
 
         context 'when security_policies_sync is disabled' do
