@@ -109,7 +109,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       context 'when nodes have enough storage' do
         it 'returns false' do
           expect(logger).not_to receive(:info)
-          expect { execute_task }.not_to change { Search::Zoekt::Index.count }.from(1)
+          expect { execute_task }.not_to change { Search::Zoekt::Replica.count }
         end
       end
 
@@ -143,7 +143,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
               'zoekt.used_bytes' => 27000001, 'zoekt.storage_percent_used' => 0.27000001) }
           )
 
-          expect { execute_task }.to change { Search::Zoekt::Index.pending_deletion.count }.from(0).to(1)
+          expect { execute_task }.to change { Search::Zoekt::Replica.count }.from(2).to(1)
         end
 
         it 'keeps search enabled for the enabled namespace' do

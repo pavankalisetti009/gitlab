@@ -142,8 +142,8 @@ module Search
         )
 
         namespaces_to_move.each_slice(100) do |namespace_ids|
-          node.indices.for_root_namespace_id(namespace_ids).each_batch do |batch|
-            batch.update_all(state: :pending_deletion)
+          ::Search::Zoekt::Replica.for_namespace(namespace_ids).each_batch do |batch|
+            batch.delete_all
           end
         end
       end
