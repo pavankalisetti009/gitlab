@@ -10,7 +10,9 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
   let(:repository_ref) { nil }
   let(:filters) { {} }
 
-  subject(:results) { described_class.new(user, query, project: project, repository_ref: repository_ref, filters: filters) }
+  subject(:results) do
+    described_class.new(user, query, project: project, repository_ref: repository_ref, filters: filters)
+  end
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -33,8 +35,8 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
   end
 
   describe "search", :sidekiq_inline do
-    let(:project) { create(:project, :public, :repository, :wiki_repo) }
-    let(:private_project) { create(:project, :repository, :wiki_repo) }
+    let_it_be(:project) { create(:project, :public, :repository, :wiki_repo) }
+    let_it_be(:private_project) { create(:project, :repository, :wiki_repo) }
 
     before do
       [project, private_project].each do |p|
@@ -57,10 +59,10 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       expect(result.commits_count).to eq(1)
     end
 
-    context 'visibility checks' do
+    context 'for visibility checks' do
       let(:query) { 'term' }
 
-      before do
+      before_all do
         project.add_guest(user)
       end
 
@@ -229,18 +231,19 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
     end
   end
 
-  context 'query performance' do
-    let(:project) { create(:project, :public, :repository, :wiki_repo) }
+  context 'for query performance' do
+    let_it_be(:project) { create(:project, :public, :repository, :wiki_repo) }
     let(:query) { '*' }
 
     before do
-      # wiki_blobs method checks to see if there is a wiki page before doing
-      # the search
+      # wiki_blobs method checks to see if there is a wiki page before doing the search
       create(:wiki_page, wiki: project.wiki)
     end
 
-    include_examples 'does not hit Elasticsearch twice for objects and counts', %w[notes blobs wiki_blobs commits issues merge_requests milestones users]
-    include_examples 'does not load results for count only queries', %w[notes blobs wiki_blobs commits issues merge_requests milestones users]
+    include_examples 'does not hit Elasticsearch twice for objects and counts',
+      %w[notes blobs wiki_blobs commits issues merge_requests milestones users]
+    include_examples 'does not load results for count only queries',
+      %w[notes blobs wiki_blobs commits issues merge_requests milestones users]
   end
 
   describe '#aggregations' do
@@ -284,14 +287,14 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       end
     end
 
-    context 'project search specific gates for blob scope' do
+    context 'for project search specific gates for blob scope' do
       let(:scope) { 'blobs' }
 
       context 'when query is blank' do
         let(:query) { nil }
 
         it 'returns the an empty array' do
-          expect(subject).to match_array([])
+          expect(aggregations).to be_empty
         end
       end
 
@@ -299,7 +302,7 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
         it 'returns an empty array' do
           allow(project).to receive(:empty_repo?).and_return(true)
 
-          expect(subject).to match_array([])
+          expect(aggregations).to be_empty
         end
       end
 
@@ -307,7 +310,7 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
         it 'returns an empty array' do
           allow(Ability).to receive(:allowed?).with(user, :read_code, project).and_return(false)
 
-          expect(subject).to match_array([])
+          expect(aggregations).to be_empty
         end
       end
     end
