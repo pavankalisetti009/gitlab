@@ -34,7 +34,9 @@ module Onboarding
         onboarding_in_progress: true,
         onboarding_status_step_url: step_url,
         onboarding_status_initial_registration_type: registration_type,
-        onboarding_status_registration_type: registration_type
+        onboarding_status_registration_type: registration_type,
+        onboarding_status_glm_content: glm_content,
+        onboarding_status_glm_source: glm_source
       }
     end
 
@@ -66,6 +68,14 @@ module Onboarding
       return unless user_return_to
 
       URI.parse(user_return_to).path
+    end
+
+    def glm_content
+      params[:glm_content]
+    end
+
+    def glm_source
+      params[:glm_source]
     end
 
     def free_registration_type?

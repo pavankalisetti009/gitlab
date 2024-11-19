@@ -10,13 +10,15 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
 
     let(:current_user) { user }
     let(:step_url) { 'foobar' }
-    let(:params) { {} }
+    let(:params) { { glm_content: 'glm_content', glm_source: 'glm_source' } }
     let(:user_return_to) { nil }
     let(:onboarding_status) do
       {
         step_url: step_url,
         initial_registration_type: 'free',
-        registration_type: 'free'
+        registration_type: 'free',
+        glm_content: 'glm_content',
+        glm_source: 'glm_source'
       }
     end
 

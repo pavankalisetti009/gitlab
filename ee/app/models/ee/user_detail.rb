@@ -12,8 +12,8 @@ module EE
 
       attribute :onboarding_status, :ind_jsonb
       store_accessor(
-        :onboarding_status, :step_url, :email_opt_in, :initial_registration_type, :registration_type,
-        prefix: true
+        :onboarding_status, :step_url, :email_opt_in, :initial_registration_type, :registration_type, :glm_content,
+        :glm_source, prefix: true
       )
     end
   end
