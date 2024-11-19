@@ -664,10 +664,10 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
     around do |example|
       create_and_delete_files(
-        project_policies_project, project_policy_file => project_policy_content.to_yaml
+        project_policies_project, { project_policy_file => project_policy_content.to_yaml }
       ) do
         create_and_delete_files(
-          namespace_policies_project, namespace_policy_file => namespace_policy_content.to_yaml
+          namespace_policies_project, { namespace_policy_file => namespace_policy_content.to_yaml }
         ) do
           example.run
         end
