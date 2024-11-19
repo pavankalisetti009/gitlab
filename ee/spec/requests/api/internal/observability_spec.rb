@@ -98,21 +98,7 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
           { extra_claims: { gitlab_namespace_id: namespace.id.to_s } }).and_return(gob_token)
       end
 
-      context 'when instance is saas', :saas do
-        let(:gitlab_realm) { "saas" }
-
-        before do
-          allow_next_instance_of(::Gitlab::CloudConnector::SelfIssuedToken) do |token|
-            allow(token).to receive(:encoded).and_return(gob_token)
-          end
-        end
-
-        it_behaves_like 'success'
-      end
-
-      context 'when instance is self-managed' do
-        it_behaves_like 'success'
-      end
+      it_behaves_like 'success'
 
       context 'without workhorse internal header' do
         let(:headers) { {} }

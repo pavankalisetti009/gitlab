@@ -15,23 +15,70 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
     let(:duo_pro_scopes) { dc_unit_primitives + [:duo_chat_up3] }
     let(:duo_extra_scopes) { dc_unit_primitives + [:duo_chat_up4] }
     let(:bundled_with) { { "duo_pro" => duo_pro_scopes, "duo_extra" => duo_extra_scopes } }
+
+    let(:issuer) { 'gitlab.com' }
+    let(:instance_id) { 'instance-uuid' }
+    let(:gitlab_realm) { 'saas' }
+    let(:ttl) { 1.hour }
     let(:extra_claims) { {} }
-    let(:expected_token) do
-      instance_double('Gitlab::CloudConnector::SelfIssuedToken', encoded: encoded_token_string)
-    end
 
     subject(:access_token) { available_service_data.access_token(resource) }
 
     shared_examples 'issue a token with scopes' do
+      let(:expected_token) do
+        instance_double('Gitlab::CloudConnector::JSONWebToken')
+      end
+
+      before do
+        allow(Doorkeeper::OpenidConnect.configuration).to receive(:issuer).and_return(issuer)
+        allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_id)
+        allow(Gitlab::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
+      end
+
       it 'returns the constructed token' do
-        expect(Gitlab::CloudConnector::SelfIssuedToken).to receive(:new).with(
+        expect(Gitlab::CloudConnector::JSONWebToken).to receive(:new).with(
+          issuer: issuer,
           audience: backend,
-          subject: Gitlab::CurrentSettings.uuid,
+          subject: instance_id,
+          realm: gitlab_realm,
           scopes: scopes,
+          ttl: ttl,
           extra_claims: extra_claims
         ).and_return(expected_token)
+        expect(expected_token).to receive(:encode).with(instance_of(::JWT::JWK::RSA)).and_return(encoded_token_string)
 
         expect(access_token).to eq(encoded_token_string)
+      end
+
+      context 'when cloud_connector_jwt_replace is disabled' do
+        before do
+          stub_feature_flags(cloud_connector_jwt_replace: false)
+        end
+
+        let(:expected_token) do
+          instance_double('Gitlab::CloudConnector::SelfIssuedToken', encoded: encoded_token_string)
+        end
+
+        it 'returns the constructed token' do
+          expect(Gitlab::CloudConnector::SelfIssuedToken).to receive(:new).with(
+            audience: backend,
+            subject: Gitlab::CurrentSettings.uuid,
+            scopes: scopes,
+            extra_claims: extra_claims
+          ).and_return(expected_token)
+
+          expect(access_token).to eq(encoded_token_string)
+        end
+      end
+    end
+
+    context 'when signing key is missing' do
+      before do
+        allow(Rails.application.credentials).to receive(:openid_connect_signing_key).and_return(nil)
+      end
+
+      it 'raises NoSigningKeyError' do
+        expect { access_token }.to raise_error(StandardError, 'Cloud Connector: no key found')
       end
     end
 

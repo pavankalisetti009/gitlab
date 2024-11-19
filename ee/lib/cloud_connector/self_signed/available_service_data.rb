@@ -12,19 +12,44 @@ module CloudConnector
 
         @bundled_with = bundled_with
         @backend = backend
+        @key = load_signing_key
       end
 
       override :access_token
       def access_token(resource = nil, extra_claims: {})
-        ::Gitlab::CloudConnector::SelfIssuedToken.new(
-          audience: backend,
-          subject: Gitlab::CurrentSettings.uuid,
-          scopes: scopes_for(resource),
-          extra_claims: extra_claims
-        ).encoded
+        if Feature.enabled?(:cloud_connector_jwt_replace, gitlab_org_group)
+          ::Gitlab::CloudConnector::JSONWebToken.new(
+            issuer: Doorkeeper::OpenidConnect.configuration.issuer,
+            audience: backend,
+            subject: Gitlab::CurrentSettings.uuid,
+            realm: Gitlab::CloudConnector.gitlab_realm,
+            scopes: scopes_for(resource),
+            ttl: 1.hour,
+            extra_claims: extra_claims
+          ).encode(@key)
+        else
+          ::Gitlab::CloudConnector::SelfIssuedToken.new(
+            audience: backend,
+            subject: Gitlab::CurrentSettings.uuid,
+            scopes: scopes_for(resource),
+            extra_claims: extra_claims
+          ).encoded
+        end
       end
 
       private
+
+      def gitlab_org_group
+        @gitlab_org_group ||= Group.find_by_path_or_name('gitlab-org')
+      end
+
+      def load_signing_key
+        key_data = Rails.application.credentials.openid_connect_signing_key
+
+        raise 'Cloud Connector: no key found' unless key_data
+
+        ::JWT::JWK.new(OpenSSL::PKey::RSA.new(key_data))
+      end
 
       def scopes_for(resource)
         free_access? ? allowed_scopes_during_free_access : allowed_scopes_from_purchased_bundles_for(resource)
