@@ -121,9 +121,22 @@ module Search
                 {
                   bool: {
                     must: {
-                      terms: {
-                        _name: context.name(:work_item_type_ids),
-                        work_item_type_id: work_item_type_ids
+                      bool: {
+                        should: [
+                          {
+                            terms: {
+                              _name: context.name(:work_item_type_ids),
+                              work_item_type_id: work_item_type_ids
+                            }
+                          },
+                          {
+                            terms: {
+                              _name: context.name(:correct_work_item_type_ids),
+                              correct_work_item_type_id: work_item_type_ids
+                            }
+                          }
+                        ],
+                        minimum_should_match: 1
                       }
                     }
                   }
@@ -136,9 +149,22 @@ module Search
                 {
                   bool: {
                     must_not: {
-                      terms: {
-                        _name: context.name(:not_work_item_type_ids),
-                        work_item_type_id: not_work_item_type_ids
+                      bool: {
+                        should: [
+                          {
+                            terms: {
+                              _name: context.name(:not_work_item_type_ids),
+                              work_item_type_id: not_work_item_type_ids
+                            }
+                          },
+                          {
+                            terms: {
+                              _name: context.name(:not_correct_work_item_type_ids),
+                              correct_work_item_type_id: not_work_item_type_ids
+                            }
+                          }
+                        ],
+                        minimum_should_match: 1
                       }
                     }
                   }
