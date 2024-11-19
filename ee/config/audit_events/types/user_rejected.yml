@@ -6,5 +6,5 @@ introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/113784
 feature_category: user_management
 milestone: '15.11'
 saved_to_database: true
-streamed: false
+streamed: true
 scope: [User]
