@@ -36,7 +36,7 @@
 
   th {
     font-size: 0.75rem !important;
-    color: $gl-text-color-secondary !important;
+    @apply gl-text-strong #{!important};
   }
 
   td {
