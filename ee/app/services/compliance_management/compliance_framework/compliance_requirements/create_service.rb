@@ -18,7 +18,8 @@ module ComplianceManagement
             framework: framework,
             namespace_id: framework.namespace.id,
             name: params[:name],
-            description: params[:description]
+            description: params[:description],
+            control_expression: params[:control_expression]
           )
 
           return ServiceResponse.error(message: 'Not permitted to create requirement') unless permitted?

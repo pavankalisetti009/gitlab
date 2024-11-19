@@ -66898,6 +66898,9 @@ msgstr ""
 msgid "should be a valid container repository path with optional wildcard characters."
 msgstr ""
 
+msgid "should be a valid json object."
+msgstr ""
+
 msgid "should be an array of %{object_name} objects"
 msgstr ""
 

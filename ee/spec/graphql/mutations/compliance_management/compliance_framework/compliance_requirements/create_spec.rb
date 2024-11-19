@@ -72,7 +72,8 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
       compliance_framework_id: framework.to_gid,
       params: {
         name: 'Custom framework requirement',
-        description: 'Example Description'
+        description: 'Example Description',
+        control_expression: control_expression
       }
     }
   end
@@ -82,8 +83,17 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
       compliance_framework_id: framework.to_gid,
       params: {
         name: '',
-        description: 'Example Description'
+        description: 'Example Description',
+        control_expression: control_expression
       }
     }
+  end
+
+  def control_expression
+    {
+      operator: "=",
+      field: "minimum_approvals_required",
+      value: 2
+    }.to_json
   end
 end

@@ -11,7 +11,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let(:params) do
     {
       name: 'Custom framework requirement',
-      description: 'Description about the requirement'
+      description: 'Description about the requirement',
+      control_expression: control_expression
     }
   end
 
@@ -90,9 +91,18 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           "name" => "Custom framework requirement",
           "description" => "Description about the requirement",
           "framework_id" => framework.id,
-          "namespace_id" => namespace.id
+          "namespace_id" => namespace.id,
+          "control_expression" => control_expression
         )
       end
     end
+  end
+
+  def control_expression
+    {
+      operator: "=",
+      field: "minimum_approvals_required",
+      value: 2
+    }.to_json
   end
 end
