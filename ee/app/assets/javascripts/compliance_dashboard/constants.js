@@ -47,6 +47,7 @@ export const FRAMEWORKS_LABEL_BACKGROUND = '#737278';
 
 export const FRAMEWORKS_FILTER_TYPE_PROJECT = 'project';
 export const FRAMEWORKS_FILTER_TYPE_FRAMEWORK = 'framework';
+export const FRAMEWORKS_FILTER_TYPE_GROUP = 'group';
 export const FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK = {
   color: '#000000',
   default: false,

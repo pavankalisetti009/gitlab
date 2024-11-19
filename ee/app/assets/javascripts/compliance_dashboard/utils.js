@@ -8,6 +8,7 @@ import { CURRENT_DATE } from '../audit_events/constants';
 import {
   FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   FRAMEWORKS_FILTER_TYPE_PROJECT,
+  FRAMEWORKS_FILTER_TYPE_GROUP,
   GRAPHQL_FRAMEWORK_TYPE,
 } from './constants';
 
@@ -49,6 +50,12 @@ export function mapFiltersToUrlParams(filters) {
     urlParams.project = projectFilter.value.data;
   }
 
+  const groupFilter = filters.find((filter) => filter.type === FRAMEWORKS_FILTER_TYPE_GROUP);
+
+  if (groupFilter) {
+    urlParams.group = groupFilter.value.data;
+  }
+
   const frameworkFilters = filters.filter(
     (filter) => filter.type === FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   );
@@ -74,7 +81,7 @@ export function mapFiltersToUrlParams(filters) {
 
 export function mapQueryToFilters(queryParams) {
   const filters = [];
-  const { project } = queryParams;
+  const { project, group } = queryParams;
   const frameworks = queryParams['framework[]'];
   const notFrameworks = queryParams['not[framework][]'];
 
@@ -103,11 +110,18 @@ export function mapQueryToFilters(queryParams) {
     });
   }
 
+  if (group) {
+    filters.push({
+      type: FRAMEWORKS_FILTER_TYPE_GROUP,
+      value: { data: group, operator: 'matches' },
+    });
+  }
+
   return filters;
 }
 
 export const checkFilterForChange = ({ currentFilters = {}, newFilters = {} }) => {
-  const filterKeys = ['project', 'framework[]', 'not[framework][]'];
+  const filterKeys = ['project', 'framework[]', 'not[framework][]', 'group'];
 
   return filterKeys.some((key) => !isEqual(currentFilters[key], newFilters[key]));
 };

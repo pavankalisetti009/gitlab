@@ -98,7 +98,7 @@ export default {
       };
     },
     filterParams() {
-      const { project, ...queryParams } = this.$route.query;
+      const { project, group, ...queryParams } = this.$route.query;
       const filters = { frameworks: [], frameworksNot: [] };
       const frameworks = queryParams['framework[]'];
       const notFrameworks = queryParams['not[framework][]'];
@@ -125,6 +125,10 @@ export default {
 
       if (project) {
         filters.project = project;
+      }
+
+      if (group) {
+        filters.groupPath = group;
       }
 
       return filters;
