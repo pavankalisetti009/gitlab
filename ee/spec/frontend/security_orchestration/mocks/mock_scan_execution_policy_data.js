@@ -154,6 +154,11 @@ export const mockScheduledProjectScanExecutionPolicy = {
   yaml: mockScheduleScanExecutionManifest,
 };
 
+export const mockBranchExceptionsProjectScanExecutionPolicy = {
+  ...mockProjectScanExecutionPolicy,
+  yaml: mockBranchExceptionsExecutionManifest,
+};
+
 export const mockGroupScanExecutionPolicy = {
   ...mockProjectScanExecutionPolicy,
   name: `${mockDastScanExecutionObject.name}-group`,

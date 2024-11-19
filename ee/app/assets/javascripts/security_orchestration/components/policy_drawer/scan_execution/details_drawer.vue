@@ -79,32 +79,36 @@ export default {
     :type="$options.i18n.scanExecution"
   >
     <template v-if="parsedYaml" #summary>
-      <info-row data-testid="policy-summary" :label="$options.i18n.summary">
-        <template v-if="!humanizedActions.length">{{ $options.i18n.noActionMessage }}</template>
-        <div v-for="{ message, criteriaList } in humanizedActions" :key="message" class="gl-mb-3">
-          <gl-sprintf :message="message">
-            <template #scanner="{ content }">
-              <strong>{{ content }}</strong>
-            </template>
-          </gl-sprintf>
+      <info-row :label="$options.i18n.summary">
+        <section data-testid="actions">
+          <template v-if="!humanizedActions.length">{{ $options.i18n.noActionMessage }}</template>
+          <div v-for="{ message, criteriaList } in humanizedActions" :key="message" class="gl-mb-3">
+            <gl-sprintf :message="message">
+              <template #scanner="{ content }">
+                <strong>{{ content }}</strong>
+              </template>
+            </gl-sprintf>
+            <ul>
+              <li v-for="criteria in criteriaList" :key="criteria.message" class="gl-mt-3">
+                {{ criteria.message }}
+                <component :is="humanizedActionComponent(criteria)" :criteria="criteria" />
+              </li>
+            </ul>
+          </div>
+        </section>
+        <section data-testid="rules">
+          <div class="gl-mb-3">{{ $options.i18n.ruleMessage }}</div>
           <ul>
-            <li v-for="criteria in criteriaList" :key="criteria.message" class="gl-mt-3">
-              {{ criteria.message }}
-              <component :is="humanizedActionComponent(criteria)" :criteria="criteria" />
+            <li v-for="(rule, idx) in humanizedRules" :key="idx">
+              {{ rule.summary }}
+              <toggle-list
+                v-if="showBranchExceptions(rule.branchExceptions)"
+                class="gl-my-2"
+                :items="rule.branchExceptions"
+              />
             </li>
           </ul>
-        </div>
-        <div class="gl-mb-3">{{ $options.i18n.ruleMessage }}</div>
-        <ul>
-          <li v-for="(rule, idx) in humanizedRules" :key="idx">
-            {{ rule.summary }}
-            <toggle-list
-              v-if="showBranchExceptions(rule.branchExceptions)"
-              class="gl-my-2"
-              :items="rule.branchExceptions"
-            />
-          </li>
-        </ul>
+        </section>
       </info-row>
     </template>
   </drawer-layout>
