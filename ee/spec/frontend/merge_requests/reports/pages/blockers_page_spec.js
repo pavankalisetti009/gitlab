@@ -6,15 +6,40 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import BlockersPage from 'ee/merge_requests/reports/pages/blockers_page.vue';
 import SecurityListItem from 'ee/merge_requests/reports/components/security_list_item.vue';
+import PolicyDrawer from 'ee/merge_requests/reports/components/policy_drawer.vue';
 import projectPoliciesQuery from 'ee/merge_requests/reports/queries/project_policies.query.graphql';
 import policyViolationsQuery from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
 
 Vue.use(VueApollo);
 
+const createMockApprovalPolicy = (data = {}) => {
+  return {
+    enabled: true,
+    name: 'policy name',
+    description: '',
+    yaml: '',
+    actionApprovers: [
+      {
+        allGroups: [],
+        roles: [],
+        users: [],
+      },
+    ],
+    source: {
+      namespace: {
+        name: 'Project',
+        webUrl: '/namespace/project',
+      },
+    },
+    ...data,
+  };
+};
+
 describe('Merge request reports blockers page component', () => {
   let wrapper;
 
   const findSecurityListItems = () => wrapper.findAllComponents(SecurityListItem);
+  const findPolicyDrawer = () => wrapper.findComponent(PolicyDrawer);
 
   const createComponent = ({ policyViolations = null, approvalPolicies = [] } = {}) => {
     const apolloProvider = createMockApollo(
@@ -28,7 +53,17 @@ describe('Merge request reports blockers page component', () => {
         [
           policyViolationsQuery,
           jest.fn().mockResolvedValue({
-            data: { project: { id: 1, mergeRequest: { id: 1, policyViolations } } },
+            data: {
+              project: {
+                id: 1,
+                mergeRequest: {
+                  id: 1,
+                  targetBranch: 'main',
+                  sourceBranch: 'feature',
+                  policyViolations,
+                },
+              },
+            },
           }),
         ],
       ],
@@ -51,7 +86,7 @@ describe('Merge request reports blockers page component', () => {
     describe('has no enabled policies', () => {
       it('does not render any security list items', async () => {
         createComponent({
-          approvalPolicies: [{ name: 'policy', enabled: false }],
+          approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: false })],
         });
 
         await waitForPromises();
@@ -63,7 +98,7 @@ describe('Merge request reports blockers page component', () => {
     describe('has policies', () => {
       it('renders security list items', async () => {
         createComponent({
-          approvalPolicies: [{ name: 'policy', enabled: true }],
+          approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
         });
 
         await waitForPromises();
@@ -73,10 +108,11 @@ describe('Merge request reports blockers page component', () => {
 
       it('renders security list items with failed findings for SCAN_FINDING report', async () => {
         createComponent({
-          approvalPolicies: [{ name: 'policy', enabled: true }],
+          approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
           policyViolations: {
             anyMergeRequest: [],
             licenseScanning: [],
+            comparisonPipelines: [],
             newScanFinding: [
               {
                 location: 'location',
@@ -106,13 +142,14 @@ describe('Merge request reports blockers page component', () => {
 
       it('renders security list items with failed findings for ANY_MERGE_REQUEST report', async () => {
         createComponent({
-          approvalPolicies: [{ name: 'policy', enabled: true }],
+          approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
           policyViolations: {
             anyMergeRequest: [{ commits: 'commits', name: 'name' }],
             licenseScanning: [],
             newScanFinding: [],
             policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST' }],
             previousScanFinding: [],
+            comparisonPipelines: [],
           },
         });
 
@@ -121,6 +158,36 @@ describe('Merge request reports blockers page component', () => {
         expect(findSecurityListItems().at(0).props('findings')).toEqual([
           { commits: 'commits', name: 'name' },
         ]);
+      });
+    });
+  });
+
+  describe('policy drawer', () => {
+    it('opens drawer with open-drawer event', async () => {
+      createComponent({
+        approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
+        policyViolations: {
+          anyMergeRequest: [{ commits: 'commits', name: 'name' }],
+          licenseScanning: [],
+          newScanFinding: [],
+          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST' }],
+          previousScanFinding: [],
+          comparisonPipelines: [],
+        },
+      });
+
+      await waitForPromises();
+
+      findSecurityListItems().at(0).vm.$emit('open-drawer', 'policy');
+
+      await waitForPromises();
+
+      expect(findPolicyDrawer().props()).toMatchObject({
+        open: true,
+        policy: { name: 'policy', enabled: true },
+        comparisonPipelines: null,
+        targetBranch: 'main',
+        sourceBranch: 'feature',
       });
     });
   });

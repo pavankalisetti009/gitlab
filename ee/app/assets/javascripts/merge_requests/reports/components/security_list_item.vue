@@ -16,6 +16,11 @@ export default {
       type: String,
       required: true,
     },
+    active: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     loading: {
       type: Boolean,
       required: false,
@@ -84,7 +89,8 @@ export default {
 <template>
   <div class="gl-grid gl-w-full gl-grid-cols-[30px_1fr_auto]">
     <div
-      class="gl-col-span-3 -gl-mx-4 gl-grid gl-grid-cols-subgrid gl-gap-4 gl-rounded-base gl-px-4 gl-py-3"
+      class="gl-col-span-3 -gl-mx-2 gl-grid gl-grid-cols-subgrid gl-gap-4 gl-rounded-base gl-px-4 gl-py-3"
+      :class="{ 'gl-bg-gray-50': active }"
     >
       <div><status-icon :icon-name="status" /></div>
       <div>
@@ -94,7 +100,9 @@ export default {
         <p class="gl-mb-0" data-testid="security-item-subheading">{{ subHeadingText }}</p>
       </div>
       <div class="gl-justify-self-end">
-        <gl-button size="small">{{ __('Details') }}</gl-button>
+        <gl-button size="small" @click="$emit('open-drawer', policyName)">{{
+          __('Details')
+        }}</gl-button>
       </div>
     </div>
     <div

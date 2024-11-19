@@ -153,4 +153,16 @@ describe('DrawerLayout component', () => {
       expect(findScopeInfoRow().exists()).toBe(true);
     });
   });
+
+  it('hides enabled text when showStatus is true', () => {
+    factory({ propsData: { policy: mockProjectScanExecutionPolicy, showStatus: false } });
+
+    expect(findEnabledText().exists()).toBe(false);
+  });
+
+  it('hides scope info row component when showPolicyScope is true', () => {
+    factory({ propsData: { policy: mockProjectScanExecutionPolicy, showPolicyScope: false } });
+
+    expect(findScopeInfoRow().exists()).toBe(false);
+  });
 });

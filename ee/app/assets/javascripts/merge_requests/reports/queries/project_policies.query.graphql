@@ -5,6 +5,38 @@ query getProjectPolicies($projectPath: ID!) {
       nodes {
         enabled
         name
+        description
+        yaml
+        actionApprovers {
+          allGroups {
+            id
+            webUrl
+            fullPath
+          }
+          roles
+          users {
+            id
+            webUrl
+            name
+          }
+        }
+        source {
+          ... on GroupSecurityPolicySource {
+            inherited
+            namespace {
+              id
+              name
+              webUrl
+            }
+          }
+          ... on ProjectSecurityPolicySource {
+            namespace: project {
+              id
+              name
+              webUrl
+            }
+          }
+        }
       }
     }
   }
