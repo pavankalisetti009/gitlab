@@ -19,6 +19,14 @@ module Types
       field :description, GraphQL::Types::String,
         null: false,
         description: 'Description of the compliance requirement.'
+
+      field :control_expression, GraphQL::Types::String,
+        null: false,
+        description: 'Control expression of the compliance requirement.'
+
+      field :requirement_type, GraphQL::Types::String,
+        null: false,
+        description: 'Type of the compliance requirement.'
     end
   end
 end
