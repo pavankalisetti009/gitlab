@@ -242,24 +242,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
         set_elasticsearch_migration_to(:reindex_merge_requests_to_backfill_label_ids, including: true)
       end
 
-      context 'when search_mr_filter_label_ids flag is false' do
-        before do
-          stub_feature_flags(search_mr_filter_label_ids: false)
-        end
-
-        it 'does not include labels filter by default' do
-          assert_names_in_query(build, without: %w[filters:label_ids])
-        end
-
-        context 'when label_name option is provided' do
-          let(:options) { base_options.merge(label_name: [label.name]) }
-
-          it 'does not include labels filter' do
-            assert_names_in_query(build, without: %w[filters:label_ids])
-          end
-        end
-      end
-
       it 'does not include labels filter by default' do
         assert_names_in_query(build, without: %w[filters:label_ids])
       end

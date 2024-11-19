@@ -555,8 +555,7 @@ module Gitlab
       strong_memoize_attr :issue_aggregations
 
       def merge_request_aggregations
-        if Feature.enabled?(:search_mr_filter_label_ids, current_user) &&
-            ::Elastic::DataMigrationService.migration_has_finished?(:reindex_merge_requests_to_backfill_label_ids)
+        if ::Elastic::DataMigrationService.migration_has_finished?(:reindex_merge_requests_to_backfill_label_ids)
           options = base_options.merge(aggregation: true, klass: MergeRequest)
 
           merge_requests_query = ::Search::Elastic::MergeRequestQueryBuilder.build(query: query, options: options)
