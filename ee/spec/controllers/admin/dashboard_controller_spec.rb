@@ -27,5 +27,41 @@ RSpec.describe Admin::DashboardController, feature_category: :shared do
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
+
+    context 'when using custom permissions' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:role) { create(:member_role, :admin) }
+      let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: user) }
+
+      before do
+        sign_in(user)
+      end
+
+      subject(:admin_dashboard) { get :index }
+
+      context 'when custom_roles feature is available' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it 'responds with success' do
+          admin_dashboard
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when custom_roles feature is not available' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it 'responds with not found' do
+          admin_dashboard
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
   end
 end
