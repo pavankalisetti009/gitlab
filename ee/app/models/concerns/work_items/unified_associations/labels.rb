@@ -8,6 +8,36 @@ module WorkItems
       included do
         has_many :own_label_links, class_name: 'LabelLink', as: :target, inverse_of: :target
         has_many :own_labels, through: :own_label_links
+
+        has_many :label_links, as: :target do
+          def load_target
+            return super unless proxy_association.owner.unified_associations?
+
+            proxy_association.target = scope.to_a unless proxy_association.loaded?
+
+            proxy_association.loaded!
+            proxy_association.target
+          end
+
+          def find(*args)
+            return super unless proxy_association.owner.unified_associations?
+            return super if block_given?
+
+            scope.find(*args)
+          end
+
+          # important to have this method overwritten as most collection proxy method methods are delegated to the scope
+          def scope
+            LabelLink.from_union(
+              [
+                proxy_association.owner.sync_object&.own_label_links || LabelLink.none,
+                proxy_association.owner.own_label_links
+              ],
+              remove_duplicates: true
+            )
+          end
+        end
+
         has_many :labels, through: :label_links do
           def load_target
             return super unless proxy_association.owner.unified_associations?

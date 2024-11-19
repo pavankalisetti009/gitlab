@@ -140,22 +140,50 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
           updated_by_id: 101,
           last_edited_by_id: 101,
           assignee_id: 101,
-          last_edited_at: "2019-11-20T17:02:09.812Z",
-          title: "Child epic",
-          description: "Child epic description",
-          state_id: "opened",
+          last_edited_at: '2019-11-20T17:02:09.812Z',
+          title: 'Child epic',
+          description: 'Child epic description',
+          state_id: 'opened',
           notes: [
             {
-              note: "added epic &1 as parent epic",
-              noteable_type: "Epic",
+              note: 'some system note 1',
+              noteable_type: 'Epic',
+              author_id: 101,
+              system: true
+            },
+            {
+              note: 'some system note 2',
+              noteable_type: 'Issue',
               author_id: 101,
               system: true
             }
           ],
+          label_links: [
+            {
+              target_type: 'Epic',
+              label: {
+                title: 'label1 title',
+                type: 'GroupLabel'
+              }
+            },
+            {
+              target_type: 'Issue',
+              label: {
+                title: 'label2 title',
+                type: 'GroupLabel'
+              }
+            }
+          ],
           award_emoji: [
             {
-              name: "clapper",
-              user_id: 101
+              name: 'thumbsdown',
+              user_id: 101,
+              awardable_type: 'Epic'
+            },
+            {
+              name: 'thumbsup',
+              user_id: 101,
+              awardable_type: 'Issue'
             }
           ]
         }.deep_stringify_keys
@@ -174,8 +202,21 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
         epic = group.reload.epics.last
 
         work_item = epic.issue
-        note = epic.notes.first
-        award_emoji = epic.award_emoji.first
+        notes = epic.notes
+        award_emoji = epic.award_emoji
+        label_links = epic.label_links
+        labels = epic.labels
+
+        expect(notes.map(&:note)).to match_array(['some system note 1', 'some system note 2'])
+        expect(notes.map(&:noteable_type)).to match_array(%w[Epic Epic])
+
+        expect(award_emoji.map(&:name)).to match_array(%w[thumbsup thumbsdown])
+        expect(award_emoji.map(&:awardable_type)).to match_array(%w[Epic Epic])
+
+        expect(label_links.map(&:label_id)).to match_array(epic.labels.map(&:id))
+        expect(label_links.map(&:target_type)).to match_array(%w[Epic Epic])
+
+        expect(labels.map(&:title)).to match_array(['label1 title', 'label2 title'])
 
         source_user = Import::SourceUser.find_by(source_user_identifier: 101)
         expect(source_user.placeholder_user).to eq(epic.author)
@@ -187,8 +228,8 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
         expect(work_item.author).to be_placeholder
         expect(work_item.last_edited_by).to be_placeholder
         expect(work_item.updated_by).to be_placeholder
-        expect(note.author).to be_placeholder
-        expect(award_emoji.user).to be_placeholder
+        expect(notes.first.author).to be_placeholder
+        expect(award_emoji.first.user).to be_placeholder
 
         user_references = placeholder_user_references(::Import::SOURCE_DIRECT_TRANSFER, bulk_import.id)
 
@@ -199,8 +240,10 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
           ['WorkItem', work_item.id, 'author_id', source_user.id],
           ['WorkItem', work_item.id, 'last_edited_by_id', source_user.id],
           ['WorkItem', work_item.id, 'updated_by_id', source_user.id],
-          ['Note', note.id, 'author_id', source_user.id],
-          ['AwardEmoji', award_emoji.id, 'user_id', source_user.id]
+          ['Note', notes.first.id, 'author_id', source_user.id],
+          ['Note', notes.second.id, 'author_id', source_user.id],
+          ['AwardEmoji', award_emoji.first.id, 'user_id', source_user.id],
+          ['AwardEmoji', award_emoji.second.id, 'user_id', source_user.id]
         ])
       end
     end

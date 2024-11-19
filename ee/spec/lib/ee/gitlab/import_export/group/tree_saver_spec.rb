@@ -2,22 +2,26 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::ImportExport::Group::TreeSaver do
+RSpec.describe Gitlab::ImportExport::Group::TreeSaver, feature_category: :importers do
   describe 'saves the group tree into a json object' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
-    let_it_be(:label) { create(:group_label) }
+    let_it_be(:label1) { create(:group_label) }
+    let_it_be(:label2) { create(:group_label) }
     let_it_be(:parent_epic) { create(:epic, group: group) }
     let_it_be(:epic, reload: true) { create(:epic, group: group, parent: parent_epic) }
     let_it_be(:epic_event) { create(:event, :created, target: epic, group: group, author: user) }
-    let_it_be(:epic_label_link) { create(:label_link, label: label, target: epic) }
+    let_it_be(:epic_label_link1) { create(:label_link, label: label1, target: epic) }
+    let_it_be(:epic_work_item_label_link1) { create(:label_link, label: label2, target: epic.work_item) }
     let_it_be(:epic_push_event) { create(:event, :pushed, target: epic, group: group, author: user) }
     let_it_be(:milestone) { create(:milestone, group: group) }
-    let_it_be(:board) { create(:board, group: group, assignee: user, labels: [label]) }
-    let_it_be(:note) { create(:note, noteable: epic) }
-    let_it_be(:note_event) { create(:event, :created, target: note, author: user) }
-    let_it_be(:epic_emoji) { create(:award_emoji, awardable: epic) }
-    let_it_be(:epic_note_emoji) { create(:award_emoji, awardable: note) }
+    let_it_be(:board) { create(:board, group: group, assignee: user, labels: [label1]) }
+    let_it_be(:note1) { create(:note, namespace_id: epic.group_id, project_id: nil, noteable: epic) }
+    let_it_be(:note2) { create(:note, namespace_id: epic.group_id, project_id: nil, noteable: epic.work_item) }
+    let_it_be(:note_event) { create(:event, :created, target: note1, author: user) }
+    let_it_be(:epic_emoji1) { create(:award_emoji, awardable: epic) }
+    let_it_be(:epic_emoji2) { create(:award_emoji, awardable: epic.work_item) }
+    let_it_be(:epic_note_emoji) { create(:award_emoji, awardable: note1) }
 
     let(:shared) { Gitlab::ImportExport::Shared.new(group) }
     let(:export_path) { "#{Dir.tmpdir}/group_tree_saver_spec_ee" }
@@ -68,8 +72,9 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver do
         notes = epic_json['notes']
 
         expect(notes).not_to be_empty
-        expect(notes.first['note']).to eq(note.note)
-        expect(notes.first['noteable_id']).to eq(epic.id)
+        expect(notes.map { |n| n['note'] }).to match_array([note1.note, note2.note])
+        expect(notes.map { |n| n['noteable_id'] }).to match_array([epic.id, epic.work_item.id])
+        expect(notes.map { |n| n['noteable_type'] }).to match_array(%w[Epic Issue])
       end
 
       it 'saves epic events' do
@@ -86,30 +91,30 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver do
         expect_successful_save(group_tree_saver)
 
         notes = epic_json['notes']
-        expect(notes.first['events'].first['action']).to eq(note_event.action)
+        expect(notes.flat_map { |n| n['events'] }.map { |ev| ev['action'] }).to match_array([note_event.action])
       end
 
       it "saves epic's award emojis" do
         expect_successful_save(group_tree_saver)
 
-        award_emoji = epic_json['award_emoji'].first
-        expect(award_emoji['name']).to eq(epic_emoji.name)
+        expect(epic_json['award_emoji'].map { |aw| aw["name"] }).to match_array([epic_emoji1.name, epic_emoji2.name])
       end
 
       it "saves epic's note award emojis" do
         expect_successful_save(group_tree_saver)
 
-        award_emoji = epic_json['notes'].first['award_emoji'].first
-        expect(award_emoji['name']).to eq(epic_note_emoji.name)
+        notes = epic_json['notes']
+        expect(notes.flat_map { |n| n['award_emoji'] }.map { |ev| ev['name'] }).to match_array([epic_note_emoji.name])
       end
 
       it 'saves epic labels' do
         expect_successful_save(group_tree_saver)
 
-        epic_label = epic_json['label_links'].first['label']
-        expect(epic_label['title']).to eq(label.title)
-        expect(epic_label['description']).to eq(label.description)
-        expect(epic_label['color']).to be_color(label.color)
+        labels = epic_json['label_links'].map { |ll| ll['label'] }
+
+        expect(labels.map { |l| l['title'] }).to match_array([label1.title, label2.title])
+        expect(labels.map { |l| l['description'] }).to match_array([label1.description, label2.description])
+        expect(labels.map { |l| l['color'] }).to match_array([label1.color.to_s, label2.color.to_s])
       end
 
       it 'saves resource state events' do
@@ -134,12 +139,12 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver do
 
         it 'filters out inaccessible epic notes' do
           note_text = "added epic #{external_parent.to_reference(full: true)} as parent epic"
-          note2 = create(:system_note, noteable: epic, note: note_text)
-          create(:system_note_metadata, note: note2, action: 'relate_epic')
+          inaccessible_note = create(:system_note, noteable: epic, note: note_text)
+          create(:system_note_metadata, note: inaccessible_note, action: 'relate_epic')
 
           expect_successful_save(group_tree_saver)
-          expect(epic_json['notes'].count).to eq(1)
-          expect(epic_json['notes'].first['note']).to eq(note.note)
+          expect(epic_json['notes'].count).to eq(2)
+          expect(epic_json['notes'].map { |n| n['note'] }).to match_array([note1.note, note2.note])
         end
       end
     end
@@ -166,7 +171,7 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver do
         labels = read_association(group, 'boards').first['labels']
 
         expect(labels).not_to be_empty
-        expect(labels.first['title']).to eq(label.title)
+        expect(labels.first['title']).to eq(label1.title)
       end
 
       it 'saves board lists' do
