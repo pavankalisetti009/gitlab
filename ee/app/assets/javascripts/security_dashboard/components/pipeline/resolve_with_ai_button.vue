@@ -116,7 +116,7 @@ export default {
           variables: {
             clientSubscriptionId: CLIENT_SUBSCRIPTION_ID,
             resourceId: this.vulnerabilityGraphqlId,
-            suggestionMergeRequestId: this.mergeRequestGraphQLId,
+            vulnerableMergeRequestId: this.mergeRequestGraphQLId,
           },
         })
         .then(({ data }) => {
@@ -160,7 +160,7 @@ export default {
     variant="confirm"
     icon="tanuki-ai"
     :loading="isResolving"
-    :title="s__('AI|Use GitLab Duo to generate a comment with a suggested solution.')"
+    :title="s__('AI|Use GitLab Duo to generate a merge request with a suggested solution.')"
     @click="handleClick"
   >
     {{ s__('AI|Resolve with AI') }}

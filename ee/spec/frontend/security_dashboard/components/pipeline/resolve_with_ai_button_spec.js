@@ -52,7 +52,7 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
         variant: 'confirm',
       });
       expect(findButton().attributes('title')).toBe(
-        'Use GitLab Duo to generate a comment with a suggested solution.',
+        'Use GitLab Duo to generate a merge request with a suggested solution.',
       );
     });
 
@@ -221,7 +221,7 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
 
         expect(visitUrl).not.toHaveBeenCalled();
 
-        const url = 'http://gitlab.com/project/merge_requests/1#comment-1';
+        const url = 'http://gitlab.com/project/merge_requests/2';
         sendSubscriptionMessage(getAiSubscriptionResponse(url));
         await waitForPromises();
 
