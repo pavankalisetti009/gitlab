@@ -114,11 +114,13 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:project) { create(:project) }
+    let(:helper) { instance_double(Gitlab::Elastic::Helper) }
     let(:project_ids) { [project.id] }
     let(:embedding_service) { instance_double(Gitlab::Llm::VertexAi::Embeddings::Text) }
     let(:mock_embedding) { [1, 2, 3] }
     let(:hybrid_similarity) { 0.5 }
     let(:hybrid_boost) { 0.5 }
+    let(:query) { 'test with long query' }
     let(:options) { base_options.merge(hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost) }
 
     before do
@@ -126,8 +128,81 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       allow(user).to receive(:any_group_with_ai_available?).and_return(true)
       allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
       allow(embedding_service).to receive(:execute).and_return(mock_embedding)
+      allow(::Search::Elastic::Queries).to receive(:helper).and_return(helper)
+      allow(::Search::Elastic::Filters).to receive(:helper).and_return(helper)
+      allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(true)
       allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
         .with(:add_embedding_to_work_items).and_return(true)
+    end
+
+    context 'when we cannot generate embeddings' do
+      before do
+        allow(embedding_service).to receive(:execute).and_return(nil)
+      end
+
+      it 'does not add a knn query' do
+        expect(build).not_to have_key(:knn)
+      end
+    end
+
+    context 'when we have both opensearch and elasticsearch not running' do
+      before do
+        allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(false)
+        allow(helper).to receive(:vectors_supported?).with(:opensearch).and_return(false)
+      end
+
+      it 'does not add a knn query' do
+        expect(build).not_to have_key(:knn)
+      end
+    end
+
+    context 'when we have opensearch running' do
+      before do
+        allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(false)
+        allow(helper).to receive(:vectors_supported?).with(:opensearch).and_return(true)
+      end
+
+      it 'add knn query for opensearch' do
+        query = build
+        os_knn_query = {
+          knn: {
+            embedding_0: {
+              k: 25,
+              vector: mock_embedding
+            }
+          }
+        }
+        expect(query[:query][:bool][:should]).to include(os_knn_query)
+      end
+
+      context 'when simple_query_string is used' do
+        before do
+          stub_feature_flags(search_uses_match_queries: false)
+        end
+
+        it 'applies boost to the query' do
+          query_hash = build
+          os_knn_query = {
+            knn: {
+              embedding_0: {
+                k: 25,
+                vector: mock_embedding
+              }
+            }
+          }
+          simple_qs_with_boost = {
+            simple_query_string: {
+              _name: "work_item:match:search_terms",
+              fields: ["iid^3", "title^2", "description"],
+              query: query,
+              lenient: true,
+              default_operator: :and,
+              boost: 0.2
+            }
+          }
+          expect(query_hash[:query][:bool][:should]).to include(simple_qs_with_boost, os_knn_query)
+        end
+      end
     end
 
     shared_examples 'without hybrid search query' do
@@ -158,6 +233,12 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
       assert_names_in_query(knn_filter, with: expected_filters)
       assert_names_in_query(query_without_knn, with: expected_filters)
+    end
+
+    context 'when query is short' do
+      let(:query) { 'foo' }
+
+      it_behaves_like 'without hybrid search query'
     end
 
     context 'if project_ids is not specified' do

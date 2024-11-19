@@ -6,21 +6,30 @@ module Search
       extend ::Gitlab::Utils::Override
 
       DOC_TYPE = 'work_item'
+      THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
       def build
-        query_hash = build_query_hash(query: query, options: options)
+        # iid field can be added here as lenient option will pardon format errors, like integer out of range.
+        options[:fields] = options[:fields].presence || %w[iid^3 title^2 description]
+
+        query_hash = if hybrid_work_item_search?
+                       ::Search::Elastic::Queries.by_knn(query: query, options: options)
+                     else
+                       build_query_hash(query: query, options: options)
+                     end
+
         query_hash = get_authorization_filter(query_hash: query_hash, options: options)
         query_hash = get_confidentiality_filter(query_hash: query_hash, options: options)
-
-        if hybrid_work_item_search?
-          query_hash = ::Search::Elastic::Queries.by_knn(query_hash: query_hash, query: query, options: options)
-        end
 
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_not_hidden(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_label_ids(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_work_item_type_ids(query_hash: query_hash, options: options)
+
+        if hybrid_work_item_search?
+          query_hash = ::Search::Elastic::Filters.by_knn(query_hash: query_hash, options: options)
+        end
 
         return ::Search::Elastic::Aggregations.by_label_ids(query_hash: query_hash) if options[:aggregation]
 
@@ -57,6 +66,8 @@ module Search
 
       # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags
       def hybrid_work_item_search?
+        return false if iid_query?
+        return false if short_query?
         return false unless Feature.enabled?(:ai_global_switch, type: :ops)
         return false unless Gitlab::Saas.feature_available?(:ai_vertex_embeddings)
         return false unless ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items)
@@ -78,23 +89,25 @@ module Search
           doc_type: DOC_TYPE,
           features: 'issues',
           authorization_use_traversal_ids: true,
-          project_visibility_level_field: :project_visibility_level
+          project_visibility_level_field: :project_visibility_level,
+          embedding_field: :embedding_0
         }
       end
 
+      def short_query?
+        query.size < THRESHOLD_FOR_GENERATING_EMBEDDING
+      end
+
+      def iid_query?
+        query =~ /#(\d+)\z/
+      end
+
       def build_query_hash(query:, options:)
-        if query =~ /#(\d+)\z/
+        if iid_query?
+          query =~ /#(\d+)\z/ # To get the match correctly
           ::Search::Elastic::Queries.by_iid(iid: Regexp.last_match(1), doc_type: DOC_TYPE)
         else
-          # iid field can be added here as lenient option will pardon format errors, like integer out of range.
-          fields = options[:fields].presence || %w[iid^3 title^2 description]
-
-          if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
-              Feature.enabled?(:search_uses_match_queries, options[:current_user])
-            ::Search::Elastic::Queries.by_multi_match_query(fields: fields, query: query, options: options)
-          else
-            ::Search::Elastic::Queries.by_simple_query_string(fields: fields, query: query, options: options)
-          end
+          ::Search::Elastic::Queries.by_full_text(query: query, options: options)
         end
       end
     end
