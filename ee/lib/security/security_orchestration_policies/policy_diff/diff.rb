@@ -43,8 +43,20 @@ module Security
           status_changed? || scope_changed? || rules_diff.any_changes?
         end
 
+        def needs_rules_refresh?
+          rules_diff.updated.any? || actions_changed? || fallback_behavior_changed?
+        end
+
         def status_changed?
           diff.key?(:enabled)
+        end
+
+        def actions_changed?
+          diff.key?(:actions)
+        end
+
+        def fallback_behavior_changed?
+          diff.key?(:fallback_behavior)
         end
 
         def scope_changed?

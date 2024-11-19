@@ -40,7 +40,7 @@ module Security
         event_data[:diff], event_data[:rules_diff]
       )
 
-      return unless policy_diff.needs_refresh?
+      return unless policy_diff.needs_refresh? || policy_diff.needs_rules_refresh?
 
       all_projects(policy) do |project|
         ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, event_data)

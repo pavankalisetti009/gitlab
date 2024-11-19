@@ -578,7 +578,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'with allowed policy' do
-          let(:allowed_policy) { build(:software_license_policy, :allowed, software_license: apache) }
+          let(:allowed_policy) { create(:software_license_policy, :allowed, software_license: apache) }
 
           before do
             project.software_license_policies << allowed_policy
@@ -589,7 +589,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'with denied policy' do
-          let(:denied_policy) { build(:software_license_policy, :denied, software_license: apache) }
+          let(:denied_policy) { create(:software_license_policy, :denied, software_license: apache) }
           let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
 
           before do
@@ -615,7 +615,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
             context 'when rule is not approved' do
               let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
-              let(:denied_policy) { build(:software_license_policy, :denied, software_license: build(:software_license, :apache_2_0)) }
+              let(:denied_policy) { create(:software_license_policy, :denied, software_license: build(:software_license, :apache_2_0)) }
 
               before do
                 allow_any_instance_of(ApprovalWrappedRule).to receive(:approved?).and_return(false)
@@ -1909,6 +1909,70 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       subject
 
       expect(merge_request.approval_rules.map(&:approval_project_rule)).not_to include(project_approval_rule_without_configuration)
+    end
+
+    context 'when mr approval rules already exist' do
+      let_it_be(:mr_approval_rule) do
+        create(:report_approver_rule, :scan_finding,
+          merge_request: merge_request,
+          approvals_required: 1
+        )
+      end
+
+      let_it_be(:approval_rule_source) do
+        create(:approval_merge_request_rule_source,
+          approval_merge_request_rule: mr_approval_rule,
+          approval_project_rule: project_approval_rule
+        )
+      end
+
+      it 'updates approval rule' do
+        subject
+
+        expect(mr_approval_rule.reload.approvals_required).to eq(2)
+      end
+    end
+
+    context 'when merge request is already merged' do
+      let_it_be(:merge_request) { create(:ee_merge_request, source_project: project, state: :merged) }
+
+      it 'does not create or update approval rule' do
+        subject
+
+        expect(merge_request.approval_rules).to be_empty
+      end
+    end
+  end
+
+  describe '#sync_project_approval_rules_for_approval_policy_rules' do
+    let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
+    let_it_be(:security_policy) { create(:security_policy) }
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+    let_it_be(:project_approval_rule_without_policy_rule) { create(:approval_project_rule, project: project) }
+
+    let_it_be(:project_approval_rule) do
+      create(:approval_project_rule, :scan_finding,
+        project: project,
+        approval_policy_rule: approval_policy_rule,
+        scanners: %w[sast],
+        approvals_required: 2
+      )
+    end
+
+    subject do
+      merge_request.sync_project_approval_rules_for_approval_policy_rules(security_policy.approval_policy_rules)
+    end
+
+    it 'creates approval rules for project' do
+      subject
+
+      expect(merge_request.approval_rules.first.approval_project_rule).to eq(project_approval_rule)
+    end
+
+    it 'does not create approval rules for other configuration' do
+      subject
+
+      expect(merge_request.approval_rules.map(&:approval_project_rule)).not_to include(project_approval_rule_without_policy_rule)
     end
 
     context 'when mr approval rules already exist' do

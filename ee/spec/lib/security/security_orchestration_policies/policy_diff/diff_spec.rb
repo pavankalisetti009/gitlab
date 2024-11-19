@@ -117,6 +117,35 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::Diff, featur
     end
   end
 
+  describe '#needs_rules_refresh?' do
+    it 'returns true when actions is changed' do
+      diff.add_policy_field(:actions,
+        [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[user_approver] }],
+        [{ type: 'require_approval', approvals_required: 1, role_approvers: %w[user_approver] }]
+      )
+
+      expect(diff.needs_rules_refresh?).to be true
+    end
+
+    it 'returns true when fallback_behavior is changed' do
+      diff.add_policy_field(:fallback_behavior, {}, { fail: "open" })
+
+      expect(diff.needs_rules_refresh?).to be true
+    end
+
+    it 'returns true when rules_diff.updated is changed' do
+      diff.add_updated_rule(create(:approval_policy_rule), { branches: ['main'] }, { branches: %w[main feature] })
+
+      expect(diff.needs_rules_refresh?).to be true
+    end
+
+    it 'returns false for no changes in concerned fields' do
+      diff.add_policy_field(:field1, 'old', 'new')
+
+      expect(diff.needs_rules_refresh?).to be false
+    end
+  end
+
   describe '.from_json' do
     let(:diff) do
       {

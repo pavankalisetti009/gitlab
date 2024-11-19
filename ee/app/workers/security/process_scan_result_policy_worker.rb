@@ -25,6 +25,8 @@ module Security
       @configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)
       return unless project && configuration
 
+      return if Feature.enabled?(:use_approval_policy_rules_for_approval_rules, project)
+
       measure_and_log(:process) do
         sync_policies(project, configuration)
 

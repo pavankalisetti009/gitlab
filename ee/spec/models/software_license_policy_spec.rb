@@ -28,7 +28,7 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when associated with a software_license' do
-      let(:software_license_policy) { build(:software_license_policy, software_license: build(:software_license), custom_software_license: nil) }
+      let(:software_license_policy) { create(:software_license_policy, software_license: build(:software_license), custom_software_license: nil) }
 
       it { is_expected.to be_valid }
 

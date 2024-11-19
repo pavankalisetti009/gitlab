@@ -15,6 +15,7 @@ module Security
       pipeline_execution_policy: %i[content pipeline_config_strategy suffix],
       vulnerability_management_policy: %i[actions]
     }.freeze
+    APPROVAL_MERGE_REQUEST_RULES_BATCH_SIZE = 5000
 
     belongs_to :security_orchestration_policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
     has_many :approval_policy_rules, class_name: 'Security::ApprovalPolicyRule', foreign_key: 'security_policy_id',
@@ -165,6 +166,36 @@ module Security
       delete_software_license_policies
 
       approval_policy_rules.delete_all(:delete_all)
+    end
+
+    def delete_approval_policy_rules_for_project(project, rules)
+      policy_configuration = security_orchestration_policy_configuration
+
+      policy_configuration.approval_project_rules.where(project_id: project.id).each_batch do |batch|
+        batch.for_approval_policy_rules(rules).delete_all
+      end
+
+      policy_configuration
+        .approval_merge_request_rules
+        .each_batch(of: APPROVAL_MERGE_REQUEST_RULES_BATCH_SIZE) do |batch|
+          batch
+            .for_unmerged_merge_requests
+            .for_merge_request_project(project.id)
+            .for_approval_policy_rules(rules)
+            .delete_all
+        end
+
+      project.scan_result_policy_violations.each_batch do |batch|
+        batch.where(approval_policy_rules: rules).delete_all
+      end
+
+      delete_software_license_policies_for_project(project, rules)
+    end
+
+    def delete_software_license_policies_for_project(project, rules)
+      project.software_license_policies.each_batch do |batch|
+        batch.where(approval_policy_rules: rules).delete_all
+      end
     end
 
     def delete_scan_execution_policy_rules
