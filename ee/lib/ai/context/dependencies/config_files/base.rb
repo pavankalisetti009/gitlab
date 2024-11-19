@@ -4,10 +4,16 @@ module Ai
   module Context
     module Dependencies
       module ConfigFiles
-        # This class represents a dependency manager config file. It contains logic
-        # to parse and extract libraries from the file content. To support a new
-        # config file type/language, create a new class that inherits from this Base.
-        # Then append the new class name to ConfigFiles::Constants::CONFIG_FILE_CLASSES.
+        # This class represents a dependency manager config file. It contains
+        # logic to parse and extract libraries from the file content.
+        #
+        # To support a new config file type/language:
+        # 1. Create a new child class that inherits from this Base. The file name should be in
+        #    the format: `<lang>_<dependency_manager_name>(_<additional_file_identifier>)`
+        #    The additional file identifier should be "lock" when applicable.
+        # 2. Add the new class to `ConfigFiles::Constants::CONFIG_FILE_CLASSES` and update
+        #    the corresponding documentation (see comments in ConfigFiles::Constants.)
+        #
         class Base
           VALID_LIB_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
 
