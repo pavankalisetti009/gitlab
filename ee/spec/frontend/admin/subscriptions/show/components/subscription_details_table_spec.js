@@ -98,7 +98,7 @@ describe('Subscription Details Table', () => {
     });
 
     it('shows the default row color', () => {
-      expect(findLastSyncRow().classes('gl-text-gray-800')).toBe(true);
+      expect(findLastSyncRow().classes('gl-text-default')).toBe(true);
     });
 
     it('displays a dash for empty values', () => {
@@ -178,7 +178,7 @@ describe('Subscription Details Table', () => {
       const store = createStore({ didSyncFail: false });
       createComponent({ store });
 
-      expect(findLastSyncRow().classes('gl-text-gray-800')).toBe(true);
+      expect(findLastSyncRow().classes('gl-text-default')).toBe(true);
     });
 
     describe('when the sync failed', () => {
@@ -194,7 +194,7 @@ describe('Subscription Details Table', () => {
       it('shows the default row color for all other rows', () => {
         const allButLastSync = findAllRows().wrappers.filter(isNotLastSyncRow);
 
-        expect(allButLastSync.every(hasClass('gl-text-gray-800'))).toBe(true);
+        expect(allButLastSync.every(hasClass('gl-text-default'))).toBe(true);
       });
     });
   });

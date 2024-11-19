@@ -76,7 +76,7 @@ export default {
       return item.detail === 'lastSync' && this.didSyncFail;
     },
     rowClass(item) {
-      return this.lastSyncFailed(item) ? `gl-text-red-500` : 'gl-text-gray-800';
+      return this.lastSyncFailed(item) ? `gl-text-red-500` : 'gl-text-default';
     },
     rowLabel({ detail }) {
       return this.$options.detailsLabels[detail];
