@@ -6,6 +6,22 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
   let(:config) { described_class.new(**params) }
   let(:params) { { policy_project_id: 123, policy_index: 1, policy: policy } }
 
+  describe '#strategy_override_project_ci?' do
+    subject { config.strategy_override_project_ci? }
+
+    context 'with inject_ci' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: 'inject_ci') }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'with override_project_ci' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: 'override_project_ci') }
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '#suffix' do
     subject { config.suffix }
 

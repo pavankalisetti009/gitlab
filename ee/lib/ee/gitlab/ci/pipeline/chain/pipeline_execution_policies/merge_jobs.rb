@@ -20,15 +20,18 @@ module EE
 
               def perform!
                 policy_context = command.pipeline_policy_context
-                return if policy_context.creating_policy_pipeline? || !policy_context.has_execution_policy_pipelines?
 
-                clear_project_pipeline
-                merge_policy_jobs
-                track_internal_event(
-                  'enforce_pipeline_execution_policy_in_project',
-                  namespace: project.namespace,
-                  project: project
-                )
+                if policy_context.creating_policy_pipeline?
+                  collect_policy_pipeline_stages
+                elsif policy_context.has_execution_policy_pipelines?
+                  clear_project_pipeline
+                  merge_policy_jobs
+                  track_internal_event(
+                    'enforce_pipeline_execution_policy_in_project',
+                    namespace: project.namespace,
+                    project: project
+                  )
+                end
               rescue ::Gitlab::Ci::Pipeline::JobsInjector::DuplicateJobNameError => e
                 error("Pipeline execution policy error: #{e.message}", failure_reason: :config_error)
               end
@@ -38,6 +41,16 @@ module EE
               end
 
               private
+
+              def collect_policy_pipeline_stages
+                # We save declared stages of `override_project_ci` policies in the pipeline context
+                # to use them in the main pipeline
+                command.pipeline_policy_context.collect_declared_stages!(command.yaml_processor_result.stages)
+              rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::OverrideStagesConflictError => e
+                # This error is propagated into `FindConfigs` because it can only happen while building
+                # the policy pipeline. `FindConfigs` decorates the error with "Pipeline execution policy error:" prefix.
+                error(e.message, failure_reason: :config_error)
+              end
 
               def clear_project_pipeline
                 # We remove the project pipeline config in two scenarios;
@@ -61,7 +74,7 @@ module EE
                   # Instantiate JobsInjector per policy pipeline to keep conflict-based job renaming isolated
                   job_injector = ::Gitlab::Ci::Pipeline::JobsInjector.new(
                     pipeline: pipeline,
-                    declared_stages: command.yaml_processor_result.stages,
+                    declared_stages: declared_stages,
                     on_conflict: on_conflict)
                   policy.pipeline.stages.each do |stage|
                     job_injector.inject_jobs(jobs: stage.statuses, stage: stage) do |_job|
@@ -75,6 +88,10 @@ module EE
                     raise
                   end
                 end
+              end
+
+              def declared_stages
+                command.pipeline_policy_context.override_policy_stages.presence || command.yaml_processor_result.stages
               end
             end
           end

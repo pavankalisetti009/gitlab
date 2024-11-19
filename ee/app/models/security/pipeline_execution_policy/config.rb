@@ -20,6 +20,10 @@ module Security
         @suffix_strategy = policy[:suffix] || DEFAULT_SUFFIX_STRATEGY
       end
 
+      def strategy_override_project_ci?
+        config_strategy == :override_project_ci
+      end
+
       def suffix
         return if suffix_strategy == SUFFIX_STRATEGIES[:never]
 
