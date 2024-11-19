@@ -45,7 +45,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
     end
 
     shared_examples_for 'successful prompt processing' do
-      it 'answers query using expected tools', :aggregate_failures do
+      it 'answers query using expected tools', :aggregate_failures,
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/505272' do
         # make the call to Duo Chat in order to receive the list of selected tools
         executor.execute
         expect(executor.context).to match_llm_tools(tools)

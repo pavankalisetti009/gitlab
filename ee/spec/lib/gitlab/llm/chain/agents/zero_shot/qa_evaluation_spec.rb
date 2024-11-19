@@ -58,7 +58,7 @@ RSpec.describe 'GitLab Duo Chat QA Evaluation', :real_ai_request, :saas, :clean_
       end
     end
 
-    it 'answers the questions correctly' do
+    it 'answers the questions correctly', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/505272' do
       test_results = batch_evaluate
 
       test_results.each do |result|
