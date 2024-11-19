@@ -2,7 +2,7 @@
 import { GlCollapsibleListbox, GlLoadingIcon } from '@gitlab/ui';
 import { escapeRegExp, debounce } from 'lodash';
 import SafeHtml from '~/vue_shared/directives/safe_html';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_INSTANCE } from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -18,8 +18,8 @@ const SELECTED_PROJECTS_MAX_COUNT = 100;
 const PROJECT_ENTITY_NAME = 'Project';
 
 const QUERIES = {
-  [DASHBOARD_TYPES.GROUP]: groupProjectsQuery,
-  [DASHBOARD_TYPES.INSTANCE]: instanceProjectsQuery,
+  [DASHBOARD_TYPE_GROUP]: groupProjectsQuery,
+  [DASHBOARD_TYPE_INSTANCE]: instanceProjectsQuery,
 };
 
 // Convert the project IDs from "gid://gitlab/Project/1" to "1". It needs to be a string because

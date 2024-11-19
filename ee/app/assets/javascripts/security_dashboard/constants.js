@@ -1,12 +1,10 @@
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
-export const DASHBOARD_TYPES = {
-  PROJECT: 'project',
-  PIPELINE: 'pipeline',
-  GROUP: 'group',
-  INSTANCE: 'instance',
-};
+export const DASHBOARD_TYPE_PROJECT = 'project';
+export const DASHBOARD_TYPE_PIPELINE = 'pipeline';
+export const DASHBOARD_TYPE_GROUP = 'group';
+export const DASHBOARD_TYPE_INSTANCE = 'instance';
 
 export const SEVERITY_LEVEL_CRITICAL = 'critical';
 export const SEVERITY_LEVEL_HIGH = 'high';

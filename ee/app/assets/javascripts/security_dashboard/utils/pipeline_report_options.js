@@ -1,5 +1,5 @@
 import { parseBoolean } from '~/lib/utils/common_utils';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import { DASHBOARD_TYPE_PIPELINE } from 'ee/security_dashboard/constants';
 import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findings.query.graphql';
 
 export const getPipelineReportOptions = (data) => {
@@ -20,7 +20,7 @@ export const getPipelineReportOptions = (data) => {
   return {
     projectFullPath,
     emptyStateSvgPath,
-    dashboardType: DASHBOARD_TYPES.PIPELINE,
+    dashboardType: DASHBOARD_TYPE_PIPELINE,
     // fullPath is needed even though projectFullPath is already provided because
     // vulnerability_list_graphql.vue expects the property name to be 'fullPath'
     fullPath: projectFullPath,

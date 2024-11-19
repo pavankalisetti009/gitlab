@@ -5,7 +5,7 @@ import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import agentImagesQuery from 'ee/security_dashboard/graphql/queries/agent_images.query.graphql';
 import projectImagesQuery from 'ee/security_dashboard/graphql/queries/project_images.query.graphql';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import { DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
 import QuerystringSync from './querystring_sync.vue';
 import { ALL_ID } from './constants';
 
@@ -40,7 +40,7 @@ export default {
   },
   inject: {
     agentName: { default: '' },
-    dashboardType: { default: DASHBOARD_TYPES.PROJECT },
+    dashboardType: { default: DASHBOARD_TYPE_PROJECT },
     fullPath: { default: '' },
     projectFullPath: { default: '' },
   },
@@ -50,7 +50,7 @@ export default {
   }),
   computed: {
     isAgentDashboard() {
-      return this.dashboardType === DASHBOARD_TYPES.PROJECT && Boolean(this.agentName);
+      return this.dashboardType === DASHBOARD_TYPE_PROJECT && Boolean(this.agentName);
     },
     toggleText() {
       return getSelectedOptionsText({

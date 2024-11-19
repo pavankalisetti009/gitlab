@@ -2,7 +2,11 @@ import Vue from 'vue';
 import ReportNotConfiguredProject from 'ee/security_dashboard/components/project/report_not_configured_project.vue';
 import ReportNotConfiguredGroup from 'ee/security_dashboard/components/group/report_not_configured_group.vue';
 import ReportNotConfiguredInstance from 'ee/security_dashboard/components/instance/report_not_configured_instance.vue';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import {
+  DASHBOARD_TYPE_GROUP,
+  DASHBOARD_TYPE_INSTANCE,
+  DASHBOARD_TYPE_PROJECT,
+} from 'ee/security_dashboard/constants';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import groupVulnerabilityGradesQuery from 'ee/security_dashboard/graphql/queries/group_vulnerability_grades.query.graphql';
 import groupVulnerabilityHistoryQuery from 'ee/security_dashboard/graphql/queries/group_vulnerability_history.query.graphql';
@@ -53,19 +57,19 @@ export default (el, dashboardType) => {
   let props;
   let component;
 
-  if (dashboardType === DASHBOARD_TYPES.GROUP) {
+  if (dashboardType === DASHBOARD_TYPE_GROUP) {
     component = hasProjects ? SecurityDashboard : ReportNotConfiguredGroup;
     props = {
       historyQuery: groupVulnerabilityHistoryQuery,
       gradesQuery: groupVulnerabilityGradesQuery,
     };
-  } else if (dashboardType === DASHBOARD_TYPES.INSTANCE) {
+  } else if (dashboardType === DASHBOARD_TYPE_INSTANCE) {
     component = hasProjects ? SecurityDashboard : ReportNotConfiguredInstance;
     props = {
       historyQuery: instanceVulnerabilityHistoryQuery,
       gradesQuery: instanceVulnerabilityGradesQuery,
     };
-  } else if (dashboardType === DASHBOARD_TYPES.PROJECT) {
+  } else if (dashboardType === DASHBOARD_TYPE_PROJECT) {
     component = hasVulnerabilities ? ProjectSecurityCharts : ReportNotConfiguredProject;
     props = {
       projectFullPath,

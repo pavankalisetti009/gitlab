@@ -1,5 +1,5 @@
 import initSecurityDashboard from 'ee/security_dashboard/security_dashboard_init';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_INSTANCE } from 'ee/security_dashboard/constants';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { TEST_HOST } from 'helpers/test_constants';
 
@@ -43,7 +43,7 @@ describe('Security Dashboard', () => {
 
   describe('default states', () => {
     it('sets up group-level', () => {
-      createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPES.GROUP });
+      createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
 
       expect(root).toMatchSnapshot();
     });
@@ -51,7 +51,7 @@ describe('Security Dashboard', () => {
     it('sets up instance-level', () => {
       createComponent({
         data: { instanceDashboardSettingsPath: '/instance/settings_page' },
-        type: DASHBOARD_TYPES.INSTANCE,
+        type: DASHBOARD_TYPE_INSTANCE,
       });
 
       expect(root).toMatchSnapshot();
