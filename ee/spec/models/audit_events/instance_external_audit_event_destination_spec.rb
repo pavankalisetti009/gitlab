@@ -39,6 +39,9 @@ RSpec.describe AuditEvents::InstanceExternalAuditEventDestination, feature_categ
     let(:model_factory_name) { :instance_external_audit_event_destination }
   end
 
+  it_behaves_like 'includes InstanceStreamDestinationMappable concern',
+    let(:model_factory_name) { :instance_external_audit_event_destination }
+
   describe 'Associations' do
     it { is_expected.to have_one(:namespace_filter) }
   end

@@ -39,4 +39,7 @@ RSpec.describe AuditEvents::Instance::GoogleCloudLoggingConfiguration, feature_c
   it_behaves_like 'includes ExternallyCommonDestinationable concern' do
     let(:model_factory_name) { :instance_google_cloud_logging_configuration }
   end
+
+  it_behaves_like 'includes InstanceStreamDestinationMappable concern',
+    let(:model_factory_name) { :instance_google_cloud_logging_configuration }
 end

@@ -55,6 +55,9 @@ RSpec.describe AuditEvents::AmazonS3Configuration, feature_category: :audit_even
     let(:model_factory_name) { :amazon_s3_configuration }
   end
 
+  it_behaves_like 'includes GroupStreamDestinationMappable concern',
+    let(:model_factory_name) { :amazon_s3_configuration }
+
   describe '#allowed_to_stream?' do
     it 'always returns true' do
       expect(s3_configuration.allowed_to_stream?).to eq(true)
