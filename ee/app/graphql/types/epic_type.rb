@@ -168,12 +168,11 @@ module Types
 
     field :color, GraphQL::Types::String,
       null: true,
-      description: 'Color of the epic. Returns `null` if `epic_color_highlight` feature flag is disabled.'
+      description: 'Color of the epic.'
 
     field :text_color, GraphQL::Types::String,
       null: true,
-      description: 'Text color generated for the epic. Returns `null` ' \
-                   'if `epic_color_highlight` feature flag is disabled.'
+      description: 'Text color generated for the epic.'
 
     field :blocked, GraphQL::Types::Boolean,
       null: true, description: 'Indicates the epic is blocked.'
@@ -257,14 +256,6 @@ module Types
 
     def blocked_by_epics
       object.blocked_by_epics_for(current_user)
-    end
-
-    def color
-      object.color if Feature.enabled?(:epic_color_highlight, object.group)
-    end
-
-    def text_color
-      object.text_color if Feature.enabled?(:epic_color_highlight, object.group)
     end
 
     # preloading target for events

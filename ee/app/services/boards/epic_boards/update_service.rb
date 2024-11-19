@@ -23,9 +23,7 @@ module Boards
           permitted += %i[labels label_ids]
         end
 
-        if Feature.enabled?(:epic_color_highlight, parent)
-          permitted += %i[display_colors]
-        end
+        permitted += %i[display_colors]
 
         permitted
       end

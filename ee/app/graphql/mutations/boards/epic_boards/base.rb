@@ -9,7 +9,7 @@ module Mutations
         argument :display_colors,
           GraphQL::Types::Boolean,
           required: false,
-          description: 'Whether or not display epic colors. Ignored unless `epic_color_highlight` flag is enabled.'
+          description: 'Whether or not display epic colors.'
       end
     end
   end

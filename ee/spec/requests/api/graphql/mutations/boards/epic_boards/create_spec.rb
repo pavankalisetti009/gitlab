@@ -45,19 +45,6 @@ RSpec.describe Mutations::Boards::EpicBoards::Create, feature_category: :portfol
       expect(mutation_response['epicBoard']['labels']['count']).to eq(1)
     end
 
-    context 'when epic_color_highlight flag is disabled' do
-      before do
-        stub_feature_flags(epic_color_highlight: false)
-      end
-
-      it 'ignores displayColors argument' do
-        post_graphql_mutation(mutation, current_user: current_user)
-
-        expect(mutation_response).to have_key('epicBoard')
-        expect(mutation_response['epicBoard']['displayColors']).to eq(true)
-      end
-    end
-
     context 'when create fails' do
       let(:params) { { groupPath: group.full_path, name: 'x' * 256 } }
 
