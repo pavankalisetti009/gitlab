@@ -82,14 +82,6 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
 
         it { is_expected.to have_gitlab_http_status(:forbidden) }
       end
-
-      context 'when POST /-/subscriptions/hand_raise_leads' do
-        it 'completes the requests also' do
-          post subscriptions_hand_raise_leads_url, params: post_params
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-      end
     end
 
     context 'when not authenticated' do
