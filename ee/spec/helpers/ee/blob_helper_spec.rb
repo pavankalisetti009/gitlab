@@ -68,6 +68,10 @@ RSpec.describe BlobHelper do
     let(:project) { build_stubbed(:project) }
     let(:ref) { 'main' }
 
+    before do
+      allow(helper).to receive(:selected_branch).and_return(ref)
+    end
+
     it 'returns data related to blob app' do
       allow(helper).to receive(:current_user).and_return(nil)
 
