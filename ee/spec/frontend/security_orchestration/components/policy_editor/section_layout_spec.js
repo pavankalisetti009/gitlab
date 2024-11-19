@@ -1,5 +1,6 @@
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { trimText } from 'helpers/text_helper';
 
 describe('SectionLayout', () => {
   let wrapper;
@@ -21,8 +22,8 @@ describe('SectionLayout', () => {
       createComponent();
     });
     it('displays the content with the correct layout', () => {
-      expect(findContent().attributes('class')).toBe(
-        'gl-grow gl-w-full gl-flex gl-gap-3 gl-items-center gl-flex-wrap ',
+      expect(trimText(findContent().attributes('class'))).toBe(
+        'gl-grow gl-w-full gl-flex gl-gap-3 gl-items-center gl-flex-wrap',
       );
     });
 
