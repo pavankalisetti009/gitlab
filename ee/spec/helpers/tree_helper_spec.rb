@@ -13,7 +13,7 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
   describe '#vue_file_list_data' do
     before do
       project.add_developer(user)
-      allow(helper).to receive(:current_user).and_return(user)
+      allow(helper).to receive_messages(selected_branch: sha, current_user: user)
       sign_in(user)
     end
 
@@ -26,7 +26,8 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
         full_name: project.name_with_namespace,
         resource_id: project.to_global_id,
         user_id: user.to_global_id,
-        explain_code_available: 'false'
+        explain_code_available: 'false',
+        target_branch: sha
       )
     end
   end
