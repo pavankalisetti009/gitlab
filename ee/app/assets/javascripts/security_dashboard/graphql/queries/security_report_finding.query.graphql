@@ -1,4 +1,4 @@
-#import "../fragments/vulnerability_detail.fragment.graphql"
+#import "ee/graphql_shared/fragments/vulnerability_detail.fragment.graphql"
 
 query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findingUuid: String!) {
   project(fullPath: $projectFullPath) {
