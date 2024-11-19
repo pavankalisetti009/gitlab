@@ -39,12 +39,10 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
         # we have duo_chat and code_suggestions as UP. In the next iteration, we could split duo_chat to smaller
         # unit_primitives. At the moment, unit_primitive name is used as a scope when ServiceToken is being issued
         unit_primitives:
-          - code_suggestions
           - complete_code
           - generate_code
       duo_enterprise:
         unit_primitives:
-          - code_suggestions
           - complete_code
           - generate_code
   duo_chat:
@@ -190,7 +188,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - ask_epic
           - ask_issue
           - ask_merge_request
-          - code_suggestions
           - complete_code
           - generate_code
           - documentation_search
