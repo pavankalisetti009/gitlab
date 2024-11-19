@@ -78,7 +78,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       ::Gitlab::Llm::Chain::Tools::IssueReader,
       ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
       ::Gitlab::Llm::Chain::Tools::EpicReader,
-      ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
       ::Gitlab::Llm::Chain::Tools::MergeRequestReader
     ]
   end
@@ -214,10 +213,6 @@ client_subscription_id: 'someid' }
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
       stub_feature_flags(ai_commit_reader_for_chat: false)
-      # This flag is used only on AI Gateway and we need to stub it to
-      # prevent Rubocop from marking this flag as unused
-      # and raising an error
-      stub_feature_flags(ci_editor_tool_removed: false)
     end
 
     context 'when resource is an issue' do
@@ -302,7 +297,6 @@ client_subscription_id: 'someid' }
           ::Gitlab::Llm::Chain::Tools::IssueReader,
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
           ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
           ::Gitlab::Llm::Chain::Tools::CommitReader
         ]
@@ -319,25 +313,6 @@ client_subscription_id: 'someid' }
           .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
          .with(:expanded_ai_logging, user).and_return(:expanded_ai_logging)
-
-        subject
-      end
-    end
-
-    context 'with ci editor toll disabled' do
-      before do
-        stub_feature_flags(ci_editor_tool_removed: true)
-        allow(ai_request).to receive(:request)
-        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
-      end
-
-      it 'pushes feature flag to AI Gateway' do
-        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
-          allow(instance).to receive(:execute).and_return(answer)
-        end
-
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-          .with(:ci_editor_tool_removed, user).and_return(:ci_editor_tool_removed)
 
         subject
       end

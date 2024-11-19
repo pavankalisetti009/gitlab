@@ -456,27 +456,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
       end
     end
 
-    context 'when asked about CI/CD' do
-      where(:input_template, :tools) do
-        'How do I configure CI/CD pipeline to deploy a ruby application to k8s?' |
-          ['CiEditorAssistant']
-        'Please help me configure a CI/CD pipeline for node application that would run lint and unit tests.' |
-          ['CiEditorAssistant']
-        'Please provide a .gitlab-ci.yaml config for running a review app for merge requests?' |
-          ['CiEditorAssistant']
-        'How do I optimize my pipelines so that they do not cost so much money?' |
-          ['CiEditorAssistant']
-        'How can I migrate from GitHub Actions to GitLab CI?' |
-          ['CiEditorAssistant']
-      end
-
-      with_them do
-        let(:input) { format(input_template) }
-
-        it_behaves_like 'successful prompt processing'
-      end
-    end
-
     context 'when asked general questions' do
       let(:input) { format('What is your name?') }
 

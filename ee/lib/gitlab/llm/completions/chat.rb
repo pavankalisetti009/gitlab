@@ -14,7 +14,6 @@ module Gitlab
           ::Gitlab::Llm::Chain::Tools::IssueReader,
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
           ::Gitlab::Llm::Chain::Tools::MergeRequestReader
         ].freeze
 
@@ -159,10 +158,6 @@ module Gitlab
 
         def push_feature_flags
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
-
-          if Feature.enabled?(:ci_editor_tool_removed, user)
-            Gitlab::AiGateway.push_feature_flag(:ci_editor_tool_removed, user)
-          end
 
           return if ::Gitlab::CloudConnector.self_managed_cloud_connected?
 
