@@ -333,6 +333,49 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       expect(test_stage.builds.map(&:name)).to contain_exactly('project_policy_job')
     end
 
+    context 'and policy uses custom stages' do
+      let(:project_policy_content) do
+        { stages: %w[build test policy-test deploy],
+          project_policy_job: { stage: 'policy-test', script: 'project script' } }
+      end
+
+      it 'includes jobs with custom stages' do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+
+        stages = execute.payload.stages
+
+        build_stage = stages.find_by(name: 'build')
+        expect(build_stage.builds.map(&:name)).to contain_exactly('namespace_policy_job')
+        policy_test_stage = stages.find_by(name: 'policy-test')
+        expect(policy_test_stage.builds.map(&:name)).to contain_exactly('project_policy_job')
+      end
+
+      context 'and also namespace policy uses `override_project_ci` with incompatible stages' do
+        let(:namespace_policy) do
+          build(:pipeline_execution_policy, :override_project_ci,
+            content: { include: [{
+              project: compliance_project.full_path,
+              file: namespace_policy_file,
+              ref: compliance_project.default_branch_or_main
+            }] })
+        end
+
+        let(:namespace_policy_content) do
+          { stages: %w[build deploy test],
+            namespace_policy_job: { stage: 'test', script: 'namespace script' } }
+        end
+
+        it 'responds with error', :aggregate_failures do
+          expect(execute).to be_error
+          expect(execute.payload).to be_persisted
+          expect(execute.payload.errors.full_messages)
+            .to contain_exactly(
+              'Pipeline execution policy error: Stages across `override_project_ci` policies are not compatible'
+            )
+        end
+      end
+    end
+
     context 'and the project has an invalid .gitlab-ci.yml' do
       let(:project_ci_yaml) do
         <<~YAML

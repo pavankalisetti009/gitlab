@@ -5,15 +5,18 @@ module Gitlab
   module Ci
     module Pipeline
       module PipelineExecutionPolicies
+        OverrideStagesConflictError = Class.new(StandardError)
+
         class PipelineContext
           include ::Gitlab::Utils::StrongMemoize
 
-          attr_reader :policy_pipelines
+          attr_reader :policy_pipelines, :override_policy_stages
 
           def initialize(project:, command: nil)
             @project = project
             @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
             @policy_pipelines = []
+            @override_policy_stages = []
           end
 
           def build_policy_pipelines!(partition_id)
@@ -47,6 +50,21 @@ module Gitlab
             return false unless has_execution_policy_pipelines?
 
             policy_pipelines.any?(&:strategy_override_project_ci?)
+          end
+
+          def collect_declared_stages!(stages)
+            return unless creating_policy_pipeline?
+            return unless current_policy.strategy_override_project_ci?
+
+            error = OverrideStagesConflictError.new('Stages across `override_project_ci` policies are not compatible')
+
+            if stages.size > override_policy_stages.size
+              raise error unless stages_compatible?(override_policy_stages, stages)
+
+              @override_policy_stages = stages
+            else
+              raise error unless stages_compatible?(stages, override_policy_stages)
+            end
           end
 
           # We inject reserved policy stages only when;
@@ -97,6 +115,21 @@ module Gitlab
             yield.tap do
               @current_policy = nil
             end
+          end
+
+          # `current_stages` are considered compatible if they are an ordered subset of `target_stages`.
+          # `target_stages` s larger or equally large set of stages.
+          # Elements of `current_stages` must appear in the same order as in `target_stages`.
+          # Valid example:
+          #   `current_stages`: [build, deploy]
+          #   `target_stages`: [build, test, deploy]
+          # Invalid example:
+          #   `current_stages`: [deploy, build]
+          #   `target_stages`: [build, test, deploy]
+          def stages_compatible?(current_stages, target_stages)
+            return true if current_stages.blank? || current_stages == target_stages
+
+            current_stages.each_with_index.all? { |stage, index| target_stages[index..].include?(stage) }
           end
         end
       end

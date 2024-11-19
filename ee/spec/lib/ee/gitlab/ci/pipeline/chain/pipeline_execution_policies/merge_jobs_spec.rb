@@ -370,6 +370,29 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         expect(pre_stage.statuses.map(&:name)).to contain_exactly('rspec')
       end
 
+      context 'with custom override policy stages' do
+        let(:execution_policy_pipelines) do
+          [
+            build(
+              :pipeline_execution_policy_pipeline, :override_project_ci,
+              pipeline: build_mock_policy_pipeline({ 'policy-test' => ['rspec'] })
+            )
+          ]
+        end
+
+        before do
+          allow(command.pipeline_policy_context).to receive(:override_policy_stages).and_return(%w[policy-test])
+        end
+
+        it 'uses override_policy_stages to inject jobs' do
+          run_chain
+
+          expect(pipeline.stages).to be_one
+          policy_test_stage = pipeline.stages.find { |stage| stage.name == 'policy-test' }
+          expect(policy_test_stage.statuses.map(&:name)).to contain_exactly('rspec')
+        end
+      end
+
       it_behaves_like 'internal event tracking' do
         let(:event) { 'enforce_pipeline_execution_policy_in_project' }
         let(:category) { described_class.name }
@@ -384,6 +407,58 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
 
       it 'does not change pipeline stages' do
         expect { run_chain }.not_to change { pipeline.stages }
+      end
+
+      it_behaves_like 'internal event not tracked' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+      end
+    end
+
+    context 'when creating_policy_pipeline? is true' do
+      let(:config) do
+        { stages: %w[test policy-test],
+          policy_test_job: { stage: 'policy-test', script: 'echo "policy-test"' },
+          test_job: { stage: 'test', script: 'echo "test"' } }
+      end
+
+      let(:execution_policy_config) { build(:pipeline_execution_policy_config) }
+
+      before do
+        allow(command.pipeline_policy_context).to receive(:current_policy).and_return(execution_policy_config)
+      end
+
+      it 'does not change pipeline stages' do
+        expect { run_chain }.not_to change { pipeline.stages }
+      end
+
+      context 'with "inject_ci" policy' do
+        it 'does not add policy stages to the pipeline_policy_context' do
+          expect { run_chain }.not_to change { command.pipeline_policy_context.override_policy_stages }.from([])
+        end
+      end
+
+      context 'with "override_project_ci" policy' do
+        let(:execution_policy_config) { build(:pipeline_execution_policy_config, :override_project_ci) }
+
+        it 'adds policy stages to the pipeline_policy_context' do
+          expect { run_chain }.to change { command.pipeline_policy_context.override_policy_stages }
+                                    .to(%w[.pipeline-policy-pre .pre test policy-test .post .pipeline-policy-post])
+        end
+
+        context 'when stages are incompatible with other policy' do
+          before do
+            command.pipeline_policy_context.collect_declared_stages!(
+              %w[.pipeline-policy-pre .pre build .post .pipeline-policy-post])
+          end
+
+          it 'raises OverrideStagesConflictError' do
+            run_chain
+
+            expect(step.break?).to be true
+            expect(pipeline.errors.full_messages)
+              .to contain_exactly('Stages across `override_project_ci` policies are not compatible')
+          end
+        end
       end
 
       it_behaves_like 'internal event not tracked' do
