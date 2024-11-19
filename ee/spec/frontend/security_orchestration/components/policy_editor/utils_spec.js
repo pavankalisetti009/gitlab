@@ -562,8 +562,13 @@ describe('mapBranchesToExceptions', () => {
     });
   });
 
-  describe('policyToYaml', () => {
-    const { urlParameter } = POLICY_TYPE_COMPONENT_OPTIONS.scanExecution;
+  describe.each([
+    POLICY_TYPE_COMPONENT_OPTIONS.scanExecution,
+    POLICY_TYPE_COMPONENT_OPTIONS.approval,
+    POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement,
+    POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution,
+  ])('policyToYaml', (policyType) => {
+    const { urlParameter } = policyType;
     it('returns policy object as yaml', () => {
       expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(
         mockDastScanExecutionManifest,
@@ -575,7 +580,7 @@ describe('mapBranchesToExceptions', () => {
         securityPoliciesNewYamlFormat: true,
       };
 
-      expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(`scan_execution_policy:
+      expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(`${urlParameter}:
   - name: Scheduled Dast/SAST scan
     description: This policy enforces pipeline configuration to have a job with DAST scan
     enabled: false

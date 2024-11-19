@@ -4,8 +4,17 @@ import { GlAlert, GlEmptyState, GlButton } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
-import { isGroup, isProject } from 'ee/security_orchestration/components/utils';
+import {
+  extractPolicyContent,
+  isGroup,
+  isProject,
+} from 'ee/security_orchestration/components/utils';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import {
+  policyBodyToYaml,
+  policyToYaml,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   ADD_ACTION_LABEL,
   BRANCHES_KEY,
@@ -35,7 +44,6 @@ import {
   createPolicyObject,
   getInvalidBranches,
   getPolicyYaml,
-  policyToYaml,
   approversOutOfSync,
   emptyBuildRule,
   invalidScanners,
@@ -170,9 +178,12 @@ export default {
     const newPolicyYaml = getPolicyYaml({
       withGroupSettings: this.glFeatures.scanResultPolicyBlockGroupBranchModification,
       isGroup: isGroup(this.namespaceType),
+      newYamlFormat: this.glFeatures.securityPoliciesNewYamlFormat,
     });
 
-    const yamlEditorValue = this.existingPolicy ? policyToYaml(this.existingPolicy) : newPolicyYaml;
+    const yamlEditorValue = this.existingPolicy
+      ? policyToYaml(this.existingPolicy, POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter)
+      : newPolicyYaml;
 
     const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
 
@@ -381,9 +392,21 @@ export default {
       this.hasParsingError = true;
     },
     async handleModifyPolicy(action) {
+      /**
+       * backend only accepts the old format
+       * policy body is extracted
+       * and policy type is added to a policy body
+       */
+      const type = POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter;
+      const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
+
+      const payload = this.glFeatures.securityPoliciesNewYamlFormat
+        ? policyBodyToYaml(policy)
+        : this.yamlEditorValue;
+
       this.$emit('save', {
         action,
-        policy: this.yamlEditorValue,
+        policy: payload,
         isActiveRuleMode: this.isActiveRuleMode,
       });
     },
@@ -404,7 +427,10 @@ export default {
       this.policy = policy;
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy);
+      this.yamlEditorValue = policyToYaml(
+        policy,
+        POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+      );
     },
     async changeEditorMode(mode) {
       this.mode = mode;
