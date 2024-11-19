@@ -111,12 +111,23 @@ export default class EEMirrorRepos extends MirrorRepos {
     $('.js-mirror-branch-regex-hidden', this.$form).val(regexValue);
   }
 
+  updateMirrorBranchSettings() {
+    if (!this.mirrorOnlyBranchesMatchRegexEnabled) {
+      return;
+    }
+
+    if (this.$mirrorBranchSettingInput.filter(':checked').val() === 'all') {
+      $('.js-mirror-protected-hidden', this.$form).val('0');
+      $('.js-mirror-branch-regex-hidden', this.$form).val('');
+    }
+  }
+
   registerUpdateListeners() {
     super.registerUpdateListeners();
     this.$mirrorDirectionSelect.on('change', () => this.handleUpdate());
     this.$mirrorBranchSettingInput.on('change', (event) => this.updateMirrorBranchSetting(event));
     this.$mirrorBranchRegexInput.on('change', () => this.updateMirrorBranchRegex());
-    this.$form.on('submit', () => this.updateMirrorBranchRegex());
+    this.$form.on('submit', () => this.updateMirrorBranchSettings());
   }
 
   deleteMirror(event) {
