@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Explore::DependenciesController, feature_category: :dependency_management do
+RSpec.describe Explore::DependenciesController, :with_current_organization, feature_category: :dependency_management do
   describe 'GET #index' do
     describe 'GET index.html' do
       subject { get explore_dependencies_path }
@@ -13,8 +13,7 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
         end
 
         context 'when user is admin', :enable_admin_mode do
-          let_it_be(:user) { create(:user, :admin) }
-          let_it_be(:organization) { create(:organization, :default) }
+          let_it_be(:user) { create(:user, :admin, organizations: [current_organization]) }
 
           before do
             sign_in(user)
@@ -32,7 +31,7 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
         end
 
         context 'when user is not admin' do
-          let_it_be(:user) { create(:user, :without_default_org) }
+          let_it_be(:user) { create(:user, organizations: [current_organization]) }
 
           before do
             sign_in(user)
@@ -54,8 +53,7 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
         include_examples 'returning response status', :not_found
 
         context 'when user is admin', :enable_admin_mode do
-          let_it_be(:user) { create(:user, :admin) }
-          let_it_be(:organization) { create(:organization, :default) }
+          let_it_be(:user) { create(:user, :admin, organizations: [current_organization]) }
 
           before do
             sign_in(user)
@@ -75,10 +73,9 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
         end
 
         context 'when user is admin', :enable_admin_mode do
-          let_it_be(:user) { create(:user, :admin) }
-          let_it_be(:organization) { create(:organization, :default) }
-          let_it_be(:group) { create(:group, organization: organization) }
-          let_it_be(:project) { create(:project, organization: organization, group: group) }
+          let_it_be(:user) { create(:user, :admin, organizations: [current_organization]) }
+          let_it_be(:group) { create(:group, organization: current_organization) }
+          let_it_be(:project) { create(:project, organization: current_organization, group: group) }
 
           before do
             sign_in(user)
@@ -122,7 +119,7 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
               get explore_dependencies_path, as: :json
             end
 
-            create_list(:project, 3, organization: organization).each do |project|
+            create_list(:project, 3, organization: current_organization).each do |project|
               create(:sbom_occurrence, project: project)
             end
 
@@ -147,8 +144,7 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
         include_examples 'returning response status', :not_found
 
         context 'when user is admin', :enable_admin_mode do
-          let_it_be(:user) { create(:user, :admin) }
-          let_it_be(:organization) { create(:organization, :default) }
+          let_it_be(:user) { create(:user, :admin, organizations: [current_organization]) }
 
           before do
             sign_in(user)

@@ -60,7 +60,7 @@ module Explore
     end
 
     def organization
-      @organization ||= current_user.organizations.default_organization
+      @organization ||= Current.organization
     end
 
     def dependencies
