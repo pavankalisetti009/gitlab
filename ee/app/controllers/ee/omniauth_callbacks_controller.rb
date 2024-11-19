@@ -63,12 +63,6 @@ module EE
       end
     end
 
-    def onboarding_params
-      # The sign in path for creating an account with sso will not have params as there are no
-      # leads that would start out there. So we need to protect for that here by using fetch
-      request.env.fetch('omniauth.params', {}).slice('glm_source', 'glm_content')
-    end
-
     override :sign_in_and_redirect_or_verify_identity
     def sign_in_and_redirect_or_verify_identity(user, auth_user, new_user)
       return super if user.blocked? # When `block_auto_created_users` is set to true

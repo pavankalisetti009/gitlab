@@ -82,7 +82,6 @@ module Registrations
 
     def passed_through_params
       update_params.slice(*::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS)
-                   .merge(::Onboarding::StatusPresenter.glm_tracking_params(params))
     end
 
     def update_success_path
