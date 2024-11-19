@@ -99,20 +99,32 @@ describe('SidebarIterationWidget', () => {
   });
 
   describe('when listing iterations in the dropdown', () => {
+    it('renders iterations alphabetically', async () => {
+      await createComponentWithApollo({ iterationCadences: true });
+      await clickEdit(wrapper);
+      jest.runOnlyPendingTimers();
+      await waitForPromises();
+
+      // title is "Automatic cadence"
+      expect(findIterationCadenceTitleAt(0)).toContain(mockIteration2.iterationCadence.title);
+      // title is "Plan cadence"
+      expect(findIterationCadenceTitleAt(1)).toContain(mockIteration1.iterationCadence.title);
+    });
+
     it('renders iterations with cadence names', async () => {
       await createComponentWithApollo({ iterationCadences: true });
       await clickEdit(wrapper);
       jest.runOnlyPendingTimers();
       await waitForPromises();
 
-      // mockIteration1 has no title
-      expect(findIterationCadenceTitleAt(0)).toContain(mockIteration1.iterationCadence.title);
-      expect(findIterationItemsTextAt(0)).toContain(getIterationPeriod(mockIteration1, null, true));
-
       // mockIteration2 has a title
-      expect(findIterationCadenceTitleAt(1)).toContain(mockIteration2.iterationCadence.title);
-      expect(findIterationItemsTextAt(1)).toContain(getIterationPeriod(mockIteration2, null, true));
-      expect(findIterationItemsTextAt(1)).toContain(mockIteration2.title);
+      expect(findIterationCadenceTitleAt(0)).toContain(mockIteration2.iterationCadence.title);
+      expect(findIterationItemsTextAt(0)).toContain(getIterationPeriod(mockIteration2, null, true));
+      expect(findIterationItemsTextAt(0)).toContain(mockIteration2.title);
+
+      // mockIteration1 has no title
+      expect(findIterationCadenceTitleAt(1)).toContain(mockIteration1.iterationCadence.title);
+      expect(findIterationItemsTextAt(1)).toContain(getIterationPeriod(mockIteration1, null, true));
     });
   });
 });

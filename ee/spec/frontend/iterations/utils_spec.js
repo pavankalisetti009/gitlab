@@ -1,4 +1,8 @@
-import { getIterationPeriod, groupByIterationCadences } from 'ee/iterations/utils';
+import {
+  getIterationPeriod,
+  groupByIterationCadences,
+  groupOptionsByIterationCadences,
+} from 'ee/iterations/utils';
 import { mockIterationsWithCadences, mockIterationsWithoutCadences } from './mock_data';
 
 describe('getIterationPeriod', () => {
@@ -54,5 +58,37 @@ describe('groupByIterationCadences', () => {
 
   it('returns empty array when passed an empty array', () => {
     expect(groupByIterationCadences([])).toEqual([]);
+  });
+});
+
+describe('groupOptionsByIterationCadences', () => {
+  const text = 'Nov 23, 2021 - Nov 30, 2021';
+  const expected = [
+    {
+      text: 'cadence 1',
+      options: [
+        { value: 1, title: 'iteration 1', text },
+        { value: 4, title: 'iteration 4', text },
+      ],
+    },
+    {
+      text: 'cadence 2',
+      options: [
+        { value: 2, title: 'iteration 2', text },
+        { value: 3, title: 'iteration 3', text },
+      ],
+    },
+  ];
+
+  it('groups iterations by cadence', () => {
+    expect(groupOptionsByIterationCadences(mockIterationsWithCadences)).toStrictEqual(expected);
+  });
+
+  it('returns empty array when iterations do not have cadences', () => {
+    expect(groupOptionsByIterationCadences(mockIterationsWithoutCadences)).toEqual([]);
+  });
+
+  it('returns empty array when passed an empty array', () => {
+    expect(groupOptionsByIterationCadences([])).toEqual([]);
   });
 });
