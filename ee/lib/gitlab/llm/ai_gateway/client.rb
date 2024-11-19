@@ -24,7 +24,12 @@ module Gitlab
           return unless enabled?
 
           response = retry_with_exponential_backoff do
-            perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
+            resp = perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
+
+            # Log the response here because 5xx errors get swallowed by
+            # Gitlab::CircuitBreaker#run_with_circuit.
+            log_server_error(resp) unless resp.success?
+            resp
           end
 
           log_response_received(response.parsed_response) if response&.success?
@@ -92,6 +97,16 @@ module Gitlab
 
         def enabled?
           access_token.present?
+        end
+
+        def log_server_error(response)
+          body = response.parsed_response['detail'] if response.parsed_response.is_a?(Hash)
+
+          log_error(message: 'Error response from AI Gateway',
+            event_name: 'error_response_received',
+            ai_component: 'abstraction_layer',
+            status: response.code,
+            body: body)
         end
 
         def log_response_received(response_body)

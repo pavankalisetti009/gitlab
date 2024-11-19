@@ -83,6 +83,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         let(:http_status) { 429 }
 
         before do
+          allow(logger).to receive(:error)
           stub_const("Gitlab::Llm::Concerns::ExponentialBackoff::INITIAL_DELAY", 0.0)
         end
 
@@ -91,6 +92,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
       context 'when request is retried once' do
         before do
+          allow(logger).to receive(:error)
           stub_request(:post, url)
             .to_return(status: 429, body: '', headers: response_headers)
             .then.to_return(status: 200, body: response_body, headers: response_headers)
@@ -113,7 +115,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       expect(Gitlab::HTTP).to receive(:post)
                                 .with(anything, hash_including(timeout: timeout))
                                 .and_call_original
-      complete
+      expect(complete).to be_a(HTTParty::Response)
+      expect(complete.code).to eq(200)
 
       expect(logger).to have_received(:conditional_info)
         .with(user, a_hash_including(message: "Performing request to AI Gateway", body: expected_body, timeout: timeout,
@@ -121,6 +124,34 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       expect(logger).to have_received(:conditional_info)
         .with(user, a_hash_including(message: "Received response from AI Gateway",
           response_from_llm: expected_response))
+    end
+
+    context 'when request is a 500 error with text body' do
+      let(:http_status) { 500 }
+      let(:response_headers) { nil }
+      let(:response_body) { 'Internal server error' }
+
+      it 'logs an error and returns nil' do
+        expect(logger).to receive(:error)
+          .with(a_hash_including(message: "Error response from AI Gateway", event_name: 'error_response_received',
+            status: 500, body: nil))
+
+        expect(complete).to be_nil
+      end
+    end
+
+    context 'when request is a 500 error with JSON details' do
+      let(:http_status) { 500 }
+      let(:response_headers) { { 'Content-Type' => 'application/json' } }
+      let(:response_body) { { 'detail' => 'System not ready' }.to_json }
+
+      it 'logs an error and returns the detail' do
+        expect(logger).to receive(:error)
+          .with(a_hash_including(message: "Error response from AI Gateway", event_name: 'error_response_received',
+            status: 500, body: 'System not ready'))
+
+        expect(complete).to be_nil
+      end
     end
 
     context 'when calling AI Gateway with Claude 2.1 model' do
