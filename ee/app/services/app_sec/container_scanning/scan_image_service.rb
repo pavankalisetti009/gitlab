@@ -95,7 +95,7 @@ module AppSec
           .new(project, nil, skip_authorization: true)
           .execute
 
-        raise StandardError, "Security Orchestration Bot was not persisted." unless response.user.persisted?
+        raise StandardError, "Security Orchestration Bot was not created." unless response.user&.persisted?
 
         response.user
       rescue StandardError => error

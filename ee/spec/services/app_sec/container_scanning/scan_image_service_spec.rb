@@ -184,6 +184,23 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
         end
       end
 
+      context 'when creating the security bot returns no user' do
+        before do
+          allow(Security::Orchestration::CreateBotService).to receive_message_chain(:new,
+            :execute).and_return(instance_double(ProjectMember, user: nil))
+        end
+
+        it 'logs the error with its respective details' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            a_kind_of(StandardError),
+            hash_including(class: described_class.name, project_id: project.id,
+              message: /Security Orchestration Bot was not created/)
+          )
+
+          execute
+        end
+      end
+
       it 'creates the security policy bot' do
         expect(Security::Orchestration::CreateBotService).to receive(:new)
                   .with(project, nil, skip_authorization: true).and_call_original
