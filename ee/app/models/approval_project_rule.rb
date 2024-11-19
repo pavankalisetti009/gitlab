@@ -34,8 +34,10 @@ class ApprovalProjectRule < ApplicationRecord
 
   attribute :severity_levels, default: DEFAULT_SEVERITIES
 
-  scope :not_from_scan_result_policy, -> { where(report_type: nil).or(where.not(report_type: [:scan_finding, :license_scanning, :any_merge_request])) }
-  scope :report_approver_without_scan_finding, -> { report_approver.where.not(report_type: [:scan_finding, :license_scanning, :any_merge_request]) }
+  scope :report_approver_without_policy_report_types, -> do
+    report_approver.where.not(report_type: SCAN_RESULT_POLICY_REPORT_TYPES)
+  end
+
   scope :for_all_branches, -> { where.missing(:protected_branches).where(applies_to_all_protected_branches: false) }
   scope :for_all_protected_branches, -> { where.missing(:protected_branches).where(applies_to_all_protected_branches: true) }
   scope :for_project, ->(project_id) { where(project_id: project_id) }

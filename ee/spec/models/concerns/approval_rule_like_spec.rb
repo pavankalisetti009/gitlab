@@ -268,6 +268,15 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
           end
         end
 
+        context 'when report type is any_merge_request' do
+          it 'is invalid' do
+            subject.report_type = :any_merge_request
+
+            expect(subject).to be_invalid
+            expect(subject.errors).to have_key(:report_type)
+          end
+        end
+
         context 'when report type is code_coverage' do
           it 'is valid' do
             subject.report_type = :code_coverage
@@ -395,6 +404,7 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
     let_it_be(:license_scanning_rule) { create(:approval_project_rule, :license_scanning, project: project) }
     let_it_be(:code_coverage) { create(:approval_project_rule, :code_coverage, project: project) }
     let_it_be(:scan_finding) { create(:approval_project_rule, :scan_finding, project: project) }
+    let_it_be(:any_merge_request) { create(:approval_project_rule, :any_merge_request, project: project) }
     # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
     subject { project.approval_rules.exportable }

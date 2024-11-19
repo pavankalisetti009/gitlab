@@ -121,7 +121,7 @@ module EE
       end
 
       scope :with_applied_scan_result_policies, -> do
-        joins(:approval_rules).merge(ApprovalMergeRequestRule.scan_finding)
+        joins(:approval_rules).merge(ApprovalMergeRequestRule.from_scan_result_policy)
       end
 
       after_create_commit :create_pending_status_check_responses, if: :allow_external_status_checks?

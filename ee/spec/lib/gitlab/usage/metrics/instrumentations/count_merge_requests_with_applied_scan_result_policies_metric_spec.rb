@@ -17,7 +17,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountMergeRequestsWithA
     let(:expected_value) { 2 }
     let(:expected_query) do
       'SELECT COUNT(DISTINCT "approval_merge_request_rules"."merge_request_id") ' \
-        'FROM "approval_merge_request_rules" WHERE "approval_merge_request_rules"."report_type" = 4'
+        'FROM "approval_merge_request_rules" WHERE "approval_merge_request_rules"."report_type" IN (4, 2, 5)'
     end
   end
 
@@ -27,7 +27,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountMergeRequestsWithA
     let(:finish) { 2.days.ago.to_fs(:db) }
     let(:expected_query) do
       "SELECT COUNT(DISTINCT \"approval_merge_request_rules\".\"merge_request_id\") " \
-        "FROM \"approval_merge_request_rules\" WHERE \"approval_merge_request_rules\".\"report_type\" = 4 " \
+        "FROM \"approval_merge_request_rules\" WHERE \"approval_merge_request_rules\".\"report_type\" IN (4, 2, 5) " \
         "AND \"approval_merge_request_rules\".\"created_at\" BETWEEN '#{start}' AND '#{finish}'"
     end
   end

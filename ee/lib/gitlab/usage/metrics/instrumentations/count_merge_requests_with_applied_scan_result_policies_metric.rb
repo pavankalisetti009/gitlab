@@ -14,7 +14,7 @@ module Gitlab
             }
           end
 
-          relation { ::ApprovalMergeRequestRule.scan_finding }
+          relation { ::ApprovalMergeRequestRule.from_scan_result_policy }
 
           start { ::ApprovalMergeRequestRule.minimum(:merge_request_id) }
           finish { ::ApprovalMergeRequestRule.maximum(:merge_request_id) }

@@ -40,7 +40,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountUserMergeRequestsW
       'SELECT COUNT(DISTINCT "merge_requests"."author_id") FROM "merge_requests" ' \
         'INNER JOIN "approval_merge_request_rules" ' \
         'ON "approval_merge_request_rules"."merge_request_id" = "merge_requests"."id" ' \
-        'WHERE "approval_merge_request_rules"."report_type" = 4'
+        'WHERE "approval_merge_request_rules"."report_type" IN (4, 2, 5)'
     end
   end
 
@@ -52,7 +52,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountUserMergeRequestsW
       "SELECT COUNT(DISTINCT \"merge_requests\".\"author_id\") FROM \"merge_requests\" " \
         "INNER JOIN \"approval_merge_request_rules\" " \
         "ON \"approval_merge_request_rules\".\"merge_request_id\" = \"merge_requests\".\"id\" " \
-        "WHERE \"approval_merge_request_rules\".\"report_type\" = 4 AND " \
+        "WHERE \"approval_merge_request_rules\".\"report_type\" IN (4, 2, 5) AND " \
         "\"merge_requests\".\"created_at\" BETWEEN '#{start}' AND '#{finish}'"
     end
   end
