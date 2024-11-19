@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search do
+RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
   subject(:worker) { described_class.new }
 
   let(:worker_with_concurrency_limit) { ElasticCommitIndexerWorker }
@@ -15,7 +15,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
         .to receive(:concurrent_worker_count).and_return(concurrent_workers)
     end
 
-    shared_examples 'report prometheus metrics' do |limit = described_class::BATCH_SIZE, queue_size = 100|
+    shared_examples 'report prometheus metrics' do |limit = described_class::BATCH_SIZE, queue_size = 10000|
       it do
         queue_size_gauge_double = instance_double(Prometheus::Client::Gauge)
         expect(Gitlab::Metrics).to receive(:gauge).at_least(:once)
@@ -39,103 +39,156 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
       end
     end
 
-    context 'when there are no jobs in the queue' do
-      before do
-        allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-          .and_return(10)
-        allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
-          .and_return(0)
-      end
+    context 'when worker_name is absent' do
+      subject(:perform) { worker.perform }
 
-      it 'does nothing' do
-        expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-          .not_to receive(:resume_processing!)
-
-        worker.perform
-      end
-
-      it 'does not log worker concurrency limit stats' do
-        expect(Gitlab::SidekiqLogging::ConcurrencyLimitLogger.instance).not_to receive(:worker_stats_log)
-
-        worker.perform
-      end
-
-      it_behaves_like 'report prometheus metrics', 10, 0
-    end
-
-    context 'when there are jobs in the queue' do
-      before do
-        allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
-          .and_return(0)
-        allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
-          .with(worker_with_concurrency_limit.name).and_return(100)
-        stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
-      end
-
-      it 'logs worker concurrency limit stats' do
-        # note that we stub all workers limit to 0 except worker_with_concurrency_limit
-        expect(Gitlab::SidekiqLogging::ConcurrencyLimitLogger.instance).to receive(:worker_stats_log).once
-
-        worker.perform
-      end
-
-      it 'resumes processing' do
-        stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
-        expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-         .to receive(:resume_processing!)
-         .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
-
-        worker.perform
-      end
-
-      it 'resumes processing if there are other jobs' do
-        stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
-        expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-         .to receive(:resume_processing!)
-         .with(worker_with_concurrency_limit.name, limit: 60 - concurrent_workers)
-
-        worker.perform
-      end
-
-      it_behaves_like 'report prometheus metrics', 60
-
-      context 'when limit is negative' do
+      context 'when worker is being limited' do
         before do
-          allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
-          allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-            .with(worker: worker_with_concurrency_limit)
-            .and_return(-1)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
+            .and_return(0)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
+            .with(worker_with_concurrency_limit.name).and_return(10000)
         end
 
-        it 'does not schedule any workers' do
-          expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-            .not_to receive(:resume_processing!)
-          expect(described_class).not_to receive(:perform_in)
+        it 'schedules workers' do
+          expect(described_class).to receive(:perform_async).with(worker_with_concurrency_limit.name)
 
-          worker.perform
+          perform
         end
-
-        it_behaves_like 'report prometheus metrics', -1
       end
 
-      context 'when limit is not set' do
+      context 'when there are no jobs in the queue' do
         before do
-          allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
-          allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-            .with(worker: worker_with_concurrency_limit)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
+            .and_return(10)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
             .and_return(0)
         end
 
-        it 'resumes processing using the BATCH_SIZE' do
-          expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-            .to receive(:resume_processing!)
-              .with(worker_with_concurrency_limit.name, limit: described_class::BATCH_SIZE)
-          expect(described_class).to receive(:perform_in)
+        it 'does not schedule workers' do
+          expect(described_class).not_to receive(:perform_async)
 
-          worker.perform
+          perform
+        end
+      end
+
+      context 'when worker is not enabled to use concurrency limit middleware' do
+        before do
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
+            .and_return(0)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
+            .and_return(0)
         end
 
-        it_behaves_like 'report prometheus metrics', 0
+        it 'does not schedule workers' do
+          expect(described_class).not_to receive(:perform_async)
+
+          perform
+        end
+      end
+    end
+
+    context 'when worker_name is present' do
+      subject(:perform) { worker.perform('ElasticCommitIndexerWorker') }
+
+      context 'when there are no jobs in the queue' do
+        before do
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
+            .and_return(10)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
+            .and_return(0)
+        end
+
+        it 'does nothing' do
+          expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+            .not_to receive(:resume_processing!)
+
+          perform
+        end
+
+        it 'does not log worker concurrency limit stats' do
+          expect(Gitlab::SidekiqLogging::ConcurrencyLimitLogger.instance).not_to receive(:worker_stats_log)
+
+          perform
+        end
+
+        it_behaves_like 'report prometheus metrics', 10, 0
+      end
+
+      context 'when there are jobs in the queue' do
+        before do
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
+            .and_return(0)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
+            .with(worker_with_concurrency_limit.name).and_return(10000)
+          stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
+        end
+
+        it 'logs worker concurrency limit stats' do
+          # note that we stub all workers limit to 0 except worker_with_concurrency_limit
+          expect(Gitlab::SidekiqLogging::ConcurrencyLimitLogger.instance).to receive(:worker_stats_log).once
+
+          perform
+        end
+
+        it 'resumes processing' do
+          stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
+          expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+          .to receive(:resume_processing!)
+          .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
+
+          perform
+        end
+
+        it 'resumes processing if there are other jobs' do
+          stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
+          expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+          .to receive(:resume_processing!)
+          .with(worker_with_concurrency_limit.name, limit: 60 - concurrent_workers)
+
+          perform
+        end
+
+        it_behaves_like 'report prometheus metrics', 60
+
+        context 'when limit is negative' do
+          before do
+            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
+            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
+              .with(worker: worker_with_concurrency_limit)
+              .and_return(-1)
+          end
+
+          it 'does not schedule any workers' do
+            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+              .not_to receive(:resume_processing!)
+            expect(described_class).not_to receive(:perform_in)
+
+            perform
+          end
+
+          it_behaves_like 'report prometheus metrics', -1
+        end
+
+        context 'when limit is not set' do
+          before do
+            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
+            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
+              .with(worker: worker_with_concurrency_limit)
+              .and_return(0)
+          end
+
+          it 'resumes processing using the BATCH_SIZE' do
+            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+              .to receive(:resume_processing!)
+                .with(worker_with_concurrency_limit.name, limit: described_class::BATCH_SIZE)
+            expect(described_class).to receive(:perform_in)
+
+            perform
+          end
+
+          it_behaves_like 'report prometheus metrics', 0
+        end
       end
     end
   end
