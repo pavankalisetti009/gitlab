@@ -42,9 +42,6 @@ export const mockParsedNamespaces = JSON.parse(mockNamespaces).map((namespace) =
   __typename: NAMESPACE_TYPE,
 }));
 
-export const mockNewUser = 'false';
-export const mockSetupForCompany = 'true';
-
 export const mockDefaultCache = {
   groupData: mockNamespaces,
   namespaceId: 132,
@@ -98,121 +95,6 @@ export const stateData = {
   stepList: STEPS,
   activeStep: STEPS[0],
   furthestAccessedStep: STEPS[1],
-};
-
-export const mockChargeItem = {
-  chargeAmount: 48,
-  processingType: 'Charge',
-  unitPrice: 48,
-};
-
-export const mockInvoicePreviewBronze = {
-  data: {
-    invoicePreview: {
-      invoice: {
-        amountWithoutTax: 48,
-      },
-      invoiceItem: [mockChargeItem],
-      metaData: {
-        showPromotionalOfferText: false,
-      },
-    },
-  },
-};
-
-export const mockDiscountItem = {
-  chargeAmount: -10,
-  processingType: 'Discount',
-  unitPrice: 10,
-};
-
-export const mockInvoicePreviewUltimate = {
-  data: {
-    invoicePreview: {
-      invoice: {
-        amountWithoutTax: 1188,
-      },
-      invoiceItem: [
-        {
-          chargeAmount: 1188,
-          processingType: 'Charge',
-          unitPrice: 1188,
-        },
-      ],
-      metaData: {
-        showPromotionalOfferText: false,
-      },
-    },
-  },
-};
-
-export const mockInvoicePreviewWithDiscount = {
-  data: {
-    invoicePreview: {
-      invoice: {
-        amountWithoutTax: 1188,
-      },
-      invoiceItem: [
-        {
-          chargeAmount: 1188,
-          processingType: 'Charge',
-          unitPrice: 1188,
-        },
-        mockDiscountItem,
-      ],
-      metaData: {
-        showPromotionalOfferText: false,
-      },
-    },
-  },
-};
-
-export const mockInvoicePreviewUltimateWithMultipleUsers = {
-  data: {
-    invoicePreview: {
-      invoice: {
-        amountWithoutTax: 3564,
-      },
-      invoiceItem: [
-        {
-          chargeAmount: 3564,
-          processingType: 'Charge',
-          unitPrice: 1188,
-        },
-      ],
-      metaData: {
-        showPromotionalOfferText: false,
-      },
-    },
-  },
-};
-
-export const mockInvoicePreviewWithPromoOffer = {
-  data: {
-    invoicePreview: {
-      invoice: {
-        amountWithoutTax: 48,
-      },
-      invoiceItem: [mockChargeItem],
-      metaData: {
-        showPromotionalOfferText: true,
-      },
-    },
-  },
-};
-
-export const mockInvoicePreviewWithoutPromoOffer = {
-  data: {
-    invoicePreview: {
-      invoice: {
-        amountWithoutTax: 48,
-      },
-      invoiceItem: [mockChargeItem],
-      metaData: {
-        showPromotionalOfferText: false,
-      },
-    },
-  },
 };
 
 export const mockBillingAccount = {

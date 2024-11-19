@@ -1,5 +1,4 @@
 import { merge } from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
 import {
   trackCombinedGroupProjectForm,
   trackFreeTrialAccountSubmissions,
@@ -8,9 +7,6 @@ import {
   trackSaasTrialLeadSubmit,
   trackSaasTrialSubmit,
   trackTrialAcceptTerms,
-  trackCheckout,
-  trackTransaction,
-  getNamespaceId,
   trackCompanyForm,
 } from 'ee/google_tag_manager';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
@@ -255,181 +251,6 @@ describe('ee/google_tag_manager/index', () => {
       expect(logError).not.toHaveBeenCalled();
     });
 
-    describe('when trackCheckout is invoked', () => {
-      it('with selectedPlan: 2c92a00d76f0d5060176f2fb0a5029ff', () => {
-        expect(spy).not.toHaveBeenCalled();
-
-        trackCheckout('2c92a00d76f0d5060176f2fb0a5029ff', 1);
-
-        expect(spy.mock.calls.flatMap((x) => x)).toEqual([
-          { ecommerce: null },
-          {
-            event: 'EECCheckout',
-            ecommerce: {
-              currencyCode: 'USD',
-              checkout: {
-                actionField: { step: 1 },
-                products: [
-                  {
-                    brand: 'GitLab',
-                    category: 'DevOps',
-                    id: '0002',
-                    name: 'Premium',
-                    price: '228',
-                    quantity: 1,
-                    variant: 'SaaS',
-                  },
-                ],
-              },
-            },
-          },
-        ]);
-      });
-
-      it('with selectedPlan: 2c92a0ff76f0d5250176f2f8c86f305a', () => {
-        expect(spy).not.toHaveBeenCalled();
-
-        trackCheckout('2c92a0ff76f0d5250176f2f8c86f305a', 1);
-
-        expect(spy).toHaveBeenCalledTimes(2);
-        expect(spy).toHaveBeenCalledWith({ ecommerce: null });
-        expect(spy).toHaveBeenCalledWith({
-          event: 'EECCheckout',
-          ecommerce: {
-            currencyCode: 'USD',
-            checkout: {
-              actionField: { step: 1 },
-              products: [
-                {
-                  brand: 'GitLab',
-                  category: 'DevOps',
-                  id: '0001',
-                  name: 'Ultimate',
-                  price: '1188',
-                  quantity: 1,
-                  variant: 'SaaS',
-                },
-              ],
-            },
-          },
-        });
-      });
-
-      it('with selectedPlan: Something else', () => {
-        expect(spy).not.toHaveBeenCalled();
-
-        trackCheckout('Something else', 1);
-
-        expect(spy).not.toHaveBeenCalled();
-      });
-
-      it('with a different number of users', () => {
-        expect(spy).not.toHaveBeenCalled();
-
-        trackCheckout('2c92a0ff76f0d5250176f2f8c86f305a', 5);
-
-        expect(spy).toHaveBeenCalledTimes(2);
-        expect(spy).toHaveBeenCalledWith({ ecommerce: null });
-        expect(spy).toHaveBeenCalledWith({
-          event: 'EECCheckout',
-          ecommerce: {
-            currencyCode: 'USD',
-            checkout: {
-              actionField: { step: 1 },
-              products: [
-                {
-                  brand: 'GitLab',
-                  category: 'DevOps',
-                  id: '0001',
-                  name: 'Ultimate',
-                  price: '1188',
-                  quantity: 5,
-                  variant: 'SaaS',
-                },
-              ],
-            },
-          },
-        });
-      });
-    });
-
-    describe('when trackTransactions is invoked', () => {
-      describe.each([
-        {
-          selectedPlan: '2c92a00d76f0d5060176f2fb0a5029ff',
-          revenue: 228,
-          name: 'Premium',
-          id: '0002',
-        },
-        {
-          selectedPlan: '2c92a0ff76f0d5250176f2f8c86f305a',
-          revenue: 1188,
-          name: 'Ultimate',
-          id: '0001',
-        },
-      ])('with %o', (planObject) => {
-        it('invokes pushes a new event that references the selected plan', () => {
-          const { selectedPlan, revenue, name, id } = planObject;
-
-          expect(spy).not.toHaveBeenCalled();
-          uuidv4.mockImplementationOnce(() => '123');
-
-          const transactionDetails = {
-            paymentOption: 'visa',
-            revenue,
-            tax: 10,
-            selectedPlan,
-            quantity: 1,
-          };
-
-          trackTransaction(transactionDetails);
-
-          expect(spy.mock.calls.flatMap((x) => x)).toEqual([
-            { ecommerce: null },
-            {
-              event: 'EECtransactionSuccess',
-              ecommerce: {
-                currencyCode: 'USD',
-                purchase: {
-                  actionField: {
-                    id: '123',
-                    affiliation: 'GitLab',
-                    option: 'visa',
-                    revenue: revenue.toString(),
-                    tax: '10',
-                  },
-                  products: [
-                    {
-                      brand: 'GitLab',
-                      category: 'DevOps',
-                      dimension36: 'not available',
-                      id,
-                      name,
-                      price: revenue.toString(),
-                      quantity: 1,
-                      variant: 'SaaS',
-                    },
-                  ],
-                },
-              },
-            },
-          ]);
-        });
-      });
-    });
-
-    describe('when trackTransaction is invoked', () => {
-      describe('with an invalid plan object', () => {
-        it('does not get called', () => {
-          expect(spy).not.toHaveBeenCalled();
-
-          trackTransaction({ selectedPlan: 'notAplan' });
-
-          expect(spy).not.toHaveBeenCalled();
-        });
-      });
-    });
-
     describe('when trackCompanyForm is invoked', () => {
       it('with an ultimate trial', () => {
         expect(spy).not.toHaveBeenCalled();
@@ -504,28 +325,6 @@ describe('ee/google_tag_manager/index', () => {
       );
 
       resetHTMLFixture();
-    });
-  });
-
-  describe('when getting the namespace_id from Snowplow standard context', () => {
-    describe('when window.gl.snowplowStandardContext.data.namespace_id has a value', () => {
-      beforeEach(() => {
-        window.gl = { snowplowStandardContext: { data: { namespace_id: '321' } } };
-      });
-
-      it('returns the value', () => {
-        expect(getNamespaceId()).toBe('321');
-      });
-    });
-
-    describe('when window.gl.snowplowStandardContext.data.namespace_id is undefined', () => {
-      beforeEach(() => {
-        window.gl = {};
-      });
-
-      it('returns a placeholder value', () => {
-        expect(getNamespaceId()).toBe('not available');
-      });
     });
   });
 });
