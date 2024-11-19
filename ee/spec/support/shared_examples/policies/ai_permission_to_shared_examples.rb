@@ -3,23 +3,17 @@
 RSpec.shared_examples 'ai permission to' do |ability|
   using RSpec::Parameterized::TableSyntax
 
-  where(:role, :flag_enabled, :has_subscription_assignment, :allowed) do
-    :guest    | false | false | false
-    :guest    | false | true  | false
-    :guest    | true  | false | false
-    :guest    | true  | true  | false
-    :reporter | false | false | true
-    :reporter | false | true  | true
-    :reporter | true  | false | false
-    :reporter | true  | true  | true
+  where(:role, :has_subscription_assignment, :allowed) do
+    :guest    | false | false
+    :guest    | true  | false
+    :reporter | false | false
+    :reporter | true  | true
   end
 
   with_them do
     let(:current_user) { public_send(role) }
 
     before do
-      stub_feature_flags(ai_impact_only_on_duo_enterprise: flag_enabled)
-
       if has_subscription_assignment
         create(
           :gitlab_subscription_user_add_on_assignment,
