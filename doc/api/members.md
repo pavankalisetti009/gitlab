@@ -46,7 +46,7 @@ GET /projects/:id/members
 | Attribute        | Type              | Required | Description |
 |------------------|-------------------|----------|-------------|
 | `id`             | integer or string | yes      | The ID or [URL-encoded path of the project or group](rest/index.md#namespaced-paths). |
-| `query`          | string            | no       | A query string to search for members. |
+| `query`          | string            | no       | Filters results based on a given name, email, or username. Use partial values to widen the scope of the query. |
 | `user_ids`       | array of integers | no       | Filter the results on the given user IDs. |
 | `skip_users`     | array of integers | no       | Filter skipped users out of the results. |
 | `show_seat_info` | boolean           | no       | Show seat information for users. |
@@ -143,7 +143,7 @@ GET /projects/:id/members/all
 | Attribute        | Type              | Required | Description |
 |------------------|-------------------|----------|-------------|
 | `id`             | integer or string | yes      | The ID or [URL-encoded path of the project or group](rest/index.md#namespaced-paths). |
-| `query`          | string            | no       | A query string to search for members. |
+| `query`          | string            | no       | Filters results based on a given name, email, or username. Use partial values to widen the scope of the query. |
 | `user_ids`       | array of integers | no       | Filter the results on the given user IDs. |
 | `show_seat_info` | boolean           | no       | Show seat information for users. |
 | `state`          | string            | no       | Filter results by member state, one of `awaiting` or `active`. Premium and Ultimate only. |
@@ -431,10 +431,10 @@ Prerequisites:
 - This API endpoint works on top-level groups only. It does not work on subgroups.
 - This API endpoint requires permission to administer memberships for the group.
 
-Lists all projects and groups a user is a member of. Only projects and groups within the group hierarchy
+Lists all projects and groups a user is a member of. Only projects and groups in the group hierarchy
 are included. For instance, if the requested group is `Root Group`, and the requested user is a direct member
 of both `Root Group / Sub Group One` and `Other Group / Sub Group Two`, then only `Root Group / Sub Group One`
-is returned, because `Other Group / Sub Group Two` is not within the `Root Group` hierarchy.
+is returned, because `Other Group / Sub Group Two` is not in the `Root Group` hierarchy.
 
 This API endpoint takes [pagination](rest/index.md#pagination) parameters `page` and `per_page` to restrict
 the list of memberships.
@@ -543,7 +543,7 @@ Example response:
 Removes a billable member from a group and its subgroups and projects.
 
 The user does not need to be a group member to qualify for removal.
-For example, if the user was added directly to a project within the group, you can
+For example, if the user was added directly to a project in the group, you can
 still use this API to remove them.
 
 ```plaintext
@@ -848,7 +848,7 @@ Example response:
 Removes a user from a group or project where the user has been explicitly assigned a role.
 
 The user needs to be a group member to qualify for removal.
-For example, if the user was added directly to a project within the group but not this
+For example, if the user was added directly to a project in the group but not this
 group explicitly, you cannot use this API to remove them. See
 [Remove a billable member from a group](#remove-a-billable-member-from-a-group) for an alternative approach.
 
