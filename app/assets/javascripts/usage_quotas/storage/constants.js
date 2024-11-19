@@ -1,9 +1,6 @@
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
-export const containerRegistryId = 'containerRegistrySize';
-export const containerRegistryPopoverId = 'container-registry-popover';
-
 export const usageQuotasHelpPaths = {
   repositorySizeLimit: helpPagePath('administration/settings/account_and_limit_settings', {
     anchor: 'repository-size-limit',
