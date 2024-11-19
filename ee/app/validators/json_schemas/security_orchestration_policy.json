@@ -67,6 +67,7 @@
           "rules": {
             "description": "Specifies conditions when this policy should be applied.",
             "type": "array",
+            "maxItems": 5,
             "additionalItems": false,
             "items": {
               "type": "object",

@@ -50537,6 +50537,9 @@ msgstr ""
 msgid "SecurityOrchestration|You already have the maximum %{maximumAllowed} %{policyType} %{instance}."
 msgstr ""
 
+msgid "SecurityOrchestration|You can add a maximum of %{rulesCount} %{rules}."
+msgstr ""
+
 msgid "SecurityOrchestration|You can select this option only once."
 msgstr ""
 
