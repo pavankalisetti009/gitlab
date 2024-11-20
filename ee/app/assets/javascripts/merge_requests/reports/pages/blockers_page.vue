@@ -108,6 +108,7 @@ export default {
         :comparison-pipelines="getComparisonPipelines(openPolicyName)"
         :target-branch="mergeRequest.targetBranch"
         :source-branch="mergeRequest.sourceBranch"
+        :pipeline="mergeRequest.headPipeline"
         @close="openPolicy = null"
       />
     </template>

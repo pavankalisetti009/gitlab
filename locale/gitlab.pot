@@ -1447,6 +1447,9 @@ msgstr ""
 msgid "%{time_ago}"
 msgstr ""
 
+msgid "%{timeago} in pipeline %{pipeline}"
+msgstr ""
+
 msgid "%{timebox_type} does not support burnup charts"
 msgstr ""
 

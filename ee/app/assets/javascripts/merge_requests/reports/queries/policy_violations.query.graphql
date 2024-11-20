@@ -5,6 +5,12 @@ query getPolicyViolations($projectPath: ID!, $iid: String!) {
       id
       targetBranch
       sourceBranch
+      headPipeline {
+        id
+        iid
+        updatedAt
+        path
+      }
       policyViolations {
         comparisonPipelines {
           reportType
