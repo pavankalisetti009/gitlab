@@ -34,6 +34,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.allow_all_integrations).to eq(true) }
     it { expect(setting.allowed_integrations).to eq([]) }
     it { expect(setting.seat_control).to eq(0) }
+    it { expect(setting.soft_phone_verification_transactions_daily_limit).to eq(16000) }
   end
 
   describe 'validations' do
