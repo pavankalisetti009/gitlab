@@ -113,6 +113,14 @@ module EE
           description: 'Approval Policies of the project',
           resolver: ::Resolvers::SecurityOrchestration::ApprovalPolicyResolver
 
+        field :vulnerability_management_policies,
+          ::Types::Security::VulnerabilityManagementPolicyType.connection_type,
+          calls_gitaly: true,
+          null: true,
+          experiment: { milestone: '17.7' },
+          description: 'Vulnerability Management Policies of the project.',
+          resolver: ::Resolvers::Security::VulnerabilityManagementPolicyResolver
+
         field :security_policy_project,
           ::Types::ProjectType,
           null: true,

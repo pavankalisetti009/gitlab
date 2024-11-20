@@ -2014,11 +2014,12 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           build(:orchestration_policy_yaml,
             scan_execution_policy: [build(:scan_execution_policy, policy_scope: { compliance_frameworks: [{ id: 2 }, { id: 3 }] })],
             scan_result_policy: [build(:scan_result_policy, policy_scope: { compliance_frameworks: [{ id: 1 }, { id: 2 }] })],
-            pipeline_execution_policy: [build(:pipeline_execution_policy, policy_scope: { compliance_frameworks: [{ id: 1 }, { id: 3 }] })]
+            pipeline_execution_policy: [build(:pipeline_execution_policy, policy_scope: { compliance_frameworks: [{ id: 1 }, { id: 3 }] })],
+            vulnerability_management_policy: [build(:vulnerability_management_policy, policy_scope: { compliance_frameworks: [{ id: 2 }, { id: 3 }] })]
           )
         end
 
-        it { is_expected.to match_array([{ framework_ids: [1, 2], policy_index: 0 }, { framework_ids: [2, 3], policy_index: 1 }, { framework_ids: [1, 3], policy_index: 2 }]) }
+        it { is_expected.to match_array([{ framework_ids: [1, 2], policy_index: 0 }, { framework_ids: [2, 3], policy_index: 1 }, { framework_ids: [1, 3], policy_index: 2 }, { framework_ids: [2, 3], policy_index: 3 }]) }
       end
     end
   end
@@ -2732,6 +2733,16 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     context 'when pipeline execution policy has changed' do
       before do
         create(:security_policy, :pipeline_execution_policy, security_orchestration_policy_configuration: configuration)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when vulnerability management policy has changed' do
+      before do
+        create(:security_policy,
+          :vulnerability_management_policy,
+          security_orchestration_policy_configuration: configuration)
       end
 
       it { is_expected.to be_truthy }
