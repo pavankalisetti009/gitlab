@@ -8,32 +8,38 @@ module Security
     end
 
     def execute
-      fetch_security_policies
+      initial_value = {
+        scan_execution_policies: [],
+        scan_result_policies: [],
+        pipeline_execution_policies: [],
+        vulnerability_management_policies: []
+      }
+
+      policy_configurations
+        .select { |config| authorized_to_read_policy_configuration?(config) }
+        .each_with_object(initial_value) do |config, policies|
+          policies.merge!(policies_with_relationship_information(config)) { |_, old_val, new_val| old_val + new_val }
+        end
     end
 
     private
 
     attr_reader :actor, :policy_configurations
 
-    def fetch_security_policies
-      policy_configurations.select { |config| authorized_to_read_policy_configuration?(config) }
-        .each_with_object({ scan_execution_policies: [], scan_result_policies: [],
-pipeline_execution_policies: [] }) do |config, policies|
-        srp_policies, sep_policies, pep_policies = merge_project_relationship(config)
-
-        policies[:scan_result_policies] += srp_policies
-        policies[:scan_execution_policies] += sep_policies
-        policies[:pipeline_execution_policies] += pep_policies
-
-        policies
-      end
-    end
-
     def authorized_to_read_policy_configuration?(config)
       Ability.allowed?(actor, :read_security_orchestration_policies, config.source)
     end
 
-    def merge_project_relationship(config)
+    def policies_with_relationship_information(config)
+      {
+        scan_execution_policies: merge_with_default_config(config, config.scan_execution_policy),
+        scan_result_policies: merge_with_default_config(config, config.scan_result_policies),
+        pipeline_execution_policies: merge_with_default_config(config, config.pipeline_execution_policy),
+        vulnerability_management_policies: merge_with_default_config(config, config.vulnerability_management_policy)
+      }
+    end
+
+    def merge_with_default_config(config, policies)
       policy_config = {
         config: config,
         project: config.project,
@@ -41,11 +47,7 @@ pipeline_execution_policies: [] }) do |config, policies|
         inherited: false
       }
 
-      srp = config.scan_result_policies.map { |policy| policy.merge(policy_config) }
-      sep = config.scan_execution_policy.map { |policy| policy.merge(policy_config) }
-      pep = config.pipeline_execution_policy.map { |policy| policy.merge(policy_config) }
-
-      [srp, sep, pep]
+      policies.map { |policy| policy.merge(policy_config) }
     end
   end
 end

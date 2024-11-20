@@ -36,29 +36,26 @@ module Gitlab
 
             policy_configurations_by_frameworks.each do |framework, configurations|
               policies = security_policies(configurations)
-              scan_result_policies = construct_scan_result_policies(
-                filter_policies_by_scope(policies[:scan_result_policies], framework.id)
-              )
-              scan_execution_policies = construct_scan_execution_policies(
-                filter_policies_by_scope(policies[:scan_execution_policies], framework.id)
-              )
-              pipeline_execution_policies = construct_pipeline_execution_policies(
-                filter_policies_by_scope(policies[:pipeline_execution_policies], framework.id)
-              )
 
               @lazy_state[:loaded_objects][framework.id] ||= {}
-              @lazy_state[:loaded_objects][framework.id][:scan_result_policies] = Array.wrap(
-                @lazy_state.dig(:loaded_objects, framework.id, :scan_result_policies)) + scan_result_policies
 
-              @lazy_state[:loaded_objects][framework.id][:scan_execution_policies] = Array.wrap(
-                @lazy_state.dig(:loaded_objects, framework.id, :scan_execution_policies)) + scan_execution_policies
-
-              @lazy_state[:loaded_objects][framework.id][:pipeline_execution_policies] = Array.wrap(
-                @lazy_state.dig(:loaded_objects, framework.id, :pipeline_execution_policies)) +
-                pipeline_execution_policies
+              policy_types_with_constructors.each do |type, constructor|
+                constructed = constructor.call(filter_policies_by_scope(policies[type], framework.id))
+                loaded_and_constructed = Array.wrap(@lazy_state.dig(:loaded_objects, framework.id, type)) + constructed
+                @lazy_state[:loaded_objects][framework.id][type] = loaded_and_constructed
+              end
             end
 
             @lazy_state[:pending_frameworks].clear
+          end
+
+          def policy_types_with_constructors
+            {
+              scan_result_policies: method(:construct_scan_result_policies),
+              scan_execution_policies: method(:construct_scan_execution_policies),
+              pipeline_execution_policies: method(:construct_pipeline_execution_policies),
+              vulnerability_management_policies: method(:construct_vulnerability_management_policies)
+            }
           end
 
           def filter_policies_by_scope(policies, framework_id)

@@ -59,11 +59,18 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
       build(:pipeline_execution_policy, name: 'PEP 1', policy_scope: policy_scope, content: { include: [content] })
     end
 
+    let(:vulnerability_management_policy) do
+      build(
+        :vulnerability_management_policy,
+        name: 'VMP 1', policy_scope: policy_scope, content: { include: [content] })
+    end
+
     let(:policy_yaml) do
       build(:orchestration_policy_yaml,
         scan_execution_policy: [scan_execution_policy],
         scan_result_policy: [scan_result_policy],
-        pipeline_execution_policy: [pipeline_execution_policy]
+        pipeline_execution_policy: [pipeline_execution_policy],
+        vulnerability_management_policy: [vulnerability_management_policy]
       )
     end
 
@@ -83,7 +90,10 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
           pending_frameworks: [],
           loaded_objects: {
             framework.id => {
-              scan_result_policies: [], scan_execution_policies: [], pipeline_execution_policy: []
+              scan_result_policies: [],
+              scan_execution_policies: [],
+              pipeline_execution_policy: [],
+              vulnerability_management_policy: []
             }
           }
         }

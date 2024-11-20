@@ -6,6 +6,7 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
   let_it_be(:scan_result_policy) { build(:scan_result_policy, name: 'SRP 1') }
   let_it_be(:scan_execution_policy) { build(:scan_execution_policy, name: 'SEP 1') }
   let_it_be(:pipeline_execution_policy) { build(:pipeline_execution_policy, name: 'PEP 1') }
+  let_it_be(:vulnerability_management_policy) { build(:vulnerability_management_policy, name: 'VMP 1') }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:actor) { create(:user, developer_of: [project, group]) }
@@ -24,7 +25,14 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
       end
 
       it 'returns empty collection' do
-        is_expected.to eq({ scan_execution_policies: [], scan_result_policies: [], pipeline_execution_policies: [] })
+        is_expected.to eq(
+          {
+            scan_execution_policies: [],
+            scan_result_policies: [],
+            pipeline_execution_policies: [],
+            vulnerability_management_policies: []
+          }
+        )
       end
     end
 
@@ -35,9 +43,12 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
         allow(policy_configuration).to receive(:scan_result_policies).and_return([scan_result_policy])
         allow(policy_configuration).to receive(:scan_execution_policy).and_return([])
         allow(policy_configuration).to receive(:pipeline_execution_policy).and_return([])
+        allow(policy_configuration).to receive(:vulnerability_management_policy)
+          .and_return([vulnerability_management_policy])
         allow(group_policy_configuration).to receive(:scan_result_policies).and_return([])
         allow(group_policy_configuration).to receive(:scan_execution_policy).and_return([scan_execution_policy])
         allow(group_policy_configuration).to receive(:pipeline_execution_policy).and_return([pipeline_execution_policy])
+        allow(group_policy_configuration).to receive(:vulnerability_management_policy).and_return([])
       end
 
       context 'when configuration is associated to project' do
@@ -57,6 +68,11 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
             project: nil,
             namespace: group,
             inherited: false
+          })], vulnerability_management_policies: [vulnerability_management_policy.merge({
+            config: policy_configuration,
+            project: project,
+            namespace: nil,
+            inherited: false
           })] })
         end
       end
@@ -65,7 +81,11 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
         let_it_be(:actor) { create(:user) }
 
         it 'returns empty collection' do
-          is_expected.to eq({ scan_execution_policies: [], scan_result_policies: [], pipeline_execution_policies: [] })
+          is_expected.to eq(
+            scan_execution_policies: [],
+            scan_result_policies: [],
+            pipeline_execution_policies: [],
+            vulnerability_management_policies: [])
         end
       end
     end

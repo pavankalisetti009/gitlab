@@ -131,10 +131,19 @@ module Security
     def compliance_framework_ids_with_policy_index
       return [] if project?
 
-      (scan_result_policies + scan_execution_policy + pipeline_execution_policy).map.with_index do |policy, index|
-        framework_ids = policy.dig(:policy_scope, :compliance_frameworks)&.pluck(:id)
-        { framework_ids: framework_ids, policy_index: index } if framework_ids
-      end.compact
+      all_policies
+        .map
+        .with_index do |policy, index|
+          framework_ids = policy.dig(:policy_scope, :compliance_frameworks)&.pluck(:id)
+          { framework_ids: framework_ids, policy_index: index } if framework_ids
+        end.compact
+    end
+
+    def all_policies
+      scan_result_policies +
+        scan_execution_policy +
+        pipeline_execution_policy +
+        vulnerability_management_policy
     end
 
     def persist_policies?
@@ -146,7 +155,10 @@ module Security
     end
 
     def policies_changed?
-      approval_policies_changed? || scan_execution_policies_changed? || pipeline_execution_policy_changed?
+      yaml_differs_from_db?(security_policies.type_approval_policy, scan_result_policies) ||
+        yaml_differs_from_db?(security_policies.type_scan_execution_policy, scan_execution_policy) ||
+        yaml_differs_from_db?(security_policies.type_pipeline_execution_policy, pipeline_execution_policy) ||
+        yaml_differs_from_db?(security_policies.type_vulnerability_management_policy, vulnerability_management_policy)
     end
 
     def policy_changes(db_policies, yaml_policies)
@@ -180,16 +192,8 @@ module Security
 
     private
 
-    def approval_policies_changed?
-      policy_changes(security_policies.type_approval_policy.undeleted, scan_result_policies).any?(&:present?)
-    end
-
-    def scan_execution_policies_changed?
-      policy_changes(security_policies.type_scan_execution_policy.undeleted, scan_execution_policy).any?(&:present?)
-    end
-
-    def pipeline_execution_policy_changed?
-      policy_changes(security_policies.type_pipeline_execution_policy.undeleted, pipeline_execution_policy).any?(&:present?)
+    def yaml_differs_from_db?(policies_persisted_in_database, policies_in_policy_yaml)
+      policy_changes(policies_persisted_in_database.undeleted, policies_in_policy_yaml).any?(&:present?)
     end
 
     def policy_cache_key

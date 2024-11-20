@@ -63,6 +63,13 @@ module Types
         null: true,
         description: 'Compliance requirements of the compliance framework.'
 
+      field :vulnerability_management_policies,
+        ::Types::Security::VulnerabilityManagementPolicyType.connection_type,
+        calls_gitaly: true,
+        null: true,
+        description: 'Vulnerability Management Policies of the compliance framework.',
+        resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::VulnerabilityManagementPolicyResolver
+
       def default
         object.id == object.namespace.namespace_settings.default_compliance_framework_id
       end
