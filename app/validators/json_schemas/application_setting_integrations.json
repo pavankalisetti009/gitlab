@@ -11,6 +11,9 @@
       "items": {
         "type": "string"
       }
+    },
+    "jira_connect_additional_audience_url": {
+      "type": "string"
     }
   },
   "additionalProperties": false

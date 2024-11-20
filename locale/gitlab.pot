@@ -30791,6 +30791,9 @@ msgstr ""
 msgid "JiraConnect|Groups are the GitLab groups and subgroups you link to this Jira instance."
 msgstr ""
 
+msgid "JiraConnect|Jira Connect Additional Audience URL"
+msgstr ""
+
 msgid "JiraConnect|Jira Connect Application ID"
 msgstr ""
 
