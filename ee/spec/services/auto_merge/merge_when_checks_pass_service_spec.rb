@@ -15,12 +15,6 @@ RSpec.describe AutoMerge::MergeWhenChecksPassService, feature_category: :code_re
   describe '#available_for?' do
     subject { service.available_for?(mr_merge_if_green_enabled) }
 
-    let(:feature_flag) { true }
-
-    before do
-      stub_feature_flags(merge_when_checks_pass: feature_flag)
-    end
-
     context 'when missing approvals' do
       let(:approval_rule) do
         create(:approval_merge_request_rule, merge_request: mr_merge_if_green_enabled,
@@ -35,12 +29,6 @@ RSpec.describe AutoMerge::MergeWhenChecksPassService, feature_category: :code_re
       end
 
       it { is_expected.to eq true }
-
-      context 'when merge_when_checks_pass flag is off' do
-        let(:feature_flag) { false }
-
-        it { is_expected.to eq false }
-      end
     end
 
     context 'when blocked status' do
@@ -51,12 +39,6 @@ RSpec.describe AutoMerge::MergeWhenChecksPassService, feature_category: :code_re
       end
 
       it { is_expected.to eq true }
-
-      context 'when merge_when_checks_pass flag is off' do
-        let(:feature_flag) { false }
-
-        it { is_expected.to eq false }
-      end
     end
 
     context 'when merge trains are enabled' do

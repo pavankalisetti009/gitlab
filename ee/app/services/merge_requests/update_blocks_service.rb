@@ -71,13 +71,11 @@ module MergeRequests
       if merge_request.blocking_merge_requests.reset != previous_blocking_merge_requests
         GraphqlTriggers.merge_request_merge_status_updated(merge_request)
 
-        if Feature.enabled?(:merge_when_checks_pass, merge_request.project)
-          Gitlab::EventStore.publish(
-            ::MergeRequests::UnblockedStateEvent.new(
-              data: { current_user_id: current_user.id, merge_request_id: merge_request.id }
-            )
+        Gitlab::EventStore.publish(
+          ::MergeRequests::UnblockedStateEvent.new(
+            data: { current_user_id: current_user.id, merge_request_id: merge_request.id }
           )
-        end
+        )
       end
 
       true

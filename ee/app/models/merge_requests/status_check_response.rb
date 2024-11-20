@@ -32,8 +32,6 @@ module MergeRequests
     private
 
     def publish_new_passing_event
-      return unless ::Feature.enabled?(:merge_when_checks_pass, merge_request.project)
-
       ::Gitlab::EventStore.publish(
         ::MergeRequests::ExternalStatusCheckPassedEvent.new(
           data: { merge_request_id: merge_request.id }

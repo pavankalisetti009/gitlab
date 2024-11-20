@@ -434,18 +434,6 @@ RSpec.describe Projects::MergeRequestsController do
 
           expect(json_response).to eq('status' => 'merge_when_checks_pass')
         end
-
-        context 'when feature flag "merge_when_checks_pass" is disabled' do
-          before do
-            stub_feature_flags(merge_when_checks_pass: false)
-          end
-
-          it 'fails to merge' do
-            merge_when_pipeline_succeeds
-
-            expect(json_response).to eq('status' => 'failed')
-          end
-        end
       end
 
       describe 'mergeable conditions' do

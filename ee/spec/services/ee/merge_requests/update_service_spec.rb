@@ -140,18 +140,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         })
       end
 
-      context 'when merge_when_checks_pass ff is off' do
-        before do
-          stub_feature_flags(merge_when_checks_pass: false)
-        end
-
-        it 'does not publish a OverrideRequestedChanges state event' do
-          expect do
-            update_merge_request(override_requested_changes: true)
-          end.not_to publish_event(MergeRequests::OverrideRequestedChangesStateEvent)
-        end
-      end
-
       it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
         let(:action) { update_merge_request(override_requested_changes: true) }
       end
@@ -596,33 +584,8 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         allow(merge_request).to receive(:has_jira_issue_keys?).and_return(has_jira_key)
       end
 
-      context 'when the merge_when_checks_pass feature flag is on' do
-        context 'when the description changes' do
-          context 'when the description or title has a jira key' do
-            it 'publishes a JiraTitleDescriptionUpdateEvent' do
-              expected_data = {
-                current_user_id: user.id,
-                merge_request_id: merge_request.id
-              }
-
-              expect do
-                update_merge_request(description: 'New description')
-              end.to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent).with(expected_data)
-            end
-          end
-
-          context 'when the description or title does not have a jira key' do
-            let(:has_jira_key) { false }
-
-            it 'does not publish a JiraTitleDescriptionUpdateEvent' do
-              expect do
-                update_merge_request(description: 'New description')
-              end.not_to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent)
-            end
-          end
-        end
-
-        context 'when the title changes' do
+      context 'when the description changes' do
+        context 'when the description or title has a jira key' do
           it 'publishes a JiraTitleDescriptionUpdateEvent' do
             expected_data = {
               current_user_id: user.id,
@@ -630,39 +593,40 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
             }
 
             expect do
-              update_merge_request(title: 'New title')
+              update_merge_request(description: 'New description')
             end.to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent).with(expected_data)
           end
-
-          context 'when the description or title does not have a jira key' do
-            let(:has_jira_key) { false }
-
-            it 'does not publish a JiraTitleDescriptionUpdateEvent' do
-              expect do
-                update_merge_request(description: 'New description')
-              end.not_to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent)
-            end
-          end
-        end
-      end
-
-      context 'when the merge_when_checks_pass feature flag is off' do
-        before do
-          stub_feature_flags(merge_when_checks_pass: false)
         end
 
-        context 'when the description changes' do
+        context 'when the description or title does not have a jira key' do
+          let(:has_jira_key) { false }
+
           it 'does not publish a JiraTitleDescriptionUpdateEvent' do
             expect do
               update_merge_request(description: 'New description')
             end.not_to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent)
           end
         end
+      end
 
-        context 'when the title changes' do
-          it 'publishes a JiraTitleDescriptionUpdateEvent' do
+      context 'when the title changes' do
+        it 'publishes a JiraTitleDescriptionUpdateEvent' do
+          expected_data = {
+            current_user_id: user.id,
+            merge_request_id: merge_request.id
+          }
+
+          expect do
+            update_merge_request(title: 'New title')
+          end.to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent).with(expected_data)
+        end
+
+        context 'when the description or title does not have a jira key' do
+          let(:has_jira_key) { false }
+
+          it 'does not publish a JiraTitleDescriptionUpdateEvent' do
             expect do
-              update_merge_request(title: 'New title')
+              update_merge_request(description: 'New description')
             end.not_to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent)
           end
         end

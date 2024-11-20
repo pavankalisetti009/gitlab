@@ -55,7 +55,6 @@ module AutoMerge
     def available_for?(merge_request)
       super do
         next false unless ::Feature.enabled?(:merge_when_checks_pass_merge_train, merge_request.project)
-        next false unless ::Feature.enabled?(:merge_when_checks_pass, merge_request.project)
         next false unless merge_request.has_ci_enabled?
         next false if merge_request.mergeable? && !merge_request.diff_head_pipeline_considered_in_progress?
 
