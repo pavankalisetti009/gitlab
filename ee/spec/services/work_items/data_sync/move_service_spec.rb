@@ -6,6 +6,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:target_group) { create(:group, parent: parent_group) }
+  let_it_be(:project) { create(:project, group: target_group) }
   let_it_be_with_reload(:original_work_item) { create(:work_item, :group_level, namespace: group) }
   let_it_be(:source_namespace_member) { create(:user, reporter_of: group) }
   let_it_be(:target_namespace_member) { create(:user, reporter_of: target_group) }
@@ -28,55 +29,43 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
     context 'when user cannot read original work item' do
       let(:current_user) { target_namespace_member }
 
-      it 'does not raise error' do
-        expect { service.execute }.not_to raise_error
-      end
-
-      it 'returns error response' do
-        response = service.execute
-
-        expect(response.success?).to be false
-        expect(response.error?).to be true
-        expect(response.message).to eq('Cannot move work item due to insufficient permissions!')
-      end
+      it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
     end
 
     context 'when user cannot create work items in target namespace' do
       let(:current_user) { source_namespace_member }
 
-      it 'does not raise error' do
-        expect { service.execute }.not_to raise_error
-      end
-
-      it 'returns error response' do
-        response = service.execute
-
-        expect(response.success?).to be false
-        expect(response.error?).to be true
-        expect(response.message).to eq('Cannot move work item due to insufficient permissions!')
-      end
+      it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
     end
   end
 
   context 'when user has permission to move work item' do
     let(:current_user) { namespaces_member }
 
+    context 'when moving a group level work item to same group' do
+      let(:target_namespace) { group }
+
+      it_behaves_like 'fails to transfer work item', 'Cannot move work item to same project or group it originates from'
+    end
+
+    context 'when moving group level work item to a project' do
+      let(:target_namespace) { project }
+
+      it_behaves_like 'fails to transfer work item', 'Cannot move work item between Projects and Groups'
+    end
+
+    context 'when moving group level work item to a project namespace' do
+      let_it_be(:target_namespace) { project.project_namespace }
+
+      it_behaves_like 'fails to transfer work item', 'Cannot move work item between Projects and Groups'
+    end
+
     context 'without group level work item license' do
       before do
         stub_licensed_features(epics: false)
       end
 
-      it 'does not raise error' do
-        expect { service.execute }.not_to raise_error
-      end
-
-      it 'returns error response' do
-        response = service.execute
-
-        expect(response.success?).to be false
-        expect(response.error?).to be true
-        expect(response.message).to eq('Cannot move work item due to insufficient permissions!')
-      end
+      it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
     end
 
     context 'when moving to a pending delete group' do
@@ -92,17 +81,8 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
         target_namespace.deletion_schedule.destroy!
       end
 
-      it 'does not raise error' do
-        expect { service.execute }.not_to raise_error
-      end
-
-      it 'returns error response' do
-        response = service.execute
-
-        expect(response.success?).to be false
-        expect(response.error?).to be true
-        expect(response.message).to eq('Cannot move work item to target namespace as it is pending deletion.')
-      end
+      it_behaves_like 'fails to transfer work item',
+        'Cannot move work item to target namespace as it is pending deletion'
     end
 
     context 'when cloning work item with success', :freeze_time do
