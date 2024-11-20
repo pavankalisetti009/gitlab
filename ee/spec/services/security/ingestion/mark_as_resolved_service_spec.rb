@@ -28,21 +28,25 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         let_it_be(:num_vulnerabilities) { 3 }
         let_it_be(:user) { create(:user) }
         let_it_be(:vulnerabilities) do
-          num_vulnerabilities.times do
-            create(:vulnerability,
-              :sast,
-              project: project,
-              author: user,
-              present_on_default_branch: true,
-              resolved_on_default_branch: false,
-              findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
-            )
-          end
+          create_list(:vulnerability,
+            num_vulnerabilities,
+            :with_scanner,
+            :sast,
+            scanner: scanner,
+            project: project,
+            author: user,
+            present_on_default_branch: true,
+            resolved_on_default_branch: false
+          )
         end
 
         it 'emits event for each vulnerability' do
           expect { command.execute }.to trigger_internal_events('vulnerability_no_longer_detected_on_default_branch')
             .with(project: project).exactly(num_vulnerabilities).times
+            .and increment_usage_metrics(
+              'counts.count_total_vulnerability_no_longer_detected_on_default_branch_weekly',
+              'counts.count_total_vulnerability_no_longer_detected_on_default_branch_monthly'
+            ).by(num_vulnerabilities)
         end
       end
 
