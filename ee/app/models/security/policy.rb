@@ -50,6 +50,7 @@ module Security
       if: :type_vulnerability_management_policy?
 
     validates :content, exclusion: { in: [nil] }
+    validates :description, length: { maximum: Gitlab::Database::MAX_TEXT_SIZE_LIMIT }
 
     scope :undeleted, -> { where('policy_index >= 0') }
     scope :order_by_index, -> { order(policy_index: :asc) }
