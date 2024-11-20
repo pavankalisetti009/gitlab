@@ -110,44 +110,43 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
     context 'when removing the user' do
       before do
         remove_user(maintainer)
-      end
-
-      it 'shows a flash message' do
         confirm_remove_user(maintainer)
 
         wait_for_all_requests
+      end
 
+      it 'shows a flash message' do
         within member_table_selector do
           expect(all('tbody tr').count).to eq(3)
         end
 
         expect(page.find('.flash-container')).to have_content('User was successfully removed')
       end
+    end
 
-      context 'when removing a user from a sub-group' do
-        it 'updates the seat table of the parent group' do
-          within member_table_selector do
-            expect(all('tbody tr').count).to eq(4)
-          end
+    context 'when removing a user from a sub-group' do
+      it 'updates the seat table of the parent group' do
+        within member_table_selector do
+          expect(all('tbody tr').count).to eq(4)
+        end
 
-          visit group_group_members_path(sub_group)
+        visit group_group_members_path(sub_group)
 
-          show_actions_for_username(user_from_sub_group)
+        show_actions_for_username(user_from_sub_group)
+        click_button _('Remove member')
+
+        within_modal do
           click_button _('Remove member')
+        end
 
-          within_modal do
-            click_button _('Remove member')
-          end
+        wait_for_all_requests
 
-          wait_for_all_requests
+        visit group_seat_usage_path(group)
 
-          visit group_seat_usage_path(group)
+        wait_for_all_requests
 
-          wait_for_all_requests
-
-          within member_table_selector do
-            expect(all('tbody tr').count).to eq(3)
-          end
+        within member_table_selector do
+          expect(all('tbody tr').count).to eq(3)
         end
       end
     end
