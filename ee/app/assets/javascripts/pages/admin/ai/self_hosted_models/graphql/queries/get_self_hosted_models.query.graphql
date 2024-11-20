@@ -1,5 +1,5 @@
-query getSelfHostedModels {
-  aiSelfHostedModels(first: 100) {
+query getSelfHostedModels($id: AiSelfHostedModelID) {
+  aiSelfHostedModels(id: $id, first: 100) {
     nodes {
       id
       name

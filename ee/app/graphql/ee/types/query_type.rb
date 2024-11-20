@@ -201,9 +201,13 @@ module EE
         field :ai_self_hosted_models,
           ::Types::Ai::SelfHostedModels::SelfHostedModelType.connection_type,
           null: true,
-          description: 'List of self-hosted LLM servers.',
           resolver: ::Resolvers::Ai::SelfHostedModels::SelfHostedModelsResolver,
-          experiment: { milestone: '17.1' }
+          experiment: { milestone: '17.1' },
+          description: 'Returns the self-hosted model if an ID is provided, otherwise returns all models.' do
+            argument :id, ::Types::GlobalIDType[::Ai::SelfHostedModel],
+              required: false,
+              description: "Global ID of a self-hosted model."
+          end
 
         field :cloud_connector_status,
           ::Types::CloudConnector::StatusType,
