@@ -55217,6 +55217,9 @@ msgstr ""
 msgid "The GitLab user to which the Jira user %{jiraDisplayName} will be mapped"
 msgstr ""
 
+msgid "The Hangouts Chat webhook (for example, `https://chat.googleapis.com/v1/spaces...`)."
+msgstr ""
+
 msgid "The ID of the application."
 msgstr ""
 
