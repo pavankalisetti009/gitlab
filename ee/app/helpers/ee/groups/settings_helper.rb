@@ -4,8 +4,8 @@ module EE
   module Groups
     module SettingsHelper
       def saas_user_caps_help_text(group)
-        project_sharing_docs_url = help_page_path('user/group/access_and_permissions', anchor: 'prevent-a-project-from-being-shared-with-groups')
-        group_sharing_docs_url = help_page_path('user/group/access_and_permissions', anchor: 'prevent-group-sharing-outside-the-group-hierarchy')
+        project_sharing_docs_url = help_page_path('user/project/members/sharing_projects_groups.md', anchor: 'prevent-a-project-from-being-shared-with-groups')
+        group_sharing_docs_url = help_page_path('user/project/members/sharing_projects_groups.md', anchor: 'prevent-inviting-groups-outside-the-group-hierarchy')
 
         project_sharing_docs_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: project_sharing_docs_url }
         group_sharing_docs_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: group_sharing_docs_url }
