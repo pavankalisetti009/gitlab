@@ -2,20 +2,20 @@
 
 module Vulnerabilities
   class AutoResolveService
+    include Gitlab::Utils::StrongMemoize
+
     MAX_BATCH = 100
 
-    def initialize(project, vulnerability_ids, security_policy_name)
+    def initialize(project, vulnerability_ids)
       @project = project
-      @vulnerability_ids = vulnerability_ids
-      @security_policy_name = security_policy_name
+      @vulnerabilities = Vulnerability.id_in(vulnerability_ids.first(MAX_BATCH))
     end
 
     def execute
+      return ServiceResponse.success if policies.blank?
       return error_response unless can_create_state_transitions?
 
-      vulnerability_ids.each_slice(MAX_BATCH).each do |ids|
-        resolve(Vulnerability.id_in(ids))
-      end
+      resolve_vulnerabilities
       refresh_statistics
 
       ServiceResponse.success
@@ -25,24 +25,37 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :vulnerability_ids, :security_policy_name
+    attr_reader :project, :vulnerabilities
 
-    def resolve(vulnerabilities)
-      # rubocop:disable CodeReuse/ActiveRecord -- context specific
-      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Caller limits to 100 records
-      vulnerability_attrs = vulnerabilities.pluck(:id, :state)
-      # rubocop:enable CodeReuse/ActiveRecord
-      # rubocop:enable Database/AvoidUsingPluckWithoutLimit
+    def vulnerabilities_to_resolve
+      policies_by_vulnerability.keys
+    end
 
-      return if vulnerability_attrs.empty?
+    def policies_by_vulnerability
+      policies.each_with_object({}) do |policy, memo|
+        vulnerabilities.each do |vulnerability|
+          if policy.match?(vulnerability)
+            memo[vulnerability] ||= []
+            memo[vulnerability].push(policy)
+          end
+        end
+      end
+    end
+    strong_memoize_attr :policies_by_vulnerability
 
-      state_transitions = transition_attributes_for(vulnerability_attrs)
-      system_notes = system_note_attributes_for(vulnerability_attrs)
+    def policies
+      # TODO: This should only include policies that have a `no_longer_detected` rule
+      # and an `auto_resolve` action
+      project.security_policies.type_vulnerability_management_policy
+    end
+
+    def resolve_vulnerabilities
+      return if vulnerabilities_to_resolve.empty?
 
       Vulnerability.transaction do
-        Vulnerabilities::StateTransition.insert_all!(state_transitions)
+        Vulnerabilities::StateTransition.insert_all!(state_transition_attrs)
 
-        vulnerabilities.update_all(
+        Vulnerability.id_in(vulnerabilities_to_resolve.map(&:id)).update_all(
           state: :resolved,
           auto_resolved: true,
           resolved_by_id: user.id,
@@ -50,28 +63,28 @@ module Vulnerabilities
           updated_at: now
         )
       end
-      Note.insert_all!(system_notes)
+      Note.insert_all!(system_note_attrs)
     end
 
-    def transition_attributes_for(attrs)
-      attrs.map do |id, state|
+    def state_transition_attrs
+      vulnerabilities_to_resolve.map do |vulnerability|
         {
-          vulnerability_id: id,
-          from_state: state,
+          vulnerability_id: vulnerability.id,
+          from_state: vulnerability.state,
           to_state: :resolved,
           author_id: user.id,
-          comment: comment,
+          comment: comment(vulnerability),
           created_at: now,
           updated_at: now
         }
       end
     end
 
-    def system_note_attributes_for(attrs)
-      attrs.map do |id, _|
+    def system_note_attrs
+      vulnerabilities_to_resolve.map do |vulnerability|
         {
           noteable_type: "Vulnerability",
-          noteable_id: id,
+          noteable_id: vulnerability.id,
           project_id: project.id,
           namespace_id: project.project_namespace_id,
           system: true,
@@ -79,7 +92,7 @@ module Vulnerabilities
             'changed',
             :resolved,
             nil,
-            comment
+            comment(vulnerability)
           ),
           author_id: user.id,
           created_at: now,
@@ -88,8 +101,9 @@ module Vulnerabilities
       end
     end
 
-    def comment
-      _("Auto-resolved by vulnerability management policy") + " #{security_policy_name}"
+    def comment(vulnerability)
+      policy_names = policies_by_vulnerability[vulnerability].map(&:name)
+      _("Auto-resolved by vulnerability management policy") + " #{policy_names.join(', ')}"
     end
 
     def user

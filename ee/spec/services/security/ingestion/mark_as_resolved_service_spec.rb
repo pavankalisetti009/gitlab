@@ -11,17 +11,41 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
       let(:ingested_ids) { [] }
       let_it_be(:scanner) { create(:vulnerabilities_scanner, project: project) }
 
-      it 'resolves non-generic vulnerabilities detected by the scanner' do
-        vulnerability = create(:vulnerability, :sast,
-          project: project,
-          present_on_default_branch: true,
-          resolved_on_default_branch: false,
-          findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
-        )
+      context 'when there is a vulnerability to be resolved' do
+        let_it_be(:vulnerability) do
+          create(:vulnerability, :sast,
+            project: project,
+            present_on_default_branch: true,
+            resolved_on_default_branch: false,
+            findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
+          )
+        end
 
-        command.execute
+        it 'resolves non-generic vulnerabilities detected by the scanner' do
+          command.execute
 
-        expect(vulnerability.reload).to be_resolved_on_default_branch
+          expect(vulnerability.reload).to be_resolved_on_default_branch
+        end
+
+        it 'calls AutoResolveService on missing_ids' do
+          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id]) do |service|
+            expect(service).to receive(:execute)
+          end
+
+          command.execute
+        end
+
+        context 'when auto_resolve_vulnerabilities feature flag is disabled' do
+          before do
+            stub_feature_flags(auto_resolve_vulnerabilities: false)
+          end
+
+          it 'does not call AutoResolveService' do
+            expect(Vulnerabilities::AutoResolveService).not_to receive(:new)
+
+            command.execute
+          end
+        end
       end
 
       context 'with multiple vulnerabilities' do

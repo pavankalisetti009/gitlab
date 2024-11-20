@@ -8,6 +8,7 @@ module Security
     # on the default branch if they were not detected again.
     class MarkAsResolvedService
       include Gitlab::InternalEventsTracking
+      include Gitlab::Utils::StrongMemoize
 
       CVS_SCANNER_EXTERNAL_ID = 'gitlab-sbom-vulnerability-scanner'
       CS_SCANNERS_EXTERNAL_IDS = %w[trivy].freeze
@@ -44,10 +45,13 @@ module Security
       delegate :vulnerability_reads, to: :project, private: true
 
       def process_batch(batch)
-        (batch.pluck_primary_key - ingested_ids).then { |missing_ids| mark_as_resolved(missing_ids) }
+        (batch.pluck_primary_key - ingested_ids).then do |missing_ids|
+          mark_as_no_longer_detected(missing_ids)
+          auto_resolve(missing_ids)
+        end
       end
 
-      def mark_as_resolved(missing_ids)
+      def mark_as_no_longer_detected(missing_ids)
         return if missing_ids.blank?
 
         resolved_count = Vulnerability.id_in(missing_ids)
@@ -57,6 +61,17 @@ module Security
 
         track_no_longer_detected_vulnerabilities(resolved_count)
       end
+
+      def auto_resolve(missing_ids)
+        return unless auto_resolve_enabled?
+
+        Vulnerabilities::AutoResolveService.new(project, missing_ids).execute
+      end
+
+      def auto_resolve_enabled?
+        ::Feature.enabled?(:auto_resolve_vulnerabilities, project)
+      end
+      strong_memoize_attr :auto_resolve_enabled?
 
       def process_existing_cvs_vulnerabilities_for_container_scanning
         vulnerability_reads

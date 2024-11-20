@@ -37,6 +37,16 @@ FactoryBot.define do
     end
     require_approval
 
+    transient do
+      linked_projects { [] }
+    end
+
+    after(:create) do |policy, evaluator|
+      evaluator.linked_projects.each do |project|
+        create(:security_policy_project_link, project: project, security_policy: policy)
+      end
+    end
+
     trait :deleted do
       policy_index { -1 }
     end
