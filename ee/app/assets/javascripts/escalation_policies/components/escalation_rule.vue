@@ -267,8 +267,9 @@ export default {
                 v-gl-tooltip
                 :title="$options.i18n.fields.rules.noSchedules"
                 name="information-o"
-                class="gl-ml-3 gl-text-gray-500"
+                class="gl-ml-3"
                 data-testid="no-schedules-info-icon"
+                variant="subtle"
               />
             </template>
             <user-select

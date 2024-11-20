@@ -182,7 +182,7 @@ export default {
                 'gl-ml-3': !isExpanded(environment),
                 'gl-ml-auto': isExpanded(environment),
               }"
-              class="gl-text-gray-500"
+              variant="subtle"
             />
           </gl-button>
           <gl-collapse
