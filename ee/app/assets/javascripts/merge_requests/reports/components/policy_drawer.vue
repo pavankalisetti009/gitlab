@@ -5,6 +5,7 @@ import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import ScanResultDetailsDrawer from 'ee/security_orchestration/components/policy_drawer/scan_result/details_drawer.vue';
 import InfoRow from 'ee/security_orchestration/components/policy_drawer/info_row.vue';
+import getPipelineQuery from '../queries/get_pipeline.query.graphql';
 
 export default {
   components: {
@@ -15,6 +16,7 @@ export default {
     InfoRow,
     ScanResultDetailsDrawer,
   },
+  inject: ['projectPath'],
   props: {
     open: {
       type: Boolean,
@@ -44,10 +46,68 @@ export default {
       default: null,
     },
   },
+  data() {
+    return {
+      pipelines: null,
+    };
+  },
   computed: {
     getDrawerHeaderHeight() {
       if (!this.open) return '0';
       return getContentWrapperHeight();
+    },
+  },
+  watch: {
+    comparisonPipelines: {
+      handler(newVal) {
+        if (newVal) {
+          this.fetchComparisonPipelines();
+        }
+      },
+      immediate: true,
+    },
+  },
+  methods: {
+    closeDrawer() {
+      this.pipelines = null;
+
+      this.$emit('close');
+    },
+    async fetchComparisonPipelines() {
+      this.pipelines = await Promise.all([
+        await Promise.all(
+          this.comparisonPipelines.source.map((id) =>
+            this.$apollo
+              .query({
+                query: getPipelineQuery,
+                variables: {
+                  projectPath: this.projectPath,
+                  id,
+                },
+                context: {
+                  batchKey: 'SecurityPolicyComparisonPipeline',
+                },
+              })
+              .then(({ data }) => data.project?.pipeline),
+          ),
+        ),
+        await Promise.all(
+          this.comparisonPipelines.target.map((id) =>
+            this.$apollo
+              .query({
+                query: getPipelineQuery,
+                variables: {
+                  projectPath: this.projectPath,
+                  id,
+                },
+                context: {
+                  batchKey: 'SecurityPolicyComparisonPipeline',
+                },
+              })
+              .then(({ data }) => data.project?.pipeline),
+          ),
+        ),
+      ]);
     },
   },
   DRAWER_Z_INDEX,
@@ -59,7 +119,7 @@ export default {
     :header-height="getDrawerHeaderHeight"
     :z-index="$options.DRAWER_Z_INDEX"
     :open="open"
-    @close="$emit('close')"
+    @close="closeDrawer"
   >
     <template #title>
       <h4 class="gl-my-0">{{ __('Security policy') }}</h4>
@@ -77,20 +137,38 @@ export default {
       </p>
       <h5 class="h4 gl-mb-0 gl-mt-0">{{ policy.name }}</h5>
       <scan-result-details-drawer :policy="policy" :show-policy-scope="false" :show-status="false">
-        <template v-if="comparisonPipelines" #additional-details>
+        <template v-if="comparisonPipelines && pipelines" #additional-details>
           <info-row :label="__('Comparison pipelines')">
             <ul class="gl-pl-6">
-              <li class="gl-mb-2">
-                <gl-sprintf :message="__('Target branch (%{branch})')">
+              <li v-if="pipelines[0]" class="gl-mb-2" data-testid="target-branch-pipeline">
+                <gl-sprintf :message="__('Target branch (%{branch}): %{pipelines}')">
                   <template #branch>
                     <code>{{ targetBranch }}</code>
                   </template>
+                  <template #pipelines>
+                    <gl-link
+                      v-for="targetBranchPipeline in pipelines[0]"
+                      :key="targetBranchPipeline.iid"
+                      :href="targetBranchPipeline.path"
+                    >
+                      #{{ targetBranchPipeline.iid }}
+                    </gl-link>
+                  </template>
                 </gl-sprintf>
               </li>
-              <li>
-                <gl-sprintf :message="__('Source branch (%{branch})')">
+              <li v-if="pipelines[1]" data-testid="source-branch-pipeline">
+                <gl-sprintf :message="__('Source branch (%{branch}): %{pipelines}')">
                   <template #branch>
                     <code>{{ sourceBranch }}</code>
+                  </template>
+                  <template #pipelines>
+                    <gl-link
+                      v-for="sourceBranchPipeline in pipelines[1]"
+                      :key="sourceBranchPipeline.iid"
+                      :href="sourceBranchPipeline.path"
+                    >
+                      #{{ sourceBranchPipeline.iid }}
+                    </gl-link>
                   </template>
                 </gl-sprintf>
               </li>

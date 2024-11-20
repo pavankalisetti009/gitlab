@@ -53279,7 +53279,7 @@ msgstr ""
 msgid "Source branch"
 msgstr ""
 
-msgid "Source branch (%{branch})"
+msgid "Source branch (%{branch}): %{pipelines}"
 msgstr ""
 
 msgid "Source branch does not exist"
@@ -54802,7 +54802,7 @@ msgstr ""
 msgid "Target branch"
 msgstr ""
 
-msgid "Target branch (%{branch})"
+msgid "Target branch (%{branch}): %{pipelines}"
 msgstr ""
 
 msgid "Target branch: %{target_branch}"
