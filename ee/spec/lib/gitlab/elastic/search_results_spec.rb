@@ -833,19 +833,32 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
 
     describe 'filtering' do
-      let!(:project) { create(:project, :public) }
       let_it_be(:unarchived_project) { create(:project, :public) }
       let_it_be(:archived_project) { create(:project, :public, :archived) }
-      let!(:opened_result) { create(:merge_request, :opened, source_project: project, title: 'foo opened') }
-      let!(:closed_result) { create(:merge_request, :closed, source_project: project, title: 'foo closed') }
-      let!(:unarchived_result) { create(:merge_request, source_project: unarchived_project, title: 'foo unarchived') }
-      let!(:archived_result) { create(:merge_request, source_project: archived_project, title: 'foo archived') }
-      let(:scope) { 'merge_requests' }
-      let(:project_ids) { [project.id, unarchived_project.id, archived_project.id] }
+      let_it_be(:opened_result) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'open-1', title: 'foo opened')
+      end
 
+      let_it_be(:closed_result) do
+        create(:merge_request, :closed, source_project: project_1, source_branch: 'closed-1', title: 'foo closed')
+      end
+
+      let_it_be(:unarchived_result) do
+        create(:merge_request, source_project: unarchived_project, source_branch: 'unarchived-1',
+          title: 'foo unarchived')
+      end
+
+      let_it_be(:archived_result) do
+        create(:merge_request, source_project: archived_project, source_branch: 'archived-1', title: 'foo archived')
+      end
+
+      let(:scope) { 'merge_requests' }
+      let(:project_ids) { [project_1.id, unarchived_project.id, archived_project.id] }
       let(:results) { described_class.new(user, 'foo', project_ids, filters: filters) }
 
       before do
+        Elastic::ProcessInitialBookkeepingService.backfill_projects!(unarchived_project, archived_project)
+
         ensure_elasticsearch_index!
       end
 
@@ -854,45 +867,45 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
 
     describe 'ordering' do
-      let!(:project) { create(:project, :public) }
-
-      let!(:old_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'old-1', title: 'sorted old',
+      let_it_be(:old_result) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'old-1', title: 'sorted old',
           created_at: 1.month.ago)
       end
 
-      let!(:new_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'new-1', title: 'sorted recent',
+      let_it_be(:new_result) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'new-1', title: 'sorted recent',
           created_at: 1.day.ago)
       end
 
-      let!(:very_old_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'very-old-1', title: 'sorted very old',
-          created_at: 1.year.ago)
+      let_it_be(:very_old_result) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'very-old-1',
+          title: 'sorted very old', created_at: 1.year.ago)
       end
 
-      let!(:old_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-old-1', title: 'updated old',
+      let_it_be(:old_updated) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'updated-old-1', title: 'updated old',
           updated_at: 1.month.ago)
       end
 
-      let!(:new_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-new-1',
+      let_it_be(:new_updated) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'updated-new-1',
           title: 'updated recent', updated_at: 1.day.ago)
       end
 
-      let!(:very_old_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-very-old-1',
+      let_it_be(:very_old_updated) do
+        create(:merge_request, :opened, source_project: project_1, source_branch: 'updated-very-old-1',
           title: 'updated very old', updated_at: 1.year.ago)
       end
 
       before do
+        Elastic::ProcessInitialBookkeepingService.backfill_projects!(project_1)
+
         ensure_elasticsearch_index!
       end
 
       include_examples 'search results sorted' do
-        let(:results_created) { described_class.new(user, 'sorted', [project.id], sort: sort) }
-        let(:results_updated) { described_class.new(user, 'updated', [project.id], sort: sort) }
+        let(:results_created) { described_class.new(user, 'sorted', [project_1.id], sort: sort) }
+        let(:results_updated) { described_class.new(user, 'updated', [project_1.id], sort: sort) }
       end
     end
   end
@@ -1072,8 +1085,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
           expect(search_for('write')).to include(file_name)
         end
 
-        # Re-enable after fixing https://gitlab.com/gitlab-org/gitlab/-/issues/10693#note_349683299
-        xit 'find by first two words' do
+        it 'find by first two words' do
           expect(search_for('writeString')).to include(file_name)
         end
 
@@ -1250,7 +1262,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
 
     context 'when wiki is disabled' do
-      let(:project_1) { create(:project, :public, :repository, :wiki_disabled) }
+      let_it_be(:project_1) { create(:project, :public, :repository, :wiki_disabled) }
 
       context 'when searching by member' do
         let(:limit_project_ids) { [project_1.id] }
@@ -1751,7 +1763,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       let(:scope) { 'issues' }
 
       it 'returns failed from the response mapper' do
-        expect(results.failed?(scope)).to eq true
+        expect(results.failed?(scope)).to be true
       end
     end
 
@@ -1759,7 +1771,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       let(:scope) { 'blobs' }
 
       it 'returns false' do
-        expect(results.failed?(scope)).to eq false
+        expect(results.failed?(scope)).to be false
       end
     end
   end
