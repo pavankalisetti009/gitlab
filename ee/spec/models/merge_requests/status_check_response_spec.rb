@@ -83,18 +83,6 @@ RSpec.describe MergeRequests::StatusCheckResponse, type: :model, feature_categor
             response
           end
         end
-
-        context 'when feature flag merge_when_checks_pass is disabled' do
-          before do
-            stub_feature_flags(merge_when_checks_pass: false)
-          end
-
-          it 'does not send a status passed event' do
-            expect(::Gitlab::EventStore).not_to receive(:publish)
-
-            response
-          end
-        end
       end
     end
   end

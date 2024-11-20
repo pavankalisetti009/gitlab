@@ -77,8 +77,6 @@ module EE
         ::SystemNoteService.override_requested_changes(merge_request, current_user, override_requested_changes.last)
         trigger_merge_request_status_updated(merge_request)
 
-        return unless ::Feature.enabled?(:merge_when_checks_pass, merge_request.project)
-
         ::Gitlab::EventStore.publish(
           ::MergeRequests::OverrideRequestedChangesStateEvent.new(
             data: { current_user_id: current_user.id, merge_request_id: merge_request.id }
@@ -87,8 +85,6 @@ module EE
       end
 
       def handle_title_and_desc_edits(merge_request, changed_fields)
-        return unless ::Feature.enabled?(:merge_when_checks_pass, merge_request.project)
-
         fields = %w[title description]
 
         return unless changed_fields.any? { |field| fields.include?(field) }

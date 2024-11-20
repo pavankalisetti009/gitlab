@@ -1231,50 +1231,30 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           expect(message).to eq('Scheduled to merge this merge request (Merge when checks pass).')
         end
       end
-
-      context 'when "merge_when_checks_pass" is disabled' do
-        before do
-          stub_feature_flags(merge_when_checks_pass: false)
-        end
-
-        it_behaves_like 'failed command', 'Could not apply merge command.' do
-          let(:issuable) { merge_request }
-        end
-      end
     end
 
     context 'when the merge request is blocked' do
       let(:content) { '/merge' }
+      let(:service) do
+        described_class.new(
+          container: project,
+          current_user: current_user,
+          params: { merge_request_diff_head_sha: issuable.diff_head_sha }
+        )
+      end
+
       let(:issuable) { create(:merge_request, :blocked, source_project: project) }
 
       before do
         stub_licensed_features(blocking_merge_requests: true)
       end
 
-      context 'when merge_when_checks_pass is enabled' do
-        let(:service) do
-          described_class.new(
-            container: project,
-            current_user: current_user,
-            params: { merge_request_diff_head_sha: issuable.diff_head_sha }
-          )
-        end
+      it 'runs merge command and returns merge message' do
+        _, updates, message = service.execute(content, issuable)
 
-        it 'runs merge command and returns merge message' do
-          _, updates, message = service.execute(content, issuable)
+        expect(updates).to eq(merge: issuable.diff_head_sha)
 
-          expect(updates).to eq(merge: issuable.diff_head_sha)
-
-          expect(message).to eq('Scheduled to merge this merge request (Merge when checks pass).')
-        end
-      end
-
-      context 'when merge_when_checks_pass id disabled' do
-        before do
-          stub_feature_flags(merge_when_checks_pass: false)
-        end
-
-        it_behaves_like 'failed command', 'Could not apply merge command.'
+        expect(message).to eq('Scheduled to merge this merge request (Merge when checks pass).')
       end
     end
 

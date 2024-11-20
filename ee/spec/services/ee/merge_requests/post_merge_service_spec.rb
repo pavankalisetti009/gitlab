@@ -251,23 +251,6 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
       end
     end
 
-    context 'when merge_when_checks_pass is disabled' do
-      let(:merge_request) { create :merge_request }
-
-      before do
-        stub_feature_flags(merge_when_checks_pass: false)
-      end
-
-      it 'does not send any unblocked events' do
-        expect(::Gitlab::EventStore).not_to receive(:publish)
-          .with(::MergeRequests::UnblockedStateEvent.new(data: {
-            current_user_id: current_user.id, merge_request_id: merge_request.id
-          }))
-
-        subject
-      end
-    end
-
     context 'when a temporary unapproval is needed for the MR' do
       it 'removes the unmergeable flag after the service is run' do
         merge_request.approval_state.temporarily_unapprove!
