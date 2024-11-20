@@ -1,5 +1,6 @@
 query getMergeRequestsCountEE(
   $fullPath: ID!
+  $search: String
   $approvedBy: [String!]
   $approver: [String!]
   $assigneeUsernames: String
@@ -25,6 +26,7 @@ query getMergeRequestsCountEE(
     id
     openedMergeRequests: mergeRequests(
       state: opened
+      search: $search
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
@@ -50,6 +52,7 @@ query getMergeRequestsCountEE(
     }
     mergedMergeRequests: mergeRequests(
       state: merged
+      search: $search
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
@@ -75,6 +78,7 @@ query getMergeRequestsCountEE(
     }
     closedMergeRequests: mergeRequests(
       state: closed
+      search: $search
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
@@ -100,6 +104,7 @@ query getMergeRequestsCountEE(
     }
     allMergeRequests: mergeRequests(
       state: all
+      search: $search
       approvedBy: $approvedBy
       approver: $approver
       assigneeUsername: $assigneeUsernames
