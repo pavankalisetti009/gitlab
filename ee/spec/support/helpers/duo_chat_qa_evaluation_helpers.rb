@@ -138,18 +138,34 @@ module DuoChatQaEvaluationHelpers
     anthropic_response = Gitlab::Llm::Anthropic::Client.new(user,
       unit_primitive: 'duo_chat').complete(prompt: test_prompt, temperature: 0.1, timeout: ANTHROPIC_TIMEOUT)
 
+    response =
+      if anthropic_response&.success?
+        anthropic_response['completion']
+      else
+        warn "Unsuccessful request to Anthropic: #{anthropic_response&.code}"
+        nil
+      end
+
     {
       model: Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
-      response: anthropic_response["completion"]
+      response: response
     }
   end
 
   def evaluate_with_vertex(user, test_prompt)
     vertex_response = Gitlab::Llm::VertexAi::Client.new(user, unit_primitive: 'duo_chat').text(content: test_prompt)
 
+    response =
+      if vertex_response&.success?
+        vertex_response.dig("predictions", 0, "content").to_s.strip
+      else
+        warn "Unsuccessful request to Vertex AI: #{vertex_response&.code}"
+        nil
+      end
+
     {
       model: Gitlab::Llm::VertexAi::ModelConfigurations::Text::NAME,
-      response: vertex_response&.dig("predictions", 0, "content").to_s.strip
+      response: response
     }
   end
 
