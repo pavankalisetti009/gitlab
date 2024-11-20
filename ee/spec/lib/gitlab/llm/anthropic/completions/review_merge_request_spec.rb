@@ -488,6 +488,18 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           end
         end
 
+        context 'when an error gets raised' do
+          before do
+            allow(DraftNote).to receive(:new).and_raise('error')
+          end
+
+          it 'updates progress note with an error message' do
+            completion.execute
+
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
+          end
+        end
+
         context 'when summary returned an error' do
           let(:summary_response) do
             {
