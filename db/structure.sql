@@ -28283,8 +28283,6 @@ CREATE INDEX idx_approval_merge_request_rules_on_scan_result_policy_id ON approv
 
 CREATE INDEX idx_approval_mr_rules_on_config_id_and_id_and_updated_at ON approval_merge_request_rules USING btree (security_orchestration_policy_configuration_id, id, updated_at);
 
-CREATE INDEX idx_approval_mr_rules_on_config_id_and_policy_rule_id ON approval_merge_request_rules USING btree (security_orchestration_policy_configuration_id, approval_policy_rule_id);
-
 CREATE INDEX idx_approval_policy_rules_security_policy_id_id ON approval_policy_rules USING btree (security_policy_id, id);
 
 CREATE INDEX idx_approval_project_rules_on_config_id_and_policy_rule_id ON approval_project_rules USING btree (security_orchestration_policy_configuration_id, approval_policy_rule_id);
@@ -28520,6 +28518,8 @@ CREATE INDEX idx_pkgs_nuget_symbols_on_lowercase_signature_and_file_name ON pack
 CREATE INDEX idx_pkgs_on_project_id_name_version_on_installable_terraform ON packages_packages USING btree (project_id, name, version, id) WHERE ((package_type = 12) AND (status = ANY (ARRAY[0, 1])));
 
 CREATE INDEX idx_pkgs_project_id_lower_name_when_nuget_installable_version ON packages_packages USING btree (project_id, lower((name)::text)) WHERE ((package_type = 4) AND (version IS NOT NULL) AND (status = ANY (ARRAY[0, 1])));
+
+CREATE INDEX idx_policy_violations_on_project_id_policy_rule_id_and_id ON scan_result_policy_violations USING btree (project_id, approval_policy_rule_id, id);
 
 CREATE INDEX idx_proj_feat_usg_on_jira_dvcs_cloud_last_sync_at_and_proj_id ON project_feature_usages USING btree (jira_dvcs_cloud_last_sync_at, project_id) WHERE (jira_dvcs_cloud_last_sync_at IS NOT NULL);
 
@@ -28855,6 +28855,8 @@ CREATE UNIQUE INDEX index_approval_merge_request_rules_users_1 ON approval_merge
 
 CREATE INDEX index_approval_merge_request_rules_users_2 ON approval_merge_request_rules_users USING btree (user_id);
 
+CREATE INDEX index_approval_mr_rules_on_project_id_policy_rule_id_and_id ON approval_merge_request_rules USING btree (security_orchestration_policy_configuration_id, approval_policy_rule_id, id);
+
 CREATE UNIQUE INDEX index_approval_policy_rule_on_project_and_rule ON approval_policy_rule_project_links USING btree (approval_policy_rule_id, project_id);
 
 CREATE INDEX index_approval_policy_rule_project_links_on_project_id ON approval_policy_rule_project_links USING btree (project_id);
@@ -28871,7 +28873,9 @@ CREATE INDEX index_approval_project_rules_on_approval_policy_rule_id ON approval
 
 CREATE INDEX index_approval_project_rules_on_id_with_regular_type ON approval_project_rules USING btree (id) WHERE (rule_type = 0);
 
-CREATE INDEX index_approval_project_rules_on_project_id ON approval_project_rules USING btree (project_id);
+CREATE INDEX index_approval_project_rules_on_project_id_and_rule_type ON approval_project_rules USING btree (project_id, rule_type);
+
+CREATE INDEX index_approval_project_rules_on_project_id_config_id_and_id ON approval_project_rules USING btree (security_orchestration_policy_configuration_id, project_id, id);
 
 CREATE INDEX index_approval_project_rules_on_rule_type ON approval_project_rules USING btree (rule_type);
 
@@ -32014,8 +32018,6 @@ CREATE INDEX index_scan_result_policy_violations_on_approval_policy_rule_id ON s
 CREATE INDEX index_scan_result_policy_violations_on_merge_request_id ON scan_result_policy_violations USING btree (merge_request_id);
 
 CREATE UNIQUE INDEX index_scan_result_policy_violations_on_policy_and_merge_request ON scan_result_policy_violations USING btree (scan_result_policy_id, merge_request_id);
-
-CREATE INDEX index_scan_result_policy_violations_on_project_id ON scan_result_policy_violations USING btree (project_id);
 
 CREATE INDEX index_scim_identities_on_group_id ON scim_identities USING btree (group_id);
 
