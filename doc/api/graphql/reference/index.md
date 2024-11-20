@@ -149,7 +149,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ### `Query.aiSelfHostedModels`
 
-List of self-hosted LLM servers.
+Returns the self-hosted model if an ID is provided, otherwise returns all models.
 
 DETAILS:
 **Introduced** in GitLab 17.1.
@@ -160,6 +160,12 @@ Returns [`AiSelfHostedModelConnection`](#aiselfhostedmodelconnection).
 This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
 `before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaiselfhostedmodelsid"></a>`id` | [`AiSelfHostedModelID`](#aiselfhostedmodelid) | Global ID of a self-hosted model. |
 
 ### `Query.aiSlashCommands`
 

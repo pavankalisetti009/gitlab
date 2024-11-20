@@ -87,4 +87,40 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
       expect(ai_self_hosted_models_data).to be_nil
     end
   end
+
+  context 'when a self-hosted model id is provided' do
+    let(:self_hosted_model_gid) { self_hosted_models.first.to_global_id }
+    let(:query) do
+      %(
+      query SelfHostedModel {
+        aiSelfHostedModels(id: "#{self_hosted_model_gid}") {
+          nodes {
+            id
+            name
+            model
+            endpoint
+            hasApiToken
+          }
+        }
+      }
+      )
+    end
+
+    let(:expected_data) do
+      [
+        { "id" => self_hosted_models.first.to_global_id.to_s,
+          "name" => self_hosted_models.first.name,
+          "model" => self_hosted_models.first.model.to_s,
+          "endpoint" => self_hosted_models.first.endpoint,
+          "hasApiToken" => self_hosted_models.first.api_token.present? }
+      ]
+    end
+
+    it 'returns the self-hosted model' do
+      request
+
+      expect(ai_self_hosted_models_data.length).to eq(1)
+      expect(ai_self_hosted_models_data).to include(*expected_data)
+    end
+  end
 end
