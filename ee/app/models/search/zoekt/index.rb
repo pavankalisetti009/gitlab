@@ -132,7 +132,9 @@ module Search
 
         return if new_reserved_bytes == reserved_storage_bytes
 
-        update_column(:reserved_storage_bytes, new_reserved_bytes)
+        self.reserved_storage_bytes = new_reserved_bytes
+        self.watermark_level = appropriate_watermark_level
+        save!
       rescue StandardError => err
         logger.error(build_structured_payload(
           message: 'Error attempting to update reserved_storage_bytes',
@@ -149,11 +151,25 @@ module Search
         reserved_storage_bytes.to_i - used_storage_bytes
       end
 
+      def storage_percent_used
+        used_storage_bytes / reserved_storage_bytes.to_f
+      end
+
       def should_be_deleted?
         SHOULD_BE_DELETED_STATES.include? state.to_sym
       end
 
       private
+
+      def appropriate_watermark_level
+        case storage_percent_used
+        when 0...STORAGE_IDEAL_PERCENT_USED then :overprovisioned
+        when STORAGE_IDEAL_PERCENT_USED...STORAGE_LOW_WATERMARK then :healthy
+        when STORAGE_LOW_WATERMARK...STORAGE_HIGH_WATERMARK then :low_watermark_exceeded
+        else
+          :high_watermark_exceeded
+        end
+      end
 
       def delete_from_index
         ::Search::Zoekt::NamespaceIndexerWorker.perform_async(namespace_id, 'delete', zoekt_node_id)

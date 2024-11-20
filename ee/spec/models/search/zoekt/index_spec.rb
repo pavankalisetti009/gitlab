@@ -282,6 +282,57 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       ).to eq(described_class::STORAGE_IDEAL_PERCENT_USED)
     end
 
+    describe 'updates the watermark level to the appropriate state' do
+      let(:percent_used) { 0 }
+
+      before do
+        idx.high_watermark_exceeded!
+        allow(idx).to receive(:storage_percent_used).and_return(percent_used)
+      end
+
+      context 'when index should be marked as overprovisioned' do
+        let(:percent_used) { 0.01 }
+
+        it 'updates the watermark level to the appropriate state' do
+          expect { idx.update_reserved_storage_bytes! }.to change {
+            idx.reload.watermark_level
+          }.from("high_watermark_exceeded").to("overprovisioned")
+        end
+      end
+
+      context 'when index should be marked as healthy' do
+        let(:percent_used) { described_class::STORAGE_IDEAL_PERCENT_USED }
+
+        it 'updates the watermark level to the appropriate state' do
+          expect { idx.update_reserved_storage_bytes! }.to change {
+            idx.reload.watermark_level
+          }.from("high_watermark_exceeded").to("healthy")
+        end
+      end
+
+      context 'when index should be marked as low_watermark_exceeded' do
+        let(:percent_used) { described_class::STORAGE_LOW_WATERMARK }
+
+        it 'updates the watermark level to the appropriate state' do
+          expect { idx.update_reserved_storage_bytes! }.to change {
+            idx.reload.watermark_level
+          }.from("high_watermark_exceeded").to("low_watermark_exceeded")
+        end
+      end
+
+      context 'when index should be marked as high_watermark_exceeded' do
+        let(:percent_used) { described_class::STORAGE_HIGH_WATERMARK }
+
+        it 'updates the watermark level to the appropriate state' do
+          idx.low_watermark_exceeded!
+
+          expect { idx.update_reserved_storage_bytes! }.to change {
+            idx.reload.watermark_level
+          }.from("low_watermark_exceeded").to("high_watermark_exceeded")
+        end
+      end
+    end
+
     context 'when the node only has a little bit more storage' do
       let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 102, used_bytes: 0) }
 
