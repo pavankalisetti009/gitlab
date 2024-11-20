@@ -22,7 +22,7 @@ RSpec.describe 'Duo Chat', :js, :requires_custom_models_setup, :sidekiq_inline,
     stub_feature_flags(duo_chat_requires_licensed_seat: false)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(service).to receive_messages(access_token: 'token', allowed_for?: true, name: :duo_chat)
-    allow(user).to receive(:allowed_to_use?).and_yield([1, 2])
+    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
   end
 
   context 'for GitLab Duo features generally accessible on any page' do

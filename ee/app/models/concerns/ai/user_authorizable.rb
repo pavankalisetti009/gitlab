@@ -17,6 +17,8 @@ module Ai
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
 
+    Response = Struct.new(:allowed?, :namespace_ids, keyword_init: true)
+
     included do
       def duo_pro_add_on_available_namespace_ids
         cache_key = format(DUO_PRO_ADD_ON_CACHE_KEY, user_id: id)
@@ -108,41 +110,40 @@ module Ai
         end
       end
 
-      def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features, &block)
-        feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
-        return false unless feature_data
-
-        service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
-        return false if service.name == :missing_service
-
-        # If the user has any relevant add-on purchase, they always have access to this service
-        purchases = service.add_on_purchases.assigned_to_user(self)
-        if purchases.any?
-          yield purchases.uniq_namespace_ids if block
-
-          return true
-        end
-
-        # If the user doesn't have add-on purchases and the service isn't free, they don't have access
-        return false if !service.free_access? ||
-          (service.name == :self_hosted_models && Feature.enabled?(:self_hosted_models_beta_ended, self))
-
-        if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-          licensed_to_use_in_com?(feature_data[:maturity], &block)
-        else
-          licensed_to_use_in_sm?(licensed_feature)
-        end
+      def allowed_to_use?(...)
+        allowed_to_use(...).allowed?
       end
 
-      def allowed_by_namespace_ids(*args, **kwargs)
-        allowed_to_use?(*args, **kwargs) { |namespace_ids| return namespace_ids } # rubocop:disable Cop/AvoidReturnFromBlocks -- Early return if namespace ids are yielded
-
-        []
+      def allowed_by_namespace_ids(...)
+        allowed_to_use(...).namespace_ids
       end
 
       private
 
-      def licensed_to_use_in_com?(maturity)
+      def allowed_to_use(ai_feature, service_name: nil, licensed_feature: :ai_features)
+        feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
+        return Response.new(allowed?: false, namespace_ids: []) unless feature_data
+
+        service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
+        return Response.new(allowed?: false, namespace_ids: []) if service.name == :missing_service
+
+        # If the user has any relevant add-on purchase, they always have access to this service
+        purchases = service.add_on_purchases.assigned_to_user(self)
+        return Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids) if purchases.any?
+
+        # If the user doesn't have add-on purchases and the service isn't free, they don't have access
+        return Response.new(allowed?: false, namespace_ids: []) if !service.free_access? ||
+          (service.name == :self_hosted_models && Feature.enabled?(:self_hosted_models_beta_ended, self))
+
+        if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
+          seats = namespaces_allowed_in_com(feature_data[:maturity])
+          Response.new(allowed?: seats.any?, namespace_ids: seats)
+        else
+          Response.new(allowed?: licensed_to_use_in_sm?(licensed_feature), namespace_ids: [])
+        end
+      end
+
+      def namespaces_allowed_in_com(maturity)
         namespaces = member_namespaces.with_ai_supported_plan
 
         requiring_seat = namespaces.select do |namespace|
@@ -151,13 +152,11 @@ module Ai
 
         # If any namespace requires a licensed seat and we've reached this point after checking for any seat assigned
         # to the user, they don't have access
-        return false if requiring_seat.any?
+        return [] if requiring_seat.any?
 
         namespaces = namespaces.namespace_settings_with_ai_features_enabled if maturity != :ga
 
-        yield namespaces.ids if block_given?
-
-        namespaces.any?
+        namespaces.ids
       end
 
       def licensed_to_use_in_sm?(licensed_feature)

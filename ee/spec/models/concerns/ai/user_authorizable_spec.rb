@@ -55,7 +55,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
         it { is_expected.to be true }
 
-        it { expect { |b| user.allowed_to_use?(ai_feature, &b) }.to yield_with_args(allowed_by_namespace_ids) }
+        it { expect(user.allowed_by_namespace_ids(ai_feature)).to match_array(allowed_by_namespace_ids) }
       end
 
       context "when the user doesn't have an active assigned seat and free access is not available" do
@@ -139,17 +139,18 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
           it_behaves_like 'checking available groups'
 
-          describe 'yielding namespace ids that allow using a feature' do
-            it 'yields the relevant namespace ids' do
-              expect do |b|
-                user.allowed_to_use?(ai_feature, &b)
-              end.to yield_with_args(match_array([group.id, group_without_experiment_features_enabled.id]))
+          describe 'returning namespace ids that allow using a feature' do
+            it 'returns the relevant namespace ids' do
+              expect(user.allowed_by_namespace_ids(ai_feature))
+                .to match_array([group.id, group_without_experiment_features_enabled.id])
             end
 
             context 'when the feature is not GA' do
               let(:maturity) { :beta }
 
-              it { expect { |b| user.allowed_to_use?(ai_feature, &b) }.to yield_with_args([group.id]) }
+              it 'returns the relevant namespace ids' do
+                expect(user.allowed_by_namespace_ids(ai_feature)).to match_array([group.id])
+              end
             end
           end
 
@@ -245,19 +246,21 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
     subject { user.allowed_by_namespace_ids(ai_feature) }
 
-    context "when allowed_to_use? doesn't yield any value" do
+    context "when allowed_to_use doesn't return any namespace ids" do
       before do
-        allow(user).to receive(:allowed_to_use?).with(ai_feature)
+        allow(user).to receive(:allowed_to_use).with(ai_feature)
+          .and_return(described_class::Response.new(allowed?: true, namespace_ids: []))
       end
 
       it { is_expected.to eq([]) }
     end
 
-    context 'when allowed_to_use? yields namespace ids' do
+    context 'when allowed_to_use returns namespace ids' do
       let(:namespace_ids) { [1, 2] }
 
       before do
-        allow(user).to receive(:allowed_to_use?).with(ai_feature).and_yield(namespace_ids)
+        allow(user).to receive(:allowed_to_use).with(ai_feature)
+          .and_return(described_class::Response.new(allowed?: true, namespace_ids: namespace_ids))
       end
 
       it { is_expected.to eq(namespace_ids) }

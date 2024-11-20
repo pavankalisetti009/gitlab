@@ -58,7 +58,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
     service = instance_double(CloudConnector::BaseAvailableServiceData)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_feature_name).and_return(service)
     allow(service).to receive_messages(access_token: expected_access_token, name: expected_feature_name)
-    allow(user).to receive(:allowed_to_use?).and_yield(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
   end
 
   describe '#search', :with_cloud_connector do

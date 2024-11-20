@@ -41,11 +41,14 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
         .and_return(false)
       allow(service_not_available).to receive_messages({ free_access?: false })
 
+      purchases = class_double(GitlabSubscriptions::AddOnPurchase)
+
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:include_file_context)
         .and_return(service)
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:include_merge_request_context)
         .and_return(service)
-      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
+      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user).and_return(purchases)
+      allow(purchases).to receive_messages(any?: true, uniq_namespace_ids: [])
     end
 
     it 'returns a list of available features' do
