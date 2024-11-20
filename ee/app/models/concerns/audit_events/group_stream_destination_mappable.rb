@@ -8,5 +8,9 @@ module AuditEvents
 
       validates :stream_destination, uniqueness: { allow_nil: true }
     end
+
+    def instance_level?
+      false
+    end
   end
 end

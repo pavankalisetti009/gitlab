@@ -10,6 +10,8 @@ RSpec.shared_examples 'includes InstanceStreamDestinationMappable concern' do
         expect(destination).to belong_to(:stream_destination)
         .class_name('AuditEvents::Instance::ExternalStreamingDestination')
         .optional
+
+        expect(destination.instance_level?).to be_truthy
       end
     end
   end

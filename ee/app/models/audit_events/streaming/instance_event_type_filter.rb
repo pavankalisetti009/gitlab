@@ -7,7 +7,8 @@ module AuditEvents
 
       include StreamableEventTypeFilter
 
-      belongs_to :instance_external_audit_event_destination
+      belongs_to :instance_external_audit_event_destination,
+        class_name: 'AuditEvents::InstanceExternalAuditEventDestination'
 
       validates :audit_event_type,
         presence: true,

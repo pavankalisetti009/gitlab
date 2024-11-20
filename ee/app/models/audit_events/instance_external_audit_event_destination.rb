@@ -16,6 +16,7 @@ module AuditEvents
 
     has_one :namespace_filter,
       class_name: 'AuditEvents::Streaming::HTTP::Instance::NamespaceFilter',
+      foreign_key: 'audit_events_instance_external_audit_event_destination_id',
       inverse_of: :instance_external_audit_event_destination
 
     validates :name, uniqueness: true
