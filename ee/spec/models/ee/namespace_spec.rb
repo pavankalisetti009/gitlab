@@ -350,38 +350,10 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    describe '.not_in_default_plan', :saas do
-      subject { described_class.not_in_default_plan.ids }
-
-      where(:plan_name, :expect_in_default_plan) do
-        ::Plan::FREE     | true
-        ::Plan::DEFAULT  | true
-        ::Plan::BRONZE   | false
-        ::Plan::SILVER   | false
-        ::Plan::PREMIUM  | false
-        ::Plan::GOLD     | false
-        ::Plan::ULTIMATE | false
-      end
-
-      with_them do
-        it 'returns expected result' do
-          namespace = create(:namespace_with_plan, plan: "#{plan_name}_plan")
-
-          is_expected.to eq(expect_in_default_plan ? [] : [namespace.id])
-        end
-      end
-
-      it 'does not include namespace without subscription' do
-        create(:namespace)
-
-        is_expected.to eq([])
-      end
-    end
-
     describe '.in_specific_plans', :saas do
-      let_it_be(:free_namespace) { create(:namespace_with_plan, plan: :free_plan) }
-      let_it_be(:premium_namespace) { create(:namespace_with_plan, plan: :premium_plan) }
-      let_it_be(:ultimate_namespace) { create(:namespace_with_plan, plan: :ultimate_plan) }
+      let_it_be(:free_namespace) { create(:group_with_plan, plan: :free_plan) }
+      let_it_be(:premium_namespace) { create(:group_with_plan, plan: :premium_plan) }
+      let_it_be(:ultimate_namespace) { create(:group_with_plan, plan: :ultimate_plan) }
 
       it 'returns namespaces with the specified plan names' do
         result = described_class.in_specific_plans(%w[ultimate premium])
@@ -413,6 +385,14 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         result = described_class.id_in(ultimate_namespace).in_specific_plans(['ultimate'])
 
         expect(result).to contain_exactly(ultimate_namespace)
+      end
+
+      it 'does not return subgroups' do
+        subgroup = create(:group, parent: ultimate_namespace)
+
+        result = described_class.id_in(subgroup).in_specific_plans([nil])
+
+        expect(result).to be_empty
       end
     end
 
@@ -483,42 +463,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         ]
 
         expect(described_class.no_active_duo_pro_trial).to match_array(expected_namespaces)
-      end
-    end
-
-    describe '.eligible_for_trial', :saas do
-      let_it_be(:namespace) { create :namespace }
-
-      subject { described_class.eligible_for_trial }
-
-      context 'when there is no subscription' do
-        it { is_expected.to contain_exactly(namespace) }
-      end
-
-      context 'when there is a subscription' do
-        context 'with a plan that is eligible for a trial' do
-          where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
-
-          with_them do
-            before do
-              create :gitlab_subscription, plan, namespace: namespace
-            end
-
-            it { is_expected.to contain_exactly(namespace) }
-          end
-        end
-
-        context 'with a plan that is ineligible for a trial' do
-          where(plan: ::Plan::PAID_HOSTED_PLANS.without(::Plan::PREMIUM))
-
-          with_them do
-            before do
-              create :gitlab_subscription, plan, namespace: namespace
-            end
-
-            it { is_expected.to be_empty }
-          end
-        end
       end
     end
 
