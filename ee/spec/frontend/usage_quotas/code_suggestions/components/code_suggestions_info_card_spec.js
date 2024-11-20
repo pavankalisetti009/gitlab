@@ -2,7 +2,6 @@ import { GlSprintf, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import Tracking from '~/tracking';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { PROMO_URL } from '~/constants';
 import { visitUrl } from 'jh_else_ce/lib/utils/url_utility';
@@ -15,6 +14,7 @@ import { ADD_ON_PURCHASE_FETCH_ERROR_CODE } from 'ee/usage_quotas/error_constant
 import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 Vue.use(VueApollo);
 
@@ -104,6 +104,8 @@ describe('CodeSuggestionsInfoCard', () => {
     });
   };
 
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   describe('when `isLoading` computed value is `true`', () => {
     beforeEach(() => {
       createComponent();
@@ -134,8 +136,6 @@ describe('CodeSuggestionsInfoCard', () => {
 
     describe('with Duo Pro add-on enabled', () => {
       beforeEach(async () => {
-        jest.spyOn(Tracking, 'event');
-
         createComponent({ props: { duoTier: 'pro' } });
 
         // wait for apollo to load
@@ -147,12 +147,13 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('tracks the page view correctly', () => {
-        expect(Tracking.event).toHaveBeenCalledWith(
-          'groups:usage_quotas:index',
-          'view_group_duo_pro_usage_pageload',
-          expect.objectContaining({
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'view_group_duo_usage_pageload',
+          {
             label: 'duo_pro_add_on_tab',
-          }),
+          },
+          'groups:usage_quotas:index',
         );
       });
     });
@@ -167,6 +168,18 @@ describe('CodeSuggestionsInfoCard', () => {
 
       it('renders the title text', () => {
         expect(findCodeSuggestionsInfoTitle().text()).toBe('Subscription');
+      });
+
+      it('tracks the page view correctly', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'view_group_duo_usage_pageload',
+          {
+            label: 'duo_enterprise_add_on_tab',
+          },
+          'groups:usage_quotas:index',
+        );
       });
     });
 
@@ -237,8 +250,6 @@ describe('CodeSuggestionsInfoCard', () => {
       const outputEndDate = 'Feb 1, 2024';
 
       beforeEach(async () => {
-        jest.spyOn(Tracking, 'event');
-
         createComponent({
           provide: {
             duoActiveTrialStartDate: '2024-01-01',
@@ -262,12 +273,13 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('tracks the page view correctly', () => {
-        expect(Tracking.event).toHaveBeenCalledWith(
-          'groups:usage_quotas:index',
-          'view_group_duo_pro_usage_pageload',
-          expect.objectContaining({
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'view_group_duo_usage_pageload',
+          {
             label: 'duo_pro_add_on_tab_active_trial',
-          }),
+          },
+          'groups:usage_quotas:index',
         );
       });
 
@@ -284,28 +296,106 @@ describe('CodeSuggestionsInfoCard', () => {
         });
 
         it('visits the correct url and tracks the purchase seats button when clicked', () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
           findPurchaseSeatsButton().vm.$emit('click');
 
-          expect(Tracking.event).toHaveBeenCalledWith(
-            'groups:usage_quotas:index',
-            'click_purchase_seats_button_group_duo_pro_usage_page',
-            expect.objectContaining({
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_purchase_seats_button_group_duo_usage_page',
+            {
               label: 'duo_pro_purchase_seats',
-            }),
+            },
+            'groups:usage_quotas:index',
           );
 
           expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
         });
 
         it('visits the correct url and tracks the learn more link when clicked', () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
           findCodeSuggestionsLearnMoreLink().vm.$emit('click');
 
-          expect(Tracking.event).toHaveBeenCalledWith(
-            'groups:usage_quotas:index',
-            'click_marketing_link_group_duo_pro_usage_page',
-            expect.objectContaining({
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_marketing_link_group_duo_usage_page',
+            {
               label: 'duo_pro_marketing_page',
-            }),
+            },
+            'groups:usage_quotas:index',
+          );
+
+          expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
+        });
+      });
+    });
+
+    describe('with a Duo Enterprise add-on trial', () => {
+      beforeEach(async () => {
+        createComponent({
+          props: {
+            duoTier: 'enterprise',
+          },
+          provide: {
+            duoActiveTrialStartDate: '2024-01-01',
+            duoActiveTrialEndDate: '2024-02-01',
+          },
+        });
+
+        // wait for apollo to load
+        await waitForPromises();
+      });
+
+      it('tracks the page view correctly', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'view_group_duo_usage_pageload',
+          {
+            label: 'duo_enterprise_add_on_tab_active_trial',
+          },
+          'groups:usage_quotas:index',
+        );
+      });
+
+      describe('buttons', () => {
+        it('sets to the correct props to the hand raise lead (contact sales) button', () => {
+          expect(findContactSalesButton().props()).toMatchObject({
+            glmContent: 'usage-quotas-gitlab-duo-tab',
+            ctaTracking: {
+              category: 'groups:usage_quotas:index',
+              action: 'click_button',
+              label: 'duo_enterprise_contact_sales',
+            },
+          });
+        });
+
+        it('visits the correct url and tracks the purchase seats button when clicked', () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+          findPurchaseSeatsButton().vm.$emit('click');
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_purchase_seats_button_group_duo_usage_page',
+            {
+              label: 'duo_enterprise_purchase_seats',
+            },
+            'groups:usage_quotas:index',
+          );
+
+          expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
+        });
+
+        it('visits the correct url and tracks the learn more link when clicked', () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+          findCodeSuggestionsLearnMoreLink().vm.$emit('click');
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_marketing_link_group_duo_usage_page',
+            {
+              label: 'duo_enterprise_marketing_page',
+            },
+            'groups:usage_quotas:index',
           );
 
           expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
@@ -351,10 +441,6 @@ describe('CodeSuggestionsInfoCard', () => {
     });
 
     describe('tracking', () => {
-      beforeEach(() => {
-        jest.spyOn(Tracking, 'event');
-      });
-
       it.each`
         isSaaS   | label
         ${true}  | ${'add_duo_pro_saas'}
@@ -362,14 +448,17 @@ describe('CodeSuggestionsInfoCard', () => {
       `('tracks the click with correct labels', async ({ isSaaS, label }) => {
         createComponent({ provide: { isSaaS } });
         await waitForPromises();
+
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
         findAddSeatsButton().vm.$emit('click');
-        expect(Tracking.event).toHaveBeenCalledWith(
-          undefined,
-          'click_add_seats_button_group_duo_pro_usage_page',
-          expect.objectContaining({
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_add_seats_button_group_duo_usage_page',
+          {
             property: 'usage_quotas_page',
             label,
-          }),
+          },
+          undefined,
         );
       });
     });

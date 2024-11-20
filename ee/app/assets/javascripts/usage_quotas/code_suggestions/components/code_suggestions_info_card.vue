@@ -14,8 +14,6 @@ import {
   DUO_PRO,
   DUO_ENTERPRISE,
   codeSuggestionsLearnMoreLink,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE_TITLE,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import { addSeatsText } from 'ee/usage_quotas/seats/constants';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
@@ -116,23 +114,18 @@ export default {
     permissionReason() {
       return this.subscriptionPermissions?.reason;
     },
-    duoTitle() {
-      const title = this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
-
-      return `${title} ${this.duoProActiveTrial ? this.$options.i18n.trial : ''}`;
-    },
     titleText() {
-      return this.duoProActiveTrial
+      return this.duoActiveTrial
         ? this.$options.i18n.trialTitle
         : this.$options.i18n.subscriptionTitle;
     },
     subscriptionEndDateText() {
-      return this.duoProActiveTrial
+      return this.duoActiveTrial
         ? this.$options.i18n.trialEndDate
         : this.$options.i18n.subscriptionEndDate;
     },
     startDate() {
-      if (this.duoProActiveTrial) {
+      if (this.duoActiveTrial) {
         return this.formattedDate(this.duoActiveTrialStartDate);
       }
 
@@ -140,18 +133,27 @@ export default {
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     endDate() {
-      if (this.duoProActiveTrial) {
+      if (this.duoActiveTrial) {
         return this.formattedDate(this.duoActiveTrialEndDate);
       }
 
       const date = this.subscription?.endDate || this.subscriptionEndDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
-    duoProActiveTrial() {
+    duoActiveTrial() {
       return Boolean(this.duoActiveTrialStartDate);
     },
     pageViewLabel() {
-      return this.duoProActiveTrial ? `duo_pro_add_on_tab_active_trial` : `duo_pro_add_on_tab`;
+      return this.duoActiveTrial
+        ? `duo_${this.duoTier}_add_on_tab_active_trial`
+        : `duo_${this.duoTier}_add_on_tab`;
+    },
+    handRaiseLeadBtnTracking() {
+      return {
+        category: 'groups:usage_quotas:index',
+        action: 'click_button',
+        label: `duo_${this.duoTier}_contact_sales`,
+      };
     },
   },
   apollo: {
@@ -199,7 +201,7 @@ export default {
   },
   mounted() {
     this.trackEvent(
-      'view_group_duo_pro_usage_pageload',
+      'view_group_duo_usage_pageload',
       {
         label: this.pageViewLabel,
       },
@@ -208,8 +210,8 @@ export default {
   },
   methods: {
     handleAddDuoProClick() {
-      this.trackEvent('click_add_seats_button_group_duo_pro_usage_page', {
-        label: `add_duo_pro_${this.trackingPreffix}`,
+      this.trackEvent('click_add_seats_button_group_duo_usage_page', {
+        label: `add_duo_${this.duoTier}_${this.trackingPreffix}`,
         property: 'usage_quotas_page',
       });
     },
@@ -224,9 +226,9 @@ export default {
     },
     handlePurchaseSeats() {
       this.trackEvent(
-        'click_purchase_seats_button_group_duo_pro_usage_page',
+        'click_purchase_seats_button_group_duo_usage_page',
         {
-          label: `duo_pro_purchase_seats`,
+          label: `duo_${this.duoTier}_purchase_seats`,
         },
         'groups:usage_quotas:index',
       );
@@ -235,9 +237,9 @@ export default {
     },
     handleCodeSuggestionsLink() {
       this.trackEvent(
-        'click_marketing_link_group_duo_pro_usage_page',
+        'click_marketing_link_group_duo_usage_page',
         {
-          label: `duo_pro_marketing_page`,
+          label: `duo_${this.duoTier}_marketing_page`,
         },
         'groups:usage_quotas:index',
       );
@@ -253,11 +255,6 @@ export default {
     size: 'small',
     variant: 'confirm',
     category: 'secondary',
-  },
-  handRaiseLeadBtnTracking: {
-    category: 'groups:usage_quotas:index',
-    action: 'click_button',
-    label: 'duo_pro_contact_sales',
   },
   modalId: PQL_MODAL_ID,
 };
@@ -300,7 +297,7 @@ export default {
         </div>
       </template>
       <template #actions>
-        <div v-if="duoProActiveTrial">
+        <div v-if="duoActiveTrial">
           <gl-button
             variant="confirm"
             size="small"
@@ -313,7 +310,7 @@ export default {
           <hand-raise-lead-button
             :modal-id="$options.modalId"
             :button-attributes="$options.handRaiseLeadAttributes"
-            :cta-tracking="$options.handRaiseLeadBtnTracking"
+            :cta-tracking="handRaiseLeadBtnTracking"
             glm-content="usage-quotas-gitlab-duo-tab"
           />
         </div>
