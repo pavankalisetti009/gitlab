@@ -1,5 +1,7 @@
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import CiIcon from '~/vue_shared/components/ci_icon/ci_icon.vue';
+import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 import SecurityListApp from 'ee/merge_requests/reports/components/security_list_item.vue';
 
 describe('Merge request reports SecurityListApp component', () => {
@@ -13,7 +15,7 @@ describe('Merge request reports SecurityListApp component', () => {
 
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(SecurityListApp, {
-      propsData: { policyName: 'Policy Name', loading: false, ...propsData },
+      propsData: { policyName: 'Policy Name', loading: false, status: 'failed', ...propsData },
       stubs: { GlSprintf },
     });
   };
@@ -59,5 +61,16 @@ describe('Merge request reports SecurityListApp component', () => {
 
       expect(findSecurityFindingStatusIcon().props('iconName')).toBe('severityHigh');
     });
+  });
+
+  it.each`
+    status       | icon          | iconName
+    ${'SUCCESS'} | ${StatusIcon} | ${'StatusIcon'}
+    ${'WARNING'} | ${StatusIcon} | ${'StatusIcon'}
+    ${'RUNNING'} | ${CiIcon}     | ${'CiIcon'}
+  `('renders icon $iconName for status $status', ({ status, icon }) => {
+    createComponent({ status });
+
+    expect(wrapper.findComponent(icon).exists()).toBe(true);
   });
 });

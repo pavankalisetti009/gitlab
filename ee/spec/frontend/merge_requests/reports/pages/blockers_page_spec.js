@@ -104,6 +104,7 @@ describe('Merge request reports blockers page component', () => {
         await waitForPromises();
 
         expect(findSecurityListItems()).toHaveLength(1);
+        expect(findSecurityListItems().at(0).props('status')).toBe('success');
       });
 
       it('renders security list items with failed findings for SCAN_FINDING report', async () => {
@@ -122,13 +123,14 @@ describe('Merge request reports blockers page component', () => {
                 severity: 'secerity',
               },
             ],
-            policies: [{ name: 'policy', reportType: 'SCAN_FINDING' }],
+            policies: [{ name: 'policy', reportType: 'SCAN_FINDING', status: 'failed' }],
             previousScanFinding: [],
           },
         });
 
         await waitForPromises();
 
+        expect(findSecurityListItems().at(0).props('status')).toBe('failed');
         expect(findSecurityListItems().at(0).props('findings')).toEqual([
           {
             location: 'location',
@@ -147,7 +149,7 @@ describe('Merge request reports blockers page component', () => {
             anyMergeRequest: [{ commits: 'commits', name: 'name' }],
             licenseScanning: [],
             newScanFinding: [],
-            policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST' }],
+            policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
             previousScanFinding: [],
             comparisonPipelines: [],
           },
@@ -170,7 +172,7 @@ describe('Merge request reports blockers page component', () => {
           anyMergeRequest: [{ commits: 'commits', name: 'name' }],
           licenseScanning: [],
           newScanFinding: [],
-          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST' }],
+          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
           previousScanFinding: [],
           comparisonPipelines: [],
         },

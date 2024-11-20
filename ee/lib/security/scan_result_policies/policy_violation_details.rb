@@ -5,7 +5,7 @@ module Security
     class PolicyViolationDetails
       include Gitlab::Utils::StrongMemoize
 
-      Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, :warning, keyword_init: true)
+      Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, :warning, :status, keyword_init: true)
       ViolationError = Struct.new(:report_type, :error, :data, :message, :warning, keyword_init: true)
       ScanFindingViolation = Struct.new(:name, :report_type, :severity, :location, :path, keyword_init: true)
       AnyMergeRequestViolation = Struct.new(:name, :commits, keyword_init: true)
@@ -60,7 +60,8 @@ module Security
             name: rule.policy_name,
             scan_result_policy_id: rule.scan_result_policy_id,
             data: violation.violation_data,
-            warning: violation.warn?
+            warning: violation.warn?,
+            status: violation.status
           )
         end
       end

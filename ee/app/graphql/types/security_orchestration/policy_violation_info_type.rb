@@ -17,6 +17,10 @@ module Types
         type: ApprovalReportTypeEnum,
         null: false,
         description: 'Represents the report type.'
+
+      field :status,
+        type: PolicyViolationStatusEnum,
+        description: 'Represents the status of the violated policy.'
     end
   end
 end

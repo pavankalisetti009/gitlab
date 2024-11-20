@@ -96,6 +96,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         expect(violation.data).to eq data
         expect(violation.scan_result_policy_id).to eq policy.id
         expect(violation.warning).to eq is_warning
+        expect(violation.status).to eq status.to_s
       end
     end
 
