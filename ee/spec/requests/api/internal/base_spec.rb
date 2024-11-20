@@ -593,18 +593,6 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
             end
           end
 
-          context 'when enforce_ssh_certificates_via_settings feature flag is disabled' do
-            before do
-              stub_feature_flags(enforce_ssh_certificates_via_settings: false)
-            end
-
-            it 'returns success response' do
-              check_allowed
-
-              expect(response).to have_gitlab_http_status(:ok)
-            end
-          end
-
           context 'when service account is used' do
             let(:params) do
               super().merge({

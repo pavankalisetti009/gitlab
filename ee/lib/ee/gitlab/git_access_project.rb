@@ -47,7 +47,6 @@ module EE
       # actor is either User or Key
       # Deploy keys are allowed anyway
       def enforced_ssh_certificates?
-        return false if ::Feature.disabled?(:enforce_ssh_certificates_via_settings, namespace.root_ancestor)
         return false unless namespace.root_ancestor.enforce_ssh_certificates?
         return false unless actor.is_a?(User) || actor.instance_of?(::Key)
         return false if request_from_ci_build?
