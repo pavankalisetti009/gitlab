@@ -64,6 +64,10 @@ module API
 
           namespace 'internal' do
             resource :jobs do
+              desc 'Provides information about X-Ray dependencies' do
+                deprecated true
+                detail "This endpoint is deprecated and will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/505471"
+              end
               params do
                 requires :id, type: Integer, desc: "Job's ID"
                 requires :token, type: String, desc: "Job's authentication token"
@@ -83,7 +87,10 @@ module API
                 status :ok
               end
 
-              desc 'Updates list of dependencies for a programming language'
+              desc 'Updates list of dependencies for a programming language' do
+                deprecated true
+                detail "This endpoint is deprecated and will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/505471"
+              end
               params do
                 requires :id, type: Integer, desc: "Job's ID"
                 requires :token, type: String, desc: "Job's authentication token"
