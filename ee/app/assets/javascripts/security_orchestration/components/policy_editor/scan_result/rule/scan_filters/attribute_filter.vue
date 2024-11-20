@@ -91,7 +91,8 @@ export default {
         v-gl-tooltip
         name="information-o"
         :title="$options.i18n.fixAvailableTooltip"
-        class="gl-ml-2 gl-text-gray-500"
+        class="gl-ml-2"
+        variant="subtle"
       />
     </template>
   </section-layout>

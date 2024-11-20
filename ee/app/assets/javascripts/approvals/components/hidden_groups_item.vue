@@ -20,10 +20,11 @@ export default {
     <gl-icon
       v-gl-tooltip
       :title="__('One or more groups that you don\'t have access to.')"
-      class="gl-ml-2 gl-text-gray-500"
+      class="gl-ml-2"
       name="question-o"
       :size="16"
       data-testid="help-icon"
+      variant="subtle"
     />
   </div>
 </template>

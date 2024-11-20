@@ -78,9 +78,10 @@ export default {
     >
       <div class="item-title align-items-xl-center mb-xl-0 gl-min-w-0 sm:gl-flex">
         <gl-icon
-          class="gl-mr-3 gl-text-gray-500"
+          class="gl-mr-3"
           :name="getLinkIcon(iconName)"
           :class="iconClasses"
+          variant="subtle"
         />
         <gl-link
           :href="linkValue"

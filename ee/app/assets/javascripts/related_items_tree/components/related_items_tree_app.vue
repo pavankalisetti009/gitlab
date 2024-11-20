@@ -312,8 +312,8 @@ export default {
               <gl-icon
                 v-gl-tooltip.hover
                 name="question-o"
-                class="gl-text-gray-500"
                 :title="$options.i18nConfidentialParent[parentItem.type]"
+                variant="subtle"
               />
             </h6>
           </template>
