@@ -3315,7 +3315,7 @@ class Project < ApplicationRecord
   end
 
   def group_group_links
-    group&.shared_with_group_links&.of_ancestors_and_self || GroupGroupLink.none
+    group&.shared_with_group_links_of_ancestors_and_self || GroupGroupLink.none
   end
 
   def security_training_available?
