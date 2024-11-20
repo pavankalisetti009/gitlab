@@ -3,7 +3,7 @@ import { nextTick } from 'vue';
 import { mockTracking } from 'helpers/tracking_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import AiCubeQueryFeedback from 'ee/analytics/analytics_dashboards/components/visualization_designer/ai_cube_query_feedback.vue';
+import AiCubeQueryFeedback from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_feedback.vue';
 
 describe('AiCubeQueryFeedback', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

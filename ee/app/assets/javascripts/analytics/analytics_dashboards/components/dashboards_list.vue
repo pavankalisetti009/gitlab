@@ -260,10 +260,10 @@ export default {
       <template v-if="showVizDesignerButton || showNewDashboardButton" #actions>
         <gl-button
           v-if="showVizDesignerButton"
-          to="visualization-designer"
-          data-testid="visualization-designer-button"
+          to="data-explorer"
+          data-testid="data-explorer-button"
         >
-          {{ s__('Analytics|Visualization designer') }}
+          {{ s__('Analytics|Data explorer') }}
         </gl-button>
         <router-link
           v-if="showNewDashboardButton"

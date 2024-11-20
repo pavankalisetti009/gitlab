@@ -1,6 +1,6 @@
 import { GlFormSelect } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import AnalyticsVisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/visualization_designer/analytics_visualization_type_selector.vue';
+import AnalyticsVisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/data_explorer/analytics_visualization_type_selector.vue';
 
 describe('AnalyticsVisualizationTypeSelector', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

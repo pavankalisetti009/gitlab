@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :product_analytics do
+RSpec.describe 'Analytics Data Explorer', :js, feature_category: :product_analytics do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:user) { current_user }
   let_it_be(:group) { create(:group) }
@@ -17,10 +17,10 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
 
   subject(:visit_page) do
     visit project_analytics_dashboards_path(project)
-    click_link "Visualization designer"
+    click_link "Data explorer"
   end
 
-  shared_examples 'valid visualization designer' do
+  shared_examples 'valid data explorer' do
     it 'renders the preview panels and the type selector' do
       visit_page
 
@@ -46,54 +46,85 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
         .to have_content('Event Count 335')
     end
 
-    [
-      {
-        name: 'LineChart',
-        text: 'Line chart',
-        content: 'Snowplow Tracked Events Count'
-      },
-      {
-        name: 'ColumnChart',
-        text: 'Column chart',
-        selector: 'dashboard-visualization-column-chart'
-      },
-      {
-        name: 'DataTable',
-        text: 'Data table',
-        content: 'Count 335'
-      },
-      {
-        name: 'SingleStat',
-        text: 'Single statistic',
-        content: '335'
-      }
-    ].each do |visualization|
-      context "with #{visualization[:text]} visualization selected" do
-        before do
-          dropdown = find_by_testid('visualization-type-dropdown')
-          dropdown.select visualization[:text]
-        end
-
-        it "shows the #{visualization[:text]} preview" do
-          preview_panel = find_by_testid('preview-visualization')
-
-          if visualization[:content].nil?
-            expect(preview_panel).to have_selector("[data-testid=\"#{visualization[:selector]}\"]")
-          else
-            expect(preview_panel).to have_content(visualization[:content])
-          end
-        end
-
-        context 'with the code tab selected' do
+    context 'when the visualization has content' do
+      [
+        {
+          name: 'LineChart',
+          text: 'Line chart',
+          content: 'Snowplow Tracked Events Count'
+        },
+        {
+          name: 'DataTable',
+          text: 'Data table',
+          content: 'Count 335'
+        },
+        {
+          name: 'SingleStat',
+          text: 'Single statistic',
+          content: '335'
+        }
+      ].each do |visualization|
+        context "with #{visualization[:text]} visualization selected" do
           before do
-            within_testid 'visualization-previewer' do
-              click_button 'Code'
+            dropdown = find_by_testid('visualization-type-dropdown')
+            dropdown.select visualization[:text]
+          end
+
+          it "shows the #{visualization[:text]} preview with content" do
+            expect(find_by_testid('preview-visualization')).to have_content(visualization[:content])
+          end
+
+          context 'with the code tab selected' do
+            before do
+              within_testid 'visualization-previewer' do
+                click_button 'Code'
+              end
+            end
+
+            it 'shows the visualization code' do
+              yaml_snippet = "type: #{visualization[:name]}"
+              expect(find_by_testid('preview-code')).to have_content(yaml_snippet)
             end
           end
+        end
+      end
+    end
 
-          it 'shows the visualization code' do
-            yaml_snippet = "type: #{visualization[:name]}"
-            expect(find_by_testid('preview-code')).to have_content(yaml_snippet)
+    context 'when the visualization does not have content' do
+      [
+        {
+          name: 'LineChart',
+          text: 'Line chart',
+          selector: 'dashboard-visualization-line-chart'
+        },
+        {
+          name: 'ColumnChart',
+          text: 'Column chart',
+          selector: 'dashboard-visualization-column-chart'
+        }
+      ].each do |visualization|
+        context "with #{visualization[:text]} visualization selected" do
+          before do
+            dropdown = find_by_testid('visualization-type-dropdown')
+            dropdown.select visualization[:text]
+          end
+
+          it "shows the #{visualization[:text]} preview with the selector" do
+            expect(find_by_testid('preview-visualization'))
+              .to have_selector("[data-testid=\"#{visualization[:selector]}\"]")
+          end
+
+          context 'with the code tab selected' do
+            before do
+              within_testid 'visualization-previewer' do
+                click_button 'Code'
+              end
+            end
+
+            it 'shows the visualization code' do
+              yaml_snippet = "type: #{visualization[:name]}"
+              expect(find_by_testid('preview-code')).to have_content(yaml_snippet)
+            end
           end
         end
       end
@@ -102,10 +133,10 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
 
   context 'with all required access and analytics settings configured' do
     context 'when a custom dashboard project has not been configured' do
-      it 'does not render the Visualization designer button' do
+      it 'does not render the Data explorer button' do
         setup_valid_state
 
-        expect(page).not_to have_link(s_('Analytics|Visualization designer'))
+        expect(page).not_to have_link(s_('Analytics|Data explorer'))
       end
     end
 
@@ -115,7 +146,7 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
         setup_valid_state
       end
 
-      it_behaves_like 'valid visualization designer'
+      it_behaves_like 'valid data explorer'
 
       it 'renders the filtered search query builder' do
         visit_page

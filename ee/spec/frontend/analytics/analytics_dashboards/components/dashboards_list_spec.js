@@ -62,8 +62,7 @@ describe('DashboardsList', () => {
   const findPageDescription = () => wrapper.findByTestId('page-heading-description');
   const findHelpLink = () => wrapper.findByTestId('help-link');
   const findNewDashboardButton = () => wrapper.findByTestId('new-dashboard-button');
-  const findVisualizationDesignerButton = () =>
-    wrapper.findByTestId('visualization-designer-button');
+  const findDataExplorerButton = () => wrapper.findByTestId('data-explorer-button');
   const findConfigureAlert = () => wrapper.findComponent(GlAlert);
 
   const $router = {
@@ -163,10 +162,10 @@ describe('DashboardsList', () => {
       );
     });
 
-    it('does not render the visualization designer button', () => {
+    it('does not render the data explorer button', () => {
       createWrapper();
 
-      expect(findVisualizationDesignerButton().exists()).toBe(false);
+      expect(findDataExplorerButton().exists()).toBe(false);
     });
 
     it('does not render the new dashboard button', () => {
@@ -184,10 +183,10 @@ describe('DashboardsList', () => {
         expect(findNewDashboardButton().exists()).toBe(true);
       });
 
-      it('does not render the visualization designer button', () => {
+      it('does not render the data explorer button', () => {
         createWrapper();
 
-        expect(findVisualizationDesignerButton().exists()).toBe(false);
+        expect(findDataExplorerButton().exists()).toBe(false);
       });
 
       describe('when product analytics is onboarded', () => {
@@ -206,18 +205,18 @@ describe('DashboardsList', () => {
           findProductAnalyticsOnboarding().vm.$emit('complete');
         });
 
-        it('should show the visualization designer button', () => {
-          expect(findVisualizationDesignerButton().exists()).toBe(true);
+        it('should show the data explorer button', () => {
+          expect(findDataExplorerButton().exists()).toBe(true);
         });
       });
     });
   });
 
   describe('for groups', () => {
-    it('does not render the visualization designer button', () => {
+    it('does not render the data explorer button', () => {
       createWrapper({ isProject: false, isGroup: true });
 
-      expect(findVisualizationDesignerButton().exists()).toBe(false);
+      expect(findDataExplorerButton().exists()).toBe(false);
     });
 
     it('does not render the new dashboard button', () => {
@@ -262,8 +261,8 @@ describe('DashboardsList', () => {
         });
       });
 
-      it('does not render the visualization designer button', () => {
-        expect(findVisualizationDesignerButton().exists()).toBe(false);
+      it('does not render the data explorer button', () => {
+        expect(findDataExplorerButton().exists()).toBe(false);
       });
 
       it('does not render the new dashboard button', () => {

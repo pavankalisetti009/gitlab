@@ -9,7 +9,7 @@ module QA
             include ::QA::Page::Component::Dropdown
 
             view 'ee/app/assets/javascripts/analytics/analytics_dashboards/' \
-              'components/analytics_visualization_designer.vue' do
+              'components/analytics_data_explorer.vue' do
               element 'visualization-title-input'
               element 'visualization-type-dropdown'
               element 'visualization-save-btn'
