@@ -1389,11 +1389,9 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
         it 'calls ::Elastic::ProcessBookkeepingService.track! when the epic is updated' do
           expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-            expect(tracked_refs.count).to eq(2)
-            expect(tracked_refs[0].class).to eq(Epic)
-            expect(tracked_refs[0].id).to eq(epic.id)
-            expect(tracked_refs[1]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-            expect(tracked_refs[1].identifier).to eq(epic.issue_id)
+            expect(tracked_refs.count).to eq(1)
+            expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+            expect(tracked_refs[0].identifier).to eq(epic.issue_id)
           end
           epic.update!(title: 'A new title')
         end

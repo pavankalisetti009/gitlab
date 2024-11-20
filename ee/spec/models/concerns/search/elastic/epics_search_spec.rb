@@ -8,13 +8,10 @@ RSpec.describe ::Search::Elastic::EpicsSearch, :elastic, feature_category: :glob
   describe '#maintain_elasticsearch_create' do
     it 'calls track! for epic' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(2)
-        expect(tracked_refs[0].class).to eq(Epic)
-        expect(tracked_refs[0].id).to eq(epic.id)
-        expect(tracked_refs[1]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-        expect(tracked_refs[1].identifier).to eq(epic.issue_id)
+        expect(tracked_refs.count).to eq(1)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+        expect(tracked_refs[0].identifier).to eq(epic.issue_id)
       end
-
       epic.maintain_elasticsearch_create
     end
   end
@@ -22,11 +19,9 @@ RSpec.describe ::Search::Elastic::EpicsSearch, :elastic, feature_category: :glob
   describe '#maintain_elasticsearch_destory' do
     it 'calls track! for epic' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(2)
-        expect(tracked_refs[0].class).to eq(Epic)
-        expect(tracked_refs[0].id).to eq(epic.id)
-        expect(tracked_refs[1]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-        expect(tracked_refs[1].identifier).to eq(epic.issue_id)
+        expect(tracked_refs.count).to eq(1)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+        expect(tracked_refs[0].identifier).to eq(epic.issue_id)
       end
 
       epic.maintain_elasticsearch_destroy
@@ -36,11 +31,9 @@ RSpec.describe ::Search::Elastic::EpicsSearch, :elastic, feature_category: :glob
   describe '#maintain_elasticsearch_update' do
     it 'calls track! for epic' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(2)
-        expect(tracked_refs[0].class).to eq(Epic)
-        expect(tracked_refs[0].id).to eq(epic.id)
-        expect(tracked_refs[1]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-        expect(tracked_refs[1].identifier).to eq(epic.issue_id)
+        expect(tracked_refs.count).to eq(1)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+        expect(tracked_refs[0].identifier).to eq(epic.issue_id)
       end
 
       epic.maintain_elasticsearch_update
@@ -54,11 +47,9 @@ RSpec.describe ::Search::Elastic::EpicsSearch, :elastic, feature_category: :glob
 
       it 'calls track! for epic and updates the associations' do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-          expect(tracked_refs.count).to eq(2)
-          expect(tracked_refs[0].class).to eq(Epic)
-          expect(tracked_refs[0].id).to eq(epic.id)
-          expect(tracked_refs[1]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-          expect(tracked_refs[1].identifier).to eq(epic.issue_id)
+          expect(tracked_refs.count).to eq(1)
+          expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+          expect(tracked_refs[0].identifier).to eq(epic.issue_id)
         end
 
         expect(::ElasticAssociationIndexerWorker).to receive(:perform_async).with('Epic', epic.id, ['issues']).once

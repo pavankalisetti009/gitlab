@@ -33,10 +33,8 @@ module Search
       private
 
       def get_indexing_data
-        indexing_data = [self]
-        indexing_data << Search::Elastic::References::WorkItem.new(
-          issue_id, "group_#{group.root_ancestor.id}")
-        indexing_data
+        [Search::Elastic::References::WorkItem.new(
+          issue_id, "group_#{group.root_ancestor.id}")]
       end
     end
   end
