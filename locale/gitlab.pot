@@ -10413,12 +10413,6 @@ msgstr ""
 msgid "Busy"
 msgstr ""
 
-msgid "Buy Storage"
-msgstr ""
-
-msgid "Buy compute minutes"
-msgstr ""
-
 msgid "Buy more compute minutes"
 msgstr ""
 
@@ -11318,9 +11312,6 @@ msgstr ""
 msgid "Checking username availability..."
 msgstr ""
 
-msgid "Checkout"
-msgstr ""
-
 msgid "Checkout|$%{pricePerUserPerYear} per user per year"
 msgstr ""
 
@@ -11584,9 +11575,6 @@ msgid "Checkout|Your subscription will be applied to this group"
 msgstr ""
 
 msgid "Checkout|Zip code"
-msgstr ""
-
-msgid "Checkout|a storage subscription"
 msgstr ""
 
 msgid "Checkout|company or team"
