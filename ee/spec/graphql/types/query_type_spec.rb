@@ -50,7 +50,8 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :cloud_connector_status,
       :project_secrets_manager,
       :ai_feature_settings,
-      :ai_slash_commands
+      :ai_slash_commands,
+      :compliance_requirement_controls
     ]
 
     all_expected_fields = expected_foss_fields + expected_ee_fields

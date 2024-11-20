@@ -232,6 +232,11 @@ module EE
         field :ai_slash_commands, [::Types::Ai::SlashCommandType], null: true,
           resolver: ::Resolvers::Ai::SlashCommandsResolver,
           description: 'Get available Duo Chat slash commands for the current user for a specific URL'
+
+        field :compliance_requirement_controls, ::Types::ComplianceManagement::ComplianceRequirementControlType,
+          null: true,
+          fallback_value: [],
+          description: 'Get the list of all the compliance requirement controls.'
       end
 
       def vulnerability(id:)
