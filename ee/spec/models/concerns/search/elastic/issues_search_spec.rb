@@ -45,8 +45,8 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
       issue_epic_type.maintain_elasticsearch_update
     end
 
-    it 'calls track! for synced_epic' do
-      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item, work_item.synced_epic])
+    it 'calls track! for work_item' do
+      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item])
       work_item.maintain_elasticsearch_update
     end
 
@@ -220,8 +220,8 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
       issue_epic_type.maintain_elasticsearch_destroy
     end
 
-    it 'calls track! for synced_epic' do
-      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item, work_item.synced_epic])
+    it 'calls track! for work_item' do
+      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item])
       work_item.maintain_elasticsearch_destroy
     end
 
@@ -252,8 +252,8 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
       non_group_work_item.maintain_elasticsearch_create
     end
 
-    it 'calls track! for synced_epic' do
-      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item, work_item.synced_epic])
+    it 'calls track! for work_item' do
+      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item])
       work_item.maintain_elasticsearch_create
     end
 
