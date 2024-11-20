@@ -165,7 +165,7 @@ describe('RoadmapFilters', () => {
         },
         {
           type: TOKEN_TYPE_MY_REACTION,
-          value: { data: 'thumbs_up', operator: '!=' },
+          value: { data: 'thumbsup', operator: '!=' },
         },
       ];
 
@@ -246,7 +246,7 @@ describe('RoadmapFilters', () => {
             confidential: true,
             'not[authorUsername]': 'John',
             'not[labelName]': ['Feature'],
-            'not[myReactionEmoji]': 'thumbs_up',
+            'not[myReactionEmoji]': 'thumbsup',
           },
         });
 
@@ -261,7 +261,7 @@ describe('RoadmapFilters', () => {
           milestoneTitle: '4.0',
           'not[authorUsername]': 'John',
           'not[labelName]': ['Feature'],
-          'not[myReactionEmoji]': 'thumbs_up',
+          'not[myReactionEmoji]': 'thumbsup',
         };
         createComponent();
 
