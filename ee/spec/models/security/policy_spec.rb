@@ -73,6 +73,20 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         it { is_expected.to be_invalid }
       end
     end
+
+    describe 'describe' do
+      context 'when description is greater than the limit' do
+        before do
+          policy.description = 'a' * (Gitlab::Database::MAX_TEXT_SIZE_LIMIT + 1)
+        end
+
+        it { is_expected.to be_invalid }
+      end
+
+      context 'when description is less than the limit' do
+        it { is_expected.to be_valid }
+      end
+    end
   end
 
   describe '.undeleted' do
