@@ -111,7 +111,7 @@ describe('Roles app', () => {
     });
 
     it('shows expected role counts', () => {
-      expect(findRoleCounts().text()).toBe('Roles: 2 Custom 5 Default');
+      expect(findRoleCounts().text()).toBe('Roles: 2 Custom 6 Default');
     });
 
     // Remove the Minimal Access role from standardRoles with slice(), it shouldn't be shown.

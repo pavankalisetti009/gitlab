@@ -29,6 +29,16 @@ export const standardRoles = [
   },
   {
     __typename: 'StandardRole',
+    id: 'gid://gitlab/StandardRole/PLANNER',
+    accessLevel: 15,
+    name: 'Planner',
+    usersCount: 1,
+    detailsPath: 'role/PLANNER',
+    description:
+      'The Guest role is for users who need visibility into a project or group but should not have the ability to make changes, such as external stakeholders..',
+  },
+  {
+    __typename: 'StandardRole',
     id: 'gid://gitlab/StandardRole/REPORTER',
     accessLevel: 20,
     name: 'Reporter',

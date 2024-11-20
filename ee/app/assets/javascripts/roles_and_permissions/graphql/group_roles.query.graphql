@@ -4,7 +4,7 @@ query getGroupRoles($fullPath: ID!) {
   group(fullPath: $fullPath) {
     id
     # Filter out the Minimal Access role (business requirement).
-    standardRoles(accessLevel: [GUEST, REPORTER, DEVELOPER, MAINTAINER, OWNER]) {
+    standardRoles(accessLevel: [GUEST, REPORTER, PLANNER, DEVELOPER, MAINTAINER, OWNER]) {
       nodes {
         ...Role
         detailsPath
