@@ -1,7 +1,7 @@
 import { GlIcon } from '@gitlab/ui';
 import { safeDump } from 'js-yaml';
-import AnalyticsVisualizationPreview from 'ee/analytics/analytics_dashboards/components/visualization_designer/analytics_visualization_preview.vue';
-import AiCubeQueryFeedback from 'ee/analytics/analytics_dashboards/components/visualization_designer/ai_cube_query_feedback.vue';
+import AnalyticsVisualizationPreview from 'ee/analytics/analytics_dashboards/components/data_explorer/analytics_visualization_preview.vue';
+import AiCubeQueryFeedback from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_feedback.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 
 import {

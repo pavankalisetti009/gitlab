@@ -2,6 +2,7 @@
 import { GlButton, GlFormGroup, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
 import { isEqual } from 'lodash';
 
+import { getVisualizationOptions } from 'ee/analytics/analytics_dashboards/utils/data_explorer_options';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
@@ -11,7 +12,6 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
 
 import { fetchFilterOptions } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
-import { getVisualizationOptions } from 'ee/analytics/analytics_dashboards/utils/visualization_designer_options';
 import { saveProductAnalyticsVisualization } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import {
   NEW_DASHBOARD_SLUG,
@@ -25,13 +25,13 @@ import {
   DEFAULT_VISUALIZATION_QUERY_STATE,
   DEFAULT_VISUALIZATION_TITLE,
 } from '../constants';
-import VisualizationPreview from './visualization_designer/analytics_visualization_preview.vue';
-import VisualizationTypeSelector from './visualization_designer/analytics_visualization_type_selector.vue';
-import AiCubeQueryGenerator from './visualization_designer/ai_cube_query_generator.vue';
-import VisualizationFilteredSearch from './visualization_designer/filters/visualization_filtered_search.vue';
+import VisualizationPreview from './data_explorer/analytics_visualization_preview.vue';
+import VisualizationTypeSelector from './data_explorer/analytics_visualization_type_selector.vue';
+import AiCubeQueryGenerator from './data_explorer/ai_cube_query_generator.vue';
+import VisualizationFilteredSearch from './data_explorer/filters/visualization_filtered_search.vue';
 
 export default {
-  name: 'AnalyticsVisualizationDesigner',
+  name: 'AnalyticsDataExplorer',
   components: {
     AiCubeQueryGenerator,
     GlButton,
@@ -288,7 +288,7 @@ export default {
     saveError: s__('Analytics|Error while saving visualization.'),
   },
   helpPageUrl: helpPagePath('user/analytics/analytics_dashboards', {
-    anchor: 'visualization-designer',
+    anchor: 'data-explorer',
   }),
 };
 </script>
@@ -302,7 +302,7 @@ export default {
       <p data-testid="page-description" class="gl-mb-0">
         {{
           s__(
-            'Analytics|Use the visualization designer to create custom visualizations. After you save a visualization, you can add it to a dashboard.',
+            'Analytics|Use the data explorer to create custom visualizations. After you save a visualization, you can add it to a dashboard.',
           )
         }}
         <gl-sprintf :message="__('%{linkStart} Learn more%{linkEnd}.')">
@@ -395,14 +395,16 @@ export default {
         variant="confirm"
         data-testid="visualization-save-btn"
         @click="saveVisualization"
-        >{{ saveButtonText }}
+      >
+        {{ saveButtonText }}
       </gl-button>
       <gl-button
         category="secondary"
         data-testid="visualization-cancel-btn"
         @click="routeToDashboardList"
-        >{{ __('Cancel') }}</gl-button
       >
+        {{ __('Cancel') }}
+      </gl-button>
     </section>
   </div>
 </template>

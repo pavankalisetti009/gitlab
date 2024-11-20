@@ -12,7 +12,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import generateCubeQueryMutation from 'ee/analytics/analytics_dashboards/graphql/mutations/generate_cube_query.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
-import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/visualization_designer/ai_cube_query_generator.vue';
+import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_generator.vue';
 import { TEST_VISUALIZATION } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 
 Vue.use(VueApollo);
@@ -105,7 +105,7 @@ describe('AiCubeQueryGenerator', () => {
     });
   });
 
-  describe('when visualization designer has existing unsaved changes', () => {
+  describe('when data explorer has existing unsaved changes', () => {
     beforeEach(() => {
       createWrapper({ warnBeforeReplacingQuery: true });
     });

@@ -7,7 +7,7 @@ import {
   EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_HELPFUL,
   EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_UNHELPFUL,
   EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_WRONG,
-  VISUALIZATION_DESIGNER_GITLAB_DUO_CORRELATION_PROPERTY,
+  GITLAB_DUO_CORRELATION_PROPERTY,
 } from 'ee/analytics/analytics_dashboards/constants';
 import { s__ } from '~/locale';
 
@@ -38,7 +38,7 @@ export default {
   methods: {
     submitFeedback(eventLabel) {
       this.trackEvent(eventLabel, {
-        label: VISUALIZATION_DESIGNER_GITLAB_DUO_CORRELATION_PROPERTY,
+        label: GITLAB_DUO_CORRELATION_PROPERTY,
         property: this.correlationId,
       });
 

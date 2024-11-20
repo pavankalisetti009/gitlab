@@ -109,7 +109,7 @@ export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNE
   'user_feedback_gitlab_duo_query_in_visualization_designer_unhelpful';
 export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_WRONG =
   'user_feedback_gitlab_duo_query_in_visualization_designer_wrong';
-export const VISUALIZATION_DESIGNER_GITLAB_DUO_CORRELATION_PROPERTY = 'correlation_id';
+export const GITLAB_DUO_CORRELATION_PROPERTY = 'correlation_id';
 
 export const EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE = 'click_metric_in_dashboard_table';
 export const AI_IMPACT_TABLE_TRACKING_PROPERTY = 'ai_impact_table';

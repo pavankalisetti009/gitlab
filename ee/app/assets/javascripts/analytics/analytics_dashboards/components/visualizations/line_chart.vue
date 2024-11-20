@@ -40,6 +40,7 @@ export default {
     height="auto"
     responsive
     class="gl-overflow-hidden"
+    data-testid="dashboard-visualization-line-chart"
   >
     <template #tooltip-title="{ title, params }">
       {{ formatVisualizationTooltipTitle(title, params) }}</template

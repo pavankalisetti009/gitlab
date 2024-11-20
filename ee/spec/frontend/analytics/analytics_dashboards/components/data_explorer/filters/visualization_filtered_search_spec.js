@@ -3,7 +3,7 @@ import { GlFilteredSearch } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import VisualizationFilteredSearch from 'ee/analytics/analytics_dashboards/components/visualization_designer/filters/visualization_filtered_search.vue';
+import VisualizationFilteredSearch from 'ee/analytics/analytics_dashboards/components/data_explorer/filters/visualization_filtered_search.vue';
 import { mockFilterOptions } from 'ee_jest/analytics/analytics_dashboards/mock_data';
 
 describe('ProductAnalyticsVisualizationFilteredSearch', () => {

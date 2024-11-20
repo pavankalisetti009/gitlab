@@ -84,12 +84,12 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
     });
 
     it('should render the root and the static route when the user visits', async () => {
-      await router.push('/visualization-designer');
+      await router.push('/data-explorer');
 
       expect(findBreadcrumbs().props('items')).toStrictEqual([
         rootBreadcrumb,
         {
-          text: 'Visualization designer',
+          text: 'Data explorer',
           to: undefined,
         },
       ]);

@@ -1,4 +1,4 @@
-import { getVisualizationOptions } from 'ee/analytics/analytics_dashboards/utils/visualization_designer_options';
+import { getVisualizationOptions } from 'ee/analytics/analytics_dashboards/utils/data_explorer_options';
 
 describe('getVisualizationOptions', () => {
   it.each`

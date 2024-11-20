@@ -1,9 +1,9 @@
 import {
   mapQueryToTokenValues,
   mapTokenValuesToQuery,
-} from 'ee/analytics/analytics_dashboards/utils/visualization_designer_mappers';
+} from 'ee/analytics/analytics_dashboards/utils/data_explorer_mappers';
 
-describe('visualization_designer_mappers', () => {
+describe('data_explorer_mappers', () => {
   describe('mapQueryToTokenValues', () => {
     it('returns an empty array when no query is provided', () => {
       expect(mapQueryToTokenValues({})).toEqual([]);

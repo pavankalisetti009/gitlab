@@ -13,9 +13,9 @@ import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import { saveProductAnalyticsVisualization } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { fetchFilterOptions } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
 
-import AnalyticsVisualizationDesigner from 'ee/analytics/analytics_dashboards/components/analytics_visualization_designer.vue';
-import VisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/visualization_designer/analytics_visualization_type_selector.vue';
-import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/visualization_designer/ai_cube_query_generator.vue';
+import AnalyticsDataExplorer from 'ee/analytics/analytics_dashboards/components/analytics_data_explorer.vue';
+import VisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/data_explorer/analytics_visualization_type_selector.vue';
+import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_generator.vue';
 import {
   EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER,
   EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION,
@@ -43,7 +43,7 @@ jest.mock('ee/analytics/analytics_dashboards/data_sources/cube_analytics');
 const showToast = jest.fn();
 const routerPush = jest.fn();
 
-describe('AnalyticsVisualizationDesigner', () => {
+describe('AnalyticsDataExplorer', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   let trackingSpy;
@@ -52,6 +52,7 @@ describe('AnalyticsVisualizationDesigner', () => {
   const findTitleInput = () => wrapper.findByTestId('visualization-title-input');
   const findFilteredSearch = () => wrapper.findByTestId('visualization-filtered-search');
   const findSaveButton = () => wrapper.findByTestId('visualization-save-btn');
+  const findCancelButton = () => wrapper.findByTestId('visualization-cancel-btn');
   const findTypeSelector = () => wrapper.findComponent(VisualizationTypeSelector);
   const findPageTitle = () => wrapper.findByTestId('page-title');
   const findPageDescription = () => wrapper.findByTestId('page-description');
@@ -112,7 +113,7 @@ describe('AnalyticsVisualizationDesigner', () => {
       await mockFetchFilterOptions(() => mockFilterOptions);
     }
 
-    wrapper = shallowMountExtended(AnalyticsVisualizationDesigner, {
+    wrapper = shallowMountExtended(AnalyticsDataExplorer, {
       stubs: {
         RouterView: true,
         GlSprintf,
@@ -144,13 +145,13 @@ describe('AnalyticsVisualizationDesigner', () => {
 
     it('renders the page description with a link to user documentation', () => {
       expect(findPageDescription().text()).toContain(
-        'Use the visualization designer to create custom visualizations. After you save a visualization, you can add it to a dashboard.',
+        'Use the data explorer to create custom visualizations. After you save a visualization, you can add it to a dashboard.',
       );
 
       expect(findPageDescriptionLink().text()).toBe('Learn more');
       expect(findPageDescriptionLink().attributes('href')).toBe(
         helpPagePath('user/analytics/analytics_dashboards', {
-          anchor: 'visualization-designer',
+          anchor: 'data-explorer',
         }),
       );
     });
@@ -164,8 +165,9 @@ describe('AnalyticsVisualizationDesigner', () => {
     });
 
     it('render a cancel button that routes to the dashboard listing page', async () => {
-      const button = wrapper.findByTestId('visualization-cancel-btn');
-
+      const button = findCancelButton();
+      expect(button.exists()).toBe(true);
+      expect(button.text()).toBe('Cancel');
       expect(button.attributes('category')).toBe('secondary');
 
       await button.vm.$emit('click');

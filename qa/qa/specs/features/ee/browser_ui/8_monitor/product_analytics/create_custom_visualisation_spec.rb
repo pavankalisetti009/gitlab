@@ -39,7 +39,7 @@ module QA
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform do |analytics_dashboards|
           analytics_dashboards.wait_for_dashboards_list
-          analytics_dashboards.click_visualization_designer_button
+          analytics_dashboards.click_data_explorer_button
         end
 
         EE::Page::Project::Analyze::VisualizationSetup.perform do |visualization|

@@ -8,7 +8,7 @@ import {
   mapQueryToTokenValues,
   mapTimeDimensionQueryToValue,
   mapTokenValuesToQuery,
-} from '../../../utils/visualization_designer_mappers';
+} from '../../../utils/data_explorer_mappers';
 import { getDimensionsForSchema, getMetricSchema, getTimeDimensionForSchema } from '../../../utils';
 import {
   DEFAULT_VISUALIZATION_QUERY_STATE,

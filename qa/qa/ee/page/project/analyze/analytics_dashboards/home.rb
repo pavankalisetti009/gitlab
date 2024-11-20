@@ -16,7 +16,7 @@ module QA
               view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/dashboards_list.vue' do
                 element 'configure-dashboard-container'
                 element 'new-dashboard-button'
-                element 'visualization-designer-button'
+                element 'data-explorer-button'
               end
 
               def wait_for_dashboards_list
@@ -41,8 +41,8 @@ module QA
                 end
               end
 
-              def click_visualization_designer_button
-                click_element('visualization-designer-button')
+              def click_data_explorer_button
+                click_element('data-explorer-button')
               end
 
               def click_new_dashboard_button

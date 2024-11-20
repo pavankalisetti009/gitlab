@@ -6,7 +6,7 @@ import ProductAnalyticsOnboardingView from 'ee/product_analytics/onboarding/onbo
 import ProductAnalyticsOnboardingSetup from 'ee/product_analytics/onboarding/onboarding_setup.vue';
 import DashboardsList from './components/dashboards_list.vue';
 import AnalyticsDashboard from './components/analytics_dashboard.vue';
-import AnalyticsVisualizationDesigner from './components/analytics_visualization_designer.vue';
+import AnalyticsDataExplorer from './components/analytics_data_explorer.vue';
 
 Vue.use(VueRouter);
 
@@ -25,11 +25,11 @@ export default (base, breadcrumbState, permissions = {}) => {
         },
       },
       {
-        name: 'visualization-designer',
-        path: '/visualization-designer',
-        component: AnalyticsVisualizationDesigner,
+        name: 'data-explorer',
+        path: '/data-explorer',
+        component: AnalyticsDataExplorer,
         meta: {
-          getName: () => s__('Analytics|Visualization designer'),
+          getName: () => s__('Analytics|Data explorer'),
         },
       },
       ...(permissions.canConfigureProjectSettings
