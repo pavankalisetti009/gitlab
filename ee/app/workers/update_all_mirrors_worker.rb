@@ -128,22 +128,12 @@ class UpdateAllMirrorsWorker # rubocop:disable Scalability/IdempotentWorker
     ::Gitlab::ExclusiveLease.cancel(LEASE_KEY, uuid)
   end
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def pull_mirrors_batch(freeze_at:, batch_size:, offset_at: nil)
-    relation = Project
-      .non_archived
-      .without_deleted
-      .mirrors_to_sync(freeze_at)
-      .reorder('import_state.next_execution_timestamp')
-      .limit(batch_size)
+    Project
+      .mirrors_to_sync(freeze_at, limit: batch_size, offset_at: offset_at)
       .with_route
       .with_namespace # Used by `project.mirror?`
-
-    relation = relation.where('import_state.next_execution_timestamp > ?', offset_at) if offset_at
-
-    relation
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   def schedule_projects_in_batch(projects)
     return if projects.empty?
