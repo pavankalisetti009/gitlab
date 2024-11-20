@@ -188,8 +188,10 @@ module QA
       def expect_epic_to_have_updated_dates(epic, new_milestone_start_date, new_milestone_due_date)
         if epic.instance_of?(QA::EE::Resource::WorkItemEpic)
           aggregate_failures do
-            expect(epic.start_date).to eq(new_milestone_start_date)
-            expect(epic.due_date).to eq(new_milestone_due_date)
+            expect { epic.reload!.start_date }
+              .to eventually_eq(new_milestone_start_date).within(wait_args)
+            expect { epic.reload!.due_date }
+              .to eventually_eq(new_milestone_due_date).within(wait_args)
           end
         else # legacy epics
           # reload! and eventually are used to wait for the epic dates to update since a sidekiq job needs to run
