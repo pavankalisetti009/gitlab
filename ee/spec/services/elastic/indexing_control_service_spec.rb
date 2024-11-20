@@ -14,6 +14,16 @@ RSpec.describe Elastic::IndexingControlService, :clean_gitlab_redis_shared_state
     end
   end
 
+  let(:worker_class_without_indexing_control) do
+    Class.new do
+      def self.name
+        'DummyIndexingWorker'
+      end
+
+      include ApplicationWorker
+    end
+  end
+
   let(:worker_context) do
     { 'correlation_id' => 'context_correlation_id',
       'meta.project' => 'gitlab-org/gitlab' }
@@ -32,8 +42,8 @@ RSpec.describe Elastic::IndexingControlService, :clean_gitlab_redis_shared_state
   end
 
   describe '.initialize' do
-    it 'raises an exception when passed wrong worker' do
-      expect { described_class.new(Class.new) }.to raise_error(ArgumentError)
+    it 'does not raise an exception when passed wrong worker' do
+      expect { described_class.new(worker_class_without_indexing_control) }.not_to raise_error
     end
   end
 
