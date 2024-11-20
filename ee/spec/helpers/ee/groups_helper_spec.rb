@@ -504,19 +504,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
 
     context 'when duo pro bulk assignment is available' do
-      before do
-        allow(helper).to receive(:duo_pro_bulk_user_assignment_available?).and_return(true)
-      end
-
       it { is_expected.to eql(data.merge(duo_pro_bulk_user_assignment_available: 'true')) }
-    end
-
-    context 'when duo pro bulk assignment is not available' do
-      before do
-        allow(helper).to receive(:duo_pro_bulk_user_assignment_available?).and_return(false)
-      end
-
-      it { is_expected.to eql(data.merge(duo_pro_bulk_user_assignment_available: 'false')) }
     end
   end
 

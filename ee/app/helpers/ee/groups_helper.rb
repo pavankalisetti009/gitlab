@@ -118,7 +118,7 @@ module EE
         full_path: group.full_path,
         group_id: group.id,
         add_duo_pro_href: duo_pro_url(group),
-        duo_pro_bulk_user_assignment_available: duo_pro_bulk_user_assignment_available?(group).to_s,
+        duo_pro_bulk_user_assignment_available: 'true',
         hand_raise_lead: code_suggestions_usage_app_hand_raise_lead_data,
         is_free_namespace: group.has_free_or_no_subscription?.to_s,
         buy_subscription_path: group_billings_path(group)

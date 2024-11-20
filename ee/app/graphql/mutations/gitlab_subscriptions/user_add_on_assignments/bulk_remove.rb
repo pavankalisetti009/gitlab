@@ -55,7 +55,7 @@ module Mutations
             raise Gitlab::Graphql::Errors::ArgumentError, MAX_USER_UNASSIGNMENT_ERROR
           end
 
-          raise_resource_not_available_error! unless feature_enabled? && add_on_purchase&.active? && user_ids.any?
+          raise_resource_not_available_error! unless add_on_purchase&.active? && user_ids.any?
 
           super
         end
@@ -63,10 +63,6 @@ module Mutations
         private
 
         attr_reader :add_on_purchase
-
-        def feature_enabled?
-          duo_pro_bulk_user_assignment_available?(add_on_purchase&.namespace)
-        end
       end
     end
   end
