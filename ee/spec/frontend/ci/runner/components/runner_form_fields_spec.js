@@ -1,4 +1,4 @@
-import { nextTick } from 'vue';
+import waitForPromises from 'helpers/wait_for_promises';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RunnerFormFields from '~/ci/runner/components/runner_form_fields.vue';
 
@@ -24,12 +24,12 @@ describe('RunnerFormFields', () => {
 
   it('updates runner maintenance note', async () => {
     createComponent({ value: {} });
-    await nextTick();
+    await waitForPromises();
 
     expect(wrapper.emitted('input')).toBe(undefined);
 
     findTextarea('maintenance-note').setValue(mockMaintenanceNote);
-    await nextTick();
+    await waitForPromises();
 
     expect(wrapper.emitted('input')[0][0]).toEqual({
       maintenanceNote: mockMaintenanceNote,
