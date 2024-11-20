@@ -11,7 +11,7 @@ module QA
       let(:milestone_due_date) { (Date.today + 120).iso8601 }
       let(:fixed_start_date) { Date.today.iso8601 }
       let(:fixed_due_date) { (Date.today + 90).iso8601 }
-      let(:api_client) { Runtime::API::Client.new(:gitlab) }
+      let(:api_client) { Runtime::UserStore.test_user.api_client }
       let(:group) { create(:group, path: "epic-milestone-group-#{SecureRandom.hex(8)}") }
       let(:project) { create(:project, name: "epic-milestone-project-#{SecureRandom.hex(8)}", group: group) }
       let(:wait_args) { { max_duration: 10, sleep_interval: 1 } }
