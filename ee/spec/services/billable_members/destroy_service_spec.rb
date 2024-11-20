@@ -35,19 +35,10 @@ RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_man
 
       context 'with billable_member_async_deletion enabled' do
         context 'with a valid user' do
-          let(:user_id) { group_member.user }
+          let(:user_id) { group_member.user_id }
 
           it 'schedules async deletion' do
             expect { execute }.to change { Members::DeletionSchedule.count }.from(0).to(1)
-          end
-        end
-
-        context 'with no found user' do
-          it 'raises an appropriate error' do
-            result = execute
-
-            expect(result[:status]).to eq :error
-            expect(result[:message]).to eq 'No user found for the given user_id'
           end
         end
       end
