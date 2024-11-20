@@ -29842,7 +29842,7 @@ msgstr ""
 msgid "InviteMembersModal|%{linkStart}Read more%{linkEnd} about access expiration"
 msgstr ""
 
-msgid "InviteMembersModal|%{linkStart}Read more%{linkEnd} about role permissions"
+msgid "InviteMembersModal|%{linkStart}Read more%{linkEnd} about role permissions. You can change this later."
 msgstr ""
 
 msgid "InviteMembersModal|Access expiration date (optional)"
@@ -29911,7 +29911,7 @@ msgstr ""
 msgid "InviteMembersModal|Select a role"
 msgstr ""
 
-msgid "InviteMembersModal|Select members or type email addresses"
+msgid "InviteMembersModal|Select from existing GitLab usernames or enter email addresses"
 msgstr ""
 
 msgid "InviteMembersModal|Show less"
