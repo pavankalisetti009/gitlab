@@ -19,7 +19,7 @@ let wrapper;
 let subscriptionHandlerMock;
 let mutationHandlerMock;
 
-function createComponent() {
+function createComponent(summarizeReviewLoading = true) {
   const apolloProvider = createMockApollo([
     [aiResponseSubscription, subscriptionHandlerMock],
     [summarizeReviewMutation, mutationHandlerMock],
@@ -28,6 +28,7 @@ function createComponent() {
   wrapper = mountExtended(SummarizeMyReview, {
     propsData: {
       id: 1,
+      summarizeReviewLoading,
     },
     apolloProvider,
   });
@@ -47,7 +48,7 @@ const subscriptionResponsePartial = {
 
 const findButton = () => wrapper.findByTestId('mutation-trigger');
 
-describe('Generate test file drawer component', () => {
+describe('Summarize review', () => {
   beforeEach(() => {
     window.gon.current_user_id = 1;
     uuidv4.mockImplementation(() => 'uuid');
@@ -71,12 +72,13 @@ describe('Generate test file drawer component', () => {
   });
 
   it('calls mutation button is clicked', async () => {
-    createComponent();
+    createComponent(false);
 
     findButton().trigger('click');
 
     await nextTick();
 
+    expect(wrapper.emitted('loading')).toEqual([[true]]);
     expect(mutationHandlerMock).toHaveBeenCalledWith({
       resourceId: 'gid://gitlab/MergeRequest/1',
       clientSubscriptionId: 'uuid',
@@ -91,7 +93,8 @@ describe('Generate test file drawer component', () => {
     await nextTick();
     await waitForPromises();
 
-    expect(wrapper.emitted()).toEqual({ input: [['This is a summary']] });
+    expect(wrapper.emitted('loading')).toEqual([[false]]);
+    expect(wrapper.emitted('input')).toEqual([['This is a summary']]);
   });
 
   it('calls createAlert when subscription returns an error', async () => {
@@ -118,5 +121,6 @@ describe('Generate test file drawer component', () => {
       htmlResponse: true,
     });
     expect(createAlert).toHaveBeenCalledWith({ message: 'Error' });
+    expect(wrapper.emitted('loading')).toEqual([[false]]);
   });
 });

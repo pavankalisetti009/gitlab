@@ -3402,6 +3402,9 @@ msgstr ""
 msgid "Add suggestion to batch"
 msgstr ""
 
+msgid "Add summary"
+msgstr ""
+
 msgid "Add tag"
 msgstr ""
 
@@ -24266,6 +24269,9 @@ msgid "Generated files are collapsed by default. To change this behavior, edit t
 msgstr ""
 
 msgid "Generated with JSON data"
+msgstr ""
+
+msgid "Generating review summary"
 msgstr ""
 
 msgid "Generic"
@@ -54275,9 +54281,6 @@ msgid "Summarize code changes"
 msgstr ""
 
 msgid "Summarize comments"
-msgstr ""
-
-msgid "Summarize my pending comments"
 msgstr ""
 
 msgid "Summarize the comments in the current issue."
