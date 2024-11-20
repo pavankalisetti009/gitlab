@@ -57,7 +57,7 @@ RSpec.shared_examples 'anthropic client' do
       access_token: api_key)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
       .and_return(available_service_data)
-    allow(user).to receive(:allowed_to_use?).with(service_name).and_yield(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
 
     stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/complete")
       .with(

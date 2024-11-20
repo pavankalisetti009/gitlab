@@ -39,9 +39,10 @@ RSpec.describe 'Querying user code suggestions access',
 
       service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData', name: :code_suggestions,
         free_access?: false)
+      purchases = class_double(GitlabSubscriptions::AddOnPurchase)
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?)
-        .and_return(user_has_add_on_purchases)
+      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user).and_return(purchases)
+      allow(purchases).to receive_messages(any?: user_has_add_on_purchases, uniq_namespace_ids: [])
     end
 
     context 'when user has access to code suggestions' do
