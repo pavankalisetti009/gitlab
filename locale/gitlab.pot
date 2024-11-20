@@ -20457,6 +20457,9 @@ msgstr ""
 msgid "DuoChat|project"
 msgstr ""
 
+msgid "DuoCodeReview|:wave: There's nothing for me to review."
+msgstr ""
+
 msgid "DuoCodeReview|Hey :wave: I'm starting to review your merge request and I will let you know when I'm finished."
 msgstr ""
 
@@ -24936,9 +24939,6 @@ msgid "GitLab Duo"
 msgstr ""
 
 msgid "GitLab Duo Pro seats"
-msgstr ""
-
-msgid "GitLab Duo didn't find any reviewable files. Code Review request skipped."
 msgstr ""
 
 msgid "GitLab Duo experiment and beta features"

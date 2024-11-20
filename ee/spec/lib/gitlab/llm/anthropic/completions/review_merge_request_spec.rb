@@ -117,6 +117,29 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       end
     end
 
+    context 'when merge request has no reviewable files' do
+      let(:no_reviewable_files_note) do
+        s_("DuoCodeReview|:wave: There's nothing for me to review.")
+      end
+
+      before do
+        allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
+      end
+
+      it 'creates explanation note' do
+        expect(Notes::CreateService).to receive(:new).with(
+          merge_request.project,
+          duo_code_review_bot,
+          noteable: merge_request,
+          note: no_reviewable_files_note
+        ).and_call_original
+
+        completion.execute
+
+        expect(merge_request.notes.non_diff_notes.last.note).to eq no_reviewable_files_note
+      end
+    end
+
     context 'when the chat client returns a successful response' do
       let(:first_review_response) { { content: [{ text: first_review_answer }] } }
       let(:first_review_answer) do
@@ -533,6 +556,18 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             ignore_whitespace_change: false
           })
         end
+      end
+
+      it 'calls UpdateReviewerStateService with review states' do
+        expect_next_instance_of(
+          MergeRequests::UpdateReviewerStateService,
+          project: project, current_user: ::Users::Internal.duo_code_review_bot
+        ) do |service|
+          expect(service).to receive(:execute).with(merge_request, 'review_started')
+          expect(service).to receive(:execute).with(merge_request, 'reviewed')
+        end
+
+        completion.execute
       end
     end
 

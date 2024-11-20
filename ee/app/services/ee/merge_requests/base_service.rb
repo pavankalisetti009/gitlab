@@ -15,6 +15,7 @@ module EE
         new_reviewers = merge_request.reviewers - old_reviewers
         capture_suggested_reviewers_accepted(merge_request)
         set_requested_changes(merge_request, new_reviewers) if new_reviewers.any?
+        request_duo_code_review(merge_request) if new_reviewers.any?(&:duo_code_review_bot?)
       end
 
       override :execute_external_hooks
@@ -54,6 +55,13 @@ module EE
 
         merge_request.merge_request_reviewers_with(requested_changes_users.select(:user_id))
           .update_all(state: :requested_changes)
+      end
+
+      override :request_duo_code_review
+      def request_duo_code_review(merge_request)
+        return unless merge_request.ai_review_merge_request_allowed?(current_user)
+
+        ::Llm::ReviewMergeRequestService.new(current_user, merge_request).execute
       end
 
       def reset_approvals?(merge_request, _newrev)

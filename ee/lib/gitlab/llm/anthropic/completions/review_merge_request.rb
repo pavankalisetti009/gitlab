@@ -5,30 +5,40 @@ module Gitlab
     module Anthropic
       module Completions
         class ReviewMergeRequest < Gitlab::Llm::Completions::Base
+          include Gitlab::Utils::StrongMemoize
+
           DRAFT_NOTES_COUNT_LIMIT = 50
           OUTPUT_TOKEN_LIMIT = 8000
           PRIORITY_THRESHOLD = 3
 
           def execute
-            create_progress_note
+            update_review_state('review_started')
 
-            # Initialize ivar that will be populated as AI review diff hunks
-            @draft_notes_by_priority = []
-            mr_diff_refs = merge_request.diff_refs
+            if merge_request.ai_reviewable_diff_files.blank?
+              create_no_reviewable_files_note
+            else
+              create_progress_note
 
-            merge_request.ai_reviewable_diff_files.each do |diff_file|
-              # NOTE: perhaps we should fall back to hunk when diff_file is too large?
-              # I'm just ignoring this for now
-              review_prompt = generate_review_prompt(diff_file, {})
+              # Initialize ivar that will be populated as AI review diff hunks
+              @draft_notes_by_priority = []
+              mr_diff_refs = merge_request.diff_refs
 
-              next unless review_prompt.present?
+              merge_request.ai_reviewable_diff_files.each do |diff_file|
+                # NOTE: perhaps we should fall back to hunk when diff_file is too large?
+                # I'm just ignoring this for now
+                review_prompt = generate_review_prompt(diff_file, {})
 
-              response = review_response_for(review_prompt)
+                next unless review_prompt.present?
 
-              build_draft_notes(response, diff_file, mr_diff_refs)
+                response = review_response_for(review_prompt)
+
+                build_draft_notes(response, diff_file, mr_diff_refs)
+              end
+
+              publish_draft_notes
             end
 
-            publish_draft_notes
+            update_review_state('reviewed')
           end
 
           private
@@ -151,6 +161,15 @@ module Gitlab
               .any? { |pos| pos.to_h >= position }
           end
 
+          def create_no_reviewable_files_note
+            @progress_note = Notes::CreateService.new(
+              merge_request.project,
+              review_bot,
+              noteable: merge_request,
+              note: s_("DuoCodeReview|:wave: There's nothing for me to review.")
+            ).execute
+          end
+
           def create_progress_note
             @progress_note = Notes::CreateService.new(
               merge_request.project,
@@ -219,6 +238,16 @@ module Gitlab
               ).execute(executing_user: user)
 
             update_progress_note_with_review_summary(draft_notes)
+          end
+
+          def update_review_state_service
+            ::MergeRequests::UpdateReviewerStateService
+              .new(project: merge_request.project, current_user: review_bot)
+          end
+          strong_memoize_attr :update_review_state_service
+
+          def update_review_state(state)
+            update_review_state_service.execute(merge_request, state)
           end
         end
       end

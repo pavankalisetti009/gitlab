@@ -775,6 +775,10 @@ module EE
         feature_available?(:github_integration)
     end
 
+    def ai_review_merge_request_allowed?(user)
+      ::Projects::AiFeatures.new(self).review_merge_request_allowed?(user)
+    end
+
     override :add_import_job
     def add_import_job
       # custom_project_template job is a special case that doesn't use `#add_import_job`

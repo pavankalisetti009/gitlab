@@ -575,13 +575,7 @@ module EE
     end
 
     def ai_review_merge_request_allowed?(user)
-      ::Feature.enabled?(:ai_review_merge_request, user) &&
-        project.licensed_feature_available?(:ai_review_mr) &&
-        ::Gitlab::Llm::FeatureAuthorizer.new(
-          container: project,
-          feature_name: :review_merge_request
-        ).allowed? &&
-        Ability.allowed?(user, :create_note, self)
+      project.ai_review_merge_request_allowed?(user) && Ability.allowed?(user, :create_note, self)
     end
 
     def ai_reviewable_diff_files

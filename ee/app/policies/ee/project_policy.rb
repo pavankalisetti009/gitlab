@@ -676,6 +676,10 @@ module EE
         ::Gitlab::Auth::GroupSaml::SsoEnforcer.access_restricted?(user: @user, resource: subject)
       end
 
+      condition(:duo_code_review_bot) do
+        @user.duo_code_review_bot?
+      end
+
       # NOTE: This condition does not use :subject scope because it needs to be evaluated for each request,
       # as the request IP can change
       condition(:ip_enforcement_prevents_access) do
@@ -1041,6 +1045,7 @@ module EE
     def lookup_access_level!
       return ::Gitlab::Access::NO_ACCESS if needs_new_sso_session?
       return ::Gitlab::Access::REPORTER if security_bot?
+      return ::Gitlab::Access::DEVELOPER if duo_code_review_bot?
 
       super
     end

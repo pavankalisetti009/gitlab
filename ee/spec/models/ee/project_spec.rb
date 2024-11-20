@@ -4972,4 +4972,19 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '#ai_review_merge_request_allowed?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:current_user) { create(:user) }
+
+    subject(:ai_review_merge_request_allowed?) { project.ai_review_merge_request_allowed?(current_user) }
+
+    it 'calls ::Projects::AiFeatures.review_merge_request_allowed?' do
+      expect_next_instance_of(::Projects::AiFeatures, project) do |ai_features|
+        expect(ai_features).to receive(:review_merge_request_allowed?).with(current_user)
+      end
+
+      ai_review_merge_request_allowed?
+    end
+  end
 end
