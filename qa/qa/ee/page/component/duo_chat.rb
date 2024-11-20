@@ -45,6 +45,10 @@ module QA
             find_element('chat-history').text
           end
 
+          def duo_chat_open?
+            has_element?('chat-prompt-input') && has_element?('chat-component')
+          end
+
           def wait_for_response
             Support::Waiter.wait_until { find_all('.duo-chat-message').present? }
           end
