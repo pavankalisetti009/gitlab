@@ -18,7 +18,7 @@ module Gitlab
         attr_accessor :iterations
 
         MAX_ITERATIONS = 10
-        MAX_RETRY_STEP_FORWARD = 1
+        MAX_RETRY_STEP_FORWARD = 2
 
         # @param [String] user_input - a question from a user
         # @param [Array<Tool>] tools - an array of Tools defined in the tools module.
