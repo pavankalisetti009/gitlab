@@ -9,8 +9,6 @@ module Elastic
     PROJECT_CONTEXT_KEY = "#{Gitlab::ApplicationContext::LOG_KEY}.project"
 
     def initialize(klass)
-      raise ArgumentError, "passed class must extend Elastic::IndexingControl" unless klass.include?(Elastic::IndexingControl)
-
       @klass = klass
       @queue_name = klass.name.underscore
       @redis_set_key = "elastic:paused_jobs:zset:#{queue_name}"
