@@ -55250,6 +55250,9 @@ msgstr ""
 msgid "The URLs for connecting to Elasticsearch. For clustering, add the URLs separated by commas."
 msgstr ""
 
+msgid "The Unify Circuit webhook (for example, `https://circuit.com/rest/v2/webhooks/incoming/...`)."
+msgstr ""
+
 msgid "The XML file must be less than %{max_size} MB."
 msgstr ""
 
