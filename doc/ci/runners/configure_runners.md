@@ -664,7 +664,7 @@ The path syntax is the same as [`git submodule`](https://git-scm.com/docs/git-su
 
   ```yaml
   variables:
-     GIT_SUBMODULE_PATHS: :(exclude)submoduleA :(exclude)submoduleB
+     GIT_SUBMODULE_PATHS: ":(exclude)submoduleA :(exclude)submoduleB"
   ```
 
 WARNING:
