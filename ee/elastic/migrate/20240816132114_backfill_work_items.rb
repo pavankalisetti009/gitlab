@@ -25,3 +25,5 @@ class BackfillWorkItems < Elastic::Migration
     :namespace
   end
 end
+
+BackfillWorkItems.prepend ::Elastic::MigrationObsolete
