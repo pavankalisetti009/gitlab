@@ -5,10 +5,15 @@ query doraMetricsByProjectQuery(
   $startDate: Date!
   $endDate: Date!
   $interval: DoraMetricBucketingInterval!
+  $after: String
 ) {
   group(fullPath: $fullPath) {
     id
-    projects {
+    projects(after: $after) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
       nodes {
         id
         name

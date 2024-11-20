@@ -1,5 +1,5 @@
 import doraMetricsByProject from 'ee/analytics/analytics_dashboards/data_sources/dora_metrics_by_project';
-import { mockDataSourceResponse } from 'ee_jest/analytics/dashboards/dora_projects_comparison/mock_data';
+import { mockDataSourceResponses } from 'ee_jest/analytics/dashboards/dora_projects_comparison/mock_data';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 
 describe('Dora Metrics by project Data Source', () => {
@@ -18,8 +18,31 @@ describe('Dora Metrics by project Data Source', () => {
 
   describe('for group', () => {
     beforeEach(() => {
-      jest.spyOn(defaultClient, 'query').mockResolvedValueOnce(mockDataSourceResponse);
+      jest
+        .spyOn(defaultClient, 'query')
+        .mockResolvedValueOnce(mockDataSourceResponses[0])
+        .mockResolvedValueOnce(mockDataSourceResponses[1]);
       return fetch();
+    });
+
+    it('requests data until pagination completes', () => {
+      const variables = {
+        startDate: '2020-05-01',
+        endDate: '2020-06-30',
+        fullPath: 'cool namespace',
+        interval: 'MONTHLY',
+      };
+
+      expect(defaultClient.query).toHaveBeenCalledTimes(2);
+      expect(defaultClient.query).toHaveBeenCalledWith(expect.objectContaining({ variables }));
+      expect(defaultClient.query).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variables: {
+            ...variables,
+            after: 'page1',
+          },
+        }),
+      );
     });
 
     it('formats the DORA metrics for the list of projects', () => {

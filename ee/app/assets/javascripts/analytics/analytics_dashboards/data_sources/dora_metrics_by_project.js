@@ -23,24 +23,37 @@ const calculateTrends = (previous, current) =>
     {},
   );
 
-const fetchDoraMetricsQuery = async ({ namespace, startDate, endDate }) => {
+const fetchAllProjects = async (params) => {
   const {
     data: {
       group: {
-        projects: { nodes },
+        projects: {
+          nodes,
+          pageInfo: { endCursor, hasNextPage },
+        },
       },
     },
   } = await defaultClient.query({
     query: DoraMetricsByProjectQuery,
     variables: {
-      fullPath: namespace,
+      ...params,
       interval: BUCKETING_INTERVAL_MONTHLY,
-      startDate,
-      endDate,
     },
   });
 
-  const projects = nodes.map(
+  if (hasNextPage) {
+    const nextNodes = await fetchAllProjects({
+      ...params,
+      after: endCursor,
+    });
+    return [...nodes, ...nextNodes];
+  }
+
+  return nodes;
+};
+
+const formatData = (nodes) => ({
+  projects: nodes.map(
     ({
       id,
       name,
@@ -57,10 +70,8 @@ const fetchDoraMetricsQuery = async ({ namespace, startDate, endDate }) => {
       trends: calculateTrends(pastMetrics, currentMetrics),
       ...currentMetrics,
     }),
-  );
-
-  return { projects };
-};
+  ),
+});
 
 export default async function fetch({ namespace, isProject, setAlerts }) {
   if (isProject) {
@@ -77,9 +88,11 @@ export default async function fetch({ namespace, isProject, setAlerts }) {
   const endDate = nDaysBefore(thisMonth, 1);
   const startDate = nMonthsBefore(thisMonth, 2);
 
-  return fetchDoraMetricsQuery({
+  const projects = await fetchAllProjects({
     startDate: toISODateFormat(startDate),
     endDate: toISODateFormat(endDate),
-    namespace,
+    fullPath: namespace,
   });
+
+  return formatData(projects);
 }
