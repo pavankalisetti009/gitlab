@@ -69,18 +69,8 @@ export const resolvers = {
       ],
     }),
   },
-  ComplianceFramework: {
-    mockRequirements: () => {
-      return {
-        __typename: 'LocalRequirements',
-        nodes: [
-          {
-            __typename: 'ComplianceRequirement',
-            id: 'gid://gitlab/Requirement/1',
-            name: 'SOC2',
-            description: 'Controls for SOC2',
-            requirementType: 'internal',
-            controlExpression: `{
+  ComplianceRequirement: {
+    controlExpression: () => `{
               "operator": "AND",
               "conditions": [
                 {
@@ -97,33 +87,5 @@ export const resolvers = {
                 }
               ]
             }`,
-          },
-          {
-            __typename: 'ComplianceRequirement',
-            id: 'gid://gitlab/Requirement/2',
-            name: 'GitLab',
-            description: 'Controls used by GitLab',
-            requirementType: 'internal',
-            controlExpression: `{
-              "operator": "AND",
-              "conditions": [
-                {
-                  "id": "minimum_approvals_required_2",
-                  "field": "minimum_approvals_required",
-                  "operator": "=",
-                  "value": "2"
-                },
-                {
-                  "id": "minimum_approvals_required_3",
-                  "field": "minimum_approvals_required",
-                  "operator": "=",
-                  "value": "3"
-                }
-              ]
-            }`,
-          },
-        ],
-      };
-    },
   },
 };

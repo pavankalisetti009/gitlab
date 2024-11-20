@@ -278,6 +278,9 @@ export const createFramework = ({
   default: isDefault,
   description: `This is a framework ${id}`,
   color: `#3cb37${id}`,
+  complianceRequirements: {
+    nodes: [],
+  },
   projects: {
     nodes: Array(projects)
       .fill(null)

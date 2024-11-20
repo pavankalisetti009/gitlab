@@ -4,6 +4,7 @@ mutation createComplianceRequirement($input: CreateComplianceRequirementInput!) 
       id
       name
       description
+      controlExpression @client
     }
     errors
   }

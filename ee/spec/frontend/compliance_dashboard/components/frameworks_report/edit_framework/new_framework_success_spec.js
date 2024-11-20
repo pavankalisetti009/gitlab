@@ -1,7 +1,7 @@
 import { GlPopover, GlButton, GlCard, GlSprintf, GlLink, GlBadge } from '@gitlab/ui';
 import NewFrameworkSuccess from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/new_framework_success.vue';
 import {
-  ROUTE_STANDARDS_ADHERENCE,
+  ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   FEEDBACK_ISSUE_URL,
 } from 'ee/compliance_dashboard/constants';
@@ -58,7 +58,7 @@ describe('NewFrameworkSuccess', () => {
 
     it('navigates to compliance center when CTA is clicked', () => {
       findCta().vm.$emit('click');
-      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_STANDARDS_ADHERENCE });
+      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_FRAMEWORKS });
     });
   });
 
