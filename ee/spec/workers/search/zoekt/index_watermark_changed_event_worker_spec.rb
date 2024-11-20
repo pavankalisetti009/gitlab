@@ -6,19 +6,9 @@ RSpec.describe Search::Zoekt::IndexWatermarkChangedEventWorker, :zoekt_settings_
   let(:event) { Search::Zoekt::IndexWatermarkChangedEvent.new(data: data) }
 
   let_it_be(:watermark_level) { 'low_watermark_exceeded' }
-  let_it_be(:idx) { create(:zoekt_index, reserved_storage_bytes: max_storage_bytes) }
-  let_it_be(:idx_2) { create(:zoekt_index) }
-  let_it_be(:index_ids) { [idx.id] }
+  let_it_be(:indices_in_event) { create_list(:zoekt_index, 3) }
+  let_it_be(:index_ids) { indices_in_event.map(&:id) }
   let_it_be(:max_storage_bytes) { 100 }
-  let_it_be(:idx_project) { create(:project, namespace_id: idx.namespace_id) }
-  let_it_be(:idx_project_2) { create(:project, namespace_id: idx_2.namespace_id) }
-  let_it_be(:repo) do
-    idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project, state: :ready)
-  end
-
-  let_it_be(:repo_2) do
-    idx.zoekt_repositories.create!(zoekt_index: idx_2, project: idx_project_2, state: :ready, size_bytes: 1)
-  end
 
   let(:data) do
     { index_ids: index_ids, watermark_level: watermark_level }
@@ -27,22 +17,15 @@ RSpec.describe Search::Zoekt::IndexWatermarkChangedEventWorker, :zoekt_settings_
   it_behaves_like 'subscribes to event'
 
   it_behaves_like 'an idempotent worker' do
-    context 'when there is an index that is over low storage watermark' do
-      it 'updates the index to be watermarked' do
-        expect do
-          consume_event(subscriber: described_class, event: event)
-        end.to change { Search::Zoekt::Index.low_watermark_exceeded.count }.from(0).to(1)
-      end
-    end
+    it 'calls `update_reserved_storage_bytes` for each index' do
+      expect(::Search::Zoekt::Index).to receive(:id_in).with(index_ids).and_return(indices_in_event)
+      expect(indices_in_event).to receive(:each_batch).and_yield(indices_in_event)
 
-    context 'when there is an index that is over a storage watermark' do
-      let_it_be(:watermark_level) { 'high_watermark_exceeded' }
-
-      it 'updates the index to be watermarked' do
-        expect do
-          consume_event(subscriber: described_class, event: event)
-        end.to change { Search::Zoekt::Index.high_watermark_exceeded.count }.from(0).to(1)
+      indices_in_event.each do |zkt_index| # rubocop:disable RSpec/IteratedExpectation -- Not applicable
+        expect(zkt_index).to receive(:update_reserved_storage_bytes!)
       end
+
+      consume_event(subscriber: described_class, event: event)
     end
   end
 end
