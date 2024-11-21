@@ -5,7 +5,7 @@ action: click_export_group_members_as_csv
 identifiers:
 - namespace
 - user
-product_group: tenant_scale
+product_group: organizations
 milestone: '17.5'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168243
 distributions:
