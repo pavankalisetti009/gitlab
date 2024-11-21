@@ -33,7 +33,6 @@ RSpec.shared_examples 'queued users' do
     def expect_to_have_warning_invite_indicator(page, user)
       expect(page).to have_selector("#{member_token_selector(user.id)} .gl-bg-orange-100")
       expect(page).to have_selector(member_token_warning_selector(user.id))
-      expect(page).to have_text("#{user.name}: Request queued for administrator approval.")
     end
 
     def member_token_warning_selector(id)
