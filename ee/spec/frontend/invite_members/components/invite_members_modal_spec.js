@@ -1,6 +1,7 @@
 import { GlModal, GlSprintf } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
+import { markLocalStorageForQueuedAlert } from '~/invite_members/utils/trigger_successful_invite_alert';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import Api from '~/api';
@@ -23,6 +24,8 @@ import {
 } from 'jest/invite_members/mock_data/member_modal';
 
 import { GROUPS_INVITATIONS_PATH, invitationsApiResponse } from '../mock_data';
+
+jest.mock('~/invite_members/utils/trigger_successful_invite_alert');
 
 describe('EEInviteMembersModal', () => {
   let wrapper;
@@ -56,7 +59,6 @@ describe('EEInviteMembersModal', () => {
   const findBase = () => wrapper.findComponent(EEInviteModalBase);
   const findMembersSelect = () => wrapper.findComponent(MembersTokenSelect);
   const findActionButton = () => wrapper.findByTestId('invite-modal-submit');
-  const findWarningMemberAlert = () => wrapper.findByTestId('alert-member-warning');
   const findMemberErrorAlert = () => wrapper.findByTestId('alert-member-error');
 
   const emitClickFromModal = (findButton) => () =>
@@ -75,7 +77,7 @@ describe('EEInviteMembersModal', () => {
   };
 
   const mockInvitationsApi = (code, data) => {
-    mock.onPost(GROUPS_INVITATIONS_PATH).reply(code, data);
+    mock.onPost(GROUPS_INVITATIONS_PATH).replyOnce(code, data);
   };
 
   beforeEach(() => {
@@ -88,26 +90,18 @@ describe('EEInviteMembersModal', () => {
   });
 
   describe('when member invitation is pending approval', () => {
-    beforeEach(() => {
-      createComponent();
-      triggerMembersTokenSelect([user3]);
-      mockInvitationsApi(HTTP_STATUS_CREATED, invitationsApiResponse.MEMBER_PENDING_APPROVAL);
-      clickInviteButton();
-      return waitForPromises();
-    });
-
-    it('displays pending member warning', () => {
-      expect(findWarningMemberAlert().props()).toMatchObject({
-        title: 'Some requests have been sent for administrator approval',
-        dismissible: false,
-        variant: 'warning',
+    describe('when there is on error', () => {
+      beforeEach(() => {
+        createComponent();
+        triggerMembersTokenSelect([user3]);
+        mockInvitationsApi(HTTP_STATUS_CREATED, invitationsApiResponse.MEMBER_PENDING_APPROVAL);
+        clickInviteButton();
+        return waitForPromises();
       });
-    });
 
-    it('displays pending member response from server', () => {
-      expect(findWarningMemberAlert().text()).toContain(
-        `${user3.name}: Request queued for administrator approval.`,
-      );
+      it('marks local storage for queued requests alert', () => {
+        expect(markLocalStorageForQueuedAlert).toHaveBeenCalled();
+      });
     });
 
     describe('when there is an error and a pending member in the invitation', () => {
@@ -119,15 +113,19 @@ describe('EEInviteMembersModal', () => {
         return waitForPromises();
       });
 
-      it('shows and clears both error and warning alerts', async () => {
+      it('shows error alert', () => {
         expect(findMemberErrorAlert().exists()).toBe(true);
-        expect(findWarningMemberAlert().exists()).toBe(true);
+      });
 
+      it('clears error alert when member select is cleared', async () => {
         findMembersSelect().vm.$emit('clear');
         await nextTick();
 
         expect(findMemberErrorAlert().exists()).toBe(false);
-        expect(findWarningMemberAlert().exists()).toBe(false);
+      });
+
+      it('does not mark local storage for queued requests alert', () => {
+        expect(markLocalStorageForQueuedAlert).not.toHaveBeenCalled();
       });
     });
   });
