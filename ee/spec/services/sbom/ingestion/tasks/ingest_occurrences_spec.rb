@@ -279,11 +279,18 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         ]
       end
 
-      let_it_be(:report_licenses) { [{ "name" => "custom license", "spdx_identifier" => nil, "url" => nil }] }
+      let_it_be(:report_licenses) do
+        [{ "name" => "DOC License", "spdx_identifier" => 'DOC', "url" => 'https://spdx.org/licenses/DOC.html' }]
+      end
 
       let_it_be(:component_without_license) { create(:ci_reports_sbom_component, licenses: []) }
       let_it_be(:component_with_license) do
-        create(:ci_reports_sbom_component, licenses: [build(:ci_reports_sbom_license, name: 'custom license')])
+        create(:ci_reports_sbom_component,
+          licenses: [build(:ci_reports_sbom_license, name: 'DOC License', spdx_identifier: 'DOC')])
+      end
+
+      let_it_be(:component_with_license_nil_spdx) do
+        create(:ci_reports_sbom_component, licenses: [build(:ci_reports_sbom_license, spdx_identifier: nil)])
       end
 
       let_it_be(:occurrence_map_without_license) do
@@ -292,6 +299,10 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
 
       let_it_be(:occurrence_map_with_license) do
         create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_license)
+      end
+
+      let_it_be(:occurrence_map_with_license_nil_spdx) do
+        create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_license_nil_spdx)
       end
 
       before do
@@ -339,6 +350,16 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
           occurrences = Sbom::Occurrence.last(2)
           expect(occurrences[0].licenses).to match_array(report_licenses)
           expect(occurrences[1].licenses).to match_array(default_licenses)
+        end
+      end
+
+      context 'when the SBOM provides licenses with missing spdx_identifier field' do
+        let_it_be(:occurrence_maps) { [occurrence_map_with_license_nil_spdx] }
+
+        it 'does not set a license' do
+          task
+
+          expect(Sbom::Occurrence.last&.licenses).to be_empty
         end
       end
     end
