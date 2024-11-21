@@ -1,8 +1,7 @@
 import GridstackDashboard from 'storybook_helpers/dashboards/gridstack_dashboard.vue';
 import GridstackPanel from 'storybook_helpers/dashboards/gridstack_panel.vue';
+import { daysToSeconds } from '~/lib/utils/datetime/date_calculation_utility';
 import ComparisonTable from './comparison_table.vue';
-
-const daysToSeconds = (days) => 86400 * days;
 
 export default {
   title: 'ee/analytics/dashboards/dora_projects_comparison/comparison_table',
