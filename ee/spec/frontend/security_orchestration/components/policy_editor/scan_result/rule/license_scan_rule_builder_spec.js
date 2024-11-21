@@ -7,13 +7,19 @@ import BranchSelection from 'ee/security_orchestration/components/policy_editor/
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
 import StatusFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filter.vue';
 import LicenseFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/license_filter.vue';
+import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/deny_allow_list.vue';
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
+import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import {
   getDefaultRule,
   licenseScanBuildRule,
   SCAN_FINDING,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/rules';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
+import {
+  FILTERS_STATUS_INDEX,
+  LICENCE_FILTERS,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 
 const actionId = 'action_0';
 jest.mock('lodash/uniqueId', () => jest.fn().mockReturnValue(actionId));
@@ -58,6 +64,8 @@ describe('LicenseScanRuleBuilder', () => {
   const findLicenseFilter = () => wrapper.findComponent(LicenseFilter);
   const findScanTypeSelect = () => wrapper.findComponent(ScanTypeSelect);
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
+  const findDenyAllowList = () => wrapper.findComponent(DenyAllowList);
+  const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
 
   describe('initial rendering', () => {
     beforeEach(() => {
@@ -181,5 +189,31 @@ describe('LicenseScanRuleBuilder', () => {
         expect(wrapper.emitted().changed).toEqual([[expect.objectContaining(expected)]]);
       },
     );
+  });
+
+  describe('allow deny list filter', () => {
+    it('does not render deny allow list', () => {
+      factory();
+
+      expect(findDenyAllowList().exists()).toBe(false);
+      expect(findScanFilterSelector().props('disabled')).toBe(true);
+      expect(findScanFilterSelector().props('filters')).toEqual([
+        LICENCE_FILTERS[FILTERS_STATUS_INDEX],
+      ]);
+    });
+
+    it('renders allow deny list filter', () => {
+      factory({
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      expect(findDenyAllowList().exists()).toBe(true);
+      expect(findScanFilterSelector().props('disabled')).toBe(false);
+      expect(findScanFilterSelector().props('filters')).toEqual(LICENCE_FILTERS);
+    });
   });
 });
