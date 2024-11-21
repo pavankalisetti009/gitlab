@@ -59,8 +59,7 @@ module EE
       end
 
       condition(:generate_commit_message_enabled) do
-        ::Feature.enabled?(:generate_commit_message_flag, @user) &&
-          subject.project.project_setting.duo_features_enabled?
+        subject.project.project_setting.duo_features_enabled?
       end
 
       condition(:user_allowed_to_use_generate_commit_message) do

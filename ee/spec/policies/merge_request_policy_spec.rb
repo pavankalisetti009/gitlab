@@ -417,17 +417,14 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
 
     subject(:policy) { policy_for(user) }
 
-    where(:flag_enabled, :duo_features_enabled, :allowed_to_use, :enabled_for_user) do
-      false | true  | true | be_disallowed(:access_generate_commit_message)
-      true  | true  | false | be_disallowed(:access_generate_commit_message)
-      true  | false | true  | be_disallowed(:access_generate_commit_message)
-      true  | true  | true  | be_allowed(:access_generate_commit_message)
+    where(:duo_features_enabled, :allowed_to_use, :enabled_for_user) do
+      true  | false | be_disallowed(:access_generate_commit_message)
+      false | true  | be_disallowed(:access_generate_commit_message)
+      true  | true  | be_allowed(:access_generate_commit_message)
     end
 
     with_them do
       before do
-        stub_feature_flags(generate_commit_message_flag: flag_enabled)
-
         allow(project)
           .to receive_message_chain(:project_setting, :duo_features_enabled?)
           .and_return(duo_features_enabled)

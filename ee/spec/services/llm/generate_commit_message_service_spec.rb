@@ -53,18 +53,6 @@ RSpec.describe Llm::GenerateCommitMessageService, :saas, feature_category: :code
         expect(Llm::CompletionWorker).not_to have_received(:perform_for)
       end
     end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(generate_commit_message_flag: false)
-      end
-
-      it 'returns an error' do
-        expect(subject.execute).to be_error
-
-        expect(Llm::CompletionWorker).not_to have_received(:perform_for)
-      end
-    end
   end
 
   describe '#valid?' do
