@@ -49,7 +49,10 @@ module Vulnerabilities
     end
 
     def dismiss(vulnerabilities)
-      vulnerability_attrs = vulnerabilities.with_projects.pluck(:id, :state, :project_id, 'projects.project_namespace_id') # rubocop:disable CodeReuse/ActiveRecord
+      vulnerability_attrs = vulnerabilities
+        .select(:id, :state, :project_id).with_projects
+        .map { |v| [v.id, v.state, v.project_id, v.project.project_namespace_id] }
+
       return if vulnerability_attrs.empty?
 
       state_transitions = transition_attributes_for(vulnerability_attrs)
