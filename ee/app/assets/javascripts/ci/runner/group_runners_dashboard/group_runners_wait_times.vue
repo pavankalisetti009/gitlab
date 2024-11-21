@@ -9,7 +9,7 @@ import groupRunnerWaitTimeHistoryQuery from 'ee/ci/runner/graphql/performance/gr
 import RunnerWaitTimes from '../components/runner_wait_times.vue';
 
 export default {
-  name: 'AdminRunnerWaitTimes',
+  name: 'GroupRunnerWaitTimes',
   components: {
     RunnerWaitTimes,
   },
