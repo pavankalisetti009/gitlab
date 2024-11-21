@@ -11,7 +11,7 @@ data_source: database
 instrumentation_class: CountUserPreferencesGroupOverviewSecurityDashboardMetric
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 performance_indicator_type:
 - customer_health_score
