@@ -140,7 +140,7 @@ export default {
 </script>
 <template>
   <gl-collapsible-listbox
-    class="gl-w-31"
+    class="md:gl-w-31"
     :selected="selectedOption"
     :items="dropdownItems"
     :toggle-text="dropdownToggleText"

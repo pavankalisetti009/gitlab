@@ -66,7 +66,7 @@ export default {
     },
     {
       key: 'identifier',
-      label: __('Model identifier'),
+      label: s__('AdminSelfHostedModels|Model identifier'),
       thClass: 'gl-w-3/20',
       tdClass: 'gl-content-center',
     },
@@ -77,9 +77,9 @@ export default {
       tdClass: 'gl-content-center',
     },
     {
-      key: 'edit',
-      label: '',
-      thClass: 'gl-w-2/20',
+      key: 'actions',
+      label: __('Actions'),
+      thClass: 'gl-w-2/20 md:gl-invisible',
       tdClass: 'gl-content-center gl-text-right',
     },
   ],
@@ -201,14 +201,14 @@ export default {
           />
         </span>
       </template>
-      <template #cell(edit)="{ item }">
+      <template #cell(actions)="{ item }">
         <gl-disclosure-dropdown
+          v-if="!isLoading"
           class="gl-py-2"
           category="tertiary"
           size="small"
           icon="ellipsis_v"
           :no-caret="true"
-          :loading="isLoading"
         >
           <gl-disclosure-dropdown-item
             data-testid="model-edit-button"
