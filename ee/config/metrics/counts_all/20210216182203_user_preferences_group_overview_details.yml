@@ -3,7 +3,7 @@ data_category: optional
 key_path: counts.user_preferences_group_overview_details
 description: Count of users who set personal preference to see Details on Group information
   page
-product_group: threat_insights
+product_group: security_insights
 value_type: number
 status: active
 time_frame: all

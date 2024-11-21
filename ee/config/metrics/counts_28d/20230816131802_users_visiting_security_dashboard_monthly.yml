@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.govern.users_visiting_security_dashboard_monthly
 description: Unique count of users visiting security dashboard in a given month
-product_group: threat_insights
+product_group: security_insights
 value_type: number
 status: active
 milestone: "16.3"
