@@ -10,6 +10,6 @@ RSpec.describe Sidebars::Admin::Menus::CodeSuggestionsMenu, feature_category: :n
 
   it_behaves_like 'Admin menu without sub menus', active_routes: {
     action: %w[show index],
-    controller: [:gitlab_duo, :seat_utilization]
+    controller: [:gitlab_duo, :seat_utilization, :configuration]
   }
 end
