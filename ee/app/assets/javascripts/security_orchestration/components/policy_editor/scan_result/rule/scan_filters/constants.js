@@ -4,6 +4,9 @@ export const SEVERITY = 'severity';
 export const STATUS = 'status';
 export const ATTRIBUTE = 'attribute';
 export const AGE = 'age';
+export const ALLOW_DENY = 'allow_deny';
+export const DENIED = 'denied';
+export const ALLOWED = 'allowed';
 
 export const UNKNOWN_LICENSE = {
   value: 'unknown',
@@ -38,6 +41,28 @@ export const FILTERS = [
   },
 ];
 
+export const LICENCE_FILTERS = [
+  {
+    text: s__('ScanResultPolicy|License status'),
+    value: STATUS,
+    tooltip: s__('ScanResultPolicy|Only 2 status criteria are allowed'),
+  },
+  {
+    text: s__('ScanResultPolicy|Allowlist or Denylist'),
+    value: ALLOW_DENY,
+    tooltip: s__('ScanResultPolicy|You can have only one of the two: deny list or allow list.'),
+  },
+];
+
+export const ALLOWED_DENIED_OPTIONS = {
+  [ALLOWED]: s__('ScanResultPolicy|Allowed'),
+  [DENIED]: s__('ScanResultPolicy|Denied'),
+};
+
+export const ALLOWED_DENIED_LISTBOX_ITEMS = Object.entries(ALLOWED_DENIED_OPTIONS).map(
+  ([value, text]) => ({ value, text }),
+);
+
 export const AGE_DAY = 'day';
 export const AGE_WEEK = 'week';
 export const AGE_MONTH = 'month';
@@ -52,7 +77,7 @@ export const AGE_INTERVALS = [
 
 export const VULNERABILITY_AGE_ALLOWED_KEYS = ['value', 'interval', 'operator'];
 
-export const FILTERS_STATUS_INDEX = FILTERS.findIndex(({ value }) => value === STATUS);
+export const FILTERS_STATUS_INDEX = LICENCE_FILTERS.findIndex(({ value }) => value === STATUS);
 
 export const FIX_AVAILABLE = 'fix_available';
 export const FALSE_POSITIVE = 'false_positive';

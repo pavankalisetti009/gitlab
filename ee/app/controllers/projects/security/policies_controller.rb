@@ -15,6 +15,7 @@ module Projects
         push_frontend_feature_flag(:scan_result_policy_block_group_branch_modification, project)
         push_frontend_feature_flag(:scan_execution_policy_action_limit, project)
         push_frontend_feature_flag(:security_policies_new_yaml_format, project.group)
+        push_frontend_feature_flag(:exclude_license_packages, project.group)
       end
 
       feature_category :security_policy_management

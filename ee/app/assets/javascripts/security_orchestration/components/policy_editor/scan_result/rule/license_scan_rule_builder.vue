@@ -1,6 +1,7 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
@@ -9,15 +10,16 @@ import SectionLayout from '../../section_layout.vue';
 import { getDefaultRule, LICENSE_STATES } from '../lib/rules';
 import StatusFilter from './scan_filters/status_filter.vue';
 import LicenseFilter from './scan_filters/license_filter.vue';
-import { FILTERS, FILTERS_STATUS_INDEX, STATUS } from './scan_filters/constants';
+import DenyAllowList from './scan_filters/deny_allow_list.vue';
+import { FILTERS_STATUS_INDEX, STATUS, LICENCE_FILTERS, DENIED } from './scan_filters/constants';
 import ScanTypeSelect from './scan_type_select.vue';
 import BranchSelection from './branch_selection.vue';
 
 export default {
-  FILTERS_ITEMS: [FILTERS[FILTERS_STATUS_INDEX]],
   STATUS,
   components: {
     BranchExceptionSelector,
+    DenyAllowList,
     SectionLayout,
     GlSprintf,
     LicenseFilter,
@@ -27,6 +29,7 @@ export default {
     ScanTypeSelect,
     StatusFilter,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     initRule: {
@@ -44,7 +47,23 @@ export default {
     ),
   },
   licenseStatuses: LICENSE_STATES,
+  data() {
+    return {
+      excludeListType: DENIED,
+    };
+  },
   computed: {
+    showLicenceExcludePackages() {
+      return this.glFeatures.excludeLicensePackages;
+    },
+    filters() {
+      return this.showLicenceExcludePackages
+        ? LICENCE_FILTERS
+        : [LICENCE_FILTERS[FILTERS_STATUS_INDEX]];
+    },
+    filtersTooltip() {
+      return this.showLicenceExcludePackages ? '' : this.$options.i18n.tooltipFilterDisabledTitle;
+    },
     branchExceptions() {
       return this.initRule.branch_exceptions;
     },
@@ -78,6 +97,9 @@ export default {
       }
 
       this.$emit('changed', rule);
+    },
+    selectExcludeListType(type) {
+      this.excludeListType = type;
     },
   },
 };
@@ -134,10 +156,16 @@ export default {
 
         <license-filter class="!gl-bg-white" :init-rule="initRule" @changed="triggerChanged" />
 
+        <deny-allow-list
+          v-if="showLicenceExcludePackages"
+          :selected="excludeListType"
+          @select-type="selectExcludeListType"
+        />
+
         <scan-filter-selector
-          :disabled="true"
-          :filters="$options.FILTERS_ITEMS"
-          :tooltip-title="$options.i18n.tooltipFilterDisabledTitle"
+          :disabled="!showLicenceExcludePackages"
+          :filters="filters"
+          :tooltip-title="filtersTooltip"
           class="gl-w-full gl-bg-white"
         />
       </template>
