@@ -26,6 +26,7 @@ module Elastic
         indexes :state, type: :keyword
         indexes :project_id, type: :integer
         indexes :author_id, type: :integer
+        indexes :traversal_ids, type: :keyword
 
         indexes :target_branch, type: :keyword
         indexes :source_branch, type: :keyword
