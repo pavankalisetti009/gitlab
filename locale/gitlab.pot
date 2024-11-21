@@ -3929,6 +3929,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Model family"
 msgstr ""
 
+msgid "AdminSelfHostedModels|Model identifier"
+msgstr ""
+
 msgid "AdminSelfHostedModels|Model identifier (optional)"
 msgstr ""
 
@@ -35322,9 +35325,6 @@ msgid "Model description"
 msgstr ""
 
 msgid "Model experiments"
-msgstr ""
-
-msgid "Model identifier"
 msgstr ""
 
 msgid "Model registry"

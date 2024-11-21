@@ -77,7 +77,7 @@ describe('SelfHostedModelsTable', () => {
       'Endpoint',
       'Model identifier',
       'API token',
-      '', // The 'edit' column does not have a header name
+      'Actions', // hidden when in desktop view
     ];
 
     expect(findTableHeaders().wrappers.map((h) => h.text())).toEqual(expectedTableHeaderNames);
