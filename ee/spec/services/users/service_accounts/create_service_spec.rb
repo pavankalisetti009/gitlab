@@ -47,7 +47,7 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
         end
 
         it 'correctly returns active model errors' do
-          service = described_class.new(current_user)
+          service = described_class.new(current_user, params)
           service.execute
 
           result = service.execute
@@ -89,7 +89,6 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
           it_behaves_like 'service account creation with customized params'
 
           it 'correctly returns active model errors' do
-            service = described_class.new(current_user)
             service.execute
 
             result = service.execute
