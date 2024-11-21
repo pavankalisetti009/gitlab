@@ -383,7 +383,7 @@ const humanizeRule = (rule) => {
  * @param rules {Array} [{type: 'scan_finding', branches: ['master'], scanners: ['container_scanning'], vulnerabilities_allowed: 1, severity_levels: ['critical']}]
  * @returns {Array} [{summary: '', criteriaList: []}]
  */
-export const humanizeRules = (rules) => {
+export const humanizeRules = (rules = []) => {
   const humanizedRules = rules.reduce((acc, curr) => {
     return [...acc, humanizeRule(curr)];
   }, []);

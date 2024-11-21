@@ -1,7 +1,8 @@
 <script>
-import { GlDrawer, GlSprintf } from '@gitlab/ui';
+import { GlDrawer, GlSprintf, GlLink } from '@gitlab/ui';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import ScanResultDetailsDrawer from 'ee/security_orchestration/components/policy_drawer/scan_result/details_drawer.vue';
 import InfoRow from 'ee/security_orchestration/components/policy_drawer/info_row.vue';
 
@@ -9,6 +10,8 @@ export default {
   components: {
     GlDrawer,
     GlSprintf,
+    GlLink,
+    TimeAgoTooltip,
     InfoRow,
     ScanResultDetailsDrawer,
   },
@@ -35,6 +38,11 @@ export default {
       type: String,
       required: true,
     },
+    pipeline: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     getDrawerHeaderHeight() {
@@ -56,7 +64,17 @@ export default {
     <template #title>
       <h4 class="gl-my-0">{{ __('Security policy') }}</h4>
     </template>
-    <div v-if="policy">
+    <div v-if="policy" data-testid="security-policy">
+      <p v-if="pipeline" class="gl-mb-3 gl-text-sm gl-text-subtle" data-testid="security-pipeline">
+        <gl-sprintf :message="__('%{timeago} in pipeline %{pipeline}')">
+          <template #timeago>
+            <time-ago-tooltip :time="pipeline.updatedAt" />
+          </template>
+          <template #pipeline>
+            <gl-link :href="pipeline.path">#{{ pipeline.iid }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </p>
       <h5 class="h4 gl-mb-0 gl-mt-0">{{ policy.name }}</h5>
       <scan-result-details-drawer :policy="policy" :show-policy-scope="false" :show-status="false">
         <template v-if="comparisonPipelines" #additional-details>

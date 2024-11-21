@@ -60,6 +60,7 @@ describe('Merge request reports blockers page component', () => {
                   id: 1,
                   targetBranch: 'main',
                   sourceBranch: 'feature',
+                  headPipeline: null,
                   policyViolations,
                 },
               },
