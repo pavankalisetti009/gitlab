@@ -1,5 +1,6 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlLink, GlSprintf } from '@gitlab/ui';
-import Api from '~/api';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -8,15 +9,39 @@ import {
   WITHOUT_EXCEPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
-import { createMockGroup, TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
+import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import createMockApollo from 'helpers/mock_apollo_helper';
 
 jest.mock('~/alert');
 
 describe('BlockGroupBranchModification', () => {
   let wrapper;
+  let requestHandler;
 
-  const createComponent = (propsData = {}) => {
+  const defaultHandler = (nodes = createMockGroups()) =>
+    jest.fn().mockResolvedValue({
+      data: {
+        groups: {
+          nodes,
+          pageInfo: {},
+        },
+      },
+    });
+
+  const createMockApolloProvider = (handler) => {
+    Vue.use(VueApollo);
+
+    requestHandler = handler;
+
+    return createMockApollo([[getGroupsByIds, handler]]);
+  };
+
+  const createComponent = ({ propsData = {}, handler = defaultHandler() } = {}) => {
     wrapper = shallowMountExtended(BlockGroupBranchModification, {
+      apolloProvider: createMockApolloProvider(handler),
       propsData: {
         title: 'Best popover',
         enabled: true,
@@ -29,11 +54,6 @@ describe('BlockGroupBranchModification', () => {
   const findLink = () => wrapper.findComponent(GlLink);
   const findHasExceptionsDropdown = () => wrapper.findByTestId('has-exceptions-selector');
   const findExceptionsDropdown = () => wrapper.findByTestId('exceptions-selector');
-
-  beforeEach(() => {
-    jest.spyOn(Api, 'group').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS[0]));
-    jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS));
-  });
 
   describe('rendering', () => {
     it('renders the default', () => {
@@ -57,7 +77,7 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('renders when not enabled and without exceptions', () => {
-      createComponent({ enabled: false });
+      createComponent({ propsData: { enabled: false } });
       expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
       expect(findHasExceptionsDropdown().props('disabled')).toBe(true);
       expect(findExceptionsDropdown().exists()).toBe(false);
@@ -68,16 +88,12 @@ describe('BlockGroupBranchModification', () => {
     const EXCEPTIONS = [{ id: 1 }, { id: 2 }];
 
     beforeEach(async () => {
-      jest
-        .spyOn(Api, 'group')
-        .mockReturnValueOnce(Promise.resolve(createMockGroup(EXCEPTIONS[0].id)))
-        .mockReturnValueOnce(Promise.resolve(createMockGroup(EXCEPTIONS[1].id)));
-      createComponent({ enabled: true, exceptions: EXCEPTIONS });
+      createComponent({ propsData: { enabled: true, exceptions: EXCEPTIONS } });
       await waitForPromises();
     });
 
     it('retrieves top-level groups', () => {
-      expect(Api.groups).toHaveBeenCalledWith('', { top_level_only: true });
+      expect(requestHandler).toHaveBeenCalledWith({ topLevelOnly: true, search: '' });
     });
 
     it('renders the except selection dropdown', () => {
@@ -94,6 +110,10 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('updates the toggle text on selection', async () => {
+      createComponent({
+        propsData: { enabled: true, exceptions: EXCEPTIONS },
+        handler: defaultHandler(createMockGroups(3)),
+      });
       await wrapper.setProps({ enabled: true, exceptions: [...EXCEPTIONS, { id: 3 }] });
       await waitForPromises();
       expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-1, Group-2 +1 more');
@@ -104,17 +124,26 @@ describe('BlockGroupBranchModification', () => {
       await waitForPromises();
       expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-2');
     });
+
+    it('updates the toggle text when disabled', async () => {
+      await wrapper.setProps({ enabled: false });
+
+      expect(findExceptionsDropdown().exists()).toBe(false);
+      expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
+
+      expect(wrapper.emitted()).toEqual({});
+    });
   });
 
   describe('events', () => {
     it('updates the policy when exceptions are added', async () => {
-      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+      createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
       await findHasExceptionsDropdown().vm.$emit('select', WITHOUT_EXCEPTIONS);
       expect(wrapper.emitted('change')[0][0]).toEqual(true);
     });
 
     it('updates the policy when exceptions are changed', async () => {
-      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+      createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
       await findExceptionsDropdown().vm.$emit('select', [1]);
       expect(wrapper.emitted('change')[0][0]).toEqual({
         enabled: true,
@@ -123,26 +152,45 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('does not update the policy when exceptions are changed and the setting is not enabled', async () => {
-      createComponent({ enabled: false });
+      createComponent({ propsData: { enabled: false } });
       await findHasExceptionsDropdown().vm.$emit('select', EXCEPT_GROUPS);
       expect(wrapper.emitted('change')).toEqual(undefined);
     });
 
     it('searches for groups', async () => {
-      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+      createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
       await findExceptionsDropdown().vm.$emit('search', 'git');
-      expect(Api.groups).toHaveBeenCalledWith('git', { top_level_only: true });
+      expect(requestHandler).toHaveBeenCalledWith({ search: 'git', topLevelOnly: true });
     });
   });
 
   describe('error', () => {
     it('handles error', async () => {
-      jest.spyOn(Api, 'groups').mockRejectedValue();
-      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+      createComponent({
+        propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
+        handler: jest.fn().mockRejectedValue({}),
+      });
       await waitForPromises();
       expect(findExceptionsDropdown().props('items')).toEqual([]);
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Something went wrong, unable to fetch groups',
+      });
+    });
+  });
+
+  describe('exceptions that were not initially loaded', () => {
+    it('loads missing groups form  exceptions list', async () => {
+      createComponent({
+        propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }, { id: 7 }, { id: 8 }] },
+        handler: defaultHandler(createMockGroups(5)),
+      });
+      await waitForPromises();
+
+      expect(requestHandler).toHaveBeenCalledTimes(2);
+      expect(requestHandler).toHaveBeenNthCalledWith(1, { topLevelOnly: true, search: '' });
+      expect(requestHandler).toHaveBeenNthCalledWith(2, {
+        topLevelOnly: true,
+        ids: [7, 8].map((id) => convertToGraphQLId(TYPENAME_GROUP, id)),
       });
     });
   });

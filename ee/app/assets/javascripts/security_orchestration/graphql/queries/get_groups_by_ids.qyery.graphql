@@ -1,0 +1,15 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+query getGroupsByIds($ids: [ID!], $search: String, $topLevelOnly: Boolean) {
+  groups(ids: $ids, search: $search, topLevelOnly: $topLevelOnly) {
+    nodes {
+      id
+      name
+      fullName
+      fullPath
+      avatarUrl
+    }
+    pageInfo {
+      ...PageInfo
+    }
+  }
+}

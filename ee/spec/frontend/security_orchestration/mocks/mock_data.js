@@ -100,4 +100,13 @@ export const createMockGroup = (id) => {
   return { id, full_name: `Group-${id}`, full_path: `group-${id}` };
 };
 
+export const createMockGroups = (length = 2) =>
+  Array.from({ length }, (_, i) => i + 1).map((id) => ({
+    id,
+    name: `Group-${id}`,
+    fullName: `Group-${id}`,
+    fullPath: `group full path ${id}`,
+    avatarUrl: `group avatar url ${id}`,
+  }));
+
 export const TOP_LEVEL_GROUPS = [1, 2, 3].map(createMockGroup);

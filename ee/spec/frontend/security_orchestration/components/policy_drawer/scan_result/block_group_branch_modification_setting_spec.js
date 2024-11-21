@@ -1,15 +1,42 @@
 import { GlSprintf } from '@gitlab/ui';
-import Api from '~/api';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import BlockGroupBranchModificationSetting from 'ee/security_orchestration/components/policy_drawer/scan_result/block_group_branch_modification_setting.vue';
-import { TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
+import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
 
 describe('BlockGroupBranchModificationSetting', () => {
   let wrapper;
+  let requestHandler;
 
-  const createComponent = (exceptions = []) => {
+  const groups = createMockGroups();
+
+  const defaultHandler = (nodes = groups) =>
+    jest.fn().mockResolvedValue({
+      data: {
+        groups: {
+          nodes,
+          pageInfo: {},
+        },
+      },
+    });
+
+  const createMockApolloProvider = (handler) => {
+    Vue.use(VueApollo);
+
+    requestHandler = handler;
+
+    return createMockApollo([[getGroupsByIds, handler]]);
+  };
+
+  const createComponent = ({ exceptions = [], handler = defaultHandler() } = {}) => {
     wrapper = shallowMountExtended(BlockGroupBranchModificationSetting, {
+      apolloProvider: createMockApolloProvider(handler),
       propsData: { exceptions },
       stubs: { GlSprintf },
     });
@@ -17,16 +44,22 @@ describe('BlockGroupBranchModificationSetting', () => {
 
   const findExceptions = () => wrapper.findAll('li');
 
-  beforeEach(() => {
-    jest.spyOn(Api, 'group').mockResolvedValueOnce(TOP_LEVEL_GROUPS[0]).mockRejectedValueOnce();
+  it('renders exception list items', async () => {
+    const exceptions = [{ id: 1 }, { id: 2 }];
+
+    createComponent({ exceptions });
+    await waitForPromises();
+
+    expect(requestHandler).toHaveBeenCalledWith({
+      ids: exceptions.map(({ id }) => convertToGraphQLId(TYPENAME_GROUP, id)),
+    });
+    expect(findExceptions()).toHaveLength(2);
+    expect(findExceptions().at(0).text()).toBe(groups[0].fullName);
+    expect(findExceptions().at(1).text()).toBe(groups[1].fullName);
   });
 
-  it('renders exception list items', async () => {
-    createComponent([{ id: 1 }, { id: 2 }]);
-    await waitForPromises();
-    const exceptions = findExceptions();
-    expect(exceptions).toHaveLength(2);
-    expect(exceptions.at(0).text()).toBe('Group-1');
-    expect(exceptions.at(1).text()).toBe('Group ID: 2');
+  it('does not execute query when there are no exceptions', () => {
+    createComponent();
+    expect(requestHandler).toHaveBeenCalledTimes(0);
   });
 });
