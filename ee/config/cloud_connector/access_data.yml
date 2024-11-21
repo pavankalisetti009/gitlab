@@ -11,7 +11,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       duo_enterprise:
         unit_primitives:
           - categorize_duo_chat_question
-          - documentation_search
           - generate_commit_message
           - generate_issue_description
           - glab_ask_git_command
@@ -85,7 +84,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       _irrelevant:
         unit_primitives:
           - duo_workflow_execute_workflow
-          - duo_workflow_generate_token # Configured only for Gitlab.com
+          - duo_workflow_generate_token
   explain_vulnerability:
     backend: 'gitlab-ai-gateway'
     cut_off_date: 2024-10-17 00:00:00 UTC
@@ -159,7 +158,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
   observability_all:
     backend: 'gitlab-observability-backend'
     bundled_with:
-      observability:
+      _irrelevant:
         unit_primitives:
           - observability_all
   resolve_vulnerability:
@@ -173,7 +172,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
   sast:
     backend: 'gitlab-security-gateway'
     bundled_with:
-      _irrelevant_:
+      _irrelevant:
         unit_primitives:
           - security_scans
   # Configured only for Gitlab.com
@@ -228,8 +227,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
     bundled_with:
       duo_enterprise:
         unit_primitives:
-          - documentation_search
-          - duo_chat
           - explain_code
           - generate_commit_message
           - generate_cube_query
