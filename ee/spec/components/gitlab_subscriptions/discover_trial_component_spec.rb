@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
-  let(:buy_now_url) { group_billings_path(namespace) }
 
   subject(:component) { render_inline(described_class.new(namespace: namespace)) && page_scope }
 
@@ -13,7 +12,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
     let(:page_scope) { find_by_testid('hero-section') }
 
     it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Ship software faster')) }
-    it { is_expected.to have_link(_('Buy now'), href: buy_now_url) }
+    it { is_expected.not_to have_link(_('Buy now')) }
     it { is_expected.to have_link(href: 'https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479') }
   end
 
@@ -59,7 +58,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
   context 'when rendering the footer actions' do
     let(:page_scope) { find_by_testid('discover-footer-actions') }
 
-    it { is_expected.to have_link(_('Buy now'), href: buy_now_url) }
+    it { is_expected.not_to have_link(_('Buy now')) }
   end
 
   context 'with trial active and expired concerns' do
@@ -73,7 +72,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
           label: cta_tracking_label
         }.to_json,
         button_attributes: {
-          category: 'secondary',
+          category: 'primary',
           variant: 'confirm',
           class: 'gl-w-full sm:gl-w-auto',
           'data-testid': 'trial-discover-hand-raise-lead-button'
@@ -99,13 +98,6 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
         }
         is_expected.to have_tracking(attributes)
       end
-
-      it 'has correct track label for the buy now links for the trial status' do
-        is_expected.to have_selector("a[href='#{buy_now_url}']", count: 2)
-        attributes = { action: 'click_buy_now', label: cta_tracking_label }
-        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-top'))
-        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-bottom'))
-      end
     end
 
     context 'when trial is expired' do
@@ -124,13 +116,6 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
           label: 'ai_transparency_center_feature'
         }
         is_expected.to have_tracking(attributes)
-      end
-
-      it 'has correct track label for the buy now links for the trial status' do
-        is_expected.to have_selector("a[href='#{buy_now_url}']", count: 2)
-        attributes = { action: 'click_buy_now', label: cta_tracking_label }
-        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-top'))
-        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-bottom'))
       end
     end
 
