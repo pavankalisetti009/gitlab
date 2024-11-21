@@ -330,7 +330,7 @@ html.group-epics-roadmap-html {
 
     .timeline-bar-wrapper {
       height: $timeline-cell-height;
-      color: var(--gray-500, $gray-500);
+      @apply gl-text-subtle;
     }
 
     .milestone-start-and-end {
@@ -471,6 +471,6 @@ html.group-epics-roadmap-html {
 }
 
 .milestone-item-date {
-  color: var(--gray-500, $gray-500);
+  @apply gl-text-subtle;
   padding-top: $gl-spacing-scale-1;
 }

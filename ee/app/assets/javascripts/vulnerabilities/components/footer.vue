@@ -223,7 +223,7 @@ export default {
         <div
           class="gl-float-left !gl-m-0 -gl-mt-1 gl-ml-2 gl-flex gl-h-6 gl-w-6 gl-items-center gl-justify-center gl-rounded-full gl-bg-gray-50 gl-text-subtle"
         >
-          <gl-icon name="search-dot" class="circle-icon-container" />
+          <gl-icon name="search-dot" class="circle-icon-container" variant="subtle" />
         </div>
         <status-description
           :vulnerability="vulnerabilityDetectionData"
