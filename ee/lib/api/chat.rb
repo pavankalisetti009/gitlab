@@ -14,6 +14,7 @@ module API
     before do
       authenticate!
 
+      Feature.enabled?(:duo_evaluation_ready, :instance) # no-op
       not_found! unless Feature.enabled?(:access_rest_chat, current_user)
     end
 
