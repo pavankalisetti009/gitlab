@@ -4689,6 +4689,28 @@ Input type: `DestroyComplianceFrameworkInput`
 | <a id="mutationdestroycomplianceframeworkclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationdestroycomplianceframeworkerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
+### `Mutation.destroyComplianceRequirement`
+
+DETAILS:
+**Introduced** in GitLab 17.7.
+**Status**: Experiment.
+
+Input type: `DestroyComplianceRequirementInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationdestroycompliancerequirementclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdestroycompliancerequirementid"></a>`id` | [`ComplianceManagementComplianceFrameworkComplianceRequirementID!`](#compliancemanagementcomplianceframeworkcompliancerequirementid) | Global ID of the compliance requirement to destroy. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationdestroycompliancerequirementclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdestroycompliancerequirementerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
 ### `Mutation.destroyContainerRepository`
 
 Input type: `DestroyContainerRepositoryInput`
@@ -41231,6 +41253,12 @@ An example `ClustersClusterID` is: `"gid://gitlab/Clusters::Cluster/1"`.
 Color represented as a hex code or named color.
 
 For example: "#fefefe".
+
+### `ComplianceManagementComplianceFrameworkComplianceRequirementID`
+
+A `ComplianceManagementComplianceFrameworkComplianceRequirementID` is a global ID. It is encoded as a string.
+
+An example `ComplianceManagementComplianceFrameworkComplianceRequirementID` is: `"gid://gitlab/ComplianceManagement::ComplianceFramework::ComplianceRequirement/1"`.
 
 ### `ComplianceManagementFrameworkID`
 

@@ -255,6 +255,8 @@ module EE
         mount_mutation ::Mutations::Projects::TargetBranchRules::Destroy
         mount_mutation ::Mutations::ComplianceManagement::ComplianceFramework::ComplianceRequirements::Create,
           experiment: { milestone: '17.6' }
+        mount_mutation ::Mutations::ComplianceManagement::ComplianceFramework::ComplianceRequirements::Destroy,
+          experiment: { milestone: '17.7' }
 
         prepend(Types::DeprecatedMutations)
       end
