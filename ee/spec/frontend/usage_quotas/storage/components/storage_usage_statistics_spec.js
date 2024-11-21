@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlButton, GlLink, GlSprintf, GlProgressBar } from '@gitlab/ui';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
+import { GlButton, GlSprintf, GlProgressBar } from '@gitlab/ui';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import StorageUsageOverviewCard from '~/usage_quotas/storage/components/storage_usage_overview_card.vue';
 import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/components/namespace_limits_storage_usage_overview_card.vue';
 import NamespaceLimitsTotalStorageAvailableBreakdownCard from 'ee/usage_quotas/storage/components/namespace_limits_total_storage_available_breakdown_card.vue';
@@ -63,7 +63,7 @@ describe('StorageUsageStatistics', () => {
         NumberToHumanSize,
         GlSprintf,
         GlButton,
-        GlLink,
+        HelpPageLink,
         GlProgressBar,
       },
     });
@@ -172,14 +172,15 @@ describe('StorageUsageStatistics', () => {
 
         it('renders project enforcement copy', () => {
           expect(wrapper.text()).toContain(
-            'Projects under this namespace have 10.0 GiB of storage limit applied to repository and LFS objects. How are limits applied?',
+            'Projects under this namespace have 10.0 GiB of storage limit applied to repository and LFS objects.',
           );
         });
 
         it('renders SaaS help link', () => {
-          expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-            usageQuotasHelpPaths.usageQuotasProjectStorageLimit,
-          );
+          expect(wrapper.findComponent(HelpPageLink).props()).toMatchObject({
+            href: 'user/storage_usage_quotas',
+            anchor: 'view-storage',
+          });
         });
 
         it('renders SM help link if not in SaaS', () => {
@@ -191,9 +192,10 @@ describe('StorageUsageStatistics', () => {
             },
           });
 
-          expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-            usageQuotasHelpPaths.repositorySizeLimit,
-          );
+          expect(wrapper.findComponent(HelpPageLink).props()).toMatchObject({
+            anchor: 'repository-size-limit',
+            href: 'administration/settings/account_and_limit_settings',
+          });
         });
       });
 
@@ -205,15 +207,14 @@ describe('StorageUsageStatistics', () => {
         });
 
         it('renders namespace enforcement copy', () => {
-          expect(wrapper.text()).toContain(
-            'This namespace has 5.0 GiB of storage. How are limits applied?',
-          );
+          expect(wrapper.text()).toContain('This namespace has 5.0 GiB of storage.');
         });
 
         it('renders namespace enforcement help link', () => {
-          expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-            usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit,
-          );
+          expect(wrapper.findComponent(HelpPageLink).props()).toMatchObject({
+            href: 'user/storage_usage_quotas',
+            anchor: 'view-storage',
+          });
         });
       });
     });

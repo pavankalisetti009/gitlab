@@ -1,10 +1,10 @@
-import { GlProgressBar, GlLink } from '@gitlab/ui';
+import { GlProgressBar } from '@gitlab/ui';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import { namespace } from 'jest/usage_quotas/storage/mock_data';
 import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/components/namespace_limits_storage_usage_overview_card.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { defaultNamespaceProvideValues } from '../mock_data';
 
 describe('NamespaceLimitsStorageUsageOverviewCard', () => {
@@ -45,10 +45,11 @@ describe('NamespaceLimitsStorageUsageOverviewCard', () => {
     });
 
     it('renders the help link with the proper attributes', () => {
-      expect(findCardTitle().findComponent(GlLink).attributes('href')).toBe(
-        usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit,
-      );
-      expect(findCardTitle().findComponent(GlLink).attributes('aria-label')).toBe(
+      expect(findCardTitle().findComponent(HelpPageLink).props()).toMatchObject({
+        href: 'user/storage_usage_quotas',
+        anchor: 'view-storage',
+      });
+      expect(findCardTitle().findComponent(HelpPageLink).attributes('aria-label')).toBe(
         'Learn more about usage quotas.',
       );
     });

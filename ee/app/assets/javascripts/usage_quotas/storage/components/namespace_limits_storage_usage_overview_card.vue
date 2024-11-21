@@ -1,8 +1,8 @@
 <script>
-import { GlCard, GlProgressBar, GlIcon, GlLink } from '@gitlab/ui';
+import { GlCard, GlProgressBar, GlIcon } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 export default {
   name: 'NamespaceLimitsStorageUsageOverviewCard',
@@ -10,7 +10,7 @@ export default {
     GlCard,
     GlProgressBar,
     GlIcon,
-    GlLink,
+    HelpPageLink,
     NumberToHumanSize,
   },
   inject: ['namespaceStorageLimit'],
@@ -59,7 +59,6 @@ export default {
       });
     },
   },
-  usageQuotasHelpPaths,
 };
 </script>
 
@@ -68,14 +67,15 @@ export default {
     <div class="gl-font-bold" data-testid="namespace-storage-card-title">
       {{ s__('UsageQuota|Namespace storage used') }}
 
-      <gl-link
-        :href="$options.usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit"
+      <help-page-link
+        href="user/storage_usage_quotas"
+        anchor="view-storage"
         target="_blank"
         class="gl-ml-2"
         :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
       >
         <gl-icon name="question-o" />
-      </gl-link>
+      </help-page-link>
     </div>
 
     <div
