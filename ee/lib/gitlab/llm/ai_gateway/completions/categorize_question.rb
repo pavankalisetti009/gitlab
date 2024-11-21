@@ -14,14 +14,26 @@ module Gitlab
             File.read(File.join(File.dirname(__FILE__), '..', '..', 'fixtures', filename)).tr("\n", '')
           end
 
+          CATEGORY_KEY = 'category'
+          DETAILED_CATEGORY_KEY = 'detailed_category'
+          LANGUAGE_KEY = 'language'
+
+          LLM_MATCHING_CATEGORIES_XML = load_xml('categories.xml') # mandatory category definition
           LLM_MATCHING_LABELS_XML = load_xml('labels.xml') # boolean attribute definitions
 
-          REQUIRED_KEYS = %w[detailed_category category].freeze
-          OPTIONAL_KEYS = (
-            %w[language] +
-              Hash.from_xml(LLM_MATCHING_LABELS_XML)
-                  .dig('root', 'label').pluck('type') # rubocop:disable CodeReuse/ActiveRecord -- Array#pluck
-          ).freeze
+          # rubocop:disable CodeReuse/ActiveRecord -- Array#pluck
+          LLM_MATCHING_CATEGORIES = Hash.from_xml(LLM_MATCHING_CATEGORIES_XML)
+                                        .dig('root', 'row').pluck(CATEGORY_KEY)
+          LLM_MATCHING_DETAILED_CATEGORIES = Hash.from_xml(LLM_MATCHING_CATEGORIES_XML)
+                                                 .dig('root', 'row').pluck(DETAILED_CATEGORY_KEY)
+          LLM_MATCHING_LABELS = Hash.from_xml(LLM_MATCHING_LABELS_XML)
+                                    .dig('root', 'label').pluck('type')
+          # rubocop:enable CodeReuse/ActiveRecord -- Array#pluck
+
+          LANGUAGE_CODES = I18nData.languages.keys.map!(&:downcase)
+
+          REQUIRED_KEYS = [CATEGORY_KEY, DETAILED_CATEGORY_KEY].freeze
+          OPTIONAL_KEYS = [LANGUAGE_KEY, *LLM_MATCHING_LABELS].freeze
           PERMITTED_KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
 
           override :inputs
@@ -46,9 +58,17 @@ module Gitlab
           def attributes(response)
             # Turn array of matched label strings into boolean attributes
             labels = response.delete('labels')
-            labels&.each { |label| response[label] = true }
+            labels&.each do |label|
+              response[label] = true if LLM_MATCHING_LABELS.include?(label)
+            end
 
-            response.slice(*PERMITTED_KEYS).merge(Gitlab::Llm::ChatMessageAnalyzer.new(messages).execute)
+            data = response.slice(*PERMITTED_KEYS)
+
+            check!(data, CATEGORY_KEY, LLM_MATCHING_CATEGORIES)
+            check!(data, DETAILED_CATEGORY_KEY, LLM_MATCHING_DETAILED_CATEGORIES)
+            check!(data, LANGUAGE_KEY, LANGUAGE_CODES)
+
+            data.merge(Gitlab::Llm::ChatMessageAnalyzer.new(messages).execute)
           end
 
           def messages
@@ -80,6 +100,14 @@ module Gitlab
 
           def contains_categories?(hash)
             REQUIRED_KEYS.each { |key| return false unless hash.has_key?(key) }
+          end
+
+          def check!(data, key, list)
+            return unless data[key]
+
+            return if list.include?(data[key])
+
+            data[key] = '[Invalid]'
           end
 
           override :service_name

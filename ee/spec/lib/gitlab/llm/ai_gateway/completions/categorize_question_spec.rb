@@ -17,7 +17,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
   let(:prompt_message) { build(:ai_message, :categorize_question, user: user, request_id: uuid) }
   let(:llm_analysis_response) do
     {
-      detailed_category: "Summarize issue",
+      detailed_category: "Summarize Issue",
       category: 'Summarize something',
       labels: %w[contains_code is_related_to_gitlab],
       language: 'en',
@@ -67,7 +67,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
         context: [{
           schema: described_class::SCHEMA_URL,
           data: {
-            'detailed_category' => "Summarize issue",
+            'detailed_category' => "Summarize Issue",
             'category' => "Summarize something",
             'contains_code' => true,
             'is_related_to_gitlab' => true,
@@ -108,6 +108,46 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
       it 'returns error message' do
         expect_client
         expect(execute[:ai_message].errors).to include('Event not tracked')
+      end
+    end
+
+    context 'with invalid attributes' do
+      let(:llm_analysis_response) do
+        {
+          detailed_category: "Foo Bar",
+          category: 'Foo Bar',
+          labels: %w[contains_code is_related_to_gitlab foo_bar],
+          language: 'FooBar',
+          extra: 'foo'
+        }.to_json
+      end
+
+      it 'tracks event, replacing invalid attributes' do
+        expect_client
+        expect(execute[:ai_message].errors).to be_empty
+
+        expect_snowplow_event(
+          category: described_class.to_s,
+          action: 'ai_question_category',
+          requestId: uuid,
+          user: user,
+          context: [{
+            schema: described_class::SCHEMA_URL,
+            data: {
+              'detailed_category' => "[Invalid]",
+              'category' => "[Invalid]",
+              'contains_code' => true,
+              'is_related_to_gitlab' => true,
+              'number_of_conversations' => 1,
+              'number_of_questions_in_conversation' => 1,
+              'length_of_questions_in_conversation' => 21,
+              'length_of_questions' => 21,
+              'first_question_after_reset' => false,
+              'time_since_beginning_of_conversation' => 0,
+              'language' => "[Invalid]"
+            }
+          }]
+        )
       end
     end
   end
