@@ -11,7 +11,6 @@ import {
 import { sprintf, s__ } from '~/locale';
 import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import { STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE, BUY_STORAGE } from '../constants';
 
 /**
  * ProjectLimitsExcessStorageBreakdownCard
@@ -85,11 +84,9 @@ export default {
   },
   i18n: {
     PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE: s__('UsageQuota|Excess storage usage'),
-    STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
     PROJECT_ENFORCEMENT_PURCHASE_CARD_SUBTITLE: s__(
       'UsageQuota|This namespace is under project-level limits, so only repository and LFS storage usage above the limit included in the plan is counted as excess storage. You can increase excess storage limit by purchasing storage packages.',
     ),
-    BUY_STORAGE,
   },
   usageQuotasHelpPaths,
 };
@@ -111,7 +108,7 @@ export default {
             :href="$options.usageQuotasHelpPaths.usageQuotasProjectStorageLimit"
             target="_blank"
             class="gl-ml-2"
-            :aria-label="$options.i18n.STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE"
+            :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
           >
             <gl-icon name="question-o" />
           </gl-link>
@@ -126,7 +123,7 @@ export default {
             data-testid="purchase-more-storage"
             class="gl-absolute gl-right-4 gl-top-4"
           >
-            {{ $options.i18n.BUY_STORAGE }}
+            {{ s__('UsageQuota|Buy storage') }}
           </gl-button>
           <gl-button
             v-else
@@ -136,7 +133,7 @@ export default {
             data-testid="purchase-more-storage"
             class="gl-absolute gl-right-4 gl-top-4"
           >
-            {{ $options.i18n.BUY_STORAGE }}
+            {{ s__('UsageQuota|Buy storage') }}
           </gl-button>
         </template>
       </div>

@@ -5,7 +5,6 @@ import StorageUsageOverviewCard from '~/usage_quotas/storage/components/storage_
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import { BUY_STORAGE } from '../constants';
 import LimitedAccessModal from '../../components/limited_access_modal.vue';
 import NamespaceLimitsStorageUsageOverviewCard from './namespace_limits_storage_usage_overview_card.vue';
 import NamespaceLimitsTotalStorageAvailableBreakdownCard from './namespace_limits_total_storage_available_breakdown_card.vue';
@@ -83,9 +82,6 @@ export default {
     };
   },
   usageQuotasHelpPaths,
-  i18n: {
-    purchaseButtonText: BUY_STORAGE,
-  },
   computed: {
     isPurchaseButtonShown() {
       return (
@@ -130,7 +126,7 @@ export default {
           variant="confirm"
           data-testid="purchase-more-storage"
         >
-          {{ $options.i18n.purchaseButtonText }}
+          {{ s__('UsageQuota|Buy storage') }}
         </gl-button>
 
         <gl-button
@@ -141,7 +137,7 @@ export default {
           data-testid="purchase-more-storage"
           @click="showLimitedAccessModal"
         >
-          {{ $options.i18n.purchaseButtonText }}
+          {{ s__('UsageQuota|Buy storage') }}
         </gl-button>
       </template>
     </div>

@@ -4,7 +4,6 @@ import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import { namespace } from 'jest/usage_quotas/storage/mock_data';
 import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/components/namespace_limits_storage_usage_overview_card.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import { STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE } from 'ee/usage_quotas/storage/constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { defaultNamespaceProvideValues } from '../mock_data';
 
@@ -50,7 +49,7 @@ describe('NamespaceLimitsStorageUsageOverviewCard', () => {
         usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit,
       );
       expect(findCardTitle().findComponent(GlLink).attributes('aria-label')).toBe(
-        STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
+        'Learn more about usage quotas.',
       );
     });
   });
