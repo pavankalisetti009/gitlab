@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_track_mr_creation_from_vr_weekly
 description: Weekly count of merge request created from vulnerability resolution
-product_group: threat_insights
+product_group: security_insights
 performance_indicator_type: []
 value_type: number
 status: active
