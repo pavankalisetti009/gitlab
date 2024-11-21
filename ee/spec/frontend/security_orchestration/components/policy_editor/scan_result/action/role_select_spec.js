@@ -53,6 +53,12 @@ describe('RoleSelect component', () => {
     it('does not emit an error', () => {
       expect(wrapper.emitted('error')).toEqual(undefined);
     });
+
+    it('organizes the standard roles into a group', () => {
+      expect(findListbox().props('items')).toEqual([
+        { text: 'Standard roles', options: expect.any(Array) },
+      ]);
+    });
   });
 
   describe('custom props', () => {
