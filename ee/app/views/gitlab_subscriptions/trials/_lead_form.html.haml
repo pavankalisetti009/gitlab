@@ -1,4 +1,4 @@
-- page_title _('Start your Free Ultimate and GitLab Duo Enterprise Trial')
+- page_title s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
 
 - content_for :page_specific_javascripts do
   = render 'layouts/google_tag_manager_head'
@@ -7,15 +7,18 @@
 
 .row.gl-items-center
   .col-md-6.m-sm-6
-    %h2.gl-pb-5.gl-my-0
-      = _('Start your Free Ultimate and GitLab Duo Enterprise Trial')
+    %h2.gl-my-0
+      - if @group_name.present?
+        = safe_format(s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial on %{group_name}'), group_name: @group_name)
+      - else
+        = s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
 
     %p.gl-text-gray-700.gl-text-lg
-    = s_('Trial|Your combined Ultimate and GitLab Duo Enterprise trial lasts for 60 days. We just need some additional information to activate it.')
+      = s_('Trial|Your combined Ultimate and GitLab Duo Enterprise trial lasts for 60 days. We just need some additional information to activate it.')
 
     = yield :before_form
 
-    #js-trial-create-lead-form{ data: create_lead_form_data }
+    #js-trial-create-lead-form{ data: create_lead_form_data(@eligible_namespaces) }
 
   .col-md-4.trial-illustration
     = image_tag 'illustrations/saas-trial-illustration.svg', alt: '', class: 'gl-hidden md:gl-inline gl-w-full'

@@ -10,7 +10,7 @@
     .gl-p-7.gl-rounded-lg.gl-bg-white
       = sprite_icon('tanuki-ai', size: 32, css_class: 'gl-pb-3')
 
-      %h2.gl-pb-3.gl-my-0
+      %h2.gl-my-0
         - if @group_name.present?
           = safe_format(s_('DuoEnterpriseTrial|Start your free GitLab Duo Enterprise trial on %{group_name}'), group_name: @group_name)
         - else

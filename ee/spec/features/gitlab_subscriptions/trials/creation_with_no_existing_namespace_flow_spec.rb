@@ -17,7 +17,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_creation
 
@@ -58,9 +58,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         fill_in_company_information
 
-        submit_company_information_form(
-          button_text: 'Continue', extra_params: { glm_content: 'discover-group-security' }
-        )
+        submit_company_information_form(extra_params: { glm_content: 'discover-group-security' })
 
         expect_to_be_on_namespace_creation
 
@@ -84,9 +82,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         fill_in_company_information
 
-        submit_company_information_form(
-          button_text: 'Continue', extra_params: { glm_source: glm_source }
-        )
+        submit_company_information_form(extra_params: { glm_source: glm_source })
 
         expect_to_be_on_namespace_creation_without_company_question
 
@@ -108,9 +104,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         fill_in_company_information
 
-        submit_company_information_form(
-          button_text: 'Continue', extra_params: { glm_source: glm_source }
-        )
+        submit_company_information_form(extra_params: { glm_source: glm_source })
 
         expect_to_be_on_namespace_creation
 
@@ -133,12 +127,12 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_result: lead_failure, button_text: 'Continue')
+      submit_company_information_form(lead_result: lead_failure)
 
       expect_to_be_on_lead_form_with_errors
 
       # success
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_creation
 
@@ -158,7 +152,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_creation
 
@@ -186,7 +180,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_creation
 

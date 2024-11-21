@@ -21,7 +21,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_selection
 
@@ -42,7 +42,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         fill_in_company_information
 
-        submit_company_information_form(extra_params: glm_params, button_text: 'Continue')
+        submit_company_information_form(extra_params: glm_params)
 
         expect_to_be_on_namespace_selection
 
@@ -62,9 +62,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         fill_in_company_information
 
-        submit_company_information_form(
-          button_text: 'Continue', extra_params: { glm_content: 'discover-group-security' }
-        )
+        submit_company_information_form(extra_params: { glm_content: 'discover-group-security' })
 
         expect_to_be_on_namespace_selection
 
@@ -85,7 +83,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_selection
 
@@ -110,7 +108,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_selection
 
@@ -144,12 +142,12 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_result: lead_failure, button_text: 'Continue')
+      submit_company_information_form(lead_result: lead_failure)
 
       expect_to_be_on_lead_form_with_errors
 
       # success
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_selection
 
@@ -170,7 +168,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Continue')
+      submit_company_information_form
 
       expect_to_be_on_namespace_selection
 

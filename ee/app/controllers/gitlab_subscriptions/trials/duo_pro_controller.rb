@@ -16,6 +16,7 @@ module GitlabSubscriptions
 
           render :step_namespace
         else
+          set_group_name
           track_event('render_duo_pro_lead_page')
 
           render :step_lead
@@ -45,6 +46,8 @@ module GitlabSubscriptions
           # namespace not found/not permitted to create
           render_404
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoProService::LEAD_FAILED
+          set_group_name
+
           render :step_lead_failed
         else
           # trial creation failed

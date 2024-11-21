@@ -18,7 +18,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       fill_in_company_information
 
-      submit_company_information_form(with_trial: true, button_text: 'Continue')
+      submit_single_namespace_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_page
     end
@@ -33,7 +33,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_company_information_form(with_trial: true, button_text: 'Continue')
+        submit_single_namespace_trial_company_form(with_trial: true)
 
         expect_to_be_on_gitlab_duo_page(path: group.name)
       end
@@ -49,7 +49,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_company_information_form(with_trial: true, button_text: 'Continue')
+        submit_single_namespace_trial_company_form(with_trial: true)
 
         expect_to_be_on_gitlab_duo_page(path: group.name)
       end
@@ -67,7 +67,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_company_information_form(with_trial: true, button_text: 'Continue')
+        submit_single_namespace_trial_company_form(with_trial: true)
 
         expect_to_be_on_gitlab_duo_page(path: group.name)
       end
@@ -81,9 +81,8 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         fill_in_company_information
 
-        submit_company_information_form(
+        submit_single_namespace_trial_company_form(
           with_trial: true,
-          button_text: 'Continue',
           extra_params: { glm_content: 'discover-group-security' }
         )
 
@@ -102,12 +101,12 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_result: lead_failure, button_text: 'Continue')
+      submit_single_namespace_trial_company_form(lead_result: lead_failure)
 
       expect_to_be_on_lead_form_with_errors
 
       # success
-      submit_company_information_form(with_trial: true, button_text: 'Continue')
+      submit_single_namespace_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_page
     end
@@ -123,9 +122,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       fill_in_company_information
 
       # trial failure
-      submit_company_information_form(
-        with_trial: true, trial_result: trial_failure, button_text: 'Continue'
-      )
+      submit_single_namespace_trial_company_form(with_trial: true, trial_result: trial_failure)
 
       expect_to_be_on_namespace_selection_with_errors
 
@@ -146,9 +143,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       fill_in_company_information
 
       # trial failure
-      submit_company_information_form(
-        with_trial: true, trial_result: trial_failure, button_text: 'Continue'
-      )
+      submit_single_namespace_trial_company_form(with_trial: true, trial_result: trial_failure)
 
       expect_to_be_on_namespace_selection_with_errors
 
@@ -164,5 +159,9 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       expect_to_be_on_gitlab_duo_page(path: group_name)
     end
+  end
+
+  def submit_single_namespace_trial_company_form(**kwargs)
+    submit_company_information_form(**kwargs, button_text: 'Activate my trial')
   end
 end
