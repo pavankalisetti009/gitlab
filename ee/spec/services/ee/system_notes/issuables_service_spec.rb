@@ -275,4 +275,29 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       end
     end
   end
+
+  describe '#cross_reference_disallowed?' do
+    context 'when noteable is an Epic' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:noteable) { create(:epic, group: group) }
+
+      context 'when mentioned_in is relevant work item' do
+        let_it_be(:mentioned_in) { noteable.work_item }
+
+        it 'is true' do
+          expect(service.cross_reference_disallowed?(mentioned_in)).to be_truthy
+        end
+      end
+
+      context 'when mentioned_in is a different epic work item' do
+        let_it_be(:epic) { create(:epic, group: group) }
+        let_it_be(:mentioned_in) { epic.work_item }
+
+        it 'is false' do
+          expect(service.cross_reference_disallowed?(mentioned_in)).to be_falsey
+        end
+      end
+    end
+  end
 end

@@ -150,10 +150,21 @@ module EE
         counter.track_epic_cross_referenced(author: author, namespace: noteable.group)
       end
 
+      override :cross_reference_disallowed?
+      def cross_reference_disallowed?(mentioned_in)
+        epic_self_reference?(mentioned_in) || super
+      end
+
       private
 
       def block_message(issuable_type, noteable_reference, type)
         "marked this #{issuable_type} as #{type} #{noteable_reference}"
+      end
+
+      def epic_self_reference?(mentioned_in)
+        noteable.is_a?(Epic) &&
+          (mentioned_in.is_a?(Issue) || mentioned_in.is_a?(WorkItem)) &&
+          noteable == mentioned_in&.synced_epic
       end
     end
   end
