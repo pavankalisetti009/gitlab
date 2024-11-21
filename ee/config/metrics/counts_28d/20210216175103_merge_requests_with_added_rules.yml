@@ -3,6 +3,8 @@ data_category: optional
 key_path: usage_activity_by_stage_monthly.create.merge_requests_with_added_rules
 description: Merge requests with added rules
 product_group: code_review
+product_categories:
+- code_review_workflow
 value_type: number
 status: active
 time_frame: 28d
