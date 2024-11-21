@@ -373,7 +373,7 @@ describeSkipVue3(skipReason, () => {
         expect(performance.mark).toHaveBeenCalledWith('response-received');
 
         expect(trackingSpy).toHaveBeenCalledWith(undefined, 'ai_response_time', {
-          property: 'request-id-123',
+          requestId: 'request-id-123',
           value: 123,
         });
       });

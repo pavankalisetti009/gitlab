@@ -144,7 +144,7 @@ export default {
       const [{ duration }] = performance.getEntriesByName('prompt-to-response');
 
       this.track('ai_response_time', {
-        property: requestId,
+        requestId,
         value: duration,
       });
 
