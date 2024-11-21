@@ -6,8 +6,6 @@ module RemoteDevelopment
     include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
 
-    ignore_column :editor, remove_with: '17.7', remove_after: '2024-11-21'
-
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
     belongs_to :agent, class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :workspaces
