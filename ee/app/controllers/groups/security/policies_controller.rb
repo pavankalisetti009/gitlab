@@ -15,6 +15,7 @@ module Groups
         push_frontend_feature_flag(:scan_execution_policy_action_limit_group, group)
         push_frontend_feature_flag(:security_policies_new_yaml_format, group)
         push_frontend_feature_flag(:exclude_license_packages, group)
+        push_frontend_feature_flag(:multiple_approval_actions, group)
       end
 
       feature_category :security_policy_management

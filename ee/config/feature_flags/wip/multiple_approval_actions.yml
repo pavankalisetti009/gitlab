@@ -1,7 +1,7 @@
 ---
 name: multiple_approval_actions
 feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/505374
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/505373
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173339
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/505374
 milestone: '17.7'
 group: group::security policies
