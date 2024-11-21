@@ -40,6 +40,11 @@ module EE
       )
     end
 
+    def display_password_requirements?
+      ::License.feature_available?(:password_complexity) &&
+        ::Feature.enabled?(:display_password_requirements, :instance, type: :wip)
+    end
+
     private
 
     def registration_objective_options

@@ -1,5 +1,6 @@
 import { s__ } from '~/locale';
 
+export const LENGTH = 'length';
 export const COMMON = 'common';
 export const NUMBER = 'number';
 export const UPPERCASE = 'uppercase';
@@ -18,6 +19,10 @@ export const I18N = {
   PASSWORD_TO_BE_SATISFIED: s__('Password|To be satisfied'),
 };
 export const PASSWORD_RULE_MAP = {
+  [LENGTH]: {
+    reg: /^.{8,128}$/u,
+    text: s__('Password|must be between 8-128 characters'),
+  },
   [COMMON]: {
     text: s__('Password|cannot use common phrases (e.g. "password")'),
   },

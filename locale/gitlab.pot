@@ -39862,6 +39862,9 @@ msgstr ""
 msgid "Password|cannot use common phrases (e.g. \"password\")"
 msgstr ""
 
+msgid "Password|must be between 8-128 characters"
+msgstr ""
+
 msgid "Password|requires at least one lowercase letter"
 msgstr ""
 
