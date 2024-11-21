@@ -224,9 +224,7 @@ module GitlabSubscriptions
     end
 
     override :buy_now_link
-    def buy_now_link
-      group_billings_path(namespace)
-    end
+    def buy_now_link; end
 
     override :hero_video
     def hero_video

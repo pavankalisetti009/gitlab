@@ -99,7 +99,7 @@ module GitlabSubscriptions
           label: trial_status_cta_label
         }.to_json,
         button_attributes: {
-          category: 'secondary',
+          category: buy_now_link ? 'secondary' : 'primary',
           variant: 'confirm',
           class: 'gl-w-full sm:gl-w-auto',
           'data-testid': 'trial-discover-hand-raise-lead-button'

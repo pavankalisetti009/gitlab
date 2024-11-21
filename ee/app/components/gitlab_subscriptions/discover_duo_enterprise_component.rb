@@ -16,6 +16,9 @@ module GitlabSubscriptions
       GitlabSubscriptions::Trials::DuoEnterprise.active_add_on_purchase_for_namespace?(namespace)
     end
 
+    override :buy_now_link
+    def buy_now_link; end
+
     override :core_section_one_card_collection
     def core_section_one_card_collection
       [
