@@ -7,7 +7,7 @@ module GitlabSubscriptions
     def create_lead_form_data
       submit_path = trials_path(
         step: GitlabSubscriptions::Trials::CreateService::LEAD,
-        **params.permit(:namespace_id).merge(::Onboarding::Status.glm_tracking_attributes(params))
+        **params.permit(:namespace_id).merge(::Onboarding::StatusPresenter.glm_tracking_attributes(params))
       )
 
       _lead_form_data.merge(
@@ -37,7 +37,7 @@ module GitlabSubscriptions
     end
 
     def should_ask_company_question?
-      TRIAL_ONBOARDING_SOURCE_URLS.exclude?(::Onboarding::Status.glm_tracking_attributes(params)[:glm_source])
+      TRIAL_ONBOARDING_SOURCE_URLS.exclude?(::Onboarding::StatusPresenter.glm_tracking_attributes(params)[:glm_source])
     end
 
     def trial_namespace_selector_data(namespaces, namespace_create_errors)

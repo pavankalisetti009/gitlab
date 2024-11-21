@@ -1,4 +1,4 @@
-- return unless onboarding_status.show_joining_project?
+- return unless onboarding_status_presenter.show_joining_project?
 
 .row
   .form-group.col-sm-12
@@ -8,7 +8,7 @@
           label: _('Create a new project'),
           help_text: _('Create a new project on GitLab. Store your files, plan your work, and collaborate on code.'),
           value: false,
-          radio_options: { required: true, class: 'js-track-error', data: { track_action_for_errors: onboarding_status.tracking_label } },
+          radio_options: { required: true, class: 'js-track-error', data: { track_action_for_errors: onboarding_status_presenter.tracking_label } },
           label_options: { data: { testid: 'create-a-new-project-radio' } })
     %div
       = render Pajamas::RadioTagComponent.new(name: :joining_project,

@@ -2,7 +2,7 @@
 
 module EE
   module Onboarding
-    module Status
+    module StatusPresenter
       extend ::Gitlab::Utils::Override
 
       GLM_PARAMS = [:glm_source, :glm_content].freeze

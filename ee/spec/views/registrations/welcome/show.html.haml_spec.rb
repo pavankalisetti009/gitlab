@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
   let(:hide_setup_for_company_field?) { false }
   let(:show_joining_project?) { true }
-  let(:onboarding_status) do
+  let(:onboarding_status_presenter) do
     instance_double(
-      ::Onboarding::Status,
+      ::Onboarding::StatusPresenter,
       hide_setup_for_company_field?: hide_setup_for_company_field?,
       setup_for_company_label_text: '_text_',
       setup_for_company_help_text: '_help_text_',
@@ -18,7 +18,7 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
   end
 
   before do
-    allow(view).to receive(:onboarding_status).and_return(onboarding_status)
+    allow(view).to receive(:onboarding_status_presenter).and_return(onboarding_status_presenter)
     allow(view).to receive(:current_user).and_return(build_stubbed(:user))
     controller.params[:glm_content] = '_glm_content_'
     controller.params[:glm_source] = '_glm_source_'

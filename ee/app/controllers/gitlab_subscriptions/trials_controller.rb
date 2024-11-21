@@ -81,7 +81,7 @@ module GitlabSubscriptions
       return if current_user
 
       redirect_to(
-        new_trial_registration_path(::Onboarding::Status.glm_tracking_params(params)), # rubocop:disable Rails/StrongParams -- method performs strong params
+        new_trial_registration_path(::Onboarding::StatusPresenter.glm_tracking_params(params)), # rubocop:disable Rails/StrongParams -- method performs strong params
         alert: I18n.t('devise.failure.unauthenticated')
       )
     end
@@ -92,14 +92,14 @@ module GitlabSubscriptions
 
     def lead_params
       params.permit(
-        *::Onboarding::Status::GLM_PARAMS,
+        *::Onboarding::StatusPresenter::GLM_PARAMS,
         :company_name, :company_size, :first_name, :last_name, :phone_number,
         :country, :state, :website_url
       ).to_h
     end
 
     def trial_params
-      params.permit(*::Onboarding::Status::GLM_PARAMS, :new_group_name, :namespace_id, :trial_entity)
+      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :new_group_name, :namespace_id, :trial_entity)
       .with_defaults(organization_id: Current.organization_id).to_h
     end
 

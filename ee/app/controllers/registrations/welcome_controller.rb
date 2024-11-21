@@ -19,7 +19,7 @@ module Registrations
 
     before_action :set_update_onboarding_status_params, only: :update
 
-    helper_method :onboarding_status
+    helper_method :onboarding_status_presenter
 
     feature_category :onboarding
 
@@ -30,13 +30,13 @@ module Registrations
                  .new(current_user, user_return_to: session['user_return_to'], params: update_params).execute
 
       if result.success?
-        clear_memoization(:onboarding_status) # needed in case registration_type is changed on update
+        clear_memoization(:onboarding_status_presenter) # needed in case registration_type is changed on update
         track_event('successfully_submitted_form')
         track_joining_a_project_event
 
         redirect_to update_success_path
       else
-        track_event("track_#{onboarding_status.tracking_label}_error", label: 'failed_submitting_form')
+        track_event("track_#{onboarding_status_presenter.tracking_label}_error", label: 'failed_submitting_form')
 
         render :show
       end
@@ -69,11 +69,11 @@ module Registrations
             .permit(:role, :setup_for_company, :registration_objective)
             .merge(params.permit(:jobs_to_be_done_other))
             .merge(user_onboarding_status_params)
-            .merge(onboarding_in_progress: onboarding_status.continue_full_onboarding?)
+            .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
     end
 
     def user_onboarding_status_params
-      return {} unless onboarding_status.convert_to_automatic_trial?
+      return {} unless onboarding_status_presenter.convert_to_automatic_trial?
 
       # Now we are in automatic trial and we'll update our status as such, initial_registration_type
       # will be how we know if they weren't a trial originally from here on out.
@@ -81,16 +81,16 @@ module Registrations
     end
 
     def passed_through_params
-      update_params.slice(*::Onboarding::Status::PASSED_THROUGH_PARAMS)
-                   .merge(::Onboarding::Status.glm_tracking_params(params))
+      update_params.slice(*::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS)
+                   .merge(::Onboarding::StatusPresenter.glm_tracking_params(params))
     end
 
     def update_success_path
-      if onboarding_status.continue_full_onboarding? # trials/regular registration on .com
+      if onboarding_status_presenter.continue_full_onboarding? # trials/regular registration on .com
         signup_onboarding_path
-      elsif onboarding_status.single_invite? # invites w/o tasks due to order
-        flash[:notice] = helpers.invite_accepted_notice(onboarding_status.last_invited_member)
-        polymorphic_path(onboarding_status.last_invited_member_source)
+      elsif onboarding_status_presenter.single_invite? # invites w/o tasks due to order
+        flash[:notice] = helpers.invite_accepted_notice(onboarding_status_presenter.last_invited_member)
+        polymorphic_path(onboarding_status_presenter.last_invited_member_source)
       else
         # Subscription registrations goes through here as well.
         # Invites will come here too if there is more than 1.
@@ -99,10 +99,10 @@ module Registrations
     end
 
     def signup_onboarding_path
-      if onboarding_status.joining_a_project?
+      if onboarding_status_presenter.joining_a_project?
         Onboarding::FinishService.new(current_user).execute
         path_for_signed_in_user
-      elsif onboarding_status.redirect_to_company_form?
+      elsif onboarding_status_presenter.redirect_to_company_form?
         Onboarding::StatusStepUpdateService
           .new(current_user, new_users_sign_up_company_path(passed_through_params)).execute[:step_url]
       else
@@ -111,14 +111,14 @@ module Registrations
     end
 
     def track_joining_a_project_event
-      return unless onboarding_status.joining_a_project?
+      return unless onboarding_status_presenter.joining_a_project?
 
       cookies[:signup_with_joining_a_project] = { value: true, expires: 30.days }
 
       track_event('select_button', label: 'join_a_project')
     end
 
-    def track_event(action, label: onboarding_status.tracking_label)
+    def track_event(action, label: onboarding_status_presenter.tracking_label)
       ::Gitlab::Tracking.event(
         helpers.body_data_page,
         action,
@@ -127,10 +127,10 @@ module Registrations
       )
     end
 
-    def onboarding_status
-      Onboarding::Status.new(@onboarding_status_params, session['user_return_to'], current_user)
+    def onboarding_status_presenter
+      Onboarding::StatusPresenter.new(@onboarding_status_params, session['user_return_to'], current_user)
     end
-    strong_memoize_attr :onboarding_status
+    strong_memoize_attr :onboarding_status_presenter
 
     def set_update_onboarding_status_params
       @onboarding_status_params = params.require(:user).permit(:setup_for_company)

@@ -7,14 +7,14 @@
   = render "layouts/bizible"
 = render "layouts/google_tag_manager_body"
 
-.row.gl-grow{ data: { track_action: 'render', track_label: onboarding_status.tracking_label } }
+.row.gl-grow{ data: { track_action: 'render', track_label: onboarding_status_presenter.tracking_label } }
   .gl-flex.gl-flex-col.gl-items-center.gl-w-full.gl-px-5.gl-pb-5
     .edit-profile.gl-flex.flex-column.gl-items-center
       %h2.gl-text-center= html_escape(_('Welcome to GitLab,%{br_tag}%{name}!')) % { name: html_escape(current_user.first_name), br_tag: '<br/>'.html_safe }
       %p.gl-text-center
         = _('To personalize your GitLab experience, we\'d like to know a bit more about you. We won\'t share this information with anyone.')
       = gitlab_ui_form_for(current_user,
-        url: users_sign_up_welcome_path(::Onboarding::Status.glm_tracking_params(params)),
+        url: users_sign_up_welcome_path(::Onboarding::StatusPresenter.glm_tracking_params(params)),
         html: { class: '!gl-w-full gl-p-5 js-users-signup-welcome',
                 'aria-live' => 'assertive',
                 data: { testid: 'welcome-form' } }) do |f|
@@ -25,7 +25,7 @@
             .row
               .form-group.col-sm-12
                 = f.label :role, _('Role'), class: 'label-bold'
-                = f.select :role, ::User.roles.keys.map { |role| [role.titleize, role] }, { include_blank: _('Select a role') }, class: 'form-control js-user-role-dropdown js-track-error', required: true, data: { testid: 'role-dropdown', track_action_for_errors: onboarding_status.tracking_label }
+                = f.select :role, ::User.roles.keys.map { |role| [role.titleize, role] }, { include_blank: _('Select a role') }, class: 'form-control js-user-role-dropdown js-track-error', required: true, data: { testid: 'role-dropdown', track_action_for_errors: onboarding_status_presenter.tracking_label }
             = render 'jobs_to_be_done', f: f
             = render 'joining_project'
             = render 'setup_for_company', f: f
@@ -34,4 +34,4 @@
                 = render Pajamas::ButtonComponent.new(variant: :confirm, block: true,
                   button_options: { type: :submit, data: { testid: 'get-started-button' },
                   class: 'js-trial-welcome-btn'}) do
-                  = onboarding_status.welcome_submit_button_text
+                  = onboarding_status_presenter.welcome_submit_button_text

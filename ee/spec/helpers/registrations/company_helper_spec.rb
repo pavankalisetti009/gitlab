@@ -30,7 +30,7 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
         track_action_for_errors: 'trial_registration'
       }
 
-      expect(helper.create_company_form_data(::Onboarding::Status.new({}, {}, user))).to match(attributes)
+      expect(helper.create_company_form_data(::Onboarding::StatusPresenter.new({}, {}, user))).to match(attributes)
     end
   end
 end

@@ -137,7 +137,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
           post :create, params: params
         end
 
-        context 'when driving from the onboarding_status.initial_registration_type' do
+        context 'when driving from the onboarding_status_presenter.initial_registration_type' do
           before do
             user.update!(onboarding_status_initial_registration_type: 'trial')
           end
