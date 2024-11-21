@@ -21,11 +21,13 @@ end
 RSpec.shared_examples 'service account creation with customized params' do
   subject(:service) { described_class.new(current_user, params) }
 
+  let_it_be(:organization) { create(:organization) }
   let_it_be(:username_prefix) { "service_account" }
   let(:params) do
     {
       name: 'John Doe',
-      username: 'test'
+      username: 'test',
+      organization_id: organization.id
     }
   end
 
@@ -48,7 +50,8 @@ RSpec.shared_examples 'service account creation with customized params' do
   context 'when username is not supplied' do
     let_it_be(:params) do
       {
-        name: 'John Doe'
+        name: 'John Doe',
+        organization_id: organization.id
       }
     end
 
@@ -65,7 +68,8 @@ RSpec.shared_examples 'service account creation with customized params' do
   context 'when name is not supplied' do
     let_it_be(:params) do
       {
-        username: 'test'
+        username: 'test',
+        organization_id: organization.id
       }
     end
 

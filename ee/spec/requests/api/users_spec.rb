@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Users, :aggregate_failures, feature_category: :user_profile do
+RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feature_category: :user_profile do
   let(:user)  { create(:user) }
   let(:admin) { create(:admin) }
 
