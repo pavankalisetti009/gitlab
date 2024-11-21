@@ -16,9 +16,13 @@ module GitlabSubscriptions
       if general_params[:step] == GitlabSubscriptions::Trials::CreateService::TRIAL
         render :step_namespace
       else
-        set_group_name
-
-        render :step_lead
+        render GitlabSubscriptions::Trials::LeadFormComponent
+                 .new(
+                   user: current_user,
+                   namespace_id: general_params[:namespace_id],
+                   eligible_namespaces: @eligible_namespaces,
+                   submit_path: trial_submit_path
+                 )
       end
     end
 
@@ -42,9 +46,15 @@ module GitlabSubscriptions
         # namespace not found/not permitted to create
         render_404
       elsif @result.reason == GitlabSubscriptions::Trials::CreateService::LEAD_FAILED
-        set_group_name
-
-        render :step_lead_failed
+        render GitlabSubscriptions::Trials::LeadFormWithErrorsComponent
+                 .new(
+                   user: current_user,
+                   namespace_id: general_params[:namespace_id],
+                   eligible_namespaces: @eligible_namespaces,
+                   submit_path: trial_submit_path,
+                   form_params: lead_form_params,
+                   errors: @result.errors
+                 )
       elsif @result.reason == GitlabSubscriptions::Trials::CreateService::NAMESPACE_CREATE_FAILED
         # namespace creation failed
         params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
@@ -59,6 +69,19 @@ module GitlabSubscriptions
     end
 
     private
+
+    def trial_submit_path
+      trials_path(
+        step: GitlabSubscriptions::Trials::CreateService::LEAD,
+        **params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id)
+      )
+    end
+
+    def lead_form_params
+      params.permit(
+        :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state
+      ).to_h.symbolize_keys
+    end
 
     def trial_success_path(namespace)
       if discover_group_security_flow?
