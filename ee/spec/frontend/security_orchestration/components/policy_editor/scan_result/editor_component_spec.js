@@ -363,6 +363,9 @@ describe('EditorComponent', () => {
           expect(
             findScanFilterSelector().props('customFilterTooltip')({ value: BOT_MESSAGE_TYPE }),
           ).toBe('Merge request approval policies allow a maximum 1 bot message action.');
+          expect(
+            findScanFilterSelector().props('shouldDisableFilter')({ value: REQUIRE_APPROVAL_TYPE }),
+          ).toBe(true);
           expect(findScanFilterSelector().props('filters')).toEqual([
             { value: REQUIRE_APPROVAL_TYPE, text: 'Require Approvers' },
             { value: BOT_MESSAGE_TYPE, text: 'Send bot message' },
@@ -375,7 +378,7 @@ describe('EditorComponent', () => {
           expect(findScanFilterSelector().exists()).toBe(true);
           expect(
             findScanFilterSelector().props('customFilterTooltip')({ value: REQUIRE_APPROVAL_TYPE }),
-          ).toBe('Merge request approval policies allow a maximum of 5 approver actions.');
+          ).toBe('Merge request approval policies allow a maximum of 1 approver action.');
           expect(findScanFilterSelector().props('filters')).toEqual([
             { text: 'Require Approvers', value: REQUIRE_APPROVAL_TYPE },
             { text: 'Send bot message', value: BOT_MESSAGE_TYPE },
@@ -438,6 +441,32 @@ describe('EditorComponent', () => {
 
           await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
           expect(findAllActionSections()).toHaveLength(5);
+        });
+
+        describe('multiple approval actions when ff enabled', () => {
+          it('allows to add multiple approver actions when ff is enabled', () => {
+            factoryWithExistingPolicy({
+              policy: mockDefaultBranchesScanResultObject,
+              provide: {
+                glFeatures: {
+                  multipleApprovalActions: true,
+                },
+              },
+            });
+
+            expect(findScanFilterSelector().exists()).toBe(true);
+
+            expect(
+              findScanFilterSelector().props('shouldDisableFilter')({
+                value: REQUIRE_APPROVAL_TYPE,
+              }),
+            ).toBe(false);
+            expect(
+              findScanFilterSelector().props('customFilterTooltip')({
+                value: REQUIRE_APPROVAL_TYPE,
+              }),
+            ).toBe('Merge request approval policies allow a maximum of 5 approver actions.');
+          });
         });
       });
 
