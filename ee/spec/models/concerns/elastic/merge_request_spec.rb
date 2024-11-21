@@ -60,6 +60,7 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
         'target_project_id',
         'author_id'
       ).merge(
+        'traversal_ids' => "#{merge_request.project.namespace.id}-p#{merge_request.project.id}-",
         'state' => merge_request.state,
         'type' => merge_request.es_type,
         'merge_requests_access_level' => ProjectFeature::ENABLED,
@@ -77,9 +78,14 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
       merge_request.project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
     end
 
-    it 'does not include label_ids if add_label_ids_to_merge_request is not finished' do
+    it 'does not include label_ids or traversal_ids if add_label_ids_to_merge_request is not finished' do
       set_elasticsearch_migration_to :add_label_ids_to_merge_request, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids'))
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids', 'traversal_ids'))
+    end
+
+    it 'does not include traversal_ids if add_traversal_ids_to_merge_requests is not finished' do
+      set_elasticsearch_migration_to :add_traversal_ids_to_merge_requests, including: false
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('traversal_ids'))
     end
 
     it 'returns json with all needed elements' do
