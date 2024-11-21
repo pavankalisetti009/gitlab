@@ -19,7 +19,7 @@ module Security
 
         return error_with_title(s_('SecurityOrchestration|Invalid policy type')) if invalid_policy_type?
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} actions'), limit: scan_execution_policies_action_limit)) if exceeds_action_limit?
-        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} approver actions'), limit: Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT)) if exceeds_approver_action_limit?
+        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} approver actions'), limit: approval_action_limit)) if exceeds_approver_action_limit?
 
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled without branch information'), field: :branches) if blank_branch_for_rule?
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled for non-existing branches (%{branches})') % { branches: missing_branch_names.join(', ') }, field: :branches) if missing_branch_for_rule?
@@ -73,7 +73,7 @@ module Security
           action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL
         end || 0
 
-        approver_actions_count >= Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT
+        approver_actions_count > approval_action_limit
       end
 
       def exceeds_action_limit?
@@ -262,6 +262,11 @@ module Security
         Gitlab::CurrentSettings.scan_execution_policies_action_limit
       end
       strong_memoize_attr :scan_execution_policies_action_limit
+
+      def approval_action_limit
+        Feature.enabled?(:multiple_approval_actions, container) ? Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT : 1
+      end
+      strong_memoize_attr :approval_action_limit
 
       def invalid_cadence?
         return false unless scan_execution_policy?

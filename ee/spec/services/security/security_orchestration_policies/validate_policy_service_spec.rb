@@ -656,6 +656,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it { expect(result[:status]).to eq(:success) }
       end
 
+      context 'when equals to a limit' do
+        before do
+          policy[:actions] = [action] * limit
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+
       context 'when exceeding limit' do
         before do
           policy[:actions] = [action] * (limit + 1)
@@ -670,6 +678,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
 
           it { expect(result[:status]).to eq(:success) }
         end
+      end
+
+      context 'when exceeding limit when ff is disabled' do
+        before do
+          stub_feature_flags(multiple_approval_actions: false)
+          policy[:actions] = [action, action]
+        end
+
+        it { expect(result[:status]).to eq(:error) }
+
+        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 1 approver actions"
       end
     end
 
