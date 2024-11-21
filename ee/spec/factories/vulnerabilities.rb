@@ -106,6 +106,26 @@ FactoryBot.define do
       end
     end
 
+    trait :with_scanner do
+      transient do
+        scanner { nil }
+      end
+
+      after(:build) do |vulnerability, evaluator|
+        finding = build(
+          :vulnerabilities_finding,
+          :identifier,
+          description: vulnerability.description,
+          vulnerability: vulnerability,
+          report_type: vulnerability.report_type,
+          project: vulnerability.project,
+          scanner: evaluator.scanner
+        )
+
+        vulnerability.findings = [finding]
+      end
+    end
+
     trait :with_notes do
       transient do
         notes_count { 3 }
