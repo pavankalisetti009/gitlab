@@ -31,3 +31,4 @@ duo_chat:
   compatible_llms:
     - mistral
     - claude_3
+    - gpt
