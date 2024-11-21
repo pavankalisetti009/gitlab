@@ -11,7 +11,8 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
   let_it_be(:source_namespace_member) { create(:user, reporter_of: group) }
   let_it_be(:target_namespace_member) { create(:user, reporter_of: target_group) }
   let_it_be(:namespaces_member) { create(:user, developer_of: [group, target_group]) }
-  let_it_be_with_reload(:target_namespace) { target_group }
+
+  let_it_be_with_refind(:target_namespace) { target_group }
 
   let(:service) do
     described_class.new(
