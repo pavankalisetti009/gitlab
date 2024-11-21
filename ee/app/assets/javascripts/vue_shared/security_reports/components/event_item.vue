@@ -64,7 +64,7 @@ export default {
 <template>
   <div :id="noteId" class="gl-flex gl-items-center">
     <div class="circle-icon-container gl-shrink-0 gl-self-start" :class="iconClass">
-      <gl-icon :size="16" :name="iconName" />
+      <gl-icon :size="16" :name="iconName" variant="subtle" />
     </div>
     <div class="gl-ml-5 gl-grow" data-testid="event-item-content">
       <note-header

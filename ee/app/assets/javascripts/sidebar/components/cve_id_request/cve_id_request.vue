@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -12,8 +12,8 @@ export default {
   },
 
   components: {
+    GlButton,
     GlIcon,
-    GlLink,
   },
 
   directives: {
@@ -106,13 +106,9 @@ export default {
       </div>
 
       <div class="gl-mt-5">
-        <gl-link
-          :href="newCveIdRequestUrl"
-          target="_blank"
-          class="btn btn-default btn-block js-cve-id-request-button"
-          data-testid="request-button"
-          >{{ $options.i18n.createRequest }}</gl-link
-        >
+        <gl-button block :href="newCveIdRequestUrl" target="_blank" data-testid="request-button">{{
+          $options.i18n.createRequest
+        }}</gl-button>
       </div>
 
       <div class="hide-collapsed">
@@ -128,12 +124,7 @@ export default {
             </p>
 
             <div>
-              <gl-link
-                :href="helpHref"
-                target="_blank"
-                class="btn btn-default js-cve-id-request-learn-more-link"
-                >{{ $options.i18n.learnMore }}</gl-link
-              >
+              <gl-button :href="helpHref" target="_blank">{{ $options.i18n.learnMore }}</gl-button>
             </div>
           </div>
         </transition>
