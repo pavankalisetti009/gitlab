@@ -13,6 +13,7 @@ RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnera
       cveEnrichment {
         cve
         epssScore
+        isKnownExploit
       }
     QUERY
   end
@@ -55,6 +56,7 @@ RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnera
 
       expect(result['cve']).to eq(cve_enrichment.cve)
       expect(result['epssScore']).to eq(cve_enrichment.epss_score)
+      expect(result['isKnownExploit']).to eq(cve_enrichment.is_known_exploit)
     end
 
     it 'returns nil for non-cve identifier' do
@@ -76,8 +78,9 @@ RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnera
 
       expect(data).to contain_exactly(
         { "cveEnrichment" => nil },
-        { "cveEnrichment" => { "cve" => cve_enrichment.cve, "epssScore" => cve_enrichment.epss_score } }
-      )
+        { "cveEnrichment" => { "cve" => cve_enrichment.cve,
+                               "epssScore" => cve_enrichment.epss_score,
+                               "isKnownExploit" => cve_enrichment.is_known_exploit } })
     end
 
     it 'does not have N+1 queries' do
@@ -109,8 +112,7 @@ RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnera
       post_graphql(query, current_user: user)
 
       expect(data).to contain_exactly(
-        { "cveEnrichment" => nil }
-      )
+        { "cveEnrichment" => nil })
     end
   end
 end

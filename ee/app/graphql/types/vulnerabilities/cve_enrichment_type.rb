@@ -12,6 +12,9 @@ module Types
 
       field :epss_score, ::GraphQL::Types::Float,
         null: false, description: 'EPSS score for the CVE.'
+
+      field :is_known_exploit, ::GraphQL::Types::Boolean,
+        null: false, description: 'Whether the CVE appears in the CISA KEV catalog.'
     end
   end
   # rubocop: enable Graphql/AuthorizeTypes
