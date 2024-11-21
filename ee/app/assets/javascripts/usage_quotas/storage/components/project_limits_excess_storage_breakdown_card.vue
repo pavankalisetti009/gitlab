@@ -1,7 +1,6 @@
 <script>
 import {
   GlIcon,
-  GlLink,
   GlCard,
   GlButton,
   GlProgressBar,
@@ -9,8 +8,8 @@ import {
   GlSkeletonLoader,
 } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 /**
  * ProjectLimitsExcessStorageBreakdownCard
@@ -25,7 +24,7 @@ export default {
   name: 'ProjectLimitsExcessStorageBreakdownCard',
   components: {
     GlIcon,
-    GlLink,
+    HelpPageLink,
     GlCard,
     GlButton,
     GlProgressBar,
@@ -88,7 +87,6 @@ export default {
       'UsageQuota|This namespace is under project-level limits, so only repository and LFS storage usage above the limit included in the plan is counted as excess storage. You can increase excess storage limit by purchasing storage packages.',
     ),
   },
-  usageQuotasHelpPaths,
 };
 </script>
 
@@ -104,14 +102,15 @@ export default {
         <div class="gl-font-bold" data-testid="purchased-storage-card-title">
           {{ $options.i18n.PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE }}
 
-          <gl-link
-            :href="$options.usageQuotasHelpPaths.usageQuotasProjectStorageLimit"
+          <help-page-link
+            href="user/storage_usage_quotas"
+            anchor="view-storage"
             target="_blank"
             class="gl-ml-2"
             :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
           >
             <gl-icon name="question-o" />
-          </gl-link>
+          </help-page-link>
         </div>
         <template v-if="purchaseStorageUrl">
           <gl-button

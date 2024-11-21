@@ -1,8 +1,8 @@
 <script>
-import { GlIcon, GlLink, GlCard } from '@gitlab/ui';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
+import { GlIcon, GlCard } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 /**
  * NamespaceLimitsTotalStorageAvailableBreakdownCard
@@ -15,7 +15,7 @@ import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/numb
 
 export default {
   name: 'NamespaceLimitsTotalStorageAvailableBreakdownCard',
-  components: { GlIcon, GlLink, GlCard, NumberToHumanSize },
+  components: { GlIcon, HelpPageLink, GlCard, NumberToHumanSize },
   inject: ['namespacePlanName', 'namespaceStorageLimit'],
   props: {
     purchasedStorage: {
@@ -37,9 +37,6 @@ export default {
       return this.namespaceStorageLimit + this.purchasedStorage;
     },
   },
-  i18n: {
-    PURCHASED_USAGE_HELP_LINK: usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit,
-  },
 };
 </script>
 
@@ -53,14 +50,15 @@ export default {
     <div class="gl-flex gl-justify-between">
       <div class="gl-w-80p">
         {{ s__('UsageQuota|Total purchased storage') }}
-        <gl-link
-          :href="$options.i18n.PURCHASED_USAGE_HELP_LINK"
+        <help-page-link
+          href="user/storage_usage_quotas"
+          anchor="view-storage"
           target="_blank"
           class="gl-ml-2"
           :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
         >
           <gl-icon name="question-o" />
-        </gl-link>
+        </help-page-link>
       </div>
       <div v-if="loading" class="gl-animate-skeleton-loader gl-h-5 gl-w-8 gl-rounded-base"></div>
       <number-to-human-size

@@ -1,14 +1,14 @@
 <script>
-import { GlIcon, GlLink, GlCard, GlSkeletonLoader } from '@gitlab/ui';
+import { GlIcon, GlCard, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 export default {
   name: 'NoLimitsPurchasedStorageBreakdownCard',
   components: {
     GlIcon,
-    GlLink,
+    HelpPageLink,
     GlCard,
     GlSkeletonLoader,
     NumberToHumanSize,
@@ -29,7 +29,6 @@ export default {
       'UsageQuota|Any additional purchased storage will be displayed here.',
     ),
   },
-  usageQuotasHelpPaths,
 };
 </script>
 
@@ -45,14 +44,15 @@ export default {
         <div class="gl-font-bold" data-testid="purchased-storage-card-title">
           {{ $options.i18n.PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE }}
 
-          <gl-link
-            :href="$options.usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit"
+          <help-page-link
+            href="user/storage_usage_quotas"
+            anchor="view-storage"
             target="_blank"
             class="gl-ml-2"
             :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
           >
             <gl-icon name="question-o" />
-          </gl-link>
+          </help-page-link>
         </div>
       </div>
       <div class="gl-my-3 gl-text-size-h-display gl-font-bold gl-leading-1">

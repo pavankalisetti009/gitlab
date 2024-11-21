@@ -1,6 +1,6 @@
 <script>
-import { GlSprintf, GlLink, GlButton, GlModalDirective } from '@gitlab/ui';
-import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
+import { GlSprintf, GlButton, GlModalDirective } from '@gitlab/ui';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import StorageUsageOverviewCard from '~/usage_quotas/storage/components/storage_usage_overview_card.vue';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
@@ -15,7 +15,7 @@ export default {
   name: 'StorageUsageStatistics',
   components: {
     GlSprintf,
-    GlLink,
+    HelpPageLink,
     GlButton,
     LimitedAccessModal,
     NamespaceLimitsStorageUsageOverviewCard,
@@ -81,7 +81,6 @@ export default {
       isLimitedAccessModalShown: false,
     };
   },
-  usageQuotasHelpPaths,
   computed: {
     isPurchaseButtonShown() {
       return (
@@ -99,11 +98,6 @@ export default {
         gon.features?.limitedAccessModal &&
         LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions.reason)
       );
-    },
-    projectLimitsHelpLink() {
-      return this.purchaseStorageUrl
-        ? usageQuotasHelpPaths.usageQuotasProjectStorageLimit
-        : usageQuotasHelpPaths.repositorySizeLimit;
     },
   },
   methods: {
@@ -146,9 +140,9 @@ export default {
         <gl-sprintf :message="s__('UsageQuota|This namespace has %{planLimit} of storage.')">
           <template #planLimit><number-to-human-size :value="namespaceStorageLimit" /></template>
         </gl-sprintf>
-        <gl-link :href="$options.usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit">{{
-          s__('UsageQuota|How are limits applied?')
-        }}</gl-link>
+        <help-page-link href="user/storage_usage_quotas" anchor="view-storage">
+          {{ s__('UsageQuota|How are limits applied?') }}</help-page-link
+        >
       </template>
 
       <template v-if="isUsingProjectEnforcementWithLimits">
@@ -161,9 +155,20 @@ export default {
         >
           <template #planLimit><number-to-human-size :value="perProjectStorageLimit" /></template>
         </gl-sprintf>
-        <gl-link :href="projectLimitsHelpLink">{{
-          s__('UsageQuota|How are limits applied?')
-        }}</gl-link>
+        <help-page-link
+          v-if="purchaseStorageUrl"
+          href="user/storage_usage_quotas"
+          anchor="view-storage"
+        >
+          {{ s__('UsageQuota|How are limits applied?') }}
+        </help-page-link>
+        <help-page-link
+          v-else
+          href="administration/settings/account_and_limit_settings"
+          anchor="repository-size-limit"
+        >
+          {{ s__('UsageQuota|How are limits applied?') }}
+        </help-page-link>
       </template>
     </p>
     <div class="gl-grid gl-gap-5 gl-py-4 md:gl-grid-cols-2">
