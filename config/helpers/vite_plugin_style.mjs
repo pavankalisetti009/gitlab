@@ -1,11 +1,10 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   resolveCompilationTargetsForVite,
   resolveLoadPaths,
 } from '../../scripts/frontend/lib/compile_css.mjs';
 
-const ROOT_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const ROOT_PATH = path.resolve(import.meta.dirname, '../../');
 
 /**
  * This Plugin provides virtual entrypoints for our SCSS files

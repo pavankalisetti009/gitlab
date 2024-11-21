@@ -1,14 +1,12 @@
 /* eslint-disable import/no-default-export */
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import localRules from 'eslint-plugin-local-rules';
 import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
 import * as graphqlEslint from '@graphql-eslint/eslint-plugin';
 
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
+const { dirname } = import.meta;
 const compat = new FlatCompat({
   baseDirectory: dirname,
   recommendedConfig: js.configs.recommended,
