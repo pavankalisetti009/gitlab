@@ -30906,6 +30906,7 @@ Represents generic policy violation information.
 | ---- | ---- | ----------- |
 | <a id="policyviolationinfoname"></a>`name` | [`String!`](#string) | Represents the name of the violated policy. |
 | <a id="policyviolationinforeporttype"></a>`reportType` | [`ApprovalReportType!`](#approvalreporttype) | Represents the report type. |
+| <a id="policyviolationinfostatus"></a>`status` | [`PolicyViolationStatus`](#policyviolationstatus) | Represents the status of the violated policy. |
 
 ### `PreviewBillableUserChange`
 
@@ -39893,6 +39894,14 @@ Types of security policy project created status.
 | <a id="policyviolationerrortypeartifacts_missing"></a>`ARTIFACTS_MISSING` | Represents error which occurs when pipeline is misconfigured and does not include necessary artifacts to evaluate a policy. |
 | <a id="policyviolationerrortypescan_removed"></a>`SCAN_REMOVED` | Represents mismatch between the scans of the source and target pipelines. |
 | <a id="policyviolationerrortypeunknown"></a>`UNKNOWN` | Represents unknown error. |
+
+### `PolicyViolationStatus`
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="policyviolationstatusfailed"></a>`FAILED` | Represents a failed policy violation. |
+| <a id="policyviolationstatusrunning"></a>`RUNNING` | Represents a running policy violation. |
+| <a id="policyviolationstatuswarning"></a>`WARNING` | Represents a policy violation warning. |
 
 ### `ProductAnalyticsState`
 

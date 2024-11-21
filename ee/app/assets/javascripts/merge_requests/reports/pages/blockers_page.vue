@@ -62,6 +62,13 @@ export default {
     openPolicyDrawer(policyName) {
       this.openPolicy = this.policies.find((p) => p.name === policyName);
     },
+    getPolicyStatus(name) {
+      const policy = this.policyViolations?.policies?.find((p) => p.name === name);
+
+      if (!policy) return 'success';
+
+      return policy.status;
+    },
     getFindingsForPolicyForName(name) {
       const policy = this.policyViolations?.policies?.find((p) => p.name === name);
 
@@ -97,6 +104,7 @@ export default {
         :policy-name="policy.name"
         :active="isPolicyActive(policy)"
         :findings="getFindingsForPolicyForName(policy.name)"
+        :status="getPolicyStatus(policy.name)"
         :loading="false"
         class="gl-mb-3 gl-pb-3"
         :class="{ 'gl-border-b': index !== policies.length - 1 }"

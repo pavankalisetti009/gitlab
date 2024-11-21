@@ -30,6 +30,7 @@ query getPolicyViolations($projectPath: ID!, $iid: String!) {
         policies {
           name
           reportType
+          status
         }
         previousScanFinding {
           location

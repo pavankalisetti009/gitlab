@@ -2,6 +2,7 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import { n__, __, sprintf } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
+import CiIcon from '~/vue_shared/components/ci_icon/ci_icon.vue';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 
@@ -9,6 +10,7 @@ export default {
   components: {
     GlButton,
     GlSprintf,
+    CiIcon,
     StatusIcon,
   },
   props: {
@@ -31,12 +33,14 @@ export default {
       required: false,
       default: () => [],
     },
+    status: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
-    status() {
-      if (!this.hasFindings) return 'success';
-
-      return 'failed';
+    statusIcon() {
+      return this.status.toLowerCase();
     },
     headingText() {
       let message = n__(
@@ -83,16 +87,20 @@ export default {
       );
     },
   },
+  EVALUATING_ICON: { icon: 'status_running' },
 };
 </script>
 
 <template>
-  <div class="gl-grid gl-w-full gl-grid-cols-[30px_1fr_auto]">
+  <div class="gl-grid gl-w-full gl-grid-cols-[38px_1fr_auto]">
     <div
       class="gl-col-span-3 -gl-mx-2 gl-grid gl-grid-cols-subgrid gl-gap-4 gl-rounded-base gl-px-4 gl-py-3"
       :class="{ 'gl-bg-gray-50': active }"
     >
-      <div><status-icon :icon-name="status" /></div>
+      <div>
+        <ci-icon v-if="status === 'RUNNING'" :status="$options.EVALUATING_ICON" :use-link="false" />
+        <status-icon v-else :icon-name="statusIcon" />
+      </div>
       <div>
         <strong class="gl-leading-[24px]" data-testid="security-item-heading">{{
           headingText
