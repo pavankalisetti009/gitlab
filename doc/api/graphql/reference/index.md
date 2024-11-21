@@ -21974,6 +21974,7 @@ Represents a CVE's Enrichment (EPSS score).
 | ---- | ---- | ----------- |
 | <a id="cveenrichmenttypecve"></a>`cve` | [`String!`](#string) | CVE identifier of relevant vulnerability. |
 | <a id="cveenrichmenttypeepssscore"></a>`epssScore` | [`Float!`](#float) | EPSS score for the CVE. |
+| <a id="cveenrichmenttypeisknownexploit"></a>`isKnownExploit` | [`Boolean!`](#boolean) | Whether the CVE appears in the CISA KEV catalog. |
 
 ### `CvssType`
 
@@ -35945,7 +35946,7 @@ Represents a vulnerability.
 | <a id="vulnerabilitycommenters"></a>`commenters` | [`UserCoreConnection!`](#usercoreconnection) | All commenters on this noteable. (see [Connections](#connections)) |
 | <a id="vulnerabilityconfirmedat"></a>`confirmedAt` | [`Time`](#time) | Timestamp of when the vulnerability state was changed to confirmed. |
 | <a id="vulnerabilityconfirmedby"></a>`confirmedBy` | [`UserCore`](#usercore) | User that confirmed the vulnerability. |
-| <a id="vulnerabilitycveenrichment"></a>`cveEnrichment` | [`CveEnrichmentType`](#cveenrichmenttype) | Enrichment (EPSS score) for CVE vulnerabilities. |
+| <a id="vulnerabilitycveenrichment"></a>`cveEnrichment` | [`CveEnrichmentType`](#cveenrichmenttype) | Enrichment (EPSS score and KEV) for CVE vulnerabilities. |
 | <a id="vulnerabilitycvss"></a>`cvss` | [`[CvssType!]!`](#cvsstype) | CVSS information for the vulnerability. |
 | <a id="vulnerabilitydescription"></a>`description` | [`String`](#string) | Description of the vulnerability. |
 | <a id="vulnerabilitydescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
