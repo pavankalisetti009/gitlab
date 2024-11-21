@@ -247,7 +247,7 @@ module Sbom
           strong_memoize_attr :licenses
 
           def map_from(license)
-            return if license[:spdx_identifier] == "unknown"
+            return if license[:spdx_identifier].nil? || license[:spdx_identifier] == "unknown"
 
             license.slice(:name, :spdx_identifier, :url)
           end
