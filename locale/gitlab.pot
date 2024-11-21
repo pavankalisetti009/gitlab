@@ -20715,6 +20715,9 @@ msgstr ""
 msgid "DuoProTrial|Start your free GitLab Duo Pro trial"
 msgstr ""
 
+msgid "DuoProTrial|Start your free GitLab Duo Pro trial on %{group_name}"
+msgstr ""
+
 msgid "DuoProTrial|Test Generation"
 msgstr ""
 
@@ -53494,9 +53497,6 @@ msgstr ""
 msgid "Start time"
 msgstr ""
 
-msgid "Start your Free Ultimate and GitLab Duo Enterprise Trial"
-msgstr ""
-
 msgid "Start your free trial"
 msgstr ""
 
@@ -58605,6 +58605,12 @@ msgid "Trial|Select state or province"
 msgstr ""
 
 msgid "Trial|Start free Ultimate + GitLab Duo Enterprise trial"
+msgstr ""
+
+msgid "Trial|Start your free Ultimate and GitLab Duo Enterprise trial"
+msgstr ""
+
+msgid "Trial|Start your free Ultimate and GitLab Duo Enterprise trial on %{group_name}"
 msgstr ""
 
 msgid "Trial|State or province"

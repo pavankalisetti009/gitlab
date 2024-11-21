@@ -25,26 +25,30 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       ActionController::Parameters.new(extra_params.merge(glm_source: '_glm_source_', glm_content: '_glm_content_'))
     end
 
+    let(:eligible_namespaces) { [] }
+
     before do
       allow(helper).to receive(:params).and_return(params)
       allow(helper).to receive(:current_user).and_return(user)
     end
 
+    subject(:form_data) { helper.create_lead_form_data(eligible_namespaces) }
+
     it 'provides expected form data' do
       keys = extra_params.keys + [:submit_path, :submit_button_text]
 
-      expect(helper.create_lead_form_data.keys.map(&:to_sym)).to match_array(keys)
+      expect(form_data.keys.map(&:to_sym)).to match_array(keys)
     end
 
     it 'allows overriding data with params' do
-      expect(helper.create_lead_form_data).to match(a_hash_including(extra_params))
+      expect(form_data).to match(a_hash_including(extra_params))
     end
 
     context 'when namespace_id is in the params' do
       let(:extra_params) { { namespace_id: non_existing_record_id } }
 
       it 'provides the submit path with the namespace_id' do
-        expect(helper.create_lead_form_data[:submit_path]).to eq(trials_path(step: :lead, **params.permit!))
+        expect(form_data[:submit_path]).to eq(trials_path(step: :lead, **params.permit!))
       end
     end
 
@@ -58,7 +62,29 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
           company_name: user.organization
         }
 
-        expect(helper.create_lead_form_data).to match(a_hash_including(current_user_attributes))
+        expect(form_data).to match(a_hash_including(current_user_attributes))
+      end
+    end
+
+    context 'when there are no eligible namespaces' do
+      it 'has the Continue text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
+      end
+    end
+
+    context 'when there is a single eligible namespace' do
+      let(:eligible_namespaces) { [build(:namespace)] }
+
+      it 'has the Activate text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Activate my trial')))
+      end
+    end
+
+    context 'when there are multiple eligible namespaces' do
+      let(:eligible_namespaces) { build_list(:namespace, 2) }
+
+      it 'has the Continue text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
       end
     end
   end
@@ -79,13 +105,14 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     end
 
     let(:params) { ActionController::Parameters.new(extra_params) }
+    let(:eligible_namespaces) { [] }
 
     before do
       allow(helper).to receive(:params).and_return(params)
       allow(helper).to receive(:current_user).and_return(user)
     end
 
-    subject(:form_data) { helper.create_duo_pro_lead_form_data }
+    subject(:form_data) { helper.create_duo_pro_lead_form_data(eligible_namespaces) }
 
     it 'provides expected form data' do
       keys = extra_params.keys + [:submit_path, :submit_button_text]
@@ -115,7 +142,29 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
           company_name: user.organization
         }
 
-        expect(helper.create_duo_pro_lead_form_data).to match(a_hash_including(current_user_attributes))
+        expect(form_data).to match(a_hash_including(current_user_attributes))
+      end
+    end
+
+    context 'when there are no eligible namespaces' do
+      it 'has the Continue text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
+      end
+    end
+
+    context 'when there is a single eligible namespace' do
+      let(:eligible_namespaces) { [build(:namespace)] }
+
+      it 'has the Activate text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Activate my trial')))
+      end
+    end
+
+    context 'when there are multiple eligible namespaces' do
+      let(:eligible_namespaces) { build_list(:namespace, 2) }
+
+      it 'has the Continue text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
       end
     end
   end
@@ -177,6 +226,12 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       end
     end
 
+    context 'when there are no eligible namespaces' do
+      it 'has the Continue text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
+      end
+    end
+
     context 'when there is a single eligible namespace' do
       let(:eligible_namespaces) { [build(:namespace)] }
 
@@ -188,7 +243,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     context 'when there are multiple eligible namespaces' do
       let(:eligible_namespaces) { build_list(:namespace, 2) }
 
-      it 'has the Activate text' do
+      it 'has the Continue text' do
         expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
       end
     end

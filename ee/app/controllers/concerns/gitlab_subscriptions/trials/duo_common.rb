@@ -19,19 +19,29 @@ module GitlabSubscriptions
         before_action :check_trial_eligibility!
       end
 
+      private
+
+      def set_group_name
+        return unless namespace || GitlabSubscriptions::Trials.single_eligible_namespace?(eligible_namespaces)
+
+        @group_name = (namespace || eligible_namespaces.first).name # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Acceptable use case
+      end
+
       def check_feature_available!
         render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
       end
 
       def check_trial_eligibility!
-        return if eligible_namespaces_exist?
+        return if eligible_for_trial?
 
         render 'gitlab_subscriptions/trials/duo/access_denied', status: :forbidden
       end
 
-      def eligible_namespaces_exist?
-        return false if eligible_namespaces.none?
+      def eligible_for_trial?
+        eligible_namespaces.any? && namespace_in_params_eligible?
+      end
 
+      def namespace_in_params_eligible?
         GitlabSubscriptions::Trials.eligible_namespace?(general_params[:namespace_id], eligible_namespaces)
       end
 

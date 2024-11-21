@@ -58,12 +58,6 @@ module GitlabSubscriptions
 
       private
 
-      def set_group_name
-        return unless namespace || GitlabSubscriptions::Trials.single_eligible_namespace?(eligible_namespaces)
-
-        @group_name = (namespace || eligible_namespaces.first).name
-      end
-
       def eligible_namespaces
         @eligible_namespaces = Users::AddOnTrialEligibleNamespacesFinder
                                  .new(current_user, add_on: :duo_enterprise).execute

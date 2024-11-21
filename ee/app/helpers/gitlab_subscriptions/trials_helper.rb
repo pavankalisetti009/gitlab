@@ -4,36 +4,31 @@ module GitlabSubscriptions
   module TrialsHelper
     TRIAL_ONBOARDING_SOURCE_URLS = %w[about.gitlab.com docs.gitlab.com learn.gitlab.com].freeze
 
-    def create_lead_form_data
+    def create_lead_form_data(eligible_namespaces)
       submit_path = trials_path(
         step: GitlabSubscriptions::Trials::CreateService::LEAD,
         **params.permit(:namespace_id).merge(::Onboarding::StatusPresenter.glm_tracking_attributes(params))
       )
 
-      _lead_form_data.merge(
-        submit_path: submit_path,
-        submit_button_text: s_('Trial|Continue')
-      )
+      _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
     end
 
-    def create_duo_pro_lead_form_data
-      _lead_form_data.merge(
-        submit_path: trials_duo_pro_path(
-          step: GitlabSubscriptions::Trials::CreateDuoProService::LEAD,
-          namespace_id: params[:namespace_id]
-        ),
-        submit_button_text: s_('Trial|Continue')
+    def create_duo_pro_lead_form_data(eligible_namespaces)
+      submit_path = trials_duo_pro_path(
+        step: GitlabSubscriptions::Trials::CreateDuoProService::LEAD,
+        namespace_id: params[:namespace_id]
       )
+
+      _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
     end
 
     def create_duo_enterprise_lead_form_data(eligible_namespaces)
-      _lead_form_data.merge(
-        submit_path: trials_duo_enterprise_path(
-          step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD,
-          namespace_id: params[:namespace_id]
-        ),
-        submit_button_text: trial_submit_text(eligible_namespaces)
+      submit_path = trials_duo_enterprise_path(
+        step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD,
+        namespace_id: params[:namespace_id]
       )
+
+      _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
     end
 
     def should_ask_company_question?
@@ -121,11 +116,12 @@ module GitlabSubscriptions
       namespaces.map { |n| { text: n.name, value: n.id.to_s } }
     end
 
-    def _lead_form_data
+    def _lead_form_data(eligible_namespaces)
       {
         first_name: current_user.first_name,
         last_name: current_user.last_name,
-        company_name: current_user.organization
+        company_name: current_user.organization,
+        submit_button_text: trial_submit_text(eligible_namespaces)
       }.merge(
         params.permit(
           :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state

@@ -225,7 +225,10 @@ module Features
     end
 
     def submit_duo_pro_trial_company_form(
-      lead_result: ServiceResponse.success, trial_result: ServiceResponse.success, with_trial: false
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      with_trial: false,
+      button_text: 'Continue'
     )
       # lead
       trial_user_params = {
@@ -258,7 +261,7 @@ module Features
         stub_duo_landing_page_data
       end
 
-      click_button 'Continue'
+      click_button button_text
 
       wait_for_requests
     end

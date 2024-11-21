@@ -18,7 +18,7 @@ RSpec.describe 'gitlab_subscriptions/trials/duo_enterprise/_lead_form.html.haml'
     expect(rendered).to render_template('gitlab_subscriptions/trials/duo_enterprise/_advantages_list')
   end
 
-  context 'when group_name is  defined' do
+  context 'when group_name is defined' do
     before do
       assign(:group_name, '_some_group_')
     end
