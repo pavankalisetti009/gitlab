@@ -30,6 +30,24 @@ module Admin
       License.feature_available?(:ai_chat) && CloudConnector::AvailableServices.find_by_name(:duo_chat).free_access?
     end
 
+    def admin_display_duo_pro_settings?
+      CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
+    end
+
+    def admin_ai_general_settings_helper_data
+      {
+        on_general_settings_page: 'true',
+        redirect_path: general_admin_application_settings_path
+      }.merge(ai_settings_helper_data)
+    end
+
+    def admin_ai_configuration_settings_helper_data
+      {
+        on_general_settings_page: 'false',
+        redirect_path: admin_gitlab_duo_path
+      }.merge(ai_settings_helper_data)
+    end
+
     def ai_settings_helper_data
       code_suggestions_purchased = CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
       disabled_direct_code_suggestions = ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
@@ -42,9 +60,7 @@ module Admin
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         self_hosted_models_enabled: self_hosted_models_enabled.to_s,
-        ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
-        redirect_path: general_admin_application_settings_path,
-        on_general_settings_page: "true"
+        ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path
       }
     end
 

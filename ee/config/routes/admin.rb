@@ -48,6 +48,7 @@ namespace :admin do
   resource :gitlab_duo, only: [:show], controller: 'gitlab_duo'
   namespace :gitlab_duo do
     resources :seat_utilization, only: [:index]
+    resources :configuration, only: [:index]
   end
   get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')
 
