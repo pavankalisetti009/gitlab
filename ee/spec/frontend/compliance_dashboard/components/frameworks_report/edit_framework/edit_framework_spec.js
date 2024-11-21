@@ -12,7 +12,7 @@ import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/ed
 import createComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_framework.mutation.graphql';
-import createComplianceRequirement from 'ee/compliance_dashboard/graphql/mutations/create_compliance_requirement.mutation.graphql';
+import createComplianceRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_requirement.mutation.graphql';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
@@ -252,6 +252,9 @@ describe('Edit Framework Form', () => {
           createComplianceRequirement: {
             requirement: {
               id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+              name: 'Requirement 1',
+              description: 'Description 1',
+              __typename: 'ComplianceManagement::Requirement',
             },
             errors: [],
           },
@@ -268,7 +271,7 @@ describe('Edit Framework Form', () => {
     it('stores requirements locally when adding to a new framework and creates them after the framework is created', async () => {
       const stubHandlers = [
         [createComplianceFrameworkMutation, createFrameworkMutationMock],
-        [createComplianceRequirement, createRequirementMutationMock],
+        [createComplianceRequirementMutation, createRequirementMutationMock],
       ];
 
       wrapper = createComponent(mountExtended, {
@@ -317,7 +320,7 @@ describe('Edit Framework Form', () => {
     it('immediately calls create requirement mutation when adding a requirement to an existing framework', async () => {
       const stubHandlers = [
         [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
-        [createComplianceRequirement, createRequirementMutationMock],
+        [createComplianceRequirementMutation, createRequirementMutationMock],
       ];
 
       wrapper = createComponent(mountExtended, {
@@ -367,7 +370,7 @@ describe('Edit Framework Form', () => {
 
       const stubHandlers = [
         [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
-        [createComplianceRequirement, createRequirementMutationMock],
+        [createComplianceRequirementMutation, createRequirementMutationMock],
       ];
 
       wrapper = createComponent(mountExtended, {

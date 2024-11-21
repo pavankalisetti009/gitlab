@@ -2,7 +2,7 @@
 import { GlButton, GlBadge, GlPopover, GlCard, GlSprintf, GlLink } from '@gitlab/ui';
 import EmptyTodosAllDoneSvg from '@gitlab/svgs/dist/illustrations/empty-todos-all-done-md.svg';
 import {
-  ROUTE_STANDARDS_ADHERENCE,
+  ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   FEEDBACK_ISSUE_URL,
 } from 'ee/compliance_dashboard/constants';
@@ -21,7 +21,7 @@ export default {
   inject: ['groupSecurityPoliciesPath', 'adherenceV2Enabled'],
   methods: {
     navigateToComplianceCenter() {
-      this.$router.push({ name: ROUTE_STANDARDS_ADHERENCE });
+      this.$router.push({ name: ROUTE_FRAMEWORKS });
     },
     navigateToProjectsReport() {
       this.$router.push({ name: ROUTE_PROJECTS });

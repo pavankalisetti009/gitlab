@@ -37,15 +37,12 @@ query getComplianceFrameworkWithPolicies(
         description
         color
         pipelineConfigurationFullPath
-        mockRequirements @client {
-          ... on LocalRequirements {
-            nodes {
-              id
-              name
-              description
-              requirementType
-              controlExpression
-            }
+        complianceRequirements {
+          nodes {
+            id
+            name
+            description
+            controlExpression @client
           }
         }
         projects {

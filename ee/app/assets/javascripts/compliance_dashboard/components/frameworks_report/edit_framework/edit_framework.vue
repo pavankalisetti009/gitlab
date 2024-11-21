@@ -1,5 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
+import produce from 'immer';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf } from '~/locale';
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
@@ -14,7 +15,7 @@ import { convertFrameworkIdToGraphQl } from '../../../utils';
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from '../../../graphql/mutations/delete_compliance_framework.mutation.graphql';
-import createComplianceRequirement from '../../../graphql/mutations/create_compliance_requirement.mutation.graphql';
+import createRequirementMutation from '../../../graphql/mutations/create_compliance_requirement.mutation.graphql';
 import getComplianceFrameworkQuery from './graphql/get_compliance_framework.query.graphql';
 import DeleteModal from './components/delete_modal.vue';
 import BasicInformationSection from './components/basic_information_section.vue';
@@ -59,17 +60,16 @@ export default {
     namespace: {
       query: getComplianceFrameworkQuery,
       variables() {
-        return {
-          fullPath: this.groupPath,
-          complianceFramework: this.graphqlId,
-        };
+        return this.queryVariables;
       },
       result({ data }) {
         const [complianceFramework] = data?.namespace?.complianceFrameworks?.nodes || [];
         if (complianceFramework) {
-          const { mockRequirements, ...rest } = complianceFramework;
+          const { complianceRequirements, ...rest } = complianceFramework;
           this.formData = { ...rest };
-          this.requirements = mockRequirements?.nodes ? [...mockRequirements.nodes] : [];
+          this.requirements = complianceRequirements?.nodes
+            ? [...complianceRequirements.nodes]
+            : [];
           this.originalName = complianceFramework.name;
           const policyBlob =
             data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
@@ -114,6 +114,12 @@ export default {
           this.formData.scanExecutionPolicies?.pageInfo.startCursor ||
           this.formData.pipelineExecutionPolicies?.pageInfo.startCursor,
       );
+    },
+    queryVariables() {
+      return {
+        fullPath: this.groupPath,
+        complianceFramework: this.graphqlId,
+      };
     },
     deleteBtnDisabled() {
       return this.hasLinkedPolicies || this.isDefaultFramework;
@@ -175,14 +181,12 @@ export default {
           },
         },
       });
-
       const framework = data?.createComplianceFramework?.framework;
       const errors = data?.createComplianceFramework?.errors;
 
       if (errors && errors.length) {
         throw new Error(errors[0]);
       }
-
       return framework.id;
     },
     async updateFramework(params) {
@@ -195,15 +199,11 @@ export default {
           },
         },
       });
-
-      const framework = data?.updateComplianceFramework?.complianceFramework;
       const errors = data?.updateComplianceFramework?.errors;
 
       if (errors && errors.length) {
         throw new Error(errors[0]);
       }
-
-      return framework.id;
     },
     async onSubmit() {
       this.isSaving = true;
@@ -214,29 +214,25 @@ export default {
           this.pipelineConfigurationFullPathEnabled,
         );
 
-        let frameworkId;
-
         if (this.isNewFramework) {
-          frameworkId = await this.createFramework(params);
+          const frameworkId = await this.createFramework(params);
           if (this.adherenceV2Enabled) {
             await this.createRequirements(frameworkId);
           }
         } else {
-          frameworkId = await this.updateFramework(params);
+          await this.updateFramework(params);
         }
-
-        this.handleMutationSuccess(this.$route.params.id || frameworkId);
+        this.handleMutationSuccess();
       } catch (error) {
         this.setError(error, SAVE_ERROR);
       } finally {
         this.isSaving = false;
       }
     },
-    handleMutationSuccess(id) {
+    handleMutationSuccess() {
       if (this.isNewFramework) {
         this.$router.push({
           name: ROUTE_NEW_FRAMEWORK_SUCCESS,
-          params: { id },
         });
       } else {
         this.navigateBack();
@@ -257,7 +253,7 @@ export default {
     },
     async createRequirement(requirement, frameworkId) {
       const { data } = await this.$apollo.mutate({
-        mutation: createComplianceRequirement,
+        mutation: createRequirementMutation,
         variables: {
           input: {
             complianceFrameworkId: frameworkId,
@@ -267,13 +263,44 @@ export default {
             },
           },
         },
+        ...(this.isNewFramework
+          ? {}
+          : {
+              update: this.updateRequirementCache,
+            }),
       });
-
       const errors = data?.createComplianceRequirement?.errors;
 
       if (errors && errors.length) {
         throw new Error(errors[0]);
       }
+    },
+    updateRequirementCache(cache, { data: { createComplianceRequirement } }) {
+      const newRequirement = createComplianceRequirement?.requirement;
+      const errors = createComplianceRequirement?.errors;
+
+      if (errors && errors.length) {
+        return;
+      }
+      const sourceData = cache.readQuery({
+        query: getComplianceFrameworkQuery,
+        variables: this.queryVariables,
+      });
+
+      const updatedData = produce(sourceData, (draft) => {
+        const framework = draft.namespace.complianceFrameworks.nodes.find(
+          (f) => f.id === this.graphqlId,
+        );
+        if (framework) {
+          framework.complianceRequirements.nodes.push(newRequirement);
+        }
+      });
+
+      cache.writeQuery({
+        query: getComplianceFrameworkQuery,
+        variables: this.queryVariables,
+        data: updatedData,
+      });
     },
     async updateRequirements(requirement) {
       if (this.isNewFramework) {
