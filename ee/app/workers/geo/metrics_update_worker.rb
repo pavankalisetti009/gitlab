@@ -7,7 +7,7 @@ module Geo
     idempotent!
     worker_has_external_dependencies!
     data_consistency :sticky
-    deduplicate :until_executed, ttl: 20.minutes
+    deduplicate :until_executed, ttl: 1.hour
 
     include Gitlab::Geo::LogHelpers
     # rubocop:disable Scalability/CronWorkerContext
