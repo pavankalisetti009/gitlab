@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe EE::AuthHelper do
   include LoginHelpers
+  include EE::RegistrationsHelper
 
   describe "button_based_providers" do
     it 'excludes group_saml' do
@@ -184,7 +185,7 @@ RSpec.describe EE::AuthHelper do
 
       context 'with basic rules' do
         it 'returns basic list' do
-          expect(password_rule_list(true)).to match_array([:common])
+          expect(password_rule_list(true)).to match_array([:length, :common])
         end
 
         context 'when display_password_requirements is disabled' do
@@ -207,7 +208,8 @@ RSpec.describe EE::AuthHelper do
         end
 
         it 'returns all rules' do
-          expect(password_rule_list(true)).to match_array([:common, :number, :symbol, :lowercase, :uppercase])
+          expect(password_rule_list(true))
+            .to match_array([:length, :common, :number, :symbol, :lowercase, :uppercase])
         end
       end
     end

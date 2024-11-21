@@ -39,7 +39,7 @@ RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category
 
     it_behaves_like 'password complexity validations' do
       let(:submit_button_selector) { _('Continue') }
-      let(:basic_rules) { [:common] }
+      let(:basic_rules) { [:length, :common] }
     end
 
     context 'when all password complexity rules are enabled' do
