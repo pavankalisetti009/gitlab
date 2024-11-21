@@ -1,4 +1,3 @@
-import Api from '~/api';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
   BLOCK_BRANCH_MODIFICATION,
@@ -8,11 +7,8 @@ import {
   protectedBranchesConfiguration,
   pushingBranchesConfiguration,
   createGroupObject,
-  fetchExistingGroups,
-  getGroupsById,
   groupProtectedBranchesConfiguration,
   organizeGroups,
-  updateSelectedGroups,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import { createMockGroup } from 'ee_jest/security_orchestration/mocks/mock_data';
 
@@ -138,33 +134,10 @@ describe('buildSettingsList', () => {
   });
 });
 
-describe('getGroupsById', () => {
-  it('returns all groups', async () => {
-    jest
-      .spyOn(Api, 'group')
-      .mockReturnValueOnce(Promise.resolve({ id: 1 }))
-      .mockRejectedValueOnce();
-    expect(await getGroupsById([1, 2])).toEqual([{ id: 1 }]);
-  });
-
-  it('returns an empty array on failure', async () => {
-    jest.spyOn(Api, 'group').mockRejectedValueOnce();
-    expect(await getGroupsById()).toEqual([]);
-  });
-});
-
 describe('createGroupObject', () => {
   it('creates a group object', () => {
     const group = createMockGroup(1);
     expect(createGroupObject(group)).toEqual({ ...group, text: 'Group-1', value: 1 });
-  });
-});
-
-describe('fetchExistingGroups', () => {
-  it('returns all groups', async () => {
-    const group = { full_path: 'path/to/group', full_name: 'group', id: 1 };
-    jest.spyOn(Api, 'group').mockReturnValueOnce(Promise.resolve(group)).mockRejectedValueOnce();
-    expect(await fetchExistingGroups([1])).toEqual([{ ...group, text: 'group', value: 1 }]);
   });
 });
 
@@ -228,46 +201,5 @@ describe('organizeGroups', () => {
       existingGroups: [],
       groupsToRetrieve: [],
     });
-  });
-});
-
-describe('updateSelectedGroups', () => {
-  beforeEach(() => {});
-
-  it('should return empty array when no ids and availableGroups are provided', async () => {
-    jest.spyOn(Api, 'group').mockReturnValueOnce(Promise.resolve(createMockGroup(1)));
-    const result = await updateSelectedGroups({});
-    expect(result).toEqual([]);
-    expect(Api.group).not.toHaveBeenCalled();
-  });
-
-  it('should return only existing groups when all groups are available', async () => {
-    jest.spyOn(Api, 'group').mockReturnValueOnce(Promise.resolve(createMockGroup(1)));
-    const availableGroups = [
-      { id: '1', name: 'Group 1' },
-      { id: '2', name: 'Group 2' },
-    ];
-    const ids = ['1', '2'];
-
-    const result = await updateSelectedGroups({ ids, availableGroups });
-
-    expect(result).toEqual(availableGroups);
-    expect(Api.group).not.toHaveBeenCalled();
-  });
-
-  it('should fetch and return missing groups', async () => {
-    const availableGroups = [{ id: '1', name: 'Group 1' }];
-    const ids = ['1', '2'];
-    const missingGroups = [createMockGroup(2)];
-    jest.spyOn(Api, 'group').mockReturnValueOnce(Promise.resolve(missingGroups[0]));
-
-    const result = await updateSelectedGroups({ ids, availableGroups });
-
-    expect(result).toEqual([
-      ...availableGroups,
-      { ...missingGroups[0], text: 'Group-2', value: 2 },
-    ]);
-    expect(Api.group).toHaveBeenCalledWith('2');
-    expect(Api.group).toHaveBeenCalledTimes(1);
   });
 });

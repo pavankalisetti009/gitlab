@@ -1,7 +1,9 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
-import { getGroupsById } from '../../policy_editor/scan_result/lib/settings';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
 
 export default {
   name: 'BlockGroupBranchModificationSetting',
@@ -9,6 +11,24 @@ export default {
     title: s__('SecurityOrchestration|Override the following project settings:'),
     blockGroupBranchModificationExceptions: s__('SecurityOrchestration|exceptions: %{exceptions}'),
     groupNameText: s__('SecurityOrchestration|Group ID: %{id}'),
+  },
+  apollo: {
+    exceptionGroups: {
+      query: getGroupsByIds,
+      variables() {
+        return {
+          ids: this.ids,
+        };
+      },
+      update(data) {
+        return (
+          data.groups?.nodes?.map((group) => ({ ...group, id: getIdFromGraphQLId(group.id) })) || []
+        );
+      },
+      skip() {
+        return this.ids.length === 0;
+      },
+    },
   },
   components: {
     GlSprintf,
@@ -26,15 +46,12 @@ export default {
     };
   },
   computed: {
-    exceptionStrings() {
-      return this.exceptions.map(({ id }) => {
-        const retrievedGroup = this.exceptionGroups.find((group) => group.id === id);
-        return retrievedGroup?.full_name || this.getDefaultName(id);
-      });
+    ids() {
+      return this.exceptions.map(({ id }) => convertToGraphQLId(TYPENAME_GROUP, id));
     },
-  },
-  async mounted() {
-    this.exceptionGroups = await getGroupsById(this.exceptions.map(({ id }) => id));
+    exceptionStrings() {
+      return this.exceptionGroups.map(({ fullName, id }) => fullName || this.getDefaultName(id));
+    },
   },
   methods: {
     getDefaultName(id) {

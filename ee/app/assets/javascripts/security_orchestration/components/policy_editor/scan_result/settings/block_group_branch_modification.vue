@@ -1,5 +1,5 @@
 <script>
-import { debounce } from 'lodash';
+import { debounce, uniqBy } from 'lodash';
 import {
   GlAvatarLabeled,
   GlCollapsibleListbox,
@@ -8,10 +8,13 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import Api from '~/api';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
+import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { __, s__ } from '~/locale';
 import {
   BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING,
@@ -23,12 +26,36 @@ import {
   EXCEPTION_GROUPS_LISTBOX_ITEMS,
   WITHOUT_EXCEPTIONS,
   createGroupObject,
-  fetchExistingGroups,
-  updateSelectedGroups,
 } from '../lib/settings';
 
 export default {
   name: 'BlockGroupBranchModification',
+  apollo: {
+    groups: {
+      query: getGroupsByIds,
+      variables() {
+        return {
+          topLevelOnly: true,
+          search: this.searchValue,
+        };
+      },
+      update(data) {
+        const groups = data.groups?.nodes?.map(createGroupObject) || [];
+        return this.joinUniqueGroups(groups);
+      },
+      async result() {
+        if (this.hasNotLoadedExceptions) {
+          const groups = await this.getGroupsByIds();
+          this.groups = this.joinUniqueGroups(groups);
+        }
+      },
+      error() {
+        createAlert({
+          message: s__('SecurityOrchestration|Something went wrong, unable to fetch groups'),
+        });
+      },
+    },
+  },
   components: {
     GlAvatarLabeled,
     GlCollapsibleListbox,
@@ -52,14 +79,37 @@ export default {
   data() {
     return {
       groups: [],
-      loading: false,
       selectedExceptionType: this.exceptions.length ? EXCEPT_GROUPS : WITHOUT_EXCEPTIONS,
-      selectedGroups: [],
+      searchValue: '',
+      searching: false,
     };
   },
   computed: {
-    exceptionItems() {
+    notLoadedExceptions() {
+      const groupIds = this.groups.map((group) => group.id);
+      return this.exceptionIds.filter((id) => !groupIds.includes(id));
+    },
+    hasNotLoadedExceptions() {
+      return this.notLoadedExceptions.length > 0;
+    },
+    filteredGroups() {
+      return searchInItemsProperties({
+        items: this.groups,
+        properties: ['text', 'fullPath', 'fullName'],
+        searchQuery: this.searchValue,
+      });
+    },
+    selectedGroups() {
+      return this.groups.filter(({ id }) => this.exceptionIds.includes(id));
+    },
+    loading() {
+      return this.$apollo.queries.groups.loading;
+    },
+    exceptionIds() {
       return this.exceptions.map(({ id }) => id);
+    },
+    exceptionGraphqlIds() {
+      return this.notLoadedExceptions.map((id) => convertToGraphQLId(TYPENAME_GROUP, id));
     },
     text() {
       return this.selectedExceptionType === WITHOUT_EXCEPTIONS
@@ -69,7 +119,7 @@ export default {
     toggleText() {
       return getSelectedOptionsText({
         options: this.selectedGroups,
-        selected: this.exceptionItems,
+        selected: this.exceptionIds,
         placeholder: __('Select groups'),
         maxOptionsShown: 2,
       });
@@ -83,33 +133,34 @@ export default {
         this.selectExceptionType(WITHOUT_EXCEPTIONS);
       }
     },
-    async exceptionItems(ids) {
-      const availableGroups = [...this.selectedGroups, ...this.groups];
-      this.selectedGroups = await updateSelectedGroups({ ids, availableGroups });
-    },
   },
   created() {
-    this.handleSearch = debounce(this.fetchGroups, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+    this.handleSearch = debounce(this.setSearchValue, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
   },
-  async mounted() {
-    this.selectedGroups = await fetchExistingGroups(this.exceptionItems);
-    await this.fetchGroups();
+  destroyed() {
+    this.handleSearch.cancel();
   },
   methods: {
-    async fetchGroups(searchValue = '') {
-      this.loading = true;
-
+    async getGroupsByIds() {
       try {
-        const topLevelGroups = await Api.groups(searchValue, { top_level_only: true });
-        this.groups = topLevelGroups.map((group) => createGroupObject(group));
-      } catch {
-        this.groups = [];
-        createAlert({
-          message: s__('SecurityOrchestration|Something went wrong, unable to fetch groups'),
+        const { data } = await this.$apollo.query({
+          query: getGroupsByIds,
+          variables: {
+            topLevelOnly: true,
+            ids: this.exceptionGraphqlIds,
+          },
         });
-      } finally {
-        this.loading = false;
+
+        return data.groups?.nodes?.map(createGroupObject) || [];
+      } catch {
+        return [];
       }
+    },
+    joinUniqueGroups(groups) {
+      return uniqBy([...this.groups, ...groups], 'id');
+    },
+    setSearchValue(value = '') {
+      this.searchValue = value;
     },
     selectExceptionType(type) {
       this.selectedExceptionType = type;
@@ -164,9 +215,9 @@ export default {
           is-check-centered
           multiple
           searchable
-          :items="groups"
+          :items="filteredGroups"
           :loading="loading"
-          :selected="exceptionItems"
+          :selected="exceptionIds"
           :toggle-text="toggleText"
           @search="handleSearch"
           @select="updateGroupExceptionValue"
@@ -178,7 +229,7 @@ export default {
               :src="item.avatar_url"
               :entity-name="item.text"
               :label="item.text"
-              :sub-label="item.full_path"
+              :sub-label="item.fullPath"
             />
           </template>
         </gl-collapsible-listbox>
