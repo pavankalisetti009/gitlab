@@ -18,7 +18,7 @@ module PackageMetadata
           PackageMetadata::CveEnrichment.bulk_upsert!(
             valid_cve_enrichment_entries,
             unique_by: %w[cve],
-            returns: %w[id cve epss_score created_at updated_at]
+            returns: %w[id cve epss_score is_known_exploit created_at updated_at]
           )
         end
 
@@ -36,6 +36,7 @@ module PackageMetadata
                   "invalid CVE enrichment entry"),
                 cve: cve_enrichment_entry.cve,
                 epss_score: cve_enrichment_entry.epss_score,
+                is_known_exploit: cve_enrichment_entry.is_known_exploit,
                 errors: cve_enrichment_entry.errors.to_hash
               )
               next
@@ -50,6 +51,7 @@ module PackageMetadata
             PackageMetadata::CveEnrichment.new(
               cve: data_object.cve_id,
               epss_score: data_object.epss_score,
+              is_known_exploit: data_object.is_known_exploit,
               created_at: now,
               updated_at: now
             )

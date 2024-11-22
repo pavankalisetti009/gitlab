@@ -112,8 +112,9 @@ RSpec.describe PackageMetadata::DataObjectFabricator, feature_category: :softwar
 
       it {
         is_expected.to match_array([
-          have_attributes(cve_id: 'CVE-2020-1234', epss_score: 0.5),
-          have_attributes(cve_id: 'CVE-2021-12345', epss_score: 0.6)
+          have_attributes(cve_id: 'CVE-2020-1234', epss_score: 0.5, is_known_exploit: false),
+          have_attributes(cve_id: 'CVE-2021-12345', epss_score: 0.6, is_known_exploit: true),
+          have_attributes(cve_id: 'CVE-2022-12345', epss_score: 0.4, is_known_exploit: false)
         ])
       }
 
