@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import IssueCardTimeInfo from 'ee/issues/list/components/issue_card_time_info.vue';
-import WeightCount from 'ee/issues/components/weight_count.vue';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import { WIDGET_TYPE_HEALTH_STATUS, WIDGET_TYPE_WEIGHT } from '~/work_items/constants';
 
@@ -25,12 +25,16 @@ describe('EE IssueCardTimeInfo component', () => {
     ],
   };
 
-  const findWeightCount = () => wrapper.findComponent(WeightCount);
+  const findWeightCount = () => wrapper.findComponent(WorkItemAttribute);
   const findIssueHealthStatus = () => wrapper.findComponent(IssueHealthStatus);
 
-  const mountComponent = ({ issue, hasIssuableHealthStatusFeature = false } = {}) =>
+  const mountComponent = ({
+    issue,
+    hasIssuableHealthStatusFeature = false,
+    hasIssueWeightsFeature = false,
+  } = {}) =>
     shallowMount(IssueCardTimeInfo, {
-      provide: { hasIssuableHealthStatusFeature },
+      provide: { hasIssuableHealthStatusFeature, hasIssueWeightsFeature },
       propsData: { issue },
     });
 
@@ -41,9 +45,9 @@ describe('EE IssueCardTimeInfo component', () => {
   `('with $type object', ({ obj }) => {
     describe('weight', () => {
       it('renders', () => {
-        wrapper = mountComponent({ issue: obj });
+        wrapper = mountComponent({ issue: obj, hasIssueWeightsFeature: true });
 
-        expect(findWeightCount().props('weight')).toBe(2);
+        expect(findWeightCount().props('title')).toBe('2');
       });
     });
 

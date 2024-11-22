@@ -1,5 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import IssueIteration from 'ee/boards/components/issue_iteration.vue';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 import { mockIterations } from '../mock_data';
 
 const mockIteration = mockIterations[0];
@@ -15,15 +16,15 @@ describe('IssueIteration', () => {
     });
   };
 
-  const findBody = () => wrapper.findByTestId('issue-iteration-body');
   const findTitle = () => wrapper.findByTestId('issue-iteration-title');
   const findPeriod = () => wrapper.findByTestId('issue-iteration-period');
   const findCadenceTitle = () => wrapper.findByTestId('issue-iteration-cadence-title');
+  const findWorkItemAttribute = () => wrapper.findComponent(WorkItemAttribute);
 
   it('shows the iteration period', () => {
     mountIssueIteration(mockIteration);
 
-    expect(findBody().text()).toContain('Oct 5 - Oct 10, 2021');
+    expect(findWorkItemAttribute().props('title')).toContain('Oct 5 - Oct 10, 2021');
   });
 
   describe('tooltip info', () => {

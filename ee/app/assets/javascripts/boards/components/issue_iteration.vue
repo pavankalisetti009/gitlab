@@ -1,11 +1,10 @@
 <script>
-import { GlTooltip, GlIcon } from '@gitlab/ui';
 import { getIterationPeriod } from 'ee/iterations/utils';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
   components: {
-    GlTooltip,
-    GlIcon,
+    WorkItemAttribute,
   },
   props: {
     iteration: {
@@ -25,22 +24,22 @@ export default {
 </script>
 
 <template>
-  <span ref="iteration" class="board-card-info gl-cursor-help gl-text-sm gl-text-secondary">
-    <gl-icon class="board-card-info-icon flex-shrink-0 gl-mr-2" name="iteration" />
-    <span class="board-card-info gl-mr-3" data-testid="issue-iteration-body">
-      {{ iterationPeriod }}
-    </span>
-    <gl-tooltip
-      :target="() => $refs.iteration"
-      placement="bottom"
-      data-testid="issue-iteration-info"
-    >
+  <work-item-attribute
+    anchor-id="issue-iteration-body"
+    wrapper-component-class="board-card-info gl-cursor-help gl-text-sm gl-text-secondary"
+    icon-name="iteration"
+    icon-class="board-card-info-icon flex-shrink-0 gl-mr-2"
+    :title="iterationPeriod"
+    title-component-class="board-card-info gl-mr-3"
+    tooltip-placement="top"
+  >
+    <template #tooltip-text>
       <div class="gl-font-bold">{{ __('Iteration') }}</div>
       <div v-if="showIterationCadenceTitle" data-testid="issue-iteration-cadence-title">
         {{ iteration.iterationCadence.title }}
       </div>
       <div data-testid="issue-iteration-period">{{ iterationPeriod }}</div>
       <div v-if="iteration.title" data-testid="issue-iteration-title">{{ iteration.title }}</div>
-    </gl-tooltip>
-  </span>
+    </template>
+  </work-item-attribute>
 </template>

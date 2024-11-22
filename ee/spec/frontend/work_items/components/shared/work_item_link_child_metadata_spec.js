@@ -4,7 +4,7 @@ import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import WorkItemLinkChildMetadata from 'ee/work_items/components/shared/work_item_link_child_metadata.vue';
-
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 import { workItemObjectiveMetadataWidgetsEE } from '../../mock_data';
 
 describe('WorkItemLinkChildMetadataEE', () => {
@@ -27,6 +27,9 @@ describe('WorkItemLinkChildMetadataEE', () => {
         workItemType,
         isChildItemOpen,
       },
+      stubs: {
+        WorkItemAttribute,
+      },
     });
   };
 
@@ -35,9 +38,9 @@ describe('WorkItemLinkChildMetadataEE', () => {
   });
 
   const findWeight = () => wrapper.findByTestId('item-weight');
-  const findWeightValue = () => wrapper.findByTestId('weight-value');
   const findWeightTooltip = () => wrapper.findByTestId('weight-tooltip');
   const findRolledUpHealthStatus = () => wrapper.findComponent(WorkItemRolledUpHealthStatus);
+  const findWorkItemAttribute = () => wrapper.findAllComponents(WorkItemAttribute);
 
   describe('progress', () => {
     it('renders item progress icon and percentage completion', () => {
@@ -75,11 +78,9 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
   describe('metadata weight', () => {
     it('renders item weight icon and value', () => {
-      const weightEl = wrapper.findByTestId('item-weight');
-
-      expect(weightEl.exists()).toBe(true);
-      expect(weightEl.findComponent(GlIcon).props('name')).toBe('weight');
-      expect(findWeightValue().text().trim()).toBe(`${WEIGHT.weight}`);
+      expect(findWorkItemAttribute().at(0).exists()).toBe(true);
+      expect(findWorkItemAttribute().at(0).props('iconName')).toBe('weight');
+      expect(findWorkItemAttribute().at(0).props('title')).toBe(`${WEIGHT.weight}`);
     });
 
     it('renders rollup weight with icon and value when widget has rollUp weight', () => {
@@ -100,9 +101,11 @@ describe('WorkItemLinkChildMetadataEE', () => {
         },
       });
 
-      expect(findWeight().exists()).toBe(true);
-      expect(findWeight().findComponent(GlIcon).props('name')).toBe('weight');
-      expect(findWeightValue().text().trim()).toBe(`${rolledUpWeightWidget.rolledUpWeight}`);
+      expect(findWorkItemAttribute().at(0).exists()).toBe(true);
+      expect(findWorkItemAttribute().at(0).props('iconName')).toBe('weight');
+      expect(findWorkItemAttribute().at(0).props('title')).toBe(
+        `${rolledUpWeightWidget.rolledUpWeight}`,
+      );
     });
 
     it('does not render item weight on `showWeight` is false', () => {
@@ -132,9 +135,9 @@ describe('WorkItemLinkChildMetadataEE', () => {
     it('renders item date icon and value', () => {
       const datesEl = wrapper.findByTestId('item-dates');
 
-      expect(datesEl.exists()).toBe(true);
+      expect(findWorkItemAttribute().at(1).exists()).toBe(true);
       expect(datesEl.findComponent(GlIcon).props('name')).toBe('calendar');
-      expect(wrapper.findByTestId('dates-value').text().trim()).toBe('Jan 1 – Jun 27, 2024');
+      expect(findWorkItemAttribute().at(1).props('title')).toBe('Jan 1 – Jun 27, 2024');
     });
 
     it('renders item with no start date', () => {
@@ -149,9 +152,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
         },
       });
 
-      expect(wrapper.findByTestId('dates-value').text().trim()).toBe(
-        'No start date – Jun 27, 2024',
-      );
+      expect(findWorkItemAttribute().at(0).props('title')).toBe('No start date – Jun 27, 2024');
     });
 
     it('renders item with no end date', () => {
@@ -166,7 +167,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
         },
       });
 
-      expect(wrapper.findByTestId('dates-value').text().trim()).toBe('Jun 27, 2024 – No due date');
+      expect(findWorkItemAttribute().at(0).props('title')).toBe('Jun 27, 2024 – No due date');
     });
 
     describe('when due date in the past', () => {
@@ -185,6 +186,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
               },
             },
           });
+
           expect(wrapper.findByTestId('item-dates').findComponent(GlIcon).props()).toMatchObject({
             variant: 'danger',
             name: 'calendar-overdue',
@@ -205,6 +207,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
             },
             isChildItemOpen: false,
           });
+
           expect(wrapper.findByTestId('item-dates').findComponent(GlIcon).props()).toMatchObject({
             variant: 'current',
             name: 'calendar',
