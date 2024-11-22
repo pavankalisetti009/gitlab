@@ -21,6 +21,7 @@ require_relative '../../lib/gitlab/popen'
 LEVELS = {
   'Not applicable' => 0,
   'Guest' => 10,
+  'Planner' => 15,
   'Reporter' => 20,
   'Developer' => 30,
   'Maintainer' => 40,

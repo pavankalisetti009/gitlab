@@ -25,6 +25,7 @@ RSpec.describe 'Query.instance_standard_role', feature_category: :system_access 
   let_it_be(:member_1) { create(:group_member, :guest, user: user) }
   let_it_be(:member_2) { create(:group_member, :maintainer, user: user) }
   let_it_be(:member_3) { create(:project_member, :guest, user: user) }
+  let_it_be(:member_4) { create(:group_member, :planner, user: user) }
 
   subject(:roles) do
     graphql_data.dig('standardRoles', 'nodes')
@@ -58,6 +59,13 @@ RSpec.describe 'Query.instance_standard_role', feature_category: :system_access 
           'membersCount' => 2,
           'usersCount' => 1,
           'detailsPath' => '/admin/application_settings/roles_and_permissions/GUEST'
+        },
+        {
+          'accessLevel' => 15,
+          'name' => 'Planner',
+          'membersCount' => 1,
+          'usersCount' => 1,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/PLANNER'
         },
         {
           'accessLevel' => 20,

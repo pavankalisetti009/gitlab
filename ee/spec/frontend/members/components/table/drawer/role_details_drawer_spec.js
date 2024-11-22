@@ -16,7 +16,9 @@ import {
 describe('Role details drawer', () => {
   const { permissions } = updateableCustomRoleMember.customRoles[1];
   const dropdownItems = roleDropdownItems(updateableCustomRoleMember);
-  const currentRole = dropdownItems.flatten[6];
+  const currentRole = dropdownItems.flatten.find(
+    (role) => role.memberRoleId === updateableCustomRoleMember.accessLevel.memberRoleId,
+  );
   let wrapper;
 
   const createWrapper = ({ member = updateableCustomRoleMember } = {}) => {

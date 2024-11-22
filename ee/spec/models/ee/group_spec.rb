@@ -571,9 +571,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         end
       end
 
-      context 'when user is reporter' do
+      context 'when user is planner' do
         before do
-          private_subgroup_1.add_reporter(user)
+          private_subgroup_1.add_planner(user)
         end
 
         it_behaves_like 'a filter for permissioned groups' do
@@ -581,11 +581,11 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         end
       end
 
-      context 'when user is reporter via shared group' do
-        let(:shared_group_access) { GroupMember::REPORTER }
+      context 'when user is planner via shared group' do
+        let(:shared_group_access) { GroupMember::PLANNER }
 
         before do
-          shared_with_group.add_reporter(user)
+          shared_with_group.add_planner(user)
         end
 
         it_behaves_like 'a filter for permissioned groups' do
@@ -3216,6 +3216,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         {
           "Minimal Access" => 5,
           "Guest" => 10,
+          "Planner" => 15,
           "Reporter" => 20,
           "Developer" => 30,
           "Maintainer" => 40,

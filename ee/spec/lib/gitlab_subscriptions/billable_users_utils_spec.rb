@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consumables_cost_management do
   let_it_be(:dummy_class) { Class.new { include GitlabSubscriptions::BillableUsersUtils }.new }
 
-  billable_roles = [Gitlab::Access::REPORTER, Gitlab::Access::DEVELOPER,
+  billable_roles = [Gitlab::Access::PLANNER, Gitlab::Access::REPORTER, Gitlab::Access::DEVELOPER,
     Gitlab::Access::MAINTAINER, Gitlab::Access::OWNER, Gitlab::Access::ADMIN].freeze
 
   sm_non_billable_roles = [Gitlab::Access::NO_ACCESS].freeze

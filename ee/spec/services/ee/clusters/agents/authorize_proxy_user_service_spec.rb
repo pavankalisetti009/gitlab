@@ -43,8 +43,8 @@ RSpec.describe Clusters::Agents::AuthorizeProxyUserService, feature_category: :d
     expect(service_response).to be_success
     expect(service_response.payload[:access_as]).to eq({
       user: {
-        projects: [{ id: deployment_project.id, roles: %i[guest reporter developer] }],
-        groups: [{ id: deployment_group.id, roles: %i[guest reporter developer maintainer] }]
+        projects: [{ id: deployment_project.id, roles: %i[guest planner reporter developer] }],
+        groups: [{ id: deployment_group.id, roles: %i[guest planner reporter developer maintainer] }]
       }
     })
   end

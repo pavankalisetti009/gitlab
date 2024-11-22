@@ -24,7 +24,7 @@ module EE
           ::Todo
             .for_type(::Epic.name)
             .for_internal_notes
-            .for_group(non_authorized_reporter_groups) # Only reporter+ can read internal notes
+            .for_group(non_authorized_planner_groups) # Only planner+ can read internal notes
             .for_user(user)
             .delete_all
         end
@@ -33,7 +33,7 @@ module EE
 
         def confidential_epics
           ::Epic
-            .in_selected_groups(non_authorized_reporter_groups)
+            .in_selected_groups(non_authorized_planner_groups)
             .confidential
         end
       end

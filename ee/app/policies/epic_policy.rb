@@ -7,6 +7,11 @@ class EpicPolicy < BasePolicy
 
   condition(:is_group_member) { @subject.group.member?(@user) }
 
+  desc "User has planner or reporter access"
+  condition(:planner_or_reporter_access) do
+    can?(:reporter_access) || can?(:planner_access)
+  end
+
   condition(:service_desk_enabled) do
     @subject.group.has_project_with_service_desk_enabled?
   end
@@ -72,7 +77,7 @@ class EpicPolicy < BasePolicy
   rule { can?(:owner_access) | can?(:maintainer_access) }.enable :admin_note
 
   desc 'User cannot read confidential epics'
-  rule { confidential & ~can?(:reporter_access) }.policy do
+  rule { confidential & ~planner_or_reporter_access }.policy do
     prevent :create_epic
     prevent :update_epic
     prevent :admin_epic
@@ -112,7 +117,7 @@ class EpicPolicy < BasePolicy
   # Special case to not prevent support bot
   # assigning issues to confidential epics using quick actions
   # when group has projects with service desk enabled.
-  rule { confidential & ~can?(:reporter_access) & ~(support_bot & service_desk_enabled) }.policy do
+  rule { confidential & ~planner_or_reporter_access & ~(support_bot & service_desk_enabled) }.policy do
     prevent :read_epic
     prevent :read_epic_iid
   end
@@ -126,7 +131,7 @@ class EpicPolicy < BasePolicy
     enable :set_confidentiality
   end
 
-  rule { can?(:reporter_access) }.policy do
+  rule { planner_or_reporter_access }.policy do
     enable :mark_note_as_internal
   end
 

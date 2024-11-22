@@ -4,11 +4,13 @@ require 'spec_helper'
 
 RSpec.describe WorkItemPolicy, feature_category: :team_planning do
   let_it_be(:guest) { create(:user) }
+  let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:owner) { create(:user) }
   let_it_be(:group) do
     create(:group, :public).tap do |g|
       g.add_guest(guest)
+      g.add_planner(planner)
       g.add_reporter(reporter)
       g.add_owner(owner)
     end
@@ -34,6 +36,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
 
       # allows read permissions
       expect(permissions(reporter, work_item)).to be_allowed(:read_internal_note, :read_crm_contacts, :reopen_issue)
+      expect(permissions(planner, work_item)).to be_allowed(:read_internal_note, :read_crm_contacts, :reopen_issue)
 
       # allows some permissions that modify the issue
       expect(permissions(owner, work_item)).to be_allowed(

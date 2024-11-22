@@ -25,6 +25,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
   context 'basic permissions' do
     let(:additional_guest_permissions) { %i[read_limit_alert] }
+    let(:additional_planner_permissions) { [:read_software_license_policy] }
     let(:additional_reporter_permissions) do
       %i[read_software_license_policy admin_value_stream read_product_analytics]
     end
@@ -66,6 +67,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     it_behaves_like 'project policies as anonymous'
     it_behaves_like 'project policies as guest'
+    it_behaves_like 'project policies as planner'
     it_behaves_like 'project policies as reporter'
     it_behaves_like 'project policies as developer'
     it_behaves_like 'project policies as maintainer'
@@ -76,6 +78,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'auditor' do
       let(:current_user) { auditor }
       let(:auditor_permission_exclusions) { [:fork_project, :create_merge_request_in] }
+      let(:auditor_as_guest_exclusions) do
+        %i[create_note read_confidential_issues create_project create_issue create_note upload_file admin_issue_link]
+      end
 
       before do
         stub_licensed_features(security_dashboard: true, license_scanning: true)
@@ -87,6 +92,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           is_expected.to be_disallowed(*maintainer_permissions)
           is_expected.to be_disallowed(*owner_permissions)
           is_expected.to be_disallowed(*(guest_permissions - auditor_permissions))
+          is_expected.to be_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
           is_expected.to be_allowed(*auditor_permission_exclusions)
           is_expected.to be_allowed(*auditor_permissions)
         end
@@ -101,6 +107,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             is_expected.to be_disallowed(*maintainer_permissions)
             is_expected.to be_disallowed(*owner_permissions)
             is_expected.to be_disallowed(*(guest_permissions - auditor_permissions))
+            is_expected.to be_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
             is_expected.to be_disallowed(*auditor_permission_exclusions)
             is_expected.to be_allowed(*(auditor_permissions - auditor_permission_exclusions))
           end
@@ -116,6 +123,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           is_expected.to be_disallowed(*(developer_permissions - auditor_permissions))
           is_expected.to be_disallowed(*maintainer_permissions)
           is_expected.to be_disallowed(*owner_permissions)
+          is_expected.to be_disallowed(*(planner_permissions - auditor_permissions - auditor_as_guest_exclusions))
           is_expected.to be_allowed(*(guest_permissions - auditor_permissions))
           is_expected.to be_allowed(*auditor_permissions)
         end
@@ -237,6 +245,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         where(:the_user, :allowed, :disallowed) do
           ref(:developer)  | [:read_iteration, :create_iteration, :admin_iteration] | []
+          ref(:planner)    | [:read_iteration, :create_iteration, :admin_iteration] | []
           ref(:guest)      | [:read_iteration]                                      | [:create_iteration, :admin_iteration]
           ref(:non_member) | [:read_iteration]                                      | [:create_iteration, :admin_iteration]
           ref(:anonymous)  | [:read_iteration]                                      | [:create_iteration, :admin_iteration]
@@ -752,40 +761,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
       end
 
-      context 'with owner' do
-        let(:current_user) { owner }
+      %w[owner maintainer].each do |role|
+        context "with #{role}" do
+          let(:current_user) { send(role) }
 
-        it { is_expected.to be_allowed(permission) }
+          it { is_expected.to be_allowed(permission) }
+        end
       end
 
-      context 'with maintainer' do
-        let(:current_user) { maintainer }
+      %w[anonymous non_member guest planner reporter].each do |role|
+        context "with #{role}" do
+          let(:current_user) { send(role) }
 
-        it { is_expected.to be_allowed(permission) }
-      end
-
-      context 'with reporter' do
-        let(:current_user) { reporter }
-
-        it { is_expected.to be_disallowed(permission) }
-      end
-
-      context 'with guest' do
-        let(:current_user) { guest }
-
-        it { is_expected.to be_disallowed(permission) }
-      end
-
-      context 'with non member' do
-        let(:current_user) { non_member }
-
-        it { is_expected.to be_disallowed(permission) }
-      end
-
-      context 'with anonymous' do
-        let(:current_user) { anonymous }
-
-        it { is_expected.to be_disallowed(permission) }
+          it { is_expected.to be_disallowed(permission) }
+        end
       end
     end
   end
@@ -971,7 +960,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       context 'with less than developer role' do
-        where(role: %w[reporter guest])
+        where(role: %w[reporter planner guest])
 
         with_them do
           let(:current_user) { public_send(role) }
@@ -1102,46 +1091,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    context 'with owner' do
-      let(:current_user) { owner }
+    %w[owner maintainer].each do |role|
+      context "with #{role}" do
+        let(:current_user) { send(role) }
 
-      it { is_expected.to be_allowed(:admin_software_license_policy) }
+        it { is_expected.to be_allowed(:admin_software_license_policy) }
+      end
     end
 
-    context 'with maintainer' do
-      let(:current_user) { maintainer }
+    %w[anonymous non_member guest planner reporter developer].each do |role|
+      context "with #{role}" do
+        let(:current_user) { send(role) }
 
-      it { is_expected.to be_allowed(:admin_software_license_policy) }
-    end
-
-    context 'with developer' do
-      let(:current_user) { developer }
-
-      it { is_expected.to be_disallowed(:admin_software_license_policy) }
-    end
-
-    context 'with reporter' do
-      let(:current_user) { reporter }
-
-      it { is_expected.to be_disallowed(:admin_software_license_policy) }
-    end
-
-    context 'with guest' do
-      let(:current_user) { guest }
-
-      it { is_expected.to be_disallowed(:admin_software_license_policy) }
-    end
-
-    context 'with non member' do
-      let(:current_user) { non_member }
-
-      it { is_expected.to be_disallowed(:admin_software_license_policy) }
-    end
-
-    context 'with anonymous' do
-      let(:current_user) { anonymous }
-
-      it { is_expected.to be_disallowed(:admin_software_license_policy) }
+        it { is_expected.to be_disallowed(:admin_software_license_policy) }
+      end
     end
   end
 
@@ -1194,46 +1157,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
         end
 
-        context 'with owner' do
-          let(:current_user) { owner }
+        %w[owner maintainer developer reporter planner].each do |role|
+          context "with #{role}" do
+            let(:current_user) { send(role) }
 
-          it { is_expected.to be_allowed(:read_dependency) }
+            it { is_expected.to be_allowed(:read_dependency) }
+          end
         end
 
-        context 'with maintainer' do
-          let(:current_user) { maintainer }
+        %w[anonymous non_member guest].each do |role|
+          context "with #{role}" do
+            let(:current_user) { send(role) }
 
-          it { is_expected.to be_allowed(:read_dependency) }
-        end
-
-        context 'with developer' do
-          let(:current_user) { developer }
-
-          it { is_expected.to be_allowed(:read_dependency) }
-        end
-
-        context 'with reporter' do
-          let(:current_user) { reporter }
-
-          it { is_expected.to be_allowed(:read_dependency) }
-        end
-
-        context 'with guest' do
-          let(:current_user) { guest }
-
-          it { is_expected.to be_disallowed(:read_dependency) }
-        end
-
-        context 'with non member' do
-          let(:current_user) { non_member }
-
-          it { is_expected.to be_disallowed(:read_dependency) }
-        end
-
-        context 'with anonymous' do
-          let(:current_user) { anonymous }
-
-          it { is_expected.to be_disallowed(:read_dependency) }
+            it { is_expected.to be_disallowed(:read_dependency) }
+          end
         end
       end
     end
@@ -1258,7 +1195,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with private project' do
         let(:project) { private_project }
 
-        where(role: %w[owner maintainer developer reporter])
+        where(role: %w[owner maintainer developer reporter planner])
 
         with_them do
           let(:current_user) { public_send(role) }
@@ -1278,22 +1215,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
         end
 
-        context 'with guest' do
-          let(:current_user) { guest }
+        %w[anonymous non_member guest].each do |role|
+          context "with #{role}" do
+            let(:current_user) { send(role) }
 
-          it { is_expected.to be_disallowed(:read_licenses) }
-        end
-
-        context 'with non member' do
-          let(:current_user) { non_member }
-
-          it { is_expected.to be_disallowed(:read_licenses) }
-        end
-
-        context 'with anonymous' do
-          let(:current_user) { anonymous }
-
-          it { is_expected.to be_disallowed(:read_licenses) }
+            it { is_expected.to be_disallowed(:read_licenses) }
+          end
         end
       end
     end
@@ -1317,6 +1244,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       where(:role, :admin_mode, :allowed) do
         :anonymous  | nil   | false
         :guest      | nil   | false
+        :planner    | nil   | false
         :reporter   | nil   | false
         :developer  | nil   | true
         :maintainer | nil   | true
@@ -1597,6 +1525,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   describe ':read_enterprise_ai_analytics' do
     let(:project) { private_project_in_group }
     let(:guest) { inherited_guest }
+    let(:planner) { inherited_planner }
     let(:reporter) { inherited_reporter }
 
     context 'when on SAAS', :saas do
@@ -1651,6 +1580,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :admin_mode, :allowed) do
       :guest      | nil   | false
+      :planner    | nil   | true
       :reporter   | nil   | true
       :developer  | nil   | true
       :maintainer | nil   | true
@@ -1687,6 +1617,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'with merge request approvers rules available in license' do
       where(:role, :setting, :admin_mode, :allowed) do
         :guest      | true  | nil    | false
+        :planner    | true  | nil    | false
         :reporter   | true  | nil    | false
         :developer  | true  | nil    | false
         :maintainer | false | nil    | true
@@ -1715,6 +1646,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'with merge request approvers rules not available in license' do
       where(:role, :setting, :admin_mode, :allowed) do
         :guest      | true  | nil    | false
+        :planner    | true  | nil    | false
         :reporter   | true  | nil    | false
         :developer  | true  | nil    | false
         :maintainer | false | nil    | true
@@ -1745,7 +1677,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     let(:project) { private_project }
 
     where(:role, :licensed, :allowed) do
-      :guest      | true  | false
+      :guest      | true | false
+      :planner    | true | false
       :reporter   | true  | false
       :developer  | true  | false
       :maintainer | false | false
@@ -1798,6 +1731,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :admin_mode, :allowed) do
       :guest      | nil   | false
+      :planner    | nil   | true
       :reporter   | nil   | true
       :developer  | nil   | true
       :maintainer | nil   | true
@@ -1829,16 +1763,19 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   shared_examples_for 'prevents CI cancellation ability' do
     context 'when feature is enabled' do
       where(:restricted_role, :actual_role, :allowed) do
+        :developer  | :planner    | false
         :developer  | :guest      | false
         :developer  | :reporter   | false
         :developer  | :developer  | true
         :developer  | :maintainer | true
         :developer  | :owner      | true
+        :maintainer | :planner    | false
         :maintainer | :guest      | false
         :maintainer | :reporter   | false
         :maintainer | :developer  | false
         :maintainer | :maintainer | true
         :maintainer | :owner      | true
+        :no_one     | :planner    | false
         :no_one     | :guest      | false
         :no_one     | :reporter   | false
         :no_one     | :developer  | false
@@ -1948,6 +1885,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     where(:role, :feature_enabled, :admin_mode, :allowed) do
       :guest      | false | nil   | false
       :guest      | true  | nil   | false
+      :planner    | false | nil   | false
+      :planner    | true  | nil   | false
       :reporter   | false | nil   | false
       :reporter   | true  | nil   | false
       :developer  | false | nil   | false
@@ -1987,6 +1926,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(:role, :admin_mode, :allowed) do
         :guest      | nil   | false
+        :planner    | nil   | false
         :reporter   | nil   | true
         :developer  | nil   | true
         :maintainer | nil   | true
@@ -2016,6 +1956,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(:role, :admin_mode, :allowed) do
         :guest      | nil   | false
+        :planner    | nil   | false
         :reporter   | nil   | false
         :developer  | nil   | false
         :maintainer | nil   | true
@@ -2055,6 +1996,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(:role, :admin_mode, :allowed) do
         :guest      | nil   | false
+        :planner    | nil   | false
         :reporter   | nil   | true
         :developer  | nil   | true
         :maintainer | nil   | true
@@ -2084,6 +2026,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(:role, :admin_mode, :allowed) do
         :guest      | nil   | false
+        :planner    | nil   | false
         :reporter   | nil   | false
         :developer  | nil   | false
         :maintainer | nil   | true
@@ -2319,38 +2262,24 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when analytics is disabled for the project' do
         let(:project) { project_with_analytics_disabled }
 
-        context 'for guest user' do
-          let(:current_user) { guest }
+        %w[guest planner developer admin auditor].each do |role|
+          context "for #{role} user" do
+            let(:current_user) { send(role) }
 
-          it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
-        end
-
-        context 'for developer' do
-          let(:current_user) { developer }
-
-          it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
-        end
-
-        context 'for admin', :enable_admin_mode do
-          let(:current_user) { admin }
-
-          it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
-        end
-
-        context 'for auditor' do
-          let(:current_user) { auditor }
-
-          it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
+            it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
+          end
         end
       end
 
       context 'when analytics is private for the project' do
         let(:project) { project_with_analytics_private }
 
-        context 'for guest user' do
-          let(:current_user) { guest }
+        %w[guest planner].each do |role|
+          context "for #{role} user" do
+            let(:current_user) { send(role) }
 
-          it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
+            it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
+          end
         end
 
         context 'for developer' do
@@ -2375,13 +2304,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when analytics is enabled for the project' do
         let(:project) { project_with_analytics_enabled }
 
-        context 'for guest user' do
-          let(:current_user) { guest }
+        %w[guest planner].each do |role|
+          context "for #{role} user" do
+            let(:current_user) { send(role) }
 
-          it { is_expected.to be_disallowed(:read_project_merge_request_analytics) }
-          it { is_expected.to be_disallowed(:read_code_review_analytics) }
-          it { is_expected.to be_disallowed(:read_cycle_analytics) }
-          it { is_expected.to be_allowed(:read_issue_analytics) }
+            it { is_expected.to be_disallowed(:read_project_merge_request_analytics) }
+            it { is_expected.to be_disallowed(:read_code_review_analytics) }
+            it { is_expected.to be_disallowed(:read_cycle_analytics) }
+            it { is_expected.to be_allowed(:read_issue_analytics) }
+          end
         end
 
         context 'for developer' do
@@ -2410,18 +2341,21 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :project_visibility, :allowed) do
       :guest      | 'public'   | true
+      :planner    | 'public'   | true
       :reporter   | 'public'   | true
       :developer  | 'public'   | true
       :maintainer | 'public'   | true
       :owner      | 'public'   | true
       :admin      | 'public'   | true
       :guest      | 'internal' | true
+      :planner    | 'internal' | true
       :reporter   | 'internal' | true
       :developer  | 'internal' | true
       :maintainer | 'internal' | true
       :owner      | 'internal' | true
       :admin      | 'internal' | true
       :guest      | 'private'  | false
+      :planner    | 'private'  | false
       :reporter   | 'private'  | true
       :developer  | 'private'  | true
       :maintainer | 'private'  | true
@@ -2532,6 +2466,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(:role, :allowed) do
         :guest      | false
+        :planner    | false
         :reporter   | false
         :developer  | false
         :maintainer | true
@@ -2696,6 +2631,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :allowed) do
       :guest      | true
+      :planner    | true
       :reporter   | true
       :developer  | true
       :maintainer | true
@@ -2742,6 +2678,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :allowed) do
       :guest      | true
+      :planner    | true
       :reporter   | true
       :developer  | true
       :maintainer | true
@@ -3854,6 +3791,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_vulnerability) }
     end
 
+    context "with planner" do
+      let(:current_user) { planner }
+
+      it { is_expected.to be_disallowed(:admin_vulnerability) }
+    end
+
     context "with reporter" do
       let(:current_user) { reporter }
 
@@ -3914,18 +3857,22 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     where(:feature_flag_enabled, :licensed_feature, :current_user, :allowed) do
       true  | true  | ref(:owner)      | true
       true  | true  | ref(:reporter)   | true
+      true  | true  | ref(:planner)    | true
       true  | true  | ref(:guest)      | true
       true  | true  | ref(:non_member) | false
       true  | false | ref(:owner)      | false
       true  | false | ref(:reporter)   | false
+      true  | false | ref(:planner)    | false
       true  | false | ref(:guest)      | false
       true  | false | ref(:non_member) | false
       false | true  | ref(:owner)      | false
       false | true  | ref(:reporter)   | false
+      false | true  | ref(:planner)    | false
       false | true  | ref(:guest)      | false
       false | true  | ref(:non_member) | false
       false | false | ref(:owner)      | false
       false | false | ref(:reporter)   | false
+      false | false | ref(:planner)    | false
       false | false | ref(:guest)      | false
       false | false | ref(:non_member) | false
     end
@@ -3947,18 +3894,22 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     where(:feature_flag_enabled, :licensed_feature, :current_user, :allowed) do
       true  | true  | ref(:owner)      | true
       true  | true  | ref(:reporter)   | true
+      true  | true  | ref(:planner)    | false
       true  | true  | ref(:guest)      | false
       true  | true  | ref(:non_member) | false
       true  | false | ref(:owner)      | false
       true  | false | ref(:reporter)   | false
+      true  | false | ref(:planner)    | false
       true  | false | ref(:guest)      | false
       true  | false | ref(:non_member) | false
       false | true  | ref(:owner)      | false
       false | true  | ref(:reporter)   | false
+      false | true  | ref(:planner)    | false
       false | true  | ref(:guest)      | false
       false | true  | ref(:non_member) | false
       false | false | ref(:owner)      | false
       false | false | ref(:reporter)   | false
+      false | false | ref(:planner)    | false
       false | false | ref(:guest)      | false
       false | false | ref(:non_member) | false
     end
@@ -4219,10 +4170,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     where(:saas_feature_enabled, :current_user, :match_expected_result) do
       true  | ref(:owner)      | be_allowed(:read_google_cloud_artifact_registry)
       true  | ref(:reporter)   | be_allowed(:read_google_cloud_artifact_registry)
+      true  | ref(:planner)    | be_disallowed(:read_google_cloud_artifact_registry)
       true  | ref(:guest)      | be_disallowed(:read_google_cloud_artifact_registry)
       true  | ref(:non_member) | be_disallowed(:read_google_cloud_artifact_registry)
       false | ref(:owner)      | be_disallowed(:read_google_cloud_artifact_registry)
       false | ref(:reporter)   | be_disallowed(:read_google_cloud_artifact_registry)
+      false | ref(:planner)    | be_disallowed(:read_google_cloud_artifact_registry)
       false | ref(:guest)      | be_disallowed(:read_google_cloud_artifact_registry)
       false | ref(:non_member) | be_disallowed(:read_google_cloud_artifact_registry)
     end
@@ -4337,26 +4290,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       true  | true  | true  | ref(:owner)      | be_allowed(:duo_workflow)
       true  | true  | true  | ref(:maintainer) | be_allowed(:duo_workflow)
       true  | true  | true  | ref(:developer)  | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:planner)    | be_disallowed(:duo_workflow)
       true  | true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
       true  | true  | true  | ref(:non_member) | be_disallowed(:duo_workflow)
       true  | false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
       true  | false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
       true  | false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:planner)    | be_disallowed(:duo_workflow)
       true  | false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
       true  | false | true  | ref(:non_member) | be_disallowed(:duo_workflow)
       false | true  | true  | ref(:owner)      | be_disallowed(:duo_workflow)
       false | true  | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
       false | true  | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:planner)    | be_disallowed(:duo_workflow)
       false | true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
       false | true  | true  | ref(:non_member) | be_disallowed(:duo_workflow)
       false | false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
       false | false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
       false | false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:planner)    | be_disallowed(:duo_workflow)
       false | false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
       false | false | true  | ref(:non_member) | be_disallowed(:duo_workflow)
       false | false | false | ref(:owner)      | be_disallowed(:duo_workflow)
       false | false | false | ref(:maintainer) | be_disallowed(:duo_workflow)
       false | false | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | false | ref(:planner)    | be_disallowed(:duo_workflow)
       false | false | false | ref(:guest)      | be_disallowed(:duo_workflow)
       false | false | false | ref(:non_member) | be_disallowed(:duo_workflow)
     end
@@ -4411,6 +4369,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       ref(:owner)      | be_allowed(:read_pre_receive_secret_detection_info)
       ref(:maintainer) | be_allowed(:read_pre_receive_secret_detection_info)
       ref(:developer)  | be_allowed(:read_pre_receive_secret_detection_info)
+      ref(:planner)    | be_disallowed(:read_pre_receive_secret_detection_info)
       ref(:guest)      | be_disallowed(:read_pre_receive_secret_detection_info)
       ref(:non_member) | be_disallowed(:read_pre_receive_secret_detection_info)
     end
@@ -4442,6 +4401,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :allowed) do
       :guest      | false
+      :planner    | false
       :reporter   | false
       :developer  | false
       :maintainer | true
@@ -4466,6 +4426,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     where(:role, :allowed) do
       :guest      | false
+      :planner    | false
       :reporter   | false
       :developer  | true
       :maintainer | true
@@ -4552,12 +4513,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         true  | ref(:maintainer) | true
         true  | ref(:developer)  | true
         true  | ref(:guest)      | false
+        true  | ref(:planner)    | false
         true  | ref(:reporter)   | false
         true  | ref(:non_member) | false
         false | ref(:owner)      | false
         false | ref(:maintainer) | false
         false | ref(:developer)  | false
         false | ref(:guest)      | false
+        false | ref(:planner)    | false
         false | ref(:reporter)   | false
         false | ref(:non_member) | false
       end
