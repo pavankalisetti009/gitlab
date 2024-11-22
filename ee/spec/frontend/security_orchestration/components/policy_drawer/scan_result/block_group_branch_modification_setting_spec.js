@@ -8,7 +8,7 @@ import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 
 describe('BlockGroupBranchModificationSetting', () => {
   let wrapper;
@@ -52,6 +52,7 @@ describe('BlockGroupBranchModificationSetting', () => {
 
     expect(requestHandler).toHaveBeenCalledWith({
       ids: exceptions.map(({ id }) => convertToGraphQLId(TYPENAME_GROUP, id)),
+      after: '',
     });
     expect(findExceptions()).toHaveLength(2);
     expect(findExceptions().at(0).text()).toBe(groups[0].fullName);

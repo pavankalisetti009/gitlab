@@ -7,13 +7,14 @@ import {
   GlSprintf,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import produce from 'immer';
 import { createAlert } from '~/alert';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { __, s__ } from '~/locale';
 import {
@@ -41,6 +42,7 @@ export default {
       },
       update(data) {
         const groups = data.groups?.nodes?.map(createGroupObject) || [];
+        this.pageInfo = data.groups?.pageInfo || {};
         return this.joinUniqueGroups(groups);
       },
       async result() {
@@ -82,6 +84,7 @@ export default {
       selectedExceptionType: this.exceptions.length ? EXCEPT_GROUPS : WITHOUT_EXCEPTIONS,
       searchValue: '',
       searching: false,
+      pageInfo: {},
     };
   },
   computed: {
@@ -123,6 +126,9 @@ export default {
         placeholder: __('Select groups'),
         maxOptionsShown: 2,
       });
+    },
+    hasNextPage() {
+      return this.pageInfo.hasNextPage;
     },
   },
   watch: {
@@ -181,6 +187,27 @@ export default {
     emitChangeEvent(value) {
       this.$emit('change', value);
     },
+    async loadMoreGroups() {
+      if (!this.hasNextPage) return [];
+      try {
+        return await this.$apollo.queries.groups.fetchMore({
+          variables: {
+            search: this.searchValue,
+            after: this.pageInfo.endCursor,
+          },
+          updateQuery(previousResult, { fetchMoreResult }) {
+            return produce(fetchMoreResult, (draftData) => {
+              draftData.groups.nodes = [
+                ...previousResult.groups.nodes,
+                ...fetchMoreResult.groups.nodes,
+              ];
+            });
+          },
+        });
+      } catch {
+        return [];
+      }
+    },
   },
 
   GROUP_PROTECTED_BRANCHES_DOCS: helpPagePath('user/project/repository/branches/protected', {
@@ -216,9 +243,11 @@ export default {
           multiple
           searchable
           :items="filteredGroups"
+          :infinite-scroll="hasNextPage"
           :loading="loading"
           :selected="exceptionIds"
           :toggle-text="toggleText"
+          @bottom-reached="loadMoreGroups"
           @search="handleSearch"
           @select="updateGroupExceptionValue"
         >

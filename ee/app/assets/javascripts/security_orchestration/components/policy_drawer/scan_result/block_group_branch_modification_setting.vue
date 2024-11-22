@@ -3,7 +3,7 @@ import { GlSprintf } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
-import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 
 export default {
   name: 'BlockGroupBranchModificationSetting',

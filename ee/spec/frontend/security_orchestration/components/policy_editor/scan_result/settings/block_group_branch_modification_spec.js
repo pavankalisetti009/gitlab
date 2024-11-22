@@ -10,7 +10,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
 import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data';
-import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.qyery.graphql';
+import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -21,12 +21,20 @@ describe('BlockGroupBranchModification', () => {
   let wrapper;
   let requestHandler;
 
-  const defaultHandler = (nodes = createMockGroups()) =>
+  const defaultPageInfo = {
+    __typename: 'PageInfo',
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null,
+  };
+
+  const defaultHandler = (nodes = createMockGroups(), pageInfo = defaultPageInfo) =>
     jest.fn().mockResolvedValue({
       data: {
         groups: {
           nodes,
-          pageInfo: {},
+          pageInfo,
         },
       },
     });
@@ -67,7 +75,7 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('renders when enabled', () => {
-      createComponent({ enabled: true });
+      createComponent({ propsData: { enabled: true } });
       expect(findLink().attributes('href')).toBe(
         '/help/user/project/repository/branches/protected#for-all-projects-in-a-group',
       );
@@ -93,7 +101,7 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('retrieves top-level groups', () => {
-      expect(requestHandler).toHaveBeenCalledWith({ topLevelOnly: true, search: '' });
+      expect(requestHandler).toHaveBeenCalledWith({ topLevelOnly: true, search: '', after: '' });
     });
 
     it('renders the except selection dropdown', () => {
@@ -160,7 +168,7 @@ describe('BlockGroupBranchModification', () => {
     it('searches for groups', async () => {
       createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
       await findExceptionsDropdown().vm.$emit('search', 'git');
-      expect(requestHandler).toHaveBeenCalledWith({ search: 'git', topLevelOnly: true });
+      expect(requestHandler).toHaveBeenCalledWith({ search: 'git', topLevelOnly: true, after: '' });
     });
   });
 
@@ -187,10 +195,41 @@ describe('BlockGroupBranchModification', () => {
       await waitForPromises();
 
       expect(requestHandler).toHaveBeenCalledTimes(2);
-      expect(requestHandler).toHaveBeenNthCalledWith(1, { topLevelOnly: true, search: '' });
+      expect(requestHandler).toHaveBeenNthCalledWith(1, {
+        topLevelOnly: true,
+        search: '',
+        after: '',
+      });
       expect(requestHandler).toHaveBeenNthCalledWith(2, {
+        after: '',
         topLevelOnly: true,
         ids: [7, 8].map((id) => convertToGraphQLId(TYPENAME_GROUP, id)),
+      });
+    });
+  });
+
+  describe('infinite scroll', () => {
+    it('does not make a query to fetch more groups when there is no next page', async () => {
+      createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
+      await waitForPromises();
+      findExceptionsDropdown().vm.$emit('bottom-reached');
+
+      expect(requestHandler).toHaveBeenCalledTimes(1);
+    });
+
+    it('makes a query to fetch more groups when there is a next page', async () => {
+      createComponent({
+        propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
+        handler: defaultHandler(createMockGroups(), { ...defaultPageInfo, hasNextPage: true }),
+      });
+      await waitForPromises();
+      findExceptionsDropdown().vm.$emit('bottom-reached');
+
+      expect(requestHandler).toHaveBeenCalledTimes(2);
+      expect(requestHandler).toHaveBeenNthCalledWith(2, {
+        after: null,
+        topLevelOnly: true,
+        search: '',
       });
     });
   });
