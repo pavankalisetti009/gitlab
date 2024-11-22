@@ -2,8 +2,6 @@ import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { MERGE_REQUESTS_STATE_MERGED } from 'ee/analytics/dashboards/graphql/constants';
 import * as utils from '~/analytics/shared/utils';
 import {
-  mockDoraMetricsResponseData,
-  mockFlowMetricsResponseData,
   mockLastVulnerabilityCountData,
   mockMergeRequestsResponseData,
   mockContributorCountResponseData,
@@ -59,22 +57,6 @@ export const mockGraphqlVulnerabilityResponse = (
         id: 'fake-vulnerability-request',
         vulnerabilitiesCountByDay: { nodes: [mockDataResponse] },
       },
-    },
-  });
-
-export const mockGraphqlFlowMetricsResponse = (mockDataResponse = mockFlowMetricsResponseData) =>
-  jest.fn().mockResolvedValue({
-    data: {
-      project: null,
-      group: { id: 'fake-flow-metrics-request', flowMetrics: mockDataResponse },
-    },
-  });
-
-export const mockGraphqlDoraMetricsResponse = (mockDataResponse = mockDoraMetricsResponseData) =>
-  jest.fn().mockResolvedValue({
-    data: {
-      project: null,
-      group: { id: 'fake-dora-metrics-request', dora: mockDataResponse },
     },
   });
 

@@ -1,7 +1,7 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import * as DoraApi from 'ee/api/dora_api';
-import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
+import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
 import { toYmd } from '~/analytics/shared/utils';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
@@ -37,7 +37,7 @@ export default {
     CiCdAnalyticsCharts,
     DoraChartHeader,
     ChartTooltipText,
-    ValueStreamMetrics,
+    LegacyValueStreamMetrics,
   },
   inject: {
     projectPath: {
@@ -183,7 +183,7 @@ export default {
       :format-tooltip-text="formatTooltipText"
     >
       <template #metrics="{ selectedChart }">
-        <value-stream-metrics
+        <legacy-value-stream-metrics
           :request-path="metricsRequestPath"
           :requests="$options.metricsRequest"
           :request-params="getMetricsRequestParams(selectedChart)"

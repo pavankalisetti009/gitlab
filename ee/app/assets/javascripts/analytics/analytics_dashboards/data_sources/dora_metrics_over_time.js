@@ -1,10 +1,7 @@
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
+import { extractQueryResponseFromNamespace, scaledValueForDisplay } from '~/analytics/shared/utils';
 import { TABLE_METRICS } from 'ee/analytics/dashboards/constants';
-import {
-  extractQueryResponseFromNamespace,
-  scaledValueForDisplay,
-} from 'ee/analytics/dashboards/api';
 import {
   LAST_180_DAYS,
   DORA_METRIC_QUERY_RANGES,

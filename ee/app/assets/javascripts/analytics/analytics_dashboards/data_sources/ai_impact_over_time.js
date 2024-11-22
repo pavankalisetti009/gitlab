@@ -6,16 +6,13 @@ import {
 } from 'ee/analytics/dashboards/ai_impact/constants';
 import { calculateRate } from 'ee/analytics/dashboards/ai_impact/utils';
 import {
-  extractQueryResponseFromNamespace,
-  scaledValueForDisplay,
-} from 'ee/analytics/dashboards/api';
-import {
   LAST_30_DAYS,
   LAST_180_DAYS,
   DORA_METRIC_QUERY_RANGES,
   startOfTomorrow,
 } from 'ee/dora/components/static_data/shared';
 import { AI_METRICS } from '~/analytics/shared/constants';
+import { scaledValueForDisplay, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { defaultClient } from '../graphql/client';
 
 const DATE_RANGE_TITLES = { [LAST_30_DAYS]: sprintf(__('Last %{days} days'), { days: 30 }) };

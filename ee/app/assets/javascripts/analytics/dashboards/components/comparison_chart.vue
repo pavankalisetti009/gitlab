@@ -1,7 +1,7 @@
 <script>
 import { uniq } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { toYmd } from '~/analytics/shared/utils';
+import { toYmd, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { CONTRIBUTOR_METRICS } from '~/analytics/shared/constants';
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
@@ -28,7 +28,6 @@ import {
   extractGraphqlFlowData,
   extractGraphqlMergeRequestsData,
   extractGraphqlContributorCountData,
-  extractQueryResponseFromNamespace,
 } from '../api';
 import {
   generateSkeletonTableData,

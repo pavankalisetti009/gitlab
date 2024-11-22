@@ -1,12 +1,12 @@
 import lastWeekData from 'test_fixtures/api/dora/metrics/daily_lead_time_for_changes_for_last_week.json';
 import deploymentFrequencyLastWeekData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_week.json';
+import { secondsToDays } from '~/analytics/shared/utils';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
 import {
   apiDataToChartSeries,
   seriesToAverageSeries,
   seriesToMedianSeries,
   extractTimeSeriesTooltip,
-  secondsToDays,
   formatAsPercentage,
   forecastDataToSeries,
   calculateForecast,

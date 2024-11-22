@@ -5,7 +5,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
 import * as DoraApi from 'ee/api/dora_api';
 import SafeHtml from '~/vue_shared/directives/safe_html';
-import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
+import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
 import { toYmd } from '~/analytics/shared/utils';
 import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
@@ -50,7 +50,7 @@ export default {
   components: {
     CiCdAnalyticsCharts,
     DoraChartHeader,
-    ValueStreamMetrics,
+    LegacyValueStreamMetrics,
     GlToggle,
     GlBadge,
     GlAlert,
@@ -431,7 +431,7 @@ export default {
               {{ forecastRequestErrorMessage }}
             </template>
           </gl-alert>
-          <value-stream-metrics
+          <legacy-value-stream-metrics
             :request-path="metricsRequestPath"
             :requests="$options.metricsRequest"
             :request-params="getMetricsRequestParams(selectedChart)"
