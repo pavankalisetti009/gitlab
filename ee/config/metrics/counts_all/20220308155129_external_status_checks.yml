@@ -2,6 +2,8 @@
 key_path: counts.external_status_checks
 description: Total number of external status checks
 product_group: security_policies
+product_categories:
+- compliance_management
 value_type: number
 status: active
 milestone: '14.9'
