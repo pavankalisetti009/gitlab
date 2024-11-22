@@ -865,6 +865,10 @@ Merge request events are triggered when:
 - A commit is added in the source branch.
 - All threads are resolved on the merge request.
 
+Merge request events can be triggered even if the `changes` field is empty.
+Webhook receivers should always inspect the content of the `changes` field for the
+actual changes in a merge request.
+
 The available values for `object_attributes.action` in the payload are:
 
 - `open`
