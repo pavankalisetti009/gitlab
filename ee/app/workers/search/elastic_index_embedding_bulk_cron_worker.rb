@@ -19,9 +19,5 @@ module Search
     def service
       Search::Elastic::ProcessEmbeddingBookkeepingService.new
     end
-
-    def re_enqueue_enabled?
-      Feature.enabled?(:embedding_cron_worker_re_enqueue) # rubocop: disable Gitlab/FeatureFlagWithoutActor -- cron worker without actor
-    end
   end
 end
