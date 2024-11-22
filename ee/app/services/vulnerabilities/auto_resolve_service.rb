@@ -8,7 +8,7 @@ module Vulnerabilities
 
     def initialize(project, vulnerability_ids)
       @project = project
-      @vulnerabilities = Vulnerability.id_in(vulnerability_ids.first(MAX_BATCH))
+      @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids)
     end
 
     def execute
@@ -25,21 +25,16 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :vulnerabilities
+    attr_reader :project, :vulnerability_reads
 
     def vulnerabilities_to_resolve
       policies_by_vulnerability.keys
     end
 
     def policies_by_vulnerability
-      policies.each_with_object({}) do |policy, memo|
-        vulnerabilities.each do |vulnerability|
-          if policy.match?(vulnerability)
-            memo[vulnerability] ||= []
-            memo[vulnerability].push(policy)
-          end
-        end
-      end
+      vulnerability_reads.index_with do |read|
+        policies.find { |policy| policy.match?(read) }
+      end.compact
     end
     strong_memoize_attr :policies_by_vulnerability
 
@@ -55,7 +50,7 @@ module Vulnerabilities
       Vulnerability.transaction do
         Vulnerabilities::StateTransition.insert_all!(state_transition_attrs)
 
-        Vulnerability.id_in(vulnerabilities_to_resolve.map(&:id)).update_all(
+        Vulnerability.id_in(vulnerabilities_to_resolve.first(MAX_BATCH).map(&:vulnerability_id)).update_all(
           state: :resolved,
           auto_resolved: true,
           resolved_by_id: user.id,
@@ -102,8 +97,8 @@ module Vulnerabilities
     end
 
     def comment(vulnerability)
-      policy_names = policies_by_vulnerability[vulnerability].map(&:name)
-      _("Auto-resolved by vulnerability management policy") + " #{policy_names.join(', ')}"
+      policy = policies_by_vulnerability[vulnerability]
+      _("Auto-resolved by vulnerability management policy") + " #{policy.name}"
     end
 
     def user
