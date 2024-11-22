@@ -100,6 +100,7 @@ module Gitlab
           },
           categorize_question: {
             service_class: ::Gitlab::Llm::Anthropic::Completions::CategorizeQuestion,
+            aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::CategorizeQuestion,
             prompt_class: ::Gitlab::Llm::Templates::CategorizeQuestion,
             feature_category: :duo_chat,
             execute_method: ::Llm::Internal::CategorizeChatQuestionService,

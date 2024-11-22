@@ -14,6 +14,14 @@ module Llm
       def ai_action
         :categorize_question
       end
+
+      override :user_can_send_to_ai?
+      def user_can_send_to_ai?
+        # only performed on .com
+        return false unless ::Gitlab.com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- internal tool
+
+        user.any_group_with_ga_ai_available?(:duo_chat)
+      end
     end
   end
 end
