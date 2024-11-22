@@ -409,6 +409,30 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#scope_has_framework?' do
+    let(:framework) { create(:compliance_framework) }
+    let(:policy_scope) { {} }
+    let(:security_policy) { create(:security_policy, scope: policy_scope) }
+
+    subject(:scope_has_framework?) { security_policy.scope_has_framework?(framework.id) }
+
+    context 'when scope is empty' do
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when scope contains framework_id' do
+      let(:policy_scope) { { compliance_frameworks: [{ id: framework.id }] } }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when scope has a non existing framework_id' do
+      let(:policy_scope) { { compliance_frameworks: [{ id: non_existing_record_id }] } }
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe '#delete_approval_policy_rules' do
     let_it_be(:policy) { create(:security_policy, :require_approval) }
     let_it_be(:other_policy) { create(:security_policy, :require_approval) }

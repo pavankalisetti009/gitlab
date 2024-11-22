@@ -18,9 +18,20 @@ module Security
       policy_configuration_ids = project.all_security_orchestration_policy_configuration_ids
       return unless policy_configuration_ids.any?
 
-      framework.security_orchestration_policy_configurations.id_in(policy_configuration_ids).find_each do |config|
-        Security::ProcessScanResultPolicyWorker.perform_async(project.id, config.id)
-      end
+      framework
+        .security_orchestration_policy_configurations
+        .with_security_policies.id_in(policy_configuration_ids)
+        .find_each do |config|
+          Security::ProcessScanResultPolicyWorker.perform_async(project.id, config.id)
+
+          config.security_policies.undeleted.find_each do |security_policy|
+            Security::SecurityOrchestrationPolicies::SyncPolicyEventService.new(
+              project: project,
+              security_policy: security_policy,
+              event: event
+            ).execute
+          end
+        end
     end
   end
 end

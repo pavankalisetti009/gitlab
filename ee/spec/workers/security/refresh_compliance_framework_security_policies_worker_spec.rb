@@ -65,4 +65,62 @@ RSpec.describe ::Security::RefreshComplianceFrameworkSecurityPoliciesWorker, fea
 
     consume_event(subscriber: described_class, event: compliance_framework_changed_event)
   end
+
+  context 'with security_policies' do
+    let_it_be(:security_policy) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: policy_configuration,
+        scope: { compliance_frameworks: [{ id: compliance_framework.id }] }
+      )
+    end
+
+    let_it_be(:deleted_security_policy) do
+      create(:security_policy, :deleted,
+        security_orchestration_policy_configuration: policy_configuration,
+        scope: { compliance_frameworks: [{ id: compliance_framework.id }] }
+      )
+    end
+
+    let_it_be(:project_security_policy) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: project_policy_configuration,
+        scope: { compliance_frameworks: [{ id: compliance_framework.id }] }
+      )
+    end
+
+    let_it_be(:other_security_policy) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: other_policy_configuration,
+        scope: { compliance_frameworks: [{ id: compliance_framework.id }] }
+      )
+    end
+
+    before do
+      create(:compliance_framework_project_setting,
+        project: project,
+        compliance_management_framework: compliance_framework
+      )
+    end
+
+    it 'invokes Security::SecurityOrchestrationPolicies::SyncPolicyEventService for undeleted policies' do
+      expect_next_instance_of(
+        Security::SecurityOrchestrationPolicies::SyncPolicyEventService,
+        project: project,
+        security_policy: security_policy,
+        event: an_instance_of(::Projects::ComplianceFrameworkChangedEvent)
+      ) do |instance|
+        expect(instance).to receive(:execute)
+      end
+      expect_next_instance_of(
+        Security::SecurityOrchestrationPolicies::SyncPolicyEventService,
+        project: project,
+        security_policy: project_security_policy,
+        event: an_instance_of(::Projects::ComplianceFrameworkChangedEvent)
+      ) do |instance|
+        expect(instance).to receive(:execute)
+      end
+
+      consume_event(subscriber: described_class, event: compliance_framework_changed_event)
+    end
+  end
 end
