@@ -292,6 +292,11 @@ describe('CodeSuggestionsInfoCard', () => {
               action: 'click_button',
               label: 'duo_pro_contact_sales',
             },
+            buttonAttributes: {
+              size: 'small',
+              variant: 'confirm',
+              category: 'secondary',
+            },
           });
         });
 
@@ -366,23 +371,16 @@ describe('CodeSuggestionsInfoCard', () => {
               action: 'click_button',
               label: 'duo_enterprise_contact_sales',
             },
+            buttonAttributes: {
+              size: 'small',
+              variant: 'confirm',
+              category: 'primary',
+            },
           });
         });
 
-        it('visits the correct url and tracks the purchase seats button when clicked', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          findPurchaseSeatsButton().vm.$emit('click');
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            'click_purchase_seats_button_group_duo_usage_page',
-            {
-              label: 'duo_enterprise_purchase_seats',
-            },
-            'groups:usage_quotas:index',
-          );
-
-          expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
+        it('does not render the purchase seats button', () => {
+          expect(findPurchaseSeatsButton().exists()).toBe(false);
         });
 
         it('visits the correct url and tracks the learn more link when clicked', () => {

@@ -59,6 +59,9 @@ export default {
     duoTitle() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
     },
+    isDuoPro() {
+      return this.duoTier === DUO_PRO;
+    },
     duoSeatUtilizationDescription() {
       return this.sprintf(this.$options.i18n.duoSeatUtilizationDescriptionText, {
         title: this.duoTitle,
@@ -127,6 +130,7 @@ export default {
           $options.i18n.duoAssignSeatsButtonText
         }}</gl-button>
         <gl-button
+          v-if="isDuoPro"
           category="primary"
           variant="default"
           :href="addDuoProHref"

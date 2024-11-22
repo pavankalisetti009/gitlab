@@ -143,6 +143,9 @@ export default {
     duoActiveTrial() {
       return Boolean(this.duoActiveTrialStartDate);
     },
+    isDuoPro() {
+      return this.duoTier === DUO_PRO;
+    },
     pageViewLabel() {
       return this.duoActiveTrial
         ? `duo_${this.duoTier}_add_on_tab_active_trial`
@@ -153,6 +156,13 @@ export default {
         category: 'groups:usage_quotas:index',
         action: 'click_button',
         label: `duo_${this.duoTier}_contact_sales`,
+      };
+    },
+    handRaiseLeadBtnAttributes() {
+      return {
+        size: 'small',
+        variant: 'confirm',
+        category: this.isDuoPro ? 'secondary' : 'primary',
       };
     },
   },
@@ -251,11 +261,6 @@ export default {
       return localeDateFormat.asDate.format(new Date(year, month - 1, day));
     },
   },
-  handRaiseLeadAttributes: {
-    size: 'small',
-    variant: 'confirm',
-    category: 'secondary',
-  },
   modalId: PQL_MODAL_ID,
 };
 </script>
@@ -299,6 +304,7 @@ export default {
       <template #actions>
         <div v-if="duoActiveTrial">
           <gl-button
+            v-if="isDuoPro"
             variant="confirm"
             size="small"
             data-testid="usage-quotas-gitlab-duo-tab-active-trial-purchase-seats-button"
@@ -309,7 +315,7 @@ export default {
 
           <hand-raise-lead-button
             :modal-id="$options.modalId"
-            :button-attributes="$options.handRaiseLeadAttributes"
+            :button-attributes="handRaiseLeadBtnAttributes"
             :cta-tracking="handRaiseLeadBtnTracking"
             glm-content="usage-quotas-gitlab-duo-tab"
           />
