@@ -49,7 +49,7 @@ describe('workspaces/agent/components/agent_workspaces_list.vue', () => {
       provide: {
         emptyStateSvgPath: SVG_PATH,
       },
-      props: {
+      propsData: {
         agentName: AGENT_NAME,
         projectPath: PROJECT_PATH,
       },
@@ -83,25 +83,36 @@ describe('workspaces/agent/components/agent_workspaces_list.vue', () => {
 
     describe('when workspaces list emits page', () => {
       it('refetches workspaces starting at the specified cursor', async () => {
-        const pageVariables = {
+        const firstPageVariables = {
+          first: 10,
+          after: null,
+          before: null,
+        };
+        const nextPageVariables = {
           after: 'end',
           first: 10,
-          agentName: AGENT_NAME,
-          projectPath: PROJECT_PATH,
         };
 
         createWrapper();
-
         await waitForPromises();
 
         expect(agentWorkspacesListQueryHandler).toHaveBeenCalledTimes(1);
+        expect(agentWorkspacesListQueryHandler).toHaveBeenLastCalledWith({
+          agentName: AGENT_NAME,
+          projectPath: PROJECT_PATH,
+          ...firstPageVariables,
+        });
 
-        findWorkspacesList().vm.$emit('page', pageVariables);
+        findWorkspacesList().vm.$emit('page', nextPageVariables);
 
         await waitForPromises();
 
         expect(agentWorkspacesListQueryHandler).toHaveBeenCalledTimes(2);
-        expect(agentWorkspacesListQueryHandler).toHaveBeenLastCalledWith(pageVariables);
+        expect(agentWorkspacesListQueryHandler).toHaveBeenLastCalledWith({
+          agentName: AGENT_NAME,
+          projectPath: PROJECT_PATH,
+          ...nextPageVariables,
+        });
       });
     });
   });

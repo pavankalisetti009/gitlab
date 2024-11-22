@@ -69,7 +69,7 @@ describe('ThroughputTable', () => {
       provide: {
         fullPath,
       },
-      props: {
+      propsData: {
         startDate,
         endDate,
       },

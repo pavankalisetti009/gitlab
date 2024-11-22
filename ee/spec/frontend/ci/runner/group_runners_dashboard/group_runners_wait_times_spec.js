@@ -61,7 +61,7 @@ describe('RunnerActiveList', () => {
         [groupRunnerWaitTimesQuery, groupRunnerWaitTimesHandler],
         [groupRunnerWaitTimeHistoryQuery, groupRunnerWaitTimeHistoryHandler],
       ]),
-      props: {
+      propsData: {
         groupFullPath: mockGroupPath,
       },
       provide: { clickhouseCiAnalyticsAvailable: true },
@@ -101,6 +101,7 @@ describe('RunnerActiveList', () => {
       expect(groupRunnerWaitTimeHistoryHandler).toHaveBeenCalledWith({
         fromTime: expect.any(String),
         toTime: expect.any(String),
+        fullPath: mockGroupPath,
       });
     });
   });
