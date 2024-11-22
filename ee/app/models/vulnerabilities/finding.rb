@@ -110,7 +110,7 @@ module Vulnerabilities
       foreign_key: :uuid,
       inverse_of: :vulnerability_finding
 
-    attribute :config_options, :ind_jsonb
+    attribute :config_options, ::Gitlab::Database::Type::IndifferentJsonb.new
 
     attr_writer :sha
     attr_accessor :scan, :found_by_pipeline

@@ -33,7 +33,7 @@ module Search
       validates :total_bytes, presence: true
       validates :metadata, json_schema: { filename: 'zoekt_node_metadata' }
 
-      attribute :metadata, :ind_jsonb # for indifferent access
+      attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
       scope :by_name, ->(*names) { where("metadata->>'name' IN (?)", names) }
       scope :lost, -> { where(last_seen_at: ..LOST_DURATION_THRESHOLD.ago) }

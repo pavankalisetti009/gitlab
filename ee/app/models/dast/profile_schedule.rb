@@ -20,7 +20,7 @@ class Dast::ProfileSchedule < ::Gitlab::Database::SecApplicationRecord
   validates :starts_at, presence: true
   validates :dast_profile_id, uniqueness: true
 
-  attribute :cadence, :ind_jsonb
+  attribute :cadence, ::Gitlab::Database::Type::IndifferentJsonb.new
   validates :cadence, json_schema: { filename: 'dast_profile_schedule_cadence', draft: 7 }
 
   validate :validate_plan_limit_not_exceeded_while_activating, if: :will_save_change_to_active?
