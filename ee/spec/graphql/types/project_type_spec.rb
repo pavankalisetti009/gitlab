@@ -309,6 +309,44 @@ RSpec.describe GitlabSchema.types['Project'] do
     end
   end
 
+  describe 'vulnerability_identifier_search' do
+    let_it_be(:identifier) { create(:vulnerabilities_identifier, project: project, external_type: 'cwe', name: 'CWE-23') }
+
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            vulnerabilityIdentifierSearch(name: "cwe") {
+            }
+          }
+        }
+      )
+    end
+
+    let(:current_user) { user }
+
+    subject(:search_results) do
+      GitlabSchema.execute(query, context: { current_user:
+        current_user }).as_json
+    end
+
+    context 'when the user has access' do
+      it 'returns the matching search result' do
+        results = search_results.dig('data', 'project', 'vulnerabilityIdentifierSearch')
+        expect(results).to contain_exactly(identifier.name)
+      end
+    end
+
+    context 'when user do not have access' do
+      let(:current_user) { create(:user) }
+
+      it 'returns nil' do
+        results = search_results.dig('data', 'project', 'vulnerabilityIdentifierSearch')
+        expect(results).to be_nil
+      end
+    end
+  end
+
   describe 'push rules field' do
     subject { described_class.fields['pushRules'] }
 

@@ -9,6 +9,8 @@ module Vulnerabilities
 
     sha_attribute :fingerprint
 
+    SEARCH_RESULTS_LIMIT = 50
+
     has_many :finding_identifiers, class_name: 'Vulnerabilities::FindingIdentifier', inverse_of: :identifier, foreign_key: 'identifier_id'
     has_many :findings, through: :finding_identifiers, class_name: 'Vulnerabilities::Finding'
 
@@ -40,6 +42,16 @@ module Vulnerabilities
 
     def other?
       !(cve? || cwe?)
+    end
+
+    def self.search_identifier_name(project_id, search_pattern)
+      result = where(project_id: project_id)
+        .loose_index_scan(column: :name)
+        .where("name ILIKE ?", ["%", sanitize_sql_like(search_pattern), "%"].join)
+        .order(:name)
+        .limit(SEARCH_RESULTS_LIMIT)
+
+      result.map(&:name)
     end
 
     # This is included at the bottom of the model definition because
