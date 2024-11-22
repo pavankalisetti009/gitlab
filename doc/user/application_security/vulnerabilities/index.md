@@ -129,7 +129,7 @@ To resolve the vulnerability:
 1. Select outside the filter field. The vulnerability severity totals and list of matching vulnerabilities are updated.
 1. Select the SAST vulnerability you want resolved.
    - A blue icon is shown next to vulnerabilities that support Vulnerability Resolution.
-1. In the upper-right corner, select **Resolve with AI**. If this project is a public project be aware that creating an MR will publicly expose the vulnerablity and offered resolution. To create the MR privately, please [create a private fork](../../../user/project/merge_requests/confidential.md), and repeat this process. 
+1. In the upper-right corner, select **Resolve with AI**. If this project is a public project be aware that creating an MR will publicly expose the vulnerablity and offered resolution. To create the MR privately, please [create a private fork](../../../user/project/merge_requests/confidential.md), and repeat this process.
 1. Add an additional commit to the MR. This forces a new pipeline to run.
 1. After the pipeline is complete, on the [pipeline security tab](../vulnerability_report/pipeline.md#view-vulnerabilities-in-a-pipeline), confirm that the vulnerability no longer appears.
 1. On the vulnerability report, [manually update the vulnerability](../vulnerability_report/index.md#change-status-of-vulnerabilities).
@@ -238,8 +238,8 @@ To resolve the vulnerability finding:
 1. Select a merge request.
    - Vulnerability findings supported by Vulnerability Resolution are indicated by the tanuki AI icon (**{tanuki-ai}**).
 1. Select the supported findings to open the security finding dialog.
-1. In the lower-right corner, select **Resolve with AI**. 
- 
+1. In the lower-right corner, select **Resolve with AI**.
+
 A comment containing the AI remediation suggestions is opened in the merge request. Review the suggested changes, then apply the merge request suggestion according to your standard workflow.
 
 Provide feedback on this feature in [issue 476553](https://gitlab.com/gitlab-org/gitlab/-/issues/476553).
@@ -265,20 +265,11 @@ DETAILS:
 **Tier:** Ultimate
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
-> - Introduced in GitLab 17.3 with a flag. Disabled by default.
-> - Enabled on GitLab.com in GitLab 17.3.
-> - Enabled on self-managed and GitLab Dedicated in GitLab 17.4.
-> - Generally available in GitLab 17.4. Feature flag removed.
+For specific types of vulnerabilities, GitLab Advanced SAST provides [code flow](../sast/gitlab_advanced_sast.md#vulnerability-code-flow) information.
+A vulnerability's code flow is the path the data takes from the user input (source) to the vulnerable line of code (sink), through all assignments, manipulation, and sanitization.
 
-For some vulnerabilities detected by Advanced SAST, a **Code flow** tab is available. A
-vulnerability's code flow is the path the data takes from the user input (source) to the vulnerable
-line of code (sink), through all assignments, manipulation, and sanitization. This information helps
-you understand and evaluate the vulnerability's context, impact, and risk.
-
-The **Code flow** tab shows:
-
-- The steps from source to sink.
-- The relevant files, including code snippets.
+For details on how to view a vulnerability's code flow, see
+[Vulnerability code flow](../sast/gitlab_advanced_sast.md#vulnerability-code-flow).
 
 ![A code flow of a Python application across two files](img/example_code_flow_of_python_applications_v17_3.png)
 
