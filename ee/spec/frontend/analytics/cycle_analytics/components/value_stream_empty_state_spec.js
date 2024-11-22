@@ -1,6 +1,5 @@
 import { GlLoadingIcon, GlEmptyState } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import ValueStreamEmptyState from 'ee/analytics/cycle_analytics/components/value_stream_empty_state.vue';
 import {
   EMPTY_STATE_ACTION_TEXT,
@@ -28,15 +27,9 @@ describe('ValueStreamEmptyState', () => {
       },
       provide: {
         newValueStreamPath,
-        glFeatures: {
-          vsaStandaloneSettingsPage: true,
-        },
         ...provide,
       },
       stubs: { GlEmptyState },
-      directives: {
-        GlModalDirective: createMockDirective('gl-modal-directive'),
-      },
     });
   };
 
@@ -67,12 +60,6 @@ describe('ValueStreamEmptyState', () => {
       expect(findPrimaryAction().exists()).toBe(true);
       expect(findPrimaryAction().text()).toContain(EMPTY_STATE_ACTION_TEXT);
       expect(findPrimaryAction().attributes('href')).toBe(newValueStreamPath);
-    });
-
-    it('does not bind modal directive to new value stream button', () => {
-      const binding = getBinding(findPrimaryAction().element, 'gl-modal-directive');
-
-      expect(binding.value).toBe(false);
     });
 
     it('renders the learn more button', () => {
@@ -139,22 +126,6 @@ describe('ValueStreamEmptyState', () => {
 
     it('does not render the learn more button', () => {
       expect(findSecondaryAction().exists()).toBe(false);
-    });
-  });
-
-  describe('vsaStandaloneSettingsPage = false', () => {
-    beforeEach(() => {
-      createComponent({ provide: { glFeatures: { vsaStandaloneSettingsPage: false } } });
-    });
-
-    it('renders new value stream button without a link', () => {
-      expect(findPrimaryAction().attributes('href')).toBe(undefined);
-    });
-
-    it('binds modal directive to new value stream button', () => {
-      const binding = getBinding(findPrimaryAction().element, 'gl-modal-directive');
-
-      expect(binding.value).toBe('value-stream-form-modal');
     });
   });
 });

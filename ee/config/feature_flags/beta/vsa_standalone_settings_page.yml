@@ -1,9 +1,0 @@
----
-name: vsa_standalone_settings_page
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/381002
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/146538
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/444848
-milestone: '16.10'
-group: group::optimize
-type: beta
-default_enabled: false

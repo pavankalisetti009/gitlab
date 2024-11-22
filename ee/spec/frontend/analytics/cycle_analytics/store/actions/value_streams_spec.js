@@ -160,7 +160,7 @@ describe('Value Stream Analytics actions / value streams', () => {
 
     describe('with no errors', () => {
       beforeEach(() => {
-        state = { currentGroup, features: { vsaStandaloneSettingsPage: true } };
+        state = { currentGroup };
         mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, updateResp);
       });
 
@@ -169,25 +169,6 @@ describe('Value Stream Analytics actions / value streams', () => {
           { type: types.REQUEST_UPDATE_VALUE_STREAM },
           { type: types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, payload: updateResp },
         ]);
-      });
-
-      describe('when `vsaStandaloneSettingsPage` feature flag is disabled', () => {
-        beforeEach(() => {
-          state = { currentGroup, features: { vsaStandaloneSettingsPage: false } };
-        });
-
-        it(`commits the ${types.REQUEST_UPDATE_VALUE_STREAM} and ${types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS} mutations and dispatches the 'fetchCycleAnalyticsData' action`, () => {
-          return testAction(
-            actions.updateValueStream,
-            payload,
-            state,
-            [
-              { type: types.REQUEST_UPDATE_VALUE_STREAM },
-              { type: types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, payload: updateResp },
-            ],
-            [{ type: 'fetchCycleAnalyticsData' }],
-          );
-        });
       });
     });
 

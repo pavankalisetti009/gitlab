@@ -12,8 +12,6 @@ import { mapState, mapActions } from 'vuex';
 import { slugifyWithUnderscore } from '~/lib/utils/text_utility';
 import { sprintf, __, s__ } from '~/locale';
 import Tracking from '~/tracking';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import ValueStreamForm from './value_stream_form.vue';
 
 const i18n = {
   DELETE_NAME: s__('DeleteValueStream|Delete %{name}'),
@@ -34,12 +32,11 @@ export default {
     GlCollapsibleListbox,
     GlModal,
     GlSprintf,
-    ValueStreamForm,
   },
   directives: {
     GlModalDirective,
   },
-  mixins: [Tracking.mixin(), glFeatureFlagsMixin()],
+  mixins: [Tracking.mixin()],
   inject: ['newValueStreamPath', 'editValueStreamPath'],
   props: {
     canEdit: {
@@ -47,12 +44,6 @@ export default {
       required: true,
       default: false,
     },
-  },
-  data() {
-    return {
-      showForm: false,
-      isEditing: false,
-    };
   },
   computed: {
     ...mapState({
@@ -83,19 +74,10 @@ export default {
         name: this.selectedValueStreamName,
       });
     },
-    isVSAStandaloneSettingsPageEnabled() {
-      return this.glFeatures?.vsaStandaloneSettingsPage;
-    },
-    createValueStreamButtonHref() {
-      return this.isVSAStandaloneSettingsPageEnabled ? this.newValueStreamPath : null;
-    },
     editValueStreamButtonHref() {
-      if (!this.isVSAStandaloneSettingsPageEnabled || !this.selectedValueStreamId) return null;
+      if (!this.selectedValueStreamId) return null;
 
       return this.editValueStreamPath.replace(':id', this.selectedValueStreamId);
-    },
-    valueStreamFormModalId() {
-      return !this.isVSAStandaloneSettingsPageEnabled && 'value-stream-form-modal';
     },
   },
   methods: {
@@ -120,20 +102,6 @@ export default {
         }
       });
     },
-    onCreate() {
-      if (!this.isVSAStandaloneSettingsPageEnabled) {
-        this.showForm = true;
-      }
-
-      this.isEditing = false;
-    },
-    onEdit() {
-      if (!this.isVSAStandaloneSettingsPageEnabled) {
-        this.showForm = true;
-      }
-
-      this.isEditing = true;
-    },
     slugify(valueStreamTitle) {
       return slugifyWithUnderscore(valueStreamTitle);
     },
@@ -155,14 +123,12 @@ export default {
       <template v-if="canEdit" #footer>
         <div class="gl-border-t gl-p-2">
           <gl-button
-            v-gl-modal-directive="valueStreamFormModalId"
             class="gl-w-full !gl-justify-start"
             category="tertiary"
-            :href="createValueStreamButtonHref"
+            :href="newValueStreamPath"
             data-testid="create-value-stream-option"
             data-track-action="click_dropdown"
             data-track-label="create_value_stream_form_open"
-            @click="onCreate"
             >{{ $options.i18n.CREATE_VALUE_STREAM }}</gl-button
           >
           <gl-button
@@ -184,25 +150,20 @@ export default {
     </gl-collapsible-listbox>
     <gl-button
       v-if="isCustomValueStream && canEdit"
-      v-gl-modal-directive="valueStreamFormModalId"
       :href="editValueStreamButtonHref"
       data-testid="edit-value-stream"
       data-track-action="click_button"
       data-track-label="edit_value_stream_form_open"
-      @click="onEdit"
       >{{ $options.i18n.EDIT_VALUE_STREAM }}</gl-button
     >
     <gl-button
       v-if="!hasValueStreams"
-      v-gl-modal-directive="valueStreamFormModalId"
-      :href="createValueStreamButtonHref"
+      :href="newValueStreamPath"
       data-testid="create-value-stream-button"
       data-track-action="click_button"
       data-track-label="create_value_stream_form_open"
-      @click="onCreate"
       >{{ $options.i18n.CREATE_VALUE_STREAM }}</gl-button
     >
-    <value-stream-form v-if="showForm" :is-editing="isEditing" @hidden="showForm = false" />
     <gl-modal
       data-testid="delete-value-stream-modal"
       modal-id="delete-value-stream-modal"

@@ -6,10 +6,7 @@ import VSASettingsApp from './components/app.vue';
 
 export default () => {
   const el = document.getElementById('js-vsa-settings-app');
-
-  if (!el || !gon.features?.vsaStandaloneSettingsPage) {
-    return false;
-  }
+  if (!el) return false;
 
   const { isEditPage, vsaPath } = el.dataset;
   const initialData = buildCycleAnalyticsInitialData(el.dataset);
