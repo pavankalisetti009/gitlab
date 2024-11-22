@@ -9,7 +9,7 @@ import {
   GlLink,
 } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/dist/charts';
-import { toYmd } from '~/analytics/shared/utils';
+import { toYmd, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { AI_METRICS, UNITS } from '~/analytics/shared/constants';
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { dasherize } from '~/lib/utils/text_utility';
@@ -57,7 +57,6 @@ import {
   extractGraphqlVulnerabilitiesData,
   extractGraphqlDoraData,
   extractGraphqlFlowData,
-  extractQueryResponseFromNamespace,
 } from '../../api';
 import { extractGraphqlAiData } from '../api';
 

@@ -25,7 +25,7 @@ module QA
               element 'vsa-path-navigation'
             end
 
-            view "app/assets/javascripts/analytics/shared/components/value_stream_metrics.vue" do
+            view "app/assets/javascripts/analytics/shared/components/legacy_value_stream_metrics.vue" do
               element 'vsa-metrics'
             end
 

@@ -1,6 +1,6 @@
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__ } from '~/locale';
-import { secondsToDays } from '../util';
+import { secondsToDays } from '~/analytics/shared/utils';
 
 export * from './shared';
 

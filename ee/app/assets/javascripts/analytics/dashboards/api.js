@@ -1,10 +1,5 @@
-import { formatAsPercentageWithoutSymbol, secondsToDays } from 'ee/dora/components/util';
-import {
-  CONTRIBUTOR_METRICS,
-  VULNERABILITY_METRICS,
-  UNITS,
-  MAX_METRIC_PRECISION,
-} from '~/analytics/shared/constants';
+import { CONTRIBUTOR_METRICS, VULNERABILITY_METRICS } from '~/analytics/shared/constants';
+import { scaledValueForDisplay } from '~/analytics/shared/utils';
 import { TABLE_METRICS } from './constants';
 
 /**
@@ -47,17 +42,6 @@ export const extractGraphqlVulnerabilitiesData = (rawVulnerabilityData = []) => 
       value: selectedCount?.high || '-',
     },
   };
-};
-
-export const scaledValueForDisplay = (value, units, precision = MAX_METRIC_PRECISION) => {
-  switch (units) {
-    case UNITS.PERCENT:
-      return formatAsPercentageWithoutSymbol(value);
-    case UNITS.DAYS:
-      return secondsToDays(value, precision);
-    default:
-      return value;
-  }
 };
 
 /**
@@ -239,25 +223,4 @@ export const fetchMetricsForTimePeriods = async (timePeriods, queryFn, queryPara
   });
 
   return Promise.all(promises);
-};
-
-/**
- * Takes a raw GraphQL response which could contain data for a group or project namespace,
- * and returns the data for the namespace which is present in the response.
- *
- * @param {Object} params
- * @param {string} params.resultKey - The data to be extracted from the namespace.
- * @param {Object} params.result
- * @param {Object} params.result.data
- * @param {Object} params.result.data.group - The group GraphQL response.
- * @param {Object} params.result.data.project - The project GraphQL response.
- * @returns {Object} The data extracted from either group[resultKey] or project[resultKey].
- */
-export const extractQueryResponseFromNamespace = ({ result, resultKey }) => {
-  const { group = null, project = null } = result.data;
-  if (group || project) {
-    const namespace = group ?? project;
-    return namespace[resultKey] || {};
-  }
-  return {};
 };

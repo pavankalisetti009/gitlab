@@ -21,12 +21,18 @@ import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.grap
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
+  mockDoraMetricsResponseData,
+  mockFlowMetricsResponseData,
+} from 'jest/analytics/shared/mock_data';
+import {
+  mockGraphqlDoraMetricsResponse,
+  mockGraphqlFlowMetricsResponse,
+} from 'jest/analytics/shared/helpers';
+import {
   doraMetricsParamsHelper,
   flowMetricsParamsHelper,
   vulnerabilityParamsHelper,
   mergeRequestsParamsHelper,
-  mockGraphqlFlowMetricsResponse,
-  mockGraphqlDoraMetricsResponse,
   mockGraphqlVulnerabilityResponse,
   mockGraphqlMergeRequestsResponse,
   expectTimePeriodRequests,
@@ -38,8 +44,6 @@ import {
   MOCK_CHART_TIME_PERIODS,
   mockComparativeTableData,
   mockLastVulnerabilityCountData,
-  mockDoraMetricsResponseData,
-  mockFlowMetricsResponseData,
   mockMergeRequestsResponseData,
   mockContributorCountResponseData,
 } from '../mock_data';
@@ -60,9 +64,6 @@ const allTimePeriods = [...MOCK_TABLE_TIME_PERIODS, ...MOCK_CHART_TIME_PERIODS];
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 jest.mock('~/alert');
-jest.mock('~/analytics/shared/utils', () => ({
-  toYmd: jest.requireActual('~/analytics/shared/utils').toYmd,
-}));
 
 Vue.use(VueApollo);
 

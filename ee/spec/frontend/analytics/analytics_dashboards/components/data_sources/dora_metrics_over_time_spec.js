@@ -1,4 +1,4 @@
-import { mockDoraMetricsResponseData } from 'ee_jest/analytics/dashboards/mock_data';
+import { mockDoraMetricsResponseData } from 'jest/analytics/shared/mock_data';
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/dora_metrics_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { LAST_WEEK, LAST_180_DAYS } from 'ee/dora/components/static_data/shared';

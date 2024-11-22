@@ -1,19 +1,20 @@
 import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
 import { UNITS } from '~/analytics/shared/constants';
+import { extractQueryResponseFromNamespace, scaledValueForDisplay } from '~/analytics/shared/utils';
 import {
   extractGraphqlDoraData,
   extractGraphqlFlowData,
   extractGraphqlVulnerabilitiesData,
   extractGraphqlMergeRequestsData,
-  scaledValueForDisplay,
   extractGraphqlContributorCountData,
-  extractQueryResponseFromNamespace,
 } from 'ee/analytics/dashboards/api';
 import {
   mockDoraMetricsResponseData,
-  mockLastVulnerabilityCountData,
   mockFlowMetricsResponseData,
+} from 'jest/analytics/shared/mock_data';
+import {
+  mockLastVulnerabilityCountData,
   mockMergeRequestsResponseData,
   mockContributorCountResponseData,
 } from './mock_data';

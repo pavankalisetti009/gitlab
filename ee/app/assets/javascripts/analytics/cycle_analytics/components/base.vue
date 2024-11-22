@@ -5,7 +5,7 @@ import { GlEmptyState } from '@gitlab/ui';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
 import { VSA_METRICS_GROUPS } from '~/analytics/shared/constants';
 import { generateValueStreamsDashboardLink } from '~/analytics/shared/utils';
-import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
+import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
 import PathNavigation from '~/analytics/cycle_analytics/components/path_navigation.vue';
 import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
 import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_stream_filters.vue';
@@ -34,7 +34,7 @@ export default {
     ValueStreamAggregatingWarning,
     ValueStreamEmptyState,
     ValueStreamFilters,
-    ValueStreamMetrics,
+    LegacyValueStreamMetrics,
     ValueStreamSelect,
     UrlSync,
     DurationOverviewChart,
@@ -260,7 +260,7 @@ export default {
         "
       />
       <template v-else>
-        <value-stream-metrics
+        <legacy-value-stream-metrics
           v-if="isOverviewStageSelected"
           :request-path="namespacePath"
           :request-params="cycleAnalyticsRequestParams"

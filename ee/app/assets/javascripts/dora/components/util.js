@@ -5,10 +5,10 @@ import {
   nDaysAfter,
   getStartOfDay,
   humanizeTimeInterval,
-  SECONDS_IN_DAY,
 } from '~/lib/utils/datetime_utility';
 import { median } from '~/lib/utils/number_utils';
 import { dateFormats } from '~/analytics/shared/constants';
+import { formatAsPercentageWithoutSymbol } from '~/analytics/shared/utils';
 import { linearRegression } from 'ee/analytics/shared/utils';
 import { buildForecast } from '../graphql/api';
 
@@ -98,17 +98,6 @@ export const seriesToMedianSeries = (chartSeriesData, seriesName) => {
 };
 
 /**
- * Converts a time in seconds to number of days, with variable precision
- *
- * @param {Number} seconds Time in seconds
- * @param {Number} precision Specifies the number of digits after the decimal
- *
- * @returns {Float} The number of days
- */
-export const secondsToDays = (seconds, precision = 1) =>
-  (seconds / SECONDS_IN_DAY).toFixed(precision);
-
-/**
  * Generates the tooltip text and value for time interval series
  *
  * @param {Object} params An object containing a time series and median data
@@ -149,19 +138,6 @@ export const extractTimeSeriesTooltip = (params, seriesName, formatter = humaniz
     tooltipTitle,
     tooltipValue,
   };
-};
-
-/**
- * Formats any valid number as percentage
- *
- * @param {number|string} decimalValue Decimal value between 0 and 1 to be converted to a percentage
- * @param {number} precision The number of decimal places to round to
- *
- * @returns {string} Returns a formatted string multiplied by 100
- */
-export const formatAsPercentageWithoutSymbol = (decimalValue = 0, precision = 1) => {
-  const parsed = Number.isNaN(Number(decimalValue)) ? 0 : decimalValue;
-  return (parsed * 100).toFixed(precision);
 };
 
 /**
