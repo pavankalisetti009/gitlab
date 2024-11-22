@@ -15,6 +15,12 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
 
   let!(:milestone_list)       { create(:milestone_list, board: board, milestone: milestone, position: 0) }
 
+  let_it_be(:iteration) do
+    create(:iteration, iterations_cadence: create(:iterations_cadence, title: "Test iteration", group: group))
+  end
+
+  let!(:iteration_list)       { create(:iteration_list, board: board, iteration: iteration, position: 1) }
+
   context 'when issues drawer is disabled' do
     before do
       stub_feature_flags(issues_list_drawer: false)
@@ -29,7 +35,7 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
         visit project_board_path(project, board)
         wait_for_requests
 
-        expect(page).to have_selector('.board', count: 3)
+        expect(page).to have_selector('.board', count: 4)
       end
 
       it 'successfully assigns weight to newly-created issue' do
@@ -57,6 +63,16 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
             wait_for_requests
 
             expect(page).to have_content 'Milestone 1'
+          end
+        end
+      end
+
+      describe 'iteration list' do
+        it 'successfully loads iteration to be added to newly created issue' do
+          create_issue_in_board_list(2)
+
+          within_testid('select-iteration') do
+            expect(page).to have_content 'Test iteration'
           end
         end
       end
@@ -95,7 +111,7 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
         visit project_board_path(project, board)
         wait_for_requests
 
-        expect(page).to have_selector('.board', count: 3)
+        expect(page).to have_selector('.board', count: 4)
       end
 
       it 'successfully assigns weight to newly-created issue' do
