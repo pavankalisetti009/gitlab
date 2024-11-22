@@ -362,7 +362,7 @@ module EE
 
       scope :missing_compliance_framework, -> { where.missing(:compliance_framework_settings) }
 
-      scope :any_compliance_framework, -> { joins(:compliance_framework_settings) }
+      scope :any_compliance_framework, -> { joins(:compliance_framework_settings).distinct }
 
       scope :available_verifiables, -> { joins(:project_state) }
 
