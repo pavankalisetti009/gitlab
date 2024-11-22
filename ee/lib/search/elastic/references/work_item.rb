@@ -89,10 +89,7 @@ module Search
 
           data['label_ids'] = target.label_ids.map(&:to_s)
           data['hidden'] = target.hidden?
-          if ::Elastic::DataMigrationService.migration_has_finished?(:add_root_namespace_id_to_work_item)
-            data['root_namespace_id'] = target.namespace.root_ancestor.id
-          end
-
+          data['root_namespace_id'] = target.namespace.root_ancestor.id
           data['traversal_ids'] = target.namespace.elastic_namespace_ancestry
           data['hashed_root_namespace_id'] = target.namespace.hashed_root_namespace_id
           data['work_item_type_id'] = target.work_item_type_id
