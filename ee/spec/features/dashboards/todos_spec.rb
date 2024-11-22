@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe 'Dashboard todos', feature_category: :notifications do
+  before do
+    stub_feature_flags(todos_vue_application: false)
+  end
+
   let_it_be(:user) { create(:user) }
 
   let(:page_path) { dashboard_todos_path }
