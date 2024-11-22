@@ -1,9 +1,0 @@
----
-name: zoekt_send_tasks
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/424124
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145796
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/443300
-milestone: '16.11'
-group: group::global search
-type: ops
-default_enabled: true

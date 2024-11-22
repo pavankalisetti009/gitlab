@@ -37,10 +37,8 @@ module API
                   # We don't want to register (save) the node if the feature flag is disabled
                   if Feature.disabled?(:zoekt_internal_api_register_nodes, type: :ops) || node.save_debounce
                     { id: node.id, truncate: new_node }.tap do |resp|
-                      if Feature.enabled?(:zoekt_send_tasks)
-                        resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
-                        resp[:pull_frequency] = node.task_pull_frequency
-                      end
+                      resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
+                      resp[:pull_frequency] = node.task_pull_frequency
                     end
                   else
                     unprocessable_entity!

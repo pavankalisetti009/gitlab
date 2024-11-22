@@ -114,24 +114,6 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
                                           'pull_frequency' =>  Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT })
           end
         end
-
-        context 'when zoekt_send_tasks is disabled' do
-          before do
-            stub_feature_flags(zoekt_send_tasks: false)
-          end
-
-          it 'does not return tasks' do
-            expect(::Search::Zoekt::Node).to receive(:find_or_initialize_by_task_request)
-              .with(valid_params).and_return(node)
-            expect(node).to receive(:save).and_return(true)
-
-            get api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
-
-            expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => node.id, 'truncate' => true })
-          end
-        end
       end
 
       context 'when a heartbeat has valid params but a node validation error occurs' do
