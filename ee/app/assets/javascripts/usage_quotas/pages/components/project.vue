@@ -126,7 +126,7 @@ export default {
             fallback-on-error
             class="mr-2"
           />
-          <span class="gl-font-bold gl-text-primary">{{ project.name }}</span>
+          <span class="gl-font-bold gl-text-default">{{ project.name }}</span>
         </gl-link>
         <div>
           <gl-sprintf :message="$options.i18n.extraDeploymentsLabel">

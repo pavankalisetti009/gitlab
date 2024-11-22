@@ -327,13 +327,13 @@ export default {
             </template>
 
             <template #description>
-              <p class="gl-my-0 gl-text-primary">
+              <p class="gl-my-0 gl-text-default">
                 <strong>{{ $options.i18n.metricType }}:&nbsp;</strong>{{ header.type }}
               </p>
-              <p class="gl-my-0 gl-text-primary">
+              <p class="gl-my-0 gl-text-default">
                 <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
               </p>
-              <p class="gl-my-0 gl-text-primary">
+              <p class="gl-my-0 gl-text-default">
                 {{ header.description }}
               </p>
             </template>

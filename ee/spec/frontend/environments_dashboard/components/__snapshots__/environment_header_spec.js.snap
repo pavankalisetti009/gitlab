@@ -8,7 +8,7 @@ exports[`Environment Header has a failed pipeline matches the snapshot 1`] = `
     class="block-truncated flex-grow-1"
   >
     <gl-link-stub
-      class="gl-text-primary js-environment-link"
+      class="gl-text-default js-environment-link"
       href="/enivronment/1"
       title="staging"
     >
@@ -36,7 +36,7 @@ exports[`Environment Header has errors matches the snapshot 1`] = `
     class="block-truncated flex-grow-1"
   >
     <gl-link-stub
-      class="gl-text-primary js-environment-link"
+      class="gl-text-default js-environment-link"
       href="/enivronment/1"
       title="staging"
     >
@@ -64,7 +64,7 @@ exports[`Environment Header renders name and link to app matches the snapshot 1`
     class="block-truncated flex-grow-1"
   >
     <a
-      class="gl-link gl-text-primary js-environment-link"
+      class="gl-link gl-text-default js-environment-link"
       href="/enivronment/1"
       title="staging"
     >
@@ -111,7 +111,7 @@ exports[`Environment Header with environments grouped into a folder matches the 
     class="block-truncated flex-grow-1"
   >
     <gl-link-stub
-      class="gl-text-primary js-environment-link"
+      class="gl-text-default js-environment-link"
       href="/enivronment/1"
       title="review/testing"
     >

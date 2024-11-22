@@ -133,7 +133,7 @@ export default {
       </template>
       <template #cell(image)="{ item }">
         <div class="gl-flex gl-items-center gl-justify-end md:gl-justify-start">
-          <router-link class="gl-min-w-0 gl-text-primary" :to="item.name">
+          <router-link class="gl-min-w-0 gl-text-default" :to="item.name">
             <gl-truncate
               class="gl-font-bold"
               position="middle"

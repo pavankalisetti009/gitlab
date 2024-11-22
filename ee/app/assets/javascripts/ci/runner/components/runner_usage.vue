@@ -227,7 +227,7 @@ export default {
               :size="16"
               :entity-name="value.name"
             />
-            <gl-link :href="value.webUrl" class="!gl-text-primary">
+            <gl-link :href="value.webUrl" class="!gl-text-default">
               {{ value.nameWithNamespace }}
             </gl-link>
           </div>
@@ -250,7 +250,7 @@ export default {
             class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
           >
             <template v-if="value">
-              <gl-link v-if="value.adminUrl" :href="value.adminUrl" class="!gl-text-primary">
+              <gl-link v-if="value.adminUrl" :href="value.adminUrl" class="!gl-text-default">
                 {{ runnerName(value) }}
               </gl-link>
               <template v-else>{{ runnerName(value) }}</template>

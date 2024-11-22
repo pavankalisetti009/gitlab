@@ -79,7 +79,7 @@ export default {
   computed: {
     checkboxLabelClass() {
       // by default, if the value is not null the text will look green or red, therefore we force it to use primary text color
-      return this.form.fields.terms.state === null ? '' : 'gl-text-primary';
+      return this.form.fields.terms.state === null ? '' : 'gl-text-default';
     },
   },
   methods: {
