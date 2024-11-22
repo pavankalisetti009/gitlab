@@ -4,13 +4,13 @@ require 'spec_helper'
 
 RSpec.describe AuditEvents::UnregisterRunnerAuditEventService, feature_category: :runner do
   let_it_be(:user) { create(:user) }
+  let_it_be(:owner) { create(:user) }
 
   let(:service) { described_class.new(runner, author, entity) }
   let(:common_attrs) do
     {
       author_id: -1,
       created_at: timestamp,
-      id: subject.id,
       target_type: runner.class.name,
       target_id: runner.id,
       ip_address: nil,
@@ -22,34 +22,32 @@ RSpec.describe AuditEvents::UnregisterRunnerAuditEventService, feature_category:
     }
   end
 
+  let(:attrs) do
+    common_attrs.deep_merge(
+      entity_id: entity.id,
+      entity_type: entity.class.name,
+      entity_path: entity.full_path,
+      target_details: target_details,
+      details: {
+        custom_message: expected_custom_message,
+        entity_path: entity.full_path,
+        target_details: target_details
+      }
+    ).deep_merge(extra_attrs)
+  end
+
   shared_examples 'expected audit event' do
     it 'returns audit event attributes' do
       travel_to(timestamp) do
-        expect(subject.attributes).to eq(attrs.stringify_keys)
+        expect(track_event.attributes).to eq('id' => track_event.id, **attrs.stringify_keys)
       end
     end
   end
 
   shared_context 'when unregistering runner' do
-    let(:entity_class_name) { entity.class.name if entity }
-    let(:runner_type) { entity_class_name&.downcase || 'instance' }
+    let(:runner_type) { runner.runner_type.chomp('_type') }
     let(:expected_custom_message) { "Unregistered #{runner_type} CI runner, never contacted" }
     let(:extra_attrs) { {} }
-    let(:attrs) do
-      common_attrs.deep_merge(
-        entity_id: entity&.id || -1,
-        entity_type: entity ? entity_class_name : 'User',
-        entity_path: entity&.full_path,
-        target_details: target_details,
-        details: {
-          custom_message: expected_custom_message,
-          entity_id: entity&.id || -1,
-          entity_type: entity ? entity_class_name : 'User',
-          entity_path: entity&.full_path,
-          target_details: target_details
-        }
-      ).deep_merge(extra_attrs)
-    end
 
     context 'with authentication token author' do
       let(:author) { 'b6bce79c3a' }
@@ -96,7 +94,7 @@ RSpec.describe AuditEvents::UnregisterRunnerAuditEventService, feature_category:
       stub_licensed_features(admin_audit_log: true)
     end
 
-    subject { service.track_event }
+    subject(:track_event) { service.track_event }
 
     let_it_be(:timestamp) { Time.zone.local(2021, 12, 28) }
 
@@ -105,46 +103,11 @@ RSpec.describe AuditEvents::UnregisterRunnerAuditEventService, feature_category:
         stub_licensed_features(extended_audit_events: true, admin_audit_log: true)
       end
 
-      let_it_be(:runner) { create(:ci_runner, contacted_at: timestamp) }
+      let(:runner) { create(:ci_runner, creator: owner) }
 
-      let(:entity) {}
-      let(:extra_attrs) { {} }
-      let(:target_details) { ::Gitlab::Routing.url_helpers.admin_runner_path(runner) }
-      let(:last_contact) { timestamp }
-      let(:attrs) do
-        common_attrs.deep_merge(
-          author_name: nil,
-          entity_id: -1,
-          entity_type: 'User',
-          entity_path: nil,
-          target_details: target_details,
-          details: {
-            custom_message: "Unregistered instance CI runner, last contacted #{last_contact}",
-            entity_path: nil,
-            target_details: target_details
-          }
-        ).deep_merge(extra_attrs)
-      end
-
-      context 'with authentication token author' do
-        let(:author) { 'b6bce79c3a' }
-        let(:extra_attrs) do
-          {
-            details: { runner_authentication_token: author[0...8] }
-          }
-        end
-
-        it_behaves_like 'expected audit event'
-      end
-
-      context 'with User author' do
-        let(:author) { user }
-
-        let(:extra_attrs) do
-          { author_id: author.id }
-        end
-
-        it_behaves_like 'expected audit event'
+      include_context 'when unregistering runner' do
+        let(:entity) { Gitlab::Audit::InstanceScope.new }
+        let(:target_details) { ::Gitlab::Routing.url_helpers.admin_runner_path(runner) }
       end
     end
 

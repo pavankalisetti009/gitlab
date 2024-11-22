@@ -15,7 +15,9 @@ module AuditEvents
       @token_scope = token_scope
       @runner = runner
 
-      raise ArgumentError, 'Missing token_scope' if token_scope.nil? && !runner.instance_type?
+      token_scope = Gitlab::Audit::InstanceScope.new if runner.instance_type?
+
+      raise ArgumentError, 'Missing token_scope' if token_scope.nil?
 
       details = {
         custom_message: message,
