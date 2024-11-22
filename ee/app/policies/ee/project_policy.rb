@@ -380,7 +380,7 @@ module EE
         enable :read_security_settings
       end
 
-      rule { can?(:reporter_access) & iterations_available }.policy do
+      rule { planner_or_reporter_access & iterations_available }.policy do
         enable :create_iteration
         enable :admin_iteration
       end
@@ -754,7 +754,7 @@ module EE
 
       rule { can?(:read_project) & requirements_available }.enable :read_requirement
 
-      rule { requirements_available & (reporter | admin) }.policy do
+      rule { requirements_available & (planner | reporter | admin) }.policy do
         enable :create_requirement
         enable :create_requirement_test_report
         enable :admin_requirement
@@ -765,7 +765,9 @@ module EE
 
       rule { requirements_available & (owner | admin) }.enable :destroy_requirement
 
-      rule { quality_management_available & can?(:reporter_access) & can?(:create_issue) }.enable :create_test_case
+      rule { quality_management_available & planner_or_reporter_access & can?(:create_issue) }.policy do
+        enable :create_test_case
+      end
 
       rule { compliance_framework_available & can?(:owner_access) }.enable :admin_compliance_framework
 

@@ -31,7 +31,7 @@ RSpec.describe Todos::Destroy::EntityLeaveService, feature_category: :team_plann
 
     context 'when user is still member of ancestor group' do
       before do
-        group.add_reporter(user)
+        group.add_planner(user)
       end
 
       it 'does not remove todos targeting confidential epics in the group' do

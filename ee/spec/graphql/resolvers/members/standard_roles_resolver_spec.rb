@@ -24,7 +24,7 @@ RSpec.describe Resolvers::Members::StandardRolesResolver, feature_category: :api
 
       it 'returns the totals for each standard role' do
         expect(result).to be_present
-        expect(result.count).to eq(6)
+        expect(result.count).to eq(7)
 
         roles_with_members = [::Gitlab::Access::MAINTAINER, ::Gitlab::Access::DEVELOPER]
 

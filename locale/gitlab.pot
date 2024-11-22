@@ -33760,6 +33760,9 @@ msgstr ""
 msgid "MemberRole|The Owner role is normally assigned to the individual or team responsible for managing and maintaining the group or creating the project. This role has the highest level of administrative control, and can manage all aspects of the group or project, including managing other Owners."
 msgstr ""
 
+msgid "MemberRole|The Planner role is suitable for team members who need to manage projects and track work items but do not need to contribute code, such as project managers and scrum masters."
+msgstr ""
+
 msgid "MemberRole|The Reporter role is suitable for team members who need to stay informed about a project or group but do not actively contribute code."
 msgstr ""
 
@@ -41294,6 +41297,9 @@ msgid "Plan"
 msgstr ""
 
 msgid "Plan:"
+msgstr ""
+
+msgid "Planner"
 msgstr ""
 
 msgid "PlantUML"
@@ -55230,6 +55236,9 @@ msgid "The Matrix access token (for example, `syt-zyx57W2v1u123ew11`)."
 msgstr ""
 
 msgid "The Mattermost token."
+msgstr ""
+
+msgid "The Planner role is suitable for team members who need to manage projects and track work items but do not need to contribute code."
 msgstr ""
 
 msgid "The Slack notifications integration is deprecated and will be removed in a future release. To continue to receive notifications from Slack, use the GitLab for Slack app instead. %{learn_more_link_start}Learn more%{link_end}."

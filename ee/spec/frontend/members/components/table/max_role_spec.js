@@ -182,9 +182,11 @@ describe('MaxRole', () => {
       createComponent();
 
       expect(findListbox().props('items')[0].text).toBe('Default roles');
-      expect(findListbox().props('items')[0].options).toHaveLength(6);
+      expect(findListbox().props('items')[0].options).toHaveLength(
+        Object.keys(member.validRoles).length,
+      );
       expect(findListbox().props('items')[1].text).toBe('Custom roles');
-      expect(findListbox().props('items')[1].options).toHaveLength(2);
+      expect(findListbox().props('items')[1].options).toHaveLength(member.customRoles.length);
     });
 
     it('calls `updateMemberRole` Vuex action', async () => {

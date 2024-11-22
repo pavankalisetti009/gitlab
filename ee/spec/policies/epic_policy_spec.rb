@@ -125,6 +125,21 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       it_behaves_like 'cannot resolve epic discussions'
     end
 
+    context 'planner group member' do
+      before do
+        group.add_planner(user)
+      end
+
+      it_behaves_like 'can manage epics'
+      it_behaves_like 'can comment on epics'
+      it_behaves_like 'cannot edit epic comments'
+      it_behaves_like 'cannot resolve epic discussions'
+
+      it 'can destroy epics' do
+        is_expected.to be_allowed(:destroy_epic)
+      end
+    end
+
     context 'reporter group member' do
       before do
         group.add_reporter(user)
@@ -306,6 +321,14 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
         it_behaves_like 'all epic permissions disabled'
       end
 
+      context 'when user is planner' do
+        before do
+          group.add_planner(user)
+        end
+
+        it_behaves_like 'all reporter epic permissions enabled'
+      end
+
       context 'when user is reporter' do
         before do
           group.add_reporter(user)
@@ -385,6 +408,15 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       context 'user who is guest' do
         before do
           group.add_guest(user)
+        end
+
+        it_behaves_like 'can comment on epics'
+        it_behaves_like 'cannot edit epic comments'
+      end
+
+      context 'when user is planner' do
+        before do
+          group.add_planner(user)
         end
 
         it_behaves_like 'can comment on epics'

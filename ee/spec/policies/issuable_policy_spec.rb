@@ -5,15 +5,18 @@ require 'spec_helper'
 RSpec.describe IssuablePolicy, :models do
   let_it_be(:non_member) { create(:user) }
   let_it_be(:guest) { create(:user) }
+  let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:developer) { create(:user) }
 
   let(:guest_issue) { create(:issue, project: project, author: guest) }
+  let(:planner_issue) { create(:issue, project: project, author: planner) }
   let(:reporter_issue) { create(:issue, project: project, author: reporter) }
   let(:incident_issue) { create(:incident, project: project, author: developer) }
 
   before do
     project.add_guest(guest)
+    project.add_planner(planner)
     project.add_reporter(reporter)
     project.add_developer(developer)
   end
@@ -34,14 +37,21 @@ RSpec.describe IssuablePolicy, :models do
         expect(permissions(guest, incident_issue)).to be_disallowed(:read_issuable_resource_link)
       end
 
+      it 'disallows planners' do
+        expect(permissions(planner, incident_issue)).to be_disallowed(:admin_issuable_resource_link)
+        expect(permissions(planner, incident_issue)).to be_disallowed(:read_issuable_resource_link)
+      end
+
       it 'disallows all on non-incident issue type' do
         expect(permissions(non_member, issue)).to be_disallowed(:admin_issuable_resource_link)
         expect(permissions(guest, issue)).to be_disallowed(:admin_issuable_resource_link)
         expect(permissions(developer, issue)).to be_disallowed(:admin_issuable_resource_link)
+        expect(permissions(planner, issue)).to be_disallowed(:admin_issuable_resource_link)
         expect(permissions(reporter, issue)).to be_disallowed(:admin_issuable_resource_link)
         expect(permissions(non_member, issue)).to be_disallowed(:read_issuable_resource_link)
         expect(permissions(guest, issue)).to be_disallowed(:read_issuable_resource_link)
         expect(permissions(developer, issue)).to be_disallowed(:read_issuable_resource_link)
+        expect(permissions(planner, issue)).to be_disallowed(:read_issuable_resource_link)
         expect(permissions(reporter, issue)).to be_disallowed(:read_issuable_resource_link)
       end
     end
@@ -60,6 +70,11 @@ RSpec.describe IssuablePolicy, :models do
         expect(permissions(guest, issue)).to be_disallowed(:upload_issuable_metric_image, :destroy_issuable_metric_image)
 
         expect(permissions(guest, guest_issue)).to be_allowed(:read_issuable_metric_image, :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
+      end
+
+      it 'allows planners to create and delete metric images' do
+        expect(permissions(planner, issue)).to be_allowed(:read_issuable_metric_image, :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
+        expect(permissions(planner, planner_issue)).to be_allowed(:read_issuable_metric_image, :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
       end
 
       it 'allows reporters to create and delete metric images' do
@@ -119,6 +134,11 @@ RSpec.describe IssuablePolicy, :models do
         expect(permissions(guest, issue)).to be_disallowed(:upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
 
         expect(permissions(guest, guest_issue)).to be_allowed(:read_issuable_metric_image, :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
+      end
+
+      it 'allows planners to create and delete metric images' do
+        expect(permissions(planner, issue)).to be_allowed(:read_issuable_metric_image, :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
+        expect(permissions(planner, planner_issue)).to be_allowed(:read_issuable_metric_image, :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image)
       end
 
       it 'allows reporters to create and delete metric images' do

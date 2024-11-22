@@ -68,7 +68,10 @@ describe('Role details drawer utils', () => {
         const mockAxios = new MockAdapter(axios);
         mockAxios.onPut(memberPath).replyOnce(HTTP_STATUS_OK);
 
-        const customRole = roleDropdownItems(upgradedMember).flatten[6];
+        const customRole = roleDropdownItems(upgradedMember).flatten.find(
+          (role) => role.memberRoleId === upgradedMember.accessLevel.memberRoleId,
+        );
+
         await callRoleUpdateApi(member, customRole);
 
         expect(mockAxios.history.put).toHaveLength(1);

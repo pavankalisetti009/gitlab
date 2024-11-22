@@ -59,6 +59,12 @@ RSpec.shared_examples 'resource with requirement permissions' do
       it_behaves_like 'user with manage permissions'
     end
 
+    context 'with planner' do
+      let(:current_user) { planner }
+
+      it_behaves_like 'user with manage permissions'
+    end
+
     context 'with guest' do
       let(:current_user) { guest }
 

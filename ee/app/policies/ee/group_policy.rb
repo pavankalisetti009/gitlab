@@ -294,6 +294,12 @@ module EE
         enable :list_subgroup_epics
       end
 
+      rule { planner }.policy do
+        enable :create_wiki
+        enable :admin_wiki
+        enable :download_wiki_code
+      end
+
       rule { reporter }.policy do
         enable :admin_issue_board_list
         enable :view_productivity_analytics
@@ -426,7 +432,7 @@ module EE
         enable :read_iteration_cadence
       end
 
-      rule { reporter & iterations_available }.policy do
+      rule { (reporter | planner) & iterations_available }.policy do
         enable :create_iteration
         enable :admin_iteration
         enable :create_iteration_cadence
@@ -437,7 +443,7 @@ module EE
         enable :rollover_issues
       end
 
-      rule { reporter & epics_available }.policy do
+      rule { (reporter | planner) & epics_available }.policy do
         enable :create_epic
         enable :admin_epic
         enable :update_epic
@@ -446,7 +452,7 @@ module EE
         enable :admin_epic_board_list
       end
 
-      rule { owner & epics_available }.enable :destroy_epic
+      rule { (owner | planner) & epics_available }.enable :destroy_epic
 
       rule { can?(:read_group) & custom_fields_available }.policy do
         enable :read_custom_field

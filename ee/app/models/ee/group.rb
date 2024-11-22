@@ -394,7 +394,7 @@ module EE
 
         access_level =
           if action == :read_confidential_epic
-            ::Gitlab::Access::REPORTER
+            ::Gitlab::Access::PLANNER
           else
             ::Gitlab::Access::GUEST
           end

@@ -128,6 +128,21 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
       end
     end
 
+    context 'for planner member role' do
+      let(:current_role) { Gitlab::Access::PLANNER }
+      let(:higher_role) { Gitlab::Access::REPORTER }
+
+      it_behaves_like 'updating members using custom permission'
+
+      context 'with the default (developer) role of the requester' do
+        let(:params) { {} }
+
+        it 'raises an error' do
+          expect { approve_access_request }.to raise_error(Gitlab::Access::AccessDeniedError)
+        end
+      end
+    end
+
     context 'for reporter member role' do
       let(:current_role) { Gitlab::Access::REPORTER }
       let(:higher_role) { Gitlab::Access::DEVELOPER }

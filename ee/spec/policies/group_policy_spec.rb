@@ -86,6 +86,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_disallowed(:destroy_epic) }
     end
 
+    context 'when user is planner' do
+      let(:current_user) { planner }
+
+      it { is_expected.to be_allowed(*epic_rules) }
+    end
+
     context 'when user is guest' do
       let(:current_user) { guest }
 
@@ -142,30 +148,31 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   context 'when iterations feature is enabled' do
+    let(:read_actions) { [:read_iteration, :read_iteration_cadence] }
+    let(:edit_actions) { [:create_iteration, :admin_iteration, :create_iteration_cadence, :admin_iteration_cadence] }
+
     before do
       stub_licensed_features(iterations: true)
     end
 
-    context 'when user is a developer' do
-      let(:current_user) { developer }
-
-      it { is_expected.to be_allowed(:read_iteration, :create_iteration, :admin_iteration, :read_iteration_cadence, :create_iteration_cadence, :admin_iteration_cadence) }
+    where(:role, :actions, :allowed) do
+      :none     | ref(:read_actions) | false
+      :none     | ref(:edit_actions) | false
+      :guest    | ref(:read_actions) | true
+      :guest    | ref(:edit_actions) | false
+      :planner  | ref(:read_actions) | true
+      :planner  | ref(:edit_actions) | true
+      :reporter | ref(:read_actions) | true
+      :reporter | ref(:edit_actions) | true
     end
 
-    context 'when user is a guest' do
-      let(:current_user) { guest }
+    with_them do
+      let(:current_user) { try(role) }
 
-      it { is_expected.to be_allowed(:read_iteration, :read_iteration_cadence) }
-      it { is_expected.to be_disallowed(:create_iteration, :admin_iteration, :create_iteration_cadence, :admin_iteration_cadence) }
+      it { is_expected.to(allowed ? be_allowed(*actions) : be_disallowed(*actions)) }
     end
 
-    context 'when user is logged out' do
-      let(:current_user) { nil }
-
-      it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration, :create_iteration_cadence) }
-    end
-
-    context 'when project is private' do
+    context 'when project is public' do
       let(:group) { create(:group, :public, :owner_subgroup_creation_only) }
 
       context 'when user is logged out' do
@@ -368,6 +375,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   describe ':read_product_analytics', :enable_admin_mode do
     where(:role, :allowed) do
       :guest     | false
+      :planner   | false
       :reporter  | true
       :developer | true
       :admin     | true
@@ -1436,6 +1444,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_disallowed(:admin_ldap_group_links) }
     end
 
+    context 'planners' do
+      let(:current_user) { planner }
+
+      it { is_expected.to be_disallowed(:override_group_member) }
+      it { is_expected.to be_disallowed(:admin_ldap_group_links) }
+    end
+
     context 'reporter' do
       let(:current_user) { reporter }
 
@@ -1668,6 +1683,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :admin_vulnerability           | :auditor    | nil   | false
       :admin_vulnerability           | :developer  | nil   | false
       :admin_vulnerability           | :guest      | nil   | false
+      :admin_vulnerability           | :planner    | nil   | false
       :admin_vulnerability           | :maintainer | nil   | true
       :admin_vulnerability           | :owner      | nil   | true
       :admin_vulnerability           | :reporter   | nil   | false
@@ -1676,6 +1692,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :read_dependency               | :auditor    | nil   | true
       :read_dependency               | :developer  | nil   | true
       :read_dependency               | :guest      | nil   | false
+      :read_dependency               | :planner    | nil   | false
       :read_dependency               | :maintainer | nil   | true
       :read_dependency               | :owner      | nil   | true
       :read_dependency               | :reporter   | nil   | false
@@ -1684,6 +1701,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :read_group_security_dashboard | :auditor    | nil   | true
       :read_group_security_dashboard | :developer  | nil   | true
       :read_group_security_dashboard | :guest      | nil   | false
+      :read_group_security_dashboard | :planner    | nil   | false
       :read_group_security_dashboard | :maintainer | nil   | true
       :read_group_security_dashboard | :owner      | nil   | true
       :read_group_security_dashboard | :reporter   | nil   | false
@@ -1692,6 +1710,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :read_licenses                 | :auditor    | nil   | true
       :read_licenses                 | :developer  | nil   | true
       :read_licenses                 | :guest      | nil   | false
+      :read_licenses                 | :planner    | nil   | false
       :read_licenses                 | :maintainer | nil   | true
       :read_licenses                 | :owner      | nil   | true
       :read_licenses                 | :reporter   | nil   | false
@@ -1700,6 +1719,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :read_vulnerability            | :auditor    | nil   | true
       :read_vulnerability            | :developer  | nil   | true
       :read_vulnerability            | :guest      | nil   | false
+      :read_vulnerability            | :planner    | nil   | false
       :read_vulnerability            | :maintainer | nil   | true
       :read_vulnerability            | :owner      | nil   | true
       :read_vulnerability            | :reporter   | nil   | false
@@ -1858,6 +1878,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'with reporter' do
       let(:current_user) { reporter }
+
+      it { is_expected.to be_disallowed(*abilities) }
+    end
+
+    context 'with planner' do
+      let(:current_user) { planner }
 
       it { is_expected.to be_disallowed(*abilities) }
     end
@@ -2121,6 +2147,14 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         is_expected.to be_disallowed(action)
       end
     end
+
+    context 'planner' do
+      let(:current_user) { planner }
+
+      it 'is not allowed' do
+        is_expected.to be_disallowed(action)
+      end
+    end
   end
 
   describe 'view_productivity_analytics' do
@@ -2280,6 +2314,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     where(:role, :admin_mode, :allowed) do
       :guest      | nil   | false
+      :planner    | nil   | false
       :reporter   | nil   | false
       :developer  | nil   | false
       :maintainer | nil   | false
@@ -2304,6 +2339,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     where(:role, :admin_mode, :allowed) do
       :guest      | nil   | false
+      :planner    | nil   | false
       :reporter   | nil   | false
       :developer  | nil   | true
       :maintainer | nil   | true
@@ -2508,6 +2544,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       where(:role, :licensed, :admin_mode, :root_group, :allowed) do
         :guest      | true  | nil   | true  | false
         :guest      | false | nil   | true  | false
+        :planner    | true  | nil   | true  | false
+        :planner    | false | nil   | true  | false
         :reporter   | true  | nil   | true  | false
         :reporter   | false | nil   | true  | false
         :developer  | true  | nil   | true  | false
@@ -2543,6 +2581,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         where(:role, :allowed) do
           :guest      | false
+          :planner    | false
           :reporter   | false
           :developer  | false
           :maintainer | false
@@ -2619,6 +2658,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         where(:role, :allowed) do
           :guest      | true
+          :planner    | true
           :reporter   | true
           :developer  | true
           :maintainer | true
@@ -2669,6 +2709,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       where(:role, :eligible_for_trial, :admin_mode, :allowed) do
         :guest      | true  | nil   | false
         :guest      | false | nil   | false
+        :planner    | true  | nil   | false
+        :planner    | false | nil   | false
         :reporter   | true  | nil   | false
         :reporter   | false | nil   | false
         :developer  | true  | nil   | false
@@ -2706,6 +2748,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         :maintainer | true  | nil   | false
         :developer  | true  | nil   | false
         :reporter   | true  | nil   | false
+        :planner    | true  | nil   | false
         :guest      | true  | nil   | false
       end
 
@@ -2759,6 +2802,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         :maintainer       | true
         :developer        | true
         :reporter         | true
+        :planner          | false
         :guest            | false
         :non_group_member | false
         :auditor          | true
@@ -2799,6 +2843,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         :maintainer       | true
         :developer        | true
         :reporter         | true
+        :planner          | false
         :guest            | false
         :non_group_member | false
       end
@@ -2822,6 +2867,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         :maintainer       | false
         :developer        | false
         :reporter         | false
+        :planner          | false
         :guest            | false
         :non_group_member | false
       end
@@ -3064,6 +3110,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         :maintainer | nil   | false
         :developer  | nil   | false
         :reporter   | nil   | false
+        :planner    | nil   | false
         :guest      | nil   | false
       end
 
@@ -4027,6 +4074,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it { is_expected.to be_allowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
       end
 
+      context 'when the user is a planner' do
+        let(:current_user) { planner }
+
+        it { is_expected.to be_disallowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+      end
+
       context 'when the user is a guest member of the group' do
         let(:current_user) { guest }
 
@@ -4240,33 +4293,41 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
   describe 'bulk_admin_epic' do
     context 'when bulk_edit_feature_available is true' do
-      let(:current_user) { reporter }
-
       before do
         stub_licensed_features(epics: true, group_bulk_edit: true)
       end
 
-      it { is_expected.to be_allowed(:bulk_admin_epic) }
+      context 'when user is planner or reporter' do
+        where(role: %w[planner reporter])
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          it { is_expected.to be_allowed(:bulk_admin_epic) }
+        end
+      end
+
+      context 'when user is not reporter or better' do
+        let(:current_user) { guest }
+
+        it { is_expected.to be_disallowed(:bulk_admin_epic) }
+      end
     end
 
     context 'when bulk_edit_feature_available is false' do
-      let(:current_user) { reporter }
-
       before do
         stub_licensed_features(epics: true, group_bulk_edit: false)
       end
 
-      it { is_expected.to be_disallowed(:bulk_admin_epic) }
-    end
+      context 'when user is guest, planner or reporter' do
+        where(role: %w[guest planner reporter])
 
-    context 'when user is not reporter or better' do
-      let(:current_user) { guest }
+        with_them do
+          let(:current_user) { public_send(role) }
 
-      before do
-        stub_licensed_features(epics: true, group_bulk_edit: true)
+          it { is_expected.to be_disallowed(:bulk_admin_epic) }
+        end
       end
-
-      it { is_expected.to be_disallowed(:bulk_admin_epic) }
     end
   end
 end

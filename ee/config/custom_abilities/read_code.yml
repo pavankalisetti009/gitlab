@@ -12,4 +12,4 @@ skip_seat_consumption: true
 feature_flag: customizable_roles
 feature_flag_enabled_milestone: '15.9'
 feature_flag_enabled_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/110810
-available_from_access_level: 20
+available_from_access_level: 15

@@ -5,12 +5,13 @@ require 'spec_helper'
 RSpec.describe RequirementsManagement::RequirementPolicy do
   let_it_be(:owner) { create(:user) }
   let_it_be(:admin) { create(:admin) }
+  let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:developer) { create(:user) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:project) do
-    create(:project, :public, namespace: owner.namespace, reporters: reporter, developers: developer,
+    create(:project, :public, namespace: owner.namespace, planners: planner, reporters: reporter, developers: developer,
       maintainers: maintainer, guests: guest)
   end
 

@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe IssuePolicy, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:guest) { create(:user) }
+  let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:owner) { create(:user) }
   let_it_be(:support_bot) { Users::Internal.support_bot }
@@ -13,6 +14,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
   let_it_be(:root_group) do
     create(:group, :public).tap do |g|
+      g.add_planner(planner)
       g.add_reporter(reporter)
       g.add_owner(owner)
     end
@@ -20,6 +22,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
   let_it_be(:group) do
     create(:group, :public, parent: root_group).tap do |g|
+      g.add_planner(planner)
       g.add_reporter(reporter)
       g.add_owner(owner)
     end
@@ -109,6 +112,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       it 'dis-allows it for members', :aggregate_failures do
         expect(permissions(guest, group_issue)).to be_disallowed(:reopen_issue)
         expect(permissions(reporter, group_issue)).to be_disallowed(:reopen_issue)
+        expect(permissions(planner, group_issue)).to be_disallowed(:reopen_issue)
         expect(permissions(owner, group_issue)).to be_disallowed(:reopen_issue)
       end
     end
@@ -121,6 +125,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       it 'allows it for members', :aggregate_failures do
         expect(permissions(guest, group_issue)).to be_disallowed(:reopen_issue)
         expect(permissions(reporter, group_issue)).to be_allowed(:reopen_issue)
+        expect(permissions(planner, group_issue)).to be_allowed(:reopen_issue)
         expect(permissions(owner, group_issue)).to be_allowed(:reopen_issue)
       end
     end
@@ -245,6 +250,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           )
 
           # allows read permissions
+          expect(permissions(planner, group_issue)).to be_disallowed(:read_internal_note, :read_crm_contacts)
           expect(permissions(reporter, group_issue)).to be_disallowed(:read_internal_note, :read_crm_contacts)
 
           # allows some permissions that modify the issue
@@ -284,6 +290,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           )
 
           # allows read permissions
+          expect(permissions(planner, group_issue)).to be_allowed(:read_internal_note, :read_crm_contacts)
           expect(permissions(reporter, group_issue)).to be_allowed(:read_internal_note, :read_crm_contacts)
 
           # allows some permissions that modify the issue

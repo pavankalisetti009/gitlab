@@ -80,7 +80,7 @@ module Elastic
       end
 
       def group_ids_user_can_read_epics(confidential: false)
-        min_access_level = confidential ? ::Gitlab::Access::REPORTER : ::Gitlab::Access::GUEST
+        min_access_level = confidential ? ::Gitlab::Access::PLANNER : ::Gitlab::Access::GUEST
         finder_params = { min_access_level: min_access_level }
         if options[:search_level] == 'group'
           finder_params[:filter_group_ids] = group.self_and_descendants.pluck_primary_key
