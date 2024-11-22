@@ -39,8 +39,6 @@ RSpec.describe AuditEvents::RunnerCustomAuditEventService, feature_category: :ru
       expect(security_event.details).to eq({
         author_name: user.name,
         custom_message: custom_message,
-        entity_id: entity.id,
-        entity_type: entity_type,
         target_details: target_details,
         target_id: target_id,
         target_type: target_type

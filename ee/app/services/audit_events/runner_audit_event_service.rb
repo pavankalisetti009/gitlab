@@ -23,7 +23,6 @@ module AuditEvents
         target_type: runner.class.name,
         target_details: runner_path
       }
-      details.merge!(entity_id: @token_scope.id, entity_type: @token_scope.class.name) if @token_scope
 
       safe_author = safe_author(author)
       details[token_field] = safe_author if safe_author.is_a?(String)

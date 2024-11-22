@@ -11,11 +11,14 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
     {
       author_id: -1,
       created_at: timestamp,
-      id: subject.id,
+      entity_id: entity.id,
+      entity_type: entity.class.name,
+      entity_path: entity.full_path,
       target_type: runner.class.name,
       target_id: runner.id,
       ip_address: nil,
       details: {
+        entity_path: entity.full_path,
         target_type: runner.class.name,
         target_id: runner.id,
         ip_address: nil
@@ -26,7 +29,7 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
   shared_examples 'expected audit event' do
     it 'returns audit event attributes' do
       travel_to(timestamp) do
-        expect(subject.attributes).to eq(attrs.stringify_keys)
+        expect(track_event.attributes).to eq('id' => track_event.id, **attrs.stringify_keys)
       end
     end
   end
@@ -36,7 +39,7 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
       stub_licensed_features(admin_audit_log: true)
     end
 
-    subject { service.track_event }
+    subject(:track_event) { service.track_event }
 
     let(:timestamp) { Time.zone.local(2021, 12, 28) }
 
@@ -45,19 +48,18 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
         stub_licensed_features(extended_audit_events: true, admin_audit_log: true)
       end
 
-      let(:entity) {}
+      let(:entity) { Gitlab::Audit::InstanceScope.new }
       let(:extra_attrs) { {} }
       let(:target_details) {}
+      let(:safe_token) { author[0...described_class::SAFE_TOKEN_LENGTH] }
+
       let(:attrs) do
         common_attrs.deep_merge(
-          author_name: nil,
-          entity_id: -1,
-          entity_type: 'User',
-          entity_path: nil,
+          author_name: safe_token,
           target_details: target_details,
           details: {
-            runner_registration_token: author[0...described_class::SAFE_TOKEN_LENGTH],
-            entity_path: nil,
+            author_name: safe_token,
+            runner_registration_token: safe_token,
             target_details: target_details
           }
         ).deep_merge(extra_attrs)
@@ -83,7 +85,7 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
 
         it 'returns audit event attributes of a failed runner registration', :aggregate_failures do
           travel_to(timestamp) do
-            expect(subject.attributes).to eq(attrs.stringify_keys)
+            expect(track_event.attributes).to eq('id' => track_event.id, **attrs.stringify_keys)
             expect(runner.persisted?).to be_falsey
           end
         end
@@ -101,11 +103,15 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
 
         context 'with registration token prefixed with RUNNERS_TOKEN_PREFIX' do
           let(:author) { "#{::RunnersTokenPrefixable::RUNNERS_TOKEN_PREFIX}b6bce79c3a" }
+          let(:safe_token) do
+            author[0...::RunnersTokenPrefixable::RUNNERS_TOKEN_PREFIX.length + described_class::SAFE_TOKEN_LENGTH]
+          end
+
           let(:extra_attrs) do
             {
               details: {
                 custom_message: 'Registered instance CI runner',
-                runner_registration_token: author[0...::RunnersTokenPrefixable::RUNNERS_TOKEN_PREFIX.length + described_class::SAFE_TOKEN_LENGTH]
+                runner_registration_token: safe_token
               }
             }
           end
@@ -123,17 +129,11 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
       let(:attrs) do
         common_attrs.deep_merge(
           author_name: author[0...described_class::SAFE_TOKEN_LENGTH],
-          entity_id: entity.id,
-          entity_type: entity.class.name,
-          entity_path: entity.full_path,
           target_details: target_details,
           details: {
             author_name: author[0...described_class::SAFE_TOKEN_LENGTH],
             runner_registration_token: author[0...described_class::SAFE_TOKEN_LENGTH],
             custom_message: 'Registered group CI runner',
-            entity_id: entity.id,
-            entity_type: entity.class.name,
-            entity_path: entity.full_path,
             target_details: target_details
           }
         ).deep_merge(extra_attrs)
@@ -159,7 +159,7 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
 
         it 'returns audit event attributes of a failed runner registration', :aggregate_failures do
           travel_to(timestamp) do
-            expect(subject.attributes).to eq(attrs.stringify_keys)
+            expect(track_event.attributes).to eq('id' => track_event.id, **attrs.stringify_keys)
             expect(runner.persisted?).to be_falsey
           end
         end
@@ -183,16 +183,10 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
         let(:attrs) do
           common_attrs.deep_merge(
             author_name: author[0...described_class::SAFE_TOKEN_LENGTH],
-            entity_id: entity.id,
-            entity_type: entity.class.name,
-            entity_path: entity.full_path,
             target_details: target_details,
             details: {
               author_name: author[0...described_class::SAFE_TOKEN_LENGTH],
               runner_registration_token: author[0...described_class::SAFE_TOKEN_LENGTH],
-              entity_id: entity.id,
-              entity_type: entity.class.name,
-              entity_path: entity.full_path,
               target_details: target_details
             }
           ).deep_merge(extra_attrs)
@@ -218,7 +212,7 @@ RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :
 
           it 'returns audit event attributes of a failed runner registration', :aggregate_failures do
             travel_to(timestamp) do
-              expect(subject.attributes).to eq(attrs.stringify_keys)
+              expect(track_event.attributes).to eq('id' => track_event.id, **attrs.stringify_keys)
               expect(runner.persisted?).to be_falsey
             end
           end
