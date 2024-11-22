@@ -2075,13 +2075,6 @@ Payload example:
 > - [Enabled by default](https://gitlab.com/gitlab-org/gitlab/-/issues/417288) in GitLab 16.4.
 > - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/417288) in GitLab 17.5. Feature flag `emoji_webhooks` removed.
 
-FLAG:
-On self-managed GitLab, by default this feature is available. To hide the feature, an administrator can
-[disable the feature flag](../../../administration/feature_flags.md) named `emoji_webhooks`. On GitLab.com, this feature is available. On GitLab Dedicated, this feature is available.
-
-NOTE:
-To have the `emoji_webhooks` flag enabled on GitLab.com, see [issue 417288](https://gitlab.com/gitlab-org/gitlab/-/issues/417288).
-
 An emoji event is triggered when an [emoji reaction](../../emoji_reactions.md) is added or removed on:
 
 - Issues
