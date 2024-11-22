@@ -20,7 +20,6 @@ module Search
       # @returns [Hash] { node_id => [1,2,3], node_id2 => [4,5,6] }
       # rubocop:disable CodeReuse/ActiveRecord -- this service builds a complex custom AR query
       # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- we restrict the number of projects in the guard clause
-      # rubocop:disable Layout/LineLength -- not breaking lines for better readability
       def execute
         raise "Too many projects" if projects.count > MAX_NUMBER_OF_PROJECTS
 
@@ -49,7 +48,7 @@ module Search
         projects.without_order.joins(zoekt_repositories: { zoekt_index: { replica: :zoekt_enabled_namespace } })
           .merge(EnabledNamespace.search_enabled).merge(Replica.ready)
       end
-      # rubocop:enable CodeReuse/ActiveRecord, Layout/LineLength, Database/AvoidUsingPluckWithoutLimit
+      # rubocop:enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
     end
   end
 end

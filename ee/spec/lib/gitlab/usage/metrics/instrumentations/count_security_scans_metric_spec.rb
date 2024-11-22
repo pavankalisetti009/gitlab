@@ -18,9 +18,9 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountSecurityScansMetri
         let(:scan_type) { scan_type }
         let(:expected_query) do
           if params[:time_frame] == 'all'
-            %{SELECT COUNT("security_scans"."build_id") FROM "security_scans" WHERE "security_scans"."scan_type" = #{scan_type}} # rubocop:disable Layout/LineLength
+            %{SELECT COUNT("security_scans"."build_id") FROM "security_scans" WHERE "security_scans"."scan_type" = #{scan_type}}
           else
-            %{SELECT COUNT("security_scans"."build_id") FROM "security_scans" WHERE "security_scans"."created_at" BETWEEN '#{start}' AND '#{finish}' AND "security_scans"."scan_type" = #{scan_type}} # rubocop:disable Layout/LineLength
+            %{SELECT COUNT("security_scans"."build_id") FROM "security_scans" WHERE "security_scans"."created_at" BETWEEN '#{start}' AND '#{finish}' AND "security_scans"."scan_type" = #{scan_type}}
           end
         end
 

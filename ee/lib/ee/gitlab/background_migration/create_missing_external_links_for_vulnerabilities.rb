@@ -131,7 +131,8 @@ module EE
           def execute(page, per_page)
             jql = build_jql
             start_at = (page - 1) * per_page
-            url = "#{context_path}/rest/api/2/search?jql=#{CGI.escape(jql)}&startAt=#{start_at}&maxResults=#{per_page}&fields=description,project" # rubocop:disable Layout/LineLength -- Whole URL is too long
+            url = "#{context_path}/rest/api/2/search?jql=#{CGI.escape(jql)}&startAt=#{start_at}&" \
+              "maxResults=#{per_page}&fields=description,project"
             request(url)
           end
 

@@ -41,7 +41,7 @@ RSpec.describe 'Group domain verification settings', :js, :saas, feature_categor
     it 'displays no domains present message' do
       visit_domain_verification_page
 
-      expect(page).to have_content s_('DomainVerification|No domains configured. Create a domain in a project in this group hierarchy.') # rubocop:disable Layout/LineLength
+      expect(page).to have_content s_('DomainVerification|No domains configured. Create a domain in a project in this group hierarchy.')
     end
   end
 

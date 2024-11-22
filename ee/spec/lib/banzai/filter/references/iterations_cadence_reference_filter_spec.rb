@@ -114,7 +114,7 @@ RSpec.describe Banzai::Filter::References::IterationsCadenceReferenceFilter, :ag
 
       expect(control.count).to eq 1
 
-      markdown = "#{cadence.to_reference} #{cadence.to_reference(format: :title)} #{another_cadence.to_reference} #{another_cadence.to_reference(format: :title)}" # rubocop:disable Layout/LineLength -- readability
+      markdown = "#{cadence.to_reference} #{cadence.to_reference(format: :title)} #{another_cadence.to_reference} #{another_cadence.to_reference(format: :title)}"
 
       expect { reference_filter(markdown, context) }.not_to exceed_all_query_limit(1)
     end

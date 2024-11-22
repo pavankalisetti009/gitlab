@@ -12,7 +12,7 @@ class AddVerificationToMergeRequestDiffRegistry < ActiveRecord::Migration[6.0]
     add_column_unless_exists :checksum_mismatch, :boolean
     add_column_unless_exists :verification_checksum, :binary
     add_column_unless_exists :verification_checksum_mismatched, :binary
-    add_column_unless_exists :verification_failure, :string, limit: 255 # rubocop:disable Migration/PreventStrings -- See https://gitlab.com/gitlab-org/gitlab/-/issues/323806
+    add_column_unless_exists :verification_failure, :string, limit: 255
   end
 
   def add_column_unless_exists(column_name, type, **options)

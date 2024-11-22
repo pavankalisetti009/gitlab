@@ -230,7 +230,10 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
     let(:finder) { described_class::JiraIssuesFinder.new(mock_jira_integration) }
 
     it "makes a call to the correct jira url" do
-      expect(finder).to receive(:request).with("/rest/api/2/search?jql=project+in+%28key1%2C+key2%29+AND+description+~+%22Issue+created+from+vulnerability%22+order+by+created+DESC&startAt=0&maxResults=100&fields=description,project") # rubocop:disable Layout/LineLength -- URL is too long
+      expect(finder).to receive(:request)
+                          .with("/rest/api/2/search?jql=project+in+%28key1%2C+key2%29+AND+description+~+%" \
+                            "22Issue+created+from+vulnerability%22+order+by+created+DESC&startAt=0&" \
+                            "maxResults=100&fields=description,project")
       finder.execute(1, 100)
     end
 
