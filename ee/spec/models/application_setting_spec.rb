@@ -149,13 +149,63 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'new_user_signups', feature_category: :onboarding do
-      it { is_expected.to validate_numericality_of(:new_user_signups_cap).only_integer.is_greater_than(0).allow_nil }
-      it { is_expected.to allow_value("").for(:new_user_signups_cap) }
+      let(:seat_control_user_cap) { 1 }
+      let(:seat_control_off) { 0 }
+
+      it 'is valid when new_user_signups_cap is set to nil' do
+        setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 20)
+
+        setting.new_user_signups_cap = nil
+
+        expect(setting).to be_valid
+        expect(setting.seat_control).to eq(seat_control_off)
+      end
+
+      it 'is valid when new_user_signups_cap is set to a number' do
+        setting.update!(seat_control: seat_control_off, new_user_signups_cap: nil)
+
+        setting.new_user_signups_cap = 20
+
+        expect(setting).to be_valid
+        expect(setting.seat_control).to eq(seat_control_user_cap)
+      end
+
+      context 'when seat_control is user cap' do
+        before do
+          setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1)
+        end
+
+        it 'must be an integer' do
+          setting.new_user_signups_cap = 1.5
+          expect(setting).to be_invalid
+          expect(setting.errors[:new_user_signups_cap]).to include('must be an integer')
+        end
+
+        it 'must be greater than 0' do
+          setting.new_user_signups_cap = 0
+          expect(setting).to be_invalid
+          expect(setting.errors[:new_user_signups_cap]).to include('must be greater than 0')
+        end
+      end
+
+      context 'when seat_control is off' do
+        before do
+          setting.update!(seat_control: seat_control_off)
+        end
+
+        it 'can be nil' do
+          setting.new_user_signups_cap = nil
+          expect(setting).to be_valid
+        end
+
+        it 'can be an empty string' do
+          setting.new_user_signups_cap = ""
+          expect(setting).to be_valid
+        end
+      end
 
       context 'sync seat_control', feature_category: :seat_cost_management do
         let(:user_cap) { nil }
-        let(:seat_control_user_cap) { 1 }
-        let(:seat_control_off) { 0 }
 
         before do
           setting.update!(new_user_signups_cap: user_cap)
@@ -204,20 +254,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
     describe 'user_seat_management', feature_category: :seat_cost_management do
       it { expect(described_class).to validate_jsonb_schema(['application_setting_user_seat_management']) }
-
-      context 'seat_control' do
-        it 'does not allow update to value > 2' do
-          expect { setting.update!(seat_control: 3) }.to raise_error(
-            ActiveRecord::RecordInvalid, "Validation failed: User seat management must be a valid json schema"
-          )
-        end
-
-        it 'does not allow update to value < 0' do
-          expect { setting.update!(seat_control: -1) }.to raise_error(
-            ActiveRecord::RecordInvalid, "Validation failed: User seat management must be a valid json schema"
-          )
-        end
-      end
     end
 
     describe 'git_two_factor', feature_category: :system_access do
