@@ -5,6 +5,8 @@ module Mutations
     class DuoUserFeedback < BaseMutation
       graphql_name 'DuoUserFeedback'
 
+      include Routing::PseudonymizationHelper
+
       argument :agent_version_id, ::Types::GlobalIDType[::Ai::AgentVersion], required: false,
         description: "Global ID of the agent to answer the chat."
       argument :ai_message_id, GraphQL::Types::String, required: true, description: 'ID of the AI Message.'
@@ -39,8 +41,27 @@ module Mutations
           label: event.label,
           property: event.property,
           requestId: message.request_id,
+          cleanedUrl: cleaned_url,
           **extra
         )
+      end
+
+      def cleaned_url
+        url = context[:request].headers["Referer"]
+
+        # Pseudo-anonymize the URL to remove identifiable information
+        url = masked_referrer_url(url)
+
+        return unless url
+
+        uri = URI.parse(url)
+        path = uri.path
+
+        # Remove all numbers, as they do not provide any value
+        path = path.gsub(/\d+/, '')
+
+        # Remove repetitive slashes
+        path.squeeze('/')
       end
     end
   end
