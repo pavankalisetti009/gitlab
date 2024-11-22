@@ -64,7 +64,7 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     it do
       is_expected.to(
         validate_uniqueness_of(:rule_idx)
-          .scoped_to(%i[security_orchestration_policy_configuration_id project_id orchestration_policy_idx]))
+          .scoped_to(%i[security_orchestration_policy_configuration_id project_id orchestration_policy_idx action_idx]))
     end
 
     it { is_expected.to validate_numericality_of(:rule_idx).is_greater_than_or_equal_to(0).only_integer }
