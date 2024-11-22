@@ -178,8 +178,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           let(:params) { { compliance_framework_filters: { presence_filter: 'any' } } }
 
           it 'returns projects with any compliance framework' do
-            expect(projects).to contain_exactly(project_1, project_2, project_multiple_frameworks,
-              project_multiple_frameworks)
+            expect(projects).to contain_exactly(project_1, project_2, project_multiple_frameworks)
           end
         end
 

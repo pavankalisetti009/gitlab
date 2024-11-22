@@ -584,6 +584,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let_it_be(:project_without_framework) { create(:project, group: namespace) }
       let_it_be(:framework_1) { create(:compliance_framework, namespace: namespace, name: 'Test1') }
       let_it_be(:framework_2) { create(:compliance_framework, namespace: namespace, name: 'Test2') }
+      let_it_be(:framework_3) { create(:compliance_framework, namespace: namespace, name: 'Test3') }
       let_it_be(:framework_settings_1) { create(:compliance_framework_project_setting, project: project_with_framework_1, compliance_management_framework: framework_1) }
       let_it_be(:framework_settings_2) { create(:compliance_framework_project_setting, project: project_with_framework_2, compliance_management_framework: framework_2) }
 
@@ -680,6 +681,13 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       describe '.any_compliance_framework' do
+        # Second framework added to ensure each project is only returned once
+        let_it_be(:additional_framework_for_project_2) do
+          create :compliance_framework_project_setting,
+            project: project_with_framework_2,
+            compliance_management_framework: framework_3
+        end
+
         subject { described_class.any_compliance_framework }
 
         it { is_expected.to match_array([project_with_framework_1, project_with_framework_2]) }
