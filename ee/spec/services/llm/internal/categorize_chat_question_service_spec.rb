@@ -7,16 +7,21 @@ RSpec.describe Llm::Internal::CategorizeChatQuestionService, :saas, feature_cate
   let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be(:resource) { user }
   let_it_be(:options) { {} }
+  let(:action_name) { :categorize_question }
 
   subject { described_class.new(user, resource, options) }
 
-  include_context 'with ai features enabled for group'
-
   describe '#execute' do
-    context 'when the user is permitted to view the merge request' do
-      it_behaves_like 'schedules completion worker' do
-        let(:action_name) { :categorize_question }
+    context 'when the user is allowed to use Duo Chat' do
+      it_behaves_like 'schedules completion worker'
+    end
+
+    context 'when the user is not allowed to use Duo Chat' do
+      before do
+        allow(user).to receive(:any_group_with_ga_ai_available?).with(:duo_chat).and_return(false)
       end
+
+      it_behaves_like 'does not schedule completion worker'
     end
   end
 end

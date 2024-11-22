@@ -38,7 +38,7 @@ module Gitlab
           end
 
           def request!
-            ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: prompt_message.ai_action.to_sym,
+            ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name,
               tracking_context: tracking_context)
             response = ai_client.complete(
               url: "#{::Gitlab::AiGateway.url}/v1/prompts/#{prompt_message.ai_action}",
@@ -55,6 +55,10 @@ module Gitlab
             Gitlab::ErrorTracking.track_exception(e, ai_action: prompt_message.ai_action)
 
             { 'detail' => DEFAULT_ERROR }
+          end
+
+          def service_name
+            prompt_message.ai_action.to_sym
           end
         end
       end

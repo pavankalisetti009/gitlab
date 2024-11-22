@@ -1,0 +1,9 @@
+---
+name: prompt_migration_categorize_question
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/500741
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/170510
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/500749
+milestone: '17.7'
+group: group::duo chat
+type: experiment
+default_enabled: false
