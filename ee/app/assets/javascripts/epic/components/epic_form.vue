@@ -28,7 +28,7 @@ import createEpic from '../queries/create_epic.mutation.graphql';
 const i18n = {
   confidentialityLabel: s__(`
       Epics|This epic and any containing child epics are confidential
-      and should only be visible to team members with at least Reporter access.
+      and should only be visible to team members with at least the Planner role.
     `),
   epicDatesHint: s__('Epics|Leave empty to inherit from milestone dates'),
   colorHelp: s__(

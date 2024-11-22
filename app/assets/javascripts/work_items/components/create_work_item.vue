@@ -278,7 +278,7 @@ export default {
     makeConfidentialText() {
       return sprintfWorkItem(
         s__(
-          'WorkItem|This %{workItemType} is confidential and should only be visible to users having at least Reporter access.',
+          'WorkItem|This %{workItemType} is confidential and should only be visible to users having at least the Planner role.',
         ),
         this.selectedWorkItemTypeName,
       );
