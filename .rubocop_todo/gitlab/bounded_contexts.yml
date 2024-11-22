@@ -3406,7 +3406,6 @@ Gitlab/BoundedContexts:
     - 'ee/app/services/personal_access_tokens/groups/update_lifetime_service.rb'
     - 'ee/app/services/personal_access_tokens/instance/update_lifetime_service.rb'
     - 'ee/app/services/personal_access_tokens/revoke_invalid_tokens.rb'
-    - 'ee/app/services/personal_access_tokens/rotation_verifier_service.rb'
     - 'ee/app/services/phone_verification/telesign_client/base_service.rb'
     - 'ee/app/services/phone_verification/telesign_client/risk_score_service.rb'
     - 'ee/app/services/phone_verification/telesign_client/send_verification_code_service.rb'

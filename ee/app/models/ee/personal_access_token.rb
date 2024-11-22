@@ -18,8 +18,6 @@ module EE
         inverse_of: :personal_access_token,
         foreign_key: :personal_access_token_id
 
-      after_create :clear_rotation_notification_cache
-
       scope :with_expires_at_after, ->(max_lifetime) { where(revoked: false).where('expires_at > ?', max_lifetime) }
       scope :expires_in, ->(within) { not_revoked.where('expires_at > CURRENT_DATE AND expires_at <= ?', within) }
       scope :created_on_or_after, ->(date) { active.where('created_at >= ?', date) }
@@ -49,13 +47,6 @@ module EE
       def find_by_token(token)
         super unless ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
       end
-    end
-
-    override :revoke!
-    def revoke!
-      clear_rotation_notification_cache
-
-      super
     end
 
     private
@@ -95,10 +86,6 @@ module EE
 
     def group_level_expiration_policy_enabled?
       expiration_policy_licensed? && expiry_date_calculator.group_level_max_expiry_date
-    end
-
-    def clear_rotation_notification_cache
-      ::PersonalAccessTokens::RotationVerifierService.new(user).clear_cache
     end
 
     def expiry_date_calculator
