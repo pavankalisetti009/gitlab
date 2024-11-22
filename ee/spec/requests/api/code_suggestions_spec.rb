@@ -265,6 +265,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         it_behaves_like 'rate limited and tracked endpoint',
           { rate_limit_key: :code_suggestions_api_endpoint,
             event_name: 'code_suggestions_rate_limit_exceeded' } do
+          before do
+            stub_feature_flags(incident_fail_over_completion_provider: false)
+          end
+
           def request
             post api('/code_suggestions/completions', current_user), headers: headers, params: body.to_json
           end
@@ -891,6 +895,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   end
 
   describe 'POST /code_suggestions/direct_access', :freeze_time do
+    before do
+      stub_feature_flags(incident_fail_over_completion_provider: false)
+    end
+
     subject(:post_api) { post api('/code_suggestions/direct_access', current_user) }
 
     context 'when unauthorized' do
@@ -1053,6 +1061,19 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       context 'when disabled_direct_code_suggestions setting is true' do
         before do
           allow(Gitlab::CurrentSettings).to receive(:disabled_direct_code_suggestions).and_return(true)
+        end
+
+        include_examples 'a response', 'unauthorized' do
+          let(:result) { :forbidden }
+          let(:response_body) do
+            { 'message' => '403 Forbidden - Direct connections are disabled' }
+          end
+        end
+      end
+
+      context 'when incident_fail_over_completion_provider setting is true' do
+        before do
+          stub_feature_flags(incident_fail_over_completion_provider: true)
         end
 
         include_examples 'a response', 'unauthorized' do

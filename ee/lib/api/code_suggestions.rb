@@ -62,6 +62,11 @@ module API
         header('X-GitLab-Error-Origin', 'monolith')
         file_too_large!
       end
+
+      def forbid_direct_access?
+        Gitlab::CurrentSettings.disabled_direct_code_suggestions ||
+          Feature.enabled?(:incident_fail_over_completion_provider, current_user)
+      end
     end
 
     namespace 'code_suggestions' do
@@ -156,7 +161,7 @@ module API
         end
 
         post do
-          forbidden!('Direct connections are disabled') if Gitlab::CurrentSettings.disabled_direct_code_suggestions
+          forbidden!('Direct connections are disabled') if forbid_direct_access?
 
           check_rate_limit!(:code_suggestions_direct_access, scope: current_user) do
             Gitlab::InternalEvents.track_event(
