@@ -150,6 +150,16 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         new_vulnerability = create(:vulnerability, :with_findings, project: project)
         vulnerability_ids << new_vulnerability.id
 
+        other_policy = create(:security_policy, :vulnerability_management_policy, linked_projects: [project])
+        create(:vulnerability_management_policy_rule,
+          security_policy: other_policy,
+          content: {
+            type: 'no_longer_detected',
+            scanners: [],
+            severity_levels: []
+          }
+        )
+
         expect do
           described_class.new(project, vulnerability_ids).execute
         end.not_to exceed_query_limit(control)
