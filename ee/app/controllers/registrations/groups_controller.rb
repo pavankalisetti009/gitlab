@@ -11,10 +11,6 @@ module Registrations
     before_action :verify_onboarding_enabled!
     before_action :authorize_create_group!, only: :new
 
-    before_action do
-      experiment(:project_templates_during_registration, user: current_user).publish
-    end
-
     layout 'minimal'
 
     feature_category :onboarding
@@ -27,9 +23,6 @@ module Registrations
       @group = Group.new(visibility_level: Gitlab::CurrentSettings.default_group_visibility)
       @project = Project.new(namespace: @group)
       @initialize_with_readme = true
-
-      experiment(:project_templates_during_registration, user: current_user)
-        .track(:render_groups_new, label: tracking_label)
 
       track_event('view_new_group_action', tracking_label)
     end
@@ -99,37 +92,18 @@ module Registrations
       onboarding_status_presenter.tracking_label
     end
 
-    def track_event(action, label)
-      ::Gitlab::Tracking.event(self.class.name, action, user: current_user, label: label)
+    def track_event(action, label, project = nil)
+      attrs = { user: current_user, label: label, project: project, namespace: project&.namespace }
+      ::Gitlab::Tracking.event(self.class.name, action, **attrs.compact)
     end
 
     def track_project_registration_submission(project)
-      experiment(:project_templates_during_registration, user: current_user).track(:assignment,
-        namespace: project.namespace)
-
-      experiment_project_templates_during_registration(
-        project,
-        :successfully_submitted_form,
-        tracking_label
-      )
+      track_event('successfully_submitted_form', tracking_label, project)
 
       template_name = project_params[:template_name]
       return if template_name.blank?
 
-      experiment_project_templates_during_registration(
-        project,
-        "select_project_template_#{template_name}",
-        tracking_label
-      )
-    end
-
-    def experiment_project_templates_during_registration(project, name, label)
-      experiment(
-        :project_templates_during_registration,
-        user: current_user,
-        project: project,
-        namespace: project.namespace
-      ).track(name, label: label)
+      track_event("select_project_template_#{template_name}", tracking_label, project)
     end
 
     def onboarding_status_presenter

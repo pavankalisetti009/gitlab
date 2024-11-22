@@ -127,6 +127,7 @@ export default {
       v-model="selected"
       class="gl-w-full"
       reset-button-label="Reset"
+      positioning-strategy="fixed"
       :items="items"
       :header-text="$options.i18n.templateNameLabel"
       @select="selectTemplate"
