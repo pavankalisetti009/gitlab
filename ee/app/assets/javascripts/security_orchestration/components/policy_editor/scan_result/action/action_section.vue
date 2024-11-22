@@ -55,6 +55,7 @@ export default {
     <div class="gl-flex gl-w-full">
       <div class="gl-flex-1">
         <approver-action
+          :action-index="actionIndex"
           :init-action="initAction"
           :errors="errors"
           :existing-approvers="existingApprovers"

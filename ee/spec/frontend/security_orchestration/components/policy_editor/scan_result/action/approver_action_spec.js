@@ -58,7 +58,7 @@ describe('ApproverAction', () => {
     group_approvers_ids: APPROVERS_IDS,
   };
 
-  const createWrapper = (propsData = {}) => {
+  const createWrapper = (propsData = {}, provide = {}) => {
     wrapper = shallowMount(ApproverAction, {
       propsData: {
         initAction: DEFAULT_ACTION,
@@ -67,6 +67,7 @@ describe('ApproverAction', () => {
       },
       provide: {
         namespaceId: '1',
+        ...provide,
       },
     });
   };
@@ -148,6 +149,34 @@ describe('ApproverAction', () => {
         dismissible: false,
       });
       expect(allAlerts.at(0).text()).toBe(error.message);
+    });
+
+    it('renders the alert only for related to action error', () => {
+      const error = { title: 'Error', message: 'Something went wrong', index: 0 };
+      const error2 = { title: 'Error 2', message: 'Something went wrong 2', index: 1 };
+      const errorWithoutIndex = {
+        title: 'Error without index',
+        message: 'Something went wrong without index',
+      };
+      createWrapper(
+        { errors: [error, error2, errorWithoutIndex], actionIndex: 1 },
+        { glFeatures: { multipleApprovalActions: true } },
+      );
+
+      const allAlerts = findAllAlerts();
+      expect(allAlerts).toHaveLength(2);
+
+      expect(allAlerts.at(0).props()).toMatchObject({
+        title: error2.title,
+        dismissible: false,
+      });
+      expect(allAlerts.at(0).text()).toBe(error2.message);
+
+      expect(allAlerts.at(1).props()).toMatchObject({
+        title: errorWithoutIndex.title,
+        dismissible: false,
+      });
+      expect(allAlerts.at(1).text()).toBe(errorWithoutIndex.message);
     });
   });
 
