@@ -16,6 +16,8 @@ module PackageMetadata
       end
 
       def ==(other)
+        return false unless other.is_a?(self.class)
+
         cve_id == other.cve_id &&
           epss_score == other.epss_score &&
           is_known_exploit == other.is_known_exploit
