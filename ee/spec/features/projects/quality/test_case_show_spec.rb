@@ -146,7 +146,7 @@ RSpec.describe 'Test cases', :js, feature_category: :quality_management do
 
               expect(page).to have_content(
                 'You are going to turn on confidentiality. ' \
-                'Only project members with at least the Reporter role ' \
+                'Only project members with at least the Planner role ' \
                 'can view or be notified about this test case.'
               )
 
@@ -156,7 +156,7 @@ RSpec.describe 'Test cases', :js, feature_category: :quality_management do
 
               expect(test_case.reload.confidential).to eq(true)
               expect(page).to have_content(
-                'Confidential Only project members with at least the Reporter role ' \
+                'Confidential Only project members with at least the Planner role ' \
                 'can view or be notified about this test case.'
               )
             end

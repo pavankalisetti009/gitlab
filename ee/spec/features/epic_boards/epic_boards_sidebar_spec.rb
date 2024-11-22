@@ -177,7 +177,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
 
           expect(page).to have_content(
             _('Only group members with at least ' \
-            'the Reporter role can view or be ' \
+            'the Planner role can view or be ' \
             'notified about this epic')
           )
         end
