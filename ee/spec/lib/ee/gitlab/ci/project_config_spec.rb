@@ -176,6 +176,16 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
       allow(security_policy_configuration).to receive(:active_scan_execution_policies).and_return([policy])
     end
 
+    shared_examples_for 'with pipeline execution policies enforced' do
+      let(:has_execution_policy_pipelines) { true }
+      let(:expected_content) { YAML.dump(Gitlab::Ci::ProjectConfig::SecurityPolicyDefault::DUMMY_CONTENT) }
+
+      it 'includes dummy job to force the pipeline creation' do
+        expect(config.source).to eq(:pipeline_execution_policy_forced)
+        expect(config.content).to eq(expected_content)
+      end
+    end
+
     context 'when policies should be enforced' do
       context 'when security_orchestration_policies feature is available' do
         before do
@@ -193,9 +203,22 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
             let(:rule) { { type: 'pipeline', branches: branches } }
 
             context 'when policy applies to the pipeline\'s branch' do
-              it 'includes security policies default pipeline configuration content' do
-                expect(config.source).to eq(:security_policies_default_source)
-                expect(config.content).to eq(security_policy_default_content)
+              context 'when pipeline execution policies are enforced' do
+                let(:has_execution_policy_pipelines) { true }
+
+                it 'includes security policies default pipeline configuration content' do
+                  expect(config.source).to eq(:security_policies_default_source)
+                  expect(config.content).to eq(security_policy_default_content)
+                end
+              end
+
+              context 'when pipeline execution policies are not enforced' do
+                let(:has_execution_policy_pipelines) { false }
+
+                it 'includes security policies default pipeline configuration content' do
+                  expect(config.source).to eq(:security_policies_default_source)
+                  expect(config.content).to eq(security_policy_default_content)
+                end
               end
             end
           end
@@ -252,6 +275,8 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
           it 'does not include security policies default pipeline configuration content' do
             expect(config.source).to eq(nil)
           end
+
+          it_behaves_like 'with pipeline execution policies enforced'
         end
 
         context 'when policy does not apply to the branch' do
@@ -260,6 +285,8 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
           it 'does not include security policies default pipeline configuration content' do
             expect(config.source).to eq(nil)
           end
+
+          it_behaves_like 'with pipeline execution policies enforced'
         end
 
         context 'when the policy should not be enforced to the pipeline source' do
@@ -272,29 +299,6 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
           end
         end
       end
-    end
-  end
-
-  context 'when config is PipelineExecutionPolicyForced' do
-    let(:has_execution_policy_pipelines) { true }
-
-    shared_examples_for 'forces the pipeline creation by including dummy content' do
-      let(:expected_content) { YAML.dump(Gitlab::Ci::ProjectConfig::PipelineExecutionPolicyForced::DUMMY_CONTENT) }
-
-      it 'includes dummy job to force the pipeline creation' do
-        expect(config.source).to eq(:pipeline_execution_policy_forced)
-        expect(config.content).to eq(expected_content)
-      end
-    end
-
-    it_behaves_like 'forces the pipeline creation by including dummy content'
-
-    context 'when auto devops is not enabled' do
-      before do
-        stub_application_setting(auto_devops_enabled: false)
-      end
-
-      it_behaves_like 'forces the pipeline creation by including dummy content'
     end
   end
 end
