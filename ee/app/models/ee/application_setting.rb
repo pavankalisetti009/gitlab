@@ -129,9 +129,10 @@ module EE
         allow_blank: true,
         numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: :max_auth_lifetime }
 
+      validates :new_user_signups_cap, absence: true, if: -> { seat_control == SEAT_CONTROL_OFF }
+
       validates :new_user_signups_cap,
-        allow_blank: true,
-        numericality: { only_integer: true, greater_than: 0 }
+        numericality: { only_integer: true, greater_than: 0 }, if: -> { seat_control == SEAT_CONTROL_USER_CAP }
 
       validates :git_two_factor_session_expiry,
         presence: true,
@@ -246,7 +247,7 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-      before_save :set_seat_control
+      before_validation :set_seat_control
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :resume_elasticsearch_indexing
