@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.network_policies.clusters_using_network_policies_ui_weekly
 description: Weekly number of distinct clusters with network policies using the network policies UI
 product_group: security_policies
+product_categories:
+- security_policy_management
 value_type: number
 status: removed
 milestone_removed: '15.5'
