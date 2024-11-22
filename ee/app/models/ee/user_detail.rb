@@ -10,7 +10,7 @@ module EE
 
       scope :with_enterprise_group, -> { where.not(enterprise_group_id: nil) }
 
-      attribute :onboarding_status, :ind_jsonb
+      attribute :onboarding_status, ::Gitlab::Database::Type::IndifferentJsonb.new
       store_accessor(
         :onboarding_status, :step_url, :email_opt_in, :initial_registration_type, :registration_type, :glm_content,
         :glm_source, prefix: true

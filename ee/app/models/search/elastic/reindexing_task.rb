@@ -11,7 +11,7 @@ module Search
       validates :slice_multiplier, presence: true
       validates :options, json_schema: { filename: 'elastic_reindexing_task_options' }
 
-      attribute :options, :ind_jsonb # for indifferent access
+      attribute :options, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
       has_many :subtasks, class_name: 'Search::Elastic::ReindexingSubtask',
         foreign_key: :elastic_reindexing_task_id, inverse_of: :elastic_reindexing_task
