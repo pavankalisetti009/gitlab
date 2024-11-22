@@ -9,6 +9,6 @@ subscription getSecurityPolicyProject($fullPath: String!) {
       }
     }
     status
-    errorMessage
+    errors
   }
 }

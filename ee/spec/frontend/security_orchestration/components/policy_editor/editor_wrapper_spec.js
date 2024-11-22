@@ -30,12 +30,12 @@ Vue.use(VueApollo);
 
 describe('EditorWrapper component', () => {
   let wrapper;
-  const getSecurityPolicyProjectSubscriptionErrorHandlerMock = jest.fn().mockResolvedValue({
+  const getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock = jest.fn().mockResolvedValue({
     data: {
       securityPolicyProjectCreated: {
         project: null,
         status: null,
-        errorMessage: 'error',
+        errors: ['There was an error', 'error reason'],
       },
     },
   });
@@ -52,7 +52,7 @@ describe('EditorWrapper component', () => {
           },
         },
         status: null,
-        errorMessage: '',
+        errors: [],
       },
     },
   });
@@ -177,16 +177,35 @@ describe('EditorWrapper component', () => {
       expect(goToPolicyMR).not.toHaveBeenCalled();
     });
 
-    it('passes the errors when the the subscription fails with a project', async () => {
+    it('shows the errors when the subscription fails to create due to an SPP already existing with the same name, but not linked', async () => {
+      factory({
+        subscriptionMock: getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock,
+      });
+      await waitForPromises();
+      const alert = findErrorAlert();
+      expect(alert.exists()).toBe(true);
+      expect(alert.props('title')).toBe('There was an error');
+      expect(alert.text()).toBe('error reason');
+    });
+
+    /**
+     * This fails in VUE_VERSION=3..
+     * See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/172643#note_2220742867
+     */
+    // quarantine: https://gitlab.com/gitlab-org/gitlab/-/issues/458409
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip('shows the errors when the subscription fails due to a configuration issue', async () => {
+      const getSecurityPolicyProjectSubscriptionErrorHandlerMock = jest
+        .fn()
+        .mockRejectedValue({ message: 'error' });
       factory({
         subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
       });
       await waitForPromises();
-      expect(findScanExecutionPolicyEditor().props('assignedPolicyProject')).toEqual({
-        branch: '',
-        fullPath: '',
-      });
-      expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([]);
+      const alert = findErrorAlert();
+      expect(alert.exists()).toBe(true);
+      expect(alert.props('title')).toBe('error');
+      expect(alert.text()).toBe('');
     });
   });
 
@@ -194,7 +213,7 @@ describe('EditorWrapper component', () => {
     describe('without an assigned policy project', () => {
       it('does not make the request to create the MR without an assigned policy project', async () => {
         await factory({
-          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
+          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock,
         });
         findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
@@ -213,7 +232,7 @@ describe('EditorWrapper component', () => {
       `('makes the request to "goToPolicyMR" $status', async ({ action }) => {
         factory({
           provide: { assignedPolicyProject: existingAssignedPolicyProject },
-          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
+          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock,
         });
         findScanExecutionPolicyEditor().vm.$emit('save', {
           action,
@@ -236,7 +255,7 @@ describe('EditorWrapper component', () => {
       it('passes extra merge request input to goToPolicyMR', async () => {
         factory({
           provide: { assignedPolicyProject: existingAssignedPolicyProject },
-          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
+          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorAsDataHandlerMock,
         });
         const extraMergeRequestInput = {
           title: 'test',
