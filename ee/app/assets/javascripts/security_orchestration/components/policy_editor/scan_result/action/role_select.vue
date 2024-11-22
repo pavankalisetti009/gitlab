@@ -24,6 +24,9 @@ export default {
     hasValidRoles() {
       return this.existingApprovers.every((role) => this.roleApproverTypes.includes(role));
     },
+    items() {
+      return [{ text: s__('SecurityOrchestration|Standard roles'), options: this.roles }];
+    },
     roles() {
       return this.roleApproverTypes.map((r) => ({ text: convertToTitleCase(r), value: r }));
     },
@@ -52,7 +55,7 @@ export default {
 
 <template>
   <gl-collapsible-listbox
-    :items="roles"
+    :items="items"
     block
     is-check-centered
     multiple
