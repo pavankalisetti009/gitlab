@@ -74,6 +74,15 @@ module EE
           description: "Path to project's security dashboard.",
           null: true
 
+        field :vulnerability_identifier_search,
+          [GraphQL::Types::String],
+          experiment: { milestone: '17.7' },
+          resolver: ::Resolvers::Vulnerabilities::IdentifierSearchResolver,
+          null: true,
+          description: 'Search for vulnerabilities by identifier. ' \
+                       'Feature flag `vulnerability_filtering_by_identifier` ' \
+                       'has to be enabled for the project.'
+
         field :iterations, ::Types::IterationType.connection_type,
           null: true,
           description: 'Find iterations.',
