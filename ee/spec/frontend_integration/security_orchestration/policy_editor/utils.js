@@ -43,7 +43,7 @@ export const createSppSubscriptionHandler = () =>
           },
         },
         status: null,
-        errorMessage: '',
+        errors: [],
       },
     },
   });

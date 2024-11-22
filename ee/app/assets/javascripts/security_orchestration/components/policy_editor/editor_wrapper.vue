@@ -25,11 +25,10 @@ export default {
         result({ data: { securityPolicyProjectCreated } }) {
           if (!securityPolicyProjectCreated) return;
 
-          const project = securityPolicyProjectCreated?.project;
-          const e = securityPolicyProjectCreated?.errorMessage;
+          const { project, errors } = securityPolicyProjectCreated;
 
-          if (e) {
-            this.setError(e);
+          if (errors.length) {
+            this.setError(errors.join('\n'));
             this.setLoadingFlag(false);
           }
 
@@ -41,7 +40,7 @@ export default {
           }
         },
         error(e) {
-          this.setError(e);
+          this.setError(e.message);
           this.setLoadingFlag(false);
         },
       },
