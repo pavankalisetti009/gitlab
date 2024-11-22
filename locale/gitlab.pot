@@ -15025,9 +15025,6 @@ msgstr ""
 msgid "ContainerRegistry|Add rule"
 msgstr ""
 
-msgid "ContainerRegistry|Both keep and remove regex patterns are automatically surrounded with %{codeStart}\\A%{codeEnd} and %{codeStart}\\Z%{codeEnd} anchors, so you do not need to include them. However, make sure to take this into account when choosing and testing your regex patterns."
-msgstr ""
-
 msgid "ContainerRegistry|Build an image"
 msgstr ""
 
@@ -15245,6 +15242,9 @@ msgid "ContainerRegistry|Published to the %{repositoryPath} image repository on 
 msgstr ""
 
 msgid "ContainerRegistry|Push an image"
+msgstr ""
+
+msgid "ContainerRegistry|Regular expression without the \\A and \\z anchors."
 msgstr ""
 
 msgid "ContainerRegistry|Remember to run %{docLinkStart}garbage collection%{docLinkEnd} to remove the stale data from storage."
