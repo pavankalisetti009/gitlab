@@ -379,7 +379,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
   def card_weight_badge(list)
     within("[data-testid='board-list'][data-list-id='gid://gitlab/List/#{list.id}']") do
-      find_by_testid('board-card-weight')
+      find_by_testid('board-card-weight-title')
     end
   end
 

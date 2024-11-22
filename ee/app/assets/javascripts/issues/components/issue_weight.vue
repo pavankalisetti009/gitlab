@@ -1,11 +1,10 @@
 <script>
-import { GlTooltip, GlIcon } from '@gitlab/ui';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
   name: 'IssueCardWeight',
   components: {
-    GlIcon,
-    GlTooltip,
+    WorkItemAttribute,
   },
   props: {
     weight: {
@@ -17,15 +16,17 @@ export default {
 </script>
 
 <template>
-  <div
-    ref="itemWeight"
-    class="board-card-info board-card-weight gl-mr-3 gl-inline-flex gl-cursor-help gl-items-center gl-align-bottom gl-text-sm gl-text-gray-500"
-    v-on="$listeners"
+  <work-item-attribute
+    wrapper-component="div"
+    anchor-id="board-card-weight"
+    wrapper-component-class="board-card-info board-card-weight gl-mr-3 gl-inline-flex gl-cursor-help gl-items-center gl-align-bottom gl-text-sm gl-text-gray-500"
+    :title="`${weight}`"
+    title-component-class="board-card-info-text"
+    icon-name="weight"
+    icon-class="board-card-info-icon gl-mr-2"
   >
-    <gl-icon name="weight" class="board-card-info-icon gl-mr-2" />
-    <span data-testid="board-card-weight" class="board-card-info-text"> {{ weight }} </span>
-    <gl-tooltip :target="() => $refs.itemWeight" placement="bottom" container="body"
-      >{{ __('Weight') }}<br /><span class="gl-text-tertiary">{{ weight }}</span>
-    </gl-tooltip>
-  </div>
+    <template #tooltip-text>
+      {{ __('Weight') }}<br /><span class="gl-text-tertiary">{{ weight }}</span>
+    </template>
+  </work-item-attribute>
 </template>

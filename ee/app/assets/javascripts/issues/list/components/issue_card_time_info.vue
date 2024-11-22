@@ -1,16 +1,18 @@
 <script>
+import { GlIcon } from '@gitlab/ui';
 import IssueCardTimeInfo from '~/issues/list/components/issue_card_time_info.vue';
-import WeightCount from 'ee/issues/components/weight_count.vue';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import { isHealthStatusWidget, isWeightWidget } from '~/work_items/utils';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
   components: {
     IssueCardTimeInfo,
     IssueHealthStatus,
-    WeightCount,
+    WorkItemAttribute,
+    GlIcon,
   },
-  inject: ['hasIssuableHealthStatusFeature'],
+  inject: ['hasIssuableHealthStatusFeature', 'hasIssueWeightsFeature'],
   props: {
     issue: {
       type: Object,
@@ -29,17 +31,27 @@ export default {
     weight() {
       return this.issue.weight || this.issue.widgets?.find(isWeightWidget)?.weight;
     },
+    showWeight() {
+      return this.hasIssueWeightsFeature && this.weight != null;
+    },
   },
 };
 </script>
 
 <template>
   <issue-card-time-info :issue="issue">
-    <weight-count
-      class="issuable-weight gl-mr-3"
-      :weight="weight"
-      data-testid="issuable-weight-content"
-    />
+    <work-item-attribute
+      v-if="showWeight"
+      anchor-id="issuable-weight-content"
+      :title="`${weight}`"
+      title-component-class="issuable-weight gl-mr-3"
+      :tooltip-text="__('Weight')"
+      tooltip-placement="top"
+    >
+      <template #icon>
+        <gl-icon name="weight" :size="12" />
+      </template>
+    </work-item-attribute>
     <issue-health-status v-if="showHealthStatus" :health-status="healthStatus" />
   </issue-card-time-info>
 </template>

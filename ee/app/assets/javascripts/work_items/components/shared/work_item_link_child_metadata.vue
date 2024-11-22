@@ -15,6 +15,7 @@ import {
 import { humanTimeframe, isInPast, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { getIterationPeriod } from 'ee/iterations/utils';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
   name: 'WorkItemLinkChildEE',
@@ -24,6 +25,7 @@ export default {
     IssueHealthStatus,
     WorkItemLinkChildMetadata,
     WorkItemRolledUpHealthStatus,
+    WorkItemAttribute,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -150,20 +152,21 @@ export default {
     :metadata-widgets="metadataWidgets"
   >
     <template #left-metadata>
-      <div
+      <work-item-attribute
         v-if="shouldShowWeight"
-        ref="weightData"
-        data-testid="item-weight"
-        class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
+        anchor-id="item-weight"
+        wrapper-component="div"
+        wrapper-component-class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
+        :title="`${workItemWeight}`"
+        icon-name="weight"
+        tooltip-placement="top"
       >
-        <gl-icon name="weight" />
-        <span data-testid="weight-value">{{ workItemWeight }}</span>
-        <gl-tooltip :target="() => $refs.weightData">
+        <template #tooltip-text>
           <span data-testid="weight-tooltip" class="gl-font-bold">
             {{ weightTooltip }}
           </span>
-        </gl-tooltip>
-      </div>
+        </template>
+      </work-item-attribute>
       <div
         v-if="iteration"
         ref="iterationData"
@@ -187,19 +190,22 @@ export default {
           </div>
         </gl-tooltip>
       </div>
-      <div
+      <work-item-attribute
         v-if="showDate"
-        ref="datesData"
-        data-testid="item-dates"
-        class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
+        anchor-id="item-dates"
+        wrapper-component="div"
+        wrapper-component-class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
+        :title="workItemTimeframe"
+        tooltip-placement="top"
       >
-        <gl-icon :variant="isOverdue ? 'danger' : 'current'" :name="datesIcon" />
-        <span data-testid="dates-value">{{ workItemTimeframe }}</span>
-        <gl-tooltip :target="() => $refs.datesData">
+        <template #icon>
+          <gl-icon :variant="isOverdue ? 'danger' : 'current'" :name="datesIcon" />
+        </template>
+        <template #tooltip-text>
           <span class="gl-font-bold">{{ __('Dates') }}</span
           ><span>{{ overdueText }}</span>
-        </gl-tooltip>
-      </div>
+        </template>
+      </work-item-attribute>
       <div
         v-if="hasProgress"
         ref="progressTooltip"

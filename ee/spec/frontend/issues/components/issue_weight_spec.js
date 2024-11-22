@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import IssueWeight from 'ee_component/issues/components/issue_weight.vue';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 function mountIssueWeight(propsData) {
   return shallowMount(IssueWeight, {
@@ -9,6 +10,7 @@ function mountIssueWeight(propsData) {
 
 describe('IssueWeight', () => {
   let wrapper;
+  const findWorkItemAttribute = () => wrapper.findComponent(WorkItemAttribute);
 
   describe('weight text', () => {
     it('shows 0 when weight is 0', () => {
@@ -16,7 +18,7 @@ describe('IssueWeight', () => {
         weight: 0,
       });
 
-      expect(wrapper.find('.board-card-info-text').text()).toContain('0');
+      expect(findWorkItemAttribute().props('title')).toBe('0');
     });
 
     it('shows 5 when weight is 5', () => {
@@ -24,7 +26,7 @@ describe('IssueWeight', () => {
         weight: 5,
       });
 
-      expect(wrapper.find('.board-card-info-text').text()).toContain('5');
+      expect(findWorkItemAttribute().props('title')).toBe('5');
     });
   });
 
@@ -33,6 +35,6 @@ describe('IssueWeight', () => {
       weight: 2,
     });
 
-    expect(wrapper.find('div.board-card-info').exists()).toBe(true);
+    expect(findWorkItemAttribute().props('wrapperComponent')).toBe('div');
   });
 });
