@@ -467,7 +467,7 @@
 {"name":"opentelemetry-instrumentation-action_pack","version":"0.10.0","platform":"ruby","checksum":"2d821a45be4c2a281cfa42ec96562268b50ff5d5fac77386e7e39e792bceab02"},
 {"name":"opentelemetry-instrumentation-action_view","version":"0.7.3","platform":"ruby","checksum":"6da829154e751bd88f5369b97a6346e12c3583a784f58178ccaa0b46d301ea21"},
 {"name":"opentelemetry-instrumentation-active_job","version":"0.7.8","platform":"ruby","checksum":"281b3d9bace7aac9f1e121b75f294e7ee8beaedd1f20405539c54df2e6763942"},
-{"name":"opentelemetry-instrumentation-active_record","version":"0.8.0","platform":"ruby","checksum":"199d83102e81f5d6236025f4e6507513ffd2e6a2231e9951d0723708cc96c1c8"},
+{"name":"opentelemetry-instrumentation-active_record","version":"0.8.1","platform":"ruby","checksum":"be580547b5653f05c0b12cb34d8d9a22e480292ee3d1214f74c57e2d38ca4a91"},
 {"name":"opentelemetry-instrumentation-active_support","version":"0.6.0","platform":"ruby","checksum":"4fe71e2be21135c4a6eb8086998c508deec50080900829fb695ee01b93b507e0"},
 {"name":"opentelemetry-instrumentation-aws_sdk","version":"0.7.0","platform":"ruby","checksum":"a3c374b04bb7e0fa8b5452e57ca6a9c8c1487f6a9dd643c95a605b3cec5a19b5"},
 {"name":"opentelemetry-instrumentation-base","version":"0.22.3","platform":"ruby","checksum":"f61c434f0406cdc878bc188f67e644f94dba4be553d2fd21b2d1faa82731605f"},
