@@ -124,7 +124,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
   end
 
   context 'when there are execution policy pipelines' do
-    let_it_be(:project) { create(:project) }
+    let_it_be(:project) { create(:project, :auto_devops_disabled) }
     let(:ci_config_path) { nil }
 
     let(:config_content_result) do
@@ -157,7 +157,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
     end
 
     context 'and a policy uses the override_project_ci strategy' do
-      let_it_be(:project) { create(:project) }
+      let_it_be(:project) { create(:project, :auto_devops_disabled) }
 
       let(:blob) { fake_blob(path: '.gitlab-ci.yml', data: project_content) }
       let(:has_overriding_policy_pipelines) { true }

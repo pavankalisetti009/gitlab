@@ -9,7 +9,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
   let(:opts) { {} }
   let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :repository, group: group) }
+  let_it_be_with_refind(:project) { create(:project, :repository, :auto_devops_disabled, group: group) }
   let_it_be_with_reload(:compliance_project) { create(:project, :empty_repo, group: group) }
   let_it_be(:user) { create(:user, developer_of: [project, compliance_project]) }
 
@@ -624,6 +624,32 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
       expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('namespace_policy_job')
       expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('project_policy_job')
+    end
+
+    context 'when both Scan Execution Policy and Pipeline Execution Policy are applied on the project' do
+      let(:scan_execution_policy) do
+        build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }])
+      end
+
+      let(:project_policy_yaml) do
+        build(:orchestration_policy_yaml,
+          pipeline_execution_policy: [project_policy],
+          scan_execution_policy: [scan_execution_policy])
+      end
+
+      it 'persists both pipeline execution policy and scan execution policy jobs', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(3)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.map(&:name)).to contain_exactly('build', 'test')
+
+        expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('namespace_policy_job')
+        expect(stages.find_by(name: 'test').builds.map(&:name))
+          .to contain_exactly('project_policy_job', 'secret-detection-0')
+      end
     end
   end
 

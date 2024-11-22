@@ -8,21 +8,50 @@ module EE
           extend ::Gitlab::Utils::Override
           include ::Gitlab::Utils::StrongMemoize
 
+          DUMMY_CONTENT = {
+            'Pipeline execution policy trigger' => {
+              'stage' => ::Gitlab::Ci::Config::EdgeStagesInjector::PRE_PIPELINE,
+              'script' => ['echo "Forcing project pipeline to run policy jobs."']
+            }
+          }.freeze
+
           override :content
           def content
-            return unless triggered_for_branch
-            return unless ::Enums::Ci::Pipeline.ci_and_security_orchestration_sources.key?(pipeline_source)
-            return unless project.licensed_feature_available?(:security_orchestration_policies)
-            return unless active_scan_execution_policies?
-
             # We merge the security scans with the pipeline configuration in ee/lib/ee/gitlab/ci/config_ee.rb.
             # An empty config with no content is enough to trigger the merge process when the Auto DevOps is disabled
             # and no .gitlab-ci.yml is present.
-            YAML.dump(nil)
+            if has_applicable_scan_execution_policies_defined?
+              YAML.dump(nil)
+            elsif has_pipeline_execution_policies_defined?
+              # Pipeline execution policy jobs will be merged onto the project pipeline.
+              # Create a dummy job to ensure that project pipeline gets created.
+              YAML.dump(DUMMY_CONTENT)
+            end
           end
           strong_memoize_attr :content
 
+          override :source
+          def source
+            if has_applicable_scan_execution_policies_defined?
+              :security_policies_default_source
+            elsif has_pipeline_execution_policies_defined?
+              :pipeline_execution_policy_forced
+            end
+          end
+          strong_memoize_attr :source
+
           private
+
+          def has_pipeline_execution_policies_defined?
+            pipeline_policy_context&.has_execution_policy_pipelines?
+          end
+
+          def has_applicable_scan_execution_policies_defined?
+            triggered_for_branch &&
+              ::Enums::Ci::Pipeline.ci_and_security_orchestration_sources.key?(pipeline_source) &&
+              project.licensed_feature_available?(:security_orchestration_policies) &&
+              active_scan_execution_policies?
+          end
 
           def active_scan_execution_policies?
             return false unless ref
