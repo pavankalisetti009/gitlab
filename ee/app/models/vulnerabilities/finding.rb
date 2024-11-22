@@ -8,8 +8,6 @@ module Vulnerabilities
     include ::VulnerabilityFindingHelpers
     include EachBatch
 
-    ignore_columns :confidence, remove_with: '17.7', remove_after: '2024-11-21'
-
     # https://gitlab.com/groups/gitlab-org/-/epics/3148
     # https://gitlab.com/gitlab-org/gitlab/-/issues/214563#note_370782508 is why the table names are not renamed
     self.table_name = "vulnerability_occurrences"
