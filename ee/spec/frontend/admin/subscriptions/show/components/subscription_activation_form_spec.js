@@ -114,7 +114,7 @@ describe('SubscriptionActivationForm', () => {
     });
 
     it('applies the correct class and shows help text field', () => {
-      expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-primary');
+      expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-default');
       expect(findAgreementCheckboxFormGroup().text()).toContain(
         subscriptionActivationForm.acceptTermsFeedback,
       );
@@ -152,7 +152,7 @@ describe('SubscriptionActivationForm', () => {
         });
 
         it('updates the validation class and hides help text field', () => {
-          expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-primary');
+          expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-default');
           expect(findAgreementCheckboxFormGroup().text()).not.toContain(
             subscriptionActivationForm.acceptTermsFeedback,
           );

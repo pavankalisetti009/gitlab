@@ -55,7 +55,7 @@ export default {
                 {{ item.name }}
               </a>
             </div>
-            <div class="gl-text-primary">@{{ item.username }}</div>
+            <div class="gl-text-default">@{{ item.username }}</div>
           </div>
         </span>
       </template>

@@ -161,7 +161,7 @@ export default {
     tableFields() {
       return [...this.fields, ACTION_COLUMN].map((field) => ({
         ...field,
-        class: ['gl-text-primary'],
+        class: ['gl-text-default'],
         thClass: ['!gl-bg-transparent', 'gl-whitespace-nowrap'],
       }));
     },

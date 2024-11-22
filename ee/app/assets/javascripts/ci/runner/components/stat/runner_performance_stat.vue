@@ -27,7 +27,7 @@ export default {
       <span class="gl-text-gray-700">{{ s__('Runners|Runners performance') }}</span>
     </div>
     <div>
-      <gl-link v-gl-modal="$options.MODAL_ID" class="!gl-text-primary">
+      <gl-link v-gl-modal="$options.MODAL_ID" class="!gl-text-default">
         {{ s__('Runners|View metrics') }} <gl-icon name="chart" />
       </gl-link>
       <runner-performance-modal :modal-id="$options.MODAL_ID" />

@@ -53,7 +53,7 @@ export default {
     <div class="flex-grow-1 block-truncated">
       <gl-link
         v-gl-tooltip
-        class="js-environment-link gl-text-primary"
+        class="js-environment-link gl-text-default"
         :href="environment.environment_path"
         :title="environment.name"
       >
