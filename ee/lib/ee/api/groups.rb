@@ -117,7 +117,6 @@ module EE
 
           def check_ssh_certificate_available_to_group(group)
             not_found!('Group') unless group
-            not_found! unless ::Feature.enabled?(:ssh_certificates_rest_endpoints, group)
             not_found! unless group.licensed_feature_available?(:ssh_certificates)
             forbidden!('Group') if group.has_parent?
           end

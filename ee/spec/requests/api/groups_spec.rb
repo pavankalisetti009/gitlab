@@ -1767,16 +1767,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     end
   end
 
-  shared_examples_for 'when feature is disabled' do
-    before do
-      stub_feature_flags(ssh_certificates_rest_endpoints: false)
-    end
-
-    it_behaves_like '404 response' do
-      let(:message) { '404 Not Found' }
-    end
-  end
-
   shared_examples_for 'when premium feature not available' do
     before do
       stub_licensed_features(ssh_certificates: false)
@@ -1830,8 +1820,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       it_behaves_like "when group doesn't exist" do
         let(:route) { '/groups/9999/ssh_certificates' }
       end
-
-      it_behaves_like 'when feature is disabled'
 
       it_behaves_like 'when premium feature not available'
 
@@ -1922,8 +1910,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       it_behaves_like "when group doesn't exist" do
         let(:route) { '/groups/9999/ssh_certificates' }
       end
-
-      it_behaves_like 'when feature is disabled'
 
       it_behaves_like 'when premium feature not available'
 
@@ -2066,8 +2052,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       it_behaves_like "when group doesn't exist" do
         let(:route) { "/groups/9999/ssh_certificates/#{ssh_certificate_1.id}" }
       end
-
-      it_behaves_like 'when feature is disabled'
 
       it_behaves_like 'when premium feature not available'
 
