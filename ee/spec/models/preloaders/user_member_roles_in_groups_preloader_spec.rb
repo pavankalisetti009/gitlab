@@ -112,7 +112,14 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
   context 'when group has a group link assigned to a custom role' do
     let_it_be(:source) { sub_group_1 }
 
-    include_context 'with member roles assigned to group links'
+    include_context 'with multiple users in a group with custom roles'
     it_behaves_like 'returns expected member role abilities'
+  end
+
+  context 'when multiple groups are invited with custom roles' do
+    let_it_be(:source) { sub_group_1 }
+
+    include_context 'with a user in multiple groups with custom role'
+    it_behaves_like 'returns expected member role abilities for the user'
   end
 end
