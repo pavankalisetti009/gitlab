@@ -86,7 +86,9 @@ module EE
         :zoekt_indexing_paused,
         :zoekt_search_enabled,
         :duo_workflow_oauth_application_id,
-        :scan_execution_policies_action_limit
+        :scan_execution_policies_action_limit,
+        :secret_detection_service_auth_token,
+        :secret_detection_service_url
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
         settings.concat(enable_promotion_management_attributes)
@@ -150,6 +152,8 @@ module EE
           service_access_tokens_expiration_enforced
           disabled_direct_code_suggestions
           allow_top_level_group_owners_to_create_service_accounts
+          secret_detection_service_auth_token
+          secret_detection_service_url
         ]
     end
 
