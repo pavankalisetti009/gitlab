@@ -161,6 +161,12 @@ module Security
       policy_scope_checker.security_policy_applicable?(self)
     end
 
+    def scope_has_framework?(compliance_framework_id)
+      scope
+        .deep_symbolize_keys[:compliance_frameworks].to_a
+        .any? { |framework| framework[:id] == compliance_framework_id }
+    end
+
     def delete_approval_policy_rules
       delete_approval_rules
       delete_policy_violations
