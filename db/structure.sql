@@ -7470,6 +7470,7 @@ CREATE TABLE audit_events_group_external_streaming_destinations (
     config jsonb NOT NULL,
     encrypted_secret_token bytea NOT NULL,
     encrypted_secret_token_iv bytea NOT NULL,
+    legacy_destination_ref bigint,
     CONSTRAINT check_97d157fbd0 CHECK ((char_length(name) <= 72))
 );
 
@@ -7565,6 +7566,7 @@ CREATE TABLE audit_events_instance_external_streaming_destinations (
     config jsonb NOT NULL,
     encrypted_secret_token bytea NOT NULL,
     encrypted_secret_token_iv bytea NOT NULL,
+    legacy_destination_ref bigint,
     CONSTRAINT check_219decfb51 CHECK ((char_length(name) <= 72))
 );
 
