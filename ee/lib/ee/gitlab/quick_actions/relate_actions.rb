@@ -8,12 +8,14 @@ module EE
         include ::Gitlab::QuickActions::Dsl
 
         included do
-          desc { _('Specifies that this issue blocks other issues') }
+          desc { _('Link items blocked by this item') }
           explanation do |target_issues|
-            format(_("Set this issue as blocking %{target}."), target: target_issues.to_sentence)
+            format(_("Set this %{work_item_type} as blocking %{target}."),
+              work_item_type: work_item_type(quick_action_target), target: target_issues.to_sentence)
           end
           execution_message do |target_issues|
-            format(_("Marked %{target} as blocked by this issue."), target: target_issues.to_sentence)
+            format(_("Added %{target} as a linked item blocked by this %{work_item_type}."),
+              work_item_type: work_item_type(quick_action_target), target: target_issues.to_sentence)
           end
           params '<#issue | group/project#issue | issue URL>'
           types Issue
@@ -23,12 +25,14 @@ module EE
             create_links(target_issues, type: 'blocks')
           end
 
-          desc { _('Mark this issue as blocked by other issues') }
+          desc { _('Link items blocking this item') }
           explanation do |target_issues|
-            format(_("Set this issue as blocked by %{target}."), target: target_issues.to_sentence)
+            format(_("Set this %{work_item_type} as blocked by %{target}."),
+              work_item_type: work_item_type(quick_action_target), target: target_issues.to_sentence)
           end
           execution_message do |target_issues|
-            format(_("Marked this issue as blocked by %{target}."), target: target_issues.to_sentence)
+            format(_("Added %{target} as a linked item blocking this %{work_item_type}."),
+              work_item_type: work_item_type(quick_action_target), target: target_issues.to_sentence)
           end
           params '<#issue | group/project#issue | issue URL>'
           types Issue
@@ -43,6 +47,10 @@ module EE
 
         def can_block_issues?
           License.feature_available?(:blocked_issues) && can_admin_link?
+        end
+
+        def work_item_type(work_item)
+          work_item.work_item_type.name.downcase
         end
       end
     end

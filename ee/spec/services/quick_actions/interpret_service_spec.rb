@@ -1549,6 +1549,17 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
             expect(explanations).to contain_exactly("Set this issue as blocking #{[ref1, ref2, ref3, ref4].to_sentence}.")
           end
 
+          context 'with task as target' do
+            let_it_be(:task) { create(:work_item, :task, project: project) }
+            let(:target) { task }
+
+            it 'replaces issue in explanation with task' do
+              _, explanations = service.explain(blocks_command, task)
+
+              expect(explanations).to contain_exactly("Set this task as blocking #{[ref1, ref2, ref3, ref4].to_sentence}.")
+            end
+          end
+
           context 'when licensed feature is not available' do
             before do
               stub_licensed_features(blocked_issues: false)
