@@ -170,6 +170,36 @@ RSpec.describe ::Iterations::Cadence, :freeze_time, feature_category: :team_plan
           end
         end
       end
+
+      context 'when creating a new record' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:iterations_in_advance, :automatic, :duration_in_weeks, :active, :worker_enqueued) do
+          0 | true  | 1 | true  | true
+          1 | true  | 1 | true  | true
+          0 | false | 1 | true  | false
+          0 | true  | 0 | true  | false
+          0 | true  | 1 | false | false
+        end
+
+        with_them do
+          subject(:create_iteration) do
+            create(:iterations_cadence,
+              start_date: Date.tomorrow, iterations_in_advance: iterations_in_advance,
+              automatic: automatic, active: active, duration_in_weeks: duration_in_weeks)
+          end
+
+          it 'enqueues the worker if it can be automated' do
+            if worker_enqueued
+              expect(::Iterations::Cadences::CreateIterationsWorker).to receive(:perform_async)
+            else
+              expect(::Iterations::Cadences::CreateIterationsWorker).not_to receive(:perform_async)
+            end
+
+            create_iteration
+          end
+        end
+      end
     end
   end
 
