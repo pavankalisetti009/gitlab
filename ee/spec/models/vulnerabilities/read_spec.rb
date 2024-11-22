@@ -841,6 +841,19 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     it { is_expected.to contain_exactly(unarchived_vulnerability_read) }
   end
 
+  describe '.unresolved' do
+    let_it_be(:resolved_vulnerability) { create(:vulnerability_read, state: :resolved, project: project) }
+    let_it_be(:unresolved_vulnerabilities) do
+      ::Enums::Vulnerability.vulnerability_states.except(:resolved).keys.map do |state|
+        create(:vulnerability_read, state: state, project: project)
+      end
+    end
+
+    subject(:unresolved) { described_class.unresolved }
+
+    it { is_expected.to match_array(unresolved_vulnerabilities) }
+  end
+
   describe '.order_traversal_ids_asc' do
     let_it_be(:group_1) { create(:group) }
     let_it_be(:group_3) { create(:group) }

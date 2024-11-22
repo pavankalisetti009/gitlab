@@ -70,6 +70,7 @@ module Vulnerabilities
     scope :traversal_ids_gteq, ->(traversal_ids) { where(arel_table[:traversal_ids].gteq(traversal_ids)) }
     scope :traversal_ids_lt, ->(traversal_ids) { where(arel_table[:traversal_ids].lt(traversal_ids)) }
     scope :unarchived, -> { where(archived: false) }
+    scope :unresolved, -> { with_states(::Enums::Vulnerability.vulnerability_states.except(:resolved).values) }
     scope :order_traversal_ids_asc, -> do
       reorder(Gitlab::Pagination::Keyset::Order.build([
         Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(

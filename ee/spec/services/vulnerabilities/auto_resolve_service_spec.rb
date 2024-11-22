@@ -7,6 +7,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   let_it_be(:namespace) { create(:namespace) }
   let_it_be_with_reload(:project) { create(:project, namespace: namespace) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_findings, :detected, :high_severity, project: project) }
+  let_it_be(:resolved_vulnerability) { create(:vulnerability, :with_findings, :resolved, project: project) }
   let_it_be(:policy) { create(:security_policy, :vulnerability_management_policy, linked_projects: [project]) }
   let_it_be(:policy_rule) do
     create(:vulnerability_management_policy_rule,
@@ -35,7 +36,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   end
 
   describe '#execute' do
-    it 'resolves each vulnerability', :freeze_time do
+    it 'resolves unresolved vulnerabilities', :freeze_time do
       service.execute
 
       vulnerability.reload
@@ -43,6 +44,8 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(vulnerability.resolved_by).to eq(project.security_policy_bot)
       expect(vulnerability.resolved_at).to eq(Time.current)
       expect(vulnerability.auto_resolved).to be(true)
+
+      expect { resolved_vulnerability.reload }.to not_change { resolved_vulnerability.updated_at }
     end
 
     it 'inserts a state transition for each vulnerability' do

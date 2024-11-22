@@ -8,7 +8,7 @@ module Vulnerabilities
 
     def initialize(project, vulnerability_ids)
       @project = project
-      @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids)
+      @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).unresolved
     end
 
     def execute
