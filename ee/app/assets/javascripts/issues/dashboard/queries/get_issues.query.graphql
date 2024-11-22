@@ -8,6 +8,7 @@ query getDashboardIssuesEE(
   $sort: IssueSort
   $state: IssuableState
   $assigneeId: String
+  $assigneeWildcardId: AssigneeWildcardId
   $assigneeUsernames: [String!]
   $authorUsername: String
   $confidential: Boolean
@@ -33,6 +34,7 @@ query getDashboardIssuesEE(
     sort: $sort
     state: $state
     assigneeId: $assigneeId
+    assigneeWildcardId: $assigneeWildcardId
     assigneeUsernames: $assigneeUsernames
     authorUsername: $authorUsername
     confidential: $confidential
