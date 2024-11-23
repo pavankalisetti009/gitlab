@@ -17,15 +17,24 @@ module Mutations
           description: copy_field_description(Types::Issuables::CustomFieldType, :id)
 
         argument :name, GraphQL::Types::String,
-          required: true,
+          required: false,
           description: copy_field_description(Types::Issuables::CustomFieldType, :name)
 
         argument :select_options, [Types::Issuables::CustomFieldSelectOptionInputType],
           required: false,
           description: copy_field_description(Types::Issuables::CustomFieldType, :select_options)
 
+        argument :work_item_type_ids, [::Types::GlobalIDType[::WorkItems::Type]],
+          required: false,
+          description: 'Work item type global IDs associated to the custom field.',
+          prepare: ->(global_ids, _ctx) { global_ids.map(&:model_id) }
+
         def resolve(id:, **args)
           custom_field = authorized_find!(id: id)
+
+          unless args[:work_item_type_ids].nil?
+            args[:work_item_type_ids] = ::WorkItems::Type.id_in(args[:work_item_type_ids]).map(&:correct_id)
+          end
 
           response = ::Issuables::CustomFields::UpdateService.new(
             custom_field: custom_field,

@@ -19,10 +19,12 @@ module Issuables
           created_by: current_user
         )
 
-        custom_field.assign_attributes(params.slice(:field_type, :name))
+        custom_field.assign_attributes(params.slice(:field_type, :name, :work_item_type_ids))
         handle_select_options(custom_field)
 
         if custom_field.save
+          custom_field.reset_ordered_associations
+
           ServiceResponse.success(payload: { custom_field: custom_field })
         else
           ServiceResponse.error(message: custom_field.errors.full_messages)

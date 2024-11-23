@@ -5,6 +5,7 @@ module Issuables
     include Gitlab::SQL::Pattern
 
     MAX_ACTIVE_FIELDS = 50
+    MAX_ACTIVE_FIELDS_PER_TYPE = 10
     MAX_SELECT_OPTIONS = 50
 
     enum field_type: { single_select: 0, multi_select: 1, number: 2, text: 3 }, _prefix: true
@@ -28,6 +29,7 @@ module Issuables
 
     validate :namespace_is_root_group
     validate :number_of_active_fields_per_namespace
+    validate :number_of_active_fields_per_namespace_per_type
     validate :selectable_field_type_with_select_options
 
     scope :of_namespace, ->(namespace) { where(namespace_id: namespace) }
@@ -67,6 +69,13 @@ module Issuables
       archived_at.nil?
     end
 
+    # These associations have ordering scopes. We need to reset these when mutated
+    # so that the cache is cleared and they are fetched again in the correct order.
+    def reset_ordered_associations
+      select_options.reset
+      work_item_types.reset
+    end
+
     private
 
     def namespace_is_root_group
@@ -84,6 +93,28 @@ module Issuables
         :namespace,
         format(_('can only have a maximum of %{limit} active custom fields.'), limit: MAX_ACTIVE_FIELDS)
       )
+    end
+
+    def number_of_active_fields_per_namespace_per_type
+      return if namespace.nil? || !active?
+
+      invalid_types = self.class.active.of_namespace(namespace)
+                        .joins(:work_item_types)
+                        .where(work_item_type_custom_fields: { work_item_type_id: work_item_type_ids })
+                        .where.not(work_item_type_custom_fields: { custom_field_id: id })
+                        .group('work_item_types.id, work_item_types.name')
+                        .having('COUNT(*) >= ?', MAX_ACTIVE_FIELDS_PER_TYPE)
+                        .pluck('work_item_types.name') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- results are limited by number of work item types
+
+      return if invalid_types.blank?
+
+      invalid_types.each do |type_name|
+        errors.add(
+          :base,
+          format(_('Work item type %{work_item_type_name} can only have a maximum of %{limit} active custom fields.'),
+            work_item_type_name: type_name, limit: MAX_ACTIVE_FIELDS_PER_TYPE)
+        )
+      end
     end
 
     def selectable_field_type_with_select_options
