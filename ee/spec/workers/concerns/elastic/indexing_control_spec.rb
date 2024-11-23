@@ -67,7 +67,7 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
       it 'adds jobs to the waiting queue' do
         expect_any_instance_of(Gitlab::Elastic::Indexer).not_to receive(:run)
         expect(Elastic::IndexingControlService).to receive(:add_to_waiting_queue!)
-          .with(worker.class, worker_args, worker_context)
+          .with(worker.class, worker_args, hash_including(worker_context))
 
         Gitlab::ApplicationContext.with_raw_context(worker_context) do
           worker.perform(*worker_args)
