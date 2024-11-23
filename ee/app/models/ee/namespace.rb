@@ -77,14 +77,9 @@ module EE
            .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
 
-      scope :not_in_default_plan, -> do
-        left_joins(gitlab_subscription: :hosted_plan)
-          .where.not(plans: { name: [nil, *::Plan.default_plans] })
-          .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
-      end
-
       scope :in_specific_plans, ->(plan_names) do
-        left_joins(gitlab_subscription: :hosted_plan)
+        top_level
+          .left_joins(gitlab_subscription: :hosted_plan)
           .where(plans: { name: plan_names })
           .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
@@ -124,14 +119,6 @@ module EE
 
         left_joins(subscription_add_on_purchases: :add_on)
           .where(no_add_on.or(not_started_yet.or(not_a_trial.or(not_duo_pro.or(is_expired)))))
-      end
-
-      scope :eligible_for_trial, -> do
-        left_joins(gitlab_subscription: :hosted_plan)
-          .top_level
-          .where(
-            plans: { name: [nil, *::Plan::PLANS_ELIGIBLE_FOR_TRIAL] }
-          ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
 
       scope :with_feature_available_in_plan, ->(feature) do
