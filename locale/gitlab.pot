@@ -61460,6 +61460,9 @@ msgstr ""
 msgid "Vulnerability|%{file} was not found in commit %{ref}"
 msgstr ""
 
+msgid "Vulnerability|%{file} was not found in ref %{ref}"
+msgstr ""
+
 msgid "Vulnerability|%{scannerName} (version %{scannerVersion})"
 msgstr ""
 

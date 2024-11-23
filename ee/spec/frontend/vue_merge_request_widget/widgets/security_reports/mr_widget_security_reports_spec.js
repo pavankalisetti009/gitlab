@@ -767,6 +767,7 @@ describe('MR Widget Security Reports', () => {
         findingUuid: '0',
         pipelineIid: 1,
         projectFullPath: targetProjectFullPath,
+        sourceProjectFullPath,
         branchRef: sourceBranch,
         showAiResolution: true,
       });

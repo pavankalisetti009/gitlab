@@ -400,6 +400,7 @@ export default {
         :pipeline-iid="pipelineIid"
         :branch-ref="branchRef"
         :project-full-path="mr.targetProjectFullPath"
+        :source-project-full-path="mr.sourceProjectFullPath"
         :show-ai-resolution="glFeatures.resolveVulnerabilityInMr"
         :merge-request-id="mr.id"
         data-testid="vulnerability-finding-modal"

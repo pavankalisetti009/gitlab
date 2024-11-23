@@ -134,7 +134,7 @@ export default {
     },
   },
   i18n: {
-    vulnerabilityNotFound: s__('Vulnerability|%{file} was not found in commit %{ref}'),
+    vulnerabilityNotFound: s__('Vulnerability|%{file} was not found in ref %{ref}'),
     expandAllLines: __('Expand all lines'),
   },
 };

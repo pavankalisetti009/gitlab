@@ -78,7 +78,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
       createWrapper({ blobInfo: {} });
 
       expect(findGlAlert().text()).toBe(
-        `${defaultProps.filePath} was not found in commit ${defaultProps.branchRef}`,
+        `${defaultProps.filePath} was not found in ref ${defaultProps.branchRef}`,
       );
     });
 
