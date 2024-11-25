@@ -660,6 +660,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         work_item.namespace
         work_item.labels
         work_item.project.project_feature
+        work_item.notes
       end
       expect(recorder.count).to be_zero
     end

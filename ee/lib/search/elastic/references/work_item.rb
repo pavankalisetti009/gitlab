@@ -6,7 +6,8 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 24_46
+        SCHEMA_VERSION = 24_47
+        NOTES_MAXIMUM_BYTES = 512.kilobytes
 
         override :serialize
         def self.serialize(record)
@@ -67,6 +68,18 @@ module Search
 
         private
 
+        def populate_notes(target, data)
+          if ::Elastic::DataMigrationService.migration_has_finished?(:add_notes_to_work_items)
+            notes_internal, notes_public = target.notes.partition(&:internal)
+            data['notes_internal'] =
+              notes_internal.sort_by(&:created_at).reverse.map(&:note).join("\n").truncate_bytes(NOTES_MAXIMUM_BYTES)
+            data['notes'] =
+              notes_public.sort_by(&:created_at).reverse.map(&:note).join("\n").truncate_bytes(NOTES_MAXIMUM_BYTES)
+          end
+
+          data
+        end
+
         # rubocop: disable Metrics/AbcSize -- it's above the limit because we have feature flags that we will remove
         def build_indexed_json(target)
           data = {}
@@ -93,6 +106,9 @@ module Search
           data['traversal_ids'] = target.namespace.elastic_namespace_ancestry
           data['hashed_root_namespace_id'] = target.namespace.hashed_root_namespace_id
           data['work_item_type_id'] = target.work_item_type_id
+
+          data = populate_notes(target, data)
+
           if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_type_correct_id)
             data['correct_work_item_type_id'] = target.correct_work_item_type_id
           end
