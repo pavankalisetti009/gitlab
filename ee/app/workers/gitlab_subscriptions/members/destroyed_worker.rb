@@ -17,7 +17,7 @@ module GitlabSubscriptions
 
         return unless user && namespace&.group_namespace?
 
-        return if namespace.billed_project_user?(user) || namespace.billed_group_user?(user)
+        return if ::Member.in_hierarchy(namespace).with_user(user).exists?
 
         GitlabSubscriptions::SeatAssignment.find_by_namespace_and_user(namespace, user)&.destroy
       end

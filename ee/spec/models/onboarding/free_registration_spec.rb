@@ -32,7 +32,7 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
   describe '.setup_for_company_help_text' do
     subject { described_class.setup_for_company_help_text }
 
-    it do
+    it 'has combined text' do
       is_expected.to eq(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
     end
   end
