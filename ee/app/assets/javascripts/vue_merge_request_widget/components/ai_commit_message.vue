@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlModal, GlModalDirective, GlSkeletonLoader } from '@gitlab/ui';
+import { uniqueId } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -50,6 +51,11 @@ export default {
       type: Number,
       required: true,
     },
+    buttonClass: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   data() {
     return {
@@ -69,6 +75,9 @@ export default {
           disabled: this.loadingCommitMessage,
         },
       };
+    },
+    modalId() {
+      return uniqueId('ai-commit-message');
     },
   },
   methods: {
@@ -100,7 +109,6 @@ export default {
     },
   },
   modal: {
-    id: 'ai-commit-message',
     actionSecondary: {
       text: __('Cancel'),
       attributes: {
@@ -117,9 +125,10 @@ export default {
 <template>
   <div>
     <gl-button
-      v-gl-modal="$options.modal.id"
+      v-gl-modal="modalId"
       icon="tanuki-ai"
       size="small"
+      :class="buttonClass"
       @click="triggerAiMutation"
     >
       {{ __('Generate commit message') }}
@@ -129,7 +138,7 @@ export default {
       :aria-label="__('Commit message')"
       :action-primary="actionPrimary"
       :action-secondary="$options.modal.actionSecondary"
-      :modal-id="$options.modal.id"
+      :modal-id="modalId"
       @primary="insertCommitMessage"
     >
       <template #modal-title>
