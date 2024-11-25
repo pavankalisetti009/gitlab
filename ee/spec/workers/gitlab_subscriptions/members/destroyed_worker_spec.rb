@@ -89,17 +89,25 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
       it_behaves_like 'returns early'
     end
 
-    context 'when user is still billed member of group hierarchy' do
+    context 'when user is still a member of group hierarchy' do
       let(:another_sub_group) { create(:group, parent: root_namespace) }
 
       before do
-        another_sub_group.add_developer(user)
+        another_sub_group.add_guest(user)
       end
 
       it_behaves_like 'returns early'
+
+      context 'when the user is blocked' do
+        before do
+          user.block!
+        end
+
+        it_behaves_like 'returns early'
+      end
     end
 
-    context 'when user is still billed member of project hierarchy' do
+    context 'when user is still a member of project hierarchy' do
       let(:project) { build(:project, group: root_namespace) }
 
       before do
