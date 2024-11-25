@@ -234,6 +234,17 @@ FactoryBot.define do
       end
     end
 
+    trait :with_representation_information do
+      after(:create) do |vulnerability|
+        create(
+          :vulnerability_representation_information,
+          vulnerability: vulnerability,
+          project: vulnerability.project,
+          resolved_in_commit_sha: 'a692c30b357d792384734f44415448e0'
+        )
+      end
+    end
+
     trait :with_merge_request_links do
       after(:create) do |vulnerability|
         merge_request = create(:merge_request, source_project: vulnerability.project)

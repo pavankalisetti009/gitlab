@@ -489,6 +489,7 @@ module EE
       rule { can?(:read_vulnerability) }.policy do
         enable :read_vulnerability_feedback
         enable :read_vulnerability_scanner
+        enable :read_vulnerability_representation_information
       end
 
       condition(:resolve_vulnerability_allowed) do
