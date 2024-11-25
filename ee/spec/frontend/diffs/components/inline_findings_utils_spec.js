@@ -39,4 +39,26 @@ describe('EE Diffs Module Getters', () => {
       }
     });
   });
+
+  const codeFlowDetails = [
+    {
+      name: 'code_flows',
+      items: [],
+    },
+  ];
+
+  it.each`
+    line | details
+    ${1} | ${codeFlowDetails}
+    ${2} | ${'no'}
+  `('finds details on line $line', ({ line, details }) => {
+    if (details === 'no') {
+      expect(fileLineSast('index.js', line, sastData)).toEqual([]);
+    } else {
+      expect(fileLineSast('index.js', line, sastData)[0]).toMatchObject({
+        line,
+        details,
+      });
+    }
+  });
 });
