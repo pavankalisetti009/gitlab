@@ -5,6 +5,7 @@ import { GlBadge } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import CreateCustomField from 'ee/groups/settings/work_items/create_custom_field.vue';
 import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields_list.vue';
 import groupCustomFieldsQuery from 'ee/groups/settings/work_items/group_custom_fields.query.graphql';
 
@@ -49,8 +50,9 @@ describe('CustomFieldsTable', () => {
     createdAt: '2023-01-01T00:00:00Z',
   };
 
-  const createComponent = (fields = [selectField]) => {
-    const customFieldsResponse = jest.fn().mockResolvedValue({
+  const createComponent = ({
+    fields = [selectField],
+    customFieldsResponse = jest.fn().mockResolvedValue({
       data: {
         group: {
           id: '123',
@@ -60,8 +62,8 @@ describe('CustomFieldsTable', () => {
           },
         },
       },
-    });
-
+    }),
+  } = {}) => {
     wrapper = mount(CustomFieldsTable, {
       provide: {
         fullPath: 'group/path',
@@ -106,7 +108,7 @@ describe('CustomFieldsTable', () => {
   });
 
   it('lists work item types', async () => {
-    createComponent([stringField]);
+    createComponent({ fields: [stringField] });
     await waitForPromises();
 
     expect(wrapper.text()).toContain('Issue');
@@ -130,5 +132,30 @@ describe('CustomFieldsTable', () => {
     const timeagoComponents = wrapper.findAllComponents(TimeagoTooltip);
     expect(timeagoComponents.exists()).toBe(true);
     expect(timeagoComponents.at(0).props('time')).toBe(selectField.updatedAt);
+  });
+
+  it('refetches list after create-custom-field emits created', async () => {
+    const customFieldsResponse = jest.fn().mockResolvedValue({
+      data: {
+        group: {
+          id: '123',
+          customFields: {
+            nodes: [],
+            count: 0,
+          },
+        },
+      },
+    });
+
+    createComponent({
+      customFieldsResponse,
+    });
+    await waitForPromises();
+
+    expect(customFieldsResponse).toHaveBeenCalledTimes(1);
+
+    wrapper.findComponent(CreateCustomField).vm.$emit('created');
+
+    expect(customFieldsResponse).toHaveBeenCalledTimes(2);
   });
 });

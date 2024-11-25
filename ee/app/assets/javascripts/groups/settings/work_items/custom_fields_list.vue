@@ -4,10 +4,12 @@ import { humanize } from '~/lib/utils/text_utility';
 import { __, n__, s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import CreateCustomField from './create_custom_field.vue';
 import groupCustomFieldsQuery from './group_custom_fields.query.graphql';
 
 export default {
   components: {
+    CreateCustomField,
     GlBadge,
     GlButton,
     GlIntersperse,
@@ -95,12 +97,16 @@ export default {
 
 <template>
   <div>
-    <div class="gl-font-lg gl-border gl-rounded-t-base gl-border-b-0 gl-p-5 gl-font-bold">
+    <div
+      class="gl-font-lg gl-border gl-flex gl-items-center gl-rounded-t-base gl-border-b-0 gl-px-5 gl-py-4 gl-font-bold"
+    >
       {{ s__('WorkItem|Active custom fields') }}
-      <gl-badge v-if="!$apollo.queries.customFields.loading">
+      <gl-badge v-if="!$apollo.queries.customFields.loading" class="gl-mx-4">
         <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
         {{ customFields.count }}/50
       </gl-badge>
+
+      <create-custom-field class="gl-ml-auto" @created="$apollo.queries.customFields.refetch()" />
     </div>
     <gl-table
       :items="customFieldsForList"
