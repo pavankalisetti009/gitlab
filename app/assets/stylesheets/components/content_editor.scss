@@ -25,6 +25,11 @@
     @apply gl-focus;
   }
 
+  .ProseMirror {
+    user-select: text;
+    cursor: text;
+  }
+
   &:not(.ProseMirror-hideselection) .content-editor-selection,
   a.ProseMirror-selectednode,
   span.ProseMirror-selectednode {
