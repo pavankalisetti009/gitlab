@@ -48,12 +48,22 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               stub_licensed_features(pre_receive_secret_detection: true)
             end
 
+            it_behaves_like "skips sending requests to the SDS"
+
             context 'when deleting the branch' do
               # We instantiate the described class with delete_changes_access object to ensure
               # this spec example works as it uses repository.blank_ref to denote a branch deletion.
               subject(:secrets_check) { described_class.new(delete_changes_access) }
 
               it_behaves_like 'skips the push check'
+            end
+
+            context 'when SDS URL is defined' do
+              before do
+                stub_application_setting(secret_detection_service_url: 'https://example.com')
+              end
+
+              it_behaves_like 'skips sending requests to the SDS'
             end
 
             context 'when the spp_scan_diffs flag is enabled' do
@@ -159,6 +169,30 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
           context 'when license is ultimate' do
             before do
               stub_licensed_features(pre_receive_secret_detection: true)
+            end
+
+            context 'when SDS URL is set' do
+              before do
+                stub_application_setting(secret_detection_service_url: 'https://example.com')
+              end
+
+              it_behaves_like 'skips sending requests to the SDS'
+
+              context 'when on Gitlab.com' do
+                before do
+                  stub_saas_features(secret_detection_service: true)
+                end
+
+                it_behaves_like 'sends requests to the SDS'
+
+                context 'when `use_secret_detection_service` is disabled`' do
+                  before do
+                    stub_feature_flags(use_secret_detection_service: false)
+                  end
+
+                  it_behaves_like 'skips sending requests to the SDS'
+                end
+              end
             end
 
             # We do not need to duplicate the other tests that are also running
