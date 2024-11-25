@@ -45,7 +45,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(vulnerability.resolved_at).to eq(Time.current)
       expect(vulnerability.auto_resolved).to be(true)
 
-      expect { resolved_vulnerability.reload }.to not_change { resolved_vulnerability.updated_at }
+      expect { resolved_vulnerability.reload }.to change { resolved_vulnerability.updated_at }
     end
 
     it 'inserts a state transition for each vulnerability' do

@@ -28,20 +28,22 @@ module Vulnerabilities
     attr_reader :project, :vulnerability_reads
 
     def vulnerabilities_to_resolve
-      policies_by_vulnerability.keys
+      rules_by_vulnerability.keys
     end
 
-    def policies_by_vulnerability
+    def rules_by_vulnerability
       vulnerability_reads.index_with do |read|
-        policies.find { |policy| policy.match?(read) }
+        rules.find { |rule| rule.match?(read) }
       end.compact
     end
-    strong_memoize_attr :policies_by_vulnerability
+    strong_memoize_attr :rules_by_vulnerability
 
     def policies
-      # TODO: This should only include policies that have a `no_longer_detected` rule
-      # and an `auto_resolve` action
-      project.security_policies.type_vulnerability_management_policy
+      project.security_policies.auto_resolve_policies_with_rules
+    end
+
+    def rules
+      project.security_policies.no_longer_detected_rules
     end
 
     def resolve_vulnerabilities
@@ -97,8 +99,8 @@ module Vulnerabilities
     end
 
     def comment(vulnerability)
-      policy = policies_by_vulnerability[vulnerability]
-      _("Auto-resolved by vulnerability management policy") + " #{policy.name}"
+      rule = rules_by_vulnerability[vulnerability]
+      _("Auto-resolved by vulnerability management policy") + " #{rule.security_policy.name}"
     end
 
     def user
