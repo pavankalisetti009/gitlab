@@ -129,6 +129,34 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
         expect { dup_rule.save!(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
       end
     end
+
+    context 'when role_approvers' do
+      context 'rule_type is :code_owner' do
+        it 'is not valid when not access value' do
+          rule = build(:approval_merge_request_rule, rule_type: :code_owner, role_approvers: [1])
+
+          expect(rule).not_to be_valid
+          expect(rule.errors.messages).to eq(role_approvers: ["is not included in the list"])
+        end
+
+        it 'is valid with an access value' do
+          expect(build(:approval_merge_request_rule, rule_type: :code_owner, role_approvers: [Gitlab::Access::DEVELOPER])).to be_valid
+        end
+
+        it 'is valid with two access values' do
+          expect(build(:approval_merge_request_rule, rule_type: :code_owner, role_approvers: [Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])).to be_valid
+        end
+      end
+
+      context 'when rule_type is not :code_owner' do
+        it 'is not valid' do
+          rule = build(:approval_merge_request_rule, rule_type: :any_approver, role_approvers: [Gitlab::Access::DEVELOPER])
+
+          expect(rule).not_to be_valid
+          expect(rule.errors.messages).to eq(role_approvers: ["can only be added to codeowner type rules"])
+        end
+      end
+    end
   end
 
   describe '.regular_or_any_approver scope' do

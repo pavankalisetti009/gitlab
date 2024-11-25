@@ -11,9 +11,10 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
 
   let(:codeowner_content) do
     <<~CODEOWNERS
-    docs/* @documentation-owner
-    docs/CODEOWNERS @owner-1 owner2@gitlab.org @owner-3 @documentation-owner
-    spec/* @test-owner @test-group @test-group/nested-group
+      docs/* @documentation-owner
+      docs/CODEOWNERS @owner-1 owner2@gitlab.org @owner-3 @documentation-owner
+      spec/* @test-owner @test-group @test-group/nested-group
+      app/* @@developer
     CODEOWNERS
   end
 
@@ -114,6 +115,32 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
 
         entry = loader.entries.first
         expect(entry.groups).to contain_exactly(test_group)
+      end
+    end
+
+    context 'role as a code owner' do
+      let(:paths) { ['app/accounts_helper.rb'] }
+      let(:expected_entry) { Gitlab::CodeOwners::Entry.new('app/*', '@@developer') }
+
+      it 'loads users with developer role as code owners' do
+        expect(loader.entries).to contain_exactly(expected_entry)
+
+        expect(loader.members.size).to eq(4)
+        expect(loader.members.flat_map(&:role).uniq).to match_array(['software_developer'])
+
+        entry = loader.entries.first
+        expect(entry.role_approvers).to contain_exactly(30)
+      end
+
+      context 'when codeowner_role_approvers feature flag is disabled' do
+        before do
+          stub_feature_flags(codeowner_role_approvers: false)
+        end
+
+        it 'contains no approvers' do
+          expect(loader.entries).to contain_exactly(expected_entry)
+          expect(loader.members).to be_empty
+        end
       end
     end
 

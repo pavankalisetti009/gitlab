@@ -5,11 +5,13 @@ require 'spec_helper'
 RSpec.describe Gitlab::CodeOwners::ReferenceExtractor, feature_category: :source_code_management do
   let(:text) do
     <<~TXT
-    This is a long text that mentions some users.
-    @user-1, @user-2 and user@gitlab.org take a walk in the park.
-    There they meet @user-4 that was out with other-user@gitlab.org.
-    @user-1 thought it was late, so went home straight away not to
-    run into some @group @group/nested-on/other-group
+      This is a long text that mentions some users.
+      @user-1, @user-2 and user@gitlab.org who is an @@owner ,
+      take a walk in the park. There they meet @user-4 who is a
+      @@Developer that was out with other-user@gitlab.org who is a @@reporter.
+      @user-1 thought it was late, so went home straight away not to run into
+      some @group @group/nested-on/other-group. Another @@user called
+      @@test was not 100% sure that this was a good idea.
     TXT
   end
 
@@ -63,8 +65,85 @@ RSpec.describe Gitlab::CodeOwners::ReferenceExtractor, feature_category: :source
     it 'includes all user-references once' do
       expect(extractor.references).to contain_exactly(
         'user-1', 'user-2', 'user@gitlab.org', 'user-4',
-        'other-user@gitlab.org', 'group', 'group/nested-on/other-group'
+        'other-user@gitlab.org', 'group', 'group/nested-on/other-group',
+        Gitlab::Access::DEVELOPER, Gitlab::Access::OWNER
       )
+    end
+  end
+
+  describe '#roles' do
+    context 'when mentioned in text with email and name references' do
+      it 'includes mentioned developer and owner roles' do
+        expect(extractor.roles).to contain_exactly(
+          Gitlab::Access::DEVELOPER, Gitlab::Access::OWNER
+        )
+      end
+
+      it 'does not included the reporter role' do
+        expect(extractor.roles).not_to include(Gitlab::Access::REPORTER)
+      end
+    end
+
+    context 'when vanilla roles are specified' do
+      let(:text) do
+        <<~TXT
+          @@owner @@maintainer
+          filename @@developer
+          @@developer
+          filename @@reporter
+          filename @@guest
+        TXT
+      end
+
+      it 'matches possible roles' do
+        expect(extractor.roles).to contain_exactly(
+          Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER, Gitlab::Access::OWNER
+        )
+      end
+    end
+
+    context 'when possible roles have forbidden prefixes' do
+      let(:text) do
+        <<~TXT
+          filename a@@owner @@@maintainer
+          filename @developer
+        TXT
+      end
+
+      it 'does not match them' do
+        expect(extractor.roles).to be_empty
+      end
+    end
+
+    context 'when possible roles have suffixes' do
+      let(:text) do
+        <<~TXT
+          filename @@owner. @@maintainers
+          filename @@developersy
+        TXT
+      end
+
+      it 'only matches permissible ones' do
+        expect(extractor.roles).to contain_exactly(
+          Gitlab::Access::MAINTAINER
+        )
+      end
+    end
+
+    context 'when possible roles have unconventional casing' do
+      let(:text) do
+        <<~TXT
+          filename @@Owner
+          filename @@mAintainer
+          filename @@deVeloperS
+        TXT
+      end
+
+      it 'matches them' do
+        expect(extractor.roles).to contain_exactly(
+          Gitlab::Access::OWNER, Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER
+        )
+      end
     end
   end
 

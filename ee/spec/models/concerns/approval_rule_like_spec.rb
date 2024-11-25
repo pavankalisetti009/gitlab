@@ -294,6 +294,75 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
 
     it_behaves_like 'approval rule like'
 
+    describe('#approvers') do
+      context 'when role_approvers exist for codeowner rule' do
+        subject { create(:code_owner_rule, *subject_traits, merge_request: merge_request) }
+
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+        let_it_be(:user1) { create(:user) }
+        let_it_be(:user2) { create(:user) }
+        let_it_be(:user3) { create(:user) }
+
+        before_all do
+          group.add_maintainer(user3)
+          project.add_maintainer(user1)
+          project.add_owner(user2)
+        end
+
+        before do
+          subject.update!(role_approvers: [Gitlab::Access::MAINTAINER])
+        end
+
+        it 'contains role members' do
+          rule = subject.class.find(subject.id)
+
+          expect(rule.approvers).to contain_exactly(user1)
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(codeowner_role_approvers: false)
+          end
+
+          it 'contains no approvers' do
+            rule = subject.class.find(subject.id)
+
+            expect(rule.approvers).to be_empty
+          end
+        end
+      end
+    end
+
+    describe '#approvers_include_user?' do
+      let(:rule) { subject.class.find(subject.id) }
+
+      before do
+        rule.update!(rule_type: 'code_owner', role_approvers: [Gitlab::Access::DEVELOPER])
+        rule.project.add_developer(user1)
+        rule.project.add_maintainer(user2)
+      end
+
+      it 'returns true for user within the selected roles' do
+        expect(rule.approvers_include_user?(user1)).to be_truthy
+      end
+
+      it 'returns false for user not within the selected roles' do
+        expect(rule.approvers_include_user?(user2)).to be_falsey
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(codeowner_role_approvers: false)
+        end
+
+        it 'returns false for a role user' do
+          expect(rule.approvers_include_user?(user1)).to be_falsey
+        end
+      end
+    end
+
     describe '#overridden?' do
       it 'returns false' do
         expect(subject.overridden?).to be_falsy
