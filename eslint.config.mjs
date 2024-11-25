@@ -545,6 +545,7 @@ export default [
 
     rules: {
       '@gitlab/require-i18n-strings': 'off',
+      'import/extensions': 'off',
       'import/no-extraneous-dependencies': 'off',
       'import/no-commonjs': 'off',
       'import/no-nodejs-modules': 'off',
