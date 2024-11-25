@@ -16,7 +16,7 @@ module Gitlab
         @data = Data.new(pattern, owner_line, section, optional, approvals_required)
       end
 
-      def all_users
+      def all_users(project)
         strong_memoize(:all_users) do
           group_members = groups.flat_map do |group|
             raise "CodeOwners for #{group.full_path} not loaded" unless group.users.loaded?
@@ -24,7 +24,7 @@ module Gitlab
             group.users
           end
 
-          (group_members + users).uniq
+          (group_members + users + role_members(project)).uniq
         end
       end
 
@@ -32,6 +32,12 @@ module Gitlab
         raise "CodeOwners for #{owner_line} not loaded" unless defined?(@users)
 
         @users.to_a
+      end
+
+      def role_approvers
+        raise "CodeOwners roles for #{owner_line} not loaded" unless defined?(@roles)
+
+        @roles.to_a
       end
 
       def groups
@@ -54,6 +60,12 @@ module Gitlab
         @users.merge(matching_users)
       end
 
+      def add_matching_roles_from(new_roles)
+        @roles ||= Set.new
+
+        @roles.merge(new_roles)
+      end
+
       def optional?
         data.optional
       end
@@ -66,6 +78,13 @@ module Gitlab
       alias_method :eql?, :==
 
       private
+
+      def role_members(project)
+        return [] unless Feature.enabled?(:codeowner_role_approvers, project)
+
+        role_approver_user_ids = project.project_members.with_roles(role_approvers).pluck_user_ids
+        User.by_ids(role_approver_user_ids)
+      end
 
       def extractor
         @extractor ||= Gitlab::CodeOwners::ReferenceExtractor.new(owner_line)

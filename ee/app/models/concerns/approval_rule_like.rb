@@ -101,8 +101,13 @@ module ApprovalRuleLike
     return false if filter_inactive_approvers([user]).empty?
 
     relation_exists?(users, column: :id, value: user.id) ||
-      relation_exists?(role_approvers, column: :id, value: user.id) ||
-      relation_exists?(group_members, column: :user_id, value: user.id)
+      relation_exists?(scan_result_policy_read_role_approvers, column: :id, value: user.id) ||
+      relation_exists?(group_members, column: :user_id, value: user.id) ||
+      relation_exists?(code_owner_role_approvers, column: :id, value: user.id)
+  end
+
+  def code_owner_role_approvers
+    User.none
   end
 
   def code_owner?
@@ -156,13 +161,13 @@ module ApprovalRuleLike
 
   def with_role_approvers
     if users.loaded? && group_users.loaded?
-      users | group_users | role_approvers
+      users | group_users | scan_result_policy_read_role_approvers | code_owner_role_approvers
     else
-      User.from_union([users, group_users, role_approvers])
+      User.from_union([users, group_users, scan_result_policy_read_role_approvers, code_owner_role_approvers])
     end
   end
 
-  def role_approvers
+  def scan_result_policy_read_role_approvers
     return User.none unless scan_result_policy_read
 
     project.team.members_with_access_levels(scan_result_policy_read.role_approvers)
