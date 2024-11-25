@@ -11,21 +11,26 @@ module Ai
     def self.commands
       {
         base: [
-          { name: 'reset', command: _('/reset'), description: _('Reset conversation and ignore previous messages.') },
-          { name: 'clear', command: _('/clear'), description: _('Delete all messages in the current conversation.') },
-          { name: 'help', command: _('/help'), description: _('Learn what Duo Chat can do.') }
+          { name: _('/reset'), description: _('Reset conversation and ignore previous messages.'),
+            should_submit: true },
+          { name: _('/clear'), description: _('Delete all messages in the current conversation.'),
+            should_submit: true },
+          { name: _('/help'), description: _('Learn what Duo Chat can do.'), should_submit: true }
         ],
         issue: [
-          { name: 'summarize_comments', command: _('/summarize_comments'),
-            description: _('Summarize the comments in the current issue.') }
+          { name: _('/summarize_comments'),
+            description: _('Summarize the comments in the current issue.'),
+            should_submit: true }
         ],
         job: [
-          { name: 'troubleshoot', command: _('/troubleshoot'),
-            description: _('Troubleshoot failed CI/CD jobs with Root Cause Analysis.') }
+          { name: _('/troubleshoot'),
+            description: _('Troubleshoot failed CI/CD jobs with Root Cause Analysis.'),
+            should_submit: true }
         ],
         vulnerability: [
-          { name: 'vulnerability_explain', command: _('/vulnerability_explain'),
-            description: _('Explain current vulnerability.') }
+          { name: _('/vulnerability_explain'),
+            description: _('Explain current vulnerability.'),
+            should_submit: true }
         ]
       }.freeze
     end

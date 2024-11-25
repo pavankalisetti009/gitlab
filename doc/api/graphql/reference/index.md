@@ -34496,9 +34496,9 @@ Duo Chat slash command.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="slashcommandcommand"></a>`command` | [`String!`](#string) | Full slash command including the leading `/`. |
 | <a id="slashcommanddescription"></a>`description` | [`String!`](#string) | Description of what the slash command does. |
 | <a id="slashcommandname"></a>`name` | [`String!`](#string) | Name of the slash command. |
+| <a id="slashcommandshouldsubmit"></a>`shouldSubmit` | [`Boolean!`](#boolean) | Indicates whether the command should be submitted automatically when clicked. |
 
 ### `Snippet`
 
