@@ -24,7 +24,15 @@ RSpec.describe Projects::AiFeatures, feature_category: :code_review_workflow do
         allow(authorizer).to receive(:allowed?).and_return(true)
       end
 
-      it { is_expected.to be(true) }
+      it { is_expected.to be(false) }
+
+      context 'when user has permission' do
+        before do
+          allow(Ability).to receive(:allowed?).with(current_user, :access_ai_review_mr, project).and_return(true)
+        end
+
+        it { is_expected.to be(true) }
+      end
 
       context 'when ai_review_merge_request feature flag is disabled' do
         before do

@@ -4538,4 +4538,25 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
   end
+
+  describe 'access_ai_review_mr' do
+    let(:current_user) { owner }
+
+    where(:duo_features_enabled, :allowed_to_use, :enabled_for_user) do
+      true  | false | be_disallowed(:access_ai_review_mr)
+      false | true  | be_disallowed(:access_ai_review_mr)
+      true  | true  | be_allowed(:access_ai_review_mr)
+    end
+
+    with_them do
+      before do
+        allow(project).to receive(:duo_features_enabled).and_return(duo_features_enabled)
+
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(allowed_to_use)
+      end
+
+      it { is_expected.to enabled_for_user }
+    end
+  end
 end

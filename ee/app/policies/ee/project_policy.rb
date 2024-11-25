@@ -1045,6 +1045,19 @@ module EE
       rule { can?(:owner_access) }.policy do
         enable :admin_project_secrets_manager
       end
+
+      condition(:ai_review_mr_enabled) do
+        @subject.duo_features_enabled
+      end
+
+      condition(:user_allowed_to_use_ai_review_mr) do
+        @user&.allowed_to_use?(:review_merge_request, licensed_feature: :ai_review_mr)
+      end
+
+      rule do
+        ai_review_mr_enabled &
+          user_allowed_to_use_ai_review_mr
+      end.enable :access_ai_review_mr
     end
 
     override :lookup_access_level!

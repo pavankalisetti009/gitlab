@@ -2899,9 +2899,22 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
     end
 
+    context 'when user does not have permission' do
+      before do
+        allow(project).to receive(:duo_features_enabled).and_return(false)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(false)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+
     context "when feature is authorized" do
       before do
         allow(authorizer).to receive(:allowed?).and_return(true)
+        allow(project).to receive(:duo_features_enabled).and_return(true)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(true)
       end
 
       it { is_expected.to eq(true) }
@@ -2917,6 +2930,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       context 'when license is not set' do
         before do
           stub_licensed_features(ai_review_mr: false)
+          allow(current_user).to receive(:allowed_to_use?)
+            .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(false)
         end
 
         it { is_expected.to eq(false) }

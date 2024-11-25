@@ -6,8 +6,9 @@ RSpec.describe ::Users::MergeRequestInteraction do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :public, :repository) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+  let_it_be(:current_user) { nil }
 
-  subject { described_class.new(user: user, merge_request: merge_request) }
+  subject { described_class.new(user: user, merge_request: merge_request, current_user: current_user) }
 
   describe '#applicable_approval_rules' do
     before do
@@ -53,6 +54,30 @@ RSpec.describe ::Users::MergeRequestInteraction do
             )
           end
         end
+      end
+    end
+  end
+
+  describe '#can_update?' do
+    let_it_be(:current_user) { create(:user) }
+
+    context 'when user is Duo Code review bot' do
+      let_it_be(:user) { create(:user, user_type: :duo_code_review_bot) }
+
+      context 'when current user has permission' do
+        before do
+          allow(merge_request.project).to receive(:ai_review_merge_request_allowed?).and_return(true)
+        end
+
+        it { is_expected.to be_can_update }
+      end
+
+      context 'when current user does not have permission' do
+        before do
+          allow(merge_request.project).to receive(:ai_review_merge_request_allowed?).and_return(false)
+        end
+
+        it { is_expected.not_to be_can_update }
       end
     end
   end
