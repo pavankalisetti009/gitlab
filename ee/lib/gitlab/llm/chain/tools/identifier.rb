@@ -31,7 +31,7 @@ module Gitlab
                   event_name: 'incorrect_response_received',
                   ai_component: 'duo_chat',
                   error_message: authorizer.message)
-                return error_with_message(authorizer.message, error_code: "M3003")
+                return error_with_message(authorizer.message, error_code: "M3003", source: "identifier")
               end
 
               # now the resource in context is being referenced in user input.

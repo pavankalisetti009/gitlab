@@ -54,7 +54,8 @@ module Gitlab
           log_info(message: "Resource not found",
             event_name: 'permission_denied',
             ai_component: 'abstraction_layer',
-            duo_chat_error_code: "M3003")
+            duo_chat_error_code: "M3003",
+            source: 'authorizer')
           s_("AI|I'm sorry, I can't generate a response. You might want to try again. " \
             "You could also be getting this error because the items you're asking about " \
             "either don't exist, you don't have access to them, or your session has expired.")
