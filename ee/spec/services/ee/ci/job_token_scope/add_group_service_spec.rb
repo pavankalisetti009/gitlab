@@ -8,14 +8,14 @@ RSpec.describe Ci::JobTokenScope::AddGroupService, feature_category: :continuous
 
   let_it_be(:current_user) { create(:user, maintainer_of: project, developer_of: target_group) }
 
-  let_it_be(:policies) { %w[read_group read_package] }
+  let_it_be(:policies) { %w[read_containers read_packages] }
 
   subject(:service_result) { described_class.new(project, current_user).execute(target_group, policies: policies) }
 
   describe '#execute' do
     let(:expected_audit_message) do
       "Group #{target_group.full_path} was added to list of allowed groups for #{project.full_path}, " \
-        "with job token permissions: read_group, read_package"
+        "with job token permissions: read_containers, read_packages"
     end
 
     let(:audit_event) do

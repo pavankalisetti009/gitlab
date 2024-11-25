@@ -8,7 +8,7 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
 
   let_it_be(:current_user) { create(:user, maintainer_of: project, developer_of: target_project) }
 
-  let(:policies) { %w[read_project read_container_image] }
+  let(:policies) { %w[read_containers read_packages] }
 
   subject(:service_result) do
     described_class.new(project, current_user).execute(target_project, policies)
@@ -20,7 +20,7 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
         create(:ci_job_token_project_scope_link,
           source_project: project,
           target_project: target_project,
-          job_token_policies: %w[read_project read_package],
+          job_token_policies: %w[read_containers read_packages],
           direction: :inbound
         )
       end
@@ -31,7 +31,7 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
           author: current_user,
           scope: project,
           target: target_project,
-          message: 'CI job token policies updated to: read_project, read_container_image'
+          message: 'CI job token policies updated to: read_containers, read_packages'
         }
       end
 
