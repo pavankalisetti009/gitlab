@@ -1,5 +1,5 @@
 import { GlSprintf } from '@gitlab/ui';
-import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import component from 'ee/vue_shared/security_reports/components/dismissal_note.vue';
 import EventItem from 'ee/vue_shared/security_reports/components/event_item.vue';
 
@@ -46,7 +46,7 @@ describe('dismissal note', () => {
     });
 
     it('should pass no action buttons', () => {
-      expect(wrapper.findComponent(EventItem).props('actionButtons')).toMatchObject([]);
+      expect(wrapper.findComponent(EventItem).props('showActionButtons')).toBe(false);
     });
 
     it('should return the event text with no project data', () => {
@@ -85,6 +85,12 @@ describe('dismissal note', () => {
       expect(wrapper.text()).toMatchInterpolatedText(
         `Dismissed: Mitigating control at ${project.value}`,
       );
+    });
+
+    it('should pass edit dismissal action button', () => {
+      expect(wrapper.findComponent(EventItem).props('actionButtons')).toMatchObject([
+        { iconName: 'pencil', title: 'Edit dismissal' },
+      ]);
     });
   });
 
@@ -167,20 +173,6 @@ describe('dismissal note', () => {
     });
   });
 
-  describe('with dismissal reason support', () => {
-    beforeEach(() => {
-      mountComponent({
-        propsData: { feedback, hasDismissalReasonSupport: true },
-      });
-    });
-
-    it('should pass edit dismissal action button', () => {
-      expect(wrapper.findComponent(EventItem).props('actionButtons')).toMatchObject([
-        { iconName: 'pencil', title: 'Edit dismissal' },
-      ]);
-    });
-  });
-
   describe('with a comment', () => {
     const commentDetails = {
       comment: 'How many times have I said we need locking mechanisms on the vehicle doors!',
@@ -192,86 +184,35 @@ describe('dismissal note', () => {
     };
     let commentItem;
 
-    describe('without confirm deletion buttons', () => {
-      beforeEach(() => {
-        mountComponent({
-          propsData: {
-            feedback: {
-              ...feedback,
-              comment_details: commentDetails,
-            },
-            project,
+    beforeEach(() => {
+      mountComponent({
+        propsData: {
+          feedback: {
+            ...feedback,
+            comment_details: commentDetails,
           },
-        });
-        commentItem = wrapper.findAllComponents(EventItem).at(1);
+          project,
+        },
       });
-
-      it('should render the comment', () => {
-        expect(commentItem.text()).toBe(commentDetails.comment);
-      });
-
-      it('should render the comment author', () => {
-        expect(commentItem.props().author).toBe(commentDetails.comment_author);
-      });
-
-      it('should render the comment timestamp', () => {
-        expect(commentItem.props().createdAt).toBe(commentDetails.comment_timestamp);
-      });
-
-      it('should pass action buttons', () => {
-        expect(commentItem.props('actionButtons')).toMatchObject([
-          { iconName: 'pencil', title: 'Edit Comment' },
-          { iconName: 'remove', title: 'Delete Comment' },
-        ]);
-      });
+      commentItem = wrapper.findAllComponents(EventItem).at(1);
     });
 
-    describe('with confirm deletion buttons', () => {
-      beforeEach(() => {
-        mountComponent(
-          {
-            propsData: {
-              feedback: {
-                ...feedback,
-                comment_details: commentDetails,
-              },
-              project,
-              isShowingDeleteButtons: true,
-            },
-          },
-          mountExtended,
-        );
-        commentItem = wrapper.findAllComponents(EventItem).at(1);
-      });
-
-      it('should render deletion buttons slot', () => {
-        const buttons = commentItem.findAll('button');
-        expect(buttons.at(1).text()).toEqual('Cancel');
-        expect(buttons.at(0).text()).toEqual('Delete comment');
-      });
+    it('should render the comment', () => {
+      expect(commentItem.text()).toBe(commentDetails.comment);
     });
 
-    describe('with dismissal reason support', () => {
-      beforeEach(() => {
-        mountComponent({
-          propsData: {
-            feedback: {
-              ...feedback,
-              comment_details: commentDetails,
-            },
-            project,
-            hasDismissalReasonSupport: true,
-          },
-        });
-        commentItem = wrapper.findAllComponents(EventItem).at(1);
-      });
+    it('should render the comment author', () => {
+      expect(commentItem.props().author).toBe(commentDetails.comment_author);
+    });
 
-      it('should pass action buttons', () => {
-        expect(commentItem.props('actionButtons')).toMatchObject([
-          { iconName: 'pencil', title: 'Edit dismissal' },
-          { iconName: 'remove', title: 'Delete Comment' },
-        ]);
-      });
+    it('should render the comment timestamp', () => {
+      expect(commentItem.props().createdAt).toBe(commentDetails.comment_timestamp);
+    });
+
+    it('should pass action buttons', () => {
+      expect(commentItem.props('actionButtons')).toMatchObject([
+        { iconName: 'pencil', title: 'Edit dismissal' },
+      ]);
     });
   });
 });
