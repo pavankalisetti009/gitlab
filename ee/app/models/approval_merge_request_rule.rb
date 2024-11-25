@@ -32,6 +32,8 @@ class ApprovalMergeRequestRule < ApplicationRecord
   validates :name, uniqueness: { scope: [:merge_request_id, :rule_type, :section, :applicable_post_merge] }, unless: :scan_finding?
   validates :name, uniqueness: { scope: [:merge_request_id, :rule_type, :section, :security_orchestration_policy_configuration_id, :orchestration_policy_idx] }, if: :scan_finding?
   validates :rule_type, uniqueness: { scope: [:merge_request_id, :applicable_post_merge], message: proc { _('any-approver for the merge request already exists') } }, if: :any_approver?
+  validates :role_approvers, inclusion: { in: Gitlab::Access.all_values }
+  validate :role_approvers_only_for_code_owner_type
 
   belongs_to :merge_request, inverse_of: :approval_rules
 
@@ -178,6 +180,20 @@ class ApprovalMergeRequestRule < ApplicationRecord
   end
 
   private
+
+  def code_owner_role_approvers
+    return User.none unless Feature.enabled?(:codeowner_role_approvers, project)
+    return User.none unless code_owner?
+
+    role_approver_user_ids = project.project_members.with_roles(role_approvers).pluck_user_ids
+    User.by_ids(role_approver_user_ids)
+  end
+
+  def role_approvers_only_for_code_owner_type
+    return unless role_approvers.present? && !code_owner?
+
+    errors.add(:role_approvers, "can only be added to codeowner type rules")
+  end
 
   def compare_with_project_rule
     self.modified_from_project_rule = overridden? ? true : false

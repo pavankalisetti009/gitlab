@@ -38,11 +38,25 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
     end
   end
 
+  describe '#role_approvers' do
+    it 'raises an error if no roles have been added' do
+      expect { entry.role_approvers }.to raise_error(/not loaded/)
+    end
+
+    it 'returns the roles in an array' do
+      entry.add_matching_roles_from([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
+
+      expect(entry.role_approvers).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
+    end
+  end
+
   describe '#all_users' do
+    let(:project) { build(:project, group: group) }
+
     it 'raises an error if users have not been loaded for groups' do
       entry.add_matching_groups_from([group])
 
-      expect { entry.all_users }.to raise_error(/not loaded/)
+      expect { entry.all_users(project) }.to raise_error(/not loaded/)
     end
 
     it 'returns users and users from groups' do
@@ -51,8 +65,9 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
 
       entry.add_matching_groups_from(Group.with_users)
       entry.add_matching_users_from([user])
+      entry.add_matching_roles_from([])
 
-      expect(entry.all_users).to contain_exactly(user, group_user)
+      expect(entry.all_users(project)).to contain_exactly(user, group_user)
     end
   end
 
@@ -136,6 +151,14 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
 
         expect(entry.users).to contain_exactly(user)
       end
+    end
+  end
+
+  describe '#add_matching_roles_from' do
+    it 'returns only mentioned roles' do
+      entry.add_matching_roles_from([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
+
+      expect(entry.role_approvers).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
     end
   end
 
