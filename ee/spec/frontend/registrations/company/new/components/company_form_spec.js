@@ -17,6 +17,7 @@ describe('CompanyForm', () => {
         user: {
           firstName: 'Joe',
           lastName: 'Doe',
+          emailDomain: '_email_domain_',
         },
         trackActionForErrors: '_trackActionForErrors_',
         formType: 'registration',
@@ -109,7 +110,7 @@ describe('CompanyForm', () => {
     it('tracks form submission', () => {
       findForm().vm.$emit('submit');
 
-      expect(trackCompanyForm).toHaveBeenCalledWith('ultimate_trial');
+      expect(trackCompanyForm).toHaveBeenCalledWith('ultimate_trial', '_email_domain_');
     });
   });
 });

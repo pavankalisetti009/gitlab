@@ -12,6 +12,7 @@ module Registrations
         submit_path: submit_path,
         first_name: current_user.first_name,
         last_name: current_user.last_name,
+        email_domain: current_user.email_domain,
         form_type: onboarding_status_presenter.company_form_type,
         track_action_for_errors: onboarding_status_presenter.tracking_label
       }

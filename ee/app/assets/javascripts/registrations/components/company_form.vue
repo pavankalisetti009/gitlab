@@ -76,7 +76,7 @@ export default {
   },
   methods: {
     trackCompanyForm() {
-      trackCompanyForm('ultimate_trial');
+      trackCompanyForm('ultimate_trial', this.user.emailDomain);
     },
   },
   i18n: {

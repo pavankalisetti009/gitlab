@@ -19,6 +19,7 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
     state,
     phoneNumber,
     submitButtonText,
+    emailDomain,
   } = el.dataset;
 
   return new Vue({
@@ -33,6 +34,7 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
         country: country || '',
         state: state || '',
         phoneNumber,
+        emailDomain,
       },
       submitPath,
       gtmSubmitEventLabel,

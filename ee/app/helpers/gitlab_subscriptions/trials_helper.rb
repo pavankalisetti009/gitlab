@@ -120,6 +120,7 @@ module GitlabSubscriptions
       {
         first_name: current_user.first_name,
         last_name: current_user.last_name,
+        email_domain: current_user.email_domain,
         company_name: current_user.organization,
         submit_button_text: trial_submit_text(eligible_namespaces)
       }.merge(

@@ -231,14 +231,36 @@ describe('ee/google_tag_manager/index', () => {
   });
 
   describe('No listener events', () => {
-    it('when trackSaasTrialLeadSubmit is invoked', () => {
-      expect(spy).not.toHaveBeenCalled();
+    describe('when trackSaasTrialLeadSubmit is invoked', () => {
+      it('should return some event', () => {
+        expect(spy).not.toHaveBeenCalled();
 
-      trackSaasTrialLeadSubmit('_eventLabel_');
+        trackSaasTrialLeadSubmit('_eventLabel_');
 
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith({ event: '_eventLabel_' });
-      expect(logError).not.toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith({ event: '_eventLabel_', valuableSignup: false });
+        expect(logError).not.toHaveBeenCalled();
+      });
+
+      it('with an email domain', () => {
+        expect(spy).not.toHaveBeenCalled();
+
+        trackSaasTrialLeadSubmit('_eventLabel_', 'xyz.com');
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith({ event: '_eventLabel_', valuableSignup: true });
+        expect(logError).not.toHaveBeenCalled();
+      });
+
+      it('with a nonbusiness gitlab domain', () => {
+        expect(spy).not.toHaveBeenCalled();
+
+        trackSaasTrialLeadSubmit('_eventLabel_', 'gitlab.com');
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith({ event: '_eventLabel_', valuableSignup: false });
+        expect(logError).not.toHaveBeenCalled();
+      });
     });
 
     it('when trackTrialAcceptTerms is invoked', () => {
@@ -261,6 +283,7 @@ describe('ee/google_tag_manager/index', () => {
         expect(spy).toHaveBeenCalledWith({
           event: 'aboutYourCompanyFormSubmit',
           aboutYourCompanyType: 'ultimate_trial',
+          valuableSignup: false,
         });
         expect(logError).not.toHaveBeenCalled();
       });
@@ -274,6 +297,35 @@ describe('ee/google_tag_manager/index', () => {
         expect(spy).toHaveBeenCalledWith({
           event: 'aboutYourCompanyFormSubmit',
           aboutYourCompanyType: 'free_account',
+          valuableSignup: false,
+        });
+        expect(logError).not.toHaveBeenCalled();
+      });
+
+      it('with a valid business email domain', () => {
+        expect(spy).not.toHaveBeenCalled();
+
+        trackCompanyForm('_eventLabel_', 'xyz.com');
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith({
+          event: 'aboutYourCompanyFormSubmit',
+          aboutYourCompanyType: '_eventLabel_',
+          valuableSignup: true,
+        });
+        expect(logError).not.toHaveBeenCalled();
+      });
+
+      it('with a gitlab nonbusiness email domain', () => {
+        expect(spy).not.toHaveBeenCalled();
+
+        trackCompanyForm('_eventLabel_', 'gitlab.com');
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith({
+          event: 'aboutYourCompanyFormSubmit',
+          aboutYourCompanyType: '_eventLabel_',
+          valuableSignup: false,
         });
         expect(logError).not.toHaveBeenCalled();
       });

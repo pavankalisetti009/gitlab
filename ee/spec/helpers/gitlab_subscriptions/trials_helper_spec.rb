@@ -13,6 +13,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       {
         first_name: '_params_first_name_',
         last_name: '_params_last_name_',
+        email_domain: 'example.org',
         company_name: '_params_company_name_',
         company_size: '_company_size_',
         phone_number: '1234',
@@ -96,6 +97,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       {
         first_name: '_params_first_name_',
         last_name: '_params_last_name_',
+        email_domain: 'example.org',
         company_name: '_params_company_name_',
         company_size: '_company_size_',
         phone_number: '1234',
@@ -176,6 +178,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       {
         first_name: '_params_first_name_',
         last_name: '_params_last_name_',
+        email_domain: 'example.org',
         company_name: '_params_company_name_',
         company_size: '_company_size_',
         phone_number: '1234',

@@ -89,7 +89,10 @@ describe('TrialCreateLeadForm', () => {
     it('tracks the saas Trial submitting', () => {
       findForm().trigger('submit');
 
-      expect(trackSaasTrialLeadSubmit).toHaveBeenCalledWith(GTM_SUBMIT_EVENT_LABEL);
+      expect(trackSaasTrialLeadSubmit).toHaveBeenCalledWith(
+        GTM_SUBMIT_EVENT_LABEL,
+        FORM_DATA.emailDomain,
+      );
     });
 
     it.each`

@@ -4,7 +4,8 @@ import CompanyForm from 'ee/registrations/components/company_form.vue';
 
 export default () => {
   const el = document.querySelector('#js-registrations-company-form');
-  const { submitPath, firstName, lastName, formType, trackActionForErrors } = el.dataset;
+  const { submitPath, firstName, lastName, emailDomain, formType, trackActionForErrors } =
+    el.dataset;
 
   return new Vue({
     el,
@@ -13,6 +14,7 @@ export default () => {
       user: {
         firstName,
         lastName,
+        emailDomain,
       },
       submitPath,
       trackActionForErrors,
