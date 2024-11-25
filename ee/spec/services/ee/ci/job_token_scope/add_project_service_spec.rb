@@ -8,7 +8,7 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
 
   let_it_be(:current_user) { create(:user, maintainer_of: project, developer_of: target_project) }
 
-  let_it_be(:policies) { %w[read_project read_package] }
+  let_it_be(:policies) { %w[read_containers read_packages] }
 
   let_it_be(:direction) { :inbound }
 
@@ -20,7 +20,7 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
     context 'when the direction is inbound' do
       let(:expected_audit_message) do
         "Project #{target_project.full_path} was added to inbound list of allowed projects for #{project.full_path}, " \
-          "with job token permissions: read_project, read_package"
+          "with job token permissions: read_containers, read_packages"
       end
 
       let(:audit_event) do
