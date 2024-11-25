@@ -16,6 +16,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
   let(:objective) { create(:work_item, :objective, project: project, labels: [label]) }
   let!(:emoji_upvote) { create(:award_emoji, :upvote, awardable: objective, user: user2) }
   let(:key_result) { create(:work_item, :key_result, project: project, labels: [label]) }
+  let(:child_item) { create(:work_item, :objective, project: project) }
   let(:list_path) { project_issues_path(project) }
 
   before do
@@ -50,39 +51,22 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
       visit work_items_path
     end
 
+    it_behaves_like 'work items title'
+    it_behaves_like 'work items description'
+    it_behaves_like 'work items award emoji'
+    it_behaves_like 'work items hierarchy', 'work-item-tree', :objective
+    it_behaves_like 'work items comments', :objective
     it_behaves_like 'work items toggle status button'
+
+    it_behaves_like 'work items todos'
+
     it_behaves_like 'work items assignees'
     it_behaves_like 'work items labels', 'project'
     it_behaves_like 'work items progress'
     it_behaves_like 'work items health status'
-    it_behaves_like 'work items comments', :objective
-    it_behaves_like 'work items description'
-    it_behaves_like 'work items todos'
-    it_behaves_like 'work items award emoji'
     it_behaves_like 'work items parent', :objective
 
-    context 'in hierarchy' do
-      it 'shows no children', :aggregate_failures do
-        within_testid('work-item-tree') do
-          expect(page).to have_content('Child items')
-          expect(page).to have_content('No child items are currently assigned.')
-        end
-      end
-
-      it 'toggles widget body', :aggregate_failures do
-        within_testid('work-item-tree') do
-          expect(page).to have_selector('[data-testid="work-item-tree"] [data-testid="crud-body"]')
-
-          click_button 'Collapse'
-
-          expect(page).not_to have_selector('[data-testid="work-item-tree"] [data-testid="crud-body"]')
-
-          click_button 'Expand'
-
-          expect(page).to have_selector('[data-testid="work-item-tree"] [data-testid="crud-body"]')
-        end
-      end
-
+    describe 'work items hierarchy' do
       it 'toggles forms', :aggregate_failures do
         within_testid('work-item-tree') do
           expect(page).not_to have_selector('[data-testid="add-tree-form"]')
@@ -113,173 +97,91 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
           expect(page).not_to have_selector('[data-testid="add-tree-form"]')
         end
       end
-    end
 
-    context 'in child metadata' do
-      it 'displays progress of 0% by default, in tree and modal' do
+      context 'in child metadata' do
+        it 'displays progress of 0% by default, in tree and modal' do
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
+
+          create_okr('objective', 'Objective 2')
+
+          within_testid('work-item-tree') do
+            expect(page).to have_content('Objective 2')
+            expect(page).to have_content('0%')
+
+            click_link 'Objective 2'
+          end
+
+          wait_for_all_requests
+
+          within_testid('work-item-detail-modal') do
+            expect(page).to have_content('0%')
+          end
+        end
+      end
+
+      it 'removes indirect child of objective with undoing',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/466192' do
         # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
         allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
 
         create_okr('objective', 'Objective 2')
 
         within_testid('work-item-tree') do
-          expect(page).to have_content('Objective 2')
-          expect(page).to have_content('0%')
-
           click_link 'Objective 2'
-        end
 
-        wait_for_all_requests
+          wait_for_all_requests
+        end
 
         within_testid('work-item-detail-modal') do
-          expect(page).to have_content('0%')
+          create_okr('objective', 'Child objective 1')
+          expect(page).to have_content('Child objective 1')
+
+          click_button 'Close'
         end
-      end
-    end
 
-    it 'adds existing child item with proper link', :aggregate_failures do
-      child_objective = create(:work_item, :objective, project: project)
-      page.refresh
-
-      within_testid('work-item-tree') do
-        click_button 'Add'
-        click_button 'Existing objective'
-
-        find_by_testid('work-item-token-select-input').set(child_objective.title)
-
-        wait_for_all_requests
-        click_button child_objective.title
-
-        send_keys :escape
-
-        click_button('Add objective')
-
+        visit work_items_path
         wait_for_all_requests
 
-        child_objective_link = find('[data-testid="links-child"] a.gl-link')
+        within_testid('work-item-tree') do
+          within_testid('widget-body') do
+            click_button 'Expand'
 
-        # Only part of the link is checked which is group/project/work-items/-/iid
-        expect(child_objective_link['href']).to have_content(project_work_item_path(project, child_objective.iid))
-      end
-    end
+            wait_for_all_requests
 
-    it 'creates objective', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/450035' do
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
+            expect(page).to have_content('Child objective 1')
+          end
+        end
 
-      create_okr('objective', 'Objective 2')
-
-      expect(find_by_testid('work-item-tree')).to have_content('Objective 2')
-    end
-
-    it 'removes direct child of objective with undoing' do
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
-
-      create_okr('objective', 'Objective 2')
-
-      find_by_testid('links-child').hover
-      within_testid('links-child') do
-        find_by_testid('remove-work-item-link').click
-        wait_for_all_requests
-      end
-
-      within_testid('work-item-tree') do
-        expect(page).not_to have_content('Objective 2')
-      end
-
-      page.within('.gl-toast') do
-        expect(find('.toast-body')).to have_content(_('Child removed'))
-        find('.b-toaster a', text: 'Undo').click
-      end
-
-      wait_for_all_requests
-
-      within_testid('work-item-tree') do
-        expect(page).to have_content('Objective 2')
-      end
-    end
-
-    it 'removes indirect child of objective with undoing',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/466192' do
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
-
-      create_okr('objective', 'Objective 2')
-
-      within_testid('work-item-tree') do
-        click_link 'Objective 2'
-
-        wait_for_all_requests
-      end
-
-      within_testid('work-item-detail-modal') do
-        create_okr('objective', 'Child objective 1')
-        expect(page).to have_content('Child objective 1')
-
-        click_button 'Close'
-      end
-
-      visit work_items_path
-      wait_for_all_requests
-
-      within_testid('work-item-tree') do
-        within_testid('widget-body') do
-          click_button 'Expand'
+        within_testid('tree-children') do
+          find_by_testid('links-child').hover
+          find_by_testid('remove-work-item-link').click
 
           wait_for_all_requests
 
+          expect(page).not_to have_content('Child objective 1')
+        end
+
+        page.within('.gl-toast') do
+          expect(find('.toast-body')).to have_content(_('Child removed'))
+          find('.b-toaster a', text: 'Undo').click
+        end
+
+        wait_for_all_requests
+
+        within_testid('work-item-tree') do
           expect(page).to have_content('Child objective 1')
         end
       end
 
-      within_testid('tree-children') do
-        find_by_testid('links-child').hover
-        find_by_testid('remove-work-item-link').click
+      it 'creates key result' do
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
 
-        wait_for_all_requests
+        create_okr('key result', 'KR 2')
 
-        expect(page).not_to have_content('Child objective 1')
+        expect(find_by_testid('work-item-tree')).to have_content('KR 2')
       end
-
-      page.within('.gl-toast') do
-        expect(find('.toast-body')).to have_content(_('Child removed'))
-        find('.b-toaster a', text: 'Undo').click
-      end
-
-      wait_for_all_requests
-
-      within_testid('work-item-tree') do
-        expect(page).to have_content('Child objective 1')
-      end
-    end
-
-    it 'creates key result' do
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
-
-      create_okr('key result', 'KR 2')
-
-      expect(find_by_testid('work-item-tree')).to have_content('KR 2')
-    end
-
-    it 'reorders children', :aggregate_failures do
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/467207
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(300)
-
-      create_okr('key result', 'KR 1')
-      create_okr('key result', 'KR 2')
-      create_okr('key result', 'KR 3')
-
-      expect(page).to have_css('.tree-item:nth-child(1) .item-title', text: 'KR 3')
-      expect(page).to have_css('.tree-item:nth-child(2) .item-title', text: 'KR 2')
-      expect(page).to have_css('.tree-item:nth-child(3) .item-title', text: 'KR 1')
-
-      drag_to(selector: '.sortable-container', from_index: 0, to_index: 2)
-
-      expect(page).to have_css('.tree-item:nth-child(1) .item-title', text: 'KR 2')
-      expect(page).to have_css('.tree-item:nth-child(2) .item-title', text: 'KR 1')
-      expect(page).to have_css('.tree-item:nth-child(3) .item-title', text: 'KR 3')
     end
   end
 
