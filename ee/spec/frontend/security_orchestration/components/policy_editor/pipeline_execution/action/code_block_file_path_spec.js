@@ -25,15 +25,14 @@ describe('CodeBlockFilePath', () => {
 
   const PROJECT_ID = 'gid://gitlab/Project/29';
 
-  const createComponent = ({ propsData = {}, provide = {}, stubs = {} } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {}, includeStubs = true } = {}) => {
+    const stubs = includeStubs ? { GlSprintf } : {};
+
     wrapper = shallowMountExtended(CodeBlockFilePath, {
       propsData: {
         ...propsData,
       },
-      stubs: {
-        GlSprintf,
-        ...stubs,
-      },
+      stubs,
       provide: {
         namespacePath: 'gitlab-org',
         namespaceType: NAMESPACE_TYPES.GROUP,
@@ -78,52 +77,41 @@ describe('CodeBlockFilePath', () => {
     });
   });
 
-  it('renders message for "inject" pipeline execution policy', () => {
-    createComponent({
-      propsData: { isPipelineExecution: true },
-      stubs: { GlSprintf: false },
-    });
+  it('renders message for "inject"', () => {
+    createComponent({ includeStubs: false });
     expect(findGlSprintf().attributes('message')).toBe(
       '%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
     );
   });
 
-  it('renders message for "override" pipeline execution policy', () => {
-    createComponent({
-      propsData: { strategy: OVERRIDE, isPipelineExecution: true },
-      stubs: { GlSprintf: false },
-    });
+  it('renders message for "override"', () => {
+    createComponent({ propsData: { strategy: OVERRIDE }, includeStubs: false });
     expect(findGlSprintf().attributes('message')).toBe(
       '%{strategySelector}the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
     );
   });
 
-  it('renders icon tooltip message for inject pipeline execution policy', () => {
-    createComponent({ propsData: { isPipelineExecution: true } });
+  it('renders icon tooltip message for inject', () => {
+    createComponent();
     expect(findIcon().attributes('title')).toBe(
       'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
     );
   });
 
-  it('renders icon tooltip message for override pipeline execution policy', () => {
-    createComponent({
-      propsData: { strategy: OVERRIDE, isPipelineExecution: true },
-    });
+  it('renders icon tooltip message for override', () => {
+    createComponent({ propsData: { strategy: OVERRIDE } });
     expect(findIcon().attributes('title')).toBe(
       'The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
     );
   });
 
   it('renders the help icon', () => {
-    createComponent({ propsData: { isPipelineExecution: true } });
+    createComponent();
     expect(findIcon().exists()).toBe(true);
   });
 
-  it('renders pipeline execution ref selector', () => {
-    createComponent({
-      propsData: { isPipelineExecution: true },
-      stubs: { GlSprintf: false },
-    });
+  it('renders ref selector', () => {
+    createComponent();
     expect(findRefSelector().exists()).toBe(false);
     expect(findPipelineExecutionRefSelector().exists()).toBe(true);
   });
@@ -164,9 +152,7 @@ describe('CodeBlockFilePath', () => {
     });
 
     it('renders selected override', () => {
-      createComponent({
-        propsData: { strategy: OVERRIDE, isPipelineExecution: true },
-      });
+      createComponent({ propsData: { strategy: OVERRIDE } });
       expect(findStrategySelector().props('strategy')).toBe(OVERRIDE);
     });
   });
@@ -210,8 +196,8 @@ describe('CodeBlockFilePath', () => {
       expect(wrapper.emitted('update-file-path')).toEqual([['file-path']]);
     });
 
-    it('can select strategy for pipeline execution policy', () => {
-      createComponent({ propsData: { strategy: INJECT, isPipelineExecution: true } });
+    it('can select strategy', () => {
+      createComponent({ propsData: { strategy: INJECT } });
       findStrategySelector().vm.$emit('select', OVERRIDE);
       expect(wrapper.emitted('select-strategy')).toEqual([[OVERRIDE]]);
     });
