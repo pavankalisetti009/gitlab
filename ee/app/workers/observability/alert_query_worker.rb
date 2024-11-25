@@ -43,7 +43,7 @@ module Observability
 
       result = Gitlab::HTTP.get(
         ::Gitlab::Observability.alerts_url,
-        headers: Gitlab::CloudConnector.headers(nil).merge({
+        headers: ::CloudConnector.headers(nil).merge({
           "Authorization" => "Bearer #{access_token}"
         }),
         verify: ::Gitlab::CurrentSettings.observability_backend_ssl_verification_enabled

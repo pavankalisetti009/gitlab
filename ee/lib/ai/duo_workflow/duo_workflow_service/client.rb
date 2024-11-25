@@ -42,7 +42,7 @@ module Ai
             "authorization" => "Bearer #{token}",
             "x-gitlab-authentication-type" => "oidc",
             'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
-            'x-gitlab-realm' => ::Gitlab::CloudConnector.gitlab_realm,
+            'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
             'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user)
           }
         end

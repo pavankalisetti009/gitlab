@@ -20,7 +20,7 @@ module API
       end
 
       def request_headers(token)
-        Gitlab::CloudConnector.headers(current_user).merge({
+        ::CloudConnector.headers(current_user).merge({
           'Authorization' => "Bearer #{token}",
           'Content-Type' => 'application/json',
           'User-Agent' => headers['User-Agent']

@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:expected_feature_name) { :duo_chat }
   let(:expected_access_token) { '123' }
-  let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
+  let(:expected_gitlab_realm) { ::CloudConnector::GITLAB_REALM_SELF_MANAGED }
   let(:expected_gitlab_host_name) { Gitlab.config.gitlab.host }
   let(:expected_instance_id) { Gitlab::GlobalAnonymousId.instance_id }
   let(:expected_user_id) { Gitlab::GlobalAnonymousId.user_id(user) }

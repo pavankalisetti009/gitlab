@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
   let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :test) }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:expected_access_token) { active_token.token }
-  let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
+  let(:expected_gitlab_realm) { ::CloudConnector::GITLAB_REALM_SELF_MANAGED }
   let(:expected_gitlab_host_name) { Gitlab.config.gitlab.host }
   let(:expected_instance_id) { Gitlab::GlobalAnonymousId.instance_id }
   let(:expected_user_id) { Gitlab::GlobalAnonymousId.user_id(user) }

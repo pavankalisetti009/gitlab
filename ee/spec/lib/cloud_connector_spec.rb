@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
+RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
   describe '.gitlab_realm' do
     subject { described_class.gitlab_realm }
 
@@ -20,7 +20,7 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
       {
         'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
         'X-Gitlab-Instance-Id' => an_instance_of(String),
-        'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
+        'X-Gitlab-Realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
         'X-Gitlab-Version' => Gitlab.version_info.to_s
       }
     end
@@ -80,7 +80,7 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
 
     context 'when on saas' do
       it 'returns false' do
-        allow(::Gitlab::CloudConnector).to receive(:gitlab_realm_saas?).and_return(true)
+        allow(::Gitlab).to receive(:org_or_com?).and_return(true)
         allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http::test.com')
 
         expect(self_managed_cloud_connected?).to be(false)
@@ -89,7 +89,7 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
 
     context 'when self-hosted and cloud connected' do
       it 'returns true' do
-        allow(::Gitlab::CloudConnector).to receive(:gitlab_realm_saas?).and_return(false)
+        allow(::Gitlab).to receive(:org_or_com?).and_return(false)
         allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(nil)
 
         expect(self_managed_cloud_connected?).to be(true)
@@ -98,7 +98,7 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
 
     context 'when self-hosted and not cloud connected' do
       it 'returns false' do
-        allow(::Gitlab::CloudConnector).to receive(:gitlab_realm_saas?).and_return(false)
+        allow(::Gitlab).to receive(:org_or_com?).and_return(false)
         allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http::test.com')
 
         expect(self_managed_cloud_connected?).to be(false)

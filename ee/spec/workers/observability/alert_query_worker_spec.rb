@@ -9,7 +9,7 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
   let_it_be(:another_project) { create(:project, group: group) }
 
   let(:expected_instance_id) { Gitlab::GlobalAnonymousId.instance_id }
-  let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
+  let(:expected_gitlab_realm) { ::CloudConnector::GITLAB_REALM_SELF_MANAGED }
 
   let(:expected_access_token) { active_token.token }
   let(:expected_response) do

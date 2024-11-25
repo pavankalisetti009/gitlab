@@ -40,7 +40,7 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
           "authorization" => "Bearer instance jwt",
           "x-gitlab-authentication-type" => "oidc",
           'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
-          'x-gitlab-realm' => ::Gitlab::CloudConnector.gitlab_realm,
+          'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
           'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user)
         }
       )

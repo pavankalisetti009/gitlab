@@ -44,7 +44,7 @@ module Gitlab
 
       def custom_claims
         {
-          gitlab_realm: Gitlab::CloudConnector.gitlab_realm,
+          gitlab_realm: ::CloudConnector.gitlab_realm,
           scopes: @scopes
         }.merge(@extra_claims)
       end

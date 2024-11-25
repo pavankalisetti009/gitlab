@@ -126,7 +126,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     before do
       allow(service).to receive(:access_token).with(user).and_return(token)
       allow(user).to receive(:allowed_by_namespace_ids).with(service_name).and_return(enabled_by_namespace_ids)
-      allow(Gitlab::CloudConnector).to(
+      allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: enabled_by_namespace_ids).and_return(cloud_connector_headers)
       )
     end
@@ -191,7 +191,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       allow(described_class).to receive(:enabled_feature_flags)
         .and_return(enabled_feature_flags)
 
-      allow(Gitlab::CloudConnector).to receive(:ai_headers)
+      allow(::CloudConnector).to receive(:ai_headers)
         .with(user, namespace_ids: namespace_ids)
         .and_return(ai_headers)
     end
