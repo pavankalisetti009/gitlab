@@ -106,7 +106,7 @@ module Iterations
     end
 
     def can_be_automated?
-      active? && automatic? && duration_in_weeks.to_i > 0 && iterations_in_advance.to_i > 0
+      active? && automatic? && duration_in_weeks.to_i > 0 && iterations_in_advance.to_i >= 0
     end
 
     def can_roll_over?
