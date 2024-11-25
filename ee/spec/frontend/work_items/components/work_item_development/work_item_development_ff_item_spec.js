@@ -1,7 +1,7 @@
 import { GlLink, GlIcon, GlTooltip } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { workItemDevelopmentFeatureFlagNodes } from 'jest/work_items/mock_data';
-import WorkItemDevelopmentFfItem from '~/work_items/components/work_item_development/work_item_development_ff_item.vue';
+import WorkItemDevelopmentFfItem from 'ee/work_items/components/work_item_development/work_item_development_ff_item.vue';
 
 jest.mock('~/alert');
 
