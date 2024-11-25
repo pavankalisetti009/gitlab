@@ -364,14 +364,10 @@ module EE
         .enable :read_dora4_analytics
 
       condition(:assigned_to_duo_enterprise) do
-        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
-
         @user.assigned_to_duo_enterprise?(@subject)
       end
 
       condition(:assigned_to_duo_pro) do
-        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
-
         @user.assigned_to_duo_pro?(@subject)
       end
 

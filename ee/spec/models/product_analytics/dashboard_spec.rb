@@ -20,8 +20,12 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
   end
 
   before do
+    allow(Ability).to receive(:allowed?)
+                  .with(user, :read_enterprise_ai_analytics, anything)
+                  .and_return(true)
+
     allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
-    stub_feature_flags(ai_impact_only_on_duo_enterprise: false)
+
     stub_licensed_features(
       product_analytics: true,
       project_level_analytics_dashboard: true,
@@ -290,30 +294,8 @@ description: with missing properties
   end
 
   describe '.ai_impact_dashboard' do
-    shared_examples 'ai_impact_only_on_duo_enterprise flag enabled' do
-      before do
-        stub_feature_flags(ai_impact_only_on_duo_enterprise: true)
-      end
-
-      context 'when user can read ai impact analytics' do
-        before do
-          allow(Ability).to receive(:allowed?)
-                        .with(user, :read_enterprise_ai_analytics, anything)
-                        .and_return(true)
-        end
-
-        it 'returns ai impact dashboard' do
-          expect(subject.title).to eq('AI impact analytics')
-        end
-      end
-
-      it { is_expected.to be_nil }
-    end
-
     context 'for groups' do
       subject { described_class.ai_impact_dashboard(group, config_project, user) }
-
-      it_behaves_like 'ai_impact_only_on_duo_enterprise flag enabled'
 
       it 'returns the dashboard' do
         expect(subject.title).to eq('AI impact analytics')
@@ -332,8 +314,6 @@ description: with missing properties
 
     context 'for projects' do
       subject { described_class.ai_impact_dashboard(project, config_project, user) }
-
-      it_behaves_like 'ai_impact_only_on_duo_enterprise flag enabled'
 
       it 'returns the dashboard' do
         expect(subject.title).to eq('AI impact analytics')

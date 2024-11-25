@@ -75,18 +75,9 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
       context 'when clickhouse is configured' do
         before do
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
-          stub_feature_flags(ai_impact_only_on_duo_enterprise: false)
         end
 
-        it 'contains the AI impact dashboard' do
-          expect(result.map(&:slug)).to include(ProductAnalytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
-        end
-
-        context 'when ai_impact_only_on_duo_enterprise is enabled' do
-          before do
-            stub_feature_flags(ai_impact_only_on_duo_enterprise: true)
-          end
-
+        context 'when user is not assigned to duo_enterprise' do
           it 'does not contain AI impact dashboard' do
             expect(result.map(&:slug)).not_to include(ProductAnalytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
           end
