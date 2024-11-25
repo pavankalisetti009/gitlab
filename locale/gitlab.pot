@@ -50013,6 +50013,9 @@ msgstr ""
 msgid "SecurityOrchestration|If any scanner finds a vulnerability that was previously detected but no longer found in a subsequent scan, then automatically set the status to Resolved."
 msgstr ""
 
+msgid "SecurityOrchestration|In each pipeline, a %{boldStart}maximum of 1000%{boldEnd} vulnerabilities that are %{italicStart}no longer detected%{italicEnd} will be set to status %{italicStart}Resolved%{italicEnd} until all have been auto-resolved."
+msgstr ""
+
 msgid "SecurityOrchestration|Individual users"
 msgstr ""
 
