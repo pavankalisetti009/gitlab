@@ -113,7 +113,7 @@ module EE
             present paginate(members), with: ::API::Entities::PendingMember
           end
 
-          desc 'Gets a list of billable users of root group.' do
+          desc 'Gets a list of billable users of top-level group.' do
             success ::API::Entities::Member
           end
           params do
@@ -171,7 +171,7 @@ module EE
             end
           end
 
-          desc 'Get the direct memberships of a billable user of a root group.' do
+          desc 'Get the direct memberships of a billable user of a top-level group.' do
             success ::EE::API::Entities::BillableMembership
           end
           params do
@@ -193,7 +193,7 @@ module EE
             present paginate(memberships), with: ::EE::API::Entities::BillableMembership
           end
 
-          desc 'Get the indirect memberships of a billable user of a root group.' do
+          desc 'Get the indirect memberships of a billable user of a top-level group.' do
             success ::EE::API::Entities::BillableMembership
           end
           params do
