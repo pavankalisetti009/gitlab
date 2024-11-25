@@ -6,7 +6,15 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
   let(:cut_off_date) { 1.month.ago }
   let(:bundled_with) { {} }
   let(:backend) { 'gitlab-ai-gateway' }
-  let(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
+
+  let_it_be(:rsa_key) { OpenSSL::PKey::RSA.new(2048) }
+  let_it_be(:expected_key_data) { Rails.application.credentials.openid_connect_signing_key }
+
+  subject(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
+
+  before do
+    allow(OpenSSL::PKey::RSA).to receive(:new).with(expected_key_data).and_return(rsa_key)
+  end
 
   describe '#access_token' do
     let(:resource) { create(:user) }
@@ -35,7 +43,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
         allow(Gitlab::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
       end
 
-      it 'returns the constructed token' do
+      it 'returns the encoded token' do
         expect(Gitlab::CloudConnector::JSONWebToken).to receive(:new).with(
           issuer: issuer,
           audience: backend,
@@ -48,6 +56,16 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
         expect(expected_token).to receive(:encode).with(instance_of(::JWT::JWK::RSA)).and_return(encoded_token_string)
 
         expect(access_token).to eq(encoded_token_string)
+      end
+
+      it 'uses RFC 7638 thumbprint key generator to compute kid' do
+        jwk = ::JWT::JWK.new(rsa_key, kid_generator: ::JWT::JWK::Thumbprint)
+        _, token_header = *::JWT.decode(access_token, nil, false)
+
+        actual_kid = token_header['kid']
+        expected_kid = jwk.kid
+
+        expect(actual_kid).to eq(expected_kid)
       end
 
       context 'when cloud_connector_jwt_replace is disabled' do
