@@ -18,12 +18,11 @@ import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import {
   INDEX_ROUTE_NAME,
-  DETAILS_ROUTE_NAME,
   ROTATION_PERIOD_OPTIONS,
   SECRET_DESCRIPTION_MAX_LENGTH,
 } from '../../constants';
 import { convertRotationPeriod } from '../../utils';
-import CreateSecretMutation from '../../graphql/mutations/client/create_secret.mutation.graphql';
+import CreateSecretMutation from '../../graphql/mutations/create_secret.mutation.graphql';
 import SecretBranchesField from './secret_branches_field.vue';
 
 export default {
@@ -133,22 +132,19 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: CreateSecretMutation,
           variables: {
-            fullPath: this.fullPath,
-            secret: {
-              ...this.secret,
-              description: this.secret.description,
-            },
+            projectPath: this.fullPath,
+            ...this.secret,
+            name: this.secret.key,
           },
         });
 
         this.isSubmitting = false;
 
-        const { errors } = data.createSecret || [];
-        if (errors.length > 0) {
-          createAlert({ message: errors[0] });
+        const error = data.projectSecretCreate.errors[0];
+        if (error) {
+          createAlert({ message: error });
         } else {
-          const { secret } = data.createSecret;
-          this.$router.push({ name: DETAILS_ROUTE_NAME, params: { id: secret.id } });
+          // TODO: redirect to secret details page when query for fetching details is available
         }
       } catch (e) {
         this.isSubmitting = false;
