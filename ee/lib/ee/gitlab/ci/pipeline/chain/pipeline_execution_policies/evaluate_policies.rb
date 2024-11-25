@@ -3,7 +3,7 @@
 # This step collects configurations for Pipeline Execution Policies and builds isolated pipelines for each policy.
 # The resulting pipeline objects are saved on the `command`.
 # The jobs of the policy pipelines are merged onto the project pipeline later in the chain,
-# in the `PipelineExecutionPolicies::MergeJobs` step.
+# in the `PipelineExecutionPolicies::ApplyPolicies` step.
 #
 # The step needs to be executed:
 # - After `AssignPartition` to ensure that all policy pipelines are built using the same `partition_id`.
@@ -19,7 +19,7 @@ module EE
       module Pipeline
         module Chain
           module PipelineExecutionPolicies
-            module FindConfigs
+            module EvaluatePolicies
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
               extend ::Gitlab::Utils::Override
 

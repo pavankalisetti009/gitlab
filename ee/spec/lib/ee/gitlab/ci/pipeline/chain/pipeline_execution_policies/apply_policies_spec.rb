@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs, feature_category: :security_policy_management do
+RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPolicies, feature_category: :security_policy_management do
   include Ci::PipelineExecutionPolicyHelpers
 
   let_it_be(:group) { create(:group) }
@@ -438,7 +438,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
 
       context 'with "override_project_ci" policy' do
-        let(:execution_policy_config) { build(:pipeline_execution_policy_config, :override_project_ci) }
+        let(:override_policy) { build(:pipeline_execution_policy, :override_project_ci, name: 'Override') }
+        let(:execution_policy_config) { build(:pipeline_execution_policy_config, policy: override_policy) }
 
         it 'adds policy stages to the pipeline_policy_context' do
           expect { run_chain }.to change { command.pipeline_policy_context.override_policy_stages }
@@ -456,7 +457,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
 
             expect(step.break?).to be true
             expect(pipeline.errors.full_messages)
-              .to contain_exactly('Stages across `override_project_ci` policies are not compatible')
+              .to contain_exactly("Policy `#{override_policy[:name]}` could not be applied. " \
+                "Its stages are incompatible with stages of another `override_project_ci` policy: " \
+                ".pipeline-policy-pre, .pre, build, .post, .pipeline-policy-post.")
           end
         end
       end

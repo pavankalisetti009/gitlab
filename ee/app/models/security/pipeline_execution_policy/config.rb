@@ -10,7 +10,7 @@ module Security
       SUFFIX_STRATEGIES = { on_conflict: 'on_conflict', never: 'never' }.freeze
       POLICY_JOB_SUFFIX = ':policy'
 
-      attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index
+      attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index, :name
 
       def initialize(policy:, policy_project_id:, policy_index:)
         @content = policy.fetch(:content).to_yaml
@@ -18,6 +18,7 @@ module Security
         @policy_index = policy_index
         @config_strategy = policy.fetch(:pipeline_config_strategy).to_sym
         @suffix_strategy = policy[:suffix] || DEFAULT_SUFFIX_STRATEGY
+        @name = policy.fetch(:name)
       end
 
       def strategy_override_project_ci?

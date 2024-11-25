@@ -370,7 +370,9 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
           expect(execute.payload).to be_persisted
           expect(execute.payload.errors.full_messages)
             .to contain_exactly(
-              'Pipeline execution policy error: Stages across `override_project_ci` policies are not compatible'
+              "Pipeline execution policy error: Policy `#{namespace_policy[:name]}` could not be applied. " \
+                "Its stages are incompatible with stages of another `override_project_ci` policy: " \
+                ".pipeline-policy-pre, .pre, build, test, policy-test, deploy, .post, .pipeline-policy-post."
             )
         end
       end

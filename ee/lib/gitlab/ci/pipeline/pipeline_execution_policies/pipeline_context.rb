@@ -56,7 +56,10 @@ module Gitlab
             return unless creating_policy_pipeline?
             return unless current_policy.strategy_override_project_ci?
 
-            error = OverrideStagesConflictError.new('Stages across `override_project_ci` policies are not compatible')
+            error = OverrideStagesConflictError.new(
+              "Policy `#{current_policy.name}` could not be applied. " \
+                "Its stages are incompatible with stages of another `override_project_ci` policy: " \
+                "#{override_policy_stages.join(', ')}.")
 
             if stages.size > override_policy_stages.size
               raise error unless stages_compatible?(override_policy_stages, stages)
