@@ -1415,6 +1415,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     it_behaves_like 'quick actions that change work item type ee'
 
     context 'duo_code_review command' do
+      let(:merge_request) { create(:merge_request, reviewers: [user]) }
       let(:content) { '/duo_code_review' }
       let(:allowed?) { true }
       let(:bot_user) { ::Users::Internal.duo_code_review_bot }
@@ -1431,6 +1432,13 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
         expect(message).to eq _('Request for a Duo Code Review queued.')
         expect(updates[:reviewer_ids]).to include(bot_user.id)
+      end
+
+      it 'keeps original reviewers assigned' do
+        _, updates = service.execute(content, merge_request)
+
+        expect(updates[:reviewer_ids]).to include(bot_user.id)
+        expect(updates[:reviewer_ids]).to include(user.id)
       end
 
       context 'when merge request is asigned to Duo Code Review bot for review' do

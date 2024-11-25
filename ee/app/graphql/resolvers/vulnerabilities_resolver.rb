@@ -114,7 +114,8 @@ module Resolvers
         merge_request: { vulnerability: :merge_requests },
         state_comment: { vulnerability: :state_transitions },
         state_transitions: { vulnerability: :state_transitions },
-        false_positive: { vulnerability: { findings: :vulnerability_flags } }
+        false_positive: { vulnerability: { findings: :vulnerability_flags } },
+        representation_information: { vulnerability: :representation_information }
       }
     end
 
