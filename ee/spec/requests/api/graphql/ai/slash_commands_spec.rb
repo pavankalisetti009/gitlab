@@ -14,7 +14,7 @@ RSpec.describe 'Getting Duo Chat slash commands', feature_category: :duo_chat do
         aiSlashCommands(url: $url) {
           name
           description
-          command
+          shouldSubmit
         }
       }
     GQL
@@ -23,8 +23,9 @@ RSpec.describe 'Getting Duo Chat slash commands', feature_category: :duo_chat do
   let(:slash_command_data) { graphql_data['aiSlashCommands'] }
   let(:mock_commands) do
     [
-      { name: 'help', description: 'Show available commands', command: '/help' },
-      { name: 'explain', description: 'Explain the code', command: '/explain' }
+      { name: _('/reset'), description: _('Reset conversation and ignore previous messages.'), should_submit: true },
+      { name: _('/clear'), description: _('Delete all messages in the current conversation.'), should_submit: true },
+      { name: _('/help'), description: _('Learn what Duo Chat can do.'), should_submit: true }
     ]
   end
 
@@ -38,9 +39,12 @@ RSpec.describe 'Getting Duo Chat slash commands', feature_category: :duo_chat do
     post_graphql(query, current_user: user, variables: { url: url })
 
     expect(response).to have_gitlab_http_status(:success)
-    expect(slash_command_data).to match_array(
-      mock_commands.map(&:stringify_keys)
-    )
+
+    expected_commands = mock_commands.map do |cmd|
+      cmd.transform_keys { |k| k.to_s.camelize(:lower) }
+    end
+
+    expect(slash_command_data).to match_array(expected_commands)
   end
 
   context 'when the service raises an exception' do
