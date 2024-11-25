@@ -14,6 +14,10 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
   end
 
   before do
+    allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+      allow(instance).to receive(:execute).and_return([Hashie::Mash.new({ id: "plan_id", code: "premium" })])
+    end
+
     stub_saas_features(subscriptions_trials: true)
     sign_in(user)
   end

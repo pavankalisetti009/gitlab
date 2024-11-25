@@ -9,6 +9,12 @@ RSpec.describe Groups::AddOns::DiscoverDuoProController, :saas, feature_category
   describe 'GET show' do
     subject(:get_show) { get group_add_ons_discover_duo_pro_path(group) }
 
+    before do
+      allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+        allow(instance).to receive(:execute).and_return([Hashie::Mash.new({ id: "plan_id", code: "premium" })])
+      end
+    end
+
     context 'when group does not have an active duo trial' do
       it 'renders not found' do
         group.add_developer(user)
