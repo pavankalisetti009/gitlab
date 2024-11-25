@@ -14,6 +14,7 @@ module API
       helpers do
         def check_feature_enabled
           not_found! unless Feature.enabled?(:suggested_reviewers_internal_api, type: :ops)
+          not_found! if ::Feature.enabled?(:hide_suggested_reviewers, type: :beta)
         end
 
         def authenticate_gitlab_suggested_reviewers_request!

@@ -4225,7 +4225,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           stub_licensed_features(suggested_reviewers: true)
         end
 
-        it { is_expected.to eq true }
+        it { is_expected.to eq false }
       end
 
       context 'when licensed features are unavailable', :saas do
@@ -4234,6 +4234,15 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         end
 
         it { is_expected.to eq false }
+      end
+
+      context 'when hide_suggested_reviewers feature flag is disabled', :saas do
+        before do
+          stub_licensed_features(suggested_reviewers: true)
+          stub_feature_flags(hide_suggested_reviewers: false)
+        end
+
+        it { is_expected.to eq true }
       end
     end
 

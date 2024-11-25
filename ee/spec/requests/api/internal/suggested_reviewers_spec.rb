@@ -34,9 +34,18 @@ RSpec.describe API::Internal::SuggestedReviewers, feature_category: :code_review
       end
     end
 
+    context 'when hide_suggested_reviewers is enabled' do
+      it 'returns 404' do
+        subject
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
     context 'when feature flag is enabled' do
       before do
         stub_feature_flags(suggested_reviewers_internal_api: true)
+        stub_feature_flags(hide_suggested_reviewers: false)
       end
 
       context 'when authentication header is not set', :aggregate_failures do
