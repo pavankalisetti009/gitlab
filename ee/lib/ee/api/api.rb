@@ -70,6 +70,7 @@ module EE
         mount ::API::GroupProtectedBranches
         mount ::API::DependencyListExports
         mount ::API::GroupServiceAccounts
+        mount ::API::GroupEnterpriseUsers
         mount ::API::Ai::Llm::GitCommand
         mount ::API::Ai::DuoWorkflows::Workflows
         mount ::API::Ai::DuoWorkflows::WorkflowsInternal
