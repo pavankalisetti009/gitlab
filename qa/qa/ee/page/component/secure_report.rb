@@ -59,7 +59,7 @@ module QA
           end
 
           def status_listbox_item_selector(report)
-            "[data-testid='listbox-item-#{report.upcase.tr(" ", "_")}']"
+            "[data-testid='listbox-item-#{report.upcase.tr(' ', '_')}']"
           end
 
           def filter_by_status(statuses)

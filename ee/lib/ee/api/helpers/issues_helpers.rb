@@ -33,7 +33,7 @@ module EE
               type: String,
               values: ::IssuesFinder::Params::VALID_HEALTH_STATUS_PARAMS,
               coerce_with: ->(val) { val.downcase },
-              desc: "The health status of the issue. Must be one of: #{::IssuesFinder::Params::VALID_HEALTH_STATUS_PARAMS.join(", ")}"
+              desc: "The health status of the issue. Must be one of: #{::IssuesFinder::Params::VALID_HEALTH_STATUS_PARAMS.join(', ')}"
             optional :iteration_id,
               types: [Integer, String],
               integer_or_custom_value: ::Iteration::Predefined::ALL.map { |iteration| iteration.name.downcase },
