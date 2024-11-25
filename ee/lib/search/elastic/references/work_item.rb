@@ -69,13 +69,13 @@ module Search
         private
 
         def populate_notes(target, data)
-          if ::Elastic::DataMigrationService.migration_has_finished?(:add_notes_to_work_items)
-            notes_internal, notes_public = target.notes.partition(&:internal)
-            data['notes_internal'] =
-              notes_internal.sort_by(&:created_at).reverse.map(&:note).join("\n").truncate_bytes(NOTES_MAXIMUM_BYTES)
-            data['notes'] =
-              notes_public.sort_by(&:created_at).reverse.map(&:note).join("\n").truncate_bytes(NOTES_MAXIMUM_BYTES)
-          end
+          notes_internal, notes = target.notes.partition(&:internal)
+
+          internal_notes = notes_internal.sort_by(&:created_at).reverse.map(&:note).join("\n").presence
+          data['notes_internal'] = internal_notes.truncate_bytes(NOTES_MAXIMUM_BYTES) if internal_notes
+
+          notes = notes.sort_by(&:created_at).reverse.map(&:note).join("\n").presence
+          data['notes'] = notes.truncate_bytes(NOTES_MAXIMUM_BYTES) if notes
 
           data
         end
@@ -107,10 +107,12 @@ module Search
           data['hashed_root_namespace_id'] = target.namespace.hashed_root_namespace_id
           data['work_item_type_id'] = target.work_item_type_id
 
-          data = populate_notes(target, data)
-
           if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_type_correct_id)
             data['correct_work_item_type_id'] = target.correct_work_item_type_id
+          end
+
+          if ::Elastic::DataMigrationService.migration_has_finished?(:add_notes_to_work_items)
+            data = populate_notes(target, data)
           end
 
           data['upvotes'] = target.upvotes_count
