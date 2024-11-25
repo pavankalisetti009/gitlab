@@ -56,6 +56,10 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
 
         it 'reassigns associated projects and returns success response' do
           expect(execute).to be_success
+          expect(execute.payload).to eq({
+            added_to_projects: [project3, project4],
+            deleted_from_projects: [project2]
+          })
 
           runner.reload
 
@@ -69,6 +73,10 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
 
         it 'reassigns associated projects and returns success response' do
           expect(execute).to be_success
+          expect(execute.payload).to eq({
+            added_to_projects: [project3],
+            deleted_from_projects: []
+          })
 
           runner.reload
 
@@ -82,6 +90,10 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
 
         it 'reassigns associated projects and returns success response' do
           expect(execute).to be_success
+          expect(execute.payload).to eq({
+            added_to_projects: [],
+            deleted_from_projects: [project2]
+          })
 
           runner.reload
 
