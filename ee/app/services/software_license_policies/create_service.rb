@@ -33,21 +33,23 @@ module SoftwareLicensePolicies
     end
 
     def insert_software_license_policy
-      software_license = SoftwareLicense.find_by_name(params[:name])
+      software_license = find_software_license(params[:name])
+      catalogue_license = find_software_license_in_catalogue(params[:name])
 
       if software_license
-        create_software_license_policies_with_software_license(software_license)
+        create_software_license_policies_with_software_license(software_license, catalogue_license)
       else
         create_software_license_policies_with_custom_software_license(custom_software_license)
       end
     end
 
-    def create_software_license_policies_with_software_license(software_license)
+    def create_software_license_policies_with_software_license(software_license, catalogue_license)
       project.software_license_policies.create!(
         classification: params[:approval_status],
         software_license: software_license,
         scan_result_policy_read: params[:scan_result_policy_read],
-        approval_policy_rule_id: params[:approval_policy_rule_id]
+        approval_policy_rule_id: params[:approval_policy_rule_id],
+        software_license_spdx_identifier: catalogue_license&.spdx_identifier
       )
     end
 
@@ -65,6 +67,16 @@ module SoftwareLicensePolicies
         params: params).execute
 
       response.payload[:custom_software_license]
+    end
+
+    def find_software_license(name)
+      SoftwareLicense.find_by_name(name)
+    end
+
+    def find_software_license_in_catalogue(name)
+      Gitlab::SPDX::Catalogue
+        .latest_active_licenses
+        .find { |license| license.name == name }
     end
   end
 end
