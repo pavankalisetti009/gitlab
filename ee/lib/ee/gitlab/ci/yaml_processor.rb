@@ -7,6 +7,8 @@ module EE
         extend ::Gitlab::Utils::Override
         include ::Gitlab::Utils::StrongMemoize
 
+        private
+
         override :ci_config_opts
         def ci_config_opts
           super.merge(pipeline_policy_context: pipeline_policy_context)
@@ -25,8 +27,6 @@ module EE
 
           error!("#{name} job: chosen stage `#{job[:stage]}` is reserved for Pipeline Execution Policies")
         end
-
-        private
 
         def pipeline_policy_context
           # We instantiate default PipelineContext as fallback to validate reserved stages

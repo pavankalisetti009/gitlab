@@ -26,7 +26,6 @@ class Groups::EpicsController < Groups::ApplicationController
     push_force_frontend_feature_flag(:work_items_alpha, group.work_items_alpha_feature_flag_enabled?)
     push_frontend_feature_flag(:epics_list_drawer, @group)
     push_frontend_feature_flag(:bulk_update_work_items_mutation, @group)
-    push_force_frontend_feature_flag(:work_items_rolledup_dates, group&.work_items_rolledup_dates_feature_flag_enabled?)
   end
 
   before_action only: :index do
@@ -99,8 +98,11 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def render_as_work_item
-    @work_item = ::WorkItems::WorkItemsFinder.new(current_user,
-      group_id: group.id).execute.with_work_item_type.find_by_iid(epic.iid)
+    @work_item = ::WorkItems::WorkItemsFinder
+      .new(current_user, group_id: group.id)
+      .execute
+      .with_work_item_type
+      .find_by_iid(epic.iid)
 
     if Feature.enabled?(:work_item_epics_list, @group) && epic_work_items_enabled?
       render 'work_items_index'

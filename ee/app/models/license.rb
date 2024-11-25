@@ -552,8 +552,8 @@ class License < ApplicationRecord
     if trueup_quantity_with_threshold >= expected_trueup_qty
       check_restricted_user_count
     else
-      message = ["You have applied a True-up for #{trueup_qty} #{"user".pluralize(trueup_qty)}"]
-      message << "but you need one for #{expected_trueup_qty} #{"user".pluralize(expected_trueup_qty)}."
+      message = ["You have applied a True-up for #{trueup_qty} #{'user'.pluralize(trueup_qty)}"]
+      message << "but you need one for #{expected_trueup_qty} #{'user'.pluralize(expected_trueup_qty)}."
       message << "Please contact sales at https://about.gitlab.com/sales/"
 
       self.errors.add(:base, :check_trueup, message: message.join(' '))
@@ -575,11 +575,11 @@ class License < ApplicationRecord
     overage_count = overage(user_count)
 
     message =  [current_period ? "This GitLab installation currently has" : "During the year before this license started, this GitLab installation had"]
-    message << "#{number_with_delimiter(user_count)} active #{"user".pluralize(user_count)},"
+    message << "#{number_with_delimiter(user_count)} active #{'user'.pluralize(user_count)},"
     message << "exceeding this license's limit of #{number_with_delimiter(restricted_user_count)} by"
-    message << "#{number_with_delimiter(overage_count)} #{"user".pluralize(overage_count)}."
+    message << "#{number_with_delimiter(overage_count)} #{'user'.pluralize(overage_count)}."
     message << "Please add a license for at least"
-    message << "#{number_with_delimiter(user_count)} #{"user".pluralize(user_count)} or contact sales at https://about.gitlab.com/sales/"
+    message << "#{number_with_delimiter(user_count)} #{'user'.pluralize(user_count)} or contact sales at https://about.gitlab.com/sales/"
 
     self.errors.add(:base, type, message: message.join(' '))
   end

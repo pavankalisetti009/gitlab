@@ -634,51 +634,6 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           end
         end
 
-        context "when the work_items_rolledup_dates feature flag is disabled" do
-          before do
-            stub_feature_flags(work_items_rolledup_dates: false)
-          end
-
-          let_it_be(:start_date) { "2002-01-01" }
-          let_it_be(:due_date) { "2002-12-31" }
-          let_it_be(:dates_dource) do
-            create(
-              :work_items_dates_source,
-              work_item: work_item,
-              due_date_sourcing_milestone: milestone,
-              due_date: milestone.due_date.to_date,
-              start_date: milestone.start_date.to_date,
-              start_date_sourcing_milestone: milestone)
-          end
-
-          let(:input) do
-            {
-              "rolledupDatesWidget" => {
-                "startDateFixed" => start_date,
-                "dueDateFixed" => due_date
-              }
-            }
-          end
-
-          it "does not update the work item's start and due date" do
-            post_graphql_mutation(mutation, current_user: current_user)
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(mutation_response['workItem']['widgets']).to include(
-              "type" => "ROLLEDUP_DATES",
-              "dueDate" => milestone.due_date.to_s,
-              "dueDateFixed" => nil,
-              "dueDateIsFixed" => false,
-              "dueDateSourcingMilestone" => { "id" => milestone.to_gid.to_s },
-              "dueDateSourcingWorkItem" => nil,
-              "startDate" => milestone.start_date.to_s,
-              "startDateFixed" => nil,
-              "startDateIsFixed" => false,
-              "startDateSourcingMilestone" => { "id" => milestone.to_gid.to_s },
-              "startDateSourcingWorkItem" => nil)
-          end
-        end
-
         context "when updating from fixed dates to rolledup dates" do
           let_it_be(:due_date_fixed) { 1.day.from_now.to_date }
           let_it_be(:start_date_fixed) { 1.day.ago.to_date }

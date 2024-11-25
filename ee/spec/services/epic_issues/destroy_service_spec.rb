@@ -118,57 +118,39 @@ RSpec.describe EpicIssues::DestroyService, feature_category: :portfolio_manageme
             )
           end
 
-          shared_examples 'rolledup dates' do
-            let_it_be(:issue) { create(:issue, project: project, milestone: milestone) }
-            let_it_be(:epic_issue_link) { create(:epic_issue, epic: epic_with_dates, issue: issue) }
-            let_it_be(:parent_link) do
-              create(:parent_link, work_item_parent: epic_with_dates.work_item, work_item: WorkItem.find(issue.id))
-            end
-
-            before do
-              epic_with_dates.work_item.create_dates_source(
-                start_date: milestone.start_date,
-                due_date: milestone.due_date,
-                start_date_is_fixed: false,
-                due_date_is_fixed: false,
-                start_date_sourcing_milestone_id: milestone.id,
-                due_date_sourcing_milestone_id: milestone.id
-              )
-            end
-
-            it 'removes relationship and updates epic dates' do
-              expect(Epics::UpdateDatesService).to receive(:new).with([epic_with_dates])
-
-              expect { described_class.new(epic_issue_link, user).execute }
-                .to change { EpicIssue.count }.by(-1)
-                .and change { epic_with_dates.reload.start_date }.from(milestone.start_date).to(nil)
-                .and change { epic_with_dates.due_date }.from(milestone.due_date).to(nil)
-                .and change { epic_with_dates.start_date_sourcing_milestone_id }.from(milestone.id).to(nil)
-                .and change { epic_with_dates.due_date_sourcing_milestone_id }.from(milestone.id).to(nil)
-
-              epic_dates_source = epic_with_dates.work_item.dates_source
-
-              expect(epic_dates_source.start_date).to eq(nil)
-              expect(epic_dates_source.due_date).to eq(nil)
-              expect(epic_dates_source.start_date_sourcing_milestone_id).to eq(nil)
-              expect(epic_dates_source.due_date_sourcing_milestone_id).to eq(nil)
-            end
+          let_it_be(:issue) { create(:issue, project: project, milestone: milestone) }
+          let_it_be(:epic_issue_link) { create(:epic_issue, epic: epic_with_dates, issue: issue) }
+          let_it_be(:parent_link) do
+            create(:parent_link, work_item_parent: epic_with_dates.work_item, work_item: WorkItem.find(issue.id))
           end
 
-          context 'when work_items_rolledup_dates is disabled' do
-            before do
-              stub_feature_flags(work_items_rolledup_dates: false)
-            end
-
-            it_behaves_like 'rolledup dates'
+          before do
+            epic_with_dates.work_item.create_dates_source(
+              start_date: milestone.start_date,
+              due_date: milestone.due_date,
+              start_date_is_fixed: false,
+              due_date_is_fixed: false,
+              start_date_sourcing_milestone_id: milestone.id,
+              due_date_sourcing_milestone_id: milestone.id
+            )
           end
 
-          context 'when work_items_rolledup_dates is enabled' do
-            before do
-              stub_feature_flags(work_items_rolledup_dates: true)
-            end
+          it 'removes relationship and updates epic dates' do
+            expect(Epics::UpdateDatesService).to receive(:new).with([epic_with_dates])
 
-            it_behaves_like 'rolledup dates'
+            expect { described_class.new(epic_issue_link, user).execute }
+              .to change { EpicIssue.count }.by(-1)
+              .and change { epic_with_dates.reload.start_date }.from(milestone.start_date).to(nil)
+              .and change { epic_with_dates.due_date }.from(milestone.due_date).to(nil)
+              .and change { epic_with_dates.start_date_sourcing_milestone_id }.from(milestone.id).to(nil)
+              .and change { epic_with_dates.due_date_sourcing_milestone_id }.from(milestone.id).to(nil)
+
+            epic_dates_source = epic_with_dates.work_item.dates_source
+
+            expect(epic_dates_source.start_date).to eq(nil)
+            expect(epic_dates_source.due_date).to eq(nil)
+            expect(epic_dates_source.start_date_sourcing_milestone_id).to eq(nil)
+            expect(epic_dates_source.due_date_sourcing_milestone_id).to eq(nil)
           end
         end
 

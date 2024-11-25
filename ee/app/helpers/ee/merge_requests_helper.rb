@@ -14,7 +14,7 @@ module EE
         "#{items.first} #{separator} #{items.last}"
       else
         last_item = items.pop
-        "#{items.join(", ")} #{separator} #{last_item}"
+        "#{items.join(', ')} #{separator} #{last_item}"
       end
     end
 

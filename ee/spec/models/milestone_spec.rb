@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Milestone do
+RSpec.describe Milestone, feature_category: :shared do
   describe "Associations" do
     it { is_expected.to have_many(:boards) }
   end
@@ -19,10 +19,8 @@ RSpec.describe Milestone do
 
     context 'when epic indexing is enabled' do
       before do
+        stub_feature_flags(work_item_epics_ssot: false)
         stub_ee_application_setting(elasticsearch_indexing: true)
-        # The feature flag needs to be disable.
-        # When the feature flag is enabled the dates are updated using the WorkItems services
-        stub_feature_flags(work_items_rolledup_dates: false)
         Epics::UpdateDatesService.new([epic, another_epic]).execute
         epic.reload
         another_epic.reload

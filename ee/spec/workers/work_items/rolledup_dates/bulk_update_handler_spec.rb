@@ -17,37 +17,21 @@ RSpec.describe WorkItems::RolledupDates::BulkUpdateHandler, feature_category: :t
   end
 
   describe ".can_handle?" do
-    context "when the feature flag is disabled" do
-      before do
-        stub_feature_flags(work_items_rolledup_dates: false)
-      end
-
+    context "and no trigger attributes are changed" do
       it "returns false" do
         expect(described_class.can_handle?(event)).to eq(false)
       end
     end
 
-    context "when the feature flag is enabled" do
-      before do
-        stub_feature_flags(work_items_rolledup_dates: group)
-      end
-
-      context "and no trigger attributes are changed" do
-        it "returns false" do
-          expect(described_class.can_handle?(event)).to eq(false)
-        end
-      end
-
-      context "and trigger attributes have changed" do
-        it "returns true" do
-          described_class::UPDATE_TRIGGER_ATTRIBUTES.each do |attribute|
-            event.data[:updated_attributes] = [attribute]
-
-            expect(described_class.can_handle?(event)).to eq(true)
-          end
+    context "and trigger attributes have changed" do
+      it "returns true" do
+        described_class::UPDATE_TRIGGER_ATTRIBUTES.each do |attribute|
+          event.data[:updated_attributes] = [attribute]
 
           expect(described_class.can_handle?(event)).to eq(true)
         end
+
+        expect(described_class.can_handle?(event)).to eq(true)
       end
     end
   end

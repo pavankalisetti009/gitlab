@@ -405,7 +405,7 @@ RSpec.describe 'Admin updates EE-only settings' do
         [:unchanged_false, :changed_from_unlimited_to_limited, false, :submits_form],
         [:unchanged_false, :unchanged_unlimited, false, :submits_form]
       ].each do |(require_admin_approval_action, user_cap_action, add_pending_user, button_effect)|
-        it "#{button_effect} if 'require admin approval for new sign-ups' is #{require_admin_approval_action} and the user cap is #{user_cap_action} and #{add_pending_user ? "has" : "doesn't have"} pending user count" do
+        it "#{button_effect} if 'require admin approval for new sign-ups' is #{require_admin_approval_action} and the user cap is #{user_cap_action} and #{add_pending_user ? 'has' : "doesn't have"} pending user count" do
           user_cap_default = 5
           require_admin_approval_value = [:unchanged_true, :toggled_off].include?(require_admin_approval_action)
 
