@@ -55,7 +55,8 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
           stub_feature_flags(custom_software_license: true)
         end
 
-        let(:license_name) { 'MIT' }
+        let(:license_name) { 'MIT License' }
+        let(:license_spdx_identifier) { 'MIT' }
         let(:params) { { name: license_name, approval_status: 'allowed' } }
 
         subject(:result) { described_class.new(project, user, params).execute }
@@ -69,6 +70,37 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
             expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
 
             result
+          end
+
+          it 'creates one software license policy correctly' do
+            result
+
+            expect(project.software_license_policies.count).to be(1)
+            expect(result[:status]).to be(:success)
+            expect(result[:software_license_policy]).to be_present
+            expect(result[:software_license_policy]).to be_persisted
+            expect(result[:software_license_policy].name).to eq(params[:name])
+            expect(result[:software_license_policy].classification).to eq(params[:approval_status])
+            expect(result[:software_license_policy].software_license_spdx_identifier).to eq(license_spdx_identifier)
+          end
+
+          context 'when the SPDX identifier is not available' do
+            before do
+              license = ::Gitlab::SPDX::License.new(id: nil, name: "MIT License", deprecated: false)
+
+              allow(::Gitlab::SPDX::Catalogue).to receive(:latest_active_licenses).and_return([license])
+            end
+
+            it 'creates one software license policy correctly' do
+              result
+              expect(project.software_license_policies.count).to be(1)
+              expect(result[:status]).to be(:success)
+              expect(result[:software_license_policy]).to be_present
+              expect(result[:software_license_policy]).to be_persisted
+              expect(result[:software_license_policy].name).to eq(params[:name])
+              expect(result[:software_license_policy].classification).to eq(params[:approval_status])
+              expect(result[:software_license_policy].software_license_spdx_identifier).to be_nil
+            end
           end
         end
 
