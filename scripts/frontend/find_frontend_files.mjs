@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import Runtime from 'jest-runtime';
 import { readConfig } from 'jest-config';
 
-import createJestConfig from '../../jest.config.base';
+import createJestConfig from '../../jest.config.base.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
 
