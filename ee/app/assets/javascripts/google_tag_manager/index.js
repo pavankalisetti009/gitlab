@@ -47,6 +47,36 @@ const trackOmniAuthSubmission = (accountType) => {
   });
 };
 
+const isValuableSignup = (emailDomain) => {
+  if (!emailDomain || emailDomain.endsWith('.edu')) {
+    return false;
+  }
+
+  const commonPersonalDomains = [
+    '163.com',
+    'aol.com',
+    'att.net',
+    'comcast.net',
+    'facebook.com',
+    'gitlab.com',
+    'gmail.com',
+    'gmx.com',
+    'googlemail.com',
+    'hotmail.com',
+    'icloud.com',
+    'live.com',
+    'mail.ru',
+    'outlook.com',
+    'proton.me',
+    'protonmail.com',
+    'qq.com',
+    'yahoo.com',
+    'yandex.ru',
+  ];
+
+  return !commonPersonalDomains.includes(emailDomain);
+};
+
 export const trackFreeTrialAccountSubmissions = () => {
   if (!isSupported()) {
     return;
@@ -65,8 +95,9 @@ export const trackNewRegistrations = () => {
   trackOmniAuthSubmission('standardSignUp');
 };
 
-export const trackSaasTrialLeadSubmit = callIfSupported((eventLabel) => {
-  pushEvent(eventLabel);
+export const trackSaasTrialLeadSubmit = callIfSupported((eventLabel, emailDomain) => {
+  const valuableSignup = isValuableSignup(emailDomain);
+  pushEvent(eventLabel, { valuableSignup });
 });
 
 export const trackSaasTrialSubmit = callIfSupported((selector, eventName) => {
@@ -138,12 +169,17 @@ export const trackCombinedGroupProjectForm = () => {
   });
 };
 
-export const trackCompanyForm = (aboutYourCompanyType) => {
+export const trackCompanyForm = (aboutYourCompanyType, emailDomain) => {
   if (!isSupported()) {
     return;
   }
 
-  pushEvent('aboutYourCompanyFormSubmit', { aboutYourCompanyType });
+  const eventData = {
+    aboutYourCompanyType,
+    valuableSignup: isValuableSignup(emailDomain),
+  };
+
+  pushEvent('aboutYourCompanyFormSubmit', eventData);
 };
 
 export const saasTrialWelcome = () => {

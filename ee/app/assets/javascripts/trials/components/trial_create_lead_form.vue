@@ -62,7 +62,7 @@ export default {
   },
   methods: {
     onSubmit() {
-      trackSaasTrialLeadSubmit(this.gtmSubmitEventLabel);
+      trackSaasTrialLeadSubmit(this.gtmSubmitEventLabel, this.user.emailDomain);
     },
   },
   i18n: {

@@ -7,6 +7,7 @@ export const FORM_DATA = {
   phoneNumber: '192919',
   country: 'US',
   state: 'CA',
+  emailDomain: '_email_domain_',
 };
 
 export const GTM_SUBMIT_EVENT_LABEL = '_eventLabel_';

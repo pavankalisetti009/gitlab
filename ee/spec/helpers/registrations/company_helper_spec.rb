@@ -26,6 +26,7 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
         submit_path: "/users/sign_up/company?#{extra_params.to_query}",
         first_name: user.first_name,
         last_name: user.last_name,
+        email_domain: user.email_domain,
         form_type: 'registration',
         track_action_for_errors: 'trial_registration'
       }
