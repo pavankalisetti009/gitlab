@@ -274,6 +274,7 @@ module EE
               Project.id_in(project_id)
             end
           end
+          strong_memoize_attr :all_projects
 
           def approval_policies
             SCAN_RESULT_POLICY_TYPES.flat_map do |type|
@@ -471,7 +472,6 @@ module EE
         def perform
           each_sub_batch do |sub_batch|
             SecurityOrchestrationPolicyConfiguration.id_in(sub_batch).each do |policy_configuration|
-              next if policy_configuration.security_policies.any?
               next unless policy_configuration.policy_configuration_valid?
 
               create_policies(policy_configuration)
@@ -482,26 +482,35 @@ module EE
         private
 
         def create_policies(policy_configuration)
-          policy_configuration.approval_policies.each_with_index do |policy_hash, index|
-            security_policy = SecurityPolicy.create_policy(policy_configuration, :approval_policy, policy_hash, index)
-            link_policy_to_project(policy_configuration, security_policy)
-          end
+          approval_policies = policy_configuration.approval_policies
+          scan_execution_policies = policy_configuration.scan_execution_policies
+          pipeline_execution_policies = policy_configuration.pipeline_execution_policies
+          vulnerability_management_policies = policy_configuration.vulnerability_management_policies
 
-          policy_configuration.scan_execution_policies.each_with_index do |policy_hash, index|
-            security_policy = SecurityPolicy.create_policy(policy_configuration, :scan_execution_policy, policy_hash,
-              index)
-            link_policy_to_project(policy_configuration, security_policy)
-          end
+          db_policies = policy_configuration.security_policies
+          yaml_policies_count = approval_policies.count + scan_execution_policies.count +
+            pipeline_execution_policies.count + vulnerability_management_policies.count
 
-          policy_configuration.pipeline_execution_policies.each_with_index do |policy_hash, index|
-            security_policy = SecurityPolicy.create_policy(policy_configuration, :pipeline_execution_policy,
-              policy_hash, index)
-            link_policy_to_project(policy_configuration, security_policy)
-          end
+          # policies already persisted in database
+          return if db_policies.count == yaml_policies_count
 
-          policy_configuration.vulnerability_management_policies.each_with_index do |policy_hash, index|
-            security_policy = SecurityPolicy.create_policy(policy_configuration, :vulnerability_management_policy,
-              policy_hash, index)
+          create_policies_by_type(db_policies, policy_configuration, approval_policies, :approval_policy)
+          create_policies_by_type(db_policies, policy_configuration, scan_execution_policies, :scan_execution_policy)
+          create_policies_by_type(db_policies, policy_configuration, pipeline_execution_policies,
+            :pipeline_execution_policy)
+          create_policies_by_type(db_policies, policy_configuration, vulnerability_management_policies,
+            :vulnerability_management_policy)
+        end
+
+        def create_policies_by_type(db_policies, policy_configuration, yaml_policies, policy_type)
+          db_policies_by_index = db_policies
+            .select { |policy| policy.type == policy_type.to_s }
+            .group_by(&:policy_index)
+
+          yaml_policies.each_with_index do |policy_hash, index|
+            next if db_policies_by_index[index]
+
+            security_policy = SecurityPolicy.create_policy(policy_configuration, policy_type, policy_hash, index)
             link_policy_to_project(policy_configuration, security_policy)
           end
         end
@@ -518,6 +527,8 @@ module EE
             attrs = security_policy.approval_policy_rules.map do |policy_rule|
               { approval_policy_rule_id: policy_rule.id, project_id: project.id }
             end
+
+            next if attrs.empty?
 
             ApprovalPolicyRuleProjectLink.insert_all(attrs, unique_by: [:approval_policy_rule_id, :project_id])
           end
