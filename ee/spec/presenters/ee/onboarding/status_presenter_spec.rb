@@ -276,18 +276,19 @@ RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
   end
 
   describe '#joining_a_project?' do
-    where(:params, :expected_result) do
-      { joining_project: 'true' }  | true
-      { joining_project: 'false' } | false
-      {}                           | false
-      { joining_project: '' }      | false
+    let(:no_value_user) { build(:user) }
+    let(:joining_user) { build(:user, onboarding_status_joining_project: true) }
+    let(:not_joining_user) { build(:user, onboarding_status_joining_project: false) }
+
+    where(:current_user, :expected_result) do
+      ref(:joining_user)     | true
+      ref(:not_joining_user) | false
+      ref(:no_value_user)    | false
     end
 
+    subject { described_class.new({}, nil, current_user).joining_a_project? }
+
     with_them do
-      let(:instance) { described_class.new(params, nil, nil) }
-
-      subject { instance.joining_a_project? }
-
       it { is_expected.to eq(expected_result) }
     end
   end
