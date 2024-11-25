@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe WikiHelper do
+RSpec.describe WikiHelper, feature_category: :wiki do
   describe '#wiki_attachment_upload_url' do
     it 'returns the upload endpoint for group wikis' do
       @wiki = build_stubbed(:group_wiki)
