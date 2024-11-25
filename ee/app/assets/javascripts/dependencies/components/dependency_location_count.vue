@@ -125,7 +125,7 @@ export default {
             <gl-icon name="doc-text" class="gl-absolute" />
             <gl-truncate position="start" :text="item.location.path" with-tooltip class="gl-pl-6" />
           </gl-link>
-          <div v-else class="gl-text-gray-500" data-testid="unknown-path">
+          <div v-else class="gl-text-subtle" data-testid="unknown-path">
             <gl-icon name="error" class="gl-absolute" />
             <gl-truncate
               position="start"
@@ -135,7 +135,7 @@ export default {
             />
           </div>
         </div>
-        <gl-truncate :text="item.project.name" class="gl-mt-2 gl-pl-6 gl-text-gray-500" />
+        <gl-truncate :text="item.project.name" class="gl-mt-2 gl-pl-6 gl-text-subtle" />
       </div>
     </template>
   </gl-collapsible-listbox>

@@ -129,7 +129,7 @@ exports[`Buy Addons Shared App Compute minutes labels does not show labels if in
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="price-per-unit"
             >
               $10 per pack of 1,000 compute minutes
@@ -139,7 +139,7 @@ exports[`Buy Addons Shared App Compute minutes labels does not show labels if in
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
             >
               <div>
                 Subtotal
@@ -151,7 +151,7 @@ exports[`Buy Addons Shared App Compute minutes labels does not show labels if in
               </div>
             </div>
             <div
-              class="gl-flex gl-justify-between gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-text-subtle"
             >
               <div
                 data-testid="vat-info-line"
@@ -209,7 +209,7 @@ exports[`Buy Addons Shared App Compute minutes labels does not show labels if in
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="price-per-unit"
           >
             $10 per pack of 1,000 compute minutes
@@ -219,7 +219,7 @@ exports[`Buy Addons Shared App Compute minutes labels does not show labels if in
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
           >
             <div>
               Subtotal
@@ -231,7 +231,7 @@ exports[`Buy Addons Shared App Compute minutes labels does not show labels if in
             </div>
           </div>
           <div
-            class="gl-flex gl-justify-between gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-text-subtle"
           >
             <div
               data-testid="vat-info-line"
@@ -404,7 +404,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="price-per-unit"
             >
               $10 per pack of 1,000 compute minutes
@@ -414,7 +414,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
             >
               <div>
                 Subtotal
@@ -426,7 +426,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
               </div>
             </div>
             <div
-              class="gl-flex gl-justify-between gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-text-subtle"
             >
               <div
                 data-testid="vat-info-line"
@@ -490,7 +490,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="price-per-unit"
           >
             $10 per pack of 1,000 compute minutes
@@ -500,7 +500,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
           >
             <div>
               Subtotal
@@ -512,7 +512,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
             </div>
           </div>
           <div
-            class="gl-flex gl-justify-between gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-text-subtle"
           >
             <div
               data-testid="vat-info-line"
@@ -685,7 +685,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="price-per-unit"
             >
               $10 per pack of 1,000 compute minutes
@@ -695,7 +695,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
             >
               <div>
                 Subtotal
@@ -707,7 +707,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
               </div>
             </div>
             <div
-              class="gl-flex gl-justify-between gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-text-subtle"
             >
               <div
                 data-testid="vat-info-line"
@@ -771,7 +771,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="price-per-unit"
           >
             $10 per pack of 1,000 compute minutes
@@ -781,7 +781,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
           >
             <div>
               Subtotal
@@ -793,7 +793,7 @@ exports[`Buy Addons Shared App Compute minutes labels shows labels correctly for
             </div>
           </div>
           <div
-            class="gl-flex gl-justify-between gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-text-subtle"
           >
             <div
               data-testid="vat-info-line"
@@ -943,13 +943,13 @@ exports[`Buy Addons Shared App Storage labels does not show labels if input is i
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="price-per-unit"
             >
               $60 per 10 GB storage pack per year
             </div>
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="subscription-period"
             >
               Jul 6, 2020 - Dec 15, 2022
@@ -967,7 +967,7 @@ exports[`Buy Addons Shared App Storage labels does not show labels if input is i
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
             >
               <div>
                 Subtotal
@@ -979,7 +979,7 @@ exports[`Buy Addons Shared App Storage labels does not show labels if input is i
               </div>
             </div>
             <div
-              class="gl-flex gl-justify-between gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-text-subtle"
             >
               <div
                 data-testid="vat-info-line"
@@ -1037,13 +1037,13 @@ exports[`Buy Addons Shared App Storage labels does not show labels if input is i
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="price-per-unit"
           >
             $60 per 10 GB storage pack per year
           </div>
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="subscription-period"
           >
             Jul 6, 2020 - Dec 15, 2022
@@ -1061,7 +1061,7 @@ exports[`Buy Addons Shared App Storage labels does not show labels if input is i
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
           >
             <div>
               Subtotal
@@ -1073,7 +1073,7 @@ exports[`Buy Addons Shared App Storage labels does not show labels if input is i
             </div>
           </div>
           <div
-            class="gl-flex gl-justify-between gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-text-subtle"
           >
             <div
               data-testid="vat-info-line"
@@ -1233,13 +1233,13 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 1 pack 
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="price-per-unit"
             >
               $60 per 10 GB storage pack per year
             </div>
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="subscription-period"
             >
               Jul 6, 2020 - Dec 15, 2022
@@ -1257,7 +1257,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 1 pack 
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
             >
               <div>
                 Subtotal
@@ -1269,7 +1269,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 1 pack 
               </div>
             </div>
             <div
-              class="gl-flex gl-justify-between gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-text-subtle"
             >
               <div
                 data-testid="vat-info-line"
@@ -1333,13 +1333,13 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 1 pack 
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="price-per-unit"
           >
             $60 per 10 GB storage pack per year
           </div>
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="subscription-period"
           >
             Jul 6, 2020 - Dec 15, 2022
@@ -1357,7 +1357,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 1 pack 
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
           >
             <div>
               Subtotal
@@ -1369,7 +1369,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 1 pack 
             </div>
           </div>
           <div
-            class="gl-flex gl-justify-between gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-text-subtle"
           >
             <div
               data-testid="vat-info-line"
@@ -1529,13 +1529,13 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 2 packs
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="price-per-unit"
             >
               $60 per 10 GB storage pack per year
             </div>
             <div
-              class="gl-text-gray-500"
+              class="gl-text-subtle"
               data-testid="subscription-period"
             >
               Jul 6, 2020 - Dec 15, 2022
@@ -1553,7 +1553,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 2 packs
             class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
           >
             <div
-              class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
             >
               <div>
                 Subtotal
@@ -1565,7 +1565,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 2 packs
               </div>
             </div>
             <div
-              class="gl-flex gl-justify-between gl-text-gray-500"
+              class="gl-flex gl-justify-between gl-text-subtle"
             >
               <div
                 data-testid="vat-info-line"
@@ -1629,13 +1629,13 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 2 packs
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="price-per-unit"
           >
             $60 per 10 GB storage pack per year
           </div>
           <div
-            class="gl-text-gray-500"
+            class="gl-text-subtle"
             data-testid="subscription-period"
           >
             Jul 6, 2020 - Dec 15, 2022
@@ -1653,7 +1653,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 2 packs
           class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-mb-5 gl-pb-5"
         >
           <div
-            class="gl-flex gl-justify-between gl-mb-2 gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-mb-2 gl-text-subtle"
           >
             <div>
               Subtotal
@@ -1665,7 +1665,7 @@ exports[`Buy Addons Shared App Storage labels shows labels correctly for 2 packs
             </div>
           </div>
           <div
-            class="gl-flex gl-justify-between gl-text-gray-500"
+            class="gl-flex gl-justify-between gl-text-subtle"
           >
             <div
               data-testid="vat-info-line"

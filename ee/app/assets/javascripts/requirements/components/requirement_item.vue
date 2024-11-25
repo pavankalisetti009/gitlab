@@ -177,7 +177,7 @@ export default {
         </div>
         <div class="gl-w-full gl-p-2">
           <h5 class="gl-m-0">{{ author.name }}</h5>
-          <div class="gl-mb-3 gl-text-gray-500">@{{ author.username }}</div>
+          <div class="gl-mb-3 gl-text-subtle">@{{ author.username }}</div>
         </div>
       </div>
     </gl-popover>

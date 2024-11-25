@@ -258,7 +258,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   Add code owners
                 </a>
                 <span
-                  class="gl-italic gl-text-gray-500"
+                  class="gl-italic gl-text-subtle"
                   data-testid="trial-only"
                 >
                   - Included in trial
@@ -285,7 +285,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   Enable require merge approvals
                 </a>
                 <span
-                  class="gl-italic gl-text-gray-500"
+                  class="gl-italic gl-text-subtle"
                   data-testid="trial-only"
                 >
                   - Included in trial
@@ -341,7 +341,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   Scan dependencies for licenses
                 </a>
                 <span
-                  class="gl-italic gl-text-gray-500"
+                  class="gl-italic gl-text-subtle"
                   data-testid="trial-only"
                 >
                   - Included in trial
@@ -368,7 +368,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   Scan dependencies for vulnerabilities
                 </a>
                 <span
-                  class="gl-italic gl-text-gray-500"
+                  class="gl-italic gl-text-subtle"
                   data-testid="trial-only"
                 >
                   - Included in trial
@@ -395,7 +395,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   Analyze your application for vulnerabilities with DAST
                 </a>
                 <span
-                  class="gl-italic gl-text-gray-500"
+                  class="gl-italic gl-text-subtle"
                   data-testid="trial-only"
                 >
                   - Included in trial

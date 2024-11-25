@@ -9,7 +9,7 @@ export default {
 };
 </script>
 <template>
-  <span class="gl-italic gl-text-gray-500" data-testid="trial-only">
+  <span class="gl-italic gl-text-subtle" data-testid="trial-only">
     {{ $options.i18n.trialOnly }}
   </span>
 </template>

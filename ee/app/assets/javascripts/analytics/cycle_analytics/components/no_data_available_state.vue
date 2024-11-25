@@ -27,7 +27,7 @@ export default {
       <div class="gl-font-bold" data-testid="vsa-no-data-title">{{ title }}</div>
     </template>
     <template #description>
-      <div class="gl-text-gray-500" data-testid="vsa-no-data-description">{{ description }}</div>
+      <div class="gl-text-subtle" data-testid="vsa-no-data-description">{{ description }}</div>
     </template>
   </gl-empty-state>
 </template>

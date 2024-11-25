@@ -38,7 +38,7 @@ export default {
 
 <template>
   <div
-    class="gl-mb-5 gl-flex gl-items-center gl-justify-between gl-border-1 gl-border-gray-100 gl-pb-3 gl-text-gray-500 gl-border-b-solid"
+    class="gl-mb-5 gl-flex gl-items-center gl-justify-between gl-border-1 gl-border-gray-100 gl-pb-3 gl-text-subtle gl-border-b-solid"
   >
     <div class="gl-flex gl-items-center">
       <project-avatar
@@ -49,7 +49,7 @@ export default {
         class="gl-mr-3"
       />
       <gl-link
-        class="gl-mr-3 gl-text-gray-500"
+        class="gl-mr-3 gl-text-subtle"
         :href="`/${project.namespace.full_path}`"
         data-testid="namespace-link"
       >
@@ -65,7 +65,7 @@ export default {
         :size="$options.avatarSize"
         class="gl-mr-3"
       />
-      <gl-link class="gl-mr-3 gl-text-gray-500" :href="project.web_url" data-testid="project-link">
+      <gl-link class="gl-mr-3 gl-text-subtle" :href="project.web_url" data-testid="project-link">
         {{ project.name }}
       </gl-link>
     </div>
@@ -76,7 +76,7 @@ export default {
         text-sr-only
         :title="$options.moreActionsText"
         icon="ellipsis_v"
-        class="gl-text-gray-500"
+        class="gl-text-subtle"
         toggle-class="gl-flex gl-items-center !gl-px-3 gl-bg-transparent !gl-shadow-none"
         no-caret
       >

@@ -121,7 +121,7 @@ export default {
   <div data-testid="throughput-chart">
     <throughput-stats :stats="singleStatsValues" :is-loading="isLoading" />
     <h4 data-testid="chartTitle">{{ $options.strings.chartTitle }}</h4>
-    <div class="gl-text-gray-500" data-testid="chartDescription">
+    <div class="gl-text-subtle" data-testid="chartDescription">
       {{ $options.strings.chartDescription }}
     </div>
     <chart-skeleton-loader v-if="isLoading" />

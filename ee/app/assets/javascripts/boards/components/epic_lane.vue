@@ -230,7 +230,7 @@ export default {
             v-if="!isLoading"
             v-gl-tooltip.hover
             :title="issuesCountTooltipText"
-            class="gl-flex gl-items-center gl-text-gray-500"
+            class="gl-flex gl-items-center gl-text-subtle"
             tabindex="0"
             :aria-label="issuesCountTooltipText"
             data-testid="epic-lane-issue-count"

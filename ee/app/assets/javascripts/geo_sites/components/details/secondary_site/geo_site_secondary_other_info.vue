@@ -17,7 +17,7 @@ export default {
     ok: __('OK'),
     nA: __('Not applicable.'),
   },
-  classTimestamp: 'gl-text-gray-500 gl-text-sm gl-font-normal',
+  classTimestamp: 'gl-text-subtle gl-text-sm gl-font-normal',
   components: {
     GlCard,
     TimeAgo,

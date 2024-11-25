@@ -275,7 +275,7 @@ export default {
         <div class="gl-flex gl-items-start" data-testid="schedule-header">
           <div class="gl-grow">
             <h2 class="gl-m-0 gl-font-bold">{{ schedule.name }}</h2>
-            <p class="gl-m-0 gl-text-gray-500">
+            <p class="gl-m-0 gl-text-subtle">
               {{ scheduleInfo }}
             </p>
           </div>

@@ -2,7 +2,7 @@
 
 exports[`Project Header matches the snapshot 1`] = `
 <div
-  class="gl-border-1 gl-border-b-solid gl-border-gray-100 gl-flex gl-items-center gl-justify-between gl-mb-5 gl-pb-3 gl-text-gray-500"
+  class="gl-border-1 gl-border-b-solid gl-border-gray-100 gl-flex gl-items-center gl-justify-between gl-mb-5 gl-pb-3 gl-text-subtle"
 >
   <div
     class="gl-flex gl-items-center"
@@ -15,7 +15,7 @@ exports[`Project Header matches the snapshot 1`] = `
       size="24"
     />
     <gl-link-stub
-      class="gl-mr-3 gl-text-gray-500"
+      class="gl-mr-3 gl-text-subtle"
       data-testid="namespace-link"
       href="/hello"
     >
@@ -34,7 +34,7 @@ exports[`Project Header matches the snapshot 1`] = `
       size="24"
     />
     <gl-link-stub
-      class="gl-mr-3 gl-text-gray-500"
+      class="gl-mr-3 gl-text-subtle"
       data-testid="project-link"
     >
       world
@@ -46,7 +46,7 @@ exports[`Project Header matches the snapshot 1`] = `
     <gl-disclosure-dropdown-stub
       autoclose="true"
       category="primary"
-      class="gl-text-gray-500"
+      class="gl-text-subtle"
       icon="ellipsis_v"
       items=""
       nocaret="true"

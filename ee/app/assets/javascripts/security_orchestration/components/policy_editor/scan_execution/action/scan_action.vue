@@ -189,7 +189,7 @@ export default {
   <div>
     <div
       v-if="!isFirstAction"
-      class="gl-mb-4 gl-ml-5 gl-text-gray-500"
+      class="gl-mb-4 gl-ml-5 gl-text-subtle"
       data-testid="action-and-label"
     >
       {{ $options.ACTION_AND_LABEL }}

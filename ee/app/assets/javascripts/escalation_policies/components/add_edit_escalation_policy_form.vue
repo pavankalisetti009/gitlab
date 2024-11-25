@@ -186,7 +186,7 @@ export default {
     <gl-link v-if="!hasMaxRules" @click="addRule">
       <span>{{ $options.i18n.addRule }}</span>
     </gl-link>
-    <span v-else data-testid="max-rules-text" class="gl-text-gray-500">
+    <span v-else data-testid="max-rules-text" class="gl-text-subtle">
       {{ $options.i18n.maxRules }}
     </span>
   </gl-form>

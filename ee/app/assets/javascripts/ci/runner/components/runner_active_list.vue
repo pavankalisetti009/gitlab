@@ -58,7 +58,7 @@ export default {
         <gl-skeleton-loader :lines="9" />
       </template>
       <template #cell(index)="{ index }">
-        <span class="gl-text-size-h2 gl-text-gray-500">{{ index + 1 }}</span>
+        <span class="gl-text-size-h2 gl-text-subtle">{{ index + 1 }}</span>
       </template>
       <template #cell(runner)="{ item = {} }">
         <runner-full-name :runner="item" />

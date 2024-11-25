@@ -136,7 +136,7 @@ export default {
           :aria-label="$options.i18n.helpPageLinkLabel"
           :href="relatedJiraIssuesHelpPath"
           target="_blank"
-          class="gl-ml-2 gl-flex gl-items-center gl-text-gray-500"
+          class="gl-ml-2 gl-flex gl-items-center gl-text-subtle"
         >
           <gl-icon name="question-o" :size="12" />
         </gl-link>
@@ -193,7 +193,7 @@ export default {
               >
                 {{ issue.title }}
               </gl-link>
-              <span class="gl-ml-3 gl-text-gray-500">&num;{{ issue.references.relative }}</span>
+              <span class="gl-ml-3 gl-text-subtle">&num;{{ issue.references.relative }}</span>
             </li>
           </ul>
         </gl-card>

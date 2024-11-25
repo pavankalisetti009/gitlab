@@ -45,7 +45,7 @@ export default {
     <gl-form-checkbox
       :disabled="!canAdminBoard"
       :checked="checked"
-      class="gl-text-gray-500"
+      class="gl-text-subtle"
       @change="handleToggle"
       >{{ $options.i18n.label }}
     </gl-form-checkbox>

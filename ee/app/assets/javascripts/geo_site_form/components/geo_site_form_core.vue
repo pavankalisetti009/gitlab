@@ -85,7 +85,7 @@ export default {
           @update="checkName"
         />
         <!-- eslint-enable vue/no-mutating-props -->
-        <span class="m-n5 gl-z-2 gl-text-gray-500">{{ 255 - siteData.name.length }}</span>
+        <span class="m-n5 gl-z-2 gl-text-subtle">{{ 255 - siteData.name.length }}</span>
       </div>
     </gl-form-group>
     <section class="form-row">
@@ -115,7 +115,7 @@ export default {
             @update="checkUrl"
           />
           <!-- eslint-enable vue/no-mutating-props -->
-          <span class="m-n5 gl-z-2 gl-text-gray-500">{{ 255 - siteData.url.length }}</span>
+          <span class="m-n5 gl-z-2 gl-text-subtle">{{ 255 - siteData.url.length }}</span>
         </div>
       </gl-form-group>
       <gl-form-group
@@ -133,7 +133,7 @@ export default {
             type="text"
           />
           <!-- eslint-enable vue/no-mutating-props -->
-          <span class="m-n5 gl-z-2 gl-text-gray-500">{{ 255 - siteData.internalUrl.length }}</span>
+          <span class="m-n5 gl-z-2 gl-text-subtle">{{ 255 - siteData.internalUrl.length }}</span>
         </div>
       </gl-form-group>
     </section>

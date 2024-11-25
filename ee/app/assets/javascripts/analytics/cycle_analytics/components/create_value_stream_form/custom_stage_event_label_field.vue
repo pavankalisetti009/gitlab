@@ -152,7 +152,7 @@ export default {
                 </span>
                 {{ selectedLabel.title }}
               </div>
-              <div v-else class="gl-text-gray-500">{{ $options.i18n.headerText }}</div>
+              <div v-else class="gl-text-subtle">{{ $options.i18n.headerText }}</div>
               <gl-icon name="chevron-down" />
             </gl-button>
           </template>

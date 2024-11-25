@@ -69,6 +69,6 @@ describe('PreScanVerificationStep', () => {
     createComponent({ status });
 
     expect(findPreScanVerificationStepText().classes('gl-text-red-500')).toEqual(expectedResult);
-    expect(findPreScanVerificationStepText().classes('gl-text-gray-500')).toEqual(!expectedResult);
+    expect(findPreScanVerificationStepText().classes('gl-text-subtle')).toEqual(!expectedResult);
   });
 });

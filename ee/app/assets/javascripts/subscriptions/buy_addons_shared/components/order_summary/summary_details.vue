@@ -118,10 +118,10 @@ export default {
       </div>
     </div>
     <div class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-5 gl-border-b-solid">
-      <div class="gl-text-gray-500" data-testid="price-per-unit">
+      <div class="gl-text-subtle" data-testid="price-per-unit">
         <slot name="price-per-unit" :price="formattedPrice"></slot>
       </div>
-      <div v-if="hasExpiration" class="gl-text-gray-500" data-testid="subscription-period">
+      <div v-if="hasExpiration" class="gl-text-subtle" data-testid="subscription-period">
         {{
           sprintf($options.i18n.dates, {
             startDate: formatDate(startDate),
@@ -139,18 +139,18 @@ export default {
       </div>
     </div>
     <div class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-5 gl-border-b-solid">
-      <div class="gl-mb-2 gl-flex gl-justify-between gl-text-gray-500">
+      <div class="gl-mb-2 gl-flex gl-justify-between gl-text-subtle">
         <div>{{ $options.i18n.subtotal }}</div>
         <div data-testid="total-ex-vat">
           {{ renderedAmount }}
         </div>
       </div>
-      <div class="gl-flex gl-justify-between gl-text-gray-500">
+      <div class="gl-flex gl-justify-between gl-text-subtle">
         <div data-testid="vat-info-line">
           <gl-sprintf :message="taxLine">
             <template #link="{ content }">
               <promo-page-link
-                class="gl-text-gray-500 gl-underline"
+                class="gl-text-subtle gl-underline"
                 :path="$options.vatHelpPath"
                 target="_blank"
                 data-testid="vat-help-link"

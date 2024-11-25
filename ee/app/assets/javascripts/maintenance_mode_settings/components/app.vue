@@ -48,7 +48,7 @@ export default {
         />
         <div class="gl-ml-3">
           <p class="gl-mb-0">{{ $options.i18n.toggleLabel }}</p>
-          <p class="gl-mb-0 gl-text-gray-500">
+          <p class="gl-mb-0 gl-text-subtle">
             {{ $options.i18n.toggleHelpText }}
           </p>
         </div>

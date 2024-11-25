@@ -77,7 +77,7 @@ export default {
                   <span>{{ item.name }} </span>
                 </span>
               </div>
-              <div class="gl-pb-1 gl-text-sm gl-text-gray-500">
+              <div class="gl-pb-1 gl-text-sm gl-text-subtle">
                 <span data-testid="workspaces-project-name">
                   {{ item.projectName }}
                 </span>

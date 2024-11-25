@@ -245,7 +245,7 @@ export default {
         {{ __('New requirement') }}
       </h4>
       <div v-else class="gl-flex gl-items-center">
-        <strong class="gl-text-gray-500">{{ reference }}</strong>
+        <strong class="gl-text-subtle">{{ reference }}</strong>
         <requirement-status-badge
           v-if="testReport"
           :test-report="testReport"

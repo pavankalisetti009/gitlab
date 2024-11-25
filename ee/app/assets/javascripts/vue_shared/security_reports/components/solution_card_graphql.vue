@@ -66,7 +66,7 @@ export default {
       </div>
     </template>
     <template v-if="showCreateMergeRequestMessage" #footer>
-      <em class="gl-text-gray-500" data-testid="merge-request-solution">
+      <em class="gl-text-subtle" data-testid="merge-request-solution">
         {{
           s__(
             'ciReport|Create a merge request to implement this solution, or download and apply the patch manually.',

@@ -187,9 +187,7 @@ export default {
       />
     </gl-form-group>
 
-    <span v-if="isShowingUploadText" class="gl-text-gray-500">{{
-      $options.i18n.uploadMessage
-    }}</span>
+    <span v-if="isShowingUploadText" class="gl-text-subtle">{{ $options.i18n.uploadMessage }}</span>
 
     <gl-form-group>
       <gl-button

@@ -55,7 +55,7 @@ export default {
     <span class="gl-font-bold" data-testid="sync-type">{{ syncType }}</span>
     <span
       v-if="!eventTimestampEmpty"
-      class="gl-ml-3 gl-text-sm gl-text-gray-500"
+      class="gl-ml-3 gl-text-sm gl-text-subtle"
       data-testid="sync-status-event-info"
     >
       {{ syncStatusEventInfo }}

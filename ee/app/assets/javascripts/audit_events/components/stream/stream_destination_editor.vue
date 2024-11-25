@@ -893,12 +893,12 @@ export default {
             />
           </template>
         </gl-table-lite>
-        <p v-if="hasNoHeaders" class="gl-mb-5 gl-text-gray-500" data-testid="no-header-created">
+        <p v-if="hasNoHeaders" class="gl-mb-5 gl-text-subtle" data-testid="no-header-created">
           {{ $options.i18n.NO_HEADER_CREATED_TEXT }}
         </p>
         <p
           v-if="hasReachedMaxHeaders"
-          class="gl-mb-0 gl-mt-5 gl-text-gray-500"
+          class="gl-mb-0 gl-mt-5 gl-text-subtle"
           data-testid="maximum-headers"
         >
           <gl-sprintf :message="$options.i18n.MAXIMUM_HEADERS_TEXT">

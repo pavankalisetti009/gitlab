@@ -131,7 +131,7 @@ export default {
               {{ $options.i18n.testRuns.learnMoreLink }}
             </gl-link>
           </gl-popover>
-          <strong class="gl-mx-2 gl-text-gray-500">{{ $options.i18n.subHeader }}</strong>
+          <strong class="gl-mx-2 gl-text-subtle">{{ $options.i18n.subHeader }}</strong>
           <gl-link
             :href="pipelineTestReportPath"
             class="gl-mx-2 gl-grow gl-text-right"
@@ -200,7 +200,7 @@ export default {
               {{ $options.i18n.codeQuality.learnMoreLink }}
             </gl-link>
           </gl-popover>
-          <strong class="gl-mx-2 gl-text-gray-500">{{ $options.i18n.subHeader }}</strong>
+          <strong class="gl-mx-2 gl-text-subtle">{{ $options.i18n.subHeader }}</strong>
           <gl-link
             :href="pipelineCodeQualityReportPath"
             class="gl-mx-2 gl-grow gl-text-right"
@@ -262,7 +262,7 @@ export default {
               {{ $options.i18n.coverage.learnMoreLink }}
             </gl-link>
           </gl-popover>
-          <strong class="gl-mx-2 gl-text-gray-500">{{ $options.i18n.subHeader }}</strong>
+          <strong class="gl-mx-2 gl-text-subtle">{{ $options.i18n.subHeader }}</strong>
           <gl-link
             :href="coverageChartPath"
             class="gl-mx-2 gl-grow gl-text-right"
