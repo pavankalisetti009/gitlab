@@ -11,6 +11,7 @@ RSpec.describe MergeRequests::ComplianceViolation, type: :model, feature_categor
   describe "Associations" do
     it { is_expected.to belong_to(:violating_user) }
     it { is_expected.to belong_to(:merge_request) }
+    it { is_expected.to belong_to(:target_project).required }
   end
 
   describe "Validations" do

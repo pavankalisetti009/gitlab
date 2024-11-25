@@ -15804,7 +15804,7 @@ CREATE TABLE merge_requests_compliance_violations (
     reason smallint NOT NULL,
     severity_level smallint DEFAULT 0 NOT NULL,
     merged_at timestamp with time zone,
-    target_project_id bigint,
+    target_project_id bigint NOT NULL,
     title text,
     target_branch text
 );
