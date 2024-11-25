@@ -36785,9 +36785,6 @@ msgstr ""
 msgid "Notes|Internal notes are only visible to members with the role of Planner or higher"
 msgstr ""
 
-msgid "Notes|Internal notes are only visible to members with the role of Reporter or higher"
-msgstr ""
-
 msgid "Notes|Last reply by %{name}"
 msgstr ""
 
