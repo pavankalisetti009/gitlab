@@ -37,7 +37,8 @@ module EE
                 .new(project: quick_action_target.project, current_user: current_user)
                 .execute(quick_action_target, duo_code_review_bot)
             else
-              @updates[:reviewer_ids] = [duo_code_review_bot.id]
+              @updates[:reviewer_ids] ||= quick_action_target.reviewers.map(&:id)
+              @updates[:reviewer_ids] |= [duo_code_review_bot.id]
             end
           end
         end
