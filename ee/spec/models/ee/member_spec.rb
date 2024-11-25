@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:user) { create :user }
-  let_it_be(:group) { create :group }
-  let_it_be(:member) { build :group_member, source: group, user: user }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:member) { build(:group_member, :developer, source: group, user: user) }
   let_it_be(:sub_group) { create(:group, parent: group) }
   let_it_be(:sub_group_member) { build(:group_member, source: sub_group, user: user) }
   let_it_be(:project) { create(:project, namespace: group) }
@@ -184,6 +184,20 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       subject(:result) { described_class.count_users_by_role }
 
       it { is_expected.to eql(::Gitlab::Access::MAINTAINER => 2, ::Gitlab::Access::GUEST => 1) }
+    end
+
+    describe '.distinct_on_user_with_max_access_level' do
+      let_it_be(:member_role) { create(:member_role, :instance) }
+
+      let_it_be(:member_with_same_access_level) { create(:group_member, :developer, user: user) }
+      let_it_be(:member_with_higher_access_level) { create(:group_member, :maintainer, user: user) }
+      let_it_be(:member_with_higher_access_level_and_custom_role) { create(:group_member, :maintainer, user: user, member_role: member_role) }
+
+      subject { described_class.default_scoped.distinct_on_user_with_max_access_level(group).to_a }
+
+      it { is_expected.not_to include member_with_same_access_level }
+      it { is_expected.not_to include member_with_higher_access_level }
+      it { is_expected.to include member_with_higher_access_level_and_custom_role }
     end
   end
 
