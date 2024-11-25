@@ -1573,13 +1573,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_project_members(exclude_guests: true))
           .to match_array([developer, sub_developer, guest_with_role])
       end
-
-      it 'includes guests with elevating role assigned when the performance feature flag is off' do
-        stub_feature_flags(billed_project_members_performance_improvement: false)
-
-        expect(group.billed_project_members(exclude_guests: true))
-          .to match_array([developer, sub_developer, guest_with_role])
-      end
     end
 
     context 'with banned members' do
