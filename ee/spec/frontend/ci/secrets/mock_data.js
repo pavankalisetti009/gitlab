@@ -101,10 +101,18 @@ export const mockSecret = ({ customSecret } = {}) => ({
 });
 
 export const mockProjectSecret = ({ customSecret, errors = [] } = {}) => ({
-  secret: {
-    ...mockSecret(customSecret),
+  data: {
+    projectSecretCreate: {
+      errors,
+      __typename: 'ProjectSecretCreatePayload',
+      projectSecret: {
+        name: 'APP_PWD',
+        description: 'This is a secret',
+        ...customSecret,
+        __typename: 'ProjectSecret',
+      },
+    },
   },
-  errors,
 });
 
 export const mockProjectSecretQueryResponse = ({ customSecret } = {}) => ({

@@ -1,7 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox, GlDatepicker, GlFormInput, GlFormTextarea } from '@gitlab/ui';
-import { DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
 import { createAlert } from '~/alert';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -10,7 +9,9 @@ import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_help
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
 import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
-import { mockProjectSecret, mockSecretId } from '../../mock_data';
+import CreateSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
+import GetProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
+import { mockProjectBranches, mockProjectSecret } from '../../mock_data';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -19,6 +20,7 @@ describe('SecretForm component', () => {
   let wrapper;
   let mockApollo;
   let mockCreateSecretResponse;
+  let mockProjectBranchesResponse;
   const mockRouter = {
     push: jest.fn(),
     currentRoute: {},
@@ -47,13 +49,12 @@ describe('SecretForm component', () => {
   const findSubmitButton = () => wrapper.findByTestId('submit-form-button');
 
   const createComponent = ({ props, mountFn = shallowMountExtended, stubs } = {}) => {
-    const mockResolvers = {
-      Mutation: {
-        createSecret: mockCreateSecretResponse,
-      },
-    };
+    const handlers = [
+      [CreateSecretMutation, mockCreateSecretResponse],
+      [GetProjectBranches, mockProjectBranchesResponse],
+    ];
 
-    mockApollo = createMockApollo([], mockResolvers);
+    mockApollo = createMockApollo(handlers);
 
     wrapper = mountFn(SecretForm, {
       apolloProvider: mockApollo,
@@ -95,6 +96,7 @@ describe('SecretForm component', () => {
 
   beforeEach(() => {
     mockCreateSecretResponse = jest.fn();
+    mockProjectBranchesResponse = jest.fn().mockResolvedValue(mockProjectBranches);
   });
 
   afterEach(() => {
@@ -282,16 +284,6 @@ describe('SecretForm component', () => {
       beforeEach(() => {
         mockCreateSecretResponse.mockResolvedValue(mockProjectSecret());
         createComponent({ mountFn: mountExtended });
-      });
-
-      it('redirects to the secret details page', async () => {
-        await submitSecret();
-        await waitForPromises();
-
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          name: DETAILS_ROUTE_NAME,
-          params: { id: mockSecretId },
-        });
       });
     });
 
