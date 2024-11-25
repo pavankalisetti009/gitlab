@@ -59,10 +59,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
               expect(response).to render_template(expected_template)
               expect(assigns(:work_item)).to eq(epic.work_item)
-              expect(response.body).to have_pushed_frontend_feature_flags(
-                workItemEpics: true,
-                workItemsRolledupDates: true
-              )
+              expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
             end
 
             it 'renders legacy page when forcing the legacy view' do

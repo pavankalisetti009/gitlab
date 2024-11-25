@@ -16,81 +16,63 @@ RSpec.describe Milestones::UpdateService, feature_category: :team_planning do
         create(:parent_link, work_item_parent: epic.work_item, work_item: WorkItem.find(issue.id))
       end
 
-      shared_examples 'updates milestone sourced dates' do
-        subject(:update_milestone) { described_class.new(project, user, params).execute(milestone) }
+      subject(:update_milestone) { described_class.new(project, user, params).execute(milestone) }
 
-        context 'when due date changes' do
-          let(:params) { { due_date: due_date } }
-          let(:expected_attributes) do
-            {
-              start_date: nil,
-              start_date_sourcing_milestone: nil,
-              due_date: due_date,
-              due_date_sourcing_milestone: milestone
-            }
-          end
-
-          it 'updates milestone sourced dates when due date changes' do
-            update_milestone
-
-            expect(epic.reload).to have_attributes(expected_attributes)
-            expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
-          end
+      context 'when due date changes' do
+        let(:params) { { due_date: due_date } }
+        let(:expected_attributes) do
+          {
+            start_date: nil,
+            start_date_sourcing_milestone: nil,
+            due_date: due_date,
+            due_date_sourcing_milestone: milestone
+          }
         end
 
-        context 'when start date changes' do
-          let(:params) { { start_date: start_date } }
-          let(:expected_attributes) do
-            {
-              start_date: start_date,
-              start_date_sourcing_milestone: milestone,
-              due_date: nil,
-              due_date_sourcing_milestone: nil
-            }
-          end
+        it 'updates milestone sourced dates when due date changes' do
+          update_milestone
 
-          it 'updates milestone sourced dates when start date changes' do
-            update_milestone
-
-            expect(epic.reload).to have_attributes(expected_attributes)
-            expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
-          end
-        end
-
-        context 'when both start and due date changes' do
-          let(:params) { { start_date: start_date, due_date: due_date } }
-          let(:expected_attributes) do
-            {
-              start_date: start_date,
-              start_date_sourcing_milestone: milestone,
-              due_date: due_date,
-              due_date_sourcing_milestone: milestone
-            }
-          end
-
-          it 'updates milestone sourced dates when start date changes' do
-            update_milestone
-
-            expect(epic.reload).to have_attributes(expected_attributes)
-            expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
-          end
+          expect(epic.reload).to have_attributes(expected_attributes)
+          expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
         end
       end
 
-      context 'when work_items_rolledup_dates is enabled', :sidekiq_inline do
-        before do
-          stub_feature_flags(work_items_rolledup_dates: true)
+      context 'when start date changes' do
+        let(:params) { { start_date: start_date } }
+        let(:expected_attributes) do
+          {
+            start_date: start_date,
+            start_date_sourcing_milestone: milestone,
+            due_date: nil,
+            due_date_sourcing_milestone: nil
+          }
         end
 
-        it_behaves_like 'updates milestone sourced dates'
+        it 'updates milestone sourced dates when start date changes' do
+          update_milestone
+
+          expect(epic.reload).to have_attributes(expected_attributes)
+          expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
+        end
       end
 
-      context 'when work_items_rolledup_dates is disabled' do
-        before do
-          stub_feature_flags(work_items_rolledup_dates: false)
+      context 'when both start and due date changes' do
+        let(:params) { { start_date: start_date, due_date: due_date } }
+        let(:expected_attributes) do
+          {
+            start_date: start_date,
+            start_date_sourcing_milestone: milestone,
+            due_date: due_date,
+            due_date_sourcing_milestone: milestone
+          }
         end
 
-        it_behaves_like 'updates milestone sourced dates'
+        it 'updates milestone sourced dates when start date changes' do
+          update_milestone
+
+          expect(epic.reload).to have_attributes(expected_attributes)
+          expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
+        end
       end
     end
   end

@@ -157,48 +157,20 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
               create(:parent_link, work_item_parent: parent_epic.work_item, work_item: child_epic.work_item)
             end
 
-            context 'when work_items_rolledup_dates is disabled' do
-              before do
-                stub_feature_flags(work_items_rolledup_dates: false)
-              end
+            it 'updates parent dates to match existing children' do
+              expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
 
-              it 'updates parent dates to match existing children' do
-                expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
+              expect { destroy_link }.to change { parent_epic.reload.children.count }.by(-1)
 
-                expect { destroy_link }.to change { parent_epic.reload.children.count }.by(-1)
+              expect(parent_epic.start_date).to eq(other_child.start_date)
+              expect(parent_epic.due_date).to eq(other_child.due_date)
+              expect(parent_epic.start_date_sourcing_epic_id).to eq(other_child.id)
+              expect(parent_epic.due_date_sourcing_epic_id).to eq(other_child.id)
 
-                expect(parent_epic.start_date).to eq(other_child.start_date)
-                expect(parent_epic.due_date).to eq(other_child.due_date)
-                expect(parent_epic.start_date_sourcing_epic_id).to eq(other_child.id)
-                expect(parent_epic.due_date_sourcing_epic_id).to eq(other_child.id)
-
-                expect(parent_dates_source.start_date).to eq(other_child.start_date)
-                expect(parent_dates_source.due_date).to eq(other_child.due_date)
-                expect(parent_dates_source.start_date_sourcing_work_item_id).to eq(other_child.issue_id)
-                expect(parent_dates_source.due_date_sourcing_work_item_id).to eq(other_child.issue_id)
-              end
-            end
-
-            context 'when work_items_rolledup_dates is enabled' do
-              before do
-                stub_feature_flags(work_items_rolledup_dates: true)
-              end
-
-              it 'updates parent dates to match existing children' do
-                expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
-
-                expect { destroy_link }.to change { parent_epic.reload.children.count }.by(-1)
-
-                expect(parent_epic.start_date).to eq(other_child.start_date)
-                expect(parent_epic.due_date).to eq(other_child.due_date)
-                expect(parent_epic.start_date_sourcing_epic_id).to eq(other_child.id)
-                expect(parent_epic.due_date_sourcing_epic_id).to eq(other_child.id)
-
-                expect(parent_dates_source.start_date).to eq(other_child.start_date)
-                expect(parent_dates_source.due_date).to eq(other_child.due_date)
-                expect(parent_dates_source.start_date_sourcing_work_item_id).to eq(other_child.issue_id)
-                expect(parent_dates_source.due_date_sourcing_work_item_id).to eq(other_child.issue_id)
-              end
+              expect(parent_dates_source.start_date).to eq(other_child.start_date)
+              expect(parent_dates_source.due_date).to eq(other_child.due_date)
+              expect(parent_dates_source.start_date_sourcing_work_item_id).to eq(other_child.issue_id)
+              expect(parent_dates_source.due_date_sourcing_work_item_id).to eq(other_child.issue_id)
             end
           end
         end

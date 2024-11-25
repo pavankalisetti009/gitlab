@@ -18,35 +18,19 @@ RSpec.describe WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEven
   describe ".can_handle?" do
     let(:milestone) { create(:milestone, :on_project, project: project) }
 
-    context "and the feature flag is disabled" do
-      before do
-        stub_feature_flags(work_items_rolledup_dates: false)
-      end
-
-      it "returns false" do
+    context "when project milestone" do
+      it "returns false if no expected widget or attribute changed" do
         expect(described_class.can_handle?(event)).to eq(false)
       end
-    end
 
-    context "when project milestone" do
-      context "and the feature flag is enabled" do
-        before do
-          stub_feature_flags(work_items_rolledup_dates: milestone.project.root_ancestor)
-        end
+      it "returns true when expected attribute changed" do
+        described_class::UPDATE_TRIGGER_ATTRIBUTES.each do |attribute|
+          event = instance_double(Milestones::MilestoneUpdatedEvent, data: {
+            id: milestone.id,
+            updated_attributes: [attribute]
+          })
 
-        it "returns false if no expected widget or attribute changed" do
-          expect(described_class.can_handle?(event)).to eq(false)
-        end
-
-        it "returns true when expected attribute changed" do
-          described_class::UPDATE_TRIGGER_ATTRIBUTES.each do |attribute|
-            event = instance_double(Milestones::MilestoneUpdatedEvent, data: {
-              id: milestone.id,
-              updated_attributes: [attribute]
-            })
-
-            expect(described_class.can_handle?(event)).to eq(true)
-          end
+          expect(described_class.can_handle?(event)).to eq(true)
         end
       end
     end
@@ -54,24 +38,18 @@ RSpec.describe WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEven
     context "when group milestone" do
       let(:milestone) { create(:milestone, :on_group, group: group) }
 
-      context "and the feature flag is enabled" do
-        before do
-          stub_feature_flags(work_items_rolledup_dates: milestone.group.root_ancestor)
-        end
+      it "returns false if no expected widget or attribute changed" do
+        expect(described_class.can_handle?(event)).to eq(false)
+      end
 
-        it "returns false if no expected widget or attribute changed" do
-          expect(described_class.can_handle?(event)).to eq(false)
-        end
+      it "returns true when expected attribute changed" do
+        described_class::UPDATE_TRIGGER_ATTRIBUTES.each do |attribute|
+          event = instance_double(Milestones::MilestoneUpdatedEvent, data: {
+            id: milestone.id,
+            updated_attributes: [attribute]
+          })
 
-        it "returns true when expected attribute changed" do
-          described_class::UPDATE_TRIGGER_ATTRIBUTES.each do |attribute|
-            event = instance_double(Milestones::MilestoneUpdatedEvent, data: {
-              id: milestone.id,
-              updated_attributes: [attribute]
-            })
-
-            expect(described_class.can_handle?(event)).to eq(true)
-          end
+          expect(described_class.can_handle?(event)).to eq(true)
         end
       end
     end

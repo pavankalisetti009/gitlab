@@ -8,7 +8,6 @@ class Groups::EpicBoardsController < Groups::ApplicationController
 
   before_action do
     push_force_frontend_feature_flag(:work_item_epics, group.work_item_epics_enabled?)
-    push_force_frontend_feature_flag(:work_items_rolledup_dates, group&.work_items_rolledup_dates_feature_flag_enabled?)
     push_frontend_feature_flag(:epics_list_drawer, group)
   end
 

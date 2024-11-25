@@ -18,11 +18,10 @@ module Epics
       # We need to either calculate the rolledup dates from the legacy epic side and sync to the work item,
       # or calculate it on the work item side and sync to the legacy epic.
       # If we'd run the jobs on both sides, we could end up with a race condition.
-      group = @epics.first&.group
-      if group&.work_items_rolledup_dates_feature_flag_enabled? && group.work_item_epics_enabled?
+      if @epics.first&.group&.work_item_epics_ssot_enabled?
         ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService
-                  .new(WorkItem.id_in(@epics.select(:issue_id)))
-                  .execute
+          .new(WorkItem.id_in(@epics.select(:issue_id)))
+          .execute
       else
         each_batch do |relation, parent_ids|
           STRATEGIES.each do |strategy|

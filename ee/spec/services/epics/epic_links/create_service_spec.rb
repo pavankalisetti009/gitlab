@@ -391,43 +391,26 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
               create(:parent_link, work_item_parent: other_parent.work_item, work_item: epic_to_add.work_item)
             end
 
-            shared_examples 'rolled up dates' do
-              it 'corectly updates the parent dates' do
-                expect { subject }.to change { epic.reload.children.count }.by(1)
-                                  .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
-                                  .and change { epic.due_date }.from(nil).to(epic_to_add.due_date)
-                                  .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                                  .and change { epic.due_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                                  .and change { other_parent.reload.children.count }.by(-1)
-                                  .and change { other_parent.start_date }.from(epic_to_add.start_date).to(nil)
-                                  .and change { other_parent.due_date }.from(epic_to_add.due_date).to(nil)
+            it 'corectly updates the parent dates' do
+              expect { subject }
+                .to change { epic.reload.children.count }.by(1)
+                .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
+                .and change { epic.due_date }.from(nil).to(epic_to_add.due_date)
+                .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                .and change { epic.due_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                .and change { other_parent.reload.children.count }.by(-1)
+                .and change { other_parent.start_date }.from(epic_to_add.start_date).to(nil)
+                .and change { other_parent.due_date }.from(epic_to_add.due_date).to(nil)
 
-                epic_dates_source = epic.work_item.dates_source
-                other_parent_dates_source = other_parent.work_item.dates_source
+              epic_dates_source = epic.work_item.dates_source
+              other_parent_dates_source = other_parent.work_item.dates_source
 
-                expect(epic_dates_source.start_date).to eq(epic_to_add.start_date)
-                expect(epic_dates_source.due_date).to eq(epic_to_add.due_date)
-                expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
-                expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
-                expect(other_parent_dates_source.start_date).to eq(nil)
-                expect(other_parent_dates_source.due_date).to eq(nil)
-              end
-            end
-
-            context 'when work_items_rolledup_dates is disabled' do
-              before do
-                stub_feature_flags(work_items_rolledup_dates: false)
-              end
-
-              it_behaves_like 'rolled up dates'
-            end
-
-            context 'when work_items_rolledup_dates is enabled' do
-              before do
-                stub_feature_flags(work_items_rolledup_dates: true)
-              end
-
-              it_behaves_like 'rolled up dates'
+              expect(epic_dates_source.start_date).to eq(epic_to_add.start_date)
+              expect(epic_dates_source.due_date).to eq(epic_to_add.due_date)
+              expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
+              expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
+              expect(other_parent_dates_source.start_date).to eq(nil)
+              expect(other_parent_dates_source.due_date).to eq(nil)
             end
           end
         end
@@ -529,37 +512,20 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
                 due_date: another_epic.due_date)
             end
 
-            shared_examples 'rolled up dates' do
-              it 'corectly updates the parent dates' do
-                expect { subject }.to change { epic.reload.children.count }.by(2)
-                                  .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
-                                  .and change { epic.due_date }.from(nil).to(another_epic.due_date)
-                                  .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                                  .and change { epic.due_date_sourcing_epic_id }.from(nil).to(another_epic.id)
+            it 'corectly updates the parent dates' do
+              expect { subject }
+                .to change { epic.reload.children.count }.by(2)
+                .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
+                .and change { epic.due_date }.from(nil).to(another_epic.due_date)
+                .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                .and change { epic.due_date_sourcing_epic_id }.from(nil).to(another_epic.id)
 
-                epic_dates_source = epic.work_item.dates_source
+              epic_dates_source = epic.work_item.dates_source
 
-                expect(epic_dates_source.start_date).to eq(epic_to_add.start_date)
-                expect(epic_dates_source.due_date).to eq(another_epic.due_date)
-                expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
-                expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(another_epic.work_item.id)
-              end
-            end
-
-            context 'when work_items_rolledup_dates is disabled' do
-              before do
-                stub_feature_flags(work_items_rolledup_dates: false)
-              end
-
-              it_behaves_like 'rolled up dates'
-            end
-
-            context 'when work_items_rolledup_dates is enabled' do
-              before do
-                stub_feature_flags(work_items_rolledup_dates: true)
-              end
-
-              it_behaves_like 'rolled up dates'
+              expect(epic_dates_source.start_date).to eq(epic_to_add.start_date)
+              expect(epic_dates_source.due_date).to eq(another_epic.due_date)
+              expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
+              expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(another_epic.work_item.id)
             end
           end
         end
