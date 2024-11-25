@@ -26,12 +26,26 @@ describe('Vulnerability Code Flow File Viewer component', () => {
   const hlInfo = [
     {
       blockStartLine: 1,
-      blockEndLine: 3,
+      blockEndLine: 5,
       highlightInfo: [
         {
           index: 0,
           startLine: 1,
           endLine: 2,
+        },
+      ],
+    },
+  ];
+
+  const hlInfoExpanded = [
+    {
+      blockStartLine: 2,
+      blockEndLine: 7,
+      highlightInfo: [
+        {
+          index: 0,
+          startLine: 3,
+          endLine: 3,
         },
       ],
     },
@@ -47,7 +61,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
         hlInfo: defaultProps.hlInfo,
         ...props,
       },
-      stubs: { GlSprintf },
+      stubs: { GlSprintf, GlButton },
     });
   };
 
@@ -55,6 +69,9 @@ describe('Vulnerability Code Flow File Viewer component', () => {
   const findVulFileContentViewer = () => wrapper.findComponent(VulnerabilityFileContentViewer);
   const findBlobHeader = () => wrapper.findComponent(BlobHeader);
   const findGlAlert = () => wrapper.findComponent(GlAlert);
+  const findExpandTopButton = () => wrapper.findByTestId('expand-top-lines');
+  const findExpandBottomButton = () => wrapper.findByTestId('expand-bottom-lines');
+  const findCollapseExpandButton = () => wrapper.findByTestId('collapse-expand-file');
 
   describe('loading and error states', () => {
     it('shows a warning if the file was not found', () => {
@@ -72,6 +89,11 @@ describe('Vulnerability Code Flow File Viewer component', () => {
   });
 
   describe('file contents loaded', () => {
+    it('does not render alert without an error', () => {
+      createWrapper();
+      expect(findGlAlert().exists()).toBe(false);
+    });
+
     it('shows the source code without markdown', () => {
       createWrapper();
       expect(findBlobHeader().exists()).toBe(true);
@@ -94,6 +116,41 @@ describe('Vulnerability Code Flow File Viewer component', () => {
     it('renders GlButton with correct aria-label when file is expanded', () => {
       createWrapper();
       expect(findButton().attributes('aria-label')).toBe('Hide file contents');
+    });
+
+    it('renders the expand buttons with correct aria-label', () => {
+      createWrapper({ hlInfo: hlInfoExpanded });
+      expect(findExpandTopButton().attributes('aria-label')).toBe('Expand all lines');
+      expect(findExpandBottomButton().attributes('aria-label')).toBe('Expand all lines');
+    });
+
+    it('does not render expand line buttons when the first markdown block starts at the first line of content', () => {
+      createWrapper({ hlInfo });
+      expect(findExpandTopButton().exists()).toBe(false);
+    });
+
+    it('does not render expand line buttons when the last markdown block matches content length', () => {
+      createWrapper({ hlInfo });
+      expect(findExpandBottomButton().exists()).toBe(false);
+    });
+
+    it('renders the expand line buttons when the first markdown block does not starts at the first line of content', () => {
+      createWrapper({ hlInfo: hlInfoExpanded });
+      expect(findExpandTopButton().exists()).toBe(true);
+    });
+
+    it('renders expand line buttons when the last markdown block does not matches content length', () => {
+      createWrapper({ hlInfo: hlInfoExpanded });
+      expect(findExpandBottomButton().exists()).toBe(true);
+    });
+
+    it('toggles the blob view when the expand button is clicked', async () => {
+      createWrapper({ hlInfo: hlInfoExpanded });
+      expect(findVulFileContentViewer().exists()).toBe(true);
+      await findCollapseExpandButton().vm.$emit('click');
+      expect(findVulFileContentViewer().exists()).toBe(false);
+      await findCollapseExpandButton().vm.$emit('click');
+      expect(findVulFileContentViewer().exists()).toBe(true);
     });
   });
 });
