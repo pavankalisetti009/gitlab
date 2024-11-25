@@ -17,20 +17,16 @@
     padding-left: calc(#{$gl-spacing-scale-5} - 3px);
   }
 
-  ::selection {
-    background-color: transparent;
+  ::selection,
+  &:not(.ProseMirror-hideselection) .content-editor-selection {
+    background-color: $blue-100;
   }
 
   &:focus {
     @apply gl-focus;
   }
 
-  .ProseMirror {
-    user-select: text;
-    cursor: text;
-  }
 
-  &:not(.ProseMirror-hideselection) .content-editor-selection,
   a.ProseMirror-selectednode,
   span.ProseMirror-selectednode {
     @apply gl-bg-blue-100;
@@ -392,3 +388,4 @@
 .bubble-menu-form {
   min-width: 320px;
 }
+
