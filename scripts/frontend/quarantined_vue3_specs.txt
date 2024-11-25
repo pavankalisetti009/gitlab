@@ -157,7 +157,6 @@ spec/frontend/boards/components/board_top_bar_spec.js
 spec/frontend/boards/components/toggle_focus_spec.js
 spec/frontend/boards/project_select_spec.js
 spec/frontend/branches/components/delete_branch_modal_spec.js
-spec/frontend/branches/components/delete_merged_branches_spec.js
 spec/frontend/cascading_settings/components/cascading_lock_icon_spec.js
 spec/frontend/cascading_settings/components/lock_tooltip_spec.js
 spec/frontend/ci/artifacts/components/artifacts_bulk_delete_spec.js
