@@ -35,7 +35,7 @@ module Search
         failed: 255
       }
 
-      scope :non_ready, -> { where.not(state: :ready) }
+      scope :non_ready, -> { where.not(state: %i[ready failed]) }
 
       scope :pending_or_initializing, -> { where(state: %i[pending initializing]) }
 
