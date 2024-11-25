@@ -311,6 +311,11 @@ module EE
           experiment: { milestone: '16.9' },
           description: 'Indicates whether GitLab Duo features are enabled for the project.'
 
+        field :duo_workflow_status_check, ::Types::Ai::DuoWorkflows::EnablementType,
+          null: true,
+          experiment: { milestone: '17.7' },
+          description: 'Indicates whether GitLab Duo Workflow is enabled for the project.'
+
         field :gitlab_subscriptions_preview_billable_user_change,
           ::Types::GitlabSubscriptions::PreviewBillableUserChangeType,
           null: true,
@@ -618,6 +623,10 @@ module EE
         return unless project.adjourned_deletion?
 
         project.permanent_deletion_date(Time.now.utc).strftime('%F')
+      end
+
+      def duo_workflow_status_check
+        ::Ai::DuoWorkflows::EnablementCheckService.new(project: object, current_user: current_user).execute
       end
     end
   end
