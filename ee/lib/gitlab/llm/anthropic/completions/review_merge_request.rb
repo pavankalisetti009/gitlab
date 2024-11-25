@@ -37,7 +37,12 @@ module Gitlab
 
               publish_draft_notes
             end
+          rescue StandardError => error
+            Gitlab::ErrorTracking.track_exception(error)
 
+            update_progress_note_with_error
+
+          ensure
             update_review_state('reviewed')
           end
 
@@ -180,6 +185,14 @@ module Gitlab
             ).execute
           end
 
+          def update_progress_note_with_error
+            Notes::UpdateService.new(
+              merge_request.project,
+              review_bot,
+              note: error_note
+            ).execute(@progress_note)
+          end
+
           def update_progress_note_with_review_summary(draft_notes)
             Notes::UpdateService.new(
               merge_request.project,
@@ -195,11 +208,15 @@ module Gitlab
               response = summary_response_for(draft_notes)
 
               if response.errors.any? || response.response_body.blank?
-                s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
+                error_note
               else
                 response.response_body
               end
             end
+          end
+
+          def error_note
+            s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
           end
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object
