@@ -121,6 +121,9 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
 
     shared_examples 'works with session enforcement' do
       it 'stores that a SAML session is active' do
+        allow_next_instance_of(Gitlab::Auth::GroupSaml::SsoEnforcer, saml_provider, anything) do |instance|
+          allow(instance).to receive(:update_session).with(anything)
+        end
         expect_next_instance_of(Gitlab::Auth::GroupSaml::SsoEnforcer, saml_provider) do |instance|
           expect(instance).to receive(:update_session)
         end
@@ -404,6 +407,35 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
             expect { post provider, params: { group_id: group } }
               .to change { Identity.exists?(user: user, extern_uid: uid, provider: provider, saml_provider_id: group.saml_provider.id) }
               .from(false).to(true)
+          end
+
+          context 'when user has minimal access to the group' do
+            before do
+              stub_licensed_features(minimal_access_role: true)
+              saml_provider.update!(default_membership_role: Gitlab::Access::MINIMAL_ACCESS)
+            end
+
+            it 'redirects to user dashboard' do
+              post provider, params: { group_id: group }
+
+              expect(response).to redirect_to(dashboard_groups_path)
+            end
+
+            context 'when RelayState is to the SAML group' do
+              it 'redirects to user dashboard' do
+                post provider, params: { group_id: group, RelayState: group_path(group) }
+
+                expect(response).to redirect_to(dashboard_groups_path)
+              end
+            end
+
+            context 'when RelayState is to another page' do
+              it 'redirects to that page' do
+                post provider, params: { group_id: group, RelayState: '/explore' }
+
+                expect(response).to redirect_to('/explore')
+              end
+            end
           end
         end
 

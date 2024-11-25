@@ -132,7 +132,8 @@ describe('ActionSection', () => {
     });
 
     it('updates project', async () => {
-      await findCodeBlockFilePath().vm.$emit('select-project', project);
+      findCodeBlockFilePath().vm.$emit('select-project', project);
+      await nextTick();
       expect(wrapper.emitted('changed')).toEqual([
         ['content', { include: [{ ...defaultAction.include[0], project: project.fullPath }] }],
       ]);
@@ -144,7 +145,8 @@ describe('ActionSection', () => {
     });
 
     it('clears project on deselect', async () => {
-      await findCodeBlockFilePath().vm.$emit('select-project', undefined);
+      findCodeBlockFilePath().vm.$emit('select-project', undefined);
+      await nextTick();
       expect(wrapper.emitted('changed')).toEqual([
         ['content', { include: [{ file: defaultAction.include[0].file }] }],
       ]);
