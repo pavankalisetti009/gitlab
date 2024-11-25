@@ -8835,9 +8835,6 @@ msgstr ""
 msgid "BillingPlans|Start a free GitLab Duo Enterprise Trial"
 msgstr ""
 
-msgid "BillingPlans|Start a free GitLab Duo Pro trial"
-msgstr ""
-
 msgid "BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab. GitLab Duo Enterprise gives you access to the full product offering from GitLab, including AI-powered features."
 msgstr ""
 
@@ -13496,9 +13493,6 @@ msgstr ""
 msgid "CodeSuggestions|Before you can buy GitLab Duo seats, you'll need a Premium or Ultimate subscription."
 msgstr ""
 
-msgid "CodeSuggestions|Boost productivity across the software development life cycle by using Code Suggestions and GitLab Duo Chat as part of the %{duoLinkStart}GitLab Duo Pro%{duoLinkEnd} add-on. You can now try GitLab Duo Pro for free for 60 days, no credit card required."
-msgstr ""
-
 msgid "CodeSuggestions|Code Explanations"
 msgstr ""
 
@@ -13530,9 +13524,6 @@ msgid "CodeSuggestions|Helps you get up to speed quickly by explaining source co
 msgstr ""
 
 msgid "CodeSuggestions|Introducing GitLab Duo"
-msgstr ""
-
-msgid "CodeSuggestions|Introducing the GitLab Duo Pro add-on"
 msgstr ""
 
 msgid "CodeSuggestions|Manage seat assignments for %{addOnName} within your group."
