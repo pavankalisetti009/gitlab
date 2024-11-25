@@ -74,7 +74,7 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     expect(page).not_to have_selector('.file-content .blob-content')
   end
 
-  it 'displays that exact code search is enabled' do
+  it 'displays that exact code search is enabled', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/490988' do
     stub_feature_flags(zoekt_multimatch_frontend: false)
 
     choose_project(project1)
