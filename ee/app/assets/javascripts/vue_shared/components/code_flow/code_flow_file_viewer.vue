@@ -162,7 +162,7 @@ export default {
             size="small"
             :icon="collapseIcon"
             :aria-label="labelToggleFile"
-            data-testid="collapse-file"
+            data-testid="collapse-expand-file"
             @click="handleToggleFile"
           />
         </template>
@@ -180,6 +180,7 @@ export default {
             class="expansion-line gl-bg-gray-50 gl-p-1"
           >
             <gl-button
+              data-testid="expand-top-lines"
               :title="$options.i18n.expandAllLines"
               :aria-label="$options.i18n.expandAllLines"
               :icon="getExpandedIcon(index)"
@@ -202,6 +203,7 @@ export default {
 
           <div v-if="isEndOfCodeBlock(index)" class="expansion-line gl-bg-gray-50 gl-p-1">
             <gl-button
+              data-testid="expand-bottom-lines"
               :title="$options.i18n.expandAllLines"
               :aria-label="$options.i18n.expandAllLines"
               icon="expand-down"
