@@ -5,6 +5,8 @@ module EE
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
 
+    SEARCH_WORK_ITEM_TRACKED_FIELDS = %w[note confidential].freeze
+
     prepended do
       include Elastic::ApplicationVersionedSearch
       include UsageStatistics
@@ -119,7 +121,35 @@ module EE
       updated_by || author
     end
 
+    override :maintain_elasticsearch_create
+    def maintain_elasticsearch_create
+      super
+
+      update_work_item_for_note!
+    end
+
+    override :maintain_elasticsearch_update
+    def maintain_elasticsearch_update(updated_attributes: previous_changes.keys)
+      super
+
+      update_work_item_for_note! if (updated_attributes & SEARCH_WORK_ITEM_TRACKED_FIELDS).any?
+    end
+
+    override :maintain_elasticsearch_destroy
+    def maintain_elasticsearch_destroy
+      super
+
+      update_work_item_for_note!
+    end
+
     private
+
+    def update_work_item_for_note!
+      return unless for_work_item?
+      return unless noteable.maintaining_elasticsearch?
+
+      ::Elastic::ProcessBookkeepingService.track!(noteable)
+    end
 
     override :ensure_namespace_id
     def ensure_namespace_id

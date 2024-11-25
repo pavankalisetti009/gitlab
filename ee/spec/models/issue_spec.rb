@@ -748,16 +748,19 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
 
     context 'when updating an Issue' do
-      let(:project) { create(:project, :public) }
-      let(:issue) { create(:issue, project: project, confidential: true) }
-      let!(:note) { create(:note, noteable: issue, project: project) }
-      let!(:system_note) { create(:note, :system, noteable: issue, project: project) }
+      let_it_be(:project) { create(:project, :public) }
+      let_it_be(:issue) { create(:issue, project: project, confidential: true) }
+      let_it_be(:note) { create(:note, noteable: issue, project: project) }
+      let_it_be(:system_note) { create(:note, :system, noteable: issue, project: project) }
+
+      before do
+        allow(Elastic::ProcessBookkeepingService).to receive(:track!)
+      end
 
       context 'when changing the confidential value' do
         it 'updates issue notes excluding system notes' do
-          expect_any_instance_of(Note).to receive(:maintain_elasticsearch_update) do |instance|
-            expect(instance.id).to eq(note.id)
-          end
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(note)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(system_note)
 
           issue.update!(confidential: false)
         end
@@ -765,9 +768,8 @@ RSpec.describe Issue, feature_category: :team_planning do
 
       context 'when changing the author' do
         it 'updates issue notes excluding system notes' do
-          expect_any_instance_of(Note).to receive(:maintain_elasticsearch_update) do |instance|
-            expect(instance.id).to eq(note.id)
-          end
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(note)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(system_note)
 
           issue.update!(author: create(:user))
         end
@@ -775,7 +777,9 @@ RSpec.describe Issue, feature_category: :team_planning do
 
       context 'when changing the title' do
         it 'does not update issue notes' do
-          expect_any_instance_of(Note).not_to receive(:maintain_elasticsearch_update)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(note)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(system_note)
+
           issue.update!(title: 'the new title')
         end
       end

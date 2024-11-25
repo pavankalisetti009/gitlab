@@ -11,10 +11,40 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
   let_it_be(:user_work_item) { create(:work_item, :opened, labels: [label], namespace: create(:namespace)) }
   let_it_be(:project_work_item) { create(:work_item, :opened, labels: [label], project: project) }
 
+  let_it_be(:note1) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Some pig') }
+  let_it_be(:note2) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Terrific') }
+  let_it_be(:note3) { create(:note, :internal, noteable: project_work_item, project: project, note: "Radiant") }
+
   describe '#as_indexed_json' do
     subject { described_class.new(work_item.id, work_item.es_parent) }
 
     let(:result) { subject.as_indexed_json.with_indifferent_access }
+
+    context 'for group work item' do
+      it 'contains the expected mappings' do
+        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
+        # routing and embedding_0 are not populated in as_indexed_json
+        # archived, issues_access_level, and project_visibility_level are project work item fields
+        non_group_keys = [:routing, :embedding_0, :archived, :issues_access_level, :project_visibility_level]
+        expected_keys = ::Search::Elastic::Types::WorkItem.mappings.to_hash[:properties].keys - non_group_keys
+
+        expect(result.keys).to match_array(expected_keys.map(&:to_s))
+      end
+    end
+
+    context 'for project work item' do
+      let(:work_item) { project_work_item }
+
+      it 'contains the expected mappings' do
+        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
+        # routing and embedding_0 are not populated in as_indexed_json
+        # namespace_id and namespace_visibility_level are group work item fields
+        non_project_keys = [:routing, :embedding_0, :namespace_id, :namespace_visibility_level]
+        expected_keys = ::Search::Elastic::Types::WorkItem.mappings.to_hash[:properties].keys - non_project_keys
+
+        expect(result.keys).to match_array(expected_keys.map(&:to_s))
+      end
+    end
 
     context 'when add_issues_access_level_in_work_item_index migration is not complete' do
       before do
@@ -205,6 +235,8 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           traversal_ids: "#{parent_group.id}-#{group.id}-",
           hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
           namespace_visibility_level: group.visibility_level,
+          notes: "",
+          notes_internal: "",
           schema_version: described_class::SCHEMA_VERSION,
           type: 'work_item'
         )
@@ -240,9 +272,57 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           traversal_ids: "#{parent_group.id}-#{group.id}-",
           hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
           namespace_visibility_level: group.visibility_level,
+          notes: "",
+          notes_internal: "",
           schema_version: described_class::SCHEMA_VERSION,
           type: 'work_item'
         )
+      end
+    end
+
+    context 'when add_notes_to_work_items is not complete' do
+      before do
+        set_elasticsearch_migration_to :add_notes_to_work_items, including: false
+      end
+
+      it 'does not contain the gated fields' do
+        result = described_class.new(project_work_item.id, project_work_item.es_parent)
+          .as_indexed_json.with_indifferent_access
+        expect(result).not_to include(:notes)
+        expect(result).not_to include(:notes_internal)
+      end
+    end
+
+    context 'when add_notes_to_work_items is complete' do
+      before do
+        set_elasticsearch_migration_to :add_notes_to_work_items, including: true
+      end
+
+      it 'does contain the gated fields' do
+        result = described_class.new(project_work_item.id, project_work_item.es_parent)
+          .as_indexed_json.with_indifferent_access
+
+        expect(result).to include(:notes)
+        expect(result).to include(:notes_internal)
+
+        expect(result[:notes]).to eq("Terrific\nSome pig")
+        expect(result[:notes_internal]).to eq("Radiant")
+      end
+
+      it 'truncates the gated fields properly' do
+        # Stuffs characters into line to ensure that we reach past the truncation
+        (1..5).each do |_|
+          create(:note, :internal, noteable: project_work_item, project: project, note: "".rjust(1000000, 'x'))
+        end
+
+        create(:note, :internal, noteable: project_work_item, project: project, note: "Newest")
+
+        result = described_class.new(project_work_item.id, project_work_item.es_parent)
+          .as_indexed_json.with_indifferent_access
+
+        # Radiant as the first comment falls off the end, but the newest one is still there
+        expect(result[:notes_internal]).not_to include("Radiant")
+        expect(result[:notes_internal]).to include("Newest")
       end
     end
   end

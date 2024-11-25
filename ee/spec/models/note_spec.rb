@@ -292,4 +292,94 @@ RSpec.describe Note, feature_category: :team_planning do
       expect(described_class.note_starting_with('prefix')).to contain_exactly(matching_note)
     end
   end
+
+  describe 'elasticsearch indexing', :elastic, feature_category: :global_search do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:work_item) { create(:work_item, project: project) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+    before do
+      stub_ee_application_setting(elasticsearch_indexing: true)
+      allow(Elastic::ProcessBookkeepingService).to receive(:track!)
+    end
+
+    describe '#maintain_elasticsearch_create' do
+      context "when a note is created" do
+        it 'always calls track for the note and the noteable on work items' do
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).twice
+
+          create(:note, noteable: work_item, project: project, note: 'Some pig')
+        end
+
+        it 'calls track for only the note on a merge request' do
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).once
+
+          create(:note, noteable: merge_request, project: project, note: 'Some pig')
+        end
+      end
+    end
+
+    describe '#maintain_elasticsearch_destroy' do
+      context "when a note is destroyed" do
+        it 'calls track for the note and the noteable on work items' do
+          delete_note = create(:note, noteable: work_item, project: project, note: 'Some pig')
+
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(delete_note)
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(delete_note.noteable)
+
+          delete_note.destroy!
+        end
+
+        it 'calls track for notes on merge requests' do
+          mr_note = create(:note, noteable: merge_request, project: project, note: 'Some pig')
+
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(mr_note)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(mr_note.noteable)
+
+          mr_note.destroy!
+        end
+      end
+    end
+
+    describe '#maintain_elasticsearch_update' do
+      context 'when an elastic tracked field is updated' do
+        it 'invokes maintain_elasticsearch_update and calls track for the note and the notable' do
+          work_item_note = create(:note, noteable: work_item, project: project, note: 'Some pig')
+
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(work_item_note)
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(work_item_note.noteable)
+
+          work_item_note.update!(note: 'Terrific')
+        end
+
+        it 'calls track for the note on merge requests' do
+          mr_note = create(:discussion_note_on_merge_request, noteable: merge_request,
+            project: project, note: 'Some pig')
+
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(mr_note)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(mr_note.noteable)
+
+          mr_note.update!(note: 'Hello')
+        end
+      end
+
+      context 'when a non-elastic field is updated' do
+        it 'calls track for the note only on work items' do
+          work_item_note = create(:note, noteable: work_item, project: project, note: 'Some pig')
+
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(work_item_note)
+          expect(work_item_note.noteable).not_to receive(:maintain_elasticsearch_update)
+
+          work_item_note.update!(updated_at: Time.zone.now)
+        end
+      end
+
+      it 'invokes maintain_elasticsearch_update callback' do
+        work_item_note = create(:note, noteable: work_item, project: project, note: 'Some pig')
+        expect(work_item_note).to receive(:maintain_elasticsearch_update).once
+
+        work_item_note.update!(note: 'Terrific')
+      end
+    end
+  end
 end
