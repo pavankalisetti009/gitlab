@@ -32,7 +32,7 @@ RSpec.describe ::Ci::DestroyPipelineService, feature_category: :continuous_integ
               author_class: 'User',
               author_name: user.name,
               custom_message: "Deleted pipeline in #{pipeline.ref} with status " \
-                              "#{pipeline.status} and SHA #{pipeline.sha}",
+                "#{pipeline.status} and SHA #{pipeline.sha}",
               event_name: "destroy_pipeline",
               target_details: pipeline.id.to_s,
               target_id: pipeline.id,
