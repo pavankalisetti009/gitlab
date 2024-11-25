@@ -561,6 +561,47 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
     end
   end
 
+  context 'when policies already exists in database' do
+    let(:policies) do
+      {
+        vulnerability_management_policy: [vulnerability_management_policy],
+        pipeline_execution_policy: [pipeline_execution_policy],
+        scan_result_policy: [scan_result_policy],
+        scan_execution_policy: [scan_execution_policy]
+      }
+    end
+
+    before do
+      create_policy(:approval_policy, scan_result_policy, 0)
+      create_policy(:scan_execution_policy, scan_execution_policy, 0)
+      create_policy(:pipeline_execution_policy, pipeline_execution_policy, 0)
+    end
+
+    context 'when some policies are persisted' do
+      it 'creates missing records', :aggregate_failures do
+        expect { perform_migration }.to change { security_policies.count }.by(1)
+          .and change { vulnerability_management_policy_rules.count }.by(1)
+          .and change { security_policy_project_links.count }.by(1)
+          .and not_change { approval_policy_rules.count }
+          .and not_change { scan_execution_policy_rules.count }
+          .and not_change { approval_policy_rule_project_links.count }
+      end
+    end
+
+    context 'when all policies are persisted' do
+      before do
+        create_policy(:vulnerability_management_policy, vulnerability_management_policy, 0)
+      end
+
+      it 'does not create any records', :aggregate_failures do
+        expect { perform_migration }.to not_change { security_policies.count }
+          .and not_change { vulnerability_management_policy_rules.count }
+          .and not_change { security_policy_project_links.count }
+          .and not_change { approval_policy_rule_project_links.count }
+      end
+    end
+  end
+
   def create_project(name, group)
     project_namespace = namespaces.create!(
       name: name,
@@ -574,6 +615,24 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
       name: name,
       path: name,
       archived: true
+    )
+  end
+
+  def create_policy(policy_type, policy_hash, policy_index)
+    security_policies.create!(
+      {
+        type: described_class::SecurityPolicy.types[policy_type],
+        policy_index: policy_index,
+        name: policy_hash[:name],
+        description: policy_hash[:description],
+        enabled: policy_hash[:enabled],
+        metadata: policy_hash.fetch(:metadata, {}),
+        scope: policy_hash.fetch(:policy_scope, {}),
+        content: policy_hash.slice(*described_class::SecurityPolicy::POLICY_CONTENT_FIELDS[policy_type]),
+        checksum: Digest::SHA256.hexdigest(policy_hash.to_json),
+        security_orchestration_policy_configuration_id: security_policy_config.id,
+        security_policy_management_project_id: security_policy_config.security_policy_management_project_id
+      }
     )
   end
 end
