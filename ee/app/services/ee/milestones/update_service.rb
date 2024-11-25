@@ -9,11 +9,7 @@ module EE
       def execute(milestone)
         super
 
-        # When the feature flag is enabled, we already handle this on the WorkItem side and sync it to the epic.
-        if saved_change_to_dates?(milestone) &&
-            !milestone.resource_parent.work_items_rolledup_dates_feature_flag_enabled?
-          Epics::UpdateDatesService.new(::Epic.in_milestone(milestone.id)).execute
-        end
+        Epics::UpdateDatesService.new(::Epic.in_milestone(milestone.id)).execute if saved_change_to_dates?(milestone)
 
         milestone
       end

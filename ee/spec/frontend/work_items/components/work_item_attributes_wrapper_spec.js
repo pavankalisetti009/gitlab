@@ -63,7 +63,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     workItem = workItemQueryResponse.data.workItem,
     handler = successHandler,
     confidentialityMock = [updateWorkItemMutation, jest.fn()],
-    featureFlags = { workItemsRolledupDates: true },
+    featureFlags = {},
     hasSubepicsFeature = true,
     workItemParticipantsQueryHandler = workItemParticipantsQuerySuccessHandler,
   } = {}) => {
@@ -276,8 +276,8 @@ describe('EE WorkItemAttributesWrapper component', () => {
     });
   });
 
-  describe('rolledup dates', () => {
-    const createComponentWithRolledupDates = async ({ featureFlag = true } = {}) => {
+  describe('rolledup dates widget', () => {
+    const createComponentWithRolledupDates = async () => {
       const response = workItemResponseFactory({
         datesWidgetPresent: true,
         workItemType: epicType,
@@ -286,20 +286,16 @@ describe('EE WorkItemAttributesWrapper component', () => {
       createComponent({
         workItem: response.data.workItem,
         handler: jest.fn().mockResolvedValue(workItemQueryResponse),
-        featureFlags: { workItemsRolledupDates: featureFlag },
+        featureFlags: {},
       });
 
       await waitForPromises();
     };
 
-    it.each`
-      description                                                       | featureFlag | exists
-      ${'renders rolledup dates when feature flag is enabled'}          | ${true}     | ${true}
-      ${'does not render rolledup dates when feature flag is disabled'} | ${false}    | ${false}
-    `('$description', async ({ featureFlag, exists }) => {
-      await createComponentWithRolledupDates({ featureFlag });
+    it('renders rolledup dates widget', async () => {
+      await createComponentWithRolledupDates();
 
-      expect(findWorkItemRolledupDates().exists()).toBe(exists);
+      expect(findWorkItemRolledupDates().exists()).toBe(true);
     });
   });
 });

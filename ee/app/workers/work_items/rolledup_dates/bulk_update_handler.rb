@@ -18,7 +18,6 @@ module WorkItems
 
         return false if namespace.blank?
         return false if namespace.root_ancestor.user_namespace?
-        return false unless namespace.work_items_rolledup_dates_feature_flag_enabled?
 
         UPDATE_TRIGGER_ATTRIBUTES.any? do |attribute|
           event.data.fetch(:updated_attributes, []).include?(attribute)

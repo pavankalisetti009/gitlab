@@ -313,46 +313,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           FIELDS
         end
 
-        context "when the work_items_rolledup_dates feature flag is disabled" do
-          before do
-            stub_feature_flags(work_items_rolledup_dates: false)
-          end
-
-          let(:start_date) { 5.days.ago.to_date }
-          let(:due_date) { 5.days.from_now.to_date }
-
-          let(:input) do
-            {
-              title: "some WI",
-              workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
-              rolledupDatesWidget: {
-                startDateFixed: start_date.to_s,
-                dueDateFixed: due_date.to_s
-              }
-            }
-          end
-
-          it "does not set the work item's start and due date" do
-            expect { post_graphql_mutation(mutation, current_user: current_user) }
-              .to change { WorkItem.count }.by(1)
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(type_response).to include({ 'name' => work_item_type.to_s.capitalize })
-            expect(widgets_response).to include(
-              "type" => "ROLLEDUP_DATES",
-              "dueDate" => nil,
-              "dueDateFixed" => nil,
-              "dueDateIsFixed" => nil,
-              "dueDateSourcingMilestone" => nil,
-              "startDate" => nil,
-              "startDateFixed" => nil,
-              "startDateIsFixed" => nil,
-              "startDateSourcingMilestone" => nil,
-              "startDateSourcingWorkItem" => nil
-            )
-          end
-        end
-
         context "with fixed dates" do
           let(:start_date) { 5.days.ago.to_date }
           let(:due_date) { 5.days.from_now.to_date }

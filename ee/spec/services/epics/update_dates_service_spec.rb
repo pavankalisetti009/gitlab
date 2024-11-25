@@ -11,20 +11,18 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
   let(:work_item) { epic.work_item }
 
   before do
-    stub_feature_flags(work_items_rolledup_dates: false, work_item_epics: false)
+    stub_feature_flags(work_item_epics_ssot: false)
     stub_licensed_features(epics: true)
   end
 
-  shared_examples 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled' do
-    before do
-      stub_feature_flags(work_items_rolledup_dates: true, work_item_epics: true)
-    end
-
+  shared_examples 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled' do
     specify do
       expect_next_instance_of(::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
         match_array(WorkItem.id_in(epic.issue_id))) do |service|
         expect(service).to receive(:execute).and_call_original
       end
+
+      stub_feature_flags(work_item_epics_ssot: true)
 
       described_class.new([epic]).execute
     end
@@ -78,7 +76,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
         end
 
         context 'without due date' do
@@ -95,7 +93,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
         end
 
         context 'without any dates' do
@@ -130,7 +128,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
 
         it_behaves_like 'syncs all data from an epic to a work item'
-        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
       end
 
       context 'and single milestone' do
@@ -155,7 +153,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
         end
 
         context 'without due date' do
@@ -171,7 +169,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
         end
 
         context 'without any dates' do
@@ -187,7 +185,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
         end
       end
     end
@@ -318,7 +316,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
 
         it_behaves_like 'syncs all data from an epic to a work item'
-        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
 
         context "and epic has child epics" do
           let_it_be(:child_epic) do
@@ -340,7 +338,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
 
           context "when epic dates are propagated upwards", :sidekiq_inline do
             let_it_be(:top_level_parent_epic) { create(:epic, group: group) }
@@ -390,9 +388,9 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
 
             it_behaves_like 'syncs all data from an epic to a work item'
 
-            context 'when work_items_rolledup_dates is enabled' do
+            context 'when work_item_epics_ssot: is enabled' do
               before do
-                stub_feature_flags(work_items_rolledup_dates: true, work_item_epics: true)
+                stub_feature_flags(work_item_epics_ssot: true)
               end
 
               it 'calls the HierarchiesUpdateService for the work items' do

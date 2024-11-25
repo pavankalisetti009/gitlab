@@ -22,8 +22,7 @@ module WorkItems
       def can_set_rolledup_dates?
         return true if params.fetch(:synced_work_item, false)
 
-        work_item.resource_parent.work_items_rolledup_dates_feature_flag_enabled? &&
-          has_permission?(:set_work_item_metadata)
+        has_permission?(:set_work_item_metadata)
       end
     end
   end

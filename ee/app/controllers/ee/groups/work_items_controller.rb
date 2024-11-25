@@ -10,13 +10,6 @@ module EE
       prepended do
         before_action :authorize_read_work_item!, only: [:description_diff, :delete_description_version]
 
-        before_action do
-          push_force_frontend_feature_flag(
-            :work_items_rolledup_dates,
-            group&.work_items_rolledup_dates_feature_flag_enabled?
-          )
-        end
-
         include DescriptionDiffActions
       end
 
