@@ -41,7 +41,7 @@ describe('DastScannerProfileForm', () => {
   const findScanType = () => wrapper.findByTestId('scan-type-option');
 
   const setFieldValue = async (field, value) => {
-    await field.find('input').setValue(value);
+    await field.setValue(value);
     field.trigger('blur');
   };
 
@@ -97,17 +97,17 @@ describe('DastScannerProfileForm', () => {
     });
 
     it.each(invalidValues)('is marked as invalid provided an invalid value', async (value) => {
-      await setFieldValue(finder().find('input'), value);
+      await setFieldValue(finder(), value);
       expect(wrapper.text()).toContain(errorMessage);
     });
 
     it('is marked as valid provided a valid value', async () => {
-      await setFieldValue(finder().find('input'), validValue);
+      await setFieldValue(finder(), validValue);
       expect(wrapper.text()).not.toContain(errorMessage);
     });
 
     it('should allow only numbers', () => {
-      expect(finder().find('input').props('type')).toBe('number');
+      expect(finder().props('type')).toBe('number');
     });
   });
 
@@ -131,22 +131,23 @@ describe('DastScannerProfileForm', () => {
     it('populates the fields with the data passed in via the profile prop or default values', () => {
       expect(findProfileNameInput().element.value).toBe(profile?.profileName ?? '');
       expect(findScanType().vm.$attrs.checked).toBe(profile?.scanType ?? SCAN_TYPE.PASSIVE);
-      expect(findSpiderTimeoutInput().props('value')).toBe(profile?.spiderTimeout ?? 1);
-      expect(findTargetTimeoutInput().props('value')).toBe(profile?.targetTimeout ?? 60);
+
+      expect(findSpiderTimeoutInput().element.value).toBe(String(profile?.spiderTimeout ?? 1));
+      expect(findTargetTimeoutInput().element.value).toBe(String(profile?.targetTimeout ?? 60));
     });
 
     it('passes correct props to base component', async () => {
       await findProfileNameInput().vm.$emit('input', profileName);
-      await findSpiderTimeoutInput().vm.$emit('input', spiderTimeout);
-      await findTargetTimeoutInput().vm.$emit('input', targetTimeout);
+      await setFieldValue(findSpiderTimeoutInput(), 20);
+      await setFieldValue(findTargetTimeoutInput(), 20);
 
       const baseDastProfileForm = findBaseDastProfileForm();
       expect(baseDastProfileForm.props('mutation')).toBe(mutation);
       expect(baseDastProfileForm.props('mutationType')).toBe(mutationKind);
       expect(baseDastProfileForm.props('mutationVariables')).toEqual({
         profileName,
-        spiderTimeout,
-        targetTimeout,
+        spiderTimeout: 20,
+        targetTimeout: 20,
         scanType,
         useAjaxSpider,
         showDebugMessages,
