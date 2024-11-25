@@ -19,8 +19,6 @@
 
   - if namespace.trial_active?
     .gl-mb-9.gl-mx-auto.billing-plan-divider
-      = render GitlabSubscriptions::DuoProCardComponent.new(namespace: namespace, user: current_user)
-
       #js-billing-plans{ data: subscription_plan_data_attributes(namespace, current_plan, read_only: read_only) }
 
   .gl-text-lg.gl-mb-5
