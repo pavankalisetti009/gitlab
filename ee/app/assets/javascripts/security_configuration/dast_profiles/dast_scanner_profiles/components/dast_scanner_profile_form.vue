@@ -196,6 +196,9 @@ export default {
         <gl-form-group
           class="gl-mb-0"
           :class="{ 'col-md-6': !stacked, 'col-md-12': stacked, 'gl-mb-4': stacked }"
+          :description="
+            s__('DastProfiles|Minimum = 0 (no timeout enabled), Maximum = 2880 minutes')
+          "
           :invalid-feedback="form.fields.spiderTimeout.feedback"
           :state="form.fields.spiderTimeout.state"
         >
@@ -210,6 +213,7 @@ export default {
             class="gl-max-w-62"
             data-testid="spider-timeout-input"
             type="number"
+            number
             :min="$options.spiderTimeoutRange.min"
             :max="$options.spiderTimeoutRange.max"
             :state="form.fields.spiderTimeout.state"
@@ -219,14 +223,12 @@ export default {
               <gl-input-group-text>{{ __('Minutes') }}</gl-input-group-text>
             </template>
           </gl-form-input-group>
-          <div class="gl-my-2 gl-text-gray-400">
-            {{ s__('DastProfiles|Minimum = 0 (no timeout enabled), Maximum = 2880 minutes') }}
-          </div>
         </gl-form-group>
 
         <gl-form-group
           class="gl-mb-0"
           :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }"
+          :description="s__('DastProfiles|Minimum = 1 second, Maximum = 3600 seconds')"
           :invalid-feedback="form.fields.targetTimeout.feedback"
           :state="form.fields.targetTimeout.state"
         >
@@ -241,6 +243,7 @@ export default {
             class="gl-max-w-62"
             data-testid="target-timeout-input"
             type="number"
+            number
             :min="$options.targetTimeoutRange.min"
             :max="$options.targetTimeoutRange.max"
             :state="form.fields.targetTimeout.state"
@@ -250,9 +253,6 @@ export default {
               <gl-input-group-text>{{ __('Seconds') }}</gl-input-group-text>
             </template>
           </gl-form-input-group>
-          <div class="gl-my-2 gl-text-gray-400">
-            {{ s__('DastProfiles|Minimum = 1 second, Maximum = 3600 seconds') }}
-          </div>
         </gl-form-group>
       </div>
 
