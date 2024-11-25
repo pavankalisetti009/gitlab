@@ -52,38 +52,16 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     click_button _('Reload page')
   end
 
-  def create_and_select_value_stream(name, with_aggregation = true, on_settings_page = true)
-    create_custom_value_stream(name, on_settings_page)
-
-    return unless with_aggregation && !on_settings_page
-
-    reload_value_stream
-
-    select_value_stream(name)
+  def expect_successful_save(value_stream_name)
+    expect(find_by_testid('dropdown-value-streams')).to have_text(value_stream_name)
+    expect(page).to have_text(_("'%{name}' Value Stream has been successfully created.") % { name: value_stream_name })
   end
 
-  def expect_successful_save(value_stream_name, expect_redirect)
-    if expect_redirect
-      expect(find_by_testid('dropdown-value-streams')).to have_text(value_stream_name)
-      expect(page).to have_text(_("'%{name}' Value Stream has been successfully created.") % { name: value_stream_name })
-    else
-      expect(page).to have_text(_("'%{name}' Value Stream created") % { name: value_stream_name })
-    end
+  def expect_successful_update(value_stream_name)
+    expect(page).to have_text(_("'%{name}' Value Stream has been successfully saved.") % { name: value_stream_name })
   end
 
-  def expect_successful_update(value_stream_name, expect_redirect)
-    if expect_redirect
-      expect(page).to have_text(_("'%{name}' Value Stream has been successfully saved.") % { name: value_stream_name })
-    else
-      expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: value_stream_name })
-    end
-  end
-
-  shared_examples 'goes back to Value Streams page when `Cancel` link button is selected' do |value_stream_name, on_settings_page = false|
-    before do
-      skip '`Cancel` link button only available on settings pages' unless on_settings_page
-    end
-
+  shared_examples 'goes back to Value Streams page when `Cancel` link button is selected' do |value_stream_name|
     it 'goes back to Value Streams page when `Cancel` link button is selected' do
       click_cancel_button
 
@@ -91,7 +69,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     end
   end
 
-  shared_examples 'create a value stream' do |custom_value_stream_name, on_settings_page|
+  shared_examples 'create a value stream' do |custom_value_stream_name|
     before do
       toggle_value_stream_dropdown
       find_by_testid('create-value-stream-option').click
@@ -104,7 +82,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     it 'can create a value stream' do
       save_value_stream(custom_value_stream_name)
 
-      expect_successful_save(custom_value_stream_name, on_settings_page)
+      expect_successful_save(custom_value_stream_name)
     end
 
     it 'can create a value stream with only custom stages' do
@@ -113,12 +91,12 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
       fill_in_custom_stage_fields
       save_value_stream(custom_value_stream_name)
 
-      expect_successful_save(custom_value_stream_name, on_settings_page)
+      expect_successful_save(custom_value_stream_name)
     end
 
     it 'can create a value stream with a custom stage and hidden defaults' do
-      add_custom_stage_to_form(on_settings_page)
-      add_custom_label_stage_to_form(on_settings_page)
+      add_custom_stage_to_form
+      add_custom_label_stage_to_form
 
       # Hide some default stages
       click_action_button('hide', 5)
@@ -127,16 +105,16 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       save_value_stream(custom_value_stream_name)
 
-      expect_successful_save(custom_value_stream_name, on_settings_page)
+      expect_successful_save(custom_value_stream_name)
 
       expect(path_nav_elem).to have_text("Cool custom stage - name")
     end
 
     it 'does not allow duplicate stage names' do
-      add_custom_stage_to_form(on_settings_page)
+      add_custom_stage_to_form
       fill_in_custom_stage_fields "Stage 1"
 
-      add_custom_stage_to_form(on_settings_page)
+      add_custom_stage_to_form
       fill_in_custom_stage_fields "Stage 1"
 
       save_value_stream(custom_value_stream_name)
@@ -145,19 +123,19 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       # Remove the duplicate stage and add a new one
       click_action_button('remove', 7)
-      add_custom_stage_to_form(on_settings_page)
+      add_custom_stage_to_form
       fill_in_custom_stage_fields "Stage 2"
       save_value_stream(custom_value_stream_name)
 
-      expect_successful_save(custom_value_stream_name, on_settings_page)
+      expect_successful_save(custom_value_stream_name)
     end
 
-    it_behaves_like 'goes back to Value Streams page when `Cancel` link button is selected', 'default', on_settings_page
+    it_behaves_like 'goes back to Value Streams page when `Cancel` link button is selected', 'default'
   end
 
-  shared_examples 'update a value stream' do |custom_value_stream_name, with_aggregation, on_settings_page|
+  shared_examples 'update a value stream' do |custom_value_stream_name|
     before do
-      create_and_select_value_stream(custom_value_stream_name, with_aggregation, on_settings_page)
+      create_custom_value_stream(custom_value_stream_name)
     end
 
     it 'can reorder stages' do
@@ -191,12 +169,12 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_all_requests
 
-        expect_successful_update(edited_name, on_settings_page)
+        expect_successful_update(edited_name)
       end
 
       it 'can add and remove custom stages' do
-        add_custom_stage_to_form(on_settings_page)
-        add_custom_label_stage_to_form(on_settings_page)
+        add_custom_stage_to_form
+        add_custom_label_stage_to_form
 
         click_save_value_stream_button
         wait_for_all_requests
@@ -227,7 +205,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_requests
 
-        expect_successful_update(custom_value_stream_name, on_settings_page)
+        expect_successful_update(custom_value_stream_name)
 
         expect(path_nav_elem).not_to have_text("Staging")
         expect(path_nav_elem).not_to have_text("Review")
@@ -240,12 +218,12 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_requests
 
-        expect_successful_update(custom_value_stream_name, on_settings_page)
+        expect_successful_update(custom_value_stream_name)
         expect(path_nav_elem).to have_text("Test")
       end
 
       it 'does not allow duplicate stage names' do
-        add_custom_stage_to_form(on_settings_page)
+        add_custom_stage_to_form
         fill_in_custom_stage_fields "Staging"
 
         click_save_value_stream_button
@@ -259,7 +237,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         expect(page).to have_text _("Stage name already exists")
       end
 
-      it_behaves_like 'goes back to Value Streams page when `Cancel` link button is selected', custom_value_stream_name, on_settings_page
+      it_behaves_like 'goes back to Value Streams page when `Cancel` link button is selected', custom_value_stream_name
     end
   end
 
@@ -284,27 +262,27 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     end
   end
 
-  shared_examples 'create group value streams' do |with_aggregation, on_settings_page|
+  shared_examples 'create group value streams' do
     name = 'group value stream'
 
     before do
       select_group(group)
     end
 
-    it_behaves_like 'create a value stream', name, on_settings_page
-    it_behaves_like 'update a value stream', name, with_aggregation, on_settings_page
+    it_behaves_like 'create a value stream', name
+    it_behaves_like 'update a value stream', name
     it_behaves_like 'delete a value stream', name
   end
 
-  shared_examples 'create sub group value streams' do |with_aggregation, on_settings_page|
+  shared_examples 'create sub group value streams' do
     name = 'sub group value stream'
 
     before do
       select_group(sub_group)
     end
 
-    it_behaves_like 'create a value stream', name, on_settings_page
-    it_behaves_like 'update a value stream', name, with_aggregation, on_settings_page
+    it_behaves_like 'create a value stream', name
+    it_behaves_like 'update a value stream', name
     it_behaves_like 'delete a value stream', name
   end
 
@@ -372,8 +350,8 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         create(:cycle_analytics_value_stream, namespace: sub_group, name: 'default')
       end
 
-      it_behaves_like 'create group value streams', true, true
-      it_behaves_like 'create sub group value streams', true, true
+      it_behaves_like 'create group value streams'
+      it_behaves_like 'create sub group value streams'
     end
   end
 end

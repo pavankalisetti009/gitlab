@@ -16488,9 +16488,6 @@ msgstr ""
 msgid "CreateValueStreamForm|Add a stage"
 msgstr ""
 
-msgid "CreateValueStreamForm|Add another stage"
-msgstr ""
-
 msgid "CreateValueStreamForm|All default stages are currently visible"
 msgstr ""
 
