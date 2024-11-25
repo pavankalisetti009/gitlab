@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
-# This step is only executed if Pipeline Execution Policies configurations were loaded in
-# `PipelineExecutionPolicies::FindConfigs`, otherwise it's a no-op.
-#
-# It merges jobs from the policy pipelines saved on `command` onto the project pipeline.
+# This step merges jobs from the policy pipelines saved in `pipeline_policy_context` onto the project pipeline.
 # If a policy pipeline stage is not used in the project pipeline, all jobs from this stage are silently ignored.
+#
+# When this step is executed for project pipeline, it is only executed
+# if Pipeline Execution Policies configurations were loaded in `PipelineExecutionPolicies::EvaluatePolicies`,
+# otherwise it's a no-op.
+# When executed for a policy pipeline, we collect `override_project_ci` policy stages to apply them
+# in the project pipeline.
 #
 # The step needs to be executed after `Populate` and `PopulateMetadata` steps to ensure that `pipeline.stages` are set,
 # and before `StopDryRun` to ensure that the policy jobs are visible for the users when pipeline creation is simulated.
@@ -14,7 +17,7 @@ module EE
       module Pipeline
         module Chain
           module PipelineExecutionPolicies
-            module MergeJobs
+            module ApplyPolicies
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
               include ::Gitlab::InternalEventsTracking
 
@@ -47,8 +50,9 @@ module EE
                 # to use them in the main pipeline
                 command.pipeline_policy_context.collect_declared_stages!(command.yaml_processor_result.stages)
               rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::OverrideStagesConflictError => e
-                # This error is propagated into `FindConfigs` because it can only happen while building
-                # the policy pipeline. `FindConfigs` decorates the error with "Pipeline execution policy error:" prefix.
+                # This error is propagated into `EvaluatePolicies` because it can only happen while building
+                # the policy pipeline. `EvaluatePolicies` decorates the error with
+                # "Pipeline execution policy error:" prefix.
                 error(e.message, failure_reason: :config_error)
               end
 

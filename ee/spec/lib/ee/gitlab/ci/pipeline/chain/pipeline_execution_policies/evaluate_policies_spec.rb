@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfigs, feature_category: :security_policy_management do
+RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::EvaluatePolicies, feature_category: :security_policy_management do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
   let(:source) { 'push' }
