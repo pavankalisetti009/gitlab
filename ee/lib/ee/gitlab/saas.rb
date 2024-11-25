@@ -33,6 +33,7 @@ module EE
           pipl_compliance
           ci_runners_allowed_plans
           limit_normalized_email_reuse
+          secret_detection_service
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
