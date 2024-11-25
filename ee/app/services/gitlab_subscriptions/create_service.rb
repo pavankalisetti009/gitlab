@@ -145,7 +145,8 @@ module GitlabSubscriptions
           expires_in: 2.hours,
           resource_owner_id: current_user.id,
           token: Doorkeeper::OAuth::Helpers::UniqueToken.generate,
-          scopes: application.scopes.to_s
+          scopes: application.scopes.to_s,
+          organization_id: @group.organization_id
         )
       end
     end

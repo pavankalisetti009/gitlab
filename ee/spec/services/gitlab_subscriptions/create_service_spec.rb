@@ -31,7 +31,7 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
     }
   end
 
-  let_it_be(:subscription_params) do
+  let(:subscription_params) do
     {
       plan_id: 'Plan ID',
       payment_method_id: 'Payment method ID',
@@ -84,7 +84,7 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
         expect { execute }.to change(OauthAccessToken, :count).by(1)
       end
 
-      it 'creates oauth token with correct application id and expiration' do
+      it 'creates oauth token with correct application id, expiration and organization' do
         now = Time.current.beginning_of_hour
 
         travel_to(now) do
@@ -94,6 +94,7 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
 
           expect(created_oauth_token.application_id).to eq(oauth_app.id)
           expect(created_oauth_token.expires_at).to eq now + 2.hours
+          expect(created_oauth_token.organization_id).to eq group.organization_id
         end
       end
 
@@ -137,7 +138,7 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
       end
 
       context 'with subscription purchase using promo code' do
-        let_it_be(:subscription_params) do
+        let(:subscription_params) do
           {
             plan_id: "Plan ID",
             payment_method_id: "Payment method ID",
@@ -157,7 +158,7 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
       end
 
       context 'with add-on purchase' do
-        let_it_be(:subscription_params) do
+        let(:subscription_params) do
           {
             is_addon: true,
             plan_id: 'Add-on Plan ID',
