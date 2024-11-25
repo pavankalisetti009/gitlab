@@ -34,7 +34,7 @@ module EE
         'OpenBao',
         install_dir: SecretsManagement::OpenbaoTestSetup.install_dir,
         version: SecretsManagement::SecretsManagerClient.expected_server_version,
-        task: "gitlab:secrets_management:openbao:clone",
+        task: "gitlab:secrets_management:openbao:download_or_clone",
         task_args: [SecretsManagement::OpenbaoTestSetup.install_dir]
       ) do
         raise ::TestEnv::ComponentFailedToInstallError unless SecretsManagement::OpenbaoTestSetup.build_openbao_binary
