@@ -92,7 +92,14 @@ class Groups::OmniauthCallbacksController < OmniauthCallbacksController
 
   override :after_sign_in_path_for
   def after_sign_in_path_for(resource)
-    saml_redirect_path || super
+    path = saml_redirect_path
+
+    # Ensure that if redirecting to the SAML group path, check the user has access first.
+    if path == group_path(@unauthenticated_group)
+      path = safe_group_path(@unauthenticated_group) || dashboard_groups_path
+    end
+
+    path || super
   end
 
   override :build_auth_user
@@ -122,6 +129,12 @@ class Groups::OmniauthCallbacksController < OmniauthCallbacksController
 
   def saml_redirect_path
     safe_relay_state || group_path(@unauthenticated_group)
+  end
+
+  def safe_group_path(group)
+    return unless can?(current_user, :read_group, group)
+
+    group_path(group)
   end
 
   def safe_relay_state
