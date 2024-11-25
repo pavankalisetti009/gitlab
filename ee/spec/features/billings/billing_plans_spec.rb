@@ -312,23 +312,6 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
         it_behaves_like 'subscription table with management buttons'
       end
 
-      context 'on premium' do
-        let(:plan) { premium_plan }
-        let!(:subscription) { create(:gitlab_subscription, namespace: namespace, hosted_plan: plan, seats: 15) }
-
-        before do
-          visit page_path
-        end
-
-        it 'renders in-app hand raise lead for code suggestions' do
-          find_by_testid('code-suggestions-hand-raise-lead-button').click
-
-          fill_in_and_submit_hand_raise_lead(
-            user, namespace, glm_content: 'code-suggestions', product_interaction: 'Requested Contact-Duo Pro Add-On'
-          )
-        end
-      end
-
       context 'on bronze' do
         let(:plan) { bronze_plan }
 

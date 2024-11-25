@@ -18,10 +18,6 @@ module GitlabSubscriptions
         .new(namespace, add_on: :duo_pro, only_active: false).execute.none?
     end
 
-    def self.no_active_add_on_purchase_for_namespace?(namespace)
-      GitlabSubscriptions::NamespaceAddOnPurchasesFinder.new(namespace, add_on: :duo_pro).execute.none?
-    end
-
     def self.namespace_eligible?(namespace)
       namespace.actual_plan_name == ELIGIBLE_PLAN
     end

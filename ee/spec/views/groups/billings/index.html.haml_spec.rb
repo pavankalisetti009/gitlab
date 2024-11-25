@@ -9,7 +9,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group_with_plan, plan: :free_plan) }
   let_it_be(:plans_data) { billing_plans_data.map { |plan| Hashie::Mash.new(plan) } }
-  let(:duo_pro_card_msg) { s_('CodeSuggestions|Introducing the GitLab Duo Pro add-on') }
 
   before do
     stub_signing_key
@@ -20,22 +19,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
   end
 
   context 'when the group is the top level' do
-    shared_examples 'without duo pro component' do
-      it 'does not have the duo pro component' do
-        render
-
-        expect(rendered).not_to have_content(duo_pro_card_msg)
-      end
-    end
-
-    shared_examples 'with duo pro component' do
-      it 'renders the component' do
-        render
-
-        expect(rendered).to have_content(duo_pro_card_msg)
-      end
-    end
-
     shared_examples 'without duo enterprise trial alert' do
       it 'does not render the component' do
         render
@@ -101,7 +84,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect(rendered).to have_tracking(action: 'click_button', label: 'view_all_groups')
       end
 
-      it_behaves_like 'without duo pro component'
       it_behaves_like 'with duo enterprise trial alert'
       it_behaves_like 'without ultimate trial cta alert'
 
@@ -114,7 +96,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         end
 
         it_behaves_like 'without ultimate trial cta alert'
-        it_behaves_like 'without duo pro component'
         it_behaves_like 'with duo enterprise trial alert'
       end
     end
@@ -128,7 +109,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
 
       it_behaves_like 'without ultimate trial cta alert'
-      it_behaves_like 'without duo pro component'
       it_behaves_like 'without duo enterprise trial alert'
     end
 
@@ -143,18 +123,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect(rendered).to have_selector('#js-billing-plans')
       end
 
-      context 'with Duo Pro trial link' do
-        it 'renders the link' do
-          render
-
-          expect(rendered).to have_link(
-            'Start a free GitLab Duo Pro trial',
-            href: new_trials_duo_pro_path(namespace_id: group.id)
-          )
-        end
-      end
-
-      it_behaves_like 'with duo pro component'
       it_behaves_like 'with duo enterprise trial alert'
     end
 

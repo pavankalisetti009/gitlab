@@ -22,7 +22,6 @@
     = render GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent.new(namespace: @group, user: current_user)
 
     = render 'shared/billings/billing_plans', plans_data: @plans_data, namespace: @group, current_plan: current_plan, read_only: read_only
-    = render GitlabSubscriptions::DuoProCardComponent.new(namespace: @group, user: current_user)
 
     - data_attributes = subscription_plan_data_attributes(@group, current_plan, read_only: read_only)
     #js-billing-plans{ data: data_attributes }

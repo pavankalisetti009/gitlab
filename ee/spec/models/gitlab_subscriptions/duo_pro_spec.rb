@@ -97,34 +97,6 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
     end
   end
 
-  describe '.no_active_add_on_purchase_for_namespace?' do
-    let_it_be(:namespace) { create(:namespace) }
-
-    subject { described_class.no_active_add_on_purchase_for_namespace?(namespace) }
-
-    context 'when there is an active add-on purchase for the namespace' do
-      let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active, namespace: namespace)
-      end
-
-      it { is_expected.to be(false) }
-    end
-
-    context 'when there is no active add-on purchase for the namespace' do
-      context 'and there are no add-on purchases at all' do
-        it { is_expected.to be(true) }
-      end
-
-      context 'and there is an expired add-on purchase' do
-        let_it_be(:add_on_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
-        end
-
-        it { is_expected.to be(true) }
-      end
-    end
-  end
-
   describe '.namespace_eligible?', :saas do
     context 'when namespace has an eligible plan' do
       let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
