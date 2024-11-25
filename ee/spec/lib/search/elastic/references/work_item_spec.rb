@@ -11,318 +11,145 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
   let_it_be(:user_work_item) { create(:work_item, :opened, labels: [label], namespace: create(:namespace)) }
   let_it_be(:project_work_item) { create(:work_item, :opened, labels: [label], project: project) }
 
-  let_it_be(:note1) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Some pig') }
-  let_it_be(:note2) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Terrific') }
-  let_it_be(:note3) { create(:note, :internal, noteable: project_work_item, project: project, note: "Radiant") }
+  before do
+    allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
+  end
 
   describe '#as_indexed_json' do
-    subject { described_class.new(work_item.id, work_item.es_parent) }
-
-    let(:result) { subject.as_indexed_json.with_indifferent_access }
-
-    context 'for group work item' do
-      it 'contains the expected mappings' do
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
-        # routing and embedding_0 are not populated in as_indexed_json
-        # archived, issues_access_level, and project_visibility_level are project work item fields
-        non_group_keys = [:routing, :embedding_0, :archived, :issues_access_level, :project_visibility_level]
-        expected_keys = ::Search::Elastic::Types::WorkItem.mappings.to_hash[:properties].keys - non_group_keys
-
-        expect(result.keys).to match_array(expected_keys.map(&:to_s))
-      end
+    let(:base_work_item_hash) do
+      {
+        project_id: object.reload.project_id,
+        id: object.id,
+        iid: object.iid,
+        root_namespace_id: object.namespace_id,
+        hashed_root_namespace_id: object.namespace.hashed_root_namespace_id,
+        created_at: object.created_at,
+        updated_at: object.updated_at,
+        title: object.title,
+        description: object.description,
+        state: object.state,
+        upvotes: object.upvotes_count,
+        hidden: object.hidden?,
+        work_item_type_id: object.work_item_type_id,
+        correct_work_item_type_id: object.correct_work_item_type_id,
+        confidential: object.confidential,
+        author_id: object.author_id,
+        label_ids: [label.id.to_s],
+        assignee_id: object.issue_assignee_user_ids,
+        due_date: object.due_date,
+        traversal_ids: "#{object.namespace.id}-",
+        schema_version: described_class::SCHEMA_VERSION,
+        type: 'work_item'
+      }
     end
 
-    context 'for project work item' do
-      let(:work_item) { project_work_item }
+    subject(:indexed_json) { described_class.new(object.id, object.es_parent).as_indexed_json.with_indifferent_access }
 
-      it 'contains the expected mappings' do
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
-        # routing and embedding_0 are not populated in as_indexed_json
-        # namespace_id and namespace_visibility_level are group work item fields
-        non_project_keys = [:routing, :embedding_0, :namespace_id, :namespace_visibility_level]
-        expected_keys = ::Search::Elastic::Types::WorkItem.mappings.to_hash[:properties].keys - non_project_keys
+    describe 'user namespace work item' do
+      let(:object) { user_work_item }
+      let(:expected_hash) { base_work_item_hash }
 
-        expect(result.keys).to match_array(expected_keys.map(&:to_s))
-      end
-    end
-
-    context 'when add_issues_access_level_in_work_item_index migration is not complete' do
-      before do
-        set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: false
+      it 'serializes work_item as a hash' do
+        expect(indexed_json).to match(expected_hash)
       end
 
-      it 'serializes the project_namespace work_item as a hash' do
-        result = described_class.new(project_work_item.id,
-          project_work_item.es_parent).as_indexed_json.with_indifferent_access
-        expect(result).to match(
-          project_id: project_work_item.reload.project_id,
-          id: project_work_item.id,
-          iid: project_work_item.iid,
-          created_at: project_work_item.created_at,
-          updated_at: project_work_item.updated_at,
-          title: project_work_item.title,
-          description: project_work_item.description,
-          state: project_work_item.state,
-          upvotes: project_work_item.upvotes_count,
-          hidden: project_work_item.hidden?,
-          work_item_type_id: project_work_item.work_item_type_id,
-          confidential: project_work_item.confidential,
-          author_id: project_work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: project_work_item.issue_assignee_user_ids,
-          due_date: project_work_item.due_date,
-          traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
-          hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          schema_version: described_class::SCHEMA_VERSION,
-          archived: project.archived?,
-          project_visibility_level: project.visibility_level,
-          root_namespace_id: project_work_item.namespace.root_ancestor.id,
-          type: 'work_item'
-        )
-      end
-    end
-
-    context 'when add_issues_access_level_in_work_item_index migration is complete' do
-      before do
-        set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: true
-      end
-
-      it 'serializes the project_namespace work_item as a hash' do
-        result = described_class.new(project_work_item.id,
-          project_work_item.es_parent).as_indexed_json.with_indifferent_access
-        expect(result).to match(
-          project_id: project_work_item.reload.project_id,
-          id: project_work_item.id,
-          iid: project_work_item.iid,
-          created_at: project_work_item.created_at,
-          updated_at: project_work_item.updated_at,
-          title: project_work_item.title,
-          description: project_work_item.description,
-          state: project_work_item.state,
-          upvotes: project_work_item.upvotes_count,
-          hidden: project_work_item.hidden?,
-          work_item_type_id: project_work_item.work_item_type_id,
-          confidential: project_work_item.confidential,
-          author_id: project_work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: project_work_item.issue_assignee_user_ids,
-          due_date: project_work_item.due_date,
-          traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
-          hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          schema_version: described_class::SCHEMA_VERSION,
-          archived: project.archived?,
-          project_visibility_level: project.visibility_level,
-          root_namespace_id: project_work_item.namespace.root_ancestor.id,
-          issues_access_level: project.issues_access_level,
-          type: 'work_item'
-        )
-      end
-    end
-
-    context 'when root_namespace_id is added to the schema' do
-      it 'serializes the project_namespace work_item as a hash' do
-        result = described_class.new(project_work_item.id,
-          project_work_item.es_parent).as_indexed_json.with_indifferent_access
-        expect(result).to match(
-          project_id: project_work_item.reload.project_id,
-          id: project_work_item.id,
-          iid: project_work_item.iid,
-          root_namespace_id: project_work_item.namespace.root_ancestor.id,
-          created_at: project_work_item.created_at,
-          updated_at: project_work_item.updated_at,
-          title: project_work_item.title,
-          description: project_work_item.description,
-          state: project_work_item.state,
-          upvotes: project_work_item.upvotes_count,
-          hidden: project_work_item.hidden?,
-          work_item_type_id: project_work_item.work_item_type_id,
-          confidential: project_work_item.confidential,
-          author_id: project_work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: project_work_item.issue_assignee_user_ids,
-          due_date: project_work_item.due_date,
-          traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
-          hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          schema_version: described_class::SCHEMA_VERSION,
-          archived: project.archived?,
-          project_visibility_level: project.visibility_level,
-          type: 'work_item'
-        )
-      end
-
-      it 'serializes the object as a hash' do
-        expect(result).to match(
-          project_id: work_item.reload.project_id,
-          id: work_item.id,
-          iid: work_item.iid,
-          namespace_id: group.id,
-          root_namespace_id: parent_group.id,
-          created_at: work_item.created_at,
-          updated_at: work_item.updated_at,
-          title: work_item.title,
-          description: work_item.description,
-          state: work_item.state,
-          upvotes: work_item.upvotes_count,
-          hidden: work_item.hidden?,
-          work_item_type_id: work_item.work_item_type_id,
-          confidential: work_item.confidential,
-          author_id: work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: work_item.issue_assignee_user_ids,
-          due_date: work_item.due_date,
-          traversal_ids: "#{parent_group.id}-#{group.id}-",
-          hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
-          namespace_visibility_level: group.visibility_level,
-          schema_version: described_class::SCHEMA_VERSION,
-          type: 'work_item'
-        )
-      end
-
-      it 'serializes the user_namespace work_item as a hash' do
-        result = described_class.new(user_work_item.id,
-          user_work_item.es_parent).as_indexed_json.with_indifferent_access
-        expect(result).to match(
-          project_id: user_work_item.reload.project_id,
-          id: user_work_item.id,
-          iid: user_work_item.iid,
-          root_namespace_id: user_work_item.namespace_id,
-          created_at: user_work_item.created_at,
-          updated_at: user_work_item.updated_at,
-          title: user_work_item.title,
-          description: user_work_item.description,
-          state: user_work_item.state,
-          upvotes: user_work_item.upvotes_count,
-          hidden: user_work_item.hidden?,
-          work_item_type_id: user_work_item.work_item_type_id,
-          confidential: user_work_item.confidential,
-          author_id: user_work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: user_work_item.issue_assignee_user_ids,
-          due_date: user_work_item.due_date,
-          traversal_ids: "#{user_work_item.namespace.id}-",
-          hashed_root_namespace_id: user_work_item.namespace.hashed_root_namespace_id,
-          schema_version: described_class::SCHEMA_VERSION,
-          type: 'work_item'
-        )
-      end
-    end
-
-    context 'when add_work_item_type_correct_id migration is not complete' do
-      before do
-        set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
-      end
-
-      it 'serializes the object as a hash' do
-        expect(result).to match(
-          project_id: work_item.reload.project_id,
-          id: work_item.id,
-          iid: work_item.iid,
-          namespace_id: group.id,
-          root_namespace_id: parent_group.id,
-          created_at: work_item.created_at,
-          updated_at: work_item.updated_at,
-          title: work_item.title,
-          description: work_item.description,
-          state: work_item.state,
-          upvotes: work_item.upvotes_count,
-          hidden: work_item.hidden?,
-          work_item_type_id: work_item.work_item_type_id,
-          confidential: work_item.confidential,
-          author_id: work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: work_item.issue_assignee_user_ids,
-          due_date: work_item.due_date,
-          traversal_ids: "#{parent_group.id}-#{group.id}-",
-          hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
-          namespace_visibility_level: group.visibility_level,
-          notes: "",
-          notes_internal: "",
-          schema_version: described_class::SCHEMA_VERSION,
-          type: 'work_item'
-        )
-      end
-    end
-
-    context 'when add_work_item_type_correct_id migration is complete' do
-      before do
-        set_elasticsearch_migration_to :add_work_item_type_correct_id, including: true
-      end
-
-      it 'serializes the object as a hash' do
-        expect(result).to match(
-          project_id: work_item.reload.project_id,
-          id: work_item.id,
-          iid: work_item.iid,
-          namespace_id: group.id,
-          root_namespace_id: parent_group.id,
-          created_at: work_item.created_at,
-          updated_at: work_item.updated_at,
-          title: work_item.title,
-          description: work_item.description,
-          state: work_item.state,
-          upvotes: work_item.upvotes_count,
-          hidden: work_item.hidden?,
-          work_item_type_id: work_item.work_item_type_id,
-          correct_work_item_type_id: work_item.correct_work_item_type_id,
-          confidential: work_item.confidential,
-          author_id: work_item.author_id,
-          label_ids: [label.id.to_s],
-          assignee_id: work_item.issue_assignee_user_ids,
-          due_date: work_item.due_date,
-          traversal_ids: "#{parent_group.id}-#{group.id}-",
-          hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
-          namespace_visibility_level: group.visibility_level,
-          notes: "",
-          notes_internal: "",
-          schema_version: described_class::SCHEMA_VERSION,
-          type: 'work_item'
-        )
-      end
-    end
-
-    context 'when add_notes_to_work_items is not complete' do
-      before do
-        set_elasticsearch_migration_to :add_notes_to_work_items, including: false
-      end
-
-      it 'does not contain the gated fields' do
-        result = described_class.new(project_work_item.id, project_work_item.es_parent)
-          .as_indexed_json.with_indifferent_access
-        expect(result).not_to include(:notes)
-        expect(result).not_to include(:notes_internal)
-      end
-    end
-
-    context 'when add_notes_to_work_items is complete' do
-      before do
-        set_elasticsearch_migration_to :add_notes_to_work_items, including: true
-      end
-
-      it 'does contain the gated fields' do
-        result = described_class.new(project_work_item.id, project_work_item.es_parent)
-          .as_indexed_json.with_indifferent_access
-
-        expect(result).to include(:notes)
-        expect(result).to include(:notes_internal)
-
-        expect(result[:notes]).to eq("Terrific\nSome pig")
-        expect(result[:notes_internal]).to eq("Radiant")
-      end
-
-      it 'truncates the gated fields properly' do
-        # Stuffs characters into line to ensure that we reach past the truncation
-        (1..5).each do |_|
-          create(:note, :internal, noteable: project_work_item, project: project, note: "".rjust(1000000, 'x'))
+      context 'when add_work_item_type_correct_id migration is not complete' do
+        before do
+          set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
         end
 
-        create(:note, :internal, noteable: project_work_item, project: project, note: "Newest")
+        it 'does not include correct_work_item_type_id' do
+          expect(indexed_json).to match(expected_hash.except(:correct_work_item_type_id))
+        end
+      end
+    end
 
-        result = described_class.new(project_work_item.id, project_work_item.es_parent)
-          .as_indexed_json.with_indifferent_access
+    describe 'group namespace work item' do
+      let(:object) { work_item }
+      let(:expected_hash) do
+        base_work_item_hash.merge(
+          root_namespace_id: parent_group.id,
+          traversal_ids: "#{parent_group.id}-#{group.id}-",
+          namespace_visibility_level: group.visibility_level,
+          namespace_id: group.id
+        )
+      end
 
-        # Radiant as the first comment falls off the end, but the newest one is still there
-        expect(result[:notes_internal]).not_to include("Radiant")
-        expect(result[:notes_internal]).to include("Newest")
+      it 'serializes work_item as a hash' do
+        expect(indexed_json).to match(expected_hash)
+      end
+
+      context 'when add_work_item_type_correct_id migration is not complete' do
+        before do
+          set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
+        end
+
+        it 'does not include correct_work_item_type_id' do
+          expect(indexed_json).to match(expected_hash.except(:correct_work_item_type_id))
+        end
+      end
+    end
+
+    describe 'project namespace work item' do
+      let(:object) { project_work_item }
+      let_it_be(:note1) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Some pig') }
+      let_it_be(:note2) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Terrific') }
+      let_it_be(:note3) { create(:note, :internal, noteable: project_work_item, project: project, note: "Radiant") }
+
+      let(:expected_hash) do
+        base_work_item_hash.merge(
+          root_namespace_id: project_work_item.namespace.root_ancestor.id,
+          traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
+          archived: project.archived?,
+          project_visibility_level: project.visibility_level,
+          issues_access_level: project.issues_access_level,
+          notes: "Terrific\nSome pig",
+          notes_internal: "Radiant"
+        )
+      end
+
+      it 'serializes work_item as a hash' do
+        expect(indexed_json).to match(expected_hash)
+      end
+
+      it 'truncates notes fields' do
+        create(:note, :internal, noteable: project_work_item, project: project, note: 'Newest')
+
+        stub_const('Search::Elastic::References::WorkItem::NOTES_MAXIMUM_BYTES', 10)
+
+        expect(indexed_json[:notes_internal]).not_to include('Radiant')
+        expect(indexed_json[:notes_internal]).to eq("Newest\n…")
+      end
+
+      context 'when add_work_item_type_correct_id migration is not complete' do
+        before do
+          set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
+        end
+
+        it 'does not include correct_work_item_type_id' do
+          expect(indexed_json).to match(expected_hash.except(:correct_work_item_type_id))
+        end
+      end
+
+      context 'when add_notes_to_work_items migration is not complete' do
+        before do
+          set_elasticsearch_migration_to :add_notes_to_work_items, including: false
+        end
+
+        it 'does not include notes or correct_work_item_type_id' do
+          expect(indexed_json).to match(expected_hash.except(:notes_internal, :notes, :correct_work_item_type_id))
+        end
+      end
+
+      context 'when add_issues_access_level_in_work_item_index migration is not complete' do
+        before do
+          set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: false
+        end
+
+        it 'does not include issues_access_level, notes or correct_work_item_type_id' do
+          expect(indexed_json)
+            .to match(expected_hash.except(:issues_access_level, :notes_internal, :notes, :correct_work_item_type_id))
+        end
       end
     end
   end
