@@ -42,6 +42,12 @@ export const sastData = {
         },
       ],
       title: 'Improper Neutralization of Input During Web Page Generation (XSS)',
+      details: [
+        {
+          name: 'code_flows',
+          items: [],
+        },
+      ],
     },
     {
       description:

@@ -14,6 +14,7 @@ export const fileLineSast = (file, line, sastData) => {
       lineDiff.push({
         line: startLine,
         description: e.description,
+        details: e.details,
         severity: e.severity.toLowerCase(),
         location: e.location,
         foundByPipelineIid: e.foundByPipelineIid,
