@@ -8,6 +8,10 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SubmitDropdown from '~/batch_comments/components/submit_dropdown.vue';
 import userCanApproveQuery from '~/batch_comments/queries/can_approve.query.graphql';
+import { updateText } from '~/lib/utils/text_markdown';
+import SummarizeMyReview from 'ee/batch_comments/components/summarize_my_review.vue';
+
+jest.mock('~/lib/utils/text_markdown');
 
 Vue.use(Vuex);
 Vue.use(VueApollo);
@@ -15,7 +19,11 @@ Vue.use(VueApollo);
 let wrapper;
 let publishReview;
 
-function factory({ canApprove = true, requirePasswordToApprove = true } = {}) {
+function factory({
+  canApprove = true,
+  requirePasswordToApprove = true,
+  canSummarize = false,
+} = {}) {
   publishReview = jest.fn();
   const requestHandlers = [
     [
@@ -69,6 +77,8 @@ function factory({ canApprove = true, requirePasswordToApprove = true } = {}) {
   wrapper = mountExtended(SubmitDropdown, {
     store,
     apolloProvider,
+    stubs: { SummarizeMyReview },
+    provide: { canSummarize },
   });
 }
 
@@ -89,4 +99,18 @@ describe('Batch comments submit dropdown', () => {
       expect(wrapper.findByTestId('approve_password').exists()).toBe(exists);
     },
   );
+
+  describe('AI summarize my review', () => {
+    it('calls updateText with the AI content', () => {
+      factory({ canSummarize: true });
+
+      wrapper.findComponent(SummarizeMyReview).vm.$emit('input', 'AI review content');
+
+      expect(updateText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tag: 'AI review content',
+        }),
+      );
+    });
+  });
 });

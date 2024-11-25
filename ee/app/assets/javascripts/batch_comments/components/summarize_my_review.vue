@@ -23,7 +23,7 @@ export default {
           };
         },
         skip() {
-          return !this.loading;
+          return !this.summarizeReviewLoading;
         },
         result({ data }) {
           const content = data.aiCompletionResponse?.content;
@@ -31,11 +31,10 @@ export default {
 
           if (errors?.length) {
             createAlert({ message: errors[0] });
-            this.loading = false;
+            this.$emit('loading', false);
           } else if (content) {
             this.$emit('input', content);
-
-            this.loading = false;
+            this.$emit('loading', false);
           }
         },
       },
@@ -44,15 +43,22 @@ export default {
   components: {
     GlButton,
   },
+  model: {
+    prop: 'summarizeReviewLoading',
+    event: 'loading',
+  },
   props: {
     id: {
       required: true,
       type: Number,
     },
+    summarizeReviewLoading: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
-      loading: false,
       clientSubscriptionId: uuidv4(),
     };
   },
@@ -63,7 +69,7 @@ export default {
   },
   methods: {
     triggerAiMutation() {
-      this.loading = true;
+      this.$emit('loading', true);
 
       try {
         this.$apollo.mutate({
@@ -84,7 +90,7 @@ export default {
           },
         });
 
-        this.loading = false;
+        this.$emit('loading', false);
       }
     },
   },
@@ -94,10 +100,12 @@ export default {
 <template>
   <gl-button
     icon="tanuki-ai"
-    :loading="loading"
+    :disabled="summarizeReviewLoading"
+    category="tertiary"
+    size="small"
     data-testid="mutation-trigger"
     @click="triggerAiMutation"
   >
-    {{ __('Summarize my pending comments') }}
+    {{ __('Add summary') }}
   </gl-button>
 </template>
