@@ -14,6 +14,111 @@ RSpec.shared_examples 'skips the push check' do
   end
 end
 
+RSpec.shared_examples 'skips sending requests to the SDS' do
+  include_context 'secrets check context'
+
+  it 'does not create the SDS client' do
+    expect(::Gitlab::SecretDetection::GRPC::Client).not_to receive(:new)
+
+    expect(secret_detection_logger).to receive(:info)
+      .once
+      .with(message: log_messages[:secrets_not_found])
+
+    expect { subject.validate! }.not_to raise_error
+  end
+end
+
+RSpec.shared_examples 'sends requests to the SDS' do
+  include_context 'secrets check context'
+
+  describe '#send_request_to_sds' do
+    it 'without exclusions' do
+      expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+        expect(instance).to receive(:run_scan)
+      end
+
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:secrets_not_found])
+
+      expect { subject.validate! }.not_to raise_error
+    end
+
+    context 'with exclusions' do
+      let(:payload) do
+        ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+          id: 'da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda',
+          data: 'BASE_URL=https://foo.bar'
+        )
+      end
+
+      let(:exclusion) do
+        ::Gitlab::SecretDetection::GRPC::ScanRequest::Exclusion.new(
+          exclusion_type: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RULE,
+          value: 'file-exclusion-1.rb'
+        )
+      end
+
+      let(:expected_request) do
+        ::Gitlab::SecretDetection::GRPC::ScanRequest.new(
+          payloads: [payload],
+          exclusions: [exclusion],
+          tags: []
+        )
+      end
+
+      before do
+        create(:project_security_exclusion, :active, :with_path, project: project, value: "file-exclusion-1.rb")
+      end
+
+      it 'includes them in the request' do
+        expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+          expect(instance).to receive(:run_scan).with(request: match(expected_request), auth_token: nil)
+        end
+
+        expect(secret_detection_logger).to receive(:info)
+          .once
+          .with(message: log_messages[:secrets_not_found])
+
+        expect { subject.validate! }.not_to raise_error
+      end
+    end
+  end
+
+  context 'when errors are raised' do
+    context 'when creating a new instance' do
+      it 'catches and logs' do
+        expect(::Gitlab::SecretDetection::GRPC::Client).to(
+          receive(:new).and_raise(::GRPC::Unauthenticated, "Expected error")
+        )
+
+        expect(secret_detection_logger).to receive_messages(
+          error: { message: "Expected error" },
+          info: { message: log_messages[:secrets_not_found] }
+        )
+        expect { subject.validate! }.not_to raise_error
+      end
+    end
+
+    context 'when calling #run_scan' do
+      it 'catches and logs' do
+        expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+          expect(instance).to(
+            receive(:run_scan).and_raise(::GRPC::Unauthenticated, "Expected error")
+          )
+        end
+
+        expect(secret_detection_logger).to receive_messages(
+          error: { message: "Expected error" },
+          info: { message: log_messages[:secrets_not_found] }
+        )
+
+        expect { subject.validate! }.not_to raise_error
+      end
+    end
+  end
+end
+
 RSpec.shared_examples 'scan passed' do
   include_context 'secrets check context'
 

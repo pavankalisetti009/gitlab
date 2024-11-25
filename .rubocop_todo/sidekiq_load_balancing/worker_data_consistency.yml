@@ -1,10 +1,6 @@
 ---
 SidekiqLoadBalancing/WorkerDataConsistency:
   Exclude:
-    - 'app/workers/bulk_imports/finish_batched_pipeline_worker.rb'
-    - 'app/workers/bulk_imports/pipeline_batch_worker.rb'
-    - 'app/workers/bulk_imports/relation_batch_export_worker.rb'
-    - 'app/workers/bulk_imports/stale_import_worker.rb'
     - 'app/workers/ci/archive_traces_cron_worker.rb'
     - 'app/workers/ci/build_prepare_worker.rb'
     - 'app/workers/ci/build_schedule_worker.rb'
@@ -84,7 +80,6 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'app/workers/export_csv_worker.rb'
     - 'app/workers/file_hook_worker.rb'
     - 'app/workers/flush_counter_increments_worker.rb'
-    - 'app/workers/gitlab/export/prune_project_export_jobs_worker.rb'
     - 'app/workers/gitlab/github_gists_import/finish_import_worker.rb'
     - 'app/workers/gitlab/github_gists_import/import_gist_worker.rb'
     - 'app/workers/gitlab/github_gists_import/start_import_worker.rb'

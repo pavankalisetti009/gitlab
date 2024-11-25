@@ -38,10 +38,17 @@ module Gitlab
       SPECIAL_COMMIT_FLAG = /\[skip secret push protection\]/i
       DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/index.html'
       DOCUMENTATION_PATH_ANCHOR = 'resolve-a-blocked-push'
+      EXCLUSION_TYPE_MAP = {
+        path: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RULE,
+        raw_value: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RAW_VALUE
+      }.freeze
+      UNKNOWN_EXCLUSION_TYPE = ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
 
       # Maximum depth any path exclusion can have.
       MAX_PATH_EXCLUSIONS_DEPTH = 20
 
+      # rubocop:disable  Metrics/PerceivedComplexity -- Temporary increase in complexity
+      # rubocop:disable  Metrics/CyclomaticComplexity -- Temporary increase in complexity
       def validate!
         # Return early and do not perform the check:
         #   1. unless license is ultimate
@@ -70,30 +77,36 @@ module Gitlab
           return
         end
 
+        if Feature.enabled?(:use_secret_detection_service, project) &&
+            ::Gitlab::Saas.feature_available?(:secret_detection_service) &&
+            !::Gitlab::CurrentSettings.gitlab_dedicated_instance
+          sds_host = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_url
+          @sds_auth_token = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_auth_token
+
+          unless sds_host.blank?
+            begin
+              @sds_client =
+                ::Gitlab::SecretDetection::GRPC::Client.new(
+                  sds_host,
+                  secure: !sds_auth_token.blank?,
+                  logger: secret_detection_logger
+                )
+            rescue StandardError => e # Currently we want to catch and simply log errors
+              @sds_client = nil
+              secret_detection_logger.error(e.message)
+            end
+          end
+        end
+
         logger.log_timed(LOG_MESSAGES[:secrets_check]) do
           # Only load exclusions if the feature flag is enabled.
           exclusions = Feature.enabled?(:secret_detection_project_level_exclusions, project) ? active_exclusions : {}
 
-          if use_diff_scan?
-            payloads = get_diffs
-
-            # Pass payloads to gem for scanning.
-            response = ::Gitlab::SecretDetection::ScanDiffs
-              .new(logger: secret_detection_logger)
-              .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
-          else
-            payloads = ::Gitlab::Checks::ChangedBlobs.new(
-              project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
-            ).execute(timeout: logger.time_left)
-
-            # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
-            payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
-
-            # Pass payloads to gem for scanning.
-            response = ::Gitlab::SecretDetection::Scan
-              .new(logger: secret_detection_logger)
-              .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
-          end
+          response = if use_diff_scan?
+                       diff_scan(exclusions)
+                     else
+                       whole_scan(exclusions)
+                     end
 
           # Log audit events for exlusions that were applied.
           log_applied_exclusions_audit_events(response.applied_exclusions)
@@ -109,8 +122,39 @@ module Gitlab
           secret_detection_logger.error(message: ERROR_MESSAGES[:scan_initialization_error])
         end
       end
+      # rubocop:enable  Metrics/PerceivedComplexity
+      # rubocop:enable  Metrics/CyclomaticComplexity
 
       private
+
+      attr_reader :sds_client, :sds_auth_token
+
+      def diff_scan(exclusions)
+        payloads = get_diffs
+
+        send_request_to_sds(payloads, exclusions: exclusions)
+
+        # Pass payloads to gem for scanning.
+        ::Gitlab::SecretDetection::ScanDiffs
+          .new(logger: secret_detection_logger)
+          .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
+      end
+
+      def whole_scan(exclusions)
+        payloads = ::Gitlab::Checks::ChangedBlobs.new(
+          project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
+        ).execute(timeout: logger.time_left)
+
+        # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
+        payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
+
+        send_request_to_sds(payloads, exclusions: exclusions)
+
+        # Pass payloads to gem for scanning.
+        ::Gitlab::SecretDetection::Scan
+          .new(logger: secret_detection_logger)
+          .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
+      end
 
       ##############################
       # Project Eligibility Checks
@@ -502,6 +546,50 @@ module Gitlab
 
           matches
         end
+      end
+
+      ##############
+      # GRPC Client Helpers
+
+      def send_request_to_sds(payloads, exclusions: {})
+        return if sds_client.nil?
+
+        request = build_sds_request(payloads, exclusions: exclusions)
+
+        # ignore the response for now
+        _ = sds_client.run_scan(request: request, auth_token: sds_auth_token)
+      rescue StandardError => e # Currently we want to catch and simply log errors
+        secret_detection_logger.error(message: e.message)
+      end
+
+      def build_sds_request(data, exclusions: {}, tags: [])
+        payloads = data.inject([]) do |payloads, datum|
+          payloads << ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+            id: datum.id,
+            data: datum.data
+          )
+        end
+
+        exclusion_ary = []
+
+        # exclusions are a hash of {string, array} pairs where the keys
+        # are exclusion types like raw_value or path
+        exclusions.each_key do |key|
+          exclusions[key].inject(exclusion_ary) do |array, exclusion|
+            type = EXCLUSION_TYPE_MAP[exclusion.type.to_sym] || UNKNOWN_EXCLUSION_TYPE
+
+            array << ::Gitlab::SecretDetection::GRPC::ScanRequest::Exclusion.new(
+              exclusion_type: type,
+              value: exclusion.value
+            )
+          end
+        end
+
+        Gitlab::SecretDetection::GRPC::ScanRequest.new(
+          payloads: payloads,
+          exclusions: exclusion_ary,
+          tags: tags
+        )
       end
     end
   end

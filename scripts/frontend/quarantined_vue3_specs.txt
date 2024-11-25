@@ -351,8 +351,6 @@ spec/frontend/super_sidebar/components/flyout_menu_spec.js
 spec/frontend/super_sidebar/components/global_search/components/frequent_items_spec.js
 spec/frontend/super_sidebar/components/nav_item_router_link_spec.js
 spec/frontend/super_sidebar/components/organization_switcher_spec.js
-spec/frontend/super_sidebar/components/sidebar_hover_peek_behavior_spec.js
-spec/frontend/super_sidebar/components/sidebar_peek_behavior_spec.js
 spec/frontend/super_sidebar/components/sidebar_portal_spec.js
 spec/frontend/super_sidebar/components/user_menu_spec.js
 spec/frontend/tags/components/delete_tag_modal_spec.js
