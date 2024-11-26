@@ -11,7 +11,6 @@ module Groups
 
       before_action do
         push_frontend_feature_flag(:vulnerability_management_policy_type_group, group)
-        push_frontend_feature_flag(:scan_result_policy_block_group_branch_modification, group)
         push_frontend_feature_flag(:scan_execution_policy_action_limit_group, group)
         push_frontend_feature_flag(:security_policies_new_yaml_format, group)
         push_frontend_feature_flag(:exclude_license_packages, group)

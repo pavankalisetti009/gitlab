@@ -22,7 +22,7 @@ import { verify } from '../utils';
 import {
   mockScanExecutionActionManifest,
   mockPipelineExecutionActionManifest,
-  mockApprovalActionManifest,
+  mockApprovalActionGroupManifest,
   mockApprovalActionProjectManifest,
   mockScanExecutionActionProjectManifest,
 } from './mocks';
@@ -78,7 +78,7 @@ describe('ComplianceFrameworks', () => {
       policyType                   | manifest
       ${SCAN_EXECUTION_POLICY}     | ${mockScanExecutionActionManifest}
       ${PIPELINE_EXECUTION_POLICY} | ${mockPipelineExecutionActionManifest}
-      ${APPROVAL_POLICY}           | ${mockApprovalActionManifest}
+      ${APPROVAL_POLICY}           | ${mockApprovalActionGroupManifest}
     `('$policyType', ({ policyType, manifest }) => {
       beforeEach(() => {
         jest.spyOn(urlUtils, 'getParameterByName').mockReturnValue(policyType);

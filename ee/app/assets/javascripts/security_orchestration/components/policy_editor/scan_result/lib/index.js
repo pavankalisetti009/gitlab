@@ -76,49 +76,6 @@ export const DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT = `approval_policy:
     fail: closed
 `;
 
-export const DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE = `type: approval_policy
-name: ''
-description: ''
-enabled: true
-policy_scope:
-  projects:
-    excluding: []
-rules:
-  - type: ''
-actions:
-  - type: require_approval
-    approvals_required: 1
-  - type: send_bot_message
-    enabled: true
-`
-  .concat(DEFAULT_PROJECT_SETTINGS)
-  .concat(FALLBACK);
-
-export const DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_NEW_FORMAT = `approval_policy:
-- name: ''
-  description: ''
-  enabled: true
-  policy_scope:
-    projects:
-      excluding: []
-  rules:
-    - type: ''
-  actions:
-    - type: require_approval
-      approvals_required: 1
-    - type: send_bot_message
-      enabled: true
-  approval_settings:
-    ${BLOCK_BRANCH_MODIFICATION}: true
-    ${PREVENT_PUSHING_AND_FORCE_PUSHING}: true
-    ${PREVENT_APPROVAL_BY_AUTHOR}: true
-    ${PREVENT_APPROVAL_BY_COMMIT_AUTHOR}: true
-    ${REMOVE_APPROVALS_WITH_NEW_COMMIT}: true
-    ${REQUIRE_PASSWORD_TO_APPROVE}: false
-  fallback_behavior:
-    fail: closed
-`;
-
 export const DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS = `type: approval_policy
 name: ''
 description: ''
@@ -163,19 +120,16 @@ export const DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS_NEW_FORMA
     fail: closed
 `;
 
-export const getPolicyYaml = ({ withGroupSettings, isGroup, newYamlFormat = false }) => {
+export const getPolicyYaml = ({ isGroup, newYamlFormat = false }) => {
   const defaultPolicy = newYamlFormat
     ? DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT
     : DEFAULT_SCAN_RESULT_POLICY;
-  const defaultPolicyWithScope = newYamlFormat
-    ? DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_NEW_FORMAT
-    : DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE;
   const defaultPolicyWithScopeAndSettings = newYamlFormat
     ? DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS_NEW_FORMAT
     : DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS;
 
   if (isGroup) {
-    return withGroupSettings ? defaultPolicyWithScopeAndSettings : defaultPolicyWithScope;
+    return defaultPolicyWithScopeAndSettings;
   }
 
   return defaultPolicy;

@@ -33,8 +33,6 @@ module EE
           @protected_branch = group.protected_branches.new
           gon.push(helpers.protected_access_levels_for_dropdowns)
 
-          return unless ::Feature.enabled?(:scan_result_policy_block_group_branch_modification, group)
-
           protected_from_deletion =
             ::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService
               .new(group: group)

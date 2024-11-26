@@ -63,17 +63,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
     it { is_expected.to be(expectation) }
   end
 
-  context 'with feature disabled' do
-    before do
-      stub_feature_flags(scan_result_policy_block_group_branch_modification: false)
-    end
-
-    let(:block_branch_modification) { true }
-    let(:block_group_branch_modification) { true }
-
-    it { is_expected.to be(false) }
-  end
-
   context 'without approval_settings' do
     let(:approval_settings) { nil }
 

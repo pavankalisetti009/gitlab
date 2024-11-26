@@ -56,9 +56,13 @@ export const APPROVAL_POLICY_DEFAULT_POLICY = {
   fallback_behavior: { fail: 'closed' },
 };
 
-export const APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE = {
+export const APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS = {
   ...APPROVAL_POLICY_DEFAULT_POLICY,
   policy_scope: { projects: { excluding: [] } },
+  approval_settings: {
+    ...APPROVAL_POLICY_DEFAULT_POLICY.approval_settings,
+    block_group_branch_modification: true,
+  },
 };
 
 export const SCAN_EXECUTION_DEFAULT_POLICY = {

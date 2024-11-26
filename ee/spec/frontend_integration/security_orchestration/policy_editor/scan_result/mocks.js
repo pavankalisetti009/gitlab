@@ -1,17 +1,21 @@
 import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { removeGroupSetting } from '../utils';
 
 const BOT_ACTION = `  - type: send_bot_message
     enabled: true
 `;
 
-const SETTINGS = `approval_settings:
+const GROUP_SETTINGS = `approval_settings:
   block_branch_modification: true
+  block_group_branch_modification: true
   prevent_pushing_and_force_pushing: true
   prevent_approval_by_author: true
   prevent_approval_by_commit_author: true
   remove_approvals_with_new_commit: true
   require_password_to_approve: false
 `;
+
+const PROJECT_SETTINGS = removeGroupSetting(GROUP_SETTINGS);
 
 const FALLBACK = `fallback_behavior:
   fail: closed
@@ -47,7 +51,7 @@ actions:
       - developer
 `
   .concat(BOT_ACTION)
-  .concat(SETTINGS)
+  .concat(PROJECT_SETTINGS)
   .concat(FALLBACK);
 
 export const mockUserApproversApprovalManifest = `type: approval_policy
@@ -63,7 +67,7 @@ actions:
       - ${USER.id}
 `
   .concat(BOT_ACTION)
-  .concat(SETTINGS)
+  .concat(PROJECT_SETTINGS)
   .concat(FALLBACK);
 
 export const mockGroupApproversApprovalManifest = `type: approval_policy
@@ -82,7 +86,7 @@ actions:
       - ${GROUP.id}
 `
   .concat(BOT_ACTION)
-  .concat(SETTINGS)
+  .concat(GROUP_SETTINGS)
   .concat(FALLBACK);
 
 export const mockLicenseApprovalManifest = `type: approval_policy
@@ -100,7 +104,7 @@ actions:
     approvals_required: 1
 `
   .concat(BOT_ACTION)
-  .concat(SETTINGS)
+  .concat(PROJECT_SETTINGS)
   .concat(FALLBACK);
 
 export const mockSecurityApprovalManifest = `type: approval_policy
@@ -119,7 +123,7 @@ actions:
     approvals_required: 1
 `
   .concat(BOT_ACTION)
-  .concat(SETTINGS)
+  .concat(PROJECT_SETTINGS)
   .concat(FALLBACK);
 
 export const mockAnyMergeRequestApprovalManifest = `type: approval_policy
@@ -135,5 +139,5 @@ actions:
     approvals_required: 1
 `
   .concat(BOT_ACTION)
-  .concat(SETTINGS)
+  .concat(PROJECT_SETTINGS)
   .concat(FALLBACK);
