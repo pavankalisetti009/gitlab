@@ -17,6 +17,8 @@ module Gitlab
 
       INDEXED_CLASSES = (ES_SEPARATE_CLASSES + [Repository]).freeze
 
+      SERVER_INFO_EXPIRES_IN = 5.minutes
+
       attr_reader :version, :client
       attr_accessor :target_name
 
@@ -370,17 +372,14 @@ module Gitlab
         false
       end
 
-      def server_info
-        info = client.info.fetch('version', {})
+      def server_info(skip_cache: false)
+        return server_info_uncached if skip_cache
 
-        {
-          distribution: info.fetch('distribution', 'elasticsearch'),
-          version: info['number'],
-          build_type: info['build_type'],
-          lucene_version: info['lucene_version']
-        }
-      rescue StandardError
-        {}
+        cache_key = [self.class.name, :server_info,
+          OpenSSL::Digest::SHA256.hexdigest(::Gitlab::CurrentSettings.elasticsearch_url.join(','))]
+        Rails.cache.fetch(cache_key, expires_in: SERVER_INFO_EXPIRES_IN) do
+          server_info_uncached
+        end
       end
 
       # Tested and supported version/distributions of Elasticsearch/Opensearch
@@ -475,6 +474,21 @@ module Gitlab
           routing: route,
           body: { query: { bool: { filter: { term: { rid: "wiki_#{container_type.downcase}_#{container_id}" } } } } }
         }.compact)
+      end
+
+      private
+
+      def server_info_uncached
+        info = client.info.fetch('version', {})
+
+        {
+          distribution: info.fetch('distribution', 'elasticsearch'),
+          version: info['number'],
+          build_type: info['build_type'],
+          lucene_version: info['lucene_version']
+        }
+      rescue StandardError
+        {}
       end
     end
   end
