@@ -1636,11 +1636,11 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     with_them do
-      it {
+      it do
         is_expected.to include(skip_approved_check: skip_approved_check, skip_draft_check: skip_draft_check,
           skip_blocked_check: skip_blocked_check, skip_discussions_check: skip_discussions_check,
           skip_external_status_check: skip_external_status_check)
-      }
+      end
     end
   end
 
@@ -1894,9 +1894,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       )
     end
 
-    subject do
-      merge_request.sync_project_approval_rules_for_policy_configuration(policy_configuration.id)
-    end
+    subject { merge_request.sync_project_approval_rules_for_policy_configuration(policy_configuration.id) }
 
     it 'creates approval rules for project' do
       subject
