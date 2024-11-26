@@ -15,7 +15,7 @@ RSpec.shared_examples 'does not hit Elasticsearch twice for objects and counts' 
         ::Gitlab::SafeRequestStore.clear!
 
         results.objects(scope)
-        results.public_send("#{scope}_count")
+        results.public_send(:"#{scope}_count")
 
         request = ::Gitlab::Instrumentation::ElasticsearchTransport.detail_store.first
 
@@ -40,7 +40,7 @@ RSpec.shared_examples 'does not load results for count only queries' do |scopes|
         warm_elasticsearch_migrations_cache!
         ::Gitlab::SafeRequestStore.clear!
 
-        results.public_send("#{scope}_count")
+        results.public_send(:"#{scope}_count")
 
         request = ::Gitlab::Instrumentation::ElasticsearchTransport.detail_store.first
 
@@ -78,5 +78,24 @@ RSpec.shared_examples 'namespace ancestry_filter for aggregations' do
   it 'includes authorized:namespace:ancestry_filter:descendants name query' do
     results.aggregations(scope)
     assert_named_queries(query_name)
+  end
+end
+
+RSpec.shared_examples_for 'a paginated object' do |object_type|
+  let(:results) { described_class.new(user, query, limit_project_ids) }
+
+  it 'does not explode when given a page as a string' do
+    expect { results.objects(object_type, page: "2") }.not_to raise_error
+  end
+
+  it 'paginates' do
+    objects = results.objects(object_type, page: 2)
+    expect(objects).to respond_to(:total_count, :limit, :offset)
+    expect(objects.offset_value).to eq(20)
+  end
+
+  it 'uses the per_page value if passed' do
+    objects = results.objects(object_type, page: 5, per_page: 1)
+    expect(objects.offset_value).to eq(4)
   end
 end
