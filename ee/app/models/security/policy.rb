@@ -3,7 +3,7 @@
 module Security
   class Policy < ApplicationRecord
     include EachBatch
-    include Security::VulnerabilityManagementPolicy
+    include Security::Policies::VulnerabilityManagement
 
     self.table_name = 'security_policies'
     self.inheritance_column = :_type_disabled

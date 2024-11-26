@@ -39,12 +39,17 @@ module Vulnerabilities
     strong_memoize_attr :rules_by_vulnerability
 
     def policies
-      project.security_policies.auto_resolve_policies_with_rules
+      project
+        .vulnerability_management_policies
+        .auto_resolve_policies_with_rules
     end
 
     def rules
-      project.security_policies.no_longer_detected_rules
+      policies
+        .flat_map(&:vulnerability_management_policy_rules)
+        .select(&:type_no_longer_detected?)
     end
+    strong_memoize_attr :rules
 
     def resolve_vulnerabilities
       return if vulnerabilities_to_resolve.empty?
