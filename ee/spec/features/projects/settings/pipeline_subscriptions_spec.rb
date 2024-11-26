@@ -65,7 +65,8 @@ RSpec.describe 'Project Subscriptions', :js,
     expect(page).to have_content('Subscription successfully created.')
   end
 
-  it 'shows flash warning when unsuccessful in creating a pipeline subscription' do
+  it 'shows flash warning when unsuccessful in creating a pipeline subscription',
+    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/469604' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
       within 'form' do
