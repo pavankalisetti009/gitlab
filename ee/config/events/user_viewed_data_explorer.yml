@@ -1,7 +1,7 @@
 ---
-description: Triggered when a user views the visualization designer.
+description: Triggered when a user views the data explorer.
 internal_events: true
-action: user_viewed_visualization_designer
+action: user_viewed_data_explorer
 extra_properties:
 identifiers:
 - project

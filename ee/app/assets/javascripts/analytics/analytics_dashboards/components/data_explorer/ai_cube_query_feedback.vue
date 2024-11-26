@@ -4,9 +4,9 @@ import { GlButton, GlPopover } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
 
 import {
-  EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_HELPFUL,
-  EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_UNHELPFUL,
-  EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_WRONG,
+  EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_HELPFUL,
+  EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_UNHELPFUL,
+  EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_WRONG,
   GITLAB_DUO_CORRELATION_PROPERTY,
 } from 'ee/analytics/analytics_dashboards/constants';
 import { s__ } from '~/locale';
@@ -48,19 +48,19 @@ export default {
   feedbackOptions: [
     {
       icon: 'thumb-up',
-      event: EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_HELPFUL,
+      event: EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_HELPFUL,
       label: s__('ProductAnalytics|Helpful'),
       testId: 'feedback-helpful-btn',
     },
     {
       icon: 'thumb-down',
-      event: EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_UNHELPFUL,
+      event: EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_UNHELPFUL,
       label: s__('ProductAnalytics|Unhelpful'),
       testId: 'feedback-unhelpful-btn',
     },
     {
       icon: 'status_warning',
-      event: EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_WRONG,
+      event: EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_WRONG,
       label: s__('ProductAnalytics|Wrong'),
       testId: 'feedback-wrong-btn',
     },
