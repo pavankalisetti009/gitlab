@@ -7,7 +7,7 @@ RSpec.describe Users::ExperimentalCommunicationOptInWorker, feature_category: :i
     subject(:perform) { described_class.new.perform(user.id) }
 
     let(:organization) { FFaker::Company.name }
-    let(:user) { create(:user, user_detail: create(:user_detail, organization: organization)) }
+    let(:user) { create(:user, organization: organization) }
 
     it 'calls customer dot opt-in API with expected params' do
       expect(::Gitlab::SubscriptionPortal::Client).to receive(:opt_in_lead).with(

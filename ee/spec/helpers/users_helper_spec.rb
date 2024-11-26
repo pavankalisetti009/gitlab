@@ -203,36 +203,29 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
   describe '#user_enterprise_group_text' do
     context 'when user is not enterprise user' do
-      let(:user_detail_without_group) do
-        create(:user_detail)
-      end
+      let(:user_without_enterprise_group) { create(:user) }
 
       it 'does not display' do
-        expect(user_enterprise_group_text(user_detail_without_group.user)).to be_nil
+        expect(user_enterprise_group_text(user_without_enterprise_group)).to be_nil
       end
     end
 
     context 'when user is enterprise user' do
-      let(:group) { create(:group) }
-      let!(:user_detail_with_group) do
-        create(
-          :user_detail,
-          enterprise_group: group,
-          enterprise_group_id: group.id,
-          enterprise_group_associated_at: Time.now
-        )
+      let(:group) { build_stubbed(:group) }
+      let(:user_with_enterprise_group) do
+        build(:user, enterprise_group: group, enterprise_group_associated_at: Time.now)
       end
 
       it 'displays enterprise group information' do
-        html_content = user_enterprise_group_text(user_detail_with_group.user)
+        html_content = user_enterprise_group_text(user_with_enterprise_group)
         expect(html_content).to include("Enterprise user of:")
         expect(html_content).to include(group.name)
         expect(html_content).to include("(#{group.id})")
       end
 
       it 'displays enterprise group associated date' do
-        html_content = user_enterprise_group_text(user_detail_with_group.user)
-        expect(html_content).to include(user_detail_with_group.enterprise_group_associated_at.to_fs(:medium))
+        html_content = user_enterprise_group_text(user_with_enterprise_group)
+        expect(html_content).to include(user_with_enterprise_group.enterprise_group_associated_at.to_fs(:medium))
       end
     end
   end

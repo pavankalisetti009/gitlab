@@ -185,8 +185,8 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
     end
 
     context 'filter by enterprise users', :saas do
-      let_it_be(:enterprise_user_member_1_of_root_group) { group.add_developer(create(:user_detail, enterprise_group_id: group.id).user) }
-      let_it_be(:enterprise_user_member_2_of_root_group) { group.add_developer(create(:user_detail, enterprise_group_id: group.id).user) }
+      let_it_be(:enterprise_user_member_1_of_root_group) { group.add_developer(create(:user, enterprise_group_id: group.id)) }
+      let_it_be(:enterprise_user_member_2_of_root_group) { group.add_developer(create(:user, enterprise_group_id: group.id)) }
 
       let(:all_members) do
         [

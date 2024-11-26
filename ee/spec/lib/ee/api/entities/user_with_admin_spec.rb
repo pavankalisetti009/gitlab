@@ -99,7 +99,10 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
 
       context 'when user is associated with an enterprise group' do
         let(:group) { create(:group) }
-        let!(:user_detail) { create(:user_detail, user: user, enterprise_group_id: group.id) }
+
+        before do
+          user.update!(enterprise_group: group)
+        end
 
         it 'returns the id of the enterprise group' do
           expect(subject[:enterprise_group_id]).to eq(group.id)
@@ -131,8 +134,9 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       context 'when user is associated with an enterprise group' do
         let(:group) { create(:group) }
         let(:associated_at) { Time.current }
-        let!(:user_detail) do
-          create(:user_detail, user: user, enterprise_group_id: group.id, enterprise_group_associated_at: associated_at)
+
+        before do
+          user.user_detail.update!(enterprise_group_id: group.id, enterprise_group_associated_at: associated_at)
         end
 
         it 'returns the time when the user was associated with the enterprise group' do

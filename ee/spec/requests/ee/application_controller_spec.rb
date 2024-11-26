@@ -10,13 +10,12 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
     let(:onboarding_status_step_url) { url }
 
     let(:user) do
-      create(:user, role: nil, onboarding_in_progress: onboarding_in_progress) do |record|
-        create(
-          :user_detail,
-          user: record,
-          onboarding_status_step_url: onboarding_status_step_url
-        )
-      end
+      create(
+        :user,
+        role: nil,
+        onboarding_in_progress: onboarding_in_progress,
+        onboarding_status_step_url: onboarding_status_step_url
+      )
     end
 
     before do

@@ -24,7 +24,7 @@ RSpec.describe AntiAbuse::BanDuplicateUsersWorker, :clean_gitlab_redis_shared_st
       let_it_be(:enterprise_group) { create(:group) }
 
       before do
-        create(:user_detail, user: duplicate_user, enterprise_group_id: enterprise_group.id)
+        duplicate_user.update!(enterprise_group_id: enterprise_group.id)
       end
 
       it_behaves_like 'does not ban the duplicate user'
