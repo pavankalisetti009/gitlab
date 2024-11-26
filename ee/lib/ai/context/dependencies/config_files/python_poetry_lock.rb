@@ -29,12 +29,12 @@ module Ai
           # ]
           #
           def extract_libs
-            parsed = TomlRB.parse(content)
+            parsed = Gitlab::Utils::TomlParser.safe_parse(content)
 
             dig_in(parsed, 'package').try(:map) do |dep|
               Lib.new(name: dig_in(dep, 'name'), version: dig_in(dep, 'version'))
             end
-          rescue TomlRB::ParseError
+          rescue Gitlab::Utils::TomlParser::ParseError
             raise ParsingError, 'content is not valid TOML'
           rescue TomlRB::Error => e
             raise ParsingError, "TOML error - #{e.message}"

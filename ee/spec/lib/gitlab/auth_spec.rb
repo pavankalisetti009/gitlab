@@ -9,7 +9,8 @@ RSpec.describe Gitlab::Auth, :use_clean_rails_memory_store_caching, feature_cate
   let(:gl_auth) { described_class }
 
   describe '.find_for_git_client' do
-    let(:request) { instance_double(ActionDispatch::Request, ip: 'ip') }
+    let(:request) { instance_double(ActionDispatch::Request, ip: 'ip', path: path) }
+    let(:path) { '/some_path/example' }
 
     context 'when using personal access token as password' do
       shared_examples 'successfully authenticates' do
