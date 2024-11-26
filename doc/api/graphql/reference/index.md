@@ -37593,6 +37593,7 @@ Access level to a resource.
 | <a id="accesslevelenumminimal_access"></a>`MINIMAL_ACCESS` | Minimal access. |
 | <a id="accesslevelenumno_access"></a>`NO_ACCESS` | No access. |
 | <a id="accesslevelenumowner"></a>`OWNER` | Owner access. |
+| <a id="accesslevelenumplanner"></a>`PLANNER` | Planner access. |
 | <a id="accesslevelenumreporter"></a>`REPORTER` | Reporter access. |
 
 ### `AgentTokenStatus`
@@ -38973,6 +38974,7 @@ Role of User.
 | <a id="gitlabsubscriptionsuserroleguest"></a>`GUEST` | Guest. |
 | <a id="gitlabsubscriptionsuserrolemaintainer"></a>`MAINTAINER` | Maintainer. |
 | <a id="gitlabsubscriptionsuserroleowner"></a>`OWNER` | Owner. |
+| <a id="gitlabsubscriptionsuserroleplanner"></a>`PLANNER` | Planner. |
 | <a id="gitlabsubscriptionsuserrolereporter"></a>`REPORTER` | Reporter. |
 
 ### `GitlabSubscriptionsUserSort`

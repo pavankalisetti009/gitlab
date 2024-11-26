@@ -7,6 +7,7 @@ module Types
       description 'Role of User'
 
       value 'GUEST', value: :guest, description: 'Guest.'
+      value 'PLANNER', value: :planner, description: 'Planner.'
       value 'REPORTER', value: :reporter, description: 'Reporter.'
       value 'DEVELOPER', value: :developer, description: 'Developer.'
       value 'MAINTAINER', value: :maintainer, description: 'Maintainer.'

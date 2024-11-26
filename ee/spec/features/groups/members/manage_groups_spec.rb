@@ -96,6 +96,7 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     end
 
     it_behaves_like "triggers an overage modal when adding a group with a given role", 'Guest'
+    it_behaves_like "triggers an overage modal when adding a group with a given role", 'Planner'
     it_behaves_like "triggers an overage modal when adding a group with a given role", 'Developer'
 
     context 'when overage modal is shown' do
@@ -118,6 +119,7 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     end
 
     it_behaves_like "doesn't trigger an overage modal when adding a group with a given role", 'Guest'
+    it_behaves_like "triggers an overage modal when adding a group with a given role", 'Planner'
     it_behaves_like "triggers an overage modal when adding a group with a given role", 'Developer'
   end
 
