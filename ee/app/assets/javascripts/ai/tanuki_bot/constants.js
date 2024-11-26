@@ -6,24 +6,6 @@ export const MESSAGE_TYPES = {
   TANUKI: GENIE_CHAT_MODEL_ROLES.assistant,
 };
 
-export const SLASH_COMMANDS = [
-  {
-    name: '/reset',
-    shouldSubmit: true,
-    description: s__('DuoChat|Reset conversation and ignore the previous messages.'),
-  },
-  {
-    name: '/clear',
-    shouldSubmit: true,
-    description: s__('DuoChat|Delete all messages in this conversation.'),
-  },
-  {
-    name: '/help',
-    shouldSubmit: true,
-    description: s__('DuoChat|Learn what Duo Chat can do.'),
-  },
-];
-
 export const SOURCE_TYPES = {
   HANDBOOK: {
     value: 'handbook',
