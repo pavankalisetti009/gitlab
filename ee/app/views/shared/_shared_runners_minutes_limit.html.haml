@@ -7,6 +7,8 @@
     .js-vue-alert{ 'v-cloak': true, data: { variant: notification.style,
       primary_button_text: _('Buy more compute minutes'),
       primary_button_link: buy_additional_minutes_path(namespace),
+      secondary_button_text: _('See usage statistics'),
+      secondary_button_link: usage_quotas_path(namespace.root_ancestor, anchor: 'pipelines-quota-tab'),
       dismissible: 'true',
       dismiss_cookie_name: notification.dismiss_cookie_id,
       dismiss_cookie_expire: 30 } }

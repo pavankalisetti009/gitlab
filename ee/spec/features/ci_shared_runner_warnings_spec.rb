@@ -34,16 +34,17 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
         group.add_member(user, membership_level)
       end
 
-      where(:case_name, :percent_threshold, :minutes_limit, :minutes_used) do
-        'warning level' | 30 | 1000 | 800
-        'danger level'  | 5  | 1000 | 980
+      where(:case_name, :percentage, :minutes_limit, :minutes_used, :minutes_left) do
+        'warning level' | 25 | 1000 | 750 | 250
+        'danger level'  | 5  | 1000 | 950 | 50
       end
 
       with_them do
         context "when there is a notification and minutes still exist", :js do
           let(:message) do
-            "#{group.name} namespace has #{percent_threshold}% or less Shared Runner compute minutes remaining. " \
-              "After it runs out, no new jobs or pipelines in its projects will run."
+            "#{group.name} namespace has #{minutes_left} / #{minutes_limit} (#{percentage}%) shared runner " \
+              "compute minutes remaining. When all compute minutes are used up, no new jobs or pipelines will run " \
+              "in this namespace's projects."
           end
 
           before do
@@ -76,8 +77,8 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
       context 'when limit is exceeded', :js do
         let(:group) { create(:group, :with_used_build_minutes_limit) }
         let(:message) do
-          "#{group.name} namespace has exceeded its compute minutes quota. " \
-            "Buy additional compute minutes, or no new jobs or pipelines in its projects will run."
+          "#{group.name} namespace has reached its shared runner compute minutes quota. " \
+            "To run new jobs and pipelines in this namespace's projects, buy additional compute minutes."
         end
 
         it 'displays a warning message on project homepage' do
@@ -136,16 +137,17 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
     end
 
     context 'when on a group related page' do
-      where(:case_name, :percent_threshold, :minutes_limit, :minutes_used) do
-        'warning level' | 30 | 1000 | 800
-        'danger level'  | 5  | 1000 | 980
+      where(:case_name, :percentage, :minutes_limit, :minutes_used, :minutes_left) do
+        'warning level' | 25 | 1000 | 750 | 250
+        'danger level'  | 5  | 1000 | 950 | 50
       end
 
       with_them do
         context "when there is a notification and minutes still exist", :js do
           let(:message) do
-            "#{group.name} namespace has #{percent_threshold}% or less Shared Runner compute minutes remaining. " \
-              "After it runs out, no new jobs or pipelines in its projects will run."
+            "#{group.name} namespace has #{minutes_left} / #{minutes_limit} (#{percentage}%) shared runner " \
+              "compute minutes remaining. When all compute minutes are used up, no new jobs or pipelines will run " \
+              "in this namespace's projects."
           end
 
           before do
@@ -166,8 +168,8 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
       context 'when limit is exceeded', :js do
         let(:group) { create(:group, :with_used_build_minutes_limit) }
         let(:message) do
-          "#{group.name} namespace has exceeded its compute minutes quota. " \
-            "Buy additional compute minutes, or no new jobs or pipelines in its projects will run."
+          "#{group.name} namespace has reached its shared runner compute minutes quota. " \
+            "To run new jobs and pipelines in this namespace's projects, buy additional compute minutes."
         end
 
         it 'displays a warning message on group information page' do
@@ -199,6 +201,7 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
     page.within('.shared-runner-quota-message') do
       expect(page).to have_content(message)
       expect(page).to have_link 'Buy more compute minutes', href: buy_minutes_subscriptions_link(group)
+      expect(page).to have_link 'See usage statistics', href: usage_quotas_path(group, anchor: 'pipelines-quota-tab')
     end
   end
 

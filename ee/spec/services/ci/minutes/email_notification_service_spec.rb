@@ -12,13 +12,13 @@ RSpec.describe Ci::Minutes::EmailNotificationService, feature_category: :hosted_
 
     where(:monthly_minutes_limit, :minutes_used, :current_notification_level, :new_notification_level, :result) do
       1000 | 500  | 100 | 100 | [false]
-      1000 | 800  | 100 | 30  | [true, 30]
-      1000 | 800  | 30  | 30  | [false]
+      1000 | 800  | 100 | 25  | [true, 25]
+      1000 | 800  | 25  | 25  | [false]
       1000 | 950  | 100 | 5   | [true, 5]
       1000 | 950  | 30  | 5   | [true, 5]
       1000 | 950  | 5   | 5   | [false]
       1000 | 1000 | 100 | 0   | [true, 0]
-      1000 | 1000 | 30  | 0   | [true, 0]
+      1000 | 1000 | 25  | 0   | [true, 0]
       1000 | 1000 | 5   | 0   | [true, 0]
       1000 | 1001 | 5   | 0   | [true, 0]
       1000 | 1000 | 0   | 0   | [false]
