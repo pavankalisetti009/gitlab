@@ -62,7 +62,7 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
     end
 
     context 'with a single work item type ID' do
-      let(:params) { { work_item_type_ids: [issue_type.id] } }
+      let(:params) { { work_item_type_ids: [issue_type.correct_id] } }
 
       it 'returns custom fields with matching work item type' do
         expect(custom_fields).to contain_exactly(custom_field_1, custom_field_2)
@@ -70,7 +70,7 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
     end
 
     context 'with multiple work item type IDs' do
-      let(:params) { { work_item_type_ids: [issue_type.id, task_type.id] } }
+      let(:params) { { work_item_type_ids: [issue_type.correct_id, task_type.correct_id] } }
 
       it 'returns custom fields that match all work item types' do
         expect(custom_fields).to contain_exactly(custom_field_1)
