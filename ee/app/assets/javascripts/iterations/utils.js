@@ -89,6 +89,17 @@ export function getIterationPeriod({ startDate, dueDate }, usedInIssue = false, 
 }
 
 /**
+ * Sort iteration cadences by the specified field
+ */
+const sortCadences = (cadences, sortBy) => {
+  return cadences.sort((a, b) => {
+    const titleA = a[sortBy].toLowerCase();
+    const titleB = b[sortBy].toLowerCase();
+    return titleA.localeCompare(titleB);
+  });
+};
+
+/**
  * Group a list of iterations by cadence.
  *
  * @param iterations A list of iterations
@@ -113,7 +124,7 @@ export function groupByIterationCadences(iterations) {
       cadences.push({ title, iterations: [cadenceIteration], id });
     }
   });
-  return cadences;
+  return sortCadences(cadences, 'title');
 }
 
 export function groupOptionsByIterationCadences(iterations) {
@@ -135,5 +146,5 @@ export function groupOptionsByIterationCadences(iterations) {
       cadences.push({ text: title, options: [cadenceIteration] });
     }
   });
-  return cadences;
+  return sortCadences(cadences, 'text');
 }
