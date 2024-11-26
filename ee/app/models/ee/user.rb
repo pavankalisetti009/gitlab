@@ -522,7 +522,7 @@ module EE
     def managed_by_user?(user, group: user_detail.enterprise_group)
       return false unless user && group
 
-      managed_by_group?(group) && group.owned_by?(user)
+      managed_by_group?(group) && Ability.allowed?(user, :owner_access, group)
     end
 
     override :ldap_sync_time

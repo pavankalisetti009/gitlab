@@ -2736,7 +2736,7 @@ RSpec.describe User, feature_category: :system_access do
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:domain_verification_availabe_for_group, :user_is_enterprise_user_of_the_group, :expected_value) do
+    where(:domain_verification_available_for_group, :user_is_enterprise_user_of_the_group, :expected_value) do
       false | false | false
       false | true  | false
       true  | false | false
@@ -2745,7 +2745,7 @@ RSpec.describe User, feature_category: :system_access do
 
     with_them do
       before do
-        stub_licensed_features(domain_verification: domain_verification_availabe_for_group)
+        stub_licensed_features(domain_verification: domain_verification_available_for_group)
 
         user.user_detail.enterprise_group_id = user_is_enterprise_user_of_the_group ? group.id : -42
       end
@@ -2765,30 +2765,49 @@ RSpec.describe User, feature_category: :system_access do
   describe '#managed_by_user?', :saas do
     let_it_be(:group) { create(:group) }
     let_it_be(:unrelated_to_user_group) { create(:group) }
+
+    let_it_be(:shared_with_group) { create(:group) }
+
+    let_it_be(:share_group) do
+      create(:group_group_link, shared_group: group, shared_with_group: shared_with_group, group_access: Gitlab::Access::OWNER)
+    end
+
+    let_it_be(:share_unrelated_to_user_group) do
+      create(:group_group_link, shared_group: unrelated_to_user_group, shared_with_group: shared_with_group, group_access: Gitlab::Access::OWNER)
+    end
+
     let_it_be(:current_user) { create(:user) }
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:domain_verification_availabe_for_group, :user_is_enterprise_user_of_the_group, :current_user_is_group_owner, :expected_value) do
-      false | false  | false  | false
-      false | false  | true   | false
-      false | true   | false  | false
-      false | true   | true   | false
-      true  | false  | false  | false
-      true  | false  | true   | false
-      true  | true   | false  | false
-      true  | true   | true   | true
+    where(:domain_verification_available_for_group, :user_is_enterprise_user_of_the_group, :current_user_is_group_owner, :owner_via_invited_group, :expected_value) do
+      false | false  | false | nil   | false
+      false | false  | true  | false | false
+      false | false  | true  | true  | false
+      false | true   | false | nil   | false
+      false | true   | true  | false | false
+      false | true   | true  | true  | false
+      true  | false  | false | nil   | false
+      true  | false  | true  | false | false
+      true  | false  | true  | true  | false
+      true  | true   | false | nil   | false
+      true  | true   | true  | false | true
+      true  | true   | true  | true  | true
     end
 
     with_them do
       before do
-        stub_licensed_features(domain_verification: domain_verification_availabe_for_group)
+        stub_licensed_features(domain_verification: domain_verification_available_for_group)
 
         user.user_detail.enterprise_group_id = user_is_enterprise_user_of_the_group ? group.id : -42
 
         if current_user_is_group_owner
-          group.add_owner(current_user)
-          unrelated_to_user_group.add_owner(current_user)
+          if owner_via_invited_group
+            shared_with_group.add_owner(current_user)
+          else
+            group.add_owner(current_user)
+            unrelated_to_user_group.add_owner(current_user)
+          end
         else
           group.add_maintainer(current_user)
           unrelated_to_user_group.add_maintainer(current_user)
