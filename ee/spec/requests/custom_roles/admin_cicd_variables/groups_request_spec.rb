@@ -95,4 +95,53 @@ RSpec.describe 'User with admin_cicd_variables custom role', feature_category: :
       end
     end
   end
+
+  describe API::GroupVariables do
+    include ApiHelpers
+
+    describe 'GET /groups/:id/variables' do
+      it 'returns group variables' do
+        get api("/groups/#{group.id}/variables", user)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to be_a(Array)
+      end
+    end
+
+    describe 'POST /groups/:id/variables' do
+      let(:params) { { key: 'KEY', value: 'VALUE' } }
+
+      it 'creates a group variable' do
+        post api("/groups/#{group.id}/variables", user), params: params
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['key']).to eq('KEY')
+        expect(json_response['value']).to eq('VALUE')
+      end
+    end
+
+    describe 'PUT /groups/:id/variables/:key' do
+      let_it_be(:variable) { create(:ci_group_variable, group: group, hidden: false) }
+      let(:params) { { value: 'UPDATED' } }
+
+      it 'updates variable data' do
+        put api("/groups/#{group.id}/variables/#{variable.key}", user), params: params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['value']).to eq('UPDATED')
+      end
+    end
+
+    describe 'DELETE /groups/:id/variables/:key' do
+      let_it_be(:variable) { create(:ci_group_variable, group: group, hidden: false) }
+
+      it 'deletes the variable' do
+        expect do
+          delete api("/groups/#{group.id}/variables/#{variable.key}", user)
+
+          expect(response).to have_gitlab_http_status(:no_content)
+        end.to change { group.variables.count }.by(-1)
+      end
+    end
+  end
 end
