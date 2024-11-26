@@ -55,14 +55,20 @@ module Sbom
 
     def keyset_order(column_expression_evaluator:, order_expression_evaluator:)
       order_definitions = orderings.map do |column, direction|
+        nullable = nullable(column, direction)
         column_expression = column_expression_evaluator.call(column)
+
+        # rubocop:disable GitlabSecurity/PublicSend -- Only values are :not_nullable, :nulls_last, :nulls_first
         order_expression = order_expression_evaluator.call(column)
+                             .then { |oe| direction == :desc ? oe.desc : oe.asc }
+                             .then { |oe| nullable == :not_nullable ? oe : oe.send(nullable) }
+        # rubocop:enable GitlabSecurity/PublicSend
 
         Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
           attribute_name: column.to_s,
           column_expression: column_expression,
-          order_expression: direction == :desc ? order_expression.desc : order_expression.asc,
-          nullable: nullable(column, direction),
+          order_expression: order_expression,
+          nullable: nullable,
           order_direction: direction
         )
       end
@@ -186,6 +192,7 @@ module Sbom
       column = Sbom::Occurrence.columns_hash[column_name.to_s]
 
       return :not_nullable unless column.null
+      return direction == :desc ? :nulls_last : :nulls_first if column_name == :highest_severity
 
       # The default behavior for postgres is to have nulls first
       # when in descending order, and nulls last otherwise.
