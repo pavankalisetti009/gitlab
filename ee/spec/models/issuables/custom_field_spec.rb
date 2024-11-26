@@ -309,9 +309,9 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
 
         context 'with array of work item type IDs' do
           it 'returns custom fields that match the work item type IDs' do
-            expect(described_class.with_work_item_types([issue_type.id, task_type.id])).to contain_exactly(
-              custom_field
-            )
+            expect(
+              described_class.with_work_item_types([issue_type.correct_id, task_type.correct_id])
+            ).to contain_exactly(custom_field)
           end
         end
 
