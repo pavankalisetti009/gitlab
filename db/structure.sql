@@ -24940,6 +24940,9 @@ ALTER TABLE workspaces
 ALTER TABLE security_scans
     ADD CONSTRAINT check_2d56d882f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE namespaces
+    ADD CONSTRAINT check_2eae3bdf93 CHECK ((organization_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE vulnerability_scanners
     ADD CONSTRAINT check_37608c9db5 CHECK ((char_length(vendor) <= 255)) NOT VALID;
 
