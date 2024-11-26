@@ -2,19 +2,25 @@
 
 require 'spec_helper'
 
-RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::GroupsController, feature_category: :subscription_management do
   let_it_be(:user) { create(:user) }
 
   describe 'GET #new' do
     context 'with an unauthenticated user' do
-      subject { get :new, params: { plan_id: 'plan-id' } }
+      subject(:get_new) do
+        get new_gitlab_subscriptions_group_path, params: { plan_id: 'plan-id' }
+        response
+      end
 
       it { is_expected.to have_gitlab_http_status(:redirect) }
       it { is_expected.to redirect_to(new_user_session_path) }
     end
 
     context 'with an authenticated user' do
-      subject(:get_new) { get :new, params: { plan_id: 'plan-id' } }
+      subject(:get_new) do
+        get new_gitlab_subscriptions_group_path, params: { plan_id: 'plan-id' }
+        response
+      end
 
       before do
         sign_in(user)
@@ -46,7 +52,7 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
         it 'assigns the eligible groups for the subscription' do
           get_new
 
-          expect(assigns(:eligible_groups)).to match_array []
+          expect(assigns(:eligible_groups)).to be_empty
         end
 
         it 'assigns the plan data' do
@@ -106,9 +112,14 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
   end
 
   describe 'POST #create', :with_current_organization do
-    context 'with an unauthenticated user' do
-      subject { post :create, params: { group: { name: 'Test Group', plan_id: 'plan-id' } } }
+    subject(:post_create) do
+      post gitlab_subscriptions_groups_path, params: params
+      response
+    end
 
+    let(:params) { { group: { name: 'Test Group' }, plan_id: 'plan-id' } }
+
+    context 'with an unauthenticated user' do
       it { is_expected.to have_gitlab_http_status(:redirect) }
       it { is_expected.to redirect_to(new_user_session_path) }
     end
@@ -120,47 +131,45 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
       end
 
       context 'with valid params' do
-        it 'creates a new group when no path is provided' do
-          expect { post :create, params: { group: { name: 'Test Group' } } }
-            .to change { user.groups.count }
-            .from(0)
-            .to(1)
-
-          expect(response).to have_gitlab_http_status(:created)
-          expect(json_response).to eq('id' => user.groups.last.id)
-          expect(user.groups.last.name).to eq('Test Group')
+        context 'when no path is provided' do
+          it 'creates a new group' do
+            expect { post_create }.to change { user.groups.count }.from(0).to(1)
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response).to eq('id' => user.groups.last.id)
+            expect(user.groups.last.name).to eq('Test Group')
+          end
         end
 
-        it 'creates a new group when path is provided' do
-          expect { post :create, params: { group: { name: 'Test Group', path: 'test-group123' } } }
-            .to change { user.groups.count }
-                  .from(0)
-                  .to(1)
+        context 'when path is provided' do
+          let(:params) { { group: { name: 'Test Group', path: 'test-group123' } } }
 
-          expect(response).to have_gitlab_http_status(:created)
-          expect(json_response).to eq('id' => user.groups.last.id)
-          expect(user.groups.last.name).to eq('Test Group')
-          expect(user.groups.last.path).to eq('test-group123')
+          it 'creates a new group' do
+            expect { post_create }.to change { user.groups.count }.from(0).to(1)
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response).to eq('id' => user.groups.last.id)
+            expect(user.groups.last.name).to eq('Test Group')
+            expect(user.groups.last.path).to eq('test-group123')
+          end
         end
       end
 
       context 'when a namespace already exists with the same name' do
+        let(:params) { { group: { name: 'Test Group' } } }
+
         it 'creates the group with a different path' do
           create(:group, name: 'Test Group', path: 'test-group')
 
-          expect { post :create, params: { group: { name: 'Test Group' } } }
-            .to change { user.groups.count }
-            .from(0)
-            .to(1)
-
+          expect { post_create }.to change { user.groups.count }.from(0).to(1)
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response).to eq('id' => user.groups.last.id)
         end
       end
 
       context 'with invalid params' do
+        let(:params) { { group: { name: '' }, plan_id: 'plan-id' } }
+
         it 'has the unprocessable entity status and the errors' do
-          post :create, params: { group: { name: '' }, plan_id: 'plan-id' }
+          post_create
 
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
           expect(json_response).to match(
@@ -176,7 +185,10 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
   describe 'GET #edit' do
     let_it_be(:group) { create(:group, :public) }
 
-    subject { get :edit, params: { id: group.to_param } }
+    subject(:get_new) do
+      get edit_gitlab_subscriptions_group_path(id: group.to_param)
+      response
+    end
 
     context 'with an unauthenticated user' do
       it { is_expected.to have_gitlab_http_status(:redirect) }
@@ -201,6 +213,20 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
       end
 
       it { is_expected.to have_gitlab_http_status(:ok) }
+
+      context 'when there is an old group path used' do
+        before_all do
+          create(:redirect_route, source: group, path: 'old-path')
+        end
+
+        subject do
+          get edit_gitlab_subscriptions_group_path(id: 'old-path')
+          response
+        end
+
+        it { is_expected.to have_gitlab_http_status(:redirect) }
+        it { is_expected.to redirect_to(edit_gitlab_subscriptions_group_path(group)) }
+      end
     end
   end
 
@@ -208,7 +234,10 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
     let_it_be(:group) { create(:group, :public) }
     let(:params) { { name: 'New name', path: 'new-path' } }
 
-    subject(:put_update) { put :update, params: { id: group.to_param, group: params } }
+    subject(:put_update) do
+      put gitlab_subscriptions_group_path(id: group.to_param), params: { group: params }
+      response
+    end
 
     context 'with an unauthenticated user' do
       it { is_expected.to have_gitlab_http_status(:redirect) }
@@ -287,16 +316,19 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
       it 'sets flash notice' do
         put_update
 
-        expect(controller).to set_flash[:notice].to('Subscription successfully applied to "New name"')
+        expect(flash[:notice]).to include('Subscription successfully applied to "New name"')
       end
 
       context 'with new_user param' do
-        subject(:put_update) { put :update, params: { id: group.to_param, group: params, new_user: 'true' } }
+        subject(:put_update) do
+          put gitlab_subscriptions_group_path(id: group.to_param), params: { group: params, new_user: 'true' }
+          response
+        end
 
         it 'sets flash notice' do
           put_update
 
-          expect(controller).to set_flash[:notice].to("Welcome to GitLab, #{user.first_name}!")
+          expect(flash[:notice]).to include("Welcome to GitLab, #{user.first_name}!")
         end
       end
     end

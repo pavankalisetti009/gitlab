@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 import { GlAccordion, GlAccordionItem, GlAlert, GlCollapsibleListbox, GlForm } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import Component from 'ee/subscriptions/groups/new/components/subscription_group_selector.vue';
+import Component from 'ee/gitlab_subscriptions/groups/new/components/subscription_group_selector.vue';
 import { visitUrl } from '~/lib/utils/url_utility';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getGroupPathAvailability } from '~/rest_api';
