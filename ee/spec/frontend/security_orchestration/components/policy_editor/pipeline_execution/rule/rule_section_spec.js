@@ -5,7 +5,9 @@ import RuleSection from 'ee/security_orchestration/components/policy_editor/pipe
 describe('RuleSection', () => {
   let wrapper;
 
-  const factory = ({ propsData = {}, provide = {} } = {}) => {
+  const factory = ({ propsData = {}, provide = {}, isStubbed = true } = {}) => {
+    const stubs = isStubbed ? { GlSprintf } : {};
+
     wrapper = shallowMountExtended(RuleSection, {
       propsData: {
         ...propsData,
@@ -13,9 +15,7 @@ describe('RuleSection', () => {
       provide: {
         ...provide,
       },
-      stubs: {
-        GlSprintf,
-      },
+      stubs,
     });
   };
 
@@ -23,9 +23,9 @@ describe('RuleSection', () => {
   const findGlLink = () => wrapper.findComponent(GlLink);
 
   it('renders text', () => {
-    factory();
-    expect(findGlSprintf().text()).toBe(
-      'Configure your conditions in the pipeline execution file.',
+    factory({ isStubbed: false });
+    expect(findGlSprintf().attributes('message')).toBe(
+      'Configure your conditions in the pipeline execution file. %{linkStart}What can pipeline execution do?%{linkEnd}',
     );
   });
 
