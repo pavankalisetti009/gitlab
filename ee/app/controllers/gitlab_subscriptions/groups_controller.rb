@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Subscriptions
+module GitlabSubscriptions
   class GroupsController < ApplicationController
     include RoutableActions
 
@@ -43,7 +43,7 @@ module Subscriptions
 
     def update
       if Groups::UpdateService.new(@group, current_user, group_params).execute
-        notice = if ::Gitlab::Utils.to_boolean(params[:new_user])
+        notice = if ::Gitlab::Utils.to_boolean(subscription_params[:new_user])
                    format(_('Welcome to GitLab, %{first_name}!'), first_name: current_user.first_name)
                  else
                    format(_('Subscription successfully applied to "%{group_name}"'), group_name: @group.name)
@@ -59,7 +59,7 @@ module Subscriptions
     private
 
     def find_group
-      @group ||= find_routable!(Group, params[:id], request.fullpath)
+      @group ||= find_routable!(Group, group_id_param[:id], request.fullpath)
     end
 
     def authorize_admin_group!
@@ -68,6 +68,14 @@ module Subscriptions
 
     def group_params
       params.require(:group).permit(:name, :path, :visibility_level)
+    end
+
+    def group_id_param
+      params.permit(:id)
+    end
+
+    def subscription_params
+      params.permit(:new_user, :plan_id)
     end
 
     def build_canonical_path(group)
@@ -87,11 +95,11 @@ module Subscriptions
     end
 
     def find_plan
-      return unless params[:plan_id]
+      return unless subscription_params[:plan_id]
 
       all_plans = GitlabSubscriptions::FetchSubscriptionPlansService.new(plan: :free).execute
 
-      all_plans.find { |plan| plan[:id] == params[:plan_id] }
+      all_plans.find { |plan| plan[:id] == subscription_params[:plan_id] }
     end
   end
 end

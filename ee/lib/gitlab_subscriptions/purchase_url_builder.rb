@@ -9,7 +9,7 @@ module GitlabSubscriptions
 
     def build(params = {})
       if namespace.blank?
-        Gitlab::Routing.url_helpers.new_subscriptions_group_path(plan_id: plan_id)
+        Gitlab::Routing.url_helpers.new_gitlab_subscriptions_group_path(plan_id: plan_id)
       else
         query = params.merge({ plan_id: plan_id, gl_namespace_id: namespace.id }).compact
         Gitlab::Utils.add_url_parameters(Gitlab::Routing.url_helpers.subscription_portal_new_subscription_url, query)

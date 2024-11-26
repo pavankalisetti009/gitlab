@@ -150,7 +150,9 @@ module GitlabSubscriptions
       plan_id, quantity = subscription_params.values_at(:plan_id, :quantity)
       return group_billings_path(group, plan_id: plan_id, purchased_quantity: quantity) if params[:selected_group]
 
-      edit_subscriptions_group_path(group.path, plan_id: plan_id, quantity: quantity, new_user: params[:new_user])
+      edit_gitlab_subscriptions_group_path(
+        group.path, plan_id: plan_id, quantity: quantity, new_user: params[:new_user]
+      )
     end
 
     def customer_params

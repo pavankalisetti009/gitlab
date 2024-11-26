@@ -3,7 +3,7 @@ import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import App from './components/subscription_group_selector.vue';
 
 export default () => {
-  const el = document.getElementById('js-new-subscription-group');
+  const el = document.getElementById('js-new-gitlab-subscription-group');
 
   if (!el) return null;
 
