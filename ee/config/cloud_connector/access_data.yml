@@ -76,6 +76,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - include_issue_context
           - include_merge_request_context
           - include_snippet_context
+          - include_local_git_context
           - refactor_code
           - write_tests
   duo_workflow:
@@ -155,6 +156,13 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       duo_enterprise:
         unit_primitives:
           - include_snippet_context
+  include_local_git_context:
+    backend: 'gitlab-ai-gateway'
+    cut_off_date: 2024-10-17 00:00:00 UTC
+    bundled_with:
+      duo_enterprise:
+        unit_primitives:
+          - include_local_git_context
   observability_all:
     backend: 'gitlab-observability-backend'
     bundled_with:
@@ -198,6 +206,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - include_issue_context
           - include_merge_request_context
           - include_snippet_context
+          - include_local_git_context
           - refactor_code
           - write_tests
   summarize_comments:
