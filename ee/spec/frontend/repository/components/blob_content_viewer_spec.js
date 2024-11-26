@@ -19,6 +19,7 @@ import getRefMixin from '~/repository/mixins/get_ref';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   simpleViewerMock,
+  richViewerMock,
   projectMock,
   userPermissionsMock,
   propsMock,
@@ -68,6 +69,7 @@ const createComponent = async (mockData = {}) => {
     isBinary,
     path = propsMock.projectPath,
     explainCodeAvailable = true,
+    activeViewerType = 'simple',
   } = mockData;
 
   blob.fileType = 'podspec';
@@ -113,6 +115,7 @@ const createComponent = async (mockData = {}) => {
       userId: 'test',
       explainCodeAvailable,
       highlightWorker: { postMessage: jest.fn() },
+      activeViewerType,
     },
   });
 
@@ -133,8 +136,8 @@ describe('Blob content viewer component', () => {
   });
 
   describe('AI Genie component', () => {
-    const prepGonAndLoad = async (explainCodeAvailable = true) => {
-      createComponent({ explainCodeAvailable });
+    const prepGonAndLoad = async (explainCodeAvailable = true, blob) => {
+      createComponent({ explainCodeAvailable, blob });
       await waitForPromises();
     };
 
@@ -147,14 +150,16 @@ describe('Blob content viewer component', () => {
     });
 
     it.each`
-      prefix        | explainCodeAvailable | shouldRender
-      ${'does not'} | ${false}             | ${false}
-      ${'does'}     | ${true}              | ${true}
+      prefix        | explainCodeAvailable | shouldRender | blob
+      ${'does not'} | ${false}             | ${false}     | ${simpleViewerMock}
+      ${'does'}     | ${true}              | ${true}      | ${simpleViewerMock}
+      ${'does not'} | ${false}             | ${false}     | ${richViewerMock}
+      ${'does not'} | ${true}              | ${false}     | ${richViewerMock}
     `(
-      '$prefix render the AI Genie component when explainCodeAvailable flag is $explainCodeAvailable',
-      async ({ explainCodeAvailable, shouldRender, loggedIn }) => {
+      '$prefix render the AI Genie component when explainCodeAvailable flag is $explainCodeAvailable and correct blob is rendered',
+      async ({ explainCodeAvailable, blob, shouldRender, loggedIn }) => {
         isLoggedIn.mockReturnValue(loggedIn);
-        await prepGonAndLoad(explainCodeAvailable);
+        await prepGonAndLoad(explainCodeAvailable, blob);
         expect(findAiGenie().exists()).toBe(shouldRender);
       },
     );
