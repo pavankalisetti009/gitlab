@@ -216,8 +216,7 @@ module EE
             ldap_group_sync_enabled: ldap_config_present_for_any_provider?(:group_base),
             ldap_admin_sync_enabled: ldap_config_present_for_any_provider?(:admin_group),
             group_saml_enabled: omniauth_provider_names.include?('group_saml'),
-            audit_event_destinations: add_metric('CountEventStreamingDestinationsMetric', time_frame: time_frame),
-            groups_with_event_streaming_destinations: add_metric('CountGroupsWithEventStreamingDestinationsMetric', time_frame: time_frame)
+            audit_event_destinations: add_metric('CountEventStreamingDestinationsMetric', time_frame: time_frame)
           })
         end
         # rubocop:enable CodeReuse/ActiveRecord
