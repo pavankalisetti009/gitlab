@@ -20,6 +20,7 @@ import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
+import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 
 import {
   MOCK_USER_MESSAGE,
@@ -58,6 +59,7 @@ describeSkipVue3(skipReason, () => {
   const chatMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
   const duoUserFeedbackMutationHandlerMock = jest.fn().mockResolvedValue({});
   const queryHandlerMock = jest.fn().mockResolvedValue(MOCK_CHAT_CACHED_MESSAGES_RES);
+  const slashCommandsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_SLASH_COMMANDS);
 
   const feedbackData = {
     feedbackChoices: ['useful', 'not_relevant'],
@@ -92,6 +94,7 @@ describeSkipVue3(skipReason, () => {
       [chatMutation, chatMutationHandlerMock],
       [duoUserFeedbackMutation, duoUserFeedbackMutationHandlerMock],
       [getAiMessages, queryHandlerMock],
+      [getAiSlashCommands, slashCommandsQueryHandlerMock],
     ]);
 
     wrapper = shallowMountExtended(TanukiBotChatApp, {
@@ -161,9 +164,35 @@ describeSkipVue3(skipReason, () => {
       expect(findDuoChat().props('badgeType')).toBe(null);
     });
 
-    it('passes the correct slashCommands prop to DuoChat', () => {
+    it('calls the slash commands GraphQL query when component loads', () => {
+      expect(slashCommandsQueryHandlerMock).toHaveBeenCalledWith({
+        url: 'http://test.host/',
+      });
+    });
+
+    it('passes the correct slash commands to the DuoChat component', async () => {
       createComponent();
-      expect(findDuoChat().props('slashCommands')).toEqual(MOCK_SLASH_COMMANDS);
+      await waitForPromises();
+
+      const duoChat = findDuoChat();
+
+      expect(duoChat.props('slashCommands')).toEqual([
+        {
+          description: 'Reset conversation and ignore previous messages.',
+          name: '/reset',
+          shouldSubmit: true,
+        },
+        {
+          description: 'Delete all messages in the current conversation.',
+          name: '/clear',
+          shouldSubmit: true,
+        },
+        {
+          description: 'Learn what Duo Chat can do.',
+          name: '/help',
+          shouldSubmit: true,
+        },
+      ]);
     });
 
     it('renders the duo-chat-callout component', () => {

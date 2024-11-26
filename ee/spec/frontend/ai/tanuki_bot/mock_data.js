@@ -1,23 +1,27 @@
 import { MESSAGE_TYPES, SOURCE_TYPES } from 'ee/ai/tanuki_bot/constants';
 import { PROMO_URL } from '~/constants';
 
-export const MOCK_SLASH_COMMANDS = [
-  {
-    name: '/reset',
-    shouldSubmit: true,
-    description: 'Reset conversation and ignore the previous messages.',
+export const MOCK_SLASH_COMMANDS = {
+  data: {
+    aiSlashCommands: [
+      {
+        description: 'Reset conversation and ignore previous messages.',
+        name: '/reset',
+        shouldSubmit: true,
+      },
+      {
+        description: 'Delete all messages in the current conversation.',
+        name: '/clear',
+        shouldSubmit: true,
+      },
+      {
+        description: 'Learn what Duo Chat can do.',
+        name: '/help',
+        shouldSubmit: true,
+      },
+    ],
   },
-  {
-    name: '/clear',
-    shouldSubmit: true,
-    description: 'Delete all messages in this conversation.',
-  },
-  {
-    name: '/help',
-    shouldSubmit: true,
-    description: 'Learn what Duo Chat can do.',
-  },
-];
+};
 
 export const MOCK_SOURCE_TYPES = {
   HANDBOOK: {

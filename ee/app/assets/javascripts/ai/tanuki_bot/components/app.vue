@@ -14,7 +14,8 @@ import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import Tracking from '~/tracking';
 import { i18n, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, SLASH_COMMANDS, MESSAGE_TYPES } from '../constants';
+import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
+import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
 export default {
@@ -35,7 +36,6 @@ export default {
       __('How do I create a template?'),
     ],
   },
-  SLASH_COMMANDS,
   helpPagePath: helpPagePath('policy/experiment-beta-support', { anchor: 'beta' }),
   components: {
     DuoChat,
@@ -77,6 +77,22 @@ export default {
         this.onError(err);
       },
     },
+    aiSlashCommands: {
+      query: getAiSlashCommands,
+      variables() {
+        return {
+          url: typeof window !== 'undefined' && window.location ? window.location.href : '',
+        };
+      },
+      result({ data }) {
+        if (data?.aiSlashCommands) {
+          this.aiSlashCommands = data.aiSlashCommands;
+        }
+      },
+      error(err) {
+        this.onError(err);
+      },
+    },
   },
   data() {
     return {
@@ -87,6 +103,7 @@ export default {
       isResponseTracked: false,
       cancelledRequestIds: [],
       completedRequestId: null,
+      aiSlashCommands: [],
     };
   },
   computed: {
@@ -258,7 +275,7 @@ export default {
 
       <duo-chat
         id="duo-chat"
-        :slash-commands="$options.SLASH_COMMANDS"
+        :slash-commands="aiSlashCommands"
         :title="$options.i18n.gitlabChat"
         :messages="messages"
         :error="error"
