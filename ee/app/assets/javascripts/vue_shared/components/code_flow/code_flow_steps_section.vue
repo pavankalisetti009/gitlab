@@ -11,15 +11,6 @@ import {
 } from '@gitlab/ui';
 import { flattenDeep } from 'lodash';
 import { __, s__, sprintf } from '~/locale';
-import {
-  numMarkerIdPrefix,
-  selectedInlineItemMark,
-  selectedInlineSectionMarker,
-  selectedInlineNumberMark,
-  textMarkerIdPrefix,
-  textSpanMarkerIdPrefix,
-  unselectedInlineNumberMark,
-} from 'ee/vue_shared/components/code_flow/utils/constants';
 
 export default {
   name: 'CodeFlowStepsSection',
@@ -103,6 +94,9 @@ export default {
   mounted() {
     this.stepsExpanded = Array(this.vulnerabilityFlowDetails.length).fill(true);
   },
+  created() {
+    this.$emit('onSelectedStep', this.selectedStepNumber);
+  },
   methods: {
     openFileSteps(index) {
       const copyStepsExpanded = [...this.stepsExpanded];
@@ -121,71 +115,7 @@ export default {
     selectStep(vulnerabilityItem) {
       this.selectedStepNumber = vulnerabilityItem.stepNumber;
       this.selectedVulnerability = vulnerabilityItem;
-      this.markdownBlobData();
-      this.scrollToSpecificCodeFlow();
-    },
-    markdownRowContent() {
-      // Highlights the selected markdown row content
-      const elements = document.querySelectorAll(`[id^=${textMarkerIdPrefix}]`);
-      elements.forEach((el) => {
-        el.classList.remove(selectedInlineSectionMarker);
-      });
-
-      // Examples of ID: 'TEXT-MARKER-1,2-L8', 'TEXT-MARKER-3-L7'
-      const stepMarkerSelectors = [
-        `[id^="${textMarkerIdPrefix}"][id*="${this.selectedStepNumber}-L"]`,
-        `[id^="${textMarkerIdPrefix}"][id*=",${this.selectedStepNumber}-L"]`,
-        `[id^="${textMarkerIdPrefix}"][id*="${this.selectedStepNumber},"][id*="-L"]`,
-      ];
-      const selector = stepMarkerSelectors.join(', ');
-      const element = document.querySelectorAll(selector);
-
-      if (element) {
-        element.forEach((el) => el.classList.add(selectedInlineSectionMarker));
-      }
-    },
-    markdownStepNumber() {
-      // Highlights the step number in the markdown
-      const elements = document.querySelectorAll(`[id^=${textMarkerIdPrefix}]`);
-      elements.forEach((el) => {
-        const spans = el.querySelectorAll('span.inline-item-mark');
-        spans.forEach((span) => {
-          span.classList.remove(selectedInlineItemMark);
-        });
-      });
-      const element = document.querySelector(
-        `[id^="${textSpanMarkerIdPrefix}${this.selectedStepNumber}"]`,
-      );
-      if (element) {
-        element.classList.add(selectedInlineItemMark, 'gs');
-      }
-    },
-    markdownRowNumber() {
-      // Highlights the row number in the markdown
-      const elements = document.querySelectorAll(`[id^="${numMarkerIdPrefix}"]`);
-      elements.forEach((el) => {
-        el.classList.remove(selectedInlineNumberMark);
-        el.classList.add(unselectedInlineNumberMark);
-      });
-
-      // Examples of ID: 'NUM-MARKER-1,2-L8', 'NUM-MARKER-3-L7'
-      const numMarkerSelectors = [
-        `[id^="${numMarkerIdPrefix}"][id*="${this.selectedStepNumber}-L"]`,
-        `[id^="${numMarkerIdPrefix}"][id*=",${this.selectedStepNumber}-L"]`,
-        `[id^="${numMarkerIdPrefix}"][id*="${this.selectedStepNumber},"][id*="-L"]`,
-      ];
-      const selector = numMarkerSelectors.join(', ');
-      const element = document.querySelector(selector);
-
-      if (element) {
-        element.classList.add(selectedInlineNumberMark);
-        element.classList.remove(unselectedInlineNumberMark);
-      }
-    },
-    markdownBlobData() {
-      this.markdownRowContent();
-      this.markdownStepNumber();
-      this.markdownRowNumber();
+      this.$emit('onSelectedStep', this.selectedStepNumber);
     },
     getNextIndex(isNext) {
       return isNext ? this.selectedStepNumber + 1 : this.selectedStepNumber - 1;
@@ -200,23 +130,7 @@ export default {
         (item) => item.stepNumber === this.getNextIndex(isNextVulnerability),
       );
       this.selectedStepNumber = this.selectedVulnerability.stepNumber;
-      this.markdownBlobData();
-      this.scrollToSpecificCodeFlow();
-    },
-    scrollToSpecificCodeFlow() {
-      const element = document.querySelector(
-        `[id^=${textMarkerIdPrefix}${this.selectedStepNumber}]`,
-      );
-      if (element) {
-        const subScroller = document.querySelector(`[id=code-flows-container]`);
-        const subScrollerRect = subScroller.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-        const offsetTop = elementRect.top - subScrollerRect.top + subScroller.scrollTop;
-        subScroller.scrollTo({
-          top: offsetTop - subScroller.clientHeight / 2 + element.clientHeight / 2,
-          behavior: 'smooth',
-        });
-      }
+      this.$emit('onSelectedStep', this.selectedStepNumber);
     },
     showNodeTypePopover(nodeType) {
       return nodeType === 'source'

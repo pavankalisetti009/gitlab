@@ -21,6 +21,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
     filePath: 'samples/test.js',
     branchRef: '123',
     hlInfo: [],
+    selectedStepNumber: 1,
   };
 
   const hlInfo = [
@@ -59,13 +60,13 @@ describe('Vulnerability Code Flow File Viewer component', () => {
         filePath: defaultProps.filePath,
         branchRef: defaultProps.branchRef,
         hlInfo: defaultProps.hlInfo,
+        selectedStepNumber: defaultProps.selectedStepNumber,
         ...props,
       },
-      stubs: { GlSprintf, GlButton },
+      stubs: { GlSprintf, GlButton, BlobHeader },
     });
   };
 
-  const findButton = () => wrapper.findComponent(GlButton);
   const findVulFileContentViewer = () => wrapper.findComponent(VulnerabilityFileContentViewer);
   const findBlobHeader = () => wrapper.findComponent(BlobHeader);
   const findGlAlert = () => wrapper.findComponent(GlAlert);
@@ -97,7 +98,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
     it('shows the source code without markdown', () => {
       createWrapper();
       expect(findBlobHeader().exists()).toBe(true);
-      expect(findButton().exists()).toBe(true);
+      expect(findCollapseExpandButton().exists()).toBe(true);
       expect(findVulFileContentViewer().exists()).toBe(false);
     });
 
@@ -115,7 +116,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
 
     it('renders GlButton with correct aria-label when file is expanded', () => {
       createWrapper();
-      expect(findButton().attributes('aria-label')).toBe('Hide file contents');
+      expect(findCollapseExpandButton().attributes('aria-label')).toBe('Hide file contents');
     });
 
     it('renders the expand buttons with correct aria-label', () => {

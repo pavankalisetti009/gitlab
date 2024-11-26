@@ -41,6 +41,11 @@ export default {
       type: String,
       required: true,
     },
+    selectedStepNumber: {
+      type: Number,
+      required: false,
+      default: undefined,
+    },
   },
   data() {
     return {
@@ -95,7 +100,6 @@ export default {
           } else {
             this.highlightedContent = res;
           }
-          this.$emit('codeFlowFileLoaded');
         })
         .catch((error) => {
           Sentry.captureException(error);
@@ -173,6 +177,7 @@ export default {
         class="file-content code js-syntax-highlight blob-content blob-viewer gl-flex gl-w-full gl-flex-col gl-overflow-auto"
         :class="userColorScheme"
         data-type="simple"
+        data-testid="file-content"
       >
         <div v-for="(highlightSectionInfo, index) in codeBlocks" :key="index">
           <div
@@ -198,7 +203,7 @@ export default {
             :start-line="highlightSectionInfo.blockStartLine"
             :end-line="highlightSectionInfo.blockEndLine"
             :highlight-info="highlightSectionInfo.highlightInfo"
-            @codeFlowFileLoaded="$emit('codeFlowFileLoaded')"
+            :selected-step-number="selectedStepNumber"
           />
 
           <div v-if="isEndOfCodeBlock(index)" class="expansion-line gl-bg-gray-50 gl-p-1">
