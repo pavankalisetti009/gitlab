@@ -2,7 +2,7 @@ import VueApollo from 'vue-apollo';
 import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
 import Vue from 'vue';
 import CodeFlowFileViewer from 'ee/vue_shared/components/code_flow/code_flow_file_viewer.vue';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobHeader from '~/blob/components/blob_header.vue';
 
@@ -17,7 +17,11 @@ describe('Vulnerability Code Flow File Viewer component', () => {
   };
 
   const defaultProps = {
-    blobInfo: { rawTextBlob: blobData.rawTextBlob },
+    blobInfo: {
+      rawTextBlob: blobData.rawTextBlob,
+      path: 'samples/test.js',
+      webPath: '/path/to/project/-/blob/samples/test.js',
+    },
     filePath: 'samples/test.js',
     branchRef: '123',
     hlInfo: [],
@@ -52,8 +56,8 @@ describe('Vulnerability Code Flow File Viewer component', () => {
     },
   ];
 
-  const createWrapper = (props = {}) => {
-    wrapper = shallowMountExtended(CodeFlowFileViewer, {
+  const createWrapper = (props = {}, mountFn = shallowMountExtended) => {
+    wrapper = mountFn(CodeFlowFileViewer, {
       provide: { projectFullPath: 'path/to/project' },
       propsData: {
         blobInfo: defaultProps.blobInfo,
@@ -69,6 +73,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
 
   const findVulFileContentViewer = () => wrapper.findComponent(VulnerabilityFileContentViewer);
   const findBlobHeader = () => wrapper.findComponent(BlobHeader);
+  const findFileTitle = () => wrapper.findByTestId('file-title-content');
   const findGlAlert = () => wrapper.findComponent(GlAlert);
   const findExpandTopButton = () => wrapper.findByTestId('expand-top-lines');
   const findExpandBottomButton = () => wrapper.findByTestId('expand-bottom-lines');
@@ -112,6 +117,11 @@ describe('Vulnerability Code Flow File Viewer component', () => {
         content: blobData.rawTextBlob,
         highlightInfo: hlInfo[0].highlightInfo,
       });
+    });
+
+    it('shows a link to the file in the blob header', () => {
+      createWrapper(defaultProps, mountExtended);
+      expect(findFileTitle().attributes('href')).toBe(defaultProps.blobInfo.webPath);
     });
 
     it('renders GlButton with correct aria-label when file is expanded', () => {

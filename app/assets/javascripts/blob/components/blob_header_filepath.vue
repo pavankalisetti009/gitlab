@@ -1,5 +1,5 @@
 <script>
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlLink } from '@gitlab/ui';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import FileIcon from '~/vue_shared/components/file_icon.vue';
@@ -9,6 +9,7 @@ export default {
     FileIcon,
     ClipboardButton,
     GlBadge,
+    GlLink,
   },
   props: {
     blob: {
@@ -19,6 +20,11 @@ export default {
       type: Boolean,
       required: false,
       default: true,
+    },
+    showAsLink: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     showBlobSize: {
       type: Boolean,
@@ -52,10 +58,12 @@ export default {
 
     <template v-if="fileName">
       <file-icon :file-name="fileName" :size="16" aria-hidden="true" css-classes="gl-mr-3" />
-      <strong
+      <component
+        :is="showAsLink ? 'gl-link' : 'strong'"
+        :href="blob.webPath"
         class="file-title-name mr-1 js-blob-header-filepath gl-break-all !gl-no-underline"
         data-testid="file-title-content"
-        >{{ fileName }}</strong
+        >{{ fileName }}</component
       >
     </template>
 
