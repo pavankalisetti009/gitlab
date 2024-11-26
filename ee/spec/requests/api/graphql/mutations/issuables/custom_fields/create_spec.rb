@@ -67,14 +67,16 @@ RSpec.describe 'Creating a custom field', feature_category: :team_planning do
   context 'when work item types are provided' do
     let_it_be(:issue_type) { create(:work_item_type, :issue) }
     let_it_be(:task_type) { create(:work_item_type, :task) }
+    let(:issue_type_gid) { issue_type.to_global_id.to_s }
+    let(:task_type_gid) { task_type.to_global_id.to_s }
 
     let(:params) do
       {
         name: 'Text Field',
         field_type: 'TEXT',
         work_item_type_ids: [
-          issue_type.to_global_id.to_s,
-          task_type.to_global_id.to_s
+          issue_type_gid,
+          task_type_gid
         ]
       }
     end
@@ -95,6 +97,29 @@ RSpec.describe 'Creating a custom field', feature_category: :team_planning do
           ]
         )
       )
+    end
+
+    context 'when an old ID is used' do
+      let(:issue_type_gid) { ::Gitlab::GlobalId.build(issue_type, id: issue_type.old_id).to_s }
+      let(:task_type_gid) { ::Gitlab::GlobalId.build(task_type, id: task_type.old_id).to_s }
+
+      it 'creates a custom field associated to the work item types' do
+        post_graphql_mutation(mutation, current_user: maintainer)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect_graphql_errors_to_be_empty
+
+        expect(mutation_response['customField']).to match(
+          a_hash_including(
+            'name' => 'Text Field',
+            'fieldType' => 'TEXT',
+            'workItemTypes' => [
+              a_hash_including('id' => issue_type.to_global_id.to_s),
+              a_hash_including('id' => task_type.to_global_id.to_s)
+            ]
+          )
+        )
+      end
     end
   end
 
