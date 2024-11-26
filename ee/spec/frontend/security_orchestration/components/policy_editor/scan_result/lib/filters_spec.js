@@ -1,7 +1,11 @@
-import { buildFiltersFromRule } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import {
+  buildFiltersFromRule,
+  buildFiltersFromLicenceRule,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import {
   AGE,
   AGE_DAY,
+  ALLOW_DENY,
   ATTRIBUTE,
   FALSE_POSITIVE,
   FIX_AVAILABLE,
@@ -150,5 +154,24 @@ describe('buildFiltersFromRule', () => {
       expect(filters[FALSE_POSITIVE]).toBe(expectedResult);
       expect(filters[FIX_AVAILABLE]).toBe(expectedResult);
     });
+  });
+});
+
+describe('buildFiltersFromLicenceRule', () => {
+  it.each`
+    rule                             | expectedResult
+    ${undefined}                     | ${false}
+    ${null}                          | ${false}
+    ${{ licenses: {} }}              | ${false}
+    ${{ licenses: undefined }}       | ${false}
+    ${{ licenses: null }}            | ${false}
+    ${{ licenses: { allowed: [] } }} | ${true}
+    ${{ licenses: { denied: [] } }}  | ${true}
+    ${{ licenses: { invalid: [] } }} | ${false}
+  `('sets ALLOW_DENY list filter', ({ rule, expectedResult }) => {
+    const filters = buildFiltersFromLicenceRule(rule);
+
+    expect(filters[STATUS]).toBe(true);
+    expect(filters[ALLOW_DENY]).toBe(expectedResult);
   });
 });

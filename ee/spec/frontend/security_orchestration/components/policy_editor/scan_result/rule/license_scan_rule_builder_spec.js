@@ -17,6 +17,8 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/rules';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
+  ALLOW_DENY,
+  DENIED,
   FILTERS_STATUS_INDEX,
   LICENCE_FILTERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
@@ -202,7 +204,7 @@ describe('LicenseScanRuleBuilder', () => {
       ]);
     });
 
-    it('renders allow deny list filter', () => {
+    it('renders allow deny list filter', async () => {
       factory({
         provide: {
           glFeatures: {
@@ -211,9 +213,73 @@ describe('LicenseScanRuleBuilder', () => {
         },
       });
 
-      expect(findDenyAllowList().exists()).toBe(true);
+      expect(findDenyAllowList().exists()).toBe(false);
       expect(findScanFilterSelector().props('disabled')).toBe(false);
       expect(findScanFilterSelector().props('filters')).toEqual(LICENCE_FILTERS);
+
+      await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
+
+      expect(findDenyAllowList().exists()).toBe(true);
+      expect(wrapper.emitted('changed')).toEqual([
+        [expect.objectContaining({ licenses: { denied: [] } })],
+      ]);
+    });
+
+    it.each(['denied', 'allowed'])('renders selected deny list', (key) => {
+      factory({
+        props: {
+          initRule: {
+            ...licenseScanBuildRule(),
+            licenses: { [key]: [] },
+          },
+        },
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      expect(findDenyAllowList().exists()).toBe(true);
+    });
+
+    it('can change list type', async () => {
+      factory({
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
+
+      expect(findDenyAllowList().exists()).toBe(true);
+
+      await findDenyAllowList().vm.$emit('select-type', DENIED);
+
+      expect(wrapper.emitted('changed')[1]).toEqual([
+        { ...licenseScanBuildRule(), licenses: { [DENIED]: [] } },
+      ]);
+    });
+
+    it('can remove allow deny list', async () => {
+      factory({
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
+
+      expect(findDenyAllowList().exists()).toBe(true);
+
+      await findDenyAllowList().vm.$emit('remove');
+
+      expect(findDenyAllowList().exists()).toBe(false);
+      expect(wrapper.emitted('changed')[1]).toEqual([licenseScanBuildRule()]);
     });
   });
 });

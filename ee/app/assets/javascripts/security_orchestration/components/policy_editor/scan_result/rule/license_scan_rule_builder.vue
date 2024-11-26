@@ -2,6 +2,7 @@
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { buildFiltersFromLicenceRule } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
@@ -11,12 +12,20 @@ import { getDefaultRule, LICENSE_STATES } from '../lib/rules';
 import StatusFilter from './scan_filters/status_filter.vue';
 import LicenseFilter from './scan_filters/license_filter.vue';
 import DenyAllowList from './scan_filters/deny_allow_list.vue';
-import { FILTERS_STATUS_INDEX, STATUS, LICENCE_FILTERS, DENIED } from './scan_filters/constants';
+import {
+  FILTERS_STATUS_INDEX,
+  STATUS,
+  LICENCE_FILTERS,
+  DENIED,
+  ALLOW_DENY,
+  ALLOWED,
+} from './scan_filters/constants';
 import ScanTypeSelect from './scan_type_select.vue';
 import BranchSelection from './branch_selection.vue';
 
 export default {
   STATUS,
+  ALLOW_DENY,
   components: {
     BranchExceptionSelector,
     DenyAllowList,
@@ -48,13 +57,20 @@ export default {
   },
   licenseStatuses: LICENSE_STATES,
   data() {
+    const { licenses = {} } = this.initRule || {};
+    const isDenied = DENIED in licenses;
+
     return {
-      excludeListType: DENIED,
+      selectedFilters: buildFiltersFromLicenceRule(this.initRule),
+      excludeListType: isDenied ? DENIED : ALLOWED,
     };
   },
   computed: {
     showLicenceExcludePackages() {
       return this.glFeatures.excludeLicensePackages;
+    },
+    showDenyAllowListFilter() {
+      return this.showLicenceExcludePackages && this.isFilterSelected(this.$options.ALLOW_DENY);
     },
     filters() {
       return this.showLicenceExcludePackages
@@ -100,6 +116,29 @@ export default {
     },
     selectExcludeListType(type) {
       this.excludeListType = type;
+      this.triggerChanged({ licenses: { [type]: [] } });
+    },
+    isFilterSelected(filter) {
+      return Boolean(this.selectedFilters[filter]);
+    },
+    shouldDisableFilterSelector(filter) {
+      return this.isFilterSelected(filter);
+    },
+    selectFilter(filter, value = true) {
+      this.selectedFilters = {
+        ...this.selectedFilters,
+        [filter]: value,
+      };
+
+      const rule = { ...this.initRule };
+
+      if (value) {
+        rule.licenses = { denied: [] };
+      } else {
+        delete rule.licenses;
+      }
+
+      this.$emit('changed', rule);
     },
   },
 };
@@ -157,8 +196,9 @@ export default {
         <license-filter class="!gl-bg-white" :init-rule="initRule" @changed="triggerChanged" />
 
         <deny-allow-list
-          v-if="showLicenceExcludePackages"
+          v-if="showDenyAllowListFilter"
           :selected="excludeListType"
+          @remove="selectFilter($options.ALLOW_DENY, false)"
           @select-type="selectExcludeListType"
         />
 
@@ -166,7 +206,9 @@ export default {
           :disabled="!showLicenceExcludePackages"
           :filters="filters"
           :tooltip-title="filtersTooltip"
+          :should-disable-filter="shouldDisableFilterSelector"
           class="gl-w-full gl-bg-white"
+          @select="selectFilter"
         />
       </template>
     </section-layout>
