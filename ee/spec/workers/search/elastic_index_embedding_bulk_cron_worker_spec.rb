@@ -43,18 +43,6 @@ RSpec.describe Search::ElasticIndexEmbeddingBulkCronWorker, feature_category: :g
 
         worker.perform(shard_number)
       end
-
-      context 'when the flag is disabled' do
-        before do
-          stub_feature_flags(embedding_cron_worker_re_enqueue: false)
-        end
-
-        it 'does not requeue the worker' do
-          expect(described_class).not_to receive(:perform_in).with(described_class::RESCHEDULE_INTERVAL, shard_number)
-
-          worker.perform(shard_number)
-        end
-      end
     end
   end
 end

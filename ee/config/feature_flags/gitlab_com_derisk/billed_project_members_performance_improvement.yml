@@ -1,9 +1,0 @@
----
-name: billed_project_members_performance_improvement
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/486951
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/169966
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/500126
-milestone: '17.6'
-group: group::utilization
-type: gitlab_com_derisk
-default_enabled: false

@@ -938,7 +938,7 @@ module EE
         .where(source_id: ::Project.joins(:group).where(namespace: self_and_descendants))
         .not_banned_in(root_ancestor)
 
-      if exclude_guests && ::Feature.enabled?(:billed_project_members_performance_improvement, root_ancestor)
+      if exclude_guests
         billed_elevated_guest_custom_roles_in_group_hierarchy = ::MemberRole.occupies_seat
           .by_namespace(self_and_descendants)
           .select(:id)
@@ -948,8 +948,6 @@ module EE
           .not_banned_in(root_ancestor)
 
         ::Member.from_union([members.non_guests.select(select), billed_custom_role_members.select(select)])
-      elsif exclude_guests
-        members.with_elevated_guests
       else
         members
       end
