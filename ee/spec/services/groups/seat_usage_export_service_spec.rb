@@ -36,7 +36,7 @@ RSpec.describe Groups::SeatUsageExportService, feature_category: :plan_provision
             public_email = create(:email, :confirmed, user: developer, email: 'public@email.org')
             developer.update!(public_email: public_email.email)
 
-            create(:user_detail, user: maintainer, enterprise_group_id: group.id)
+            maintainer.update!(enterprise_group_id: group.id)
 
             group.add_developer(developer)
             group.add_reporter(reporter)

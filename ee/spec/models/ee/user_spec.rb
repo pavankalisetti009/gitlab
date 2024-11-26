@@ -28,6 +28,12 @@ RSpec.describe User, feature_category: :system_access do
     end
 
     it { is_expected.to delegate_method(:onboarding_status_glm_source).to(:user_detail).allow_nil }
+    it { is_expected.to delegate_method(:enterprise_group_associated_at).to(:user_detail) }
+
+    it do
+      is_expected.to delegate_method(:enterprise_group_associated_at=).to(:user_detail).with_arguments(Time.current)
+    end
+
     it { is_expected.to delegate_method(:onboarding_status_step_url=).to(:user_detail).with_arguments('url').allow_nil }
     it { is_expected.to delegate_method(:onboarding_status_step_url).to(:user_detail).allow_nil }
 
@@ -326,9 +332,9 @@ RSpec.describe User, feature_category: :system_access do
       let_it_be(:group) { create(:group) }
 
       it 'excludes users that are enterprise users of the specified group' do
-        _enterprise_user_of_the_group = create(:user_detail, enterprise_group_id: group.id).user
+        create(:user, enterprise_group: group)
         enterprise_user_of_some_group = create(:enterprise_user)
-        not_enterprise_user = create(:user_detail, enterprise_group_id: nil).user
+        not_enterprise_user = create(:user, enterprise_group_id: nil)
         user_without_user_detail_record = create(:user)
         user_without_user_detail_record.user_detail.destroy!
 

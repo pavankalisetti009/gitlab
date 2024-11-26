@@ -17,9 +17,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
     let_it_be(:onboarding_in_progress) { true }
 
     let_it_be(:user) do
-      create(:user, onboarding_in_progress: onboarding_in_progress) do |record|
-        create(:user_detail, user: record, onboarding_status_step_url: url)
-      end
+      create(:user, onboarding_in_progress: onboarding_in_progress, onboarding_status_step_url: url)
     end
 
     context 'when onboarding feature is not available' do

@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsWithEnterpri
 
   let_it_be(:user1) { create(:user) }
   let_it_be(:user2) { create(:user) }
-  let_it_be(:user3) { create(:user_detail).user }
+  let_it_be(:user3) { create(:user) }
 
   it_behaves_like 'a correct instrumented metric value and query', { time_frame: 'all', data_source: 'database' } do
     let(:expected_value) { 2 }

@@ -103,9 +103,11 @@ RSpec.describe Groups::EnterpriseUsers::BulkAssociateByDomainWorker, :saas, feat
         let_it_be(:project) { create(:project, namespace: root_group) }
 
         let!(:enterprise_user_of_the_group_with_the_specified_domain) do
-          create(:user_detail, enterprise_group_id: root_group.id).user.tap do |user|
-            user.update_column(:email, "enterprise_user_of_the_group_with_the_specified_domain@#{pages_domain.domain}")
-          end
+          create(
+            :user,
+            enterprise_group_id: root_group.id,
+            email: "enterprise_user_of_the_group_with_the_specified_domain@#{pages_domain.domain}"
+          )
         end
 
         let!(:enterprise_user_of_some_group_with_the_specified_domain) do
@@ -116,9 +118,10 @@ RSpec.describe Groups::EnterpriseUsers::BulkAssociateByDomainWorker, :saas, feat
         end
 
         let!(:not_enterprise_user_with_the_specified_domain) do
-          create(:user_detail, enterprise_group_id: nil).user.tap do |user|
-            user.update_column(:email, "not_enterprise_user_with_the_specified_domain@#{pages_domain.domain}")
-          end
+          create(
+            :user,
+            enterprise_group_id: nil, email: "not_enterprise_user_with_the_specified_domain@#{pages_domain.domain}"
+          )
         end
 
         let!(:user_without_user_detail_record_with_the_specified_domain) do

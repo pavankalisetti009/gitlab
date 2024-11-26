@@ -22,7 +22,7 @@ RSpec.describe UserDetail, feature_category: :system_access do
       subject(:scope) { described_class.with_enterprise_group }
 
       let_it_be(:user_detail_with_enterprise_group) { create(:enterprise_user).user_detail }
-      let_it_be(:user_details_without_enterprise_group) { create_list(:user_detail, 3, enterprise_group: nil) }
+      let_it_be(:user_details_without_enterprise_group) { create_list(:user, 3, enterprise_group: nil) }
 
       it 'returns user details with enterprise group' do
         expect(scope).to contain_exactly(
@@ -35,14 +35,14 @@ RSpec.describe UserDetail, feature_category: :system_access do
   context 'with loose foreign key on user_details.provisioned_by_group_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:group) }
-      let_it_be(:model) { create(:user_detail, provisioned_by_group: parent) }
+      let_it_be(:model) { create(:user, provisioned_by_group: parent).user_detail }
     end
   end
 
   context 'with loose foreign key on user_details.enterprise_group_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:group) }
-      let_it_be(:model) { create(:user_detail, enterprise_group: parent) }
+      let_it_be(:model) { create(:user, enterprise_group: parent).user_detail }
     end
   end
 end

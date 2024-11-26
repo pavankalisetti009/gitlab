@@ -56,7 +56,7 @@ module EE
         :onboarding_status_glm_content, :onboarding_status_glm_content=,
         :onboarding_status_glm_source, :onboarding_status_glm_source=,
         :enterprise_group, :enterprise_group=,
-        :enterprise_group_id, :enterprise_group_id=,
+        :enterprise_group_id, :enterprise_group_id=, :enterprise_group_associated_at, :enterprise_group_associated_at=,
         to: :user_detail, allow_nil: true
 
       delegate :enabled_zoekt?, :enabled_zoekt, :enabled_zoekt=,

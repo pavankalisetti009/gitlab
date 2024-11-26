@@ -539,7 +539,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
 
   describe 'scopes for preloading' do
     let_it_be(:runner) { create(:ci_runner) }
-    let_it_be(:user) { create(:user).tap { |user| create(:user_detail, user: user) } }
+    let_it_be(:user) { create(:user) }
 
     before_all do
       build = create(:ci_build, :trace_artifact, :artifacts, :test_reports, pipeline: pipeline)

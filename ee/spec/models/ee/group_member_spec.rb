@@ -169,8 +169,8 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
 
   describe '.filter_by_enterprise_users' do
     let_it_be(:group) { create(:group) }
-    let_it_be(:enterprise_user_member_1_of_group) { group.add_developer(create(:user_detail, enterprise_group_id: group.id).user) }
-    let_it_be(:enterprise_user_member_2_of_group) { group.add_developer(create(:user_detail, enterprise_group_id: group.id).user) }
+    let_it_be(:enterprise_user_member_1_of_group) { group.add_developer(create(:user, enterprise_group_id: group.id)) }
+    let_it_be(:enterprise_user_member_2_of_group) { group.add_developer(create(:user, enterprise_group_id: group.id)) }
     let_it_be(:non_enterprise_user_member_of_group) { group.add_developer(create(:user)) }
 
     it 'returns members that are enterprise users of a group when the filter is `true`' do
@@ -329,7 +329,7 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
     subject { member.provisioned_by_this_group? }
 
     context 'when user is provisioned by the group' do
-      let!(:user_detail) { build(:user_detail, user: user, provisioned_by_group_id: group.id) }
+      let(:user) { build(:user, provisioned_by_group_id: group.id) }
 
       it { is_expected.to eq(true) }
     end

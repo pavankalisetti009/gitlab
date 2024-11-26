@@ -37,10 +37,6 @@ RSpec.describe Onboarding::AddOnSeatAssignmentIterableTriggerWorker, :saas, type
         }.stringify_keys
       end
 
-      before_all do
-        create(:user_detail, user: user_1)
-      end
-
       before do
         allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_iterable)
                                                        .with(params)
@@ -56,10 +52,6 @@ RSpec.describe Onboarding::AddOnSeatAssignmentIterableTriggerWorker, :saas, type
       context 'for multiple ids' do
         let_it_be(:user_2) { create(:user) }
         let(:user_ids) { [user_1.id, user_2.id] }
-
-        before_all do
-          create(:user_detail, user: user_2)
-        end
 
         before do
           allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_iterable).and_return({ success: true })
