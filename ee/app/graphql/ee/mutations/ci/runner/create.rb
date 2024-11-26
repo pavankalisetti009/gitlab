@@ -4,7 +4,7 @@ module EE
   module Mutations
     module Ci
       module Runner
-        module Update
+        module Create
           extend ActiveSupport::Concern
 
           prepended do
