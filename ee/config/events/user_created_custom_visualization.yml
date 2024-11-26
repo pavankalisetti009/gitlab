@@ -1,5 +1,5 @@
 ---
-description: Triggered when a user saves a new custom visualization in the visualization designer.
+description: Triggered when a user saves a new custom visualization in the data explorer.
 internal_events: true
 action: user_created_custom_visualization
 extra_properties:

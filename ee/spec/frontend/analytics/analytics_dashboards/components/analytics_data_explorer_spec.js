@@ -17,7 +17,7 @@ import AnalyticsDataExplorer from 'ee/analytics/analytics_dashboards/components/
 import VisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/data_explorer/analytics_visualization_type_selector.vue';
 import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_generator.vue';
 import {
-  EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER,
+  EVENT_LABEL_USER_VIEWED_DATA_EXPLORER,
   EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION,
 } from 'ee/analytics/analytics_dashboards/constants';
 import { NEW_DASHBOARD_SLUG } from '~/vue_shared/components/customizable_dashboard/constants';
@@ -175,10 +175,10 @@ describe('AnalyticsDataExplorer', () => {
       expect(routerPush).toHaveBeenCalledWith('/');
     });
 
-    it(`tracks the "${EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER}" event`, () => {
+    it(`tracks the "${EVENT_LABEL_USER_VIEWED_DATA_EXPLORER}" event`, () => {
       expect(trackingSpy).toHaveBeenCalledWith(
         undefined,
-        EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER,
+        EVENT_LABEL_USER_VIEWED_DATA_EXPLORER,
         expect.any(Object),
       );
     });

@@ -1,7 +1,7 @@
 ---
-description: User provided feedback for GitLab Duo generated query in the Product Analytics Visualization Designer - helpful
+description: User provided feedback for GitLab Duo generated query in the data explorer - wrong
 internal_events: true
-action: user_feedback_gitlab_duo_query_in_visualization_designer_helpful
+action: user_feedback_gitlab_duo_query_in_data_explorer_wrong
 identifiers:
 - project
 - namespace

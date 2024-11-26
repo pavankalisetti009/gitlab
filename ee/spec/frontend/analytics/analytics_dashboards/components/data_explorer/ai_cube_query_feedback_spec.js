@@ -59,9 +59,9 @@ describe('AiCubeQueryFeedback', () => {
   });
 
   it.each([
-    [findHelpfulBtn, 'user_feedback_gitlab_duo_query_in_visualization_designer_helpful'],
-    [findUnhelpfulBtn, 'user_feedback_gitlab_duo_query_in_visualization_designer_unhelpful'],
-    [findWrongBtn, 'user_feedback_gitlab_duo_query_in_visualization_designer_wrong'],
+    [findHelpfulBtn, 'user_feedback_gitlab_duo_query_in_data_explorer_helpful'],
+    [findUnhelpfulBtn, 'user_feedback_gitlab_duo_query_in_data_explorer_unhelpful'],
+    [findWrongBtn, 'user_feedback_gitlab_duo_query_in_data_explorer_wrong'],
   ])('submits the %s event when clicked', async (findButton, eventLabel) => {
     findButton().vm.$emit('click');
 
