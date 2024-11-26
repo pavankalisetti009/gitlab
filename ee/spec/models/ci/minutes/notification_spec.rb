@@ -51,7 +51,7 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show?' do
           it 'has warning notification' do
             expect(subject.show?(user)).to be_truthy
-            expect(subject.text).to match(/.*\shas 30% or less Shared Runner compute minutes remaining/)
+            expect(subject.text).to match(%r{.*\shas 4 / 20 \(20%\) shared runner compute minutes remaining})
             expect(subject.style).to eq :warning
           end
 
@@ -72,7 +72,7 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
 
         describe '#stage_percentage' do
           it 'provides percentage for current alert level' do
-            expect(subject.stage_percentage).to eq 30
+            expect(subject.stage_percentage).to eq 25
           end
         end
       end
@@ -83,7 +83,7 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show?' do
           it 'has danger notification' do
             expect(subject.show?(user)).to be_truthy
-            expect(subject.text).to match(/.*\shas 5% or less Shared Runner compute minutes remaining/)
+            expect(subject.text).to match(%r{.*\shas 1 / 20 \(5%\) shared runner compute minutes remaining})
             expect(subject.style).to eq :danger
           end
 
@@ -110,12 +110,12 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
       end
 
       context 'when right at the limit for notification' do
-        let(:group) { create(:group, :with_ci_minutes, ci_minutes_used: 14) }
+        let(:group) { create(:group, :with_ci_minutes, ci_minutes_used: 15) }
 
         describe '#show?' do
           it 'has warning notification' do
             expect(subject.show?(user)).to be_truthy
-            expect(subject.text).to match(/.*\shas 30% or less Shared Runner compute minutes remaining/)
+            expect(subject.text).to match(%r{.*\shas 5 / 20 \(25%\) shared runner compute minutes remaining})
             expect(subject.style).to eq :warning
           end
 
@@ -136,7 +136,7 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
 
         describe '#stage_percentage' do
           it 'provides percentage for current alert level' do
-            expect(subject.stage_percentage).to eq 30
+            expect(subject.stage_percentage).to eq 25
           end
         end
       end
@@ -147,7 +147,7 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show?' do
           it 'has exceeded notification' do
             expect(subject.show?(user)).to be_truthy
-            expect(subject.text).to match(/.*\shas exceeded its compute minutes quota/)
+            expect(subject.text).to match(/.*\shas reached its shared runner compute minutes quota/)
             expect(subject.style).to eq :danger
           end
 
