@@ -17,6 +17,7 @@ module Projects
         push_frontend_feature_flag(:security_policies_new_yaml_format, project.group)
         push_frontend_feature_flag(:exclude_license_packages, project.group)
         push_frontend_feature_flag(:multiple_approval_actions, project.group)
+        push_frontend_feature_flag(:security_policy_custom_roles, project.group)
       end
 
       feature_category :security_policy_management

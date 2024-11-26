@@ -1,6 +1,13 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import RoleSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/role_select.vue';
+import groupCustomRoles from 'ee/security_orchestration/graphql/queries/group_custom_roles.query.graphql';
+import projectCustomRoles from 'ee/security_orchestration/graphql/queries/project_custom_roles.query.graphql';
+import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 const roleCounts = {
   developer: 3,
@@ -16,15 +23,57 @@ describe('RoleSelect component', () => {
   let wrapper;
   const namespacePath = 'path/to/namespace';
 
-  const createComponent = ({ propsData = {} } = {}) => {
+  const defaultCustomRole = {
+    id: 'gid://gitlab/MemberRole/1',
+    name: 'Custom (Gitlab Org - 24)',
+    __typename: 'MemberRole',
+  };
+
+  const createCustomRolesHandlerSuccess = ({ type = 'Project', nodes = [defaultCustomRole] }) =>
+    jest.fn().mockResolvedValue({
+      data: {
+        [type.toLowerCase()]: {
+          id: `gid://gitlab/${type}/2`,
+          memberRoles: { nodes, __typename: 'MemberRoleConnection' },
+          __typename: type,
+        },
+      },
+    });
+
+  const mockProjectCustomRolesHandlerSuccess = createCustomRolesHandlerSuccess({});
+
+  const mockProjectCustomRolesHandlerEmpty = createCustomRolesHandlerSuccess({ nodes: [] });
+
+  const mockGroupCustomRolesHandlerSuccess = createCustomRolesHandlerSuccess({ type: 'Group' });
+
+  const createMockApolloProvider = (customHandlers) => {
+    Vue.use(VueApollo);
+
+    const defaultHandlers = {
+      groupCustomRoles: mockGroupCustomRolesHandlerSuccess,
+      projectCustomRoles: mockProjectCustomRolesHandlerSuccess,
+    };
+
+    const requestHandlers = { ...defaultHandlers, ...customHandlers };
+
+    return createMockApollo([
+      [groupCustomRoles, requestHandlers.groupCustomRoles],
+      [projectCustomRoles, requestHandlers.projectCustomRoles],
+    ]);
+  };
+
+  const createComponent = ({ handlers = {}, propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMount(RoleSelect, {
+      apolloProvider: createMockApolloProvider(handlers),
       propsData: {
         existingApprovers: [],
         ...propsData,
       },
       provide: {
-        namespacePath,
         roleApproverTypes,
+        namespacePath,
+        namespaceType: NAMESPACE_TYPES.PROJECT,
+        ...provide,
       },
     });
   };
@@ -105,6 +154,97 @@ describe('RoleSelect component', () => {
       createComponent({ propsData: { existingApprovers: [validRole] } });
       await wrapper.setProps({ existingApprovers: [invalidRole] });
       expect(wrapper.emitted('error')).toEqual([[]]);
+    });
+  });
+
+  describe('custom roles', () => {
+    describe('without securityPolicyCustomRoles feature flag', () => {
+      it('does not retrieve custom roles', () => {
+        createComponent();
+        expect(mockProjectCustomRolesHandlerSuccess).not.toHaveBeenCalled();
+        expect(mockGroupCustomRolesHandlerSuccess).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('with securityPolicyCustomRoles feature flag', () => {
+      describe('default', () => {
+        it('retrieves the project custom roles', () => {
+          createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
+          expect(mockProjectCustomRolesHandlerSuccess).toHaveBeenCalled();
+          expect(mockGroupCustomRolesHandlerSuccess).not.toHaveBeenCalled();
+        });
+
+        it('retrieves the group custom roles', () => {
+          createComponent({
+            provide: {
+              glFeatures: { securityPolicyCustomRoles: true },
+              namespaceType: NAMESPACE_TYPES.GROUP,
+            },
+          });
+          expect(mockProjectCustomRolesHandlerSuccess).not.toHaveBeenCalled();
+          expect(mockGroupCustomRolesHandlerSuccess).toHaveBeenCalled();
+        });
+
+        it('adds custom role section to items if custom roles exist', async () => {
+          createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
+          await waitForPromises();
+          expect(findListbox().props('items')).toEqual([
+            { text: 'Standard roles', options: expect.any(Array) },
+            { text: 'Custom roles', options: expect.any(Array) },
+          ]);
+        });
+
+        it('does not add custom role section to items if custom roles do not exist', async () => {
+          createComponent({
+            handlers: { projectCustomRoles: mockProjectCustomRolesHandlerEmpty },
+            provide: { glFeatures: { securityPolicyCustomRoles: true } },
+          });
+          await waitForPromises();
+          expect(findListbox().props('items')).toEqual([
+            { text: 'Standard roles', options: expect.any(Array) },
+          ]);
+        });
+      });
+
+      describe('with valid approvers', () => {
+        const customRole = { id: 1, name: 'Custom (Gitlab Org - 24)' };
+
+        it('displays the correct toggle text for a custom role', async () => {
+          createComponent({
+            propsData: { existingApprovers: [customRole.id] },
+            provide: { glFeatures: { securityPolicyCustomRoles: true } },
+          });
+          await waitForPromises();
+          expect(findListbox().props('toggleText')).toBe(customRole.name);
+        });
+
+        it('does not emit an invalid role error for custom roles that exist', async () => {
+          createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
+          await waitForPromises();
+          await wrapper.setProps({ existingApprovers: [customRole.id] });
+          expect(wrapper.emitted('error')).toBeUndefined();
+        });
+      });
+
+      describe('with invalid approvers', () => {
+        const validStandardRole = { text: 'Developer', value: 'developer' };
+        const invalidCustomRole = { id: 999, name: 'Non-existent Custom Role' };
+
+        it('displays the correct toggle text', () => {
+          createComponent({
+            propsData: { existingApprovers: [invalidCustomRole, validStandardRole.value] },
+          });
+          expect(findListbox().props('toggleText')).toBe(validStandardRole.text);
+        });
+
+        it('emits an invalid role error for custom roles that do not exist', async () => {
+          createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
+          await waitForPromises();
+          await wrapper.setProps({ existingApprovers: [invalidCustomRole.id] });
+          expect(wrapper.emitted('error')).toEqual([[]]);
+          expect(findListbox().props('toggleText')).toBe('Choose specific role');
+        });
+      });
     });
   });
 });
