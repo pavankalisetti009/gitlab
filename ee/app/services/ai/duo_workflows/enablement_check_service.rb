@@ -15,7 +15,7 @@ module Ai
         checks = [
           {
             name: :feature_flag,
-            value: ::Feature.enabled?(:duo_workflow, @user),
+            value: ::Feature.enabled?(:duo_workflow, @current_user),
             message: _("duo_workflow feature flag must be enabled.")
           }, {
             name: :duo_features_enabled,
