@@ -5,7 +5,7 @@ import { GlAlert, GlIcon, GlTooltip } from '@gitlab/ui';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { generateFilterTextDescription } from '../utils';
 import { formattedDate } from '../../shared/utils';
-import { TASKS_BY_TYPE_SUBJECT_ISSUE, TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS } from '../constants';
+import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_SUBJECT_ISSUE } from '../constants';
 import TasksByTypeChart from './tasks_by_type/chart.vue';
 import TasksByTypeFilters from './tasks_by_type/filters.vue';
 import NoDataAvailableState from './no_data_available_state.vue';
@@ -28,12 +28,25 @@ export default {
       type: Object,
       required: true,
     },
+    selectedLabelNames: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+    subject: {
+      type: String,
+      required: false,
+      default: TASKS_BY_TYPE_SUBJECT_ISSUE,
+    },
+    errorMessage: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   computed: {
     ...mapState(['namespace', 'createdAfter', 'createdBefore']),
-    ...mapState('typeOfWork', ['subject', 'errorMessage']),
     ...mapGetters(['selectedProjectIds']),
-    ...mapGetters('typeOfWork', ['selectedLabelNames']),
     hasData() {
       return Boolean(this.chartData?.data.length);
     },
@@ -47,15 +60,8 @@ export default {
         createdBefore: formattedDate(this.createdBefore),
       });
     },
-    selectedSubjectFilter() {
-      return this.subject || TASKS_BY_TYPE_SUBJECT_ISSUE;
-    },
     selectedSubjectFilterText() {
-      const { selectedSubjectFilter } = this;
-      return (
-        TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS[selectedSubjectFilter] ||
-        TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS[TASKS_BY_TYPE_SUBJECT_ISSUE]
-      );
+      return TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS[this.subject];
     },
   },
 };
@@ -74,8 +80,9 @@ export default {
       </h4>
       <tasks-by-type-filters
         :selected-label-names="selectedLabelNames"
-        :subject-filter="selectedSubjectFilter"
-        @update-filter="$emit('update-filter', $event)"
+        :subject-filter="subject"
+        @toggle-label="$emit('toggle-label', $event)"
+        @set-subject="$emit('set-subject', $event)"
       />
     </div>
     <tasks-by-type-chart v-if="hasData" :data="chartData.data" :group-by="chartData.groupBy" />
