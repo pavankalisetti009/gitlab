@@ -561,54 +561,69 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   end
 
   describe '#server_info' do
-    subject { helper.server_info }
-
-    context 'server is accessible' do
-      before do
-        allow(described_class.default.client).to receive(:info).and_return(info)
-      end
-
-      context 'using elasticsearch' do
-        let(:info) do
-          {
-            'version' => {
-              'number' => '7.9.3',
-              'build_type' => 'docker',
-              'lucene_version' => '8.11.4'
-            }
-          }
-        end
-
-        it 'returns server info' do
-          is_expected.to include(distribution: 'elasticsearch', version: '7.9.3', build_type: 'docker', lucene_version: '8.11.4')
-        end
-      end
-
-      context 'using opensearch' do
-        let(:info) do
-          {
-            'version' => {
-              'distribution' => 'opensearch',
-              'number' => '1.0.0',
-              'build_type' => 'tar',
-              'lucene_version' => '8.10.1'
-            }
-          }
-        end
-
-        it 'returns server info' do
-          is_expected.to include(distribution: 'opensearch', version: '1.0.0', build_type: 'tar', lucene_version: '8.10.1')
-        end
+    context 'with cached information' do
+      it 'uses the correct cache key' do
+        expected_key = [
+          described_class.name,
+          :server_info,
+          OpenSSL::Digest::SHA256.hexdigest(::Gitlab::CurrentSettings.elasticsearch_url.join(','))
+        ]
+        expect(Rails.cache).to receive(:fetch).with(expected_key,
+          expires_in: described_class::SERVER_INFO_EXPIRES_IN).and_call_original
+        helper.server_info
       end
     end
 
-    context 'server is inaccessible' do
-      before do
-        allow(described_class.default.client).to receive(:info).and_raise(StandardError)
+    context 'without cached information' do
+      subject { helper.server_info(skip_cache: true) }
+
+      context 'server is accessible' do
+        before do
+          allow(described_class.default.client).to receive(:info).and_return(info)
+        end
+
+        context 'using elasticsearch' do
+          let(:info) do
+            {
+              'version' => {
+                'number' => '7.9.3',
+                'build_type' => 'docker',
+                'lucene_version' => '8.11.4'
+              }
+            }
+          end
+
+          it 'returns server info' do
+            is_expected.to include(distribution: 'elasticsearch', version: '7.9.3', build_type: 'docker', lucene_version: '8.11.4')
+          end
+        end
+
+        context 'using opensearch' do
+          let(:info) do
+            {
+              'version' => {
+                'distribution' => 'opensearch',
+                'number' => '1.0.0',
+                'build_type' => 'tar',
+                'lucene_version' => '8.10.1'
+              }
+            }
+          end
+
+          it 'returns server info' do
+            is_expected.to include(distribution: 'opensearch', version: '1.0.0', build_type: 'tar', lucene_version: '8.10.1')
+          end
+        end
       end
 
-      it 'returns empty hash' do
-        is_expected.to eq({})
+      context 'server is inaccessible' do
+        before do
+          allow(described_class.default.client).to receive(:info).and_raise(StandardError)
+        end
+
+        it 'returns empty hash' do
+          is_expected.to eq({})
+        end
       end
     end
   end

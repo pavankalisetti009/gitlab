@@ -5,6 +5,7 @@ module Ci
     class Context
       delegate :shared_runners_minutes_limit_enabled?, to: :namespace
       delegate :name, to: :namespace, prefix: true
+      delegate :percent_total_minutes_remaining, :current_balance, to: :usage
 
       attr_reader :namespace
 
@@ -12,8 +13,8 @@ module Ci
         @namespace = project&.shared_runners_limit_namespace || namespace
       end
 
-      def percent_total_minutes_remaining
-        usage.percent_total_minutes_remaining
+      def total
+        usage.quota.total
       end
 
       private

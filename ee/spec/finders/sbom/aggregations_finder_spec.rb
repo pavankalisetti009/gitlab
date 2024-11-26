@@ -111,6 +111,10 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
       let_it_be(:occurrence_2) { occurrence(traits: [:mit, :apache_2, :bundler], name: 'b', severity: 'medium') }
       let_it_be(:occurrence_3) { occurrence(traits: [:mpl_2, :nuget], name: 'a', severity: 'high') }
       let_it_be(:occurrence_4) { occurrence(traits: [:apache_2, :yarn], name: 'd', severity: 'critical') }
+      let_it_be(:null_fields) do
+        create(:sbom_occurrence, component: create(:sbom_component), highest_severity: nil, project: project)
+          .tap { |o| o.update!(package_manager: nil, component_name: nil) }
+      end
 
       before_all do
         Sbom::Occurrence.id_in(target_occurrences.map(&:id)).delete_all
@@ -149,8 +153,8 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
           let_it_be(:c_name) { occurrence_1 }
           let_it_be(:d_name) { occurrence_4 }
 
-          let(:expected_asc) { [a_name, b_name, c_name, d_name] }
-          let(:expected_desc) { [d_name, c_name, b_name, a_name] }
+          let(:expected_asc) { [a_name, b_name, c_name, d_name, null_fields] }
+          let(:expected_desc) { [null_fields, d_name, c_name, b_name, a_name] }
         end
       end
 
@@ -161,8 +165,8 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
           let_it_be(:high) { occurrence_3 }
           let_it_be(:critical) { occurrence_4 }
 
-          let(:expected_asc) { [low, medium, high, critical] }
-          let(:expected_desc) { [critical, high, medium, low] }
+          let(:expected_asc) { [null_fields, low, medium, high, critical] }
+          let(:expected_desc) { [critical, high, medium, low, null_fields] }
         end
       end
 
@@ -173,8 +177,8 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
           let_it_be(:mpl) { occurrence_3 }
           let_it_be(:apache) { occurrence_4 }
 
-          let(:expected_asc) { [apache, mit_apache, mpl, blank_license_array] }
-          let(:expected_desc) { [blank_license_array, mpl, mit_apache, apache] }
+          let(:expected_asc) { [apache, mit_apache, mpl, blank_license_array, null_fields] }
+          let(:expected_desc) { [null_fields, blank_license_array, mpl, mit_apache, apache] }
         end
       end
 
@@ -185,8 +189,8 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
           let_it_be(:nuget) { occurrence_3 }
           let_it_be(:yarn) { occurrence_4 }
 
-          let(:expected_asc) { [bundler, npm, nuget, yarn] }
-          let(:expected_desc) { [yarn, nuget, npm, bundler] }
+          let(:expected_asc) { [bundler, npm, nuget, yarn, null_fields] }
+          let(:expected_desc) { [null_fields, yarn, nuget, npm, bundler] }
         end
       end
     end
