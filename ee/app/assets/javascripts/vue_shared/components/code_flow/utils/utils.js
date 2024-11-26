@@ -1,5 +1,14 @@
 import { differenceWith, isEqual } from 'lodash';
-import { linesPadding } from 'ee/vue_shared/components/code_flow/utils/constants';
+import {
+  linesPadding,
+  numMarkerIdPrefix,
+  selectedInlineItemMark,
+  selectedInlineNumberMark,
+  selectedInlineSectionMarker,
+  textMarkerIdPrefix,
+  textSpanMarkerIdPrefix,
+  unselectedInlineNumberMark,
+} from 'ee/vue_shared/components/code_flow/utils/constants';
 import { splitByLineBreaks } from '~/vue_shared/components/source_viewer/workers/highlight_utils';
 
 /**
@@ -144,4 +153,113 @@ export const createHighlightSourcesInfo = (normalizedCodeFlows, rawTextBlobs) =>
     );
     return acc;
   }, {});
+};
+
+/**
+ * Generates an array of CSS selector strings for identifying elements based on a prefix and step number.
+ * @param {string} idPrefix - The prefix of the ID to match.
+ * @param {number} selectedStepNumber - The selected step number to include in the selectors.
+ * @returns {string[]} An array of three CSS selector strings.
+ */
+const getIdSelectors = (idPrefix, selectedStepNumber) => {
+  // Examples of ID: '<idPrefix>-<selectedStepNumber>>,2-L8', '<idPrefix>-<selectedStepNumber>-L7'
+  // Examples of ID: 'NUM-MARKER-1,2-L8', 'NUM-MARKER-3-L7'
+  // Examples of ID: 'TEXT-MARKER-1,2-L8', 'TEXT-MARKER-3-L7'
+  return [
+    `[id^="${idPrefix}"][id*="${selectedStepNumber}-L"]`,
+    `[id^="${idPrefix}"][id*=",${selectedStepNumber}-L"]`,
+    `[id^="${idPrefix}"][id*="${selectedStepNumber},"][id*="-L"]`,
+  ];
+};
+
+/**
+ * Highlights the content of the selected markdown row and unhighlights others.
+ * @param {number} selectedStepNumber - The step number corresponding to the row to highlight.
+ */
+export const markdownRowContent = (selectedStepNumber) => {
+  // Highlights the selected markdown row content
+  const textMarkerElements = document.querySelectorAll(`[id^=${textMarkerIdPrefix}]`);
+  textMarkerElements.forEach((el) => {
+    el.classList.remove(selectedInlineSectionMarker);
+  });
+
+  const textMarkerSelectors = getIdSelectors(textMarkerIdPrefix, selectedStepNumber);
+  const selector = textMarkerSelectors.join(', ');
+  const allTextMarkerElements = document.querySelectorAll(selector);
+  if (allTextMarkerElements.length > 0) {
+    allTextMarkerElements.forEach((el) => el.classList.add(selectedInlineSectionMarker));
+  }
+};
+
+/**
+ * Highlights the selected step number in the markdown and unhighlights others.
+ * @param {number} selectedStepNumber - The step number to highlight.
+ */
+export const markdownStepNumber = (selectedStepNumber) => {
+  // Highlights the step number in the markdown
+  const textMarkerElements = document.querySelectorAll(`[id^=${textMarkerIdPrefix}]`);
+  textMarkerElements.forEach((el) => {
+    const spans = el.querySelectorAll('span.inline-item-mark');
+    spans.forEach((span) => {
+      span.classList.remove(selectedInlineItemMark);
+    });
+  });
+  const textSpanMarkerElements = document.querySelectorAll(
+    `[id^="${textSpanMarkerIdPrefix}${selectedStepNumber}"]`,
+  );
+  if (textSpanMarkerElements.length > 0) {
+    textSpanMarkerElements.forEach((el) => el.classList.add(selectedInlineItemMark, 'gs'));
+  }
+};
+
+/**
+ * Highlights the selected row number in the markdown and unhighlights others.
+ * @param {number} selectedStepNumber - The step number to highlight.
+ */
+export const markdownRowNumber = (selectedStepNumber) => {
+  // Highlights the row number in the markdown
+  const numMarkerElements = document.querySelectorAll(`[id^="${numMarkerIdPrefix}"]`);
+  numMarkerElements.forEach((el) => {
+    el.classList.remove(selectedInlineNumberMark);
+    el.classList.add(unselectedInlineNumberMark);
+  });
+
+  const numMarkerSelectors = getIdSelectors(numMarkerIdPrefix, selectedStepNumber);
+  const selector = numMarkerSelectors.join(', ');
+  const allNumMarkerElements = document.querySelectorAll(selector);
+
+  if (allNumMarkerElements.length > 0) {
+    allNumMarkerElements.forEach((el) => {
+      el.classList.add(selectedInlineNumberMark);
+      el.classList.remove(unselectedInlineNumberMark);
+    });
+  }
+};
+
+/**
+ * call the markdown functions when the step is selected
+ * @param {Number} selectedStepNumber - The selected step number.
+ */
+export const markdownBlobData = (selectedStepNumber) => {
+  markdownRowContent(selectedStepNumber);
+  markdownStepNumber(selectedStepNumber);
+  markdownRowNumber(selectedStepNumber);
+};
+
+/**
+ * Scrolls to a specific code flow element within a container.
+ * @param {number} selectedStepNumber - The number of the step to scroll to.
+ */
+export const scrollToSpecificCodeFlow = (selectedStepNumber) => {
+  const element = document.querySelector(`[id^=${textMarkerIdPrefix}${selectedStepNumber}]`);
+  if (element) {
+    const subScroller = document.getElementById('code-flows-container');
+    const subScrollerRect = subScroller.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const offsetTop = elementRect.top - subScrollerRect.top + subScroller.scrollTop;
+    subScroller.scrollTo({
+      top: offsetTop - subScroller.clientHeight / 2 + element.clientHeight / 2,
+      behavior: 'smooth',
+    });
+  }
 };
