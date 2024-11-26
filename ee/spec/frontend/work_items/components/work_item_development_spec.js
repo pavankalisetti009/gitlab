@@ -11,6 +11,7 @@ import {
   workItemDevelopmentFragmentResponse,
   workItemDevelopmentMRNodes,
   workItemDevelopmentFeatureFlagNodes,
+  workItemRelatedBranchNodes,
 } from 'jest/work_items/mock_data';
 
 import WorkItemDevelopment from '~/work_items/components/work_item_development/work_item_development.vue';
@@ -28,32 +29,55 @@ describe('WorkItemDevelopment EE', () => {
 
   const workItemWithMRListOnly = workItemResponseFactory({
     developmentWidgetPresent: true,
-    developmentItems: workItemDevelopmentFragmentResponse(workItemDevelopmentMRNodes, true, []),
+    developmentItems: workItemDevelopmentFragmentResponse({
+      mrNodes: workItemDevelopmentMRNodes,
+      willAutoCloseByMergeRequest: true,
+      featureFlagNodes: [],
+      branchNodes: [],
+    }),
   });
 
   const workItemWithFlagListOnly = workItemResponseFactory({
     developmentWidgetPresent: true,
-    developmentItems: workItemDevelopmentFragmentResponse(
-      [],
-      false,
-      workItemDevelopmentFeatureFlagNodes,
-    ),
+    developmentItems: workItemDevelopmentFragmentResponse({
+      mrNodes: [],
+      willAutoCloseByMergeRequest: false,
+      featureFlagNodes: workItemDevelopmentFeatureFlagNodes,
+      branchNodes: [],
+    }),
     canUpdate: true,
   });
 
-  const workItemWithNoMRsOrFlags = workItemResponseFactory({
+  const workItemWithBranchListOnly = workItemResponseFactory({
     developmentWidgetPresent: true,
-    developmentItems: workItemDevelopmentFragmentResponse([], false, []),
+    developmentItems: workItemDevelopmentFragmentResponse({
+      mrNodes: [],
+      willAutoCloseByMergeRequest: false,
+      featureFlagNodes: [],
+      branchNodes: workItemRelatedBranchNodes,
+    }),
     canUpdate: true,
   });
 
-  const workItemWithMRsAndFlagList = workItemResponseFactory({
+  const workItemWithNoDevItems = workItemResponseFactory({
     developmentWidgetPresent: true,
-    developmentItems: workItemDevelopmentFragmentResponse(
-      workItemDevelopmentMRNodes,
-      true,
-      workItemDevelopmentFeatureFlagNodes,
-    ),
+    developmentItems: workItemDevelopmentFragmentResponse({
+      mrNodes: [],
+      willAutoCloseByMergeRequest: false,
+      featureFlagNodes: [],
+      branchNodes: [],
+    }),
+    canUpdate: true,
+  });
+
+  const workItemWithAllDevItems = workItemResponseFactory({
+    developmentWidgetPresent: true,
+    developmentItems: workItemDevelopmentFragmentResponse({
+      mrNodes: workItemDevelopmentMRNodes,
+      willAutoCloseByMergeRequest: true,
+      featureFlagNodes: workItemDevelopmentFeatureFlagNodes,
+      branchNodes: workItemRelatedBranchNodes,
+    }),
   });
 
   const successQueryHandler = jest.fn().mockResolvedValue({
@@ -66,7 +90,7 @@ describe('WorkItemDevelopment EE', () => {
     },
   });
 
-  const successQueryHandlerWithEmptyFlagListAndHasMRList = jest.fn().mockResolvedValue({
+  const successQueryHandlerWithOnlyMRList = jest.fn().mockResolvedValue({
     data: {
       workspace: {
         __typename: 'Project',
@@ -76,22 +100,32 @@ describe('WorkItemDevelopment EE', () => {
     },
   });
 
-  const successQueryHandlerWithEmptyMRAndFlagList = jest.fn().mockResolvedValue({
+  const successQueryHandlerWithOnlyBranchList = jest.fn().mockResolvedValue({
     data: {
       workspace: {
         __typename: 'Project',
         id: 'gid://gitlab/Project/1',
-        workItem: workItemWithNoMRsOrFlags.data.workItem,
+        workItem: workItemWithBranchListOnly.data.workItem,
       },
     },
   });
 
-  const successQueryHandlerWithMRAndFlagList = jest.fn().mockResolvedValue({
+  const successQueryHandlerWithNoDevItem = jest.fn().mockResolvedValue({
     data: {
       workspace: {
         __typename: 'Project',
         id: 'gid://gitlab/Project/1',
-        workItem: workItemWithMRsAndFlagList.data.workItem,
+        workItem: workItemWithNoDevItems.data.workItem,
+      },
+    },
+  });
+
+  const successQueryHandlerWithAllDevItemsList = jest.fn().mockResolvedValue({
+    data: {
+      workspace: {
+        __typename: 'Project',
+        id: 'gid://gitlab/Project/1',
+        workItem: workItemWithAllDevItems.data.workItem,
       },
     },
   });
@@ -155,7 +189,7 @@ describe('WorkItemDevelopment EE', () => {
   describe('when the list of Feature Flag is empty but there is a MR list', () => {
     it(`hides 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithEmptyFlagListAndHasMRList,
+        workItemQueryHandler: successQueryHandlerWithOnlyMRList,
         workItemsAlphaEnabled: true,
       });
       await waitForPromises();
@@ -166,7 +200,7 @@ describe('WorkItemDevelopment EE', () => {
 
     it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithEmptyFlagListAndHasMRList,
+        workItemQueryHandler: successQueryHandlerWithOnlyMRList,
         workItemsAlphaEnabled: false,
       });
       await waitForPromises();
@@ -179,7 +213,7 @@ describe('WorkItemDevelopment EE', () => {
   describe('when both the list of Feature flags and MRs are empty', () => {
     it(`shows 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithEmptyMRAndFlagList,
+        workItemQueryHandler: successQueryHandlerWithNoDevItem,
         workItemsAlphaEnabled: true,
       });
       await waitForPromises();
@@ -190,7 +224,7 @@ describe('WorkItemDevelopment EE', () => {
 
     it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithEmptyMRAndFlagList,
+        workItemQueryHandler: successQueryHandlerWithNoDevItem,
         workItemsAlphaEnabled: false,
       });
       await waitForPromises();
@@ -203,7 +237,7 @@ describe('WorkItemDevelopment EE', () => {
   describe('when both the list of Feature flags and MRs exist', () => {
     it(`hides 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithMRAndFlagList,
+        workItemQueryHandler: successQueryHandlerWithAllDevItemsList,
         workItemsAlphaEnabled: true,
       });
       await waitForPromises();
@@ -214,7 +248,7 @@ describe('WorkItemDevelopment EE', () => {
 
     it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithMRAndFlagList,
+        workItemQueryHandler: successQueryHandlerWithAllDevItemsList,
         workItemsAlphaEnabled: false,
       });
       await waitForPromises();
@@ -224,27 +258,20 @@ describe('WorkItemDevelopment EE', () => {
     });
   });
 
-  describe('when there is only a list of feature flags', () => {
-    beforeEach(async () => {
-      createComponent();
-      await waitForPromises();
-    });
-
-    it('should show the relationship list', () => {
-      expect(findRelationshipList().exists()).toBe(true);
-    });
-  });
-
-  describe('when there is only a list of MR`s', () => {
-    beforeEach(async () => {
+  it.each`
+    description        | successQueryResolveHandler
+    ${'feature flags'} | ${successQueryHandler}
+    ${'MRs'}           | ${successQueryHandlerWithOnlyMRList}
+    ${'branches'}      | ${successQueryHandlerWithOnlyBranchList}
+  `(
+    'should show the relationship list when there is only a list of $description',
+    async ({ successQueryResolveHandler }) => {
       createComponent({
-        workItemQueryHandler: successQueryHandlerWithEmptyFlagListAndHasMRList,
+        workItemQueryHandler: successQueryResolveHandler,
       });
       await waitForPromises();
-    });
 
-    it('should show the relationship list', () => {
       expect(findRelationshipList().exists()).toBe(true);
-    });
-  });
+    },
+  );
 });
