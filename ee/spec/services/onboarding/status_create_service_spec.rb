@@ -98,6 +98,49 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
             expect(execute[:user].onboarding_status.symbolize_keys).to eq(onboarding_status.merge(email_opt_in: true))
           end
         end
+
+        context 'for sanitizing the glm items' do
+          let(:params) do
+            {
+              glm_content: '<div onerror=alert(1)>glm_content</div>',
+              glm_source: '<div onerror=alert(1)>glm_content</div>'
+            }
+          end
+
+          it 'sanitizes', :aggregate_failures do
+            expect(execute[:user].onboarding_status_glm_content).to eq('<div>glm_content</div>')
+            expect(execute[:user].onboarding_status_glm_source).to eq('<div>glm_content</div>')
+          end
+        end
+
+        context 'for truncating the glm items' do
+          let(:long_string) { 'a' * 300 }
+          let(:params) do
+            {
+              glm_content: long_string,
+              glm_source: long_string
+            }
+          end
+
+          it 'truncates glm items to 255 characters', :aggregate_failures do
+            expect(execute[:user].onboarding_status_glm_content).to eq(long_string.truncate(255))
+            expect(execute[:user].onboarding_status_glm_source).to eq(long_string.truncate(255))
+          end
+        end
+
+        context 'for glm items passed as integers' do
+          let(:params) do
+            {
+              glm_content: 12345,
+              glm_source: 12345
+            }
+          end
+
+          it 'converts glm items to strings', :aggregate_failures do
+            expect(execute[:user].onboarding_status_glm_content).to eq('12345')
+            expect(execute[:user].onboarding_status_glm_source).to eq('12345')
+          end
+        end
       end
 
       context 'when update is not successful due to systemic failure' do
