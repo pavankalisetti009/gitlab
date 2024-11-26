@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Search::Zoekt::NamespaceAssignmentService, feature_category: :global_search do
-  let_it_be_with_reload(:namespace) { create(:group, :with_hierarchy, children: 1, depth: 3) }
+  let_it_be(:namespace) { create(:group, :with_hierarchy, children: 1, depth: 3) }
   let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
-  let_it_be_with_reload(:project) { create(:project, :repository, namespace: namespace) }
+  let_it_be(:project) { create(:project, :repository, namespace: namespace) }
   let_it_be_with_reload(:project2) { create(:project, :repository, namespace: namespace.children.first) }
   let_it_be_with_reload(:project3) { create(:project, :repository, namespace: namespace) }
   let_it_be_with_reload(:project4) { create(:project, :repository, namespace: namespace.children.first) }
@@ -39,7 +39,7 @@ RSpec.describe Search::Zoekt::NamespaceAssignmentService, feature_category: :glo
       end
 
       context 'when a namespace can be accommodated within 5 nodes' do
-        context 'when atleast one project does not have statistics' do
+        context 'when at least one project does not have statistics' do
           before do
             project3.statistics.destroy!
           end
@@ -74,8 +74,8 @@ RSpec.describe Search::Zoekt::NamespaceAssignmentService, feature_category: :glo
         end
 
         context 'when there are too many projects' do
-          let_it_be_with_reload(:project6) { create(:project, :repository, namespace: namespace) }
-          let_it_be_with_reload(:project7) { create(:project, :repository, namespace: namespace.children.first) }
+          let_it_be(:project6) { create(:project, :repository, namespace: namespace) }
+          let_it_be(:project7) { create(:project, :repository, namespace: namespace.children.first) }
 
           before do
             create(:project_statistics, project: project6, with_data: true, size_multiplier: 10)
@@ -85,6 +85,18 @@ RSpec.describe Search::Zoekt::NamespaceAssignmentService, feature_category: :glo
           it 'returns empty collection' do
             expect(collection).to be_empty
           end
+        end
+      end
+
+      context 'when indices is over pre ready limit' do
+        before do
+          allow(Search::Zoekt::Index)
+            .to receive_message_chain(:pre_ready, :count)
+            .and_return(described_class::PRE_READY_LIMIT + 1)
+        end
+
+        it 'returns empty collection' do
+          expect(collection).to be_empty
         end
       end
     end

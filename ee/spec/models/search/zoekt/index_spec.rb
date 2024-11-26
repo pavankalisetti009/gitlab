@@ -119,6 +119,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.pre_ready' do
+      let_it_be(:in_progress) { create(:zoekt_index, state: :in_progress) }
+      let_it_be(:initializing) { create(:zoekt_index, state: :initializing) }
+      let_it_be(:ready) { create(:zoekt_index, state: :ready) }
+      let_it_be(:reallocating) { create(:zoekt_index, state: :reallocating) }
+      let_it_be(:pending_deletion) { create(:zoekt_index, state: :pending_deletion) }
+
+      it 'returns correct indices' do
+        expect(described_class.pre_ready).to contain_exactly(zoekt_index, zoekt_index_2, in_progress, initializing)
+      end
+    end
+
     describe '.searchable' do
       let_it_be(:zoekt_index_ready) do
         create(:zoekt_index, node: zoekt_node, zoekt_enabled_namespace: zoekt_enabled_namespace_2, state: :ready)
@@ -390,8 +402,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
   describe '#free_storage_bytes' do
     it 'is difference between reserved bytes and used bytes' do
-      allow(zoekt_index).to receive(:reserved_storage_bytes).and_return(100)
-      allow(zoekt_index).to receive(:used_storage_bytes).and_return(1)
+      allow(zoekt_index).to receive_messages(reserved_storage_bytes: 100, used_storage_bytes: 1)
       expect(zoekt_index.free_storage_bytes).to eq(99)
     end
   end
