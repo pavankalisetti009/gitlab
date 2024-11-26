@@ -117,6 +117,8 @@ describe('ml/model_registry/apps/show_ml_model', () => {
   const findLoadOrErrorOrShow = () => wrapper.findComponent(LoadOrErrorOrShow);
   const findModelEditButton = () => wrapper.findByTestId('edit-model-button');
   const findTimeAgoTooltip = () => wrapper.findComponent(TimeAgoTooltip);
+  const findCandidateTab = () => wrapper.findAllComponents(GlTab).at(2);
+  const findCandidatesCountBadge = () => findCandidateTab().findComponent(GlBadge);
 
   describe('Title', () => {
     beforeEach(() => createWrapper());
@@ -205,6 +207,10 @@ describe('ml/model_registry/apps/show_ml_model', () => {
     it('shows the number of versions in the tab', () => {
       expect(findVersionsCountBadge().text()).toBe(model.versionCount.toString());
     });
+
+    it('shows the number of candidates in the tab', () => {
+      expect(findCandidatesCountBadge().text()).toBe(model.candidateCount.toString());
+    });
   });
 
   describe('Model loading', () => {
@@ -238,10 +244,10 @@ describe('ml/model_registry/apps/show_ml_model', () => {
       expect(findCandidateList().exists()).toBe(false);
     });
 
-    it('shows model version list when location hash is `#/versions`', async () => {
+    it('shows model version list when clicks versions tabs', async () => {
       await createWrapper({ mountFn: mountExtended });
 
-      await wrapper.vm.$router.push({ path: '/versions' });
+      await findVersionsTab().vm.$emit('click');
 
       expect(findTabs().props('value')).toBe(1);
       expect(findModelDetail().exists()).toBe(false);
@@ -249,12 +255,28 @@ describe('ml/model_registry/apps/show_ml_model', () => {
       expect(findCandidateList().exists()).toBe(false);
     });
 
+    it('shows candidate list when user clicks candidates tab', async () => {
+      await createWrapper({ mountFn: mountExtended });
+
+      await findCandidateTab().vm.$emit('click');
+
+      expect(findTabs().props('value')).toBe(2);
+      expect(findModelDetail().exists()).toBe(false);
+      expect(findModelVersionList().exists()).toBe(false);
+      expect(findCandidateList().props('modelId')).toBe(model.id);
+    });
+
     describe.each`
-      location        | tab                | navigatedTo
-      ${'#/'}         | ${findDetailTab}   | ${0}
-      ${'#/'}         | ${findVersionsTab} | ${1}
-      ${'#/versions'} | ${findDetailTab}   | ${0}
-      ${'#/versions'} | ${findVersionsTab} | ${1}
+      location          | tab                 | navigatedTo
+      ${'#/'}           | ${findDetailTab}    | ${0}
+      ${'#/'}           | ${findVersionsTab}  | ${1}
+      ${'#/'}           | ${findCandidateTab} | ${2}
+      ${'#/versions'}   | ${findDetailTab}    | ${0}
+      ${'#/versions'}   | ${findVersionsTab}  | ${1}
+      ${'#/versions'}   | ${findCandidateTab} | ${2}
+      ${'#/candidates'} | ${findDetailTab}    | ${0}
+      ${'#/candidates'} | ${findVersionsTab}  | ${1}
+      ${'#/candidates'} | ${findCandidateTab} | ${2}
     `('When at $location', ({ location, tab, navigatedTo }) => {
       beforeEach(async () => {
         setWindowLocation(location);
