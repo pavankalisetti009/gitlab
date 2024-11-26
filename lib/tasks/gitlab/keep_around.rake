@@ -27,7 +27,6 @@ namespace :gitlab do
         add_merge_request_shas(project, csv)
         add_merge_request_diff_shas(project, csv)
         add_note_shas(project, csv)
-        add_sent_notification_shas(project, csv)
 
         logger.info "Keep-around orphan report complete"
       end
@@ -78,10 +77,6 @@ namespace :gitlab do
           end
         end
       end
-    end
-
-    def add_sent_notification_shas(_project, _csv)
-      logger.warn "Sent notifications will not be included."
     end
 
     def add_match(csv, sha)
