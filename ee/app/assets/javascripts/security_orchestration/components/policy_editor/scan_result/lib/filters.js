@@ -1,7 +1,10 @@
 import { isEmpty } from 'lodash';
 import {
   AGE,
+  ALLOW_DENY,
+  ALLOWED,
   ATTRIBUTE,
+  DENIED,
   FALSE_POSITIVE,
   FIX_AVAILABLE,
   NEWLY_DETECTED,
@@ -32,4 +35,15 @@ export const buildFiltersFromRule = (rule) => {
   filters[ATTRIBUTE] = Boolean(filters[FALSE_POSITIVE] && filters[FIX_AVAILABLE]);
 
   return filters;
+};
+
+export const buildFiltersFromLicenceRule = (rule) => {
+  let { licenses = {} } = rule || {};
+
+  licenses = licenses ?? {};
+
+  return {
+    [STATUS]: true,
+    [ALLOW_DENY]: ALLOWED in licenses || DENIED in licenses,
+  };
 };

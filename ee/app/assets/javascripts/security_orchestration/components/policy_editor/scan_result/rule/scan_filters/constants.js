@@ -45,7 +45,7 @@ export const LICENCE_FILTERS = [
   {
     text: s__('ScanResultPolicy|License status'),
     value: STATUS,
-    tooltip: s__('ScanResultPolicy|Only 2 status criteria are allowed'),
+    tooltip: s__('ScanResultPolicy|Only 1 licence status criteria is allowed'),
   },
   {
     text: s__('ScanResultPolicy|Allowlist or Denylist'),

@@ -48634,6 +48634,9 @@ msgstr ""
 msgid "ScanResultPolicy|Only 1 age criteria is allowed"
 msgstr ""
 
+msgid "ScanResultPolicy|Only 1 licence status criteria is allowed"
+msgstr ""
+
 msgid "ScanResultPolicy|Only 2 attribute criteria are allowed"
 msgstr ""
 
