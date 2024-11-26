@@ -6,16 +6,13 @@ module EE
       module Runner
         module Update
           extend ActiveSupport::Concern
-          extend ::Gitlab::Utils::Override
 
           prepended do
-            argument :public_projects_minutes_cost_factor, GraphQL::Types::Float,
-              required: false,
-              description: 'Public projects\' "compute cost factor" associated with the runner (GitLab.com only).'
-
-            argument :private_projects_minutes_cost_factor, GraphQL::Types::Float,
-              required: false,
-              description: 'Private projects\' "compute cost factor" associated with the runner (GitLab.com only).'
+            # rubocop:disable Cop/InjectEnterpriseEditionModule -- This is not a typical EE module include
+            # that happens from the non-EE code part. It's a "standard" include of an EE module inside
+            # other EE module
+            include EE::Mutations::Ci::Runner::CommonMutationArguments
+            # rubocop:enable Cop/InjectEnterpriseEditionModule
           end
         end
       end

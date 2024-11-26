@@ -17,7 +17,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
-import { EVENT_LABEL_USER_SUBMITTED_GITLAB_DUO_QUERY_FROM_VISUALIZATION_DESIGNER } from 'ee/analytics/analytics_dashboards/constants';
+import { EVENT_LABEL_USER_SUBMITTED_GITLAB_DUO_QUERY_FROM_DATA_EXPLORER } from 'ee/analytics/analytics_dashboards/constants';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 
 import generateCubeQuery from '../../graphql/mutations/generate_cube_query.mutation.graphql';
@@ -98,7 +98,7 @@ export default {
         if (!confirmed) return;
       }
 
-      this.trackEvent(EVENT_LABEL_USER_SUBMITTED_GITLAB_DUO_QUERY_FROM_VISUALIZATION_DESIGNER);
+      this.trackEvent(EVENT_LABEL_USER_SUBMITTED_GITLAB_DUO_QUERY_FROM_DATA_EXPLORER);
       this.skipSubscription = false;
       this.submitting = true;
       this.error = null;

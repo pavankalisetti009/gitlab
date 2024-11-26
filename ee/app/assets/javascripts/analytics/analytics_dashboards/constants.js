@@ -99,16 +99,16 @@ export const EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD = 'user_viewed_custom_dashboard
 export const EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD = 'user_viewed_builtin_dashboard';
 export const EVENT_LABEL_VIEWED_DASHBOARD = 'user_viewed_dashboard';
 
-export const EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER = 'user_viewed_visualization_designer';
+export const EVENT_LABEL_USER_VIEWED_DATA_EXPLORER = 'user_viewed_data_explorer';
 export const EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION = 'user_created_custom_visualization';
-export const EVENT_LABEL_USER_SUBMITTED_GITLAB_DUO_QUERY_FROM_VISUALIZATION_DESIGNER =
-  'user_submitted_gitlab_duo_query_from_visualization_designer';
-export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_HELPFUL =
-  'user_feedback_gitlab_duo_query_in_visualization_designer_helpful';
-export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_UNHELPFUL =
-  'user_feedback_gitlab_duo_query_in_visualization_designer_unhelpful';
-export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_WRONG =
-  'user_feedback_gitlab_duo_query_in_visualization_designer_wrong';
+export const EVENT_LABEL_USER_SUBMITTED_GITLAB_DUO_QUERY_FROM_DATA_EXPLORER =
+  'user_submitted_gitlab_duo_query_from_data_explorer';
+export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_HELPFUL =
+  'user_feedback_gitlab_duo_query_in_data_explorer_helpful';
+export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_UNHELPFUL =
+  'user_feedback_gitlab_duo_query_in_data_explorer_unhelpful';
+export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_DATA_EXPLORER_WRONG =
+  'user_feedback_gitlab_duo_query_in_data_explorer_wrong';
 export const GITLAB_DUO_CORRELATION_PROPERTY = 'correlation_id';
 
 export const EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE = 'click_metric_in_dashboard_table';

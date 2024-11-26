@@ -721,28 +721,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
-  describe '#has_repository_xray_reports?', feature_category: :code_suggestions do
-    subject { pipeline.has_repository_xray_reports? }
-
-    let(:pipeline) { create(:ci_empty_pipeline, status: :created, project: project) }
-
-    before do
-      pipeline.succeed!
-    end
-
-    context 'when the pipeline does not have xray reports' do
-      it { is_expected.to be_falsy }
-    end
-
-    context 'when the pipeline has xray reports' do
-      before do
-        create(:ee_ci_build, :repository_xray, pipeline: pipeline, project: project)
-      end
-
-      it { is_expected.to be_truthy }
-    end
-  end
-
   describe '#can_ingest_sbom_reports?' do
     let(:ingest_sbom_reports_available) { true }
 

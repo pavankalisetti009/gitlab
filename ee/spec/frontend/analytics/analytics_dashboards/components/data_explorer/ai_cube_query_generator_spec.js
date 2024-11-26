@@ -175,7 +175,7 @@ describe('AiCubeQueryGenerator', () => {
       it('should track the prompt has been submitted', () => {
         expect(trackingSpy).toHaveBeenCalledWith(
           undefined,
-          'user_submitted_gitlab_duo_query_from_visualization_designer',
+          'user_submitted_gitlab_duo_query_from_data_explorer',
           expect.any(Object),
         );
       });
