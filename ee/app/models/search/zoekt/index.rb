@@ -51,6 +51,8 @@ module Search
         where(namespace_id: root_namespace_id).where.not(zoekt_enabled_namespace_id: nil)
       end
 
+      scope :pre_ready, -> { where(state: %i[pending in_progress initializing]) }
+
       scope :searchable, -> do
         where(state: SEARCHEABLE_STATES)
           .joins(:zoekt_enabled_namespace)

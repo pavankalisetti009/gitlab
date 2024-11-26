@@ -4,6 +4,7 @@ module Search
   module Zoekt
     class NamespaceAssignmentService
       MAX_INDICES_PER_REPLICA = 5
+      PRE_READY_LIMIT = 1
 
       def self.execute(...)
         new(...).execute
@@ -46,21 +47,25 @@ module Search
       def initialize_index_for_project(project)
         index = indices.last
         project_stats = project.statistics
-        # early return if project_stats is nil
+
         if project_stats.nil?
           @early_return = true
           return
         end
 
         if set_new_index
-          # early return if number of indices per replica exceeds the maximum indices per replica
           if indices.size == MAX_INDICES_PER_REPLICA
             @early_return = true
             return
           end
 
           node = Node.order_by_unclaimed_space.id_not_in(indices.map(&:zoekt_node_id)).last
-          # early return if there is no node available
+
+          if Search::Zoekt::Index.for_node(node).pre_ready.count > PRE_READY_LIMIT
+            @early_return = true
+            return
+          end
+
           if node.nil?
             @early_return = true
             return
