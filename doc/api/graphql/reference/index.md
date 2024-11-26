@@ -37633,6 +37633,7 @@ The category of the additional context.
 | <a id="aiadditionalcontextcategorydependency"></a>`DEPENDENCY` | Dependency content category. |
 | <a id="aiadditionalcontextcategoryfile"></a>`FILE` | File content category. |
 | <a id="aiadditionalcontextcategoryissue"></a>`ISSUE` | Issue content category. |
+| <a id="aiadditionalcontextcategorylocal_git"></a>`LOCAL_GIT` | Local_git content category. |
 | <a id="aiadditionalcontextcategorymerge_request"></a>`MERGE_REQUEST` | Merge_request content category. |
 | <a id="aiadditionalcontextcategorysnippet"></a>`SNIPPET` | Snippet content category. |
 
