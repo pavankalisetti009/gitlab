@@ -111,5 +111,12 @@ describe('DuoSeatUtilizationInfoCard', () => {
       expect(findActionButtons().at(0).text()).toBe('Assign seats');
       expect(findActionButtons().at(1).text()).toBe('Purchase seats');
     });
+
+    it('renders only assign seats button for duo enterprise', () => {
+      wrapper = createComponent({ duoTier: DUO_ENTERPRISE });
+
+      expect(findActionButtons()).toHaveLength(1);
+      expect(findActionButtons().at(0).text()).toBe('Assign seats');
+    });
   });
 });
