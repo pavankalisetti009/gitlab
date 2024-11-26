@@ -50,7 +50,7 @@ export default {
     deleteScheduledAtLabel: s__('Pages|Scheduled for deletion at'),
     deleteBtnLabel: s__('Pages|Delete'),
     restoreBtnLabel: s__('Pages|Restore'),
-    moreDeloymentsMessage: s__('Pages|+ %{n} more deployments'),
+    moreDeploymentsMessage: s__('Pages|+ %{n} more deployments'),
   },
   fields: [
     {
@@ -95,7 +95,7 @@ export default {
       return this.deploymentsTotalCount - this.project.pagesDeployments.nodes.length;
     },
     moreDeploymentsMessage() {
-      return sprintf(this.$options.i18n.moreDeloymentsMessage, {
+      return sprintf(this.$options.i18n.moreDeploymentsMessage, {
         n: this.deploymentsNotShownCount,
       });
     },
