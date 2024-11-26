@@ -5,7 +5,6 @@ require 'securerandom'
 module Geo
   class FrameworkRepositorySyncService
     include ExclusiveLeaseGuard
-    include ::Gitlab::ShellAdapter
     include ::Gitlab::Geo::LogHelpers
     include Delay
 
