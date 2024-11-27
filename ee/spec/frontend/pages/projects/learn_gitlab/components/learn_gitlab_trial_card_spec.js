@@ -6,7 +6,5 @@ describe('Learn GitLab Trial Card', () => {
     const wrapper = shallowMount(IncludedInTrialIndicator);
 
     expect(wrapper.text()).toEqual('- Included in trial');
-
-    wrapper.destroy();
   });
 });

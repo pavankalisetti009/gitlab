@@ -54,8 +54,6 @@ describe('FilterDropdowns component', () => {
   const findProjectsDropdownFilter = () => wrapper.findComponent(ProjectsDropdownFilter);
 
   afterEach(() => {
-    // eslint-disable-next-line @gitlab/vtu-no-explicit-wrapper-destroy
-    wrapper.destroy();
     resetStore(mockStore);
   });
 

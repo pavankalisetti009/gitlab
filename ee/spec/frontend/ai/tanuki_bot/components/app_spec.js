@@ -115,9 +115,6 @@ describeSkipVue3(skipReason, () => {
     jest.clearAllMocks();
     duoChatGlobalState.commands = [];
     duoChatGlobalState.isShown = false;
-    if (wrapper) {
-      wrapper.destroy();
-    }
   });
 
   it('generates unique `clientSubscriptionId` using v4', () => {
@@ -502,9 +499,6 @@ describeSkipVue3(skipReason, () => {
   describe('Subscription Component', () => {
     afterEach(() => {
       duoChatGlobalState.isShown = false;
-      if (wrapper) {
-        wrapper.destroy();
-      }
       jest.clearAllMocks();
     });
 
