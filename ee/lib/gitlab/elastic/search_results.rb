@@ -40,8 +40,6 @@ module Gitlab
 
         found_line_number = 0
         highlight_found = false
-        matched_lines_count = highlight_content
-          .scan(/#{::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG}(.*)\R/o).size
 
         highlight_content.each_line.each_with_index do |line, index|
           next unless line.include?(::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG)
@@ -72,7 +70,6 @@ module Gitlab
             path: path,
             basename: basename,
             ref: ref,
-            matched_lines_count: matched_lines_count,
             startline: from + 1,
             highlight_line: highlight_line,
             data: data.join,
