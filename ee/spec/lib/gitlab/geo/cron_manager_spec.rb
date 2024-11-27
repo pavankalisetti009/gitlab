@@ -35,8 +35,8 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
   subject(:manager) { described_class.new }
 
   describe '#execute' do
-    let_it_be(:primary) { create(:geo_node, :primary) }
-    let_it_be(:secondary) { create(:geo_node) }
+    let_it_be(:current_node_name) { Gitlab.config.geo.node_name }
+    let_it_be(:primary_node) { create(:geo_node, :primary, name: current_node_name) }
 
     let(:common_geo_jobs) { [job('geo_metrics_update_worker'), job('geo_verification_cron_worker')] }
     let(:ldap_test_job) { job('ldap_test') }
@@ -66,8 +66,6 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
 
     context 'on a Geo primary' do
       before do
-        stub_current_geo_node(primary)
-
         manager.execute
       end
 
@@ -105,7 +103,6 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
     context 'with geo primary and disabled feature flag stop_bulk_sidekiq_job_activation' do
       before do
         stub_feature_flags(stop_bulk_sidekiq_job_activation: false)
-        stub_current_geo_node(primary)
 
         manager.execute
       end
@@ -117,7 +114,9 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
 
     context 'on a Geo secondary' do
       before do
-        stub_current_geo_node(secondary)
+        # Without stubbing we would receive the following validation error:
+        # `Validation failed: Current node must be the primary node or you will be locking yourself out`
+        allow(GeoNode).to receive(:current_node).and_return create(:geo_node)
 
         manager.execute
       end
@@ -145,7 +144,7 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
 
     context 'on a non-Geo node' do
       before do
-        stub_current_geo_node(nil)
+        allow(GeoNode).to receive(:current_node).and_return nil
 
         manager.execute
       end
@@ -176,7 +175,7 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
     context 'with non geo and disabled feature flag stop_bulk_sidekiq_job_activation' do
       before do
         stub_feature_flags(stop_bulk_sidekiq_job_activation: false)
-        stub_current_geo_node(nil)
+        allow(GeoNode).to receive(:current_node).and_return nil
 
         manager.execute
       end
