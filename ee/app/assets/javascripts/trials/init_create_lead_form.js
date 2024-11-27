@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue';
-import apolloProvider from 'ee/subscriptions/buy_addons_shared/graphql';
+import apolloProvider from 'ee/subscriptions/graphql/graphql';
 
 export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
   const el = document.querySelector('#js-trial-create-lead-form');

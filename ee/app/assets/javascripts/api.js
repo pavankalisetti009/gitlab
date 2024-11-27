@@ -18,8 +18,6 @@ export default {
   countriesPath: '/-/countries',
   countryStatesPath: '/-/country_states',
   paymentFormPath: '/-/subscriptions/payment_form',
-  paymentMethodPath: '/-/subscriptions/payment_method',
-  confirmOrderPath: '/-/subscriptions',
   filePath: '/api/:version/projects/:id/repository/files/:file_path',
   validatePaymentMethodPath: '/-/subscriptions/validate_payment_method',
   vulnerabilityPath: '/api/:version/vulnerabilities/:id',
@@ -120,11 +118,6 @@ export default {
     return axios.get(url, { params: { id } });
   },
 
-  fetchPaymentMethodDetails(id) {
-    const url = Api.buildUrl(this.paymentMethodPath);
-    return axios.get(url, { params: { id } });
-  },
-
   getFile(id, filePath, params = {}) {
     const url = Api.buildUrl(this.filePath)
       .replace(':id', encodeURIComponent(id))
@@ -136,11 +129,6 @@ export default {
   validatePaymentMethod(id, gitlabUserId) {
     const url = Api.buildUrl(this.validatePaymentMethodPath);
     return axios.post(url, { id, gitlab_user_id: gitlabUserId });
-  },
-
-  confirmOrder(params = {}) {
-    const url = Api.buildUrl(this.confirmOrderPath);
-    return axios.post(url, params);
   },
 
   changeVulnerabilityState(id, state) {

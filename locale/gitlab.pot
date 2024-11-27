@@ -11327,9 +11327,6 @@ msgstr ""
 msgid "Checking username availability..."
 msgstr ""
 
-msgid "Checkout|Compute pack"
-msgstr ""
-
 msgid "Checkout|Failed to load countries. Please try again."
 msgstr ""
 
@@ -11339,16 +11336,7 @@ msgstr ""
 msgid "Checkout|Failed to load the payment form. Refresh the page and try again."
 msgstr ""
 
-msgid "Checkout|GB"
-msgstr ""
-
-msgid "Checkout|Storage packs"
-msgstr ""
-
 msgid "Checkout|Your subscription will be applied to this group"
-msgstr ""
-
-msgid "Checkout|compute minutes"
 msgstr ""
 
 msgid "Cherry-pick this commit"

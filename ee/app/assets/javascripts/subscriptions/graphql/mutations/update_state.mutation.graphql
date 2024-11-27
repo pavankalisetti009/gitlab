@@ -1,3 +1,0 @@
-mutation UpdateState($input: UpdateStateInput!) {
-  updateState(input: $input) @client
-}

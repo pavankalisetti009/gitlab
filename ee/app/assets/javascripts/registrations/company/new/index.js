@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import apolloProvider from 'ee/subscriptions/buy_addons_shared/graphql';
+import apolloProvider from 'ee/subscriptions/graphql/graphql';
 import CompanyForm from 'ee/registrations/components/company_form.vue';
 
 export default () => {

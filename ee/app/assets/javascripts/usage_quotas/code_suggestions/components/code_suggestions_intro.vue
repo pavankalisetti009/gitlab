@@ -19,7 +19,7 @@ import {
   VIEW_ADMIN_CODE_SUGGESTIONS_PAGELOAD,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
-import apolloProvider from 'ee/subscriptions/buy_addons_shared/graphql';
+import apolloProvider from 'ee/subscriptions/graphql/graphql';
 import SubscriptionActivationModal from 'ee/admin/subscriptions/show/components/subscription_activation_modal.vue';
 import { addActivationCode, subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 import Tracking, { InternalEvents } from '~/tracking';

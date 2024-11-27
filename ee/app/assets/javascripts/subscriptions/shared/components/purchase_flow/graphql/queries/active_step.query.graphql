@@ -1,5 +1,0 @@
-query activeStep {
-  activeStep @client {
-    id
-  }
-}

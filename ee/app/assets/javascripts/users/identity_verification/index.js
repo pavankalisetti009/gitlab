@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import apolloProvider from 'ee/subscriptions/buy_addons_shared/graphql';
+import apolloProvider from 'ee/subscriptions/graphql/graphql';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import IdentityVerificationWizard from './components/wizard.vue';
 

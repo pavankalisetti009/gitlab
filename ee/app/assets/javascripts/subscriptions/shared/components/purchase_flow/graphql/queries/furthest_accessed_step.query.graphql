@@ -1,5 +1,0 @@
-query furthestAccessedStep {
-  furthestAccessedStep @client {
-    id
-  }
-}
