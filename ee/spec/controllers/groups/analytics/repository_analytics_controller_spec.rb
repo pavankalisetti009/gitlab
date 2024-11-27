@@ -20,7 +20,7 @@ RSpec.describe Groups::Analytics::RepositoryAnalyticsController, feature_categor
       group.add_reporter(current_user)
     end
 
-    specify { is_expected.to have_gitlab_http_status(:success) }
+    it { is_expected.to have_gitlab_http_status(:success) }
 
     it 'tracks a pageview event in snowplow' do
       subject

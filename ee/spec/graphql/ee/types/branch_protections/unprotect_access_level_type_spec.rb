@@ -7,7 +7,7 @@ RSpec.describe GitlabSchema.types['UnprotectAccessLevel'], feature_category: :so
 
   let(:fields) { %i[access_level access_level_description user group] }
 
-  specify { is_expected.to require_graphql_authorizations(:read_protected_branch) }
+  it { is_expected.to require_graphql_authorizations(:read_protected_branch) }
 
-  specify { is_expected.to have_graphql_fields(fields).only }
+  it { is_expected.to have_graphql_fields(fields).only }
 end

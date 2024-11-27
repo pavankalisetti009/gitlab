@@ -49,7 +49,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(group_ci_cd_analytics: true)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when licensed feature :group_ci_cd_analytics is disabled' do
         specify do
@@ -62,7 +62,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -73,12 +73,12 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(group_level_devops_adoption: true)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -89,7 +89,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(group_coverage_reports: true, group_repository_analytics: true)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when licensed feature :group_coverage_reports is disabled' do
         specify do
@@ -110,7 +110,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -121,7 +121,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(contribution_analytics: true)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when licensed feature :group_coverage_reports is disabled' do
         specify do
@@ -148,12 +148,12 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         allow(group).to receive(:insights_available?).and_return(insights_available)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when insights are not available' do
         let(:insights_available) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -165,12 +165,12 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(issues_analytics: issues_analytics_enabled)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when licensed feature :issues_analytics is disabled' do
         let(:issues_analytics_enabled) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -182,18 +182,18 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(productivity_analytics: productivity_analytics_enabled)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when licensed feature :productivity_analytics is disabled' do
         let(:productivity_analytics_enabled) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -205,18 +205,18 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(cycle_analytics_for_groups: cycle_analytics_enabled)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when licensed feature :cycle_analytics_for_groups is disabled' do
         let(:cycle_analytics_enabled) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -228,7 +228,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
         stub_licensed_features(group_level_analytics_dashboard: group_level_analytics_dashboard_enabled)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
       specify { expect(menu_item.link).to eq('/groups/group_one/-/analytics/dashboards') }
 
       context 'with different user access levels' do
@@ -247,11 +247,11 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
           end
 
           describe "when the user is not allowed to view the menu item", if: !params[:has_menu_item] do
-            specify { is_expected.to be_nil }
+            it { is_expected.to be_nil }
           end
 
           describe "when the user is allowed to view the menu item", if: params[:has_menu_item] do
-            specify { is_expected.not_to be_nil }
+            it { is_expected.not_to be_nil }
           end
         end
       end
@@ -259,7 +259,7 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
       describe 'when the license does not support the feature' do
         let(:group_level_analytics_dashboard_enabled) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
   end
