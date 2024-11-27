@@ -8,9 +8,7 @@ module EE
 
         override :execute
         def execute
-          super.tap do |result|
-            audit_event_service(result)
-          end
+          super.tap { |result| audit_event_service(result) }
         end
 
         private
@@ -21,22 +19,34 @@ module EE
           audit_context = {
             name: 'set_runner_associated_projects',
             author: current_user,
-            scope: current_user,
+            scope: runner.owner,
             target: runner,
             target_details: runner_path,
             message: 'Changed CI runner project assignments',
             additional_details: {
               action: :custom,
-              project_ids: project_ids
+              added_project_ids: result.payload[:added_to_projects].map(&:id),
+              deleted_from_projects: result.payload[:deleted_from_projects].map(&:id)
             }
           }
           ::Gitlab::Audit::Auditor.audit(audit_context)
+
+          audit_project_events(
+            result.payload[:added_to_projects], EE::Ci::Runners::AssignRunnerService::AUDIT_MESSAGE)
+          audit_project_events(
+            result.payload[:deleted_from_projects], EE::Ci::Runners::UnassignRunnerService::AUDIT_MESSAGE)
         end
 
         def runner_path
           url_helpers = ::Gitlab::Routing.url_helpers
 
           runner.owner ? url_helpers.project_runner_path(runner.owner, runner) : nil
+        end
+
+        def audit_project_events(projects, audit_message)
+          projects.each do |project|
+            ::AuditEvents::RunnerCustomAuditEventService.new(runner, current_user, project, audit_message).track_event
+          end
         end
       end
     end
