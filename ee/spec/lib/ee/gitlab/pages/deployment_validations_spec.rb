@@ -174,10 +174,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
         let_it_be(:build_options) { { pages: { path_prefix: "prefix" } } }
 
         include_examples "invalid pages deployment",
-          message: <<~MESSAGE.squish
-          Configuring path_prefix is only allowed when using multiple pages deployments per project,
-          which is disabled for your project.
-          MESSAGE
+          message: "To configure a path_prefix, please add a license to your project."
       end
     end
   end

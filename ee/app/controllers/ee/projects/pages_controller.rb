@@ -12,13 +12,6 @@ module EE
 
         super + %i[max_pages_size]
       end
-
-      override :project_setting_attributes
-      def project_setting_attributes
-        return super unless can?(current_user, :pages_multiple_versions, project)
-
-        super + %i[pages_multiple_versions_enabled]
-      end
     end
   end
 end
