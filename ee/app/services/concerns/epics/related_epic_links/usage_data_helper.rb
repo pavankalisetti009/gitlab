@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Helper to simplify recording related epics unique events on services.
-# Used by RelatedEpicLinks::CreateService and RelatedEpicLinks::DestroyService
+# Used by RelatedEpicLinks::DestroyService
 #
 # Calls the following methods on Gitlab::UsageDataCounters::EpicActivityUniqueCounter:
 #

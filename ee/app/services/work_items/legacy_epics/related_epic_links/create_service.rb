@@ -11,18 +11,14 @@ module WorkItems
         end
 
         def execute
-          if legacy_epic.group.work_item_epics_ssot_enabled?
-            WorkItems::RelatedWorkItemLinks::CreateService
-              .new(legacy_epic.work_item, user,
-                {
-                  target_issuable: target_work_items,
-                  link_type: params[:link_type]
-                })
-              .execute
-              .then { |result| transform_result(result) }
-          else
-            Epics::RelatedEpicLinks::CreateService.new(legacy_epic, user, params).execute
-          end
+          WorkItems::RelatedWorkItemLinks::CreateService
+            .new(legacy_epic.work_item, user,
+              {
+                target_issuable: target_work_items,
+                link_type: params[:link_type]
+              })
+            .execute
+            .then { |result| transform_result(result) }
         end
 
         private
@@ -50,7 +46,7 @@ module WorkItems
             result[:message] = transformed_error_message(result) || result[:message]
           else
             result[:created_references] = result[:created_references]&.map(&:synced_related_epic_link)
-            result[:message] = nil
+            result.delete(:message)
           end
 
           result

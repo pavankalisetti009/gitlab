@@ -7,12 +7,6 @@ module EE
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
-        def initialize(issuable, user, params)
-          @synced_work_item = params.delete(:synced_work_item)
-
-          super
-        end
-
         def execute
           if params[:link_type].present? && !link_type_available?
             return error(_('Blocked work items are not available for the current subscription tier'), 403)
@@ -47,27 +41,11 @@ module EE
 
         private
 
-        attr_reader :synced_work_item
-
-        override :create_notes_async
-        def create_notes_async
-          return if synced_work_item
-
-          super
-        end
-
         # This override prevents calling :create_notes_async
         # inside a transaction.
         # Can be removed after migration of epics to work_items.
         override :after_execute
         def after_execute; end
-
-        override :can_admin_work_item_link?
-        def can_admin_work_item_link?(work_item)
-          return true if synced_work_item
-
-          super
-        end
 
         def link_type_available?
           return true unless [link_class::TYPE_BLOCKS, link_class::TYPE_IS_BLOCKED_BY].include?(params[:link_type])
@@ -108,8 +86,7 @@ module EE
         end
 
         def sync_related_epic_link?
-          !synced_work_item &&
-            issuable.epic_work_item? &&
+          issuable.epic_work_item? &&
             issuable.synced_epic.present?
         end
       end
