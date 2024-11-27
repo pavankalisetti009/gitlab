@@ -1,9 +1,9 @@
 <script>
 import { isEmpty } from 'lodash';
-import { GlAlert, GlEmptyState, GlButton } from '@gitlab/ui';
+import { GlAlert, GlTooltipDirective, GlEmptyState, GlButton } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
-import { __, s__ } from '~/locale';
+import { __, s__, n__, sprintf } from '~/locale';
 import {
   extractPolicyContent,
   isGroup,
@@ -97,6 +97,9 @@ export default {
     botActionTooltip: s__(
       'SecurityOrchestration|Merge request approval policies allow a maximum 1 bot message action.',
     ),
+    exceedingRulesMessage: s__(
+      'SecurityOrchestration|You can add a maximum of %{rulesCount} %{rules}.',
+    ),
   },
   components: {
     ActionSection,
@@ -111,6 +114,7 @@ export default {
     ScanFilterSelector,
     SettingsSection,
   },
+  directives: { GlTooltip: GlTooltipDirective },
   apollo: {
     linkedSppGroups: {
       query: getSppLinkedProjectsGroups,
@@ -256,6 +260,13 @@ export default {
     },
     isWithinLimit() {
       return this.policy.rules?.length < MAX_ALLOWED_RULES_LENGTH;
+    },
+    addRuleTitle() {
+      const rules = n__('rule', 'rules', this.policy.rules?.length);
+      return sprintf(this.$options.i18n.exceedingRulesMessage, {
+        rulesCount: MAX_ALLOWED_RULES_LENGTH,
+        rules,
+      });
     },
     hasRequireApprovalAction() {
       return this.policy.actions?.some(({ type }) => type === REQUIRE_APPROVAL_TYPE);
@@ -535,13 +546,23 @@ export default {
           @remove="removeRule(index)"
         />
 
-        <div
-          v-if="isWithinLimit"
-          class="security-policies-bg-subtle gl-mb-5 gl-rounded-base gl-p-5"
-        >
-          <gl-button variant="link" data-testid="add-rule" @click="addRule">
-            {{ $options.ADD_RULE_LABEL }}
-          </gl-button>
+        <div class="security-policies-bg-subtle gl-mb-5 gl-rounded-base gl-p-5">
+          <span
+            v-gl-tooltip="{
+              disabled: isWithinLimit,
+              title: addRuleTitle,
+            }"
+            data-testid="add-rule-wrapper"
+          >
+            <gl-button
+              variant="link"
+              data-testid="add-rule"
+              :disabled="!isWithinLimit"
+              @click="addRule"
+            >
+              {{ $options.ADD_RULE_LABEL }}
+            </gl-button>
+          </span>
         </div>
       </dim-disable-container>
     </template>
