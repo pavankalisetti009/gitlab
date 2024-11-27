@@ -14,7 +14,6 @@ module Resolvers
 
       argument :include_unscoped, GraphQL::Types::Boolean,
         description: 'Filter policies that are scoped to the project.',
-        experiment: { milestone: '17.3' },
         required: false,
         default_value: true
 
