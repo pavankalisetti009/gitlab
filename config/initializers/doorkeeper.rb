@@ -124,6 +124,10 @@ Doorkeeper.configure do
 
   # 2 hours in seconds
   # This is also the database default value
+  #
+  # WARNING: If this is less than `300` some unexpected behavior may occur.
+  # For example, the Web IDE has a baked in expiration buffer of 5 minutes, so
+  # the Web IDE would treat all tokens as expired if this value is `300` or less.
   access_token_expires_in 7200
 
   # Use a custom class for generating the application secret.
