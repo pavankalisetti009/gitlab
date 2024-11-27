@@ -2,9 +2,27 @@
 
 module ComplianceManagement
   class PiplUser < ApplicationRecord
+    include EachBatch
+
+    LEVEL_1_NOTIFICATION_TIME = 30.days
+    LEVEL_2_NOTIFICATION_TIME = 53.days
+    LEVEL_3_NOTIFICATION_TIME = 59.days
+
     NOTICE_PERIOD = 60.days
 
     belongs_to :user, optional: false
+
+    scope :days_from_initial_pipl_email, ->(*days) do
+      sent_mail_ranges = days.map do |day_count|
+        day_count.ago.beginning_of_day..day_count.ago.end_of_day
+      end
+
+      includes(:user).where(initial_email_sent_at: sent_mail_ranges)
+    end
+
+    scope :with_due_notifications, -> do
+      days_from_initial_pipl_email(*[LEVEL_1_NOTIFICATION_TIME, LEVEL_2_NOTIFICATION_TIME, LEVEL_3_NOTIFICATION_TIME])
+    end
 
     validates :last_access_from_pipl_country_at, presence: true
 
@@ -36,6 +54,10 @@ module ComplianceManagement
 
     def notification_sent!
       update!(initial_email_sent_at: Time.current)
+    end
+
+    def remaining_pipl_access_days
+      (pipl_access_end_date - Date.current).to_i
     end
   end
 end

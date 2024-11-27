@@ -9,6 +9,93 @@ RSpec.describe ComplianceManagement::PiplUser,
 
   it { is_expected.to validate_presence_of(:last_access_from_pipl_country_at) }
 
+  describe "scopes" do
+    describe '.days_from_initial_pipl_email', time_travel_to: '2024-10-07 10:32:45.000000' do
+      subject(:scope) { described_class.days_from_initial_pipl_email(*days) }
+
+      # time_travel_to doesn't work with before_all and didn't want to use before to
+      # avoid bad performance
+      let!(:pipl_users) do
+        create(:pipl_user, initial_email_sent_at: Time.current)
+        create(:pipl_user, initial_email_sent_at: Time.current - 30.days)
+        create(:pipl_user, initial_email_sent_at: Time.current - 90.days)
+      end
+
+      let(:days) { [0.days, 30.days, 90.days] }
+
+      it 'returns all the user_details' do
+        result = scope
+
+        expect(result.count).to eq(3)
+      end
+
+      context 'when days matches only a part of the details' do
+        let(:days) { [30.days] }
+
+        it 'returns only the matched results' do
+          result = scope
+          expect(result.count).to eq(1)
+          expect(result.first.initial_email_sent_at).to eq(Time.current - 30.days)
+        end
+      end
+
+      context 'when days does not match any records' do
+        let(:days) { [10.days] }
+
+        it 'does not return any results' do
+          result = scope
+
+          expect(result.count).to eq(0)
+        end
+      end
+    end
+
+    describe '.with_due_notifications', time_travel_to: '2024-10-07 10:32:45.000000' do
+      subject(:scope) { described_class.with_due_notifications }
+
+      context 'when all the users match a due date' do
+        # time_travel_to doesn't work with before_all and didn't want to use before to
+        # avoid bad performance
+        let!(:pipl_users) do
+          create(:pipl_user, initial_email_sent_at: Time.current - 30.days)
+          create(:pipl_user, initial_email_sent_at: Time.current - 53.days)
+          create(:pipl_user, initial_email_sent_at: Time.current - 59.days)
+        end
+
+        it 'returns all the user_details' do
+          result = scope
+
+          expect(result.count).to eq(3)
+        end
+      end
+
+      context 'when some users match a due date' do
+        let!(:pipl_users) do
+          create(:pipl_user, initial_email_sent_at: Time.current)
+          create(:pipl_user, initial_email_sent_at: Time.current - 30.days)
+        end
+
+        it 'returns only the matched results' do
+          result = scope
+          expect(result.count).to eq(1)
+          expect(result.first.initial_email_sent_at).to eq(Time.current - 30.days)
+        end
+      end
+
+      context 'when days does not match any records' do
+        let!(:pipl_users) do
+          create(:pipl_user, initial_email_sent_at: Time.current)
+        end
+
+        it 'does not return any results' do
+          result = scope
+
+          expect(result.count).to eq(0)
+        end
+      end
+    end
+  end
+
   describe '.for_user' do
     let_it_be(:pipl_user) { create(:pipl_user) }
     let_it_be(:other_user) { create(:user) }
@@ -118,6 +205,16 @@ RSpec.describe ComplianceManagement::PiplUser,
         .to change { pipl_user.reload.initial_email_sent_at }
               .from(nil)
               .to(Time.current)
+    end
+  end
+
+  describe '#remaining_pipl_access_days' do
+    let(:pipl_user) { create(:pipl_user, initial_email_sent_at: 10.days.ago) }
+
+    subject(:remaining_pipl_access_days) { pipl_user.remaining_pipl_access_days }
+
+    it 'calculate the remaining pipl access days', :freeze_time do
+      expect(remaining_pipl_access_days).to be(50)
     end
   end
 end

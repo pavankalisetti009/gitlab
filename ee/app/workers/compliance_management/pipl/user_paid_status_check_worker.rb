@@ -4,6 +4,7 @@ module ComplianceManagement
   module Pipl
     class UserPaidStatusCheckWorker
       include ApplicationWorker
+      include UserConcern
 
       data_consistency :delayed
 
@@ -27,22 +28,13 @@ module ComplianceManagement
 
       attr_reader :user
 
-      # Guests and minimal access users, while treated as non-billables in
-      # namespaces under Ultimate plans, are also exempted from actions taken to
-      # ensure PIPL compliance
-      def paid?
-        user.authorized_groups.any? do |group|
-          group.root_ancestor.paid?
-        end
-      end
-
       def user_subject_to_pipl?
         # This cache value is used to determine if a user is subject to PIPL
         # which qualifies them for certain actions taken for compliance (e.g.
         # banner and email notifications, etc.).
 
         Rails.cache.fetch([PIPL_SUBJECT_USER_CACHE_KEY, user.id], expires_in: 24.hours) do
-          !paid?
+          !belongs_to_paid_group?(user)
         end
       end
 
