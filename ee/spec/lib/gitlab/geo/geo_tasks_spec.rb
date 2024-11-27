@@ -23,9 +23,9 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
   end
 
   describe '.set_secondary_as_primary' do
-    let_it_be(:primary) { create(:geo_node, :primary) }
+    let_it_be(:primary) { create(:geo_node, :primary, name: Gitlab.config.geo.node_name) }
 
-    let(:secondary) { create(:geo_node) }
+    let!(:secondary) { create(:geo_node) }
 
     let(:execute) do
       Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
@@ -34,8 +34,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
     end
 
     before do
-      stub_current_geo_node(secondary)
-      stub_current_node_name(secondary.name)
+      allow(GeoNode).to receive(:current_node).and_return(secondary)
     end
 
     it 'aborts if the primary node is not set' do
@@ -46,12 +45,14 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       expect { execute }.to raise_error('aborted')
     end
 
-    it 'aborts if current node is not identified' do
-      secondary.destroy!
+    context 'without secondary geo node' do
+      let(:secondary) { nil }
 
-      expect(subject).to receive(:abort).with('Current node is not identified').and_raise('aborted')
+      it 'aborts if current node is not identified' do
+        expect(subject).to receive(:abort).with('Current node is not identified').and_raise('aborted')
 
-      expect { execute }.to raise_error('aborted')
+        expect { execute }.to raise_error('aborted')
+      end
     end
 
     it 'does nothing if run on a node that is not a secondary' do

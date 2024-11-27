@@ -8,6 +8,8 @@ module Gitlab
       # secondary to a primary node, during and also every minute by the `Geo::SidekiqCronConfigWorker` to ensure
       # the correct status of the geo jobs.
 
+      include ::Gitlab::Utils::StrongMemoize
+
       COMMON_GEO_JOBS = %w[
         geo_metrics_update_worker
         geo_verification_cron_worker
@@ -39,9 +41,9 @@ module Gitlab
       def execute
         return unless Geo.connected?
 
-        if Geo.primary?
+        if current_node&.primary?
           configure_primary
-        elsif Geo.secondary?
+        elsif current_node&.secondary?
           configure_secondary
         else
           configure_non_geo_site
@@ -68,6 +70,13 @@ module Gitlab
       end
 
       private
+
+      # We avoid the memoized `Gitlab::Geo.current_node`, in particular because it can be
+      # stale during `rake set_secondary_as_primary`.
+      def current_node
+        GeoNode.current_node
+      end
+      strong_memoize_attr :current_node
 
       def configure_primary
         disable!(SECONDARY_GEO_JOBS)
