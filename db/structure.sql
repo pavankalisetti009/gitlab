@@ -28853,6 +28853,8 @@ CREATE UNIQUE INDEX index_alert_user_mentions_on_alert_id_and_note_id ON alert_m
 
 CREATE UNIQUE INDEX index_alert_user_mentions_on_note_id ON alert_management_alert_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
 
+CREATE INDEX index_alerts_on_project_id_domain_status ON alert_management_alerts USING btree (project_id, domain, status);
+
 CREATE INDEX index_allowed_email_domains_on_group_id ON allowed_email_domains USING btree (group_id);
 
 CREATE INDEX index_analytics_ca_group_stages_on_end_event_label_id ON analytics_cycle_analytics_group_stages USING btree (end_event_label_id);
