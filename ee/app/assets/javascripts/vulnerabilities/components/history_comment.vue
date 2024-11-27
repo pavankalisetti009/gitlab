@@ -198,7 +198,7 @@ export default {
     :action-buttons="actionButtons"
     icon-name="comment"
     icon-class="timeline-icon m-0"
-    class="gl-border-t gl-border-gray-50 gl-p-5"
+    class="gl-border-t gl-border-subtle gl-p-5"
   >
     <div v-safe-html="noteHtml" class="md">
       <gl-loading-icon size="sm" />
