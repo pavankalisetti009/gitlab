@@ -64,37 +64,89 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
           end
         end
 
-        context 'streaming replication' do
-          it 'returns an error when replication is not working' do
-            allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(no_args).with('SELECT * FROM pg_last_wal_receive_lsn() as result').and_return(['result' => 'fake'])
-            allow(ActiveRecord::Base).to receive_message_chain('connection.select_values').with(no_args).with('SELECT pid FROM pg_stat_wal_receiver').and_return([])
+        context 'when geo_postgresql_replication_agnostic is enabled' do
+          context 'streaming replication' do
+            it 'returns no error when replication is not working' do
+              allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(no_args).with('SELECT * FROM pg_last_wal_receive_lsn() as result').and_return(['result' => 'fake'])
+              allow(ActiveRecord::Base).to receive_message_chain('connection.select_values').with(no_args).with('SELECT pid FROM pg_stat_wal_receiver').and_return([])
 
-            expect(subject.perform_checks).to match(/Geo node does not appear to be replicating the database from the primary node/)
+              expect(subject.perform_checks).to be_empty
+            end
+          end
+
+          context 'archive recovery replication' do
+            it 'returns no error when replication is not working' do
+              allow(subject).to receive(:streaming_replication_enabled?).and_return(false)
+              allow(subject).to receive(:archive_recovery_replication_enabled?).and_return(true)
+              allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(no_args).with('SELECT * FROM pg_last_xact_replay_timestamp() as result').and_return([{ 'result' => nil }])
+
+              expect(subject.perform_checks).to be_empty
+            end
+          end
+
+          context 'some sort of replication' do
+            before do
+              allow(subject).to receive(:replication_enabled?).and_return(true)
+            end
+
+            it 'returns no error' do
+              allow(subject).to receive(:archive_recovery_replication_enabled?).and_return(false)
+              allow(subject).to receive(:streaming_replication_enabled?).and_return(false)
+
+              # allow the call with :feature_flag_state_logs first
+              allow(Feature).to receive(:disabled?).and_call_original
+
+              expect(subject.perform_checks).to be_empty
+            end
           end
         end
 
-        context 'archive recovery replication' do
-          it 'returns an error when replication is not working' do
-            allow(subject).to receive(:streaming_replication_enabled?).and_return(false)
-            allow(subject).to receive(:archive_recovery_replication_enabled?).and_return(true)
-            allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(no_args).with('SELECT * FROM pg_last_xact_replay_timestamp() as result').and_return([{ 'result' => nil }])
+        context 'when geo_postgresql_replication_agnostic is disabled' do
+          before do
+            stub_feature_flags(geo_postgresql_replication_agnostic: false)
+          end
 
-            expect(subject.perform_checks).to match(/Geo node does not appear to be replicating the database from the primary node/)
+          context 'streaming replication' do
+            it 'returns an error when replication is not working' do
+              allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(no_args).with('SELECT * FROM pg_last_wal_receive_lsn() as result').and_return(['result' => 'fake'])
+              allow(ActiveRecord::Base).to receive_message_chain('connection.select_values').with(no_args).with('SELECT pid FROM pg_stat_wal_receiver').and_return([])
+
+              expect(subject.perform_checks).to match(/Geo node does not appear to be replicating the database from the primary node/)
+            end
+          end
+
+          context 'archive recovery replication' do
+            it 'returns an error when replication is not working' do
+              allow(subject).to receive(:streaming_replication_enabled?).and_return(false)
+              allow(subject).to receive(:archive_recovery_replication_enabled?).and_return(true)
+              allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(no_args).with('SELECT * FROM pg_last_xact_replay_timestamp() as result').and_return([{ 'result' => nil }])
+
+              expect(subject.perform_checks).to match(/Geo node does not appear to be replicating the database from the primary node/)
+            end
+          end
+
+          context 'some sort of replication' do
+            before do
+              allow(subject).to receive(:replication_enabled?).and_return(true)
+            end
+
+            context 'that is not working' do
+              it 'returns an error' do
+                allow(subject).to receive(:archive_recovery_replication_enabled?).and_return(false)
+                allow(subject).to receive(:streaming_replication_enabled?).and_return(false)
+
+                # allow the call with :feature_flag_state_logs first
+                allow(Feature).to receive(:disabled?).and_call_original
+
+                expect(subject.perform_checks).to match(/Geo node does not appear to be replicating the database from the primary node/)
+              end
+            end
           end
         end
 
         context 'some sort of replication' do
           before do
             allow(subject).to receive(:replication_enabled?).and_return(true)
-          end
-
-          context 'that is not working' do
-            it 'returns an error' do
-              allow(subject).to receive(:archive_recovery_replication_enabled?).and_return(false)
-              allow(subject).to receive(:streaming_replication_enabled?).and_return(false)
-
-              expect(subject.perform_checks).to match(/Geo node does not appear to be replicating the database from the primary node/)
-            end
           end
 
           context 'that is working' do
