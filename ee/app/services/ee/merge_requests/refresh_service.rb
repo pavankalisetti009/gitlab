@@ -13,6 +13,7 @@ module EE
 
         super
 
+        remove_requested_changes
         update_approvers_for_source_branch_merge_requests
         update_approvers_for_target_branch_merge_requests
 
@@ -127,6 +128,20 @@ module EE
           .including_merge_train
       end
       # rubocop:enable Gitlab/ModuleWithInstanceVariables
+
+      def remove_requested_changes
+        return unless project.feature_available?(:requested_changes_block_merge_request)
+
+        update_reviewer_service = ::MergeRequests::UpdateReviewerStateService
+          .new(project: project, current_user: current_user)
+
+        merge_requests_for_source_branch
+          .select(&:merge_requests_disable_committers_approval?)
+          .each do |merge_request|
+            merge_request.destroy_requested_changes(current_user)
+            update_reviewer_service.execute(merge_request, 'unreviewed')
+          end
+      end
     end
   end
 end

@@ -755,6 +755,62 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
         forked_merge_request.reload
       end
     end
+
+    context 'when user has requested changes' do
+      before do
+        create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project,
+          user: current_user)
+      end
+
+      context 'when project does not have the right license' do
+        before do
+          stub_licensed_features(requested_changes_block_merge_request: false)
+        end
+
+        it 'does not call merge_request.destroy_requested_changes' do
+          expect { subject }.not_to change { merge_request.requested_changes.count }.from(1)
+        end
+      end
+
+      context 'when licensed feature is available' do
+        before do
+          stub_licensed_features(requested_changes_block_merge_request: true)
+        end
+
+        context 'when merge_requests_disable_committers_approval is disabled' do
+          before do
+            project.update!(merge_requests_disable_committers_approval: false)
+          end
+
+          it 'does not call merge_request.destroy_requested_changes' do
+            expect { subject }.not_to change { merge_request.requested_changes.count }.from(1)
+          end
+        end
+
+        context 'when merge_requests_disable_committers_approval is enabled' do
+          before do
+            project.update!(merge_requests_disable_committers_approval: true)
+          end
+
+          it 'calls merge_request.destroy_requested_changes' do
+            expect { subject }.to change { merge_request.requested_changes.count }.from(1).to(0)
+          end
+
+          context 'when user is a reviewer' do
+            before do
+              create(:merge_request_reviewer, merge_request: merge_request, reviewer: current_user, state: 'reviewed')
+              project.add_developer(current_user)
+            end
+
+            it 'updates reviewer state to unreviewed' do
+              subject
+
+              expect(merge_request.merge_request_reviewers.first).to be_unreviewed
+            end
+          end
+        end
+      end
+    end
   end
 
   describe '#abort_ff_merge_requests_with_when_pipeline_succeeds' do
