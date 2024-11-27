@@ -107,6 +107,30 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
               work_item:multi_match_phrase:search_terms])
         end
       end
+
+      context "when add_notes_to_work_item migration is finished" do
+        before do
+          set_elasticsearch_migration_to :add_notes_to_work_items, including: true
+        end
+
+        context 'when search_uses_note_fields feature flag is disabled' do
+          before do
+            stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
+          end
+
+          it 'returns the expected query without the note fields' do
+            assert_fields_in_query(build,
+              without: %w[notes notes_internal])
+          end
+        end
+
+        context 'when search_uses_note_fields feature flag is enabled' do
+          it 'returns the expected query with the note fields' do
+            assert_fields_in_query(build,
+              with: %w[notes notes_internal])
+          end
+        end
+      end
     end
   end
 
@@ -133,6 +157,8 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(true)
       allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
         .with(:add_embedding_to_work_items).and_return(true)
+      allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+        .with(:add_notes_to_work_items).and_return(true)
     end
 
     context 'when we cannot generate embeddings' do
@@ -193,7 +219,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           simple_qs_with_boost = {
             simple_query_string: {
               _name: "work_item:match:search_terms",
-              fields: ["iid^3", "title^2", "description"],
+              fields: ["iid^3", "title^2", "description", "notes", "notes_internal"],
               query: query,
               lenient: true,
               default_operator: :and,
