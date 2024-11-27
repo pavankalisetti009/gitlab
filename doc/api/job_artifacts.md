@@ -350,3 +350,13 @@ curl --request DELETE --header "PRIVATE-TOKEN: <your_access_token>" "https://git
 ```
 
 A response with status `202 Accepted` is returned.
+
+## Troubleshooting
+
+### Downloading `artifacts:reports` files
+
+You might get a `404 Not Found` error when trying to download reports using the job artifacts API.
+
+This issue occurs because [reports](../ci/yaml/index.md#artifactsreports) are not downloadable by default.
+
+To make reports downloadable, add their filenames or `gl-*-report.json` to [`artifacts:paths`](../ci/yaml/index.md#artifactspaths).
