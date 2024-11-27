@@ -5,6 +5,11 @@ RSpec.shared_examples 'issuable link creation with blocking link_type' do
 
   subject { described_class.new(issuable, user, params).execute }
 
+  let(:noteable) { issuable }
+  let(:noteable2) { issuable2 }
+  let(:noteable3) { issuable3 }
+  let(:noteable_link_class) { issuable_link_class }
+
   context 'when is_blocked_by relation is used' do
     before do
       params[:link_type] = 'is_blocked_by'
@@ -22,9 +27,9 @@ RSpec.shared_examples 'issuable link creation with blocking link_type' do
         expect(Issuable::RelatedLinksCreateWorker).to receive(:perform_async) do |args|
           expect(args).to eq(
             {
-              issuable_class: issuable.class.name,
-              issuable_id: issuable.id,
-              link_ids: issuable_link_class.where(target: issuable).last(2).pluck(:id),
+              issuable_class: noteable.class.name,
+              issuable_id: noteable.id,
+              link_ids: noteable_link_class.where(target: noteable).last(2).pluck(:id),
               link_type: 'is_blocked_by',
               user_id: user.id
             }
@@ -33,15 +38,15 @@ RSpec.shared_examples 'issuable link creation with blocking link_type' do
       else
         # First block and blocked_by notes
         expect(SystemNoteService).to receive(:block_issuable)
-                                       .with(issuable2, issuable, user)
+                                       .with(noteable2, noteable, user)
         expect(SystemNoteService).to receive(:blocked_by_issuable)
-                                       .with(issuable, issuable2, user)
+                                       .with(noteable, noteable2, user)
 
         # Second block and blocked_by notes
         expect(SystemNoteService).to receive(:block_issuable)
-                                       .with(issuable3, issuable, user)
+                                       .with(noteable3, noteable, user)
         expect(SystemNoteService).to receive(:blocked_by_issuable)
-                                       .with(issuable, issuable3, user)
+                                       .with(noteable, noteable3, user)
       end
 
       subject
@@ -65,9 +70,9 @@ RSpec.shared_examples 'issuable link creation with blocking link_type' do
         expect(Issuable::RelatedLinksCreateWorker).to receive(:perform_async) do |args|
           expect(args).to eq(
             {
-              issuable_class: issuable.class.name,
-              issuable_id: issuable.id,
-              link_ids: issuable_link_class.where(source: issuable).last(2).pluck(:id),
+              issuable_class: noteable.class.name,
+              issuable_id: noteable.id,
+              link_ids: noteable_link_class.where(source: noteable).last(2).pluck(:id),
               link_type: 'blocks',
               user_id: user.id
             }
@@ -76,15 +81,15 @@ RSpec.shared_examples 'issuable link creation with blocking link_type' do
       else
         # First block and blocked_by notes
         expect(SystemNoteService).to receive(:block_issuable)
-                                       .with(issuable, issuable2, user)
+                                       .with(noteable, noteable2, user)
         expect(SystemNoteService).to receive(:blocked_by_issuable)
-                                       .with(issuable2, issuable, user)
+                                       .with(noteable2, noteable, user)
 
         # Second block and blocked_by notes
         expect(SystemNoteService).to receive(:block_issuable)
-                                       .with(issuable, issuable3, user)
+                                       .with(noteable, noteable3, user)
         expect(SystemNoteService).to receive(:blocked_by_issuable)
-                                       .with(issuable3, issuable, user)
+                                       .with(noteable3, noteable, user)
       end
 
       subject
