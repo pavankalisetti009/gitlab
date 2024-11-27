@@ -195,6 +195,7 @@ RSpec.describe GitlabSubscriptions::AddOnEligibleUsersFinder, feature_category: 
       let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
       let_it_be(:owner) { create(:user, name: 'Owner User') }
       let_it_be(:assigned_user) { create(:user, name: 'Assigned User') }
+      let_it_be(:blocked_assigned_user) { create(:user, :blocked, name: 'Blocked Assigned User') }
       let_it_be(:non_assigned_user) { create(:user, name: 'Non Assigned User') }
 
       before_all do
@@ -203,6 +204,7 @@ RSpec.describe GitlabSubscriptions::AddOnEligibleUsersFinder, feature_category: 
         subgroup.add_developer(non_assigned_user)
         add_on_purchase.assigned_users.create!(user: owner)
         add_on_purchase.assigned_users.create!(user: assigned_user)
+        add_on_purchase.assigned_users.create!(user: blocked_assigned_user)
       end
 
       context 'when filter_by_assigned_seat is true' do
@@ -216,7 +218,7 @@ RSpec.describe GitlabSubscriptions::AddOnEligibleUsersFinder, feature_category: 
             filter_options: filter_options
           )
 
-          expect(finder.execute).to match_array([owner, assigned_user])
+          expect(finder.execute).to match_array([owner, assigned_user, blocked_assigned_user])
         end
       end
 
