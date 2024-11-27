@@ -21,7 +21,7 @@ module Gitlab
 
       def notice_text
         if filtered_config != insights_config
-          s_('Insights|Some items are not visible beacuse the project was filtered out in the insights.yml file (see the projects.only config in the YAML file or the enabled project features (issues, merge requests) in the project settings).')
+          s_('Insights|Some items are not visible because the project was filtered out in the insights.yml file (see the projects.only config in the YAML file or the enabled project features (issues, merge requests) in the project settings).')
         end
       end
 
