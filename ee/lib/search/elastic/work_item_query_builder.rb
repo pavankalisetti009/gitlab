@@ -9,8 +9,7 @@ module Search
       THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
       def build
-        # iid field can be added here as lenient option will pardon format errors, like integer out of range.
-        options[:fields] = options[:fields].presence || %w[iid^3 title^2 description]
+        options[:fields] = fields
 
         query_hash = if hybrid_work_item_search?
                        ::Search::Elastic::Queries.by_knn(query: query, options: options)
@@ -41,6 +40,18 @@ module Search
       end
 
       private
+
+      def fields
+        return options[:fields] if options[:fields]
+
+        # iid field can be added here as lenient option will pardon format errors, like integer out of range.
+        fields = %w[iid^3 title^2 description]
+
+        return fields unless Feature.enabled?(:advanced_search_work_item_uses_note_fields,
+          options[:current_user]) && ::Elastic::DataMigrationService.migration_has_finished?(:add_notes_to_work_items)
+
+        fields + %w[notes notes_internal]
+      end
 
       def get_authorization_filter(query_hash:, options:)
         if options[:group_level_authorization]
