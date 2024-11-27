@@ -21,6 +21,9 @@ describe('RunnerHeader', () => {
           ...runner,
         },
       },
+      stubs: {
+        RunnerUpgradeStatusBadge,
+      },
       ...options,
     });
   };
