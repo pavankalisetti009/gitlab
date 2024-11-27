@@ -159,6 +159,18 @@ panels:
 
 If multiple topics are provided, all topics must match for the project to be included in the results.
 
+### Projects by DORA categories
+
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/408516) in GitLab 17.7.
+
+The **Projects by [DORA](dora_metrics.md) categories** panel is a group-level table that lists the status of the organization's DevOps performance levels across projects.
+
+The table lists all projects with their DORA metrics, aggregating data from child projects in groups and subgroups.
+The metrics are aggregated for the last full calendar month.
+
+You can sort the projects by metric values, helping you identify high, medium, and low-performing projects.
+For further investigation, you can select a project name to drill down into that project's page.
+
 ## Enable or disable overview background aggregation
 
 DETAILS:
