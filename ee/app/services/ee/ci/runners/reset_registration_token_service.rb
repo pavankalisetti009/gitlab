@@ -5,7 +5,6 @@ module EE
     module Runners
       module ResetRegistrationTokenService
         extend ::Gitlab::Utils::Override
-        include ::AuditEvents::Changes
 
         override :execute
         def execute

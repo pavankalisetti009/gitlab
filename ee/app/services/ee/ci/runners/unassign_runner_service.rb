@@ -5,15 +5,12 @@ module EE
     module Runners
       module UnassignRunnerService
         extend ::Gitlab::Utils::Override
-        include ::AuditEvents::Changes
 
         override :execute
         def execute
-          result = super
-
-          audit_event if result.success?
-
-          result
+          super.tap do |result|
+            audit_event if result.success?
+          end
         end
 
         private
