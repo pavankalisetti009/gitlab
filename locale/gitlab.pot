@@ -1209,6 +1209,14 @@ msgid_plural "%{requireStart}Require%{requireEnd} %{approvalsRequired} %{approva
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{resolvedDiscussionsCount} of %{resolvableDiscussionsCount}"
+msgstr ""
+
+msgid "%{resolvedDiscussionsCount} of %{resolvableDiscussionsCount} thread resolved"
+msgid_plural "%{resolvedDiscussionsCount} of %{resolvableDiscussionsCount} threads resolved"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{retryButtonStart}Try again%{retryButtonEnd} or %{newFileButtonStart}attach a new file%{newFileButtonEnd}."
 msgstr ""
 
@@ -5635,6 +5643,11 @@ msgstr ""
 
 msgid "All"
 msgstr ""
+
+msgid "All %{resolvableDiscussionsCount} thread resolved"
+msgid_plural "All %{resolvableDiscussionsCount} threads resolved"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "All (default)"
 msgstr ""
