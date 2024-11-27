@@ -7,7 +7,7 @@ import last90DaysData from 'test_fixtures/api/dora/metrics/daily_change_failure_
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { useFixturesFakeDate } from 'helpers/fake_date';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
+import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
@@ -64,7 +64,7 @@ describe('change_failure_rate_charts.vue', () => {
       .replyOnce(HTTP_STATUS_OK, data);
   };
 
-  const findValueStreamMetrics = () => wrapper.findComponent(LegacyValueStreamMetrics);
+  const findValueStreamMetrics = () => wrapper.findComponent(ValueStreamMetrics);
 
   afterEach(() => {
     mock.restore();
@@ -123,7 +123,7 @@ describe('change_failure_rate_charts.vue', () => {
       it('correctly computes the requestParams', () => {
         const metricsComponent = findValueStreamMetrics();
         expect(metricsComponent.props('requestParams')).toMatchObject({
-          created_after: '2015-06-04',
+          created_after: '2015-06-04T00:00:00+0000',
         });
       });
     });

@@ -12,7 +12,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { useFixturesFakeDate } from 'helpers/fake_date';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
+import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import axios from '~/lib/utils/axios_utils';
@@ -111,7 +111,7 @@ describe('deployment_frequency_charts.vue', () => {
     });
   };
 
-  const findValueStreamMetrics = () => wrapper.findComponent(LegacyValueStreamMetrics);
+  const findValueStreamMetrics = () => wrapper.findComponent(ValueStreamMetrics);
   const findCiCdAnalyticsCharts = () => wrapper.findComponent(CiCdAnalyticsCharts);
   const findDataForecastToggle = () => wrapper.findByTestId('data-forecast-toggle');
   const findExperimentBadge = () => wrapper.findComponent(GlBadge);
@@ -183,7 +183,7 @@ describe('deployment_frequency_charts.vue', () => {
       it('passes the selectedChart correctly and computes the requestParams', () => {
         const metricsComponent = findValueStreamMetrics();
         expect(metricsComponent.props('requestParams')).toMatchObject({
-          created_after: '2015-06-04',
+          created_after: '2015-06-04T00:00:00+0000',
         });
       });
     });
@@ -318,6 +318,9 @@ describe('deployment_frequency_charts.vue', () => {
           doraChartsForecast: true,
         },
       },
+      stubs: {
+        ValueStreamMetrics: true,
+      },
     };
 
     beforeEach(async () => {
@@ -436,6 +439,9 @@ describe('deployment_frequency_charts.vue', () => {
           doraChartsForecast: true,
           useHoltWintersForecastForDeploymentFrequency: true,
         },
+      },
+      stubs: {
+        ValueStreamMetrics: true,
       },
     };
 

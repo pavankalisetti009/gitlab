@@ -1,11 +1,10 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import * as DoraApi from 'ee/api/dora_api';
-import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
-import { toYmd } from '~/analytics/shared/utils';
+import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
-import { METRICS_REQUESTS } from '~/analytics/cycle_analytics/constants';
+import { DORA_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
 import { buildNullSeries } from '../../analytics/shared/utils';
 import ChartTooltipText from '../../analytics/shared/components/chart_tooltip_text.vue';
@@ -37,7 +36,7 @@ export default {
     CiCdAnalyticsCharts,
     DoraChartHeader,
     ChartTooltipText,
-    LegacyValueStreamMetrics,
+    ValueStreamMetrics,
   },
   inject: {
     projectPath: {
@@ -75,7 +74,7 @@ export default {
       }));
     },
     metricsRequestPath() {
-      return this.projectPath || `groups/${this.groupPath}`;
+      return this.projectPath || this.groupPath;
     },
   },
   async mounted() {
@@ -147,11 +146,13 @@ export default {
     },
     getMetricsRequestParams(selectedChart) {
       const {
-        requestParams: { start_date },
+        // eslint-disable-next-line camelcase
+        requestParams: { start_date: created_after, end_date: created_before },
       } = allChartDefinitions[selectedChart];
 
       return {
-        created_after: toYmd(start_date),
+        created_after,
+        created_before,
       };
     },
     formatTooltipText(params) {
@@ -163,11 +164,11 @@ export default {
   areaChartOptions,
   chartDescriptionText,
   chartDocumentationHref,
-  metricsRequest: METRICS_REQUESTS,
   extractTimeToRestoreServiceMetrics,
   i18n: {
     noIncidents: s__('DORA4Metrics|No incidents during this period'),
   },
+  DORA_METRICS_QUERY_TYPE,
 };
 </script>
 <template>
@@ -183,11 +184,11 @@ export default {
       :format-tooltip-text="formatTooltipText"
     >
       <template #metrics="{ selectedChart }">
-        <legacy-value-stream-metrics
+        <value-stream-metrics
           :request-path="metricsRequestPath"
-          :requests="$options.metricsRequest"
           :request-params="getMetricsRequestParams(selectedChart)"
           :filter-fn="$options.extractTimeToRestoreServiceMetrics"
+          :query-type="$options.DORA_METRICS_QUERY_TYPE"
         />
       </template>
       <template #tooltip-title> {{ tooltipTitle }} </template>
