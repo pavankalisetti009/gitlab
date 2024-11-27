@@ -31,6 +31,7 @@ module Search
         pending: 0,
         processing: 1,
         done: 10,
+        skipped: 250,
         failed: 255,
         orphaned: 256
       }
@@ -81,11 +82,19 @@ module Search
         processed_project_identifiers = Set.new
         iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
           orphaned_task_ids = []
+          skipped_task_ids = []
 
           tasks.each do |task|
-            unless task.delete_repo? || task.zoekt_repository&.project
-              orphaned_task_ids << task.id
-              next
+            unless task.delete_repo?
+              unless task.zoekt_repository&.project
+                orphaned_task_ids << task.id
+                next
+              end
+
+              if task.zoekt_repository.failed?
+                skipped_task_ids << task.id
+                next
+              end
             end
 
             next unless processed_project_identifiers.add?(task.project_identifier)
@@ -96,8 +105,8 @@ module Search
           end
 
           tasks.where(id: orphaned_task_ids).update_all(state: :orphaned) if orphaned_task_ids.any?
-
-          tasks.where.not(state: :orphaned).update_all(state: :processing)
+          tasks.where(id: skipped_task_ids).update_all(state: :skipped) if skipped_task_ids.any?
+          tasks.where.not(state: [:orphaned, :skipped]).update_all(state: :processing)
 
           break if count >= limit
         end

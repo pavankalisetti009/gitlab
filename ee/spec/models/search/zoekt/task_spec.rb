@@ -119,6 +119,23 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         expect(orphaned_delete_task.reload.state).to eq('processing')
       end
     end
+
+    context 'with failed repo task' do
+      let_it_be(:failed_repo_indexing_task) { create(:zoekt_task) }
+      let_it_be(:failed_repo_delete_task) { create(:zoekt_task, task_type: :delete_repo) }
+
+      before do
+        failed_repo_indexing_task.zoekt_repository.failed!
+        failed_repo_delete_task.zoekt_repository.failed!
+      end
+
+      it 'marks indexing tasks as skipped' do
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.to change { failed_repo_indexing_task.reload.state }.from('pending').to('skipped')
+        expect(failed_repo_delete_task.reload).to be_processing
+      end
+    end
   end
 
   describe 'sliding_list partitioning' do
