@@ -7,5 +7,5 @@ RSpec.describe GitlabSchema.types['MergeAccessLevel'], feature_category: :source
 
   let(:fields) { %i[access_level access_level_description user group] }
 
-  specify { is_expected.to have_graphql_fields(fields).only }
+  it { is_expected.to have_graphql_fields(fields).only }
 end

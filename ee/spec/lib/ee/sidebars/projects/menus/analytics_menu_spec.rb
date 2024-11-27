@@ -18,12 +18,12 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
     describe 'Code Review' do
       let(:item_id) { :code_review }
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -35,18 +35,18 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
         allow(project).to receive(:insights_available?).and_return(insights_available)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       context 'when insights are not available' do
         let(:insights_available) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -58,18 +58,18 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
         stub_licensed_features(issues_analytics: licensed)
       end
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       describe 'when licensed feature issues analytics is not enabled' do
         let(:licensed) { false }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       describe 'when issues are disabled' do
@@ -78,19 +78,19 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
           project.save!
         end
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
     describe 'Merge Request' do
       let(:item_id) { :merge_requests }
 
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
 
       describe 'when merge requests are disabled' do
@@ -99,7 +99,7 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
           project.save!
         end
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -125,7 +125,7 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
           project.add_maintainer(user)
         end
 
-        specify { is_expected.not_to be_nil }
+        it { is_expected.not_to be_nil }
 
         context 'with different user access levels' do
           where(:access_level, :has_menu_item) do
@@ -144,11 +144,11 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
             end
 
             context "when the user is not allowed to view the menu item", if: !params[:has_menu_item] do
-              specify { is_expected.to be_nil }
+              it { is_expected.to be_nil }
             end
 
             context "when the user is allowed to view the menu item", if: params[:has_menu_item] do
-              specify { is_expected.not_to be_nil }
+              it { is_expected.not_to be_nil }
             end
           end
         end
@@ -158,7 +158,7 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
             stub_licensed_features(combined_project_analytics_dashboards: false)
           end
 
-          specify { is_expected.to be_nil }
+          it { is_expected.to be_nil }
         end
       end
     end

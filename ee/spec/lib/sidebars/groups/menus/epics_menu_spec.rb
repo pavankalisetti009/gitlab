@@ -30,7 +30,7 @@ RSpec.describe Sidebars::Groups::Menus::EpicsMenu, feature_category: :navigation
     describe 'when the user does not have access' do
       let(:user) { nil }
 
-      specify { is_expected.to be_empty }
+      it { is_expected.to be_empty }
     end
   end
 

@@ -24,19 +24,19 @@ RSpec.describe Sidebars::Groups::Menus::WikiMenu, feature_category: :navigation 
     end
 
     context 'when user can access group wiki' do
-      specify { is_expected.to be true }
+      it { is_expected.to be true }
 
       context 'when feature is not enabled' do
         let(:wiki_enabled) { false }
 
-        specify { is_expected.to be false }
+        it { is_expected.to be false }
       end
     end
 
     context 'when user cannot access group wiki' do
       let(:user) { nil }
 
-      specify { is_expected.to be false }
+      it { is_expected.to be false }
     end
   end
 

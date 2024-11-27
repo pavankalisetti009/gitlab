@@ -15,5 +15,5 @@ RSpec.describe GitlabSchema.types['BranchProtection'], feature_category: :source
     ]
   end
 
-  specify { is_expected.to have_graphql_fields(fields).only }
+  it { is_expected.to have_graphql_fields(fields).only }
 end

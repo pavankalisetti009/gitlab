@@ -66,7 +66,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
       context 'when show group discover security option is enabled' do
         let(:show_group_discover_security) { true }
 
-        specify { is_expected.to be true }
+        it { is_expected.to be true }
       end
     end
   end
@@ -75,12 +75,12 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
     subject { described_class.new(context).renderable_items.index { |e| e.item_id == item_id } }
 
     shared_examples 'menu access rights' do
-      specify { is_expected.not_to be_nil }
+      it { is_expected.not_to be_nil }
 
       describe 'when the user does not have access' do
         let(:user) { nil }
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -92,11 +92,11 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
           stub_licensed_features(security_dashboard: true)
         end
 
-        specify { is_expected.not_to be_nil }
+        it { is_expected.not_to be_nil }
       end
 
       context 'when security_dashboard feature is not enabled' do
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -108,11 +108,11 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
           stub_licensed_features(security_dashboard: true)
         end
 
-        specify { is_expected.not_to be_nil }
+        it { is_expected.not_to be_nil }
       end
 
       context 'when security_dashboard feature is not enabled' do
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -128,7 +128,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
       end
 
       context 'when group_level_compliance_dashboard feature is not enabled' do
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -173,7 +173,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
             stub_licensed_features(security_orchestration_policies: false)
           end
 
-          specify { is_expected.to be_nil }
+          it { is_expected.to be_nil }
         end
       end
     end
@@ -194,7 +194,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
           stub_licensed_features(audit_events: false)
         end
 
-        specify { is_expected.to be_nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -205,14 +205,14 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         stub_licensed_features(security_dashboard: false)
       end
 
-      specify { is_expected.to be_nil }
+      it { is_expected.to be_nil }
 
       context 'when security_dashboard feature is enabled' do
         before do
           stub_licensed_features(security_dashboard: true)
         end
 
-        specify { is_expected.not_to be_nil }
+        it { is_expected.not_to be_nil }
       end
     end
   end
