@@ -48,7 +48,7 @@ module CloudConnector
 
         raise 'Cloud Connector: no key found' unless key_data
 
-        ::JWT::JWK.new(OpenSSL::PKey::RSA.new(key_data))
+        ::JWT::JWK.new(OpenSSL::PKey::RSA.new(key_data), kid_generator: ::JWT::JWK::Thumbprint)
       end
 
       def scopes_for(resource)
