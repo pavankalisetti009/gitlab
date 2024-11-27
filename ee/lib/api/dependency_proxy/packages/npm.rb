@@ -28,15 +28,9 @@ module API
           end
 
           def package
-            if Feature.enabled?(:npm_extract_npm_package_model, Feature.current_request)
-              ::Packages::Npm::Package
-                .for_projects(project)
-                .by_name_and_file_name(declared_params[:package_name], declared_params[:file_name])
-            else
-              project.packages
-                     .npm
-                     .by_name_and_file_name(declared_params[:package_name], declared_params[:file_name])
-            end
+            ::Packages::Npm::Package
+              .for_projects(project)
+              .by_name_and_file_name(declared_params[:package_name], declared_params[:file_name])
           rescue ActiveRecord::RecordNotFound
             # we can't let the error bubble up. Instead, we need to return the nil value.
             nil

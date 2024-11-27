@@ -39127,9 +39127,6 @@ msgstr ""
 msgid "Package type must be Maven"
 msgstr ""
 
-msgid "Package type must be NPM"
-msgstr ""
-
 msgid "Package type must be NuGet"
 msgstr ""
 
