@@ -59,10 +59,6 @@ describe('Ai Response Subscriptions', () => {
   afterEach(() => {
     jest.clearAllMocks();
     duoChatGlobalState.commands = [];
-
-    if (wrapper) {
-      wrapper.destroy();
-    }
   });
 
   describe('Subscriptions', () => {
