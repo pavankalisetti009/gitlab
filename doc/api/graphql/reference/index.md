@@ -9136,6 +9136,10 @@ Input type: `RunnersExportUsageInput`
 
 ### `Mutation.runnersRegistrationTokenReset`
 
+DETAILS:
+**Deprecated** in GitLab 17.7.
+Underlying feature was deprecated in 15.6 and will be removed in 18.0.
+
 Input type: `RunnersRegistrationTokenResetInput`
 
 #### Arguments
