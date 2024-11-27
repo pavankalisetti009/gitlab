@@ -171,6 +171,13 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         )
       end
     end
+
+    context 'when there is no user' do
+      let(:user) { nil }
+      let(:enabled_by_namespace_ids) { [] }
+
+      it { is_expected.to match(expected_headers.merge('X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '')) }
+    end
   end
 
   describe '.public_headers' do
