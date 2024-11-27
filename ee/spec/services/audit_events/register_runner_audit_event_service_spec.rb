@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :audit_events do
+RSpec.describe AuditEvents::RegisterRunnerAuditEventService, feature_category: :runner do
   let_it_be(:user) { create(:user) }
 
   let(:author) { 'b6bce79c3a' }

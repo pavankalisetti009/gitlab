@@ -5,16 +5,12 @@ module EE
     module Runners
       module RegisterRunnerService
         extend ::Gitlab::Utils::Override
-        include ::AuditEvents::Changes
 
         override :execute
         def execute
-          result = super
-          runner = result.payload[:runner] if result.success?
-
-          audit_event(runner) if result.success?
-
-          result
+          super.tap do |result|
+            audit_event(result.payload[:runner]) if result.success?
+          end
         end
 
         private
