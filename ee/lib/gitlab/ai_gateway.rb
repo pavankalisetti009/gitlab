@@ -47,7 +47,7 @@ module Gitlab
     end
 
     def self.headers(user:, service:, agent: nil, lsp_version: nil)
-      allowed_by_namespace_ids = user&.allowed_by_namespace_ids(service.name)
+      allowed_by_namespace_ids = user&.allowed_by_namespace_ids(service.name) || []
 
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
