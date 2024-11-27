@@ -1,6 +1,7 @@
 <% if llm_patch.present? %>
 <% if description_options&.dig(:vulnerable_mr) %>
-Vulnerability finding detected in merge request: <%= merge_request_url(description_options[:vulnerable_mr]) + '+s' %>
+<% mr_url = description_options.dig(:vulnerable_mr).then { |mr| Gitlab::Routing.url_helpers.project_merge_request_url(mr.target_project, mr) } %>
+Vulnerability finding detected in merge request: <%= "#{mr_url}+s" %>
 <% else %>
 MR created from vulnerability: [<%= vulnerability.title %>](<%= vulnerability_url(vulnerability) %>)
 <% end %>
