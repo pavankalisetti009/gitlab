@@ -60,7 +60,7 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
           runner.reload
 
           expect(runner.owner).to eq(owner_project)
-          expect(runner.runner_projects.order(:id).map(&:project_id)).to eq([owner_project, *new_projects].map(&:id))
+          expect(runner.runner_projects.map(&:project_id)).to eq([owner_project, *new_projects].map(&:id))
         end
       end
 
@@ -73,7 +73,7 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
           runner.reload
 
           expect(runner.owner).to eq(owner_project)
-          expect(runner.runner_projects.order(:id).map(&:project_id)).to eq([owner_project, *new_projects].map(&:id))
+          expect(runner.runner_projects.map(&:project_id)).to eq([owner_project, *new_projects].map(&:id))
         end
       end
 
@@ -205,7 +205,19 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
             runner.reload
 
             expect(runner.owner).to eq(owner_project)
-            expect(runner.runner_projects.order(:id).map(&:project_id)).to eq(new_projects.map(&:id))
+            expect(runner.runner_projects.map(&:project_id)).to eq(new_projects.map(&:id))
+          end
+
+          context 'with different owner' do
+            let(:new_projects) { [project4, project3] }
+
+            it 'assigns correct owner and returns success response' do
+              expect(execute).to be_success
+
+              runner.reload
+
+              expect(runner.owner).to eq(owner_project)
+            end
           end
         end
 

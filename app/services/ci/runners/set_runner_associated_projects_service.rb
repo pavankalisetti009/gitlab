@@ -41,7 +41,9 @@ module Ci
       end
 
       def associate_new_projects(new_project_ids, current_project_ids)
-        missing_projects = Project.id_in(new_project_ids - current_project_ids)
+        missing_projects =
+          Project.id_in(new_project_ids - current_project_ids)
+           .sort_by { |project| new_project_ids.index(project.id) }
 
         error_responses = missing_projects.map do |project|
           Ci::Runners::AssignRunnerService.new(runner, project, current_user, quiet: true)
