@@ -4,6 +4,8 @@ module AuditEvents
   class RunnerAuditEventService < ::AuditEventService
     include SafeRunnerToken
 
+    attr_reader :runner
+
     # Logs an audit event related to a runner event
     #
     # @param [Ci::Runner] runner

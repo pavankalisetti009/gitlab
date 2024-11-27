@@ -7,7 +7,9 @@ module AuditEvents
     end
 
     def message
-      "Unregistered #{runner_type} CI runner"
+      return "Unregistered #{runner_type} CI runner, never contacted" if runner.contacted_at.nil?
+
+      "Unregistered #{runner_type} CI runner, last contacted #{runner.contacted_at}"
     end
   end
 end
