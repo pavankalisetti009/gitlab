@@ -134,20 +134,15 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
       context 'when there are customizable roles defined' do
         let_it_be(:member_user) { create(:user) }
         let_it_be(:sub_group_membership) do
-          maintainer_member_role = create(:member_role, { name: 'custom maintainer',
-                                                          namespace: root_group,
-                                                          base_access_level: ::Gitlab::Access::MAINTAINER })
-          create(:group_member, { user: member_user,
-                                  group: sub_group,
-                                  access_level: Gitlab::Access::MAINTAINER,
-                                  member_role: maintainer_member_role })
+          create(:group_member, {
+            user: member_user,
+            group: sub_group,
+            access_level: Gitlab::Access::MAINTAINER,
+            member_role: create(:member_role, :maintainer, namespace: root_group)
+          })
         end
 
-        let_it_be(:custom_owner_role) do
-          create(:member_role, { name: 'custom owner',
-                                 namespace: root_group,
-                                 base_access_level: ::Gitlab::Access::OWNER })
-        end
+        let_it_be(:custom_owner_role) { create(:member_role, :owner, namespace: root_group) }
 
         let_it_be(:sub_2_group_membership) do
           create(:group_member, { user: member_user,
