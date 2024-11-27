@@ -22,12 +22,9 @@ class GraphqlController < ApplicationController
   # enforced SSO from using an auth token to access the API.
   skip_around_action :set_session_storage, unless: :current_user
 
-  # Allow missing CSRF tokens, this would mean that if a CSRF is invalid or missing,
-  # the user won't be authenticated but can proceed as an anonymous user.
-  #
-  # If a CSRF is valid, the user is authenticated. This makes it easier to play
-  # around in GraphiQL.
-  protect_from_forgery with: :null_session, only: :execute
+  # Only verify CSRF tokens when current_user is set from the session.
+  # Sessionless users authenticated below may access this endpoint without a CSRF token.
+  skip_before_action :verify_authenticity_token, unless: :current_user
 
   # must come first: current_user is set up here
   before_action(only: [:execute]) { authenticate_sessionless_user!(:graphql_api) }

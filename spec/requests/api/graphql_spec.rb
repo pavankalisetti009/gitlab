@@ -235,7 +235,6 @@ RSpec.describe 'GraphQL', feature_category: :shared do
         stub_authentication_activity_metrics do |metrics|
           expect(metrics)
             .to increment(:user_authenticated_counter)
-            .and increment(:user_session_destroyed_counter)
 
           expect(metrics.user_csrf_token_invalid_counter)
             .to receive(:increment).with(controller: 'GraphqlController', auth: 'session')
@@ -243,7 +242,7 @@ RSpec.describe 'GraphQL', feature_category: :shared do
 
         post_graphql(query, headers: { 'X-CSRF-Token' => 'invalid' })
 
-        expect(graphql_data['echo']).to eq('nil says: Hello world')
+        expect(response).to have_gitlab_http_status(:internal_server_error)
       end
 
       it 'authenticates a user with a valid session token' do
@@ -270,19 +269,32 @@ RSpec.describe 'GraphQL', feature_category: :shared do
             .to increment(:user_authenticated_counter)
             .and increment(:user_session_override_counter)
             .and increment(:user_sessionless_authentication_counter)
-
-          ##
-          # TODO: PAT authentication should not trigger `handle_unverified_request` on CSRF token mismatch.
-          #
-          # `auth` type is 'other' here, becase we `handle_unverified_request` before we call sessionless sign in hooks.
-          #
-          expect(metrics.user_csrf_token_invalid_counter)
-            .to receive(:increment).with(controller: 'GraphqlController', auth: 'other')
         end
 
         post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token })
 
         expect(graphql_data['echo']).to eq("\"#{token.user.username}\" says: Hello world")
+      end
+
+      context 'when user also has a valid session' do
+        let_it_be(:other_user) { create(:user) }
+
+        before do
+          login_as(other_user)
+          get('/')
+        end
+
+        it 'authenticates with the session user' do
+          post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token, 'X-CSRF-Token' => session['_csrf_token'] })
+
+          expect(graphql_data['echo']).to eq("\"#{other_user.username}\" says: Hello world")
+        end
+
+        it 'returns 403 when CSRF token is invalid' do
+          post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token, 'X-CSRF-Token' => 'invalid' })
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
       end
 
       shared_examples 'valid token' do
