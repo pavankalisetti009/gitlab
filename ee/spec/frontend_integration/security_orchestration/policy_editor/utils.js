@@ -47,3 +47,6 @@ export const createSppSubscriptionHandler = () =>
       },
     },
   });
+
+export const removeGroupSetting = (yaml) =>
+  yaml.replace('  block_group_branch_modification: true\n', '');

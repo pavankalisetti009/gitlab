@@ -133,10 +133,7 @@ export default {
         }
       },
       skip() {
-        return (
-          isGroup(this.namespaceType) ||
-          !this.glFeatures.scanResultPolicyBlockGroupBranchModification
-        );
+        return isGroup(this.namespaceType);
       },
     },
   },
@@ -179,7 +176,6 @@ export default {
   },
   data() {
     const newPolicyYaml = getPolicyYaml({
-      withGroupSettings: this.glFeatures.scanResultPolicyBlockGroupBranchModification,
       isGroup: isGroup(this.namespaceType),
       newYamlFormat: this.glFeatures.securityPoliciesNewYamlFormat,
     });
@@ -249,8 +245,6 @@ export default {
         options: {
           hasLinkedGroups: Boolean(this.linkedSppGroups.length),
           namespaceType: this.namespaceType,
-          scanResultPolicyBlockGroupBranchModification:
-            this.glFeatures.scanResultPolicyBlockGroupBranchModification,
         },
       });
     },

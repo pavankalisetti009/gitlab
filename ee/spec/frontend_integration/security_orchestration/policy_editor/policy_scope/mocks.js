@@ -1,3 +1,5 @@
+import { removeGroupSetting } from '../utils';
+
 const putPolicyScopeComplianceFrameworksToEndOfYaml = (yaml) =>
   yaml
     .replace('\npolicy_scope:\n  compliance_frameworks:\n    - id: 1\n    - id: 2', '')
@@ -8,8 +10,9 @@ const putPolicyScopeProjectsToEndOfYaml = (yaml) =>
     .replace('\npolicy_scope:\n  projects:\n    excluding:\n      - id: 1\n      - id: 2', '')
     .concat('policy_scope:\n  projects:\n    excluding:\n      - id: 1\n      - id: 2\n');
 
-const SETTINGS = `approval_settings:
+const GROUP_SETTINGS = `approval_settings:
   block_branch_modification: true
+  block_group_branch_modification: true
   prevent_pushing_and_force_pushing: true
   prevent_approval_by_author: true
   prevent_approval_by_commit_author: true
@@ -55,7 +58,7 @@ policy_scope:
     - id: 2
 `);
 
-export const mockApprovalActionManifest = BASE_POLICY('approval_policy')
+export const mockApprovalActionGroupManifest = BASE_POLICY('approval_policy')
   .concat(
     `policy_scope:
   compliance_frameworks:
@@ -70,11 +73,11 @@ actions:
     enabled: true
 `,
   )
-  .concat(SETTINGS)
+  .concat(GROUP_SETTINGS)
   .concat(FALLBACK);
 
-export const mockApprovalActionProjectManifest = putPolicyScopeComplianceFrameworksToEndOfYaml(
-  mockApprovalActionManifest,
+export const mockApprovalActionProjectManifest = removeGroupSetting(
+  putPolicyScopeComplianceFrameworksToEndOfYaml(mockApprovalActionGroupManifest),
 );
 
 export const EXCLUDING_PROJECTS_MOCKS = {
@@ -117,7 +120,7 @@ actions:
     enabled: true
 `,
     )
-    .concat(SETTINGS)
+    .concat(GROUP_SETTINGS)
     .concat(FALLBACK),
 };
 
@@ -126,7 +129,9 @@ export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
   PIPELINE_EXECUTION: putPolicyScopeProjectsToEndOfYaml(
     EXCLUDING_PROJECTS_MOCKS.PIPELINE_EXECUTION,
   ),
-  APPROVAL_POLICY: putPolicyScopeProjectsToEndOfYaml(EXCLUDING_PROJECTS_MOCKS.APPROVAL_POLICY),
+  APPROVAL_POLICY: removeGroupSetting(
+    putPolicyScopeProjectsToEndOfYaml(EXCLUDING_PROJECTS_MOCKS.APPROVAL_POLICY),
+  ),
 };
 
 const replaceProjectKey = (value) => value.replace('excluding', 'including');
@@ -201,7 +206,7 @@ actions:
     enabled: true
 `,
     )
-    .concat(SETTINGS)
+    .concat(GROUP_SETTINGS)
     .concat(FALLBACK),
 };
 

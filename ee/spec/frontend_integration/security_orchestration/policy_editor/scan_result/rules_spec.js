@@ -97,15 +97,6 @@ describe('Scan result policy rules', () => {
       await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
       await verify({ manifest: mockLicenseApprovalManifest, verifyRuleMode, wrapper });
     });
-
-    it('should select license rule after breaking changes for match on inclusion license', async () => {
-      await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
-      await verify({
-        manifest: mockLicenseApprovalManifest,
-        verifyRuleMode,
-        wrapper,
-      });
-    });
   });
 
   describe('any merge request rule', () => {

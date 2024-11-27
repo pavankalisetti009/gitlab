@@ -12,17 +12,24 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import { createMockGroup } from 'ee_jest/security_orchestration/mocks/mock_data';
 
-const defaultSettings = buildSettingsList();
-
 describe('buildSettingsList', () => {
-  it('returns the default settings with no arguments', () => {
-    expect(buildSettingsList()).toEqual(defaultSettings);
+  it('returns the default project settings with no arguments', () => {
+    expect(buildSettingsList()).toEqual({
+      ...protectedBranchesConfiguration,
+      ...pushingBranchesConfiguration,
+      ...mergeRequestConfiguration,
+    });
   });
 
-  it('returns the default settings when there are no settings', () => {
+  it('returns the default group settings when there are no settings', () => {
     expect(
       buildSettingsList({ settings: undefined, options: { namespaceType: NAMESPACE_TYPES.GROUP } }),
-    ).toEqual(defaultSettings);
+    ).toEqual({
+      ...protectedBranchesConfiguration,
+      ...groupProtectedBranchesConfiguration(false),
+      ...pushingBranchesConfiguration,
+      ...mergeRequestConfiguration,
+    });
   });
 
   it('can update merge request settings for projects', () => {
@@ -37,7 +44,7 @@ describe('buildSettingsList', () => {
     });
   });
 
-  it('can update merge request settings for group w/ scanResultPolicyBlockGroupBranchModification ff', () => {
+  it('can update merge request settings for group', () => {
     const settings = {
       ...pushingBranchesConfiguration,
       ...mergeRequestConfiguration,
@@ -46,10 +53,7 @@ describe('buildSettingsList', () => {
     expect(
       buildSettingsList({
         settings,
-        options: {
-          namespaceType: NAMESPACE_TYPES.GROUP,
-          scanResultPolicyBlockGroupBranchModification: true,
-        },
+        options: { namespaceType: NAMESPACE_TYPES.GROUP },
       }),
     ).toEqual({
       ...protectedBranchesConfiguration,
@@ -58,7 +62,7 @@ describe('buildSettingsList', () => {
     });
   });
 
-  it('can update merge request settings for a group w/ an enabled block_branch_modification setting and w/ scanResultPolicyBlockGroupBranchModification ff', () => {
+  it('can update merge request settings for a group with an enabled block_branch_modification setting', () => {
     const enabledSetting = { [BLOCK_BRANCH_MODIFICATION]: true };
     const settings = {
       ...pushingBranchesConfiguration,
@@ -68,10 +72,7 @@ describe('buildSettingsList', () => {
     expect(
       buildSettingsList({
         settings: enabledSetting,
-        options: {
-          namespaceType: NAMESPACE_TYPES.GROUP,
-          scanResultPolicyBlockGroupBranchModification: true,
-        },
+        options: { namespaceType: NAMESPACE_TYPES.GROUP },
       }),
     ).toEqual({
       ...enabledSetting,
@@ -80,7 +81,7 @@ describe('buildSettingsList', () => {
     });
   });
 
-  it('can update merge request settings for SPP w/ linked groups && w/ scanResultPolicyBlockGroupBranchModification ff', () => {
+  it('can update merge request settings for SPP with linked groups', () => {
     const settings = {
       ...pushingBranchesConfiguration,
       ...mergeRequestConfiguration,
@@ -92,7 +93,6 @@ describe('buildSettingsList', () => {
         options: {
           hasLinkedGroups: true,
           namespaceType: NAMESPACE_TYPES.PROJECT,
-          scanResultPolicyBlockGroupBranchModification: true,
         },
       }),
     ).toEqual({
@@ -102,33 +102,15 @@ describe('buildSettingsList', () => {
     });
   });
 
-  it('can update merge request settings for group w/o scanResultPolicyBlockGroupBranchModification ff', () => {
-    const settings = {
-      ...pushingBranchesConfiguration,
-      ...mergeRequestConfiguration,
-      [PREVENT_APPROVAL_BY_AUTHOR]: false,
-    };
-    expect(
-      buildSettingsList({
-        settings,
-        options: {
-          namespaceType: NAMESPACE_TYPES.GROUP,
-          scanResultPolicyBlockGroupBranchModification: false,
-        },
-      }),
-    ).toEqual({
-      ...protectedBranchesConfiguration,
-      ...settings,
-    });
-  });
-
-  it('has fall back values for settings', () => {
+  it('has fallback values for settings', () => {
     const settings = {
       [PREVENT_APPROVAL_BY_AUTHOR]: true,
     };
 
     expect(buildSettingsList({ settings, hasAnyMergeRequestRule: true })).toEqual({
-      ...defaultSettings,
+      ...protectedBranchesConfiguration,
+      ...pushingBranchesConfiguration,
+      ...mergeRequestConfiguration,
       ...settings,
     });
   });

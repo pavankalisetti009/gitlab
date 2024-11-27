@@ -30,7 +30,6 @@ module EE
 
         def blocking_group_branch_modification?(group)
           return false unless group&.licensed_feature_available?(:security_orchestration_policies)
-          return false unless ::Feature.enabled?(:scan_result_policy_block_group_branch_modification, group)
 
           ::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService
             .new(group: group)

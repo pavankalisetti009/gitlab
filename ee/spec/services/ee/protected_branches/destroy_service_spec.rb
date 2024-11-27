@@ -116,16 +116,6 @@ RSpec.describe ProtectedBranches::DestroyService, feature_category: :compliance_
           it 'blocks unprotecting branches' do
             expect { service.execute(protected_branch) }.to raise_error(Gitlab::Access::AccessDeniedError)
           end
-
-          context 'with feature disabled' do
-            before do
-              stub_feature_flags(scan_result_policy_block_group_branch_modification: false)
-            end
-
-            it 'does not block unprotecting branches' do
-              expect { service.execute(protected_branch) }.not_to raise_error
-            end
-          end
         end
       end
     end

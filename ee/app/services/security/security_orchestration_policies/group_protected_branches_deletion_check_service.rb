@@ -4,8 +4,6 @@ module Security
   module SecurityOrchestrationPolicies
     class GroupProtectedBranchesDeletionCheckService < BaseGroupService
       def execute
-        return false unless ::Feature.enabled?(:scan_result_policy_block_group_branch_modification, group)
-
         group.all_security_orchestration_policy_configurations.any? do |config|
           config.active_scan_result_policies.any? { |policy| applies?(policy) }
         end

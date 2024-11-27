@@ -2,6 +2,7 @@ import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { isGroup } from 'ee/security_orchestration/components/utils';
 
 export const BLOCK_BRANCH_MODIFICATION = 'block_branch_modification';
 export const BLOCK_GROUP_BRANCH_MODIFICATION = 'block_group_branch_modification';
@@ -123,19 +124,13 @@ export const PERMITTED_INVALID_SETTINGS = {
  */
 const buildConfig = (
   settings,
-  {
-    hasLinkedGroups = false,
-    namespaceType = NAMESPACE_TYPES.PROJECT,
-    scanResultPolicyBlockGroupBranchModification = false,
-  },
+  { hasLinkedGroups = false, namespaceType = NAMESPACE_TYPES.PROJECT },
 ) => {
   const baseConfigurations = {
     ...protectedBranchesConfiguration,
   };
 
-  const isGroupOrHasLinkedGroups = namespaceType === NAMESPACE_TYPES.GROUP || hasLinkedGroups;
-  const shouldIncludeGroupConfiguration =
-    isGroupOrHasLinkedGroups && scanResultPolicyBlockGroupBranchModification;
+  const shouldIncludeGroupConfiguration = isGroup(namespaceType) || hasLinkedGroups;
 
   if (shouldIncludeGroupConfiguration) {
     Object.assign(

@@ -23,11 +23,11 @@ import {
   buildBotMessageAction,
   DISABLED_BOT_MESSAGE_ACTION,
   SCAN_FINDING,
-  DEFAULT_SCAN_RESULT_POLICY,
-  DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE,
   getInvalidBranches,
   REQUIRE_APPROVAL_TYPE,
+  DEFAULT_SCAN_RESULT_POLICY,
   DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT,
+  DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
 import {
@@ -45,7 +45,7 @@ import {
 import {
   unsupportedManifest,
   APPROVAL_POLICY_DEFAULT_POLICY,
-  APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE,
+  APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
   ASSIGNED_POLICY_PROJECT,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
 import {
@@ -176,7 +176,7 @@ describe('EditorComponent', () => {
   describe('rendering', () => {
     it.each`
       namespaceType              | policy
-      ${NAMESPACE_TYPES.GROUP}   | ${APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE}
+      ${NAMESPACE_TYPES.GROUP}   | ${APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS}
       ${NAMESPACE_TYPES.PROJECT} | ${APPROVAL_POLICY_DEFAULT_POLICY}
     `('should render default policy for a $namespaceType', ({ namespaceType, policy }) => {
       factory({ provide: { namespaceType } });
@@ -186,7 +186,7 @@ describe('EditorComponent', () => {
 
     it.each`
       namespaceType              | manifest
-      ${NAMESPACE_TYPES.GROUP}   | ${DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE}
+      ${NAMESPACE_TYPES.GROUP}   | ${DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS}
       ${NAMESPACE_TYPES.PROJECT} | ${DEFAULT_SCAN_RESULT_POLICY}
     `(
       'should use the correct default policy yaml for a $namespaceType',
@@ -319,7 +319,7 @@ describe('EditorComponent', () => {
       describe('rendering', () => {
         describe.each`
           namespaceType              | manifest
-          ${NAMESPACE_TYPES.GROUP}   | ${DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE}
+          ${NAMESPACE_TYPES.GROUP}   | ${DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS}
           ${NAMESPACE_TYPES.PROJECT} | ${DEFAULT_SCAN_RESULT_POLICY}
         `('$namespaceType', ({ namespaceType, manifest }) => {
           it('should use the correct default policy yaml for a $namespaceType', () => {
@@ -793,7 +793,7 @@ describe('EditorComponent', () => {
       const groupBranchModificationSettingsPolicy = {
         actions: [{ type: BOT_MESSAGE_TYPE, enabled: false }],
         approval_settings: {
-          [BLOCK_GROUP_BRANCH_MODIFICATION]: { enabled: true, exceptions: ['top-level-group'] },
+          [BLOCK_GROUP_BRANCH_MODIFICATION]: { enabled: true, exceptions: [{ id: 1 }] },
         },
       };
       const disabledBotPolicy = { actions: [{ type: BOT_MESSAGE_TYPE, enabled: false }] };
@@ -829,32 +829,15 @@ describe('EditorComponent', () => {
       describe('graphql request', () => {
         it('fetches when namespace type is project', async () => {
           const mockRequestHandler = mockLinkedSppItemsResponse();
-          factory({
-            provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
-            handler: mockRequestHandler,
-          });
+          factory({ handler: mockRequestHandler });
           await waitForPromises();
-          expect(mockRequestHandler).toHaveBeenCalledWith({
-            fullPath: defaultProjectPath,
-          });
+          expect(mockRequestHandler).toHaveBeenCalledWith({ fullPath: defaultProjectPath });
         });
 
         it('does not fetch when namespace type is group', async () => {
           const mockRequestHandler = mockLinkedSppItemsResponse();
           factory({
-            provide: {
-              namespaceType: NAMESPACE_TYPES.GROUP,
-              glFeatures: { scanResultPolicyBlockGroupBranchModification: true },
-            },
-            handler: mockRequestHandler,
-          });
-          await waitForPromises();
-          expect(mockRequestHandler).not.toHaveBeenCalled();
-        });
-
-        it('does not fetch when namespace type is a project and the ff is false', async () => {
-          const mockRequestHandler = mockLinkedSppItemsResponse();
-          factory({
+            provide: { namespaceType: NAMESPACE_TYPES.GROUP },
             handler: mockRequestHandler,
           });
           await waitForPromises();
@@ -863,10 +846,7 @@ describe('EditorComponent', () => {
       });
 
       it('updates the settings if groups are linked', async () => {
-        factory({
-          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
-          handler: mockLinkedSppItemsResponse({ groups: defaultGroups }),
-        });
+        factory({ handler: mockLinkedSppItemsResponse({ groups: defaultGroups }) });
         await waitForPromises();
         expect(findSettingsSection().props('settings')).toEqual({
           ...defaultProjectApprovalConfiguration,
@@ -878,10 +858,7 @@ describe('EditorComponent', () => {
       });
 
       it('does not update the settings if groups are not linked', async () => {
-        factory({
-          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
-          handler: mockLinkedSppItemsResponse(),
-        });
+        factory({ handler: mockLinkedSppItemsResponse() });
         await waitForPromises();
         expect(findSettingsSection().props('settings')).toEqual(
           defaultProjectApprovalConfiguration,
@@ -895,14 +872,13 @@ describe('EditorComponent', () => {
         const blockGroupBranchModificationSetting = {
           [BLOCK_GROUP_BRANCH_MODIFICATION]: {
             enabled: true,
-            exceptions: ['top-level-group'],
+            exceptions: [{ id: 1 }],
           },
         };
         factoryWithExistingPolicy({
           policy: {
             approval_settings: blockGroupBranchModificationSetting,
           },
-          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
           handler: mockLinkedSppItemsResponse({ groups: defaultGroups }),
         });
         await waitForPromises();
@@ -913,7 +889,6 @@ describe('EditorComponent', () => {
 
       it('adds settings for an existing policy without settings', async () => {
         factoryWithExistingPolicy({
-          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
           handler: mockLinkedSppItemsResponse({ groups: defaultGroups }),
         });
         await waitForPromises();

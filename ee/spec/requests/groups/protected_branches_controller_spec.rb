@@ -153,24 +153,6 @@ RSpec.describe Groups::ProtectedBranchesController, feature_category: :source_co
 
           expect(response).to have_gitlab_http_status(:forbidden)
         end
-
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(scan_result_policy_block_group_branch_modification: false)
-          end
-
-          it 'renames' do
-            expect { patch member_path, params: update_params }.to change {
-                                                                     protected_branch.reload.name
-                                                                   }.to(update_params.dig(:protected_branch, :name))
-          end
-
-          it 'responds with 200' do
-            patch member_path, params: update_params
-
-            expect(response).to have_gitlab_http_status(:success)
-          end
-        end
       end
 
       include_context 'with scan result policy blocking protected branches' do
