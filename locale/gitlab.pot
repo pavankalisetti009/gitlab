@@ -59254,6 +59254,9 @@ msgstr ""
 msgid "UsageQuota|Code packages and container images."
 msgstr ""
 
+msgid "UsageQuota|Compute units usage is calculated based on shared runners duration with cost factors applied."
+msgstr ""
+
 msgid "UsageQuota|Compute usage"
 msgstr ""
 
