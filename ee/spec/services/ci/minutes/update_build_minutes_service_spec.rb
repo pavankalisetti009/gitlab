@@ -107,6 +107,14 @@ RSpec.describe Ci::Minutes::UpdateBuildMinutesService, feature_category: :hosted
         end
 
         it_behaves_like 'updates usage', 220, 200 + 1.hour
+
+        it 'creates tracking event' do
+          expect { subject }.to trigger_internal_events("track_ci_build_minutes_with_runner_type")
+            .with(
+              namespace: namespace,
+              additional_properties: { value: 60.0, label: 'instance_type' }
+            )
+        end
       end
 
       context 'when group is subgroup' do
