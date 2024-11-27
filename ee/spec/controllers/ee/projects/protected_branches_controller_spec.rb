@@ -36,7 +36,7 @@ RSpec.describe Projects::ProtectedBranchesController, feature_category: :source_
     end
 
     context 'when a user has custom roles with `admin_protected_branch` assigned' do
-      let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
+      let_it_be(:role) { create(:member_role, :guest, :admin_protected_branch, namespace: group) }
       let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: another_user, group: group) }
 
       context 'when custom_roles feature is available' do
