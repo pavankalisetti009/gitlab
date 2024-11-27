@@ -27,7 +27,7 @@ describe('Comparison table', () => {
     });
 
     it('shows a no data message', () => {
-      expect(wrapper.text()).toEqual('No data available for Group: goo');
+      expect(wrapper.text()).toBe('No data available for Group: goo');
     });
   });
 
@@ -37,7 +37,7 @@ describe('Comparison table', () => {
     });
 
     it('renders a row for each project', () => {
-      expect(findTable().vm.$attrs.items.length).toEqual(mockProjectsDoraMetrics.length);
+      expect(findTable().vm.$attrs.items.length).toBe(mockProjectsDoraMetrics.length);
     });
 
     describe.each(mockProjectsDoraMetrics)(
@@ -48,11 +48,11 @@ describe('Comparison table', () => {
         const findAllMetricTableCells = () => findTableRow().findAllComponents(MetricTableCell);
 
         it('renders the project avatar', () => {
-          expect(findAvatar().props().label).toEqual(name);
-          expect(findAvatar().props().labelLink).toEqual(webUrl);
-          expect(findAvatar().vm.$attrs['entity-id']).toEqual(getIdFromGraphQLId(id));
-          expect(findAvatar().vm.$attrs['entity-name']).toEqual(name);
-          expect(findAvatar().vm.$attrs.src).toEqual(avatarUrl);
+          expect(findAvatar().props().label).toBe(name);
+          expect(findAvatar().props().labelLink).toBe(webUrl);
+          expect(findAvatar().vm.$attrs['entity-id']).toBe(getIdFromGraphQLId(id));
+          expect(findAvatar().vm.$attrs['entity-name']).toBe(name);
+          expect(findAvatar().vm.$attrs.src).toBe(avatarUrl);
         });
 
         it('renders each metric value', () => {
