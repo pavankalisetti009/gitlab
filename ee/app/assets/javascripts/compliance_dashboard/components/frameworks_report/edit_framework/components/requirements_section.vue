@@ -1,11 +1,11 @@
 <script>
 import { GlLoadingIcon, GlTable, GlButton } from '@gitlab/ui';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import { s__, __ } from '~/locale';
+import { createAlert } from '~/alert';
 import { emptyRequirement } from '../constants';
 
-import complianceRequirementControls from '../../../../graphql/compliance_requirement_controls.query.graphql';
+import complianceRequirementControlsQuery from '../../../../graphql/compliance_requirement_controls.query.graphql';
 import EditSection from './edit_section.vue';
 import RequirementModal from './requirement_modal.vue';
 
@@ -30,11 +30,16 @@ export default {
   },
   apollo: {
     complianceRequirementControls: {
-      query: complianceRequirementControls,
-      update: (data) => data?.mockControls?.controls || [],
+      query: complianceRequirementControlsQuery,
+      update: (data) => data.complianceRequirementControls.controlExpressions || [],
       error(e) {
-        Sentry.captureException(e);
-        this.hasQueryError = true;
+        createAlert({
+          message: s__(
+            'ComplianceFrameworks|Error fetching compliance requirements controls data. Please refresh the page.',
+          ),
+          captureException: true,
+          error: e,
+        });
       },
     },
   },
