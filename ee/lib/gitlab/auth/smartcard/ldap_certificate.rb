@@ -17,7 +17,7 @@ module Gitlab
         private
 
         def find_user
-          identity = Identity.find_by_extern_uid(@provider, ldap_user.dn)
+          identity = ::Identity.find_by_extern_uid(@provider, ldap_user.dn)
           identity&.user
         end
 
