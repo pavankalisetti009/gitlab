@@ -319,7 +319,7 @@ export default {
         @cancel="hideEditor"
       />
     </div>
-    <ul class="content-list gl-border-t gl-border-gray-50" data-testid="stream-destinations">
+    <ul class="content-list gl-border-t gl-border-subtle" data-testid="stream-destinations">
       <stream-item
         v-for="item in externalAuditEventDestinations"
         :key="item.id"

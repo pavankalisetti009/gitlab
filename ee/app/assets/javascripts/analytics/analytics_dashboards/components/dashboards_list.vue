@@ -289,7 +289,7 @@ export default {
         )
       }}</gl-alert
     >
-    <ul class="content-list gl-border-t gl-border-gray-50">
+    <ul class="content-list gl-border-t gl-border-subtle">
       <component
         :is="setupComponent"
         v-for="(setupComponent, feature) in activeOnboardingComponents"
