@@ -72,7 +72,7 @@ Possible response status codes:
 | Status | Description |
 |--------|-------------|
 | 200    | Serves the artifacts file. |
-| 404    | Build not found or no artifacts. |
+| 404    | Build not found, no artifacts, or all artifacts are reports. |
 
 ## Download the artifacts archive
 
@@ -147,7 +147,7 @@ Possible response status codes:
 | Status | Description |
 |--------|-------------|
 | 200    | Serves the artifacts file. |
-| 404    | Build not found or no artifacts. |
+| 404    | Build not found, no artifacts, or all artifacts are reports. |
 
 ## Download a single artifact file by job ID
 
@@ -186,7 +186,7 @@ Possible response status codes:
 |--------|-------------|
 | 200    | Sends a single artifact file. |
 | 400    | Invalid path provided. |
-| 404    | Build not found or no file/artifacts |
+| 404    | Build not found, no artifacts, or all artifacts are reports. |
 
 ## Download a single artifact file from specific tag or branch
 
@@ -233,7 +233,7 @@ Possible response status codes:
 |--------|-------------|
 | 200    | Sends a single artifact file. |
 | 400    | Invalid path provided. |
-| 404    | Build not found or no file/artifacts |
+| 404    | Build not found, no artifacts, or all artifacts are reports. |
 
 ## Keep artifacts
 
