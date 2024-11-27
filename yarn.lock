@@ -1407,10 +1407,10 @@
   resolved "https://registry.yarnpkg.com/@gitlab/noop/-/noop-1.0.0.tgz#b1ecb8ae6b2abf9b2e28927e4fbb05b7a1b2704b"
   integrity sha512-nOltttik5o2BjBo8LnyeTFzHoLpMY/XcCVOC+lm9ZwU+ivEam8wafacMF0KTbRn1KVrIoHYdo70QnqS+vJiOVw==
 
-"@gitlab/query-language-rust@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@gitlab/query-language-rust/-/query-language-rust-0.1.1.tgz#970702976ff54536c3c62d374b635304248d3596"
-  integrity sha512-AEXlbbAXuKIkimaWPl+C+PTf5gtGKX1KQ+g49xhYFam+wS3y/z7T0DeNweK7wkWnCh8p54EOHpHR2mgE/ZfLuA==
+"@gitlab/query-language-rust@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@gitlab/query-language-rust/-/query-language-rust-0.1.2.tgz#e71a7f774c370e2cbd388886061c498ff8bda388"
+  integrity sha512-53fjNFdF2j9RTeqROuZbfCIxn5d9Is4gnPAOSQSvsdNFEK5bFTiCo7fdMUcT6RGgCAf/C71F2WNe5Qs0F3N8dg==
 
 "@gitlab/query-language@^0.0.5-a-20241112":
   version "0.0.5-a-20241112"
