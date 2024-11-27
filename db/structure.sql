@@ -201,7 +201,8 @@ CREATE TABLE namespaces (
     shared_runners_enabled boolean DEFAULT true NOT NULL,
     allow_descendants_override_disabled_shared_runners boolean DEFAULT false NOT NULL,
     traversal_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
-    organization_id bigint DEFAULT 1
+    organization_id bigint DEFAULT 1,
+    CONSTRAINT check_2eae3bdf93 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE FUNCTION find_namespaces_by_id(namespaces_id bigint) RETURNS namespaces
@@ -24938,9 +24939,6 @@ ALTER TABLE workspaces
 
 ALTER TABLE security_scans
     ADD CONSTRAINT check_2d56d882f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE namespaces
-    ADD CONSTRAINT check_2eae3bdf93 CHECK ((organization_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE vulnerability_scanners
     ADD CONSTRAINT check_37608c9db5 CHECK ((char_length(vendor) <= 255)) NOT VALID;
