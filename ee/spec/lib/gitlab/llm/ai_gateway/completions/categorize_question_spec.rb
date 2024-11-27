@@ -58,6 +58,29 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
     it 'executes a completion request and calls the response chains' do
       expect_client
       expect(execute[:ai_message].errors).to be_empty
+
+      expect_snowplow_event(
+        category: described_class.to_s,
+        action: 'ai_question_category',
+        requestId: uuid,
+        user: user,
+        context: [{
+          schema: described_class::SCHEMA_URL,
+          data: {
+            'detailed_category' => "Summarize issue",
+            'category' => "Summarize something",
+            'contains_code' => true,
+            'is_related_to_gitlab' => true,
+            'number_of_conversations' => 1,
+            'number_of_questions_in_conversation' => 1,
+            'length_of_questions_in_conversation' => 21,
+            'length_of_questions' => 21,
+            'first_question_after_reset' => false,
+            'time_since_beginning_of_conversation' => 0,
+            'language' => "en"
+          }
+        }]
+      )
     end
 
     context 'when previous answer is present' do
