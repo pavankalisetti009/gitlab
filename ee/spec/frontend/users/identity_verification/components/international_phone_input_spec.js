@@ -11,7 +11,7 @@ import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_OK } from '~/lib/utils/http_status
 import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 
 import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
-import countriesResolver from 'ee/subscriptions/buy_addons_shared/graphql/resolvers';
+import countriesResolver from 'ee/subscriptions/graphql/resolvers';
 
 import InternationalPhoneInput from 'ee/users/identity_verification/components/international_phone_input.vue';
 import GlCountdown from '~/vue_shared/components/gl_countdown.vue';

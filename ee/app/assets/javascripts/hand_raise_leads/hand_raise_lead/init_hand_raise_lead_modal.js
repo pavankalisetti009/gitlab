@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { PQL_MODAL_ID } from 'ee/hand_raise_leads/hand_raise_lead/constants';
-import apolloProvider from 'ee/subscriptions/buy_addons_shared/graphql';
+import apolloProvider from 'ee/subscriptions/graphql/graphql';
 import HandRaiseLeadModal from './components/hand_raise_lead_modal.vue';
 
 export default (function initHandRaiseLeadModal() {
