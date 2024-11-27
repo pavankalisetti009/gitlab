@@ -303,6 +303,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
         %w[build deploy]      | %w[deploy test build]
         %w[deploy test build] | %w[build deploy]
         %w[deploy test build] | %w[build other]
+        %w[deploy test]       | %w[build policy-build test policy-test deploy]
       end
 
       with_them do
