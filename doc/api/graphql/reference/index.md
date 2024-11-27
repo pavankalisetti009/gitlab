@@ -8376,8 +8376,10 @@ Input type: `ProjectSecretCreateInput`
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mutationprojectsecretcreatebranch"></a>`branch` | [`String!`](#string) | Branches that can access the secret. |
 | <a id="mutationprojectsecretcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationprojectsecretcreatedescription"></a>`description` | [`String`](#string) | Description of the project secret. |
+| <a id="mutationprojectsecretcreateenvironment"></a>`environment` | [`String!`](#string) | Environments that can access the secret. |
 | <a id="mutationprojectsecretcreatename"></a>`name` | [`String!`](#string) | Name of the project secret. |
 | <a id="mutationprojectsecretcreateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project of the secret. |
 | <a id="mutationprojectsecretcreatevalue"></a>`value` | [`String!`](#string) | Value of the project secret. |
@@ -33339,7 +33341,9 @@ Representation of a project secret.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="projectsecretbranch"></a>`branch` | [`String!`](#string) | Branches that can access the secret. |
 | <a id="projectsecretdescription"></a>`description` | [`String!`](#string) | Description of the project secret. |
+| <a id="projectsecretenvironment"></a>`environment` | [`String!`](#string) | Environments that can access the secret. |
 | <a id="projectsecretname"></a>`name` | [`String!`](#string) | Name of the project secret. |
 | <a id="projectsecretproject"></a>`project` | [`Project!`](#project) | Project the secret belong to. |
 

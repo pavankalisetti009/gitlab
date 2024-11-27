@@ -57,11 +57,41 @@ module SecretsManagement
       end
     end
 
+    def get_policy(name)
+      policy = read_raw_policy name
+      return AclPolicy.new(name) if policy.nil?
+
+      parsed = Gitlab::Json.parse(policy["policy"])
+      AclPolicy.build_from_hash(name, parsed)
+    end
+
+    def set_policy(policy)
+      save_raw_policy(policy.name, policy.to_openbao_attributes.to_json)
+    end
+
+    def delete_policy(name)
+      handle_optional_request do
+        system_api.policies_delete_acl_policy(name)
+      end
+    end
+
     private
 
     def handle_request
       yield
     rescue OpenbaoClient::ApiError => e
+      raise ApiError, e.message
+    end
+
+    # handle_optional_request returns nil rather than having the OpenAPI
+    # client raise an exception; returning (nil, nil) from a request handler
+    # in OpenBao gets translated to a 404 response, even if the path was
+    # otherwise valid.
+    def handle_optional_request
+      yield
+    rescue OpenbaoClient::ApiError => e
+      return if e.code == 404
+
       raise ApiError, e.message
     end
 
@@ -74,5 +104,28 @@ module SecretsManagement
       OpenbaoClient::SecretsApi.new
     end
     strong_memoize_attr(:secrets_api)
+
+    # save_raw_policy and read_raw_policy handle raw (direct API responses)
+    # and the get_policy/set_policy forms should be preferred as they return
+    # typed (JSON-able) policies. The risk with these endpoints is that
+    # direct usage with HCL will result in non-JSON-parseable policies that
+    # cannot be easily modified by Rails.
+    def save_raw_policy(name, value)
+      handle_request do
+        system_api.policies_write_acl_policy(
+          name,
+          OpenbaoClient::PoliciesWriteAclPolicyRequest.new(
+            policy: value
+          )
+        )
+      end
+    end
+
+    def read_raw_policy(name)
+      handle_optional_request do
+        body = system_api.policies_read_acl_policy(name, debug_return_type: "String")
+        Gitlab::Json.parse(body)["data"]
+      end
+    end
   end
 end

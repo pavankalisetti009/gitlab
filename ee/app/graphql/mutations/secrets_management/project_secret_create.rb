@@ -25,12 +25,20 @@ module Mutations
         required: true,
         description: 'Value of the project secret.'
 
+      argument :environment, GraphQL::Types::String,
+        required: true,
+        description: 'Environments that can access the secret.'
+
+      argument :branch, GraphQL::Types::String,
+        required: true,
+        description: 'Branches that can access the secret.'
+
       field :project_secret,
         Types::SecretsManagement::ProjectSecretType,
         null: true,
         description: "Project secret."
 
-      def resolve(project_path:, name:, value:, description: nil)
+      def resolve(project_path:, name:, value:, environment:, branch:, description: nil)
         project = authorized_find!(project_path: project_path)
 
         if Feature.disabled?(:secrets_manager, project)
@@ -39,7 +47,7 @@ module Mutations
 
         result = ::SecretsManagement::CreateProjectSecretService
           .new(project, current_user)
-          .execute(name: name, description: description, value: value)
+          .execute(name: name, description: description, value: value, environment: environment, branch: branch)
 
         if result.success?
           {
@@ -49,7 +57,7 @@ module Mutations
         else
           {
             project_secret: nil,
-            errors: [result.message]
+            errors: errors_on_object(result.payload[:project_secret])
           }
         end
       end

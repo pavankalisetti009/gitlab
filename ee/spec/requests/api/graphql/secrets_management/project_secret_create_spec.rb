@@ -16,7 +16,9 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
       project_path: project.full_path,
       name: 'TEST_SECRET',
       description: 'test description',
-      value: 'the-secret-value'
+      value: 'the-secret-value',
+      branch: 'main',
+      environment: 'prod'
     }
   end
 
@@ -56,14 +58,19 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
         .to match(a_graphql_entity_for(
           project: a_graphql_entity_for(project),
           name: params[:name],
-          description: params[:description]
+          description: params[:description],
+          branch: params[:branch],
+          environment: params[:environment]
         ))
     end
 
     context 'and service results to a failure' do
       it 'returns the service error' do
         expect_next_instance_of(SecretsManagement::CreateProjectSecretService) do |service|
-          result = ServiceResponse.error(message: 'some error')
+          project_secret = SecretsManagement::ProjectSecret.new
+          project_secret.errors.add(:base, 'some error')
+
+          result = ServiceResponse.error(message: 'some error', payload: { project_secret: project_secret })
           expect(service).to receive(:execute).and_return(result)
         end
 
