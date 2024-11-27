@@ -27,7 +27,7 @@ module CodeSuggestions
       "OCaml" => %w[ml],
       "Perl" => %w[pl],
       "PHP" => %w[php],
-      "Python" => %w[py],
+      "Python" => %w[py ipynb],
       "Ruby" => %w[rb],
       "Rust" => %w[rs],
       "Scala" => %w[scala],
