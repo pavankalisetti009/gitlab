@@ -5,13 +5,12 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
 import * as DoraApi from 'ee/api/dora_api';
 import SafeHtml from '~/vue_shared/directives/safe_html';
-import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
-import { toYmd } from '~/analytics/shared/utils';
+import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
+import { ALL_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
 import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { spriteIcon } from '~/lib/utils/common_utils';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
-import { SUMMARY_METRICS_REQUEST } from '~/analytics/cycle_analytics/constants';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
 import { DEFAULT_SELECTED_CHART } from '~/vue_shared/components/ci_cd_analytics/constants';
 import glFeaturesFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -50,7 +49,7 @@ export default {
   components: {
     CiCdAnalyticsCharts,
     DoraChartHeader,
-    LegacyValueStreamMetrics,
+    ValueStreamMetrics,
     GlToggle,
     GlBadge,
     GlAlert,
@@ -157,7 +156,7 @@ export default {
       });
     },
     metricsRequestPath() {
-      return this.projectPath ? this.projectPath : `groups/${this.groupPath}`;
+      return this.projectPath ? this.projectPath : this.groupPath;
     },
     selectedChartDefinition() {
       return allChartDefinitions[this.selectedChartIndex];
@@ -258,11 +257,13 @@ export default {
     },
     getMetricsRequestParams(selectedChartIndex) {
       const {
-        requestParams: { start_date },
+        // eslint-disable-next-line camelcase
+        requestParams: { start_date: created_after, end_date: created_before },
       } = allChartDefinitions[selectedChartIndex];
 
       return {
-        created_after: toYmd(start_date),
+        created_after,
+        created_before,
       };
     },
     async fetchForecast() {
@@ -345,9 +346,9 @@ export default {
   areaChartOptions,
   chartDescriptionText,
   chartDocumentationHref,
-  metricsRequest: SUMMARY_METRICS_REQUEST,
   filterFn,
   FORECAST_FEEDBACK_ISSUE_URL,
+  ALL_METRICS_QUERY_TYPE,
 };
 </script>
 <template>
@@ -431,11 +432,11 @@ export default {
               {{ forecastRequestErrorMessage }}
             </template>
           </gl-alert>
-          <legacy-value-stream-metrics
+          <value-stream-metrics
             :request-path="metricsRequestPath"
-            :requests="$options.metricsRequest"
             :request-params="getMetricsRequestParams(selectedChart)"
             :filter-fn="$options.filterFn"
+            :query-type="$options.ALL_METRICS_QUERY_TYPE"
           />
         </div>
       </template>
