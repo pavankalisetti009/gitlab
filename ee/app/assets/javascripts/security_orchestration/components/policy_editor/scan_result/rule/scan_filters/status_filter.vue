@@ -79,7 +79,8 @@ export default {
       this.filters = value === NEWLY_DETECTED ? DEFAULT_VULNERABILITY_STATES : [];
       this.$emit('change-group', value);
     },
-    emitVulnerabilityStates() {
+    emitVulnerabilityStates(value) {
+      this.filters = value;
       const selectedStates = Object.values(this.filters).flatMap((states) => states);
       this.$emit('input', selectedStates);
     },
@@ -106,7 +107,7 @@ export default {
           @select="selectVulnerabilityStateGroup"
         />
         <rule-multi-select
-          v-model="filters"
+          :value="filters"
           :item-type-name="$options.i18n.vulnerabilityStates"
           :items="$options.APPROVAL_VULNERABILITY_STATES[selectedFilter]"
           data-testid="vulnerability-states-select"

@@ -103,14 +103,14 @@ describe('StatusFilters', () => {
 
     it.each`
       filters                      | disabled
-      ${filtersNewlyDetected}      | ${undefined}
-      ${filtersPreviouslyExisting} | ${undefined}
-      ${filtersBoth}               | ${'true'}
+      ${filtersNewlyDetected}      | ${false}
+      ${filtersPreviouslyExisting} | ${false}
+      ${filtersBoth}               | ${true}
     `('renders filter with disabled=$disabled for $filters', ({ filters, disabled }) => {
       createComponent({ filters });
 
       for (let i = 0; i < findStatusFilters().length; i += 1) {
-        expect(findStatusFilters().at(i).attributes('disabled')).toEqual(disabled);
+        expect(findStatusFilters().at(i).props('disabled')).toEqual(disabled);
       }
     });
   });
