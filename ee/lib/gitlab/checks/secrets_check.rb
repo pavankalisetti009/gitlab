@@ -99,13 +99,10 @@ module Gitlab
         end
 
         logger.log_timed(LOG_MESSAGES[:secrets_check]) do
-          # Only load exclusions if the feature flag is enabled.
-          exclusions = Feature.enabled?(:secret_detection_project_level_exclusions, project) ? active_exclusions : {}
-
           response = if use_diff_scan?
-                       diff_scan(exclusions)
+                       diff_scan(active_exclusions)
                      else
-                       whole_scan(exclusions)
+                       whole_scan(active_exclusions)
                      end
 
           # Log audit events for exlusions that were applied.
@@ -224,10 +221,8 @@ module Gitlab
         # feasible so instead of doing that, we loop through exclusions that have been applied during
         # scanning of either `rule` or `raw_value` type. For `path` exclusions, we create the audit events
         # when applied while formatting the response.
-        if Feature.enabled?(:secret_detection_project_level_exclusions, project) && !applied_exclusions.empty?
-          applied_exclusions.each do |exclusion|
-            log_exclusion_audit_event(exclusion)
-          end
+        applied_exclusions.each do |exclusion|
+          log_exclusion_audit_event(exclusion)
         end
       end
 
@@ -526,9 +521,6 @@ module Gitlab
       end
 
       def matches_excluded_path?(path)
-        # Skip checking if the changed path matches an excluded path when feature flag is disabled.
-        return false unless ::Feature.enabled?(:secret_detection_project_level_exclusions, project)
-
         # Skip paths that are too deep.
         return false if path.count('/') > MAX_PATH_EXCLUSIONS_DEPTH
 

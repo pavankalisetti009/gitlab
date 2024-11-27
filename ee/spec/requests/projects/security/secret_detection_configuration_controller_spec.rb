@@ -56,23 +56,6 @@ RSpec.describe Projects::Security::SecretDetectionConfigurationController,
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end
-
-      context "when feature flag is disabled" do
-        before do
-          stub_licensed_features(security_dashboard: true, pre_receive_secret_detection: true)
-          stub_feature_flags(secret_detection_project_level_exclusions: false)
-        end
-
-        before_all do
-          project.add_developer(user)
-        end
-
-        it 'sees a 404 error' do
-          get project_security_configuration_secret_detection_path(project)
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
     end
   end
 end
