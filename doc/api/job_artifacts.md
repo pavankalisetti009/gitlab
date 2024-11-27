@@ -184,8 +184,8 @@ Possible response status codes:
 
 | Status | Description |
 |--------|-------------|
-| 200    | Sends a single artifact file |
-| 400    | Invalid path provided |
+| 200    | Sends a single artifact file. |
+| 400    | Invalid path provided. |
 | 404    | Build not found or no file/artifacts |
 
 ## Download a single artifact file from specific tag or branch
@@ -231,8 +231,8 @@ Possible response status codes:
 
 | Status | Description |
 |--------|-------------|
-| 200    | Sends a single artifact file |
-| 400    | Invalid path provided |
+| 200    | Sends a single artifact file. |
+| 400    | Invalid path provided. |
 | 404    | Build not found or no file/artifacts |
 
 ## Keep artifacts
