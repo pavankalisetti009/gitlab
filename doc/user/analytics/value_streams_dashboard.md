@@ -138,6 +138,8 @@ For example, if a project has a high score for deployment frequency (velocity), 
 | Time to restore service | The number of days to restore service when a service incident or a defect that impacts users occurs | ≤1 | 2-6 | ≥7 |
 | Change failure rate  | The percentage of changes to production resulted in degraded service | ≤15% | 16%-44% | ≥45% |
 
+To learn more, see the blog post [Inside DORA Performers score in GitLab Value Streams Dashboard](https://about.gitlab.com/blog/2024/01/18/inside-dora-performers-score-in-gitlab-value-streams-dashboard/).
+
 #### Filter the DORA Performers score by project topics
 
 When you customize dashboards with a YAML configuration,
