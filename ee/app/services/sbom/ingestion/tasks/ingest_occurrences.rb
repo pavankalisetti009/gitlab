@@ -55,46 +55,46 @@ module Sbom
         end
 
         def attributes
-          Gitlab::Database.allow_cross_joins_across_databases(
-            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480330'
-          ) do
-            ensure_uuids
-            occurrence_maps.uniq!(&:uuid)
-            occurrence_maps.filter_map do |occurrence_map|
-              uuid = occurrence_map.uuid
+          ensure_uuids
+          occurrence_maps.uniq!(&:uuid)
+          occurrence_maps.filter_map do |occurrence_map|
+            uuid = occurrence_map.uuid
 
-              vulnerability_data = VulnerabilityData.new(vulnerabilities_info, occurrence_map)
+            vulnerability_data = VulnerabilityData.new(
+              vulnerabilities_info,
+              occurrence_map,
+              project
+            )
 
-              new_attributes = {
-                project_id: project.id,
-                pipeline_id: pipeline.id,
-                component_id: occurrence_map.component_id,
-                component_version_id: occurrence_map.component_version_id,
-                source_id: occurrence_map.source_id,
-                source_package_id: occurrence_map.source_package_id,
-                commit_sha: pipeline.sha,
-                uuid: uuid,
-                package_manager: occurrence_map.packager,
-                input_file_path: occurrence_map.input_file_path,
-                licenses: licenses.fetch(occurrence_map.report_component, []),
-                component_name: occurrence_map.name,
-                highest_severity: vulnerability_data.highest_severity,
-                vulnerability_count: vulnerability_data.count,
-                traversal_ids: project.namespace.traversal_ids,
-                archived: project.archived,
-                ancestors: occurrence_map.ancestors,
-                reachability: occurrence_map.reachability
-              }
+            new_attributes = {
+              project_id: project.id,
+              pipeline_id: pipeline.id,
+              component_id: occurrence_map.component_id,
+              component_version_id: occurrence_map.component_version_id,
+              source_id: occurrence_map.source_id,
+              source_package_id: occurrence_map.source_package_id,
+              commit_sha: pipeline.sha,
+              uuid: uuid,
+              package_manager: occurrence_map.packager,
+              input_file_path: occurrence_map.input_file_path,
+              licenses: licenses.fetch(occurrence_map.report_component, []),
+              component_name: occurrence_map.name,
+              highest_severity: vulnerability_data.highest_severity,
+              vulnerability_count: vulnerability_data.count,
+              traversal_ids: project.namespace.traversal_ids,
+              archived: project.archived,
+              ancestors: occurrence_map.ancestors,
+              reachability: occurrence_map.reachability
+            }
 
-              occurrence_map.vulnerability_ids = vulnerability_data.vulnerability_ids
+            occurrence_map.vulnerability_ids = vulnerability_data.vulnerability_ids
 
-              if attributes_changed?(new_attributes)
-                # Remove updated items from the list so that we don't have to iterate over them
-                # twice when setting the ids in `after_ingest`.
-                existing_occurrences_by_uuid.delete(uuid)
+            if attributes_changed?(new_attributes)
+              # Remove updated items from the list so that we don't have to iterate over them
+              # twice when setting the ids in `after_ingest`.
+              existing_occurrences_by_uuid.delete(uuid)
 
-                new_attributes
-              end
+              new_attributes
             end
           end
         end
