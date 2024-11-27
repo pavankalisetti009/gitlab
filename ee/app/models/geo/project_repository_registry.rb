@@ -33,12 +33,7 @@ module Geo
       end
 
       return out_of_date("it has never been synced") unless last_synced_at
-
-      if Feature.enabled?(:geo_relax_criteria_for_proxying_git_fetch, project)
-        return out_of_date("verification failed") if verification_failed?
-      else
-        return out_of_date("not verified yet") unless verification_succeeded?
-      end
+      return out_of_date("not verified yet") unless verification_succeeded?
 
       # Relatively expensive check
       return synchronous_pipeline_check if synchronous_request_required
