@@ -8646,9 +8646,6 @@ msgstr ""
 msgid "Bi-weekly code coverage"
 msgstr ""
 
-msgid "Billable Users"
-msgstr ""
-
 msgid "Billable users"
 msgstr ""
 
@@ -54965,9 +54962,6 @@ msgstr ""
 msgid "The %{plan_name} is no longer available to purchase. For more information about how this will impact you, check our %{faq_link_start}frequently asked questions%{faq_link_end}."
 msgstr ""
 
-msgid "The %{trueUpLinkStart}true-up model%{trueUpLinkEnd} allows having more users, and additional users will incur a retroactive charge on renewal."
-msgstr ""
-
 msgid "The %{type} contains the following error:"
 msgid_plural "The %{type} contains the following errors:"
 msgstr[0] ""
@@ -60375,9 +60369,6 @@ msgid "Users can select 'Remember me' on sign-in to keep their session active be
 msgstr ""
 
 msgid "Users cannot be added to projects in this group"
-msgstr ""
-
-msgid "Users in License"
 msgstr ""
 
 msgid "Users in subscription"
