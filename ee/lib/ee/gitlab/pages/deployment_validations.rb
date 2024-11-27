@@ -53,8 +53,7 @@ module EE
           return if ::Gitlab::Pages.multiple_versions_enabled_for?(project)
 
           errors.add(:base, _(
-            "Configuring path_prefix is only allowed when using multiple pages deployments per project, " \
-            "which is disabled for your project."
+            "To configure a path_prefix, please add a license to your project."
           ))
         end
       end
