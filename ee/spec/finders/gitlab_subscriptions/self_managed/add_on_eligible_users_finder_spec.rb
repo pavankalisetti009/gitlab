@@ -101,10 +101,12 @@ RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, featu
     context 'when supplied a filter option' do
       let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, :gitlab_duo_pro) }
       let(:assigned_user) { create(:user, name: 'Assigned User') }
+      let(:blocked_assigned_user) { create(:user, :blocked, name: 'Blocked Assigned User') }
       let(:non_assigned_user) { create(:user, name: 'Non Assigned User') }
 
       before do
         add_on_purchase.assigned_users.create!(user: assigned_user)
+        add_on_purchase.assigned_users.create!(user: blocked_assigned_user)
       end
 
       context 'when filter_by_assigned_seat is true' do
@@ -117,7 +119,7 @@ RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, featu
             filter_options: filter_options
           )
 
-          expect(finder.execute).to include(assigned_user)
+          expect(finder.execute).to include(assigned_user, blocked_assigned_user)
           expect(finder.execute).not_to include(non_assigned_user)
         end
       end

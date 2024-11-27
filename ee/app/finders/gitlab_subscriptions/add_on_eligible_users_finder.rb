@@ -132,7 +132,7 @@ module GitlabSubscriptions
       assignments = GitlabSubscriptions::UserAddOnAssignment.for_active_add_on_purchase_ids(add_on_purchase_id)
 
       if filter_options[:filter_by_assigned_seat]
-        collection.id_in(assignments.select(:user_id))
+        User.id_in(assignments.select(:user_id))
       else
         collection.id_not_in(assignments.select(:user_id))
       end
