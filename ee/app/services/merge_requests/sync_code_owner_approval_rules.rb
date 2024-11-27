@@ -26,7 +26,7 @@ module MergeRequests
 
           rule.users = entry.users
           rule.groups = entry.groups
-          rule.role_approvers = entry.role_approvers
+          rule.role_approvers = entry.role_approvers(merge_request.target_project)
           rule.approvals_required = entry.approvals_required
 
           rule.save
