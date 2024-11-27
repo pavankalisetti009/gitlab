@@ -52,6 +52,23 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type:
     end
   end
 
+  describe 'scopes' do
+    describe '.by_framework_and_project' do
+      let_it_be(:framework1) do
+        create(:compliance_framework, namespace: project.group.root_ancestor, name: 'framework1')
+      end
+
+      let_it_be(:setting) do
+        create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework1)
+      end
+
+      it 'returns the setting' do
+        expect(described_class.by_framework_and_project(project.id, framework1.id))
+          .to eq([setting])
+      end
+    end
+  end
+
   describe 'creation of ComplianceManagement::Framework record' do
     subject { create(:compliance_framework_project_setting, :sox, project: project) }
 
@@ -71,55 +88,63 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type:
     end
   end
 
-  describe '.by_framework_and_project' do
-    let_it_be(:framework1) do
-      create(:compliance_framework, namespace: project.group.root_ancestor, name: 'framework1')
-    end
-
-    let_it_be(:setting) do
-      create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework1)
-    end
-
-    it 'returns the setting' do
-      expect(described_class.by_framework_and_project(project.id, framework1.id))
-        .to eq([setting])
-    end
-  end
-
   describe '.find_or_create_by_project' do
-    let_it_be(:framework) { create(:compliance_framework, namespace: project.group.root_ancestor) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:new_framework) { create(:compliance_framework, namespace: group, name: 'New Framework') }
 
-    subject(:assign_framework) { described_class.find_or_create_by_project(project, framework) }
+    subject(:assign_framework) { described_class.find_or_create_by_project(project, new_framework) }
 
-    context 'when there is no compliance framework assigned to a project' do
+    context 'when there is no compliance framework assigned to a project', :freeze_time do
       it 'creates a new record' do
         expect { assign_framework }.to change { described_class.count }.by(1)
       end
 
-      it 'creates the compliance framework project settings' do
-        assign_framework
-
-        setting = described_class.last
+      it 'creates the compliance framework project settings with correct framework' do
+        setting = assign_framework
 
         expect(setting.project).to eq(project)
-        expect(setting.compliance_management_framework).to eq(framework)
+        expect(setting.framework_id).to eq(new_framework.id)
+      end
+
+      it 'sets created_at when creating a new record' do
+        setting = assign_framework
+
+        expect(setting.created_at).to eq(Time.current)
       end
     end
 
     context 'when there is a compliance framework assigned to a project' do
-      let_it_be(:project_setting) { create(:compliance_framework_project_setting, project: project) }
+      let_it_be(:old_framework) { create(:compliance_framework, namespace: group, name: 'Existing Framework') }
+      let_it_be(:existing_setting) do
+        create(:compliance_framework_project_setting,
+          project: project,
+          compliance_management_framework: old_framework)
+      end
 
       it 'does not create a new record' do
         expect { assign_framework }.not_to change { described_class.count }
       end
 
       it 'updates the compliance framework project settings' do
-        assign_framework
+        expect(existing_setting.framework_id).to eq(old_framework.id)
 
-        setting = described_class.last
+        setting = described_class.find_or_create_by_project(project, new_framework)
+        setting.reload
 
-        expect(setting.project).to eq(project)
-        expect(setting.compliance_management_framework).to eq(framework)
+        expect(setting.id).to eq(existing_setting.id)
+        expect(setting.project_id).to eq(project.id)
+        expect(setting.framework_id).to eq(new_framework.id)
+      end
+
+      it 'does not update the created_at timestamp' do
+        original_timestamp = existing_setting.created_at
+
+        travel_to(1.day.from_now) do
+          setting = assign_framework
+
+          expect(setting.created_at.to_i).to eq(original_timestamp.to_i)
+        end
       end
     end
   end

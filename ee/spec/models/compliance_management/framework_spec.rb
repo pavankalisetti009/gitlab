@@ -128,4 +128,49 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
       expect(described_class.search('')).to match_array([framework, framework2])
     end
   end
+
+  describe 'scopes' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:namespace) { create(:group) }
+
+    describe '.with_projects' do
+      before do
+        create(:compliance_framework_project_setting, :first_framework, project: project)
+        create(:compliance_framework_project_setting, :second_framework, project: project)
+      end
+
+      it 'returns frameworks associated with given project ids in order of addition' do
+        frameworks = described_class.with_projects([project.id])
+
+        expect(frameworks.map(&:name)).to eq(['First Framework', 'Second Framework'])
+      end
+    end
+
+    describe '.ordered_by_addition_time_and_pipeline_existence' do
+      before do
+        create(:compliance_framework_project_setting, :first_framework, project: project)
+        create(:compliance_framework_project_setting, :second_framework, project: project)
+        create(:compliance_framework_project_setting, :third_framework, project: project)
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: create(:compliance_framework,
+            pipeline_configuration_full_path: 'path/to/pipeline',
+            name: 'Framework with pipeline'),
+          project: project, created_at: 5.days.ago
+        )
+      end
+
+      it 'left joins the table correctly' do
+        sql = described_class.ordered_by_addition_time_and_pipeline_existence.to_sql
+
+        expect(sql).to include('LEFT OUTER JOIN "project_compliance_framework_settings')
+      end
+
+      it 'returns frameworks in order of their addition time' do
+        ordered_frameworks = described_class.ordered_by_addition_time_and_pipeline_existence
+
+        expect(ordered_frameworks.pluck(:name)).to eq(['Framework with pipeline', 'First Framework',
+          'Second Framework', 'Third Framework'])
+      end
+    end
+  end
 end
