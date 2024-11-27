@@ -2109,9 +2109,6 @@ msgstr ""
 msgid "A non-confidential work item cannot have a confidential parent."
 msgstr ""
 
-msgid "A parent group has selected \"Only direct members.\" It cannot be overridden by this group."
-msgstr ""
-
 msgid "A parent must be provided when bulk updating issuables"
 msgstr ""
 
@@ -5640,9 +5637,6 @@ msgid "All changes are committed"
 msgstr ""
 
 msgid "All child items must be confidential in order to turn on confidentiality."
-msgstr ""
-
-msgid "All direct and inherited members of the group or project"
 msgstr ""
 
 msgid "All environments"
@@ -11010,6 +11004,9 @@ msgid "CascadingSettings|An administrator selected this setting for the instance
 msgstr ""
 
 msgid "CascadingSettings|Enforce for all subgroups"
+msgstr ""
+
+msgid "CascadingSettings|Enforce this setting for all groups on this instance."
 msgstr ""
 
 msgid "CascadingSettings|Lock tooltip icon"
@@ -22584,12 +22581,6 @@ msgid "Expires %{preposition} %{expires_at}"
 msgstr ""
 
 msgid "Expiring soon"
-msgstr ""
-
-msgid "Expiry notification emails about group and project access tokens should be sent to:"
-msgstr ""
-
-msgid "Expiry notification emails about group and project access tokens within this group should be sent to:"
 msgstr ""
 
 msgid "Explain current vulnerability."
@@ -38071,9 +38062,6 @@ msgstr ""
 msgid "Only accessible by %{membersPageLinkStart}project members%{membersPageLinkEnd}. Membership must be explicitly granted."
 msgstr ""
 
-msgid "Only direct members of the group or project"
-msgstr ""
-
 msgid "Only effective when remote storage is enabled. Set to 0 for no size limit."
 msgstr ""
 
@@ -51850,6 +51838,15 @@ msgid "Settings for the License Compliance feature"
 msgstr ""
 
 msgid "Settings saved successfully."
+msgstr ""
+
+msgid "Settings|All direct and inherited members of the group or project"
+msgstr ""
+
+msgid "Settings|Expiry notification emails about group and project access tokens within this group should be sent to:"
+msgstr ""
+
+msgid "Settings|Only direct members of the group or project"
 msgstr ""
 
 msgid "Settings|Unable to load the merge request options settings. Try reloading the page."
