@@ -35,7 +35,7 @@ module API
           {
             'gob' => {
               'backend' => observability_url,
-              'headers' => Gitlab::CloudConnector.headers(current_user).merge({
+              'headers' => ::CloudConnector.headers(current_user).merge({
                 'X-GitLab-Namespace-id' => project.root_ancestor.id.to_s,
                 'X-GitLab-Project-id' => project.id.to_s,
                 'Authorization' => "Bearer #{cc_access_token}",

@@ -83,7 +83,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         'X-Gitlab-Instance-Id' => Gitlab::GlobalAnonymousId.instance_id,
         'X-Gitlab-Global-User-Id' => Gitlab::GlobalAnonymousId.user_id(user),
         'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-        'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
+        'X-Gitlab-Realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{instance_token.token}",
         "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],

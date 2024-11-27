@@ -40,7 +40,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
       before do
         allow(Doorkeeper::OpenidConnect.configuration).to receive(:issuer).and_return(issuer)
         allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_id)
-        allow(Gitlab::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
+        allow(::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
       end
 
       it 'returns the encoded token' do

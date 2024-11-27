@@ -16,7 +16,7 @@ module EE
 
         override :realm
         def realm
-          ::Gitlab::CloudConnector.gitlab_realm
+          ::CloudConnector.gitlab_realm
         end
 
         override :instance_id

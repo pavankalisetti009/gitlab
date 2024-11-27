@@ -22,7 +22,7 @@ module CloudConnector
             issuer: Doorkeeper::OpenidConnect.configuration.issuer,
             audience: backend,
             subject: Gitlab::CurrentSettings.uuid,
-            realm: Gitlab::CloudConnector.gitlab_realm,
+            realm: ::CloudConnector.gitlab_realm,
             scopes: scopes_for(resource),
             ttl: 1.hour,
             extra_claims: extra_claims
