@@ -2403,6 +2403,9 @@ msgstr ""
 msgid "API key"
 msgstr ""
 
+msgid "API token of the Packagist server."
+msgstr ""
+
 msgid "APIFuzzing|$VARIABLE_WITH_PASSWORD"
 msgstr ""
 
@@ -21255,15 +21258,6 @@ msgid "Enter values to populate the .gitlab-ci.yml configuration file."
 msgstr ""
 
 msgid "Enter verification code"
-msgstr ""
-
-msgid "Enter your Packagist server. Defaults to https://packagist.org."
-msgstr ""
-
-msgid "Enter your Packagist token."
-msgstr ""
-
-msgid "Enter your Packagist username."
 msgstr ""
 
 msgid "Enter your password to approve"
@@ -58585,6 +58579,9 @@ msgstr ""
 msgid "URL of the Mock CI integration."
 msgstr ""
 
+msgid "URL of the Packagist server. The default value is `https://packagist.org`."
+msgstr ""
+
 msgid "URL of the Squash TM webhook."
 msgstr ""
 
@@ -60354,6 +60351,9 @@ msgid "Username is already taken."
 msgstr ""
 
 msgid "Username is available."
+msgstr ""
+
+msgid "Username of a Packagist account."
 msgstr ""
 
 msgid "Username of the Jenkins server."
