@@ -22,6 +22,16 @@ module Types
         type: GraphQL::Types::String,
         null: false,
         description: 'Description of the project secret.'
+
+      field :environment,
+        type: GraphQL::Types::String,
+        null: false,
+        description: 'Environments that can access the secret.'
+
+      field :branch,
+        type: GraphQL::Types::String,
+        null: false,
+        description: 'Branches that can access the secret.'
     end
   end
 end

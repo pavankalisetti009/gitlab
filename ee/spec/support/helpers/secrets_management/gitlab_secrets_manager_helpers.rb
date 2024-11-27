@@ -11,6 +11,15 @@ module SecretsManagement
       end
     end
 
+    def clean_all_policies
+      client = secrets_manager_client
+      client.each_acl_policy do |name|
+        next unless name.start_with? "project_"
+
+        client.delete_policy(name)
+      end
+    end
+
     def provision_project_secrets_manager(secrets_manager)
       ProvisionProjectSecretsManagerService.new(secrets_manager).execute
     end
