@@ -16,6 +16,7 @@ import { captureException } from '~/ci/runner/sentry_utils';
 import { pushEECproductAddToCartEvent } from 'ee/google_tag_manager';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import { logError } from '~/lib/logger';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import getCiMinutesUsageNamespace from '../graphql/queries/ci_minutes.query.graphql';
 import getCiMinutesUsageNamespaceProjects from '../graphql/queries/ci_minutes_projects.query.graphql';
 import { ERROR_MESSAGE, LABEL_BUY_ADDITIONAL_MINUTES } from '../constants';
@@ -31,6 +32,7 @@ import MonthlyUnitsUsageSummary from './cards/monthly_units_usage_summary.vue';
 export default {
   name: 'PipelineUsageApp',
   components: {
+    HelpPageLink,
     GlAlert,
     GlButton,
     GlCollapsibleListbox,
@@ -239,6 +241,19 @@ export default {
 
 <template>
   <div>
+    <h3 data-testid="overview-subtitle">{{ __('Pipelines') }}</h3>
+    <p class="gl-mb-0" data-testid="pipelines-description">
+      {{
+        s__(
+          'UsageQuota|Compute units usage is calculated based on shared runners duration with cost factors applied.',
+        )
+      }}
+      <help-page-link href="ci/pipelines/compute_minutes" anchor="compute-usage-calculation">{{
+        __('Learn more')
+      }}</help-page-link
+      >.
+    </p>
+
     <gl-loading-icon
       v-if="isLoadingYearUsageData"
       class="gl-mt-5"

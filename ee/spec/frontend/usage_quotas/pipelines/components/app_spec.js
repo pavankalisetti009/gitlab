@@ -19,6 +19,7 @@ import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { captureException } from '~/ci/runner/sentry_utils';
 import { logError } from '~/lib/logger';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import {
   defaultProvide,
   mockGetCiMinutesUsageNamespace,
@@ -36,6 +37,7 @@ describe('PipelineUsageApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
+  const findDescription = () => wrapper.findByTestId('pipelines-description');
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findOverviewLoadingIcon = () =>
     wrapper.findByTestId('pipelines-overview-loading-indicator');
@@ -106,6 +108,21 @@ describe('PipelineUsageApp', () => {
   beforeEach(() => {
     ciMinutesHandler.mockResolvedValue(mockGetCiMinutesUsageNamespace);
     ciMinutesProjectsHandler.mockResolvedValue(mockGetCiMinutesUsageNamespaceProjects);
+  });
+
+  describe('rendering', () => {
+    it('renders description with a help link', () => {
+      createComponent();
+
+      expect(findDescription().text()).toContain(
+        'Compute units usage is calculated based on shared runners duration with cost factors applied.',
+      );
+
+      expect(findDescription().findComponent(HelpPageLink).attributes()).toMatchObject({
+        anchor: 'compute-usage-calculation',
+        href: 'ci/pipelines/compute_minutes',
+      });
+    });
   });
 
   describe('Buy additional compute minutes Button', () => {
