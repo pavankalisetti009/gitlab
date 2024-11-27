@@ -39,14 +39,26 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
   end
 
   describe '#role_approvers' do
+    let(:project) { build(:project) }
+
     it 'raises an error if no roles have been added' do
-      expect { entry.role_approvers }.to raise_error(/not loaded/)
+      expect { entry.role_approvers(project) }.to raise_error(/not loaded/)
     end
 
     it 'returns the roles in an array' do
       entry.add_matching_roles_from([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
 
-      expect(entry.role_approvers).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
+      expect(entry.role_approvers(project)).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
+    end
+
+    context 'when the codeowner_role_approvers feature flag is disabled' do
+      before do
+        stub_feature_flags(codeowner_role_approvers: false)
+      end
+
+      it 'returns an empty array' do
+        expect(entry.role_approvers(project)).to eq([])
+      end
     end
   end
 
@@ -155,10 +167,12 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
   end
 
   describe '#add_matching_roles_from' do
+    let(:project) { build(:project) }
+
     it 'returns only mentioned roles' do
       entry.add_matching_roles_from([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
 
-      expect(entry.role_approvers).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
+      expect(entry.role_approvers(project)).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
     end
   end
 

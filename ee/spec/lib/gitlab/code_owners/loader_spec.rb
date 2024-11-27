@@ -129,7 +129,7 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
         expect(loader.members.flat_map(&:role).uniq).to match_array(['software_developer'])
 
         entry = loader.entries.first
-        expect(entry.role_approvers).to contain_exactly(30)
+        expect(entry.role_approvers(project)).to contain_exactly(30)
       end
 
       context 'when codeowner_role_approvers feature flag is disabled' do
