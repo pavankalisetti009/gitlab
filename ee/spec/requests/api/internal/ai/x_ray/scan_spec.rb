@@ -194,7 +194,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
       end
 
       before do
-        allow_next_instance_of(::Gitlab::CloudConnector::JSONWebToken) do |token|
+        allow_next_instance_of(::Gitlab::CloudConnector::JsonWebToken) do |token|
           allow(token).to receive(:encode).and_return(ai_gateway_token)
         end
       end
@@ -422,7 +422,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
       end
 
       before do
-        allow_next_instance_of(::Gitlab::CloudConnector::JSONWebToken) do |token|
+        allow_next_instance_of(::Gitlab::CloudConnector::JsonWebToken) do |token|
           allow(token).to receive(:encode).and_return(ai_gateway_token)
         end
       end
