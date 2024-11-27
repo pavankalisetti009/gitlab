@@ -441,7 +441,7 @@ export const mockRequirements = [
     description: 'Controls for SOC2',
     controlExpression: JSON.stringify({
       operator: 'AND',
-      conditions: [{ id: 'minimum_approvals_required_2' }],
+      conditions: [{ id: 'minimum_approvals_required' }],
     }),
   },
   {
@@ -450,7 +450,7 @@ export const mockRequirements = [
     description: 'Controls used by GitLab',
     controlExpression: JSON.stringify({
       operator: 'AND',
-      conditions: [{ id: 'minimum_approvals_required_2' }, { id: 'minimum_approvals_required_3' }],
+      conditions: [{ id: 'minimum_approvals_required' }, { id: 'scanner_sast_running' }],
     }),
   },
 ];
@@ -463,7 +463,20 @@ export const mockRequirementControls = [
       field: 'scanner_sast_running',
       operator: '=',
       value: true,
+      __typename: 'BooleanExpression',
     },
+    __typename: 'ControlExpression',
+  },
+  {
+    id: 'minimum_approvals_required',
+    name: 'Minimum approvals required',
+    expression: {
+      field: 'minimum_approvals_required',
+      operator: '=',
+      value: 1,
+      __typename: 'IntegerExpression',
+    },
+    __typename: 'ControlExpression',
   },
   {
     id: 'minimum_approvals_required_2',
@@ -472,43 +485,9 @@ export const mockRequirementControls = [
       field: 'minimum_approvals_required',
       operator: '=',
       value: 2,
+      __typename: 'IntegerExpression',
     },
-  },
-  {
-    id: 'minimum_approvals_required_3',
-    name: 'At least three approvals',
-    expression: {
-      field: 'minimum_approvals_required',
-      operator: '=',
-      value: 3,
-    },
-  },
-  {
-    id: 'merge_request_prevent_author_approval',
-    name: 'Author approved merge request',
-    expression: {
-      field: 'merge_request_prevent_author_approval',
-      operator: '=',
-      value: true,
-    },
-  },
-  {
-    id: 'merge_request_prevent_committers_approval',
-    name: 'Committers approved merge request',
-    expression: {
-      field: 'merge_request_prevent_committers_approval',
-      operator: '=',
-      value: true,
-    },
-  },
-  {
-    id: 'project_visibility_not_internal',
-    name: 'Internal visibility is forbidden',
-    expression: {
-      field: 'project_visibility',
-      operator: '=',
-      value: 'internal',
-    },
+    __typename: 'ControlExpression',
   },
   {
     id: 'default_branch_protected',
@@ -517,6 +496,8 @@ export const mockRequirementControls = [
       field: 'default_branch_protected',
       operator: '=',
       value: true,
+      __typename: 'BooleanExpression',
     },
+    __typename: 'ControlExpression',
   },
 ];

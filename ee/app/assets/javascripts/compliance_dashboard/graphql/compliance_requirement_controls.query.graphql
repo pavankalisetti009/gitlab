@@ -1,5 +1,25 @@
 query complianceRequirementControls {
-  mockControls @client {
-    controls
+  complianceRequirementControls {
+    controlExpressions {
+      id
+      name
+      expression {
+        ... on BooleanExpression {
+          field
+          operator
+          value
+        }
+        ... on IntegerExpression {
+          field
+          operator
+          value
+        }
+        ... on StringExpression {
+          field
+          operator
+          value
+        }
+      }
+    }
   }
 }
