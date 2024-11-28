@@ -3,6 +3,8 @@ key_path: counts.geo_nodes
 data_category: operational
 description: Total number of sites in a Geo deployment
 product_group: geo
+product_categories:
+- disaster_recovery
 value_type: number
 status: active
 milestone: '11.2'
