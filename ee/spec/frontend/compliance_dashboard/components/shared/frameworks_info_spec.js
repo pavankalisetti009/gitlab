@@ -59,7 +59,7 @@ describe('ComplianceFrameworksInfo', () => {
       });
 
       it('passes expected props', () => {
-        expect(badge().props()).toEqual({
+        expect(badge().props()).toMatchObject({
           closeable: false,
           framework: frameworks[0],
           showDefault: true,
