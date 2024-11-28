@@ -489,12 +489,12 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     # idx2 has all ready zoekt_repositories
     # idx3 does not have zoekt_repositories
     # idx4 all ready zoekt_repositories but zoekt_index is pending
-    it 'moves only initializing indices that have all ready zoekt_repositories to ready' do
-      expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task, 'count' => 1,
+    it 'moves initializing indices to ready that do not have any zoekt_repos or all finished zoekt_repos' do
+      expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task, 'count' => 2,
                                               'message' => 'Set indices ready' }
       )
       execute_task
-      expect([idx, idx2, idx3, idx4].map { |i| i.reload.state }).to eq(%w[initializing ready initializing pending])
+      expect([idx, idx2, idx3, idx4].map { |i| i.reload.state }).to eq(%w[initializing ready ready pending])
     end
   end
 

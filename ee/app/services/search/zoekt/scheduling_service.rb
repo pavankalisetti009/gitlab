@@ -280,7 +280,7 @@ module Search
 
           count = 0
           initializing_indices.each_batch do |batch|
-            records = batch.with_all_repositories_ready
+            records = batch.with_all_finished_repositories
             next if records.empty?
 
             count += records.update_all(state: :ready)

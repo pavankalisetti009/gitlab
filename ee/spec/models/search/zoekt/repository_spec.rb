@@ -37,13 +37,13 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
   end
 
   describe 'scope' do
-    describe '.non_ready' do
+    describe '.uncompleted' do
       let_it_be(:zoekt_repository) { create(:zoekt_repository, state: :pending) }
-      let_it_be(:zoekt_failed_repository) { create(:zoekt_repository, state: :failed) }
 
       it 'returns non ready records' do
         create(:zoekt_repository, state: :ready)
-        expect(described_class.non_ready).to contain_exactly zoekt_repository
+        create(:zoekt_repository, state: :failed)
+        expect(described_class.uncompleted).to contain_exactly zoekt_repository
       end
     end
 
