@@ -47,8 +47,6 @@ module Gitlab
       # Maximum depth any path exclusion can have.
       MAX_PATH_EXCLUSIONS_DEPTH = 20
 
-      # rubocop:disable  Metrics/PerceivedComplexity -- Temporary increase in complexity
-      # rubocop:disable  Metrics/CyclomaticComplexity -- Temporary increase in complexity
       def validate!
         # Return early and do not perform the check:
         #   1. unless license is ultimate
@@ -119,8 +117,6 @@ module Gitlab
           secret_detection_logger.error(message: ERROR_MESSAGES[:scan_initialization_error])
         end
       end
-      # rubocop:enable  Metrics/PerceivedComplexity
-      # rubocop:enable  Metrics/CyclomaticComplexity
 
       private
 
