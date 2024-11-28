@@ -1029,6 +1029,15 @@ To open group settings:
 1. Expand **General pipelines**.
 ```
 
+To open settings for a top-level group:
+
+```markdown
+1. On the left sidebar, select **Search or go to** and find your group.
+   This group must be at the top level.
+1. Select **Settings > CI/CD**.
+1. Expand **General pipelines**.
+```
+
 To open either project or group settings:
 
 ```markdown
@@ -1320,7 +1329,7 @@ When writing alt text:
 - Try to avoid repeating text you've already used in the topic.
 - Do not use inline styling like bold, italics, or backticks.
   Screen readers read `**text**` as `star star text star star`.
-- Use an empty alt text tag (`alt=""`) instead of omitting the tag altogether when the image does not add any unique information to the page. For example, when the image is decorative or is already fully described in the body text or caption. An empty alt tag tells assistive technologies that you have omitted the text intentionally, while a missing alt tag is ambiguous. 
+- Use an empty alt text tag (`alt=""`) instead of omitting the tag altogether when the image does not add any unique information to the page. For example, when the image is decorative or is already fully described in the body text or caption. An empty alt tag tells assistive technologies that you have omitted the text intentionally, while a missing alt tag is ambiguous.
 
 #### Automatic screenshot generator
 
