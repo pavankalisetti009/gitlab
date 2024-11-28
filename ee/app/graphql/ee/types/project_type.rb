@@ -378,6 +378,11 @@ module EE
           method: :configured_to_create_issues_from_vulnerabilities?,
           description: 'Indicates whether Jira issue creation from vulnerabilities is enabled.'
 
+        field :pre_receive_secret_detection_enabled, GraphQL::Types::Boolean,
+          null: true,
+          description: 'Indicates whether Secret Push Protection is on or not for the project.',
+          authorize: :read_pre_receive_secret_detection_info
+
         field :prevent_merge_without_jira_issue_enabled, GraphQL::Types::Boolean,
           null: false,
           method: :prevent_merge_without_jira_issue?,
@@ -558,6 +563,10 @@ module EE
         return unless object.product_analytics_enabled?
 
         object.project_setting.product_analytics_instrumentation_key
+      end
+
+      def pre_receive_secret_detection_enabled
+        object.security_setting.pre_receive_secret_detection_enabled
       end
 
       def api_fuzzing_ci_configuration
