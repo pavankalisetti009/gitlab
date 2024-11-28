@@ -64,13 +64,9 @@ module Security
 
       def create_violations
         attrs = violated_policies.map do |policy|
-          approval_policy_rule = if policy.security_orchestration_policy_configuration.persist_policies?
-                                   policy.approval_policy_rule
-                                 end
-
           {
             scan_result_policy_id: policy.id,
-            approval_policy_rule_id: approval_policy_rule&.id,
+            approval_policy_rule_id: policy.approval_policy_rule&.id,
             merge_request_id: merge_request.id,
             project_id: merge_request.project_id,
             violation_data: violation_data[policy.id],

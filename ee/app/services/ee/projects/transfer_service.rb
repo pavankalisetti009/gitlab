@@ -70,9 +70,7 @@ module EE
         ::Security::ScanResultPolicies::SyncProjectWorker.perform_async(project.id)
 
         project.all_security_orchestration_policy_configurations.each do |configuration|
-          if configuration.persist_policies?
-            ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
-          end
+          ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
         end
       end
 

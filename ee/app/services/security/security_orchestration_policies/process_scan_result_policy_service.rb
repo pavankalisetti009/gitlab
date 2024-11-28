@@ -39,12 +39,8 @@ module Security
             rule, require_approval_action, send_bot_message_action, project, rule_index
           )
 
-          approval_policy_rule = if policy_configuration.persist_policies?
-                                   Security::ApprovalPolicyRule.by_policy_rule_index(policy_configuration,
-                                     policy_index: real_policy_index,
-                                     rule_index: rule_index
-                                   )
-                                 end
+          approval_policy_rule = Security::ApprovalPolicyRule
+            .by_policy_rule_index(policy_configuration, policy_index: real_policy_index, rule_index: rule_index)
 
           if license_finding?(rule)
             if Feature.enabled?(:bulk_create_scan_result_policies, project)

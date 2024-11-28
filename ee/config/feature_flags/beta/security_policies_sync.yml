@@ -1,9 +1,0 @@
----
-name: security_policies_sync
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/416262
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/146504
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/446102
-milestone: '16.11'
-group: group::security policies
-type: beta
-default_enabled: true

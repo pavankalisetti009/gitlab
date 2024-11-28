@@ -12,8 +12,6 @@ module Security
     def perform(configuration_id)
       configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id) || return
 
-      return unless configuration.persist_policies?
-
       configuration.invalidate_policy_yaml_cache
 
       persist_policy(configuration, configuration.scan_result_policies, :approval_policy)

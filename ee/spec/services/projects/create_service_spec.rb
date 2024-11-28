@@ -636,18 +636,6 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
         end
 
-        context 'when security_policies_sync is disabled' do
-          before do
-            stub_feature_flags(security_policies_sync_group: false)
-          end
-
-          it 'does not invoke SyncProjectPoliciesWorker' do
-            expect(::Security::SyncProjectPoliciesWorker).not_to receive(:perform_async)
-
-            response
-          end
-        end
-
         it 'invokes workers', :sidekiq_inline do
           expect(::Security::ProcessScanResultPolicyWorker).to receive(:perform_async).twice.and_call_original
           expect(::Security::SyncProjectPoliciesWorker).to receive(:perform_async).twice.and_call_original
