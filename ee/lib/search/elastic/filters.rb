@@ -244,11 +244,8 @@ module Search
         end
 
         def by_knn(query_hash:, options:)
-          embedding = options[:embeddings]
-
-          return query_hash unless embedding
-
-          return query_hash unless helper.vectors_supported?(:elasticsearch)
+          return query_hash unless options[:embeddings]
+          return query_hash unless options[:vectors_supported] == :elasticsearch
 
           filters = query_hash.dig(:query, :bool, :filter)
 
@@ -455,10 +452,6 @@ module Search
 
           query_hash.dig(*path) << filter_result
           query_hash
-        end
-
-        def helper
-          @helper ||= Gitlab::Elastic::Helper.default
         end
 
         def group_ids_user_has_min_access_as(access_level:, user:, group_ids:)

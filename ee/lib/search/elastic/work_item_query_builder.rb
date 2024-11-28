@@ -4,11 +4,13 @@ module Search
   module Elastic
     class WorkItemQueryBuilder < QueryBuilder
       extend ::Gitlab::Utils::Override
+      include Gitlab::Utils::StrongMemoize
 
       DOC_TYPE = 'work_item'
       THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
       def build
+        options[:vectors_supported] = vectors_supported
         options[:fields] = fields
 
         query_hash = if hybrid_work_item_search?
@@ -40,6 +42,14 @@ module Search
       end
 
       private
+
+      def vectors_supported
+        return false unless hybrid_work_item_search?
+        return :elasticsearch if helper.vectors_supported?(:elasticsearch)
+        return :opensearch if helper.vectors_supported?(:opensearch)
+
+        false
+      end
 
       def fields
         return options[:fields] if options[:fields]
@@ -92,6 +102,7 @@ module Search
         Feature.enabled?(:elasticsearch_work_item_embedding, project, type: :ops) &&
           user.any_group_with_ai_available?
       end
+      strong_memoize_attr :hybrid_work_item_search?
       # rubocop: enable Gitlab/FeatureFlagWithoutActor
 
       override :extra_options
@@ -103,6 +114,10 @@ module Search
           project_visibility_level_field: :project_visibility_level,
           embedding_field: :embedding_0
         }
+      end
+
+      def helper
+        @helper ||= Gitlab::Elastic::Helper.default
       end
 
       def short_query?
