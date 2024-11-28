@@ -165,4 +165,8 @@ RSpec.describe ProjectGroupLink do
       it_behaves_like 'restricted membership by email domain'
     end
   end
+
+  it_behaves_like 'model with member role relation' do
+    subject(:model) { create(:project_group_link) }
+  end
 end
