@@ -174,14 +174,6 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
         container_scan.update!(latest: false)
       end
 
-      context 'when use_latest_security_scans_for_security_policies is disabled' do
-        before do
-          stub_feature_flags(use_latest_security_scans_for_security_policies: false)
-        end
-
-        it { is_expected.to contain_exactly(container_scanning_finding) }
-      end
-
       context 'when latest scan is not successful' do
         let_it_be(:failed_container_scan) do
           create(:security_scan, status: :job_failed, latest: true,

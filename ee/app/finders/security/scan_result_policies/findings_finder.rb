@@ -54,11 +54,7 @@ module Security
                      pipeline.security_findings.by_partition_number(pipeline.security_findings_partition_number)
                    end
 
-        if Feature.enabled?(:use_latest_security_scans_for_security_policies, project)
-          return findings.merge(::Security::Scan.latest_successful)
-        end
-
-        findings
+        findings.merge(::Security::Scan.latest_successful)
       end
 
       def only_new_dismissed_findings?

@@ -1,9 +1,0 @@
----
-name: use_latest_security_scans_for_security_policies
-feature_issue_url:
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/172587
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/505244
-milestone: '17.7'
-group: group::security policies
-type: gitlab_com_derisk
-default_enabled: false
