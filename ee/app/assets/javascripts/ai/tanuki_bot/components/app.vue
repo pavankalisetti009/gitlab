@@ -36,7 +36,7 @@ export default {
       __('How do I create a template?'),
     ],
   },
-  helpPagePath: helpPagePath('policy/experiment-beta-support', { anchor: 'beta' }),
+  helpPagePath: helpPagePath('policy/development_stages_support', { anchor: 'beta' }),
   components: {
     DuoChat,
     DuoChatCallout,

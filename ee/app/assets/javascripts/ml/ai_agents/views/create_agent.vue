@@ -23,7 +23,7 @@ export default {
       loading: false,
     };
   },
-  helpPagePath: helpPagePath('policy/experiment-beta-support', { anchor: 'experiment' }),
+  helpPagePath: helpPagePath('policy/development_stages_support', { anchor: 'experiment' }),
   methods: {
     async createAgent(requestData) {
       this.errorMessage = '';
