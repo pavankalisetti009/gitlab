@@ -91,7 +91,6 @@ ee/spec/frontend/projects/settings/components/shared_runners_toggle_spec.js
 ee/spec/frontend/protected_environments/protected_environment_edit_spec.js
 ee/spec/frontend/related_items_tree/components/related_items_tree_body_spec.js
 ee/spec/frontend/related_items_tree/components/tree_root_spec.js
-ee/spec/frontend/repository/components/blob_button_group_spec.js
 ee/spec/frontend/requirements/components/requirement_item_spec.js
 ee/spec/frontend/requirements/components/requirements_root_spec.js
 ee/spec/frontend/roadmap/components/roadmap_shell_spec.js
