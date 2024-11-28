@@ -65,6 +65,35 @@ module Search
         end
       end
 
+      def self.create_bulk_tasks(task_type: :index_repo, perform_at: Time.zone.now)
+        scope = self
+        unless task_type.to_sym == :delete_repo
+          # Reject the failed repos for non delete_repo task_type
+          scope = scope.where.not(state: :failed)
+        end
+        # Reject the repo_ids which already have the pending tasks for the given task_type
+        scope = scope.where.not(
+          id: Search::Zoekt::Task.pending.where(
+            zoekt_repository_id: scope.select(:id), task_type: task_type
+          ).select(:zoekt_repository_id)
+        )
+        tasks = scope.includes(:zoekt_index).map do |zoekt_repo|
+          Search::Zoekt::Task.new(
+            zoekt_repository_id: zoekt_repo.id,
+            zoekt_node_id: zoekt_repo.zoekt_index.zoekt_node_id,
+            project_identifier: zoekt_repo.project_identifier,
+            task_type: task_type,
+            perform_at: perform_at,
+            created_at: Time.zone.now,
+            updated_at: Time.zone.now
+          )
+        end
+        ApplicationRecord.transaction do
+          scope.pending.update_all(state: :initializing)
+          Search::Zoekt::Task.bulk_insert!(tasks)
+        end
+      end
+
       private
 
       def project_id_matches_project_identifier

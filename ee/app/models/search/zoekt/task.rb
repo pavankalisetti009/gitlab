@@ -5,6 +5,7 @@ module Search
     class Task < ApplicationRecord
       include PartitionedTable
       include EachBatch
+      include BulkInsertSafe
 
       PARTITION_DURATION = 1.day
       PARTITION_CLEANUP_THRESHOLD = 7.days

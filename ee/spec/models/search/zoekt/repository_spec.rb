@@ -213,4 +213,48 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       end
     end
   end
+
+  describe '.create_bulk_tasks', :freeze_time do
+    let_it_be(:zoekt_repo_with_pending_tasks) { create(:zoekt_repository) }
+    let_it_be(:zoekt_repo_with_processing_tasks) { create(:zoekt_repository) }
+    let_it_be(:zoekt_repo_without_tasks) { create(:zoekt_repository) }
+    let_it_be(:failed_zoekt_repo_without_tasks) { create(:zoekt_repository, :failed) }
+
+    before do
+      create(:zoekt_task, :pending, zoekt_repository: zoekt_repo_with_pending_tasks)
+      create(:zoekt_task, :pending, task_type: :delete_repo, zoekt_repository: zoekt_repo_with_pending_tasks)
+      create(:zoekt_task, :processing, zoekt_repository: zoekt_repo_with_processing_tasks)
+      create(:zoekt_task, :processing, task_type: :delete_repo, zoekt_repository: zoekt_repo_with_processing_tasks)
+    end
+
+    context 'when task_type is delete_repo' do
+      it 'creates zoekt_tasks for failed repos and repos which do not have pending tasks' do
+        pending_tasks_count = zoekt_repo_with_pending_tasks.reload.tasks.count
+        processing_tasks_count = zoekt_repo_with_processing_tasks.reload.tasks.count
+        described_class.create_bulk_tasks(task_type: :delete_repo)
+        expect(zoekt_repo_with_pending_tasks.reload.tasks.count).to eq pending_tasks_count
+        expect(zoekt_repo_with_processing_tasks.reload.tasks.count).to eq processing_tasks_count + 1
+        expect(zoekt_repo_without_tasks.reload.tasks.count).to eq 1
+        expect(failed_zoekt_repo_without_tasks.reload.tasks.count).to eq 1
+        expect(zoekt_repo_without_tasks).to be_initializing
+        expect(zoekt_repo_with_processing_tasks).to be_initializing
+        expect(zoekt_repo_with_pending_tasks).to be_pending
+      end
+    end
+
+    context 'when task_type is index_repo' do
+      it 'does not creates tasks for failed repos and creates tasks for repos which do not have pending tasks' do
+        pending_tasks_count = zoekt_repo_with_pending_tasks.reload.tasks.count
+        processing_tasks_count = zoekt_repo_with_processing_tasks.reload.tasks.count
+        described_class.create_bulk_tasks
+        expect(zoekt_repo_with_pending_tasks.reload.tasks.count).to eq pending_tasks_count
+        expect(zoekt_repo_with_processing_tasks.reload.tasks.count).to eq processing_tasks_count + 1
+        expect(zoekt_repo_without_tasks.reload.tasks.count).to eq 1
+        expect(failed_zoekt_repo_without_tasks.reload.tasks.count).to eq 0
+        expect(zoekt_repo_without_tasks).to be_initializing
+        expect(zoekt_repo_with_processing_tasks).to be_initializing
+        expect(zoekt_repo_with_pending_tasks).to be_pending
+      end
+    end
+  end
 end
