@@ -1,10 +1,10 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import FindingsDrawerDetails from '~/diffs/components/shared/findings_drawer_details.vue';
+import FindingsDrawerDetails from 'ee/diffs/components/shared/findings_drawer_details.vue';
 import {
   mockFindingDetected,
   mockFindingsMultiple,
   mockProject,
-} from '../../mock_data/findings_drawer';
+} from 'jest/diffs/mock_data/findings_drawer';
 
 describe('Findings Drawer Details', () => {
   let wrapper;

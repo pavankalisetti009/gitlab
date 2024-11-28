@@ -4,7 +4,7 @@ import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getSeverity } from '~/ci/reports/utils';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
-import FindingsDrawerDetails from '~/diffs/components/shared/findings_drawer_details.vue';
+import FindingsDrawerDetails from './findings_drawer_details.vue';
 
 export const i18n = {
   codeQualityFinding: s__('FindingsDrawer|Code Quality Finding'),

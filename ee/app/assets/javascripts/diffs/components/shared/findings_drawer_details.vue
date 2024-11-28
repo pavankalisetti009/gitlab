@@ -1,8 +1,8 @@
 <script>
 import { GlBadge, GlLink } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import DrawerItem from '~/diffs/components/shared/findings_drawer_item.vue';
 import { SAST_FINDING_DISMISSED } from '~/diffs/constants';
+import DrawerItem from './findings_drawer_item.vue';
 
 export default {
   name: 'FindingsDrawerDetails',

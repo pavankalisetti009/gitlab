@@ -1,4 +1,4 @@
-import FindingsDrawerItem from '~/diffs/components/shared/findings_drawer_item.vue';
+import FindingsDrawerItem from 'ee/diffs/components/shared/findings_drawer_item.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 let wrapper;
