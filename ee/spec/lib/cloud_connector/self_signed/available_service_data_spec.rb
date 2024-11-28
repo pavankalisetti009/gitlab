@@ -68,6 +68,15 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
         expect(actual_kid).to eq(expected_kid)
       end
 
+      it 'does not repeatedly load the validation key' do
+        expect(OpenSSL::PKey::RSA).to receive(:new)
+          .with(expected_key_data)
+          .at_most(:once)
+          .and_return(rsa_key)
+
+        3.times { described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token }
+      end
+
       context 'when cloud_connector_jwt_replace is disabled' do
         before do
           stub_feature_flags(cloud_connector_jwt_replace: false)
@@ -91,7 +100,19 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
     end
 
     context 'when signing key is missing' do
+      let(:fake_key_loader) do
+        Class.new(described_class::CachingKeyLoader) do
+          def self.signing_key
+            load_signing_key # don't actually cache the key
+          end
+        end
+      end
+
       before do
+        stub_const(
+          'CloudConnector::SelfSigned::AvailableServiceData::CachingKeyLoader',
+          fake_key_loader
+        )
         allow(Rails.application.credentials).to receive(:openid_connect_signing_key).and_return(nil)
       end
 

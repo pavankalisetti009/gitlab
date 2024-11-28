@@ -5,6 +5,31 @@ module CloudConnector
     class AvailableServiceData < BaseAvailableServiceData
       extend ::Gitlab::Utils::Override
 
+      class CachingKeyLoader
+        delegate :signing_key, to: :class
+
+        class << self
+          # Cache the key in process memory so that we don't perform disk IO every time
+          # an access token is created. This function should be called lazily the first
+          # time the signing key is needed.
+          def signing_key
+            @signing_key ||= load_signing_key
+          end
+
+          private
+
+          def load_signing_key
+            key_data = Rails.application.credentials.openid_connect_signing_key
+
+            raise 'Cloud Connector: no key found' unless key_data
+
+            rsa_key = OpenSSL::PKey::RSA.new(key_data)
+
+            ::JWT::JWK.new(rsa_key, kid_generator: ::JWT::JWK::Thumbprint)
+          end
+        end
+      end
+
       attr_reader :backend
 
       def initialize(name, cut_off_date, bundled_with, backend)
@@ -12,7 +37,7 @@ module CloudConnector
 
         @bundled_with = bundled_with
         @backend = backend
-        @key = load_signing_key
+        @key_loader = CachingKeyLoader.new
       end
 
       override :access_token
@@ -26,7 +51,7 @@ module CloudConnector
             scopes: scopes_for(resource),
             ttl: 1.hour,
             extra_claims: extra_claims
-          ).encode(@key)
+          ).encode(@key_loader.signing_key)
         else
           ::Gitlab::CloudConnector::SelfIssuedToken.new(
             audience: backend,
@@ -41,14 +66,6 @@ module CloudConnector
 
       def gitlab_org_group
         @gitlab_org_group ||= Group.find_by_path_or_name('gitlab-org')
-      end
-
-      def load_signing_key
-        key_data = Rails.application.credentials.openid_connect_signing_key
-
-        raise 'Cloud Connector: no key found' unless key_data
-
-        ::JWT::JWK.new(OpenSSL::PKey::RSA.new(key_data), kid_generator: ::JWT::JWK::Thumbprint)
       end
 
       def scopes_for(resource)
