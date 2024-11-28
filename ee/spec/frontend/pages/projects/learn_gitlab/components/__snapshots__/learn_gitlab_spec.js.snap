@@ -14,7 +14,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
         Learn GitLab
       </h1>
       <p
-        class="gl-mb-0 gl-text-gray-700"
+        class="gl-mb-0 gl-text-subtle"
       >
         Follow these steps to get familiar with the GitLab workflow.
       </p>
@@ -79,7 +79,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             Set up your code
           </h2>
           <p
-            class="gl-mb-6 gl-text-gray-700"
+            class="gl-mb-6 gl-text-subtle"
           >
             Use the built-in editor, WebIDE, or upload code using your preferred method.
           </p>
@@ -167,7 +167,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             Configure your project
           </h2>
           <p
-            class="gl-mb-6 gl-text-gray-700"
+            class="gl-mb-6 gl-text-subtle"
           >
             Complete these tasks first so you can enjoy GitLab's features to their fullest:
           </p>
@@ -314,7 +314,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             Secure your deployment
           </h2>
           <p
-            class="gl-mb-6 gl-text-gray-700"
+            class="gl-mb-6 gl-text-subtle"
           >
             Use GitLab to deploy your application, monitor its health, and keep it secure:
           </p>
@@ -424,7 +424,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             Plan and execute work together
           </h2>
           <p
-            class="gl-mb-6 gl-text-gray-700"
+            class="gl-mb-6 gl-text-subtle"
           >
             Create a workflow, and learn how GitLab features work together:
           </p>

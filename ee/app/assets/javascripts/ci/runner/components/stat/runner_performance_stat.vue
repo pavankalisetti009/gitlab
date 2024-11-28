@@ -24,7 +24,7 @@ export default {
 <template>
   <div v-if="shouldShowPerformanceStat" class="gl-p-2 gl-leading-normal">
     <div class="gl-mb-4">
-      <span class="gl-text-gray-700">{{ s__('Runners|Runners performance') }}</span>
+      <span class="gl-text-subtle">{{ s__('Runners|Runners performance') }}</span>
     </div>
     <div>
       <gl-link v-gl-modal="$options.MODAL_ID" class="!gl-text-default">

@@ -75,7 +75,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="showDefaultMode" class="gl-flex gl-items-center gl-gap-3 gl-text-gray-700">
+  <div v-if="showDefaultMode" class="gl-flex gl-items-center gl-gap-3 gl-text-subtle">
     <span>{{ $options.i18n.defaultModeText }}</span>
     <gl-icon v-gl-tooltip name="status_warning" :title="$options.i18n.allGroupText" />
   </div>
@@ -92,7 +92,7 @@ export default {
       :items-to-show="itemsToShow"
     />
   </div>
-  <p v-else class="gl-m-0 gl-text-gray-700">
+  <p v-else class="gl-m-0 gl-text-subtle">
     {{ $options.i18n.projectDefaultText }}
   </p>
 </template>

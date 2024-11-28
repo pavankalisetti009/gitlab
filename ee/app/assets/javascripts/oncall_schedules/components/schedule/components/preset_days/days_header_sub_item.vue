@@ -33,7 +33,7 @@ export default {
       :key="hour"
       ref="dailyHourCell"
       :class="getSubItemValueClass(hour)"
-      class="sublabel-value gl-grow gl-basis-0 gl-text-center gl-font-normal gl-text-gray-700"
+      class="sublabel-value gl-grow gl-basis-0 gl-text-center gl-font-normal gl-text-subtle"
       data-testid="sublabel-value"
       >{{ hour - 1 }}</span
     >

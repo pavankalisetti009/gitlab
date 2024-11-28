@@ -13,7 +13,7 @@ exports[`RotationsListSectionComponent when the timeframe includes today renders
       >
         <span
           aria-label="Rotation 242"
-          class="gl-text-gray-700 gl-truncate"
+          class="gl-text-subtle gl-truncate"
           data-testid="rotation-name-gid://gitlab/IncidentManagement::OncallRotation/2"
         >
           Rotation 242
