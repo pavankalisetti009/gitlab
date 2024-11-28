@@ -247,7 +247,7 @@ module EE
       end
 
       def user_cap_reached?
-        return false unless user_cap_max.present?
+        return false unless ::Gitlab::CurrentSettings.seat_control_user_cap?
 
         billable.limit(user_cap_max + 1).count >= user_cap_max
       end

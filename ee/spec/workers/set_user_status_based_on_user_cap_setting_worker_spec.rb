@@ -13,6 +13,7 @@ RSpec.describe SetUserStatusBasedOnUserCapSettingWorker, type: :worker, feature_
 
     before do
       allow(Gitlab::CurrentSettings).to receive(:new_user_signups_cap).and_return(new_user_signups_cap)
+      stub_application_setting(seat_control: seat_control)
     end
 
     shared_examples 'sends emails to every active admin' do
@@ -33,24 +34,28 @@ RSpec.describe SetUserStatusBasedOnUserCapSettingWorker, type: :worker, feature_
 
     context 'when user cap is set to nil' do
       let(:new_user_signups_cap) { nil }
+      let(:seat_control) { 0 }
 
       include_examples 'does not send emails to active admins'
     end
 
     context 'when current billable user count is less than user cap' do
       let(:new_user_signups_cap) { 10 }
+      let(:seat_control) { 1 }
 
       include_examples 'does not send emails to active admins'
     end
 
     context 'when current billable user count is equal to user cap' do
       let(:new_user_signups_cap) { 2 }
+      let(:seat_control) { 1 }
 
       include_examples 'sends emails to every active admin'
     end
 
     context 'when current billable user count is greater than user cap' do
       let(:new_user_signups_cap) { 1 }
+      let(:seat_control) { 1 }
 
       include_examples 'sends emails to every active admin'
 

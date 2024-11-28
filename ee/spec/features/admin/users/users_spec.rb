@@ -110,6 +110,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
     context 'with a user cap set' do
       before do
         stub_application_setting(new_user_signups_cap: 2)
+        stub_application_setting(seat_control: 1)
       end
 
       context 'when the cap has not been reached' do
