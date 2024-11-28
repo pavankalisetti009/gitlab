@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { spawnSync } = require('node:child_process');
 const { readFile, open, stat } = require('node:fs/promises');
 const parser = require('fast-xml-parser');
