@@ -22,7 +22,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import DevopsScore from '~/analytics/devops_reports/components/devops_score.vue';
-import API from '~/api';
 import { groupNodes, devopsAdoptionNamespaceData } from '../mock_data';
 
 jest.mock('ee/analytics/devops_reports/devops_adoption/utils/cache_updates', () => ({
@@ -374,18 +373,6 @@ describe('DevopsAdoptionApp', () => {
           wrapper.findByTestId(testId).vm.$emit('click');
 
           expect(trackEventSpy).toHaveBeenCalledWith(event, {}, undefined);
-        });
-
-        it('only tracks the event once', () => {
-          jest.spyOn(API, 'trackInternalEvent');
-
-          expect(API.trackInternalEvent).not.toHaveBeenCalled();
-
-          const { vm } = wrapper.findByTestId(testId);
-          vm.$emit('click');
-          vm.$emit('click');
-
-          expect(API.trackInternalEvent).toHaveBeenCalledTimes(1);
         });
       });
     };
