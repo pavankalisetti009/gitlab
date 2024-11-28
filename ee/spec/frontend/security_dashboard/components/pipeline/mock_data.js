@@ -491,6 +491,7 @@ export const pipelineSecurityReportFinding = {
     nameWithNamespace: 'Secure Ex / Security Reports',
     fullPath: 'project fullPath',
     hasJiraVulnerabilityIssueCreationEnabled: false,
+    visibility: 'private',
   },
   scanner: {
     id: '1',

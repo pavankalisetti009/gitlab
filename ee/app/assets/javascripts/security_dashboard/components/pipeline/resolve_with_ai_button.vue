@@ -1,9 +1,10 @@
 <script>
-import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { v4 as uuidv4 } from 'uuid';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import securityFindingCreateVulnerability from 'ee/vulnerabilities/graphql/security_finding_create_vulnerability.mutation.graphql';
+import ResolveWithAiInfoPopover from 'ee/security_dashboard/components/pipeline/resolve_with_ai_info_popover.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import {
   TYPENAME_USER,
@@ -17,9 +18,7 @@ const CLIENT_SUBSCRIPTION_ID = uuidv4();
 export default {
   components: {
     GlButton,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
+    ResolveWithAiInfoPopover,
   },
   props: {
     mergeRequestId: {
@@ -35,6 +34,11 @@ export default {
       type: [String, Number],
       required: false,
       default: null,
+    },
+    showPublicProjectWarning: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {
@@ -156,13 +160,17 @@ export default {
 
 <template>
   <gl-button
-    v-gl-tooltip.hover
+    id="resolve-with-ai-button"
+    data-testid="resolve-with-ai"
     variant="confirm"
     icon="tanuki-ai"
     :loading="isResolving"
-    :title="s__('AI|Use GitLab Duo to generate a merge request with a suggested solution.')"
     @click="handleClick"
   >
     {{ s__('AI|Resolve with AI') }}
+    <resolve-with-ai-info-popover
+      target="resolve-with-ai-button"
+      :show-public-project-warning="showPublicProjectWarning"
+    />
   </gl-button>
 </template>
