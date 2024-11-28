@@ -1435,7 +1435,12 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
 
       it 'marks for deletion of a group with a trial plan', :saas do
-        create(:gitlab_subscription, :ultimate_trial, trial: true, namespace: group)
+        create(
+          :gitlab_subscription,
+          :ultimate_trial,
+          :active_trial,
+          namespace: group
+        )
 
         delete api("/groups/#{group.id}", user)
 
@@ -1469,7 +1474,12 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
 
       it 'deletes a group with a trial plan', :saas do
-        create(:gitlab_subscription, :ultimate_trial, trial: true, namespace: group)
+        create(
+          :gitlab_subscription,
+          :ultimate_trial,
+          :active_trial,
+          namespace: group
+        )
 
         expect { delete api("/groups/#{group.id}", user) }.to change(GroupDestroyWorker.jobs, :size).by(1)
         expect(response).to have_gitlab_http_status(:accepted)

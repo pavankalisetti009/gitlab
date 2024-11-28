@@ -18,12 +18,42 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
   end
 
   describe 'validations' do
+    let_it_be(:namespace) { create(:namespace) }
+    let(:trial) { false }
+    let(:today) { Time.zone.now.to_date }
+
+    subject(:subscription) { described_class.new(trial: trial, namespace: namespace) }
+
     it { is_expected.to validate_presence_of(:seats) }
     it { is_expected.to validate_presence_of(:start_date) }
 
-    it do
-      subject.namespace = create(:namespace)
-      is_expected.to validate_uniqueness_of(:namespace_id)
+    it { is_expected.to validate_uniqueness_of(:namespace_id) }
+
+    context 'without trial' do
+      it { is_expected.not_to validate_presence_of(:trial_ends_on) }
+      it { is_expected.not_to validate_presence_of(:trial_starts_on) }
+
+      it 'does not validate trial date attributes' do
+        subscription.trial_starts_on = today
+        subscription.trial_ends_on = today
+
+        expect(subscription).to be_valid
+      end
+    end
+
+    context 'with trial' do
+      let(:trial) { true }
+
+      it { is_expected.to validate_presence_of(:trial_ends_on) }
+      it { is_expected.to validate_presence_of(:trial_starts_on) }
+
+      it 'does not allow trial date attributes to be equal' do
+        subscription.trial_starts_on = today
+        subscription.trial_ends_on = today
+
+        expect(subscription).not_to be_valid
+        expect(subscription.errors[:trial_ends_on]).to include("must be greater than #{today}")
+      end
     end
   end
 
@@ -37,7 +67,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       let_it_be(:ultimate_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan) }
       let_it_be(:premium_subscription) { create(:gitlab_subscription, hosted_plan: premium_plan) }
       let_it_be(:gold_subscription) { create(:gitlab_subscription, hosted_plan: gold_plan, trial: nil) }
-      let_it_be(:trial_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan, trial: true) }
+      let_it_be(:trial_subscription) { create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan) }
 
       it 'scopes to the plan' do
         expect(described_class.with_hosted_plan('ultimate')).to contain_exactly(ultimate_subscription)
@@ -50,7 +80,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     describe '.by_hosted_plan_ids' do
       let_it_be(:ultimate_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan) }
       let_it_be(:premium_subscription) { create(:gitlab_subscription, hosted_plan: premium_plan) }
-      let_it_be(:trial_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan, trial: true) }
+      let_it_be(:trial_subscription) { create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan) }
 
       it 'returns subscriptions by their plan ids' do
         expect(described_class.by_hosted_plan_ids(ultimate_plan.id)).to match_array([ultimate_subscription, trial_subscription])
@@ -89,7 +119,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       let_it_be(:premium_subscription_24_hours) { create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 24.hours.ago) }
 
       let_it_be(:free_subscription) { create(:gitlab_subscription, :free, last_seat_refresh_at: 2.days.ago) }
-      let_it_be(:trial_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan, trial: true, last_seat_refresh_at: 2.days.ago) }
+      let_it_be(:trial_subscription) { create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan, last_seat_refresh_at: 2.days.ago) }
 
       it 'returns relevant subscriptions' do
         matching_subscriptions = [
@@ -124,7 +154,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       let_it_be(:ultimate_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan) }
       let_it_be(:premium_subscription) { create(:gitlab_subscription, hosted_plan: premium_plan) }
       let_it_be(:gold_subscription) { create(:gitlab_subscription, hosted_plan: gold_plan, trial: nil) }
-      let_it_be(:trial_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan, trial: true) }
+      let_it_be(:trial_subscription) { create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan) }
       let_it_be(:free_subscription) { create(:gitlab_subscription, :free) }
 
       it 'returns relevant subscriptions' do
@@ -262,7 +292,14 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     end
 
     context 'with a trial plan' do
-      let(:subscription_attrs) { { hosted_plan: ultimate_trial_plan, trial: true } }
+      let(:subscription_attrs) do
+        {
+          hosted_plan: ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: Time.zone.yesterday,
+          trial_ends_on: Time.zone.tomorrow
+        }
+      end
 
       include_examples 'always returns a total of 0'
     end
@@ -386,8 +423,15 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     end
 
     context 'with a trial plan' do
-      let(:hosted_plan) { ultimate_trial_plan }
-      let(:trial) { true }
+      let(:gitlab_subscription) do
+        create(
+          :gitlab_subscription,
+          :active_trial,
+          namespace: group,
+          hosted_plan: ultimate_trial_plan,
+          seats_in_use: seats_in_use
+        )
+      end
 
       it 'returns the current seats in use' do
         expect(subject).to eq(1)
@@ -799,7 +843,14 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
 
       context 'with an active trial' do
         let_it_be(:trial_subscription) do
-          create(:gitlab_subscription, hosted_plan: ultimate_plan, trial: true, max_seats_used: 10, seats_owed: 0, seats_in_use: 5)
+          create(
+            :gitlab_subscription,
+            :active_trial,
+            hosted_plan: ultimate_plan,
+            max_seats_used: 10,
+            seats_owed: 0,
+            seats_in_use: 5
+          )
         end
 
         it 'resets seats when upgrading to a paid plan' do
@@ -821,8 +872,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       end
 
       context 'when starting a trial with an expired subscription' do
-        let(:new_start) { Date.today }
-        let(:new_end) { new_start + 1.year }
+        let(:new_start) { Date.current }
+        let(:new_end) { 1.year.from_now }
         let(:max_seats_used_changed_at) { nil }
         let(:gitlab_subscription) do
           create(
@@ -837,7 +888,13 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         shared_examples 'does not reset seat statistics' do
           it 'does not reset seat statistics' do
             expect do
-              gitlab_subscription.update!(trial: true, start_date: new_start, end_date: new_end)
+              gitlab_subscription.update!(
+                start_date: new_start,
+                end_date: new_end,
+                trial: true,
+                trial_starts_on: new_start,
+                trial_ends_on: new_end
+              )
             end.to not_change(gitlab_subscription, :max_seats_used)
               .and not_change(gitlab_subscription, :max_seats_used_changed_at)
               .and not_change(gitlab_subscription, :seats_owed)

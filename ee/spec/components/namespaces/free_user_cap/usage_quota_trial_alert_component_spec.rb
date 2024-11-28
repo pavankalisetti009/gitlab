@@ -8,8 +8,10 @@ RSpec.describe Namespaces::FreeUserCap::UsageQuotaTrialAlertComponent, :saas, :a
   let_it_be(:user, refind: true) { create(:user) }
   let(:content_class) { '_content_class_' }
   let(:trial_ends_on) { Date.parse('2022-06-01') }
+  let(:trial_starts_on) { Date.parse('2022-05-31') }
   let!(:gitlab_subscription) do
-    create(:gitlab_subscription, :active_trial, :free, namespace: namespace, trial_ends_on: trial_ends_on)
+    create(:gitlab_subscription, :active_trial, :free, namespace:, trial_ends_on:,
+      trial_starts_on:)
   end
 
   let(:title) do

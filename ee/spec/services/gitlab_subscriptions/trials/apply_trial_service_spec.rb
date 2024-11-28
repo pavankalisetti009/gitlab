@@ -96,7 +96,16 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
         it_behaves_like 'records an onboarding progress action', :trial_started
 
         context 'when namespace has already had a trial', :saas do
-          let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
+          let_it_be(:namespace) do
+            create(
+              :group_with_plan,
+              plan: :free_plan,
+              trial: true,
+              trial_starts_on: 2.years.ago,
+              trial_ends_on: 1.year.ago
+            )
+          end
+
           let_it_be(:user) { create(:user, owner_of: namespace) }
 
           it { is_expected.to be_success }
@@ -134,7 +143,16 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
       end
 
       context 'when namespace is already on a trial', :saas do
-        let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_trial_plan, trial_ends_on: 1.year.from_now) }
+        let_it_be(:namespace) do
+          create(
+            :group_with_plan,
+            plan: :ultimate_trial_plan,
+            trial: true,
+            trial_starts_on: 2.years.ago,
+            trial_ends_on: 1.year.ago
+          )
+        end
+
         let_it_be(:user) { create(:user, owner_of: namespace) }
 
         it 'returns success: false with errors' do
@@ -166,7 +184,16 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
     end
 
     context 'when namespace is already on a trial', :saas do
-      let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
+      let_it_be(:namespace) do
+        create(
+          :group_with_plan,
+          plan: :free_plan,
+          trial: true,
+          trial_starts_on: 2.years.ago,
+          trial_ends_on: 1.year.ago
+        )
+      end
+
       let_it_be(:user) { create(:user, owner_of: namespace) }
 
       it { is_expected.to be true }

@@ -252,6 +252,7 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
           namespace: namespace,
           hosted_plan: plan,
           trial: true,
+          trial_starts_on: Date.current,
           trial_ends_on: Date.current.tomorrow,
           seats: 15
         )

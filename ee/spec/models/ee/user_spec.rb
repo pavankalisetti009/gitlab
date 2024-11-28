@@ -2265,7 +2265,15 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       context 'when passed exclude_trials: true' do
-        let_it_be(:trial_group) { create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now) }
+        let_it_be(:trial_group) do
+          create(
+            :group_with_plan,
+            plan: :ultimate_plan,
+            trial: true,
+            trial_starts_on: Date.current,
+            trial_ends_on: 1.day.from_now
+          )
+        end
 
         it 'returns false' do
           trial_group.add_owner(user)
@@ -2599,7 +2607,14 @@ RSpec.describe User, feature_category: :system_access do
     end
 
     it 'returns false if owns a group with a plan on a trial with an end date', :saas do
-      group_with_plan = create(:group_with_plan, name: 'trial group', plan: :premium_plan, trial_ends_on: 1.year.from_now)
+      group_with_plan = create(
+        :group_with_plan,
+        name: 'trial group',
+        plan: :premium_plan,
+        trial: true,
+        trial_starts_on: Date.current,
+        trial_ends_on: 1.year.from_now
+      )
       group_with_plan.add_owner(user)
 
       is_expected.to be(false)

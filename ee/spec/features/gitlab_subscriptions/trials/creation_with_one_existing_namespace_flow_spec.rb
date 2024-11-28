@@ -41,7 +41,11 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
     context 'on a free plan and has previously had a legacy ultimate trial' do
       it 'fills out form, submits and lands on the group page' do
-        group.gitlab_subscription.update!(trial_ends_on: Date.current.advance(days: -10), trial: true)
+        group.gitlab_subscription.update!(
+          trial: true,
+          trial_starts_on: 1.month.ago,
+          trial_ends_on: 10.days.ago
+        )
 
         sign_in(user)
 
@@ -58,7 +62,10 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
     context 'on a premium plan and has previously had a legacy ultimate trial' do
       it 'fills out form, submits and lands on the group page' do
         group.gitlab_subscription.update!(
-          hosted_plan_id: create(:premium_plan).id, trial_ends_on: Date.current.advance(days: -10), trial: true
+          hosted_plan_id: create(:premium_plan).id,
+          trial: true,
+          trial_starts_on: 1.month.ago,
+          trial_ends_on: 10.days.ago
         )
 
         sign_in(user)

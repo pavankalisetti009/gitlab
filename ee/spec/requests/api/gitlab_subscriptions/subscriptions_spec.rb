@@ -66,7 +66,11 @@ RSpec.describe API::GitlabSubscriptions::Subscriptions, :aggregate_failures, fea
 
       context 'when creating a trial' do
         it 'sets the trial_starts_on to the start_date' do
-          post subscription_path(namespace.id), headers: internal_api_headers, params: params.merge(trial: true)
+          post(
+            subscription_path(namespace.id),
+            headers: internal_api_headers,
+            params: params.merge(trial: true, trial_ends_on: 30.days.from_now)
+          )
 
           expect(response).to have_gitlab_http_status(:created)
           expect(namespace.reload.gitlab_subscription.trial_starts_on).to be_present
@@ -119,7 +123,10 @@ RSpec.describe API::GitlabSubscriptions::Subscriptions, :aggregate_failures, fea
         end
 
         it 'sets the trial_starts_on to the start_date' do
-          post subscription_path(namespace.id, admin, admin_mode: true), params: params.merge(trial: true)
+          post(
+            subscription_path(namespace.id, admin, admin_mode: true),
+            params: params.merge(trial: true, trial_ends_on: 30.days.from_now)
+          )
 
           expect(response).to have_gitlab_http_status(:created)
           expect(namespace.reload.gitlab_subscription.trial_starts_on).to be_present

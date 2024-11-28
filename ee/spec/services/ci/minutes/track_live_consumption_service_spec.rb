@@ -130,6 +130,8 @@ RSpec.describe Ci::Minutes::TrackLiveConsumptionService, :saas, feature_category
         let(:namespace) do
           create(:namespace_with_plan,
             plan: :premium_plan,
+            trial: true,
+            trial_starts_on: Date.current,
             trial_ends_on: Date.current.advance(days: 15),
             shared_runners_minutes_limit: 100)
         end
