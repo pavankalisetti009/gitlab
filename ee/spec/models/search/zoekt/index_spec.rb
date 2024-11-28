@@ -100,22 +100,36 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '.with_all_repositories_ready' do
-      let_it_be(:idx) { create(:zoekt_index) } # It has some pending zoekt_repositories
+    describe '.with_all_finished_repositories' do
+      let_it_be(:idx) { create(:zoekt_index) } # It has some pending and some ready zoekt_repositories
       let_it_be(:idx2) { create(:zoekt_index) } # It has all ready zoekt_repositories
       let_it_be(:idx3) { create(:zoekt_index) } # It does not have zoekt_repositories
+      let_it_be(:idx4) { create(:zoekt_index) } # It has all failed zoekt_repositories
+      let_it_be(:idx5) { create(:zoekt_index) } # It has some failed and some ready zoekt_repositories
+      let_it_be(:idx6) { create(:zoekt_index) } # It has some initializing and some pending zoekt_repositories
       let_it_be(:idx_project) { create(:project, namespace_id: idx.namespace_id) }
       let_it_be(:idx_project2) { create(:project, namespace_id: idx.namespace_id) }
       let_it_be(:idx2_project2) { create(:project, namespace_id: idx2.namespace_id) }
+      let_it_be(:idx4_project) { create(:project, namespace_id: idx4.namespace_id) }
+      let_it_be(:idx5_project) { create(:project, namespace_id: idx5.namespace_id) }
+      let_it_be(:idx5_project2) { create(:project, namespace_id: idx5.namespace_id) }
+      let_it_be(:idx6_project) { create(:project, namespace_id: idx6.namespace_id) }
+      let_it_be(:idx6_project2) { create(:project, namespace_id: idx6.namespace_id) }
 
       before do
         idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project, state: :pending)
         idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project2, state: :ready)
         idx2.zoekt_repositories.create!(zoekt_index: idx2, project: idx2_project2, state: :ready)
+        idx4.zoekt_repositories.create!(zoekt_index: idx2, project: idx4_project, state: :failed)
+        idx5.zoekt_repositories.create!(zoekt_index: idx2, project: idx5_project, state: :failed)
+        idx5.zoekt_repositories.create!(zoekt_index: idx2, project: idx5_project2, state: :ready)
+        idx6.zoekt_repositories.create!(zoekt_index: idx6, project: idx6_project, state: :initializing)
+        idx6.zoekt_repositories.create!(zoekt_index: idx6, project: idx6_project2, state: :pending)
       end
 
       it 'returns all the indices whose all zoekt_repositories are ready' do
-        expect(described_class.with_all_repositories_ready).to contain_exactly(idx2)
+        expect(described_class.with_all_finished_repositories).to include(idx2, idx3, idx4, idx5)
+        expect(described_class.with_all_finished_repositories).not_to include(idx, idx6)
       end
     end
 

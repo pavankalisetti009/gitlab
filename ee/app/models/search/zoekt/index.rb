@@ -65,9 +65,8 @@ module Search
           .where(zoekt_enabled_namespace: { search: true })
       end
 
-      scope :with_all_repositories_ready, -> do
-        where_not_exists(Repository.non_ready.where(Repository.arel_table[:zoekt_index_id].eq(Index.arel_table[:id])))
-          .where_exists(Repository.where(Repository.arel_table[:zoekt_index_id].eq(Index.arel_table[:id])))
+      scope :with_all_finished_repositories, -> do
+        where_not_exists(Repository.uncompleted.where(Repository.arel_table[:zoekt_index_id].eq(Index.arel_table[:id])))
       end
 
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
