@@ -49,7 +49,7 @@ export default {
       this.$emit('change', this.experimentsEnabled);
     },
   },
-  experimentBetaHelpPath: helpPagePath('policy/experiment-beta-support'),
+  experimentBetaHelpPath: helpPagePath('policy/development_stages_support'),
   testingAgreementPath: `/handbook/legal/testing-agreement/`,
 };
 </script>

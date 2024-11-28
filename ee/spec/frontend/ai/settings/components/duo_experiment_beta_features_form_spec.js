@@ -4,7 +4,7 @@ import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_li
 import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
 
 const MOCK_DATA = {
-  experimentBetaHelpPath: '/help/policy/experiment-beta-support',
+  experimentBetaHelpPath: '/help/policy/development_stages_support',
   testingAgreementPath: `/handbook/legal/testing-agreement/`,
 };
 
