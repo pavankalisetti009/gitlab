@@ -19,6 +19,8 @@ RSpec.describe "Merge request > User sees security widget",
       sast: true
     )
 
+    stub_feature_flags(mr_reports_tab: false)
+
     project.add_developer(user)
     sign_in(user)
   end
