@@ -9,16 +9,6 @@ export default {
   components: {
     SelfHostedModelForm,
   },
-  props: {
-    basePath: {
-      type: String,
-      required: true,
-    },
-    modelOptions: {
-      type: Array,
-      required: true,
-    },
-  },
   i18n: {
     title: s__('AdminSelfHostedModels|Add self-hosted model'),
     description: s__(
@@ -37,10 +27,6 @@ export default {
     <p class="gl-pb-2 gl-pt-3">
       {{ $options.i18n.description }}
     </p>
-    <self-hosted-model-form
-      :base-path="basePath"
-      :model-options="modelOptions"
-      :mutation-data="$options.mutationData"
-    />
+    <self-hosted-model-form :mutation-data="$options.mutationData" />
   </div>
 </template>

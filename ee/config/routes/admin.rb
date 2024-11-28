@@ -53,7 +53,7 @@ namespace :admin do
   get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')
 
   namespace :ai do
-    resources :self_hosted_models, only: [:index, :new, :edit] do
+    resources :self_hosted_models, only: [:index], path: 'self_hosted_models(/*vueroute)' do
       collection do
         resources :terms_and_conditions, only: [:index, :create]
       end

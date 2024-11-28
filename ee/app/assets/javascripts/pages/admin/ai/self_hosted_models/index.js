@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import SelfHostedDuoConfiguration from '../custom_models/self_hosted_duo_configuration.vue';
+import createRouter from '../custom_models/router';
 
 Vue.use(VueApollo);
 
@@ -16,17 +16,22 @@ function mountSelfHostedModelsApp() {
     return null;
   }
 
-  const { basePath, newSelfHostedModelPath } = el.dataset;
+  const { basePath, modelOptions } = JSON.parse(el.dataset.viewModel);
+
+  const router = createRouter(basePath);
 
   return new Vue({
     el,
     name: 'SelfHostedDuoConfigurationApp',
     apolloProvider,
+    router,
     provide: {
       basePath,
-      newSelfHostedModelPath,
+      modelOptions,
     },
-    render: (h) => h(SelfHostedDuoConfiguration),
+    render(createElement) {
+      return createElement('router-view');
+    },
   });
 }
 

@@ -3899,6 +3899,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|An error occurred while loading self-hosted models. Please try again."
 msgstr ""
 
+msgid "AdminSelfHostedModels|An error occurred while loading the self-hosted model. Please try again."
+msgstr ""
+
 msgid "AdminSelfHostedModels|An error occurred while updating the sefl-hosted model, please try again."
 msgstr ""
 

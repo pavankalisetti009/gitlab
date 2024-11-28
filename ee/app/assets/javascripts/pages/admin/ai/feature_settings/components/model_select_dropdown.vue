@@ -20,7 +20,6 @@ export default {
     GlCollapsibleListbox,
     GlButton,
   },
-  inject: ['newSelfHostedModelPath'],
   props: {
     aiFeatureSetting: {
       type: Object,
@@ -152,11 +151,7 @@ export default {
   >
     <template #footer>
       <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
-        <gl-button
-          data-testid="add-self-hosted-model-button"
-          :href="newSelfHostedModelPath"
-          category="tertiary"
-        >
+        <gl-button data-testid="add-self-hosted-model-button" category="tertiary" to="new">
           {{ s__('AdminAIPoweredFeatures|Add self-hosted model') }}
         </gl-button>
       </div>

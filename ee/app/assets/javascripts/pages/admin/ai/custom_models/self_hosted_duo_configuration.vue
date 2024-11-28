@@ -17,38 +17,61 @@ export default {
     FeatureSettingsTable,
     PageHeading,
   },
-  inject: ['newSelfHostedModelPath'],
   i18n: {
     title: s__('AdminSelfHostedModels|Self-hosted models'),
     description: s__(
       'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
     ),
   },
-  data() {
-    return {
-      currentTab: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
-    };
-  },
-  computed: {
-    isSelfHostedModelsTab() {
-      return this.currentTab === SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS;
-    },
-  },
-  methods: {
-    onTabClick(tab) {
-      this.currentTab = tab.value;
+  props: {
+    tabId: {
+      type: String,
+      required: false,
+      default: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
     },
   },
   tabs: [
     {
+      id: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
       title: s__('AdminSelfHostedModels|Self-hosted models'),
-      value: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
     },
     {
+      id: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
       title: s__('AdminAIPoweredFeatures|AI-powered features'),
-      value: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
     },
   ],
+  data() {
+    return {
+      currentTabIndex: this.$options.tabs.findIndex((tab) => tab.id === this.tabId) || 0,
+    };
+  },
+  computed: {
+    isSelfHostedModelsTab() {
+      return this.tabId === SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS;
+    },
+  },
+  watch: {
+    currentTabIndex(newTabIdx) {
+      const currentTabId = this.$options.tabs[newTabIdx].id;
+
+      if (currentTabId === this.tabId) return;
+
+      if (currentTabId === SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS) {
+        this.navigateToFeaturesTab();
+        return;
+      }
+
+      this.navigateToSelfHostedModelsTab();
+    },
+  },
+  methods: {
+    navigateToSelfHostedModelsTab() {
+      this.$router.push({ name: 'index' });
+    },
+    navigateToFeaturesTab() {
+      this.$router.push({ name: 'features' });
+    },
+  },
 };
 </script>
 
@@ -63,19 +86,19 @@ export default {
       </template>
       <template #description>{{ $options.i18n.description }}</template>
       <template #actions>
-        <gl-button variant="confirm" :href="newSelfHostedModelPath">
+        <gl-button variant="confirm" to="new">
           {{ s__('AdminSelfHostedModels|Add self-hosted model') }}
         </gl-button>
       </template>
     </page-heading>
     <div class="top-area gl-border-b-0">
-      <gl-tabs class="gl-flex gl-grow" nav-class="gl-border-b-0">
-        <gl-tab
-          v-for="tab in $options.tabs"
-          :key="tab.id"
-          :data-testid="`${tab.value}-tab`"
-          @click="onTabClick(tab)"
-        >
+      <gl-tabs
+        v-model="currentTabIndex"
+        data-testid="self-hosted-duo-config-tabs"
+        class="gl-flex gl-grow"
+        nav-class="gl-border-b-0"
+      >
+        <gl-tab v-for="tab in $options.tabs" :key="tab.id" :data-testid="`${tab.id}-tab`">
           <template #title>
             {{ tab.title }}
           </template>

@@ -30,7 +30,6 @@ export default {
     GlTruncate,
     DeleteSelfHostedModelDisclosureItem,
   },
-  inject: ['basePath', 'newSelfHostedModelPath'],
   data() {
     return {
       searchTerm: '',
@@ -120,7 +119,7 @@ export default {
     editModelItem(model) {
       return {
         text: __('Edit'),
-        to: `${this.basePath}/${getIdFromGraphQLId(model.id)}/edit`,
+        to: `${getIdFromGraphQLId(model.id)}/edit`,
       };
     },
   },
@@ -160,7 +159,7 @@ export default {
         <p class="gl-m-0 gl-py-4">
           <gl-sprintf :message="$options.i18n.emptyStateText">
             <template #link="{ content }">
-              <gl-link :href="newSelfHostedModelPath">{{ content }}</gl-link>
+              <gl-link to="new">{{ content }}</gl-link>
             </template>
           </gl-sprintf>
         </p>

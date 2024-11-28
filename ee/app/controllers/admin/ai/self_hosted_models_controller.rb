@@ -11,9 +11,7 @@ module Admin
       before_action :ensure_registration!
       before_action :ensure_feature_enabled!
 
-      def edit
-        @self_hosted_model = ::Ai::SelfHostedModel.find(params[:id])
-      end
+      def index; end
 
       private
 
