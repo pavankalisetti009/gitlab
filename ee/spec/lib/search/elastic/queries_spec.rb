@@ -324,21 +324,19 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         hybrid_similarity: hybrid_similarity,
         hybrid_boost: hybrid_boost,
         embedding_field: :embedding_0,
-        fields: %w[iid^3 title^2 description]
+        fields: %w[iid^3 title^2 description],
+        vectors_supported: :elasticsearch
       }
     end
 
     let(:embedding_service) { instance_double(Gitlab::Llm::VertexAi::Embeddings::Text) }
     let(:mock_embedding) { [1, 2, 3] }
-    let_it_be(:helper) { Gitlab::Elastic::Helper.default }
 
     subject(:by_knn) { described_class.by_knn(query: 'test', options: options) }
 
     before do
       allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
       allow(embedding_service).to receive(:execute).and_return(mock_embedding)
-      allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-      allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(true)
     end
 
     it 'returns the expected query hash' do
@@ -353,7 +351,8 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         {
           current_user: user,
           embedding_field: :embedding_0,
-          fields: %w[iid^3 title^2 description]
+          fields: %w[iid^3 title^2 description],
+          vectors_supported: :elasticsearch
         }
       end
 

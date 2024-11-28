@@ -118,23 +118,15 @@ module Search
         end
 
         def by_knn(query:, options:)
+          return by_full_text(query: query, options: options) unless options[:vectors_supported]
+
           embedding = get_embedding_for_hybrid_query(query: query, options: options)
           return by_full_text(query: query, options: options) unless embedding
 
-          if helper.vectors_supported?(:elasticsearch)
-            build_elastic_knn_query(query: query, options: options, embedding: embedding)
-          elsif helper.vectors_supported?(:opensearch)
-            build_opensearch_knn_query(query: query, options: options, embedding: embedding)
-          else
-            by_full_text(query: query, options: options)
-          end
+          send(:"build_#{options[:vectors_supported]}_knn_query", query: query, options: options, embedding: embedding) # rubocop:disable GitlabSecurity/PublicSend -- fields are controlled, it is safe
         end
 
         private
-
-        def helper
-          @helper ||= Gitlab::Elastic::Helper.default
-        end
 
         def get_embedding_for_hybrid_query(query:, options:)
           return options[:embeddings] if options[:embeddings]
@@ -164,7 +156,7 @@ module Search
           query_hash
         end
 
-        def build_elastic_knn_query(query:, options:, embedding:)
+        def build_elasticsearch_knn_query(query:, options:, embedding:)
           query_hash = by_full_text(query: query, options: options)
 
           knn_query = {
