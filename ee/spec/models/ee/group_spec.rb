@@ -3918,21 +3918,21 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
 
       it 'returns false when there are not enough seats if the custom role is billable' do
-        custom_role = create(:member_role, base_access_level: ::Gitlab::Access::GUEST, permissions: { remove_project: true })
+        custom_role = create(:member_role, :guest, :remove_project)
         user_ids = %w[1 2 3]
 
         expect(group.seats_available_for?(user_ids, ::Gitlab::Access::GUEST, custom_role.id)).to eq(false)
       end
 
       it 'returns true even if there are not enough seats if the custom role is not billable' do
-        custom_role = create(:member_role, base_access_level: ::Gitlab::Access::GUEST, permissions: { read_code: true })
+        custom_role = create(:member_role, :guest, :read_code)
         user_ids = %w[1 2 3]
 
         expect(group.seats_available_for?(user_ids, ::Gitlab::Access::GUEST, custom_role.id)).to eq(true)
       end
 
       it 'returns false when there are not enough seats if the custom role is billable and uses minimal access as its base' do
-        custom_role = create(:member_role, base_access_level: ::Gitlab::Access::MINIMAL_ACCESS, permissions: { remove_project: true })
+        custom_role = create(:member_role, :minimal_access, :remove_project)
         user_ids = %w[1 2 3]
 
         expect(group.seats_available_for?(user_ids, ::Gitlab::Access::MINIMAL_ACCESS, custom_role.id)).to eq(false)
