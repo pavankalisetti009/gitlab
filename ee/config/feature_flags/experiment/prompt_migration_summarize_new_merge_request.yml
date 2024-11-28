@@ -1,0 +1,9 @@
+---
+name: prompt_migration_summarize_new_merge_request
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/501320
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/174059
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/506656
+milestone: '17.7'
+group: group::ai framework
+type: experiment
+default_enabled: false
