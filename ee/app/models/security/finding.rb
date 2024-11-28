@@ -241,6 +241,14 @@ module Security
                                                         .then { remediations_proxy.by_byte_offsets(_1) }
     end
 
+    def cve_enrichment
+      @cve_enrichment ||= nil
+    end
+
+    def advisory
+      @advisory ||= nil
+    end
+
     def finding_details
       finding_data['details']
     end
