@@ -26,17 +26,17 @@ describe('Metric table cell', () => {
       });
 
       it('correctly formats the value', () => {
-        expect(wrapper.text()).toEqual(formattedValue);
+        expect(wrapper.text()).toBe(formattedValue);
       });
 
       it('sets the correct color for trend indicator', () => {
-        expect(findTrendIndicator().props().invertColor).toEqual(invertTrendColor);
+        expect(findTrendIndicator().props().invertColor).toBe(invertTrendColor);
       });
     },
   );
 
   it('hides the trend indicator when trend is zero', () => {
     createWrapper({ metricType: DORA_METRICS.DEPLOYMENT_FREQUENCY, value: 10, trend: 0 });
-    expect(findTrendIndicator().exists()).toEqual(false);
+    expect(findTrendIndicator().exists()).toBe(false);
   });
 });
