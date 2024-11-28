@@ -4,8 +4,6 @@ module Vulnerabilities
   class AutoResolveService
     include Gitlab::Utils::StrongMemoize
 
-    MAX_BATCH = 100
-
     def initialize(project, vulnerability_ids)
       @project = project
       @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).unresolved
@@ -57,7 +55,16 @@ module Vulnerabilities
       Vulnerability.transaction do
         Vulnerabilities::StateTransition.insert_all!(state_transition_attrs)
 
-        Vulnerability.id_in(vulnerabilities_to_resolve.first(MAX_BATCH).map(&:vulnerability_id)).update_all(
+        # The caller (Security::Ingestion::MarkAsResolvedService) operates on ALL Vulnerability::Read rows
+        # narrowed by scanner type in batches of 1000. If we apply any sort of limit here then this poses a problem:
+        # 1. A policy is set to auto-resolve crical SAST vulnerabiliites.
+        # 2. In the first 1000 SAST Vulnerability::Read rows there's one critical vulnerability.
+        # 3. There's no guarantee that the critical vulnerability is going to be among the first 100 rows
+
+        # Theoretically we could sort them according to severity but this will also not work if you have a policy
+        # that auto-resolves Critical and Low SAST vulnerabilities. First 100 will most certainly contain the Critical
+        # ones but the Low ones are going to be at the end of the collection
+        Vulnerability.id_in(vulnerabilities_to_resolve.map(&:vulnerability_id)).update_all(
           state: :resolved,
           auto_resolved: true,
           resolved_by_id: user.id,
