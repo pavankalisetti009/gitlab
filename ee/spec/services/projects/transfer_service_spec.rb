@@ -179,18 +179,6 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
 
           subject.execute(sub_group)
         end
-
-        context 'when security_policies_sync is disabled' do
-          before do
-            stub_feature_flags(security_policies_sync_group: false)
-          end
-
-          it 'does not invoke SyncProjectPoliciesWorker', :sidekiq_inline do
-            expect(::Security::SyncProjectPoliciesWorker).not_to receive(:perform_async)
-
-            subject.execute(sub_group)
-          end
-        end
       end
 
       context 'when transferring the project from one hierarchy to another' do

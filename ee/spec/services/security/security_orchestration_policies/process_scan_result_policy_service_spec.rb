@@ -619,34 +619,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
           subject
         end
 
-        context 'with security_policies_sync disabled' do
-          before do
-            stub_feature_flags(security_policies_sync: false)
-          end
-
-          it 'calls SoftwareLicensePolicies::BulkCreateScanResultPolicyService' do
-            expect(SoftwareLicensePolicies::BulkCreateScanResultPolicyService).to receive(:new).with(
-              project,
-              [
-                {
-                  name: 'BSD',
-                  approval_status: 'denied',
-                  scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
-                  approval_policy_rule_id: nil
-                },
-                {
-                  name: 'MIT',
-                  approval_status: 'denied',
-                  scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
-                  approval_policy_rule_id: nil
-                }
-              ]
-            ).and_call_original
-
-            subject
-          end
-        end
-
         context 'with bulk_create_scan_result_policies feature flag disabled' do
           before do
             stub_feature_flags(bulk_create_scan_result_policies: false)
@@ -743,18 +715,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       expect(scan_finding_rule.security_orchestration_policy_configuration).to eq(policy_configuration)
       expect(scan_finding_rule.orchestration_policy_idx).to eq(0)
       expect(scan_finding_rule.approval_policy_rule).to eq(approval_policy_rule)
-    end
-
-    context 'with security_policies_sync disabled' do
-      before do
-        stub_feature_flags(security_policies_sync: false)
-      end
-
-      it 'does not set approval_policy_rule' do
-        subject
-
-        expect(project.approval_rules.first.approval_policy_rule).to be_nil
-      end
     end
 
     context 'with fallback_behavior' do

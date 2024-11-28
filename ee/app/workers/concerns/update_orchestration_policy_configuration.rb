@@ -12,12 +12,9 @@ module UpdateOrchestrationPolicyConfiguration
       return
     end
 
-    if configuration.persist_policies?
-      return unless configuration.policies_changed?
+    return unless configuration.policies_changed?
 
-      Security::PersistSecurityPoliciesWorker.perform_async(configuration.id)
-    end
-
+    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id)
     Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService.new(configuration).execute
 
     configuration.delete_all_schedules

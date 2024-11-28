@@ -49,10 +49,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     describe 'attributes' do
       subject(:attrs) { project.scan_result_policy_violations.last.attributes }
 
-      let(:security_policies_sync_enabled) { true }
-
       before do
-        stub_feature_flags(security_policies_sync: security_policies_sync_enabled)
         service.add([policy_a], [])
         service.execute
       end
@@ -64,19 +61,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
           "project_id" => project.id,
           "approval_policy_rule_id" => approval_policy_rule_a.id
         )
-      end
-
-      context 'when security_policies_sync is disabled' do
-        let(:security_policies_sync_enabled) { false }
-
-        specify do
-          is_expected.to include(
-            "scan_result_policy_id" => policy_a.id,
-            "merge_request_id" => merge_request.id,
-            "project_id" => project.id,
-            "approval_policy_rule_id" => nil
-          )
-        end
       end
     end
 

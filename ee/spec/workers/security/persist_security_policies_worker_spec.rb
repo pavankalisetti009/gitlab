@@ -92,16 +92,6 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
 
         expect(policy_configuration.security_policies.type_vulnerability_management_policy.count).to be(3)
       end
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policies_sync: false)
-        end
-
-        it 'does not persist policies' do
-          expect { perform }.not_to change { policy_configuration.security_policies.count }
-        end
-      end
     end
   end
 end

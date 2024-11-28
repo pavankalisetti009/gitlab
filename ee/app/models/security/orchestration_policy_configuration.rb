@@ -147,14 +147,6 @@ module Security
         vulnerability_management_policy
     end
 
-    def persist_policies?
-      if project?
-        ::Feature.enabled?(:security_policies_sync, project)
-      else
-        ::Feature.enabled?(:security_policies_sync_group, namespace)
-      end
-    end
-
     def policies_changed?
       yaml_differs_from_db?(security_policies.type_approval_policy, scan_result_policies) ||
         yaml_differs_from_db?(security_policies.type_scan_execution_policy, scan_execution_policy) ||

@@ -154,18 +154,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
 
         context "with project-level configuration" do
           include_examples "persist policies"
-
-          context "with feature disabled" do
-            before do
-              stub_feature_flags(security_policies_sync: false)
-            end
-
-            it "does not persist policies" do
-              expect(persistence_worker).not_to receive(:perform_async)
-
-              execute
-            end
-          end
         end
 
         context "with group-level configuration" do
@@ -176,18 +164,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
           end
 
           include_examples "persist policies"
-
-          context "with feature disabled" do
-            before do
-              stub_feature_flags(security_policies_sync_group: false)
-            end
-
-            it "does not persist policies" do
-              expect(persistence_worker).not_to receive(:perform_async)
-
-              execute
-            end
-          end
         end
       end
 
