@@ -12,7 +12,7 @@ import {
   UPDATE_FILE_ACTION,
   CONFIGURATION_FILE_TYPE,
 } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
-import { TEST_CUSTOM_DASHBOARDS_PROJECT } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
+import { TEST_CUSTOM_DASHBOARDS_PROJECT } from '../mock_data';
 
 describe('AnalyticsDashboard', () => {
   const dummyUrlRoot = '/gitlab';

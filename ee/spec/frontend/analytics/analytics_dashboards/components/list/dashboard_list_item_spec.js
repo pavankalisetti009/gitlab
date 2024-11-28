@@ -3,8 +3,10 @@ import { nextTick } from 'vue';
 import { visitUrl } from '~/lib/utils/url_utility';
 import DashboardListItem from 'ee/analytics/analytics_dashboards/components/list/dashboard_list_item.vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import { TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
-import { mockInvalidDashboardErrors } from '../../mock_data';
+import {
+  TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
+  mockInvalidDashboardErrors,
+} from '../../mock_data';
 
 jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api');
 
