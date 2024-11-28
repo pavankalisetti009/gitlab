@@ -39,6 +39,7 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
           nameWithNamespace
           fullPath
           hasJiraVulnerabilityIssueCreationEnabled
+          visibility
         }
         evidence {
           summary

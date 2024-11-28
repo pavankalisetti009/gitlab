@@ -9,6 +9,7 @@ import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulner
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import securityFindingCreateVulnerability from 'ee/vulnerabilities/graphql/security_finding_create_vulnerability.mutation.graphql';
 import ResolveWithAiButton from 'ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue';
+import ResolveWithAiInfoPopover from 'ee/security_dashboard/components/pipeline/resolve_with_ai_info_popover.vue';
 import {
   MUTATION_AI_ACTION_DEFAULT_RESPONSE,
   getAiSubscriptionResponse,
@@ -40,8 +41,6 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
   const findButton = () => wrapper.findComponent(GlButton);
   const clickButton = () => findButton().vm.$emit('click');
 
-  beforeEach(createWrapper);
-
   describe('initial render', () => {
     it('renders a "Resolve with AI" confirm button with an tanuki-ai icon and a title that describes the feature', () => {
       createWrapper();
@@ -51,9 +50,6 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
         icon: 'tanuki-ai',
         variant: 'confirm',
       });
-      expect(findButton().attributes('title')).toBe(
-        'Use GitLab Duo to generate a merge request with a suggested solution.',
-      );
     });
 
     it('does not have a loading state by default', () => {
@@ -61,6 +57,30 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
 
       expect(findButton().props('loading')).toBe(false);
     });
+  });
+
+  describe('info popover', () => {
+    it('is connected to the button', () => {
+      createWrapper();
+      const buttonId = findButton().attributes('id');
+
+      expect(buttonId).toEqual(expect.any(String));
+      expect(buttonId).not.toHaveLength(0);
+      expect(wrapper.findComponent(ResolveWithAiInfoPopover).props('target')).toBe(buttonId);
+    });
+
+    it.each([true, false])(
+      'gets passed "show-public-project-warning" when it is "%s"',
+      (showPublicProjectWarning) => {
+        createWrapper({
+          propsData: { showPublicProjectWarning },
+        });
+
+        expect(
+          wrapper.findComponent(ResolveWithAiInfoPopover).props('showPublicProjectWarning'),
+        ).toBe(showPublicProjectWarning);
+      },
+    );
   });
 
   describe('when the button is clicked', () => {
