@@ -1,22 +1,95 @@
 #!/usr/bin/env node
 
 const { spawnSync } = require('node:child_process');
-const { readFile, open, stat } = require('node:fs/promises');
-const { join, relative } = require('node:path');
+const { readFile, open, stat, mkdir } = require('node:fs/promises');
+const { join, relative, dirname } = require('node:path');
 const defaultChalk = require('chalk');
+const program = require('commander');
 const { getLocalQuarantinedFiles } = require('./jest_vue3_quarantine_utils');
 
-// Always use basic color output
-const chalk = new defaultChalk.constructor({ level: 1 });
+const ROOT = join(__dirname, '..', '..');
+const IS_CI = Boolean(process.env.CI);
+const FIXTURES_HELP_URL =
+  // eslint-disable-next-line no-restricted-syntax
+  'https://docs.gitlab.com/ee/development/testing_guide/frontend_testing.html#download-fixtures';
 
-const JEST_JSON_OUTPUT = './jest_results.json';
+const DIR = IS_CI ? ROOT : join(ROOT, 'tmp/tests/frontend');
+
+const JEST_JSON_OUTPUT = join(DIR, 'jest_results.json');
+const JEST_STDOUT = join(DIR, 'jest_stdout');
+const JEST_STDERR = join(DIR, 'jest_stderr');
+
+// Force basic color output in CI
+const chalk = new defaultChalk.constructor({ level: IS_CI ? 1 : undefined });
 
 let quarantinedFiles;
 let filesThatChanged;
 
-async function parseResults() {
-  const root = join(__dirname, '..', '..');
+function parseArguments() {
+  program
+    .usage('[options] <SPEC ...>')
+    .description(
+      `
+Checks whether Jest specs quarantined under Vue 3 should be unquarantined.
 
+Usage examples
+--------------
+
+In CI:
+
+    # Check quarantined files which were affected by changes in the merge request.
+    $ scripts/frontend/check_jest_vue3_quarantine.js
+
+    # Check all quarantined files, still subject to sharding/fixture separation.
+    # Useful for tier 3 pipelines, or when dependencies change.
+    $ scripts/frontend/check_jest_vue3_quarantine.js --all
+
+Locally:
+
+    # Run all quarantined files, including those which need fixtures.
+    # See ${FIXTURES_HELP_URL}
+    $ scripts/frontend/check_jest_vue3_quarantine.js --all
+
+    # Run a particular spec
+    $ scripts/frontend/check_jest_vue3_quarantine.js spec/frontend/foo_spec.js
+
+    # Run specs in this branch that were modified since master
+    $ scripts/frontend/check_jest_vue3_quarantine.js $(git diff master... --name-only)
+
+    # Write to stdio normally instead of to temporary files
+    $ scripts/frontend/check_jest_vue3_quarantine.js --stdio spec/frontend/foo_spec.js
+    `.trim(),
+    )
+    .option(
+      '--all',
+      'Run all quarantined specs. Good for local testing, or in CI when configuration files have changed.',
+    )
+    .option(
+      '--stdio',
+      `Let Jest write to stdout/stderr as normal. By default, it writes to ${JEST_STDOUT} and ${JEST_STDERR}. Should not be used in CI, as it can exceed maximum job log size.`,
+    )
+    .parse(process.argv);
+
+  let invalidArgumentsMessage;
+
+  if (!IS_CI) {
+    if (!program.all && program.args.length === 0) {
+      invalidArgumentsMessage =
+        'No spec files to check!\n\nWhen run locally, either add the --all option, or a list of spec files to check.';
+    }
+
+    if (program.all && program.args.length > 0) {
+      invalidArgumentsMessage = `Do not pass arguments in addition to the --all option.`;
+    }
+  }
+
+  if (invalidArgumentsMessage) {
+    console.warn(`${chalk.red(invalidArgumentsMessage)}\n`);
+    program.help();
+  }
+}
+
+async function parseResults() {
   let results;
   try {
     results = JSON.parse(await readFile(JEST_JSON_OUTPUT, 'UTF-8'));
@@ -29,7 +102,7 @@ async function parseResults() {
 
   return results.testResults.reduce((acc, { name, status }) => {
     if (status === 'passed') {
-      acc.push(relative(root, name));
+      acc.push(relative(ROOT, name));
     }
 
     return acc;
@@ -56,6 +129,11 @@ function reportSpecsShouldBeUnquarantined(files) {
 }
 
 async function changedFiles() {
+  if (!IS_CI) {
+    // We're not in CI, so `detect-tests` artifacts won't be available.
+    return [];
+  }
+
   const { RSPEC_CHANGED_FILES_PATH, RSPEC_MATCHING_JS_FILES_PATH } = process.env;
 
   const files = await Promise.all(
@@ -80,7 +158,13 @@ function intersection(a, b) {
 async function getRemovedQuarantinedSpecs() {
   const removedQuarantinedSpecs = [];
 
-  for (const file of intersection(filesThatChanged, quarantinedFiles)) {
+  const filesToCheckIfTheyExist = IS_CI
+    ? // In CI, only check quarantined files the author has touched
+      intersection(filesThatChanged, quarantinedFiles)
+    : // Locally, check all quarantined files
+      quarantinedFiles;
+
+  for (const file of filesToCheckIfTheyExist) {
     try {
       // eslint-disable-next-line no-await-in-loop
       await stat(file);
@@ -92,11 +176,66 @@ async function getRemovedQuarantinedSpecs() {
   return removedQuarantinedSpecs;
 }
 
+function getTestArguments() {
+  if (IS_CI) {
+    const ciArguments = (touchedFiles) => [
+      '--findRelatedTests',
+      ...touchedFiles,
+      '--passWithNoTests',
+      // Explicitly have one shard, so that the `shard` method of the sequencer is called.
+      '--shard=1/1',
+      '--testSequencer',
+      './scripts/frontend/check_jest_vue3_quarantine_sequencer.js',
+    ];
+
+    return program.all
+      ? // Pretend that all quarantined files were touched. This ensures
+        // we still rely on FixtureCISequencer behavior.
+        ciArguments(quarantinedFiles)
+      : // Run only tests affected by changes in the merge request.
+        ciArguments(filesThatChanged);
+  }
+
+  if (program.all) {
+    return ['--runTestsByPath', ...quarantinedFiles];
+  }
+
+  if (program.args.length > 0) {
+    const specs = program.args.filter((spec) => {
+      const isQuarantined = quarantinedFiles.has(relative(ROOT, spec));
+      if (!isQuarantined) console.warn(`Omitting file as it is not in quarantine list: ${spec}`);
+      return isQuarantined;
+    });
+
+    if (specs.length === 0) {
+      console.warn(`No quarantined specs to run!`);
+      process.exit(1);
+    }
+
+    return ['--runTestsByPath', ...specs];
+  }
+
+  // ESLint's consistent-return rule requires something like this.
+  return ['--this-should-never-happen-and-jest-should-fail'];
+}
+
+async function getStdio() {
+  if (program.stdio) {
+    return 'inherit';
+  }
+
+  await mkdir(dirname(JEST_STDOUT), { recursive: true });
+  const jestStdout = (await open(JEST_STDOUT, 'w')).createWriteStream();
+  const jestStderr = (await open(JEST_STDERR, 'w')).createWriteStream();
+
+  return ['inherit', jestStdout, jestStderr];
+}
+
 async function main() {
+  parseArguments();
+
   filesThatChanged = await changedFiles();
   quarantinedFiles = new Set(await getLocalQuarantinedFiles());
-  const jestStdout = (await open('jest_stdout', 'w')).createWriteStream();
-  const jestStderr = (await open('jest_stderr', 'w')).createWriteStream();
 
   console.log('Running quarantined specs...');
 
@@ -117,19 +256,13 @@ async function main() {
       '--config',
       'jest.config.js',
       '--ci',
-      '--findRelatedTests',
-      ...filesThatChanged,
-      '--passWithNoTests',
-      // Explicitly have one shard, so that the `shard` method of the sequencer is called.
-      '--shard=1/1',
-      '--testSequencer',
-      './scripts/frontend/check_jest_vue3_quarantine_sequencer.js',
       '--logHeapUsage',
       '--json',
       `--outputFile=${JEST_JSON_OUTPUT}`,
+      ...getTestArguments(),
     ],
     {
-      stdio: ['inherit', jestStdout, jestStderr],
+      stdio: await getStdio(),
       env: {
         ...process.env,
         VUE_VERSION: '3',
@@ -144,6 +277,7 @@ async function main() {
   if (filesToReport.length === 0) {
     // No tests ran, or there was some unexpected error. Either way, exit
     // successfully.
+    console.warn('No spec files need to be removed from quarantine.');
     return;
   }
 
