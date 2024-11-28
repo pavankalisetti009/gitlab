@@ -50,7 +50,7 @@
             .gl-col-span-2
               %strong
                 = group_lfs_status(@group)
-                = link_to sprite_icon('question-o', css_class: 'gl-text-blue-600'), help_page_path('topics/git/lfs/index.md')
+                = link_to sprite_icon('question-o', css_class: 'gl-fill-icon-info'), help_page_path('topics/git/lfs/index.md')
           = render_if_exists 'namespaces/shared_runner_status', namespace: @group
           = render_if_exists 'namespaces/additional_minutes_status', namespace: @group
 
@@ -107,10 +107,10 @@
       - c.with_body do
         %ul.content-list.group-users-list.members-list
           = render partial: 'shared/members/member',
-                  collection: @members, as: :member,
-                  locals: { membership_source: @group,
-                            group: @group,
-                            current_user_is_group_owner: current_user_is_group_owner }
+            collection: @members, as: :member,
+            locals: { membership_source: @group,
+            group: @group,
+            current_user_is_group_owner: current_user_is_group_owner }
       - unless @members.size < Kaminari.config.default_per_page
         - c.with_footer do
           = paginate @members, param_name: 'members_page', theme: 'gitlab'

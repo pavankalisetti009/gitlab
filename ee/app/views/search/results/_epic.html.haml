@@ -8,7 +8,7 @@
       = gl_badge_tag _('Closed'), variant: :info
     - else
       = gl_badge_tag _('Open'), variant: :success
-    = sprite_icon('eye-slash', css_class: 'gl-text-secondary gl-ml-2') if epic.confidential?
+    = sprite_icon('eye-slash', css_class: 'gl-fill-icon-subtle gl-ml-2') if epic.confidential?
     = link_to group_epic_path(epic.group, epic), data: { event_tracking: 'click_search_result', event_label: @scope, event_value: position }, class: 'gl-w-full' do
       %span.term.str-truncated.gl-font-bold.gl-ml-2= epic.title
   .gl-text-secondary.gl-mb-3.gl-text-sm
