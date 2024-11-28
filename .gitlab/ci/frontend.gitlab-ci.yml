@@ -444,7 +444,7 @@ jest vue3 check quarantined:
     paths:
       - jest_stdout
       - jest_stderr
-      - junit_jest.xml
+      - jest_results.json
 
 jest-with-fixtures vue3 check quarantined:
   extends:
@@ -463,7 +463,7 @@ jest-with-fixtures vue3 check quarantined:
     paths:
       - jest_stdout
       - jest_stderr
-      - junit_jest.xml
+      - jest_results.json
 
 jest-integration:
   extends:

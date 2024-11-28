@@ -2,26 +2,24 @@
 
 const { spawnSync } = require('node:child_process');
 const { readFile, open, stat } = require('node:fs/promises');
-const parser = require('fast-xml-parser');
+const { join, relative } = require('node:path');
 const defaultChalk = require('chalk');
 const { getLocalQuarantinedFiles } = require('./jest_vue3_quarantine_utils');
 
 // Always use basic color output
 const chalk = new defaultChalk.constructor({ level: 1 });
 
+const JEST_JSON_OUTPUT = './jest_results.json';
+
 let quarantinedFiles;
 let filesThatChanged;
 
-async function parseJUnitReport() {
-  let junit;
+async function parseResults() {
+  const root = join(__dirname, '..', '..');
+
+  let results;
   try {
-    const xml = await readFile('./junit_jest.xml', 'UTF-8');
-    junit = parser.parse(xml, {
-      arrayMode: true,
-      attributeNamePrefix: '',
-      parseNodeValue: false,
-      ignoreAttributes: false,
-    });
+    results = JSON.parse(await readFile(JEST_JSON_OUTPUT, 'UTF-8'));
   } catch (e) {
     console.warn(e);
     // No JUnit report exists, or there was a parsing error. Either way, we
@@ -29,29 +27,13 @@ async function parseJUnitReport() {
     return [];
   }
 
-  const failuresByFile = new Map();
-
-  for (const testsuites of junit.testsuites) {
-    for (const testsuite of testsuites.testsuite || []) {
-      for (const testcase of testsuite.testcase) {
-        const { file } = testcase;
-        if (!failuresByFile.has(file)) {
-          failuresByFile.set(file, 0);
-        }
-
-        const failuresSoFar = failuresByFile.get(file);
-        const testcaseFailed = testcase.failure ? 1 : 0;
-        failuresByFile.set(file, failuresSoFar + testcaseFailed);
-      }
+  return results.testResults.reduce((acc, { name, status }) => {
+    if (status === 'passed') {
+      acc.push(relative(root, name));
     }
-  }
 
-  const passed = [];
-  for (const [file, failures] of failuresByFile.entries()) {
-    if (failures === 0 && quarantinedFiles.has(file)) passed.push(file);
-  }
-
-  return passed;
+    return acc;
+  }, []);
 }
 
 function reportSpecsShouldBeUnquarantined(files) {
@@ -143,6 +125,8 @@ async function main() {
       '--testSequencer',
       './scripts/frontend/check_jest_vue3_quarantine_sequencer.js',
       '--logHeapUsage',
+      '--json',
+      `--outputFile=${JEST_JSON_OUTPUT}`,
     ],
     {
       stdio: ['inherit', jestStdout, jestStderr],
@@ -153,7 +137,7 @@ async function main() {
     },
   );
 
-  const passed = await parseJUnitReport();
+  const passed = await parseResults();
   const removedQuarantinedSpecs = await getRemovedQuarantinedSpecs();
   const filesToReport = [...passed, ...removedQuarantinedSpecs];
 
