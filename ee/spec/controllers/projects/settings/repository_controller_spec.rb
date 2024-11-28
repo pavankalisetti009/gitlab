@@ -195,7 +195,7 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
 
     context 'when accessing through custom ability' do
       let_it_be(:another_user) { create(:user) }
-      let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
+      let_it_be(:role) { create(:member_role, :guest, :admin_protected_branch, namespace: group) }
       let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: another_user, group: group) }
 
       before do
