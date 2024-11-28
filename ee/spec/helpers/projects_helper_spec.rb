@@ -107,14 +107,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   end
 
   describe '#compliance_center_path' do
-    let(:group) { create(:group) }
-
-    before do
-      project.update!(namespace: group)
-    end
-
-    it 'returns the path to the group security compliance dashboard' do
-      expect(helper.compliance_center_path(project)).to eq(group_security_compliance_dashboard_path(group, vueroute: "frameworks"))
+    it 'returns the path to the project security compliance dashboard' do
+      expect(helper.compliance_center_path(project)).to eq(project_security_compliance_dashboard_path(project, vueroute: "frameworks"))
     end
   end
 

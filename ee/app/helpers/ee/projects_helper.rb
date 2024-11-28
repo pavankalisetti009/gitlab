@@ -304,8 +304,7 @@ module EE
     end
 
     def compliance_center_path(project)
-      group = project.root_ancestor
-      group_security_compliance_dashboard_path(group, vueroute: "frameworks")
+      project_security_compliance_dashboard_path(project, vueroute: "frameworks")
     end
 
     def scheduled_for_deletion?(project)

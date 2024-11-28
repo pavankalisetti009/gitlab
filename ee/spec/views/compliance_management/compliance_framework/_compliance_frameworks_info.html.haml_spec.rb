@@ -3,58 +3,65 @@
 require 'spec_helper'
 
 RSpec.describe 'compliance_management/compliance_framework/_compliance_framework_info.html.haml', feature_category: :compliance_management do
-  let(:group) { build_stubbed(:group) }
   let(:framework1) { build_stubbed(:compliance_framework) }
   let(:project) do
-    build_stubbed(:project, namespace: group,
+    build_stubbed(:project,
       compliance_framework_settings:
       [build_stubbed(:compliance_framework_project_setting, compliance_management_framework: framework1)])
   end
 
   before do
-    allow(view).to receive(:show_compliance_frameworks_info?).and_return(true)
-    allow(view).to receive(:can?).with(anything, :admin_compliance_framework, project.root_ancestor).and_return(false)
+    allow(view).to receive(:show_compliance_frameworks_info?).and_return(show_compliance_frameworks_info)
+    allow(view).to receive(:can?).with(anything, :read_compliance_adherence_report,
+      project).and_return(can_read_compliance_report)
   end
 
-  it 'renders compliance framework badges' do
-    render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
-    expect(rendered).to have_selector('[data-testid="compliance-frameworks-info"]', count: 1)
-    expect(rendered).to have_content(framework1.name)
-  end
+  context 'when compliance frameworks info is enabled and user has permissions' do
+    let(:show_compliance_frameworks_info) { true }
+    let(:can_read_compliance_report) { true }
 
-  context 'when user is not a group owner' do
-    it 'renders tooltip for badges' do
+    it 'renders the #js-compliance-info element with correct data' do
       render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
-      expect(rendered).to have_css('.has-tooltip')
+      expect(rendered).to have_selector('#js-compliance-info')
+      expect(rendered).to have_selector("[data-project-path='#{project.full_path}']")
+      expect(rendered).to have_selector("[data-compliance-center-path='#{compliance_center_path(project)}']")
     end
   end
 
-  context 'when user is a group owner' do
+  context 'when compliance frameworks info is enabled but user do not have permissions' do
+    let(:show_compliance_frameworks_info) { true }
+    let(:can_read_compliance_report) { false }
+
+    it 'does not render the #js-compliance-info element' do
+      render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
+
+      expect(rendered).not_to have_selector('#js-compliance-info')
+    end
+  end
+
+  context 'when compliance frameworks info is disabled' do
+    let(:show_compliance_frameworks_info) { false }
+    let(:can_read_compliance_report) { true }
+
+    it 'does not render the #js-compliance-info element' do
+      render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
+
+      expect(rendered).not_to have_selector('#js-compliance-info')
+    end
+  end
+
+  context 'when compliance frameworks info is enabled but no frameworks exist' do
+    let(:show_compliance_frameworks_info) { true }
+    let(:can_read_compliance_report) { true }
+
     before do
-      allow(view).to receive(:show_compliance_frameworks_info?).and_return(true)
-      allow(view).to receive(:can?).with(anything, :admin_compliance_framework, project.root_ancestor).and_return(true)
+      allow(project).to receive(:compliance_framework_settings).and_return([])
     end
 
-    it 'does not render tooltip for badges' do
-      render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
-      expect(rendered).not_to have_selector('.has-tooltip')
-    end
-
-    it 'renders the link to compliance path' do
-      render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
-      expect(rendered).to have_link(nil, href: compliance_center_path(project))
-    end
-  end
-
-  context 'when show_compliance_frameworks_info? is false' do
-    before do
-      allow(view).to receive(:show_compliance_frameworks_info?).and_return(false)
-    end
-
-    it 'does not render any badge' do
+    it 'does not render any compliance frameworks info' do
       render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
 
-      expect(rendered).not_to have_css('.project-page-sidebar-block')
+      expect(rendered).not_to have_selector('[data-testid="compliance-frameworks-info"]')
     end
   end
 end

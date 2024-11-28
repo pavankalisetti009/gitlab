@@ -1,11 +1,16 @@
 import { GlLabel, GlButton, GlPopover } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { visitUrl } from '~/lib/utils/url_utility';
 
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 
 import { ROUTE_EDIT_FRAMEWORK, ROUTE_FRAMEWORKS } from 'ee/compliance_dashboard/constants';
 import { complianceFramework } from '../../mock_data';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  visitUrl: jest.fn().mockName('visitUrlMock'),
+}));
 
 describe('FrameworkBadge component', () => {
   let wrapper;
@@ -117,6 +122,19 @@ describe('FrameworkBadge component', () => {
       wrapper = createComponent({ framework: complianceFramework, closeable: true });
 
       expect(findLabel().props('showCloseButton')).toBe(true);
+    });
+
+    it('navigates to viewDetailsUrl when provided', async () => {
+      const viewDetailsUrl = 'http://example.com/framework-details';
+      wrapper = createComponent({
+        framework: complianceFramework,
+        showEdit: false,
+        viewDetailsUrl,
+      });
+
+      await findCtaButton().vm.$emit('click', new MouseEvent('click'));
+      expect(visitUrl).toHaveBeenCalledWith(viewDetailsUrl);
+      expect(routerPushMock).not.toHaveBeenCalled();
     });
   });
 });

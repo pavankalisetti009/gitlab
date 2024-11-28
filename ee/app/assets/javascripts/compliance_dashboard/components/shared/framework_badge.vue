@@ -1,7 +1,7 @@
 <script>
 import { GlButton, GlLabel, GlPopover } from '@gitlab/ui';
 import { s__ } from '~/locale';
-
+import { visitUrl } from '~/lib/utils/url_utility';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { ROUTE_EDIT_FRAMEWORK, ROUTE_FRAMEWORKS } from '../../constants';
 
@@ -37,6 +37,11 @@ export default {
       required: false,
       default: true,
     },
+    viewDetailsUrl: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     showDefaultBadge() {
@@ -55,19 +60,26 @@ export default {
         ? 'compliance-framework-default-label'
         : 'compliance-framework-label';
     },
+    frameworkId() {
+      return getIdFromGraphQLId(this.framework.id);
+    },
   },
   methods: {
     editFromPopover() {
       this.$router.push({
         name: ROUTE_EDIT_FRAMEWORK,
-        params: { id: getIdFromGraphQLId(this.framework.id) },
+        params: { id: this.frameworkId },
       });
     },
     viewFrameworkDetails() {
-      this.$router.push({
-        name: ROUTE_FRAMEWORKS,
-        query: { id: getIdFromGraphQLId(this.framework.id) },
-      });
+      if (this.viewDetailsUrl) {
+        visitUrl(this.viewDetailsUrl);
+      } else {
+        this.$router.push({
+          name: ROUTE_FRAMEWORKS,
+          query: { id: this.frameworkId },
+        });
+      }
     },
   },
   i18n: {
