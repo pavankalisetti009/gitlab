@@ -58,7 +58,7 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
 
   context 'with a registration token' do
     let(:token) { registration_token }
-    let(:token_scope) {}
+    let(:token_scope) { an_instance_of(Gitlab::Audit::InstanceScope) }
 
     it_behaves_like 'a service logging a runner registration audit event'
   end
