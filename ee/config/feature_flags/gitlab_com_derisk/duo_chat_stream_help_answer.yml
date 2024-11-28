@@ -1,9 +1,0 @@
----
-name: duo_chat_stream_help_answer
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/499479
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/169884
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/500023
-milestone: '17.6'
-group: group::duo chat
-type: gitlab_com_derisk
-default_enabled: false

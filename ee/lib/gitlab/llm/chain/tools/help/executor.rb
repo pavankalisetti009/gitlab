@@ -89,10 +89,6 @@ Learn more about GitLab Duo Chat can do in the [documentation](#{::Gitlab::Routi
             def perform
               content = command.platform_origin == SlashCommand::VS_CODE_EXTENSION ? IDE_COPY : WEB_COPY
 
-              if Feature.enabled?(:duo_chat_stream_help_answer, context.current_user)
-                streamed_request_handler(StreamedAnswer.new).call(content)
-              end
-
               track_internal_event(
                 'request_ask_help',
                 namespace: namespace,
