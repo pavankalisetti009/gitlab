@@ -23,7 +23,7 @@ module Admin
       private
 
       def ensure_feature_available!
-        return if !Gitlab.org_or_com? && # rubocop:disable Gitlab/AvoidGitlabInstanceChecks,Style/InlineDisableAnnotation -- Not related to SaaS offerings
+        return if !Gitlab.org_or_com? && # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Not related to SaaS offerings
           check_duo_visibility? &&
           License.current.present? &&
           License.current.paid? &&

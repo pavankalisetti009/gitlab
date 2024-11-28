@@ -70,17 +70,17 @@ module EE
         end
 
         define_method("#{attribute}?") do |inherit_group_setting: false|
-          if inherit_group_setting
-            result = public_send(attribute.to_s) || public_send("#{attribute}_of_parent_group") # rubocop:disable GitlabSecurity/PublicSend
-          else
-            result = public_send(attribute.to_s) # rubocop:disable GitlabSecurity/PublicSend
-          end
+          result = if inherit_group_setting
+                     public_send(attribute.to_s) || public_send("#{attribute}_of_parent_group")
+                   else
+                     public_send(attribute.to_s)
+                   end
 
           !!result
         end
 
         define_method("#{attribute}_locked?") do
-          !!public_send("#{attribute}_of_parent_group") # rubocop:disable GitlabSecurity/PublicSend
+          !!public_send("#{attribute}_of_parent_group")
         end
       end
 

@@ -142,7 +142,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
   describe '#admin_display_duo_pro_settings?' do
     subject(:display_duo_pro_settings) { helper.admin_display_duo_pro_settings? }
 
-    let(:code_suggestions_service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles,Style/InlineDisableAnnotation -- Stubbed to test purchases call
+    let(:code_suggestions_service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
 
     before do
       allow(CloudConnector::AvailableServices)
