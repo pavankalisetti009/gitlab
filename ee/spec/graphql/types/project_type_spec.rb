@@ -85,6 +85,43 @@ RSpec.describe GitlabSchema.types['Project'] do
     end
   end
 
+  describe 'secret push protection' do
+    let_it_be(:security_setting) { create(:project_security_setting, pre_receive_secret_detection_enabled: true) }
+    let_it_be(:project) { security_setting.project }
+
+    describe 'pre_receive_secret_detection_enabled' do
+      where(:user_role, :licensed_feature, :expected) do
+        :guest     | true  | nil
+        :developer | true  | true
+        :developer | false | nil
+      end
+
+      with_them do
+        before do
+          stub_licensed_features(pre_receive_secret_detection: licensed_feature)
+          project.add_role(user, user_role)
+        end
+
+        let(:query) do
+          %(
+            query {
+              project(fullPath: "#{project.full_path}") {
+                preReceiveSecretDetectionEnabled
+              }
+            }
+          )
+        end
+
+        subject(:response) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+        it 'returns the expected pre_receive_secret_detection_enabled value' do
+          pre_receive_secret_detection_enabled = response.dig('data', 'project', 'preReceiveSecretDetectionEnabled')
+          expect(pre_receive_secret_detection_enabled).to eq(expected)
+        end
+      end
+    end
+  end
+
   describe 'security_scanners' do
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:pipeline) { create(:ci_pipeline, project: project, sha: project.commit.id, ref: project.default_branch) }
