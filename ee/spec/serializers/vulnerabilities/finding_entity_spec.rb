@@ -261,5 +261,71 @@ RSpec.describe Vulnerabilities::FindingEntity, feature_category: :vulnerability_
         it { is_expected.not_to have_key(:found_by_pipeline) }
       end
     end
+
+    context 'when cve_enrichment is present' do
+      let(:epss_score) { 0.5 }
+      let(:is_known_exploit) { true }
+      let(:cve_enrichment) do
+        instance_double(PackageMetadata::CveEnrichment, epss_score: epss_score, is_known_exploit: is_known_exploit)
+      end
+
+      before do
+        allow(occurrence).to receive(:cve_enrichment).and_return(cve_enrichment)
+      end
+
+      it 'includes epss_score' do
+        expect(subject[:epss_score]).to eq(epss_score)
+      end
+
+      it 'includes is_known_exploit' do
+        expect(subject[:is_known_exploit]).to eq(is_known_exploit)
+      end
+    end
+
+    context 'when cve_enrichment is not present' do
+      before do
+        allow(occurrence).to receive(:cve_enrichment).and_return(nil)
+      end
+
+      it 'does not include epss_score' do
+        expect(subject[:epss_score]).to be_nil
+      end
+
+      it 'does not include is_known_exploit' do
+        expect(subject[:is_known_exploit]).to be_nil
+      end
+    end
+
+    context 'when advisory is present' do
+      let(:cvss_v2) { 10 }
+      let(:cvss_v3) { 9.8 }
+      let(:advisory) { instance_double(PackageMetadata::Advisory, cvss_v2: cvss_v2, cvss_v3: cvss_v3) }
+
+      before do
+        allow(occurrence).to receive(:advisory).and_return(advisory)
+      end
+
+      it 'includes cvss_v2' do
+        expect(subject[:cvss_v2]).to eq(cvss_v2)
+      end
+
+      it 'includes cvss_v3' do
+        expect(subject[:cvss_v3]).to eq(cvss_v3)
+      end
+    end
+
+    context 'when advisory is not present' do
+      before do
+        allow(occurrence).to receive(:advisory).and_return(nil)
+      end
+
+      it 'does not include cvss_v2' do
+        expect(subject[:cvss_v2]).to be_nil
+      end
+
+      it 'does not include cvss_v3' do
+        expect(subject[:cvss_v3]).to be_nil
+      end
+    end
   end
 end
