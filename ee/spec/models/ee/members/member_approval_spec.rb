@@ -125,7 +125,7 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
 
         context 'when updating existing approval' do
           context 'when updating member_role' do
-            let(:member_role) { create(:member_role, :guest, namespace: nil, read_vulnerability: true) }
+            let(:member_role) { create(:member_role, :guest, :read_vulnerability, :instance) }
 
             it 'updates member role' do
               member_approval.member_role_id = member_role.id
