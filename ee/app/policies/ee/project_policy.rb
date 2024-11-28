@@ -52,7 +52,11 @@ module EE
       with_scope :subject
       condition(:generate_cube_query_enabled) do
         ::Feature.enabled?(:generate_cube_query, @subject) &&
-          @subject.licensed_feature_available?(:ai_generate_cube_query)
+          ::Gitlab::Llm::FeatureAuthorizer.new(
+            container: subject,
+            feature_name: :generate_cube_query,
+            user: @user
+          ).allowed?
       end
 
       with_scope :global
@@ -252,7 +256,8 @@ module EE
         ::Feature.enabled?(:add_ai_summary_for_new_mr, subject) &&
           ::Gitlab::Llm::FeatureAuthorizer.new(
             container: subject,
-            feature_name: :summarize_new_merge_request
+            feature_name: :summarize_new_merge_request,
+            user: @user
           ).allowed?
       end
 
@@ -260,7 +265,8 @@ module EE
       condition(:generate_description_enabled) do
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: subject,
-          feature_name: :generate_description
+          feature_name: :generate_description,
+          user: @user
         ).allowed?
       end
 
@@ -495,7 +501,8 @@ module EE
       condition(:resolve_vulnerability_allowed) do
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: subject,
-          feature_name: :resolve_vulnerability
+          feature_name: :resolve_vulnerability,
+          user: @user
         ).allowed?
       end
 

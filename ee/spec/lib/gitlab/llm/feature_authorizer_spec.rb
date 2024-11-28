@@ -4,18 +4,24 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction_layer do
   let_it_be_with_reload(:group) { create(:group) }
+  let_it_be(:user) { create(:user) }
 
   let(:feature_name) { :summarize_review }
   let(:instance) do
     described_class.new(
       container: group,
-      feature_name: feature_name
+      feature_name: feature_name,
+      user: user
     )
   end
 
   subject(:allowed?) { instance.allowed? }
 
   describe '#allowed?' do
+    before do
+      allow(user).to receive(:allowed_to_use?).and_return(true)
+    end
+
     context 'when container has correct setting and license' do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
@@ -38,6 +44,16 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
       end
     end
 
+    context 'when user is not allowed to use feature' do
+      before do
+        allow(user).to receive(:allowed_to_use?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(allowed?).to be false
+      end
+    end
+
     context 'when container does not have correct license' do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false)
@@ -48,11 +64,26 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
       end
     end
 
-    context 'when container not present' do
+    context 'when container is not present' do
       let(:instance) do
         described_class.new(
           container: nil,
-          feature_name: feature_name
+          feature_name: feature_name,
+          user: user
+        )
+      end
+
+      it 'returns false' do
+        expect(allowed?).to be false
+      end
+    end
+
+    context 'when user is not present' do
+      let(:instance) do
+        described_class.new(
+          container: group,
+          feature_name: feature_name,
+          user: nil
         )
       end
 

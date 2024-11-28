@@ -25,7 +25,8 @@ class InstanceSecurityDashboardPolicy < BasePolicy
   condition(:resolve_vulnerability_allowed) do
     ::Gitlab::Llm::FeatureAuthorizer.new(
       container: subject,
-      feature_name: :resolve_vulnerability
+      feature_name: :resolve_vulnerability,
+      user: @user
     ).allowed?
   end
 

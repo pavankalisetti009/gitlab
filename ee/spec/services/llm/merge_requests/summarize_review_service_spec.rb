@@ -18,7 +18,7 @@ RSpec.describe Llm::MergeRequests::SummarizeReviewService, :saas, feature_catego
     before do
       stub_ee_application_setting(should_check_namespace_plan: true)
       stub_licensed_features(summarize_my_mr_code_review: true, ai_features: true, experimental_features: true)
-
+      allow(user).to receive(:allowed_to_use?).and_return(true)
       group.add_developer(user)
 
       group.namespace_settings.update!(experiment_features_enabled: true)

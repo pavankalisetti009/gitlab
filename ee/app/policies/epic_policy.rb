@@ -38,7 +38,8 @@ class EpicPolicy < BasePolicy
   condition(:summarize_notes_allowed) do
     ::Gitlab::Llm::FeatureAuthorizer.new(
       container: subject.group,
-      feature_name: :summarize_comments
+      feature_name: :summarize_comments,
+      user: @user
     ).allowed?
   end
 

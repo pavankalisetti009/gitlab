@@ -1756,6 +1756,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         security_dashboard: true,
         ai_features: true
       )
+      allow(current_user).to receive(:allowed_to_use?).and_return(true)
     end
 
     context 'when user cannot :read_security_resource' do

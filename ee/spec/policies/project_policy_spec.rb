@@ -3824,6 +3824,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
   describe 'generate_cube_query policy' do
     let(:current_user) { owner }
+    let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
 
     where(:ai_global_switch, :flag_enabled, :licensed, :allowed) do
       true | true | true | true
@@ -3840,7 +3841,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       before do
         stub_feature_flags(ai_global_switch: ai_global_switch)
         stub_feature_flags(generate_cube_query: flag_enabled)
-        stub_licensed_features(ai_generate_cube_query: licensed)
+        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+        allow(authorizer).to receive(:allowed?).and_return(licensed)
       end
 
       it 'permits the correct abilities' do
