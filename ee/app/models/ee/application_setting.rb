@@ -329,7 +329,7 @@ module EE
     end
 
     def max_auth_lifetime
-      if ::Feature.enabled?(:buffered_token_expiration_limit) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Group setting but checked at user
+      if ::Feature.enabled?(:buffered_token_expiration_limit)
         400
       else
         365

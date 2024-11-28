@@ -102,7 +102,7 @@ module EE
 
         # We don't have controller params here, so we need to slice instead of permit
         super
-          .merge(params.slice(*GLM_PARAMS)) # rubocop:disable Rails/StrongParams -- false positive due to unique placement of this class in the controller area
+          .merge(params.slice(*GLM_PARAMS))
           .merge(onboarding_status_email_opt_in: email_opt_in?)
       end
 

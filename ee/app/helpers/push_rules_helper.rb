@@ -39,7 +39,7 @@ module PushRulesHelper
       messages << s_("ProjectSettings|This setting will be applied to all projects unless overridden by an admin.")
     else
       enabled_globally = PushRule.global&.public_send(rule)
-      enabled_in_project = push_rule.public_send(rule) # rubocop:disable GitlabSecurity/PublicSend
+      enabled_in_project = push_rule.public_send(rule)
 
       if enabled_globally
         messages << if enabled_in_project
