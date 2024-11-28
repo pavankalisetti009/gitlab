@@ -14,6 +14,7 @@ const DEFAULT_PROPS = {
   isLocked: false,
   canLock: true,
   showForkSuggestion: false,
+  handleFormSubmit: jest.fn(),
 };
 
 const DEFAULT_INJECT = {
@@ -33,6 +34,9 @@ describe('EE BlobButtonGroup component', () => {
       },
       provide: {
         ...DEFAULT_INJECT,
+      },
+      stubs: {
+        LockButton,
       },
     });
   };
