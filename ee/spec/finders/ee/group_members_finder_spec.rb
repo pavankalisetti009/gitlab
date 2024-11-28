@@ -43,33 +43,15 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
       end
 
       let_it_be(:members) do
-        group_custom_maintainer_role = create(:member_role, { name: 'custom maintainer',
-                                                              namespace: group,
-                                                              base_access_level: ::Gitlab::Access::MAINTAINER })
-        group_custom_developer_role = create(:member_role, { name: 'custom developer',
-                                                             namespace: group,
-                                                             base_access_level: ::Gitlab::Access::DEVELOPER })
-        group_custom_reporter_role = create(:member_role, { name: 'custom reporter',
-                                                            namespace: group,
-                                                            base_access_level: ::Gitlab::Access::REPORTER })
-        public_shared_group_custom_maintainer_role = create(:member_role, { name: 'custom maintainer',
-                                                                            namespace: public_shared_group,
-                                                                            base_access_level: ::Gitlab::Access::MAINTAINER })
-        public_shared_group_custom_developer_role = create(:member_role, { name: 'custom developer',
-                                                                           namespace: public_shared_group,
-                                                                           base_access_level: ::Gitlab::Access::DEVELOPER })
-        public_shared_group_custom_reporter_role = create(:member_role, { name: 'custom reporter',
-                                                                          namespace: public_shared_group,
-                                                                          base_access_level: ::Gitlab::Access::REPORTER })
-        private_shared_group_custom_maintainer_role = create(:member_role, { name: 'custom maintainer',
-                                                                             namespace: private_shared_group,
-                                                                             base_access_level: ::Gitlab::Access::MAINTAINER })
-        private_shared_group_custom_developer_role = create(:member_role, { name: 'custom developer',
-                                                                            namespace: private_shared_group,
-                                                                            base_access_level: ::Gitlab::Access::DEVELOPER })
-        private_shared_group_custom_reporter_role = create(:member_role, { name: 'custom reporter',
-                                                                           namespace: private_shared_group,
-                                                                           base_access_level: ::Gitlab::Access::REPORTER })
+        group_custom_maintainer_role = create(:member_role, :maintainer, namespace: group)
+        group_custom_developer_role = create(:member_role, :developer, namespace: group)
+        group_custom_reporter_role = create(:member_role, :reporter, namespace: group)
+        public_shared_group_custom_maintainer_role = create(:member_role, :maintainer, namespace: public_shared_group)
+        public_shared_group_custom_developer_role = create(:member_role, :developer, namespace: public_shared_group)
+        public_shared_group_custom_reporter_role = create(:member_role, :reporter, namespace: public_shared_group)
+        private_shared_group_custom_maintainer_role = create(:member_role, :maintainer, namespace: private_shared_group)
+        private_shared_group_custom_developer_role = create(:member_role, :developer, namespace: private_shared_group)
+        private_shared_group_custom_reporter_role = create(:member_role, :reporter, namespace: private_shared_group)
         {
           user1_sub_sub_group: create(:group_member, :maintainer, group: sub_sub_group, user: user1, member_role: group_custom_maintainer_role),
           user1_sub_group: create(:group_member, :developer, group: sub_group, user: user1, member_role: group_custom_developer_role),
