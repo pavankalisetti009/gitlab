@@ -168,7 +168,6 @@ spec/frontend/ci/pipeline_editor/pipeline_editor_app_spec.js
 spec/frontend/ci/pipeline_mini_graph/pipeline_mini_graph_spec.js
 spec/frontend/ci/pipelines_page/components/pipeline_multi_actions_spec.js
 spec/frontend/ci/pipelines_page/components/pipelines_artifacts_spec.js
-spec/frontend/ci/runner/admin_runner_show/admin_runner_show_app_spec.js
 spec/frontend/ci/runner/components/runner_details_spec.js
 spec/frontend/ci/runner/components/runner_form_fields_spec.js
 spec/frontend/ci/runner/components/runner_managers_table_spec.js
