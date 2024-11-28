@@ -67,6 +67,9 @@ RSpec.describe InstanceSecurityDashboardPolicy do
         security_dashboard: true,
         ai_features: true
       )
+
+      allow(developer).to receive(:allowed_to_use?).and_return(true)
+      allow(guest).to receive(:allowed_to_use?).and_return(true)
     end
 
     context 'when user cannot :read_security_resource' do

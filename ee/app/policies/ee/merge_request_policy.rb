@@ -15,7 +15,8 @@ module EE
         ::Feature.enabled?(:summarize_my_code_review, @user) &&
           ::Gitlab::Llm::FeatureAuthorizer.new(
             container: @subject.project,
-            feature_name: :summarize_review
+            feature_name: :summarize_review,
+            user: @user
           ).allowed?
       end
 
