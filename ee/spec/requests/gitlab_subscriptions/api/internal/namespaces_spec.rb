@@ -207,8 +207,8 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces, :saas, :aggregate
               max_seats_used: 10,
               auto_renew: true,
               trial: true,
-              trial_ends_on: '2019-05-01',
-              trial_starts_on: '2019-06-01',
+              trial_starts_on: '2019-05-01',
+              trial_ends_on: '2019-06-01',
               trial_extension_type: GitlabSubscription.trial_extension_types[:reactivated]
             }
           }
@@ -563,8 +563,8 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces, :saas, :aggregate
             max_seats_used: 10,
             auto_renew: true,
             trial: true,
-            trial_ends_on: '2019-05-01',
-            trial_starts_on: '2019-06-01',
+            trial_starts_on: '2019-05-01',
+            trial_ends_on: '2019-06-01',
             trial_extension_type: GitlabSubscription.trial_extension_types[:reactivated]
           }
         end

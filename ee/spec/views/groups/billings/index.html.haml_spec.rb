@@ -91,7 +91,8 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         let_it_be(:group) do
           create(:group_with_plan,
             plan: :free_plan,
-            trial_starts_on: Time.current,
+            trial: true,
+            trial_starts_on: 1.month.ago,
             trial_ends_on: Date.yesterday)
         end
 
@@ -104,7 +105,8 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       let_it_be(:group) do
         create(:group_with_plan,
           plan: :ultimate_trial_plan,
-          trial_starts_on: Time.current,
+          trial: true,
+          trial_starts_on: 1.month.ago,
           trial_ends_on: 10.days.from_now)
       end
 

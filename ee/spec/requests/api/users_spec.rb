@@ -362,7 +362,11 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
 
           context 'and user is a trial user' do
             before do
-              subscription.update!(trial: true)
+              subscription.update!(
+                trial: true,
+                trial_starts_on: Date.current,
+                trial_ends_on: 1.month.from_now
+              )
             end
 
             it 'contains plan and trial' do

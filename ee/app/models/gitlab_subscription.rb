@@ -24,6 +24,9 @@ class GitlabSubscription < ApplicationRecord
   validates :seats, :start_date, presence: true
   validates :namespace_id, uniqueness: true, presence: true
 
+  validates :trial_ends_on, :trial_starts_on, presence: true, if: :trial?
+  validates_comparison_of :trial_ends_on, greater_than: :trial_starts_on, if: :trial?
+
   delegate :name, :title, to: :hosted_plan, prefix: :plan, allow_nil: true
   delegate :exclude_guests?, to: :namespace
 

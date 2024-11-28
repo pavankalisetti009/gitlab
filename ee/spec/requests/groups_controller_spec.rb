@@ -560,7 +560,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       end
 
       it 'deletes a group with trial plan', :saas do
-        create(:gitlab_subscription, :ultimate_trial, trial: true, namespace: group)
+        create(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
 
         Sidekiq::Testing.fake! do
           expect { delete(group_path(group)) }.to change { group.reload.marked_for_deletion? }.from(false).to(true)
@@ -574,7 +574,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       end
 
       it 'immediately schedules a group destroy', :saas do
-        create(:gitlab_subscription, :ultimate_trial, trial: true, namespace: group)
+        create(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
 
         Sidekiq::Testing.fake! do
           expect { delete(group_path(group)) }.to change(GroupDestroyWorker.jobs, :size).by(1)

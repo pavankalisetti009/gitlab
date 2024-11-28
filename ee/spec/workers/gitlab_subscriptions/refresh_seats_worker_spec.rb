@@ -87,7 +87,14 @@ RSpec.describe GitlabSubscriptions::RefreshSeatsWorker, :saas, feature_category:
         end
 
         context 'with a trial plan' do
-          let(:subscription_attrs) { { hosted_plan: premium_plan, trial: true } }
+          let(:subscription_attrs) do
+            {
+              hosted_plan: premium_plan,
+              trial: true,
+              trial_starts_on: Date.current,
+              trial_ends_on: 1.month.from_now
+            }
+          end
 
           include_examples 'updates nothing'
         end

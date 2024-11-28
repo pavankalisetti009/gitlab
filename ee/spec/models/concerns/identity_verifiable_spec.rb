@@ -631,7 +631,14 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     let_it_be(:group_paid) { create(:group_with_plan, :public, plan: :ultimate_plan) }
 
     let_it_be(:group_trial) do
-      create(:group_with_plan, :public, plan: :ultimate_plan, trial_ends_on: Time.current + 30.days)
+      create(
+        :group_with_plan,
+        :public,
+        plan: :ultimate_plan,
+        trial: true,
+        trial_starts_on: Date.current,
+        trial_ends_on: 30.days.from_now
+      )
     end
 
     context 'when a user has a identity verification exemption' do

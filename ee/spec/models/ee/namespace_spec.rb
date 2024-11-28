@@ -337,7 +337,12 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         [
           create(:namespace),
           create(:namespace_with_plan),
-          create(:namespace_with_plan, trial_ends_on: Date.yesterday)
+          create(
+            :namespace_with_plan,
+            trial: true,
+            trial_starts_on: 1.month.ago,
+            trial_ends_on: Date.yesterday
+          )
         ]
       end
 

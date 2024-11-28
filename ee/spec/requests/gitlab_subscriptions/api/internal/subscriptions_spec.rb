@@ -268,11 +268,17 @@ RSpec.describe GitlabSubscriptions::API::Internal::Subscriptions, :aggregate_fai
 
       context 'when creating a trial' do
         it 'sets the trial_starts_on to the start_date' do
-          post subscription_path(namespace.id), headers: internal_api_headers, params: params.merge(trial: true)
+          post(
+            subscription_path(namespace.id),
+            headers: internal_api_headers,
+            params: params.merge(
+              trial: true,
+              trial_ends_on: 1.month.from_now
+            )
+          )
 
           expect(response).to have_gitlab_http_status(:created)
-          expect(namespace.reload.gitlab_subscription.trial_starts_on).to be_present
-          expect(namespace.gitlab_subscription.trial_starts_on.iso8601).to eq '2018-01-01'
+          expect(namespace.reload.gitlab_subscription.trial_starts_on.iso8601).to eq '2018-01-01'
         end
       end
     end
@@ -324,11 +330,16 @@ RSpec.describe GitlabSubscriptions::API::Internal::Subscriptions, :aggregate_fai
         end
 
         it 'sets the trial_starts_on to the start_date' do
-          post api(subscription_path(namespace.id), admin, admin_mode: true), params: params.merge(trial: true)
+          post(
+            api(subscription_path(namespace.id), admin, admin_mode: true),
+            params: params.merge(
+              trial: true,
+              trial_ends_on: 1.month.from_now
+            )
+          )
 
           expect(response).to have_gitlab_http_status(:created)
-          expect(namespace.reload.gitlab_subscription.trial_starts_on).to be_present
-          expect(namespace.gitlab_subscription.trial_starts_on.iso8601).to eq params[:start_date]
+          expect(namespace.reload.gitlab_subscription.trial_starts_on.iso8601).to eq '2018-01-01'
         end
 
         it 'can create a subscription using full_path' do
@@ -472,7 +483,9 @@ RSpec.describe GitlabSubscriptions::API::Internal::Subscriptions, :aggregate_fai
           context 'when updating as a trial' do
             it 'sets the trial_starts_on to the start_date' do
               params = {
-                start_date: '2018-01-01', trial: true
+                start_date: '2018-01-01',
+                trial: true,
+                trial_ends_on: 1.month.from_now
               }
 
               put subscription_path(namespace.id), headers: internal_api_headers, params: params

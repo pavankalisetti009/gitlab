@@ -52,6 +52,8 @@ FactoryBot.define do
   factory :namespace_with_plan, parent: :namespace do
     transient do
       plan { :free_plan }
+      trial { false }
+      trial_starts_on { nil }
       trial_ends_on { nil }
     end
 
@@ -63,7 +65,8 @@ FactoryBot.define do
           :gitlab_subscription,
           namespace: namespace,
           hosted_plan: create(evaluator.plan),
-          trial: evaluator.trial_ends_on.present?,
+          trial: evaluator.trial,
+          trial_starts_on: evaluator.trial_starts_on,
           trial_ends_on: evaluator.trial_ends_on
         )
       end

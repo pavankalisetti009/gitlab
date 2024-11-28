@@ -46,7 +46,7 @@ RSpec.describe 'groups/settings/_remove.html.haml' do
     end
 
     it 'enables the Remove group button for group with a trial plan', :saas do
-      create(:gitlab_subscription, :ultimate_trial, trial: true, namespace: group)
+      create(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
       render 'groups/settings/remove', group: group
 
       expect(rendered).to have_selector '[data-button-testid="remove-group-button"]'

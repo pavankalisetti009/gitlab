@@ -9,7 +9,10 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
     let_it_be(:group) do
       create(
         :group_with_plan, :private,
-        plan: :ultimate_trial_plan, trial_starts_on: Date.today, trial_ends_on: 10.days.from_now
+        plan: :ultimate_trial_plan,
+        trial: true,
+        trial_starts_on: Date.today,
+        trial_ends_on: 10.days.from_now
       ) do |g|
         create(:onboarding_progress, namespace: g)
       end

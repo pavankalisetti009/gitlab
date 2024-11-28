@@ -276,7 +276,13 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan) }
     let_it_be_with_reload(:group_without_plan) { create(:group) }
     let_it_be_with_reload(:trial_group) do
-      create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now)
+      create(
+        :group_with_plan,
+        plan: :ultimate_plan,
+        trial: true,
+        trial_starts_on: Date.current,
+        trial_ends_on: 1.day.from_now
+      )
     end
 
     let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group) }
@@ -377,7 +383,13 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan) }
     let_it_be_with_reload(:group_without_plan) { create(:group) }
     let_it_be_with_reload(:trial_group) do
-      create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now)
+      create(
+        :group_with_plan,
+        plan: :ultimate_plan,
+        trial: true,
+        trial_starts_on: Date.current,
+        trial_ends_on: 1.day.from_now
+      )
     end
 
     let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group) }
@@ -722,7 +734,14 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group, name: 'ultimate_sub_group') }
     let_it_be_with_reload(:bronze_sub_group) { create(:group, parent: bronze_group, name: 'bronze_sub_group') }
     let_it_be_with_reload(:trial_group) do
-      create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now, name: 'trial_group')
+      create(
+        :group_with_plan,
+        plan: :ultimate_plan,
+        trial: true,
+        trial_starts_on: Date.current,
+        trial_ends_on: 1.day.from_now,
+        name: 'trial_group'
+      )
     end
 
     describe '#any_group_with_ai_chat_available?', :use_clean_rails_redis_caching do

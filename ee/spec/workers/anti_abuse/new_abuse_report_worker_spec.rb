@@ -53,7 +53,14 @@ RSpec.describe AntiAbuse::NewAbuseReportWorker, :saas, feature_category: :instan
 
       context 'when the user is a member of a namespace with a paid plan trial subscription' do
         let_it_be(:trial_group) do
-          create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now, reporters: user)
+          create(
+            :group_with_plan,
+            plan: :ultimate_plan,
+            trial: true,
+            trial_starts_on: Date.current,
+            trial_ends_on: 1.day.from_now,
+            reporters: user
+          )
         end
 
         it_behaves_like 'bans user'

@@ -11,6 +11,7 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
     create(
       :group_with_plan,
       plan: :ultimate_trial_plan,
+      trial: true,
       trial_starts_on: Date.current,
       trial_ends_on: 60.days.from_now,
       owners: user
@@ -57,6 +58,7 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         create(
           :group_with_plan,
           plan: :free_plan,
+          trial: true,
           trial_starts_on: Date.current,
           trial_ends_on: 60.days.from_now,
           owners: user
