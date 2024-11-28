@@ -39305,6 +39305,7 @@ Issue type.
 | <a id="issuetyperequirement"></a>`REQUIREMENT` | Requirement issue type. |
 | <a id="issuetypetask"></a>`TASK` | Task issue type. |
 | <a id="issuetypetest_case"></a>`TEST_CASE` | Test Case issue type. |
+| <a id="issuetypeticket"></a>`TICKET` | Ticket issue type. |
 
 ### `IterationSearchableField`
 
