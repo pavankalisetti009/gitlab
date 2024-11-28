@@ -22,8 +22,7 @@ import {
 } from 'ee/analytics/analytics_dashboards/constants';
 import { NEW_DASHBOARD_SLUG } from '~/vue_shared/components/customizable_dashboard/constants';
 
-import { TEST_CUSTOM_DASHBOARDS_PROJECT } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
-import { mockFilterOptions } from '../mock_data';
+import { mockFilterOptions, TEST_CUSTOM_DASHBOARDS_PROJECT } from '../mock_data';
 
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_action');
 

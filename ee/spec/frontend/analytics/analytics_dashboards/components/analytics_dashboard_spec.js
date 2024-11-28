@@ -10,18 +10,16 @@ import {
 import { createAlert } from '~/alert';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import getCustomizableDashboardQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_customizable_dashboard.query.graphql';
+import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
 import getAvailableVisualizations from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_visualizations.query.graphql';
 import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/analytics_dashboard.vue';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
 import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
+import { updateApolloCache } from 'ee/analytics/analytics_dashboards/utils';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
-import {
-  buildDefaultDashboardFilters,
-  updateApolloCache,
-} from '~/vue_shared/components/customizable_dashboard/utils';
+import { buildDefaultDashboardFilters } from '~/vue_shared/components/customizable_dashboard/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   NEW_DASHBOARD,
@@ -34,12 +32,7 @@ import {
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import {
   dashboard,
-  TEST_CUSTOM_DASHBOARDS_PROJECT,
   TEST_EMPTY_DASHBOARD_SVG_PATH,
-  TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
-  TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
-  TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE,
-  getGraphQLDashboard,
 } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 import { stubComponent } from 'helpers/stub_component';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
@@ -54,6 +47,11 @@ import {
   TEST_INVALID_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   mockInvalidDashboardErrors,
   TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE,
+  TEST_CUSTOM_DASHBOARDS_PROJECT,
+  TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
+  TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
+  TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE,
+  getGraphQLDashboard,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -69,10 +67,7 @@ jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api', () => ({
   saveCustomDashboard: jest.fn(),
 }));
 
-jest.mock('~/vue_shared/components/customizable_dashboard/utils', () => ({
-  ...jest.requireActual('~/vue_shared/components/customizable_dashboard/utils'),
-  updateApolloCache: jest.fn(),
-}));
+jest.mock('ee/analytics/analytics_dashboards/utils');
 
 const showToast = jest.fn();
 

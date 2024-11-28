@@ -13,7 +13,7 @@ import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import generateCubeQueryMutation from 'ee/analytics/analytics_dashboards/graphql/mutations/generate_cube_query.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import AiCubeQueryGenerator from 'ee/analytics/analytics_dashboards/components/data_explorer/ai_cube_query_generator.vue';
-import { TEST_VISUALIZATION } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
+import { createVisualization } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 
 Vue.use(VueApollo);
 
@@ -25,7 +25,7 @@ describe('AiCubeQueryGenerator', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   const prompt = 'Count of page views grouped weekly';
-  const generatedQuery = TEST_VISUALIZATION().data.query;
+  const generatedQuery = createVisualization().data.query;
   const error = new Error('oh no it failed!!1!');
 
   let trackingSpy;

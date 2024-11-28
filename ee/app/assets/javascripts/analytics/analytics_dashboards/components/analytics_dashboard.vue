@@ -12,7 +12,6 @@ import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_
 import {
   buildDefaultDashboardFilters,
   getDashboardConfig,
-  updateApolloCache,
   getUniquePanelId,
 } from '~/vue_shared/components/customizable_dashboard/utils';
 import {
@@ -24,7 +23,7 @@ import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashb
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
-import getCustomizableDashboardQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_customizable_dashboard.query.graphql';
+import { updateApolloCache } from '../utils';
 import {
   FILE_ALREADY_EXISTS_SERVER_RESPONSE,
   NEW_DASHBOARD,
@@ -37,6 +36,8 @@ import {
   DASHBOARD_REFRESH_MESSAGE,
 } from '../constants';
 import getAvailableVisualizations from '../graphql/queries/get_all_customizable_visualizations.query.graphql';
+import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
+
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
 
 // Avoid adding new values here, as this will eventually be migrated to the dashboard YAML config.
