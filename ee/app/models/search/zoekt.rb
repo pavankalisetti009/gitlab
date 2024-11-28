@@ -25,9 +25,15 @@ module Search
         Index.for_root_namespace_id(root_namespace_id).exists?
       end
 
-      def enabled_for_user?(user)
+      def enabled?
         return false unless ::License.feature_available?(:zoekt_code_search)
         return false unless ::Gitlab::CurrentSettings.zoekt_search_enabled?
+
+        true
+      end
+
+      def enabled_for_user?(user)
+        return false unless enabled?
         return true unless user # anonymous users have access, the final check is the user's preference setting
 
         user.enabled_zoekt?

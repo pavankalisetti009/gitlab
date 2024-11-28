@@ -10,16 +10,9 @@ module Search
       idempotent!
 
       def handle_event(event)
-        Repository.id_in(event.data[:zoekt_repo_ids]).pending_or_initializing.each do |repository|
-          next if repository.project.nil?
+        return false unless ::Search::Zoekt.enabled?
 
-          if repository.project.empty_repo?
-            repository.ready!
-            next
-          end
-
-          ::Search::Zoekt.index_async(repository.project_identifier)
-        end
+        Repository.id_in(event.data[:zoekt_repo_ids]).pending_or_initializing.create_bulk_tasks
       end
     end
   end
