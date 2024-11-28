@@ -459,9 +459,11 @@ RSpec.describe User, feature_category: :system_access do
   describe 'after_create' do
     describe '#perform_user_cap_check' do
       let(:new_user_signups_cap) { nil }
+      let(:seat_control_user_cap) { false }
 
       before do
         allow(Gitlab::CurrentSettings).to receive(:new_user_signups_cap).and_return(new_user_signups_cap)
+        allow(Gitlab::CurrentSettings).to receive(:seat_control_user_cap?).and_return(seat_control_user_cap)
       end
 
       context 'when user cap is not set' do
@@ -474,6 +476,7 @@ RSpec.describe User, feature_category: :system_access do
 
       context 'when user cap is set' do
         let(:new_user_signups_cap) { 3 }
+        let(:seat_control_user_cap) { true }
 
         context 'when user signup cap has been reached' do
           let!(:users) { create_list(:user, 3) }
@@ -2646,17 +2649,18 @@ RSpec.describe User, feature_category: :system_access do
 
     subject { described_class.user_cap_reached? }
 
-    where(:billable_count, :user_cap_max, :result) do
-      2 | nil | false
-      2 | 5   | false
-      5 | 5   | true
-      8 | 5   | true
+    where(:seat_control_user_cap, :billable_count, :user_cap_max, :result) do
+      false | 2 | nil | false
+      true  | 2 | 5   | false
+      true  | 5 | 5   | true
+      true  | 8 | 5   | true
     end
 
     with_them do
       before do
         allow(described_class).to receive_message_chain(:billable, :limit).and_return(Array.new(billable_count, instance_double('User')))
         allow(Gitlab::CurrentSettings).to receive(:new_user_signups_cap).and_return(user_cap_max)
+        allow(Gitlab::CurrentSettings).to receive(:seat_control_user_cap?).and_return(seat_control_user_cap)
       end
 
       it { is_expected.to eq(result) }

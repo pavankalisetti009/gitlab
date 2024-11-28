@@ -5,6 +5,7 @@ RSpec.shared_examples 'finding user when user cap is set' do
     before do
       gl_user.state = ::User::BLOCKED_PENDING_APPROVAL_STATE
       stub_application_setting(new_user_signups_cap: new_user_signups_cap)
+      stub_application_setting(seat_control: 1)
     end
 
     context 'when the user cap has been reached' do

@@ -582,6 +582,10 @@ module EE
       end
     end
 
+    def seat_control_user_cap?
+      seat_control == SEAT_CONTROL_USER_CAP
+    end
+
     private
 
     def set_seat_control

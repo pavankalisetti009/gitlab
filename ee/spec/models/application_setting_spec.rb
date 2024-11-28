@@ -712,6 +712,28 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe '#seat_control_user_cap?' do
+    context 'when seat_control is set to user cap' do
+      before do
+        setting.seat_control = described_class::SEAT_CONTROL_USER_CAP
+      end
+
+      it 'returns true' do
+        expect(setting.seat_control_user_cap?).to be true
+      end
+    end
+
+    context 'when seat_control is off' do
+      before do
+        setting.seat_control = described_class::SEAT_CONTROL_OFF
+      end
+
+      it 'returns false' do
+        expect(setting.seat_control_user_cap?).to be false
+      end
+    end
+  end
+
   describe '#should_check_namespace_plan?', feature_category: :groups_and_projects do
     before do
       stub_application_setting(check_namespace_plan: check_namespace_plan_column)

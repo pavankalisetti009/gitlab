@@ -11,7 +11,8 @@ RSpec.describe 'displays new user signups cap alert', :js, feature_category: :ac
   context 'when reached active users cap', :do_not_mock_admin_mode_setting do
     before do
       allow(User).to receive(:billable).and_return((0..9))
-      allow(Gitlab::CurrentSettings.current_application_settings).to receive(:new_user_signups_cap).and_return(9)
+      stub_application_setting(new_user_signups_cap: 9)
+      stub_application_setting(seat_control: 1)
 
       gitlab_sign_in(admin)
     end

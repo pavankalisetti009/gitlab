@@ -31,6 +31,7 @@ RSpec.describe 'Signup', :with_current_organization, feature_category: :system_a
       stub_application_setting(require_admin_approval_after_user_signup: false)
       stub_application_setting_enum('email_confirmation_setting', 'off')
       stub_application_setting(new_user_signups_cap: 3)
+      stub_application_setting(seat_control: 1)
 
       visit new_user_registration_path
     end

@@ -127,11 +127,11 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
 
     context 'when feature flag is enabled', :do_not_mock_admin_mode_setting do
-      where(:new_user_signups_cap, :active_user_count, :result) do
-        nil | 10 | false
-        10  | 9  | false
-        0   | 10 | true
-        1   | 1  | true
+      where(:seat_control_user_cap, :new_user_signups_cap, :active_user_count, :result) do
+        false | nil | 10 | false
+        true  | 10  | 9  | false
+        true  | 1   | 10 | true
+        true  | 1   | 1  | true
       end
 
       with_them do
@@ -140,6 +140,8 @@ RSpec.describe EE::Users::CalloutsHelper do
           allow(User.billable).to receive(:count).and_return(active_user_count)
           allow(Gitlab::CurrentSettings.current_application_settings)
             .to receive(:new_user_signups_cap).and_return(new_user_signups_cap)
+          allow(Gitlab::CurrentSettings.current_application_settings)
+            .to receive(:seat_control_user_cap?).and_return(seat_control_user_cap)
         end
 
         it { is_expected.to eq(result) }

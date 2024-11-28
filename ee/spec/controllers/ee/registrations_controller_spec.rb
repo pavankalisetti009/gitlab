@@ -230,6 +230,7 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
       context 'when user signup cap is set' do
         before do
           stub_application_setting(new_user_signups_cap: 3)
+          stub_application_setting(seat_control: 1)
         end
 
         it_behaves_like 'blocked user by default'
@@ -238,6 +239,7 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
       context 'when user signup cap is not set' do
         before do
           stub_application_setting(new_user_signups_cap: nil)
+          stub_application_setting(seat_control: 0)
         end
 
         it_behaves_like 'blocked user by default'
@@ -302,6 +304,7 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
       context 'when user signup cap is set' do
         before do
           stub_application_setting(new_user_signups_cap: 3)
+          stub_application_setting(seat_control: 1)
         end
 
         context 'when user signup cap would be exceeded by new user signup' do
@@ -320,6 +323,7 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
       context 'when user signup cap is not set' do
         before do
           stub_application_setting(new_user_signups_cap: nil)
+          stub_application_setting(seat_control: 0)
         end
 
         it_behaves_like 'active user by default'
