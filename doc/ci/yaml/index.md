@@ -2315,6 +2315,7 @@ stop_review_app:
 #### `environment:auto_stop_in`
 
 > - CI/CD variable support [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/365140) in GitLab 15.4.
+> - [Updated](https://gitlab.com/gitlab-org/gitlab/-/issues/437133) to support `prepare`, `access` and `verify` environment actions in GitLab 17.7.
 
 The `auto_stop_in` keyword specifies the lifetime of the environment. When an environment expires, GitLab
 automatically stops it.
@@ -2343,6 +2344,10 @@ review_app:
 
 When the environment for `review_app` is created, the environment's lifetime is set to `1 day`.
 Every time the review app is deployed, that lifetime is also reset to `1 day`.
+
+The `auto_stop_in` keyword can be used for all [environment actions](#environmentaction) except `stop`.
+Some actions can be used to reset the scheduled stop time for the environment. For more information, see
+[Access an environment for preparation or verification purposes](../../ci/environments/index.md#access-an-environment-for-preparation-or-verification-purposes).
 
 **Related topics**:
 
