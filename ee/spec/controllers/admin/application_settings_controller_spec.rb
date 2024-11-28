@@ -319,7 +319,7 @@ RSpec.describe Admin::ApplicationSettingsController do
           it 'does not set required_instance_ci_template to nil' do
             put :update, params: { application_setting: {} }
 
-            expect(ApplicationSetting.current.required_instance_ci_template).to be == 'Auto-DevOps'
+            expect(ApplicationSetting.current.required_instance_ci_template).to eq 'Auto-DevOps'
           end
         end
       end
