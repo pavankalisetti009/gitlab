@@ -1,13 +1,13 @@
 import { nextTick } from 'vue';
 import { GlDrawer } from '@gitlab/ui';
-import FindingsDrawer from '~/diffs/components/shared/findings_drawer.vue';
+import FindingsDrawer from 'ee/diffs/components/shared/findings_drawer.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import {
   mockFindingDismissed,
   mockFindingDetected,
   mockProject,
   mockFindingsMultiple,
-} from '../../mock_data/findings_drawer';
+} from 'jest/diffs/mock_data/findings_drawer';
 
 describe('FindingsDrawer', () => {
   let wrapper;
