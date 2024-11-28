@@ -49,7 +49,7 @@ module DuoChatFixtureHelpers
     parent = if Group.exists?(root_group[:id])
                Group.find(root_group[:id])
              else
-               parent = create(:group_with_plan, id: root_group[:id], name: root_group[:name], path: root_group[:path],
+               create(:group_with_plan, id: root_group[:id], name: root_group[:name], path: root_group[:path],
                  plan: :ultimate_plan)
              end
 
