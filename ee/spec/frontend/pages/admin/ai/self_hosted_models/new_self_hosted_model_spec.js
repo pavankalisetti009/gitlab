@@ -3,20 +3,12 @@ import SelfHostedModelForm from 'ee/pages/admin/ai/self_hosted_models/components
 import createSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
 import NewSelfHostedModel from 'ee/pages/admin/ai/self_hosted_models/components/new_self_hosted_model.vue';
 import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/self_hosted_models/constants';
-import { SELF_HOSTED_MODEL_OPTIONS } from './mock_data';
 
 describe('NewSelfHostedModel', () => {
   let wrapper;
 
-  const basePath = '/admin/ai/self_hosted_models';
-
   const createComponent = () => {
-    wrapper = shallowMount(NewSelfHostedModel, {
-      propsData: {
-        basePath,
-        modelOptions: SELF_HOSTED_MODEL_OPTIONS,
-      },
-    });
+    wrapper = shallowMount(NewSelfHostedModel, {});
   };
 
   beforeEach(() => {
@@ -37,8 +29,6 @@ describe('NewSelfHostedModel', () => {
     const selfHostedModelForm = findSelfHostedModelForm();
 
     expect(selfHostedModelForm.exists()).toBe(true);
-    expect(selfHostedModelForm.props('basePath')).toBe(basePath);
-    expect(selfHostedModelForm.props('modelOptions')).toBe(SELF_HOSTED_MODEL_OPTIONS);
     expect(selfHostedModelForm.props('mutationData')).toEqual({
       name: SELF_HOSTED_MODEL_MUTATIONS.CREATE,
       mutation: createSelfHostedModelMutation,

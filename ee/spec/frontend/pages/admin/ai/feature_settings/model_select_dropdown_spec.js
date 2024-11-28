@@ -19,7 +19,6 @@ jest.mock('~/alert');
 describe('ModelSelectDropdown', () => {
   let wrapper;
 
-  const newSelfHostedModelPath = '/admin/ai/self_hosted_models/new';
   const mockAiFeatureSetting = mockAiFeatureSettings[0];
 
   const updateFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
@@ -61,9 +60,6 @@ describe('ModelSelectDropdown', () => {
       propsData: {
         aiFeatureSetting: mockAiFeatureSetting,
         ...props,
-      },
-      provide: {
-        newSelfHostedModelPath,
       },
       mocks: {
         $toast: {

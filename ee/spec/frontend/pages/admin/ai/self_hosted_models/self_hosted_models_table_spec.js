@@ -14,6 +14,7 @@ import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graph
 import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
 import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
 import { createAlert } from '~/alert';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mockSelfHostedModelsList } from './mock_data';
 
@@ -32,8 +33,6 @@ describe('SelfHostedModelsTable', () => {
       },
     },
   });
-  const basePath = '/admin/ai/self_hosted_models';
-  const newSelfHostedModelPath = 'admin/ai/self_hosted_models/new';
 
   const createComponent = ({
     apolloHandlers = [[getSelfHostedModelsQuery, getSelfHostedModelsSuccessHandler]],
@@ -41,10 +40,6 @@ describe('SelfHostedModelsTable', () => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
     wrapper = mountExtended(SelfHostedModelsTable, {
-      provide: {
-        basePath,
-        newSelfHostedModelPath,
-      },
       apolloProvider: mockApollo,
     });
   };
@@ -170,7 +165,7 @@ describe('SelfHostedModelsTable', () => {
       });
 
       it('renders a link to create a new self-hosted model', () => {
-        expect(findEmptyStateLink().attributes('href')).toBe(newSelfHostedModelPath);
+        expect(findEmptyStateLink().attributes('to')).toBe('new');
       });
     });
 
@@ -189,9 +184,12 @@ describe('SelfHostedModelsTable', () => {
         });
       });
 
-      it('routes to the correct path', () => {
-        findEditButtons().wrappers.forEach((button, idx) => {
-          expect(button.html()).toContain(`href="/admin/ai/self_hosted_models/${idx + 1}/edit"`);
+      it('routes to the Edit page when edit button is clicked', () => {
+        const modelIdAtIdx0 = getIdFromGraphQLId(mockSelfHostedModelsList[0].id);
+
+        expect(findEditButtons().at(0).props('item')).toEqual({
+          text: 'Edit',
+          to: `${modelIdAtIdx0}/edit`,
         });
       });
     });

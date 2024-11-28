@@ -43,9 +43,11 @@ describe('SelfHostedModelForm', () => {
 
     wrapper = mountExtended(SelfHostedModelForm, {
       apolloProvider: mockApollo,
-      propsData: {
+      provide: {
         basePath,
         modelOptions: SELF_HOSTED_MODEL_OPTIONS,
+      },
+      propsData: {
         ...props,
       },
     });

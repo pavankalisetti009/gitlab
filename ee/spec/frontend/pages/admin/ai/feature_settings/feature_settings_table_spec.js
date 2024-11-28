@@ -29,12 +29,8 @@ describe('FeatureSettingsTable', () => {
     apolloHandlers = [[getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler]],
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
-    const newSelfHostedModelPath = '/admin/self_hosted_models/new';
 
     wrapper = mountExtended(FeatureSettingsTable, {
-      provide: {
-        newSelfHostedModelPath,
-      },
       apolloProvider: mockApollo,
     });
   };

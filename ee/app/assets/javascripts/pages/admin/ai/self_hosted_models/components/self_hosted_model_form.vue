@@ -16,15 +16,8 @@ export default {
     GlFormFields,
     InputCopyToggleVisibility,
   },
+  inject: ['basePath', 'modelOptions'],
   props: {
-    basePath: {
-      type: String,
-      required: true,
-    },
-    modelOptions: {
-      type: Array,
-      required: true,
-    },
     submitButtonText: {
       type: String,
       required: false,

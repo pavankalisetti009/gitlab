@@ -1,51 +1,117 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
+import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import SelfHostedModelForm from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_model_form.vue';
 import updateSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
 import EditSelfHostedModel from 'ee/pages/admin/ai/self_hosted_models/components/edit_self_hosted_model.vue';
 import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/self_hosted_models/constants';
-import { SELF_HOSTED_MODEL_OPTIONS, mockSelfHostedModel } from './mock_data';
+import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import { createAlert } from '~/alert';
+import { mockSelfHostedModel } from './mock_data';
+
+Vue.use(VueApollo);
+
+jest.mock('~/alert');
 
 describe('EditSelfHostedModel', () => {
   let wrapper;
 
-  const basePath = '/admin/ai/self_hosted_models';
+  const getSelfHostedModelQueryHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiSelfHostedModels: {
+        nodes: [mockSelfHostedModel],
+        errors: [],
+      },
+    },
+  });
 
-  const createComponent = ({ props = {} }) => {
+  const createComponent = async ({
+    apolloHandlers = [[getSelfHostedModelsQuery, getSelfHostedModelQueryHandler]],
+  } = {}) => {
+    const mockApollo = createMockApollo([...apolloHandlers]);
+
     wrapper = shallowMount(EditSelfHostedModel, {
+      apolloProvider: mockApollo,
       propsData: {
-        basePath,
-        ...props,
+        modelId: mockSelfHostedModel.id,
       },
     });
-  };
 
-  beforeEach(() => {
-    createComponent({
-      props: { modelOptions: SELF_HOSTED_MODEL_OPTIONS, model: mockSelfHostedModel },
-    });
-  });
+    await waitForPromises();
+  };
 
   const findSelfHostedModelForm = () => wrapper.findComponent(SelfHostedModelForm);
 
   it('has a title', () => {
+    createComponent();
+
     expect(wrapper.text()).toMatch('Edit self-hosted model');
   });
 
   it('has a description', () => {
+    createComponent();
+
     expect(wrapper.text()).toMatch('Edit the AI model that can be used for GitLab Duo features.');
   });
 
-  it('renders the self-hosted model form and passes the correct props', () => {
-    const selfHostedModelForm = findSelfHostedModelForm();
+  it('fetches self-hosted model data', () => {
+    createComponent();
 
-    expect(selfHostedModelForm.exists()).toBe(true);
-    expect(selfHostedModelForm.props('basePath')).toBe(basePath);
-    expect(selfHostedModelForm.props('initialFormValues')).toEqual(mockSelfHostedModel);
-    expect(selfHostedModelForm.props('modelOptions')).toBe(SELF_HOSTED_MODEL_OPTIONS);
-    expect(selfHostedModelForm.props('mutationData')).toEqual({
-      name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
-      mutation: updateSelfHostedModelMutation,
+    expect(getSelfHostedModelQueryHandler).toHaveBeenCalledWith({
+      id: mockSelfHostedModel.id,
     });
-    expect(selfHostedModelForm.props('submitButtonText')).toBe('Edit self-hosted model');
+  });
+
+  describe('when the API query succeeds', () => {
+    it('renders the self-hosted model form and passes the correct props', async () => {
+      await createComponent();
+
+      expect(findSelfHostedModelForm().props('initialFormValues')).toEqual(mockSelfHostedModel);
+      expect(findSelfHostedModelForm().props('mutationData')).toEqual({
+        name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
+        mutation: updateSelfHostedModelMutation,
+      });
+      expect(findSelfHostedModelForm().props('submitButtonText')).toBe('Edit self-hosted model');
+    });
+  });
+
+  describe('when the API query is unsuccessful', () => {
+    describe('due to a general error', () => {
+      it('displays an error message', async () => {
+        await createComponent({
+          apolloHandlers: [[getSelfHostedModelsQuery, jest.fn().mockRejectedValue('ERROR')]],
+        });
+
+        expect(createAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'An error occurred while loading the self-hosted model. Please try again.',
+          }),
+        );
+      });
+    });
+
+    describe('due to a business logic error', () => {
+      const getSelfHostedModelErrorHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiSelfHostedModels: {
+            errors: ['An error occurred'],
+          },
+        },
+      });
+
+      it('displays an error message', async () => {
+        await createComponent({
+          apolloHandlers: [[getSelfHostedModelsQuery, getSelfHostedModelErrorHandler]],
+        });
+
+        expect(createAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'An error occurred while loading the self-hosted model. Please try again.',
+          }),
+        );
+      });
+    });
   });
 });

@@ -1,19 +1,20 @@
 import { nextTick } from 'vue';
-import { GlExperimentBadge } from '@gitlab/ui';
-import FeatureSettingsTable from 'ee/pages/admin/ai/feature_settings/components/feature_settings_table.vue';
-import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
+import { GlExperimentBadge, GlButton } from '@gitlab/ui';
 import SelfHostedDuoConfiguration from 'ee/pages/admin/ai/custom_models/self_hosted_duo_configuration.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('SelfHostedDuoConfiguration', () => {
   let wrapper;
+  const $router = { push: jest.fn() };
 
-  const createComponent = () => {
-    const newSelfHostedModelPath = '/admin/ai/self_hosted_models/new';
-
+  const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(SelfHostedDuoConfiguration, {
-      provide: {
-        newSelfHostedModelPath,
+      propsData: {
+        ...props,
+      },
+      mocks: {
+        $router,
+        $route: { params: {} },
       },
     });
   };
@@ -22,10 +23,10 @@ describe('SelfHostedDuoConfiguration', () => {
     createComponent();
   });
 
+  const findTabs = () => wrapper.findByTestId('self-hosted-duo-config-tabs');
   const findFeatureSettingsTab = () => wrapper.findByTestId('ai-feature-settings-tab');
   const findSelfHostedModelsTab = () => wrapper.findByTestId('self-hosted-models-tab');
-  const findFeatureSettingsTable = () => wrapper.findComponent(FeatureSettingsTable);
-  const findSelfHostedModelsTable = () => wrapper.findComponent(SelfHostedModelsTable);
+  const findAddModelButton = () => wrapper.findComponent(GlButton);
   const findBetaBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   it('has a title', () => {
@@ -44,28 +45,37 @@ describe('SelfHostedDuoConfiguration', () => {
     );
   });
 
-  it('has the correct tabs', () => {
-    expect(findFeatureSettingsTab().text()).toBe('AI-powered features');
-    expect(findSelfHostedModelsTab().text()).toBe('Self-hosted models');
+  it('has a button to add a new self-hosted model', () => {
+    expect(findAddModelButton().text()).toBe('Add self-hosted model');
   });
 
-  describe('self-hosted models tab', () => {
-    it('renders the self-hosted models table when tab clicked', async () => {
-      findSelfHostedModelsTab().vm.$emit('click');
+  describe('Self-hosted models tab', () => {
+    it('renders the correct name', () => {
+      expect(findSelfHostedModelsTab().text()).toBe('Self-hosted models');
+    });
+
+    it('navigates to self-hosted models when tab is clicked', async () => {
+      createComponent({ props: { tabId: 'ai-feature-settings' } });
+
+      findTabs().vm.$emit('input', 0);
 
       await nextTick();
 
-      expect(findSelfHostedModelsTable().exists()).toBe(true);
+      expect($router.push).toHaveBeenCalledWith({ name: 'index' });
     });
   });
 
-  describe('feature settings tab', () => {
-    it('renders the feature settings table when tab clicked', async () => {
-      findFeatureSettingsTab().vm.$emit('click');
+  describe('Feature settings tab', () => {
+    it('renders the correct name', () => {
+      expect(findFeatureSettingsTab().text()).toBe('AI-powered features');
+    });
+
+    it('navigates to feature settings when tab is clicked', async () => {
+      findTabs().vm.$emit('input', 1);
 
       await nextTick();
 
-      expect(findFeatureSettingsTable().exists()).toBe(true);
+      expect($router.push).toHaveBeenCalledWith({ name: 'features' });
     });
   });
 });

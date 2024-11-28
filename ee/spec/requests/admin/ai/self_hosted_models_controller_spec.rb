@@ -51,26 +51,4 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
       end
     end
   end
-
-  describe 'GET #edit' do
-    let(:page) { Nokogiri::HTML(response.body) }
-    let(:self_hosted_model) do
-      create(:ai_self_hosted_model, model: :mistral, api_token: nil)
-    end
-
-    subject :perform_request do
-      get edit_admin_ai_self_hosted_model_path(self_hosted_model)
-    end
-
-    it 'returns the self-hosted model for edit' do
-      perform_request
-
-      expect(response).to have_gitlab_http_status(:ok)
-
-      expect(assigns(:self_hosted_model)).to eq(self_hosted_model)
-    end
-
-    it_behaves_like 'returns 404'
-    it_behaves_like 'must accept terms and conditions'
-  end
 end

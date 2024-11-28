@@ -1,7 +1,9 @@
 <script>
 import { s__ } from '~/locale';
-import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { createAlert } from '~/alert';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import updateSelfHostedModelMutation from '../graphql/mutations/update_self_hosted_model.mutation.graphql';
+import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
 import { SELF_HOSTED_MODEL_MUTATIONS } from '../constants';
 import SelfHostedModelForm from './self_hosted_model_form.vue';
 
@@ -11,22 +13,9 @@ export default {
     SelfHostedModelForm,
   },
   props: {
-    basePath: {
-      type: String,
+    modelId: {
+      type: Number,
       required: true,
-    },
-    model: {
-      type: Object,
-      required: true,
-    },
-    modelOptions: {
-      type: Array,
-      required: true,
-    },
-  },
-  computed: {
-    modelData() {
-      return convertObjectPropsToCamelCase(this.model);
     },
   },
   i18n: {
@@ -34,10 +23,43 @@ export default {
     description: s__(
       'AdminSelfHostedModels|Edit the AI model that can be used for GitLab Duo features.',
     ),
+    errorMessage: s__(
+      'AdminSelfHostedModels|An error occurred while loading the self-hosted model. Please try again.',
+    ),
   },
   mutationData: {
     name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
     mutation: updateSelfHostedModelMutation,
+  },
+  data() {
+    return {
+      selfHostedModel: null,
+    };
+  },
+  apollo: {
+    selfHostedModel: {
+      query: getSelfHostedModelsQuery,
+      variables() {
+        return {
+          id: convertToGraphQLId('Ai::SelfHostedModel', this.modelId),
+        };
+      },
+      update(data) {
+        return data.aiSelfHostedModels?.nodes[0];
+      },
+      error(error) {
+        createAlert({
+          message: this.$options.i18n.errorMessage,
+          error,
+          captureError: true,
+        });
+      },
+    },
+  },
+  computed: {
+    isLoading() {
+      return this.$apollo.loading;
+    },
   },
 };
 </script>
@@ -48,9 +70,8 @@ export default {
       {{ $options.i18n.description }}
     </p>
     <self-hosted-model-form
-      :initial-form-values="modelData"
-      :base-path="basePath"
-      :model-options="modelOptions"
+      v-if="!isLoading"
+      :initial-form-values="selfHostedModel"
       :mutation-data="$options.mutationData"
       :submit-button-text="s__('AdminSelfHostedModels|Edit self-hosted model')"
     />
