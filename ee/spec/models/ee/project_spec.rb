@@ -1638,6 +1638,51 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#execute_integrations' do
+    let(:integration) { create(:integrations_slack, push_events: true) }
+
+    subject(:execute_integrations) { integration.project.execute_integrations(kind_of(Hash)) }
+
+    shared_examples 'executes the integration' do
+      specify do
+        expect_next_found_instance_of(integration.class) do |instance|
+          expect(instance).to receive(:async_execute).once
+        end
+
+        execute_integrations
+      end
+    end
+
+    context 'when application settings do not allow all integrations' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it 'does not execute the integration' do
+        expect(integration.class).not_to receive(:new)
+
+        execute_integrations
+      end
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration.to_param])
+        end
+
+        it_behaves_like 'executes the integration'
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_licensed_features(integrations_allow_list: false)
+        end
+
+        it_behaves_like 'executes the integration'
+      end
+    end
+  end
+
   describe '#allowed_to_share_with_group?' do
     let(:project) { create(:project) }
 

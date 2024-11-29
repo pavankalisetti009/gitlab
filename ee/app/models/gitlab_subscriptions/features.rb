@@ -23,6 +23,7 @@ module GitlabSubscriptions
       geo
       git_abuse_rate_limit
       instance_level_scim
+      integrations_allow_list
       ldap_group_sync
       ldap_group_sync_filter
       multiple_ldap_servers
@@ -223,6 +224,7 @@ module GitlabSubscriptions
       incident_management
       inline_codequality
       insights
+      integrations_allow_list
       issuable_health_status
       issues_completed_analytics
       jira_vulnerabilities_integration

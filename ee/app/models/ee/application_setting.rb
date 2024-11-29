@@ -664,8 +664,7 @@ module EE
     end
 
     def check_allowed_integrations
-      available_integrations = ::Integration.available_integration_names(include_disabled: true)
-      unknown_integrations = allowed_integrations - available_integrations
+      unknown_integrations = allowed_integrations - ::Integration.all_integration_names
 
       return if unknown_integrations.blank?
 

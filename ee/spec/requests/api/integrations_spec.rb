@@ -41,6 +41,52 @@ RSpec.describe API::Integrations, feature_category: :integrations do
     end
   end
 
+  shared_examples 'observes allow list settings' do |allowed_status:, blocked_status:|
+    def stub_allow_list_license(allowed:)
+      licensed_features = { integrations_allow_list: allowed }
+      licensed_features[:github_integration] = true if integration == 'github'
+
+      stub_licensed_features(licensed_features)
+    end
+
+    context 'when application settings do not allow all integrations' do
+      before do
+        stub_allow_list_license(allowed: true)
+        stub_application_setting(allow_all_integrations: false)
+      end
+
+      it "returns #{blocked_status}" do
+        request
+
+        expect(response).to have_gitlab_http_status(blocked_status)
+      end
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration])
+        end
+
+        it "returns #{allowed_status}" do
+          request
+
+          expect(response).to have_gitlab_http_status(allowed_status)
+        end
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_allow_list_license(allowed: false)
+        end
+
+        it "returns #{allowed_status}" do
+          request
+
+          expect(response).to have_gitlab_http_status(allowed_status)
+        end
+      end
+    end
+  end
+
   %w[integrations services].each do |endpoint|
     where(:integration) do
       Integration::EE_PROJECT_LEVEL_ONLY_INTEGRATION_NAMES.union(Integration::GOOGLE_CLOUD_PLATFORM_INTEGRATION_NAMES)
@@ -50,15 +96,21 @@ RSpec.describe API::Integrations, feature_category: :integrations do
       integration = params[:integration]
 
       describe "PUT /projects/:id/#{endpoint}/#{integration.dasherize}" do
-        it_behaves_like 'set up an integration', endpoint: endpoint, integration: integration
+        it_behaves_like 'set up an integration', endpoint: endpoint, integration: integration do
+          it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :bad_request
+        end
       end
 
       describe "DELETE /projects/:id/#{endpoint}/#{integration.dasherize}" do
-        it_behaves_like 'disable an integration', endpoint: endpoint, integration: integration
+        it_behaves_like 'disable an integration', endpoint: endpoint, integration: integration do
+          it_behaves_like 'observes allow list settings', allowed_status: :no_content, blocked_status: :not_found
+        end
       end
 
       describe "GET /projects/:id/#{endpoint}/#{integration.dasherize}" do
-        it_behaves_like 'get an integration settings', endpoint: endpoint, integration: integration
+        it_behaves_like 'get an integration settings', endpoint: endpoint, integration: integration do
+          it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :not_found
+        end
       end
     end
 
@@ -83,6 +135,34 @@ RSpec.describe API::Integrations, feature_category: :integrations do
         end
       end
     end
+  end
+
+  describe 'POST /projects/:id/integrations/slack_slash_commands/trigger' do
+    before_all do
+      create(:slack_slash_commands_integration, project: project)
+    end
+
+    let(:integration) { ::Integrations::SlackSlashCommands.to_param }
+
+    let(:params) { { token: 'secrettoken', text: 'help' } }
+
+    subject(:request) { post api("/projects/#{project.id}/integrations/#{integration}/trigger"), params: params }
+
+    it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :not_found
+  end
+
+  describe 'POST /projects/:id/integrations/mattermost_slash_commands/trigger' do
+    before_all do
+      create(:mattermost_slash_commands_integration, project: project)
+    end
+
+    let(:integration) { ::Integrations::MattermostSlashCommands.to_param }
+
+    let(:params) { { token: 'secrettoken', text: 'help' } }
+
+    subject(:request) { post api("/projects/#{project.id}/integrations/#{integration}/trigger"), params: params }
+
+    it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :not_found
   end
 
   describe 'Google Artifact Registry' do
