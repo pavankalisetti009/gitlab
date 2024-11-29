@@ -91,17 +91,19 @@ module Gitlab
 
             response = Nokogiri::XML.parse(response_modifier.response_body)
 
+            expected_attrs = %w[priority old_line new_line]
             response.css('review comment').each do |comment|
-              next unless comment['line'].present? && comment['priority'].present?
+              next unless (expected_attrs - comment.keys).blank?
 
-              # NOTE: Occasionally LLM gets the line number wrong and it seems that
-              # it'd be safer for us to match them if possible.
-              new_line = comment['line'].to_i
-              line = diff_file.diff_lines.find { |line| line.new_line == new_line }
+              old_line = comment['old_line'].blank? ? nil : comment['old_line'].to_i
+              new_line = comment['new_line'].blank? ? nil : comment['new_line'].to_i
+
+              # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
+              line = diff_file.diff_lines.find { |line| line.old_line == old_line && line.new_line == new_line }
               next unless line.present?
 
               note_content = parsed_note_content(comment)
-              draft_note_params = build_draft_note_params(note_content, diff_file, line, diff_refs)
+              draft_note_params = build_draft_note_params(note_content, diff_file, old_line, new_line, diff_refs)
               next unless draft_note_params.present?
 
               @draft_notes_by_priority << [
@@ -118,23 +120,28 @@ module Gitlab
             line_offset_below = 0
 
             comment.children.map do |element|
+              inner_html = element.inner_html
+
               case element.name
               when 'from'
                 # NOTE: We're just interested in counting the existing lines as LLM doesn't
                 # seem to be able to reliably set this by itself.
                 # We need to remove the starting line breaks to count content lines correctly
                 # as the element.inner_html includes the initial line break as in `<from>\n`.
-                line_offset_below = element.inner_html.delete_prefix("\n").lines.count - 1
+                line_offset_below = inner_html.delete_prefix("\n").lines.count - 1
                 ''
               when 'to'
-                "```suggestion:-0+#{line_offset_below}#{element.inner_html}```\n"
+                # NOTE: Sometimes LLM returns it like `<to>  some text</to` for single line suggestions
+                #   so we need to handle that here to make sure the suggestion format is correct.
+                content = inner_html.start_with?("\n") ? inner_html : "\n#{inner_html}\n"
+                "```suggestion:-0+#{line_offset_below}#{content}```\n"
               when 'text'
                 element.inner_text.delete_prefix("\n")
               end
             end.join
           end
 
-          def build_draft_note_params(comment, diff_file, line, diff_refs)
+          def build_draft_note_params(comment, diff_file, old_line, new_line, diff_refs)
             position = {
               base_sha: diff_refs.base_sha,
               start_sha: diff_refs.start_sha,
@@ -142,8 +149,8 @@ module Gitlab
               old_path: diff_file.old_path,
               new_path: diff_file.new_path,
               position_type: 'text',
-              old_line: line.old_line,
-              new_line: line.new_line,
+              old_line: old_line,
+              new_line: new_line,
               ignore_whitespace_change: false
             }
 

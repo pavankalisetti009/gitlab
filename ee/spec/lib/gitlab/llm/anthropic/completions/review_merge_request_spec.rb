@@ -145,7 +145,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:first_review_answer) do
         <<~RESPONSE
           <review>
-          <comment priority="3" line="2">
+          <comment priority="3" old_line="" new_line="2">
           First comment with suggestions
           With additional line
           <from>
@@ -166,9 +166,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:second_review_answer) do
         <<~RESPONSE
           <review>
-          <comment priority="3" line="1">Second comment with suggestions</comment>
-          <comment priority="3" line="2">Third comment with suggestions</comment>
-          <comment priority="2" line="2">Fourth comment with suggestions</comment>
+          <comment priority="3" old_line="" new_line="1">Second comment with suggestions</comment>
+          <comment priority="3" old_line="" new_line="2">Third comment with suggestions</comment>
+          <comment priority="2" old_line="" new_line="2">Fourth comment with suggestions</comment>
           </review>
         RESPONSE
       end
@@ -252,11 +252,41 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         end
       end
 
+      context 'when the <from> and <to> content is at the same line as the tags' do
+        let(:first_review_answer) do
+          <<~RESPONSE
+            <review>
+            <comment priority="3" old_line="" new_line="2">
+            First comment with suggestions
+            <from>  first offending line</from>
+            <to>  first improved line</to>
+            Some more comments
+            </comment>
+            </review>
+          RESPONSE
+        end
+
+        let(:second_review_response) { {} }
+
+        it 'returns the correctly formatted suggestion block' do
+          completion.execute
+
+          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
+          expect(diff_note.note).to eq <<~NOTE_CONTENT
+            First comment with suggestions
+            ```suggestion:-0+0
+              first improved line
+            ```
+            Some more comments
+          NOTE_CONTENT
+        end
+      end
+
       context 'when the content includes other elements' do
         let(:first_review_answer) do
           <<~RESPONSE
             <review>
-            <comment priority="3" line="2">
+            <comment priority="3" old_line="" new_line="2">
             First comment with suggestions
             <from>
                 <div>first offending line</div>
@@ -295,7 +325,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           let(:first_review_answer) do
             <<~RESPONSE
               <review>
-              <comment priority="3" line="2">
+              <comment priority="3" old_line="" new_line="2">
               First comment with suggestions
               <from>
                   something fishy
@@ -339,7 +369,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:first_review_answer) do
           <<~RESPONSE
             <review>
-            <comment priority="3" line="2">
+            <comment priority="3" old_line="" new_line="2">
             First comment with suggestions
             <to>
                 first improved line
@@ -374,7 +404,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           <<~RESPONSE
             <review>
             <comment>First comment with suggestions</comment>
-            <comment priority="3" line="2">Second comment with suggestions</comment>
+            <comment priority="3" old_line="" new_line="2">Second comment with suggestions</comment>
             </review>
           RESPONSE
         end
@@ -383,8 +413,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:second_review_answer) do
           <<~RESPONSE
             <review>
-            <comment priority="" line="1">Third comment with suggestions</comment>
-            <comment priority="3" line="">Fourth comment with suggestions</comment>
+            <comment priority="" old_line="" new_line="1">Third comment with suggestions</comment>
+            <comment priority="3" old_line="" new_line="">Fourth comment with suggestions</comment>
             </review>
           RESPONSE
         end
@@ -408,7 +438,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             Let me explain how awesome this review is.
 
             <review>
-            <comment priority="3" line="2">First comment with suggestions</comment>
+            <comment priority="3" old_line="" new_line="2">First comment with suggestions</comment>
             </review>
           RESPONSE
         end
@@ -417,7 +447,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:second_review_answer) do
           <<~RESPONSE
             <review>
-            <comment priority="3" line="1">Second comment with suggestions</comment>
+            <comment priority="3" old_line="" new_line="1">Second comment with suggestions</comment>
             </review>
           RESPONSE
         end

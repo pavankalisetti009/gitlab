@@ -31,19 +31,22 @@ module Gitlab
             To properly review this MR, follow these steps:
 
             1. Parse the git diff:
-               - Each `<line>` tags inside of the `<git_diff>` tag represents a line in git diff
-               - Each `<line>` tags also have `new_line` attribute which represents the current line number
-               - Use the `new_line` as the line number in your reviews to refer to them precisely
+               - Each `<line>` tag inside of the `<git_diff>` tag represents a line in git diff
+               - `old_line` attribute in `<line>` tag represents the old line number before the change
+               - `old_line` will be empty if the line is a newly added line
+               - `new_line` attribute  in `<line>` tag represents the new line number after the change
+               - `new_line` will be empty if the line is a deleted line
+               - Unchanged lines will have both `old_line` and `new_line`, but the line number may have changed if any changes were made above the line
 
             2. Analyze the changes carefully, strictly focus on the following criteria:
                - Code correctness and functionality
                - Code efficiency and performance impact
                - Potential security vulnerabilities like SQL injection, XSS, etc.
-               - Potential bugs or edge cases that may have missed
+               - Potential bugs or edge cases that may have been missed
                - Do not comment on documentations
 
             3. Formulate your comments:
-               - Determine the most appropriate line for your comment and provide that as the line number for the comment.
+               - Determine the most appropriate line for your comment
                - When you notice multiple issues on the same line, leave only one comment on that line and list your issues together. List comments from highest in priority to the lowest.
                - Assign each comment a priority from 1 to 3:
                  - Priority 1: Not important
@@ -52,22 +55,22 @@ module Gitlab
 
             4. Format your comments:
                - Wrap each comment in a <comment> element
-               - Include a 'priority' attribute with the assigned priority (1, 2, or 3)
-               - Include a 'line' attribute with the most relevant `new_line` number from the git diff
+               - Include a `priority` attribute with the assigned priority (1, 2, or 3)
+               - Include the `old_line` and `new_line` attributes exactly as they appear in the chosen `<line>` tag for the comment
                - When suggesting a change, use the following format:
-
                  <from>
                    [existing lines that you are suggesting to change]
                  </from>
                  <to>
                    [your suggestion]
                  </to>
-
-                 - <from> tag must contain existings lines before applying your suggestion
+                 - <from> tag must be identical to the lines as they appear in the diff, including any leading spaces or tabs
                  - <to> tag must contain your suggestion
-                 - Your suggestion must match the indentation of the existing lines as the suggestion will be applied directly in place of existing line
+                 - Opening and closing `<from>` and `<to>` tags should not be on the same line as the content
+                 - When making suggestions, always maintain the exact indentation as shown in the original diff. The suggestion should match the indentation of the line you are commenting on precisely, as it will be applied directly in place of the existing line.
                  - Your suggestion must only include the lines that are actually changing from the existing lines
 
+               - Do not include any code suggestions when you are commenting on a deleted line since suggestions cannot be applied on deleted lines
                - Wrap your entire response in `<review></review>` tag.
                - Just return `<review></review>` as your entire response, if the change is acceptable
 
@@ -106,7 +109,9 @@ module Gitlab
           lines = Gitlab::Diff::Parser.new.parse(raw_diff.lines)
 
           lines.map do |line|
-            %(<line new_line="#{line.new_line}">#{line.text}</line>)
+            # NOTE: We are passing in diffs without the prefixes as the LLM seems to get confused sometimes and thinking
+            # that's a part of the actual content.
+            %(<line old_line="#{line.old_line}" new_line="#{line.new_line}">#{line.text(prefix: false)}</line>)
           end.join("\n")
         end
 
