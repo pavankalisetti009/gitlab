@@ -125,7 +125,7 @@ export default {
       </div>
 
       <div class="gl-pt-2 gl-text-subtle">
-        <gl-icon name="information-o" />
+        <gl-icon name="information-o" variant="subtle" />
         {{ $options.i18n.latestTagsOnly }}
       </div>
     </div>

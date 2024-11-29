@@ -31,8 +31,8 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-text-secondary">
-    <gl-icon name="clock" :size="12" class="js-dashboard-project-clock-icon" />
+  <div class="gl-text-subtle">
+    <gl-icon name="clock" :size="12" class="js-dashboard-project-clock-icon" variant="subtle" />
 
     <time ref="timeAgo" class="js-dashboard-project-time-ago">
       {{ formattedTime }}

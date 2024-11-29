@@ -110,7 +110,7 @@ export default {
       <span class="gl-text-subtle">{{ referenceFull }}</span>
     </div>
     <div v-if="showTimeframe" class="gl-mt-2 gl-flex gl-text-subtle" data-testid="epic-timeframe">
-      <gl-icon name="calendar" />
+      <gl-icon name="calendar" variant="subtle" />
       <span class="gl-ml-2">{{ epicTimeframe }}</span>
     </div>
   </gl-popover>

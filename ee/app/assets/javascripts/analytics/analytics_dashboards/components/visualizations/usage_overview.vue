@@ -111,7 +111,7 @@ export default {
           }}</span>
           <gl-icon
             v-gl-tooltip.viewport
-            class="gl-text-secondary"
+            variant="subtle"
             :name="data.namespace.visibilityLevelIcon"
             :title="data.namespace.visibilityLevelTooltip"
           />
