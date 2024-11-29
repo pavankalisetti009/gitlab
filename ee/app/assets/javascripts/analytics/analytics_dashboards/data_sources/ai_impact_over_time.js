@@ -72,6 +72,23 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
       };
     }
 
+    case AI_METRICS.DUO_USAGE_RATE: {
+      const { duoUsedCount, duoAssignedUsersCount } = resp;
+      return {
+        rate: calculateRate({
+          numerator: duoUsedCount,
+          denominator: duoAssignedUsersCount,
+        }),
+        tooltip: {
+          ...tooltip,
+          description: sprintf(tooltipDescription, {
+            duoUsedCount,
+            duoAssignedUsersCount,
+          }),
+        },
+      };
+    }
+
     default:
       return { rate: null, tooltip: null };
   }

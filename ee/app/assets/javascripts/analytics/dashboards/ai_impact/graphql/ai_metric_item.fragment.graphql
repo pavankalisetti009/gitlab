@@ -7,4 +7,5 @@ fragment AiMetricItem on AiMetrics {
   codeSuggestionsAcceptedCount
   duoChatContributorsCount
   duoAssignedUsersCount
+  duoUsedCount
 }

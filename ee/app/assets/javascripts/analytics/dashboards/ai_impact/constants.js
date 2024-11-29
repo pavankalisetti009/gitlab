@@ -37,6 +37,10 @@ export const AI_IMPACT_OVER_TIME_METRICS = {
     label: s__('AiImpactAnalytics|Duo Chat: Unique users'),
     units: UNITS.PERCENT,
   },
+  [AI_METRICS.DUO_USAGE_RATE]: {
+    label: s__('AiImpactAnalytics|Duo seats: Assigned and used'),
+    units: UNITS.PERCENT,
+  },
 };
 
 export const AI_IMPACT_TABLE_METRICS = {
@@ -71,6 +75,14 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
     ),
     descriptionLink: helpPagePath('user/gitlab_duo/index', {
       anchor: 'gitlab-duo-chat',
+    }),
+  },
+  [AI_METRICS.DUO_USAGE_RATE]: {
+    description: s__(
+      'AiImpactAnalytics|%{duoUsedCount} out of %{duoAssignedUsersCount} GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+    ),
+    descriptionLink: helpPagePath('subscriptions/subscription-add-ons', {
+      anchor: 'assign-gitlab-duo-seats',
     }),
   },
 };
