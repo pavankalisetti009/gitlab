@@ -2,12 +2,8 @@
 
 module Security
   module Configuration
-    class SetPreReceiveSecretDetection
+    class SetSecretPushProtectionService
       def self.execute(current_user:, namespace:, enable:)
-        # At present, the security_setting feature is exclusively accessible for projects.
-        # Following the implementation of https://gitlab.com/gitlab-org/gitlab/-/issues/451357,
-        # this feature will also be available at the group level.
-
         # Some projects do not have the necessary security_setting,
         # so we create it when it is missing
         if namespace.is_a?(Project) && namespace.security_setting.nil?

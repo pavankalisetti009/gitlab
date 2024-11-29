@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::Configuration::SetPreReceiveSecretDetection, feature_category: :secret_detection do
+RSpec.describe Security::Configuration::SetSecretPushProtectionService, feature_category: :secret_detection do
   describe '#execute' do
     let_it_be(:security_setting) { create(:project_security_setting, pre_receive_secret_detection_enabled: false) }
     let_it_be(:current_user) { create(:user, :admin) }

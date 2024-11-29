@@ -5,6 +5,8 @@ class ProjectSecuritySetting < ApplicationRecord
 
   belongs_to :project, inverse_of: :security_setting
 
+  scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
+
   def set_continuous_vulnerability_scans!(enabled:)
     enabled if update!(continuous_vulnerability_scans_enabled: enabled)
   end

@@ -29,7 +29,7 @@ module Mutations
         def resolve(namespace_path:, enable:)
           namespace = find_namespace(namespace_path)
 
-          response = ::Security::Configuration::SetPreReceiveSecretDetection
+          response = ::Security::Configuration::SetSecretPushProtectionService
             .execute(current_user: current_user, namespace: namespace, enable: enable)
 
           { pre_receive_secret_detection_enabled: response.payload[:enabled], errors: response.errors }
