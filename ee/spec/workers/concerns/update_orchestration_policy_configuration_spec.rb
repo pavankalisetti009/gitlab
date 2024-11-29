@@ -72,16 +72,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         expect { execute }.to change { configuration.configured_at }.from(nil).to(Time.current)
       end
 
-      it 'executes SyncScanResultPoliciesService' do
-        expect_next_instance_of(
-          Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService, configuration
-        ) do |service|
-          expect(service).to receive(:execute).with(no_args)
-        end
-
-        execute
-      end
-
       it 'executes ComplianceFrameworks::SyncService' do
         expect_next_instance_of(
           Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService, configuration
@@ -129,8 +119,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
 
             it 'does not process policy' do
               expect(Security::SecurityOrchestrationPolicies::ProcessRuleService).not_to receive(:new)
-              expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService).not_to receive(:new)
-              expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).not_to receive(:new)
               expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService).not_to receive(:new)
 
               expect { execute }
@@ -211,8 +199,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
 
       it 'does not execute process for any policy' do
         expect(Security::SecurityOrchestrationPolicies::ProcessRuleService).not_to receive(:new)
-        expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService).not_to receive(:new)
-        expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).not_to receive(:new)
         expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService).not_to receive(:new)
 
         expect { execute }.to change(Security::OrchestrationPolicyRuleSchedule, :count).by(-1)

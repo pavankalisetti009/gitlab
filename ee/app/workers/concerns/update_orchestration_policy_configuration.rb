@@ -24,8 +24,6 @@ module UpdateOrchestrationPolicyConfiguration
         .execute
     end
 
-    Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService.new(configuration).execute
-
     configuration.update!(configured_at: Time.current)
   end
 end

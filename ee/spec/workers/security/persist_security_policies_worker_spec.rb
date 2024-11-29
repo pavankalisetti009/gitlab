@@ -92,6 +92,16 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
 
         expect(policy_configuration.security_policies.type_vulnerability_management_policy.count).to be(3)
       end
+
+      it 'calls SyncScanResultPoliciesService' do
+        expect_next_instance_of(
+          Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService, policy_configuration
+        ) do |service|
+          expect(service).to receive(:execute).with(no_args)
+        end.exactly(IdempotentWorkerHelper::WORKER_EXEC_TIMES)
+
+        perform
+      end
     end
   end
 end
