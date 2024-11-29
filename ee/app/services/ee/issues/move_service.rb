@@ -7,31 +7,20 @@ module EE
 
       override :update_old_entity
       def update_old_entity
-        rewrite_related_vulnerability_issues
         delete_pending_escalations
         super
       end
 
       override :execute
       def execute(issue, target_project, move_any_issue_type = false)
-        ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %w[
-            internal_ids
-            issues
-            issue_user_mentions
-            issue_metrics
-            notes
-            system_note_metadata
-            vulnerability_issue_links
-          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480371'
-        ) do
-          new_issue = super(issue, target_project, move_any_issue_type)
-          # The epic_issue update is not included in `update_old_entity` because it needs to run in a separate
-          # transaction that can be rolled back without aborting the move.
-          move_epic_issue(issue, new_issue) if new_entity.persisted?
+        new_issue = super
+        rewrite_related_vulnerability_issues
 
-          new_issue
-        end
+        # The epic_issue update is not included in `update_old_entity` because it needs to run in a separate
+        # transaction that can be rolled back without aborting the move.
+        move_epic_issue(issue, new_issue) if new_entity.persisted?
+
+        new_issue
       end
 
       private
@@ -55,8 +44,12 @@ module EE
       end
 
       def rewrite_related_vulnerability_issues
-        issue_links = Vulnerabilities::IssueLink.for_issue(original_entity)
-        issue_links.update_all(issue_id: new_entity.id)
+        context = { original_id: original_entity.id, new_id: new_entity.id }
+
+        original_entity.run_after_commit_or_now do
+          issue_links = Vulnerabilities::IssueLink.for_issue(context[:original_id])
+          issue_links.update_all(issue_id: context[:new_id])
+        end
       end
 
       def delete_pending_escalations
