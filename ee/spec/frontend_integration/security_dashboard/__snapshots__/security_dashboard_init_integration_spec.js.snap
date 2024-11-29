@@ -24,7 +24,7 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
             Vulnerabilities over time
           </h4>
           <p
-            class="gl-m-0 gl-text-secondary"
+            class="gl-m-0 gl-text-subtle"
             data-testid="help-text"
           >
             June 6th to today
@@ -93,7 +93,7 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
             Project security status
           </h4>
           <p
-            class="gl-m-0 gl-text-secondary"
+            class="gl-m-0 gl-text-subtle"
             data-testid="help-text"
           />
         </header>
@@ -136,7 +136,7 @@ exports[`Security Dashboard default states sets up instance-level 1`] = `
             Vulnerabilities over time
           </h4>
           <p
-            class="gl-m-0 gl-text-secondary"
+            class="gl-m-0 gl-text-subtle"
             data-testid="help-text"
           >
             June 6th to today
@@ -205,7 +205,7 @@ exports[`Security Dashboard default states sets up instance-level 1`] = `
             Project security status
           </h4>
           <p
-            class="gl-m-0 gl-text-secondary"
+            class="gl-m-0 gl-text-subtle"
             data-testid="help-text"
           />
         </header>

@@ -164,7 +164,7 @@ export default {
 
           <div class="gl-flex gl-flex-col gl-truncate">
             <gl-truncate class="gl-font-bold gl-text-default" :text="span.operation" with-tooltip />
-            <gl-truncate class="gl-text-secondary" :text="span.service" with-tooltip />
+            <gl-truncate class="gl-text-subtle" :text="span.service" with-tooltip />
           </div>
         </div>
 
@@ -177,7 +177,7 @@ export default {
           <span
             data-testid="span-duration-value"
             :style="durationValueStyle(span)"
-            class="gl-text-secondary"
+            class="gl-text-subtle"
             >{{ durationValue(span) }}</span
           >
         </div>

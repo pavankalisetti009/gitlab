@@ -98,7 +98,7 @@ export default {
       return this.anyIteration ? ANY_ITERATION.title : this.selected.title;
     },
     iterationTitleClass() {
-      return this.anyIteration ? 'gl-text-secondary' : 'gl-font-bold';
+      return this.anyIteration ? 'gl-text-subtle' : 'gl-font-bold';
     },
     isLoading() {
       return this.$apollo.queries.iterations.loading;

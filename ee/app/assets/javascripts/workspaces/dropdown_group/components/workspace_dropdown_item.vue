@@ -67,7 +67,7 @@ export default {
       <span v-else class="gl-break-anywhere">{{ workspace.name }}</span>
       <div class="gl-flex gl-gap-2">
         <workspace-state-indicator :workspace-display-state="displayState" />
-        <div class="gl-text-secondary">
+        <div class="gl-text-subtle">
           {{ $options.i18n.created }}
           <time-ago-tooltip :time="workspace.createdAt" />
         </div>

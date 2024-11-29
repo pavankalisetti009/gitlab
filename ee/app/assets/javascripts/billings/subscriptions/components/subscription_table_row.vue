@@ -134,7 +134,7 @@ export default {
           {{ getDisplayValue(col) }}
           <template v-if="col.id === 'subscriptionEndDate' && temporaryExtensionEndDate">
             <p
-              class="gl-mb-0 gl-pt-3 gl-text-sm gl-text-secondary"
+              class="gl-mb-0 gl-pt-3 gl-text-sm gl-text-subtle"
               data-testid="temporary-extension-label"
             >
               <gl-sprintf :message="$options.i18n.TEMPORARY_EXTENSION_LABEL">
@@ -155,7 +155,7 @@ export default {
         >
         <p
           v-if="seatsLastUpdated && col.type === $options.TABLE_TYPE_DEFAULT"
-          class="gl-mb-0 gl-pt-3 gl-text-sm gl-text-secondary"
+          class="gl-mb-0 gl-pt-3 gl-text-sm gl-text-subtle"
           data-testid="seats-last-updated"
         >
           <template v-if="col.id === 'seatsInSubscription'">

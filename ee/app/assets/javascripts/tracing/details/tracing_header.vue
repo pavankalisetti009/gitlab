@@ -141,7 +141,7 @@ export default {
 
         <template #default>
           <span>{{ traceDate }}</span>
-          <span class="gl-font-normal gl-text-secondary">{{ traceTime }}</span>
+          <span class="gl-font-normal gl-text-subtle">{{ traceTime }}</span>
         </template>
       </gl-card>
 

@@ -79,7 +79,7 @@ export default {
         </template>
         <template #tbody>
           <tr v-if="!hasPolicies">
-            <td colspan="4" class="gl-p-5 gl-text-center gl-text-secondary">
+            <td colspan="4" class="gl-p-5 gl-text-center gl-text-subtle">
               {{ $options.i18n.noPolicies }}.
             </td>
           </tr>

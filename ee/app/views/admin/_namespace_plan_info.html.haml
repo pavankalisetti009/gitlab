@@ -3,7 +3,7 @@
 - return unless Gitlab::CurrentSettings.should_check_namespace_plan? && namespace
 
 %li{ class: list_item_classes }
-  %span.gl-text-secondary Plan:
+  %span.gl-text-subtle Plan:
   .gl-col-span-2
     - if namespace.actual_plan&.paid?
       %strong.plan-badge.gl-inline{ data: { plan: namespace.actual_plan_name, testid: 'group-plan-content' } }

@@ -108,10 +108,10 @@ export default {
       >
         <thead>
           <tr class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid">
-            <th class="w-60p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-secondary">
+            <th class="w-60p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-subtle">
               {{ section.label }}
             </th>
-            <th class="w-30p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-secondary">
+            <th class="w-30p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-subtle">
               {{ __('Approvals') }}
             </th>
             <th class="w-30p gl-px-5 gl-py-3"></th>

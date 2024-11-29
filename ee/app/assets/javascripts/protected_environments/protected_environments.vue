@@ -153,7 +153,7 @@ export default {
         {{ confirmUnprotectText }}
       </gl-modal>
 
-      <div v-if="showEmptyMessage" class="gl-text-secondary">
+      <div v-if="showEmptyMessage" class="gl-text-subtle">
         {{ emptyMessage }}
       </div>
       <template v-else>

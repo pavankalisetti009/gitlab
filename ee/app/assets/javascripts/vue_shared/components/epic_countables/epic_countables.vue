@@ -115,7 +115,7 @@ export default {
 
     <span
       ref="countBadge"
-      class="issue-count-badge gl-mr-0 gl-cursor-help gl-pl-3 gl-pr-0 gl-text-secondary"
+      class="issue-count-badge gl-mr-0 gl-cursor-help gl-pl-3 gl-pr-0 gl-text-subtle"
     >
       <span v-if="allowSubEpics" class="gl-mr-3">
         <gl-icon name="epic" />
@@ -134,7 +134,7 @@ export default {
     <span
       v-if="shouldRenderEpicProgress"
       ref="progressBadge"
-      class="issue-count-badge gl-cursor-help gl-pl-0 gl-text-secondary"
+      class="issue-count-badge gl-cursor-help gl-pl-0 gl-text-subtle"
     >
       <span class="gl-mr-3" data-testid="epic-progress">
         <gl-icon name="progress" />

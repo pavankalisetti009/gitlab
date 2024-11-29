@@ -41,7 +41,7 @@ export default {
 </script>
 <template>
   <div>
-    <time-ago v-if="job.finishedAt" :time="job.finishedAt" class="gl-text-sm gl-text-secondary" />
+    <time-ago v-if="job.finishedAt" :time="job.finishedAt" class="gl-text-sm gl-text-subtle" />
     <div class="gl-mb-3 gl-mt-1">
       <ci-icon v-if="job.detailedStatus" :status="job.detailedStatus" show-status-text />
       <gl-link v-if="runner" :href="runner.adminUrl" data-testid="runner-link">

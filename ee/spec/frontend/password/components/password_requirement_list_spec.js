@@ -186,7 +186,7 @@ describe('Password requirement list component', () => {
 
     it('shows the list as secondary text', () => {
       expect(
-        wrapper.findByTestId('password-requirement-list').classes().includes('gl-text-secondary'),
+        wrapper.findByTestId('password-requirement-list').classes().includes('gl-text-subtle'),
       ).toBe(true);
     });
 

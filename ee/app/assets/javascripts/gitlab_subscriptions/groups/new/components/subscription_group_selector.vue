@@ -382,7 +382,7 @@ export default {
               </gl-collapsible-listbox>
             </template>
             <template #group(groupId)-label-description>
-              <span v-if="hasEligibleGroups" class="gl-text-secondary">{{
+              <span v-if="hasEligibleGroups" class="gl-text-subtle">{{
                 $options.i18n.groupSelection.description
               }}</span>
             </template>
@@ -398,7 +398,7 @@ export default {
               </gl-accordion>
             </template>
             <template #group(groupName)-label-description>
-              <span v-if="!hasEligibleGroups" class="gl-text-secondary">{{
+              <span v-if="!hasEligibleGroups" class="gl-text-subtle">{{
                 $options.i18n.groupSelection.description
               }}</span>
             </template>
@@ -409,7 +409,7 @@ export default {
                 {{ rootUrl }}{{ groupSlug }}
               </p>
 
-              <p class="gl-mb-5 gl-text-center gl-text-secondary">
+              <p class="gl-mb-5 gl-text-center gl-text-subtle">
                 {{ $options.i18n.groupPath.urlFooter }}
               </p>
             </template>

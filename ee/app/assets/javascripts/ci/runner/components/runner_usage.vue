@@ -12,7 +12,7 @@ import RunnerUsageQuery from '../graphql/performance/runner_usage.query.graphql'
 import RunnerUsageByProjectQuery from '../graphql/performance/runner_usage_by_project.query.graphql';
 import RunnerUsageExportMutation from '../graphql/performance/runner_usage_export.mutation.graphql';
 
-const thClass = ['!gl-text-sm', '!gl-text-secondary'];
+const thClass = ['!gl-text-sm', '!gl-text-subtle'];
 
 export default {
   name: 'RunnerUsage',

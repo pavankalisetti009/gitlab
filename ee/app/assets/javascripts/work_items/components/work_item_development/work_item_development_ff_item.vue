@@ -43,7 +43,7 @@ export default {
     <gl-tooltip :target="() => $refs.flagInfo" placement="top">
       <span class="gl-inline-block gl-font-bold"> {{ __('Feature flag') }} </span>
       <span class="gl-inline-block">{{ itemContent.name }} {{ itemContent.reference }}</span>
-      <span class="gl-inline-block gl-text-secondary">{{ flagStatus(itemContent) }}</span>
+      <span class="gl-inline-block gl-text-subtle">{{ flagStatus(itemContent) }}</span>
     </gl-tooltip>
   </div>
 </template>

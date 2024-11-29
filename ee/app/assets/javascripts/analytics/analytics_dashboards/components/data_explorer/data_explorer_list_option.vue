@@ -29,7 +29,7 @@ export default {
     <gl-button category="tertiary" variant="confirm" :icon="icon" @click="$emit('click')">{{
       title
     }}</gl-button>
-    <div class="gl-text-secondary">
+    <div class="gl-text-subtle">
       {{ description }}
     </div>
   </li>

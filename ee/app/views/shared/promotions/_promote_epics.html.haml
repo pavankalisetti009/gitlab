@@ -26,5 +26,5 @@
             = link_button_to s_("Promotions|Don't show me this again"), '#', class: 'js-close js-close-callout gl-mt-2'
 
     .hide-collapsed
-      %span.gl-text-secondary= s_('Promotions|This feature is locked.')
+      %span.gl-text-subtle= s_('Promotions|This feature is locked.')
       = link_to s_('Promotions|Upgrade plan') , '#', class: 'btn-link gl-button', data: { toggle: "dropdown", target: ".js-epics-sidebar-callout", display: 'static' }
