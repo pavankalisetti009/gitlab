@@ -48,10 +48,14 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
 
     context 'when updating widgets' do
       context 'for the progress widget' do
+        let_it_be(:objective_type) { create(:work_item_type, :objective) }
+
         let(:widget_params) { { progress_widget: { progress: 50 } } }
 
         before do
           stub_licensed_features(epics: true, okrs: true)
+
+          work_item.update!(work_item_type: objective_type)
         end
 
         it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
