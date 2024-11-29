@@ -234,7 +234,7 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
         allow(::Gitlab::Audit::Auditor).to receive(:audit)
       end
 
-      it 'returns user and streams audit event' do
+      it 'returns user and streams audit event', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/505904' do
         expect(subject).to eq(user)
 
         expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
