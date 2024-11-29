@@ -7,6 +7,10 @@
     "soft_phone_verification_transactions_daily_limit": {
       "type": "integer",
       "description": "Soft limit for daily phone verification transactions"
+    },
+    "unverified_account_group_creation_limit": {
+      "type": "integer",
+      "description": "Limit for number of top-level groups an unverified account can create"
     }
   }
 }

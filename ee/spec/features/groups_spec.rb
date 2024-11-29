@@ -202,7 +202,7 @@ RSpec.describe 'Group', :with_current_organization, feature_category: :groups_an
 
     context 'when the user has reached the maximum number of created groups' do
       before do
-        create_list(:group, IdentityVerifiable::UNVERIFIED_USER_CREATED_GROUP_LIMIT, creator: user)
+        create_list(:group, ::Gitlab::CurrentSettings.unverified_account_group_creation_limit, creator: user)
       end
 
       context 'when the user has not completed identity verification' do

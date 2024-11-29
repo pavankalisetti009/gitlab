@@ -19,7 +19,6 @@ module IdentityVerifiable
   LOW_RISK_USER_METHODS = %w[email].freeze
   ACTIVE_USER_METHODS = %w[phone].freeze
   IDENTITY_VERIFICATION_RELEASE_DATE = Date.new(2024, 5, 30)
-  UNVERIFIED_USER_CREATED_GROUP_LIMIT = 2
 
   def signup_identity_verification_enabled?
     return false unless ::Gitlab::Saas.feature_available?(:identity_verification)
@@ -260,7 +259,7 @@ module IdentityVerifiable
     return false unless ::Feature.enabled?(:unverified_account_group_creation_limit, self, type: :gitlab_com_derisk)
     return false if identity_verified?
 
-    created_top_level_group_count >= UNVERIFIED_USER_CREATED_GROUP_LIMIT
+    created_top_level_group_count >= ::Gitlab::CurrentSettings.unverified_account_group_creation_limit
   end
 
   def bot_identity_verified?
