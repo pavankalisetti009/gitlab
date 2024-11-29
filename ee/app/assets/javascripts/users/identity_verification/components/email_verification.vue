@@ -151,8 +151,8 @@ export default {
           trim
         />
       </gl-form-group>
-      <div class="gl-text-sm gl-text-secondary">
-        <gl-icon name="information-o" :size="12" />
+      <div class="gl-text-sm gl-text-subtle">
+        <gl-icon name="information-o" :size="12" variant="subtle" />
         <gl-sprintf :message="$options.i18n.noCode">
           <template #resendLink="{ content }">
             <gl-link class="gl-text-sm" @click="resend">{{ content }}</gl-link>

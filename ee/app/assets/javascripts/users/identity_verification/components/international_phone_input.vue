@@ -300,8 +300,8 @@ export default {
       </gl-form-input-group>
     </gl-form-group>
 
-    <div class="gl-mt-3 gl-text-sm gl-text-secondary">
-      <gl-icon name="information-o" :size="12" class="gl-mt-2" />
+    <div class="gl-mt-3 gl-text-sm gl-text-subtle">
+      <gl-icon name="information-o" :size="12" class="gl-mt-2" variant="subtle" />
       <span>{{ $options.i18n.infoText }}</span>
     </div>
 

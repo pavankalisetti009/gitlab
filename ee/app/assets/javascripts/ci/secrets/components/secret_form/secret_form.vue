@@ -290,7 +290,7 @@ export default {
               <gl-dropdown-divider />
               <div class="gl-mx-3 gl-mb-4 gl-mt-3">
                 <p class="gl-my-0 gl-py-0">{{ s__('Secrets|Add custom interval.') }}</p>
-                <p class="gl-my-0 gl-py-0 gl-text-sm gl-text-secondary">
+                <p class="gl-my-0 gl-py-0 gl-text-sm gl-text-subtle">
                   <gl-sprintf :message="__('Use CRON syntax. %{linkStart}Learn more.%{linkEnd}')">
                     <template #link="{ content }">
                       <gl-link href="https://crontab.guru/" target="_blank">{{ content }}</gl-link>

@@ -28,8 +28,14 @@ export default {
 </script>
 
 <template>
-  <div class="gl-text-secondary">
-    <gl-icon :class="alertClasses" class="js-dashboard-alerts-icon" name="warning" :size="12" />
-    <span class="js-alert-count"> {{ alertCount }} </span>
+  <div>
+    <gl-icon
+      :class="alertClasses"
+      class="js-dashboard-alerts-icon"
+      name="warning"
+      :size="12"
+      variant="subtle"
+    />
+    <span class="js-alert-count gl-text-subtle"> {{ alertCount }} </span>
   </div>
 </template>

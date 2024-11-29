@@ -164,8 +164,13 @@ export default {
       @success="handleValidationSuccess"
     />
 
-    <div class="gl-mx-4 gl-mt-4 gl-flex gl-text-sm gl-text-secondary">
-      <gl-icon class="gl-mr-2 gl-mt-2 gl-shrink-0" name="information-o" :size="14" />
+    <div class="gl-mx-4 gl-mt-4 gl-flex gl-text-sm gl-text-subtle">
+      <gl-icon
+        class="gl-mr-2 gl-mt-2 gl-shrink-0"
+        name="information-o"
+        :size="14"
+        variant="subtle"
+      />
 
       <div>
         <p class="gl-mb-2">{{ $options.i18n.formInfo }}</p>

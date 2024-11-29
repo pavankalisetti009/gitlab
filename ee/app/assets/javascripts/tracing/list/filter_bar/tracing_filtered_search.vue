@@ -200,11 +200,12 @@ export default {
         @onDateRangeSelected="onDateRangeSelected"
       />
 
-      <div class="gl-self-center gl-text-secondary">
+      <div class="gl-self-center">
         <gl-icon
           v-tooltip="$options.i18n.dateRangeLimitInfoMessage"
           name="information-o"
           :size="16"
+          variant="subtle"
         />
       </div>
     </div>
