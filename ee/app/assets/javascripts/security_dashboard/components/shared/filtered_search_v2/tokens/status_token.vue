@@ -18,8 +18,8 @@ const OPTIONS = [...GROUPS[0].options, ...GROUPS[1].options];
 export default {
   DEFAULT_VALUES: [detected.searchParamValue, confirmed.searchParamValue],
   VALID_VALUES: OPTIONS.map(({ value }) => value),
+  CLEAR_VALUES: [ALL_STATUS_VALUE],
   GROUPS,
-  queryStringDefaultValues: [ALL_STATUS_VALUE],
   components: {
     GlFilteredSearchToken,
     GlDropdownDivider,
@@ -173,7 +173,7 @@ export default {
     querystring-key="state"
     :value="querySyncValues"
     :valid-values="$options.VALID_VALUES"
-    :default-values="$options.queryStringDefaultValues"
+    :default-values="$options.CLEAR_VALUES"
     @input="updateSelectedFromQS"
   >
     <gl-filtered-search-token

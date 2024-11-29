@@ -3,8 +3,6 @@ import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
 import SeverityToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/severity_token.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -48,7 +46,6 @@ describe('Severity Token component', () => {
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
@@ -132,18 +129,6 @@ describe('Severity Token component', () => {
         expect(isOptionChecked(value)).toBe(false);
       });
     });
-
-    it('emits filters-changed event when a filter is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      // Select 2 states
-      await clickDropdownItem('MEDIUM', 'HIGH');
-
-      expect(spy).toHaveBeenCalledWith({
-        severity: ['MEDIUM', 'HIGH'],
-      });
-    });
   });
 
   describe('toggle text', () => {
@@ -176,43 +161,6 @@ describe('Severity Token component', () => {
     it('shows "Low" when only low severity is selected', async () => {
       await clickDropdownItem('LOW');
       expect(findSlotView().text()).toBe('Low');
-    });
-  });
-
-  describe('QuerystringSync component', () => {
-    beforeEach(() => {
-      createWrapper({});
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'severity',
-        value: ['ALL'],
-        validValues: SeverityToken.VALID_IDS,
-      });
-    });
-
-    it('receives ALL_STATUS_VALUE when All Statuses option is clicked', async () => {
-      await clickDropdownItem('ALL');
-
-      expect(findQuerystringSync().props('value')).toEqual(['ALL']);
-    });
-
-    it.each`
-      emitted                   | expected
-      ${['CRITICAL', 'MEDIUM']} | ${['CRITICAL', 'MEDIUM']}
-      ${['ALL']}                | ${['ALL']}
-    `('restores selected items from the query string - $emitted', async ({ emitted, expected }) => {
-      findQuerystringSync().vm.$emit('input', emitted);
-      await nextTick();
-
-      expected.forEach((item) => {
-        expect(isOptionChecked(item)).toBe(true);
-      });
-
-      allOptionsExcept(expected).forEach((item) => {
-        expect(isOptionChecked(item)).toBe(false);
-      });
     });
   });
 });
