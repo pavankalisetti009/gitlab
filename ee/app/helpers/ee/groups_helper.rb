@@ -122,7 +122,7 @@ module EE
         hand_raise_lead: code_suggestions_usage_app_hand_raise_lead_data,
         is_free_namespace: group.has_free_or_no_subscription?.to_s,
         buy_subscription_path: group_billings_path(group)
-      }.merge(duo_pro_trial_link(group), active_duo_trial_data(group), active_subscription_data(group))
+      }.merge(duo_pro_trial_link(group), active_duo_add_on_data(group), active_subscription_data(group))
     end
 
     def active_subscription_data(group)
@@ -140,14 +140,15 @@ module EE
       end
     end
 
-    def active_duo_trial_data(group)
-      active_duo_trial_add_on = group.subscription_add_on_purchases.for_duo_pro_or_duo_enterprise.active.trial.first
+    def active_duo_add_on_data(group)
+      active_duo_add_on = group.subscription_add_on_purchases.for_duo_pro_or_duo_enterprise.active.first
 
-      return {} unless active_duo_trial_add_on
+      return {} unless active_duo_add_on
 
       {
-        duo_active_trial_start_date: active_duo_trial_add_on.started_at,
-        duo_active_trial_end_date: active_duo_trial_add_on.expires_on
+        duo_add_on_is_trial: active_duo_add_on.trial?.to_s,
+        duo_add_on_start_date: active_duo_add_on.started_at,
+        duo_add_on_end_date: active_duo_add_on.expires_on
       }
     end
 
