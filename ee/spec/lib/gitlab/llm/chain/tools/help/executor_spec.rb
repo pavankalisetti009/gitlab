@@ -64,19 +64,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
   end
 
   describe '#execute' do
-    def expect_streaming
-      expect(handler).to receive(:execute) do |response:, options:|
-        expect(options).to eq({ chunk_id: 1 })
-        expect(response.ai_response).to eq(copy)
-      end
-    end
-
     context 'when request is from IDE' do
       let(:platform_origin) { Gitlab::Llm::Chain::SlashCommand::VS_CODE_EXTENSION }
       let(:copy) { described_class::IDE_COPY }
 
       it 'returns IDE copy' do
-        expect_streaming
         expect(tool.execute.content).to eq(copy)
       end
 
@@ -87,21 +79,10 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
       let(:copy) { described_class::WEB_COPY }
 
       it 'returns web copy' do
-        expect_streaming
         expect(tool.execute.content).to eq(copy)
       end
 
       it_behaves_like 'track internal event'
-    end
-
-    context 'when streaming feature is disabled' do
-      before do
-        stub_feature_flags(duo_chat_stream_help_answer: false)
-      end
-
-      it 'returns copy' do
-        expect(tool.execute.content).to eq(copy)
-      end
     end
   end
 end
