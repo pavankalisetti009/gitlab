@@ -60913,6 +60913,9 @@ msgstr[1] ""
 msgid "View replaced file @ "
 msgstr ""
 
+msgid "View report"
+msgstr ""
+
 msgid "View seat usage"
 msgstr ""
 

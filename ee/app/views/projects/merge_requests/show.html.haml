@@ -43,3 +43,8 @@
   = javascript_tag do
     :plain
       window.gl.mrWidgetData.path_locks_path = '#{project_path_locks_path(@project)}'
+
+- if ::Feature.enabled?(:mr_reports_tab, @project, type: :wip)
+  = javascript_tag do
+    :plain
+      window.gl.mrWidgetData.reportsTabPath = '#{reports_project_merge_request_path(@project, @merge_request)}';
