@@ -8,7 +8,7 @@
       = gl_badge_tag _('Closed'), variant: :info
     - else
       = gl_badge_tag _('Open'), variant: :success
-    = sprite_icon('eye-slash', css_class: 'gl-text-secondary gl-ml-2') if work_item.confidential?
+    = sprite_icon('eye-slash', css_class: 'gl-fill-icon-subtle gl-ml-2') if work_item.confidential?
     = link_to group_work_item_path(work_item.namespace, work_item), data: { event_tracking: 'click_search_result', event_label: @scope, event_value: position }, class: 'gl-w-full' do
       %span.term.str-truncated.gl-font-bold.gl-ml-2= work_item.title
   .gl-text-secondary.gl-mb-3.gl-text-sm
