@@ -4,17 +4,16 @@ import { sprintf, s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { joinPaths } from '~/lib/utils/url_utility';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import {
   FAIL_STATUS,
   STANDARDS_ADHERENCE_CHECK_DESCRIPTIONS,
   STANDARDS_ADHERENCE_CHECK_FAILURE_REASONS,
   STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS,
-  STANDARDS_ADHERENCE_CHECK_MR_FIX_TITLE,
-  STANDARDS_ADHERENCE_CHECK_MR_FIX_FEATURES,
+  STANDARDS_ADHERENCE_CHECK_FIX_FEATURES,
   STANDARDS_ADHERENCE_CHECK_LABELS,
-  STANDARDS_ADHERENCE_CHECK_MR_FIX_LEARN_MORE_DOCS_LINKS,
+  STANDARDS_ADHERENCE_CHECK_FIX_BUTTON_TEXT,
+  STANDARDS_ADHERENCE_CHECK_FIX_LEARN_MORE_DOCS_LINKS,
 } from './constants';
 
 export default {
@@ -45,8 +44,19 @@ export default {
     project() {
       return this.adherence.project;
     },
-    projectMRSettingsPath() {
-      return joinPaths(this.project.webUrl, '-', 'settings', 'merge_requests');
+    projectSettingsPath() {
+      switch (this.adherence.checkName) {
+        case 'SAST':
+        case 'DAST':
+          return joinPaths(this.project.webUrl, '-', 'security', 'configuration');
+        case 'PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR':
+        case 'PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS':
+        case 'AT_LEAST_TWO_APPROVALS':
+        case 'AT_LEAST_ONE_NON_AUTHOR_APPROVAL':
+          return joinPaths(this.project.webUrl, '-', 'settings', 'merge_requests');
+        default:
+          return this.project.webUrl;
+      }
     },
     isFailedStatus() {
       return this.adherence.status === FAIL_STATUS;
@@ -64,7 +74,10 @@ export default {
       return STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS[this.adherence.checkName];
     },
     adherenceCheckLearnMoreLink() {
-      return STANDARDS_ADHERENCE_CHECK_MR_FIX_LEARN_MORE_DOCS_LINKS[this.adherence.checkName];
+      return STANDARDS_ADHERENCE_CHECK_FIX_LEARN_MORE_DOCS_LINKS[this.adherence.checkName];
+    },
+    adherenceCheckFixButtonText() {
+      return STANDARDS_ADHERENCE_CHECK_FIX_BUTTON_TEXT[this.adherence.checkName];
     },
     projectFrameworksText() {
       return sprintf(
@@ -74,10 +87,10 @@ export default {
         { projectName: this.project.name },
       );
     },
+    standardsAdherenceCheckFixes() {
+      return STANDARDS_ADHERENCE_CHECK_FIX_FEATURES[this.adherence.checkName];
+    },
   },
-  standardsAdherenceCheckMRFixTitle: STANDARDS_ADHERENCE_CHECK_MR_FIX_TITLE,
-  standardsAdherenceCheckMRFixes: STANDARDS_ADHERENCE_CHECK_MR_FIX_FEATURES,
-  projectMRSettingsDocsPath: helpPagePath('user/project/merge_requests/approvals/rules'),
   DRAWER_Z_INDEX,
 };
 </script>
@@ -131,29 +144,29 @@ export default {
           <h3 class="gl-mt-0">{{ s__('ComplianceStandardsAdherence|How to fix') }}</h3>
         </div>
         <div class="gl-my-5">
-          {{ $options.standardsAdherenceCheckMRFixTitle }}
+          {{
+            s__(
+              'ComplianceStandardsAdherence|The following features help satisfy this requirement.',
+            )
+          }}
         </div>
-        <div
-          v-for="fix in $options.standardsAdherenceCheckMRFixes"
-          :key="fix.title"
-          class="gl-mb-4"
-        >
-          <div class="gl-mb-4 gl-font-bold">{{ fix.title }}</div>
-          <div class="gl-mb-4">{{ fix.description }}</div>
+        <div v-for="fix in standardsAdherenceCheckFixes" :key="fix.title" class="gl-mb-4">
+          <div class="gl-mb-4 gl-font-bold" data-testid="sidebar-fix-title">{{ fix.title }}</div>
+          <div class="gl-mb-4" data-testid="sidebar-fix-description">{{ fix.description }}</div>
           <gl-button
             class="gl-my-3"
             size="small"
             category="secondary"
             variant="confirm"
-            :href="projectMRSettingsPath"
-            data-testid="sidebar-mr-settings-button"
+            :href="projectSettingsPath"
+            data-testid="sidebar-fix-settings-button"
           >
-            {{ __('Manage rules') }}
+            {{ adherenceCheckFixButtonText }}
           </gl-button>
           <gl-button
             size="small"
             :href="adherenceCheckLearnMoreLink"
-            data-testid="sidebar-mr-settings-learn-more-button"
+            data-testid="sidebar-fix-settings-learn-more-button"
           >
             {{ __('Learn more') }}
           </gl-button>

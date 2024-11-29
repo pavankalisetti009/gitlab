@@ -13,8 +13,10 @@ describe('FixSuggestionsSidebar component', () => {
   const findFailureSectionReasonContent = () => wrapper.findByTestId('sidebar-failure-content');
   const findSuccessSectionReasonContent = () => wrapper.findByTestId('sidebar-success-content');
   const findHowToFixSection = () => wrapper.findByTestId('sidebar-how-to-fix');
-  const findManageRulesBtn = () => wrapper.findByTestId('sidebar-mr-settings-button');
-  const findLearnMoreBtn = () => wrapper.findByTestId('sidebar-mr-settings-learn-more-button');
+  const findFixTitle = () => wrapper.findAllByTestId('sidebar-fix-title');
+  const findFixDescription = () => wrapper.findAllByTestId('sidebar-fix-description');
+  const findFixBtn = () => wrapper.findAllByTestId('sidebar-fix-settings-button');
+  const findLearnMoreBtn = () => wrapper.findAllByTestId('sidebar-fix-settings-learn-more-button');
   const findFrameworksTitle = () => wrapper.findByTestId('sidebar-frameworks-title');
   const findFrameworksContent = () => wrapper.findByTestId('sidebar-frameworks-content');
   const findFrameworksBadges = () => wrapper.findAllComponents(FrameworkBadge);
@@ -104,32 +106,25 @@ describe('FixSuggestionsSidebar component', () => {
     });
 
     describe('for failed checks', () => {
-      describe('for the `how to fix` section', () => {
-        it('has the details', () => {
-          expect(findHowToFixSection().text()).toContain('Merge request approval rules');
-
-          expect(findHowToFixSection().text()).toContain(
-            "Update approval settings in the project's merge request settings to satisfy this requirement.",
-          );
-        });
-
-        it('has the `manage rules` button', () => {
-          expect(findManageRulesBtn().text()).toBe('Manage rules');
-
-          expect(findManageRulesBtn().attributes('href')).toBe(
-            'example.com/groups/example-group/example-project/-/settings/merge_requests',
-          );
-        });
-      });
-
       describe.each`
-        checkName                                         | expectedRequirement                                                                                  | expectedFailureReason                                                        | expectedLearnMoreDocsLink
-        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR'}     | ${'Have a valid rule that prevents author-approved merge requests from being merged'}                | ${'No rule is configured to prevent author approved merge requests.'}        | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#prevent-authors-as-approvers`}
-        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS'} | ${'Have a valid rule that prevents users from approving merge requests where they’ve added commits'} | ${'No rule is configured to prevent merge requests approved by committers.'} | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#prevent-committers-as-approvers`}
-        ${'AT_LEAST_TWO_APPROVALS'}                       | ${'Have a valid rule that prevents merge requests with less than two approvals from being merged'}   | ${'No rule is configured to require two approvals.'}                         | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#at-least-two-approvals`}
+        checkName                                         | expectedRequirement                                                                                    | expectedFailureReason                                                                     | expectedLearnMoreDocsLink                                                                                                              | expectedFixTitle                  | expectedFixDescription                                                                             | expectedProjectSettingsButtonText | expectedProjectSettingsPath
+        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR'}     | ${'Have a valid rule that prevents author-approved merge requests from being merged'}                  | ${'No rule is configured to prevent author approved merge requests.'}                     | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-authors-as-approvers`}    | ${'Merge request approval rules'} | ${"Update approval settings in the project's merge request settings to satisfy this requirement."} | ${'Manage rules'}                 | ${'-/settings/merge_requests'}
+        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS'} | ${"Have a valid rule that prevents users from approving merge requests that they've added commits to"} | ${'No rule is configured to prevent merge requests approved by committers.'}              | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-committers-as-approvers`} | ${'Merge request approval rules'} | ${"Update approval settings in the project's merge request settings to satisfy this requirement."} | ${'Manage rules'}                 | ${'-/settings/merge_requests'}
+        ${'AT_LEAST_TWO_APPROVALS'}                       | ${'Have a valid rule that prevents merge requests with fewer than two approvals from being merged'}    | ${'No rule is configured to require two approvals.'}                                      | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-two-approvals`}          | ${'Merge request approval rules'} | ${"Update approval settings in the project's merge request settings to satisfy this requirement."} | ${'Manage rules'}                 | ${'-/settings/merge_requests'}
+        ${'SAST'}                                         | ${'Have SAST scanner configured in pipeline configuration'}                                            | ${'SAST scanner is not configured in the pipeline configuration for the default branch.'} | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#sast-scanner-artifact`}           | ${'Enable SAST scanner'}          | ${"Enable SAST scanner in the project's security configuration to satisfy this requirement."}      | ${'Manage configuration'}         | ${'-/security/configuration'}
+        ${'DAST'}                                         | ${'Have DAST scanner configured in pipeline configuration'}                                            | ${'DAST scanner is not configured in the pipeline configuration for the default branch.'} | ${`${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#dast-scanner-artifact`}           | ${'Enable DAST scanner'}          | ${"Enable DAST scanner in the project's security configuration to satisfy this requirement."}      | ${'Manage configuration'}         | ${'-/security/configuration'}
       `(
         'when check is $checkName',
-        ({ checkName, expectedRequirement, expectedFailureReason, expectedLearnMoreDocsLink }) => {
+        ({
+          checkName,
+          expectedRequirement,
+          expectedFailureReason,
+          expectedLearnMoreDocsLink,
+          expectedFixTitle,
+          expectedFixDescription,
+          expectedProjectSettingsButtonText,
+          expectedProjectSettingsPath,
+        }) => {
           beforeEach(() => {
             createComponent({
               propsData: {
@@ -154,8 +149,22 @@ describe('FixSuggestionsSidebar component', () => {
             expect(findFailureSectionReasonContent().text()).toBe(expectedFailureReason);
           });
 
-          it('renders the `learn more` button with the correct href', () => {
-            expect(findLearnMoreBtn().attributes('href')).toBe(expectedLearnMoreDocsLink);
+          describe('for the `how to fix` section', () => {
+            it('has the details', () => {
+              expect(findFixTitle().at(0).text()).toContain(expectedFixTitle);
+
+              expect(findFixDescription().at(0).text()).toContain(expectedFixDescription);
+            });
+
+            it('has the `manage rules` button', () => {
+              expect(findFixBtn().at(0).text()).toBe(expectedProjectSettingsButtonText);
+
+              expect(findFixBtn().at(0).attributes('href')).toBe(expectedProjectSettingsPath);
+            });
+
+            it('renders the `learn more` button with the correct href', () => {
+              expect(findLearnMoreBtn().at(0).attributes('href')).toBe(expectedLearnMoreDocsLink);
+            });
           });
         },
       );
@@ -163,10 +172,12 @@ describe('FixSuggestionsSidebar component', () => {
 
     describe('for passed checks', () => {
       describe.each`
-        checkName                                         | expectedRequirement                                                                                  | expectedSuccessReason
-        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR'}     | ${'Have a valid rule that prevents author-approved merge requests from being merged'}                | ${'A rule is configured to prevent author approved merge requests.'}
-        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS'} | ${'Have a valid rule that prevents users from approving merge requests where they’ve added commits'} | ${'A rule is configured to prevent merge requests approved by committers.'}
-        ${'AT_LEAST_TWO_APPROVALS'}                       | ${'Have a valid rule that prevents merge requests with less than two approvals from being merged'}   | ${'A rule is configured to require two approvals.'}
+        checkName                                         | expectedRequirement                                                                                    | expectedSuccessReason
+        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR'}     | ${'Have a valid rule that prevents author-approved merge requests from being merged'}                  | ${'A rule is configured to prevent author approved merge requests.'}
+        ${'PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS'} | ${"Have a valid rule that prevents users from approving merge requests that they've added commits to"} | ${'A rule is configured to prevent merge requests approved by committers.'}
+        ${'AT_LEAST_TWO_APPROVALS'}                       | ${'Have a valid rule that prevents merge requests with fewer than two approvals from being merged'}    | ${'A rule is configured to require two approvals.'}
+        ${'SAST'}                                         | ${'Have SAST scanner configured in pipeline configuration'}                                            | ${'SAST scanner is configured in the pipeline configuration for the default branch.'}
+        ${'DAST'}                                         | ${'Have DAST scanner configured in pipeline configuration'}                                            | ${'DAST scanner is configured in the pipeline configuration for the default branch.'}
       `('when check is $checkName', ({ checkName, expectedRequirement, expectedSuccessReason }) => {
         beforeEach(() => {
           createComponent({
