@@ -564,6 +564,7 @@ class Project < ApplicationRecord
       delegate :allow_fork_pipelines_to_run_in_parent_project, :allow_fork_pipelines_to_run_in_parent_project=
       delegate :separated_caches, :separated_caches=
       delegate :id_token_sub_claim_components, :id_token_sub_claim_components=
+      delegate :delete_pipelines_in_seconds, :delete_pipelines_in_seconds=
     end
   end
 
