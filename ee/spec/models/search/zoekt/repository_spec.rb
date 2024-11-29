@@ -19,6 +19,14 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
     end
   end
 
+  describe 'attribute :retries_left' do
+    subject(:repository) { build(:zoekt_repository) }
+
+    it 'has a default value of 3' do
+      expect(repository.retries_left).to eq(3)
+    end
+  end
+
   describe 'validation' do
     let_it_be_with_reload(:zoekt_repo) { create(:zoekt_repository) }
     let(:zoekt_index) { zoekt_repo.zoekt_index }
@@ -237,6 +245,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         expect(zoekt_repo_without_tasks.reload.tasks.count).to eq 1
         expect(failed_zoekt_repo_without_tasks.reload.tasks.count).to eq 1
         expect(zoekt_repo_without_tasks).to be_initializing
+        expect(zoekt_repo_without_tasks.retries_left).to eq 3
         expect(zoekt_repo_with_processing_tasks).to be_initializing
         expect(zoekt_repo_with_pending_tasks).to be_pending
       end
@@ -252,6 +261,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         expect(zoekt_repo_without_tasks.reload.tasks.count).to eq 1
         expect(failed_zoekt_repo_without_tasks.reload.tasks.count).to eq 0
         expect(zoekt_repo_without_tasks).to be_initializing
+        expect(zoekt_repo_without_tasks.retries_left).to eq 3
         expect(zoekt_repo_with_processing_tasks).to be_initializing
         expect(zoekt_repo_with_pending_tasks).to be_pending
       end

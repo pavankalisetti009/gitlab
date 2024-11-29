@@ -10,6 +10,14 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
     it { is_expected.to belong_to(:zoekt_repository).inverse_of(:tasks) }
   end
 
+  describe 'attribute :retries_left' do
+    subject(:task) { build(:zoekt_task) }
+
+    it 'has a default value of 3' do
+      expect(task.retries_left).to eq(3)
+    end
+  end
+
   describe 'scopes' do
     describe '.with_project' do
       let_it_be(:task) { create(:zoekt_task) }
