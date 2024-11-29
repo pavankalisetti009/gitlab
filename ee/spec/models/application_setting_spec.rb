@@ -694,6 +694,18 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           expect(setting.allowed_integrations).to eq(['unknown_integration'])
         end
       end
+
+      context 'when application settings do not allow all integrations' do
+        before do
+          stub_application_setting(allow_all_integrations: false)
+          stub_licensed_features(integrations_allow_list: true)
+        end
+
+        it 'allows setting a new allowed integration' do
+          setting.allowed_integrations = ['asana']
+          expect(setting).to be_valid
+        end
+      end
     end
   end
 

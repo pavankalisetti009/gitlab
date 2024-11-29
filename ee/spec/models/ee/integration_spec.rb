@@ -3,6 +3,42 @@
 require 'spec_helper'
 
 RSpec.describe Integration, feature_category: :integrations do
+  describe 'Scopes' do
+    describe '.active' do
+      let_it_be(:active_integration) { create(:asana_integration, active: true) }
+      let_it_be(:inactive_integration) { create(:asana_integration, active: false) }
+
+      subject { described_class.active }
+
+      it { is_expected.to contain_exactly(active_integration) }
+
+      context 'when integration is blocked by allowlist settings' do
+        before do
+          stub_application_setting(allow_all_integrations: false)
+          stub_licensed_features(integrations_allow_list: true)
+        end
+
+        it { is_expected.to be_empty }
+
+        context 'when integration is in allowlist' do
+          before do
+            stub_application_setting(allowed_integrations: [active_integration.to_param])
+          end
+
+          it { is_expected.to contain_exactly(active_integration) }
+        end
+
+        context 'when license is insufficient' do
+          before do
+            stub_licensed_features(integrations_allow_list: false)
+          end
+
+          it { is_expected.to contain_exactly(active_integration) }
+        end
+      end
+    end
+  end
+
   describe '.integration_names' do
     subject { described_class.integration_names }
 
@@ -51,6 +87,49 @@ RSpec.describe Integration, feature_category: :integrations do
     end
   end
 
+  describe '.all_integration_names' do
+    subject(:names) { described_class.all_integration_names }
+
+    it 'includes integrations that are blocked by allowlist settings' do
+      stub_application_setting(allow_all_integrations: false)
+      stub_licensed_features(integrations_allow_list: true)
+
+      expect(Integrations::Asana).to be_blocked_by_settings
+      expect(names).to include(Integrations::Asana.to_param)
+    end
+  end
+
+  describe '.blocked_by_settings?' do
+    subject(:integration_class) { Integrations::Asana }
+
+    it { is_expected.not_to be_blocked_by_settings }
+
+    context 'when application settings do not allow all integrations' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it { is_expected.to be_blocked_by_settings }
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration_class.to_param])
+        end
+
+        it { is_expected.not_to be_blocked_by_settings }
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_licensed_features(integrations_allow_list: false)
+        end
+
+        it { is_expected.not_to be_blocked_by_settings }
+      end
+    end
+  end
+
   describe '.vulnerability_hooks' do
     it 'includes integrations where vulnerability_events is true' do
       create(:integration, active: true, vulnerability_events: true)
@@ -86,6 +165,190 @@ RSpec.describe Integration, feature_category: :integrations do
         expect(described_class.integration_name_to_type(:google_cloud_platform_artifact_registry))
           .to eq('Integrations::GoogleCloudPlatform::ArtifactRegistry')
       end
+    end
+
+    context 'when integration is blocked by allowlist settings' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it 'still returns the type' do
+        expect(Integrations::Asana).to be_blocked_by_settings
+        expect(described_class.integration_name_to_type(Integrations::Asana.to_param)).to eq('Integrations::Asana')
+      end
+    end
+  end
+
+  describe '.available_integration_names' do
+    let(:integration_name) { ::Integrations::Asana.to_param }
+
+    subject { described_class.available_integration_names }
+
+    it { is_expected.to include(integration_name) }
+
+    context 'when integration is blocked by allowlist settings' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it { is_expected.not_to include(integration_name) }
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration_name])
+        end
+
+        it { is_expected.to include(integration_name) }
+      end
+
+      context 'when include_blocked_by_settings: true is passed' do
+        subject { described_class.available_integration_names(include_blocked_by_settings: true) }
+
+        it { is_expected.to include(integration_name) }
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_licensed_features(integrations_allow_list: false)
+        end
+
+        it { is_expected.to include(integration_name) }
+      end
+    end
+  end
+
+  describe '#active and #active?' do
+    subject(:integration) { build(:asana_integration) }
+
+    it 'is active' do
+      expect(integration.active).to be(true)
+      expect(integration.active?).to be(true)
+    end
+
+    context 'when integration is blocked by allowlist settings' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it 'is not active' do
+        expect(integration.active).to be(false)
+        expect(integration.active?).to be(false)
+      end
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration.to_param])
+        end
+
+        it 'is active' do
+          expect(integration.active).to be(true)
+          expect(integration.active?).to be(true)
+        end
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_licensed_features(integrations_allow_list: false)
+        end
+
+        it 'is active' do
+          expect(integration.active).to be(true)
+          expect(integration.active?).to be(true)
+        end
+      end
+    end
+  end
+
+  describe '#testable?' do
+    subject(:integration) { create(:asana_integration) }
+
+    it { is_expected.to be_testable }
+
+    context 'when integration is blocked by allowlist settings' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it { is_expected.not_to be_testable }
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration.to_param])
+        end
+
+        it { is_expected.to be_testable }
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_licensed_features(integrations_allow_list: false)
+        end
+
+        it { is_expected.to be_testable }
+      end
+    end
+  end
+
+  describe '#async_execute' do
+    let(:integration) { build(:jenkins_integration, id: 123) }
+
+    subject(:async_execute) { integration.async_execute({ object_kind: 'push' }) }
+
+    it 'queues an Integrations::ExecuteWorker' do
+      expect(Integrations::ExecuteWorker).to receive(:perform_async)
+
+      async_execute
+    end
+
+    context 'when application settings do not allow all integrations' do
+      before do
+        stub_application_setting(allow_all_integrations: false)
+        stub_licensed_features(integrations_allow_list: true)
+      end
+
+      it 'does not queue an Integrations::ExecuteWorker' do
+        expect(Integrations::ExecuteWorker).not_to receive(:perform_async)
+
+        async_execute
+      end
+
+      context 'when integration is in allowlist' do
+        before do
+          stub_application_setting(allowed_integrations: [integration.to_param])
+        end
+
+        it 'queues an Integrations::ExecuteWorker' do
+          expect(Integrations::ExecuteWorker).to receive(:perform_async)
+
+          async_execute
+        end
+      end
+
+      context 'when license is insufficient' do
+        before do
+          stub_licensed_features(integrations_allow_list: false)
+        end
+
+        it 'queues an Integrations::ExecuteWorker' do
+          expect(Integrations::ExecuteWorker).to receive(:perform_async)
+
+          async_execute
+        end
+      end
+    end
+  end
+
+  describe '#blocked_by_settings' do
+    let(:integration_class) { Integrations::Asana }
+
+    it 'delegates to the same method on the class' do
+      expect(integration_class).to receive(:blocked_by_settings?)
+
+      integration_class.new.blocked_by_settings?
     end
   end
 end

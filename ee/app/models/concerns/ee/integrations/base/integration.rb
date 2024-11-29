@@ -5,9 +5,10 @@ module EE
     module Base
       module Integration
         extend ActiveSupport::Concern
+        extend ::Gitlab::Utils::Override
 
         prepended do
-          scope :vulnerability_hooks, -> { where(vulnerability_events: true, active: true) }
+          scope :vulnerability_hooks, -> { where(vulnerability_events: true).active }
         end
 
         EE_INTEGRATION_NAMES = %w[
@@ -27,6 +28,17 @@ module EE
 
         class_methods do
           extend ::Gitlab::Utils::Override
+
+          override :active
+          def active(*_args)
+            return super if instance_allows_all_integrations?
+
+            allowed_integration_types = ::Gitlab::CurrentSettings.allowed_integrations.map do |name|
+              integration_name_to_type(name)
+            end
+
+            super.where(type: allowed_integration_types)
+          end
 
           override :integration_names
           def integration_names
@@ -52,6 +64,15 @@ module EE
             names
           end
 
+          override :available_integration_names
+          def available_integration_names(include_blocked_by_settings: false, **kwargs)
+            names = super(**kwargs)
+
+            return names if include_blocked_by_settings || instance_allows_all_integrations?
+
+            names & ::Gitlab::CurrentSettings.allowed_integrations
+          end
+
           # Returns the STI type for the given integration name.
           # Example: "asana" => "Integrations::Asana"
           override :integration_name_to_type
@@ -65,6 +86,34 @@ module EE
               super
             end
           end
+
+          override :all_integration_names
+          def all_integration_names
+            available_integration_names(include_disabled: true, include_blocked_by_settings: true)
+          end
+
+          def blocked_by_settings?
+            return false if instance_allows_all_integrations?
+
+            ::Gitlab::CurrentSettings.allowed_integrations.exclude?(to_param)
+          end
+
+          private
+
+          def instance_allows_all_integrations?
+            ::Gitlab::CurrentSettings.allow_all_integrations? || !::License.feature_available?(:integrations_allow_list)
+          end
+        end
+
+        delegate :blocked_by_settings?, to: :class
+
+        def active
+          super && !blocked_by_settings?
+        end
+
+        override :testable?
+        def testable?
+          super && !blocked_by_settings?
         end
       end
     end
