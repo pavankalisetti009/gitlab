@@ -3973,7 +3973,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     context 'for a custom role with the `manage_merge_request_settings` ability' do
-      let(:member_role_abilities) { { manage_merge_request_settings: true } }
+      let(:member_role_abilities) { { read_code: true, manage_merge_request_settings: true } }
       let(:allowed_abilities) { [:manage_merge_request_settings, :view_edit_page] }
 
       it_behaves_like 'custom roles abilities'

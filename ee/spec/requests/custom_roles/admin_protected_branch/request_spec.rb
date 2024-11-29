@@ -10,7 +10,7 @@ RSpec.describe 'User with admin_protected_branch custom role', feature_category:
   let_it_be(:protected_branch) { create(:protected_branch, project: project) }
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
+  let_it_be(:role) { create(:member_role, :guest, namespace: group, read_code: true, admin_protected_branch: true) }
   let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: current_user, group: group) }
 
   before do

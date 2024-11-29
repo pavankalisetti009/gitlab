@@ -229,7 +229,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
       context 'with no permissions enabled' do
         it 'is invalid' do
-          member_role = build(:member_role, read_code: false)
+          member_role = build(:member_role, without_any_permissions: true)
 
           expect(member_role).not_to be_valid
           expect(member_role.errors[:base].first)

@@ -41,7 +41,6 @@ RSpec.describe Auth::MemberRoleAbilityLoader, feature_category: :system_access d
           :member_role,
           :guest,
           admin_vulnerability: false,
-          read_code: false,
           read_vulnerability: true,
           members: [group_member],
           namespace: group

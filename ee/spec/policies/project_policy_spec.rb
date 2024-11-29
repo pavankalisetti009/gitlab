@@ -3025,7 +3025,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     context 'for a custom role with the `manage_merge_request_settings` ability' do
-      let(:member_role_abilities) { { manage_merge_request_settings: true } }
+      let(:member_role_abilities) { { read_code: true, manage_merge_request_settings: true } }
       let(:allowed_abilities) do
         [
           :manage_merge_request_settings,

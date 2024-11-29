@@ -386,11 +386,11 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
 
     context 'for custom roles assignement' do
       let_it_be(:member_role_current_user) do
-        create(:member_role, :maintainer, admin_group_member: true, admin_merge_request: true, read_code: false)
+        create(:member_role, :maintainer, admin_group_member: true, admin_merge_request: true)
       end
 
       let_it_be(:member_role_less_abilities) do
-        create(:member_role, :guest, admin_merge_request: true, read_code: false)
+        create(:member_role, :guest, admin_merge_request: true)
       end
 
       let_it_be(:member_role_more_abilities) do
