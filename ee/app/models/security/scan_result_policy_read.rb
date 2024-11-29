@@ -31,7 +31,9 @@ module Security
     validates :vulnerability_attributes, json_schema: { filename: 'scan_result_policy_vulnerability_attributes' },
       allow_blank: true
     validates :rule_idx,
-      uniqueness: { scope: %i[security_orchestration_policy_configuration_id project_id orchestration_policy_idx] },
+      uniqueness: {
+        scope: %i[security_orchestration_policy_configuration_id project_id orchestration_policy_idx action_idx]
+      },
       numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
     validates :project_approval_settings, json_schema: { filename: 'scan_result_policy_project_approval_settings' },
       allow_blank: true
