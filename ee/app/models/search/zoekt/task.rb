@@ -15,6 +15,7 @@ module Search
       self.primary_key = :id
 
       ignore_column :partition_id, remove_never: true
+      attribute :retries_left, default: 3
 
       belongs_to :node, foreign_key: :zoekt_node_id, inverse_of: :tasks, class_name: '::Search::Zoekt::Node'
       belongs_to :zoekt_repository, inverse_of: :tasks, class_name: '::Search::Zoekt::Repository'

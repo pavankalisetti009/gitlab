@@ -9,6 +9,8 @@ module Search
 
       self.table_name = 'zoekt_repositories'
 
+      attribute :retries_left, default: 3
+
       belongs_to :zoekt_index, inverse_of: :zoekt_repositories, class_name: '::Search::Zoekt::Index'
 
       belongs_to :project, inverse_of: :zoekt_repositories, class_name: 'Project'
