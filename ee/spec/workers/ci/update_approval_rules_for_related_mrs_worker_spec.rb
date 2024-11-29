@@ -6,6 +6,7 @@ RSpec.describe ::Ci::UpdateApprovalRulesForRelatedMrsWorker, feature_category: :
   describe '#perform' do
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:approval_rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
     let_it_be(:base_pipeline) do
       create(:ee_ci_pipeline, :success, project: project,
         ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
@@ -59,6 +60,16 @@ RSpec.describe ::Ci::UpdateApprovalRulesForRelatedMrsWorker, feature_category: :
           3.times { create_merge_request_with_completed_pipeline }
 
           expect(::Ci::SyncReportsToApprovalRulesService).to receive(:new).twice.and_call_original
+          described_class.new.perform(base_pipeline_id)
+        end
+      end
+
+      context 'when there is no approval rule' do
+        let(:approval_rule) { nil }
+
+        it 'does not call SyncReportsToApprovalRulesService' do
+          expect(::Ci::SyncReportsToApprovalRulesService).not_to receive(:new).with(head_pipeline)
+
           described_class.new.perform(base_pipeline_id)
         end
       end

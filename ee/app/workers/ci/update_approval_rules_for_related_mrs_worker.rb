@@ -16,6 +16,7 @@ module Ci
     def perform(pipeline_id)
       pipeline = Ci::Pipeline.find_by_id(pipeline_id)
       return unless pipeline
+      return if pipeline.project.approval_merge_request_rules.empty?
 
       # rubocop: disable CodeReuse/ActiveRecord -- To avoid N+1 queries
       merge_requests_as_base_pipeline = pipeline.merge_requests_as_base_pipeline.where.not(head_pipeline_id: nil)
