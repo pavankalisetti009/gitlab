@@ -3341,6 +3341,10 @@ class Project < ApplicationRecord
     pages_domains.count < Gitlab::CurrentSettings.max_pages_custom_domains_per_project
   end
 
+  def pages_domain_present?(domain_url)
+    pages_url == domain_url || pages_domains.exists?(domain: domain_url)
+  end
+
   # overridden in EE
   def can_suggest_reviewers?
     false
