@@ -4,6 +4,7 @@ import { joinPaths } from '~/lib/utils/url_utility';
 import NewSelfHostedModel from '../self_hosted_models/components/new_self_hosted_model.vue';
 import EditSelfHostedModel from '../self_hosted_models/components/edit_self_hosted_model.vue';
 import SelfHostedDuoConfiguration from './self_hosted_duo_configuration.vue';
+import { SELF_HOSTED_DUO_TABS } from './constants';
 
 Vue.use(VueRouter);
 
@@ -34,9 +35,8 @@ export default function createRouter(base) {
         name: 'features',
         path: '/features',
         component: SelfHostedDuoConfiguration,
-        props: () => ({ tabId: 'ai-feature-settings' }),
+        props: () => ({ tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS }),
       },
-
       {
         path: '*',
         redirect: '/',
