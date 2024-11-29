@@ -4,7 +4,6 @@ FactoryBot.define do
   factory :member_role do
     namespace { association(:group) }
     base_access_level { Gitlab::Access::DEVELOPER }
-    read_code { true }
     name { generate(:title) }
 
     trait(:minimal_access) { base_access_level { Gitlab::Access::MINIMAL_ACCESS } }
@@ -24,5 +23,16 @@ FactoryBot.define do
 
     # this trait can be used only for self-managed
     trait(:instance) { namespace { nil } }
+
+    transient do
+      without_any_permissions { false }
+    end
+
+    after(:build) do |member_role, evaluator|
+      next if evaluator.without_any_permissions
+      next if evaluator.permissions.present? && evaluator.permissions.values.any?
+
+      member_role.read_code = true
+    end
   end
 end

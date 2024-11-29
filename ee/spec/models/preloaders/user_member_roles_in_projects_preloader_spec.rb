@@ -3,184 +3,162 @@
 require 'spec_helper'
 
 RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category: :permissions do
+  include MemberRoleHelpers
+
   let_it_be(:user) { create(:user) }
+
   let_it_be(:group) { create(:group) }
-  let_it_be(:subgroup) { create(:group, parent: group) }
-  let_it_be(:project) { create(:project, :private, group: subgroup) }
-  let_it_be(:other_project) { create(:project, :private, group: subgroup) }
-  let_it_be(:project_member) { create(:project_member, :guest, user: user, source: project) }
-  let_it_be(:other_project_member) { create(:project_member, :guest, user: user, source: other_project) }
+  let_it_be(:sub_group) { create(:group, parent: group) }
 
-  let(:project_list) { [project, other_project] }
+  let_it_be(:project) { create(:project, :private, group: sub_group) }
+  let_it_be(:project_2) { create(:project, :private, group: group) }
 
-  subject(:result) { described_class.new(projects: project_list, user: user).execute }
+  let_it_be(:group_member) { create(:group_member, :guest, user: user, source: group) }
+  let_it_be(:sub_group_member) { create(:group_member, :guest, user: user, source: sub_group) }
+
+  let_it_be_with_reload(:project_member) { create(:project_member, :guest, user: user, source: project) }
+  let_it_be_with_reload(:project_2_member) { create(:project_member, :guest, user: user, source: project_2) }
+
+  let(:projects_list) { [project, project_2] }
+
+  subject(:result) { described_class.new(projects: projects_list, user: user).execute }
 
   before do
     stub_licensed_features(custom_roles: true)
   end
 
-  def ability_requirements(ability)
-    ability_definition = MemberRole.all_customizable_permissions[ability]
-    requirements = ability_definition[:requirements]&.map(&:to_sym) || []
-    requirements & MemberRole.all_customizable_project_permissions
-  end
-
-  def create_member_role(ability, member)
-    build(:member_role, :guest, namespace: group, read_code: false).tap do |record|
-      record.assign_attributes(ability => true)
-      ability_requirements(ability).each do |requirement|
-        record.assign_attributes(requirement => true)
-      end
-      record.save!
-      record.members << member if member
-    end
-  end
-
   shared_examples 'custom roles' do |ability|
-    let_it_be(:other_ability) do
-      (MemberRole.all_customizable_project_permissions - [ability]).sample
-    end
+    context "with ability: #{ability}" do
+      let_it_be(:member_role) { create_member_role(group, ability) }
 
-    let(:expected_abilities) { [ability, *ability_requirements(ability)].compact }
-    let(:expected_abilities_other_project) { [other_ability, *ability_requirements(other_ability)].compact }
+      context 'when custom_roles license is not enabled on project root ancestor' do
+        before do
+          stub_licensed_features(custom_roles: false)
 
-    context 'when custom_roles license is not enabled on project root ancestor' do
-      it 'returns project id with nil ability value' do
-        stub_licensed_features(custom_roles: false)
-        create_member_role(ability, project_member)
+          project_member.update!(member_role: member_role)
+        end
 
-        expect(result).to eq(project.id => nil, other_project.id => nil)
+        it 'returns project id with nil ability value' do
+          expect(result).to eq(project.id => nil, project_2.id => nil)
+        end
       end
-    end
 
-    context 'when custom_roles license is enabled on project root ancestor' do
-      context 'when project has custom role' do
-        let_it_be(:member_role) do
-          create_member_role(ability, project_member)
-        end
+      context 'when custom_roles license is enabled on project root ancestor' do
+        let_it_be(:ability_2) { random_ability(ability, :all_customizable_project_permissions) }
 
-        let_it_be(:other_project_member_role) do
-          create_member_role(other_ability, other_project_member)
-        end
+        let_it_be(:member_role_2) { create_member_role(group, ability_2) }
 
-        context "when custom role has #{ability}: true" do
-          context 'when Array of project passed' do
+        let_it_be(:expected_abilities) { expected_project_abilities(ability) }
+        let_it_be(:expected_abilities_2) { expected_project_abilities(ability_2) }
+
+        context 'when project members are assigned a custom role' do
+          before do
+            project_member.update!(member_role: member_role)
+            project_2_member.update!(member_role: member_role_2)
+          end
+
+          context 'when ability is enabled' do
             it 'returns all requested project IDs with their respective abilities' do
               expect(result[project.id]).to match_array(expected_abilities)
-              expect(result[other_project.id]).to match_array(expected_abilities_other_project)
+              expect(result[project_2.id]).to match_array(expected_abilities_2)
             end
 
-            context "when the `#{ability}` is disabled" do
-              before do
-                allow(::MemberRole).to receive(:permission_enabled?)
-                  .and_call_original
-                allow(::MemberRole).to receive(:permission_enabled?)
-                  .with(ability, user).and_return(false)
+            it 'avoids N+1 queries' do
+              projects = [project]
+              control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+                described_class.new(projects: projects, user: user).execute
               end
 
-              it { expect(result[project.id]).to match_array(ability_requirements(ability)) }
+              projects << create(:project, :private, group: create(:group, parent: group))
+
+              expect do
+                described_class.new(projects: projects, user: user).execute
+              end.to issue_same_number_of_queries_as(control).or_fewer
+            end
+          end
+
+          context 'when ability is disabled' do
+            before do
+              allow(::MemberRole).to receive(:permission_enabled?).and_call_original
+              allow(::MemberRole).to receive(:permission_enabled?).with(ability, user).and_return(false)
             end
 
-            context 'when saas', :saas do
-              let_it_be(:subscription) do
-                create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
-              end
-
-              before do
-                stub_ee_application_setting(should_check_namespace_plan: true)
-              end
-
-              it 'avoids N+1 queries' do
-                projects = [project]
-                control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-                  described_class.new(projects: projects, user: user).execute
-                end
-
-                projects << create(:project, :private, group: create(:group, parent: group))
-
-                expect do
-                  described_class.new(projects: projects, user: user).execute
-                end.to issue_same_number_of_queries_as(control).or_fewer
-              end
+            it 'returns all requested project IDs without the disabled ability' do
+              expect(result[project.id]).to match_array(expected_abilities.without(ability))
             end
           end
 
           context 'when ActiveRecord::Relation of projects passed' do
-            let(:project_list) { Project.where(id: project.id) }
+            let(:projects_list) { Project.where(id: project.id) }
 
             it 'returns the project_id with a value array that includes the ability' do
               expect(result[project.id]).to match_array(expected_abilities)
             end
           end
         end
-      end
 
-      context 'when project namespace has a custom role with ability: true' do
-        let_it_be(:group_member) { create(:group_member, :guest, user: user, source: project.namespace) }
-        let_it_be(:member_role) do
-          create_member_role(ability, group_member)
+        context 'when a user is assigned custom roles in both group and project' do
+          let(:expected) { (expected_abilities + expected_abilities_2).uniq }
+
+          before do
+            project_member.update!(member_role: member_role)
+            group_member.update!(member_role: member_role_2)
+          end
+
+          it 'returns abilities assigned to the custom role inside both project and group' do
+            expect(result[project.id]).to match_array(expected)
+          end
         end
 
-        it 'returns the project_id with a value array that includes the ability' do
-          expect(result[project.id]).to match_array(expected_abilities)
+        context 'when a user is assigned custom roles in group, sub_group and project' do
+          let_it_be(:expected) { (expected_abilities + [:read_code, :read_vulnerability]).uniq }
+
+          let_it_be(:read_code_member_role) { create_member_role(group, :read_code) }
+          let_it_be(:read_vulnerability_member_role) { create_member_role(group, :read_vulnerability) }
+
+          before do
+            project_member.update!(member_role: member_role)
+            group_member.update!(member_role: read_code_member_role)
+            sub_group_member.update!(member_role: read_vulnerability_member_role)
+          end
+
+          it 'returns abilities assigned to the custom role inside group, sub_group and project' do
+            expect(result[project.id]).to match_array(expected)
+          end
+        end
+
+        context 'when project membership has no custom role' do
+          it 'returns project id with empty value array' do
+            expect(result).to eq(project.id => [], project_2.id => [])
+          end
+        end
+
+        context 'when user has custom role that enables custom permission outside of project hierarchy' do
+          let_it_be(:sub_group_2) { create(:group, :private, parent: group) }
+          let_it_be_with_reload(:sub_group_2_member) do
+            create(:group_member, :guest, user: user, source: sub_group_2, member_role: member_role)
+          end
+
+          it 'ignores custom role outside of project hierarchy' do
+            expect(result).to eq({ project.id => [], project_2.id => [] })
+          end
         end
       end
 
-      context 'when a user is assigned to custom roles in both group and project' do
-        let_it_be(:group_member) { create(:group_member, :guest, user: user, source: group) }
-
-        it 'returns abilities assigned to the custom role inside both project and group' do
-          create_member_role(ability, group_member)
-          create_member_role(:read_code, project_member)
-
-          expect(result[project.id]).to match_array(expected_abilities.push(:read_code).uniq)
-        end
-      end
-
-      context 'when a user is assigned to custom roles in group, subgroup and project' do
-        let_it_be(:group_member) { create(:group_member, :guest, user: user, source: group) }
-        let_it_be(:sub_group_member) { create(:group_member, :guest, user: user, source: subgroup) }
-
-        it 'returns abilities assigned to the custom role inside both project and group' do
-          create_member_role(ability, group_member)
-          create_member_role(:read_code, project_member)
-          create_member_role(:read_vulnerability, sub_group_member)
-
-          expect(result[project.id]).to match_array(expected_abilities.concat([:read_code, :read_vulnerability]).uniq)
-        end
-      end
-
-      context 'when project membership has no custom role' do
-        let_it_be(:project) { create(:project, :private, :in_group) }
-
-        it 'returns project id with empty value array' do
-          expect(result).to eq(project.id => [], other_project.id => [])
-        end
-      end
-
-      context 'when user has custom role that enables custom permission outside of project hierarchy' do
-        it 'ignores custom role outside of project hierarchy' do
-          # subgroup is within parent group of project but not above project
-          subgroup = create(:group, parent: group)
-          subgroup_member = create(:group_member, :guest, user: user, source: subgroup)
-          create_member_role(ability, subgroup_member)
-
-          expect(result).to eq({ project.id => [], other_project.id => [] })
-        end
-      end
-    end
-
-    it 'avoids N+1 queries' do
-      projects = [project]
-      described_class.new(projects: projects, user: user).execute
-
-      control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+      it 'avoids N+1 queries' do
+        projects = [project]
         described_class.new(projects: projects, user: user).execute
+
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          described_class.new(projects: projects, user: user).execute
+        end
+
+        projects = [project, create(:project, :private, :in_group)]
+
+        expect do
+          described_class.new(projects: projects, user: user).execute
+        end.to issue_same_number_of_queries_as(control)
       end
-
-      projects = [project, create(:project, :private, :in_group)]
-
-      expect { described_class.new(projects: projects, user: user).execute }.to issue_same_number_of_queries_as(control)
     end
   end
 

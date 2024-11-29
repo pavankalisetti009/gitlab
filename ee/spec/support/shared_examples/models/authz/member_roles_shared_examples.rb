@@ -4,15 +4,15 @@ RSpec.shared_context 'with member roles assigned to group links' do
   let_it_be(:invited_group) { create(:group) }
 
   let_it_be(:guest_read_runners) do
-    create(:member_role, :guest, :instance, read_runners: true, read_code: false)
+    create(:member_role, :guest, :instance, read_runners: true)
   end
 
   let_it_be(:guest_read_vulnerability) do
-    create(:member_role, :guest, :instance, read_vulnerability: true, read_code: false)
+    create(:member_role, :guest, :instance, read_vulnerability: true)
   end
 
   let_it_be(:developer_admin_vulnerability) do
-    create(:member_role, :developer, :instance, admin_vulnerability: true, read_vulnerability: true, read_code: false)
+    create(:member_role, :developer, :instance, admin_vulnerability: true, read_vulnerability: true)
   end
 
   let_it_be(:user_a) { create(:group_member, :guest, source: invited_group, member_role: guest_read_runners) }
