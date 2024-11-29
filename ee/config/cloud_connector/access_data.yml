@@ -85,7 +85,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       _irrelevant:
         unit_primitives:
           - duo_workflow_execute_workflow
-          - duo_workflow_generate_token
   explain_vulnerability:
     backend: 'gitlab-ai-gateway'
     cut_off_date: 2024-10-17 00:00:00 UTC
