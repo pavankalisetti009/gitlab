@@ -734,6 +734,19 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         expect(record.namespace.association(:owner)).to be_loaded
       end
     end
+
+    describe '.without_security_setting' do
+      let_it_be(:project_with_security_setting) { create(:project) }
+      let_it_be(:project_without_security_setting) { create(:project) }
+
+      before do
+        project_without_security_setting.security_setting.destroy!
+      end
+
+      it 'only returns projects without security_setting' do
+        expect(described_class.without_security_setting).to match_array([project_without_security_setting])
+      end
+    end
   end
 
   describe 'validations' do

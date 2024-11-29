@@ -305,6 +305,7 @@ module EE
       scope :with_invited_groups, -> { preload(:invited_groups) }
 
       scope :with_security_setting, -> { preload(:security_setting) }
+      scope :without_security_setting, -> { left_outer_joins(:security_setting).where(project_security_settings: { project_id: nil }) }
       scope :with_scan_result_policy_reads, -> { preload(:scan_result_policy_reads) }
 
       scope :by_marked_for_deletion_on, ->(marked_for_deletion_on) do

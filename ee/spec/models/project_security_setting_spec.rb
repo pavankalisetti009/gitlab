@@ -64,4 +64,17 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
       end
     end
   end
+
+  describe 'scopes' do
+    describe '.for_projects' do
+      let_it_be(:project_1) { create(:project) }
+      let_it_be(:project_2) { create(:project) }
+      let_it_be(:project_3) { create(:project) }
+
+      it 'only returns security settings for selected projects' do
+        expect(described_class.for_projects([project_1.id, project_2.id]))
+          .to match_array([project_1.security_setting, project_2.security_setting])
+      end
+    end
+  end
 end
