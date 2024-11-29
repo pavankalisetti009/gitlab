@@ -7038,6 +7038,31 @@ Input type: `MarkAsSpamSnippetInput`
 | <a id="mutationmarkasspamsnippeterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationmarkasspamsnippetsnippet"></a>`snippet` | [`Snippet`](#snippet) | Snippet after mutation. |
 
+### `Mutation.memberRoleAdminCreate`
+
+DETAILS:
+**Introduced** in GitLab 17.7.
+**Status**: Experiment.
+
+Input type: `MemberRoleAdminCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmemberroleadmincreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmemberroleadmincreatedescription"></a>`description` | [`String`](#string) | Description of the member role. |
+| <a id="mutationmemberroleadmincreatename"></a>`name` | [`String`](#string) | Name of the member role. |
+| <a id="mutationmemberroleadmincreatepermissions"></a>`permissions` | [`[MemberRoleAdminPermission!]!`](#memberroleadminpermission) | List of all customizable admin permissions. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmemberroleadmincreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmemberroleadmincreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationmemberroleadmincreatememberrole"></a>`memberRole` | [`AdminMemberRole`](#adminmemberrole) | Created member role. |
+
 ### `Mutation.memberRoleCreate`
 
 DETAILS:
@@ -13403,6 +13428,29 @@ The edge type for [`CustomerRelationsOrganization`](#customerrelationsorganizati
 | <a id="customerrelationsorganizationedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="customerrelationsorganizationedgenode"></a>`node` | [`CustomerRelationsOrganization`](#customerrelationsorganization) | The item at the end of the edge. |
 
+#### `CustomizableAdminPermissionConnection`
+
+The connection type for [`CustomizableAdminPermission`](#customizableadminpermission).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizableadminpermissionconnectionedges"></a>`edges` | [`[CustomizableAdminPermissionEdge]`](#customizableadminpermissionedge) | A list of edges. |
+| <a id="customizableadminpermissionconnectionnodes"></a>`nodes` | [`[CustomizableAdminPermission]`](#customizableadminpermission) | A list of nodes. |
+| <a id="customizableadminpermissionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `CustomizableAdminPermissionEdge`
+
+The edge type for [`CustomizableAdminPermission`](#customizableadminpermission).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizableadminpermissionedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="customizableadminpermissionedgenode"></a>`node` | [`CustomizableAdminPermission`](#customizableadminpermission) | The item at the end of the edge. |
+
 #### `CustomizableDashboardConnection`
 
 The connection type for [`CustomizableDashboard`](#customizabledashboard).
@@ -13494,6 +13542,29 @@ The edge type for [`CustomizablePermission`](#customizablepermission).
 | ---- | ---- | ----------- |
 | <a id="customizablepermissionedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="customizablepermissionedgenode"></a>`node` | [`CustomizablePermission`](#customizablepermission) | The item at the end of the edge. |
+
+#### `CustomizableStandardPermissionConnection`
+
+The connection type for [`CustomizableStandardPermission`](#customizablestandardpermission).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizablestandardpermissionconnectionedges"></a>`edges` | [`[CustomizableStandardPermissionEdge]`](#customizablestandardpermissionedge) | A list of edges. |
+| <a id="customizablestandardpermissionconnectionnodes"></a>`nodes` | [`[CustomizableStandardPermission]`](#customizablestandardpermission) | A list of nodes. |
+| <a id="customizablestandardpermissionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `CustomizableStandardPermissionEdge`
+
+The edge type for [`CustomizableStandardPermission`](#customizablestandardpermission).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizablestandardpermissionedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="customizablestandardpermissionedgenode"></a>`node` | [`CustomizableStandardPermission`](#customizablestandardpermission) | The item at the end of the edge. |
 
 #### `DastProfileConnection`
 
@@ -18493,6 +18564,25 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserworkspacesincludeactualstates"></a>`includeActualStates` **{warning-solid}** | [`[String!]`](#string) | **Deprecated** in GitLab 16.7. Use actual_states instead. |
 | <a id="addonuserworkspacesprojectids"></a>`projectIds` | [`[ProjectID!]`](#projectid) | Filter workspaces by project GlobalIDs. |
 
+### `AdminMemberRole`
+
+Represents an admin member role.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="adminmemberrolebaseaccesslevel"></a>`baseAccessLevel` **{warning-solid}** | [`AccessLevel!`](#accesslevel) | **Introduced** in GitLab 16.5. **Status**: Experiment. Base access level for the custom role. |
+| <a id="adminmemberrolecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the member role was created. |
+| <a id="adminmemberroledescription"></a>`description` | [`String`](#string) | Role description. |
+| <a id="adminmemberroledetailspath"></a>`detailsPath` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.4. **Status**: Experiment. URL path to the role details webpage. |
+| <a id="adminmemberroleeditpath"></a>`editPath` **{warning-solid}** | [`String!`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Web UI path to edit the custom role. |
+| <a id="adminmemberroleenabledpermissions"></a>`enabledPermissions` **{warning-solid}** | [`CustomizableAdminPermissionConnection!`](#customizableadminpermissionconnection) | **Introduced** in GitLab 17.7. **Status**: Experiment. Array of all permissions enabled for the custom role. |
+| <a id="adminmemberroleid"></a>`id` | [`ID!`](#id) | Role ID. |
+| <a id="adminmemberrolememberscount"></a>`membersCount` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
+| <a id="adminmemberrolename"></a>`name` | [`String`](#string) | Role name. |
+| <a id="adminmemberroleuserscount"></a>`usersCount` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.5. **Status**: Experiment. Number of users who have been directly assigned the role in at least one group or project. |
+
 ### `AgentConfiguration`
 
 Configuration details for an Agent.
@@ -22148,6 +22238,19 @@ Represents a custom field select option.
 | <a id="customerrelationsorganizationname"></a>`name` | [`String!`](#string) | Name of the organization. |
 | <a id="customerrelationsorganizationupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp the organization was last updated. |
 
+### `CustomizableAdminPermission`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizableadminpermissionavailablefor"></a>`availableFor` | [`[String!]!`](#string) | Objects the permission is available for. |
+| <a id="customizableadminpermissionavailablefromaccesslevel"></a>`availableFromAccessLevel` | [`AccessLevel`](#accesslevel) | Access level from which the permission is available. |
+| <a id="customizableadminpermissiondescription"></a>`description` | [`String`](#string) | Description of the permission. |
+| <a id="customizableadminpermissionname"></a>`name` | [`String!`](#string) | Localized name of the permission. |
+| <a id="customizableadminpermissionrequirements"></a>`requirements` | [`[MemberRoleAdminPermission!]`](#memberroleadminpermission) | Requirements of the permission. |
+| <a id="customizableadminpermissionvalue"></a>`value` | [`MemberRoleAdminPermission!`](#memberroleadminpermission) | Value of the permission. |
+
 ### `CustomizableDashboard`
 
 Represents a product analytics dashboard.
@@ -22205,6 +22308,19 @@ Represents a product analytics dashboard visualization.
 | <a id="customizablepermissionname"></a>`name` | [`String!`](#string) | Localized name of the permission. |
 | <a id="customizablepermissionrequirements"></a>`requirements` | [`[MemberRolePermission!]`](#memberrolepermission) | Requirements of the permission. |
 | <a id="customizablepermissionvalue"></a>`value` | [`MemberRolePermission!`](#memberrolepermission) | Value of the permission. |
+
+### `CustomizableStandardPermission`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizablestandardpermissionavailablefor"></a>`availableFor` | [`[String!]!`](#string) | Objects the permission is available for. |
+| <a id="customizablestandardpermissionavailablefromaccesslevel"></a>`availableFromAccessLevel` | [`AccessLevel`](#accesslevel) | Access level from which the permission is available. |
+| <a id="customizablestandardpermissiondescription"></a>`description` | [`String`](#string) | Description of the permission. |
+| <a id="customizablestandardpermissionname"></a>`name` | [`String!`](#string) | Localized name of the permission. |
+| <a id="customizablestandardpermissionrequirements"></a>`requirements` | [`[MemberRoleStandardPermission!]`](#memberrolestandardpermission) | Requirements of the permission. |
+| <a id="customizablestandardpermissionvalue"></a>`value` | [`MemberRoleStandardPermission!`](#memberrolestandardpermission) | Value of the permission. |
 
 ### `CveEnrichmentType`
 
@@ -27315,7 +27431,7 @@ Represents a member role.
 | <a id="memberroledescription"></a>`description` | [`String`](#string) | Role description. |
 | <a id="memberroledetailspath"></a>`detailsPath` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.4. **Status**: Experiment. URL path to the role details webpage. |
 | <a id="memberroleeditpath"></a>`editPath` **{warning-solid}** | [`String!`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Web UI path to edit the custom role. |
-| <a id="memberroleenabledpermissions"></a>`enabledPermissions` **{warning-solid}** | [`CustomizablePermissionConnection!`](#customizablepermissionconnection) | **Introduced** in GitLab 16.5. **Status**: Experiment. Array of all permissions enabled for the custom role. |
+| <a id="memberroleenabledpermissions"></a>`enabledPermissions` **{warning-solid}** | [`CustomizableStandardPermissionConnection!`](#customizablestandardpermissionconnection) | **Introduced** in GitLab 16.5. **Status**: Experiment. Array of all permissions enabled for the custom role. |
 | <a id="memberroleid"></a>`id` | [`ID!`](#id) | Role ID. |
 | <a id="memberrolememberscount"></a>`membersCount` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
 | <a id="memberrolename"></a>`name` | [`String`](#string) | Role name. |
@@ -39604,6 +39720,14 @@ Types of member approval status.
 | <a id="memberapprovalstatustypedenied"></a>`DENIED` | Denied promotion request. |
 | <a id="memberapprovalstatustypepending"></a>`PENDING` | Pending promotion request. |
 
+### `MemberRoleAdminPermission`
+
+Member role admin permission.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="memberroleadminpermissionread_admin_dashboard"></a>`READ_ADMIN_DASHBOARD` | Read-only access to admin dashboard. |
+
 ### `MemberRolePermission`
 
 Member role permission.
@@ -39635,6 +39759,37 @@ Member role permission.
 | <a id="memberrolepermissionread_vulnerability"></a>`READ_VULNERABILITY` | Read vulnerability reports and security dashboards. |
 | <a id="memberrolepermissionremove_group"></a>`REMOVE_GROUP` | Ability to delete or restore a group. This ability does not allow deleting top-level groups. Review the Retention period settings to prevent accidental deletion. |
 | <a id="memberrolepermissionremove_project"></a>`REMOVE_PROJECT` | Allows deletion of projects. |
+
+### `MemberRoleStandardPermission`
+
+Member role standard permission.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="memberrolestandardpermissionadmin_cicd_variables"></a>`ADMIN_CICD_VARIABLES` | Create, read, update, and delete CI/CD variables. |
+| <a id="memberrolestandardpermissionadmin_compliance_framework"></a>`ADMIN_COMPLIANCE_FRAMEWORK` | Create, read, update, and delete compliance frameworks. Users with this permission can also assign a compliance framework label to a project, and set the default framework of a group. |
+| <a id="memberrolestandardpermissionadmin_group_member"></a>`ADMIN_GROUP_MEMBER` | Add or remove users in a group, and assign roles to users. When assigning a role, users with this custom permission must select a role that has the same or fewer permissions as the default role used as the base for their custom role. |
+| <a id="memberrolestandardpermissionadmin_integrations"></a>`ADMIN_INTEGRATIONS` | Create, read, update, and delete integrations with external applications. |
+| <a id="memberrolestandardpermissionadmin_merge_request"></a>`ADMIN_MERGE_REQUEST` | Allows approval of merge requests. |
+| <a id="memberrolestandardpermissionadmin_protected_branch"></a>`ADMIN_PROTECTED_BRANCH` | Create, read, update, and delete protected branches for a project. |
+| <a id="memberrolestandardpermissionadmin_push_rules"></a>`ADMIN_PUSH_RULES` | Configure push rules for repositories at the group or project level. |
+| <a id="memberrolestandardpermissionadmin_runners"></a>`ADMIN_RUNNERS` | Create, view, edit, and delete group or project Runners. Includes configuring Runner settings. |
+| <a id="memberrolestandardpermissionadmin_terraform_state"></a>`ADMIN_TERRAFORM_STATE` | Execute terraform commands, lock/unlock terraform state files, and remove file versions. |
+| <a id="memberrolestandardpermissionadmin_vulnerability"></a>`ADMIN_VULNERABILITY` | Edit the vulnerability object, including the status and linking an issue. Includes the `read_vulnerability` permission actions. |
+| <a id="memberrolestandardpermissionadmin_web_hook"></a>`ADMIN_WEB_HOOK` | Manage webhooks. |
+| <a id="memberrolestandardpermissionarchive_project"></a>`ARCHIVE_PROJECT` | Allows archiving of projects. |
+| <a id="memberrolestandardpermissionmanage_deploy_tokens"></a>`MANAGE_DEPLOY_TOKENS` | Manage deploy tokens at the group or project level. |
+| <a id="memberrolestandardpermissionmanage_group_access_tokens"></a>`MANAGE_GROUP_ACCESS_TOKENS` | Create, read, update, and delete group access tokens. When creating a token, users with this custom permission must select a role for that token that has the same or fewer permissions as the default role used as the base for the custom role. |
+| <a id="memberrolestandardpermissionmanage_merge_request_settings"></a>`MANAGE_MERGE_REQUEST_SETTINGS` | Configure merge request settings at the group or project level. Group actions include managing merge checks and approval settings. Project actions include managing MR configurations, approval rules and settings, and branch targets. In order to enable Suggested reviewers, the "Manage project access tokens" custom permission needs to be enabled. |
+| <a id="memberrolestandardpermissionmanage_project_access_tokens"></a>`MANAGE_PROJECT_ACCESS_TOKENS` | Create, read, update, and delete project access tokens. When creating a token, users with this custom permission must select a role for that token that has the same or fewer permissions as the default role used as the base for the custom role. |
+| <a id="memberrolestandardpermissionmanage_security_policy_link"></a>`MANAGE_SECURITY_POLICY_LINK` | Allows linking security policy projects. |
+| <a id="memberrolestandardpermissionread_code"></a>`READ_CODE` | Allows read-only access to the source code in the user interface. Does not allow users to edit or download repository archives, clone or pull repositories, view source code in an IDE, or view merge requests for private projects. You can download individual files because read-only access inherently grants the ability to make a local copy of the file. |
+| <a id="memberrolestandardpermissionread_crm_contact"></a>`READ_CRM_CONTACT` | Read CRM contact. |
+| <a id="memberrolestandardpermissionread_dependency"></a>`READ_DEPENDENCY` | Allows read-only access to the dependencies and licenses. |
+| <a id="memberrolestandardpermissionread_runners"></a>`READ_RUNNERS` | Allows read-only access to group or project runners, including the runner fleet dashboard. |
+| <a id="memberrolestandardpermissionread_vulnerability"></a>`READ_VULNERABILITY` | Read vulnerability reports and security dashboards. |
+| <a id="memberrolestandardpermissionremove_group"></a>`REMOVE_GROUP` | Ability to delete or restore a group. This ability does not allow deleting top-level groups. Review the Retention period settings to prevent accidental deletion. |
+| <a id="memberrolestandardpermissionremove_project"></a>`REMOVE_PROJECT` | Allows deletion of projects. |
 
 ### `MemberRolesOrderBy`
 
@@ -43095,6 +43250,7 @@ Implementations:
 
 Implementations:
 
+- [`AdminMemberRole`](#adminmemberrole)
 - [`MemberRole`](#memberrole)
 - [`StandardRole`](#standardrole)
 

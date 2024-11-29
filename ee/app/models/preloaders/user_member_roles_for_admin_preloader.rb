@@ -34,7 +34,7 @@ module Preloaders
 
     def enabled_permissions
       MemberRole
-        .all_customizable_admin_permissions
+        .all_customizable_admin_permission_keys
         .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
     strong_memoize_attr :enabled_permissions

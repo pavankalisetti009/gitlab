@@ -10,7 +10,7 @@ RSpec.describe 'updating member role', feature_category: :system_access do
   let_it_be(:current_user) { create(:user) }
 
   let(:name) { 'new name' }
-  let(:permissions) { MemberRole.all_customizable_permissions.keys.map(&:to_s).map(&:upcase) }
+  let(:permissions) { MemberRole.all_customizable_standard_permissions.keys.map(&:to_s).map(&:upcase) }
 
   let(:input) { { 'name' => name, 'permissions' => permissions } }
   let(:mutation) { graphql_mutation(:memberRoleUpdate, input.merge('id' => member_role.to_global_id.to_s), fields) }

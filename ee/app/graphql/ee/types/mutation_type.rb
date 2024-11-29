@@ -55,6 +55,7 @@ module EE
         mount_mutation ::Mutations::Iterations::Cadences::Destroy
         mount_mutation ::Mutations::MemberRoles::Update
         mount_mutation ::Mutations::MemberRoles::Create, experiment: { milestone: '16.5' }
+        mount_mutation ::Mutations::MemberRoles::CreateAdmin, experiment: { milestone: '17.7' }
         mount_mutation ::Mutations::MemberRoles::Delete, experiment: { milestone: '16.7' }
         mount_mutation ::Mutations::RequirementsManagement::CreateRequirement
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements

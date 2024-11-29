@@ -50,7 +50,7 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
     end
   end
 
-  MemberRole.all_customizable_admin_permissions.each do |ability|
+  MemberRole.all_customizable_admin_permission_keys.each do |ability|
     it_behaves_like 'custom roles', ability
   end
 end
