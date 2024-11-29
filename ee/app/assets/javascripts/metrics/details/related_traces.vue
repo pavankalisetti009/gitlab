@@ -89,7 +89,7 @@ export default {
         <gl-link v-if="item.url" :href="item.url">{{
           s__('ObservabilityMetrics|View traces')
         }}</gl-link>
-        <span v-else class="gl-text-secondary">{{
+        <span v-else class="gl-text-subtle">{{
           s__('ObservabilityMetrics|No related traces')
         }}</span>
       </li>

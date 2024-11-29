@@ -35,7 +35,7 @@ export default {
 
 <template>
   <div class="gl-flex gl-flex-col gl-items-center">
-    <h5 class="gl-mb-2 gl-mt-0 gl-text-secondary" data-testid="empty-state-header">
+    <h5 class="gl-mb-2 gl-mt-0 gl-text-subtle" data-testid="empty-state-header">
       {{ emptyStateHeader }}
     </h5>
     <span class="gl-text-center gl-text-subtle">

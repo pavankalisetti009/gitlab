@@ -145,7 +145,7 @@ export default {
         </template>
       </title-area>
 
-      <p class="gl-text-secondary">
+      <p class="gl-text-subtle">
         {{ s__('AIAgents|Update the name and prompt for this agent.') }}
       </p>
 

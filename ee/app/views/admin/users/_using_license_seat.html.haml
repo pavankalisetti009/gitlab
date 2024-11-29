@@ -2,6 +2,6 @@
 
 - unless Gitlab.com?
   %li{ class: list_item_classes }
-    %span.gl-text-secondary= _("Is using license seat:")
+    %span.gl-text-subtle= _("Is using license seat:")
     .gl-col-span-2
       %strong= @user.using_license_seat? ? _("Yes") : _("No")

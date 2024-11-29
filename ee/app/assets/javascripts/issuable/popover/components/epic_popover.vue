@@ -100,20 +100,16 @@ export default {
         :aria-label="__('Confidential')"
         data-testid="confidential-icon"
       />
-      <span class="gl-text-secondary" data-testid="created-at">
+      <span class="gl-text-subtle" data-testid="created-at">
         {{ __('Opened') }} <time :datetime="epic.createdAt">{{ formattedTime }}</time>
       </span>
     </div>
     <h5 v-if="!loading" class="gl-my-3">{{ title }}</h5>
     <div>
       <work-item-type-icon work-item-type="epic" />
-      <span class="gl-text-secondary">{{ referenceFull }}</span>
+      <span class="gl-text-subtle">{{ referenceFull }}</span>
     </div>
-    <div
-      v-if="showTimeframe"
-      class="gl-mt-2 gl-flex gl-text-secondary"
-      data-testid="epic-timeframe"
-    >
+    <div v-if="showTimeframe" class="gl-mt-2 gl-flex gl-text-subtle" data-testid="epic-timeframe">
       <gl-icon name="calendar" />
       <span class="gl-ml-2">{{ epicTimeframe }}</span>
     </div>

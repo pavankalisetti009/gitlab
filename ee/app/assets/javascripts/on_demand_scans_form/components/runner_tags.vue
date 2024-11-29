@@ -61,7 +61,7 @@ export default {
   <div>
     <gl-sprintf :message="$options.i18n.runnerTagsLabel" class="form-text gl-mb-5">
       <template #text="{ content }">
-        <p class="gl-m-0 gl-text-secondary">{{ content }}</p>
+        <p class="gl-m-0 gl-text-subtle">{{ content }}</p>
       </template>
       <template #link="{ content }">
         <gl-link :href="$options.HELP_PAGE_RUNNER_TAGS_PATH" target="_blank">{{ content }}</gl-link>

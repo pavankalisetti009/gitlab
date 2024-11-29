@@ -67,7 +67,7 @@ export default {
         class="gl-ml-2 !gl-no-underline"
         variant="link"
         size="small"
-        button-text-classes="gl-text-secondary"
+        button-text-classes="gl-text-subtle"
       >
         {{ showMoreButtonText }}
       </gl-button>

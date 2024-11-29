@@ -43,15 +43,15 @@ module EE
 
       group_info = link_to enterprise_group.name, admin_group_path(enterprise_group)
       user_enterprise_group = content_tag(:li, class: list_item_classes) do
-        content_tag(:span, _("Enterprise user of: "), class: "gl-text-secondary") +
+        content_tag(:span, _("Enterprise user of: "), class: "gl-text-subtle") +
           content_tag(:div, "", class: "gl-col-span-2") do
             content_tag(:strong, group_info) +
-              content_tag(:span, format(' (%{gid})', gid: enterprise_group.id), class: "gl-text-secondary")
+              content_tag(:span, format(' (%{gid})', gid: enterprise_group.id), class: "gl-text-subtle")
           end
       end
 
       user_enterprise_associated = content_tag(:li, class: list_item_classes) do
-        content_tag(:span, _("Enterprise user associated at: "), class: "gl-text-secondary") +
+        content_tag(:span, _("Enterprise user associated at: "), class: "gl-text-subtle") +
           content_tag(:div, class: "gl-col-span-2") do
             content_tag(:strong, user.user_detail.enterprise_group_associated_at.to_fs(:medium))
           end

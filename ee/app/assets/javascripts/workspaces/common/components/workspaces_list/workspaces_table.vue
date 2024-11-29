@@ -83,7 +83,7 @@ export default {
                 </span>
                 &middot; {{ $options.i18n.created }}
                 <time-ago-tooltip
-                  class="gl-font-sm-600 gl-whitespace-nowrap gl-text-secondary"
+                  class="gl-font-sm-600 gl-whitespace-nowrap gl-text-subtle"
                   :time="item.createdAt"
                 />
               </div>

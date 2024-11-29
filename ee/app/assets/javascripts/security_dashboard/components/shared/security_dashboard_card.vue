@@ -23,7 +23,7 @@ export default {
       <h4 class="gl-mb-3 gl-mt-0" data-testid="title">
         <slot name="title"></slot>
       </h4>
-      <p class="gl-m-0 gl-text-secondary" data-testid="help-text">
+      <p class="gl-m-0 gl-text-subtle" data-testid="help-text">
         <slot name="help-text"></slot>
       </p>
       <div v-if="$scopedSlots.controls" class="gl-mt-5" data-testid="controls">

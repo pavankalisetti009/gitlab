@@ -3,7 +3,7 @@
 - return unless provisioning_group
 
 %li{ class: list_item_classes }
-  %span.gl-text-secondary= _("Provisioned by:")
+  %span.gl-text-subtle= _("Provisioned by:")
   .gl-col-span-2
     %strong
       = link_to provisioning_group.name, admin_group_path(provisioning_group)

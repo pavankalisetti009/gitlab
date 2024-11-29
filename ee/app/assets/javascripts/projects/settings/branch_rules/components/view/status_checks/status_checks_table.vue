@@ -49,7 +49,7 @@ export default {
         {{ $options.i18n.addStatusCheck }}
       </gl-button>
     </template>
-    <p v-if="!statusChecks.length" class="gl-break-words gl-text-secondary">
+    <p v-if="!statusChecks.length" class="gl-break-words gl-text-subtle">
       {{ $options.i18n.statusChecksEmptyState }}
     </p>
 
@@ -60,7 +60,7 @@ export default {
     >
       <div class="gl-min-w-0 gl-flex-1">
         <p class="gl-my-0 gl-truncate">{{ statusCheck.name }}</p>
-        <p class="gl-my-0 gl-truncate gl-text-secondary">{{ statusCheck.externalUrl }}</p>
+        <p class="gl-my-0 gl-truncate gl-text-subtle">{{ statusCheck.externalUrl }}</p>
       </div>
       <div class="gl-flex gl-gap-2">
         <gl-button

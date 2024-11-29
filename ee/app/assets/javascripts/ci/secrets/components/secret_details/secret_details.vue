@@ -107,7 +107,7 @@ export default {
     <div class="gl-flex">
       <b class="gl-basis-1/4">{{ __('Description') }}</b>
       <p
-        :class="{ 'gl-text-secondary': !secret.description }"
+        :class="{ 'gl-text-subtle': !secret.description }"
         data-testid="secret-details-description"
       >
         {{ descriptionText }}
@@ -145,10 +145,7 @@ export default {
     </div>
     <div class="gl-flex">
       <b class="gl-basis-1/4">{{ __('Last used') }}</b>
-      <p
-        :class="{ 'gl-text-secondary': !secret.lastAccessed }"
-        data-testid="secret-details-last-used"
-      >
+      <p :class="{ 'gl-text-subtle': !secret.lastAccessed }" data-testid="secret-details-last-used">
         {{ lastUsedText }}
       </p>
       <gl-avatar-link
@@ -175,7 +172,7 @@ export default {
     <div class="gl-flex">
       <b class="gl-basis-1/4">{{ __('Rotation reminder') }}</b>
       <p
-        :class="{ 'gl-text-secondary': !secret.rotationPeriod }"
+        :class="{ 'gl-text-subtle': !secret.rotationPeriod }"
         data-testid="secret-details-rotation-reminder"
       >
         {{ rotationPeriodText }}

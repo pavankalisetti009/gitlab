@@ -53,7 +53,7 @@ export default {
     boxClasses() {
       return {
         // make class permanent with display_password_requirements ff removal
-        'gl-text-secondary': this.ruleTypes.includes(COMMON),
+        'gl-text-subtle': this.ruleTypes.includes(COMMON),
       };
     },
   },

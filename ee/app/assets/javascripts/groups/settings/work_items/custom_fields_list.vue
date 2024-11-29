@@ -130,7 +130,7 @@ export default {
       </template>
       <template #cell(fieldType)="{ item }">
         {{ formattedFieldType(item) }}
-        <div class="gl-text-secondary">{{ selectOptionsText(item) }}</div>
+        <div class="gl-text-subtle">{{ selectOptionsText(item) }}</div>
       </template>
       <template #cell(usage)="{ item }">
         <gl-intersperse>
@@ -167,7 +167,7 @@ export default {
               </ul>
             </dd>
           </div>
-          <div class="gl-text-sm gl-text-secondary">
+          <div class="gl-text-sm gl-text-subtle">
             <gl-sprintf :message="s__('WorkItem|Last updated %{timeago}')">
               <template #timeago>
                 <timeago-tooltip :time="item.updatedAt" />

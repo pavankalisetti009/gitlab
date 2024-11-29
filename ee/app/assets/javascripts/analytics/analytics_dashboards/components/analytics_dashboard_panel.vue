@@ -285,11 +285,11 @@ export default {
     :editing="editing"
   >
     <template #body>
-      <span v-if="isErrorAlert" class="gl-text-secondary" data-testid="alert-body">
+      <span v-if="isErrorAlert" class="gl-text-subtle" data-testid="alert-body">
         {{ s__('Analytics|Something went wrong.') }}
       </span>
 
-      <span v-else-if="showEmptyState" class="gl-text-secondary">
+      <span v-else-if="showEmptyState" class="gl-text-subtle">
         {{ s__('Analytics|No results match your query or filter.') }}
       </span>
 

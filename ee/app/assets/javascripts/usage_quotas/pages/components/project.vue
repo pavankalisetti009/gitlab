@@ -167,7 +167,7 @@ export default {
           <gl-link v-if="item.active" :href="item.url" target="_blank" data-testid="url">
             {{ item.url }}
           </gl-link>
-          <span v-else class="gl-text-secondary" data-testid="url">
+          <span v-else class="gl-text-subtle" data-testid="url">
             {{ item.url }}
           </span>
         </template>
