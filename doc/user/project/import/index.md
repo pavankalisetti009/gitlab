@@ -317,7 +317,7 @@ To keep placeholder users one at a time:
 1. Select the **Placeholders** tab.
 1. Go to **Awaiting reassignment** sub-tab, where placeholders are listed in a table.
 1. Find placeholder user you want to keep by reviewing **Placeholder user** and **Source** columns.
-1. In **Reassign placeholder to** column, select **Don't reassign**.
+1. In **Reassign placeholder to** column, select **Do not reassign**.
 1. Select **Confirm**.
 
 To keep placeholder users in bulk:
@@ -325,7 +325,7 @@ To keep placeholder users in bulk:
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Manage > Members**.
 1. Select the **Placeholders** tab.
-1. Above the list, select the vertical ellipsis (**{ellipsis_v}**) > **Keep all as placeholder**.
+1. Above the list, select the vertical ellipsis (**{ellipsis_v}**) > **Keep all as placeholders**.
 1. On the confirmation dialog, select **Confirm**.
 
 #### Cancel reassignment request
