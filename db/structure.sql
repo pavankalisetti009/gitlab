@@ -32153,7 +32153,7 @@ CREATE INDEX index_scan_execution_policy_rules_on_policy_mgmt_project_id ON scan
 
 CREATE UNIQUE INDEX index_scan_execution_policy_rules_on_unique_policy_rule_index ON scan_execution_policy_rules USING btree (security_policy_id, rule_index);
 
-CREATE UNIQUE INDEX index_scan_result_policies_on_position_in_configuration ON scan_result_policies USING btree (security_orchestration_policy_configuration_id, project_id, orchestration_policy_idx, rule_idx);
+CREATE UNIQUE INDEX index_scan_result_policies_on_configuration_action_and_rule_idx ON scan_result_policies USING btree (security_orchestration_policy_configuration_id, project_id, orchestration_policy_idx, rule_idx, action_idx);
 
 CREATE INDEX index_scan_result_policies_on_project_id ON scan_result_policies USING btree (project_id);
 
