@@ -805,7 +805,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     context 'when the user has created the max number of groups' do
       before do
-        create_list(:group, IdentityVerifiable::UNVERIFIED_USER_CREATED_GROUP_LIMIT, creator: user)
+        create_list(:group, ::Gitlab::CurrentSettings.unverified_account_group_creation_limit, creator: user)
       end
 
       it { is_expected.to eq(true) }
@@ -835,7 +835,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     context 'when the user has not created the max number of groups' do
       before do
-        create_list(:group, IdentityVerifiable::UNVERIFIED_USER_CREATED_GROUP_LIMIT - 1, creator: user)
+        create_list(:group, ::Gitlab::CurrentSettings.unverified_account_group_creation_limit - 1, creator: user)
       end
 
       it { is_expected.to eq(false) }

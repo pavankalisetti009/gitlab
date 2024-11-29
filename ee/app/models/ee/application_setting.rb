@@ -48,7 +48,8 @@ module EE
         receptive_cluster_agents_enabled: [:boolean, { default: false }]
 
       jsonb_accessor :identity_verification_settings,
-        soft_phone_verification_transactions_daily_limit: [:integer, { default: 16_000 }]
+        soft_phone_verification_transactions_daily_limit: [:integer, { default: 16_000 }],
+        unverified_account_group_creation_limit: [:integer, { default: 2 }]
 
       validates :identity_verification_settings, json_schema: { filename: "identity_verification_settings" }
 
