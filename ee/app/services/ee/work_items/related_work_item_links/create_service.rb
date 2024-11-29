@@ -63,7 +63,8 @@ module EE
         def create_synced_related_epic_link!
           new_links.each do |work_item_link|
             # RelatedEpicLink can only link an epic to an epic. We therefore need to skip the links where not both
-            # work items are epics. next if work_item_link.source.synced_epic.nil?
+            # work items are epics.
+            next if work_item_link.source.synced_epic.nil?
             next if work_item_link.target.synced_epic.nil?
 
             epic_link = ::Epic::RelatedEpicLink.find_or_initialize_from_work_item_link(work_item_link)
