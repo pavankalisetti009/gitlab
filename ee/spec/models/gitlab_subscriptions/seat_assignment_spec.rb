@@ -43,4 +43,45 @@ RSpec.describe GitlabSubscriptions::SeatAssignment, feature_category: :seat_cost
       expect(described_class.find_by_namespace_and_user(namespace, user)).to eq(result)
     end
   end
+
+  describe '.dormant_in_namespace', :freeze_time do
+    let_it_be(:dormant_seat_assignment_1) do
+      create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: 91.days.ago)
+    end
+
+    let_it_be(:dormant_seat_assignment_2) do
+      create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: nil, created_at: 18.days.ago)
+    end
+
+    let_it_be(:dormant_seat_assignment_3) do
+      create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: 101.days.ago)
+    end
+
+    let_it_be(:dormant_seat_assignment_4) do
+      create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: nil, created_at: 6.days.ago)
+    end
+
+    let_it_be(:active_seat_assignment) do
+      create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: 1.hour.ago)
+    end
+
+    context 'with no cut off date passed to scope' do
+      it 'returns dormant seat assignment records' do
+        expect(described_class.dormant_in_namespace(namespace)).to contain_exactly(
+          dormant_seat_assignment_1,
+          dormant_seat_assignment_2,
+          dormant_seat_assignment_3
+        )
+      end
+    end
+
+    context 'with a cut off date passed to scope' do
+      it 'returns seat assignment records dormant for the given cut off date' do
+        expect(described_class.dormant_in_namespace(namespace, 100.days.ago)).to contain_exactly(
+          dormant_seat_assignment_2,
+          dormant_seat_assignment_3
+        )
+      end
+    end
+  end
 end
