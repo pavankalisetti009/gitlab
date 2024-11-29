@@ -50,6 +50,7 @@ module ProductAnalytics
       code_suggestions_usage_rate_over_time
       code_suggestions_acceptance_rate_over_time
       duo_chat_usage_rate_over_time
+      duo_usage_rate_over_time
     ].freeze
 
     def self.for(container:, user:)

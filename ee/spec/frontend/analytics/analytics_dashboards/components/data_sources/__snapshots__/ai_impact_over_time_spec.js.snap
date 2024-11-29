@@ -146,3 +146,52 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
   ],
 ]
 `;
+
+exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_usage_rate metric with null values response will call the setVisualizationOverrides callback with the correct settings 1`] = `
+[
+  [
+    {
+      "visualizationOptionOverrides": {
+        "title": "Last 30 days",
+        "titleIcon": "clock",
+        "tooltip": {
+          "description": "No usage data for the selected time range.",
+        },
+      },
+    },
+  ],
+]
+`;
+
+exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_usage_rate metric with valid response will call the setVisualizationOverrides callback with the correct settings 1`] = `
+[
+  [
+    {
+      "visualizationOptionOverrides": {
+        "title": "Last 30 days",
+        "titleIcon": "clock",
+        "tooltip": {
+          "description": "3 out of 10 GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats",
+        },
+      },
+    },
+  ],
+]
+`;
+
+exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_usage_rate metric with zeroes response will call the setVisualizationOverrides callback with the correct settings 1`] = `
+[
+  [
+    {
+      "visualizationOptionOverrides": {
+        "title": "Last 30 days",
+        "titleIcon": "clock",
+        "tooltip": {
+          "description": "No usage data for the selected time range.",
+        },
+      },
+    },
+  ],
+]
+`;

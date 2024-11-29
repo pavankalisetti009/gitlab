@@ -5129,6 +5129,9 @@ msgstr ""
 msgid "AiImpactAnalytics|%{duoChatContributorsCount} out of %{duoAssignedUsersCount} GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
+msgid "AiImpactAnalytics|%{duoUsedCount} out of %{duoAssignedUsersCount} GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
 msgid "AiImpactAnalytics|Code Suggestions acceptance usage"
 msgstr ""
 
@@ -5136,6 +5139,9 @@ msgid "AiImpactAnalytics|Code Suggestions usage"
 msgstr ""
 
 msgid "AiImpactAnalytics|Duo Chat: Unique users"
+msgstr ""
+
+msgid "AiImpactAnalytics|Duo seats: Assigned and used"
 msgstr ""
 
 msgid "AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}."
