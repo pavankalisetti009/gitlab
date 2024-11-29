@@ -531,23 +531,38 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#active_duo_trial_data' do
-    context 'when an active duo trial exists' do
+  describe '#active_duo_add_on_data' do
+    context 'when an active duo add on is a trial' do
       let(:trial_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group) }
 
       it 'returns the trial start date and end date' do
         trial_add_on
 
-        expect(helper.active_duo_trial_data(group)).to eq({
-          duo_active_trial_start_date: trial_add_on.started_at,
-          duo_active_trial_end_date: trial_add_on.expires_on
+        expect(helper.active_duo_add_on_data(group)).to eq({
+          duo_add_on_is_trial: 'true',
+          duo_add_on_start_date: trial_add_on.started_at,
+          duo_add_on_end_date: trial_add_on.expires_on
         })
       end
     end
 
-    context 'when an active duo trial does not exist' do
+    context 'when an active duo add on is not a trial' do
+      let(:add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group) }
+
+      it 'returns the trial start date and end date' do
+        add_on
+
+        expect(helper.active_duo_add_on_data(group)).to eq({
+          duo_add_on_is_trial: 'false',
+          duo_add_on_start_date: add_on.started_at,
+          duo_add_on_end_date: add_on.expires_on
+        })
+      end
+    end
+
+    context 'when an active duo add on does not exist' do
       it 'returns empty' do
-        expect(helper.active_duo_trial_data(group)).to eq({})
+        expect(helper.active_duo_add_on_data(group)).to eq({})
       end
     end
   end

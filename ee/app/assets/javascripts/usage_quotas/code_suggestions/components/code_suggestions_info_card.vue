@@ -65,8 +65,9 @@ export default {
     subscriptionName: { default: null },
     subscriptionStartDate: { default: null },
     subscriptionEndDate: { default: null },
-    duoActiveTrialStartDate: { default: null },
-    duoActiveTrialEndDate: { default: null },
+    duoAddOnIsTrial: { default: null },
+    duoAddOnStartDate: { default: null },
+    duoAddOnEndDate: { default: null },
   },
   props: {
     groupId: {
@@ -90,11 +91,8 @@ export default {
     parsedGroupId() {
       return parseInt(this.groupId, 10);
     },
-    shouldShowAddSeatsButton() {
-      if (this.isLoading) {
-        return false;
-      }
-      return true;
+    shouldShowCTAButton() {
+      return !this.isLoading;
     },
     hasNoRequestInformation() {
       return !(this.groupId || this.subscriptionName);
@@ -115,39 +113,39 @@ export default {
       return this.subscriptionPermissions?.reason;
     },
     titleText() {
-      return this.duoActiveTrial
+      return this.duoAddOnIsTrial
         ? this.$options.i18n.trialTitle
         : this.$options.i18n.subscriptionTitle;
     },
     subscriptionEndDateText() {
-      return this.duoActiveTrial
+      return this.duoAddOnIsTrial
         ? this.$options.i18n.trialEndDate
         : this.$options.i18n.subscriptionEndDate;
     },
     startDate() {
-      if (this.duoActiveTrial) {
-        return this.formattedDate(this.duoActiveTrialStartDate);
+      if (this.duoAddOnIsTrial) {
+        return this.formattedDate(this.duoAddOnStartDate);
       }
 
       const date = this.subscription?.startDate || this.subscriptionStartDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     endDate() {
-      if (this.duoActiveTrial) {
-        return this.formattedDate(this.duoActiveTrialEndDate);
+      if (this.duoAddOnIsTrial) {
+        return this.formattedDate(this.duoAddOnEndDate);
       }
 
       const date = this.subscription?.endDate || this.subscriptionEndDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
-    duoActiveTrial() {
-      return Boolean(this.duoActiveTrialStartDate);
+    isDuoEnterprise() {
+      return this.duoTier === DUO_ENTERPRISE;
     },
     isDuoPro() {
       return this.duoTier === DUO_PRO;
     },
     pageViewLabel() {
-      return this.duoActiveTrial
+      return this.duoAddOnIsTrial
         ? `duo_${this.duoTier}_add_on_tab_active_trial`
         : `duo_${this.duoTier}_add_on_tab`;
     },
@@ -158,11 +156,16 @@ export default {
         label: `duo_${this.duoTier}_contact_sales`,
       };
     },
-    handRaiseLeadBtnAttributes() {
+    trialHandRaiseLeadAttributes() {
       return {
-        size: 'small',
-        variant: 'confirm',
-        category: this.isDuoPro ? 'secondary' : 'primary',
+        ...this.$options.sharedHandRaiseLeadAttributes,
+        ...{ category: this.isDuoPro ? 'secondary' : 'primary' },
+      };
+    },
+    nonTrialHandRaiseLeadAttributes() {
+      return {
+        ...this.$options.sharedHandRaiseLeadAttributes,
+        ...{ category: 'primary' },
       };
     },
   },
@@ -261,6 +264,10 @@ export default {
       return localeDateFormat.asDate.format(new Date(year, month - 1, day));
     },
   },
+  sharedHandRaiseLeadAttributes: {
+    size: 'small',
+    variant: 'confirm',
+  },
   modalId: PQL_MODAL_ID,
 };
 </script>
@@ -302,7 +309,7 @@ export default {
         </div>
       </template>
       <template #actions>
-        <div v-if="duoActiveTrial">
+        <div v-if="duoAddOnIsTrial">
           <gl-button
             v-if="isDuoPro"
             variant="confirm"
@@ -315,25 +322,34 @@ export default {
 
           <hand-raise-lead-button
             :modal-id="$options.modalId"
-            :button-attributes="handRaiseLeadBtnAttributes"
+            :button-attributes="trialHandRaiseLeadAttributes"
             :cta-tracking="handRaiseLeadBtnTracking"
             glm-content="usage-quotas-gitlab-duo-tab"
           />
         </div>
         <div v-else>
-          <gl-button
-            v-if="shouldShowAddSeatsButton"
-            v-gl-modal-directive="'limited-access-modal-id'"
-            category="primary"
-            target="_blank"
-            variant="confirm"
-            size="small"
-            class="gl-ml-3 gl-self-start"
-            data-testid="purchase-button"
-            @click="handleAddSeats"
-          >
-            {{ $options.i18n.addSeatsText }}
-          </gl-button>
+          <div v-if="shouldShowCTAButton">
+            <hand-raise-lead-button
+              v-if="isDuoEnterprise"
+              :modal-id="$options.modalId"
+              :button-attributes="nonTrialHandRaiseLeadAttributes"
+              :cta-tracking="handRaiseLeadBtnTracking"
+              glm-content="usage-quotas-gitlab-duo-tab"
+            />
+            <gl-button
+              v-else
+              v-gl-modal-directive="'limited-access-modal-id'"
+              category="primary"
+              target="_blank"
+              variant="confirm"
+              size="small"
+              class="gl-ml-3 gl-self-start"
+              data-testid="purchase-button"
+              @click="handleAddSeats"
+            >
+              {{ $options.i18n.addSeatsText }}
+            </gl-button>
+          </div>
           <limited-access-modal
             v-if="shouldShowModal"
             v-model="showLimitedAccessModal"

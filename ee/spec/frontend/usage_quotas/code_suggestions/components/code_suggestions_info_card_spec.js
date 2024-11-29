@@ -30,8 +30,9 @@ const defaultProvide = {
   subscriptionName: null,
   subscriptionStartDate: '2023-03-16',
   subscriptionEndDate: '2024-03-16',
-  duoActiveTrialStartDate: null,
-  duoActiveTrialEndDate: null,
+  duoAddOnIsTrial: false,
+  duoAddOnStartDate: null,
+  duoAddOnEndDate: null,
 };
 
 describe('CodeSuggestionsInfoCard', () => {
@@ -251,9 +252,13 @@ describe('CodeSuggestionsInfoCard', () => {
 
       beforeEach(async () => {
         createComponent({
+          props: {
+            duoTier: 'pro',
+          },
           provide: {
-            duoActiveTrialStartDate: '2024-01-01',
-            duoActiveTrialEndDate: '2024-02-01',
+            duoAddOnIsTrial: true,
+            duoAddOnStartDate: '2024-01-01',
+            duoAddOnEndDate: '2024-02-01',
           },
         });
 
@@ -282,56 +287,6 @@ describe('CodeSuggestionsInfoCard', () => {
           'groups:usage_quotas:index',
         );
       });
-
-      describe('buttons', () => {
-        it('sets to the correct props to the hand raise lead (contact sales) button', () => {
-          expect(findContactSalesButton().props()).toMatchObject({
-            glmContent: 'usage-quotas-gitlab-duo-tab',
-            ctaTracking: {
-              category: 'groups:usage_quotas:index',
-              action: 'click_button',
-              label: 'duo_pro_contact_sales',
-            },
-            buttonAttributes: {
-              size: 'small',
-              variant: 'confirm',
-              category: 'secondary',
-            },
-          });
-        });
-
-        it('visits the correct url and tracks the purchase seats button when clicked', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          findPurchaseSeatsButton().vm.$emit('click');
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            'click_purchase_seats_button_group_duo_usage_page',
-            {
-              label: 'duo_pro_purchase_seats',
-            },
-            'groups:usage_quotas:index',
-          );
-
-          expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
-        });
-
-        it('visits the correct url and tracks the learn more link when clicked', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          findCodeSuggestionsLearnMoreLink().vm.$emit('click');
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            'click_marketing_link_group_duo_usage_page',
-            {
-              label: 'duo_pro_marketing_page',
-            },
-            'groups:usage_quotas:index',
-          );
-
-          expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
-        });
-      });
     });
 
     describe('with a Duo Enterprise add-on trial', () => {
@@ -341,8 +296,9 @@ describe('CodeSuggestionsInfoCard', () => {
             duoTier: 'enterprise',
           },
           provide: {
-            duoActiveTrialStartDate: '2024-01-01',
-            duoActiveTrialEndDate: '2024-02-01',
+            duoAddOnIsTrial: true,
+            duoAddOnStartDate: '2024-01-01',
+            duoAddOnEndDate: '2024-02-01',
           },
         });
 
@@ -361,183 +317,391 @@ describe('CodeSuggestionsInfoCard', () => {
           'groups:usage_quotas:index',
         );
       });
-
-      describe('buttons', () => {
-        it('sets to the correct props to the hand raise lead (contact sales) button', () => {
-          expect(findContactSalesButton().props()).toMatchObject({
-            glmContent: 'usage-quotas-gitlab-duo-tab',
-            ctaTracking: {
-              category: 'groups:usage_quotas:index',
-              action: 'click_button',
-              label: 'duo_enterprise_contact_sales',
-            },
-            buttonAttributes: {
-              size: 'small',
-              variant: 'confirm',
-              category: 'primary',
-            },
-          });
-        });
-
-        it('does not render the purchase seats button', () => {
-          expect(findPurchaseSeatsButton().exists()).toBe(false);
-        });
-
-        it('visits the correct url and tracks the learn more link when clicked', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          findCodeSuggestionsLearnMoreLink().vm.$emit('click');
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            'click_marketing_link_group_duo_usage_page',
-            {
-              label: 'duo_enterprise_marketing_page',
-            },
-            'groups:usage_quotas:index',
-          );
-
-          expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
-        });
-      });
-    });
-  });
-
-  describe('add seats button', () => {
-    it('is rendered after apollo is loaded', async () => {
-      createComponent();
-
-      // wait for apollo to load
-      await waitForPromises();
-      expect(findAddSeatsButton().exists()).toBe(true);
     });
 
-    describe('when subscriptionPermissions returns error', () => {
-      const mockError = new Error('Woops, error in permissions call');
-      beforeEach(async () => {
-        queryHandlerMock = jest.fn().mockRejectedValueOnce(mockError);
-        createComponent();
-
-        await waitForPromises();
-      });
-
-      it('captures the ooriginal error in subscriptionPermissions call', () => {
-        expect(Sentry.captureException).toHaveBeenCalledWith(mockError, {
-          tags: { vue_component: 'CodeSuggestionsUsageInfoCard' },
-        });
-      });
-
-      it('emits the error', () => {
-        expect(wrapper.emitted('error')).toHaveLength(1);
-        const caughtError = wrapper.emitted('error')[0][0];
-        expect(caughtError.cause).toBe(ADD_ON_PURCHASE_FETCH_ERROR_CODE);
-      });
-
-      it('shows the button', () => {
-        // When clicked the button will redirect a customer and we will handle the error on CustomersPortal side
-        expect(findAddSeatsButton().exists()).toBe(true);
-      });
-    });
-
-    describe('tracking', () => {
-      it.each`
-        isSaaS   | label
-        ${true}  | ${'add_duo_pro_saas'}
-        ${false} | ${'add_duo_pro_sm'}
-      `('tracks the click with correct labels', async ({ isSaaS, label }) => {
-        createComponent({ provide: { isSaaS } });
-        await waitForPromises();
-
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-        findAddSeatsButton().vm.$emit('click');
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          'click_add_seats_button_group_duo_usage_page',
-          {
-            property: 'usage_quotas_page',
-            label,
-          },
-          undefined,
-        );
-      });
-    });
-
-    describe('limited access modal', () => {
-      describe.each`
-        canAddDuoProSeats | limitedAccessReason
-        ${false}          | ${'MANAGED_BY_RESELLER'}
-        ${false}          | ${'RAMP_SUBSCRIPTION'}
-      `(
-        'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-        ({ canAddDuoProSeats, limitedAccessReason }) => {
+    describe('buttons', () => {
+      describe('when add on is a trial', () => {
+        describe('when add on is duo pro (code suggestions)', () => {
           beforeEach(async () => {
-            queryHandlerMock = jest.fn().mockResolvedValue({
-              data: {
-                subscription: {
-                  canAddSeats: false,
-                  canRenew: false,
-                  communityPlan: false,
-                  canAddDuoProSeats,
-                },
-                userActionAccess: { limitedAccessReason },
+            createComponent({
+              props: {
+                duoTier: 'pro',
+              },
+              provide: {
+                duoAddOnIsTrial: true,
+                duoAddOnStartDate: '2024-01-01',
+                duoAddOnEndDate: '2024-02-01',
               },
             });
-            createComponent();
+
             await waitForPromises();
-
-            findAddSeatsButton().vm.$emit('click');
-
-            await nextTick();
           });
 
-          it('shows modal', () => {
-            expect(findLimitedAccessModal().isVisible()).toBe(true);
-          });
-
-          it('sends correct props', () => {
-            expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(limitedAccessReason);
-          });
-
-          it('does not navigate to URL', () => {
-            expect(visitUrl).not.toHaveBeenCalled();
-          });
-        },
-      );
-
-      describe.each`
-        canAddDuoProSeats | limitedAccessReason
-        ${true}           | ${'MANAGED_BY_RESELLER'}
-        ${true}           | ${'RAMP_SUBSCRIPTION'}
-      `(
-        'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-        ({ canAddDuoProSeats, limitedAccessReason }) => {
-          beforeEach(async () => {
-            queryHandlerMock = jest.fn().mockResolvedValue({
-              data: {
-                subscription: {
-                  canAddSeats: false,
-                  canRenew: false,
-                  communityPlan: false,
-                  canAddDuoProSeats,
-                },
-                userActionAccess: { limitedAccessReason },
+          it('sets to the correct props to the hand raise lead (contact sales) button', () => {
+            expect(findContactSalesButton().props()).toMatchObject({
+              glmContent: 'usage-quotas-gitlab-duo-tab',
+              ctaTracking: {
+                category: 'groups:usage_quotas:index',
+                action: 'click_button',
+                label: 'duo_pro_contact_sales',
               },
             });
-            createComponent();
-            await waitForPromises();
-
-            findAddSeatsButton().vm.$emit('click');
-            await nextTick();
           });
 
-          it('does not show modal', () => {
-            expect(findLimitedAccessModal().exists()).toBe(false);
-          });
+          it('visits the correct url and tracks the purchase seats button when clicked', () => {
+            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
-          it('navigates to URL', () => {
+            findPurchaseSeatsButton().vm.$emit('click');
+
+            expect(trackEventSpy).toHaveBeenCalledWith(
+              'click_purchase_seats_button_group_duo_usage_page',
+              {
+                label: 'duo_pro_purchase_seats',
+              },
+              'groups:usage_quotas:index',
+            );
+
             expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
           });
-        },
-      );
+
+          it('visits the correct url and tracks the learn more link when clicked', () => {
+            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+            findCodeSuggestionsLearnMoreLink().vm.$emit('click');
+
+            expect(trackEventSpy).toHaveBeenCalledWith(
+              'click_marketing_link_group_duo_usage_page',
+              {
+                label: 'duo_pro_marketing_page',
+              },
+              'groups:usage_quotas:index',
+            );
+
+            expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
+          });
+        });
+
+        describe('when add on is duo enterprise', () => {
+          beforeEach(async () => {
+            createComponent({
+              props: {
+                duoTier: 'enterprise',
+              },
+              provide: {
+                duoAddOnIsTrial: true,
+                duoAddOnStartDate: '2024-01-01',
+                duoAddOnEndDate: '2024-02-01',
+              },
+            });
+
+            await waitForPromises();
+          });
+
+          it('sets to the correct props to the hand raise lead (contact sales) button', () => {
+            expect(findContactSalesButton().props()).toMatchObject({
+              glmContent: 'usage-quotas-gitlab-duo-tab',
+              ctaTracking: {
+                category: 'groups:usage_quotas:index',
+                action: 'click_button',
+                label: 'duo_enterprise_contact_sales',
+              },
+              buttonAttributes: {
+                size: 'small',
+                variant: 'confirm',
+                category: 'primary',
+              },
+            });
+          });
+
+          it('does not render the purchase seats button', () => {
+            expect(findPurchaseSeatsButton().exists()).toBe(false);
+          });
+
+          it('visits the correct url and tracks the learn more link when clicked', () => {
+            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+            findCodeSuggestionsLearnMoreLink().vm.$emit('click');
+
+            expect(trackEventSpy).toHaveBeenCalledWith(
+              'click_marketing_link_group_duo_usage_page',
+              {
+                label: 'duo_enterprise_marketing_page',
+              },
+              'groups:usage_quotas:index',
+            );
+
+            expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
+          });
+        });
+      });
+
+      describe('when add on is not a trial', () => {
+        describe('when add on is duo enterprise', () => {
+          describe('contact sales button', () => {
+            it('is rendered after apollo is loaded with the correct props', async () => {
+              createComponent({
+                props: { duoTier: 'enterprise' },
+                provide: { duoAddOnIsTrial: false },
+              });
+
+              // wait for apollo to load
+              await waitForPromises();
+              expect(findContactSalesButton().exists()).toBe(true);
+              expect(findContactSalesButton().props()).toMatchObject({
+                glmContent: 'usage-quotas-gitlab-duo-tab',
+                ctaTracking: {
+                  category: 'groups:usage_quotas:index',
+                  action: 'click_button',
+                  label: 'duo_enterprise_contact_sales',
+                },
+              });
+            });
+
+            describe('when subscriptionPermissions returns error', () => {
+              const mockError = new Error('Woops, error in permissions call');
+              beforeEach(async () => {
+                queryHandlerMock = jest.fn().mockRejectedValueOnce(mockError);
+                createComponent({ props: { duoTier: 'enterprise' } });
+
+                await waitForPromises();
+              });
+
+              it('captures the original error in subscriptionPermissions call', () => {
+                expect(Sentry.captureException).toHaveBeenCalledWith(mockError, {
+                  tags: { vue_component: 'CodeSuggestionsUsageInfoCard' },
+                });
+              });
+
+              it('emits the error', () => {
+                expect(wrapper.emitted('error')).toHaveLength(1);
+                const caughtError = wrapper.emitted('error')[0][0];
+                expect(caughtError.cause).toBe(ADD_ON_PURCHASE_FETCH_ERROR_CODE);
+              });
+
+              it('shows the button', () => {
+                // When clicked the button will redirect a customer and we will handle the error on CustomersPortal side
+                expect(findContactSalesButton().exists()).toBe(true);
+              });
+            });
+
+            describe('limited access modal', () => {
+              describe.each`
+                canAddDuoProSeats | limitedAccessReason
+                ${false}          | ${'MANAGED_BY_RESELLER'}
+                ${false}          | ${'RAMP_SUBSCRIPTION'}
+              `(
+                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
+                ({ canAddDuoProSeats, limitedAccessReason }) => {
+                  beforeEach(async () => {
+                    queryHandlerMock = jest.fn().mockResolvedValue({
+                      data: {
+                        subscription: {
+                          canAddSeats: false,
+                          canRenew: false,
+                          communityPlan: false,
+                          canAddDuoProSeats,
+                        },
+                        userActionAccess: { limitedAccessReason },
+                      },
+                    });
+                    createComponent({ props: { duoTier: 'enterprise' } });
+                    await waitForPromises();
+
+                    findContactSalesButton().vm.$emit('click');
+
+                    await nextTick();
+                  });
+
+                  it('shows modal', () => {
+                    expect(findLimitedAccessModal().isVisible()).toBe(true);
+                  });
+
+                  it('sends correct props', () => {
+                    expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(
+                      limitedAccessReason,
+                    );
+                  });
+                },
+              );
+
+              describe.each`
+                canAddDuoProSeats | limitedAccessReason
+                ${true}           | ${'MANAGED_BY_RESELLER'}
+                ${true}           | ${'RAMP_SUBSCRIPTION'}
+              `(
+                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
+                ({ canAddDuoProSeats, limitedAccessReason }) => {
+                  beforeEach(async () => {
+                    queryHandlerMock = jest.fn().mockResolvedValue({
+                      data: {
+                        subscription: {
+                          canAddSeats: false,
+                          canRenew: false,
+                          communityPlan: false,
+                          canAddDuoProSeats,
+                        },
+                        userActionAccess: { limitedAccessReason },
+                      },
+                    });
+                    createComponent({ props: { duoTier: 'enterprise' } });
+                    await waitForPromises();
+
+                    findContactSalesButton().vm.$emit('click');
+                    await nextTick();
+                  });
+
+                  it('does not show modal', () => {
+                    expect(findLimitedAccessModal().exists()).toBe(false);
+                  });
+                },
+              );
+            });
+          });
+        });
+
+        describe('when add on is duo pro (code suggestions)', () => {
+          describe('add seats button', () => {
+            it('is rendered after apollo is loaded', async () => {
+              createComponent();
+
+              // wait for apollo to load
+              await waitForPromises();
+              expect(findAddSeatsButton().exists()).toBe(true);
+            });
+
+            describe('when subscriptionPermissions returns error', () => {
+              const mockError = new Error('Woops, error in permissions call');
+              beforeEach(async () => {
+                queryHandlerMock = jest.fn().mockRejectedValueOnce(mockError);
+                createComponent({ props: { duoTier: 'pro' } });
+
+                await waitForPromises();
+              });
+
+              it('captures the ooriginal error in subscriptionPermissions call', () => {
+                expect(Sentry.captureException).toHaveBeenCalledWith(mockError, {
+                  tags: { vue_component: 'CodeSuggestionsUsageInfoCard' },
+                });
+              });
+
+              it('emits the error', () => {
+                expect(wrapper.emitted('error')).toHaveLength(1);
+                const caughtError = wrapper.emitted('error')[0][0];
+                expect(caughtError.cause).toBe(ADD_ON_PURCHASE_FETCH_ERROR_CODE);
+              });
+
+              it('shows the button', () => {
+                // When clicked the button will redirect a customer and we will handle the error on CustomersPortal side
+                expect(findAddSeatsButton().exists()).toBe(true);
+              });
+            });
+
+            describe('tracking', () => {
+              it.each`
+                isSaaS   | label
+                ${true}  | ${'add_duo_pro_saas'}
+                ${false} | ${'add_duo_pro_sm'}
+              `('tracks the click with correct labels', async ({ isSaaS, label }) => {
+                createComponent({ props: { duoTier: 'pro' }, provide: { isSaaS } });
+                await waitForPromises();
+
+                const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+                findAddSeatsButton().vm.$emit('click');
+                expect(trackEventSpy).toHaveBeenCalledWith(
+                  'click_add_seats_button_group_duo_usage_page',
+                  {
+                    property: 'usage_quotas_page',
+                    label,
+                  },
+                  undefined,
+                );
+              });
+            });
+
+            describe('limited access modal', () => {
+              describe.each`
+                canAddDuoProSeats | limitedAccessReason
+                ${false}          | ${'MANAGED_BY_RESELLER'}
+                ${false}          | ${'RAMP_SUBSCRIPTION'}
+              `(
+                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
+                ({ canAddDuoProSeats, limitedAccessReason }) => {
+                  beforeEach(async () => {
+                    queryHandlerMock = jest.fn().mockResolvedValue({
+                      data: {
+                        subscription: {
+                          canAddSeats: false,
+                          canRenew: false,
+                          communityPlan: false,
+                          canAddDuoProSeats,
+                        },
+                        userActionAccess: { limitedAccessReason },
+                      },
+                    });
+                    createComponent({ props: { duoTier: 'pro' } });
+                    await waitForPromises();
+
+                    findAddSeatsButton().vm.$emit('click');
+
+                    await nextTick();
+                  });
+
+                  it('shows modal', () => {
+                    expect(findLimitedAccessModal().isVisible()).toBe(true);
+                  });
+
+                  it('sends correct props', () => {
+                    expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(
+                      limitedAccessReason,
+                    );
+                  });
+
+                  it('does not navigate to URL', () => {
+                    expect(visitUrl).not.toHaveBeenCalled();
+                  });
+                },
+              );
+
+              describe.each`
+                canAddDuoProSeats | limitedAccessReason
+                ${true}           | ${'MANAGED_BY_RESELLER'}
+                ${true}           | ${'RAMP_SUBSCRIPTION'}
+              `(
+                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
+                ({ canAddDuoProSeats, limitedAccessReason }) => {
+                  beforeEach(async () => {
+                    queryHandlerMock = jest.fn().mockResolvedValue({
+                      data: {
+                        subscription: {
+                          canAddSeats: false,
+                          canRenew: false,
+                          communityPlan: false,
+                          canAddDuoProSeats,
+                        },
+                        userActionAccess: { limitedAccessReason },
+                      },
+                    });
+                    createComponent({ props: { duoTier: 'pro' } });
+                    await waitForPromises();
+
+                    findAddSeatsButton().vm.$emit('click');
+                    await nextTick();
+                  });
+
+                  it('does not show modal', () => {
+                    expect(findLimitedAccessModal().exists()).toBe(false);
+                  });
+
+                  it('navigates to URL', () => {
+                    expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
+                  });
+                },
+              );
+            });
+          });
+        });
+      });
     });
   });
 });
