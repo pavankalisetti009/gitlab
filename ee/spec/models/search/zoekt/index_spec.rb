@@ -157,6 +157,16 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.negative_reserved_storage_bytes' do
+      let_it_be(:negative_reserved_storage_bytes_index) { create(:zoekt_index, :negative_reserved_storage_bytes) }
+
+      it 'returns indices only with negative reserved_storage_bytes' do
+        results = described_class.negative_reserved_storage_bytes
+        expect(results.all? { |idx| idx.reserved_storage_bytes < 0 }).to be true
+        expect(results).to include(negative_reserved_storage_bytes_index)
+      end
+    end
+
     describe '.should_be_marked_as_orphaned' do
       let_it_be(:idx) { create(:zoekt_index) }
       let_it_be(:idx_missing_replica) { create(:zoekt_index) }
@@ -185,91 +195,79 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '.should_have_overprovisioned_watermark' do
-      it 'returns indices that have too much storage' do
-        zoekt_index.update!(reserved_storage_bytes: 100_000_000, state: :ready)
-        expect(described_class.should_have_overprovisioned_watermark).to match_array(zoekt_index)
+    describe '.with_mismatched_watermark_levels' do
+      let(:ideal_percent) { Search::Zoekt::Index::STORAGE_IDEAL_PERCENT_USED }
+      let(:low_watermark) { Search::Zoekt::Index::STORAGE_LOW_WATERMARK }
+      let(:high_watermark) { Search::Zoekt::Index::STORAGE_HIGH_WATERMARK }
+      let(:mismatched_indices) { described_class.with_mismatched_watermark_levels }
 
-        zoekt_index.update!(reserved_storage_bytes: 0)
-        expect(described_class.should_have_overprovisioned_watermark).to be_empty
+      before do
+        # Clear existing records
+        Search::Zoekt::Repository.delete_all
+        described_class.delete_all
       end
 
-      it 'does not returns indices that already have overprovisioned watermark level' do
-        zoekt_index.update!(reserved_storage_bytes: 100_000_000, watermark_level: :overprovisioned, state: :ready)
-        expect(described_class.should_have_overprovisioned_watermark).to be_empty
-      end
-    end
+      it 'returns indices where watermark_level is mismatched (healthy)' do
+        # Setup a healthy record but with incorrect watermark_level
+        create(
+          :zoekt_index,
+          used_storage_bytes: 40,
+          reserved_storage_bytes: 100,
+          watermark_level: :low_watermark_exceeded # Incorrect level
+        )
 
-    describe '.should_have_low_watermark' do
-      it 'returns indices that have over low watermark of storage' do
-        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
-
-        zoekt_index.update!(used_storage_bytes: saturated_storage)
-        expect(described_class.should_have_low_watermark).to match_array(zoekt_index)
-
-        zoekt_index.update!(reserved_storage_bytes: zoekt_index.used_storage_bytes * 2)
-        expect(described_class.should_have_low_watermark).to be_empty
+        expect(mismatched_indices.count).to eq(1)
+        expect(mismatched_indices.first.watermark_level).to eq('low_watermark_exceeded')
       end
 
-      it 'does not return indices that already have low watermarked state' do
-        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
+      it 'returns no indices when all watermark_levels are correct' do
+        # Setup record with correct watermark level
+        create(
+          :zoekt_index,
+          used_storage_bytes: 40,
+          reserved_storage_bytes: 100,
+          watermark_level: :healthy
+        )
 
-        zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :low_watermark_exceeded)
-        expect(described_class.should_have_low_watermark).to be_empty
+        expect(mismatched_indices).to be_empty
       end
 
-      it 'returns indices that have high watermark state but storage that reflects low watermark' do
-        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
+      it 'detects overprovisioned mismatches' do
+        # Setup an overprovisioned record with incorrect watermark_level
+        create(
+          :zoekt_index,
+          used_storage_bytes: 10,
+          reserved_storage_bytes: 100,
+          watermark_level: :healthy # Incorrect level
+        )
 
-        zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :high_watermark_exceeded)
-        expect(described_class.should_have_low_watermark).to match_array(zoekt_index)
-      end
-    end
-
-    describe '.should_have_high_watermark' do
-      it 'returns indices that have over high watermark of storage' do
-        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_HIGH_WATERMARK
-
-        zoekt_index.update!(used_storage_bytes: saturated_storage)
-        expect(described_class.should_have_high_watermark).to match_array(zoekt_index)
-
-        zoekt_index.update!(reserved_storage_bytes: zoekt_index.used_storage_bytes * 2)
-        expect(described_class.should_have_high_watermark).to be_empty
+        expect(mismatched_indices.count).to eq(1)
+        expect(mismatched_indices.first.watermark_level).to eq('healthy')
       end
 
-      it 'does not return indices that already have high watermark state' do
-        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_HIGH_WATERMARK
+      it 'handles edge cases at the exact boundary' do
+        # Setup a record exactly at the STORAGE_LOW_WATERMARK
+        create(
+          :zoekt_index,
+          used_storage_bytes: (low_watermark * 100).to_i,
+          reserved_storage_bytes: 100,
+          watermark_level: :healthy
+        )
 
-        zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :high_watermark_exceeded)
-        expect(described_class.should_have_high_watermark).to be_empty
-      end
-    end
-
-    describe '.with_storage_over_percent' do
-      it 'returns indices over percent' do
-        zoekt_index.update!(used_storage_bytes: 10.megabytes)
-        expect(described_class.with_storage_over_percent(0.1).pluck_primary_key).to match_array([zoekt_index.id])
-        expect(described_class.with_storage_over_percent(0.2).pluck_primary_key).to be_empty
+        expect(mismatched_indices.count).to eq(1)
+        expect(mismatched_indices.first.watermark_level).to eq('healthy')
       end
 
-      it 'does not return zoekt indices with nothing reserved' do
-        zoekt_index.update!(used_storage_bytes: 100.megabytes, reserved_storage_bytes: 0)
-        expect(described_class.with_storage_over_percent(0.01).pluck_primary_key).to be_empty
+      it 'handles division by zero gracefully' do
+        # Setup a record with zero reserved_storage_bytes
+        create(
+          :zoekt_index,
+          used_storage_bytes: 50,
+          reserved_storage_bytes: 0,
+          watermark_level: :critical_watermark_exceeded
+        )
 
-        zoekt_index.update!(used_storage_bytes: 100.megabytes, reserved_storage_bytes: nil)
-        expect(described_class.with_storage_over_percent(0.01).pluck_primary_key).to be_empty
-      end
-    end
-
-    describe '.with_reserved_storage_bytes' do
-      it 'returns indices with reserved storage' do
-        expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to match_array([zoekt_index.id])
-
-        zoekt_index.update!(reserved_storage_bytes: 0)
-        expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to be_empty
-
-        zoekt_index.update!(reserved_storage_bytes: nil)
-        expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to be_empty
+        expect { mismatched_indices }.not_to raise_error
       end
     end
   end

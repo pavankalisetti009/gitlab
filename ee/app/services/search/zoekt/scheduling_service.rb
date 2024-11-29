@@ -9,7 +9,7 @@ module Search
         auto_index_self_managed
         dot_com_rollout
         eviction
-        index_over_watermark_check
+        index_mismatched_watermark_check
         index_should_be_marked_as_orphaned_check
         index_to_delete_check
         initial_indexing
@@ -402,23 +402,20 @@ module Search
         end
       end
 
-      def index_over_watermark_check
-        execute_every 10.minutes, cache_key: :index_over_watermark_check do
-          Search::Zoekt::Index.with_reserved_storage_bytes.each_batch do |batch|
-            {
-              "overprovisioned" => batch.should_have_overprovisioned_watermark,
-              "low_watermark_exceeded" => batch.should_have_low_watermark,
-              "high_watermark_exceeded" => batch.should_have_high_watermark
-            }.each do |watermark_level, indices|
-              Gitlab::EventStore.publish(
-                Search::Zoekt::IndexWatermarkChangedEvent.new(
-                  data: {
-                    index_ids: indices.pluck_primary_key,
-                    watermark_level: watermark_level
-                  }
-                )
+      def index_mismatched_watermark_check
+        execute_every 10.minutes, cache_key: :index_mismatched_watermark_check do
+          Search::Zoekt::Index.each_batch do |batch|
+            ids = batch.with_mismatched_watermark_levels.or(batch.negative_reserved_storage_bytes).pluck_primary_key
+            next if ids.empty?
+
+            Gitlab::EventStore.publish(
+              Search::Zoekt::IndexWatermarkChangedEvent.new(
+                data: {
+                  index_ids: ids,
+                  watermark_level: "mismatched"
+                }
               )
-            end
+            )
           end
         end
       end

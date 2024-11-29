@@ -72,7 +72,7 @@ module Search
 
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
       scope :preload_node, -> { includes(:node) }
-
+      scope :negative_reserved_storage_bytes, -> { where('reserved_storage_bytes < 0') }
       scope :should_be_marked_as_orphaned, -> do
         where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: SHOULD_BE_DELETED_STATES)
       end
@@ -81,30 +81,18 @@ module Search
         where(state: SHOULD_BE_DELETED_STATES)
       end
 
-      scope :should_have_overprovisioned_watermark, -> do
-        ready.where.not(watermark_level: :overprovisioned).with_storage_under_percent(STORAGE_IDEAL_PERCENT_USED)
-      end
-
-      scope :should_have_low_watermark, -> do
-        where.not(watermark_level: :low_watermark_exceeded)
-          .with_storage_over_percent(STORAGE_LOW_WATERMARK)
-          .with_storage_under_percent(STORAGE_HIGH_WATERMARK)
-      end
-
-      scope :should_have_high_watermark, -> do
-        where.not(watermark_level: :high_watermark_exceeded).with_storage_over_percent(STORAGE_HIGH_WATERMARK)
-      end
-
-      scope :with_reserved_storage_bytes, -> { where('reserved_storage_bytes > 0') }
-
-      scope :with_storage_over_percent, ->(percent) do
-        with_reserved_storage_bytes
-          .where('(used_storage_bytes / reserved_storage_bytes::double precision) >= ?', percent)
-      end
-
-      scope :with_storage_under_percent, ->(percent) do
-        with_reserved_storage_bytes
-          .where('(used_storage_bytes / reserved_storage_bytes::double precision) < ?', percent)
+      scope :with_mismatched_watermark_levels, -> do
+        where <<~SQL.squish
+          CASE
+            WHEN (used_storage_bytes / NULLIF(reserved_storage_bytes, 0)::float) < #{STORAGE_IDEAL_PERCENT_USED}
+              THEN #{watermark_levels[:overprovisioned]}
+            WHEN (used_storage_bytes / NULLIF(reserved_storage_bytes, 0)::float) < #{STORAGE_LOW_WATERMARK}
+              THEN #{watermark_levels[:healthy]}
+            WHEN (used_storage_bytes / NULLIF(reserved_storage_bytes, 0)::float) < #{STORAGE_HIGH_WATERMARK}
+              THEN #{watermark_levels[:low_watermark_exceeded]}
+            ELSE #{watermark_levels[:high_watermark_exceeded]}
+          END != watermark_level
+        SQL
       end
 
       def self.update_used_storage_bytes!
