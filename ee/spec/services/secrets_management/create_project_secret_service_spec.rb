@@ -41,7 +41,9 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
         expect_kv_secret_to_have_custom_metadata(
           project.secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name),
-          "description" => description
+          "description" => description,
+          "environment" => environment,
+          "branch" => branch
         )
 
         # Validate correct policy has path.
@@ -61,7 +63,7 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
       context 'when using any environment' do
         let(:environment) { '*' }
 
-        it 'create the correct policy' do
+        it 'create the correct policy and custom metadata' do
           expect(result).to be_success
 
           # Validate correct policy has path.
@@ -76,13 +78,19 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
           expected_path = project.secrets_manager.ci_metadata_full_path(name)
           expect(actual_policy.paths).to include(expected_path)
           expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
+
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "environment" => environment
+          )
         end
       end
 
       context 'when using any branch' do
         let(:branch) { '*' }
 
-        it 'create the correct policy' do
+        it 'create the correct policy and custom metadata' do
           expect(result).to be_success
 
           # Validate correct policy has path.
@@ -97,12 +105,18 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
           expected_path = project.secrets_manager.ci_metadata_full_path(name)
           expect(actual_policy.paths).to include(expected_path)
           expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
+
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "branch" => branch
+          )
         end
 
         context 'and any environmnet' do
           let(:environment) { '*' }
 
-          it 'create the correct policy' do
+          it 'create the correct policy and custom metadata' do
             expect(result).to be_success
 
             # Validate correct policy has path.
@@ -117,6 +131,13 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
             expected_path = project.secrets_manager.ci_metadata_full_path(name)
             expect(actual_policy.paths).to include(expected_path)
             expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
+
+            expect_kv_secret_to_have_custom_metadata(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              "environment" => environment,
+              "branch" => branch
+            )
           end
         end
 
