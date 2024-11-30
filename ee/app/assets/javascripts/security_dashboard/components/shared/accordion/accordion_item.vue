@@ -107,8 +107,9 @@ export default {
           <div class="p-2 gl-flex gl-items-center">
             <gl-icon
               :size="16"
-              class="gl-mr-3 gl-text-gray-900"
+              class="gl-mr-3"
               :name="isExpanded ? 'chevron-lg-down' : 'chevron-lg-right'"
+              variant="default"
             />
             <span
               ><slot name="title" :is-expanded="isExpanded" :is-disabled="isDisabled"></slot

@@ -2,7 +2,7 @@
 
 exports[`Target component renders target 1`] = `
 <span
-  class="gl-text-gray-900"
+  class="gl-text-default"
 >
   294444-apollo-management-table
 </span>
@@ -10,7 +10,7 @@ exports[`Target component renders target 1`] = `
 
 exports[`Target component without target renders Not Set with icon 1`] = `
 <span
-  class="gl-text-gray-900"
+  class="gl-text-default"
   title="To use this corpus, edit the corresponding YAML file"
 >
   <gl-icon-stub

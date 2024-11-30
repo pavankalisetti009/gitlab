@@ -525,7 +525,7 @@ export default {
       </template>
       <template #cell(email)="{ item }">
         <div data-testid="email">
-          <span v-if="item.publicEmail" class="gl-text-gray-900">{{ item.publicEmail }}</span>
+          <span v-if="item.publicEmail" class="gl-text-default">{{ item.publicEmail }}</span>
           <span
             v-else
             v-gl-tooltip

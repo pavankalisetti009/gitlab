@@ -42,7 +42,7 @@ export const getShiftStyles = ({ colorWeight, colorPalette }) => {
 
   if (isDarkMode) {
     const medianColorPaletteWeight = 500;
-    textClass = modeColorWeight < medianColorPaletteWeight ? 'gl-text-white' : 'gl-text-gray-900';
+    textClass = modeColorWeight < medianColorPaletteWeight ? 'gl-text-white' : 'gl-text-default';
   }
 
   return {

@@ -20,7 +20,7 @@ export default {
         return '';
       }
 
-      return '!gl-text-gray-900 gl-font-bold';
+      return '!gl-text-default gl-font-bold';
     },
   },
 };

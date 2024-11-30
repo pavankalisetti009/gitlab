@@ -40,7 +40,7 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-text-gray-900" data-testid="corpus-name">
+    <div class="gl-text-default" data-testid="corpus-name">
       {{ name }}
       <span class="gl-text-subtle" data-testid="file-size">({{ fileSize }})</span>
     </div>

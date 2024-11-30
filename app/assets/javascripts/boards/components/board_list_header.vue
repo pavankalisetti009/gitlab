@@ -424,9 +424,9 @@ export default {
         v-if="isSwimlanesHeader && list.collapsed"
         ref="collapsedInfo"
         aria-hidden="true"
-        class="board-header-collapsed-info-icon gl-cursor-pointer gl-text-secondary hover:gl-text-gray-900"
+        class="board-header-collapsed-info-icon gl-cursor-pointer"
       >
-        <gl-icon name="information" />
+        <gl-icon name="information" variant="subtle" />
       </span>
       <gl-tooltip v-if="isSwimlanesHeader && list.collapsed" :target="() => $refs.collapsedInfo">
         <div class="gl-pb-2 gl-font-bold">{{ collapsedTooltipTitle }}</div>

@@ -276,7 +276,7 @@ export default {
         <div>
           <work-item-type-icon :work-item-type="type" show-tooltip-on-hover />
           <gl-link
-            class="gl-font-bold gl-text-gray-900"
+            class="gl-font-bold gl-text-default"
             :href="webUrl"
             :title="title"
             data-testid="iteration-issue-link"

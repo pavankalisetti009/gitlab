@@ -32,7 +32,7 @@ export default {
     getSubItemValueClass(subItem) {
       // Show dark color text only for the current date
       if (subItem.getTime() === this.$options.currentDate.getTime()) {
-        return '!gl-text-gray-900 gl-font-bold';
+        return '!gl-text-default gl-font-bold';
       }
 
       return '';

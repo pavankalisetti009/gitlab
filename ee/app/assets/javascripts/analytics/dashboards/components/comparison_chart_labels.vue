@@ -62,7 +62,7 @@ export default {
 </script>
 <template>
   <div>
-    <span class="gl-mr-2 gl-text-sm gl-text-gray-900">{{ $options.i18n.filteredBy }}</span>
+    <span class="gl-mr-2 gl-text-sm gl-text-default">{{ $options.i18n.filteredBy }}</span>
     <span data-testid="primary-labels">
       <gl-label
         v-for="label in primaryLabels"
