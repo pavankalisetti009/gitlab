@@ -6,23 +6,16 @@ module QA
       'When using elasticsearch API to search for a known blob',
       :orchestrated,
       :elasticsearch,
+      :requires_admin,
       except: :production
     ) do
       include Support::API
       include_context 'advanced search active'
 
       let(:project_file_content) { "elasticsearch: #{SecureRandom.hex(8)}" }
-      let(:non_member_user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1)
-      end
-
-      let(:api_client) { Runtime::API::Client.new(:gitlab) }
-      let(:non_member_api_client) do
-        Runtime::API::Client.new(
-          user: non_member_user,
-          personal_access_token: Runtime::Env.gitlab_qa_access_token_1
-        )
-      end
+      let(:non_member_user) { create(:user, :with_personal_access_token) }
+      let(:non_member_api_client) { non_member_user.api_client }
+      let(:api_client) { Runtime::UserStore.user_api_client }
 
       let(:project) { create(:project, name: "api-es-#{SecureRandom.hex(8)}") }
 

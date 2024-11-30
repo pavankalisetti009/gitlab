@@ -4,45 +4,34 @@ module QA
   RSpec.describe 'Plan' do
     describe 'Merge Request Analytics', :blocking, :requires_admin, product_group: :optimize do
       let(:label) { "mr-label" }
-      let(:admin_api_client) { Runtime::API::Client.as_admin }
-      let(:user_api_client) { Runtime::API::Client.new(user: user) }
-
-      let(:user) { create(:user, api_client: admin_api_client) }
-
-      let(:group) { create(:group, path: "mr-analytics-#{SecureRandom.hex(8)}") }
-
-      let(:project) { create(:project, name: 'mr_analytics', group: group, api_client: admin_api_client) }
+      let(:project) { create(:project, name: 'mr_analytics') }
 
       let(:mr_1) do
         create(:merge_request,
           title: 'First merge request',
           labels: [label],
-          project: project,
-          api_client: user_api_client)
+          project: project)
       end
 
       let(:mr_2) do
         create(:merge_request,
           title: 'Second merge request',
-          project: project,
-          api_client: user_api_client)
+          project: project)
       end
 
       before do
-        group.add_member(user, Resource::Members::AccessLevel::MAINTAINER)
-
         # Retry is needed due to delays with project authorization updates
         # Long term solution to accessing the status of a project authorization update
         # has been proposed in https://gitlab.com/gitlab-org/gitlab/-/issues/393369
         Support::Retrier.retry_until(max_duration: 60, retry_on_exception: true, sleep_interval: 1) do
-          create(:project_label, project: project, title: label, api_client: user_api_client)
+          create(:project_label, project: project, title: label)
         end
 
         mr_2.add_comment(body: "This is mr comment")
         mr_1.merge_via_api!
         mr_2.merge_via_api!
 
-        Flow::Login.sign_in(as: user)
+        Flow::Login.sign_in
         project.visit!
         Page::Project::Menu.perform(&:go_to_merge_request_analytics)
       end
