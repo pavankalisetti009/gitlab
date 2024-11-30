@@ -5,9 +5,8 @@ module QA
     describe 'User with minimal access to group', :requires_admin, product_group: :authentication do
       include QA::Support::Helpers::Project
 
-      let(:admin_api_client) { Runtime::API::Client.as_admin }
-      let(:user_with_minimal_access) { create(:user, api_client: admin_api_client) }
-      let(:user_api_client) { Runtime::API::Client.new(:gitlab, user: user_with_minimal_access) }
+      let(:user_with_minimal_access) { create(:user, :with_personal_access_token) }
+      let(:user_api_client) { user_with_minimal_access.api_client }
       let(:group) { create(:group, path: "group-for-minimal-access-#{SecureRandom.hex(8)}") }
       let!(:project) { create(:project, :with_readme, name: 'project-for-minimal-access', group: group) }
 

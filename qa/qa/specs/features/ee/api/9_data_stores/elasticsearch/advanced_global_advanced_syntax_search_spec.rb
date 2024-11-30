@@ -12,7 +12,7 @@ module QA
       include_context 'advanced search active'
 
       let(:project_name_suffix) { SecureRandom.hex(8) }
-      let(:api_client) { Runtime::API::Client.new(:gitlab) }
+      let(:api_client) { Runtime::UserStore.user_api_client }
 
       let(:project) do
         create(:project,

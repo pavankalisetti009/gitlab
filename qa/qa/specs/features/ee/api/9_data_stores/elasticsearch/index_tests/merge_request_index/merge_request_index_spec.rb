@@ -11,7 +11,7 @@ module QA
       include Support::API
       include_context 'advanced search active'
 
-      let(:api_client) { Runtime::API::Client.new(:gitlab) }
+      let(:api_client) { Runtime::UserStore.user_api_client }
 
       let(:merge_request) do
         create(:merge_request,

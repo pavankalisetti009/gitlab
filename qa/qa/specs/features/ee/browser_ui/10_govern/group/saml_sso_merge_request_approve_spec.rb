@@ -12,7 +12,10 @@ module QA
       let(:project) { create(:project, group: group) }
       let(:author) { build(:user) }
       let(:approver) { build(:user) }
-      let(:author_api_client) { Runtime::API::Client.new(:gitlab, user: author) }
+
+      let(:author_api_client) do
+        Runtime::API::Client.new(:gitlab, personal_access_token: author.create_personal_access_token!.to_s)
+      end
 
       let(:merge_request) do
         create(:merge_request, project: project, api_client: author_api_client,

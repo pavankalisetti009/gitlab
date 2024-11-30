@@ -4,20 +4,20 @@ module QA
   RSpec.describe 'Fulfillment', :requires_admin, only: { subdomain: :staging },
     product_group: :subscription_management do
     describe 'Utilization' do
-      let(:admin_api_client) { Runtime::API::Client.as_admin }
-      let(:owner_api_client) { Runtime::API::Client.new(:gitlab, user: group_owner) }
       let(:hash) { SecureRandom.hex(8) }
 
       let(:group_owner) do
-        create(:user, :hard_delete, email: "test-user-#{hash}@gitlab.com", api_client: admin_api_client)
+        create(:user, :hard_delete, :with_personal_access_token, email: "test-user-#{hash}@gitlab.com")
       end
 
-      let(:user_2) { create(:user, api_client: admin_api_client) }
-      let(:user_3) { create(:user, api_client: admin_api_client) }
-      let(:user_4) { create(:user, api_client: admin_api_client) }
-      let(:user_5) { create(:user, api_client: admin_api_client) }
-      let(:user_6) { create(:user, api_client: admin_api_client) }
-      let(:user_7) { create(:user, api_client: admin_api_client) }
+      let(:owner_api_client) { group_owner.api_client }
+
+      let(:user_2) { create(:user) }
+      let(:user_3) { create(:user) }
+      let(:user_4) { create(:user) }
+      let(:user_5) { create(:user) }
+      let(:user_6) { create(:user) }
+      let(:user_7) { create(:user) }
 
       let(:private_group) do
         Resource::Sandbox.fabricate_via_browser_ui! do |sandbox|
@@ -43,7 +43,7 @@ module QA
         Flow::Login.sign_in(as: group_owner)
       end
 
-      context 'when Saas user limit experience ' do
+      context 'when Saas user limit experience' do
         it(
           'limit overage enforcement removed from private group when trial is started',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/387826'
