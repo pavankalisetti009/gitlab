@@ -38,7 +38,7 @@ export default {
           :to="{ name: $options.routeNames.BLOCKERS_ROUTE }"
           active-class="gl-font-bold gl-bg-gray-50"
           exact
-          class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-gray-900 hover:gl-bg-gray-50 hover:gl-text-gray-900 hover:gl-no-underline"
+          class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-default hover:gl-bg-gray-50 hover:gl-text-default hover:gl-no-underline"
         >
           <span class="gl-mr-3 gl-flex gl-rounded-full gl-bg-red-100 gl-p-2">
             <gl-icon class="gl-rounded-full gl-bg-white gl-text-red-500" name="status-failed" />
@@ -61,7 +61,7 @@ export default {
               <router-link
                 :to="{ name: $options.routeNames.CODE_QUALITY_ROUTE }"
                 active-class="gl-font-bold gl-bg-gray-50"
-                class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-gray-900 hover:gl-bg-gray-50 hover:gl-text-gray-900 hover:gl-no-underline"
+                class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-default hover:gl-bg-gray-50 hover:gl-text-default hover:gl-no-underline"
               >
                 <span class="gl-mr-3 gl-flex gl-p-2">
                   <gl-icon
@@ -76,7 +76,7 @@ export default {
               <router-link
                 :to="{ name: $options.routeNames.SECURITY_ROUTE }"
                 active-class="gl-font-bold gl-bg-gray-50"
-                class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-gray-900 hover:gl-bg-gray-50 hover:gl-text-gray-900 hover:gl-no-underline"
+                class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-default hover:gl-bg-gray-50 hover:gl-text-default hover:gl-no-underline"
               >
                 <span class="gl-mr-3 gl-flex gl-p-2">
                   <gl-icon
@@ -91,7 +91,7 @@ export default {
               <router-link
                 :to="{ name: $options.routeNames.LICENSE_COMPLIANCE_ROUTE }"
                 active-class="gl-font-bold gl-bg-gray-50"
-                class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-gray-900 hover:gl-bg-gray-50 hover:gl-text-gray-900 hover:gl-no-underline"
+                class="gl-flex gl-items-center gl-rounded-base gl-p-2 gl-text-default hover:gl-bg-gray-50 hover:gl-text-default hover:gl-no-underline"
               >
                 <span class="gl-mr-3 gl-flex gl-p-2">
                   <gl-icon

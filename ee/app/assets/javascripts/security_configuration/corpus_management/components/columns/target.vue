@@ -29,8 +29,8 @@ export default {
 };
 </script>
 <template>
-  <span v-if="hasTarget" class="gl-text-gray-900"> {{ target }} </span>
-  <span v-else v-gl-tooltip.hover class="gl-text-gray-900" :title="$options.i18n.noSetInfo">
+  <span v-if="hasTarget" class="gl-text-default"> {{ target }} </span>
+  <span v-else v-gl-tooltip.hover class="gl-text-default" :title="$options.i18n.noSetInfo">
     <gl-icon class="gl-mr-1" :size="16" name="information-o" />
     {{ $options.i18n.notSet }}
   </span>

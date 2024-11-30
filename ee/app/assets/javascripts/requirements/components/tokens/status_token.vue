@@ -10,7 +10,7 @@ export default {
       text: __('Satisfied'),
       icon: 'status-success',
       iconClass: 'gl-text-green-700',
-      containerClass: 'gl-bg-green-100 gl-text-gray-900',
+      containerClass: 'gl-bg-green-100 gl-text-default',
     },
     {
       id: 2,
@@ -18,15 +18,15 @@ export default {
       text: __('Failed'),
       icon: 'status-failed',
       iconClass: 'gl-text-red-700',
-      containerClass: 'gl-bg-red-100 gl-text-gray-900',
+      containerClass: 'gl-bg-red-100 gl-text-default',
     },
     {
       id: 3,
       value: 'missing',
       text: __('Missing'),
       icon: 'status-waiting',
-      iconClass: 'gl-text-gray-900',
-      containerClass: 'gl-bg-gray-100 gl-text-gray-900',
+      iconClass: 'gl-text-default',
+      containerClass: 'gl-bg-gray-100 gl-text-default',
     },
   ],
   components: {

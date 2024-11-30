@@ -177,10 +177,7 @@ export default {
           :data-testid="`toggle-seat-usage-details-${item.user.id}`"
           @click="toggleDetails"
         >
-          <gl-icon
-            :name="detailsShowing ? 'chevron-down' : 'chevron-right'"
-            class="gl-text-gray-900"
-          />
+          <gl-icon :name="detailsShowing ? 'chevron-down' : 'chevron-right'" />
         </gl-button>
       </template>
 
@@ -208,7 +205,7 @@ export default {
 
       <template #cell(email)="{ item }">
         <div data-testid="email">
-          <span v-if="item.email" class="gl-text-gray-900">{{ item.email }}</span>
+          <span v-if="item.email" class="gl-text-default">{{ item.email }}</span>
           <span
             v-else
             v-gl-tooltip

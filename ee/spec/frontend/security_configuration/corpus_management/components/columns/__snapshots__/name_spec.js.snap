@@ -2,7 +2,7 @@
 
 exports[`Name component renders name with correct file size 1`] = `
 <div
-  class="gl-text-gray-900"
+  class="gl-text-default"
   data-testid="corpus-name"
 >
   Corpus-sample-1-13830-23932
@@ -17,7 +17,7 @@ exports[`Name component renders name with correct file size 1`] = `
 
 exports[`Name component renders the latest job 1`] = `
 <div
-  class="gl-text-gray-900"
+  class="gl-text-default"
   data-testid="corpus-name"
 >
   Corpus-sample-1-13830-23932
@@ -32,7 +32,7 @@ exports[`Name component renders the latest job 1`] = `
 
 exports[`Name component without job path renders a - string instead of a link 1`] = `
 <div
-  class="gl-text-gray-900"
+  class="gl-text-default"
   data-testid="corpus-name"
 >
   Corpus-sample-3-1431-4425

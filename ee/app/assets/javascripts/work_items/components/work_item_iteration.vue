@@ -242,7 +242,7 @@ export default {
       <div class="gl-mr-2 gl-text-subtle">
         {{ selectedIterationCadenceName }}
       </div>
-      <gl-link class="!gl-text-gray-900" :href="localIteration.webUrl">
+      <gl-link class="!gl-text-default" :href="localIteration.webUrl">
         <div>
           {{ iterationPeriod }}
         </div>

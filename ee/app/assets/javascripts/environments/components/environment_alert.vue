@@ -56,7 +56,7 @@ export default {
   classes: [
     'gl-py-2',
     'gl-pl-3',
-    'gl-text-gray-900',
+    'gl-text-default',
     'gl-bg-gray-10',
     'gl-border-t-solid',
     'gl-border-gray-100',

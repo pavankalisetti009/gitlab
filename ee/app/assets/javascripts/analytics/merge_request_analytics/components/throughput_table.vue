@@ -282,7 +282,7 @@ export default {
           :data-testid="$options.testIds.MERGE_REQUEST_DETAILS"
         >
           <div class="merge-request-title gl-str-truncated">
-            <gl-link :href="item.webUrl" target="_blank" class="gl-font-bold gl-text-gray-900">{{
+            <gl-link :href="item.webUrl" target="_blank" class="gl-font-bold gl-text-default">{{
               item.title
             }}</gl-link>
             <ul class="horizontal-list gl-mb-0 gl-mt-2">

@@ -30,11 +30,11 @@ describe('getParticipantsForSave', () => {
 
 describe('getShiftStyles', () => {
   it.each`
-    isDarkMode | colorWeight | expectedTextClass     | expectedBackgroundColor
-    ${true}    | ${900}      | ${'gl-text-white'}    | ${'#d2dcff'}
-    ${true}    | ${500}      | ${'gl-text-gray-900'} | ${'#617ae2'}
-    ${false}   | ${400}      | ${'gl-text-white'}    | ${'#7992f5'}
-    ${false}   | ${700}      | ${'gl-text-white'}    | ${'#3f51ae'}
+    isDarkMode | colorWeight | expectedTextClass    | expectedBackgroundColor
+    ${true}    | ${900}      | ${'gl-text-white'}   | ${'#d2dcff'}
+    ${true}    | ${500}      | ${'gl-text-default'} | ${'#617ae2'}
+    ${false}   | ${400}      | ${'gl-text-white'}   | ${'#7992f5'}
+    ${false}   | ${700}      | ${'gl-text-white'}   | ${'#3f51ae'}
   `(
     'sets correct styles and class',
     ({ isDarkMode, colorWeight, expectedTextClass, expectedBackgroundColor }) => {
@@ -54,11 +54,11 @@ describe('getParticipantColor', () => {
   jest.spyOn(ColorUtils, 'darkModeEnabled').mockImplementation(() => false);
 
   it.each`
-    isDarkMode | colorWeight | expectedTextClass     | expectedBackgroundColor
-    ${true}    | ${900}      | ${'gl-text-white'}    | ${'#d2dcff'}
-    ${true}    | ${500}      | ${'gl-text-gray-900'} | ${'#617ae2'}
-    ${false}   | ${400}      | ${'gl-text-white'}    | ${'#7992f5'}
-    ${false}   | ${700}      | ${'gl-text-white'}    | ${'#3f51ae'}
+    isDarkMode | colorWeight | expectedTextClass    | expectedBackgroundColor
+    ${true}    | ${900}      | ${'gl-text-white'}   | ${'#d2dcff'}
+    ${true}    | ${500}      | ${'gl-text-default'} | ${'#617ae2'}
+    ${false}   | ${400}      | ${'gl-text-white'}   | ${'#7992f5'}
+    ${false}   | ${700}      | ${'gl-text-white'}   | ${'#3f51ae'}
   `(
     'sets correct styles and class',
     ({ isDarkMode, colorWeight, expectedTextClass, expectedBackgroundColor }) => {
@@ -202,27 +202,27 @@ describe('formatParticipantsForTokenSelector', () => {
     const expected = [
       {
         ...mockParticipants[0],
-        class: 'gl-text-gray-900',
+        class: 'gl-text-default',
         style: { backgroundColor: '#617ae2' },
       },
       {
         ...mockParticipants[1],
-        class: 'gl-text-gray-900',
+        class: 'gl-text-default',
         style: { backgroundColor: '#c95d2e' },
       },
       {
         ...mockParticipants[2],
-        class: 'gl-text-gray-900',
+        class: 'gl-text-default',
         style: { backgroundColor: '#0090b1' },
       },
       {
         ...mockParticipants[3],
-        class: 'gl-text-gray-900',
+        class: 'gl-text-default',
         style: { backgroundColor: '#619025' },
       },
       {
         ...mockParticipants[4],
-        class: 'gl-text-gray-900',
+        class: 'gl-text-default',
         style: { backgroundColor: '#cf4d81' },
       },
       {

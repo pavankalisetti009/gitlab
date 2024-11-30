@@ -52,7 +52,7 @@ describe('ee/oncall_schedules/components/schedule/components/preset_days/days_he
         'gl-text-center',
         'gl-font-normal',
         'gl-text-gray-700',
-        '!gl-text-gray-900',
+        '!gl-text-default',
         'gl-font-bold',
       ]);
       expect(findDaysHeaderCurrentIndicator().exists()).toBe(true);

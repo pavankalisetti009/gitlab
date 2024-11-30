@@ -189,7 +189,7 @@ export default {
                 :href="issue.web_url"
                 target="_blank"
                 data-testid="jira-issue-link"
-                class="gl-text-gray-900"
+                class="gl-text-default"
               >
                 {{ issue.title }}
               </gl-link>

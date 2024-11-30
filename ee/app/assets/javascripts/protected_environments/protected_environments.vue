@@ -168,7 +168,7 @@ export default {
             data-testid="protected-environment-item-toggle"
             @click="toggleCollapse(environment)"
           >
-            <span class="gl-py-2 gl-text-gray-900">{{ environment.name }}</span>
+            <span class="gl-py-2 gl-text-default">{{ environment.name }}</span>
             <gl-badge v-if="!isExpanded(environment)" class="gl-ml-auto">
               {{ deploymentRulesText(environment) }}
             </gl-badge>
