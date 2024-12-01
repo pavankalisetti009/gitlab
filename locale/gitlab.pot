@@ -35928,6 +35928,9 @@ msgstr ""
 msgid "New incident has been created"
 msgstr ""
 
+msgid "New integration"
+msgstr ""
+
 msgid "New issue"
 msgid_plural "New issues"
 msgstr[0] ""
