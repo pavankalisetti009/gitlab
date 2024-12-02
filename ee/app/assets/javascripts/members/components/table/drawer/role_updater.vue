@@ -9,7 +9,7 @@ import GuestOverageConfirmation from './guest_overage_confirmation.vue';
 
 export default {
   components: { GuestOverageConfirmation },
-  inject: ['group', 'project'],
+  inject: ['context', 'group', 'project'],
   props: {
     member: {
       type: Object,
@@ -116,10 +116,10 @@ export default {
       // In either case if a role was changed or enqueued for promotion — we need to update the
       // Promotion requests tab data.
       if (this.$store.hasModule(MEMBERS_TAB_TYPES.promotionRequest)) {
-        const { group, project } = this;
+        const { context, group, project } = this;
         this.$store.dispatch(
           `${MEMBERS_TAB_TYPES.promotionRequest}/invalidatePromotionRequestsData`,
-          { group, project },
+          { context, group, project },
           { root: true },
         );
       }
