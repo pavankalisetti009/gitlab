@@ -10,6 +10,7 @@ RSpec.describe Gitlab::BackgroundMigration::DeleteInvalidEpicIssues, schema: 202
 
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   let!(:users) { table(:users) }
+  let!(:organizations) { table(:organizations) }
   let!(:namespaces) { table(:namespaces) }
   let!(:projects) { table(:projects) }
   let!(:epics) { table(:epics) }
@@ -18,32 +19,34 @@ RSpec.describe Gitlab::BackgroundMigration::DeleteInvalidEpicIssues, schema: 202
 
   let!(:user) { users.create!(name: 'test', email: 'test@example.com', projects_limit: 5) }
 
+  let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+
   let!(:root_group) do
     namespaces.create!(name: 'root-group', path: 'root-group', type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [new_group.id])
+      new_group.update!(traversal_ids: [new_group.id], organization_id: organization.id)
     end
   end
 
   let!(:group) do
     namespaces.create!(name: 'group', path: 'group', parent_id: root_group.id, type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [root_group.id, new_group.id])
+      new_group.update!(traversal_ids: [root_group.id, new_group.id], organization_id: organization.id)
     end
   end
 
   let!(:sub_group) do
-    namespaces.create!(name: 'subgroup', path: 'subgroup', parent_id: group.id, type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [root_group.id, group.id, new_group.id])
-    end
+    namespaces
+      .create!(name: 'subgroup', path: 'subgroup', parent_id: group.id, type: 'Group', organization_id: organization.id)
+      .tap { |new_group| new_group.update!(traversal_ids: [root_group.id, group.id, new_group.id]) }
   end
 
   let!(:other_group) do
-    namespaces.create!(name: 'other group', path: 'other-group', type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [new_group.id])
-    end
+    namespaces.create!(name: 'other group', path: 'other-group', type: 'Group', organization_id: organization.id)
+      .tap { |new_group| new_group.update!(traversal_ids: [new_group.id]) }
   end
 
   let!(:project_root) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: root_group.id,
       project_namespace_id: root_group.id,
       name: 'root group project',
@@ -53,18 +56,26 @@ RSpec.describe Gitlab::BackgroundMigration::DeleteInvalidEpicIssues, schema: 202
 
   let!(:project) do
     projects.create!(
-      namespace_id: group.id, project_namespace_id: group.id, name: 'group project', path: 'group-project'
+      organization_id: organization.id,
+      namespace_id: group.id,
+      project_namespace_id: group.id,
+      name: 'group project', path: 'group-project'
     )
   end
 
   let!(:project_sub) do
     projects.create!(
-      namespace_id: sub_group.id, project_namespace_id: sub_group.id, name: 'subgroup project', path: 'subgroup-project'
+      organization_id: organization.id,
+      namespace_id: sub_group.id,
+      project_namespace_id: sub_group.id,
+      name: 'subgroup project',
+      path: 'subgroup-project'
     )
   end
 
   let!(:project_other) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: other_group.id,
       project_namespace_id: other_group.id,
       name: 'other group project',

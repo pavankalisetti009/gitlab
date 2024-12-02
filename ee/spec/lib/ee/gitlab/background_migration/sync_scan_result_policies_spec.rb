@@ -10,32 +10,41 @@ RSpec.describe Gitlab::BackgroundMigration::SyncScanResultPolicies, feature_cate
     let(:pause_ms) { 0 }
     let(:connection) { ApplicationRecord.connection }
 
+    let(:organizations) { table(:organizations) }
     let(:projects) { table(:projects) }
     let(:namespaces) { table(:namespaces) }
     let(:security_orchestration_policy_configurations) { table(:security_orchestration_policy_configurations) }
 
+    let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+
     let(:group_namespace) do
       namespaces.create!(name: 'group_1', path: 'group_1', type: 'Group').tap do |group|
-        group.update!(traversal_ids: [group.id])
+        group.update!(traversal_ids: [group.id], organization_id: organization.id)
       end
     end
 
-    let(:project_namespace_1) { namespaces.create!(name: '1', path: '1', type: 'Project', parent_id: group_namespace) }
-    let(:project_namespace_2) { namespaces.create!(name: '2', path: '2', type: 'Project', parent_id: group_namespace) }
-    let(:project_namespace_3) { namespaces.create!(name: '3', path: '3', type: 'Project', parent_id: group_namespace) }
+    # rubocop:disable Layout/LineLength -- easier to read in single line
+    let(:project_namespace_1) { namespaces.create!(name: '1', path: '1', type: 'Project', parent_id: group_namespace, organization_id: organization.id) }
+    let(:project_namespace_2) { namespaces.create!(name: '2', path: '2', type: 'Project', parent_id: group_namespace, organization_id: organization.id) }
+    let(:project_namespace_3) { namespaces.create!(name: '3', path: '3', type: 'Project', parent_id: group_namespace, organization_id: organization.id) }
 
-    let(:policy_project_namespace) { namespaces.create!(name: '4', path: '4', type: 'Project') }
+    let(:project_1) { projects.create!(namespace_id: group_namespace.id, project_namespace_id: project_namespace_1.id, organization_id: organization.id) }
+    let(:project_2) { projects.create!(namespace_id: group_namespace.id, project_namespace_id: project_namespace_2.id, organization_id: organization.id) }
+    let(:project_3) { projects.create!(namespace_id: group_namespace.id, project_namespace_id: project_namespace_3.id, organization_id: organization.id) }
+    # rubocop:enable Layout/LineLength
+
+    let(:policy_project_namespace) do
+      namespaces.create!(name: '4', path: '4', type: 'Project', organization_id: organization.id)
+    end
+
     let(:policy_project) do
       projects.create!(
         name: 'Policy Project',
         namespace_id: policy_project_namespace.id,
-        project_namespace_id: policy_project_namespace.id
+        project_namespace_id: policy_project_namespace.id,
+        organization_id: organization.id
       )
     end
-
-    let(:project_1) { projects.create!(namespace_id: group_namespace.id, project_namespace_id: project_namespace_1.id) }
-    let(:project_2) { projects.create!(namespace_id: group_namespace.id, project_namespace_id: project_namespace_2.id) }
-    let(:project_3) { projects.create!(namespace_id: group_namespace.id, project_namespace_id: project_namespace_3.id) }
 
     let(:project_policy_configuration) { create_policy_configuration(project_id: project_1.id) }
     let(:project_policy_configuration_2) { create_policy_configuration(project_id: project_2.id) }

@@ -10,6 +10,7 @@ RSpec.describe Gitlab::BackgroundMigration::PopulateDenormalizedColumnsForSbomOc
     skip_if_multiple_databases_are_setup(:sec)
   end
 
+  let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:users) { table(:users) }
@@ -17,8 +18,17 @@ RSpec.describe Gitlab::BackgroundMigration::PopulateDenormalizedColumnsForSbomOc
   let(:sbom_sources) { table(:sbom_sources) }
   let(:sbom_occurrences) { table(:sbom_occurrences) }
 
-  let(:namespace) { namespaces.create!(name: 'Test Namespace', path: 'namespace-path-1') }
-  let(:project) { projects.create!(name: 'Test', namespace_id: namespace.id, project_namespace_id: namespace.id) }
+  let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+  let(:namespace) { namespaces.create!(name: 'Test Namespace', path: 'np-path-1', organization_id: organization.id) }
+  let(:project) do
+    projects.create!(
+      name: 'Test',
+      namespace_id: namespace.id,
+      project_namespace_id: namespace.id,
+      organization_id: organization.id
+    )
+  end
+
   let(:component_1) { sbom_components.create!(component_type: 0, name: 'Component 1') }
   let(:component_2) { sbom_components.create!(component_type: 0, name: 'Component 2') }
   let(:component_3) { sbom_components.create!(component_type: 0, name: 'Component 3') }

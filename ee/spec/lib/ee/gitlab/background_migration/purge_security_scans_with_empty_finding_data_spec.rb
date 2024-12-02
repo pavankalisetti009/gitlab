@@ -13,14 +13,22 @@ RSpec.describe Gitlab::BackgroundMigration::PurgeSecurityScansWithEmptyFindingDa
   let(:security_scans) { table(:security_scans) }
   let(:vulnerability_scanners) { table(:vulnerability_scanners) }
   let(:ci_pipelines) { table(:ci_pipelines, primary_key: :id, database: :ci) }
+  let(:organizations) { table(:organizations) }
   let(:projects) { table(:projects) }
   let(:namespaces) { table(:namespaces) }
   let(:ci_builds) { partitioned_table(:p_ci_builds, database: :ci) }
 
   let(:scanner) { vulnerability_scanners.create!(project_id: project.id, name: 'Foo', external_id: 'foo') }
-  let(:namespace) { namespaces.create!(name: 'test', path: 'test', type: 'Group') }
+  let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+  let(:namespace) { namespaces.create!(name: 'test', path: 'test', type: 'Group', organization_id: organization.id) }
   let(:project) do
-    projects.create!(namespace_id: namespace.id, project_namespace_id: namespace.id, name: 'test', path: 'test')
+    projects.create!(
+      organization_id: organization.id,
+      namespace_id: namespace.id,
+      project_namespace_id: namespace.id,
+      name: 'test',
+      path: 'test'
+    )
   end
 
   let(:pipeline) { ci_pipelines.create!(project_id: project.id, partition_id: 100) }

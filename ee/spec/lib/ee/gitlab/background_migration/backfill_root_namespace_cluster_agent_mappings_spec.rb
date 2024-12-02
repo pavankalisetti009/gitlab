@@ -4,26 +4,35 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::BackfillRootNamespaceClusterAgentMappings, :migration,
   schema: 20241023210409, feature_category: :workspaces do
+  let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:cluster_agents) { table(:cluster_agents) }
   let(:rd_agent_configs) { table(:remote_development_agent_configs) }
   let(:rd_namespace_cluster_agent_mappings) { table(:remote_development_namespace_cluster_agent_mappings) }
 
+  let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+
   let!(:namespace) do
-    namespaces.create!(name: 'root-group', path: 'root', type: 'Group').tap do |new_group|
+    namespaces.create!(name: 'root', path: 'root', type: 'Group', organization_id: organization.id).tap do |new_group|
       new_group.update!(traversal_ids: [new_group.id])
     end
   end
 
   let!(:nested_group) do
-    namespaces.create!(name: 'nested-group', path: 'root/nested_group', type: 'Group').tap do |new_group|
+    namespaces.create!(
+      name: 'nested',
+      path: 'root/nested',
+      type: 'Group',
+      organization_id: organization.id
+    ).tap do |new_group|
       new_group.update!(traversal_ids: [namespace.id, new_group.id])
     end
   end
 
   let!(:project) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: nested_group.id,
       project_namespace_id: nested_group.id,
       name: 'agent project',
@@ -136,6 +145,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillRootNamespaceClusterAgentMap
 
       let!(:project2) do
         projects.create!(
+          organization_id: organization.id,
           namespace_id: namespace2.id,
           project_namespace_id: namespace2.id,
           name: 'agent project 2',
