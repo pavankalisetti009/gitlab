@@ -14,8 +14,10 @@ RSpec.describe('shared/credentials_inventory/resource_access_tokens/_resource_ac
     end
 
     before do
-      allow(view).to receive(:user_detail_path).and_return('abcd')
-
+      allow(view).to receive_messages(
+        user_detail_path: 'abcd',
+        resource_access_token_revoke_path: 'revoke'
+      )
       render 'shared/credentials_inventory/resource_access_tokens/resource_access_token',
         resource_access_token: project_access_token
     end
@@ -42,14 +44,7 @@ RSpec.describe('shared/credentials_inventory/resource_access_tokens/_resource_ac
     end
 
     it 'shows the link to revoke the token' do
-      expect(rendered).to have_link(
-        'Revoke',
-        href: admin_credential_resource_revoke_path(
-          credential_id: project_access_token.id,
-          resource_id: project.id,
-          resource_type: 'Project'
-        )
-      )
+      expect(rendered).to have_link('Revoke')
     end
 
     context 'for last used date' do
@@ -116,7 +111,10 @@ RSpec.describe('shared/credentials_inventory/resource_access_tokens/_resource_ac
     end
 
     before do
-      allow(view).to receive(:user_detail_path).and_return('abcd')
+      allow(view).to receive_messages(
+        user_detail_path: 'abcd',
+        resource_access_token_revoke_path: 'revoke'
+      )
 
       render 'shared/credentials_inventory/resource_access_tokens/resource_access_token',
         resource_access_token: group_access_token
@@ -144,14 +142,7 @@ RSpec.describe('shared/credentials_inventory/resource_access_tokens/_resource_ac
     end
 
     it 'shows the link to revoke the token' do
-      expect(rendered).to have_link(
-        'Revoke',
-        href: admin_credential_resource_revoke_path(
-          credential_id: group_access_token.id,
-          resource_id: group.id,
-          resource_type: 'Group'
-        )
-      )
+      expect(rendered).to have_link('Revoke')
     end
 
     context 'for last used date' do
@@ -215,7 +206,10 @@ RSpec.describe('shared/credentials_inventory/resource_access_tokens/_resource_ac
     end
 
     before do
-      allow(view).to receive(:user_detail_path).and_return('abcd')
+      allow(view).to receive_messages(
+        user_detail_path: 'abcd',
+        resource_access_token_revoke_path: 'revoke'
+      )
 
       render 'shared/credentials_inventory/resource_access_tokens/resource_access_token',
         resource_access_token: resource_access_token

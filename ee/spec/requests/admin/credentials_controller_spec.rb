@@ -162,6 +162,8 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
   end
 
   describe 'PUT #revoke' do
+    it_behaves_like 'credentials inventory revoke project & group access tokens'
+
     shared_examples_for 'responds with 404' do
       it do
         put revoke_admin_credential_path(id: token_id)

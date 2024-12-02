@@ -24,113 +24,148 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
   describe 'GET #index' do
     let(:filter) {}
 
-    subject { get group_security_credentials_path(group_id: group_id.to_param, filter: filter) }
+    subject(:get_request) { get group_security_credentials_path(group_id: group_id.to_param, filter: filter) }
 
-    context 'when `credentials_inventory` feature is enabled' do
+    context 'when `credentials_inventory` feature is licensed' do
       before do
         stub_licensed_features(credentials_inventory: true, group_saml: true)
       end
 
-      context 'for a group with enterprise users' do
-        context 'for a user with access to view credentials inventory' do
-          it 'responds with 200' do
-            subject
+      context 'for a user with access to view credentials inventory' do
+        it 'responds with 200' do
+          get_request
 
-            expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'filtering by type of credential' do
+          before do
+            enterprise_users.each do |user|
+              create(:personal_access_token, user: user)
+            end
           end
 
-          context 'filtering by type of credential' do
+          shared_examples_for 'filtering by `personal_access_tokens`' do
+            it do
+              get_request
+
+              expect(assigns(:credentials)).to match_array(PersonalAccessToken.where(user: enterprise_users))
+            end
+          end
+
+          context 'no credential type specified' do
+            let(:filter) { nil }
+
+            it_behaves_like 'filtering by `personal_access_tokens`'
+          end
+
+          context 'non-existent credential type specified' do
+            let(:filter) { 'non_existent_credential_type' }
+
+            it_behaves_like 'filtering by `personal_access_tokens`'
+          end
+
+          context 'credential type specified as `personal_access_tokens`' do
+            let(:filter) { 'personal_access_tokens' }
+
+            it_behaves_like 'filtering by `personal_access_tokens`'
+          end
+
+          context 'user scope' do
+            it 'does not show the credentials of a user outside the group' do
+              personal_access_token = create(:personal_access_token, user: create(:user))
+
+              get_request
+
+              expect(assigns(:credentials)).not_to include(personal_access_token)
+            end
+          end
+
+          context 'credential type specified as `ssh_keys`' do
+            let(:filter) { 'ssh_keys' }
+
             before do
               enterprise_users.each do |user|
-                create(:personal_access_token, user: user)
+                create(:personal_key, user: user)
               end
             end
 
-            shared_examples_for 'filtering by `personal_access_tokens`' do
-              it do
-                subject
+            it 'filters by ssh keys' do
+              get_request
 
-                expect(assigns(:credentials)).to match_array(PersonalAccessToken.where(user: enterprise_users))
-              end
-            end
-
-            context 'no credential type specified' do
-              let(:filter) { nil }
-
-              it_behaves_like 'filtering by `personal_access_tokens`'
-            end
-
-            context 'non-existent credential type specified' do
-              let(:filter) { 'non_existent_credential_type' }
-
-              it_behaves_like 'filtering by `personal_access_tokens`'
-            end
-
-            context 'credential type specified as `personal_access_tokens`' do
-              let(:filter) { 'personal_access_tokens' }
-
-              it_behaves_like 'filtering by `personal_access_tokens`'
-            end
-
-            context 'user scope' do
-              it 'does not show the credentials of a user outside the group' do
-                personal_access_token = create(:personal_access_token, user: create(:user))
-
-                subject
-
-                expect(assigns(:credentials)).not_to include(personal_access_token)
-              end
-            end
-
-            context 'credential type specified as `ssh_keys`' do
-              let(:filter) { 'ssh_keys' }
-
-              before do
-                enterprise_users.each do |user|
-                  create(:personal_key, user: user)
-                end
-              end
-
-              it 'filters by ssh keys' do
-                subject
-
-                expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: enterprise_users))
-              end
+              expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: enterprise_users))
             end
           end
 
-          context 'for a user without access to view credentials inventory' do
-            before do
-              sign_in(maintainer)
+          context 'credential type specified as `resource access tokens`' do
+            let(:filter) { 'resource_access_tokens' }
+
+            let_it_be(:subgroup) { create(:group, :private, parent: group) }
+            let_it_be(:project) { create(:project, :private, group: subgroup) }
+            let_it_be(:other_group) { create(:group, :private) }
+
+            let_it_be(:group_bot) { create(:user, :project_bot, name: "Group bot", created_by_id: owner.id) }
+            let_it_be(:subgroup_bot) { create(:user, :project_bot, name: "Subgroup bot", created_by_id: owner.id) }
+            let_it_be(:project_bot) { create(:user, :project_bot, name: "Project bot", created_by_id: owner.id) }
+            let_it_be(:nonmember_bot) { create(:user, :project_bot, name: "Non-member bot", created_by_id: owner.id) }
+
+            let_it_be(:group_bot_token) do
+              create(:personal_access_token, user: group_bot, scopes: %w[read_api])
             end
 
-            it 'responds with 404' do
-              subject
+            let_it_be(:subgroup_bot_token) do
+              create(:personal_access_token, user: subgroup_bot, scopes: %w[read_api])
+            end
 
-              expect(response).to have_gitlab_http_status(:not_found)
+            let_it_be(:project_bot_token) do
+              create(:personal_access_token, user: project_bot, scopes: %w[read_api])
+            end
+
+            let_it_be(:nonmember_bot_token) do
+              create(:personal_access_token, user: nonmember_bot, scopes: %w[read_api])
+            end
+
+            before_all do
+              group_bot.update!(bot_namespace: group)
+              subgroup_bot.update!(bot_namespace: subgroup)
+              project_bot.update!(bot_namespace: project.project_namespace)
+              nonmember_bot.update!(bot_namespace: other_group)
+
+              group.add_developer(group_bot)
+              subgroup.add_developer(subgroup_bot)
+              project.add_developer(project_bot)
+              other_group.add_developer(nonmember_bot)
+            end
+
+            it 'filters resource access tokens for project bots that belong to the hierarchy' do
+              get_request
+
+              expect(assigns(:credentials)).to match_array([group_bot_token, subgroup_bot_token, project_bot_token])
             end
           end
         end
-      end
 
-      context 'for a group that does not enforce group managed accounts' do
-        let_it_be(:group_id) { create(:group).id }
+        context 'for a user without access to view credentials inventory' do
+          before do
+            sign_in(maintainer)
+          end
 
-        it 'responds with 404' do
-          subject
+          it 'responds with 404' do
+            get_request
 
-          expect(response).to have_gitlab_http_status(:not_found)
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
       end
     end
 
-    context 'when `credentials_inventory` feature is disabled' do
+    context 'when `credentials_inventory` feature is unlicensed' do
       before do
         stub_licensed_features(credentials_inventory: false)
       end
 
       it 'returns 404' do
-        subject
+        get_request
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -144,6 +179,8 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
   end
 
   describe 'PUT #revoke' do
+    it_behaves_like 'credentials inventory revoke project & group access tokens', group_credentials_inventory: true
+
     shared_examples_for 'responds with 404' do
       it do
         put revoke_group_security_credential_path(group_id: group_id.to_param, id: token_id)
@@ -239,7 +276,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
         end
       end
 
-      context 'for a group that does not enforce group managed accounts' do
+      context 'for non-enterprise user tokens' do
         let_it_be(:token_id) { personal_access_token.id }
         let_it_be(:group_id) { create(:group).id }
 

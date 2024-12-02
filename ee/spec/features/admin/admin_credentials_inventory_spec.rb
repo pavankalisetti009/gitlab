@@ -62,6 +62,13 @@ RSpec.describe 'Admin::CredentialsInventory', feature_category: :user_management
         it_behaves_like 'credentials inventory SSH keys'
       end
 
+      context 'by resource access tokens' do
+        let_it_be(:credentials_path) { admin_credentials_path(filter: 'resource_access_tokens') }
+        let_it_be(:group) { create(:group) }
+
+        it_behaves_like 'credentials inventory resource access tokens'
+      end
+
       context 'by GPG Keys' do
         let(:credentials_path) { admin_credentials_path(filter: 'gpg_keys') }
 

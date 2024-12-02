@@ -25,10 +25,6 @@ module CredentialsInventoryHelper
     License.feature_available?(:credentials_inventory)
   end
 
-  def resource_access_tokens_available?
-    false
-  end
-
   def gpg_keys_available?
     false
   end
@@ -46,6 +42,10 @@ module CredentialsInventoryHelper
   end
 
   def personal_access_token_revoke_path(token)
+    raise NotImplementedError, "#{self.class} does not implement #{__method__}"
+  end
+
+  def resource_access_token_revoke_path(token)
     raise NotImplementedError, "#{self.class} does not implement #{__method__}"
   end
 end

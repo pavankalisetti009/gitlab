@@ -10,8 +10,11 @@ RSpec.describe('shared/credentials_inventory/personal_access_tokens/_personal_ac
   before do
     freeze_time
 
-    allow(view).to receive(:user_detail_path).and_return('abcd')
-    allow(view).to receive(:personal_access_token_revoke_path).and_return('revoke')
+    allow(view).to receive_messages(
+      user_detail_path: 'abcd',
+      personal_access_token_revoke_path: 'revoke',
+      resource_access_token_revoke_path: 'revoke'
+    )
 
     render 'shared/credentials_inventory/personal_access_tokens/personal_access_token', personal_access_token: personal_access_token
   end

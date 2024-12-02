@@ -135,3 +135,68 @@ RSpec.shared_examples_for 'credentials inventory SSH keys' do
     end
   end
 end
+
+RSpec.shared_examples_for 'credentials inventory resource access tokens' do
+  let_it_be(:admin) { create(:admin) }
+  let_it_be(:user) { create(:user, :project_bot) }
+
+  before_all do
+    user.update!(bot_namespace: group, created_by: admin)
+    group.add_developer(user)
+  end
+
+  context 'when a resource access token has an expiry' do
+    let_it_be(:expiry_date) { 1.day.since.to_date.to_s }
+    let_it_be(:pat) do
+      create(
+        :personal_access_token,
+        user: user,
+        created_at: '2019-12-10',
+        updated_at: '2020-06-22',
+        expires_at: expiry_date
+      )
+    end
+
+    before do
+      visit credentials_path
+    end
+
+    it 'shows the details with an expiry date' do
+      expect(first_row.text).to include(expiry_date)
+    end
+
+    # `SELECT 1/LIMIT 1` query is less performant than the actual query.
+    # Controller explicitly loads the query to avoid this.
+    it 'does not run a select 1 query' do
+      recorded_queries = ActiveRecord::QueryRecorder.new do
+        visit credentials_path
+      end
+
+      found_query = recorded_queries.log.any? do |q|
+        q.starts_with?(/SELECT 1 AS one FROM "personal_access_tokens"/) && q.include?("LIMIT 1 OFFSET 0")
+      end
+
+      expect(found_query).to be false
+    end
+
+    it 'shows the details', :aggregate_failures do
+      expect(first_row.text).to include(pat.name)
+      expect(first_row.text).to include('2019-12-10')
+      expect(first_row.text).to include(expiry_date)
+      expect(first_row.text).to include('Never')
+    end
+
+    context 'and the user clicks the revoke button', :js do
+      it 'deletes the token' do
+        click_link('Revoke')
+
+        page.within('.modal') do
+          page.click_button('OK')
+        end
+
+        expect(page).to have_content('has been revoked')
+        expect(page).to have_content('No credentials found')
+      end
+    end
+  end
+end

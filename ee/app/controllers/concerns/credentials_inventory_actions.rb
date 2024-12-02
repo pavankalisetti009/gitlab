@@ -58,7 +58,7 @@ module CredentialsInventoryActions
     elsif show_ssh_keys?
       ::KeysFinder.new({ users: users, key_type: 'ssh' }).execute
     elsif show_resource_access_tokens?
-      ::PersonalAccessTokensFinder.new(users: users, impersonation: false, sort: 'id_desc').execute.project_access_token
+      ::PersonalAccessTokensFinder.new(users: bot_users, impersonation: false, sort: 'id_desc').execute.project_access_token
     end
   end
 
@@ -79,11 +79,22 @@ module CredentialsInventoryActions
   end
 
   def personal_access_token_finder
-    if revocable.instance_of?(Group)
-      ::PersonalAccessTokensFinder.new({ impersonation: false, users: users })
-    else
-      ::PersonalAccessTokensFinder.new({ impersonation: false }, current_user)
-    end
+    return resource_access_token_finder if resource_type
+    return group_personal_access_token_finder if revocable.instance_of?(Group)
+
+    admin_personal_access_token_finder
+  end
+
+  def resource_access_token_finder
+    PersonalAccessTokensFinder.new({ impersonation: false, users: bot_users })
+  end
+
+  def group_personal_access_token_finder
+    ::PersonalAccessTokensFinder.new({ impersonation: false, users: users })
+  end
+
+  def admin_personal_access_token_finder
+    ::PersonalAccessTokensFinder.new({ impersonation: false }, current_user)
   end
 
   def resource_type
@@ -94,16 +105,29 @@ module CredentialsInventoryActions
   end
 
   def revoke_service(token, resource_id: nil, resource_type: nil)
-    return ::ResourceAccessTokens::RevokeService.new(current_user, resource_type.find_by_id(resource_id), token) if resource_id
+    return resource_access_token_revoke_service(token, resource_type, resource_id) if resource_id
+    return group_personal_access_token_revoke_service(token, revocable) if revocable.instance_of?(Group)
 
-    if revocable.instance_of?(Group)
-      ::PersonalAccessTokens::RevokeService.new(current_user, token: token, group: revocable)
-    else
-      ::PersonalAccessTokens::RevokeService.new(current_user, token: token)
-    end
+    admin_personal_access_token_revoke_service(token)
+  end
+
+  def resource_access_token_revoke_service(token, resource_type, resource_id)
+    ::ResourceAccessTokens::RevokeService.new(current_user, resource_type.find_by_id(resource_id), token)
+  end
+
+  def group_personal_access_token_revoke_service(token, group)
+    ::PersonalAccessTokens::RevokeService.new(current_user, token: token, group: group)
+  end
+
+  def admin_personal_access_token_revoke_service(token)
+    ::PersonalAccessTokens::RevokeService.new(current_user, token: token)
   end
 
   def users
+    raise NotImplementedError, "#{self.class} does not implement #{__method__}"
+  end
+
+  def bot_users
     raise NotImplementedError, "#{self.class} does not implement #{__method__}"
   end
 

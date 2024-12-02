@@ -198,6 +198,9 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       resource :compliance_dashboard, path: 'compliance_dashboard(/*vueroute)', only: [:show]
       resource :discover, only: [:show], controller: :discover
       resources :credentials, only: [:index, :destroy] do
+        resources :resources, only: [] do
+          put :revoke, controller: :credentials
+        end
         member do
           put :revoke
         end
