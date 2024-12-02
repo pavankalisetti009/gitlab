@@ -44,12 +44,36 @@ RSpec.describe 'User activates Artifact Management', :js, :sidekiq_inline, featu
       fill_in s_('GoogleCloud|Repository name'),
         with: integration.artifact_registry_repositories
 
-      click_test_then_save_integration(expect_test_to_fail: false)
+      click_save_integration
 
       expect(page).to have_content('Google Artifact Management settings saved and active.')
 
       expect(page).to have_link('View artifacts',
         href: project_google_cloud_artifact_registry_index_path(project))
+
+      expect(page).to be_axe_clean.within('[data-testid=integration-settings-form]')
+        .skipping :'link-in-text-block', :'color-contrast'
+    end
+  end
+
+  shared_examples 'tests saved integration' do
+    it 'saves, activates and tests the saved integration' do
+      visit_page
+
+      fill_in s_('GoogleCloud|Google Cloud project ID'),
+        with: integration.artifact_registry_project_id
+      fill_in s_('GoogleCloud|Repository location'),
+        with: integration.artifact_registry_location
+      fill_in s_('GoogleCloud|Repository name'),
+        with: integration.artifact_registry_repositories
+
+      click_save_integration
+
+      expect(page).to have_content('Google Artifact Management settings saved and active.')
+
+      click_test_integration
+
+      expect(page).to have_content('Connection successful.')
 
       expect(page).to be_axe_clean.within('[data-testid=integration-settings-form]')
         .skipping :'link-in-text-block', :'color-contrast'
@@ -80,6 +104,7 @@ RSpec.describe 'User activates Artifact Management', :js, :sidekiq_inline, featu
     end
 
     it_behaves_like 'activates integration'
+    it_behaves_like 'tests saved integration'
 
     context 'and inactive at project level' do
       before do

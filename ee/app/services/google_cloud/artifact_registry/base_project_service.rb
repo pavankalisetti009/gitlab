@@ -3,6 +3,8 @@
 module GoogleCloud
   module ArtifactRegistry
     class BaseProjectService < ::BaseProjectService
+      extend ::Gitlab::Utils::Override
+
       ERROR_RESPONSES = {
         saas_only: ServiceResponse.error(message: "This is a SaaS-only feature that can't run here"),
         access_denied: ServiceResponse.error(message: 'Access denied'),
