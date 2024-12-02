@@ -456,12 +456,14 @@ jest vue3 check quarantined:
   extends:
     - jest vue3 check quarantined predictive
     - .frontend:rules:jest-vue3-check-quarantined
+  parallel: 4
   script:
     - if [[ -s "$RSPEC_CHANGED_FILES_PATH" ]] || [[ -s "$RSPEC_MATCHING_JS_FILES_PATH" ]]; then run_timed_command "./scripts/frontend/check_jest_vue3_quarantine.js --all"; fi
 
 jest-with-fixtures vue3 check quarantined:
   extends:
     - jest vue3 check quarantined
+  parallel: 1
   variables:
     JEST_FIXTURE_JOBS_ONLY: 1
 
