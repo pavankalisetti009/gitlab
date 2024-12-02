@@ -1,4 +1,4 @@
-import { GlSkeletonLoader, GlEmptyState } from '@gitlab/ui';
+import { GlSkeletonLoader, GlEmptyState, GlSprintf, GlLink } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -94,6 +94,7 @@ describe('AnalyticsDashboard', () => {
     wrapper.findByTestId('analytics-dashboard-invalid-config-alert');
   const findUsageOverviewAggregationWarning = () =>
     wrapper.findComponent(UsageOverviewBackgroundAggregationWarning);
+  const findAfterDescriptionLink = () => wrapper.findByTestId('after-description-link');
 
   const mockSaveDashboardImplementation = async (responseCallback, dashboardToSave = dashboard) => {
     saveCustomDashboard.mockImplementation(responseCallback);
@@ -172,6 +173,8 @@ describe('AnalyticsDashboard', () => {
         ...props,
       },
       stubs: {
+        GlSprintf,
+        GlLink,
         RouterLink: true,
         RouterView: true,
         CustomizableDashboard: stubComponent(CustomizableDashboard, {
@@ -181,6 +184,7 @@ describe('AnalyticsDashboard', () => {
           },
           template: `<div>
             <slot name="alert"></slot>
+            <slot name="after-description"></slot>
             <template v-for="panel in initialDashboard.panels">
               <slot name="panel" v-bind="{ panel, filters: defaultFilters, deletePanel, editing: false }"></slot>
             </template>
@@ -320,6 +324,14 @@ describe('AnalyticsDashboard', () => {
           editing: false,
         });
       });
+    });
+
+    it('should not add the after-description link to the dashboard by default', async () => {
+      createWrapper();
+
+      await waitForPromises();
+
+      expect(findAfterDescriptionLink().exists()).toBe(false);
     });
 
     describe('and a panel emits a "delete" event', () => {
@@ -861,6 +873,32 @@ describe('AnalyticsDashboard', () => {
     it('does not render the product analytics feedback banner', () => {
       expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
     });
+
+    it('adds the after-description link to the dashboard', () => {
+      const linkWrapper = findAfterDescriptionLink();
+      const links = linkWrapper.findAllComponents(GlLink);
+
+      expect(linkWrapper.text()).toBe(
+        'Learn more about AI Impact analytics and GitLab Duo Pro seats usage.',
+      );
+
+      const expectedLinks = [
+        {
+          text: 'AI Impact analytics',
+          href: '/help/user/analytics/ai_impact_analytics',
+        },
+        {
+          text: 'GitLab Duo Pro seats usage',
+          href: '/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats',
+        },
+      ];
+
+      expectedLinks.forEach((expected, index) => {
+        const link = links.at(index);
+        expect(link.text()).toBe(expected.text);
+        expect(link.attributes('href')).toBe(expected.href);
+      });
+    });
   });
 
   describe('with a value stream dashboard', () => {
@@ -889,6 +927,15 @@ describe('AnalyticsDashboard', () => {
 
     it('does not render the product analytics feedback banner', () => {
       expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
+    });
+
+    it('adds the after-description link to the dashboard', () => {
+      const linkWrapper = findAfterDescriptionLink();
+
+      expect(linkWrapper.text()).toBe('Learn more.');
+      expect(linkWrapper.findComponent(GlLink).attributes('href')).toBe(
+        '/help/user/analytics/value_streams_dashboard',
+      );
     });
   });
 
