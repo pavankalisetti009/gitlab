@@ -24,7 +24,7 @@ module EE
             ApplicationRecord.transaction do
               parent_link = super
               parent_link.work_item_syncing = true # set this attribute to skip the validation validate_legacy_hierarchy
-              create_synced_epic_link!(work_item) if parent_link.save
+              create_synced_epic_link!(parent_link, work_item) if parent_link.save
 
               parent_link
             end
@@ -85,8 +85,12 @@ module EE
           super
         end
 
-        def create_synced_epic_link!(work_item)
-          result = work_item.work_item_type.epic? ? handle_epic_link(work_item) : handle_epic_issue(work_item)
+        def create_synced_epic_link!(parent_link, work_item)
+          result = if work_item.work_item_type.epic?
+                     handle_epic_link(parent_link, work_item)
+                   else
+                     handle_epic_issue(work_item)
+                   end
 
           return result if result[:status] == :success
 
@@ -109,17 +113,21 @@ module EE
           end
         end
 
-        def handle_epic_link(work_item)
+        def handle_epic_link(parent_link, work_item)
           success_result = { status: :success }
           legacy_child_epic = work_item.synced_epic
           return success_result unless legacy_child_epic
 
           if sync_epic_link?
-            ::Epics::EpicLinks::CreateService.new(
-              issuable.synced_epic,
-              current_user,
-              { target_issuable: legacy_child_epic, synced_epic: true }
-            ).execute
+            legacy_child_epic.parent = issuable.synced_epic
+            legacy_child_epic.move_to_start
+            legacy_child_epic.work_item_parent_link = parent_link
+
+            if legacy_child_epic.save(touch: false)
+              { status: :success }
+            else
+              { status: :error, message: legacy_child_epic.errors.map(&:message).to_sentence }
+            end
           elsif legacy_child_epic.parent.present?
             ::Epics::EpicLinks::DestroyService.new(legacy_child_epic, current_user, synced_epic: true).execute
           else

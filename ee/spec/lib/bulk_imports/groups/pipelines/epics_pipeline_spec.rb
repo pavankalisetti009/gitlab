@@ -48,7 +48,7 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
       expect(group.epics.count).to eq(6)
       expect(group.work_items.count).to eq(6)
       expect(WorkItems::ParentLink.count).to eq(4)
-      expect(Epic.where.not(parent_id: nil).count).to eq(4)
+      expect(Epic.where.not(parent_id: nil).where.not(work_item_parent_link_id: nil).count).to eq(4)
 
       group.epics.each do |epic|
         expect(epic.work_item).not_to be_nil
