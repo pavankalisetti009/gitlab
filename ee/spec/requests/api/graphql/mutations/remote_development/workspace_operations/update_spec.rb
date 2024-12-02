@@ -42,10 +42,13 @@ RSpec.describe 'Updating a workspace', feature_category: :workspaces do
     {
       domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Update::Main,
       domain_main_class_args: {
-        current_user: current_user,
+        user: current_user,
         workspace: workspace,
         params: all_mutation_args.except(:id)
-      }
+      },
+      auth_ability: :update_workspace,
+      auth_subject: workspace,
+      current_user: current_user
     }
   end
 

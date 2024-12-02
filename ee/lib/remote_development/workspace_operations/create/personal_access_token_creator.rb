@@ -10,7 +10,7 @@ module RemoteDevelopment
         # @return [Gitlab::Fp::Result]
         def self.create(context)
           context => {
-            current_user: User => user,
+            user: User => user,
             workspace_name: String => workspace_name,
             params: Hash => params
           }

@@ -12,7 +12,7 @@ module RemoteDevelopment
           context => {
             workspace: RemoteDevelopment::Workspace => workspace,
             personal_access_token: PersonalAccessToken => personal_access_token,
-            current_user: User => user,
+            user: User => user,
             vscode_extensions_gallery: Hash => vscode_extensions_gallery,
             params: Hash => params
           }

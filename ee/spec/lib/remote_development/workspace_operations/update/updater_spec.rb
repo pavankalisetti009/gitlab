@@ -10,7 +10,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Updater, featur
   end
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:current_user) { user }
   let(:personal_access_token) { create(:personal_access_token, user: user) }
   let(:workspace) do
     create(

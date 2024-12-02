@@ -12,9 +12,6 @@ module RemoteDevelopment
     # License error
     LicenseCheckFailed = Class.new(Gitlab::Fp::Message)
 
-    # Auth errors
-    Unauthorized = Class.new(Gitlab::Fp::Message)
-
     # AgentConfigOperations errors
     AgentConfigUpdateFailed = Class.new(Gitlab::Fp::Message)
 

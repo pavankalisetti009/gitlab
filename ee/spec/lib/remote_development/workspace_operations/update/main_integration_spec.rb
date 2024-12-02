@@ -4,14 +4,13 @@ require 'spec_helper'
 
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Main, "Integration", feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
-  let_it_be(:current_user) { user }
   let_it_be(:workspace, refind: true) do
     create(:workspace, user: user, desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING)
   end
 
   let(:new_desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
   let(:params) { { desired_state: new_desired_state } }
-  let(:context) { { workspace: workspace, current_user: current_user, params: params } }
+  let(:context) { { workspace: workspace, user: user, params: params } }
 
   subject(:response) do
     described_class.main(context)

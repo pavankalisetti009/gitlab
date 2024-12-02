@@ -34,7 +34,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
   let(:context) do
     {
       params: params,
-      current_user: user,
+      user: user,
       devfile_yaml: devfile_yaml,
       processed_devfile: processed_devfile,
       personal_access_token: personal_access_token,

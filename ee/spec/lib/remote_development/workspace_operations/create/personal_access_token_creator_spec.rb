@@ -19,7 +19,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessT
   let(:context) do
     {
       params: params,
-      current_user: user,
+      user: user,
       workspace_name: workspace_name
     }
   end

@@ -7,7 +7,7 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
   include StubFeatureFlags
 
   let_it_be(:user) { create(:user, :with_namespace) }
-  let_it_be(:current_user) { user }
+  let_it_be(:current_user) { user } # NOTE: Some graphql spec helper methods rely on current_user to be set
   let_it_be(:namespace) { create(:group, owners: user) }
   let_it_be_with_reload(:agent) { create(:cluster_agent, project: create(:project, group: namespace)) }
 
@@ -35,7 +35,10 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
       domain_main_class_args: {
         namespace: namespace,
         cluster_agent: agent
-      }
+      },
+      auth_ability: :admin_remote_development_cluster_agent_mapping,
+      auth_subject: agent,
+      current_user: current_user
     }
   end
 

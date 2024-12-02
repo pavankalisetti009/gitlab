@@ -37,14 +37,17 @@ module Mutations
           track_usage_event(:users_updating_workspaces, current_user.id)
 
           domain_main_class_args = {
-            current_user: current_user,
+            user: current_user,
             workspace: workspace,
             params: args
           }
 
           response = ::RemoteDevelopment::CommonService.execute(
             domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Update::Main,
-            domain_main_class_args: domain_main_class_args
+            domain_main_class_args: domain_main_class_args,
+            auth_ability: :update_workspace,
+            auth_subject: workspace,
+            current_user: current_user
           )
 
           response_object = response.success? ? response.payload[:workspace] : nil

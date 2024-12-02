@@ -15,7 +15,6 @@ module RemoteDevelopment
 
           result =
             initial_result
-              .and_then(Authorizer.method(:authorize))
               .and_then(DevfileFetcher.method(:fetch))
               .and_then(PreFlattenDevfileValidator.method(:validate))
               .and_then(DevfileFlattener.method(:flatten))
@@ -28,8 +27,6 @@ module RemoteDevelopment
 
           # rubocop:disable Lint/DuplicateBranch -- Rubocop doesn't know the branches are different due to destructuring
           case result
-          in { err: Unauthorized => message }
-            generate_error_response_from_message(message: message, reason: :unauthorized)
           in { err: WorkspaceCreateParamsValidationFailed => message }
             generate_error_response_from_message(message: message, reason: :bad_request)
           in { err: WorkspaceCreateDevfileYamlParseFailed => message }

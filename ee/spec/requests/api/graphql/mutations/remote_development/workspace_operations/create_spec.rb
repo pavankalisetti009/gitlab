@@ -68,11 +68,14 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     {
       domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Create::Main,
       domain_main_class_args: {
-        current_user: current_user,
+        user: current_user,
         params: params,
         vscode_extensions_gallery_metadata: { enabled: true },
         vscode_extensions_gallery: { some_gallery_setting: "some-value" }
-      }
+      },
+      auth_ability: :create_workspace,
+      auth_subject: workspace_project,
+      current_user: current_user
     }
   end
 

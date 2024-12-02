@@ -26,7 +26,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
   let(:initial_value) do
     {
       params: params,
-      current_user: user
+      user: user
     }
   end
 

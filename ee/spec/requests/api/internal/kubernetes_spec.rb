@@ -66,7 +66,8 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
         domain_main_class_args: {
           original_params: params,
           agent: agent
-        }
+        },
+        auth_ability: nil
       }
     end
 
