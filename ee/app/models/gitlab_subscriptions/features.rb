@@ -49,6 +49,7 @@ module GitlabSubscriptions
     STARTER_FEATURES = %i[
       audit_events
       blocked_issues
+      blocked_work_items
       board_iteration_lists
       code_owners
       code_review_analytics
@@ -76,7 +77,6 @@ module GitlabSubscriptions
       product_analytics_usage_quotas
       wip_limits
       zoekt_code_search
-      blocked_work_items
     ].freeze
 
     PREMIUM_FEATURES = %i[
@@ -135,6 +135,7 @@ module GitlabSubscriptions
       instance_level_scim
       jira_issues_integration
       ldap_group_sync_filter
+      linked_items_epics
       merge_request_performance_metrics
       admin_merge_request_approvers_rules
       merge_trains
@@ -153,6 +154,7 @@ module GitlabSubscriptions
       protected_environments
       reject_non_dco_commits
       reject_unsigned_commits
+      related_epics
       remote_development
       saml_group_sync
       service_accounts
@@ -238,8 +240,6 @@ module GitlabSubscriptions
       project_quality_summary
       project_level_analytics_dashboard
       quality_management
-      related_epics
-      linked_items_epics
       release_evidence_test_artifacts
       report_approver_rules
       required_ci_templates
