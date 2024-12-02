@@ -21,7 +21,7 @@ module EE
 
         if updated
           ::Gitlab::UsageDataCounters::IssueActivityUniqueCounter.track_issue_changed_epic_action(author: current_user,
-                                                                                                  project: target_project)
+            project: target_project)
         end
       end
     end
