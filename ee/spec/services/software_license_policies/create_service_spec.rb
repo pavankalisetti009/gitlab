@@ -21,15 +21,17 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
   describe '#execute' do
     context 'when valid parameters are specified' do
       context 'when custom_software_license feature flag is disabled' do
-        let(:params) { { name: 'MIT', approval_status: 'allowed' } }
+        let(:license_name) { 'MIT' }
+        let(:params) { { name: license_name, approval_status: 'allowed' } }
         let(:result) { subject.execute }
 
         before do
           stub_feature_flags(custom_software_license: false)
-          result
         end
 
         it 'creates one software license policy correctly' do
+          result
+
           expect(project.software_license_policies.count).to be(1)
           expect(result[:status]).to be(:success)
           expect(result[:software_license_policy]).to be_present
@@ -42,10 +44,37 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
           let(:params) { { name: '  MIT   ', approval_status: 'allowed' } }
 
           it 'creates one software license policy with stripped name' do
+            result
+
             expect(project.software_license_policies.count).to be(1)
             expect(result[:status]).to be(:success)
             expect(result[:software_license_policy]).to be_persisted
             expect(result[:software_license_policy].name).to eq('MIT')
+          end
+        end
+
+        context 'when a software license with the given name exists' do
+          before do
+            create(:software_license, name: license_name)
+          end
+
+          it 'does not call CustomSoftwareLicense::FindOrCreateService' do
+            expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
+
+            result
+          end
+        end
+
+        context 'when the software license does not exists' do
+          let(:license_name) { 'Custom License' }
+
+          it 'calls CustomSoftwareLicense::FindOrCreateService' do
+            expect_next_instance_of(Security::CustomSoftwareLicenses::FindOrCreateService, project: project,
+              params: params) do |service|
+              expect(service).to receive(:execute).and_call_original
+            end
+
+            result
           end
         end
       end
