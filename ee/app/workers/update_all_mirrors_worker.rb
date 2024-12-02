@@ -48,8 +48,6 @@ class UpdateAllMirrorsWorker # rubocop:disable Scalability/IdempotentWorker
   # for how long it takes StuckImportJob to run, and instead mark them as failed on the next run of this worker.
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/477716.
   def fail_stuck_mirrors!
-    return unless Feature.enabled?(:fail_stuck_mirrors, Feature.current_request)
-
     Project.stuck_mirrors(STUCK_JOBS_DURATION_THRESHOLD, STUCK_JOBS_LIMIT).each do |project|
       project.import_state.mark_as_failed('Project import state stuck in scheduled for too long')
     end

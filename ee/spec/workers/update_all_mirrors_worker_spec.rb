@@ -156,20 +156,6 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
         expect(project.import_state.reload.scheduled?).to be(true)
       end
     end
-
-    context 'when fail_stuck_mirrors feature flag is disabled' do
-      before do
-        stub_feature_flags(fail_stuck_mirrors: false)
-      end
-
-      it 'does not update import state' do
-        expect(project.import_state.scheduled?).to be(true)
-
-        worker.fail_stuck_mirrors!
-
-        expect(project.import_state.reload.scheduled?).to be(true)
-      end
-    end
   end
 
   describe '#schedule_mirrors!', :clean_gitlab_redis_shared_state do
