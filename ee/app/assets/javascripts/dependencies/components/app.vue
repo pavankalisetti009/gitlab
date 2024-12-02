@@ -184,7 +184,7 @@ export default {
           </gl-sprintf>
           <span v-if="generatedAtTimeAgo" data-testid="time-ago-message">
             <span aria-hidden="true">&bull;</span>
-            <span class="text-secondary">{{ generatedAtTimeAgo }}</span>
+            <span class="gl-text-subtle">{{ generatedAtTimeAgo }}</span>
           </span>
         </p>
       </div>

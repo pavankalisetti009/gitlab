@@ -100,7 +100,7 @@ export default {
       :items="ai_agents"
       sort-by="key"
       sort-direction="asc"
-      table-class="text-secondary"
+      table-class="gl-text-subtle"
       show-empty
       :fields="$options.fields"
       stacked="false"

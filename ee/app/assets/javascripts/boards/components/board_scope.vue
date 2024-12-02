@@ -78,7 +78,7 @@ export default {
       </gl-button>
     </div>
     <div v-else class="gl-mb-2 gl-text-lg gl-font-bold">{{ __('Scope') }}</div>
-    <p class="text-secondary gl-mb-3">
+    <p class="gl-mb-3 gl-text-subtle">
       {{ scopeText }}
     </p>
     <div v-if="!collapseScope || expanded">

@@ -37,7 +37,7 @@ export default {
     },
     valueClass() {
       if (this.valueText === ANY_WEIGHT) {
-        return 'text-secondary';
+        return 'gl-text-subtle';
       }
       return 'bold';
     },

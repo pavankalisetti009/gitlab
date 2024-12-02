@@ -83,7 +83,7 @@ export default {
       </gl-form-group>
     </div>
 
-    <p class="text-secondary">
+    <p class="gl-text-subtle">
       <gl-sprintf
         :message="
           __(
