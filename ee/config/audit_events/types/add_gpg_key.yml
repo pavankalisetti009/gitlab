@@ -1,6 +1,6 @@
 ---
 name: add_gpg_key
-description: Triggered when a GPG key is added.
+description: A GPG key is added
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/373961
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/111744
 feature_category: compliance_management

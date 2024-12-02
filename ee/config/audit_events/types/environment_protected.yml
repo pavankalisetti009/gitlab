@@ -1,6 +1,6 @@
 ---
 name: environment_protected
-description: Triggered when a protected environment is created
+description: A protected environment is created
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/216164
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/108247
 feature_category: environment_management

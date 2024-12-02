@@ -1,6 +1,6 @@
 ---
 name: destroyed_compliance_requirement
-description: Triggered when a compliance framework requirement is destroyed
+description: A compliance framework requirement is destroyed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/470695
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/170380
 milestone: '17.7'
