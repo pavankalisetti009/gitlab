@@ -35,6 +35,7 @@ describe('RunnerDetails', () => {
         },
         stubs: {
           RunnerDetail,
+          RunnerMaintenanceNoteDetail,
         },
         provide: {
           glFeatures: {
