@@ -2,7 +2,7 @@
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { buildFiltersFromLicenceRule } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import { buildFiltersFromLicenseRule } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
@@ -61,7 +61,7 @@ export default {
     const isDenied = DENIED in licenses;
 
     return {
-      selectedFilters: buildFiltersFromLicenceRule(this.initRule),
+      selectedFilters: buildFiltersFromLicenseRule(this.initRule),
       excludeListType: isDenied ? DENIED : ALLOWED,
     };
   },

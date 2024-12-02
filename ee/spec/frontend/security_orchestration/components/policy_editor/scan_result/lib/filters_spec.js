@@ -1,6 +1,6 @@
 import {
   buildFiltersFromRule,
-  buildFiltersFromLicenceRule,
+  buildFiltersFromLicenseRule,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import {
   AGE,
@@ -157,7 +157,7 @@ describe('buildFiltersFromRule', () => {
   });
 });
 
-describe('buildFiltersFromLicenceRule', () => {
+describe('buildFiltersFromLicenseRule', () => {
   it.each`
     rule                             | expectedResult
     ${undefined}                     | ${false}
@@ -169,7 +169,7 @@ describe('buildFiltersFromLicenceRule', () => {
     ${{ licenses: { denied: [] } }}  | ${true}
     ${{ licenses: { invalid: [] } }} | ${false}
   `('sets ALLOW_DENY list filter', ({ rule, expectedResult }) => {
-    const filters = buildFiltersFromLicenceRule(rule);
+    const filters = buildFiltersFromLicenseRule(rule);
 
     expect(filters[STATUS]).toBe(true);
     expect(filters[ALLOW_DENY]).toBe(expectedResult);

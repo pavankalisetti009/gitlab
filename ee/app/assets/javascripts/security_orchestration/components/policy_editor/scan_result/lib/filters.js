@@ -37,7 +37,12 @@ export const buildFiltersFromRule = (rule) => {
   return filters;
 };
 
-export const buildFiltersFromLicenceRule = (rule) => {
+/**
+ * Build allow or deny list from a policy rule
+ * @param rule
+ * @returns {{[ALLOW_DENY]: boolean, [STATUS]: boolean}}
+ */
+export const buildFiltersFromLicenseRule = (rule) => {
   let { licenses = {} } = rule || {};
 
   licenses = licenses ?? {};
