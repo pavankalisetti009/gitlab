@@ -103,7 +103,7 @@ export default {
     </gl-alert>
     <div v-else>
       <div class="gl-flex gl-items-center gl-justify-between">
-        <h1 class="page-title gl-text-size-h-display">{{ secret.key }}</h1>
+        <h1 class="page-title gl-text-size-h-display">{{ secret.name }}</h1>
         <div>
           <gl-button
             icon="pencil"

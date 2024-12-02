@@ -27,7 +27,7 @@ export default {
       // start with link to root on all pages
       const crumbs = [this.rootRoute];
 
-      // add link to secret details if route contains a secret key
+      // add link to secret details if route contains a secret id
       if (this.$route.params.id) {
         crumbs.push(this.detailsRoute);
       }

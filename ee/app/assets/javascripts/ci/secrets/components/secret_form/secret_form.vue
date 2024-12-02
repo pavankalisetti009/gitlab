@@ -67,10 +67,10 @@ export default {
       secret: {
         branch: '',
         createdAt: undefined,
+        description: '',
         environment: '',
         expiration: undefined,
-        description: '',
-        key: undefined,
+        name: undefined,
         rotationPeriod: '',
         value: undefined,
       },
@@ -81,7 +81,7 @@ export default {
       return (
         this.isBranchValid &&
         this.isExpirationValid &&
-        this.isKeyValid &&
+        this.isNameValid &&
         this.isValueValid &&
         this.isDescriptionValid &&
         this.isEnvironmentScopeValid
@@ -102,8 +102,8 @@ export default {
     isExpirationValid() {
       return isDate(this.secret.expiration);
     },
-    isKeyValid() {
-      return this.secret.key.length > 0;
+    isNameValid() {
+      return this.secret.name.length > 0;
     },
     isValueValid() {
       return this.secret.value.length > 0;
@@ -134,7 +134,7 @@ export default {
           variables: {
             projectPath: this.fullPath,
             ...this.secret,
-            name: this.secret.key,
+            name: this.secret.name,
           },
         });
 
@@ -184,18 +184,18 @@ export default {
   <div>
     <gl-form @submit.prevent="submitSecret">
       <gl-form-group
-        data-testid="secret-key-field-group"
-        label-for="secret-key"
+        data-testid="secret-name-field-group"
+        label-for="secret-name"
         :label="__('Name')"
         :description="s__('Secrets|The name should be unique within this project.')"
         :invalid-feedback="$options.i18n.fieldRequired"
-        :state="secret.key === undefined || isKeyValid"
+        :state="secret.name === undefined || isNameValid"
       >
         <gl-form-input
-          id="secret-key"
-          v-model="secret.key"
+          id="secret-name"
+          v-model="secret.name"
           :placeholder="__('Enter a name')"
-          :state="secret.key === undefined || isKeyValid"
+          :state="secret.name === undefined || isNameValid"
         />
       </gl-form-group>
       <gl-form-group
