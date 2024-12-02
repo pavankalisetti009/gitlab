@@ -89,6 +89,12 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(project.vulnerability_statistic.letter_grade).to eq('d')
     end
 
+    it 'returns the correct count' do
+      result = service.execute
+      expect(result.success?).to be true
+      expect(result.payload[:count]).to eq(1)
+    end
+
     context 'when project does not have a security_policy_bot' do
       before_all do
         project.security_policy_bots.delete_all
