@@ -449,16 +449,24 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     end
 
     context 'when the error has :generic_trial_error as reason' do
+      let(:message) { ['Some Error 1', 'Some Error 2'] }
+      let(:link) { '<a target="_blank" rel="noopener noreferrer" href="https://support.gitlab.com">GitLab Support</a>' }
+
       let(:result) do
-        ServiceResponse.error(message: ['some error'],
+        ServiceResponse.error(message: message,
           reason: GitlabSubscriptions::Trials::BaseApplyTrialService::GENERIC_TRIAL_ERROR)
       end
 
-      it 'overrides the error message' do
-        is_expected.to include('Please try again or reach out to')
-        is_expected.to include(
-          '<a target="_blank" rel="noopener noreferrer" href="https://support.gitlab.com/hc/en-us">GitLab Support</a>'
-        )
+      it 'displays the error message and a support message' do
+        is_expected.to eq("Please reach out to #{link} for assistance: Some Error 1 and Some Error 2.")
+      end
+
+      context 'without message' do
+        let(:message) { [] }
+
+        it 'displays only a support message' do
+          is_expected.to eq("Please reach out to #{link} for assistance.")
+        end
       end
     end
   end
