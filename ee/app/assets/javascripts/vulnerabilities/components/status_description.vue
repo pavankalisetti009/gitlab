@@ -8,6 +8,7 @@ import {
   GlAvatarLabeled,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DISMISSAL_REASONS } from '../constants';
 
@@ -21,7 +22,7 @@ export default {
     GlAvatarLink,
     GlAvatarLabeled,
   },
-
+  mixins: [glFeatureFlagMixin()],
   props: {
     vulnerability: {
       type: Object,
@@ -60,7 +61,23 @@ export default {
         : this.vulnerability[`${this.state}At`];
     },
 
+    representationInformation() {
+      return this.vulnerability.representationInformation;
+    },
+
     statusText() {
+      const { resolvedOnDefaultBranch } = this.vulnerability;
+
+      if (
+        this.glFeatures.vulnerabilityRepresentationInformation &&
+        resolvedOnDefaultBranch &&
+        this.representationInformation?.resolvedInCommitShaLink
+      ) {
+        return s__(
+          'VulnerabilityManagement|No longer detected %{timeago} as of commit %{commitShaLink}',
+        );
+      }
+
       switch (this.state) {
         case 'detected':
           if (this.isVulnerabilityScanner) {
@@ -141,6 +158,15 @@ export default {
         <gl-link :href="vulnerability.pipeline.url" target="_blank" class="link">{{
           vulnerability.pipeline.id
         }}</gl-link>
+      </template>
+      <template #commitShaLink>
+        <gl-link
+          :href="representationInformation.resolvedInCommitShaLink"
+          target="_blank"
+          class="link gl-str-truncated gl-whitespace-nowrap"
+        >
+          {{ representationInformation.resolvedInCommitSha }}
+        </gl-link>
       </template>
     </gl-sprintf>
   </div>

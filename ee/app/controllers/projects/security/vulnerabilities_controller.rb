@@ -12,6 +12,7 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:vulnerability_code_flow, project)
+        push_frontend_feature_flag(:vulnerability_representation_information, project)
       end
 
       alias_method :vulnerable, :project
