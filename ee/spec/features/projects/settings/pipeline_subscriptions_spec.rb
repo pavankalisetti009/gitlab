@@ -45,7 +45,8 @@ RSpec.describe 'Project Subscriptions', :js,
     end
   end
 
-  it 'successfully creates new pipeline subscription' do
+  it 'successfully creates new pipeline subscription',
+    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444886' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
       within 'form' do
