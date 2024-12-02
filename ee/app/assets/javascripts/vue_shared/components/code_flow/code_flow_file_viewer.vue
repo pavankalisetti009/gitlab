@@ -158,7 +158,12 @@ export default {
     </gl-alert>
 
     <template v-else>
-      <blob-header :blob="blobInfo" :show-blob-size="false" :hide-default-actions="true">
+      <blob-header
+        :blob="blobInfo"
+        :show-blob-size="false"
+        hide-default-actions
+        edit-button-variant="default"
+      >
         <template #prepend>
           <gl-button
             class="gl-mr-2"
