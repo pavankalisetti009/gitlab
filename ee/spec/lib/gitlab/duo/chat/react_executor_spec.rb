@@ -314,6 +314,31 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
+    context "when agent error received" do
+      before do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          allow(react_agent).to receive(:step).with(step_params)
+            .and_yield(event).and_return([event])
+        end
+      end
+
+      context "when license mismatch error received" do
+        let(:event) do
+          Gitlab::Duo::Chat::AgentEvents::Error.new({ "message" => 'tool not available', 'retryable' => false })
+        end
+
+        it "returns an error" do
+          expect(answer.is_final).to eq(true)
+          expect(answer.content).to include("I'm sorry, but answering this question requires a different Duo")
+          expect(answer.error_code).to include("G3001")
+          expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(
+            kind_of(described_class::AgentEventError)
+          )
+        end
+      end
+    end
+
     context "when resource is not authorized" do
       let!(:user) { create(:user) }
 

@@ -114,6 +114,15 @@ module Gitlab
                 source: "chat_v2",
                 error_code: "A1005"
               )
+            elsif error.message.include?("tool not available")
+              Gitlab::Llm::Chain::Answer.error_answer(
+                error: error,
+                context: context,
+                content: _("I'm sorry, but answering this question requires a different Duo subscription. " \
+                  "Please contact your administrator."),
+                source: "chat_v2",
+                error_code: "G3001"
+              )
             else
               Gitlab::Llm::Chain::Answer.error_answer(
                 error: error,

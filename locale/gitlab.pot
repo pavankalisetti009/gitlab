@@ -27607,6 +27607,9 @@ msgstr ""
 msgid "I'm sorry, I couldn't respond in time. Please try again."
 msgstr ""
 
+msgid "I'm sorry, but answering this question requires a different Duo subscription. Please contact your administrator."
+msgstr ""
+
 msgid "I'm sorry, you don't have the GitLab Duo subscription required to use Duo Chat. Please contact your administrator."
 msgstr ""
 
