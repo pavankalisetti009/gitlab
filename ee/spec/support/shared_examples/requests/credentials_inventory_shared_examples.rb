@@ -99,3 +99,141 @@ RSpec.shared_examples_for 'credentials inventory delete SSH key' do |group_crede
     end
   end
 end
+
+RSpec.shared_examples_for 'credentials inventory revoke project & group access tokens' do
+  |group_credentials_inventory: false|
+  include AdminModeHelper
+
+  let_it_be(:token_creator) { create(:user) }
+  let_it_be(:subgroup) { create(:group, :private, parent: group) }
+  let_it_be(:project) { create(:project, :private, group: group) }
+  let_it_be(:other_group) { create(:group) }
+
+  let_it_be(:group_bot) { create(:user, :project_bot, name: "Group bot", created_by_id: token_creator.id) }
+  let_it_be(:subgroup_bot) { create(:user, :project_bot, name: "Subgroup bot", created_by_id: token_creator.id) }
+  let_it_be(:project_bot) { create(:user, :project_bot, name: "Project bot", created_by_id: token_creator.id) }
+  let_it_be(:nonmember_bot) { create(:user, :project_bot, name: "Non-member bot", created_by_id: token_creator.id) }
+
+  let_it_be(:group_bot_token) do
+    create(:personal_access_token, name: group_bot.name, user: group_bot, scopes: %w[read_api])
+  end
+
+  let_it_be(:subgroup_bot_token) do
+    create(:personal_access_token, name: subgroup_bot.name, user: subgroup_bot, scopes: %w[read_api])
+  end
+
+  let_it_be(:project_bot_token) do
+    create(:personal_access_token, name: project_bot.name, user: project_bot, scopes: %w[read_api])
+  end
+
+  let_it_be(:nonmember_bot_token) do
+    create(:personal_access_token, name: nonmember_bot.name, user: nonmember_bot, scopes: %w[read_api])
+  end
+
+  context 'revoke resource access tokens', saas: group_credentials_inventory do
+    before do
+      unless group_credentials_inventory
+        sign_in(admin)
+        enable_admin_mode!(admin)
+      end
+
+      stub_licensed_features(credentials_inventory: true, group_saml: true)
+    end
+
+    before_all do
+      group_bot.update!(bot_namespace: group)
+      subgroup_bot.update!(bot_namespace: subgroup)
+      project_bot.update!(bot_namespace: project.project_namespace)
+      nonmember_bot.update!(bot_namespace: other_group)
+
+      group.add_developer(group_bot)
+      subgroup.add_developer(subgroup_bot)
+      project.add_developer(project_bot)
+      other_group.add_developer(nonmember_bot)
+    end
+
+    subject(:revoke_token) do
+      if group_credentials_inventory
+        put group_security_credential_resource_revoke_path(
+          group_id: group, credential_id: token_id, resource_id: resource_id, resource_type: resource_type
+        )
+      else
+        put admin_credential_resource_revoke_path(
+          credential_id: token_id, resource_id: resource_id, resource_type: resource_type
+        )
+      end
+    end
+
+    let_it_be(:redirect_path) do
+      if group_credentials_inventory
+        group_security_credentials_path(group_id: group)
+      else
+        admin_credentials_path
+      end
+    end
+
+    context 'group access token' do
+      let(:token_id) { group_bot_token.id }
+      let(:resource_id) { group.id }
+      let(:resource_type) { 'Group' }
+
+      it 'removes group access token' do
+        revoke_token
+
+        expect(response).to redirect_to redirect_path
+        expect(flash[:notice]).to eq(
+          format(_("Access token %{token_name} has been revoked."), token_name: group_bot_token.name)
+        )
+      end
+    end
+
+    context 'subgroup access token' do
+      let(:token_id) { subgroup_bot_token.id }
+      let(:resource_id) { subgroup.id }
+      let(:resource_type) { 'Group' }
+
+      it 'removes subgroup access token' do
+        revoke_token
+
+        expect(response).to redirect_to redirect_path
+        expect(flash[:notice]).to eq(
+          format(_("Access token %{token_name} has been revoked."), token_name: subgroup_bot_token.name)
+        )
+      end
+    end
+
+    context 'project access token' do
+      let(:token_id) { project_bot_token.id }
+      let(:resource_id) { project.id }
+      let(:resource_type) { 'Project' }
+
+      it 'removes group access token' do
+        revoke_token
+
+        expect(response).to redirect_to redirect_path
+        expect(flash[:notice]).to eq(
+          format(_("Access token %{token_name} has been revoked."), token_name: project_bot_token.name)
+        )
+      end
+    end
+
+    context 'nonmember access token' do
+      let(:token_id) { nonmember_bot_token.id }
+      let(:resource_id) { other_group.id }
+      let(:resource_type) { 'Group' }
+
+      it "removes the access token only for admin users" do
+        revoke_token
+
+        if group_credentials_inventory
+          expect(response).to have_gitlab_http_status(:not_found)
+        else
+          expect(response).to redirect_to redirect_path
+          expect(flash[:notice]).to eq(
+            format(_("Access token %{token_name} has been revoked."), token_name: nonmember_bot_token.name)
+          )
+        end
+      end
+    end
+  end
+end

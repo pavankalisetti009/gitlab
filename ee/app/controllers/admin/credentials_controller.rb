@@ -6,7 +6,7 @@ class Admin::CredentialsController < Admin::ApplicationController
   include ProductAnalyticsTracking
 
   helper_method :credentials_inventory_path, :user_detail_path, :personal_access_token_revoke_path,
-    :ssh_key_delete_path, :gpg_keys_available?, :resource_access_tokens_available?
+    :resource_access_token_revoke_path, :ssh_key_delete_path, :gpg_keys_available?
 
   before_action :check_license_credentials_inventory_available!, only: [:index, :revoke, :destroy]
 
@@ -54,18 +54,23 @@ class Admin::CredentialsController < Admin::ApplicationController
     revoke_admin_credential_path(token)
   end
 
+  override :resource_access_token_revoke_path
+  def resource_access_token_revoke_path(...)
+    admin_credential_resource_revoke_path(...)
+  end
+
   override :gpg_keys_available?
   def gpg_keys_available?
     true
   end
 
-  override :resource_access_tokens_available?
-  def resource_access_tokens_available?
-    true
-  end
-
   override :users
   def users
+    nil
+  end
+
+  override :bot_users
+  def bot_users
     nil
   end
 

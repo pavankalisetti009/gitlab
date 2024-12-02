@@ -8,11 +8,10 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
   include Groups::SecurityFeaturesHelper
 
   helper_method :credentials_inventory_path, :user_detail_path, :personal_access_token_revoke_path,
-    :ssh_key_delete_path, :resource_access_tokens_available?
+    :resource_access_token_revoke_path, :ssh_key_delete_path
 
   before_action :validate_group_level_credentials_inventory_available!, only: [:index, :revoke, :destroy]
   before_action :check_gpg_keys_list_enabled!, only: [:index]
-  before_action :check_resource_access_tokens_enabled!, only: [:index]
 
   feature_category :user_management
 
@@ -24,10 +23,6 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
 
   def check_gpg_keys_list_enabled!
     render_404 if show_gpg_keys?
-  end
-
-  def check_resource_access_tokens_enabled!
-    render_404 if show_resource_access_tokens?
   end
 
   override :credentials_inventory_path
@@ -50,14 +45,19 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
     revoke_group_security_credential_path(group, token)
   end
 
-  override :resource_access_tokens_available?
-  def resource_access_tokens_available?
-    false
+  override :resource_access_token_revoke_path
+  def resource_access_token_revoke_path(...)
+    group_security_credential_resource_revoke_path(...)
   end
 
   override :users
   def users
     group.enterprise_users
+  end
+
+  override :bot_users
+  def bot_users
+    User.by_bot_namespace_ids(group.self_and_descendants(skope: Namespace).as_ids)
   end
 
   override :revocable
