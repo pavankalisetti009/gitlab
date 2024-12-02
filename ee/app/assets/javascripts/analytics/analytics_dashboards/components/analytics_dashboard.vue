@@ -1,5 +1,5 @@
 <script>
-import { GlEmptyState, GlSkeletonLoader, GlAlert } from '@gitlab/ui';
+import { GlEmptyState, GlSkeletonLoader, GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
@@ -14,17 +14,15 @@ import {
   getDashboardConfig,
   getUniquePanelId,
 } from '~/vue_shared/components/customizable_dashboard/utils';
-import {
-  AI_IMPACT_DASHBOARD,
-  BUILT_IN_VALUE_STREAM_DASHBOARD,
-  CUSTOM_VALUE_STREAM_DASHBOARD,
-} from '~/vue_shared/components/customizable_dashboard/constants';
+import { CUSTOM_VALUE_STREAM_DASHBOARD } from '~/vue_shared/components/customizable_dashboard/constants';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import { updateApolloCache } from '../utils';
 import {
+  AI_IMPACT_DASHBOARD,
+  BUILT_IN_VALUE_STREAM_DASHBOARD,
   FILE_ALREADY_EXISTS_SERVER_RESPONSE,
   NEW_DASHBOARD,
   EVENT_LABEL_CREATED_DASHBOARD,
@@ -59,6 +57,8 @@ export default {
     GlSkeletonLoader,
     GlAlert,
     UsageOverviewBackgroundAggregationWarning,
+    GlLink,
+    GlSprintf,
   },
   mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   inject: {
@@ -152,6 +152,15 @@ export default {
     },
     showEnableAggregationWarning() {
       return this.dashboardHasUsageOverviewPanel && !this.overviewCountsAggregationEnabled;
+    },
+    hasCustomDescriptionLink() {
+      return this.isValueStreamsDashboard || this.isAiImpactDashboard;
+    },
+    isValueStreamsDashboard() {
+      return this.currentDashboard.slug === BUILT_IN_VALUE_STREAM_DASHBOARD;
+    },
+    isAiImpactDashboard() {
+      return this.currentDashboard.slug === AI_IMPACT_DASHBOARD;
     },
   },
   watch: {
@@ -373,6 +382,16 @@ export default {
   troubleshootingUrl: helpPagePath('user/analytics/analytics_dashboards', {
     anchor: '#troubleshooting',
   }),
+  i18n: {
+    aiImpactDescriptionLink: s__(
+      'Analytics|Learn more about %{docsLinkStart}AI Impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo Pro seats usage%{subscriptionLinkEnd}.',
+    ),
+  },
+  VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
+  AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
+  DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons', {
+    anchor: 'assign-gitlab-duo-seats',
+  }),
 };
 </script>
 
@@ -413,6 +432,29 @@ export default {
         @save="saveDashboard"
         @title-input="validateDashboardTitle"
       >
+        <!-- TODO: Remove this link in https://gitlab.com/gitlab-org/gitlab/-/issues/465569 -->
+        <template v-if="hasCustomDescriptionLink" #after-description>
+          <span data-testid="after-description-link">
+            <gl-sprintf v-if="isAiImpactDashboard" :message="$options.i18n.aiImpactDescriptionLink">
+              <template #docsLink="{ content }">
+                <gl-link :href="$options.AI_IMPACT_DOCUMENTATION_LINK">{{ content }}</gl-link>
+              </template>
+              <template #subscriptionLink="{ content }">
+                <gl-link :href="$options.DUO_PRO_SUBSCRIPTION_ADD_ON_LINK">{{ content }}</gl-link>
+              </template>
+            </gl-sprintf>
+
+            <gl-sprintf
+              v-else-if="isValueStreamsDashboard"
+              :message="__('%{linkStart} Learn more%{linkEnd}.')"
+            >
+              <template #link="{ content }">
+                <gl-link :href="$options.VSD_DOCUMENTATION_LINK">{{ content }}</gl-link>
+              </template>
+            </gl-sprintf>
+          </span>
+        </template>
+
         <template #alert>
           <div v-if="showEnableAggregationWarning" class="gl-mx-3">
             <usage-overview-background-aggregation-warning />

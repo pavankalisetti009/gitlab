@@ -132,3 +132,9 @@ export const CUSTOM_EVENT_FILTER_SUPPORTED_MEASURES = [
   `${EVENTS_TABLE_NAME}.count`,
   `${EVENTS_TABLE_NAME}.uniqueUsersCount`,
 ];
+
+export const AI_IMPACT_DASHBOARD = 'ai_impact';
+
+// The URL name already in use is `value_streams_dashboard`,
+// the slug name for a dashboard must match the URL path that is used
+export const BUILT_IN_VALUE_STREAM_DASHBOARD = 'value_streams_dashboard';
