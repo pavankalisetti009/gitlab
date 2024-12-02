@@ -116,6 +116,13 @@ module Integrations
         )
       end
 
+      override :testable?
+      def testable?
+        # Integration must be persisted and active to execute during the test.
+        # https://gitlab.com/gitlab-org/gitlab/-/blob/ffab9d0cd946e725e9b7878e9c46991dbc1d478a/ee/app/services/google_cloud/artifact_registry/base_project_service.rb#L42
+        super && persisted? && active?
+      end
+
       def test(data)
         response = ::GoogleCloud::ArtifactRegistry::GetRepositoryService # rubocop:disable CodeReuse/ServiceClass -- the implementation is tied to existing strategy of testing an integration
           .new(project: project, current_user: data[:current_user]).execute
