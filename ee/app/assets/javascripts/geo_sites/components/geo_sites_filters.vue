@@ -80,7 +80,7 @@ export default {
         <gl-badge class="gl-tab-counter-badge">{{ tab.count }}</gl-badge>
       </template>
     </gl-tab>
-    <div class="gl-border-b-1 gl-border-gray-100 gl-pb-3 gl-border-b-solid">
+    <div class="gl-border-b-1 gl-border-default gl-pb-3 gl-border-b-solid">
       <gl-search-box-by-type v-model="search" :placeholder="$options.i18n.searchPlaceholder" />
     </div>
   </gl-tabs>

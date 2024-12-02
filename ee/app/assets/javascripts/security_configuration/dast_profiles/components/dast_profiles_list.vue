@@ -182,7 +182,7 @@ export default {
         stacked="md"
         fixed
         hover
-        thead-class="gl-border-b-solid gl-border-gray-100 gl-border-1 !gl-pt-3"
+        thead-class="gl-border-b-solid gl-border-default gl-border-1 !gl-pt-3"
         tbody-tr-class="hover:gl-cursor-pointer hover:!gl-bg-blue-50"
         @row-clicked="navigateToProfile"
       >

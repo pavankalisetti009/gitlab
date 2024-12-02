@@ -229,7 +229,7 @@ export default {
     </template>
     <template v-if="$apollo.queries.pipelines.loading || hasPipelines">
       <gl-table
-        thead-class="gl-border-b-solid gl-border-gray-100 gl-border-1"
+        thead-class="gl-border-b-solid gl-border-default gl-border-1"
         :fields="tableFields"
         :items="pipelineNodes"
         :busy="$apollo.queries.pipelines.loading"

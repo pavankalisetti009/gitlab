@@ -291,7 +291,7 @@ export default {
           v-for="item in pendingMembers"
           v-else
           :key="item.id"
-          class="gl-flex gl-justify-between gl-border-0 !gl-border-b-1 gl-border-solid gl-border-gray-100 gl-p-5"
+          class="gl-flex gl-justify-between gl-border-0 !gl-border-b-1 gl-border-solid gl-border-default gl-p-5"
           data-testid="pending-members-content"
         >
           <gl-avatar-link target="blank" :href="item.webUrl" :alt="item.name">

@@ -38,7 +38,7 @@ export default {
 
 <template>
   <div
-    class="gl-mb-5 gl-flex gl-items-center gl-justify-between gl-border-1 gl-border-gray-100 gl-pb-3 gl-text-subtle gl-border-b-solid"
+    class="gl-mb-5 gl-flex gl-items-center gl-justify-between gl-border-1 gl-border-default gl-pb-3 gl-text-subtle gl-border-b-solid"
   >
     <div class="gl-flex gl-items-center">
       <project-avatar

@@ -77,8 +77,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100">
-    <div class="gl-overflow-hidden gl-border-b-1 gl-border-b-gray-100 gl-p-3 gl-border-b-solid">
+  <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default">
+    <div class="gl-overflow-hidden gl-border-b-1 gl-border-b-default gl-p-3 gl-border-b-solid">
       <gl-button-group class="gl-float-right gl-flex">
         <gl-button
           :class="{ selected: isDiffView }"

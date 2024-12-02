@@ -17,7 +17,7 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
         Description 1 lives here
       </p>
       <div
-        class="gl-border-1 gl-border-gray-100 gl-border-solid gl-p-5 gl-rounded-base"
+        class="gl-border-1 gl-border-default gl-border-solid gl-p-5 gl-rounded-base"
       >
         <div
           class="escalation-rule-row gl-flex gl-items-center gl-mb-5"

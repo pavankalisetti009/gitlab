@@ -31,7 +31,7 @@ export default {
   <div class="gl-grid gl-grid-cols-[1fr] gl-gap-5 md:gl-min-h-31 md:gl-grid-cols-[200px,1fr]">
     <h2 class="gl-sr-only">{{ s__('MrReports|Reports') }}</h2>
     <aside
-      class="gl-border-b gl-border-gray-100 gl-pb-3 gl-pt-5 md:gl-border-r md:gl-border-0 md:gl-pr-5"
+      class="gl-border-b gl-border-default gl-pb-3 gl-pt-5 md:gl-border-r md:gl-border-0 md:gl-pr-5"
     >
       <nav>
         <router-link
@@ -50,7 +50,7 @@ export default {
             }}</span></gl-badge
           >
         </router-link>
-        <div class="gl-border-t gl-mt-2 gl-border-gray-100 gl-pt-1">
+        <div class="gl-border-t gl-mt-2 gl-border-default gl-pt-1">
           <h3
             class="gl-heading-6 gl-mb-0 gl-py-3 gl-pl-3 gl-text-sm gl-font-[700] gl-leading-normal"
           >

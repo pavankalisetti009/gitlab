@@ -56,7 +56,7 @@ export default {
     <div
       v-for="statusCheck in statusChecks"
       :key="statusCheck.id"
-      class="gl-mb-4 gl-flex gl-items-center gl-gap-5 gl-border-t-1 gl-border-gray-100"
+      class="gl-mb-4 gl-flex gl-items-center gl-gap-5 gl-border-t-1 gl-border-default"
     >
       <div class="gl-min-w-0 gl-flex-1">
         <p class="gl-my-0 gl-truncate">{{ statusCheck.name }}</p>

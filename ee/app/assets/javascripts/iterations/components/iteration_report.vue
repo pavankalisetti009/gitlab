@@ -171,7 +171,7 @@ export default {
     <template v-else>
       <div
         ref="topbar"
-        class="gl-flex gl-items-center gl-justify-items-center gl-border-1 gl-border-gray-100 gl-py-3 gl-border-b-solid"
+        class="gl-flex gl-items-center gl-justify-items-center gl-border-1 gl-border-default gl-py-3 gl-border-b-solid"
       >
         <timebox-status-badge :state="iteration.state" />
         <span class="gl-ml-4">{{ iterationPeriod }}</span>

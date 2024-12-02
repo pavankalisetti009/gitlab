@@ -186,7 +186,7 @@ export default {
         <p v-if="policy.description" class="gl-mb-5 gl-text-subtle">
           {{ policy.description }}
         </p>
-        <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-p-5">
+        <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-p-5">
           <div v-if="!policy.rules.length" class="gl-text-red-500">
             <gl-icon name="status_warning" class="gl-mr-3" /> {{ $options.i18n.noRules }}
           </div>

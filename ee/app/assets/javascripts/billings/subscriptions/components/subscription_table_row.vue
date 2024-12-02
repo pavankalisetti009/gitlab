@@ -53,7 +53,7 @@ export default {
   },
   computed: {
     rowClasses() {
-      return !this.last ? 'gl-border-b-gray-100 gl-border-b-1 gl-border-b-solid' : null;
+      return !this.last ? 'gl-border-b-default gl-border-b-1 gl-border-b-solid' : null;
     },
     formattedNextTermStartDate() {
       if (!this.nextTermStartDate) return ' - ';

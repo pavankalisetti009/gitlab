@@ -17,7 +17,7 @@ export default {
 
 <template>
   <section
-    class="gl-flex gl-flex-col gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100"
+    class="gl-flex gl-flex-col gl-rounded-base gl-border-1 gl-border-solid gl-border-default"
   >
     <header class="gl-p-5">
       <h4 class="gl-mb-3 gl-mt-0" data-testid="title">

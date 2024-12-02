@@ -29,7 +29,7 @@ export default {
       return { 'gl-p-0 gl-pb-1': !this.isActive };
     },
     titleClasses() {
-      const borderClasses = 'gl-pb-5 gl-border-1 gl-border-b-solid gl-border-gray-100';
+      const borderClasses = 'gl-pb-5 gl-border-1 gl-border-b-solid gl-border-default';
       const defaultClasses = 'gl-text-base gl-my-2 gl-flex gl-justify-between';
       return { [borderClasses]: this.isActive, [defaultClasses]: true };
     },

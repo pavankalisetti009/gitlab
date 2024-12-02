@@ -196,7 +196,7 @@ export default {
         <p class="gl-mb-0" data-testid="health-check-expand-text">{{ expandText }}</p>
         <gl-experiment-badge type="beta" class="gl-ml-auto gl-mr-0" />
       </div>
-      <gl-collapse :visible="expanded" class="border-gray-100 gl-border-t">
+      <gl-collapse :visible="expanded" class="border-default gl-border-t">
         <div class="gl-p-5">
           <health-check-list-loader v-if="isLoading" />
           <div v-else class="gl-font-monospace" data-testid="health-check-results">

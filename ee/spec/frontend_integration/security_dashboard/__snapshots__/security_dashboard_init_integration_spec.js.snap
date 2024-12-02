@@ -12,7 +12,7 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
       class="gl-grid security-charts"
     >
       <section
-        class="gl-border-1 gl-border-gray-100 gl-border-solid gl-flex gl-flex-col gl-rounded-base"
+        class="gl-border-1 gl-border-default gl-border-solid gl-flex gl-flex-col gl-rounded-base"
       >
         <header
           class="gl-p-5"
@@ -81,7 +81,7 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
         </div>
       </section>
       <section
-        class="gl-border-1 gl-border-gray-100 gl-border-solid gl-flex gl-flex-col gl-rounded-base"
+        class="gl-border-1 gl-border-default gl-border-solid gl-flex gl-flex-col gl-rounded-base"
       >
         <header
           class="gl-p-5"
@@ -124,7 +124,7 @@ exports[`Security Dashboard default states sets up instance-level 1`] = `
       class="gl-grid security-charts"
     >
       <section
-        class="gl-border-1 gl-border-gray-100 gl-border-solid gl-flex gl-flex-col gl-rounded-base"
+        class="gl-border-1 gl-border-default gl-border-solid gl-flex gl-flex-col gl-rounded-base"
       >
         <header
           class="gl-p-5"
@@ -193,7 +193,7 @@ exports[`Security Dashboard default states sets up instance-level 1`] = `
         </div>
       </section>
       <section
-        class="gl-border-1 gl-border-gray-100 gl-border-solid gl-flex gl-flex-col gl-rounded-base"
+        class="gl-border-1 gl-border-default gl-border-solid gl-flex gl-flex-col gl-rounded-base"
       >
         <header
           class="gl-p-5"
