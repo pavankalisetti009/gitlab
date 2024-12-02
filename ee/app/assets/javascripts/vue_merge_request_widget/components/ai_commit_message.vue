@@ -71,7 +71,7 @@ export default {
       return {
         text: __('Insert'),
         attributes: {
-          variant: 'info',
+          variant: 'confirm',
           disabled: this.loadingCommitMessage,
         },
       };
