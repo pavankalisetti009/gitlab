@@ -427,10 +427,10 @@ jest-with-fixtures vue3 predictive:
     - if [[ -s "$RSPEC_CHANGED_FILES_PATH" ]] || [[ -s "$RSPEC_MATCHING_JS_FILES_PATH" ]]; then run_timed_command "yarn jest:ci:vue3-mr:predictive-with-fixtures"; fi
   allow_failure: false
 
-jest vue3 check quarantined:
+jest vue3 check quarantined predictive:
   extends:
     - jest vue3 mr
-    - .frontend:rules:jest-vue3-check-quarantined
+    - .frontend:rules:jest:predictive
   needs:
     - !reference [jest vue3 mr, needs]
     - "detect-tests"
@@ -446,9 +446,9 @@ jest vue3 check quarantined:
       - tmp/tests/frontend/jest_stderr
       - tmp/tests/frontend/jest_results.json
 
-jest-with-fixtures vue3 check quarantined:
+jest-with-fixtures vue3 check quarantined predictive:
   extends:
-    - jest vue3 check quarantined
+    - jest vue3 check quarantined predictive
   variables:
     JEST_FIXTURE_JOBS_ONLY: 1
 
