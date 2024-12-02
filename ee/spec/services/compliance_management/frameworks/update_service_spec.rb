@@ -73,9 +73,9 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateService, feature_category
         messages = AuditEvent.last(3).map { |e| e.details[:custom_message] }
 
         expect(messages).to contain_exactly(
-          'Changed compliance framework\'s name from GDPR to New Name',
-          'Changed compliance framework\'s color from #004494 to #000001',
-          'Changed compliance framework\'s description from The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy in the European Union (EU) and the European Economic Area (EEA). to New Description'
+          'Changed compliance framework\'s "name" from "GDPR" to "New Name"',
+          'Changed compliance framework\'s "color" from "#004494" to "#000001"',
+          'Changed compliance framework\'s "description" from "The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy in the European Union (EU) and the European Economic Area (EEA)." to "New Description"'
         )
       end
 
