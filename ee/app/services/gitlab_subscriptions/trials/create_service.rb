@@ -31,6 +31,10 @@ module GitlabSubscriptions
         @namespace = response[:group]
 
         if response.success?
+          # We need to stick to the primary database in order to allow the following request
+          # fetch the namespace from an up-to-date replica or a primary database.
+          ::Namespace.sticking.stick(:namespace, namespace.id)
+
           apply_trial_flow
         else
           ServiceResponse.error(
