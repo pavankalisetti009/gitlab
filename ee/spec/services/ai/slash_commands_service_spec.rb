@@ -38,6 +38,12 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
 
         it_behaves_like 'returns only base commands'
       end
+
+      context 'when user is not authorized' do
+        let(:user) { nil }
+
+        it_behaves_like 'returns only base commands'
+      end
     end
 
     context 'when ActionController::RoutingError is raised' do

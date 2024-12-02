@@ -69,7 +69,7 @@ module Ai
       return false unless @route
 
       namespace = Namespace.find_by_full_path(@route[:namespace_id])
-      namespace && @user.assigned_to_duo_enterprise?(namespace)
+      namespace && @user&.assigned_to_duo_enterprise?(namespace)
     end
 
     def can_access_job?
