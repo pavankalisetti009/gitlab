@@ -58,6 +58,17 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
     end
   end
 
+  shared_examples_for 'a 200 git request' do
+    subject do
+      make_request
+      response
+    end
+
+    it 'returns an OK response' do
+      is_expected.to have_gitlab_http_status(:ok)
+    end
+  end
+
   shared_examples_for 'a Geo 200 git-lfs request' do
     subject do
       make_request
@@ -81,13 +92,11 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
       response
     end
 
-    context 'valid Geo JWT token' do
-      it 'returns a redirect response' do
-        is_expected.to have_gitlab_http_status(:redirect)
+    it 'responds with a 302 redirect to the primary site' do
+      is_expected.to have_gitlab_http_status(:redirect)
 
-        expect(response.media_type).to eq('text/html')
-        expect(response).to redirect_to(redirect_url)
-      end
+      expect(response.media_type).to eq('text/html')
+      expect(response).to redirect_to(redirect_url)
     end
   end
 
@@ -116,107 +125,55 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
 
       it { is_expected.to have_gitlab_http_status(:unauthorized) }
     end
-
-    context 'Geo is unlicensed' do
-      before do
-        stub_licensed_features(geo: false)
-      end
-
-      it { is_expected.to have_gitlab_http_status(:forbidden) }
-    end
   end
 
   context 'when current node is a secondary' do
     let(:current_node) { secondary }
-
-    let(:auth_token) { Gitlab::Geo::BaseRequest.new(scope: project.full_path).authorization }
+    let(:env) { { user: user.username, password: user.password } }
+    let(:auth_token) { nil }
 
     describe 'GET info_refs' do
       context 'git pull' do
         def make_request
-          get "/#{project.full_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: env
+          get "/#{project_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: auth_env(user.username, user.password, nil)
         end
+
+        let(:project_path) { project.full_path }
+        let(:endpoint_path) { "/#{project_path}.git/info/refs?service=git-upload-pack" }
 
         context 'when the repository exists' do
           context 'but has not successfully synced' do
-            let_it_be(:project_with_repo_but_not_synced) { create(:project, :repository, :private) }
-            let_it_be(:project) { project_with_repo_but_not_synced }
-
-            let(:endpoint_path) { "/#{project_with_repo_but_not_synced.full_path}.git/info/refs?service=git-upload-pack" }
+            let_it_be(:project) { project_with_repo }
             let(:redirect_url) { full_redirected_url }
 
             before do
-              create(:geo_project_repository_registry, :synced, project: project_with_repo_but_not_synced, last_synced_at: nil)
+              project_registry_with_repo.update!(last_synced_at: nil)
             end
 
             it_behaves_like 'a Geo 302 redirect to Primary'
-
-            context 'when terms are enforced' do
-              before do
-                enforce_terms
-              end
-
-              it_behaves_like 'a Geo 302 redirect to Primary'
-            end
           end
 
           context 'and has successfully synced' do
             let_it_be(:project) { project_with_repo }
 
-            it_behaves_like 'a Geo git request'
-            it_behaves_like 'a Geo 200 git request'
-
-            context 'when terms are enforced' do
-              before do
-                enforce_terms
-              end
-
-              it_behaves_like 'a Geo git request'
-              it_behaves_like 'a Geo 200 git request'
-            end
+            it_behaves_like 'a 200 git request'
           end
         end
 
         context 'when the repository does not exist' do
           let_it_be(:project) { project_no_repo }
-
-          let(:endpoint_path) { "/#{project.full_path}.git/info/refs?service=git-upload-pack" }
           let(:redirect_url) { full_redirected_url }
 
           it_behaves_like 'a Geo 302 redirect to Primary'
-
-          context 'when terms are enforced' do
-            before do
-              enforce_terms
-            end
-
-            it_behaves_like 'a Geo 302 redirect to Primary'
-          end
         end
 
         context 'when the project does not exist' do
-          # Override #make_request so we can use a non-existent project path
-          def make_request
-            get "/#{non_existent_project_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: env
-          end
-
-          let(:project) { nil }
-          let(:auth_token) { nil }
-          let(:non_existent_project_path) { 'non-existent-namespace/non-existent-project' }
-          let(:endpoint_path) { "/#{non_existent_project_path}.git/info/refs?service=git-upload-pack" }
+          let(:project_path) { 'non-existent-namespace/non-existent-project' }
           let(:redirect_url) { full_redirected_url }
 
           # To avoid enumeration of private projects not in selective sync,
           # this response must be the same as a private project without a repo.
           it_behaves_like 'a Geo 302 redirect to Primary'
-
-          context 'when terms are enforced' do
-            before do
-              enforce_terms
-            end
-
-            it_behaves_like 'a Geo 302 redirect to Primary'
-          end
         end
       end
 
@@ -241,40 +198,37 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
 
     describe 'POST git_upload_pack' do
       def make_request
-        post "/#{project.full_path}.git/git-upload-pack", params: {}, headers: env
+        post endpoint_path, params: {}, headers: auth_env(user.username, user.password, nil)
       end
 
+      let(:endpoint_path) { "/#{project_path}.git/git-upload-pack" }
+      let(:project_path) { project.full_path }
+
       context 'when the repository exists' do
-        let_it_be(:project) { project_with_repo }
+        context 'and is up-to-date' do
+          let_it_be(:project) { project_with_repo }
 
-        it_behaves_like 'a Geo git request'
-        it_behaves_like 'a Geo 200 git request'
-
-        context 'when terms are enforced' do
-          before do
-            enforce_terms
-          end
-
-          it_behaves_like 'a Geo git request'
-          it_behaves_like 'a Geo 200 git request'
+          it_behaves_like 'a 200 git request'
         end
 
-        context 'when the repository has been updated' do
-          let(:geo_gl_id) { "key-#{key.id}" }
-          # to avoid "Unexpected actor :geo." error
-          let(:auth_token) { Gitlab::Geo::BaseRequest.new(scope: project.full_path, gl_id: geo_gl_id).authorization }
-          let(:project_with_repo_but_not_synced) { create(:project, :repository, :private) }
-          let(:project) { project_with_repo_but_not_synced }
+        context 'and is out-of-date' do
+          let(:project) { project_with_repo }
 
-          subject do
-            post "/#{project_with_repo_but_not_synced.full_path}.git/git-upload-pack", params: {}, headers: env
-            response
-          end
-
-          it 'is not redirected' do
-            is_expected.to have_gitlab_http_status(:ok)
-          end
+          it_behaves_like 'a 200 git request'
         end
+      end
+
+      context 'when the repository does not exist' do
+        let_it_be(:project) { project_no_repo }
+
+        it_behaves_like 'a 200 git request'
+      end
+
+      context 'when the project does not exist' do
+        let(:project_path) { 'non-existent-namespace/non-existent-project' }
+        let(:redirect_url) { full_redirected_url }
+
+        it_behaves_like 'a Geo 302 redirect to Primary'
       end
     end
 
@@ -287,7 +241,6 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
 
           let(:args) { {} }
           let_it_be(:project) { project_with_repo }
-
           let(:endpoint_path) { "/#{project.full_path}.git/info/lfs/objects/batch" }
 
           subject do
@@ -590,97 +543,107 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
       end
     end
 
-    context 'repository does not exist' do
-      subject do
-        make_request
-        response
-      end
-
-      def make_request
-        full_path = project.full_path
-
-        get "/#{full_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: env
-      end
-
-      let_it_be(:project) { project_no_repo }
-
-      it { is_expected.to have_gitlab_http_status(:not_found) }
-    end
-
-    context 'invalid scope' do
-      subject do
-        make_request
-        response
-      end
-
-      def make_request
-        get "/#{repository_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: env
-      end
-
+    describe 'GET info_refs' do
       let_it_be(:project) { project_with_repo }
-
-      shared_examples_for 'unauthorized because of invalid scope' do
-        it { is_expected.to have_gitlab_http_status(:unauthorized) }
-
-        it 'returns correct error' do
-          expect(subject.parsed_body).to eq('Geo JWT authentication failed: Unauthorized scope')
-        end
-      end
-
-      context 'invalid scope of Geo JWT token' do
-        let(:repository_path) { project.full_path }
-        let(:env) { geo_env(auth_token_with_invalid_scope) }
-
-        include_examples 'unauthorized because of invalid scope'
-      end
-
-      context 'Geo JWT token scopes for wiki and repository are not interchangeable' do
-        context 'for a repository but using a wiki scope' do
-          let(:repository_path) { project.full_path }
-          let(:scope) { project.wiki.full_path }
-          let(:auth_token_with_valid_wiki_scope) { Gitlab::Geo::BaseRequest.new(scope: scope).authorization }
-          let(:env) { geo_env(auth_token_with_valid_wiki_scope) }
-
-          include_examples 'unauthorized because of invalid scope'
-        end
-
-        context 'for a wiki but using a repository scope' do
-          let(:project) { create(:project, :wiki_repo) }
-          let(:repository_path) { project.wiki.full_path }
-          let(:scope) { project.full_path }
-          let(:auth_token_with_valid_repository_scope) { Gitlab::Geo::BaseRequest.new(scope: scope).authorization }
-          let(:env) { geo_env(auth_token_with_valid_repository_scope) }
-
-          include_examples 'unauthorized because of invalid scope'
-        end
-      end
-    end
-
-    context 'IP allowed settings' do
-      subject do
-        make_request
-        response
-      end
-
-      def make_request
-        get "/#{repository_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: env
-      end
-
-      let_it_be(:project) { project_with_repo }
-
       let(:repository_path) { project.full_path }
 
-      it 'returns unauthorized error' do
-        stub_application_setting(geo_node_allowed_ips: '192.34.34.34')
-
-        is_expected.to have_gitlab_http_status(:unauthorized)
-        expect(subject.parsed_body).to eq('Request from this IP is not allowed')
+      def make_request
+        get "/#{repository_path}.git/info/refs", params: { service: 'git-upload-pack' }, headers: env
       end
 
-      it 'returns success response' do
-        stub_application_setting(geo_node_allowed_ips: '127.0.0.1')
+      context 'when a secondary is attempting to sync a repository' do
+        subject do
+          make_request
+          response
+        end
 
-        is_expected.to have_gitlab_http_status(:success)
+        context 'when the repository exists' do
+          it_behaves_like 'a Geo git request'
+          it_behaves_like 'a Geo 200 git request'
+
+          context 'when terms are enforced' do
+            let(:geo_gl_id) { nil }
+
+            before do
+              enforce_terms
+            end
+
+            it_behaves_like 'a Geo git request'
+            it_behaves_like 'a Geo 200 git request'
+          end
+        end
+      end
+
+      context 'repository does not exist' do
+        subject do
+          make_request
+          response
+        end
+
+        let_it_be(:project) { project_no_repo }
+
+        it { is_expected.to have_gitlab_http_status(:not_found) }
+      end
+
+      context 'invalid scope' do
+        subject do
+          make_request
+          response
+        end
+
+        shared_examples_for 'unauthorized because of invalid scope' do
+          it { is_expected.to have_gitlab_http_status(:unauthorized) }
+
+          it 'returns correct error' do
+            expect(subject.parsed_body).to eq('Geo JWT authentication failed: Unauthorized scope')
+          end
+        end
+
+        context 'invalid scope of Geo JWT token' do
+          let(:env) { geo_env(auth_token_with_invalid_scope) }
+
+          include_examples 'unauthorized because of invalid scope'
+        end
+
+        context 'Geo JWT token scopes for wiki and repository are not interchangeable' do
+          context 'for a repository but using a wiki scope' do
+            let(:scope) { project.wiki.full_path }
+            let(:auth_token_with_valid_wiki_scope) { Gitlab::Geo::BaseRequest.new(scope: scope).authorization }
+            let(:env) { geo_env(auth_token_with_valid_wiki_scope) }
+
+            include_examples 'unauthorized because of invalid scope'
+          end
+
+          context 'for a wiki but using a repository scope' do
+            let(:project) { create(:project, :wiki_repo) }
+            let(:repository_path) { project.wiki.full_path }
+            let(:scope) { project.full_path }
+            let(:auth_token_with_valid_repository_scope) { Gitlab::Geo::BaseRequest.new(scope: scope).authorization }
+            let(:env) { geo_env(auth_token_with_valid_repository_scope) }
+
+            include_examples 'unauthorized because of invalid scope'
+          end
+        end
+      end
+
+      context 'IP allowed settings' do
+        subject do
+          make_request
+          response
+        end
+
+        it 'returns unauthorized error' do
+          stub_application_setting(geo_node_allowed_ips: '192.34.34.34')
+
+          is_expected.to have_gitlab_http_status(:unauthorized)
+          expect(subject.parsed_body).to eq('Request from this IP is not allowed')
+        end
+
+        it 'returns success response' do
+          stub_application_setting(geo_node_allowed_ips: '127.0.0.1')
+
+          is_expected.to have_gitlab_http_status(:success)
+        end
       end
     end
   end
