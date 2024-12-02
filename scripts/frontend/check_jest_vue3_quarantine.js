@@ -13,7 +13,7 @@ const FIXTURES_HELP_URL =
   // eslint-disable-next-line no-restricted-syntax
   'https://docs.gitlab.com/ee/development/testing_guide/frontend_testing.html#download-fixtures';
 
-const DIR = IS_CI ? ROOT : join(ROOT, 'tmp/tests/frontend');
+const DIR = join(ROOT, 'tmp/tests/frontend');
 
 const JEST_JSON_OUTPUT = join(DIR, 'jest_results.json');
 const JEST_STDOUT = join(DIR, 'jest_stdout');
