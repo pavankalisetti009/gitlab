@@ -13,7 +13,7 @@ module API
       end
 
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-        desc 'Create a subscription for the namespace' do
+        desc '[DEPRECATED] Create a subscription for the namespace' do
           success ::API::Entities::GitlabSubscription
         end
         params do
@@ -44,7 +44,7 @@ module API
           end
         end
 
-        desc 'Update the subscription for the namespace' do
+        desc '[DEPRECATED] Update the subscription for the namespace' do
           success ::API::Entities::GitlabSubscription
         end
         params do
