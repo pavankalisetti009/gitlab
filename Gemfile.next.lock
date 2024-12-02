@@ -755,7 +755,7 @@ GEM
       mime-types
       net-http-persistent (~> 4.0)
       nokogiri (~> 1, >= 1.10.8)
-    gitlab-glfm-markdown (0.0.21)
+    gitlab-glfm-markdown (0.0.23)
       rb_sys (= 0.9.94)
     gitlab-kas-grpc (17.5.1)
       grpc (~> 1.0)
@@ -1473,7 +1473,8 @@ GEM
       pry (>= 0.13.0)
       tty-markdown
       tty-prompt
-    psych (5.2.0)
+    psych (5.2.1)
+      date
       stringio
     public_suffix (6.0.1)
     puma (6.5.0)
