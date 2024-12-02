@@ -15,7 +15,7 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import GuestOverageConfirmation from 'ee/members/components/table/drawer/guest_overage_confirmation.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import { MEMBERS_TAB_TYPES } from 'ee_else_ce/members/constants';
+import { CONTEXT_TYPE, MEMBERS_TAB_TYPES } from 'ee_else_ce/members/constants';
 import { updateableCustomRoleMember, ldapMember, ldapOverriddenMember } from '../../../mock_data';
 
 Vue.use(Vuex);
@@ -50,7 +50,7 @@ describe('Role updater EE', () => {
 
     wrapper = shallowMountExtended(RoleUpdater, {
       propsData: { member, role },
-      provide: { group: { path: 'group/path' }, project: {} },
+      provide: { context: CONTEXT_TYPE.PROJECT, group: { path: 'group/path' }, project: {} },
       slots: { default: slotContent },
       store,
     });
@@ -108,6 +108,7 @@ describe('Role updater EE', () => {
     it('dispatches a promotion requests invalidation action', async () => {
       await waitForPromises();
       expect(invalidatePromotionRequestsData).toHaveBeenCalledWith(expect.anything(), {
+        context: CONTEXT_TYPE.PROJECT,
         group: { path: 'group/path' },
         project: {},
       });
