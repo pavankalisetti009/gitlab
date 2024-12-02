@@ -43,13 +43,13 @@ export const STANDARDS_ADHERENCE_CHECK_DESCRIPTIONS = {
     'ComplianceStandardsAdherence|Have a valid rule that prevents author-approved merge requests from being merged',
   ),
   [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: s__(
-    'ComplianceStandardsAdherence|Have a valid rule that prevents users from approving merge requests where they’ve added commits',
+    "ComplianceStandardsAdherence|Have a valid rule that prevents users from approving merge requests that they've added commits to",
   ),
   [AT_LEAST_TWO_APPROVALS]: s__(
-    'ComplianceStandardsAdherence|Have a valid rule that prevents merge requests with less than two approvals from being merged',
+    'ComplianceStandardsAdherence|Have a valid rule that prevents merge requests with fewer than two approvals from being merged',
   ),
   [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: s__(
-    'ComplianceStandardsAdherence|Have a valid rule that prevents merge requests with less than one non-author approval from being merged',
+    'ComplianceStandardsAdherence|Have a valid rule that prevents merge requests with fewer than one non-author approval from being merged',
   ),
   [SAST]: s__(
     'ComplianceStandardsAdherence|Have SAST scanner configured in pipeline configuration',
@@ -98,24 +98,65 @@ export const STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS = {
   ),
 };
 
-export const STANDARDS_ADHERENCE_CHECK_MR_FIX_TITLE = s__(
-  'ComplianceStandardsAdherence|The following features help satisfy this requirement.',
-);
+export const STANDARDS_ADHERENCE_CHECK_FIX_FEATURES = {
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR]: [
+    {
+      title: s__('ComplianceStandardsAdherence|Merge request approval rules'),
+      description: s__(
+        "ComplianceStandardsAdherence|Update approval settings in the project's merge request settings to satisfy this requirement.",
+      ),
+    },
+  ],
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: [
+    {
+      title: s__('ComplianceStandardsAdherence|Merge request approval rules'),
+      description: s__(
+        "ComplianceStandardsAdherence|Update approval settings in the project's merge request settings to satisfy this requirement.",
+      ),
+    },
+  ],
+  [AT_LEAST_TWO_APPROVALS]: [
+    {
+      title: s__('ComplianceStandardsAdherence|Merge request approval rules'),
+      description: s__(
+        "ComplianceStandardsAdherence|Update approval settings in the project's merge request settings to satisfy this requirement.",
+      ),
+    },
+  ],
+  [SAST]: [
+    {
+      title: s__('ComplianceStandardsAdherence|Enable SAST scanner'),
+      description: s__(
+        "ComplianceStandardsAdherence|Enable SAST scanner in the project's security configuration to satisfy this requirement.",
+      ),
+    },
+  ],
+  [DAST]: [
+    {
+      title: s__('ComplianceStandardsAdherence|Enable DAST scanner'),
+      description: s__(
+        "ComplianceStandardsAdherence|Enable DAST scanner in the project's security configuration to satisfy this requirement.",
+      ),
+    },
+  ],
+};
 
-export const STANDARDS_ADHERENCE_CHECK_MR_FIX_FEATURES = [
-  {
-    title: s__('ComplianceStandardsAdherence|Merge request approval rules'),
-    description: s__(
-      "ComplianceStandardsAdherence|Update approval settings in the project's merge request settings to satisfy this requirement.",
-    ),
-  },
-];
+export const STANDARDS_ADHERENCE_CHECK_FIX_LEARN_MORE_DOCS_LINKS = {
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-authors-as-approvers`,
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-committers-as-approvers`,
+  [AT_LEAST_TWO_APPROVALS]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-two-approvals`,
+  [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-one-non-author-approval`,
+  [SAST]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#sast-scanner-artifact`,
+  [DAST]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#dast-scanner-artifact`,
+};
 
-export const STANDARDS_ADHERENCE_CHECK_MR_FIX_LEARN_MORE_DOCS_LINKS = {
-  [PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#prevent-authors-as-approvers`,
-  [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#prevent-committers-as-approvers`,
-  [AT_LEAST_TWO_APPROVALS]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#at-least-two-approvals`,
-  [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/#at-least-one-non-author-approval`,
+export const STANDARDS_ADHERENCE_CHECK_FIX_BUTTON_TEXT = {
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR]: __('Manage rules'),
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: __('Manage rules'),
+  [AT_LEAST_TWO_APPROVALS]: __('Manage rules'),
+  [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: __('Manage rules'),
+  [SAST]: __('Manage configuration'),
+  [DAST]: __('Manage configuration'),
 };
 
 const GITLAB = 'GITLAB';
