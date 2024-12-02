@@ -76,27 +76,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
         3.times { described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token }
       end
-
-      context 'when cloud_connector_jwt_replace is disabled' do
-        before do
-          stub_feature_flags(cloud_connector_jwt_replace: false)
-        end
-
-        let(:expected_token) do
-          instance_double('Gitlab::CloudConnector::SelfIssuedToken', encoded: encoded_token_string)
-        end
-
-        it 'returns the constructed token' do
-          expect(Gitlab::CloudConnector::SelfIssuedToken).to receive(:new).with(
-            audience: backend,
-            subject: Gitlab::CurrentSettings.uuid,
-            scopes: scopes,
-            extra_claims: extra_claims
-          ).and_return(expected_token)
-
-          expect(access_token).to eq(encoded_token_string)
-        end
-      end
     end
 
     context 'when signing key is missing' do
