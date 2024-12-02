@@ -66,8 +66,8 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
       end
       # Issues scope is not available for search within a project when
       # work_items are restricted
-      if has_search_scope?('Work items')
-        select_search_scope('Work items')
+      if has_search_scope?('Issue')
+        select_search_scope('Issue')
         # Project work_items are restricted
         expect(page).not_to have_content('The Issue')
         expect(page).not_to have_content('The Confidential work_item')
@@ -113,7 +113,7 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
           expect(page).to have_content('The Project')
         end
 
-        select_search_scope('Work items')
+        select_search_scope('Issue')
         # Project work_items are still public
         expect(page).to have_content('The Issue')
         expect(page).not_to have_content('The Confidential work_item')

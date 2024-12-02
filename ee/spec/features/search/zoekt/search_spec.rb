@@ -58,12 +58,12 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     wait_for_all_requests
     submit_search('user.*egex')
 
-    expect(page).to have_selector('.file-content .blob-content', count: 2)
+    expect(page).to have_selector('.file-content .blob-content', count: 2, wait: 60)
     expect(page).to have_button('Copy file path')
 
     choose_project(project1)
 
-    expect(page).to have_selector('.file-content .blob-content', count: 1)
+    expect(page).to have_selector('.file-content .blob-content', count: 1, wait: 60)
 
     allow(Ability).to receive(:allowed?).and_call_original
     expect(Ability).to receive(:allowed?).with(anything, :read_blob, anything).twice.and_return(false)

@@ -94,7 +94,7 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
 
     it 'finds issues' do
       submit_search('chosen')
-      select_search_scope('Work items')
+      select_search_scope('Issue')
       expect(page).to have_content('chosen issue title')
     end
   end
