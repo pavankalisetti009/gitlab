@@ -9831,6 +9831,9 @@ msgstr ""
 msgid "BranchRules|Something went wrong while updating branch rule."
 msgstr ""
 
+msgid "BranchRules|Squash commits: %{setting}"
+msgstr ""
+
 msgid "BranchRules|Status check created"
 msgstr ""
 
