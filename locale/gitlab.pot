@@ -31897,6 +31897,9 @@ msgstr ""
 msgid "Last year"
 msgstr ""
 
+msgid "LastPushEvent|Copy branch name"
+msgstr ""
+
 msgid "LastPushEvent|You pushed to"
 msgstr ""
 
