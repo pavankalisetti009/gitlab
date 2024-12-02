@@ -177,7 +177,7 @@ export default {
 
 <template>
   <div
-    class="gl-flex gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-bg-white gl-p-5"
+    class="gl-flex gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-bg-white gl-p-5"
   >
     <gl-skeleton-loader v-if="isLoading" :height="64">
       <rect width="140" height="30" x="5" y="0" rx="4" />

@@ -88,7 +88,7 @@ export default {
   <div>
     <div
       v-if="group.key === 'optional'"
-      class="gl-border-b-1 gl-border-b-gray-100 gl-px-5 gl-py-3 gl-border-b-solid"
+      class="gl-border-b-1 gl-border-b-default gl-px-5 gl-py-3 gl-border-b-solid"
     >
       <gl-button
         category="tertiary"
@@ -107,7 +107,7 @@ export default {
         class="!gl-mb-0 gl-w-full gl-table-fixed"
       >
         <thead>
-          <tr class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid">
+          <tr class="gl-border-b-1 gl-border-b-default gl-border-b-solid">
             <th class="w-60p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-subtle">
               {{ section.label }}
             </th>
@@ -123,7 +123,7 @@ export default {
               :key="rule.id"
               class="gl-border-b-1 gl-bg-gray-10"
               :class="{
-                'gl-border-b-gray-100 gl-border-b-solid': !rule.reviewers.length,
+                'gl-border-b-default gl-border-b-solid': !rule.reviewers.length,
               }"
             >
               <td class="gl-px-5 gl-py-3">
@@ -166,7 +166,7 @@ export default {
             <tr
               v-if="rule.reviewers.length"
               :key="`${rule.id}-reviewers`"
-              class="gl-border-b-1 gl-border-b-gray-100 gl-bg-gray-10 gl-border-b-solid"
+              class="gl-border-b-1 gl-border-b-default gl-bg-gray-10 gl-border-b-solid"
             >
               <td colspan="3" class="gl-px-5 gl-pb-3">
                 <uncollapsed-reviewer-list

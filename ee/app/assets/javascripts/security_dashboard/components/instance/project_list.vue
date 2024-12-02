@@ -64,7 +64,7 @@ export default {
 <template>
   <section>
     <h5
-      class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-3 gl-font-bold gl-text-subtle gl-border-b-solid"
+      class="gl-mb-5 gl-border-b-1 gl-border-b-default gl-pb-3 gl-font-bold gl-text-subtle gl-border-b-solid"
     >
       {{ $options.i18n.projectsAdded }}
       <gl-badge class="gl-font-bold">{{ projects.length }}</gl-badge>

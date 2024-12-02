@@ -34,7 +34,7 @@ export default {
 
 <template>
   <section
-    class="gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-py-6 gl-border-b-solid gl-border-t-solid"
+    class="gl-border-b-1 gl-border-t-1 gl-border-default gl-py-6 gl-border-b-solid gl-border-t-solid"
   >
     <header class="gl-flex">
       <div class="gl-grow">

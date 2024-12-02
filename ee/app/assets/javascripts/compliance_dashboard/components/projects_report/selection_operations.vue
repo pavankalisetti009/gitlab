@@ -159,9 +159,9 @@ export default {
 </script>
 
 <template>
-  <section class="gl-border-t gl-items-center gl-border-gray-100 gl-py-5 md:gl-flex md:gl-px-5">
+  <section class="gl-border-t gl-items-center gl-border-default gl-py-5 md:gl-flex md:gl-px-5">
     <span
-      class="gl-mb-3 gl-inline-block gl-border-0 gl-border-solid gl-border-gray-100 gl-pr-5 md:gl-mb-0 md:gl-border-r-1"
+      class="gl-mb-3 gl-inline-block gl-border-0 gl-border-solid gl-border-default gl-pr-5 md:gl-mb-0 md:gl-border-r-1"
     >
       <gl-sprintf :message="__('%{count} selected')">
         <template #count>

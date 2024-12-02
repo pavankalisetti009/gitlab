@@ -270,7 +270,7 @@ export default {
     />
 
     <div
-      class="gl-flex gl-justify-end gl-gap-3 gl-border-t-1 gl-border-t-gray-100 gl-pt-5 gl-border-t-solid"
+      class="gl-flex gl-justify-end gl-gap-3 gl-border-t-1 gl-border-t-default gl-pt-5 gl-border-t-solid"
     >
       <gl-button data-testid="cancel-btn" @click="onCancel">{{
         $options.i18n.cancelBtnText

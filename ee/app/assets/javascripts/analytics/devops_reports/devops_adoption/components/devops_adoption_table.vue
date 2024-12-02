@@ -148,7 +148,7 @@ export default {
       :items="enabledNamespaces"
       :sort-by.sync="sortBy"
       :sort-desc.sync="sortDesc"
-      thead-class="gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-gray-100"
+      thead-class="gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-default"
       stacked="sm"
     >
       <template v-for="header in tableHeaderFields" #[headerSlotName(header.key)]>

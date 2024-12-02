@@ -258,7 +258,7 @@ export default {
                     id: $options.SELECTED_PROJECT_TOOLTIP,
                     title: selectedProjectTooltip,
                   }"
-                  :class="{ 'gl-border-gray-100': !selectedProjectId }"
+                  :class="{ 'gl-border-default': !selectedProjectId }"
                   class="!gl-max-h-full gl-max-w-26"
                 >
                   <gl-truncate :text="selectedProjectFullPath" position="start" />

@@ -173,11 +173,7 @@ export default {
               :key="issue.created_at"
               class="gl-flex gl-items-center gl-px-4 gl-py-3"
               :class="
-                issue !== lastIssue && [
-                  'gl-border-b-1',
-                  'gl-border-b-gray-100',
-                  'gl-border-b-solid',
-                ]
+                issue !== lastIssue && ['gl-border-b-1', 'gl-border-b-default', 'gl-border-b-solid']
               "
             >
               <span

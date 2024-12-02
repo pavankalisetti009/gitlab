@@ -93,7 +93,7 @@ export default {
         :class="chevronType"
         variant="link"
         :data-button-type="$options.treeItemChevronBtnKey"
-        class="gl-mb-2 gl-mr-2 gl-self-start !gl-py-3 !gl-leading-[0px] !gl-text-gray-900 hover:gl-border-gray-100 hover:!gl-bg-gray-100"
+        class="gl-mb-2 gl-mr-2 gl-self-start !gl-py-3 !gl-leading-[0px] !gl-text-gray-900 hover:gl-border-default hover:!gl-bg-gray-100"
         @click="handleChevronClick"
       >
         <gl-icon :name="chevronType" />

@@ -59,7 +59,7 @@ export default {
     'gl-text-default',
     'gl-bg-gray-10',
     'gl-border-t-solid',
-    'gl-border-gray-100',
+    'gl-border-default',
     'gl-border-1',
   ],
 };

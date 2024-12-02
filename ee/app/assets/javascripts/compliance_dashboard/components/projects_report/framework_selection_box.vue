@@ -162,7 +162,7 @@ export default {
     <template #footer>
       <div
         v-if="isFrameworkCreatingEnabled"
-        class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-gray-100 !gl-p-2 !gl-pt-0 gl-border-t-solid"
+        class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-default !gl-p-2 !gl-pt-0 gl-border-t-solid"
       >
         <gl-button
           category="tertiary"

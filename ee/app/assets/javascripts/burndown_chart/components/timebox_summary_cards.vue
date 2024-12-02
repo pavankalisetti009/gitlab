@@ -42,7 +42,7 @@ export default {
           <rect x="200" y="4" width="86" height="20" rx="4" />
         </gl-skeleton-loader>
         <div v-else>
-          <span class="gl-mr-2 gl-border-1 gl-border-gray-100 gl-pr-3 gl-border-r-solid">
+          <span class="gl-mr-2 gl-border-1 gl-border-default gl-pr-3 gl-border-r-solid">
             {{ column.title }}
             <span class="gl-font-bold"
               >{{ percent(column.value) }}<small class="gl-text-subtle">%</small></span

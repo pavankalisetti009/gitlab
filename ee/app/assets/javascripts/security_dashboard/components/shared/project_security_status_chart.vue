@@ -181,7 +181,7 @@ export default {
     </template>
 
     <accordion
-      class="gl-flex gl-grow gl-border-t-1 gl-border-t-gray-100 gl-px-5 gl-border-t-solid"
+      class="gl-flex gl-grow gl-border-t-1 gl-border-t-default gl-px-5 gl-border-t-solid"
       :list-classes="['gl-flex', 'gl-grow']"
     >
       <template #default="{ accordionId }">

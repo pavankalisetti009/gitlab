@@ -317,7 +317,7 @@ export default {
             <li
               v-for="iteration in iterations"
               :key="iteration.id"
-              class="gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-p-5 gl-border-t-solid"
+              class="gl-border-t-1 gl-border-default gl-bg-gray-10 gl-p-5 gl-border-t-solid"
             >
               <router-link
                 :to="path(iteration.id)"

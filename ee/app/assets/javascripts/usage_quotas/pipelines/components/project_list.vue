@@ -93,7 +93,7 @@ export default {
     <div v-else>
       <p
         v-if="!projects.length"
-        class="gl-mb-0 gl-border-b-1 gl-border-gray-100 gl-pb-5 gl-text-center gl-border-b-solid"
+        class="gl-mb-0 gl-border-b-1 gl-border-default gl-pb-5 gl-text-center gl-border-b-solid"
       >
         {{ $options.PROJECTS_NO_SHARED_RUNNERS }}
       </p>

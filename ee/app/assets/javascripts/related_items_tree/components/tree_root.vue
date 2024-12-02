@@ -101,7 +101,7 @@ export default {
       :key="item.id"
       :parent-item="parentItem"
       :item="item"
-      class="gl-border-t-1 gl-border-t-gray-100 !gl-pt-3 gl-pl-3 gl-pr-4 gl-border-t-solid"
+      class="gl-border-t-1 gl-border-t-default !gl-pt-3 gl-pl-3 gl-pr-4 gl-border-t-solid"
       :class="{}"
     />
     <li v-if="hasMoreChildren" class="tree-item list-item justify-content-center gl-flex gl-py-0">

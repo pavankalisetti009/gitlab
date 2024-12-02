@@ -54,7 +54,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-items-center gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6 lg:gl-flex">
+  <div class="gl-items-center gl-border-1 gl-border-solid gl-border-default gl-p-6 lg:gl-flex">
     <div class="gl-flex gl-items-center" data-testid="pipeline">
       <div class="gl-mr-3">
         <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span

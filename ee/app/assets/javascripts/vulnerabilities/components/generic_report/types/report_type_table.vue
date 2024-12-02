@@ -26,7 +26,7 @@ export default {
     bordered
     borderless
     class="!gl-m-0"
-    thead-class="gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-gray-100"
+    thead-class="gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-default"
     tbody-tr-class="gl-break-all"
   >
     <template #head()="data">
