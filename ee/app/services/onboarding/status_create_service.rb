@@ -71,11 +71,18 @@ module Onboarding
     end
 
     def glm_content
-      params[:glm_content]
+      sanitize_and_truncate(params[:glm_content])
     end
 
     def glm_source
-      params[:glm_source]
+      sanitize_and_truncate(params[:glm_source])
+    end
+
+    def sanitize_and_truncate(value)
+      return if value.blank?
+
+      # Value below is fairly arbitrary at this point, but matches how we think about text value in db columns.
+      ActionController::Base.helpers.sanitize(value.to_s).truncate(255)
     end
 
     def free_registration_type?
