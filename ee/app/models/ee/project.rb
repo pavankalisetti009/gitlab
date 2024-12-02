@@ -143,6 +143,8 @@ module EE
 
       has_many :security_policy_project_links, class_name: 'Security::PolicyProjectLink', inverse_of: :project
       has_many :security_policies, class_name: 'Security::Policy', through: :security_policy_project_links
+      has_many :vulnerability_management_policies, -> { type_vulnerability_management_policy },
+        class_name: 'Security::Policy', through: :security_policy_project_links, source: :security_policy
 
       has_many :approval_policy_rule_project_links,
         class_name: 'Security::ApprovalPolicyRuleProjectLink',

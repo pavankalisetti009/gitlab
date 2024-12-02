@@ -3,6 +3,7 @@
 module Security
   class Policy < ApplicationRecord
     include EachBatch
+    include Security::Policies::VulnerabilityManagement
 
     self.table_name = 'security_policies'
     self.inheritance_column = :_type_disabled
@@ -54,6 +55,7 @@ module Security
 
     scope :undeleted, -> { where('policy_index >= 0') }
     scope :order_by_index, -> { order(policy_index: :asc) }
+    scope :enabled, -> { where(enabled: true) }
 
     def self.checksum(policy_hash)
       Digest::SHA256.hexdigest(policy_hash.to_json)

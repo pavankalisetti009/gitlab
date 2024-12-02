@@ -7,11 +7,25 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   let_it_be(:namespace) { create(:namespace) }
   let_it_be_with_reload(:project) { create(:project, namespace: namespace) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_findings, :detected, :high_severity, project: project) }
-  let(:vulnerability_ids) { [vulnerability.id] }
-  let(:comment) { _("Auto-resolved by vulnerability management policy") + " #{security_policy_name}" }
-  let(:security_policy_name) { 'resolve_low_severity_vulnerabilities' }
+  let_it_be(:resolved_vulnerability) { create(:vulnerability, :with_findings, :resolved, project: project) }
+  let_it_be(:policy) { create(:security_policy, :vulnerability_management_policy, linked_projects: [project]) }
+  let_it_be(:policy_rule) do
+    create(:vulnerability_management_policy_rule,
+      security_policy: policy,
+      content: {
+        type: 'no_longer_detected',
+        scanners: [],
+        severity_levels: []
+      }
+    )
+  end
 
-  subject(:service) { described_class.new(project, vulnerability_ids, security_policy_name) }
+  let(:vulnerability_ids) { [vulnerability.id] }
+
+  let(:comment) { _("Auto-resolved by vulnerability management policy") + " #{security_policy_name}" }
+  let(:security_policy_name) { policy.name }
+
+  subject(:service) { described_class.new(project, vulnerability_ids) }
 
   before_all do
     project.add_guest(user)
@@ -22,7 +36,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   end
 
   describe '#execute' do
-    it 'resolves each vulnerability', :freeze_time do
+    it 'resolves unresolved vulnerabilities', :freeze_time do
       service.execute
 
       vulnerability.reload
@@ -30,6 +44,8 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(vulnerability.resolved_by).to eq(project.security_policy_bot)
       expect(vulnerability.resolved_at).to eq(Time.current)
       expect(vulnerability.auto_resolved).to be(true)
+
+      expect { resolved_vulnerability.reload }.to change { resolved_vulnerability.updated_at }
     end
 
     it 'inserts a state transition for each vulnerability' do
@@ -128,14 +144,24 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
 
       it 'does not introduce N+1 queries' do
         control = ActiveRecord::QueryRecorder.new do
-          described_class.new(project, vulnerability_ids, security_policy_name).execute
+          described_class.new(project, vulnerability_ids).execute
         end
 
         new_vulnerability = create(:vulnerability, :with_findings, project: project)
         vulnerability_ids << new_vulnerability.id
 
+        other_policy = create(:security_policy, :vulnerability_management_policy, linked_projects: [project])
+        create(:vulnerability_management_policy_rule,
+          security_policy: other_policy,
+          content: {
+            type: 'no_longer_detected',
+            scanners: [],
+            severity_levels: []
+          }
+        )
+
         expect do
-          described_class.new(project, vulnerability_ids, security_policy_name).execute
+          described_class.new(project, vulnerability_ids).execute
         end.not_to exceed_query_limit(control)
       end
     end

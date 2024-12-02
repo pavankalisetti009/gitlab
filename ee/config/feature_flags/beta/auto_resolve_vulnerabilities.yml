@@ -1,0 +1,9 @@
+---
+name: auto_resolve_vulnerabilities
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/5708
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173437
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/505711
+milestone: '17.7'
+group: group::security insights
+type: beta
+default_enabled: false
