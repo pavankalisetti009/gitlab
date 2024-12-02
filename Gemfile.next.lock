@@ -736,7 +736,7 @@ GEM
       terminal-table (>= 1.5.1)
     gitlab-chronic (0.10.5)
       numerizer (~> 0.2)
-    gitlab-cloud-connector (0.2.2)
+    gitlab-cloud-connector (0.2.3)
       activesupport (~> 7.0)
       jwt (~> 2.9.3)
     gitlab-dangerfiles (4.8.0)
@@ -1473,7 +1473,8 @@ GEM
       pry (>= 0.13.0)
       tty-markdown
       tty-prompt
-    psych (5.2.0)
+    psych (5.2.1)
+      date
       stringio
     public_suffix (6.0.1)
     puma (6.5.0)
