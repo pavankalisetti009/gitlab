@@ -188,15 +188,22 @@ function getTestArguments() {
       './scripts/frontend/check_jest_vue3_quarantine_sequencer.js',
     ];
 
-    return program.all
-      ? // Pretend that all quarantined files were touched. This ensures
-        // we still rely on FixtureCISequencer behavior.
-        ciArguments(quarantinedFiles)
-      : // Run only tests affected by changes in the merge request.
-        ciArguments(filesThatChanged);
+    if (program.all) {
+      console.warn(
+        'Running in CI with --all. Checking all quarantined specs, subject to FixtureCISequencer sharding behavior.',
+      );
+
+      return ciArguments(quarantinedFiles);
+    }
+
+    console.warn(
+      'Running in CI. Only specs affected by changes in the merge request will be checked.',
+    );
+    return ciArguments(filesThatChanged);
   }
 
   if (program.all) {
+    console.warn('Running locally with --all. Checking all quarantined specs.');
     return ['--runTestsByPath', ...quarantinedFiles];
   }
 
@@ -212,6 +219,7 @@ function getTestArguments() {
       process.exit(1);
     }
 
+    console.warn('Running locally. Checking given specs.');
     return ['--runTestsByPath', ...specs];
   }
 
@@ -236,8 +244,6 @@ async function main() {
 
   filesThatChanged = await changedFiles();
   quarantinedFiles = new Set(await getLocalQuarantinedFiles());
-
-  console.log('Running quarantined specs...');
 
   // Note: we don't care what Jest's exit code is.
   //
