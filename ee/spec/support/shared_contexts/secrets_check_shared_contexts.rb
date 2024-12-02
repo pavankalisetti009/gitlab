@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- needed in specs
+
 RSpec.shared_context 'secrets check context' do
   include_context 'secret detection error and log messages context'
 
@@ -27,14 +29,13 @@ RSpec.shared_context 'secrets check context' do
   # Define blob references as follows:
   #   1. old reference is used as the left blob id in diff_blob objects.
   #   2. new reference is used as the right blob id in diff_blob objects.
-  let(:old_blob_reference) { 'f3ac5ae18d057a11d856951f27b9b5b8043cf1ec' }
-  let(:new_blob_reference) { 'fe29d93da4843da433e62711ace82db601eb4f8f' }
+  let(:existing_blob_reference) { 'f3ac5ae18d057a11d856951f27b9b5b8043cf1ec' }
+  let(:new_blob_reference) { 'da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda' }
 
-  # We cannot really get the same Gitlab::Git::Blob objects even if we call `list_all_blobs` or `list_blobs`
-  # directly in any of the specs (which is also not a very good idea) as the object ids will always
-  # be different, so we expect the attributes of the returned object to match.
-  let(:old_blob) { have_attributes(class: Gitlab::Git::Blob, id: old_blob_reference, size: 23) }
-  let(:new_blob) { have_attributes(class: Gitlab::Git::Blob, id: new_blob_reference, size: 33) }
+  let(:existing_blob) { have_attributes(class: Gitlab::Git::Blob, id: existing_blob_reference, size: 23) }
+  let(:new_blob) { have_attributes(class: Gitlab::Git::Blob, id: new_blob_reference, size: 24) }
+  let(:existing_payload) { { id: existing_blob_reference, data: "Documentation goes here", offset: 1 } }
+  let(:new_payload) { { id: new_blob_reference, data: "BASE_URL=https://foo.bar", offset: 1 } }
 
   let(:changes) do
     [
@@ -142,7 +143,6 @@ RSpec.shared_context 'secrets check context' do
     #
     # Instead, we set `RUN_IN_SUBPROCESS` to false so that we don't scan in sub-processes at all in tests.
     stub_const('Gitlab::SecretDetection::Scan::RUN_IN_SUBPROCESS', false)
-    stub_const('Gitlab::SecretDetection::ScanDiffs::RUN_IN_SUBPROCESS', false)
   end
 
   before_all do
@@ -215,25 +215,22 @@ RSpec.shared_context 'secret detection error and log messages context' do
         variables.merge(line_number: finding_line_number + 1))
   end
 
+  let(:finding_message_multiple_hunks_in_same_diff) do
+    variables = {
+      line_number: finding_line_number,
+      description: finding_description
+    }
+
+    finding_message_path + format(log_messages[:finding_message_occurrence_line], variables) +
+      finding_message_path + format(log_messages[:finding_message_occurrence_line],
+        variables.merge(line_number: finding_line_number + 10))
+  end
+
   let(:finding_message_same_blob_in_multiple_commits_header_path_and_lines) do
     message = finding_message_header
     message += finding_message_path
     message += finding_message_occurrence_line
     message += format(log_messages[:finding_message_occurrence_header], { sha: commit_with_same_blob })
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message
-  end
-
-  let(:diff_finding_message_same_blob_in_multiple_commits_header_path_and_lines) do
-    message = finding_message_header
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message += another_finding_message_header
-    message += finding_message_path
-    message += finding_message_occurrence_line
     message += finding_message_path
     message += finding_message_occurrence_line
     message
@@ -299,7 +296,7 @@ RSpec.shared_context 'quarantine directory exists' do
 
   let(:object_existence_map) do
     {
-      old_blob_reference.to_s => true,
+      existing_blob_reference.to_s => true,
       new_blob_reference.to_s => false
     }
   end
@@ -350,3 +347,5 @@ def finding_message(sha, path, line_number, description)
   )
   message
 end
+
+# rubocop:enable RSpec/MultipleMemoizedHelpers

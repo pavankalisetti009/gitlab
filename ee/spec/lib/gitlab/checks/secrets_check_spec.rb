@@ -34,11 +34,16 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
           project.security_setting.update!(pre_receive_secret_detection_enabled: true)
         end
 
-        context 'when instance is dedicated' do
+        context 'when the push check feature flag is disabled' do
           before do
-            Gitlab::CurrentSettings.update!(gitlab_dedicated_instance: true)
+            stub_feature_flags(pre_receive_secret_detection_push_check: false)
           end
 
+          it_behaves_like 'skips the push check'
+        end
+
+        context 'when the push check feature flag is enabled' do
+          # pre_receive_secret_detection_push_check: true by default
           context 'when license is not ultimate' do
             it_behaves_like 'skips the push check'
           end
@@ -66,41 +71,12 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               it_behaves_like 'skips sending requests to the SDS'
             end
 
-            context 'when the spp_scan_diffs flag is enabled' do
-              it_behaves_like 'diff scan passed'
-              it_behaves_like 'diff scan detected secrets'
-              it_behaves_like 'diff scan detected secrets but some errors occured'
-              it_behaves_like 'diff scan timed out'
-              it_behaves_like 'diff scan failed to initialize'
-              it_behaves_like 'diff scan failed with invalid input'
-              it_behaves_like 'diff scan handles malformed blobs'
-              it_behaves_like 'diff scan skipped due to invalid status'
-              it_behaves_like 'diff scan skipped when a commit has special bypass flag'
-              it_behaves_like 'diff scan skipped when secret_push_protection.skip_all push option is passed'
-              it_behaves_like 'diff scan discarded secrets because they match exclusions'
-
-              context 'when the protocol is web' do
-                subject(:secrets_check) { described_class.new(changes_access_web) }
-
-                it_behaves_like 'scan passed'
-                it_behaves_like 'scan detected secrets'
-                it_behaves_like 'scan detected secrets but some errors occured'
-                it_behaves_like 'scan timed out'
-                it_behaves_like 'scan failed to initialize'
-                it_behaves_like 'scan failed with invalid input'
-                it_behaves_like 'scan skipped due to invalid status'
-                it_behaves_like 'scan skipped when a commit has special bypass flag'
-                it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
-                it_behaves_like 'scan discarded secrets because they match exclusions'
-              end
-            end
-
-            context 'when the scan diff feature flag is not enabled' do
+            context 'when the spp_scan_diffs flag is disabled' do
               before do
                 stub_feature_flags(spp_scan_diffs: false)
               end
 
-              it_behaves_like 'scan passed'
+              it_behaves_like 'entire file scan passed'
               it_behaves_like 'scan detected secrets'
               it_behaves_like 'scan detected secrets but some errors occured'
               it_behaves_like 'scan timed out'
@@ -110,20 +86,17 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               it_behaves_like 'scan skipped when a commit has special bypass flag'
               it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
               it_behaves_like 'scan discarded secrets because they match exclusions'
+            end
+
+            context 'when the spp_scan_diffs flag is enabled' do
+              it_behaves_like 'diff scan passed'
+              it_behaves_like 'scan detected secrets in diffs'
 
               context 'when the protocol is web' do
                 subject(:secrets_check) { described_class.new(changes_access_web) }
 
-                it_behaves_like 'scan passed'
+                it_behaves_like 'entire file scan passed'
                 it_behaves_like 'scan detected secrets'
-                it_behaves_like 'scan detected secrets but some errors occured'
-                it_behaves_like 'scan timed out'
-                it_behaves_like 'scan failed to initialize'
-                it_behaves_like 'scan failed with invalid input'
-                it_behaves_like 'scan skipped due to invalid status'
-                it_behaves_like 'scan skipped when a commit has special bypass flag'
-                it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
-                it_behaves_like 'scan discarded secrets because they match exclusions'
               end
             end
           end
