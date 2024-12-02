@@ -1748,6 +1748,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_57d53b2ab135() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_5ca97b87ee30() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -13514,6 +13530,7 @@ CREATE TABLE issuable_resource_links (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     is_unique boolean,
+    namespace_id bigint,
     CONSTRAINT check_67be6729db CHECK ((char_length(link) <= 2200)),
     CONSTRAINT check_b137147e0b CHECK ((char_length(link_text) <= 255))
 );
@@ -30631,6 +30648,8 @@ CREATE INDEX index_issuable_metric_images_on_issue_id ON issuable_metric_images 
 
 CREATE INDEX index_issuable_resource_links_on_issue_id ON issuable_resource_links USING btree (issue_id);
 
+CREATE INDEX index_issuable_resource_links_on_namespace_id ON issuable_resource_links USING btree (namespace_id);
+
 CREATE UNIQUE INDEX index_issuable_severities_on_issue_id ON issuable_severities USING btree (issue_id);
 
 CREATE INDEX index_issuable_severities_on_namespace_id ON issuable_severities USING btree (namespace_id);
@@ -35321,6 +35340,8 @@ CREATE TRIGGER trigger_56d49f4ed623 BEFORE INSERT OR UPDATE ON workspace_variabl
 
 CREATE TRIGGER trigger_57ad2742ac16 BEFORE INSERT OR UPDATE ON user_achievements FOR EACH ROW EXECUTE FUNCTION trigger_57ad2742ac16();
 
+CREATE TRIGGER trigger_57d53b2ab135 BEFORE INSERT OR UPDATE ON issuable_resource_links FOR EACH ROW EXECUTE FUNCTION trigger_57d53b2ab135();
+
 CREATE TRIGGER trigger_5ca97b87ee30 BEFORE INSERT OR UPDATE ON merge_request_context_commits FOR EACH ROW EXECUTE FUNCTION trigger_5ca97b87ee30();
 
 CREATE TRIGGER trigger_5f6432d2dccc BEFORE INSERT OR UPDATE ON operations_strategies_user_lists FOR EACH ROW EXECUTE FUNCTION trigger_5f6432d2dccc();
@@ -37048,6 +37069,9 @@ ALTER TABLE ONLY catalog_resource_components
 
 ALTER TABLE ONLY workspaces
     ADD CONSTRAINT fk_ec70695b2c FOREIGN KEY (personal_access_token_id) REFERENCES personal_access_tokens(id) ON DELETE RESTRICT;
+
+ALTER TABLE ONLY issuable_resource_links
+    ADD CONSTRAINT fk_ec74801551 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY merge_requests_compliance_violations
     ADD CONSTRAINT fk_ec881c1c6f FOREIGN KEY (violating_user_id) REFERENCES users(id) ON DELETE CASCADE;
