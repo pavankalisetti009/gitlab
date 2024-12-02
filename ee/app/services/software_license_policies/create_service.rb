@@ -22,6 +22,11 @@ module SoftwareLicensePolicies
       if Feature.enabled?(:custom_software_license, project)
         insert_software_license_policy
       else
+        software_license = SoftwareLicense.find_by_name(params[:name])
+
+        # also creates a custom license to allow enabling and disabling the feature flag as needed
+        find_or_create_custom_software_license unless software_license
+
         SoftwareLicense.unsafe_create_policy_for!(
           project: project,
           name: params[:name].strip,
@@ -39,7 +44,7 @@ module SoftwareLicensePolicies
       if software_license
         create_software_license_policies_with_software_license(software_license, catalogue_license)
       else
-        create_software_license_policies_with_custom_software_license(custom_software_license)
+        create_software_license_policies_with_custom_software_license(find_or_create_custom_software_license)
       end
     end
 
@@ -62,7 +67,7 @@ module SoftwareLicensePolicies
       )
     end
 
-    def custom_software_license
+    def find_or_create_custom_software_license
       response = Security::CustomSoftwareLicenses::FindOrCreateService.new(project: project,
         params: params).execute
 
