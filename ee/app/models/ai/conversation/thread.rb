@@ -3,6 +3,8 @@
 module Ai
   module Conversation
     class Thread < ApplicationRecord
+      include EachBatch
+
       self.table_name = :ai_conversation_threads
 
       has_many :messages, class_name: 'Ai::Conversation::Message'
