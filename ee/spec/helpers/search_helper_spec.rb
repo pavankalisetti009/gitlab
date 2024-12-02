@@ -426,11 +426,11 @@ RSpec.describe SearchHelper, feature_category: :global_search do
     using RSpec::Parameterized::TableSyntax
 
     context 'with data' do
-      where(:scope, :label, :data, :search, :active_scope) do
-        "projects"       | "Projects"                | { testid: 'projects-tab' } | nil                  | "projects"
-        "snippet_titles" | "Snippets"                | nil                        | { snippets: "test" } | "code"
-        "projects"       | "Projects"                | { testid: 'projects-tab' } | nil                  | "issue"
-        "snippet_titles" | "Snippets"                | nil                        | { snippets: "test" } | "snippet_titles"
+      where(:scope, :label, :data, :search, :active_scope, :type) do
+        "projects"       | "Projects"                | { testid: 'projects-tab' } | nil                  | "projects"        | nil
+        "snippet_titles" | "Snippets"                | nil                        | { snippets: "test" } | "code"            | nil
+        "projects"       | "Projects"                | { testid: 'projects-tab' } | nil                  | "issue"           | "issue"
+        "snippet_titles" | "Snippets"                | nil                        | { snippets: "test" } | "snippet_titles"  | nil
       end
 
       with_them do
@@ -457,7 +457,7 @@ RSpec.describe SearchHelper, feature_category: :global_search do
           expected[:count] = dummy_count if current_scope
           expected[:count_link] = "test count link" unless current_scope
 
-          expect(search_filter_link_json(scope, label, data, search)).to eq(expected)
+          expect(search_filter_link_json(scope, label, data, search, type)).to eq(expected)
         end
       end
     end

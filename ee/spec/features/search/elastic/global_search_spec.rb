@@ -26,7 +26,7 @@ RSpec.describe 'Global elastic search', :elastic, :js, :sidekiq_inline, :disable
       visit dashboard_projects_path
 
       submit_search('initial')
-      select_search_scope('Work items')
+      select_search_scope('Issue')
 
       expect(page).to have_selector('.gl-pagination .js-pagination-page', count: 2)
     end
@@ -162,7 +162,7 @@ RSpec.describe 'Global elastic search', :elastic, :js, :sidekiq_inline, :disable
 
     it 'displays result counts for all categories' do
       expect(page).to have_content('Projects 1')
-      expect(page).to have_content('Work items 1')
+      expect(page).to have_content('Issue')
       expect(page).to have_content('Merge requests 0')
       expect(page).to have_content('Milestones 0')
       expect(page).to have_content('Comments 0')
