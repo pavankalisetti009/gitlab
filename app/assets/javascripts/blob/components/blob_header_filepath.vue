@@ -61,7 +61,8 @@ export default {
       <component
         :is="showAsLink ? 'gl-link' : 'strong'"
         :href="blob.webPath"
-        class="file-title-name mr-1 js-blob-header-filepath gl-break-all !gl-no-underline"
+        class="file-title-name mr-1 js-blob-header-filepath gl-break-all gl-font-bold"
+        :class="{ '!gl-text-blue-700 hover:gl-cursor-pointer': showAsLink }"
         data-testid="file-title-content"
         >{{ fileName }}</component
       >

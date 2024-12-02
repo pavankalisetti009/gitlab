@@ -160,9 +160,9 @@ export default {
     <template v-else>
       <blob-header
         :blob="blobInfo"
-        :show-path-as-link="true"
         :show-blob-size="false"
-        :hide-default-actions="true"
+        show-path-as-link
+        hide-default-actions
         edit-button-variant="default"
       >
         <template #prepend>
