@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_category: :security_policy_management do
   let(:security_orchestration_policy_configurations) { table(:security_orchestration_policy_configurations) }
-  let(:projects) { table(:projects) }
   let(:namespaces) { table(:namespaces) }
   let(:security_policies) { table(:security_policies) }
   let(:scan_execution_policy_rules) { table(:scan_execution_policy_rules) }
@@ -29,8 +28,11 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
     }
   end
 
+  let!(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
+
   let!(:group_namespace) do
     namespaces.create!(
+      organization_id: organization.id,
       name: 'gitlab-org',
       path: 'gitlab-org',
       type: 'Group'
@@ -353,6 +355,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
 
     let!(:sub_group_namespace) do
       namespaces.create!(
+        organization_id: organization.id,
         name: 'gitlab-com',
         path: 'gitlab-com',
         type: 'Group',
@@ -606,10 +609,12 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
     project_namespace = namespaces.create!(
       name: name,
       path: name,
-      type: 'Project'
+      type: 'Project',
+      organization_id: group.organization_id
     )
 
-    projects.create!(
+    table(:projects).create!(
+      organization_id: group.organization_id,
       namespace_id: group.id,
       project_namespace_id: project_namespace.id,
       name: name,

@@ -7,7 +7,7 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion3, sche
     let(:v2) { 2 }
     let(:v3) { 3 }
     let(:personal_access_tokens_table) { table(:personal_access_tokens) }
-    let(:organization) { create(:organization) }
+    let(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
     let(:pat) do
       personal_access_tokens_table.create!(name: 'workspace1', user_id: user.id, scopes: "---\n- api\n",
         expires_at: 4.days.from_now, organization_id: organization.id)
@@ -31,10 +31,13 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion3, sche
       }
     end
 
-    let(:namespace) { table(:namespaces).create!(name: 'namespace', path: 'namespace') }
+    let(:namespace) do
+      table(:namespaces).create!(name: 'namespace', path: 'namespace', organization_id: organization.id)
+    end
+
     let(:project) do
       table(:projects).create!(name: 'project', path: 'project', project_namespace_id: namespace.id,
-        namespace_id: namespace.id)
+        namespace_id: namespace.id, organization_id: organization.id)
     end
 
     let(:cluster_agent) { table(:cluster_agents).create!(name: 'cluster_agent', project_id: project.id) }

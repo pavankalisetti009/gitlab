@@ -16,27 +16,48 @@ RSpec.describe Gitlab::BackgroundMigration::DeleteOrphanedTransferredProjectAppr
     let(:approval_merge_request_rules) { table(:approval_merge_request_rules) }
     let(:security_orchestration_policy_configurations) { table(:security_orchestration_policy_configurations) }
 
-    let(:group_1) { namespaces.create!(name: 'group 1', path: 'group-1') }
-    let!(:group_2) { namespaces.create!(name: 'group 2', path: 'group-2') }
+    let(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
+
+    let(:group_1) { namespaces.create!(name: 'group 1', path: 'group-1', organization_id: organization.id) }
+    let!(:group_2) { namespaces.create!(name: 'group 2', path: 'group-2', organization_id: organization.id) }
     let!(:project) do
-      projects
-        .create!(name: "project", path: "project", namespace_id: group_1.id, project_namespace_id: group_1.id)
+      projects.create!(
+        name: "project",
+        path: "project",
+        organization_id: organization.id,
+        namespace_id: group_1.id,
+        project_namespace_id: group_1.id
+      )
     end
 
     let!(:security_project_1) do
-      projects
-        .create!(name: "security_project", path: "security_project", namespace_id: group_1.id,
-          project_namespace_id: namespaces.create!(name: 'security project 1', path: 'sp-1').id)
+      projects.create!(
+        name: "security_project",
+        path: "security_project",
+        namespace_id: group_1.id,
+        project_namespace_id: namespaces.create!(name: 'security project 1', path: 'sp-1').id,
+        organization_id: organization.id
+      )
     end
 
     let!(:security_project_2) do
-      projects
-        .create!(name: "security_project_2", path: "security_project_2", namespace_id: group_2.id,
-          project_namespace_id: namespaces.create!(name: 'security project 2', path: 'sp-2').id)
+      projects.create!(
+        name: "security_project_2",
+        path: "security_project_2",
+        namespace_id: group_2.id,
+        project_namespace_id: namespaces.create!(name: 'security project 2', path: 'sp-2').id,
+        organization_id: organization.id
+      )
     end
 
     let!(:project_last) do
-      projects.create!(name: "project 2", path: "project-2", namespace_id: group_2.id, project_namespace_id: group_2.id)
+      projects.create!(
+        name: "project 2",
+        path: "project-2",
+        namespace_id: group_2.id,
+        project_namespace_id: group_2.id,
+        organization_id: organization.id
+      )
     end
 
     let!(:security_orchestration_policy_configuration) do

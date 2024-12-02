@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForExistingProjects, feature_category: :vulnerability_management do
   let(:users) { table(:users) }
   let(:scanners) { table(:vulnerability_scanners) }
+  let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:security_statistics) { table(:project_security_statistics) }
@@ -13,18 +14,20 @@ RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForEx
   let(:vulnerability_occurrences) { table(:vulnerability_occurrences) }
   let(:vulnerability_identifiers) { table(:vulnerability_identifiers) }
 
+  let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
   let(:user) { users.create!(email: 'john@doe', username: 'john_doe', projects_limit: 10) }
-  let(:namespace) { namespaces.create!(name: 'Test', path: 'test') }
-  let(:project_namespace_1) { namespaces.create!(name: 'Project Namespace 1', path: 'project_1') }
-  let(:project_namespace_2) { namespaces.create!(name: 'Project Namespace 2', path: 'project_2') }
-  let(:project_namespace_3) { namespaces.create!(name: 'Project Namespace 3', path: 'project_3') }
+  let(:namespace) { namespaces.create!(name: 'Test', path: 'test', organization_id: organization.id) }
+  let(:project_namespace_1) { namespaces.create!(name: 'Project1', path: 'project1', organization_id: organization.id) }
+  let(:project_namespace_2) { namespaces.create!(name: 'Project2', path: 'project2', organization_id: organization.id) }
+  let(:project_namespace_3) { namespaces.create!(name: 'Project3', path: 'project3', organization_id: organization.id) }
 
   let(:project_1) do
     projects.create!(
       name: 'project_1',
       path: 'project_1',
       namespace_id: namespace.id,
-      project_namespace_id: project_namespace_1.id
+      project_namespace_id: project_namespace_1.id,
+      organization_id: organization.id
     )
   end
 
@@ -33,7 +36,8 @@ RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForEx
       name: 'project_2',
       path: 'project_2',
       namespace_id: namespace.id,
-      project_namespace_id: project_namespace_2.id
+      project_namespace_id: project_namespace_2.id,
+      organization_id: organization.id
     )
   end
 
@@ -42,7 +46,8 @@ RSpec.describe Gitlab::BackgroundMigration::SetTotalNumberOfVulnerabilitiesForEx
       name: 'project_3',
       path: 'project_3',
       namespace_id: namespace.id,
-      project_namespace_id: project_namespace_3.id
+      project_namespace_id: project_namespace_3.id,
+      organization_id: organization.id
     )
   end
 

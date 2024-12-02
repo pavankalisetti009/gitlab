@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence, :migration, schema: 20230721095222,
   feature_category: :compliance_management do
-  let(:settings) { table(:application_settings) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:approval_project_rules) { table(:approval_project_rules) }
@@ -13,7 +12,8 @@ RSpec.describe Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence, 
   let(:gitlab_subscriptions) { table(:gitlab_subscriptions) }
 
   let!(:application_setting) do
-    settings.create!(prevent_merge_requests_author_approval: false, prevent_merge_requests_committers_approval: false)
+    table(:application_settings)
+      .create!(prevent_merge_requests_author_approval: false, prevent_merge_requests_committers_approval: false)
   end
 
   let!(:premium_plan) { plans.create!(name: 'premium', title: 'Premium') }
@@ -27,35 +27,43 @@ RSpec.describe Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence, 
     gitlab_subscriptions.create!(hosted_plan_id: ultimate_plan.id, namespace_id: ultimate_group.id)
   end
 
-  let!(:namespace_1) { namespaces.create!(name: 'alpha', path: 'alpha', type: 'Group') }
-  let!(:namespace_2) { namespaces.create!(name: 'beta', path: 'beta', type: 'Group') }
-  let!(:namespace_3) { namespaces.create!(name: 'root', path: 'root', type: 'User') }
-  let!(:premium_group) { namespaces.create!(name: 'premium', path: 'premium', type: 'Group') }
-  let!(:ultimate_group) { namespaces.create!(name: 'ultimate', path: 'ultimate', type: 'Group') }
+  let!(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
+  let!(:namespace_1) { namespaces.create!(name: 'alpa', path: 'alpa', type: 'Group', organization_id: organization.id) }
+  let!(:namespace_2) { namespaces.create!(name: 'beta', path: 'beta', type: 'Group', organization_id: organization.id) }
+  let!(:namespace_3) { namespaces.create!(name: 'root', path: 'root', type: 'User', organization_id: organization.id) }
+
+  let!(:premium_group) do
+    namespaces.create!(name: 'premium', path: 'premium', type: 'Group', organization_id: organization.id)
+  end
+
+  let!(:ultimate_group) do
+    namespaces.create!(name: 'ultimate', path: 'ultimate', type: 'Group', organization_id: organization.id)
+  end
 
   let!(:project_1) do
     projects.create!(namespace_id: namespace_1.id, project_namespace_id: namespace_1.id, name: 'Project One',
-      path: 'project-one', merge_requests_author_approval: false, merge_requests_disable_committers_approval: true)
+      path: 'project-one', merge_requests_author_approval: false, merge_requests_disable_committers_approval: true,
+      organization_id: organization.id)
   end
 
   let!(:project_2) do
     projects.create!(namespace_id: namespace_2.id, project_namespace_id: namespace_2.id, name: 'Project Two',
-      path: 'project-two')
+      path: 'project-two', organization_id: organization.id)
   end
 
   let!(:project_3) do
     projects.create!(namespace_id: namespace_3.id, project_namespace_id: namespace_3.id, name: 'Project Three',
-      path: 'project-three')
+      path: 'project-three', organization_id: organization.id)
   end
 
   let!(:premium_project) do
     projects.create!(namespace_id: premium_group.id, project_namespace_id: premium_group.id, name: 'Premium project',
-      path: 'premium-project')
+      path: 'premium-project', organization_id: organization.id)
   end
 
   let!(:ultimate_project) do
     projects.create!(namespace_id: ultimate_group.id, project_namespace_id: ultimate_group.id, name: 'Ultimate Project',
-      path: 'ultimate-project')
+      path: 'ultimate-project', organization_id: organization.id)
   end
 
   let!(:ultimate_project_compliance_standards_adherence) do
