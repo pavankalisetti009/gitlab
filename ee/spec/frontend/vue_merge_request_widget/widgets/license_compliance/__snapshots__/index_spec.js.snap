@@ -165,7 +165,7 @@ exports[`License Compliance extension expanded data with new licenses displays a
                           </div>
                         </div>
                         <a
-                          class="btn btn-confirm btn-confirm-tertiary btn-sm gl-button gl-float-left gl-hidden md:gl-block"
+                          class="btn btn-confirm btn-confirm-tertiary btn-sm gl-button gl-float-left gl-hidden md:gl-inline-flex"
                           data-testid="extension-actions-button"
                           href="/group-name/project-name/-/merge_requests/78/full_report"
                         >
@@ -462,7 +462,7 @@ exports[`License Compliance extension expanded data with new licenses displays u
                           </div>
                         </div>
                         <a
-                          class="btn btn-confirm btn-confirm-tertiary btn-sm gl-button gl-float-left gl-hidden md:gl-block"
+                          class="btn btn-confirm btn-confirm-tertiary btn-sm gl-button gl-float-left gl-hidden md:gl-inline-flex"
                           data-testid="extension-actions-button"
                           href="/group-name/project-name/-/merge_requests/78/full_report"
                         >
