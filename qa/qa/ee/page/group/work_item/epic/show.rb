@@ -31,6 +31,10 @@ module QA
                 element 'work-item-tree'
               end
 
+              view 'app/assets/javascripts/work_items_feedback/components/work_item_feedback.vue' do
+                element 'work-item-feedback-popover'
+              end
+
               def add_child_issue_to_epic(issue)
                 within_element('work-item-tree') do
                   click_element('base-dropdown-toggle', text: 'Add')
@@ -76,11 +80,18 @@ module QA
               end
 
               def toggle_actions_dropdown
+                close_new_epic_popover if has_element?('work-item-feedback-popover')
                 click_element('work-item-actions-dropdown')
               end
 
               def work_item_epic?
                 has_element?('work-item-tree')
+              end
+
+              def close_new_epic_popover
+                within_element('work-item-feedback-popover') do
+                  click_element('close-button')
+                end
               end
             end
           end
