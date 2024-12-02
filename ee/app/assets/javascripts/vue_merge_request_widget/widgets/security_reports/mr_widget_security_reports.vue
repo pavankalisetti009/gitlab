@@ -186,6 +186,9 @@ export default {
     pipelineIid() {
       return this.modalData.vulnerability.found_by_pipeline?.iid;
     },
+    branchRef() {
+      return this.mr.sourceBranch;
+    },
 
     shouldRenderMrWidget() {
       return !this.mr.isPipelineActive && this.endpoints.length > 0;
@@ -395,7 +398,9 @@ export default {
         v-if="modalData"
         :finding-uuid="modalData.vulnerability.uuid"
         :pipeline-iid="pipelineIid"
+        :branch-ref="branchRef"
         :project-full-path="mr.targetProjectFullPath"
+        :source-project-full-path="mr.sourceProjectFullPath"
         :show-ai-resolution="glFeatures.resolveVulnerabilityInMr"
         :merge-request-id="mr.id"
         data-testid="vulnerability-finding-modal"

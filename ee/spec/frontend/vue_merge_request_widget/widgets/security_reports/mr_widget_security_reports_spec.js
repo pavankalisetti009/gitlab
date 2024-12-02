@@ -26,6 +26,7 @@ describe('MR Widget Security Reports', () => {
 
   const securityConfigurationPath = '/help/user/application_security/index.md';
   const sourceProjectFullPath = 'namespace/project';
+  const sourceBranch = 'feature-branch';
 
   const sastHelp = '/help/user/application_security/sast/index';
   const dastHelp = '/help/user/application_security/dast/index';
@@ -66,6 +67,7 @@ describe('MR Widget Security Reports', () => {
           ...propsData?.mr,
           ...reportEndpoints,
           securityConfigurationPath,
+          sourceBranch,
           sourceProjectFullPath,
           sastHelp,
           dastHelp,
@@ -765,6 +767,8 @@ describe('MR Widget Security Reports', () => {
         findingUuid: '0',
         pipelineIid: 1,
         projectFullPath: targetProjectFullPath,
+        sourceProjectFullPath,
+        branchRef: sourceBranch,
         showAiResolution: true,
       });
     });
