@@ -40,25 +40,11 @@ module Geo
       start_registry_sync!
       fetch_repository
       mark_sync_as_successful
-    rescue Gitlab::Git::Repository::NoRepository => e
-      fail_registry_sync!('Invalid repository', e)
-
-      log_info('Expiring caches')
-      repository.after_create
+    rescue Gitlab::Git::Repository::NoRepository
+      mark_missing_on_primary
       @skip_housekeeping = true
     rescue Gitlab::Shell::Error, Gitlab::Git::BaseError => e
-      # In some cases repository does not exist, the only way to know about this
-      # is to parse the error text. If the repository does not exist on the
-      # primary, then the state on this secondary matches the primary, and
-      # therefore the repository is successfully synced.
-      if e.message.include?(replicator.class.no_repo_message)
-        log_info('Repository is not found, marking it as successfully synced')
-        mark_sync_as_successful(missing_on_primary: true)
-        @skip_housekeeping = true
-      else
-        fail_registry_sync!('Error syncing repository', e)
-      end
-
+      fail_registry_sync!('Error syncing repository', e)
     ensure
       expire_repository_caches
       execute_housekeeping
@@ -117,6 +103,11 @@ module Geo
 
       log_info("Finished #{replicable_name} sync",
         download_time_s: download_time_in_seconds)
+    end
+
+    def mark_missing_on_primary
+      log_info('Repository is not found, marking it as successfully synced')
+      mark_sync_as_successful(missing_on_primary: true)
     end
 
     def start_registry_sync!

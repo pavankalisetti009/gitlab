@@ -238,18 +238,6 @@ RSpec.shared_examples 'a repository replicator' do
     end
   end
 
-  describe '.git_access_class' do
-    it 'is implemented' do
-      expect(replicator.class.git_access_class).to be < Gitlab::GitAccess
-    end
-  end
-
-  describe '.no_repo_message' do
-    it 'is implemented' do
-      expect(replicator.class.no_repo_message).to be_a(String)
-    end
-  end
-
   describe '.housekeeping_enabled?' do
     it 'is implemented' do
       expect(replicator.class.housekeeping_enabled?).to be_in([true, false])

@@ -189,11 +189,11 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
           expect { subject.execute }.not_to raise_error
         end
 
-        it 'skips housekeeping when repository is invalid' do
+        it 'skips housekeeping when repository at given URL is not found' do
           allow(repository)
             .to receive(:fetch_as_mirror)
             .with(url_to_repo, forced: true, http_authorization_header: anything)
-            .and_raise(Gitlab::Git::Repository::NoRepository)
+            .and_raise(Gitlab::Git::Repository::NoRepository.new('repository at given URL not found'))
 
           expect(Repositories::HousekeepingService).not_to receive(:new)
 
@@ -204,7 +204,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
           allow(repository)
             .to receive(:fetch_as_mirror)
             .with(url_to_repo, forced: true, http_authorization_header: anything)
-            .and_raise(Gitlab::Shell::Error.new(Gitlab::GitAccessSnippet::ERROR_MESSAGES[:no_repo]))
+            .and_raise(Gitlab::Git::Repository::NoRepository.new('A repository for this project does not exist yet'))
 
           expect(Repositories::HousekeepingService).not_to receive(:new)
 
@@ -242,36 +242,10 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
         expect { subject.execute }.not_to raise_error
       end
 
-      it 'rescues exception and fires after_create hook when Gitlab::Git::Repository::NoRepository is raised' do
+      it 'marks sync as successful if repository at given URL is not found' do
         allow(repository).to receive(:fetch_as_mirror)
                                .with(url_to_repo, forced: true, http_authorization_header: anything)
-                               .and_raise(Gitlab::Git::Repository::NoRepository)
-
-        expect(repository).to receive(:after_create)
-
-        expect { subject.execute }.not_to raise_error
-      end
-
-      it 'increases retry count when Gitlab::Git::Repository::NoRepository is raised' do
-        registry.save!
-
-        allow(repository).to receive(:fetch_as_mirror)
-                               .with(url_to_repo, forced: true, http_authorization_header: anything)
-                               .and_raise(Gitlab::Git::Repository::NoRepository)
-
-        subject.execute
-
-        expect(registry.reload).to have_attributes(
-          state: Geo::SnippetRepositoryRegistry::STATE_VALUES[:failed],
-          retry_count: 1)
-      end
-
-      it 'marks sync as successful if repository is not found' do
-        allow(repository).to receive(:fetch_as_mirror)
-                               .with(url_to_repo, forced: true, http_authorization_header: anything)
-                               .and_raise(Gitlab::Shell::Error.new(Gitlab::GitAccessSnippet::ERROR_MESSAGES[:no_repo]))
-
-        expect(replicator.class).to receive(:no_repo_message).once.and_call_original
+                               .and_raise(Gitlab::Git::Repository::NoRepository.new('repository at given URL not found'))
 
         subject.execute
 
@@ -280,14 +254,40 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
           missing_on_primary: true)
       end
 
-      it 'marks sync as failed' do
+      it 'marks sync as successful if repository is not found' do
+        allow(repository).to receive(:fetch_as_mirror)
+                               .with(url_to_repo, forced: true, http_authorization_header: anything)
+                               .and_raise(Gitlab::Git::Repository::NoRepository.new('A repository for this project does not exist yet'))
+
+        subject.execute
+
+        expect(registry).to have_attributes(
+          state: Geo::SnippetRepositoryRegistry::STATE_VALUES[:synced],
+          missing_on_primary: true)
+      end
+
+      it 'marks sync as failed when Gitlab::Shell::Error is raised' do
         subject.execute
 
         expect(registry.synced?).to be true
 
         allow(repository).to receive(:fetch_as_mirror)
                                .with(url_to_repo, forced: true, http_authorization_header: anything)
-                               .and_raise(Gitlab::Git::Repository::NoRepository)
+                               .and_raise(Gitlab::Shell::Error)
+
+        subject.execute
+
+        expect(registry.reload.failed?).to be true
+      end
+
+      it 'marks sync as failed when Gitlab::Git::BaseError is raised' do
+        subject.execute
+
+        expect(registry.synced?).to be true
+
+        allow(repository).to receive(:fetch_as_mirror)
+                               .with(url_to_repo, forced: true, http_authorization_header: anything)
+                               .and_raise(Gitlab::Git::BaseError)
 
         subject.execute
 
@@ -348,6 +348,50 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
                                 .once
 
         subject.execute
+      end
+
+      it 'marks sync as successful if repository at given URL is not found' do
+        allow(repository).to receive(:clone_as_mirror)
+                                .with(url_to_repo, http_authorization_header: anything)
+                                .and_raise(Gitlab::Git::Repository::NoRepository.new('repository at given URL not found'))
+
+        subject.execute
+
+        expect(registry).to have_attributes(
+          state: Geo::SnippetRepositoryRegistry::STATE_VALUES[:synced],
+          missing_on_primary: true)
+      end
+
+      it 'marks sync as successful if repository is not found' do
+        allow(repository).to receive(:clone_as_mirror)
+                                .with(url_to_repo, http_authorization_header: anything)
+                                .and_raise(Gitlab::Git::Repository::NoRepository.new('A repository for this project does not exist yet'))
+
+        subject.execute
+
+        expect(registry).to have_attributes(
+          state: Geo::SnippetRepositoryRegistry::STATE_VALUES[:synced],
+          missing_on_primary: true)
+      end
+
+      it 'marks sync as failed when Gitlab::Shell::Error is raised' do
+        allow(repository).to receive(:clone_as_mirror)
+                                .with(url_to_repo, http_authorization_header: anything)
+                                .and_raise(Gitlab::Shell::Error)
+
+        subject.execute
+
+        expect(registry.reload.failed?).to be true
+      end
+
+      it 'marks sync as failed when Gitlab::Git::BaseError is raised' do
+        allow(repository).to receive(:clone_as_mirror)
+                                .with(url_to_repo, http_authorization_header: anything)
+                                .and_raise(Gitlab::Git::BaseError)
+
+        subject.execute
+
+        expect(registry.reload.failed?).to be true
       end
 
       context 'repository housekeeping' do

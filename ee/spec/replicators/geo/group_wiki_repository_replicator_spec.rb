@@ -36,10 +36,4 @@ RSpec.describe Geo::GroupWikiRepositoryReplicator, feature_category: :geo_replic
       end
     end
   end
-
-  describe '.no_repo_message' do
-    it 'returns the proper error message for group-level wikis' do
-      expect(replicator.class.no_repo_message).to eq(::Gitlab::GitAccessWiki.error_message(:no_group_repo))
-    end
-  end
 end
