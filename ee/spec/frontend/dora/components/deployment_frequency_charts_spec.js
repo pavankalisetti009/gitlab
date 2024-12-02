@@ -369,7 +369,7 @@ describe('deployment_frequency_charts.vue', () => {
 
         expect(confirmAction).toHaveBeenCalledWith('', {
           primaryBtnText: DeploymentFrequencyCharts.i18n.confirmationBtnText,
-          primaryBtnVariant: 'info',
+          primaryBtnVariant: 'confirm',
           title: DeploymentFrequencyCharts.i18n.confirmationTitle,
           modalHtmlMessage: DeploymentFrequencyCharts.i18n.confirmationHtmlMessage,
         });

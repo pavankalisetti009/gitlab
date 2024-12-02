@@ -46,7 +46,7 @@ export default {
     discoverButtonProps() {
       return {
         class: 'gl-ml-3',
-        variant: 'info',
+        variant: 'confirm',
         // False positive i18n lint: https://gitlab.com/gitlab-org/frontend/eslint-plugin-i18n/issues/26
         // eslint-disable-next-line @gitlab/require-i18n-strings
         rel: 'noopener noreferrer',

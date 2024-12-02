@@ -327,7 +327,7 @@ export default {
       } = this.$options.i18n;
 
       this.forecastConfirmed = await confirmAction('', {
-        primaryBtnVariant: 'info',
+        primaryBtnVariant: 'confirm',
         primaryBtnText,
         title,
         modalHtmlMessage,

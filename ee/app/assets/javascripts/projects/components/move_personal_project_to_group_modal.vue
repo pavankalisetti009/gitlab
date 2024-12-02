@@ -33,7 +33,7 @@ export default {
         attributes: {
           target: '_blank',
           category: 'primary',
-          variant: 'info',
+          variant: 'confirm',
           href: this.$options.moveProjectDocsPath,
           'data-testid': 'docs-link-button',
         },
