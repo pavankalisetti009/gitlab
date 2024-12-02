@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
-import VulnerabilityFileContentViewer from 'ee/vulnerabilities/components/vulnerability_file_content_viewer.vue';
+import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobHeader from '~/blob/components/blob_header.vue';
 import { __, s__ } from '~/locale';
 import { highlightContent } from '~/highlight_js';

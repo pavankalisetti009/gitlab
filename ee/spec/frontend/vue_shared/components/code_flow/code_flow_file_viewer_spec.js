@@ -3,7 +3,7 @@ import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
 import Vue from 'vue';
 import CodeFlowFileViewer from 'ee/vue_shared/components/code_flow/code_flow_file_viewer.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import VulnerabilityFileContentViewer from 'ee/vulnerabilities/components/vulnerability_file_content_viewer.vue';
+import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobHeader from '~/blob/components/blob_header.vue';
 
 Vue.use(VueApollo);
