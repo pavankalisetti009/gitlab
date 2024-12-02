@@ -120,10 +120,11 @@ describe('RoadmapApp', () => {
   );
 
   describe('roadmap view', () => {
-    it('does not show filters UI when epicIid is present', () => {
+    it('disables search when epicIid is present', () => {
       createComponent({ epicIid: '1' });
 
-      expect(findRoadmapFilters().exists()).toBe(false);
+      expect(findRoadmapFilters().exists()).toBe(true);
+      expect(findRoadmapFilters().props('viewOnly')).toBe(true);
     });
 
     it('shows roadmap filters UI when epicIid is not present', () => {

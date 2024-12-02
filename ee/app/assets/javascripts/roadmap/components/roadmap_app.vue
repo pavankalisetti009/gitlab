@@ -201,8 +201,8 @@ export default {
 <template>
   <div class="roadmap-app-container gl-h-full">
     <roadmap-filters
-      v-if="showFilteredSearchbar && !epicIid"
       ref="roadmapFilters"
+      :view-only="!showFilteredSearchbar || Boolean(epicIid)"
       @toggleSettings="toggleSettings"
     />
     <div

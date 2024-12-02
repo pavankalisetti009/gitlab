@@ -47,6 +47,7 @@ describe('RoadmapFilters', () => {
   let apolloProvider;
 
   const createComponent = ({
+    props = {},
     presetType = PRESET_TYPES.MONTHS,
     epicsState = STATUS_ALL,
     sortedBy = mockSortedBy,
@@ -75,6 +76,9 @@ describe('RoadmapFilters', () => {
     });
 
     wrapper = shallowMountExtended(RoadmapFilters, {
+      propsData: {
+        ...props,
+      },
       provide: {
         groupFullPath,
         groupMilestonesPath,
@@ -168,6 +172,14 @@ describe('RoadmapFilters', () => {
           value: { data: 'thumbsup', operator: '!=' },
         },
       ];
+
+      it('does not render FilteredSearchBar when the viewOnly prop is true', () => {
+        createComponent({
+          props: { viewOnly: true },
+        });
+
+        expect(findFilteredSearchBar().exists()).toBe(false);
+      });
 
       it('component is rendered with correct namespace & recent search key', () => {
         createComponent();

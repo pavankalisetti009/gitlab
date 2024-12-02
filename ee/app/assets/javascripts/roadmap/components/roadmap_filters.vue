@@ -58,6 +58,13 @@ export default {
     FilteredSearchBar,
   },
   mixins: [EpicsFilteredSearchMixin],
+  props: {
+    viewOnly: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
   data() {
     return {
       localRoadmapSettings: {},
@@ -125,8 +132,10 @@ export default {
   <div class="epics-filters epics-roadmap-filters epics-roadmap-filters-gl-ui gl-relative">
     <div
       class="epics-details-filters filtered-search-block row-content-block second-block gl-flex gl-flex-col gl-px-5 gl-py-3 sm:gl-flex-row sm:gl-gap-3 xl:gl-px-6"
+      :class="{ 'gl-justify-end': viewOnly }"
     >
       <filtered-search-bar
+        v-if="!viewOnly"
         :namespace="groupFullPath"
         :tokens="getFilteredSearchTokens()"
         :sort-options="$options.availableSortOptions"
