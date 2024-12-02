@@ -11,15 +11,15 @@ module Features
     def expect_to_be_on_namespace_selection_with_errors
       expect_to_be_on_namespace_selection
       expect(page).to have_content('could not be created because our system did not respond successfully')
-      expect(page).to have_content('Please try again or reach out to GitLab Support.')
-      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
+      expect(page).to have_content('Please reach out to GitLab Support for assistance')
+      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com')
     end
 
     def expect_to_be_on_duo_enterprise_namespace_selection_with_errors
       expect_to_be_on_duo_enterprise_namespace_selection
       expect(page).to have_content('could not be created because our system did not respond successfully')
-      expect(page).to have_content('Please try again or reach out to GitLab Support.')
-      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
+      expect(page).to have_content('Please reach out to GitLab Support for assistance')
+      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com')
     end
 
     def expect_to_be_on_duo_enterprise_namespace_selection
@@ -29,8 +29,8 @@ module Features
     def expect_to_be_on_duo_pro_namespace_selection_with_errors
       expect_to_be_on_duo_pro_namespace_selection
       expect(page).to have_content('could not be created because our system did not respond successfully')
-      expect(page).to have_content('Please try again or reach out to GitLab Support.')
-      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
+      expect(page).to have_content('Please reach out to GitLab Support for assistance')
+      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com')
     end
 
     def expect_to_be_on_duo_pro_namespace_selection

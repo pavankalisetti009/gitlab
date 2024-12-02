@@ -93,16 +93,24 @@ module GitlabSubscriptions
         return result.errors.to_sentence
       end
 
-      support_link_url = 'https://support.gitlab.com/hc/en-us'
-      support_link = link_to('', support_link_url, target: '_blank',
-        rel: 'noopener noreferrer')
       safe_format(
-        _('Please try again or reach out to %{support_link_start}GitLab Support%{support_link_end}.'),
+        errors_message(result.errors),
         tag_pair(support_link, :support_link_start, :support_link_end)
       )
     end
 
     private
+
+    def support_link
+      link_to('', Gitlab::Saas.customer_support_url, target: '_blank', rel: 'noopener noreferrer')
+    end
+
+    def errors_message(errors)
+      support_message = _('Please reach out to %{support_link_start}GitLab Support%{support_link_end} for assistance')
+      full_message = [support_message, errors.to_sentence.presence].compact.join(': ')
+
+      "#{full_message}."
+    end
 
     def trial_submit_text(eligible_namespaces)
       if GitlabSubscriptions::Trials.single_eligible_namespace?(eligible_namespaces)
