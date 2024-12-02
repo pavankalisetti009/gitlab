@@ -19,6 +19,7 @@ describe('Vulnerability status description component', () => {
 
   const timeAgo = () => wrapper.findComponent(TimeAgoTooltip);
   const pipelineLink = () => wrapper.findComponent(GlLink);
+  const commitShaLink = () => wrapper.findComponent(GlLink);
   const avatarLink = () => wrapper.findComponent(GlAvatarLink);
   const avatarLabeled = () => wrapper.findComponent(GlAvatarLabeled);
   const userLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -29,7 +30,7 @@ describe('Vulnerability status description component', () => {
   // Create a date using the passed-in string, or just use the current time if nothing was passed in.
   const createDate = (value) => (value ? new Date(value) : new Date()).toISOString();
 
-  const createWrapper = (props = {}, dismissalReason = true) => {
+  const createWrapper = (props = {}, vulnerabilityRepresentationInformation = true) => {
     const vulnerability = props.vulnerability || { pipeline: {} };
     // Automatically create the ${v.state}_at property if it doesn't exist. Otherwise, every test would need to create
     // it manually for the component to mount properly.
@@ -42,7 +43,7 @@ describe('Vulnerability status description component', () => {
 
     wrapper = mountExtended(StatusDescription, {
       propsData: { ...props, vulnerability },
-      provide: { glFeatures: { dismissalReason } },
+      provide: { glFeatures: { vulnerabilityRepresentationInformation } },
     });
   };
 
@@ -228,6 +229,60 @@ describe('Vulnerability status description component', () => {
 
       expect(timeAgo().exists()).toBe(false);
       expect(pipelineLink().exists()).toBe(false);
+    });
+  });
+
+  describe('commit sha link', () => {
+    it('shows the link to the commit where the vulnerability was resolved on', () => {
+      createWrapper({
+        vulnerability: {
+          resolvedOnDefaultBranch: true,
+          representationInformation: {
+            resolvedInCommitShaLink: 'https://gitlab.com/gitlab-org/gitlab/-/commit/0123456789',
+            resolvedInCommitSha: '0123456789',
+          },
+        },
+      });
+
+      expect(commitShaLink().attributes('href')).toBe(
+        'https://gitlab.com/gitlab-org/gitlab/-/commit/0123456789',
+      );
+      expect(commitShaLink().text()).toBe('0123456789');
+    });
+
+    it.each`
+      resolvedOnDefaultBranch | resolvedInCommitShaLink
+      ${false}                | ${'https://gitlab.com/gitlab/org/gitlab/-/commit/0123456789'}
+      ${true}                 | ${null}
+    `(
+      'does not show the commitShaLink when resolvedOnDefaultBranch is "$resolvedOnDefaultBranch" and resolvedInCommitShaLink is "$resolvedInCommitShaLink"',
+      ({ resolvedOnDefaultBranch, resolvedInCommitShaLink }) => {
+        createWrapper({
+          vulnerability: {
+            resolvedOnDefaultBranch,
+            representationInformation: {
+              resolvedInCommitShaLink,
+            },
+          },
+        });
+        expect(commitShaLink().exists()).toBe(false);
+      },
+    );
+
+    it('does not show the commitShaLink when the "vulnerabilityRepresentationInformation" feature flag is disabled', () => {
+      createWrapper(
+        {
+          vulnerability: {
+            resolvedOnDefaultBranch: true,
+            representationInformation: {
+              resolvedInCommitShaLink: 'https://gitlab.com/gitlab',
+            },
+          },
+        },
+        false,
+      );
+
+      expect(commitShaLink().exists()).toBe(false);
     });
   });
 });

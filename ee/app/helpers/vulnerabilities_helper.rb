@@ -36,7 +36,8 @@ module VulnerabilitiesHelper
       can_admin: current_user.can?(:admin_vulnerability, vulnerability.project),
       issue_tracking_help_path: help_page_path('user/project/issues/index.md'),
       permissions_help_path: help_page_path('user/permissions.md', anchor: 'project-members-permissions'),
-      dismissal_descriptions: dismissal_descriptions
+      dismissal_descriptions: dismissal_descriptions,
+      representation_information: format_vulnerability_representation_information(vulnerability.representation_information)
     }
 
     result.merge(vulnerability_data(vulnerability), vulnerability_finding_data(vulnerability))
@@ -84,6 +85,21 @@ module VulnerabilitiesHelper
 
   def vulnerability_data(vulnerability)
     VulnerabilitySerializer.new.represent(vulnerability)
+  end
+
+  def format_vulnerability_representation_information(representation_information)
+    return unless representation_information
+
+    {
+      resolved_in_commit_sha: representation_information.resolved_in_commit_sha,
+      resolved_in_commit_sha_link: resolved_in_commit_sha_link(representation_information)
+    }
+  end
+
+  def resolved_in_commit_sha_link(representation_information)
+    return unless representation_information&.resolved_in_commit_sha
+
+    commit_path_template(representation_information.project).gsub('$COMMIT_SHA', representation_information.resolved_in_commit_sha)
   end
 
   def vulnerability_finding_data(vulnerability)
