@@ -8222,6 +8222,8 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
     end
   end
 
+  # TODO: Remove with the rollout of the FF npm_extract_npm_package_model
+  # https://gitlab.com/gitlab-org/gitlab/-/issues/501469
   describe '#has_namespaced_npm_packages?' do
     let_it_be(:namespace) { create(:namespace, path: 'test') }
     let_it_be(:project) { create(:project, :public, namespace: namespace) }
