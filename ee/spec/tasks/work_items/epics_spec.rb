@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fast_spec_helper'
+require 'spec_helper'
 
 RSpec.describe 'gitlab:work_items:epics', :silence_stdout, feature_category: :team_planning do
   before do
@@ -14,18 +14,11 @@ RSpec.describe 'gitlab:work_items:epics', :silence_stdout, feature_category: :te
       %w[closed_at closed_by_id confidential description iid state_id title epic_issue related_links parent_id]
     end
 
-    let(:database_estimate) { instance_double(Gitlab::Database::PgClass, cardinality_estimate: 100) }
-    let(:progress_bar) { instance_double(ProgressBar::Base) }
+    let(:cardinality_estimate) { 100 }
+    let(:database_estimate) { instance_double(Gitlab::Database::PgClass, cardinality_estimate: cardinality_estimate) }
 
     before do
-      allow(Gitlab::Database::PgClass).to receive(:for_table).with('epics')
-        .and_return(database_estimate)
-
-      allow(ProgressBar).to receive(:create)
-        .with(title: 'Verifying epics', total: 100, format: '%t: |%B| %c/%C')
-        .and_return(progress_bar)
-
-      allow(progress_bar).to receive(:finish)
+      allow(Gitlab::Database::PgClass).to receive(:for_table).with('epics').and_return(database_estimate)
     end
 
     context 'when bulk verification has no mismatches' do
@@ -42,12 +35,44 @@ RSpec.describe 'gitlab:work_items:epics', :silence_stdout, feature_category: :te
       it 'enables the feature flag and updates the progress bar' do
         expect(Feature).to receive(:enable).with(:work_item_epics)
 
-        expect(progress_bar).to receive(:progress=).with(20)
-        expect(progress_bar).to receive(:progress=).with(35)
-        expect(progress_bar).to receive(:finish)
+        expect(ProgressBar).to receive(:create)
+          .with(title: 'Verifying epics', total: cardinality_estimate, format: '%t: |%B| %c/%C').and_call_original
+
+        expect_next_instance_of(ProgressBar::Base) do |progress_bar|
+          expect(progress_bar).to receive(:progress=).with(20).and_call_original
+          expect(progress_bar).to receive(:progress=).with(35).and_call_original
+          expect(progress_bar).to receive(:finish).and_call_original
+        end
 
         expect { task }.to output(
           a_string_including("Verified 35 epics")
+          .and(a_string_including("Successfully enabled work item epics"))
+        ).to_stdout
+      end
+    end
+
+    context 'when cardinality was not estimated correctly' do
+      before do
+        allow_next_instance_of(::Gitlab::EpicWorkItemSync::BulkVerification,
+          a_hash_including(filter_attributes: match_array(checking_attributes))) do |instance|
+          allow(instance).to receive(:verify)
+            .and_yield({ valid: 80, mismatched: 0 })
+            .and_yield({ valid: 35, mismatched: 0 })
+            .and_return({ valid: 115, mismatched: 0 })
+        end
+      end
+
+      it 'does set current progress over estimated total' do
+        expect(Feature).to receive(:enable).with(:work_item_epics)
+
+        expect_next_instance_of(ProgressBar::Base) do |progress_bar|
+          expect(progress_bar).to receive(:progress=).with(80).and_call_original
+          expect(progress_bar).not_to receive(:progress=).with(35)
+          expect(progress_bar).to receive(:finish).and_call_original
+        end
+
+        expect { task }.to output(
+          a_string_including("Verified 115 epics")
           .and(a_string_including("Successfully enabled work item epics"))
         ).to_stdout
       end
@@ -66,9 +91,11 @@ RSpec.describe 'gitlab:work_items:epics', :silence_stdout, feature_category: :te
       it 'does not enable the feature flag' do
         expect(Feature).not_to receive(:enable).with(:work_item_epics)
 
-        expect(progress_bar).to receive(:progress=).with(5)
-        expect(progress_bar).to receive(:progress=).with(5)
-        expect(progress_bar).to receive(:finish)
+        expect_next_instance_of(ProgressBar::Base) do |progress_bar|
+          expect(progress_bar).to receive(:progress=).with(5).and_call_original
+          expect(progress_bar).to receive(:progress=).with(5).and_call_original
+          expect(progress_bar).to receive(:finish).and_call_original
+        end
 
         expect { task }.to output(
           a_string_matching("2 out of 12 epics have attributes that are out of sync")

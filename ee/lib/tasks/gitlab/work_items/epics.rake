@@ -19,7 +19,10 @@ namespace :gitlab do
           format: '%t: |%B| %c/%C'
         )
 
-        verifications = verifier.verify { |progress| progress_bar.progress = progress[:valid] + progress[:mismatched] }
+        verifications = verifier.verify do |progress|
+          new_progress = progress[:valid] + progress[:mismatched]
+          progress_bar.progress = new_progress if progress_bar.progress + new_progress <= progress_bar.total
+        end
 
         progress_bar.finish
 
