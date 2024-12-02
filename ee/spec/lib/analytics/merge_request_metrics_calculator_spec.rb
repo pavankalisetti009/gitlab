@@ -28,6 +28,10 @@ RSpec.describe Analytics::MergeRequestMetricsCalculator, feature_category: :code
     )
   end
 
+  around do |example|
+    freeze_time { example.run }
+  end
+
   describe '#productivity_data' do
     it 'calculates productivity data' do
       expected_data = {
