@@ -103,6 +103,7 @@ export default {
       targetType = TARGET_TYPES.WEBSITE.value,
       scanMethod = null,
       scanFilePath = '',
+      optionalVariables = [],
     } = this.profile;
 
     const form = {
@@ -124,6 +125,11 @@ export default {
         targetType: initFormField({ value: targetType, skipValidation: true }),
         scanMethod: initFormField({ value: scanMethod, skipValidation: true }),
         scanFilePath: initFormField({ value: scanFilePath, skipValidation: true }),
+        optionalVariables: initFormField({
+          value: optionalVariables,
+          required: false,
+          skipValidation: true,
+        }),
       },
     };
 
@@ -201,8 +207,15 @@ export default {
       return this.$options.DAST_BROWSER_AVAILABLE_VARIABLES_PATH;
     },
     mutationVariables() {
-      const { profileName, targetUrl, targetType, requestHeaders, scanMethod, scanFilePath } =
-        serializeFormObject(this.form.fields);
+      const {
+        profileName,
+        targetUrl,
+        targetType,
+        requestHeaders,
+        scanMethod,
+        scanFilePath,
+        optionalVariables,
+      } = serializeFormObject(this.form.fields);
 
       return {
         ...(this.isEdit ? { id: this.profile.id } : { fullPath: this.projectFullPath }),
@@ -215,6 +228,7 @@ export default {
           requestHeaders,
         }),
         ...(this.isTargetAPI && { scanMethod, scanFilePath }),
+        ...(this.glFeatures.dastUiAdditionalVariables && { optionalVariables }),
       };
     },
     showWarningTextForTargetUrl() {
@@ -456,6 +470,10 @@ export default {
       :stacked="stacked"
     />
 
-    <dast-variables-form-group v-if="glFeatures.dastUiAdditionalVariables" class="gl-mb-6" />
+    <dast-variables-form-group
+      v-if="glFeatures.dastUiAdditionalVariables"
+      v-model="form.fields.optionalVariables.value"
+      class="gl-mb-6"
+    />
   </base-dast-profile-form>
 </template>

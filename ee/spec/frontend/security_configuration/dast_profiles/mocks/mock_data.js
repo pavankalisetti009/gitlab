@@ -38,3 +38,8 @@ export const mockSharedData = {
   resetAndClose: false,
   __typename: 'SharedData',
 };
+
+export const mockVariables = [
+  { variable: 'DAST_CHECKS_TO_EXCLUDE', value: '552.2,78.1' },
+  { variable: 'DAST_CRAWL_GRAPH', value: 'true' },
+];

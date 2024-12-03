@@ -11,6 +11,7 @@ import DastVariablesFormGroup from 'ee/security_configuration/dast_profiles/comp
 import { helpPagePath } from '~/helpers/help_page_helper';
 import DastVariablesModal from 'ee/security_configuration/dast_profiles/components/dast_variables_modal.vue';
 import { stubComponent } from 'helpers/stub_component';
+import { mockVariables } from '../mocks/mock_data';
 
 describe('DastVariablesFormGroup', () => {
   let wrapper;
@@ -21,6 +22,7 @@ describe('DastVariablesFormGroup', () => {
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(DastVariablesFormGroup, {
       propsData: {
+        value: mockVariables,
         ...props,
       },
       stubs: {

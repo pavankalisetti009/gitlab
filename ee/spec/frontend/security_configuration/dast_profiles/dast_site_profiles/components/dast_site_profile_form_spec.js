@@ -10,7 +10,10 @@ import DastSiteAuthSection from 'ee/security_configuration/dast_profiles/dast_si
 import DastSiteProfileForm from 'ee/security_configuration/dast_profiles/dast_site_profiles/components/dast_site_profile_form.vue';
 import dastSiteProfileCreateMutation from 'ee/security_configuration/dast_profiles/dast_site_profiles/graphql/dast_site_profile_create.mutation.graphql';
 import dastSiteProfileUpdateMutation from 'ee/security_configuration/dast_profiles/dast_site_profiles/graphql/dast_site_profile_update.mutation.graphql';
-import { policySiteProfiles } from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
+import {
+  policySiteProfiles,
+  mockVariables,
+} from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
 import resolvers from 'ee/vue_shared/security_configuration/graphql/resolvers/resolvers';
 import { typePolicies } from 'ee/vue_shared/security_configuration/graphql/provider';
 import { TEST_HOST } from 'helpers/test_constants';
@@ -421,8 +424,15 @@ describe('DastSiteProfileForm', () => {
   });
 
   describe('DastVariablesFormGroup', () => {
+    const optionalVariables = mockVariables;
     beforeEach(() => {
       createShallowComponent({
+        propsData: {
+          profile: {
+            ...siteProfileWithSecrets,
+            optionalVariables,
+          },
+        },
         provide: {
           glFeatures: {
             dastUiAdditionalVariables: true,
@@ -433,6 +443,15 @@ describe('DastSiteProfileForm', () => {
 
     it('renders DastVariablesFormGroup when feature flag is enabled', () => {
       expect(findDastVariablesFormGroup().exists()).toBe(true);
+    });
+
+    it('passes correct props to base component', () => {
+      const baseDastProfileForm = findBaseDastProfileForm();
+      expect(baseDastProfileForm.props('mutationVariables')).toEqual(
+        expect.objectContaining({
+          optionalVariables,
+        }),
+      );
     });
   });
 });

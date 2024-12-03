@@ -12,11 +12,6 @@ import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import DastVariablesModal from './dast_variables_modal.vue';
 
-const mockVariables = [
-  { variable: 'DAST_CHECKS_TO_EXCLUDE', value: '552.2,78.1' },
-  { variable: 'DAST_CRAWL_GRAPH', value: 'true' },
-];
-
 export default {
   i18n: {
     label: s__('DastProfiles|Additional variables'),
@@ -47,8 +42,7 @@ export default {
     },
     value: {
       type: Array,
-      required: false,
-      default: () => mockVariables,
+      required: true,
     },
   },
   data() {
