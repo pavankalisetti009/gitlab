@@ -5989,6 +5989,8 @@ CREATE TABLE ai_settings (
     id bigint NOT NULL,
     ai_gateway_url text,
     singleton boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT check_3cf9826589 CHECK ((char_length(ai_gateway_url) <= 2048)),
     CONSTRAINT check_singleton CHECK ((singleton IS TRUE))
 );
