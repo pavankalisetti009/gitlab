@@ -1,6 +1,6 @@
 ---
 name: container_repository_created
-description: Triggered when a container repository is first pushed to the registry
+description: A container repository is first pushed to the registry
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/362290
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/156037
 feature_category: container_registry

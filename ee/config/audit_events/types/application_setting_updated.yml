@@ -1,6 +1,6 @@
 ---
 name: application_setting_updated
-description: Triggered when an application setting is updated.
+description: An application setting is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/282428
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/124639
 feature_category: system_access

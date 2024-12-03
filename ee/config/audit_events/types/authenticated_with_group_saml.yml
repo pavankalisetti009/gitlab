@@ -1,6 +1,6 @@
 ---
 name: authenticated_with_group_saml
-description: Triggered when successfully signing in with SAML authentication.
+description: Successfully signing in with SAML authentication
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/35710
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/28575
 milestone: '12.10'

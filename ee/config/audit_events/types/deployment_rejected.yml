@@ -1,6 +1,6 @@
 ---
 name: deployment_rejected
-description: Triggered when a deployment is rejected
+description: A deployment is rejected
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/456685
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153375
 feature_category: continuous_delivery

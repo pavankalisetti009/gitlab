@@ -1,6 +1,6 @@
 ---
 name: allow_committer_approval_updated
-description: Triggered when 'Prevent approvals by users who add commits' setting is updated.
+description: Prevent approvals by users who add commits setting is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/373949
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/102256
 feature_category: "compliance_management"
