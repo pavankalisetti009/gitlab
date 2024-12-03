@@ -8,8 +8,6 @@ module PhoneVerification
   module Users
     class RateLimitService
       def self.daily_transaction_soft_limit_exceeded?
-        return false unless Feature.enabled?(:soft_limit_daily_phone_verifications)
-
         ::Gitlab::ApplicationRateLimiter.peek(:soft_phone_verification_transactions_limit, scope: nil)
       end
 
@@ -20,8 +18,7 @@ module PhoneVerification
       end
 
       def self.increase_daily_attempts
-        Feature.enabled?(:soft_limit_daily_phone_verifications) &&
-          ::Gitlab::ApplicationRateLimiter.throttled?(:soft_phone_verification_transactions_limit, scope: nil)
+        ::Gitlab::ApplicationRateLimiter.throttled?(:soft_phone_verification_transactions_limit, scope: nil)
 
         return unless Feature.enabled?(:hard_limit_daily_phone_verifications)
 
