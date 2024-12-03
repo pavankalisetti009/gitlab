@@ -42857,6 +42857,9 @@ msgstr ""
 msgid "ProjectCreationLevel|No one"
 msgstr ""
 
+msgid "ProjectCreationLevel|Owners"
+msgstr ""
+
 msgid "ProjectCreationLevel|Roles allowed to create projects"
 msgstr ""
 
