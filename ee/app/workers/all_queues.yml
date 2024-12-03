@@ -1578,6 +1578,24 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: gitlab_subscriptions_add_on_purchases_create_user_add_on_assignment
+  :worker_name: GitlabSubscriptions::AddOnPurchases::CreateUserAddOnAssignmentWorker
+  :feature_category: :subscription_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: gitlab_subscriptions_add_on_purchases_destroy_user_add_on_assignment
+  :worker_name: GitlabSubscriptions::AddOnPurchases::DestroyUserAddOnAssignmentWorker
+  :feature_category: :subscription_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: gitlab_subscriptions_add_on_purchases_email_on_duo_bulk_user_assignments
   :worker_name: GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker
   :feature_category: :seat_cost_management

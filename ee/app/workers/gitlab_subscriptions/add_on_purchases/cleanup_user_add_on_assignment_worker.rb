@@ -4,6 +4,7 @@ module GitlabSubscriptions
   module AddOnPurchases
     class CleanupUserAddOnAssignmentWorker
       include ::ApplicationWorker
+      include GitlabSubscriptions::AddOnPurchases::UserAddOnAssignmentCommon
 
       feature_category :seat_cost_management
 
@@ -31,22 +32,6 @@ module GitlabSubscriptions
       private
 
       attr_reader :user_id, :root_namespace_id
-
-      def user
-        @user ||= User.find_by_id(user_id)
-      end
-
-      def root_namespace
-        @root_namespace ||= Group.find_by_id(root_namespace_id)
-      end
-
-      def add_on_purchase
-        @add_on_purchase ||= GitlabSubscriptions::Duo.enterprise_or_pro_for_namespace(root_namespace)
-      end
-
-      def assignment
-        @assignment ||= add_on_purchase.assigned_users.by_user(user).first
-      end
 
       def eligible_for_seat?
         root_namespace.eligible_for_gitlab_duo_pro_seat?(user)
