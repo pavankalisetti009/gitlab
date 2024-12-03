@@ -36,7 +36,7 @@ module Llm
         user: user,
         project: project,
         namespace: namespace,
-        feature_enabled_by_namespace_ids: user.ai_chat_enabled_namespace_ids
+        feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, service_name: :duo_chat)
       )
       Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response', user: user)
 
