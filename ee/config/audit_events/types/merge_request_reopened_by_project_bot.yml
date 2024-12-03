@@ -1,6 +1,6 @@
 ---
 name: merge_request_reopened_by_project_bot
-description: Triggered when a merge request is reopened using a project access token
+description: A merge request is reopened using a project access token
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/323299
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/120927
 feature_category: code_review_workflow

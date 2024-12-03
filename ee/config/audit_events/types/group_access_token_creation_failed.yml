@@ -1,6 +1,6 @@
 ---
 name: group_access_token_creation_failed
-description: Triggered when creating a group access token failed
+description: Creating a group access token failed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/363087
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/92225
 milestone: '15.2'
