@@ -706,7 +706,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryissuessearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="queryissuessort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="queryissuesstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="queryissuessubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="queryissuessubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="queryissuestypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="queryissuesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="queryissuesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -11302,7 +11302,7 @@ Input type: `WorkItemExportInput`
 | <a id="mutationworkitemexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="mutationworkitemexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
 | <a id="mutationworkitemexportstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
-| <a id="mutationworkitemexportsubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.5. |
+| <a id="mutationworkitemexportsubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="mutationworkitemexporttypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 #### Fields
@@ -18117,7 +18117,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="addonuserassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="addonuserassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="addonuserassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="addonuserassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="addonuserassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="addonuserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="addonuserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -18172,7 +18172,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="addonuserauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="addonuserauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="addonuserauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="addonuserauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="addonuserauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="addonuserauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="addonuserauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -18284,7 +18284,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="addonuserreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="addonuserreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="addonuserreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="addonuserreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="addonuserreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="addonuserreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="addonuserreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19053,7 +19053,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="autocompleteduserassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="autocompleteduserassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="autocompleteduserassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="autocompleteduserassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="autocompleteduserassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="autocompleteduserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="autocompleteduserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19108,7 +19108,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="autocompleteduserauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="autocompleteduserauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="autocompleteduserauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="autocompleteduserauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="autocompleteduserauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="autocompleteduserauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="autocompleteduserauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19232,7 +19232,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="autocompleteduserreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="autocompleteduserreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="autocompleteduserreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="autocompleteduserreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="autocompleteduserreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="autocompleteduserreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="autocompleteduserreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19623,7 +19623,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="boardepicancestorssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="boardepicancestorssort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="boardepicancestorsstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="boardepicancestorssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="boardepicancestorssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="boardepicancestorstimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="boardepicancestorstoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="boardepicancestorsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -19661,7 +19661,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="boardepicchildrensearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="boardepicchildrensort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="boardepicchildrenstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="boardepicchildrensubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="boardepicchildrensubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="boardepicchildrentimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="boardepicchildrentoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="boardepicchildrenupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -21593,7 +21593,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -21650,7 +21650,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserassigneeorreviewermergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserassigneeorreviewermergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserassigneeorreviewermergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserassigneeorreviewermergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserassigneeorreviewermergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserassigneeorreviewermergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserassigneeorreviewermergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserassigneeorreviewermergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -21705,7 +21705,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -21817,7 +21817,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -23312,7 +23312,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="epicancestorssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="epicancestorssort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="epicancestorsstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="epicancestorssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="epicancestorssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="epicancestorstimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="epicancestorstoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="epicancestorsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -23350,7 +23350,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="epicchildrensearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="epicchildrensort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="epicchildrenstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="epicchildrensubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="epicchildrensubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="epicchildrentimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="epicchildrentoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="epicchildrenupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -24982,7 +24982,7 @@ Returns [`Epic`](#epic).
 | <a id="groupepicsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupepicsort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="groupepicstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="groupepicsubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupepicsubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="groupepictimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="groupepictoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="groupepicupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -25040,7 +25040,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupepicssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupepicssort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="groupepicsstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="groupepicssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupepicssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="groupepicstimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="groupepicstoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="groupepicsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -25155,7 +25155,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupissuessearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupissuessort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="groupissuesstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="groupissuessubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupissuessubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="groupissuestypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="groupissuesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="groupissuesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -25328,7 +25328,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="groupmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="groupmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="groupmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="groupmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="groupmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="groupmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -25933,7 +25933,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="groupworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="groupworkitemstatecountsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="groupworkitemstatecountsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="groupworkitemstatecountssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupworkitemstatecountssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="groupworkitemstatecountstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ##### `Group.workItemTypes`
@@ -25991,7 +25991,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="groupworkitemsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="groupworkitemsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="groupworkitemssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupworkitemssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="groupworkitemstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ### `GroupAuditEventNamespaceFilter`
@@ -27552,7 +27552,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneeassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestassigneeassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestassigneeassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestassigneeassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestassigneeassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestassigneeassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestassigneeassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestassigneeassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27607,7 +27607,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneeauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestassigneeauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestassigneeauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestassigneeauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestassigneeauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestassigneeauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestassigneeauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestassigneeauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27719,7 +27719,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneereviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestassigneereviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestassigneereviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestassigneereviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestassigneereviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27957,7 +27957,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestauthorassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestauthorassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestauthorassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestauthorassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestauthorassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestauthorassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestauthorassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28012,7 +28012,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestauthorauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestauthorauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestauthorauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestauthorauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestauthorauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestauthorauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestauthorauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28124,7 +28124,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestauthorreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestauthorreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestauthorreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestauthorreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28408,7 +28408,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestparticipantassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestparticipantassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestparticipantassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestparticipantassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestparticipantassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestparticipantassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestparticipantassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28463,7 +28463,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestparticipantauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestparticipantauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestparticipantauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestparticipantauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestparticipantauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestparticipantauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestparticipantauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28575,7 +28575,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestparticipantreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestparticipantreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestparticipantreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28832,7 +28832,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestreviewerassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestreviewerassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestreviewerassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestreviewerassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestreviewerassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestreviewerassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestreviewerassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28887,7 +28887,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestreviewerauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestreviewerauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestreviewerauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestreviewerauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestreviewerauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestreviewerauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestreviewerauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28999,7 +28999,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestreviewerreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestreviewerreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestreviewerreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -32003,7 +32003,7 @@ Returns [`Issue`](#issue).
 | <a id="projectissuesearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectissuesort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="projectissuestate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="projectissuesubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectissuesubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="projectissuetypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="projectissueupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="projectissueupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -32054,7 +32054,7 @@ Returns [`IssueStatusCountsType`](#issuestatuscountstype).
 | <a id="projectissuestatuscountsreleasetag"></a>`releaseTag` | [`[String!]`](#string) | Release tag associated with the issue's milestone. |
 | <a id="projectissuestatuscountsreleasetagwildcardid"></a>`releaseTagWildcardId` | [`ReleaseTagWildcardId`](#releasetagwildcardid) | Filter issues by release tag ID wildcard. |
 | <a id="projectissuestatuscountssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
-| <a id="projectissuestatuscountssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectissuestatuscountssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="projectissuestatuscountstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="projectissuestatuscountsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="projectissuestatuscountsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -32112,7 +32112,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectissuessearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectissuessort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="projectissuesstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="projectissuessubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectissuessubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="projectissuestypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="projectissuesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="projectissuesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -32325,7 +32325,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="projectmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="projectmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="projectmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="projectmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="projectmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="projectmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -33192,7 +33192,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="projectworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="projectworkitemstatecountsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="projectworkitemstatecountsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="projectworkitemstatecountssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectworkitemstatecountssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="projectworkitemstatecountstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ##### `Project.workItemTypes`
@@ -33247,7 +33247,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="projectworkitemsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="projectworkitemsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="projectworkitemssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectworkitemssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="projectworkitemstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ### `ProjectCiCdSetting`
@@ -35621,7 +35621,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoreassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="usercoreassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="usercoreassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="usercoreassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="usercoreassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="usercoreassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="usercoreassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="usercoreassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -35676,7 +35676,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoreauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="usercoreauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="usercoreauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="usercoreauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="usercoreauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="usercoreauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="usercoreauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="usercoreauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -35788,7 +35788,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercorereviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="usercorereviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="usercorereviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="usercorereviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="usercorereviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="usercorereviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="usercorereviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="usercorereviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -43156,7 +43156,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="userassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="userassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="userassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="userassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="userassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="userassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="userassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -43211,7 +43211,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="userauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="userauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="userauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="userauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="userauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="userauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="userauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -43323,7 +43323,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="userreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="userreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="userreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="userreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="userreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="userreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="userreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
