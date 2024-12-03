@@ -36,6 +36,6 @@ export default {
       issue.name
     }}</gl-link>
     <span v-else data-testid="license-copy">{{ issue.name }}</span>
-    <license-packages v-if="hasPackages" :packages="issue.packages" class="text-secondary" />
+    <license-packages v-if="hasPackages" :packages="issue.packages" class="gl-text-subtle" />
   </div>
 </template>

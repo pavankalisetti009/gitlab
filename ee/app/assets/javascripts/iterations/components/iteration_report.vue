@@ -206,7 +206,7 @@ export default {
       </div>
       <div ref="heading">
         <h3 class="page-title gl-mb-1" data-testid="">{{ iterationPeriod }}</h3>
-        <iteration-title v-if="iteration.title" :title="iteration.title" class="text-secondary" />
+        <iteration-title v-if="iteration.title" :title="iteration.title" class="gl-text-subtle" />
       </div>
       <div
         ref="description"

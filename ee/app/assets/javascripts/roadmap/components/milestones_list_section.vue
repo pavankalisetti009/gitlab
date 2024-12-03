@@ -143,10 +143,10 @@ export default {
         </div>
         <div
           v-gl-tooltip="milestonesCountText"
-          class="text-secondary gl-flex gl-items-center gl-justify-center gl-whitespace-nowrap"
+          class="gl-flex gl-items-center gl-justify-center gl-whitespace-nowrap gl-text-subtle"
           data-testid="count"
         >
-          <gl-icon name="milestone" class="gl-mr-2" />
+          <gl-icon name="milestone" class="gl-mr-2" variant="subtle" />
           <span :aria-label="milestonesCountText">{{ milestonesCount }}</span>
         </div>
       </div>

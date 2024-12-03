@@ -113,7 +113,7 @@ export default {
             >{{ items.item.title }}</gl-link
           >
         </div>
-        <ul class="horizontal-list list-items-separated text-secondary mb-0">
+        <ul class="horizontal-list list-items-separated mb-0 gl-text-subtle">
           <li>!{{ items.item.iid }}</li>
           <li>{{ getTimeAgoString(items.item.created_at) }}</li>
           <li v-if="items.item.milestone">

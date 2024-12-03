@@ -134,13 +134,13 @@ export default {
       @blur="offFocus"
     />
     <div v-else class="gl-flex gl-items-center">
-      <p class="text-secondary gl-m-0 gl-font-bold" data-testid="wip-limit">
+      <p class="gl-m-0 gl-font-bold gl-text-subtle" data-testid="wip-limit">
         {{ activeListWipLimit }}
       </p>
       <template v-if="wipLimitIsSet">
         <span class="m-1">-</span>
         <gl-button
-          class="text-secondary gl-h-full gl-border-0"
+          class="gl-h-full gl-border-0 gl-text-subtle"
           category="tertiary"
           size="small"
           data-testid="remove-limit"

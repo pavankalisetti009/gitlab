@@ -52,6 +52,6 @@ describe('BoardScope', () => {
     ${false}     | ${'Board scope affects which epics are displayed for anyone who visits this board'}
   `('displays $text when isIssueBoard is $isIssueBoard', ({ isIssueBoard, text }) => {
     mountComponent({ isIssueBoard });
-    expect(wrapper.find('p.text-secondary').text()).toEqual(text);
+    expect(wrapper.find('p.gl-text-subtle').text()).toEqual(text);
   });
 });

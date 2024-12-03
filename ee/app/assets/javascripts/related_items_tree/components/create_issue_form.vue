@@ -250,7 +250,7 @@ export default {
                   />
                   <span
                     ><span class="block">{{ project.name }}</span>
-                    <span class="block text-secondary">{{ project.namespace }}</span></span
+                    <span class="block gl-text-subtle">{{ project.namespace }}</span></span
                   >
                 </div>
               </gl-dropdown-item>
@@ -276,7 +276,7 @@ export default {
                   />
                   <span
                     ><span class="block">{{ project.name }}</span>
-                    <span class="block text-secondary">{{ project.namespace.name }}</span></span
+                    <span class="block gl-text-subtle">{{ project.namespace.name }}</span></span
                   >
                 </div>
               </gl-dropdown-item>

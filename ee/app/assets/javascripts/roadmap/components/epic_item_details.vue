@@ -215,7 +215,7 @@ export default {
             {{ epic.title }}
           </a>
         </div>
-        <div class="epic-group-timeframe text-secondary gl-flex">
+        <div class="epic-group-timeframe gl-flex gl-text-subtle">
           <span
             v-if="isEpicGroupDifferent && !epic.hasParent"
             :title="epic.group.fullName"
@@ -246,7 +246,7 @@ export default {
       <template v-if="allowSubEpics">
         <div
           ref="childEpicsCount"
-          class="text-secondary text-nowrap gl-mt-1 gl-flex"
+          class="text-nowrap gl-mt-1 gl-flex gl-text-subtle"
           data-testid="child-epics-count"
         >
           <gl-icon name="epic" class="align-text-bottom mr-1" />

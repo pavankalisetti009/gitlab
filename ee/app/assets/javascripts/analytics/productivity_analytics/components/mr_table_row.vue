@@ -61,7 +61,7 @@ export default {
             mergeRequest.title
           }}</gl-link>
         </h5>
-        <ul class="horizontal-list list-items-separated text-secondary mb-0">
+        <ul class="horizontal-list list-items-separated mb-0 gl-text-subtle">
           <li>{{ mrId }}</li>
           <li v-if="isNumber(mergeRequest.commits_count)" ref="commitCount">{{ commitCount }}</li>
           <li v-if="isNumber(mergeRequest.loc_per_commit)" ref="locPerCommitCount">

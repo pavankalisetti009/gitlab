@@ -13,7 +13,7 @@
         .row
           .form-group.col-md-9
             = f.text_area :issues_template, class: "form-control gl-form-input", rows: 3, aria: { labelledby: 'issue-settings-default-template-label'}, data: { testid: 'issue-template-field' }
-            .text-secondary
+            .gl-text-subtle
               - link = link_to('', help_page_path('user/markdown.md'), target: '_blank', rel: 'noopener noreferrer')
               = safe_format(_('Description parsed with %{link_start}GitLab Flavored Markdown%{link_end}.'), tag_pair(link, :link_start, :link_end))
         = f.submit _('Save changes'), data: { testid: 'save-issue-template-button' }, pajamas_button: true

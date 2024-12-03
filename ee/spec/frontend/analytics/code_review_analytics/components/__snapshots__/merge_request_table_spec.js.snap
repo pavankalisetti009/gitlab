@@ -113,7 +113,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
               </a>
             </div>
             <ul
-              class="horizontal-list list-items-separated mb-0 text-secondary"
+              class="gl-text-subtle horizontal-list list-items-separated mb-0"
             >
               <li>
                 !12345
