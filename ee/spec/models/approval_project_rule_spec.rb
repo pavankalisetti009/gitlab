@@ -333,11 +333,98 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
   end
 
   describe '#applies_to_branch?' do
-    let_it_be(:protected_branch) { create(:protected_branch) }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:protected_branch) { create(:protected_branch, project: project) }
+
+    shared_context 'when rule is created from security policy' do |policy_type, with_protected_branches: true|
+      let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+      let(:applies_for_all_protected_branches) { false }
+
+      subject(:rule) do
+        create(:approval_project_rule, policy_type, :requires_approval,
+          project: project,
+          security_orchestration_policy_configuration: policy_configuration,
+          applies_to_all_protected_branches: applies_for_all_protected_branches,
+          protected_branches: with_protected_branches ? [protected_branch] : [],
+          scan_result_policy_read: create(:scan_result_policy_read,
+            project: project,
+            security_orchestration_policy_configuration: policy_configuration)
+        )
+      end
+
+      context "for #{policy_type} policy and #{with_protected_branches ? 'with' : 'without'} protected branches" do
+        context 'when branch is not protected in project configuration' do
+          if with_protected_branches
+            it 'returns false' do
+              expect(subject.applies_to_branch?('unprotected_branch')).to be false
+            end
+          else
+            context 'when applies_to_all_protected_branches is true' do
+              let(:applies_for_all_protected_branches) { true }
+
+              it 'returns false' do
+                expect(subject.applies_to_branch?('unprotected_branch')).to be false
+              end
+            end
+
+            context 'when applies_to_all_protected_branches is false' do
+              let(:applies_for_all_protected_branches) { false }
+
+              it 'returns false' do
+                expect(subject.applies_to_branch?('unprotected_branch')).to be false
+              end
+            end
+          end
+        end
+
+        context 'when branch is protected in project configuration' do
+          it 'returns true' do
+            expect(subject.applies_to_branch?(protected_branch.name)).to be true
+          end
+        end
+
+        context 'when ignore_policies_for_unprotected_branches feature flag is disabled' do
+          before do
+            stub_feature_flags(ignore_policies_for_unprotected_branches: false)
+          end
+
+          if with_protected_branches
+            it 'returns false' do
+              expect(subject.applies_to_branch?('unprotected_branch')).to be false
+            end
+          else
+            context 'when applies_to_all_protected_branches is true' do
+              let(:applies_for_all_protected_branches) { true }
+
+              it 'returns false' do
+                expect(subject.applies_to_branch?('unprotected_branch')).to be false
+              end
+            end
+
+            context 'when applies_to_all_protected_branches is false' do
+              let(:applies_for_all_protected_branches) { false }
+
+              it 'incorrectly returns true' do
+                expect(subject.applies_to_branch?('unprotected_branch')).to be true
+              end
+            end
+          end
+        end
+      end
+    end
+
+    # we are not testing scan_finding without protected branches as this is prevented from creation with validation rule
+    it_behaves_like 'when rule is created from security policy', :scan_finding, with_protected_branches: true
+    it_behaves_like 'when rule is created from security policy', :license_scanning, with_protected_branches: true
+    it_behaves_like 'when rule is created from security policy', :license_scanning, with_protected_branches: false
+    it_behaves_like 'when rule is created from security policy', :any_merge_request, with_protected_branches: true
+    it_behaves_like 'when rule is created from security policy', :any_merge_request, with_protected_branches: false
 
     context 'when rule has no specific branches' do
-      it 'returns true' do
-        expect(subject.applies_to_branch?('branch_name')).to be true
+      context 'when rule is not created from security policy' do
+        it 'returns true' do
+          expect(subject.applies_to_branch?('branch_name')).to be true
+        end
       end
     end
 
@@ -358,16 +445,14 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
     context 'when rule applies to all protected branches' do
       let_it_be(:wildcard_protected_branch) { create(:protected_branch, name: "stable-*") }
 
-      let(:project) { rule.project }
-
       before do
         rule.update!(applies_to_all_protected_branches: true)
       end
 
       context 'and project has protected branches' do
         before do
-          project.protected_branches << protected_branch
-          project.protected_branches << wildcard_protected_branch
+          rule.project.protected_branches << protected_branch
+          rule.project.protected_branches << wildcard_protected_branch
         end
 
         it 'returns true when the branch name is a protected branch' do

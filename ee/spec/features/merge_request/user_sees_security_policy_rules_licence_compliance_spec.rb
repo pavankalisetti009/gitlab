@@ -26,8 +26,12 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
     let(:ee_merge_request_path) { project_merge_request_path(project, ee_merge_request) }
     let(:policy_branch_names) { %w[master] }
 
+    let!(:protected_branch) { create(:protected_branch, name: policy_branch_names.first, project: project) }
+
     shared_examples 'a merge request without violations' do
       it 'does not block the MR' do
+        sign_in(approver)
+
         visit(ee_merge_request_path)
         wait_for_requests
 
@@ -134,7 +138,6 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
         let(:license_type) { 'MIT' }
         let(:policy_branch_names) { %w[spooky-stuff] }
         let(:license_states) { %w[newly_detected] }
-        let!(:protected_branch) { create(:protected_branch, name: policy_branch_names.first, project: project) }
 
         before do
           create_policy_setup
