@@ -23,9 +23,18 @@ module Onboarding
       @registration_type = calculate_registration_type_klass
     end
 
+    def existing_plan
+      (registration_type.include_existing_plan_for_iterable? &&
+        plan_name_from_invited_source&.then { |plan| { existing_plan: plan } }) || {}
+    end
+
     private
 
     attr_reader :user
+
+    def plan_name_from_invited_source
+      user.members.last&.source&.root_ancestor&.actual_plan_name
+    end
 
     def calculate_registration_type_klass
       return ::Onboarding::AutomaticTrialRegistration if automatic_trial?

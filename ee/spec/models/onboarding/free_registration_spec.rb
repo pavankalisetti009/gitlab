@@ -45,6 +45,10 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
     it { is_expected.to be_eligible_for_iterable_trigger }
   end
 
+  describe '.include_existing_plan_for_iterable?' do
+    it { is_expected.not_to be_include_existing_plan_for_iterable }
+  end
+
   describe '.continue_full_onboarding?' do
     it { is_expected.to be_continue_full_onboarding }
   end

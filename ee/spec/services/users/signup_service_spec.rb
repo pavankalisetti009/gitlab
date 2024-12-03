@@ -80,6 +80,7 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
           }
         end
 
+        let(:extra_iterable_params) { {} }
         let(:iterable_params) do
           {
             comment: '_jobs_to_be_done_other_',
@@ -92,7 +93,7 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
             setup_for_company: false,
             uid: user.id,
             work_email: user.email
-          }.stringify_keys
+          }.merge(extra_iterable_params).stringify_keys
         end
 
         before do
@@ -105,6 +106,22 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
             .to receive(:perform_async).with(iterable_params).and_call_original
 
           execute
+        end
+
+        context 'with existing_plan for invite registrations', :saas do
+          let(:extra_iterable_params) { { product_interaction: 'Invited User', existing_plan: 'ultimate' } }
+
+          before do
+            user.update!(onboarding_status_registration_type: 'invite')
+            create(:group_with_plan, plan: :ultimate_plan, developers: user)
+          end
+
+          it 'initiates iterable trigger creation', :sidekiq_inline do
+            expect(::Onboarding::CreateIterableTriggerWorker)
+              .to receive(:perform_async).with(iterable_params).and_call_original
+
+            execute
+          end
         end
       end
 

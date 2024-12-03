@@ -61,7 +61,7 @@ module Users
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
         setup_for_company: user.setup_for_company,
         role: user.role
-      }
+      }.merge(onboarding_user_status.existing_plan)
     end
 
     def assign_attributes
