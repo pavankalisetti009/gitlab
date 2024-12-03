@@ -5,6 +5,12 @@ class GraphqlController < ApplicationController
 
   # Unauthenticated users have access to the API for public data
   skip_before_action :authenticate_user!
+  # This is already handled by authorize_access_api!
+  skip_before_action :active_user_check
+  # CSRF protection is only necessary when the request is authenticated via a session cookie.
+  # Also, we allow anonymous users to access the API without a CSRF token so that it is easier for users
+  # to get started with our GraphQL API.
+  skip_before_action :verify_authenticity_token, if: -> { current_user.nil? || sessionless_user? }
 
   # Header can be passed by tests to disable SQL query limits.
   DISABLE_SQL_QUERY_LIMIT_HEADER = 'HTTP_X_GITLAB_DISABLE_SQL_QUERY_LIMIT'
@@ -16,18 +22,8 @@ class GraphqlController < ApplicationController
   CACHED_INTROSPECTION_QUERY_STRING = CachedIntrospectionQuery.query_string
   INTROSPECTION_QUERY_OPERATION_NAME = 'IntrospectionQuery'
 
-  # If a user is using their session to access GraphQL, we need to have session
-  # storage, since the admin-mode check is session wide.
-  # We can't enable this for anonymous users because that would cause users using
-  # enforced SSO from using an auth token to access the API.
-  skip_around_action :set_session_storage, unless: :current_user
-
-  # Only verify CSRF tokens when current_user is set from the session.
-  # Sessionless users authenticated below may access this endpoint without a CSRF token.
-  skip_before_action :verify_authenticity_token, unless: :current_user
-
   # must come first: current_user is set up here
-  before_action(only: [:execute]) { authenticate_sessionless_user!(:graphql_api) }
+  prepend_before_action(only: [:execute]) { authenticate_sessionless_user!(:graphql_api) }
 
   before_action :authorize_access_api!
   before_action :set_user_last_activity

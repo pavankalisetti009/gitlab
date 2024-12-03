@@ -284,16 +284,16 @@ RSpec.describe 'GraphQL', feature_category: :shared do
           get('/')
         end
 
-        it 'authenticates with the session user' do
+        it 'authenticates as PAT user' do
           post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token, 'X-CSRF-Token' => session['_csrf_token'] })
 
-          expect(graphql_data['echo']).to eq("\"#{other_user.username}\" says: Hello world")
+          expect(graphql_data['echo']).to eq("\"#{token.user.username}\" says: Hello world")
         end
 
-        it 'returns 403 when CSRF token is invalid' do
+        it 'authenticates as PAT user even when CSRF token is invalid' do
           post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token, 'X-CSRF-Token' => 'invalid' })
 
-          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(graphql_data['echo']).to eq("\"#{token.user.username}\" says: Hello world")
         end
       end
 

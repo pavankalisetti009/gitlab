@@ -11,6 +11,8 @@ RSpec.describe Gitlab::Auth::GroupSaml::FailureHandler do
   let(:group) { saml_provider.group }
   let(:warden) { Warden::Proxy.new({}, Warden::Manager.new(nil)) }
 
+  let(:mock_session) { {} }
+
   subject { described_class.new(parent_handler) }
 
   def failure_env(path, strategy)
@@ -24,7 +26,8 @@ RSpec.describe Gitlab::Auth::GroupSaml::FailureHandler do
       'action_dispatch.signed_cookie_salt' => 'a4fb52b0ccb302eaef92bda18fedf5c3',
       'action_dispatch.encrypted_signed_cookie_salt' => 'a4fb52b0ccb302eaef92bda18fedf5c3',
       'action_dispatch.encrypted_cookie_salt' => 'a4fb52b0ccb302eaef92bda18fedf5c3',
-      'action_dispatch.cookies_rotations' => OpenStruct.new(signed: [], encrypted: [])
+      'action_dispatch.cookies_rotations' => OpenStruct.new(signed: [], encrypted: []),
+      'rack.session' => mock_session
     }
     Rack::MockRequest.env_for(path, params)
   end
@@ -35,6 +38,8 @@ RSpec.describe Gitlab::Auth::GroupSaml::FailureHandler do
 
   before do
     sign_in
+
+    allow(mock_session).to receive_messages(enabled?: true, loaded?: true)
   end
 
   it 'calls Groups::OmniauthCallbacksController#failure for GroupSaml' do
