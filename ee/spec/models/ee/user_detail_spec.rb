@@ -45,4 +45,15 @@ RSpec.describe UserDetail, feature_category: :system_access do
       let_it_be(:model) { create(:user, enterprise_group: parent).user_detail }
     end
   end
+
+  context 'with onboarding_status_roles values' do
+    let(:json_schema) do
+      Gitlab::Json.parse(File.read(Rails.root.join('app/validators/json_schemas/user_detail_onboarding_status.json')))
+    end
+
+    it 'matches with enum values in onboarding_status json schema' do
+      role_enum = json_schema.dig('properties', 'role', 'enum')
+      expect(role_enum).to eq(described_class.onboarding_status_roles.values)
+    end
+  end
 end
