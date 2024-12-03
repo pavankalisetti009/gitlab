@@ -24,6 +24,12 @@ module EE
       rule { support_bot & service_desk_enabled }.policy do
         enable :admin_parent_link
       end
+
+      # summarize comments is enabled at namespace(project or group) level, however if issue is confidential
+      # and user(e.g. guest cannot read issue) we do not allow summarize comments
+      rule { ~can?(:read_work_item) }.policy do
+        prevent :summarize_comments
+      end
     end
   end
 end

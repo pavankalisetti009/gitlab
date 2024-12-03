@@ -231,6 +231,26 @@ module EE
         end
       end
 
+      with_scope :subject
+      condition(:generate_description_enabled) do
+        ::Gitlab::Llm::FeatureAuthorizer.new(
+          container: subject,
+          feature_name: :generate_description,
+          user: @user
+        ).allowed?
+      end
+
+      with_scope :subject
+      condition(:summarize_notes_allowed) do
+        next false unless @user
+
+        ::Gitlab::Llm::FeatureAuthorizer.new(
+          container: subject,
+          feature_name: :summarize_comments,
+          user: @user
+        ).allowed?
+      end
+
       rule { custom_role_enables_read_code }.policy do
         enable :read_code
       end
@@ -909,6 +929,14 @@ module EE
       end
 
       rule { duo_workflow_token & ~duo_features_enabled }.prevent_all
+
+      rule do
+        summarize_notes_allowed & can?(:read_work_item)
+      end.enable :summarize_comments
+
+      rule do
+        generate_description_enabled & can?(:create_work_item)
+      end.enable :generate_description
     end
 
     override :lookup_access_level!
