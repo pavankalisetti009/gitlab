@@ -4592,7 +4592,7 @@ msgstr ""
 msgid "AdminUsers|Bot"
 msgstr ""
 
-msgid "AdminUsers|Can create top level group"
+msgid "AdminUsers|Can create top-level group"
 msgstr ""
 
 msgid "AdminUsers|Cannot sign in or access instance information"
@@ -10805,7 +10805,7 @@ msgstr ""
 msgid "Can be manually deployed to"
 msgstr ""
 
-msgid "Can create top level groups:"
+msgid "Can create top-level groups:"
 msgstr ""
 
 msgid "Can not delete primary training"
