@@ -41226,6 +41226,9 @@ msgstr ""
 msgid "Please enter a valid time interval"
 msgstr ""
 
+msgid "Please enter a value between 90 and 1827 days (5 years)."
+msgstr ""
+
 msgid "Please enter a value of 90 days or more"
 msgstr ""
 
