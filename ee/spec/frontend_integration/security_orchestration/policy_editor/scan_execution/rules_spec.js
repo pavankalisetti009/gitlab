@@ -9,7 +9,7 @@ import { DEFAULT_PROVIDE } from '../mocks/mocks';
 import { verify } from '../utils';
 import { mockPipelineScanExecutionManifest, mockScheduleScanExecutionManifest } from './mocks';
 
-describe('Scan execution policy actions', () => {
+describe('Scan execution policy rules', () => {
   let wrapper;
 
   const createWrapper = ({ propsData = {}, provide = {} } = {}) => {

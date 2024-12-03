@@ -10,11 +10,13 @@ import {
   groupScanResultPolicies,
   projectPipelineResultPolicies,
   groupPipelineResultPolicies,
+  projectVulnerabilityManagementPolicies,
   mockLinkedSppItemsResponse,
 } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { mockScanExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import { mockPipelineExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import { mockVulnerabilityManagementPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_vulnerability_management_policy_data';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import App from 'ee/security_orchestration/components/policies/app.vue';
@@ -24,6 +26,7 @@ import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/qu
 import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
+import projectVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_vulnerability_management_policies.query.graphql';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { DEFAULT_PROVIDE } from './mocks';
@@ -42,6 +45,9 @@ const projectPipelineExecutionPoliciesSpy = projectPipelineResultPolicies(
 const groupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies(
   mockPipelineExecutionPoliciesResponse,
 );
+const projectVulnerabilityManagementPoliciesSpy = projectVulnerabilityManagementPolicies(
+  mockVulnerabilityManagementPoliciesResponse,
+);
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 
 const defaultRequestHandlers = {
@@ -51,6 +57,7 @@ const defaultRequestHandlers = {
   groupScanResultPolicies: groupScanResultPoliciesSpy,
   projectPipelineExecutionPolicies: projectPipelineExecutionPoliciesSpy,
   groupPipelineExecutionPolicies: groupPipelineExecutionPoliciesSpy,
+  projectVulnerabilityManagementPolicies: projectVulnerabilityManagementPoliciesSpy,
   linkedSppItemsResponse: linkedSppItemsResponseSpy,
 };
 
@@ -79,6 +86,10 @@ describe('Policies List', () => {
         [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
         [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
         [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
+        [
+          projectVulnerabilityManagementPoliciesQuery,
+          requestHandlers.projectVulnerabilityManagementPolicies,
+        ],
         [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
       ]),
     });
@@ -105,6 +116,11 @@ describe('Policies List', () => {
       expect(requestHandlers.projectScanExecutionPolicies).toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).toHaveBeenCalled();
     });
+
+    it('fetches vulnerability management policies if feature flag is enabled', () => {
+      createWrapper({ provide: { glFeatures: { vulnerabilityManagementPolicyType: true } } });
+      expect(requestHandlers.projectVulnerabilityManagementPolicies).toHaveBeenCalled();
+    });
   });
 
   describe('group level', () => {
@@ -124,6 +140,7 @@ describe('Policies List', () => {
       expect(requestHandlers.projectScanResultPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectScanExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).not.toHaveBeenCalled();
+      expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
     });
   });
 
