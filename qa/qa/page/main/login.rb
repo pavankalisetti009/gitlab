@@ -227,7 +227,7 @@ module QA
 
           fill_in_credential(user)
 
-          click_accept_all_cookies if Runtime::Env.running_on_dot_com? && has_accept_all_cookies_button?
+          click_accept_all_cookies if Runtime::Env.running_on_live_env? && has_accept_all_cookies_button?
 
           click_element 'sign-in-button'
 
