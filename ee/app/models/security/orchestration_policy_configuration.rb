@@ -6,6 +6,7 @@ module Security
     include Security::ScanExecutionPolicy
     include Security::ScanResultPolicy
     include Security::PipelineExecutionPolicy
+    include Security::PipelineExecutionSchedulePolicy
     include Security::CiComponentPublishingPolicy
     include Security::VulnerabilityManagementPolicy
     include EachBatch

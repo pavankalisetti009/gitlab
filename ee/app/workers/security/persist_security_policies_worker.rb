@@ -18,6 +18,11 @@ module Security
       persist_policy(configuration, configuration.scan_execution_policy, :scan_execution_policy)
       persist_policy(configuration, configuration.pipeline_execution_policy, :pipeline_execution_policy)
       persist_policy(configuration, configuration.vulnerability_management_policy, :vulnerability_management_policy)
+      persist_policy(
+        configuration,
+        configuration.pipeline_execution_schedule_policy,
+        :pipeline_execution_schedule_policy
+      )
 
       Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService.new(configuration).execute
     end

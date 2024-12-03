@@ -262,6 +262,46 @@ FactoryBot.define do
     end
   end
 
+  factory :pipeline_execution_schedule_policy,
+    class: Struct.new(:name, :description, :enabled, :content, :schedule, :policy_scope, :metadata) do
+    skip_create
+
+    initialize_with do
+      name = attributes[:name]
+      description = attributes[:description]
+      enabled = attributes[:enabled]
+      content = attributes[:content]
+      schedule = attributes[:schedule]
+      policy_scope = attributes[:policy_scope]
+      metadata = attributes[:metadata]
+
+      new(name, description, enabled, content, schedule, policy_scope, metadata).to_h
+    end
+
+    sequence(:name) { |n| "test-pipeline-execution-schedule-policy-#{n}" }
+    description { 'TODO' }
+    enabled { true }
+    sequence(:content) { |n| { include: [{ project: 'compliance-project', file: "compliance-pipeline-#{n}.yml" }] } }
+    policy_scope { {} }
+    metadata { {} }
+    schedule { { cadence: '0 0 * * *' } }
+
+    trait :with_policy_scope do
+      policy_scope do
+        {
+          compliance_frameworks: [
+            { id: 1 },
+            { id: 2 }
+          ],
+          projects: {
+            including: [],
+            excluding: []
+          }
+        }
+      end
+    end
+  end
+
   factory :scan_result_policy,
     class: Struct.new(:name, :description, :enabled, :actions, :rules, :approval_settings, :policy_scope,
       :fallback_behavior, :metadata, :policy_tuning),
@@ -388,7 +428,7 @@ FactoryBot.define do
 
   factory :orchestration_policy_yaml,
     class: Struct.new(:scan_execution_policy, :scan_result_policy, :approval_policy, :pipeline_execution_policy,
-      :ci_component_publishing_policy, :vulnerability_management_policy) do
+      :ci_component_publishing_policy, :vulnerability_management_policy, :pipeline_execution_schedule_policy) do
     skip_create
 
     initialize_with do
@@ -398,6 +438,7 @@ FactoryBot.define do
       pipeline_execution_policy = attributes[:pipeline_execution_policy]
       ci_component_publishing_policy = attributes[:ci_component_publishing_policy]
       vulnerability_management_policy = attributes[:vulnerability_management_policy]
+      pipeline_execution_schedule_policy = attributes[:pipeline_execution_schedule_policy]
 
       YAML.dump(
         new(
@@ -406,7 +447,8 @@ FactoryBot.define do
           approval_policy,
           pipeline_execution_policy,
           ci_component_publishing_policy,
-          vulnerability_management_policy
+          vulnerability_management_policy,
+          pipeline_execution_schedule_policy
         ).to_h.compact.deep_stringify_keys
       )
     end

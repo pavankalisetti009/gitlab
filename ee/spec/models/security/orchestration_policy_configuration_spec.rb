@@ -2500,6 +2500,39 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '#active_pipeline_execution_schedule_policies' do
+    let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
+
+    subject(:active_pipeline_execution_schedule_policies) { security_orchestration_policy_configuration.active_pipeline_execution_schedule_policies }
+
+    before do
+      allow(security_policy_management_project).to receive(:repository).and_return(repository)
+      allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(policy_yaml)
+    end
+
+    it 'returns only enabled policies' do
+      expect(active_pipeline_execution_schedule_policies.pluck(:enabled).uniq).to contain_exactly(true)
+    end
+
+    it 'returns only 1 from all active policies' do
+      expect(active_pipeline_execution_schedule_policies.count).to be(1)
+    end
+
+    context 'when policy configuration is configured for namespace' do
+      let(:security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, :namespace, security_policy_management_project: security_policy_management_project)
+      end
+
+      it 'returns only enabled policies' do
+        expect(active_pipeline_execution_schedule_policies.pluck(:enabled).uniq).to contain_exactly(true)
+      end
+
+      it 'returns only 1 from all active policies' do
+        expect(active_pipeline_execution_schedule_policies.count).to be(1)
+      end
+    end
+  end
+
   describe '#active_ci_component_publishing_policies' do
     let(:ci_component_publishing_yaml) do
       build(:orchestration_policy_yaml, ci_component_publishing_policy: [build(:ci_component_publishing_policy)])
