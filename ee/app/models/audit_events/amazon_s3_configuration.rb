@@ -4,6 +4,7 @@ module AuditEvents
   class AmazonS3Configuration < ApplicationRecord
     include Limitable
     include ExternallyCommonDestinationable
+    include GroupStreamDestinationMappable
 
     self.limit_name = 'audit_events_amazon_s3_configurations'
     self.limit_scope = :group

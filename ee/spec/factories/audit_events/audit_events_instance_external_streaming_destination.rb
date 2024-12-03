@@ -4,7 +4,7 @@ FactoryBot.define do
   factory :audit_events_instance_external_streaming_destination,
     class: 'AuditEvents::Instance::ExternalStreamingDestination' do
     category { 'http' }
-    config { { url: FFaker::Internet.http_url } }
+    config { { url: FFaker::Internet.uri('https') } }
     secret_token { 'a' * 20 }
 
     trait :aws do

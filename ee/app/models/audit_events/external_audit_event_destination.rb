@@ -5,6 +5,7 @@ module AuditEvents
     include CustomHttpExternallyDestinationable
     include Limitable
     include ExternallyCommonDestinationable
+    include GroupStreamDestinationMappable
 
     self.limit_name = 'external_audit_event_destinations'
     self.limit_scope = :group

@@ -30,6 +30,9 @@ RSpec.describe AuditEvents::Instance::AmazonS3Configuration, feature_category: :
     let(:model_factory_name) { :instance_amazon_s3_configuration }
   end
 
+  it_behaves_like 'includes InstanceStreamDestinationMappable concern',
+    let(:model_factory_name) { :instance_amazon_s3_configuration }
+
   describe '#allowed_to_stream?' do
     let(:s3_configuration) { create(:instance_amazon_s3_configuration) }
 

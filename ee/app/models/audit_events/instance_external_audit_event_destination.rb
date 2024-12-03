@@ -5,6 +5,7 @@ module AuditEvents
     include ExternallyCommonDestinationable
     include CustomHttpExternallyDestinationable
     include Limitable
+    include InstanceStreamDestinationMappable
 
     self.limit_name = 'external_audit_event_destinations'
     self.limit_scope = Limitable::GLOBAL_SCOPE
