@@ -12,7 +12,9 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
         scan_execution_policy: scan_execution_policies,
         scan_result_policy: scan_result_policies,
         pipeline_execution_policy: pipeline_execution_policies,
-        vulnerability_management_policy: vulnerability_management_policies)
+        vulnerability_management_policy: vulnerability_management_policies,
+        pipeline_execution_schedule_policy: pipeline_execution_schedule_policies
+      )
     end
 
     let(:scan_result_policies) { build_list(:scan_result_policy, 2) + [build(:scan_result_policy, active: false)] }
@@ -22,6 +24,10 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
 
     let(:pipeline_execution_policies) do
       build_list(:pipeline_execution_policy, 2) + [build(:pipeline_execution_policy, active: false)]
+    end
+
+    let(:pipeline_execution_schedule_policies) do
+      build_list(:pipeline_execution_schedule_policy, 1) + [build(:pipeline_execution_schedule_policy, active: false)]
     end
 
     let(:vulnerability_management_policies) do
@@ -36,6 +42,7 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
         let(:scan_execution_policies) { [] }
         let(:pipeline_execution_policies) { [] }
         let(:vulnerability_management_policies) { [] }
+        let(:pipeline_execution_schedule_policies) { [] }
 
         it 'does not persist policies' do
           expect { perform }.not_to change { policy_configuration.security_policies.reload.count }
@@ -91,6 +98,12 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
         perform
 
         expect(policy_configuration.security_policies.type_vulnerability_management_policy.count).to be(3)
+      end
+
+      it 'persists pipeline execution schedule policies' do
+        perform
+
+        expect(policy_configuration.security_policies.type_pipeline_execution_schedule_policy.count).to be(2)
       end
 
       it 'calls SyncScanResultPoliciesService' do

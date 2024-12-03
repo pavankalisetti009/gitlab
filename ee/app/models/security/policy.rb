@@ -14,7 +14,8 @@ module Security
       approval_policy: %i[actions approval_settings fallback_behavior policy_tuning],
       scan_execution_policy: %i[actions],
       pipeline_execution_policy: %i[content pipeline_config_strategy suffix],
-      vulnerability_management_policy: %i[actions]
+      vulnerability_management_policy: %i[actions],
+      pipeline_execution_schedule_policy: %i[content schedule]
     }.freeze
     APPROVAL_MERGE_REQUEST_RULES_BATCH_SIZE = 5000
 
@@ -34,7 +35,8 @@ module Security
       approval_policy: 0,
       scan_execution_policy: 1,
       pipeline_execution_policy: 2,
-      vulnerability_management_policy: 3
+      vulnerability_management_policy: 3,
+      pipeline_execution_schedule_policy: 4
     }, _prefix: true
 
     validates :security_orchestration_policy_configuration_id,
@@ -46,6 +48,8 @@ module Security
     validates :content, json_schema: { filename: "approval_policy_content" }, if: :type_approval_policy?
     validates :content, json_schema: { filename: "pipeline_execution_policy_content" },
       if: :type_pipeline_execution_policy?
+    validates :content, json_schema: { filename: "pipeline_execution_schedule_policy_content" },
+      if: :type_pipeline_execution_schedule_policy?
     validates :content, json_schema: { filename: "scan_execution_policy_content" }, if: :type_scan_execution_policy?
     validates :content, json_schema: { filename: "vulnerability_management_policy_content" },
       if: :type_vulnerability_management_policy?

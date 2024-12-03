@@ -244,38 +244,7 @@
             "type": "string"
           },
           "content": {
-            "description": "Specifies the content of custom configuration.",
-            "type": "object",
-            "properties": {
-              "include": {
-                "type": "array",
-                "maxItems": 1,
-                "minItems": 1,
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "project": {
-                      "type": "string"
-                    },
-                    "file": {
-                      "type": "string"
-                    },
-                    "ref": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "project",
-                    "file"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": [
-              "include"
-            ],
-            "additionalProperties": false
+            "$ref": "#/$defs/pipeline_execution_content"
           },
           "pipeline_config_strategy": {
             "description": "Defines the method for merging the policy configuration with the project pipeline. `inject_ci` preserves the project CI configuration and injects additional jobs from the policy. Having multiple policies enabled injects all jobs additively. `override_project_ci` replaces the project CI configuration and keeps only the policy jobs in the pipeline.",
@@ -299,6 +268,65 @@
                 "type": "null"
               }
             ]
+          },
+          "policy_scope": {
+            "$ref": "#/$defs/policy_scope"
+          },
+          "metadata": {
+            "$ref": "#/$defs/metadata"
+          },
+          "enabled": {
+            "description": "Whether to enforce this policy or not.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "pipeline_execution_schedule_policy": {
+      "type": "array",
+      "description": "Starts pipelines on a schedule with custom pipeline configuration.",
+      "additionalItems": false,
+      "maxItems": 1,
+      "items": {
+        "required": [
+          "name",
+          "enabled",
+          "content",
+          "schedule"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name for the policy.",
+            "minLength": 1,
+            "maxLength": 255,
+            "type": "string"
+          },
+          "description": {
+            "description": "Specifies the longer description of the policy.",
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/$defs/pipeline_execution_content"
+          },
+          "schedule": {
+            "description": "Specifies the condition when this policy should be triggered.",
+            "type": "object",
+            "properties": {
+              "cadence": {
+                "description": "Specifies when this policy should schedule a new pipeline. Uses cron expression as a format (ie. `0 22 * * 1-5`).",
+                "type": "string",
+                "pattern": "(@(yearly|annually|monthly|weekly|daily|midnight|noon|hourly))|(((\\*|(\\-?\\d+\\,?)+)(\\/\\d+)?|last|L|(sun|mon|tue|wed|thu|fri|sat|SUN|MON|TUE|WED|THU|FRI|SAT\\-|\\,)+|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC|\\-|\\,)+)\\s?){5,6}"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Time zone to apply to the cadence. Value must be an IANA Time Zone Database identifier, for example: `America/New_York`."
+              }
+            },
+            "required": [
+              "cadence"
+            ],
+            "additionalProperties": false
           },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
@@ -1284,6 +1312,40 @@
           }
         }
       }
+    },
+    "pipeline_execution_content": {
+      "description": "Specifies the content of custom configuration.",
+      "type": "object",
+      "properties": {
+        "include": {
+          "type": "array",
+          "maxItems": 1,
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "project": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "project",
+              "file"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "include"
+      ],
+      "additionalProperties": false
     },
     "metadata": {
       "description": "Specifies custom annotations in a form of key-value pairs.",

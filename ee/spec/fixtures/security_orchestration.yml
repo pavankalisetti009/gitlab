@@ -335,6 +335,40 @@ pipeline_execution_policy:
           file: 'pipeline_execution_policy.yml'
     policy_scope: {}
     metadata: {}
+pipeline_execution_schedule_policy:
+  - name: Run scheduled pipeline
+    description: This policy runs a scheduled pipeline
+    enabled: true
+    content:
+      include:
+        - project: 'main'
+          file: 'pipeline_execution_policy.yml'
+    policy_scope: {}
+    metadata: {}
+    schedule:
+      cadence: 0 0 * * *
+  - name: Second scheduled pipeline policy
+    description: This policy runs a scheduled pipeline
+    enabled: true
+    content:
+      include:
+        - project: 'main'
+          file: 'pipeline_execution_policy.yml'
+    policy_scope: {}
+    metadata: {}
+    schedule:
+      cadence: 0 0 * * *
+  - name: Disabled scheduled pipeline policy
+    description: This policy runs a scheduled pipeline
+    enabled: true
+    content:
+      include:
+        - project: 'main'
+          file: 'pipeline_execution_policy.yml'
+    policy_scope: {}
+    metadata: {}
+    schedule:
+      cadence: 0 0 * * *
 ci_component_publishing_policy:
   - name: Allow publishing of CI Components to catalog
     description: This policy enforces an allowlist of projects and groups that can publish CI components

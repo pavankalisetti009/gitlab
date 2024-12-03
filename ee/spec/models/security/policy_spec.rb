@@ -47,6 +47,12 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         it_behaves_like 'validates policy content'
       end
 
+      context 'when policy_type is pipeline_execution_schedule_policy' do
+        subject(:policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+
+        it_behaves_like 'validates policy content'
+      end
+
       context 'when policy_type is vulnerability_management_policy' do
         subject(:policy) { create(:security_policy, :vulnerability_management_policy) }
 

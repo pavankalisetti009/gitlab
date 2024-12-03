@@ -519,6 +519,62 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
   end
 
+  describe "pipeline execution schedule policies" do
+    let(:policy_type) { :pipeline_execution_schedule_policy }
+
+    let(:pipeline_execution_schedule_policy) do
+      build(:pipeline_execution_schedule_policy, :with_policy_scope)
+    end
+
+    let(:policies) do
+      [pipeline_execution_schedule_policy]
+    end
+
+    context 'without pre-existing policies' do
+      include_examples 'succeeds'
+
+      it 'creates policies' do
+        expect { persist }.to change {
+          policy_configuration.security_policies.reload.type_pipeline_execution_schedule_policy.count
+        }.by(1)
+      end
+
+      context 'on exception' do
+        let(:msg) { "foobar" }
+
+        before do
+          allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
+        end
+
+        it 'errors' do
+          expect(persist).to include(status: :error, message: msg)
+        end
+      end
+
+      describe 'persisted attributes' do
+        describe 'policies' do
+          include_examples 'persists attributes' do
+            let(:relation) { Security::Policy.type_pipeline_execution_schedule_policy.order(policy_index: :asc) }
+            let(:expected_attributes) do
+              [
+                {
+                  security_orchestration_policy_configuration_id: policy_configuration.id,
+                  policy_index: 0,
+                  name: pipeline_execution_schedule_policy[:name],
+                  type: 'pipeline_execution_schedule_policy',
+                  description: pipeline_execution_schedule_policy[:description],
+                  checksum: Security::Policy.checksum(pipeline_execution_schedule_policy),
+                  enabled: true,
+                  content: pipeline_execution_schedule_policy.slice(:content, :schedule).deep_stringify_keys
+                }
+              ]
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe "vulnerability management policies" do
     let(:policy_type) { :vulnerability_management_policy }
 
