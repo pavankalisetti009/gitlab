@@ -52,9 +52,8 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
         stub_licensed_features(
           security_dashboard: true, audit_events: true, dependency_scanning: true, custom_roles: true, license_scanning: true)
 
-        create(:member_role, :guest, namespace: project.group, read_vulnerability: true).tap do |role|
-          member = create(:group_member, :guest, user: guest, source: project.group)
-          role.members << member
+        create(:member_role, :guest, :read_vulnerability, namespace: project.group).tap do |role|
+          role.members << create(:group_member, :guest, user: guest, source: project.group)
         end
       end
 
