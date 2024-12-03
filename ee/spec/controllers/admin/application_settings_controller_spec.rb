@@ -43,7 +43,7 @@ RSpec.describe Admin::ApplicationSettingsController do
 
     shared_examples 'settings for licensed features' do
       it 'does not update settings when licensed feature is not available' do
-        stub_licensed_features(feature => false)
+        stub_licensed_features(license_feature => false)
         attribute_names = settings.keys.map(&:to_s)
 
         expect { put :update, params: { application_setting: settings } }
@@ -51,7 +51,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
 
       it 'updates settings when the feature is available' do
-        stub_licensed_features(feature => true)
+        stub_licensed_features(license_feature => true)
 
         put :update, params: { application_setting: settings }
 
@@ -82,7 +82,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'mirror settings' do
+    context 'for mirror settings' do
       let(:settings) do
         {
           mirror_max_delay: (Gitlab::Mirror.min_delay_upper_bound / 60) + 1,
@@ -91,12 +91,12 @@ RSpec.describe Admin::ApplicationSettingsController do
         }
       end
 
-      let(:feature) { :repository_mirrors }
+      let(:license_feature) { :repository_mirrors }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'boolean attributes' do
+    context 'for boolean attributes' do
       shared_examples_for 'updates boolean attribute' do |attribute|
         specify do
           existing_value = ApplicationSetting.current.public_send(attribute)
@@ -112,44 +112,44 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'updates boolean attribute', :receptive_cluster_agents_enabled
     end
 
-    context 'default project deletion protection' do
+    context 'for default project deletion protection' do
       let(:settings) { { default_project_deletion_protection: true } }
-      let(:feature) { :default_project_deletion_protection }
+      let(:license_feature) { :default_project_deletion_protection }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating name disabled for users setting' do
+    context 'when updating name disabled for users setting' do
       let(:settings) { { updating_name_disabled_for_users: true } }
-      let(:feature) { :disable_name_update_for_users }
+      let(:license_feature) { :disable_name_update_for_users }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating `group_owners_can_manage_default_branch_protection` setting' do
+    context 'when updating `group_owners_can_manage_default_branch_protection` setting' do
       let(:settings) { { group_owners_can_manage_default_branch_protection: false } }
-      let(:feature) { :default_branch_protection_restriction_in_groups }
+      let(:license_feature) { :default_branch_protection_restriction_in_groups }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating maven packages request forwarding setting' do
+    context 'when updating maven packages request forwarding setting' do
       let(:settings) { { maven_package_requests_forwarding: true } }
-      let(:feature) { :package_forwarding }
+      let(:license_feature) { :package_forwarding }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating npm packages request forwarding setting' do
+    context 'when updating npm packages request forwarding setting' do
       let(:settings) { { npm_package_requests_forwarding: true } }
-      let(:feature) { :package_forwarding }
+      let(:license_feature) { :package_forwarding }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'Sign-up restrictions' do
-      context 'Seat controls' do
-        context 'Member promotion management' do
+    context 'for sign-up restrictions' do
+      context 'with seat controls' do
+        context 'and member promotion management' do
           let(:settings) do
             { enable_member_promotion_management: true }
           end
@@ -167,7 +167,7 @@ RSpec.describe Admin::ApplicationSettingsController do
             it 'updates the setting' do
               put :update, params: { application_setting: settings }
 
-              expect(ApplicationSetting.current.enable_member_promotion_management).to eq(true)
+              expect(ApplicationSetting.current.enable_member_promotion_management).to be(true)
             end
           end
 
@@ -177,14 +177,14 @@ RSpec.describe Admin::ApplicationSettingsController do
             it 'does not update the setting' do
               put :update, params: { application_setting: settings }
 
-              expect(ApplicationSetting.current.enable_member_promotion_management).to eq(false)
+              expect(ApplicationSetting.current.enable_member_promotion_management).to be(false)
             end
           end
         end
       end
     end
 
-    context 'updating password complexity settings' do
+    context 'when updating password complexity settings' do
       let(:settings) do
         { password_number_required: true,
           password_symbol_required: true,
@@ -192,45 +192,45 @@ RSpec.describe Admin::ApplicationSettingsController do
           password_lowercase_required: true }
       end
 
-      let(:feature) { :password_complexity }
+      let(:license_feature) { :password_complexity }
 
       it_behaves_like 'settings for licensed features'
       it_behaves_like 'settings for registration features'
     end
 
-    context 'updating pypi packages request forwarding setting' do
+    context 'when updating pypi packages request forwarding setting' do
       let(:settings) { { pypi_package_requests_forwarding: true } }
-      let(:feature) { :package_forwarding }
+      let(:license_feature) { :package_forwarding }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating service_access_tokens_expiration_enforced setting' do
+    context 'when updating service_access_tokens_expiration_enforced setting' do
       let(:settings) { { service_access_tokens_expiration_enforced: false } }
-      let(:feature) { :service_accounts }
+      let(:license_feature) { :service_accounts }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating allow_top_level_group_owners_to_create_service_accounts setting' do
+    context 'when updating allow_top_level_group_owners_to_create_service_accounts setting' do
       let(:settings) { { allow_top_level_group_owners_to_create_service_accounts: false } }
-      let(:feature) { :service_accounts }
+      let(:license_feature) { :service_accounts }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating `git_two_factor_session_expiry` setting' do
+    context 'when updating `git_two_factor_session_expiry` setting' do
       before do
         stub_feature_flags(two_factor_for_cli: true)
       end
 
       let(:settings) { { git_two_factor_session_expiry: 10 } }
-      let(:feature) { :git_two_factor_enforcement }
+      let(:license_feature) { :git_two_factor_enforcement }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'updating maintenance mode setting' do
+    context 'when updating maintenance mode setting' do
       let(:settings) do
         {
           maintenance_mode: true,
@@ -238,36 +238,36 @@ RSpec.describe Admin::ApplicationSettingsController do
         }
       end
 
-      let(:feature) { :geo }
+      let(:license_feature) { :geo }
 
       it_behaves_like 'settings for licensed features'
       it_behaves_like 'settings for registration features'
     end
 
-    context 'deletion adjourned period' do
+    context 'with deletion adjourned period' do
       let(:settings) { { deletion_adjourned_period: 6 } }
-      let(:feature) { :adjourned_deletion_for_projects_and_groups }
+      let(:license_feature) { :adjourned_deletion_for_projects_and_groups }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'additional email footer' do
+    context 'with additional email footer' do
       let(:settings) { { email_additional_text: 'scary legal footer' } }
-      let(:feature) { :email_additional_text }
+      let(:license_feature) { :email_additional_text }
 
       it_behaves_like 'settings for licensed features'
       it_behaves_like 'settings for registration features'
     end
 
-    context 'custom project templates settings' do
+    context 'with custom project templates settings' do
       let(:group) { create(:group) }
       let(:settings) { { custom_project_templates_group_id: group.id } }
-      let(:feature) { :custom_project_templates }
+      let(:license_feature) { :custom_project_templates }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'merge request approvers rules' do
+    context 'with merge request approvers rules' do
       let(:settings) do
         {
           disable_overriding_approvers_per_merge_request: true,
@@ -276,21 +276,21 @@ RSpec.describe Admin::ApplicationSettingsController do
         }
       end
 
-      let(:feature) { :admin_merge_request_approvers_rules }
+      let(:license_feature) { :admin_merge_request_approvers_rules }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'globally allowed IPs' do
+    context 'with globally allowed IPs' do
       let(:settings) { { globally_allowed_ips: '10.0.0.0/8, 192.168.1.0/24' } }
-      let(:feature) { :group_ip_restriction }
+      let(:license_feature) { :group_ip_restriction }
 
       it_behaves_like 'settings for licensed features'
     end
 
-    context 'required instance ci template' do
+    context 'with required instance ci template' do
       let(:settings) { { required_instance_ci_template: 'Auto-DevOps' } }
-      let(:feature) { :required_ci_templates }
+      let(:license_feature) { :required_ci_templates }
 
       it_behaves_like 'settings for licensed features'
 
@@ -325,12 +325,12 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'secret detection settings' do
+    context 'with secret detection settings' do
       let(:settings) { { pre_receive_secret_detection_enabled: true } }
-      let(:feature) { :pre_receive_secret_detection }
+      let(:license_feature) { :pre_receive_secret_detection }
 
       before do
-        stub_licensed_features(feature => true)
+        stub_licensed_features(license_feature => true)
       end
 
       it_behaves_like 'settings for licensed features'
@@ -386,7 +386,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'maintenance mode settings' do
+    context 'with maintenance mode settings' do
       let(:message) { 'Maintenance mode is on.' }
 
       before do
@@ -433,14 +433,14 @@ RSpec.describe Admin::ApplicationSettingsController do
 
           put :update, params: { application_setting: { maintenance_mode_message: '' } }
 
-          expect(ApplicationSetting.current.maintenance_mode_message).to eq(nil)
+          expect(ApplicationSetting.current.maintenance_mode_message).to be_nil
         end
       end
     end
 
-    context 'private profile disabled for users' do
+    context 'with private profile disabled for users' do
       let(:settings) { { make_profile_private: false } }
-      let(:feature) { :disable_private_profiles }
+      let(:license_feature) { :disable_private_profiles }
 
       it_behaves_like 'settings for licensed features'
     end
@@ -471,7 +471,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       @request.env['HTTP_REFERER'] = advanced_search_admin_application_settings_path
     end
 
-    context 'check search version is compatability' do
+    context 'with check search version is compatability' do
       let_it_be(:helper) { ::Gitlab::Elastic::Helper.default }
 
       before do
@@ -493,7 +493,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'warning if not using index aliases' do
+    context 'with warning if not using index aliases' do
       let_it_be(:helper) { ::Gitlab::Elastic::Helper.default }
 
       before do
@@ -521,14 +521,13 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
 
       it 'does NOT warn when default index does not exist' do
-        allow(helper).to receive(:alias_missing?).and_return true
-        allow(helper).to receive(:index_exists?).and_return false
+        allow(helper).to receive_messages(alias_missing?: true, index_exists?: false)
         get :advanced_search
         expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_falsey
       end
     end
 
-    context 'warning outdated code search mappings' do
+    context 'with warning outdated code search mappings' do
       let_it_be(:helper) { ::Gitlab::Elastic::Helper.default }
 
       before do
@@ -561,7 +560,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'alerting for pending obsolete migrations' do
+    context 'when alerting for pending obsolete migrations' do
       let_it_be(:helper) { ::Gitlab::Elastic::Helper.default }
 
       before do
@@ -609,7 +608,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'advanced search settings' do
+    context 'with advanced search settings' do
       it 'updates the advanced search settings' do
         settings = {
           elasticsearch_url: URI.parse('http://my-elastic.search:9200'),
@@ -631,7 +630,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'zero-downtime elasticsearch reindexing' do
+    context 'when zero-downtime elasticsearch reindexing' do
       render_views
 
       let!(:task) { create(:elastic_reindexing_task) }
@@ -644,7 +643,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
     end
 
-    context 'elasticsearch_aws_secret_access_key setting is blank' do
+    context 'when elasticsearch_aws_secret_access_key setting is blank' do
       let(:settings) do
         {
           elasticsearch_aws_access_key: 'elasticsearch_aws_access_key',

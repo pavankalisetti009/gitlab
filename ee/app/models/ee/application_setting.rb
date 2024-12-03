@@ -108,7 +108,8 @@ module EE
 
       validates :elasticsearch_worker_number_of_shards,
         presence: true,
-        numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: Elastic::ProcessBookkeepingService::SHARDS_MAX }
+        numericality: { only_integer: true, greater_than: 0,
+                        less_than_or_equal_to: Elastic::ProcessBookkeepingService::SHARDS_MAX }
 
       validates :email_additional_text,
         allow_blank: true,
@@ -146,13 +147,13 @@ module EE
         numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10.days.to_i }
 
       validates :git_rate_limit_users_allowlist,
-        length: { maximum: 100, message: ->(object, data) { _("exceeds maximum length (100 usernames)") } },
+        length: { maximum: 100, message: ->(_object, _data) { _("exceeds maximum length (100 usernames)") } },
         allow_nil: false,
         user_existence: true,
         if: :git_rate_limit_users_allowlist_changed?
 
       validates :git_rate_limit_users_alertlist,
-        length: { maximum: 100, message: ->(object, data) { _("exceeds maximum length (100 user ids)") } },
+        length: { maximum: 100, message: ->(_object, _data) { _("exceeds maximum length (100 user ids)") } },
         allow_nil: false,
         user_id_existence: true,
         if: :git_rate_limit_users_alertlist_changed?
@@ -389,7 +390,7 @@ module EE
 
       union = ::Gitlab::SQL::Union.new([
         ::Project.where(namespace_id: elasticsearch_limited_namespaces.select(:id)),
-                                         ::Project.where(id: ElasticsearchIndexedProject.select(:project_id))
+        ::Project.where(id: ElasticsearchIndexedProject.select(:project_id))
       ]).to_sql
 
       ::Project.from("(#{union}) projects")
@@ -472,7 +473,8 @@ module EE
 
     def elasticsearch_url_with_credentials
       elasticsearch_url.map do |uri|
-        ::Gitlab::Elastic::Helper.connection_settings(uri: uri, user: elasticsearch_username, password: elasticsearch_password)
+        ::Gitlab::Elastic::Helper.connection_settings(uri: uri, user: elasticsearch_username,
+          password: elasticsearch_password)
       end
     end
 
@@ -554,7 +556,9 @@ module EE
     end
 
     def unique_project_download_limit_enabled?
-      return true if max_number_of_repository_downloads.nonzero? && max_number_of_repository_downloads_within_time_period.nonzero?
+      if max_number_of_repository_downloads.nonzero? && max_number_of_repository_downloads_within_time_period.nonzero?
+        return true
+      end
 
       false
     end
@@ -625,9 +629,10 @@ module EE
     def mirror_capacity_threshold_less_than
       return unless mirror_max_capacity && mirror_capacity_threshold
 
-      if mirror_capacity_threshold > mirror_max_capacity
-        errors.add(:mirror_capacity_threshold, "Project's mirror capacity threshold can't be higher than it's maximum capacity")
-      end
+      return unless mirror_capacity_threshold > mirror_max_capacity
+
+      errors.add(:mirror_capacity_threshold,
+        "Project's mirror capacity threshold can't be higher than it's maximum capacity")
     end
 
     def elasticsearch_indexing_column_exists?
