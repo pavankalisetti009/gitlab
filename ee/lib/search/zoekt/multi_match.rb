@@ -63,9 +63,10 @@ module Search
             generate_context_blobs(match, chunk, :before, file_name)
           end
 
+          text = Base64.decode64(match[:Line]).force_encoding('UTF-8')
           chunk[:lines][match[:LineNumber]] = {
-            text: Base64.decode64(match[:Line]).force_encoding('UTF-8'),
-            rich_text: highlight_match(match[:Line], match[:LineFragments], file_name)
+            text: text,
+            rich_text: highlight_match(text, match[:LineFragments], file_name)
           }
           match_count_per_line = match[:LineFragments].count
           chunk[:match_count_in_chunk] += match_count_per_line
@@ -125,11 +126,11 @@ module Search
         }
       end
 
-      def highlight_match(match_line, match_line_fragments, file_name)
+      def highlight_match(text, match_line_fragments, file_name)
         ranges = match_line_fragments.map do |fragment|
           fragment[:LineOffset]..(fragment[:LineOffset] + fragment[:MatchLength] - 1)
         end
-        line = Gitlab::StringRangeMarker.new(Base64.decode64(match_line).force_encoding('UTF-8')).mark(ranges) do |text|
+        line = Gitlab::StringRangeMarker.new(text).mark(ranges) do |text|
           "#{HIGHLIGHT_START_TAG}#{text}#{HIGHLIGHT_END_TAG}"
         end
         syntax_decorated_line = syntax_decorate(file_name, line)
