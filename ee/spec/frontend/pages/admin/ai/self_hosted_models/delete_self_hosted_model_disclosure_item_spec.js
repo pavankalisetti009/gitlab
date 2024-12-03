@@ -183,7 +183,7 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
       it('displays the correct body', () => {
         const body = findModal().text();
         expect(body).toContain('mock-self-hosted-model-1');
-        expect(body).toContain('code_suggestions');
+        expect(body).toContain('Code Completion');
       });
 
       it('does not render the modal footer buttons', () => {

@@ -1,7 +1,7 @@
 export const mockSelfHostedModel = {
   id: 'gid://gitlab/Ai::SelfHostedModel/1',
   name: 'mock-self-hosted-model',
-  model: 'mistral',
+  model: 'Mistral',
   endpoint: 'https://mock-endpoint.com',
   identifier: 'provider/some-model-1',
   hasApiToken: true,
@@ -14,14 +14,15 @@ export const mockSelfHostedModelsList = [
   {
     id: 'gid://gitlab/Ai::SelfHostedModel/1',
     name: 'mock-self-hosted-model-1',
-    model: 'codellama',
+    model: 'Code Llama',
     endpoint: 'https://mock-endpoint-1.com',
     identifier: 'provider/some-model-1',
     hasApiToken: true,
     featureSettings: {
       nodes: [
         {
-          feature: 'code_suggestions',
+          title: 'Code Completion',
+          feature: 'code_completions',
         },
       ],
     },
@@ -29,7 +30,7 @@ export const mockSelfHostedModelsList = [
   {
     id: 'gid://gitlab/Ai::SelfHostedModel/2',
     name: 'mock-self-hosted-model-2',
-    model: 'mistral',
+    model: 'Mistral',
     endpoint: 'https://mock-endpoint-2.com',
     identifier: '',
     hasApiToken: true,

@@ -174,7 +174,7 @@ export default {
         </p>
         <ul>
           <li v-for="feature in featureSettings" :key="feature.feature">
-            {{ feature.feature }}
+            {{ feature.title }}
           </li>
         </ul>
         <p>

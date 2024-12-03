@@ -19,12 +19,14 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
     model_params.map { |params| create(:ai_self_hosted_model, **params) }
   end
 
+  let(:model_name_mapper) { ::Admin::Ai::SelfHostedModelsHelper::MODEL_NAME_MAPPER }
+
   let :expected_data do
     self_hosted_models.map do |self_hosted|
       {
         "id" => self_hosted.to_global_id.to_s,
         "name" => self_hosted.name,
-        "model" => self_hosted.model.to_s,
+        "model" => model_name_mapper[self_hosted.model],
         "endpoint" => self_hosted.endpoint,
         "hasApiToken" => self_hosted.api_token.present?
       }
@@ -110,7 +112,7 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
       [
         { "id" => self_hosted_models.first.to_global_id.to_s,
           "name" => self_hosted_models.first.name,
-          "model" => self_hosted_models.first.model.to_s,
+          "model" => model_name_mapper[self_hosted_models.first.model],
           "endpoint" => self_hosted_models.first.endpoint,
           "hasApiToken" => self_hosted_models.first.api_token.present? }
       ]
