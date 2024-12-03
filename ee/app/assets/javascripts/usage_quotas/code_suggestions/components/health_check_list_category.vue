@@ -17,10 +17,10 @@ export default {
 
 <template>
   <article>
-    <header class="gl-mb-2 gl-font-bold gl-text-gray-700">
+    <header class="gl-mb-2 gl-font-bold gl-text-subtle">
       {{ category.title }}
     </header>
-    <p class="gl-mb-0 gl-text-gray-700">
+    <p class="gl-mb-0 gl-text-subtle">
       {{ category.description }}
     </p>
 

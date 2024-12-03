@@ -38,7 +38,7 @@ export default {
     <template #header>
       <img :src="svg" />
       <h2 class="gl-mb-3 gl-text-lg">{{ $options.i18n[section].title }}</h2>
-      <p class="gl-mb-6 gl-text-gray-700">{{ $options.i18n[section].description }}</p>
+      <p class="gl-mb-6 gl-text-subtle">{{ $options.i18n[section].description }}</p>
     </template>
     <template #default>
       <learn-gitlab-section-link

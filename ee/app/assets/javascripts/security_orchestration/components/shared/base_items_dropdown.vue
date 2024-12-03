@@ -151,7 +151,7 @@ export default {
       <span :class="['gl-block', { 'gl-font-bold': item.fullPath }]">
         <gl-truncate :text="item.text" with-tooltip />
       </span>
-      <span v-if="item.fullPath" class="gl-mt-1 gl-block gl-text-sm gl-text-gray-700">
+      <span v-if="item.fullPath" class="gl-mt-1 gl-block gl-text-sm gl-text-subtle">
         <gl-truncate position="middle" :text="item.fullPath" with-tooltip />
       </span>
     </template>

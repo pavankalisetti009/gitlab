@@ -503,7 +503,7 @@ export default {
               <gl-avatar class="gl-mr-2 gl-shrink-0" :size="16" :src="selectedItem.avatarUrl" />
               <div class="gl-truncate">
                 <b class="gl-mr-2">{{ selectedItem.name }}</b>
-                <span class="gl-text-gray-700">@{{ selectedItem.username }}</span>
+                <span class="gl-text-subtle">@{{ selectedItem.username }}</span>
               </div>
             </template>
 

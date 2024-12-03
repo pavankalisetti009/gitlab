@@ -51,7 +51,7 @@ describe('ee/oncall_schedules/components/schedule/components/preset_days/days_he
         'gl-basis-0',
         'gl-text-center',
         'gl-font-normal',
-        'gl-text-gray-700',
+        'gl-text-subtle',
         '!gl-text-default',
         'gl-font-bold',
       ]);

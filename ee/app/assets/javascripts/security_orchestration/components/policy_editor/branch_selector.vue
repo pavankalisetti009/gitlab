@@ -156,7 +156,7 @@ export default {
             @select="unselectBranch(item)"
           >
             <gl-truncate :text="item.name" />
-            <p v-if="item.fullPath" class="gl-m-0 gl-mt-1 gl-text-sm gl-text-gray-700">
+            <p v-if="item.fullPath" class="gl-m-0 gl-mt-1 gl-text-sm gl-text-subtle">
               <gl-truncate position="middle" :text="item.fullPath" />
             </p>
           </gl-listbox-item>

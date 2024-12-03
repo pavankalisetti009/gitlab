@@ -92,7 +92,7 @@ export default {
   <section>
     <h2 class="gl-mb-2">{{ $options.i18n.title }}</h2>
 
-    <p class="gl-mb-5 gl-text-gray-700">
+    <p class="gl-mb-5 gl-text-subtle">
       <gl-sprintf :message="$options.i18n.description">
         <template #link="{ content }">
           <gl-link :href="$options.userPermissionsDocPath" target="_blank">{{ content }}</gl-link>

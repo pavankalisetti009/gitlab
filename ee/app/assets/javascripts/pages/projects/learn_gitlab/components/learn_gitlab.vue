@@ -174,7 +174,7 @@ export default {
     <div class="row">
       <div class="col-sm-12 col-mb-9 col-lg-9">
         <h1 class="gl-text-size-h1">{{ $options.i18n.title }}</h1>
-        <p class="gl-mb-0 gl-text-gray-700">{{ $options.i18n.description }}</p>
+        <p class="gl-mb-0 gl-text-subtle">{{ $options.i18n.description }}</p>
       </div>
 
       <div :class="progressBarBlockClasses" data-testid="progress-bar-block">

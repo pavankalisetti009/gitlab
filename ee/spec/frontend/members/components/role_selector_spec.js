@@ -42,7 +42,7 @@ describe('Role selector', () => {
       const description = findRoleDescription('role-custom-101');
 
       expect(description.text()).toBe('custom role 1 description');
-      expect(description.find('span').classes('gl-text-gray-700')).toBe(true);
+      expect(description.find('span').classes('gl-text-subtle')).toBe(true);
     });
 
     it(`shows 'No description' when custom role does not have description`, () => {

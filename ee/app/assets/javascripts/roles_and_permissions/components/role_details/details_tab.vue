@@ -65,13 +65,13 @@ export default {
     <h4 class="gl-mb-5">{{ __('General') }}</h4>
     <dl class="gl-mb-8">
       <dt data-testid="id-header">{{ idLabel }}</dt>
-      <dd class="gl-mb-6 gl-mt-3 gl-text-gray-700" data-testid="id-value">{{ roleId }}</dd>
+      <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="id-value">{{ roleId }}</dd>
 
       <dt data-testid="type-header">{{ s__('MemberRole|Role type') }}</dt>
-      <dd class="gl-mb-6 gl-mt-3 gl-text-gray-700" data-testid="type-value">{{ roleType }}</dd>
+      <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="type-value">{{ roleType }}</dd>
 
       <dt data-testid="description-header">{{ __('Description') }}</dt>
-      <dd class="gl-mt-3 gl-leading-20 gl-text-gray-700" data-testid="description-value">
+      <dd class="gl-mt-3 gl-leading-20 gl-text-subtle" data-testid="description-value">
         {{ role.description }}
       </dd>
     </dl>
@@ -79,7 +79,7 @@ export default {
     <h4>{{ __('Permissions') }}</h4>
     <dl>
       <dt v-if="isCustomRole" data-testid="base-role-header">{{ s__('MemberRole|Base role') }}</dt>
-      <dd class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-gray-700">
+      <dd class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-subtle">
         <span v-if="isCustomRole" data-testid="base-role-value">
           {{ role.baseAccessLevel.humanAccess }}
         </span>
@@ -98,7 +98,7 @@ export default {
         <dt data-testid="custom-permissions-header">{{ s__('MemberRole|Custom permissions') }}</dt>
         <dd
           v-if="allPermissions.length"
-          class="gl-mb-6 gl-mt-3 gl-text-gray-700"
+          class="gl-mb-6 gl-mt-3 gl-text-subtle"
           data-testid="custom-permissions-value"
         >
           <gl-sprintf :message="s__('MemberRole|%{count} of %{total} permissions added')">
