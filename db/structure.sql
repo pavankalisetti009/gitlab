@@ -1988,6 +1988,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_7943cb549289() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_7a8b08eed782() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -13564,6 +13580,7 @@ CREATE TABLE issuable_metric_images (
     file text NOT NULL,
     url text,
     url_text text,
+    namespace_id bigint,
     CONSTRAINT check_3bc6d47661 CHECK ((char_length(url_text) <= 128)),
     CONSTRAINT check_5b3011e234 CHECK ((char_length(url) <= 255)),
     CONSTRAINT check_7ed527062f CHECK ((char_length(file) <= 255))
@@ -30710,6 +30727,8 @@ CREATE INDEX index_ip_restrictions_on_group_id ON ip_restrictions USING btree (g
 
 CREATE INDEX index_issuable_metric_images_on_issue_id ON issuable_metric_images USING btree (issue_id);
 
+CREATE INDEX index_issuable_metric_images_on_namespace_id ON issuable_metric_images USING btree (namespace_id);
+
 CREATE INDEX index_issuable_resource_links_on_issue_id ON issuable_resource_links USING btree (issue_id);
 
 CREATE INDEX index_issuable_resource_links_on_namespace_id ON issuable_resource_links USING btree (namespace_id);
@@ -35450,6 +35469,8 @@ CREATE TRIGGER trigger_740afa9807b8 BEFORE INSERT OR UPDATE ON subscription_user
 
 CREATE TRIGGER trigger_77d9fbad5b12 BEFORE INSERT OR UPDATE ON packages_debian_project_distribution_keys FOR EACH ROW EXECUTE FUNCTION trigger_77d9fbad5b12();
 
+CREATE TRIGGER trigger_7943cb549289 BEFORE INSERT OR UPDATE ON issuable_metric_images FOR EACH ROW EXECUTE FUNCTION trigger_7943cb549289();
+
 CREATE TRIGGER trigger_7a8b08eed782 BEFORE INSERT OR UPDATE ON boards_epic_board_positions FOR EACH ROW EXECUTE FUNCTION trigger_7a8b08eed782();
 
 CREATE TRIGGER trigger_7de792ddbc05 BEFORE INSERT OR UPDATE ON dast_site_validations FOR EACH ROW EXECUTE FUNCTION trigger_7de792ddbc05();
@@ -36681,6 +36702,9 @@ ALTER TABLE ONLY abuse_report_user_mentions
 
 ALTER TABLE ONLY security_orchestration_policy_configurations
     ADD CONSTRAINT fk_a50430b375 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY issuable_metric_images
+    ADD CONSTRAINT fk_a53e03ca65 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY operations_strategies
     ADD CONSTRAINT fk_a542e10c31 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
