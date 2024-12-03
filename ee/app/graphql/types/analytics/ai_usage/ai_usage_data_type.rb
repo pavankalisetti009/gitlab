@@ -5,11 +5,12 @@ module Types
     module AiUsage
       class AiUsageDataType < BaseObject
         graphql_name 'AiUsageData'
+        description "Usage data for events stored in the default PostgreSQL database. Data retained for three months."
 
         authorize :read_enterprise_ai_analytics
 
         field :code_suggestion_events,
-          description: 'Events related to code suggestions feature.',
+          description: 'Events related to code suggestions.',
           resolver: ::Resolvers::Analytics::AiUsage::CodeSuggestionEventsResolver
       end
     end
