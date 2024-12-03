@@ -113,8 +113,9 @@ RSpec.shared_context 'with duo pro addon' do
       # we first search by active purchases and are trying to not create
       # entities twice because it will cause an ActiveRecord error in tests
       active_purchase = GitlabSubscriptions::AddOnPurchase.find_by(namespace: group)
+      add_on = GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions, group)
 
-      active_purchase ||= create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group)
+      active_purchase ||= create(:gitlab_subscription_add_on_purchase, add_on: add_on, namespace: group)
 
       active_assignment = GitlabSubscriptions::UserAddOnAssignment.find_by(
         user: the_user, add_on_purchase: active_purchase)
@@ -148,8 +149,9 @@ RSpec.shared_context 'with duo pro self-managed addon' do
       # we first search by active purchases and are trying to not create
       # entities twice because it will cause an ActiveRecord error in tests
       active_purchase = GitlabSubscriptions::AddOnPurchase.find_by(namespace: nil)
+      add_on = GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
 
-      active_purchase ||= create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: nil)
+      active_purchase ||= create(:gitlab_subscription_add_on_purchase, add_on: add_on, namespace: nil)
 
       active_assignment = GitlabSubscriptions::UserAddOnAssignment.find_by(
         user: the_user, add_on_purchase: active_purchase)
