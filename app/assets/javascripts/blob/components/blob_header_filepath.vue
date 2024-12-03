@@ -49,6 +49,9 @@ export default {
 
       return this.blob.name;
     },
+    linkHref() {
+      return this.showAsLink ? { href: this.blob?.webPath } : {};
+    },
   },
 };
 </script>
@@ -60,7 +63,7 @@ export default {
       <file-icon :file-name="fileName" :size="16" aria-hidden="true" css-classes="gl-mr-3" />
       <component
         :is="showAsLink ? 'gl-link' : 'strong'"
-        v-bind="showAsLink ? { href: blob?.webPath } : {}"
+        v-bind="linkHref"
         class="file-title-name mr-1 js-blob-header-filepath gl-break-all gl-font-bold"
         :class="{ '!gl-text-blue-700 hover:gl-cursor-pointer': showAsLink }"
         data-testid="file-title-content"
