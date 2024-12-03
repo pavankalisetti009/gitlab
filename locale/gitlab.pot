@@ -18970,6 +18970,9 @@ msgstr ""
 msgid "Deployment #%{iid}"
 msgstr ""
 
+msgid "Deployment ID"
+msgstr ""
+
 msgid "Deployment Target|%{linkStart}How to provision or deploy to Kubernetes clusters from GitLab?%{linkEnd}"
 msgstr ""
 
