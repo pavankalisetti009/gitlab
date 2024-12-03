@@ -450,30 +450,29 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
   end
 
   describe '#duo_home_app_data' do
+    let(:namespace_settings) { group.namespace_settings }
+
     subject(:duo_home_app_data) { helper.duo_home_app_data(group) }
 
     before do
-      allow(helper).to receive(:group_settings_gitlab_duo_seat_utilization_index_path).and_return('/path/to/seat/utilization')
+      allow(helper).to receive(:group_settings_gitlab_duo_seat_utilization_index_path).with(group).and_return('/groups/my-group/-/settings/gitlab_duo/seat_utilization')
+      allow(helper).to receive(:group_settings_gitlab_duo_configuration_index_path).with(group).and_return('/groups/my-group/-/settings/gitlab_duo/configuration')
       allow(helper).to receive(:code_suggestions_usage_app_data).and_return({ code_suggestions: 'data' })
     end
 
     it 'returns a hash with expected values and merges the result of code_suggestions_usage_app_data' do
-      expect(subject).to eq({
-        duo_seat_utilization_path: '/path/to/seat/utilization',
+      namespace_settings.update!(
+        duo_availability: 'default_on',
+        experiment_features_enabled: true
+      )
+
+      expect(helper.duo_home_app_data(group)).to eq({
+        duo_seat_utilization_path: '/groups/my-group/-/settings/gitlab_duo/seat_utilization',
+        duo_availability: 'default_on',
+        experiment_features_enabled: 'true',
+        duo_configuration_path: '/groups/my-group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data'
       })
-    end
-
-    it 'calls group_settings_gitlab_duo_seat_utilization_index_path with the group' do
-      expect(helper).to receive(:group_settings_gitlab_duo_seat_utilization_index_path).with(group)
-
-      subject
-    end
-
-    it 'calls code_suggestions_usage_app_data with the group' do
-      expect(helper).to receive(:code_suggestions_usage_app_data).with(group)
-
-      subject
     end
   end
 

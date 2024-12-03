@@ -16,13 +16,13 @@ export default {
     defaultOffHelpText: s__(
       'AiPowered|Features are not available. However, any group, subgroup, or project can turn them on.',
     ),
-    neverOnText: s__('AiPowered|Never on'),
-    neverOnHelpText: s__(
+    alwaysOffText: s__('AiPowered|Always off'),
+    alwaysOffHelpText: s__(
       'AiPowered|Features are not available and cannot be turned on for any group, subgroup, or project.',
     ),
     defaultOnString: AVAILABILITY_OPTIONS.DEFAULT_ON,
     defaultOffString: AVAILABILITY_OPTIONS.DEFAULT_OFF,
-    neverOnString: AVAILABILITY_OPTIONS.NEVER_ON,
+    alwaysOffString: AVAILABILITY_OPTIONS.NEVER_ON,
   },
   components: {
     GlSprintf,
@@ -83,11 +83,11 @@ export default {
         </template>
       </gl-form-radio>
       <gl-form-radio
-        :value="$options.i18n.neverOnString"
+        :value="$options.i18n.alwaysOffString"
         :disabled="areDuoSettingsLocked"
         @change="radioChanged"
       >
-        {{ $options.i18n.neverOnText }}
+        {{ $options.i18n.alwaysOffText }}
         <cascading-lock-icon
           v-if="showCascadingButton"
           :is-locked-by-group-ancestor="cascadingSettingsData.lockedByAncestor"
@@ -96,7 +96,7 @@ export default {
           class="gl-ml-1"
         />
         <template #help>
-          <gl-sprintf :message="$options.i18n.neverOnHelpText" />
+          <gl-sprintf :message="$options.i18n.alwaysOffHelpText" />
         </template>
       </gl-form-radio>
     </gl-form-radio-group>

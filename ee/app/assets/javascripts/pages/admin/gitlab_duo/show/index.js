@@ -17,6 +17,11 @@ export function mountGitlabDuoHomeApp() {
     subscriptionName,
     subscriptionStartDate,
     subscriptionEndDate,
+    duoConfigurationPath,
+    duoAvailability,
+    directCodeSuggestionsEnabled,
+    experimentFeaturesEnabled,
+    selfHostedModelsEnabled,
   } = el.dataset;
 
   return new Vue({
@@ -31,6 +36,11 @@ export function mountGitlabDuoHomeApp() {
       subscriptionName,
       subscriptionStartDate,
       subscriptionEndDate,
+      duoConfigurationPath,
+      duoAvailability,
+      directCodeSuggestionsEnabled: parseBoolean(directCodeSuggestionsEnabled),
+      experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
+      selfHostedModelsEnabled: parseBoolean(selfHostedModelsEnabled),
     },
     render: (h) => h(GitlabDuoHome),
   });
