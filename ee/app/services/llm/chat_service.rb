@@ -21,16 +21,6 @@ module Llm
         return error(MISSING_RESOURCE_ID_MESSAGE)
       end
 
-      if options[:agent_version_id]
-        agent_version = Ai::AgentVersion.find_by_id(options[:agent_version_id].model_id)
-        return error(agent_not_found_message) if agent_version.nil?
-
-        return error(insufficient_agent_permission_message) unless Ability.allowed?(user, :read_ai_agents,
-          agent_version.project)
-
-        @options = options.merge(agent_version_id: agent_version.id)
-      end
-
       track_internal_event(
         'request_duo_chat_response',
         user: user,
