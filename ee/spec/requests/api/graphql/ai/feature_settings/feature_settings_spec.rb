@@ -56,6 +56,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     }
   end
 
+  let(:model_name_mapper) { ::Admin::Ai::SelfHostedModelsHelper::MODEL_NAME_MAPPER }
+
   before do
     allow(::Ai::FeatureSetting).to receive(:allowed_features).and_return(test_ai_feature_enum)
   end
@@ -183,7 +185,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     {
       'id' => self_hosted.to_global_id.to_s,
       'name' => self_hosted.name,
-      'model' => self_hosted.model.to_s
+      'model' => model_name_mapper[self_hosted.model]
     }
   end
 end

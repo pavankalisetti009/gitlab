@@ -103,7 +103,7 @@ describe('SelfHostedModelsTable', () => {
         .wrappers.map((cell) => cell.text().replace(/\u200E/g, '')); // Remove U+200E left-to-right marks added by the GlTruncate component
 
       expect(firstModelTextContent).toContain('mock-self-hosted-model-1');
-      expect(firstModelTextContent).toContain('codellama');
+      expect(firstModelTextContent).toContain('Code Llama');
       expect(firstModelTextContent).toContain('https://mock-endpoint-1.com');
       expect(firstModelTextContent).toContain('provider/some-model-1');
       expect(firstModel.find('[data-testid="check-circle-icon"]').exists()).toBe(true);

@@ -10,6 +10,7 @@ query getSelfHostedModels($id: AiSelfHostedModelID) {
       featureSettings {
         nodes {
           feature
+          title
         }
       }
     }
