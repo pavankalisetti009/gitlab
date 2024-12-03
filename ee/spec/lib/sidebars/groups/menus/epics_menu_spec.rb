@@ -34,10 +34,6 @@ RSpec.describe Sidebars::Groups::Menus::EpicsMenu, feature_category: :navigation
     end
   end
 
-  it_behaves_like 'pill_count formatted results' do
-    let(:count_service) { ::Groups::EpicsCountService }
-  end
-
   it_behaves_like 'serializable as super_sidebar_menu_args' do
     let(:extra_attrs) do
       {
@@ -53,16 +49,6 @@ RSpec.describe Sidebars::Groups::Menus::EpicsMenu, feature_category: :navigation
   describe '#pill_count_field' do
     it 'returns the correct GraphQL field name' do
       expect(menu.pill_count_field).to eq('openEpicsCount')
-    end
-
-    context 'when async_sidebar_counts feature flag is disabled' do
-      before do
-        stub_feature_flags(async_sidebar_counts: false)
-      end
-
-      it 'returns nil' do
-        expect(menu.pill_count_field).to be_nil
-      end
     end
   end
 end
