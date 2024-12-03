@@ -1004,7 +1004,7 @@ _KaTeX only supports a [subset](https://katex.org/docs/supported.html) of LaTeX.
 This syntax also works in AsciiDoc wikis and files using `:stem: latexmath`. For details, see
 the [Asciidoctor user manual](https://asciidoctor.org/docs/user-manual/#activating-stem-support).
 
-To prevent malicious activity, GitLab renders only the first 50 inline math instances. 
+To prevent malicious activity, GitLab renders only the first 50 inline math instances.
 You can disable this limit [for a group](../api/graphql/reference/index.md#mutationgroupupdate)
 or for the entire [self-managed instance](../administration/instance_limits.md#math-rendering-limits).
 
@@ -1539,10 +1539,7 @@ $example = array(
 
 ## Includes
 
-> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/195798) in GitLab 17.7 [with a flag](../administration/feature_flags.md) named `markdown_include_directive`. Disabled by default.
-
-FLAG:
-The availability of this feature is controlled by a feature flag. For more information, see the history.
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/195798) in GitLab 17.7.
 
 Use includes, or include directives, to add the content of a document inside another document.
 
