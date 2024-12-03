@@ -2849,6 +2849,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_e815625b59fa() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_ebab34f83f1d() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -19021,7 +19037,8 @@ CREATE TABLE resource_link_events (
     issue_id bigint NOT NULL,
     child_work_item_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    system_note_metadata_id bigint
+    system_note_metadata_id bigint,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE resource_link_events_id_seq
@@ -32187,6 +32204,8 @@ CREATE INDEX index_resource_link_events_on_child_work_item_id ON resource_link_e
 
 CREATE INDEX index_resource_link_events_on_issue_id ON resource_link_events USING btree (issue_id);
 
+CREATE INDEX index_resource_link_events_on_namespace_id ON resource_link_events USING btree (namespace_id);
+
 CREATE INDEX index_resource_link_events_on_user_id ON resource_link_events USING btree (user_id);
 
 CREATE INDEX index_resource_milestone_events_created_at ON resource_milestone_events USING btree (created_at);
@@ -35581,6 +35600,8 @@ CREATE TRIGGER trigger_e1da4a738230 BEFORE INSERT OR UPDATE ON vulnerability_ext
 
 CREATE TRIGGER trigger_e49ab4d904a0 BEFORE INSERT OR UPDATE ON vulnerability_finding_links FOR EACH ROW EXECUTE FUNCTION trigger_e49ab4d904a0();
 
+CREATE TRIGGER trigger_e815625b59fa BEFORE INSERT OR UPDATE ON resource_link_events FOR EACH ROW EXECUTE FUNCTION trigger_e815625b59fa();
+
 CREATE TRIGGER trigger_ebab34f83f1d BEFORE INSERT OR UPDATE ON packages_debian_publications FOR EACH ROW EXECUTE FUNCTION trigger_ebab34f83f1d();
 
 CREATE TRIGGER trigger_ec1934755627 BEFORE INSERT OR UPDATE ON alert_management_alert_metric_images FOR EACH ROW EXECUTE FUNCTION trigger_ec1934755627();
@@ -36381,6 +36402,9 @@ ALTER TABLE ONLY cluster_agent_tokens
 
 ALTER TABLE ONLY protected_tag_create_access_levels
     ADD CONSTRAINT fk_7537413f9d FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY resource_link_events
+    ADD CONSTRAINT fk_75961aea6b FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY environments
     ADD CONSTRAINT fk_75c2098045 FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE SET NULL;
