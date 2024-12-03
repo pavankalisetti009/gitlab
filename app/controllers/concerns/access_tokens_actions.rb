@@ -63,7 +63,7 @@ module AccessTokensActions
   end
 
   def create_params
-    params.require(:resource_access_token).permit(:name, :expires_at, :access_level, scopes: [])
+    params.require(:resource_access_token).permit(:name, :expires_at, :description, :access_level, scopes: [])
   end
 
   # rubocop:disable Gitlab/ModuleWithInstanceVariables

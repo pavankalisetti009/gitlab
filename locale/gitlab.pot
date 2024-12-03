@@ -2946,6 +2946,9 @@ msgstr ""
 msgid "AccessTokens|Token already revoked"
 msgstr ""
 
+msgid "AccessTokens|Token description"
+msgstr ""
+
 msgid "AccessTokens|Token name"
 msgstr ""
 
