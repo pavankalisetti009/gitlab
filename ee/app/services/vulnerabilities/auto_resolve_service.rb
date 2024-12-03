@@ -72,7 +72,10 @@ module Vulnerabilities
           updated_at: now
         )
       end
-      Note.insert_all!(system_note_attrs)
+      Note.transaction do
+        results = Note.insert_all!(system_note_attrs, returning: %w[id])
+        SystemNoteMetadata.insert_all!(note_metadata_attrs(results))
+      end
     end
 
     def state_transition_attrs
@@ -104,6 +107,19 @@ module Vulnerabilities
             comment(vulnerability)
           ),
           author_id: user.id,
+          created_at: now,
+          updated_at: now
+        }
+      end
+    end
+
+    def note_metadata_attrs(results)
+      results.map do |row|
+        id = row['id']
+
+        {
+          note_id: id,
+          action: 'vulnerability_resolve',
           created_at: now,
           updated_at: now
         }
