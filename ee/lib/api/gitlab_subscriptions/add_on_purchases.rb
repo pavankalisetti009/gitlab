@@ -15,7 +15,7 @@ module API
       end
 
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-        desc 'Create an add-on purchase for the namespace' do
+        desc '[DEPRECATED] Create an add-on purchase for the namespace' do
           detail 'Creates a subscription add-on record for the given namespaces and add-on'
           success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
@@ -47,7 +47,7 @@ module API
           end
         end
 
-        desc 'Returns an add-on purchase for the namespace' do
+        desc '[DEPRECATED] Returns an add-on purchase for the namespace' do
           detail 'Gets the add-on purchase record for the given namespace and add-on'
           success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
@@ -62,7 +62,7 @@ module API
           present add_on_purchase, with: ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
         end
 
-        desc 'Update the add-on purchase for the namespace' do
+        desc '[DEPRECATED] Update the add-on purchase for the namespace' do
           detail 'Updates a subscription add-on record for the given namespaces and add-on'
           success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [

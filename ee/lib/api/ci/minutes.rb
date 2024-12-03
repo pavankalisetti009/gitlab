@@ -9,7 +9,7 @@ module API
       CI_MINUTES_TAGS = %w[ci_minutes].freeze
 
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-        desc 'Create a compute minutes purchase record for the namespace' do
+        desc '[DEPRECATED] Create a compute minutes purchase record for the namespace' do
           detail 'Creates an additional pack'
           success ::EE::API::Entities::Ci::Minutes::AdditionalPack
           failure [
@@ -41,7 +41,7 @@ module API
           end
         end
 
-        desc 'Transfer purchased compute minutes packs to another namespace' do
+        desc '[DEPRECATED] Transfer purchased compute minutes packs to another namespace' do
           detail 'Moves additional packs from one namespace to another'
           success code: 202
           failure [
