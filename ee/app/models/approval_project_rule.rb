@@ -3,6 +3,7 @@
 class ApprovalProjectRule < ApplicationRecord
   include ApprovalRuleLike
   include Auditable
+  include ::Gitlab::Utils::StrongMemoize
   extend ::Gitlab::Utils::Override
 
   UNSUPPORTED_SCANNER = 'cluster_image_scanning'
@@ -74,6 +75,7 @@ class ApprovalProjectRule < ApplicationRecord
   end
 
   def applies_to_branch?(branch)
+    return false if ignore_policy_rules_for_unprotected_branches?(branch)
     return !applies_to_all_protected_branches? if protected_branches.empty?
 
     # Call `ProtectedBranch.matching` with `protected_branches` passed as `protected_refs`
@@ -82,13 +84,13 @@ class ApprovalProjectRule < ApplicationRecord
     #
     # Without this, a SQL query per rule will be executed as `ProtectedRef.matching`
     # will call `#all` on the relation even if it's already loaded.
-    return ProtectedBranch.matching(branch, protected_refs: protected_branches).any? if protected_branches.loaded?
+    return protected_branch_matches?(branch, protected_branches) if protected_branches.loaded?
 
     protected_branches.matching(branch).any?
   end
 
   def protected_branches
-    return project.all_protected_branches if applies_to_all_protected_branches?
+    return all_protected_branches_for_project if applies_to_all_protected_branches?
 
     super
   end
@@ -225,4 +227,25 @@ class ApprovalProjectRule < ApplicationRecord
   def track_creation_event
     Gitlab::UsageDataCounters::HLLRedisCounter.track_event(APPROVAL_PROJECT_RULE_CREATION_EVENT, values: self.id)
   end
+
+  def ignore_policy_rules_for_unprotected_branches?(branch)
+    from_scan_result_policy? &&
+      Feature.enabled?(:ignore_policies_for_unprotected_branches, project) &&
+      !branch_protected_in_project?(branch)
+  end
+
+  def branch_protected_in_project?(branch)
+    protected_branch_matches?(branch, all_protected_branches_for_project)
+  end
+
+  def protected_branch_matches?(branch, protected_refs)
+    strong_memoize_with(:protected_branch_matches, branch, protected_refs) do
+      ProtectedBranch.matching(branch, protected_refs: protected_refs).any?
+    end
+  end
+
+  def all_protected_branches_for_project
+    project.all_protected_branches
+  end
+  strong_memoize_attr :all_protected_branches_for_project
 end
