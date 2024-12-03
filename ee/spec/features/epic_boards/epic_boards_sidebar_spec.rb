@@ -295,7 +295,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
     end
 
     context 'todo' do
-      it 'creates todo when clicking button' do
+      it 'creates todo when clicking button', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/501253' do
         click_card(card)
         wait_for_requests
 
