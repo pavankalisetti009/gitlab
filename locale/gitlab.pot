@@ -35319,6 +35319,9 @@ msgstr ""
 msgid "MlModelRegistry|Creating models, model versions and candidates is also possible using the MLflow client:"
 msgstr ""
 
+msgid "MlModelRegistry|Default experiment"
+msgstr ""
+
 msgid "MlModelRegistry|Delete model"
 msgstr ""
 
