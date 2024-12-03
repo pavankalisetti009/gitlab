@@ -14,7 +14,6 @@
     "tailwindcss:build": "node scripts/frontend/tailwindcss.mjs",
     "jest": "jest --config jest.config.js",
     "jest-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
-    "jest:ci:build-cache": "./scripts/frontend/warm_jest_cache.mjs",
     "jest:ci:without-fixtures": "jest --config jest.config.js --ci --testSequencer ./scripts/frontend/fixture_ci_sequencer.js --shard \"${CI_NODE_INDEX:-1}/${CI_NODE_TOTAL:-1}\" --logHeapUsage",
     "jest:ci:with-fixtures": "JEST_FIXTURE_JOBS_ONLY=1 jest --config jest.config.js --ci --testSequencer ./scripts/frontend/fixture_ci_sequencer.js --shard \"${CI_NODE_INDEX:-1}/${CI_NODE_TOTAL:-1}\" --logHeapUsage",
     "jest:ci:predictive-without-fixtures": "jest --config jest.config.js --ci --findRelatedTests $(cat $RSPEC_CHANGED_FILES_PATH) $(cat $RSPEC_MATCHING_JS_FILES_PATH) --passWithNoTests --testSequencer ./scripts/frontend/fixture_ci_sequencer.js --shard \"${CI_NODE_INDEX:-1}/${CI_NODE_TOTAL:-1}\" --logHeapUsage",

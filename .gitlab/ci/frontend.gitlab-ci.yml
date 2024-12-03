@@ -263,7 +263,7 @@ jest-build-cache:
     paths:
       - tmp/cache/jest/
   script:
-    - run_timed_command "yarn jest:ci:build-cache"
+    - run_timed_command "scripts/frontend/warm_jest_cache.mjs"
   variables:
     # Propagate exit code correctly. See https://gitlab.com/groups/gitlab-org/-/epics/6074.
     FF_USE_NEW_BASH_EVAL_STRATEGY: 'true'
