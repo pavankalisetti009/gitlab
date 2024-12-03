@@ -14,13 +14,10 @@ module Admin
 
     before_action do
       push_frontend_feature_flag(:enable_add_on_users_filtering)
+      push_frontend_feature_flag(:duo_page_configuration_settings_box, :instance, type: :wip)
     end
 
-    def show
-      @subscription_name = License.current.subscription_name
-      @subscription_start_date = License.current.starts_at
-      @subscription_end_date = License.current.expires_at
-    end
+    def show; end
 
     private
 

@@ -31,9 +31,9 @@ describe('DuoAvailabilityForm', () => {
   it('renders radio buttons with correct labels', () => {
     wrapper = createComponent();
     expect(findFormRadioButtons()).toHaveLength(3);
-    expect(findFormRadioButtons().at(0).text()).toContain(DuoAvailabilityForm.i18n.defaultOnText);
-    expect(findFormRadioButtons().at(1).text()).toContain(DuoAvailabilityForm.i18n.defaultOffText);
-    expect(findFormRadioButtons().at(2).text()).toContain(DuoAvailabilityForm.i18n.neverOnText);
+    expect(findFormRadioButtons().at(0).text()).toContain('On by default');
+    expect(findFormRadioButtons().at(1).text()).toContain('Off by default');
+    expect(findFormRadioButtons().at(2).text()).toContain('Always off');
   });
 
   it('emits change event when radio button is selected', () => {

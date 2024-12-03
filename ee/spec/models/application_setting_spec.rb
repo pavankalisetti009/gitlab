@@ -337,7 +337,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       where(:duo_availability, :duo_features_enabled_expectation, :lock_duo_features_enabled_expectation) do
         "default_on"  | true  | false
         "default_off" | false | false
-        "never_on"    | false | true
+        "never_on" | false | true
       end
 
       with_them do

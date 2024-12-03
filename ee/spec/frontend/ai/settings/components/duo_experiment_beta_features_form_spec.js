@@ -54,13 +54,14 @@ describe('DuoExperimentBetaFeaturesForm', () => {
     });
 
     it('renders the title and form group', () => {
-      expect(wrapper.find('h5').text()).toBe('GitLab Duo experiment and beta features');
-      expect(findFormGroup().exists()).toBe(true);
+      expect(wrapper.find('h5').text()).toBe('Feature preview');
     });
 
     it('renders the checkbox with correct label', () => {
       expect(findFormCheckbox().exists()).toBe(true);
-      expect(findFormCheckbox().text()).toContain('Use experiment and beta GitLab Duo features');
+      expect(findFormCheckbox().text()).toContain(
+        'Turn on experiment and beta GitLab Duo features',
+      );
     });
 
     it('sets initial checkbox state based on experimentFeaturesEnabled prop when unselected', () => {
@@ -77,9 +78,7 @@ describe('DuoExperimentBetaFeaturesForm', () => {
     });
 
     it('renders correct links', () => {
-      const experimentBetaHelpLink = wrapper.findComponent(GlLink);
       const testingAgreementLink = wrapper.findComponent(PromoPageLink);
-      expect(experimentBetaHelpLink.attributes('href')).toBe(MOCK_DATA.experimentBetaHelpPath);
       expect(testingAgreementLink.props('path')).toBe(MOCK_DATA.testingAgreementPath);
     });
   });

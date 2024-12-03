@@ -34,6 +34,23 @@ module Admin
       CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
     end
 
+    def admin_duo_home_app_data
+      subscription_name = License.current.subscription_name
+      {
+        duo_seat_utilization_path: admin_gitlab_duo_seat_utilization_index_path,
+        duo_configuration_path: admin_gitlab_duo_configuration_index_path,
+        add_duo_pro_seats_url: add_duo_pro_seats_url(subscription_name),
+        subscription_name: subscription_name,
+        is_bulk_add_on_assignment_enabled: 'true',
+        subscription_start_date: License.current.starts_at,
+        subscription_end_date: License.current.expires_at,
+        duo_availability: duo_availability,
+        direct_code_suggestions_enabled: ::Gitlab::CurrentSettings.disabled_direct_code_suggestions.to_s,
+        experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+        self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s
+      }
+    end
+
     def admin_ai_general_settings_helper_data
       {
         on_general_settings_page: 'true',

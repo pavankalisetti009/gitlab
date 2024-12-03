@@ -178,4 +178,49 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
       it { is_expected.to be_nil }
     end
   end
+
+  describe '#admin_duo_home_app_data' do
+    let(:starts_at) { Date.current }
+    let(:expires_at) { Date.current + 1.year }
+    let(:license) { build(:gitlab_license, starts_at: starts_at, expires_at: expires_at) }
+    let(:subscription_name) { 'Test Subscription Name' }
+
+    before do
+      allow(License).to receive(:current).and_return(license)
+      allow(license).to receive_messages(
+        subscription_name: subscription_name,
+        subscription_start_date: starts_at,
+        subscription_end_date: expires_at
+      )
+
+      allow(helper).to receive_messages(
+        admin_gitlab_duo_seat_utilization_index_path: '/admin/gitlab_duo/seat_utilization',
+        admin_gitlab_duo_configuration_index_path: '/admin/gitlab_duo/configuration',
+        duo_pro_bulk_user_assignment_available?: true,
+        duo_availability: 'default_off',
+        instance_level_ai_beta_features_enabled: true
+      )
+
+      allow(helper).to receive(:add_duo_pro_seats_url).with(subscription_name).and_return('https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats')
+      allow(Gitlab::CurrentSettings).to receive_message_chain(:current,
+        :disabled_direct_code_suggestions).and_return(false)
+      allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+    end
+
+    it 'returns a hash with all required keys and correct values' do
+      expect(helper.admin_duo_home_app_data).to eq({
+        duo_seat_utilization_path: '/admin/gitlab_duo/seat_utilization',
+        duo_configuration_path: '/admin/gitlab_duo/configuration',
+        add_duo_pro_seats_url: 'https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats',
+        subscription_name: 'Test Subscription Name',
+        is_bulk_add_on_assignment_enabled: 'true',
+        subscription_start_date: starts_at,
+        subscription_end_date: expires_at,
+        duo_availability: 'default_off',
+        direct_code_suggestions_enabled: 'false',
+        experiment_features_enabled: 'true',
+        self_hosted_models_enabled: 'true'
+      })
+    end
+  end
 end
