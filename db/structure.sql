@@ -2177,6 +2177,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_8d661362aa1a() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_8e66b994e8f0() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -13713,6 +13729,7 @@ CREATE TABLE issue_email_participants (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     email text NOT NULL,
+    namespace_id bigint,
     CONSTRAINT check_2c321d408d CHECK ((char_length(email) <= 255))
 );
 
@@ -30770,6 +30787,8 @@ CREATE INDEX index_issue_customer_relations_contacts_on_contact_id ON issue_cust
 
 CREATE UNIQUE INDEX index_issue_email_participants_on_issue_id_and_lower_email ON issue_email_participants USING btree (issue_id, lower(email));
 
+CREATE INDEX index_issue_email_participants_on_namespace_id ON issue_email_participants USING btree (namespace_id);
+
 CREATE INDEX index_issue_emails_on_email_message_id ON issue_emails USING btree (email_message_id);
 
 CREATE INDEX index_issue_emails_on_issue_id ON issue_emails USING btree (issue_id);
@@ -35512,6 +35531,8 @@ CREATE TRIGGER trigger_8d002f38bdef BEFORE INSERT OR UPDATE ON packages_debian_g
 
 CREATE TRIGGER trigger_8d17725116fe BEFORE INSERT OR UPDATE ON merge_request_reviewers FOR EACH ROW EXECUTE FUNCTION trigger_8d17725116fe();
 
+CREATE TRIGGER trigger_8d661362aa1a BEFORE INSERT OR UPDATE ON issue_email_participants FOR EACH ROW EXECUTE FUNCTION trigger_8d661362aa1a();
+
 CREATE TRIGGER trigger_8e66b994e8f0 BEFORE INSERT OR UPDATE ON audit_events_streaming_event_type_filters FOR EACH ROW EXECUTE FUNCTION trigger_8e66b994e8f0();
 
 CREATE TRIGGER trigger_8fbb044c64ad BEFORE INSERT OR UPDATE ON design_management_designs FOR EACH ROW EXECUTE FUNCTION trigger_8fbb044c64ad();
@@ -36258,6 +36279,9 @@ ALTER TABLE ONLY packages_conan_file_metadata
 
 ALTER TABLE ONLY user_broadcast_message_dismissals
     ADD CONSTRAINT fk_5c0cfb74ce FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY issue_email_participants
+    ADD CONSTRAINT fk_5cb5a5b4f0 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY boards_epic_lists
     ADD CONSTRAINT fk_5cbb450986 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
