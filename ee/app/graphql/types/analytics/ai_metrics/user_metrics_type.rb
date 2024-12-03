@@ -6,6 +6,7 @@ module Types
       # rubocop: disable Graphql/AuthorizeTypes -- always authorized by Resolver
       class UserMetricsType < BaseObject
         graphql_name 'AiUserMetrics'
+        description "Pre-aggregated per-user metrics for GitLab Code Suggestions and GitLab Duo Chat."
 
         field :code_suggestions_accepted_count, GraphQL::Types::Int,
           description: 'Total count of code suggestions accepted by the user.',
@@ -14,7 +15,7 @@ module Types
           description: 'Number of user interactions with GitLab Duo Chat.',
           null: true
         field :user, Types::UserType,
-          description: 'Metrics user.',
+          description: 'User metrics.',
           null: false
 
         alias_method :user, :object
