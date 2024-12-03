@@ -43,7 +43,6 @@ module QA
           QA::Page::Main::Menu.perform(&:sign_out_if_signed_in)
           QA::Page::Main::Login.perform(&:sign_in_using_admin_credentials)
           QA::Page::Main::Menu.perform(&:go_to_admin_area)
-          QA::Page::Main::Login.perform(&:set_up_new_admin_password_if_required)
           QA::Page::Admin::Menu.perform(&:click_subscription_menu_link)
 
           EE::Page::Admin::Settings::Component::AddLicense.perform do |admin_settings|
