@@ -33,7 +33,7 @@ RSpec.shared_context 'with experiment features disabled for group' do
 end
 
 RSpec.shared_context 'with duo features enabled and ai chat available for self-managed' do
-  include_context 'with duo pro addon'
+  include_context 'with duo pro self-managed addon'
 
   before do
     allow(Gitlab).to receive(:org_or_com?).and_return(false)
@@ -43,7 +43,7 @@ RSpec.shared_context 'with duo features enabled and ai chat available for self-m
 end
 
 RSpec.shared_context 'with duo features enabled and ai chat not available for self-managed' do
-  include_context 'with duo pro addon'
+  include_context 'with duo pro self-managed addon'
 
   before do
     allow(Gitlab).to receive(:org_or_com?).and_return(false)
@@ -53,7 +53,7 @@ RSpec.shared_context 'with duo features enabled and ai chat not available for se
 end
 
 RSpec.shared_context 'with duo features disabled and ai chat available for self-managed' do
-  include_context 'with duo pro addon'
+  include_context 'with duo pro self-managed addon'
 
   before do
     allow(Gitlab).to receive(:org_or_com?).and_return(false)
@@ -115,6 +115,41 @@ RSpec.shared_context 'with duo pro addon' do
       active_purchase = GitlabSubscriptions::AddOnPurchase.find_by(namespace: group)
 
       active_purchase ||= create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group)
+
+      active_assignment = GitlabSubscriptions::UserAddOnAssignment.find_by(
+        user: the_user, add_on_purchase: active_purchase)
+
+      unless active_assignment
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: the_user,
+          add_on_purchase: active_purchase
+        )
+      end
+    end
+  end
+end
+
+RSpec.shared_context 'with duo pro self-managed addon' do
+  # To accommodate existing specs that use this config
+  # this helper assign seat in an addon for both
+  # current_user or user depends on which one is defined
+  before do
+    the_user = if defined?(current_user) && current_user.present?
+                 current_user
+               elsif defined?(user) && user.present?
+                 user
+               else
+                 false
+               end
+
+    if the_user
+      # As this context could be included in tests multiple times,
+      # we first search by active purchases and are trying to not create
+      # entities twice because it will cause an ActiveRecord error in tests
+      active_purchase = GitlabSubscriptions::AddOnPurchase.find_by(namespace: nil)
+
+      active_purchase ||= create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: nil)
 
       active_assignment = GitlabSubscriptions::UserAddOnAssignment.find_by(
         user: the_user, add_on_purchase: active_purchase)
