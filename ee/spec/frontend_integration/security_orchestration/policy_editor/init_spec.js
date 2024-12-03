@@ -14,8 +14,10 @@ const TEST_DATASET = {
   globalGroupApproversEnabled: 'true',
   maxActiveScanExecutionPoliciesReached: 'false',
   maxActiveScanResultPoliciesReached: 'false',
+  maxActiveVulnerabilityManagementPoliciesReached: 'false',
   maxScanExecutionPoliciesAllowed: '5',
   maxScanResultPoliciesAllowed: '5',
+  maxVulnerabilityManagementPoliciesAllowed: '5',
   roleApproverTypes: '["developer", "maintainer", "owner"]',
   softwareLicenses: '["3dfx Glide License"]',
   timezones:
