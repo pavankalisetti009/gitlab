@@ -65185,6 +65185,9 @@ msgstr ""
 msgid "ciReport|API fuzzing"
 msgstr ""
 
+msgid "ciReport|Advanced SAST Scanning"
+msgstr ""
+
 msgid "ciReport|All tools"
 msgstr ""
 
