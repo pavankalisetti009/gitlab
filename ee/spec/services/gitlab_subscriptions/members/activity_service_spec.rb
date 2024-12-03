@@ -27,29 +27,50 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
     subject(:execute) { instance.execute }
 
     describe 'with valid params', :freeze_time do
-      it 'create a new seat assignment record' do
-        expect do
-          expect(execute).to be_success
-        end.to change {
-          GitlabSubscriptions::SeatAssignment.where(
-            namespace: namespace, user: user, last_activity_on: Time.current
-          ).count
-        }
+      let_it_be(:membership) { namespace.add_developer(user) }
+
+      context 'when a seat assignment record does not exist' do
+        it 'create a new seat assignment record' do
+          expect do
+            expect(execute).to be_success
+          end.to change {
+            GitlabSubscriptions::SeatAssignment.where(
+              namespace: namespace, user: user, last_activity_on: Time.current
+            ).count
+          }
+        end
+
+        context 'when the user is not a member of the namespace' do
+          before do
+            membership.destroy!
+          end
+
+          it 'returns an error' do
+            response = execute
+
+            expect(response).to be_error
+            expect(response.message).to eq('Member activity could not be tracked')
+          end
+        end
       end
 
-      it 'updates the existing seat_assignment record' do
-        seat_assignment = create(:gitlab_subscription_seat_assignment, namespace: namespace, user: user)
+      context 'when a seat_assignment record exists' do
+        it 'updates the existing seat_assignment record' do
+          seat_assignment = create(:gitlab_subscription_seat_assignment, namespace: namespace, user: user)
 
-        expect do
-          expect(execute).to be_success
-        end.to change { seat_assignment.reload.last_activity_on }
-          .from(nil).to(Time.current)
+          expect do
+            expect(execute).to be_success
+          end.to change { seat_assignment.reload.last_activity_on }
+            .from(nil).to(Time.current)
+        end
       end
 
       context 'with project belonging to a group' do
         let(:namespace) { build(:project, namespace: create(:group)) }
 
         it 'returns success' do
+          namespace.root_ancestor.add_developer(user)
+
           expect do
             expect(execute).to be_success
           end.to change { GitlabSubscriptions::SeatAssignment.count }.by(1)
@@ -64,12 +85,12 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
       end
 
       context 'when a lease cannot be obtained' do
-        it 'returns success, without updating any record' do
+        it 'returns error, without updating any record' do
           stub_exclusive_lease_taken(lease_key)
 
           expect(instance).not_to receive(:seat_assignment)
 
-          expect(execute).to be_success
+          expect(execute).to be_error
         end
       end
     end
