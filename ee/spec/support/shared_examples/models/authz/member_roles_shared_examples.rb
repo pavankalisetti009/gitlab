@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_context 'with member roles assigned to group links' do
+RSpec.shared_context 'with multiple users in a group with custom roles' do
   let_it_be(:invited_group) { create(:group) }
 
   let_it_be(:guest_read_runners) do
@@ -89,6 +89,90 @@ RSpec.shared_examples 'returns expected member role abilities' do
 
         it 'returns empty array' do
           expect(result[source.id]).to match_array([])
+        end
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+        end
+
+        it 'returns empty array' do
+          expect(result[source.id]).to match_array([])
+        end
+      end
+    end
+
+    context 'when on self-managed' do
+      context 'when feature-flag `assign_custom_roles_to_group_links_sm` is enabled' do
+        it 'returns expected result' do
+          expect(result[source.id]).to match_array(expected_result)
+        end
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links_sm` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_sm: false)
+        end
+
+        it 'returns empty array' do
+          expect(result[source.id]).to match_array([])
+        end
+      end
+    end
+  end
+end
+
+RSpec.shared_context 'with a user in multiple groups with custom role' do
+  let_it_be(:group_a) { create(:group) }
+  let_it_be(:group_b) { create(:group) }
+
+  let_it_be(:user) { create(:user) }
+
+  let_it_be(:reporter_member_role) { create(:member_role, :reporter, :instance, admin_cicd_variables: true) }
+
+  let_it_be(:member_a) { create(:group_member, :reporter, source: group_a, user: user) }
+  let_it_be(:member_b) do
+    create(:group_member, :reporter, source: group_b, user: user, member_role: reporter_member_role)
+  end
+end
+
+RSpec.shared_examples 'returns expected member role abilities for the user' do
+  using RSpec::Parameterized::TableSyntax
+
+  where(:group_a_access, :group_a_member_role, :group_b_access, :group_b_member_role, :expected_result) do
+    Gitlab::Access::REPORTER | nil | Gitlab::Access::DEVELOPER | nil | [:admin_cicd_variables]
+    Gitlab::Access::REPORTER | nil | Gitlab::Access::REPORTER | nil | []
+    Gitlab::Access::REPORTER | nil | Gitlab::Access::REPORTER | ref(:reporter_member_role) | [:admin_cicd_variables]
+  end
+
+  with_them do
+    before do
+      create(
+        :group_group_link,
+        group_access: group_a_access,
+        member_role: group_a_member_role,
+        shared_group: group,
+        shared_with_group: group_a
+      )
+
+      create(
+        :group_group_link,
+        group_access: group_b_access,
+        member_role: group_b_member_role,
+        shared_group: group,
+        shared_with_group: group_b
+      )
+    end
+
+    context 'when on SaaS', :saas do
+      context 'when feature-flag `assign_custom_roles_to_group_links_saas` for group is enabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_saas: [group])
+        end
+
+        it 'returns expected result' do
+          expect(result[source.id]).to match_array(expected_result)
         end
       end
 

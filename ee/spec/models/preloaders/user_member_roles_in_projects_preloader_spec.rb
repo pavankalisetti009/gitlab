@@ -166,10 +166,17 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
     it_behaves_like 'custom roles', ability
   end
 
-  context 'when project namespace has a group link assigned to a custom role' do
+  context "when project's parent group invites a group with a custom role" do
     let(:source) { project }
 
-    include_context 'with member roles assigned to group links'
+    include_context 'with multiple users in a group with custom roles'
     it_behaves_like 'returns expected member role abilities'
+  end
+
+  context "when project's parent group invites multiple groups with a custom role" do
+    let(:source) { project }
+
+    include_context 'with a user in multiple groups with custom role'
+    it_behaves_like 'returns expected member role abilities for the user'
   end
 end

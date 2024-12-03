@@ -827,7 +827,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
   describe '.with_group_group_sharing_access' do
     let_it_be(:shared_group) { create(:group) }
 
-    include_context 'with member roles assigned to group links' do
+    include_context 'with multiple users in a group with custom roles' do
       let(:group) { shared_group }
     end
 
