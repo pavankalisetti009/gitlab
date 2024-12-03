@@ -9,7 +9,13 @@ module Ai
     validate :validates_singleton
 
     def self.instance
-      first_or_create!
+      first || create!(defaults)
+    rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+      first
+    end
+
+    def self.defaults
+      { ai_gateway_url: ENV['AI_GATEWAY_URL'] }
     end
 
     private

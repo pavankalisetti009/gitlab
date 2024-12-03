@@ -60,6 +60,38 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         expect(described_class.count).to eq(1)
         expect(first_instance).to eq(second_instance)
       end
+
+      it "handles concurrent requests without uniqueness violations" do
+        setting.destroy!
+        barrier = Concurrent::CyclicBarrier.new(2)
+
+        allow(described_class).to receive(:first) do
+          # Simulate slow database query to force race condition
+          sleep 0.1
+          nil
+        end
+
+        thread1 = Thread.new do
+          ApplicationRecord.connection_pool.with_connection do
+            barrier.wait
+            described_class.instance
+          end
+        end
+
+        thread2 = Thread.new do
+          ApplicationRecord.connection_pool.with_connection do
+            barrier.wait
+            described_class.instance
+          end
+        end
+
+        expect do
+          thread1.join
+          thread2.join
+        end.not_to raise_error
+
+        expect(described_class.count).to eq(1)
+      end
     end
   end
 end
