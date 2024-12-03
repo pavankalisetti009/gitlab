@@ -242,7 +242,7 @@ RSpec.describe 'GraphQL', feature_category: :shared do
 
         post_graphql(query, headers: { 'X-CSRF-Token' => 'invalid' })
 
-        expect(response).to have_gitlab_http_status(:internal_server_error)
+        expect(response).to have_gitlab_http_status(:forbidden)
       end
 
       it 'authenticates a user with a valid session token' do
