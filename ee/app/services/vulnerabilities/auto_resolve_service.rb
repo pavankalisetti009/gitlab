@@ -10,13 +10,13 @@ module Vulnerabilities
     end
 
     def execute
-      return ServiceResponse.success if policies.blank?
+      return ServiceResponse.success(payload: { count: 0 }) if policies.blank?
       return error_response unless can_create_state_transitions?
 
       resolve_vulnerabilities
       refresh_statistics
 
-      ServiceResponse.success
+      ServiceResponse.success(payload: { count: vulnerabilities_to_resolve.size })
     rescue ActiveRecord::ActiveRecordError
       error_response
     end

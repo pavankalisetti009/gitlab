@@ -14,6 +14,9 @@ module Security
       CS_SCANNERS_EXTERNAL_IDS = %w[trivy].freeze
       DS_SCANNERS_EXTERNAL_IDS = %w[gemnasium gemnasium-maven gemnasium-python].freeze
 
+      BATCH_SIZE = 1000
+      AUTO_RESOLVE_LIMIT = 1000
+
       def self.execute(scanner, ingested_ids)
         new(scanner, ingested_ids).execute
       end
@@ -21,6 +24,7 @@ module Security
       def initialize(scanner, ingested_ids)
         @scanner = scanner
         @ingested_ids = ingested_ids
+        @auto_resolved_count = 0
       end
 
       def execute
@@ -28,7 +32,7 @@ module Security
 
         vulnerability_reads
           .by_scanner(scanner)
-          .each_batch { |batch| process_batch(batch) }
+          .each_batch(of: BATCH_SIZE) { |batch| process_batch(batch) }
 
         if scanner_for_container_scanning?
           process_existing_cvs_vulnerabilities_for_container_scanning
@@ -39,6 +43,7 @@ module Security
 
       private
 
+      attr_accessor :auto_resolved_count
       attr_reader :ingested_ids, :scanner
 
       delegate :project, to: :scanner, private: true
@@ -64,8 +69,11 @@ module Security
 
       def auto_resolve(missing_ids)
         return unless auto_resolve_enabled?
+        return unless auto_resolved_count < AUTO_RESOLVE_LIMIT
 
-        Vulnerabilities::AutoResolveService.new(project, missing_ids).execute
+        result = Vulnerabilities::AutoResolveService.new(project, missing_ids).execute
+
+        @auto_resolved_count += result.payload[:count] if result.success?
       end
 
       def auto_resolve_enabled?
