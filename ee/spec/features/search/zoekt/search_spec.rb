@@ -51,7 +51,8 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     choose_group(group)
   end
 
-  it 'finds files with a regex search and allows filtering down again by project' do
+  it 'finds files with a regex search and allows filtering down again by project',
+    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/490987' do
     stub_feature_flags(zoekt_multimatch_frontend: false)
 
     select_search_scope('Code')
