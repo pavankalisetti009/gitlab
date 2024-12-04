@@ -327,7 +327,6 @@ spec/frontend/super_sidebar/components/nav_item_router_link_spec.js
 spec/frontend/super_sidebar/components/organization_switcher_spec.js
 spec/frontend/super_sidebar/components/sidebar_portal_spec.js
 spec/frontend/super_sidebar/components/user_menu_spec.js
-spec/frontend/tags/components/delete_tag_modal_spec.js
 spec/frontend/tags/init_delete_tag_modal_spec.js
 spec/frontend/tooltips/components/tooltips_spec.js
 spec/frontend/tooltips/index_spec.js
