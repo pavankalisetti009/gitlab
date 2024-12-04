@@ -4,9 +4,10 @@ module Vulnerabilities
   class AutoResolveService
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(project, vulnerability_ids)
+    def initialize(project, vulnerability_ids, budget)
       @project = project
       @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).unresolved
+      @budget = budget
     end
 
     def execute
@@ -23,10 +24,10 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :vulnerability_reads
+    attr_reader :project, :vulnerability_reads, :budget
 
     def vulnerabilities_to_resolve
-      rules_by_vulnerability.keys
+      rules_by_vulnerability.keys.first(budget)
     end
 
     def rules_by_vulnerability
