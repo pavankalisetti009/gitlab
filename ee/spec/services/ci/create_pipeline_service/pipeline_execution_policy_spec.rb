@@ -476,7 +476,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
-  describe 'variables precedence' do
+  describe 'variables' do
     let(:opts) { { variables_attributes: [{ key: 'TEST_TOKEN', value: 'run token' }] } }
     let(:project_ci_yaml) do
       <<~YAML
@@ -573,6 +573,37 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         test_stage = stages.find_by(name: 'test')
 
         expect(test_stage.builds.map(&:name)).to include('secret_detection')
+      end
+    end
+
+    context 'when using pipeline variables to conditionally run policy jobs' do
+      let(:opts) { { variables_attributes: [{ key: 'POLICY_ONLY', value: 'true' }] } }
+
+      let(:project_policy_content) do
+        {
+          project_policy_job: {
+            script: 'project script'
+          }
+        }
+      end
+
+      let(:namespace_policy_content) do
+        {
+          namespace_policy_job: {
+            rules: [{ if: '$POLICY_ONLY == "true"', when: 'never' }, { when: 'always' }],
+            script: 'namespace script'
+          }
+        }
+      end
+
+      it 'creates pipeline without namespace_policy_job', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(3)
+
+        stages = execute.payload.stages
+        expect(stages.map(&:name)).to contain_exactly('build', 'test')
+
+        expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('project-build')
+        expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('project_policy_job', 'project-test')
       end
     end
   end
