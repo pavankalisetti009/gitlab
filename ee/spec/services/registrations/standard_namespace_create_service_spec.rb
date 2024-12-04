@@ -9,7 +9,6 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
     let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
     let_it_be(:group) { create(:group, owners: user) }
     let_it_be(:organization) { create(:organization) }
-    let(:glm_params) { {} }
     let(:group_params) do
       {
         name: 'Group name',
@@ -36,7 +35,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
 
     subject(:execute) do
       described_class
-        .new(user, glm_params: glm_params, group_params: group_params, project_params: project_params).execute
+        .new(user, group_params: group_params, project_params: project_params).execute
     end
 
     context 'when group and project can be created' do
@@ -205,19 +204,16 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
     end
 
     context 'with applying for a trial' do
-      let(:glm_params) do
-        { glm_source: 'about.gitlab.com', glm_content: 'content' }
-      end
-
+      let(:glm_content) { 'content' }
+      let(:glm_source) { 'about.gitlab.com' }
+      let(:extra_information) { { glm_content: glm_content, glm_source: glm_source } }
       let(:trial_user_information) do
         {
-          glm_source: 'about.gitlab.com',
-          glm_content: 'content',
           namespace_id: group.id,
           gitlab_com_trial: true,
           sync_to_gl: true,
           namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on)
-        }
+        }.merge(extra_information)
       end
 
       before do
@@ -226,7 +222,12 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         end
 
         stub_saas_features(onboarding: true)
-        user.update!(onboarding_status_initial_registration_type: 'trial', onboarding_status_registration_type: 'trial')
+        user.update!(
+          onboarding_status_initial_registration_type: 'trial',
+          onboarding_status_registration_type: 'trial',
+          onboarding_status_glm_source: glm_source,
+          onboarding_status_glm_content: glm_content
+        )
       end
 
       it 'applies a trial' do
@@ -234,6 +235,19 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
           .to receive(:perform_async).with(user.id, trial_user_information.stringify_keys).and_call_original
 
         expect(execute).to be_success
+      end
+
+      context 'when glm params are nil' do
+        let(:glm_content) { nil }
+        let(:glm_source) { nil }
+        let(:extra_information) { {} }
+
+        it 'does not pass the glm parameters to the worker' do
+          expect(GitlabSubscriptions::Trials::ApplyTrialWorker)
+            .to receive(:perform_async).with(user.id, trial_user_information.stringify_keys).and_call_original
+
+          expect(execute).to be_success
+        end
       end
 
       context 'when a group already exists applying a trial is not attempted' do

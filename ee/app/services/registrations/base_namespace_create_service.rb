@@ -5,15 +5,14 @@ module Registrations
     include BaseServiceUtility
     include Gitlab::Experiment::Dsl
 
-    def initialize(user, glm_params:, group_params:)
+    def initialize(user, group_params:)
       @user = user
-      @glm_params = glm_params.dup
       @group_params = group_params.dup
     end
 
     private
 
-    attr_reader :user, :glm_params, :project, :group, :group_params
+    attr_reader :user, :project, :group, :group_params
 
     def after_successful_group_creation(group_track_action:)
       ::Groups::CreateEventWorker.perform_async(group.id, user.id, 'created')
@@ -35,14 +34,19 @@ module Registrations
 
     def apply_trial
       trial_user_information = {
-        **glm_params,
         namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on),
         namespace_id: group.id,
         gitlab_com_trial: true,
-        sync_to_gl: true
+        sync_to_gl: true,
+        **glm_params
       }
 
-      GitlabSubscriptions::Trials::ApplyTrialWorker.perform_async(user.id, trial_user_information.stringify_keys)
+      # deep_stringify_keys to ensure fully compliant with the worker's contract on the exact hash type.
+      GitlabSubscriptions::Trials::ApplyTrialWorker.perform_async(user.id, trial_user_information.deep_stringify_keys)
+    end
+
+    def glm_params
+      { glm_content: user.onboarding_status_glm_content, glm_source: user.onboarding_status_glm_source }.compact
     end
 
     def group_needs_path_added?
