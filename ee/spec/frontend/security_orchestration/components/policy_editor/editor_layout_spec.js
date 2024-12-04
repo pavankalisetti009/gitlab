@@ -60,6 +60,7 @@ describe('EditorLayout component', () => {
     });
   };
 
+  const findRootSection = () => wrapper.find('section');
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findNameInput = () => wrapper.findComponent(GlFormInput);
   const findDescriptionTextArea = () => wrapper.findComponent(GlFormTextarea);
@@ -392,6 +393,21 @@ describe('EditorLayout component', () => {
       expect(glTooltipDirectiveMock.mock.calls[0][1].value.title).toBe(
         "You've reached the maximum limit of 5 scan execution policies allowed. Policies are disabled when added.",
       );
+    });
+  });
+
+  describe('layout class', () => {
+    it('renders default layout class', () => {
+      factory();
+
+      expect(findRootSection().classes()).toContain('security-policies');
+    });
+
+    it('renders wider layout for new yaml format', () => {
+      factory({ provide: { glFeatures: { securityPoliciesNewYamlFormat: true } } });
+
+      expect(findRootSection().classes()).not.toContain('security-policies');
+      expect(findRootSection().classes()).toContain('security-policies-new-yaml-format');
     });
   });
 });
