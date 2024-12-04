@@ -133,7 +133,7 @@ describe('PipelineUsageApp', () => {
     });
 
     it('calls pushEECproductAddToCartEvent on click', () => {
-      findBuyAdditionalMinutesButton().trigger('click');
+      findBuyAdditionalMinutesButton().vm.$emit('click');
       expect(pushEECproductAddToCartEvent).toHaveBeenCalledTimes(1);
     });
 
