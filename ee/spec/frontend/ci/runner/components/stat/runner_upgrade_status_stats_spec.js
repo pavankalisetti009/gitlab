@@ -10,7 +10,7 @@ describe('RunnerStats', () => {
 
   const findRunnerSingleStatAt = (i) => wrapper.findAllComponents(RunnerSingleStat).at(i);
   const findPopoverByTarget = (target) =>
-    wrapper.findAllComponents(GlPopover).filter((w) => w.attributes('target') === target);
+    wrapper.findAllComponents(GlPopover).wrappers.find((w) => w.attributes('target') === target);
 
   const createComponent = ({ props = {}, glFeatures = {}, mountFn = shallowMount } = {}) => {
     wrapper = mountFn(RunnerUpgradeStatusStats, {

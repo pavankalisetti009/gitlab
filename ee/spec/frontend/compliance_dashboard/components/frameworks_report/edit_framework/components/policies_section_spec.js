@@ -275,11 +275,11 @@ describe('PoliciesSection component', () => {
     });
 
     it('displays disabled badge for disabled policy', () => {
-      const disabledBadge = wrapper
+      const disabledBadges = wrapper
         .findAllComponents(GlBadge)
-        .filter((badge) => badge.text() === 'Disabled');
-      expect(disabledBadge).toHaveLength(1);
-      const disabledPolicyNames = disabledBadge.wrappers.map((badgeWrapper) =>
+        .wrappers.filter((badge) => badge.text() === 'Disabled');
+      expect(disabledBadges).toHaveLength(1);
+      const disabledPolicyNames = disabledBadges.map((badgeWrapper) =>
         badgeWrapper.element.closest('tr').querySelector('td span').textContent.trim(),
       );
       expect(disabledPolicyNames).toEqual(['test']);

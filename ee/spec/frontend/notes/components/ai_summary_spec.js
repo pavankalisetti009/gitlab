@@ -31,7 +31,7 @@ describe('AiSummary component', () => {
   const findMarkdownRef = () => wrapper.findComponent({ ref: 'markdown' });
   const findSkeleton = () => wrapper.findComponent(GlSkeletonLoader);
   const findIcon = (name) =>
-    wrapper.findAllComponents(GlIcon).filter((icon) => icon.props().name === name);
+    wrapper.findAllComponents(GlIcon).wrappers.find((icon) => icon.props('name') === name);
   const findCopyButton = () => wrapper.find('[data-testid="copy-ai-summary"]');
   const findRemoveButton = () => wrapper.find('[data-testid="remove-ai-summary"]');
 
@@ -61,7 +61,7 @@ describe('AiSummary component', () => {
       createWrapper();
 
       expect(findSkeleton().exists()).toBe(true);
-      expect(findIcon('eye-slash').exists()).toBe(false);
+      expect(findIcon('eye-slash')).toBeUndefined();
       expect(wrapper.text()).not.toContain('Only visible to you');
     });
 
