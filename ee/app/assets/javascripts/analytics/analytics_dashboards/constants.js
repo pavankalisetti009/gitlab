@@ -138,3 +138,7 @@ export const AI_IMPACT_DASHBOARD = 'ai_impact';
 // The URL name already in use is `value_streams_dashboard`,
 // the slug name for a dashboard must match the URL path that is used
 export const BUILT_IN_VALUE_STREAM_DASHBOARD = 'value_streams_dashboard';
+
+// The URL for shared analytics dashboards is based on the name of the YAML config
+// YAML configured VSD uses `/value_streams` for the custom file name
+export const CUSTOM_VALUE_STREAM_DASHBOARD = 'value_streams';

@@ -28,6 +28,7 @@ import {
   EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD,
   EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD,
   EVENT_LABEL_VIEWED_DASHBOARD,
+  CUSTOM_VALUE_STREAM_DASHBOARD,
 } from 'ee/analytics/analytics_dashboards/constants';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import {
@@ -205,12 +206,13 @@ describe('AnalyticsDashboard', () => {
     });
   };
 
-  const setupDashboard = (dashboardResponse, slug = '') => {
+  const setupDashboard = (dashboardResponse, slug = '', createWrapperOptions = {}) => {
     mockDashboardResponse(dashboardResponse);
     mockAvailableVisualizationsResponse(TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE);
 
     createWrapper({
       routeSlug: slug || dashboardResponse.data.project.customizableDashboards.nodes[0]?.slug,
+      ...createWrapperOptions,
     });
 
     return waitForPromises();
@@ -539,6 +541,42 @@ describe('AnalyticsDashboard', () => {
         expect(Sentry.captureException).toHaveBeenCalledWith(error);
       });
     });
+  });
+
+  describe('editingEnabled', () => {
+    describe.each`
+      userDefined | slug                             | vsdEditorEnabled | editingEnabled
+      ${true}     | ${'some_dashboard'}              | ${true}          | ${true}
+      ${true}     | ${'some_dashboard'}              | ${false}         | ${true}
+      ${false}    | ${'some_dashboard'}              | ${true}          | ${false}
+      ${false}    | ${'some_dashboard'}              | ${false}         | ${false}
+      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${true}          | ${true}
+      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}         | ${false}
+      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${true}          | ${false}
+      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}         | ${false}
+    `(
+      'when userDefined is $userDefined, slug is $slug, and vsdEditorEnabled is $vsdEditorEnabled',
+      ({ userDefined, slug, vsdEditorEnabled, editingEnabled }) => {
+        beforeEach(async () => {
+          setupDashboard(
+            createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ userDefined, slug })),
+            slug,
+            {
+              provide: {
+                glFeatures: {
+                  enableVsdVisualEditor: vsdEditorEnabled,
+                },
+              },
+            },
+          );
+
+          await waitForPromises();
+        });
+        it(`should set editingEnabled to ${editingEnabled}`, () => {
+          expect(findDashboard().props('editingEnabled')).toBe(editingEnabled);
+        });
+      },
+    );
   });
 
   describe('dashboard editor', () => {

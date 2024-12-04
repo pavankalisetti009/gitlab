@@ -14,7 +14,6 @@ import {
   getDashboardConfig,
   getUniquePanelId,
 } from '~/vue_shared/components/customizable_dashboard/utils';
-import { CUSTOM_VALUE_STREAM_DASHBOARD } from '~/vue_shared/components/customizable_dashboard/constants';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -25,6 +24,7 @@ import {
   BUILT_IN_VALUE_STREAM_DASHBOARD,
   FILE_ALREADY_EXISTS_SERVER_RESPONSE,
   NEW_DASHBOARD,
+  CUSTOM_VALUE_STREAM_DASHBOARD,
   EVENT_LABEL_CREATED_DASHBOARD,
   EVENT_LABEL_EDITED_DASHBOARD,
   EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD,
@@ -161,6 +161,13 @@ export default {
     },
     isAiImpactDashboard() {
       return this.currentDashboard.slug === AI_IMPACT_DASHBOARD;
+    },
+    editingEnabled() {
+      return (
+        this.currentDashboard.userDefined &&
+        (this.currentDashboard.slug !== CUSTOM_VALUE_STREAM_DASHBOARD ||
+          this.glFeatures.enableVsdVisualEditor)
+      );
     },
   },
   watch: {
@@ -429,6 +436,7 @@ export default {
         :show-anon-users-filter="showDashboardFilters"
         :changes-saved="changesSaved"
         :title-validation-error="titleValidationError"
+        :editing-enabled="editingEnabled"
         @save="saveDashboard"
         @title-input="validateDashboardTitle"
       >
