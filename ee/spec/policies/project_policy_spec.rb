@@ -4259,6 +4259,22 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_allowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
 
+      context 'when the user is a guest' do
+        let(:current_user) { guest }
+
+        it { is_expected.to be_allowed(:read_saved_replies) }
+
+        it { is_expected.to be_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+      end
+
+      context 'when the user is a reporter' do
+        let(:current_user) { reporter }
+
+        it { is_expected.to be_allowed(:read_saved_replies) }
+
+        it { is_expected.to be_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+      end
+
       context 'when the user is a developer' do
         let(:current_user) { developer }
 
@@ -4268,7 +4284,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is a guest member of the project' do
         let(:current_user) { guest }
 
-        it { is_expected.to be_disallowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+        it { is_expected.to be_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
       end
     end
   end
