@@ -11,7 +11,10 @@ module Security
 
       feature_category :secret_detection
 
-      def perform(group_id, enable, excluded_projects_ids = [])
+      # rubocop:disable Lint/UnusedMethodArgument -- Added argument for future development, but it is not yet in use
+      # See https://docs.gitlab.com/ee/development/sidekiq/compatibility_across_updates.html#add-an-argument
+      def perform(group_id, enable, current_user_id = nil, excluded_projects_ids = [])
+        # rubocop:enable Lint/UnusedMethodArgument
         group = Group.find_by_id(group_id)
 
         return unless group
