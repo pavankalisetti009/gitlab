@@ -21,6 +21,9 @@ module EE
       attr_accessor :protected_from_deletion
 
       has_one :squash_option, class_name: 'Projects::BranchRules::SquashOption'
+      accepts_nested_attributes_for :squash_option, allow_destroy: true, update_only: true
+
+      validate :exact_match_for_squash_option, if: :name_changed?
     end
 
     class_methods do
@@ -72,5 +75,14 @@ module EE
       !namespace_id.nil?
     end
     alias_method :inherited, :inherited?
+
+    private
+
+    def exact_match_for_squash_option
+      return unless wildcard? && squash_option.present?
+      return if squash_option.changed?
+
+      errors.add(:squash_option, 'can only be configured for exact match branch rules')
+    end
   end
 end

@@ -25,6 +25,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
     end
 
     it { is_expected.to have_one(:squash_option) }
+    it { is_expected.to accept_nested_attributes_for(:squash_option) }
   end
 
   shared_examples 'uniqueness validation' do |access_level_class|
@@ -136,6 +137,44 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
 
   it_behaves_like 'uniqueness validation', ProtectedBranch::MergeAccessLevel
   it_behaves_like 'uniqueness validation', ProtectedBranch::PushAccessLevel
+
+  describe 'squash options validation' do
+    context 'when squash options are being created' do
+      before do
+        protected_branch.squash_option_attributes = { project: project, protected_branch: protected_branch }
+      end
+
+      context 'and name also changes to wildcard' do
+        before do
+          protected_branch.name = '*'
+        end
+
+        it 'is invalid' do
+          expect(protected_branch).to be_invalid
+          expect(protected_branch.errors.full_messages).to match_array([
+            'Squash option protected branch cannot be a wildcard'
+          ])
+        end
+      end
+    end
+
+    context 'when squash options exist' do
+      let!(:squash_option) { create :branch_rule_squash_option, project: project, protected_branch: protected_branch }
+
+      context 'and name changes to wildcard' do
+        before do
+          protected_branch.name = '*'
+        end
+
+        it 'is invalid' do
+          expect(protected_branch).to be_invalid
+          expect(protected_branch.errors.full_messages).to match_array([
+            'Squash option can only be configured for exact match branch rules'
+          ])
+        end
+      end
+    end
+  end
 
   describe "#code_owner_approval_required" do
     context "when the attr code_owner_approval_required is true" do
