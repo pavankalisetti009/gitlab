@@ -15,20 +15,20 @@ module Gitlab
           def each
             return enum_for(__method__) unless block_given?
 
-            collection.each do |item|
+            entries.each do |item|
               yield(item)
             end
           end
 
-          private
+          def entries
+            return @entries if defined?(@entries)
 
-          def collection
-            return @collection if defined?(@collection)
-
-            @collection = database_configurations.map do |config|
+            @entries = database_configurations.map do |config|
               Database.new(config)
             end
           end
+
+          private
 
           def database_configurations
             return @database_configurations if defined?(@database_configurations)
@@ -38,6 +38,8 @@ module Gitlab
 
             @database_configurations = ActiveRecord::Base.configurations
                                                          .configs_for(env_name: context.env, include_hidden: false)
+          rescue Errno::ENOENT
+            raise Gitlab::Backup::Cli::Errors::DatabaseConfigMissingError, context.database_config_file_path
           end
         end
       end
