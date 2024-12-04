@@ -68,7 +68,7 @@ describe('SelfHostedModelsTable', () => {
 
     const expectedTableHeaderNames = [
       'Name',
-      'Model',
+      'Model family',
       'Endpoint',
       'Model identifier',
       'API token',
