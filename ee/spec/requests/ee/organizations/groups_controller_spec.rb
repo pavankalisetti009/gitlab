@@ -137,7 +137,8 @@ RSpec.describe Organizations::GroupsController, feature_category: :cell do
     end
 
     context 'when the group does not exist in the organization' do
-      let_it_be(:group) { create(:group, :public, owners: user) }
+      let_it_be(:other_organization) { create(:organization) }
+      let_it_be(:group) { create(:group, :public, owners: user, organization: other_organization) }
 
       before do
         sign_in(user)

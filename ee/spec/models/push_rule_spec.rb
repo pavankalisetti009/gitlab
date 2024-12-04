@@ -12,7 +12,7 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
 
   it_behaves_like 'cleanup by a loose foreign key' do
     let!(:parent) { create(:organization) }
-    let!(:model) { create(:push_rule, organization: parent) }
+    let!(:model) { create(:push_rule_without_project, organization: parent) }
   end
 
   describe "Associations" do

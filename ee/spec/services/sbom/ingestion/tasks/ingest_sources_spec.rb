@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::Tasks::IngestSources, feature_category: :dependency_management do
   describe '#execute' do
-    let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
+    let_it_be(:pipeline) { create(:ci_pipeline) }
 
     let(:organization) { pipeline.project.namespace.organization }
     let(:report_source) { create(:ci_reports_sbom_source) }
