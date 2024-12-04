@@ -199,6 +199,55 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
     end
   end
 
+  context 'with member_role_id param', :saas do
+    let(:member_role) { create(:member_role, namespace: project.root_ancestor) }
+    let(:opts) { super().merge({ member_role_id: member_role.id }) }
+
+    subject(:service) { described_class.new(project, group, user, opts) }
+
+    before do
+      group.add_developer(user)
+    end
+
+    shared_examples_for 'does not assign the member role' do
+      specify do
+        result = service.execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:link].member_role_id).to be_nil
+      end
+    end
+
+    context 'and custom roles feature is available' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      it 'assigns the member role' do
+        result = service.execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:link].member_role_id).to eq(member_role.id)
+      end
+
+      context 'and assign_custom_roles_to_project_links_saas feature flag is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_project_links_saas: false)
+        end
+
+        it_behaves_like 'does not assign the member role'
+      end
+    end
+
+    context 'and custom roles feature is not available' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it_behaves_like 'does not assign the member role'
+    end
+  end
+
   def create_group_link(user, project, group, opts)
     group.add_developer(user)
     described_class.new(project, group, user, opts).execute

@@ -48,6 +48,10 @@ module EE
             optional :merge_trains_skip_train_allowed, type: Grape::API::Boolean, desc: 'Allow merge train merge requests to be merged without waiting for pipelines to finish.'
             optional :ci_restrict_pipeline_cancellation_role, type: String, desc: 'Roles allowed to cancel pipelines and jobs.'
           end
+
+          params :share_project_params_ee do
+            optional :member_role_id, type: Integer, desc: 'The ID of the Member Role to be assigned to the group'
+          end
         end
 
         class_methods do

@@ -2321,4 +2321,59 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
   end
+
+  describe 'POST /projects/:id/share', :saas do
+    let_it_be(:group) { create(:group, :private) }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:member_role) { create(:member_role, namespace: project.namespace, base_access_level: Gitlab::Access::DEVELOPER) }
+    let(:path) { "/projects/#{project.id}/share" }
+
+    let(:params) do
+      { group_id: group.id, group_access: member_role.base_access_level, member_role_id: member_role.id }
+    end
+
+    subject(:request) { post api(path, user), params: params }
+
+    before do
+      group.add_developer(user)
+      project.add_maintainer(user)
+    end
+
+    context 'feature is available' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      it 'shares the project with the group with member role' do
+        expect { request }.to change { ProjectGroupLink.count }.by(1)
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['member_role_id']).to eq(member_role.id)
+      end
+
+      context 'but assign_custom_roles_to_project_links_saas feature flag is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_project_links_saas: false)
+        end
+
+        it 'shares the project with the group without member role' do
+          expect { request }.to change { ProjectGroupLink.count }.by(1)
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['member_role_id']).to be_nil
+        end
+      end
+    end
+
+    context 'feature is not available' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it 'shares the project with the group without member role' do
+        expect { request }.to change { ProjectGroupLink.count }.by(1)
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['member_role_id']).to be_nil
+      end
+    end
+  end
 end

@@ -5,6 +5,7 @@ module EE
     module GroupLinks
       module CreateService
         extend ::Gitlab::Utils::Override
+        include ProjectLinksHelper
 
         override :execute
         def execute
@@ -53,6 +54,19 @@ module EE
           }
 
           ::Gitlab::Audit::Auditor.audit(audit_context)
+        end
+
+        override :build_link
+        def build_link
+          super
+
+          link.tap do |l|
+            l.member_role_id = params[:member_role_id] if can_assign_custom_roles_to_project_links?
+          end
+        end
+
+        def can_assign_custom_roles_to_project_links?
+          custom_role_for_project_link_enabled?(project) && shared_with_group&.custom_roles_enabled?
         end
       end
     end
