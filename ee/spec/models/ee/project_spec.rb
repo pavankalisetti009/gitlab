@@ -1768,7 +1768,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
                 let(:plan_license) { build(:ultimate_plan) }
 
                 before do
-                  allow(namespace).to receive(:plans) { [plan_license] }
+                  allow(namespace).to receive(:actual_plan) { plan_license }
                 end
 
                 it 'returns true' do
@@ -4215,7 +4215,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     context 'when check_namespace_plan application setting is true' do
       before do
         stub_application_setting(check_namespace_plan: true)
-        allow(namespace).to receive(:plans) { [plan_license] }
+        allow(namespace).to receive(:actual_plan) { plan_license }
       end
 
       context 'when plan is not ultimate' do

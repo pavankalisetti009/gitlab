@@ -58,7 +58,7 @@ RSpec.describe Gitlab::ProductAnalytics::Developments::Setup, :saas, feature_cat
     end
 
     it 'sets the group plan to "ultimate"' do
-      expect(group.plans.first.name).to eq('ultimate')
+      expect(group.actual_plan_name).to eq('ultimate')
     end
 
     it 'enables feature flags for product analytics' do

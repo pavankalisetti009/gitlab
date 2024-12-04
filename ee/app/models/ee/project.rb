@@ -1502,7 +1502,7 @@ module EE
 
       if ::Gitlab::CurrentSettings.should_check_namespace_plan? && namespace
         globally_available &&
-          (open_source_license_granted? || namespace.feature_available_in_plan?(feature))
+          (namespace.feature_available_in_plan?(feature) || open_source_license_granted?)
       else
         globally_available
       end
