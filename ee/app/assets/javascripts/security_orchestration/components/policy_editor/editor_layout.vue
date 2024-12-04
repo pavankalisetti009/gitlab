@@ -145,6 +145,12 @@ export default {
     };
   },
   computed: {
+    hasNewYamlFormat() {
+      return this.glFeatures.securityPoliciesNewYamlFormat;
+    },
+    layoutClass() {
+      return this.hasNewYamlFormat ? 'security-policies-new-yaml-format' : 'security-policies';
+    },
     policyType() {
       return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
         (policy) => policy.urlParameter === this.policy.type,
@@ -248,7 +254,7 @@ export default {
 </script>
 
 <template>
-  <section class="security-policies gl-mt-6 gl-flex gl-flex-col lg:gl-grid">
+  <section :class="layoutClass" class="gl-mt-6 gl-flex gl-flex-col lg:gl-grid">
     <div class="gl-mb-5">
       <div class="gl-mb-6 gl-border-b-1 gl-border-default gl-pb-6 gl-border-b-solid">
         <gl-segmented-control v-model="selectedEditorMode" :options="editorModes" />

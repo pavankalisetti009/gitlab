@@ -33,6 +33,16 @@
   }
 }
 
+.security-policies-new-yaml-format {
+  grid-template-areas: 'content sidebar';
+  grid-template-columns: 1fr 350px;
+  grid-gap: $gl-spacing-scale-5;
+
+  @include media-breakpoint-up(lg) {
+    grid-gap: 0 $gl-spacing-scale-7;
+  }
+}
+
 .security-policies-content,
 .security-policies-actions {
   grid-area: content;
