@@ -8,12 +8,7 @@ module Vulnerabilities
     attr_accessor :scan_type
 
     has_many :findings, class_name: 'Vulnerabilities::Finding', inverse_of: :scanner
-    has_many :security_findings,
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472344')
-      },
-      class_name: 'Security::Finding',
-      inverse_of: :scanner
+    has_many :security_findings, class_name: 'Security::Finding', inverse_of: :scanner
 
     belongs_to :project
 
@@ -24,8 +19,8 @@ module Vulnerabilities
 
     scope :with_external_id, ->(external_ids) { where(external_id: external_ids) }
 
-    scope :for_projects, ->(project_ids) { where(project_id: project_ids).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478017') }
-    scope :by_projects, ->(values) { where(project_id: values).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478017') }
+    scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
+    scope :by_projects, ->(values) { where(project_id: values) }
     scope :with_report_type, -> do
       lateral = Vulnerabilities::Finding.where(Vulnerabilities::Finding.arel_table[:scanner_id].eq(arel_table[:id])).select(:report_type).limit(1)
 
