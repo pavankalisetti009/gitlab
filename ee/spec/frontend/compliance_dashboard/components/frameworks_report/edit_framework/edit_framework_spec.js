@@ -1,11 +1,11 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
+import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import getComplianceFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/get_compliance_framework.query.graphql';
 import * as Utils from 'ee/groups/settings/compliance_frameworks/utils';
 import EditFramework from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/edit_framework.vue';
 import BasicInformationSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/basic_information_section.vue';
-import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import PoliciesSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/policies_section.vue';
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
@@ -13,6 +13,7 @@ import createComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/m
 import updateComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_framework.mutation.graphql';
 import createComplianceRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_requirement.mutation.graphql';
+import deleteComplianceRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_requirement.mutation.graphql';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
@@ -21,11 +22,17 @@ import waitForPromises from 'helpers/wait_for_promises';
 import {
   createComplianceFrameworksReportResponse,
   createComplianceFrameworkMutationResponse,
+  mockRequirements,
 } from '../../../mock_data';
 
 Vue.use(VueApollo);
 
 jest.mock('~/lib/utils/url_utility');
+
+const showToastMock = jest.fn();
+const $toast = {
+  show: showToastMock,
+};
 
 describe('Edit Framework Form', () => {
   let wrapper;
@@ -60,6 +67,13 @@ describe('Edit Framework Form', () => {
   const invalidFeedback = (input) =>
     input.closest('[role=group]').querySelector('.invalid-feedback')?.textContent ?? '';
 
+  let hideMock;
+  const clickToastAction = () => {
+    const [[, toastOptions]] = showToastMock.mock.calls;
+    hideMock = jest.fn();
+    toastOptions.action.onClick(null, { hide: hideMock });
+  };
+
   function createComponent(
     mountFn = mountExtended,
     { requestHandlers = [], routeParams = { id: '1' }, provide = {} } = {},
@@ -81,6 +95,7 @@ describe('Edit Framework Form', () => {
         $route: {
           params: routeParams,
         },
+        $toast,
         $router: {
           back: routerBack,
           push: routerPush,
@@ -240,10 +255,9 @@ describe('Edit Framework Form', () => {
     let createRequirementMutationMock;
     let createFrameworkMutationMock;
     const mockFrameworkId = 'gid://gitlab/ComplianceManagement::Framework/1';
-
     const requirements = [
-      { name: 'Requirement 1', description: 'Description 1' },
-      { name: 'Requirement 2', description: 'Description 2' },
+      { name: 'SOC2', description: 'Controls for SOC2' },
+      { name: 'GitLab', description: 'Controls used by GitLab' },
     ];
 
     beforeEach(() => {
@@ -252,8 +266,8 @@ describe('Edit Framework Form', () => {
           createComplianceRequirement: {
             requirement: {
               id: 'gid://gitlab/ComplianceManagement::Requirement/1',
-              name: 'Requirement 1',
-              description: 'Description 1',
+              name: 'SOC2',
+              description: 'Controls for SOC2',
               __typename: 'ComplianceManagement::Requirement',
             },
             errors: [],
@@ -302,7 +316,7 @@ describe('Edit Framework Form', () => {
       expect(createFrameworkMutationMock).toHaveBeenCalledTimes(1);
       expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirements.length);
 
-      requirements.forEach((requirement) => {
+      mockRequirements.forEach((requirement) => {
         expect(createRequirementMutationMock).toHaveBeenCalledWith(
           expect.objectContaining({
             input: {
@@ -334,15 +348,15 @@ describe('Edit Framework Form', () => {
 
       const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-      requirements.forEach((requirement) => {
+      mockRequirements.forEach((requirement) => {
         requirementsSection.vm.$emit('save', requirement);
       });
 
       await waitForPromises();
 
-      expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirements.length);
+      expect(createRequirementMutationMock).toHaveBeenCalledTimes(mockRequirements.length);
 
-      requirements.forEach((requirement) => {
+      mockRequirements.forEach((requirement) => {
         expect(createRequirementMutationMock).toHaveBeenCalledWith(
           expect.objectContaining({
             input: {
@@ -384,11 +398,146 @@ describe('Edit Framework Form', () => {
 
       const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-      requirementsSection.vm.$emit('save', requirements[0]);
+      requirementsSection.vm.$emit('save', mockRequirements[0]);
       await waitForPromises();
 
       expect(createRequirementMutationMock).toHaveBeenCalledTimes(1);
       expect(wrapper.vm.errorMessage.message).toBe(errorMessage);
+    });
+  });
+
+  describe('Deleting requirements', () => {
+    let createRequirementMutationMock;
+    let deleteRequirementMutationMock;
+
+    beforeEach(() => {
+      createRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          createComplianceRequirement: {
+            requirement: {
+              id: 'gid://gitlab/ComplianceManagement::Requirement/2',
+              name: 'GitLab',
+              description: 'Controls used by GitLab',
+              __typename: 'ComplianceManagement::Requirement',
+            },
+            errors: [],
+          },
+        },
+      });
+
+      deleteRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          destroyComplianceRequirement: {
+            errors: [],
+          },
+        },
+      });
+    });
+
+    describe('deleting requirements when creating a new framework', () => {
+      beforeEach(async () => {
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [],
+          routeParams: {},
+          provide: {
+            adherenceV2Enabled: true,
+          },
+        });
+
+        await waitForPromises();
+
+        const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+        mockRequirements.forEach((requirement) => {
+          requirementsSection.vm.$emit('save', requirement);
+        });
+
+        await waitForPromises();
+      });
+
+      it('deletes and undoes delete of a requirement', async () => {
+        const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+        requirementsSection.vm.$emit('delete', 1);
+
+        await nextTick();
+
+        expect(requirementsSection.props('requirements')).toEqual([
+          mockRequirements[0],
+          mockRequirements[2],
+        ]);
+
+        clickToastAction();
+
+        expect(hideMock).toHaveBeenCalledTimes(1);
+
+        expect(requirementsSection.props('requirements')).toEqual(mockRequirements);
+      });
+    });
+
+    describe('deleting requirements when editing an existing framework', () => {
+      beforeEach(async () => {
+        const mockFrameworkResponse = createComplianceFrameworksReportResponse();
+        mockFrameworkResponse.data.namespace.complianceFrameworks.nodes[0].complianceRequirements =
+          {
+            nodes: mockRequirements,
+          };
+
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [
+            [getComplianceFrameworkQuery, () => mockFrameworkResponse],
+            [createComplianceRequirementMutation, createRequirementMutationMock],
+            [deleteComplianceRequirementMutation, deleteRequirementMutationMock],
+          ],
+          routeParams: { id: '1' },
+          provide: {
+            adherenceV2Enabled: true,
+          },
+        });
+
+        await waitForPromises();
+      });
+
+      it('deletes and undoes delete of a requirement', async () => {
+        const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+        requirementsSection.vm.$emit('delete', 1);
+
+        await waitForPromises();
+
+        expect(deleteRequirementMutationMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            input: { id: mockRequirements[1].id },
+          }),
+        );
+
+        expect(requirementsSection.props('requirements')).toEqual([
+          mockRequirements[0],
+          mockRequirements[2],
+        ]);
+
+        expect(showToastMock).toHaveBeenCalledTimes(1);
+
+        clickToastAction();
+
+        expect(hideMock).toHaveBeenCalledTimes(1);
+
+        expect(createRequirementMutationMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            input: {
+              complianceFrameworkId: expect.any(String),
+              params: {
+                name: mockRequirements[1].name,
+                description: mockRequirements[1].description,
+              },
+            },
+          }),
+        );
+
+        await waitForPromises();
+
+        expect(requirementsSection.props('requirements')).toEqual(mockRequirements);
+      });
     });
   });
 
@@ -470,7 +619,7 @@ describe('Edit Framework Form', () => {
       expect(showDeleteModal).toHaveBeenCalled();
     });
 
-    describe('Delete mutation', () => {
+    describe('Deleteframework mutation', () => {
       let resolveDeleteFrameworkMutation;
       const deleteFrameworkMutationFn = jest.fn().mockImplementation(
         () =>

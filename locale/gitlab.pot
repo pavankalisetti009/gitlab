@@ -13982,6 +13982,9 @@ msgstr ""
 msgid "ComplianceFrameworks|All selected projects will be covered by the framework’s selected requirements and the policies."
 msgstr ""
 
+msgid "ComplianceFrameworks|An error occurred while deleting the requirement."
+msgstr ""
+
 msgid "ComplianceFrameworks|Background color"
 msgstr ""
 
@@ -14127,6 +14130,9 @@ msgid "ComplianceFrameworks|Required format: %{codeStart}path/file.y[a]ml@group-
 msgstr ""
 
 msgid "ComplianceFrameworks|Requirement name"
+msgstr ""
+
+msgid "ComplianceFrameworks|Requirement removed."
 msgstr ""
 
 msgid "ComplianceFrameworks|Requirements"

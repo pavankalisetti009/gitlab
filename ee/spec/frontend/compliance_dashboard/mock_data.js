@@ -436,22 +436,24 @@ export const createDeleteFrameworkResponse = (errors = []) => ({
 
 export const mockRequirements = [
   {
-    id: '1',
+    id: 'gid://gitlab/ComplianceManagement::Requirement/1',
     name: 'SOC2',
     description: 'Controls for SOC2',
     controlExpression: JSON.stringify({
       operator: 'AND',
       conditions: [{ id: 'minimum_approvals_required' }],
     }),
+    __typename: 'ComplianceManagement::Requirement',
   },
   {
-    id: '2',
+    id: 'gid://gitlab/ComplianceManagement::Requirement/2',
     name: 'GitLab',
     description: 'Controls used by GitLab',
     controlExpression: JSON.stringify({
       operator: 'AND',
       conditions: [{ id: 'minimum_approvals_required' }, { id: 'scanner_sast_running' }],
     }),
+    __typename: 'ComplianceManagement::Requirement',
   },
 ];
 
