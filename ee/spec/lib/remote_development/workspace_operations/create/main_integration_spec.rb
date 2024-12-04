@@ -12,7 +12,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
   let(:user) { create(:user) }
   let(:group) { create(:group, name: 'test-group', developers: user) }
-  let(:current_user) { user }
   let(:random_string) { 'abcdef' }
   let(:devfile_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
@@ -75,7 +74,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
   let(:context) do
     {
-      current_user: current_user,
+      user: user,
       params: params,
       settings: settings,
       vscode_extensions_gallery: vscode_extensions_gallery,

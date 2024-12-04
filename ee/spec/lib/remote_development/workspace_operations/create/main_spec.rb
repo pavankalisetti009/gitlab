@@ -6,7 +6,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
   let(:context_passed_along_steps) { {} }
   let(:rop_steps) do
     [
-      [RemoteDevelopment::WorkspaceOperations::Create::Authorizer, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::PreFlattenDevfileValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, :and_then],
@@ -69,18 +68,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
     # rubocop:disable Layout/LineLength -- we want to avoid excessive wrapping for RSpec::Parameterized Nested Array Style so we can have formatting consistency between entries
     where(:case_name, :err_result_for_step, :expected_response) do
       [
-        [
-          "when Authorizer returns Unauthorized",
-          {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::Authorizer,
-            returned_message: lazy { RemoteDevelopment::Messages::Unauthorized.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "Unauthorized: #{error_details}" },
-            reason: :unauthorized
-          },
-        ],
         [
           "when DevfileFetcher returns WorkspaceCreateParamsValidationFailed",
           {

@@ -46,7 +46,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
     {
       workspace: workspace,
       personal_access_token: personal_access_token,
-      current_user: user,
+      user: user,
       vscode_extensions_gallery: vscode_extensions_gallery,
       params: {
         variables: user_provided_variables

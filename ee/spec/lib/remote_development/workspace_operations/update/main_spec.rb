@@ -7,7 +7,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Update::Main, feature_cat
 
   let(:rop_steps) do
     [
-      [RemoteDevelopment::WorkspaceOperations::Update::Authorizer, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Update::Updater, :and_then]
     ]
   end
@@ -63,18 +62,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Update::Main, feature_cat
     where(:case_name, :err_result_for_step, :expected_response) do
       [
         [
-          "when Authorizer returns Unauthorized",
-          {
-            step_class: RemoteDevelopment::WorkspaceOperations::Update::Authorizer,
-            returned_message: lazy { RemoteDevelopment::Messages::Unauthorized.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "Unauthorized: #{error_details}" },
-            reason: :unauthorized
-          }
-        ],
-        [
           "when Updater returns WorkspaceUpdateFailed",
           {
             step_class: RemoteDevelopment::WorkspaceOperations::Update::Updater,
@@ -89,7 +76,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Update::Main, feature_cat
         [
           "when an unmatched error is returned, an exception is raised",
           {
-            step_class: RemoteDevelopment::WorkspaceOperations::Update::Authorizer,
+            step_class: RemoteDevelopment::WorkspaceOperations::Update::Updater,
             returned_message: lazy { Class.new(Gitlab::Fp::Message).new(err_message_content) }
           },
           Gitlab::Fp::UnmatchedResultError

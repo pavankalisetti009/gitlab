@@ -11,7 +11,7 @@ module RemoteDevelopment
         def self.delete(context)
           context => {
             namespace: Namespace => namespace,
-            cluster_agent: Clusters::Agent => cluster_agent,
+            cluster_agent: Clusters::Agent => cluster_agent
           }
 
           delete_count = RemoteDevelopmentNamespaceClusterAgentMapping.delete_by(

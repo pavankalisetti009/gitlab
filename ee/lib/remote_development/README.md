@@ -352,7 +352,7 @@ Unlike `Result`, the `Messages` module and `Message` class are intentionally par
 
 #### What types of errors should be handled as domain Messages?
 
-Domain message classes should normally only be defined and used for _expected_ errors. I.e., validation or authorization
+Domain message classes should normally only be defined and used for _expected_ errors. I.e., validation
 errors, yes. Infrastructure errors, or bugs in our own code, no.
 
 The exception to this would be if you are processing multiple items or models (i.e. `Workspaces`) in a single request, and you want to
@@ -379,14 +379,17 @@ class Update < BaseMutation
     workspace = authorized_find!(id: id)
   
     domain_main_class_args = {
-      current_user: current_user,
+      user: current_user,
       workspace: workspace,
       params: args
     }
   
     response = ::RemoteDevelopment::CommonService.execute(
       domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Update::Main,
-      domain_main_class_args: domain_main_class_args
+      domain_main_class_args: domain_main_class_args,
+      auth_ability: :update_workspace,
+      auth_subject: workspace,
+      current_user: current_user
     )
   
     response_object = response.success? ? response.payload[:workspace] : nil
@@ -406,15 +409,17 @@ You will notice this looks very different than the [standard Service class patte
 
 Since all of our domain logic is in the domain layer and models, the Service layer is cohesive - it only has a limited set of explicit and specific responsibilities:
 
+1. Perform authorization, if necessary
 1. Accept the arguments passed from the API layer, and pass them to the correct `Main` class in the Domain Logic layer.
-2. Inject additional dependencies, such as [Remote Development Settings](#remote-development-settings) and logger, into the Domain Logic layer.
-3. Convert the "`response_hash`" return value from the Domain Logic layer into a `ServiceResponse` object.
-4. [Enforce at runtime](#enforcement-of-patterns) the [Functional Patterns](#functional-patterns) used within the domain.
+1. Inject additional dependencies, such as [Remote Development Settings](#remote-development-settings) and logger, into the Domain Logic layer.
+1. Convert the "`response_hash`" return value from the Domain Logic layer into a `ServiceResponse` object.
+1. [Enforce at runtime](#enforcement-of-patterns) the [Functional Patterns](#functional-patterns) used within the domain.
 
 Given this limited responsiblity and the strictly consistent patterns used in the Domain layer, this means we can use a single, generic `CommonService` class for the entire domain, and do not need to write (or test) individual service classes for each use case.
 The `GitLab::Fp` module stands for "Functional Programming", and contains helper methods used with these patterns. 
 
-Here's what the `CommonService` class looks like:
+Here's what the `CommonService` class looks like (with comments and some validation checks removed
+to focus on the patterns):
 
 
 ```ruby
@@ -422,10 +427,16 @@ class CommonService
   extend Gitlab::Fp::RopHelpers
   extend ServiceResponseFactory
 
-  def self.execute(domain_main_class:, domain_main_class_args:)
+  def self.execute(domain_main_class:, domain_main_class_args:, auth_ability:, auth_subject: nil, current_user: nil)
+    authorize!(
+      current_user: current_user,
+      auth_ability: auth_ability,
+      auth_subject: auth_subject
+    )
+
     main_class_method = retrieve_single_public_singleton_method(domain_main_class)
 
-      settings = ::RemoteDevelopment::Settings.get(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys)
+    settings = ::RemoteDevelopment::Settings.get(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys)
     logger = RemoteDevelopment::Logger.build
 
     response_hash = domain_main_class.singleton_method(main_class_method).call(
@@ -434,15 +445,31 @@ class CommonService
 
     create_service_response(response_hash)
   end
+
+  def self.authorize!(auth_ability:, auth_subject:, current_user:)
+    return unless auth_ability
+
+    raise "User is not authorized to perform this action" unless current_user.can?(auth_ability, auth_subject)
+  end
 end
 ```
 
 #### Domain layer code examples
 
-Next, you see the `ee/lib/remote_development/workspace_operations/update/main.rb` class, which implements an ROP chain with two steps, `authorize` and `update`.
+Next, you see the `ee/lib/remote_development/workspace_operations/update/main.rb` class, which implements an ROP chain with two steps, `validate` and `update`.
 
-Note that the `Main` class also has no domain logic in it itself other than invoking the steps and matching the the domain messages and transforming them into a response hash. We want to avoid that coupling, because all domain logic should live in the cohesive classes that are called by `Main` via the ROP pattern:
+Notes:
 
+- Notice that the `Main` class also has no domain logic in it itself other than invoking the steps and
+  matching the the domain messages and transforming them into a response hash. We want to avoid that
+  coupling, because all domain logic should live in the cohesive classes that are called by `Main` via the
+  ROP pattern.
+- There's not actually a `Validator` or `WorkspaceObserver` step in the actual code,
+  they are just included to give an example of multiple steps and both `and_then` and `map`. See one of the
+  other `main.rb` classes for an actual multi-step example.
+- Notice that the `WorkspaceObserver` step uses `map` instead of `and_then`, because it has no possibility
+  of failing, and thus will not return a `Result` instance, but just pass through the `context` object.
+  See the [Result class](#result-class) section for more details.
 
 ```ruby
 class Main
@@ -450,12 +477,13 @@ class Main
     initial_result = Gitlab::Fp::Result.ok(context)
     result =
       initial_result
-        .and_then(Authorizer.method(:authorize))
+        .and_then(Validator.method(:validate))
+        .map(WorkspaceObserver.method(:observe))
         .and_then(Updater.method(:update))
 
     case result
-    in { err: Unauthorized => message }
-      generate_error_response_from_message(message: message, reason: :unauthorized)
+    in { err: WorkspaceValidationFailed => message }
+      generate_error_response_from_message(message: message, reason: :bad_request)
     in { err: WorkspaceUpdateFailed => message }
       generate_error_response_from_message(message: message, reason: :bad_request)
     in { ok: WorkspaceUpdateSuccessful => message }
@@ -467,7 +495,8 @@ class Main
 end
 ```
 
-...and here is an example of the `ee/lib/remote_development/workspace_operations/update/updater.rb` class implementing the business logic in the "chain".
+Finally, we get to the bottom, where the actual domain logic implementation lives.
+Here is an example of the `ee/lib/remote_development/workspace_operations/update/updater.rb` class implementing the business logic in the "chain".
 In this case, it contains the cohesive logic to update a workspace, and no other
 unrelated domain logic:
 
