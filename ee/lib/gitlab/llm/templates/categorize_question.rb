@@ -54,8 +54,8 @@ module Gitlab
             question: params[:question],
             previous_answer_prefix: previous_answer_prefix,
             previous_answer_section: previous_answer_section,
-            categories: ::Gitlab::Llm::Anthropic::Completions::CategorizeQuestion::LLM_MATCHING_CATEGORIES_XML,
-            labels: ::Gitlab::Llm::Anthropic::Completions::CategorizeQuestion::LLM_MATCHING_LABELS_XML
+            categories: ::Gitlab::Llm::AiGateway::Completions::CategorizeQuestion::LLM_MATCHING_CATEGORIES_XML,
+            labels: ::Gitlab::Llm::AiGateway::Completions::CategorizeQuestion::LLM_MATCHING_LABELS_XML
           }
 
           {
