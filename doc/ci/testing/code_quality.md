@@ -202,6 +202,19 @@ To integrate its output:
 
 You can also use or adapt the [ESLint CI/CD component](https://gitlab.com/explore/catalog/eakca1/codequality-os-scanners-integration) to run the scan and integrate its output with Code Quality.
 
+#### Stylelint
+
+If you already have a [Stylelint](https://stylelint.io/) job in your CI/CD pipelines, you should add a report to send its output to Code Quality.
+To integrate its output:
+
+1. Add [`@studiometa/stylelint-formatter-gitlab`](https://www.npmjs.com/package/@studiometa/stylelint-formatter-gitlab) as a development dependency in your project.
+1. Add the `--custom-formatter=@studiometa/stylelint-formatter-gitlab` option to the command you use to run Stylelint.
+1. Declare a [`codequality` report artifact](../yaml/artifacts_reports.md#artifactsreportscodequality) that points to the location of the report file.
+   - By default, the formatter reads your CI/CD configuration and infers the filename where it should save the report.
+     If the formatter can't infer the filename you used in your artifact declaration, set the CI/CD variable `STYLELINT_CODE_QUALITY_REPORT` to the filename specified for your artifact, such as `gl-code-quality-report.json`.
+
+For more details and an example CI/CD job definition, see the [documentation for `@studiometa/stylelint-formatter-gitlab`](https://www.npmjs.com/package/@studiometa/stylelint-formatter-gitlab#usage).
+
 #### MyPy
 
 If you already have a [MyPy](https://mypy-lang.org/) job in your CI/CD pipelines, you should add a report to send its output to Code Quality.
