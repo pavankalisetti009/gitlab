@@ -69,10 +69,10 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       end
     end
 
-    shared_examples "shows an overage modal when adding one user with a given role" do |role|
+    shared_examples "shows an overage modal when adding one user with a given role" do |role, use_exact_text_match|
       it "shows a modal and invites them to a group if confirmed" do
         group.add_owner(user1)
-        add_user_by_name(user2.name, role)
+        add_user_by_name(user2.name, role, use_exact_text_match: use_exact_text_match)
 
         message = ns_('MembersOverage|Your subscription includes %d seat.', 'MembersOverage|Your subscription includes %d seats.', 1) % 1
         info = format(ns_('MembersOverage|If you continue, the %{groupName} group will have %{quantity} seat in use and will be billed for the overage.', 'MembersOverage|If you continue, the %{groupName} group will have %{quantity} seats in use and will be billed for the overage.', 2), groupName: group.name, quantity: 2)
@@ -93,10 +93,10 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       end
     end
 
-    shared_examples "adding user by email with a given role" do |role|
+    shared_examples "adding user by email with a given role" do |role, use_exact_text_match|
       it "shows a modal and invites them to a group if confirmed" do
         group.add_owner(user1)
-        add_user_by_email(role)
+        add_user_by_email(role, use_exact_text_match: use_exact_text_match)
 
         message = ns_('MembersOverage|Your subscription includes %d seat.', 'MembersOverage|Your subscription includes %d seats.', 1) % 1
         info = format(ns_('MembersOverage|If you continue, the %{groupName} group will have %{quantity} seat in use and will be billed for the overage.', 'MembersOverage|If you continue, the %{groupName} group will have %{quantity} seats in use and will be billed for the overage.', 2), groupName: group.name, quantity: 2)
@@ -200,11 +200,11 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       end
 
       include_examples 'adding one user with a given role doesn\'t trigger an overage modal', 'Guest'
-      include_examples 'shows an overage modal when adding one user with a given role', 'Planner'
+      include_examples 'shows an overage modal when adding one user with a given role', 'Planner', false
       include_examples 'shows an overage modal when adding one user with a given role', 'Developer'
 
       include_examples 'adding one user by email with a given role doesn\'t trigger an overage modal', 'Guest'
-      include_examples 'adding user by email with a given role', 'Planner'
+      include_examples 'adding user by email with a given role', 'Planner', false
       include_examples 'adding user by email with a given role', 'Developer'
     end
 
@@ -214,7 +214,7 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       end
 
       include_examples 'shows an overage modal when adding one user with a given role', 'Developer'
-      include_examples 'shows an overage modal when adding one user with a given role', 'Planner'
+      include_examples 'shows an overage modal when adding one user with a given role', 'Planner', false
       include_examples 'adding one user by email with a given role doesn\'t trigger an overage modal', 'Guest'
     end
 
@@ -227,16 +227,16 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       include_examples 'adding one user with a given role doesn\'t trigger an overage modal', 'Developer'
     end
 
-    def add_user_by_name(name, role)
+    def add_user_by_name(name, role, use_exact_text_match: true)
       visit group_group_members_path(group)
 
-      invite_member(name, role: role)
+      invite_member(name, role: role, use_exact_text_match: use_exact_text_match)
     end
 
-    def add_user_by_email(role)
+    def add_user_by_email(role, use_exact_text_match: true)
       visit group_group_members_path(group)
 
-      invite_member_by_email(role)
+      invite_member_by_email(role, use_exact_text_match: use_exact_text_match)
     end
   end
 
