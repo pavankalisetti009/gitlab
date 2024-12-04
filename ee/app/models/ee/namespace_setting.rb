@@ -35,10 +35,14 @@ module EE
 
       validate :user_cap_allowed, if: -> { enabling_user_cap? }
       validate :experiment_features_allowed
+      validates :remove_dormant_members, inclusion: { in: [false] }, if: :subgroup?
+      validates :remove_dormant_members_period,
+        numericality: { only_integer: true, greater_than_or_equal_to: 90, less_than_or_equal_to: 1827 } # 90d - ~5 years
 
       enum enterprise_users_extensions_marketplace_opt_in_status:
         ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, _prefix: :enterprise_users_extensions_marketplace
 
+      after_initialize :set_default_values, if: :new_record?
       before_save :clear_new_user_signups_cap, unless: -> { seat_control_user_cap? }
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? || seat_control_block_overages? }
@@ -164,6 +168,10 @@ module EE
         return if experiment_settings_allowed?
 
         errors.add(:experiment_features_enabled, _("Experiment features' settings not allowed."))
+      end
+
+      def set_default_values
+        self.remove_dormant_members_period = 90
       end
     end
 
