@@ -11,12 +11,22 @@ RSpec.describe AuditEvents::Instance::ExternalStreamingDestination, feature_cate
   end
 
   describe 'Validations' do
-    it 'validates uniqueness of name scoped to namespace' do
+    it 'validates uniqueness of name scoped to category' do
       create(:audit_events_instance_external_streaming_destination, name: 'Test Destination')
       destination = build(:audit_events_instance_external_streaming_destination, name: 'Test Destination')
 
       expect(destination).not_to be_valid
       expect(destination.errors.full_messages).to include('Name has already been taken')
+    end
+
+    it 'allows name to be used across different categories' do
+      http_destination = create(:audit_events_instance_external_streaming_destination, name: 'Test Destination')
+      gcp_destination = create(:audit_events_instance_external_streaming_destination, :gcp, name: 'Test Destination')
+      aws_destination = create(:audit_events_instance_external_streaming_destination, :aws, name: 'Test Destination')
+
+      expect(http_destination).to be_valid
+      expect(gcp_destination).to be_valid
+      expect(aws_destination).to be_valid
     end
 
     describe '#no_more_than_5_namespace_filters?' do
