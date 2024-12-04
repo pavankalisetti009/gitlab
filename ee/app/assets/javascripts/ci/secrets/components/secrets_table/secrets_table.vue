@@ -1,5 +1,14 @@
 <script>
-import { GlBadge, GlButton, GlTableLite, GlSprintf, GlLabel, GlPagination } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlBadge,
+  GlButton,
+  GlLabel,
+  GlLoadingIcon,
+  GlSprintf,
+  GlTableLite,
+  GlPagination,
+} from '@gitlab/ui';
 import { updateHistory, getParameterByName, setUrlParams } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -8,13 +17,18 @@ import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import getSecretsQuery from '../../graphql/queries/client/get_secrets.query.graphql';
+import getSecretManagerStatusQuery from '../../graphql/queries/get_secret_manager_status.query.graphql';
 import {
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
   INITIAL_PAGE,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
+  POLL_INTERVAL,
   SCOPED_LABEL_COLOR,
+  SECRET_MANAGER_STATUS_ACTIVE,
+  SECRET_MANAGER_STATUS_INACTIVE,
+  SECRET_MANAGER_STATUS_PROVISIONING,
   SECRET_STATUS,
   UNSCOPED_LABEL_COLOR,
 } from '../../constants';
@@ -23,13 +37,15 @@ import SecretActionsCell from './secret_actions_cell.vue';
 export default {
   name: 'SecretsTable',
   components: {
+    CrudComponent,
+    GlAlert,
     GlBadge,
     GlButton,
-    CrudComponent,
-    GlTableLite,
-    GlSprintf,
     GlLabel,
+    GlLoadingIcon,
     GlPagination,
+    GlSprintf,
+    GlTableLite,
     TimeAgo,
     UserDate,
     SecretActionsCell,
@@ -46,13 +62,48 @@ export default {
   },
   data() {
     return {
+      secretManagerStatus: null,
       secrets: null,
       page: INITIAL_PAGE,
     };
   },
   apollo: {
+    secretManagerStatus: {
+      query: getSecretManagerStatusQuery,
+      variables() {
+        return {
+          projectPath: this.fullPath,
+        };
+      },
+      update({ projectSecretsManager }) {
+        const newStatus = projectSecretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
+
+        if (newStatus !== SECRET_MANAGER_STATUS_PROVISIONING) {
+          this.$apollo.queries.secretManagerStatus.stopPolling();
+        }
+
+        if (newStatus === SECRET_MANAGER_STATUS_ACTIVE) {
+          this.$apollo.queries.secrets.refetch();
+        }
+
+        return newStatus;
+      },
+      error() {
+        createAlert({
+          message: s__(
+            'Secrets|An error occurred while fetching the Secret manager status. Please try again.',
+          ),
+        });
+      },
+      pollInterval: POLL_INTERVAL,
+    },
     secrets: {
       query: getSecretsQuery,
+      skip() {
+        return (
+          !this.secretManagerStatus || !this.secretManagerStatus === SECRET_MANAGER_STATUS_ACTIVE
+        );
+      },
       variables() {
         return this.queryVariables;
       },
@@ -68,6 +119,9 @@ export default {
     },
   },
   computed: {
+    isProvisioning() {
+      return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
+    },
     onSecretsPage() {
       return window.location.pathname.includes('/-/secrets');
     },
@@ -164,13 +218,25 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            'Secrets|Secrets represent sensitive information your CI job needs to complete work. This sensitive information can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, which are always presented to a job, secrets must be explicitly required by a job.',
+            'Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job.',
           )
         "
       />
     </p>
-
-    <crud-component :title="s__('Secrets|Stored secrets')" icon="lock" :count="secretsCount">
+    <gl-loading-icon v-if="!secretManagerStatus" />
+    <gl-alert
+      v-else-if="isProvisioning"
+      class="gl-mb-3"
+      :title="s__('Secrets|Provisioning in progress')"
+      :dismissible="false"
+    >
+      {{
+        s__(
+          'Secrets|Please wait while the Secrets manager is provisioned. It is safe to refresh this page.',
+        )
+      }}
+    </gl-alert>
+    <crud-component v-else :title="s__('Secrets|Stored secrets')" icon="lock" :count="secretsCount">
       <template #actions>
         <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
           {{ s__('Secrets|New secret') }}

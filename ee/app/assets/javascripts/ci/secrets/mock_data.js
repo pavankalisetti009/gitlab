@@ -40,8 +40,16 @@ const mockSecretsData = [
     envMatchesPath: '/environments',
     expiration: '2026-01-22T08:04:26.024Z',
     labels: [],
-    lastAccessed: null,
-    lastAccessedUser: null,
+    lastAccessed: Date.now(),
+    lastAccessedUser: {
+      id: 1,
+      avatarUrl:
+        'https://www.gravatar.com/avatar/83f082bcac69be6bda7945a24ae1a1fda41e864296bd32356819a09cc342e384?s=80&d=identicon',
+      name: 'Jane Doe',
+      userId: 1,
+      username: 'root',
+      webUrl: 'http://127.0.0.1:3000/root',
+    },
     nextRotation: null,
     rotationPeriod: null,
     status: 'disabled',

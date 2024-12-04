@@ -128,3 +128,14 @@ export const mockProjectSecretQueryResponse = ({ customSecret } = {}) => ({
     },
   },
 });
+
+export const secretManagerStatusResponse = (status) => {
+  return {
+    data: {
+      projectSecretsManager: {
+        status,
+        __typename: 'ProjectSecretsManager',
+      },
+    },
+  };
+};

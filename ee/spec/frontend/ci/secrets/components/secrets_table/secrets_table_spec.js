@@ -1,5 +1,5 @@
-import { GlBadge, GlTableLite, GlLabel, GlPagination } from '@gitlab/ui';
-import Vue from 'vue';
+import { GlAlert, GlBadge, GlLabel, GlLoadingIcon, GlPagination, GlTableLite } from '@gitlab/ui';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { RouterLinkStub } from '@vue/test-utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -7,18 +7,23 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
-  NEW_ROUTE_NAME,
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
   INITIAL_PAGE,
+  NEW_ROUTE_NAME,
   PAGE_SIZE,
+  POLL_INTERVAL,
   ENTITY_GROUP,
+  SECRET_MANAGER_STATUS_ACTIVE,
+  SECRET_MANAGER_STATUS_PROVISIONING,
 } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 import { cacheConfig } from 'ee/ci/secrets/graphql/settings';
 import getSecretsQuery from 'ee/ci/secrets/graphql/queries/client/get_secrets.query.graphql';
+import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
 import { mockGroupSecretsData, mockProjectSecretsData } from 'ee/ci/secrets/mock_data';
+import { secretManagerStatusResponse } from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -26,7 +31,10 @@ describe('SecretsTable component', () => {
   let wrapper;
   let apolloProvider;
   let resolverMock;
+  let mockSecretManagerStatus;
 
+  const findAlert = () => wrapper.findComponent(GlAlert);
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findNewSecretButton = () => wrapper.findByTestId('new-secret-button');
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
   const findSecretsTableRows = () => findSecretsTable().find('tbody').findAll('tr');
@@ -59,7 +67,11 @@ describe('SecretsTable component', () => {
 
     resolverMock = jest.fn().mockImplementation(mockPaginatedSecretsData);
 
-    apolloProvider = createMockApollo([[getSecretsQuery, resolverMock]], undefined, cacheConfig);
+    const handlers = [
+      [getSecretManagerStatusQuery, mockSecretManagerStatus],
+      [getSecretsQuery, resolverMock],
+    ];
+    apolloProvider = createMockApollo(handlers, undefined, cacheConfig);
 
     wrapper = mountExtended(SecretsTable, {
       propsData: {
@@ -75,8 +87,80 @@ describe('SecretsTable component', () => {
     await waitForPromises();
   };
 
+  const advanceToNextFetch = (milliseconds) => {
+    jest.advanceTimersByTime(milliseconds);
+  };
+
+  const pollNextStatus = async (status) => {
+    mockSecretManagerStatus.mockResolvedValue(secretManagerStatusResponse(status));
+    advanceToNextFetch(POLL_INTERVAL);
+
+    await waitForPromises();
+    await nextTick();
+  };
+  beforeEach(() => {
+    mockSecretManagerStatus = jest.fn();
+    mockSecretManagerStatus.mockResolvedValue(
+      secretManagerStatusResponse(SECRET_MANAGER_STATUS_ACTIVE),
+    );
+  });
+
   afterEach(() => {
     apolloProvider = null;
+  });
+
+  describe('Secret Manager Status', () => {
+    it('shows loading icon while status is being fetched', () => {
+      createComponent();
+
+      expect(findLoadingIcon().exists()).toBe(true);
+      expect(findSecretsTable().exists()).toBe(false);
+    });
+
+    describe('when status is PROVISIONING', () => {
+      beforeEach(async () => {
+        mockSecretManagerStatus.mockResolvedValue(
+          secretManagerStatusResponse(SECRET_MANAGER_STATUS_PROVISIONING),
+        );
+
+        await createComponent();
+      });
+
+      it('shows alert notice when status is provisioning', () => {
+        expect(findLoadingIcon().exists()).toBe(false);
+        expect(findSecretsTable().exists()).toBe(false);
+        expect(findAlert().exists()).toBe(true);
+        expect(findAlert().props('dismissible')).toBe(false);
+      });
+
+      it('polls for status while provisioning', async () => {
+        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+
+        await pollNextStatus(SECRET_MANAGER_STATUS_PROVISIONING);
+
+        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when status is active', () => {
+      beforeEach(async () => {
+        await createComponent();
+      });
+
+      it('shows table when status is active', () => {
+        expect(findLoadingIcon().exists()).toBe(false);
+        expect(findAlert().exists()).toBe(false);
+        expect(findSecretsTable().exists()).toBe(true);
+      });
+
+      it('stops polling for status', async () => {
+        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+
+        await pollNextStatus(SECRET_MANAGER_STATUS_ACTIVE);
+
+        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 
   describe.each`
