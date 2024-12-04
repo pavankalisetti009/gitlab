@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, :silence_stdout, feature_category: :"self-hosted_models" do
   include RakeHelpers
 
-  let_it_be(:user) { create(:user, :admin, id: 1) }
+  let_it_be(:user) { create(:user, :admin, id: 1, username: 'root') }
+  let_it_be(:user1) { create(:user, :admin, id: 2) }
 
-  let(:task) { described_class.new }
   let(:rake_task) { instance_double(Rake::Task, invoke: true) }
   let(:ai_gateway_url) { 'http://ai_gateway_url' }
   let(:use_self_signed_token) { "1" }
@@ -15,6 +15,8 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
   let(:can_user_access_code_suggestions) { true }
   let(:status_code) { 200 }
   let(:http_response) { instance_double(HTTParty::Response, body: '{}', code: status_code) }
+  let(:username) { user1.username }
+  let(:task) { described_class.new(username) }
 
   subject(:verify_setup) { task.execute }
 
@@ -29,6 +31,8 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
     allow(Ability).to receive(:allowed?).and_call_original
     allow(Ability).to receive(:allowed?).with(user, :access_code_suggestions)
                                         .and_return(can_user_access_code_suggestions)
+    allow(Ability).to receive(:allowed?).with(user1, :access_code_suggestions)
+                                        .and_return(can_user_access_code_suggestions)
 
     allow(Gitlab::HTTP).to receive(:get).with("#{ai_gateway_url}/monitoring/healthz",
       headers: { "accept" => "application/json" }, allow_local_requests: true)
@@ -38,6 +42,22 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
   context 'when everything is set properly' do
     it 'rake task succeeds' do
       expect { verify_setup }.not_to raise_error
+    end
+
+    it 'fetches the correct user' do
+      expect(User).to receive(:find_by_username!).with(username).and_call_original
+
+      verify_setup
+    end
+
+    context 'when not passing user' do
+      let(:username) { nil }
+
+      it 'uses root user' do
+        expect(User).to receive(:find_by_username!).with('root').and_call_original
+
+        verify_setup
+      end
     end
   end
 

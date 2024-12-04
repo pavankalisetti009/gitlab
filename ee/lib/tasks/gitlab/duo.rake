@@ -24,8 +24,8 @@ namespace :gitlab do
     end
 
     desc 'GitLab | Duo | Verify self-hosted Duo setup'
-    task verify_self_hosted_setup: :gitlab_environment do
-      Gitlab::Duo::Administration::VerifySelfHostedSetup.new.execute
+    task :verify_self_hosted_setup, [:username] => :gitlab_environment do |_, args|
+      Gitlab::Duo::Administration::VerifySelfHostedSetup.new(args[:username]).execute
     end
   end
 end
