@@ -177,6 +177,7 @@ module EE
         end
 
         attrs << :new_user_signups_cap
+        attrs << :pending_user_auto_approval
         attrs << :namespace_storage_forks_cost_factor
 
         if License.feature_available?(:code_owner_approval_required)
