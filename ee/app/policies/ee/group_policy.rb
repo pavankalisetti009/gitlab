@@ -865,6 +865,8 @@ module EE
       rule { can?(:admin_epic) & bulk_edit_feature_available }.policy do
         enable :bulk_admin_epic
       end
+
+      rule { duo_workflow_token & ~duo_features_enabled }.prevent_all
     end
 
     override :lookup_access_level!

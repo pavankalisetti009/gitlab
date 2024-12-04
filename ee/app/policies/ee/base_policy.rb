@@ -37,6 +37,13 @@ module EE
         !License.feature_available?(:default_branch_protection_restriction_in_groups) ||
           ::Gitlab::CurrentSettings.group_owners_can_manage_default_branch_protection
       end
+
+      # token_info is set when authenticating user with a token. ai_workflows scope is used only by requests sent by Duo
+      # Workflow.This is a temporary solution until https://gitlab.com/gitlab-org/gitlab/-/issues/468370 is done.
+      with_scope :user
+      condition(:duo_workflow_token, score: 0) do
+        ::Current.token_info.present? && Array.wrap(Current.token_info[:token_scopes]).include?(:ai_workflows)
+      end
     end
   end
 end

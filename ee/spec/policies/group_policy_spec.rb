@@ -3610,6 +3610,27 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'access to group for duo workflow' do
+    let_it_be_with_reload(:group) { create(:group, :public) }
+
+    where(:current_user, :token_info, :duo_features_enabled, :cs_matcher) do
+      ref(:guest)      | nil                               | true  | be_allowed(:read_group)
+      ref(:guest)      | { token_scopes: [:ai_workflows] } | true  | be_allowed(:read_group)
+      ref(:guest)      | { token_scopes: [:ai_workflows] } | false | be_disallowed(:read_group, :admin_group)
+      ref(:guest)      | { token_scopes: [:other_scope] }  | true  | be_allowed(:read_group)
+      ref(:maintainer) | { token_scopes: [:ai_workflows] } | false | be_disallowed(:read_group, :admin_group)
+    end
+
+    with_them do
+      before do
+        group.namespace_settings.update!(duo_features_enabled: duo_features_enabled)
+        ::Current.token_info = token_info
+      end
+
+      it { is_expected.to cs_matcher }
+    end
+  end
+
   describe ':read_saml_user' do
     let_it_be(:user) { non_group_member }
     let_it_be(:subgroup) { create(:group, :private, parent: group) }
