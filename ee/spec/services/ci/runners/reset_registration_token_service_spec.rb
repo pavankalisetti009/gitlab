@@ -8,13 +8,15 @@ RSpec.describe ::Ci::Runners::ResetRegistrationTokenService, '#execute', feature
   let_it_be(:user) { build(:user) }
   let_it_be(:admin_user) { create(:user, :admin) }
 
+  let(:expected_audit_scope) { scope }
+
   shared_examples 'a registration token reset operation' do
     context 'without user' do
       let(:current_user) { nil }
 
       it 'does not audit and returns error response', :aggregate_failures do
         expect(scope).not_to receive(token_reset_method_name)
-        expect(::AuditEvents::RunnersTokenAuditEventService).not_to receive(:new)
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
         is_expected.to be_error
       end
@@ -25,7 +27,7 @@ RSpec.describe ::Ci::Runners::ResetRegistrationTokenService, '#execute', feature
 
       it 'does not audit and returns error response', :aggregate_failures do
         expect(scope).not_to receive(token_reset_method_name)
-        expect(::AuditEvents::RunnersTokenAuditEventService).not_to receive(:new)
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
         is_expected.to be_error
       end
@@ -33,18 +35,21 @@ RSpec.describe ::Ci::Runners::ResetRegistrationTokenService, '#execute', feature
 
     context 'with admin user', :enable_admin_mode do
       let(:current_user) { admin_user }
-      let(:audit_service) { instance_double(::AuditEvents::RunnersTokenAuditEventService) }
 
-      it 'calls security_event on RunnersTokenAuditEventService and returns the new token', :aggregate_failures do
+      it 'calls audit on Auditor and returns the new token', :aggregate_failures do
         expect(scope).to receive(token_reset_method_name) do
           expect(scope).to receive(token_method_name).and_return("new #{scope.class.name} token value")
           true
         end.once
 
-        expect(::AuditEvents::RunnersTokenAuditEventService).to receive(:new)
-          .with(current_user, scope, scope.public_send(token_method_name), "new #{scope.class.name} token value")
-          .once.and_return(audit_service)
-        expect(audit_service).to receive(:security_event).once.and_return('track_event_return_value')
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with({
+          name: 'ci_runner_token_reset',
+          author: current_user,
+          scope: expected_audit_scope,
+          target: an_instance_of(::Gitlab::Audit::NullTarget),
+          message: "Reset #{scope_name} runner registration token",
+          additional_details: expected_audit_details
+        })
 
         expect(execute).to be_success
         expect(execute.payload[:new_registration_token]).to eq("new #{scope.class.name} token value")
@@ -57,7 +62,7 @@ RSpec.describe ::Ci::Runners::ResetRegistrationTokenService, '#execute', feature
 
         it 'does not log an audit event and returns an error' do
           expect(scope).not_to receive(token_reset_method_name)
-          expect(::AuditEvents::RunnersTokenAuditEventService).not_to receive(:new)
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
           expect(execute).to be_error
         end
@@ -67,6 +72,8 @@ RSpec.describe ::Ci::Runners::ResetRegistrationTokenService, '#execute', feature
 
   context 'with instance scope' do
     let_it_be(:scope) { build(:application_setting) }
+    let_it_be(:scope_name) { 'instance' }
+    let(:expected_audit_scope) { an_instance_of(Gitlab::Audit::InstanceScope) }
 
     before do
       allow(ApplicationSetting).to receive(:current).and_return(scope)
@@ -76,24 +83,41 @@ RSpec.describe ::Ci::Runners::ResetRegistrationTokenService, '#execute', feature
     it_behaves_like 'a registration token reset operation' do
       let(:token_method_name) { :runners_registration_token }
       let(:token_reset_method_name) { :reset_runners_registration_token! }
+      let(:expected_audit_details) do
+        { from: scope.runners_registration_token[0...8], to: "new #{scope.class.name} token value"[0...8] }
+      end
     end
   end
 
   context 'with group scope' do
     let_it_be(:scope) { create(:group, :allow_runner_registration_token) }
+    let_it_be(:scope_name) { 'group' }
 
     it_behaves_like 'a registration token reset operation' do
       let(:token_method_name) { :runners_token }
       let(:token_reset_method_name) { :reset_runners_token! }
+      let(:expected_audit_details) do
+        {
+          from: scope.runners_token[0...(8 + ::RunnersTokenPrefixable::RUNNERS_TOKEN_PREFIX.length)],
+          to: "new #{scope.class.name} token value"[0...8]
+        }
+      end
     end
   end
 
   context 'with project scope' do
     let_it_be(:scope) { create(:project, :allow_runner_registration_token) }
+    let_it_be(:scope_name) { 'project' }
 
     it_behaves_like 'a registration token reset operation' do
       let(:token_method_name) { :runners_token }
       let(:token_reset_method_name) { :reset_runners_token! }
+      let(:expected_audit_details) do
+        {
+          from: scope.runners_token[0...(8 + ::RunnersTokenPrefixable::RUNNERS_TOKEN_PREFIX.length)],
+          to: "new #{scope.class.name} token value"[0...8]
+        }
+      end
     end
   end
 end
