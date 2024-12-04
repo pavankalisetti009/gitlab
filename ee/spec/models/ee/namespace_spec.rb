@@ -8,7 +8,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   include EE::GeoHelpers
   include NamespaceStorageHelpers
 
-  let(:namespace) { create(:namespace) }
+  let_it_be(:organization) { create(:organization) }
+  let(:namespace) { create(:namespace, organization: organization) }
   let!(:ultimate_plan) { create(:ultimate_plan) }
 
   it { is_expected.to have_one(:namespace_limit) }
@@ -583,7 +584,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
   describe 'after_commit :sync_name_with_customers_dot', :request_store do
     let(:owner) { create(:user) }
-    let(:namespace) { create(:group) }
+    let(:namespace) { create(:group, organization: organization) }
     let(:privatized_by_abuse_automation) { false }
     let(:block_namespace_name_update) { false }
 
@@ -662,7 +663,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
         context 'when the namespace is not root' do
           before do
-            namespace.parent = build(:group)
+            namespace.parent = build(:group, organization: organization)
           end
 
           include_examples 'no sync'
@@ -1673,10 +1674,10 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     # Note: Group transfers are not yet implemented
     context 'when a group is transferred into a root group' do
       context 'when the root group "Membership lock" is enabled' do
-        let(:root_group) { create(:group, membership_lock: true) }
+        let(:root_group) { create(:group, membership_lock: true, organization: organization) }
 
         context 'when the subgroup "Membership lock" is enabled' do
-          let(:subgroup) { create(:group, membership_lock: true) }
+          let(:subgroup) { create(:group, membership_lock: true, organization: organization) }
 
           it 'the subgroup "Membership lock" does not change' do
             subgroup.parent = root_group
@@ -1699,10 +1700,10 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       context 'when the root group "Membership lock" is disabled' do
-        let(:root_group) { create(:group) }
+        let(:root_group) { create(:group, organization: organization) }
 
         context 'when the subgroup "Membership lock" is enabled' do
-          let(:subgroup) { create(:group, membership_lock: true) }
+          let(:subgroup) { create(:group, membership_lock: true, organization: organization) }
 
           it 'the subgroup "Membership lock" does not change' do
             subgroup.parent = root_group

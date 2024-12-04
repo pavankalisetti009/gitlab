@@ -222,7 +222,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
     let(:attributes_to_update) { { created_at: Time.current } }
     let(:additional_properties) do
       {
-        organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID,
+        organization_id: object.add_on_purchase.organization_id,
         add_on_name: object.add_on_name,
         user_id: object.user_id,
         namespace_path: object.add_on_purchase.namespace.traversal_path,

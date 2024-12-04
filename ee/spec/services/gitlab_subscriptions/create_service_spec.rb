@@ -13,8 +13,9 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
     ).execute
   end
 
-  let_it_be(:user) { create(:user, id: 111, first_name: 'First name', last_name: 'Last name', email: 'first.last@gitlab.com') }
-  let_it_be(:group) { create(:group, id: 222, name: 'Group name') }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, id: 111, first_name: 'First name', last_name: 'Last name', email: 'first.last@gitlab.com', organizations: [organization]) }
+  let_it_be(:group) { create(:group, id: 222, name: 'Group name', organization: organization) }
   let_it_be(:oauth_app) { create(:oauth_application) }
 
   let_it_be(:idempotency_key) { 'idempotency-key' }

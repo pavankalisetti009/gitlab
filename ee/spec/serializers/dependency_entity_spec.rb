@@ -4,8 +4,9 @@ require 'spec_helper'
 
 RSpec.describe DependencyEntity, feature_category: :dependency_management do
   describe '#as_json' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project, :repository, :private, :in_group) }
+    let_it_be(:organization) { create(:organization) }
+    let_it_be(:user) { create(:user, organizations: [organization]) }
+    let_it_be(:project) { create(:project, :repository, :private, :in_group, organization: organization) }
     let_it_be(:group) { project.group }
     let_it_be(:sbom_occurrence) { create(:sbom_occurrence, :mit, :bundler, :with_ancestors, project: project) }
     let(:request_params) { { project: project, group: group, user: user } }
@@ -49,7 +50,6 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
     end
 
     context 'with an organization' do
-      let_it_be(:organization) { create(:organization, :default) }
       let_it_be(:project) { create(:project, organization: organization) }
       let_it_be(:sbom_occurrence) { create(:sbom_occurrence, :mit, :bundler, project: project) }
       let(:request_params) { { project: nil, group: nil, user: user, organization: organization } }
