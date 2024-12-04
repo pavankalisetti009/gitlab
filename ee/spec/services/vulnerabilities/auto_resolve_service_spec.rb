@@ -24,8 +24,9 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
 
   let(:comment) { _("Auto-resolved by vulnerability management policy") + " #{security_policy_name}" }
   let(:security_policy_name) { policy.name }
+  let(:budget) { 1000 }
 
-  subject(:service) { described_class.new(project, vulnerability_ids) }
+  subject(:service) { described_class.new(project, vulnerability_ids, budget) }
 
   before_all do
     project.add_guest(user)
@@ -150,7 +151,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
 
       it 'does not introduce N+1 queries' do
         control = ActiveRecord::QueryRecorder.new do
-          described_class.new(project, vulnerability_ids).execute
+          described_class.new(project, vulnerability_ids, budget).execute
         end
 
         new_vulnerability = create(:vulnerability, :with_findings, project: project)
@@ -167,8 +168,16 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         )
 
         expect do
-          described_class.new(project, vulnerability_ids).execute
+          described_class.new(project, vulnerability_ids, budget).execute
         end.not_to exceed_query_limit(control)
+      end
+
+      it 'respects the budget' do
+        result = described_class.new(project, vulnerability_ids, 1).execute
+
+        expect(result.payload[:count]).to eq(1)
+        expect(vulnerabilities[0].reload).to be_auto_resolved
+        expect(vulnerabilities[1].reload).not_to be_auto_resolved
       end
     end
   end
