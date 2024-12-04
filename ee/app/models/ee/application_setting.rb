@@ -409,22 +409,11 @@ module EE
     end
 
     def elasticsearch_indexing
-      return false unless elasticsearch_indexing_column_exists?
-
       super && License.feature_available?(:elastic_search) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency
     end
     alias_method :elasticsearch_indexing?, :elasticsearch_indexing
 
-    def elasticsearch_pause_indexing
-      return false unless elasticsearch_pause_indexing_column_exists?
-
-      super
-    end
-    alias_method :elasticsearch_pause_indexing?, :elasticsearch_pause_indexing
-
     def elasticsearch_search
-      return false unless elasticsearch_search_column_exists?
-
       super && License.feature_available?(:elastic_search) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency
     end
     alias_method :elasticsearch_search?, :elasticsearch_search
@@ -633,18 +622,6 @@ module EE
 
       errors.add(:mirror_capacity_threshold,
         "Project's mirror capacity threshold can't be higher than it's maximum capacity")
-    end
-
-    def elasticsearch_indexing_column_exists?
-      self.class.database.cached_column_exists?(:elasticsearch_indexing)
-    end
-
-    def elasticsearch_pause_indexing_column_exists?
-      self.class.database.cached_column_exists?(:elasticsearch_pause_indexing)
-    end
-
-    def elasticsearch_search_column_exists?
-      self.class.database.cached_column_exists?(:elasticsearch_search)
     end
 
     def check_geo_node_allowed_ips
