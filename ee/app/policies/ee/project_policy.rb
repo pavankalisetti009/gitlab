@@ -981,13 +981,14 @@ module EE
 
       rule { can?(:read_project) & duo_features_enabled }.enable :access_duo_features
 
-      desc "Group has saved replies support"
+      desc "Project has saved replies support"
       condition(:supports_saved_replies) do
         @subject.supports_saved_replies?
       end
 
+      rule { supports_saved_replies & guest }.enable :read_saved_replies
+
       rule { supports_saved_replies & developer }.policy do
-        enable :read_saved_replies
         enable :create_saved_replies
         enable :destroy_saved_replies
         enable :update_saved_replies
