@@ -251,6 +251,20 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
         expect(response.body).to eq(service_response.to_json)
       end
+
+      context 'when the user has an unconfirmed email' do
+        before do
+          user.update!(unconfirmed_email: 'user+unconfired@example.com')
+        end
+
+        it 'confirms the user with the current email', :freeze_time, :aggregate_failures do
+          current_email = user.email
+
+          expect { do_request }.to change { user.reload.confirmed_at }.from(nil).to(Time.current)
+          expect(user.email).to eq(current_email)
+          expect(user.unconfirmed_email).to eq(nil)
+        end
+      end
     end
 
     context 'when failing to validate' do
