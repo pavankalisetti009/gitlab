@@ -3,6 +3,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
+import { initPlannerRoleBanner } from '~/planner_role_banner';
 import RolesApp from './components/app.vue';
 
 Vue.use(GlToast);
@@ -18,6 +19,8 @@ export const initCustomRolesApp = () => {
   if (!el) {
     return null;
   }
+
+  initPlannerRoleBanner();
 
   const { groupFullPath, newRolePath } = el.dataset;
 

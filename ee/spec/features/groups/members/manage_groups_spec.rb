@@ -55,9 +55,9 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     end
   end
 
-  shared_examples "triggers an overage modal when adding a group with a given role" do |role|
+  shared_examples "triggers an overage modal when adding a group with a given role" do |role, use_exact_text_match|
     specify do
-      add_group_with_one_extra_user(role)
+      add_group_with_one_extra_user(role, use_exact_text_match: use_exact_text_match)
       click_button 'Continue'
 
       wait_for_requests
@@ -96,7 +96,7 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     end
 
     it_behaves_like "triggers an overage modal when adding a group with a given role", 'Guest'
-    it_behaves_like "triggers an overage modal when adding a group with a given role", 'Planner'
+    it_behaves_like "triggers an overage modal when adding a group with a given role", 'Planner', false
     it_behaves_like "triggers an overage modal when adding a group with a given role", 'Developer'
 
     context 'when overage modal is shown' do
@@ -119,7 +119,7 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     end
 
     it_behaves_like "doesn't trigger an overage modal when adding a group with a given role", 'Guest'
-    it_behaves_like "triggers an overage modal when adding a group with a given role", 'Planner'
+    it_behaves_like "triggers an overage modal when adding a group with a given role", 'Planner', false
     it_behaves_like "triggers an overage modal when adding a group with a given role", 'Developer'
   end
 
@@ -225,13 +225,13 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     it_behaves_like "doesn't trigger an overage modal when adding a group with a given role", 'Reporter'
   end
 
-  def add_group_with_one_extra_user(role = 'Developer')
+  def add_group_with_one_extra_user(role = 'Developer', use_exact_text_match: true)
     group.add_owner(user)
     group_to_add.add_owner(user)
     group_to_add.add_developer(user2)
 
     visit group_group_members_path(group)
-    invite_group(group_to_add.name, role: role)
+    invite_group(group_to_add.name, role: role, use_exact_text_match: use_exact_text_match)
 
     expect(page).to have_content("Your subscription includes 1 seat. If you continue, the #{group.name} group will "\
       "have 2 seats in use and will be billed for the overage. Learn more.")
