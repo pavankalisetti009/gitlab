@@ -161,6 +161,7 @@ export default {
       <blob-header
         :blob="blobInfo"
         :show-blob-size="false"
+        show-path-as-link
         hide-default-actions
         edit-button-variant="default"
       >
