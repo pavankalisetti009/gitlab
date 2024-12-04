@@ -1,4 +1,8 @@
 import { CubeApi, HttpTransport } from '@cubejs-client/core';
+import {
+  TODAY,
+  SEVEN_DAYS_AGO,
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { convertToSnakeCase } from '~/lib/utils/text_utility';
 import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import csrf from '~/lib/utils/csrf';
@@ -15,10 +19,6 @@ import {
   VISUALIZATION_TYPE_COLUMN_CHART,
   VISUALIZATION_TYPE_SINGLE_STAT,
 } from '~/vue_shared/components/customizable_dashboard/constants';
-import {
-  TODAY,
-  SEVEN_DAYS_AGO,
-} from '~/vue_shared/components/customizable_dashboard/filters/constants';
 
 // This can be any value because the cube proxy adds the real API token.
 const CUBE_API_TOKEN = '1';

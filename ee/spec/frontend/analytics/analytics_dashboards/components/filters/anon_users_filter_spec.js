@@ -1,7 +1,7 @@
 import { GlToggle, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import AnonUsersFilter from '~/vue_shared/components/customizable_dashboard/filters/anon_users_filter.vue';
+import AnonUsersFilter from 'ee/analytics/analytics_dashboards/components/filters/anon_users_filter.vue';
 
 describe('AnonUsersFilter', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

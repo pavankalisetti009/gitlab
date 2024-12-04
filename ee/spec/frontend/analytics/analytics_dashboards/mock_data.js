@@ -1050,3 +1050,9 @@ export const TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE = {
     },
   },
 };
+
+export const mockDateRangeFilterChangePayload = {
+  startDate: new Date('2016-01-01'),
+  endDate: new Date('2016-02-01'),
+  dateRangeOption: 'foo',
+};

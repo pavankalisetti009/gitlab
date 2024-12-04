@@ -10,7 +10,6 @@ import CustomizableDashboard from '~/vue_shared/components/customizable_dashboar
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import {
-  buildDefaultDashboardFilters,
   getDashboardConfig,
   getUniquePanelId,
 } from '~/vue_shared/components/customizable_dashboard/utils';
@@ -18,6 +17,7 @@ import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashb
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
+import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
 import { updateApolloCache } from '../utils';
 import {
   AI_IMPACT_DASHBOARD,
@@ -29,13 +29,14 @@ import {
   EVENT_LABEL_EDITED_DASHBOARD,
   EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD,
   EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD,
+  EVENT_LABEL_EXCLUDE_ANONYMISED_USERS,
   EVENT_LABEL_VIEWED_DASHBOARD,
   DEFAULT_DASHBOARD_LOADING_ERROR,
   DASHBOARD_REFRESH_MESSAGE,
 } from '../constants';
 import getAvailableVisualizations from '../graphql/queries/get_all_customizable_visualizations.query.graphql';
 import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
-
+import { buildDefaultDashboardFilters, filtersToQueryParams } from './filters/utils';
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
 
 // Avoid adding new values here, as this will eventually be migrated to the dashboard YAML config.
@@ -49,6 +50,8 @@ const HIDE_DASHBOARD_FILTERS = [
 export default {
   name: 'AnalyticsDashboard',
   components: {
+    DateRangeFilter: () => import('./filters/date_range_filter.vue'),
+    AnonUsersFilter: () => import('./filters/anon_users_filter.vue'),
     AnalyticsDashboardPanel,
     CustomizableDashboard,
     ProductAnalyticsFeedbackBanner,
@@ -59,6 +62,7 @@ export default {
     UsageOverviewBackgroundAggregationWarning,
     GlLink,
     GlSprintf,
+    UrlSync,
   },
   mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   inject: {
@@ -111,7 +115,7 @@ export default {
         hasError: false,
         visualizations: [],
       },
-      defaultFilters: buildDefaultDashboardFilters(window.location.search),
+      filters: buildDefaultDashboardFilters(window.location.search),
       isSaving: false,
       titleValidationError: null,
       backUrl: this.$router.resolve('/').href,
@@ -168,6 +172,9 @@ export default {
         (this.currentDashboard.slug !== CUSTOM_VALUE_STREAM_DASHBOARD ||
           this.glFeatures.enableVsdVisualEditor)
       );
+    },
+    queryParams() {
+      return filtersToQueryParams(this.filters);
     },
   },
   watch: {
@@ -385,6 +392,24 @@ export default {
     panelTestId({ visualization: { slug = '' } }) {
       return `panel-${slug.replaceAll('_', '-')}`;
     },
+    setDateRangeFilter({ dateRangeOption, startDate, endDate }) {
+      this.filters = {
+        ...this.filters,
+        dateRangeOption,
+        startDate,
+        endDate,
+      };
+    },
+    setAnonymousUsersFilter(filterAnonUsers) {
+      this.filters = {
+        ...this.filters,
+        filterAnonUsers,
+      };
+
+      if (filterAnonUsers) {
+        this.trackEvent(EVENT_LABEL_EXCLUDE_ANONYMISED_USERS);
+      }
+    },
   },
   troubleshootingUrl: helpPagePath('user/analytics/analytics_dashboards', {
     anchor: '#troubleshooting',
@@ -399,6 +424,7 @@ export default {
   DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons', {
     anchor: 'assign-gitlab-duo-seats',
   }),
+  HISTORY_REPLACE_UPDATE_METHOD,
 };
 </script>
 
@@ -423,17 +449,13 @@ export default {
       </gl-alert>
       <value-stream-feedback-banner v-if="showValueStreamFeedbackBanner" />
       <product-analytics-feedback-banner v-if="showProductAnalyticsFeedbackBanner" />
+
       <customizable-dashboard
         ref="dashboard"
         :initial-dashboard="currentDashboard"
         :available-visualizations="availableVisualizations"
-        :default-filters="defaultFilters"
         :is-saving="isSaving"
-        :date-range-limit="0"
-        :sync-url-filters="!isNewDashboard"
         :is-new-dashboard="isNewDashboard"
-        :show-date-range-filter="showDashboardFilters"
-        :show-anon-users-filter="showDashboardFilters"
         :changes-saved="changesSaved"
         :title-validation-error="titleValidationError"
         :editing-enabled="editingEnabled"
@@ -468,7 +490,23 @@ export default {
             <usage-overview-background-aggregation-warning />
           </div>
         </template>
-        <template #panel="{ panel, filters, editing, deletePanel }">
+
+        <template v-if="showDashboardFilters" #filters>
+          <date-range-filter
+            :default-option="filters.dateRangeOption"
+            :start-date="filters.startDate"
+            :end-date="filters.endDate"
+            :date-range-limit="0"
+            @change="setDateRangeFilter"
+          />
+          <anon-users-filter :value="filters.filterAnonUsers" @change="setAnonymousUsersFilter" />
+          <url-sync
+            :query="queryParams"
+            :history-update-method="$options.HISTORY_REPLACE_UPDATE_METHOD"
+          />
+        </template>
+
+        <template #panel="{ panel, editing, deletePanel }">
           <analytics-dashboard-panel
             :title="panel.title"
             :visualization="panel.visualization"

@@ -19,12 +19,18 @@ import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/p
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import { updateApolloCache } from 'ee/analytics/analytics_dashboards/utils';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
-import { buildDefaultDashboardFilters } from '~/vue_shared/components/customizable_dashboard/utils';
+import {
+  buildDefaultDashboardFilters,
+  filtersToQueryParams,
+} from 'ee/analytics/analytics_dashboards/components/filters/utils';
+import AnonUsersFilter from 'ee/analytics/analytics_dashboards/components/filters/anon_users_filter.vue';
+import DateRangeFilter from 'ee/analytics/analytics_dashboards/components/filters/date_range_filter.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   NEW_DASHBOARD,
   EVENT_LABEL_CREATED_DASHBOARD,
   EVENT_LABEL_EDITED_DASHBOARD,
+  EVENT_LABEL_EXCLUDE_ANONYMISED_USERS,
   EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD,
   EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD,
   EVENT_LABEL_VIEWED_DASHBOARD,
@@ -37,6 +43,7 @@ import {
 } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 import { stubComponent } from 'helpers/stub_component';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
 import {
   TEST_CUSTOM_DASHBOARDS_GROUP,
   TEST_ROUTER_BACK_HREF,
@@ -53,6 +60,7 @@ import {
   TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE,
   getGraphQLDashboard,
+  mockDateRangeFilterChangePayload,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -96,6 +104,9 @@ describe('AnalyticsDashboard', () => {
   const findUsageOverviewAggregationWarning = () =>
     wrapper.findComponent(UsageOverviewBackgroundAggregationWarning);
   const findAfterDescriptionLink = () => wrapper.findByTestId('after-description-link');
+  const findAnonUsersFilter = () => wrapper.findComponent(AnonUsersFilter);
+  const findDateRangeFilter = () => wrapper.findComponent(DateRangeFilter);
+  const findUrlSync = () => wrapper.findComponent(UrlSync);
 
   const mockSaveDashboardImplementation = async (responseCallback, dashboardToSave = dashboard) => {
     saveCustomDashboard.mockImplementation(responseCallback);
@@ -176,6 +187,8 @@ describe('AnalyticsDashboard', () => {
       stubs: {
         GlSprintf,
         GlLink,
+        AnonUsersFilter,
+        DateRangeFilter,
         RouterLink: true,
         RouterView: true,
         CustomizableDashboard: stubComponent(CustomizableDashboard, {
@@ -186,8 +199,9 @@ describe('AnalyticsDashboard', () => {
           template: `<div>
             <slot name="alert"></slot>
             <slot name="after-description"></slot>
+            <slot name="filters"></slot>
             <template v-for="panel in initialDashboard.panels">
-              <slot name="panel" v-bind="{ panel, filters: defaultFilters, deletePanel, editing: false }"></slot>
+              <slot name="panel" v-bind="{ panel, deletePanel, editing: false }"></slot>
             </template>
           </div>`,
         }),
@@ -223,7 +237,7 @@ describe('AnalyticsDashboard', () => {
       mockDashboardResponse(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
     });
 
-    it('should render with mock dashboard with filter properties', async () => {
+    it('should render with mock dashboard', async () => {
       createWrapper();
 
       await waitForPromises();
@@ -237,10 +251,6 @@ describe('AnalyticsDashboard', () => {
 
       expect(findDashboard().props()).toMatchObject({
         initialDashboard: getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
-        defaultFilters: buildDefaultDashboardFilters(''),
-        dateRangeLimit: 0,
-        showDateRangeFilter: true,
-        syncUrlFilters: true,
         changesSaved: false,
       });
 
@@ -758,14 +768,11 @@ describe('AnalyticsDashboard', () => {
         return waitForPromises();
       });
 
-      it('creates a new dashboard and disables the filter syncing', () => {
+      it('creates a new dashboard', () => {
         expect(findDashboard().props()).toMatchObject({
           initialDashboard: {
             ...NEW_DASHBOARD,
           },
-          defaultFilters: buildDefaultDashboardFilters(''),
-          showDateRangeFilter: true,
-          syncUrlFilters: false,
         });
       });
 
@@ -884,6 +891,108 @@ describe('AnalyticsDashboard', () => {
     );
   });
 
+  describe('filters', () => {
+    const defaultFilters = buildDefaultDashboardFilters('');
+    let trackEventSpy;
+
+    beforeEach(() => {
+      trackEventSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;
+      mockDashboardResponse(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
+      createWrapper({});
+
+      return waitForPromises();
+    });
+
+    it('synchronizes the filters with the URL', () => {
+      expect(findUrlSync().props()).toMatchObject({
+        historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+        query: filtersToQueryParams(defaultFilters),
+      });
+    });
+
+    describe('anonymous user filter', () => {
+      it('sets the default filter on the anon users filter component', () => {
+        expect(findAnonUsersFilter().props('value')).toBe(defaultFilters.filterAnonUsers);
+      });
+
+      it('sets the panel filter', () => {
+        expect(findAllPanels().at(0).props('filters')).toMatchObject({
+          filterAnonUsers: defaultFilters.filterAnonUsers,
+        });
+      });
+
+      describe('when filter changes', () => {
+        beforeEach(async () => {
+          findAnonUsersFilter().vm.$emit('change', true);
+          await waitForPromises();
+        });
+
+        it('updates the filter on the anon users filter component', () => {
+          expect(findAnonUsersFilter().props('value')).toBe(true);
+        });
+
+        it('updates the panel filter', () => {
+          expect(findAllPanels().at(0).props('filters')).toMatchObject({
+            filterAnonUsers: true,
+          });
+        });
+        it(`tracks the "${EVENT_LABEL_EXCLUDE_ANONYMISED_USERS}" event when excluding anon users`, () => {
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            EVENT_LABEL_EXCLUDE_ANONYMISED_USERS,
+            {},
+            undefined,
+          );
+        });
+
+        it(`does not track "${EVENT_LABEL_EXCLUDE_ANONYMISED_USERS}" event including anon users`, async () => {
+          trackEventSpy.mockClear();
+
+          await findAnonUsersFilter().vm.$emit('change', false);
+
+          expect(trackEventSpy).not.toHaveBeenCalled();
+        });
+      });
+    });
+    describe('date range filter', () => {
+      it('shows the date range filter and passes the default options and filters', () => {
+        expect(findDateRangeFilter().props()).toMatchObject({
+          startDate: defaultFilters.startDate,
+          endDate: defaultFilters.endDate,
+          defaultOption: defaultFilters.dateRangeOption,
+          dateRangeLimit: 0,
+        });
+      });
+
+      it('sets the panel filters', () => {
+        expect(findAllPanels().at(0).props('filters')).toMatchObject({
+          dateRangeOption: defaultFilters.dateRangeOption,
+          startDate: defaultFilters.startDate,
+          endDate: defaultFilters.endDate,
+        });
+      });
+
+      describe('when filters change', () => {
+        beforeEach(async () => {
+          await findDateRangeFilter().vm.$emit('change', mockDateRangeFilterChangePayload);
+        });
+        it('updates the slot filters', () => {
+          expect(findAllPanels().at(0).props('filters')).toMatchObject({
+            dateRangeOption: mockDateRangeFilterChangePayload.dateRangeOption,
+            startDate: mockDateRangeFilterChangePayload.startDate,
+            endDate: mockDateRangeFilterChangePayload.endDate,
+          });
+        });
+
+        it('synchronizes the updated filters with the URL', () => {
+          expect(findUrlSync().props()).toMatchObject({
+            historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+            query: filtersToQueryParams(mockDateRangeFilterChangePayload),
+          });
+        });
+      });
+    });
+  });
+
   describe('with an AI impact dashboard', () => {
     beforeEach(() => {
       mockDashboardResponse(TEST_AI_IMPACT_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
@@ -899,8 +1008,6 @@ describe('AnalyticsDashboard', () => {
           title: 'AI impact analytics',
           slug: 'ai_impact',
         },
-        showDateRangeFilter: false,
-        showAnonUsersFilter: false,
       });
     });
 
@@ -937,6 +1044,12 @@ describe('AnalyticsDashboard', () => {
         expect(link.attributes('href')).toBe(expected.href);
       });
     });
+
+    it('does not render filters', () => {
+      expect(findAnonUsersFilter().exists()).toBe(false);
+      expect(findDateRangeFilter().exists()).toBe(false);
+      expect(findUrlSync().exists()).toBe(false);
+    });
   });
 
   describe('with a value stream dashboard', () => {
@@ -954,8 +1067,6 @@ describe('AnalyticsDashboard', () => {
           title: 'Value Streams Dashboard',
           slug: 'value_streams_dashboard',
         },
-        showDateRangeFilter: false,
-        showAnonUsersFilter: false,
       });
     });
 
@@ -974,6 +1085,12 @@ describe('AnalyticsDashboard', () => {
       expect(linkWrapper.findComponent(GlLink).attributes('href')).toBe(
         '/help/user/analytics/value_streams_dashboard',
       );
+    });
+
+    it('does not render filters', () => {
+      expect(findAnonUsersFilter().exists()).toBe(false);
+      expect(findDateRangeFilter().exists()).toBe(false);
+      expect(findUrlSync().exists()).toBe(false);
     });
   });
 
@@ -1024,7 +1141,6 @@ describe('AnalyticsDashboard', () => {
           slug: 'value_streams_dashboard',
           panels: [],
         },
-        showDateRangeFilter: false,
       });
     });
   });
