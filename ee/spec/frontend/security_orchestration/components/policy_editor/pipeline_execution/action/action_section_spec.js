@@ -163,6 +163,13 @@ describe('ActionSection', () => {
         await wrapper.setProps({ doesFileExist: true });
         expect(findCodeBlockFilePath().props('doesFileExist')).toBe(true);
       });
+
+      it('removes file path if removed by user', () => {
+        const { file, ...actionWithoutFile } = defaultAction.include[0];
+        factory();
+        findCodeBlockFilePath().vm.$emit('update-file-path', '');
+        expect(wrapper.emitted('changed')).toEqual([['content', { include: [actionWithoutFile] }]]);
+      });
     });
   });
 
