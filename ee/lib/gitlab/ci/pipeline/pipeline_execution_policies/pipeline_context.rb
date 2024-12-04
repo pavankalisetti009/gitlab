@@ -98,7 +98,8 @@ module Gitlab
           def create_pipeline(policy, partition_id)
             with_policy_context(policy) do
               ::Ci::CreatePipelineService
-                .new(project, command.current_user, ref: command.ref, partition_id: partition_id)
+                .new(project, command.current_user, ref: command.ref, partition_id: partition_id,
+                  variables_attributes: command.variables_attributes)
                 .execute(command.source,
                   content: policy.content,
                   pipeline_policy_context: self, # propagates itself inside the policy pipeline creation

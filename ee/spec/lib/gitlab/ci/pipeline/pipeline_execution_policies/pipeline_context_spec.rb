@@ -10,9 +10,10 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
   let(:current_policy) { nil }
   let(:policy_pipelines) { [] }
   let(:pipeline) { build(:ci_pipeline, source: 'push', project: project, ref: 'master', user: user) }
+  let(:command_attributes) { {} }
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
-      project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref
+      project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref, **command_attributes
     )
   end
 
@@ -65,6 +66,22 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
       context.policy_pipelines.each do |policy|
         expect(policy.pipeline.partition_id).to eq(ci_testing_partition_id)
+      end
+    end
+
+    context 'with variables_attributes' do
+      let(:command_attributes) do
+        { variables_attributes: [{ key: 'CF_STANDALONE', secret_value: 'true', variable_type: 'env_var' }] }
+      end
+
+      it 'propagates it to policy pipelines', :aggregate_failures do
+        perform
+
+        context.policy_pipelines.each do |policy|
+          variables = policy.pipeline.variables
+          expect(variables).to be_one
+          expect(variables.first).to have_attributes(key: 'CF_STANDALONE', value: 'true', variable_type: 'env_var')
+        end
       end
     end
 
