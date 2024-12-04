@@ -91,28 +91,10 @@ describe('Subscription User List', () => {
   const findAllRemoveUserItems = () => wrapper.findAllByTestId('remove-user');
   const findErrorModal = () => wrapper.findComponent(GlModal);
 
-  const serializeUser = (rowWrapper) => {
-    const avatarLink = rowWrapper.findComponent(GlAvatarLink);
-    const avatarLabeled = rowWrapper.findComponent(GlAvatarLabeled);
-
-    return {
-      avatarLink: {
-        href: avatarLink.attributes('href'),
-        alt: avatarLink.attributes('alt'),
-      },
-      avatarLabeled: {
-        src: avatarLabeled.attributes('src'),
-        size: avatarLabeled.attributes('size'),
-        text: avatarLabeled.text(),
-      },
-    };
-  };
-
   const serializeTableRow = (rowWrapper) => {
     const emailWrapper = rowWrapper.find('[data-testid="email"]');
 
     return {
-      user: serializeUser(rowWrapper),
       email: emailWrapper.text(),
       tooltip: emailWrapper.find('span').attributes('title'),
       removeUserButtonExists: rowWrapper.findComponent(GlButton).exists(),
@@ -198,11 +180,34 @@ describe('Subscription User List', () => {
       });
     });
 
+    describe('members labeled avatar', () => {
+      it('shows the correct avatarLabeled length', () => {
+        const avatarLabeledList = findTable().findAllComponents(GlAvatarLabeled);
+
+        expect(avatarLabeledList.length).toBe(6);
+      });
+
+      it('passes the correct props to avatarLabeled', () => {
+        const avatarLabeled = findTable().findComponent(GlAvatarLabeled);
+
+        expect(avatarLabeled.props()).toMatchObject({ label: 'Administrator', subLabel: '@root' });
+      });
+    });
+
     describe('members avatar', () => {
       it('shows the correct avatarLinks length', () => {
         const avatarLinks = findTable().findAllComponents(GlAvatarLink);
 
         expect(avatarLinks.length).toBe(6);
+      });
+
+      it('passes the correct props to avatarLink', () => {
+        const avatarLink = findTable().findComponent(GlAvatarLink);
+
+        expect(avatarLink.attributes()).toMatchObject({
+          alt: 'Administrator',
+          href: 'path/to/administrator',
+        });
       });
 
       it.each(['group_invite', 'project_invite'])(
