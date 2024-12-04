@@ -118,7 +118,8 @@ export default {
       return APPROVER_TYPE_LIST_ITEMS.map(({ value, text }) => ({
         value,
         text,
-        disabled: this.availableTypes.find((item) => item.value === value) === undefined,
+        disabled:
+          this.isMissingFromAvailableTypes(value) && this.hasExistingApproversSelected(value),
       }));
     },
   },
@@ -145,6 +146,12 @@ export default {
     },
     handleRemoveApprover() {
       this.$emit('removeApproverType', this.approverType);
+    },
+    hasExistingApproversSelected(type) {
+      return this.existingApprovers[type]?.length > 0;
+    },
+    isMissingFromAvailableTypes(type) {
+      return this.availableTypes.find(({ value }) => value === type) === undefined;
     },
   },
   i18n: {
