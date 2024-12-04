@@ -20,7 +20,7 @@ module Llm
         # only performed on .com
         return false unless ::Gitlab.com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- internal tool
 
-        user.any_group_with_ga_ai_available?(:duo_chat)
+        user.allowed_to_use?(:duo_chat)
       end
     end
   end

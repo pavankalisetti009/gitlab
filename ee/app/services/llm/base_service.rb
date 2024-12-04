@@ -48,7 +48,7 @@ module Llm
       return true unless ::Gitlab.com?
 
       if ai_action.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.ga.keys)
-        user.any_group_with_ga_ai_available?(ai_action)
+        user.any_group_with_ga_ai_available?
       else
         user.any_group_with_ai_available?
       end

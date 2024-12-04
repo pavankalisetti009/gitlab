@@ -13,12 +13,16 @@ RSpec.describe Llm::Internal::CategorizeChatQuestionService, :saas, feature_cate
 
   describe '#execute' do
     context 'when the user is allowed to use Duo Chat' do
+      before do
+        allow(user).to receive(:allowed_to_use?).with(:duo_chat).and_return(true)
+      end
+
       it_behaves_like 'schedules completion worker'
     end
 
     context 'when the user is not allowed to use Duo Chat' do
       before do
-        allow(user).to receive(:any_group_with_ga_ai_available?).with(:duo_chat).and_return(false)
+        allow(user).to receive(:allowed_to_use?).with(:duo_chat).and_return(false)
       end
 
       it_behaves_like 'does not schedule completion worker'

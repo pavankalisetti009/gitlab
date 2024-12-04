@@ -807,7 +807,7 @@ module EE
 
       rule { guest }.enable :read_limit_alert
 
-      rule { can?(:read_group) & chat_allowed_for_group & chat_available_for_user }.enable :access_duo_chat
+      rule { can?(:read_group) & chat_allowed_for_group & chat_available_for_user & duo_features_enabled }.enable :access_duo_chat
 
       rule { can?(:read_group) & duo_features_enabled }.enable :access_duo_features
 

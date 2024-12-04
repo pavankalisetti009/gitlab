@@ -94,7 +94,7 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
       context 'when the instance does not have duo chat availabile' do
         before do
           allow(controller).to receive_messages(admin_display_ai_powered_chat_settings?: true,
-            admin_display_duo_pro_settings?: false)
+            admin_display_duo_addon_settings?: false)
         end
 
         it_behaves_like 'redirects configuration path'
@@ -103,7 +103,7 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
       context 'when the instance does not have duo pro availabile' do
         before do
           allow(controller).to receive_messages(admin_display_ai_powered_chat_settings?: false,
-            admin_display_duo_pro_settings?: true)
+            admin_display_duo_addon_settings?: true)
         end
 
         it_behaves_like 'redirects configuration path'

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggestions do
+RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstraction_layer do
   using RSpec::Parameterized::TableSyntax
 
   let(:duo_availability) { :default_off }
@@ -106,41 +106,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
     end
   end
 
-  describe '#admin_display_ai_powered_chat_settings?', :freeze_time, feature_category: :duo_chat do
-    let(:feature_enabled) { true }
-    let(:past) { Time.current - 1.second }
-    let(:future) { Time.current + 1.second }
-    let(:duo_chat_service_data) do
-      CloudConnector::SelfManaged::AvailableServiceData.new(:duo_chat, duo_chat_cut_off_date, %w[duo_pro])
-    end
-
-    before do
-      stub_licensed_features(ai_chat: feature_enabled)
-
-      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_chat)
-                                                                        .and_return(duo_chat_service_data)
-    end
-
-    where(:duo_chat_cut_off_date, :feature_available, :expectation) do
-      ref(:past) | true | false
-      ref(:past) | false | false
-      ref(:future) | true | true
-      ref(:future) | false | false
-      nil | true | true
-      nil | false | false
-    end
-
-    with_them do
-      it 'returns expectation' do
-        stub_licensed_features(ai_chat: feature_available)
-
-        expect(helper.admin_display_ai_powered_chat_settings?).to eq(expectation)
-      end
-    end
-  end
-
-  describe '#admin_display_duo_pro_settings?' do
-    subject(:display_duo_pro_settings) { helper.admin_display_duo_pro_settings? }
+  describe '#admin_display_duo_addon_settings?' do
+    subject(:display_duo_pro_settings) { helper.admin_display_duo_addon_settings? }
 
     let(:code_suggestions_service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
 

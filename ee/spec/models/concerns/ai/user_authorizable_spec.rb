@@ -161,14 +161,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
             it_behaves_like 'checking available groups'
           end
-
-          context "when any of the user's groups requires a seat" do
-            before do
-              stub_feature_flags(duo_chat_requires_licensed_seat: group)
-            end
-
-            it { is_expected.to be false }
-          end
         end
       end
     end
@@ -363,134 +355,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       context 'with not eligible group' do
         let(:group) { bronze_group }
         let_it_be(:project) { create(:project, group: bronze_group) }
-
-        before_all do
-          project.add_guest(user)
-        end
-
-        it { is_expected.to eq(false) }
-      end
-    end
-  end
-
-  describe '#any_group_with_ga_ai_available?', :saas, :use_clean_rails_redis_caching do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:user) { create(:user) }
-    let_it_be(:service_name) { :test }
-    let_it_be_with_reload(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
-    let_it_be_with_reload(:bronze_group) { create(:group_with_plan, plan: :bronze_plan) }
-    let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan) }
-    let_it_be_with_reload(:group_without_plan) { create(:group) }
-    let_it_be_with_reload(:trial_group) do
-      create(
-        :group_with_plan,
-        plan: :ultimate_plan,
-        trial: true,
-        trial_starts_on: Date.current,
-        trial_ends_on: 1.day.from_now
-      )
-    end
-
-    let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group) }
-    let_it_be_with_reload(:bronze_sub_group) { create(:group, parent: bronze_group) }
-    let_it_be_with_reload(:free_sub_group) { create(:group, parent: free_group) }
-
-    subject(:group_with_ga_ai_enabled) { user.any_group_with_ga_ai_available?(service_name) }
-
-    where(:group, :result) do
-      ref(:bronze_group)       | false
-      ref(:free_group)         | false
-      ref(:group_without_plan) | false
-      ref(:ultimate_group)     | true
-      ref(:trial_group)        | true
-    end
-
-    with_them do
-      context 'when duo chat requires licensed seat feature flag is enabled' do
-        before do
-          group.add_guest(user)
-          stub_feature_flags(duo_chat_requires_licensed_seat: true)
-        end
-
-        context 'when user has a duo pro seat' do
-          before do
-            allow(::CloudConnector::AvailableServices)
-              .to receive_message_chain(:find_by_name, :allowed_for?)
-                    .with(service_name)
-                    .with(user)
-                    .and_return(true)
-          end
-
-          it { is_expected.to eq(result) }
-        end
-
-        context 'when user does not have a duo pro seat' do
-          before do
-            allow(::CloudConnector::AvailableServices)
-              .to receive_message_chain(:find_by_name, :allowed_for?)
-                    .with(service_name)
-                    .with(user)
-                    .and_return(false)
-          end
-
-          it { is_expected.to eq(false) }
-        end
-      end
-
-      context 'when member of the root group' do
-        before do
-          group.add_guest(user)
-          stub_feature_flags(duo_chat_requires_licensed_seat: false)
-        end
-
-        it { is_expected.to eq(result) }
-
-        it 'caches the result' do
-          group_with_ga_ai_enabled
-
-          expect(Rails.cache.fetch(['users', user.id, 'group_with_ga_ai_enabled'])).to eq(result)
-        end
-      end
-    end
-
-    context 'when member of a sub-group only' do
-      context 'with eligible group' do
-        let(:group) { ultimate_group }
-
-        before_all do
-          ultimate_sub_group.add_guest(user)
-        end
-
-        it { is_expected.to eq(true) }
-      end
-
-      context 'with not eligible group' do
-        let(:group) { free_group }
-
-        before_all do
-          free_sub_group.add_guest(user)
-        end
-
-        it { is_expected.to eq(false) }
-      end
-    end
-
-    context 'when member of a project only' do
-      context 'with eligible group' do
-        let(:group) { ultimate_group }
-        let_it_be(:project) { create(:project, group: ultimate_group) }
-
-        before_all do
-          project.add_guest(user)
-        end
-
-        it { is_expected.to eq(true) }
-      end
-
-      context 'with not eligible group' do
-        let(:group) { free_group }
-        let_it_be(:project) { create(:project, group: free_group) }
 
         before_all do
           project.add_guest(user)
@@ -744,167 +608,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       )
     end
 
-    describe '#any_group_with_ai_chat_available?', :use_clean_rails_redis_caching do
-      using RSpec::Parameterized::TableSyntax
-
-      let_it_be_with_reload(:premium_group) { create(:group_with_plan, plan: :premium_plan) }
-      let_it_be_with_reload(:premium_sub_group) { create(:group, parent: premium_group) }
-      let_it_be_with_reload(:free_sub_group) { create(:group, parent: free_group) }
-
-      subject(:group_with_ai_chat_enabled) { user.any_group_with_ai_chat_available? }
-
-      where(:group, :result) do
-        ref(:premium_group)      | true
-        ref(:free_group)         | false
-        ref(:group_without_plan) | false
-        ref(:ultimate_group)     | true
-        ref(:trial_group)        | true
-      end
-
-      with_them do
-        context 'when duo chat requires licensed seat feature flag is enabled' do
-          before do
-            group.add_guest(user)
-            stub_feature_flags(duo_chat_requires_licensed_seat: true)
-          end
-
-          context 'when user has a duo pro seat' do
-            before do
-              allow(::CloudConnector::AvailableServices)
-                .to receive_message_chain(:find_by_name, :allowed_for?)
-                .with(:duo_chat)
-                .with(user)
-                .and_return(true)
-            end
-
-            it { is_expected.to eq(result) }
-          end
-
-          context 'when user does not have a duo pro seat' do
-            before do
-              allow(::CloudConnector::AvailableServices)
-                .to receive_message_chain(:find_by_name, :allowed_for?)
-                .with(:duo_chat)
-                .with(user)
-                .and_return(false)
-            end
-
-            it { is_expected.to eq(false) }
-          end
-        end
-
-        context 'when member of the root group' do
-          before do
-            group.add_guest(user)
-            stub_feature_flags(duo_chat_requires_licensed_seat: false)
-          end
-
-          it { is_expected.to eq(result) }
-
-          it 'caches the result' do
-            group_with_ai_chat_enabled
-
-            expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_chat_enabled'])).to eq(result)
-          end
-        end
-      end
-
-      context 'when member of a sub-group only' do
-        context 'with eligible group' do
-          let(:group) { ultimate_group }
-
-          before_all do
-            ultimate_sub_group.add_guest(user)
-          end
-
-          it { is_expected.to eq(true) }
-        end
-
-        context 'with not eligible group' do
-          let(:group) { free_group }
-
-          before_all do
-            free_sub_group.add_guest(user)
-          end
-
-          it { is_expected.to eq(false) }
-        end
-      end
-
-      context 'when member of a project only' do
-        context 'with eligible group' do
-          let(:group) { ultimate_group }
-          let_it_be(:project) { create(:project, group: ultimate_group) }
-
-          before_all do
-            project.add_guest(user)
-          end
-
-          it { is_expected.to eq(true) }
-        end
-
-        context 'with eligible premium group' do
-          let(:group) { premium_group }
-          let_it_be(:project) { create(:project, group: premium_group) }
-
-          before_all do
-            project.add_guest(user)
-          end
-
-          it { is_expected.to eq(true) }
-        end
-
-        context 'with not eligible group' do
-          let(:group) { free_group }
-          let_it_be(:project) { create(:project, group: free_group) }
-
-          before_all do
-            project.add_guest(user)
-          end
-
-          it { is_expected.to eq(false) }
-        end
-      end
-    end
-
-    describe '#belongs_to_group_requires_licensed_seat_for_chat?', :use_clean_rails_redis_caching do
-      using RSpec::Parameterized::TableSyntax
-
-      let_it_be(:member_group) { create(:group) }
-      let_it_be(:non_member_group) { create(:group) }
-
-      subject(:group_requires_licensed_seat_for_chat) { user.belongs_to_group_requires_licensed_seat_for_chat? }
-
-      before_all do
-        member_group.add_guest(user)
-      end
-
-      where(:group, :group_actor, :result) do
-        ref(:non_member_group) | false | false
-        ref(:non_member_group) | true  | false
-        ref(:member_group)  | false | false
-        ref(:member_group)  | true  | true
-      end
-
-      with_them do
-        context 'when member of the root group' do
-          before do
-            if group_actor
-              allow(::Feature).to receive(:group_ids_for).with(:duo_chat_requires_licensed_seat).and_return([group.id])
-            end
-          end
-
-          it { is_expected.to eq(result) }
-
-          it 'caches the result' do
-            group_requires_licensed_seat_for_chat
-
-            expect(Rails.cache.fetch(['users', user.id, 'group_requires_licensed_seat_for_chat'])).to eq(result)
-          end
-        end
-      end
-    end
-
     describe '#ai_chat_enabled_namespace_ids', :use_clean_rails_redis_caching do
       using RSpec::Parameterized::TableSyntax
 
@@ -1000,31 +703,20 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
     before do
       user.any_group_with_ai_available?
-      user.any_group_with_ga_ai_available?(:test)
       other_user.any_group_with_ai_available?
-      other_user.any_group_with_ga_ai_available?(:test)
-      yet_another_user.any_group_with_ai_chat_available?
       yet_another_user.ai_chat_enabled_namespace_ids
-      yet_another_user.belongs_to_group_requires_licensed_seat_for_chat?
     end
 
     it 'clears cache from users with the given ids', :aggregate_failures do
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
-      expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ga_ai_enabled'])).to eq(false)
-      expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_with_ai_chat_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_ids_with_ai_chat_enabled'])).to eq([])
-      expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_requires_licensed_seat_for_chat'])).to eq(false)
 
       User.clear_group_with_ai_available_cache([user.id, yet_another_user.id])
 
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to be_nil
-      expect(Rails.cache.fetch(['users', user.id, 'group_with_ga_ai_enabled'])).to be_nil
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
-      expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ga_ai_enabled'])).to eq(false)
-      expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_with_ai_chat_enabled'])).to be_nil
       expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_ids_with_ai_chat_enabled'])).to be_nil
-      expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_requires_licensed_seat_for_chat'])).to be_nil
     end
 
     it 'clears cache when given a single id', :aggregate_failures do

@@ -32,9 +32,9 @@ RSpec.describe 'Subscription expired notification', :js, :with_cloud_connector, 
     it 'displays and dismisses alert' do
       expect(page).to have_content(expected_content)
 
-      within_testid('duo-chat-promo-callout-popover') do
-        find_by_testid('close-button').click
-      end
+      # within_testid('duo-chat-promo-callout-popover') do
+      #   find_by_testid('close-button').click
+      # end
 
       within_testid('subscribable_banner') do
         click_button('Dismiss')
