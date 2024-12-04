@@ -1,9 +1,20 @@
 <script>
-import { GlDrawer, GlButton, GlButtonGroup, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import {
+  GlDrawer,
+  GlButton,
+  GlButtonGroup,
+  GlIcon,
+  GlTooltipDirective,
+  GlTabs,
+  GlTab,
+} from '@gitlab/ui';
+import { VULNERABILITY_TAB_NAMES } from 'ee/vulnerabilities/constants';
+import { VULNERABILITY_DETAIL_CODE_FLOWS } from 'ee/security_dashboard/constants';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getSeverity } from '~/ci/reports/utils';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { s__ } from '~/locale';
 import FindingsDrawerDetails from './findings_drawer_details.vue';
 
 export const i18n = {
@@ -13,6 +24,7 @@ export const i18n = {
   detected: s__('FindingsDrawer|Detected in pipeline'),
   nextButton: s__('FindingsDrawer|Next finding'),
   previousButton: s__('FindingsDrawer|Previous finding'),
+  VULNERABILITY_TAB_NAMES,
 };
 export const codeQuality = 'codeQuality';
 
@@ -25,10 +37,13 @@ export default {
     GlButton,
     GlButtonGroup,
     GlIcon,
+    GlTabs,
+    GlTab,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     drawer: {
       type: Object,
@@ -42,7 +57,8 @@ export default {
   },
   data() {
     return {
-      activeIndex: 0,
+      drawerIndex: 0,
+      tabIndex: 0,
     };
   },
   computed: {
@@ -53,30 +69,43 @@ export default {
       return this.activeElement.scale === this.$options.codeQuality;
     },
     activeElement() {
-      return this.drawer.findings[this.activeIndex];
+      return this.drawer.findings[this.drawerIndex];
+    },
+    showCodeFlowTabs() {
+      const codeFlowData = this.activeElement.details?.find(
+        (detail) => detail.type === VULNERABILITY_DETAIL_CODE_FLOWS,
+      );
+      return (
+        this.glFeatures.vulnerabilityCodeFlow &&
+        this.glFeatures.mrVulnerabilityCodeFlow &&
+        codeFlowData?.items?.length > 0
+      );
     },
   },
   DRAWER_Z_INDEX,
   watch: {
     drawer(newVal) {
-      this.activeIndex = newVal.index;
+      this.drawerIndex = newVal.index;
     },
   },
   methods: {
     getSeverity,
     prev() {
-      if (this.activeIndex === 0) {
-        this.activeIndex = this.drawer.findings.length - 1;
+      if (this.drawerIndex === 0) {
+        this.drawerIndex = this.drawer.findings.length - 1;
       } else {
-        this.activeIndex -= 1;
+        this.drawerIndex -= 1;
       }
     },
     next() {
-      if (this.activeIndex === this.drawer.findings.length - 1) {
-        this.activeIndex = 0;
+      if (this.drawerIndex === this.drawer.findings.length - 1) {
+        this.drawerIndex = 0;
       } else {
-        this.activeIndex += 1;
+        this.drawerIndex += 1;
       }
+    },
+    redirectToCodeFlowTab() {
+      this.tabIndex = 1;
     },
   },
 };
@@ -132,7 +161,25 @@ export default {
     </template>
 
     <template #default>
-      <findings-drawer-details :drawer="activeElement" :project="project" />
+      <gl-tabs v-if="showCodeFlowTabs" v-model="tabIndex" class="!gl-pt-0">
+        <gl-tab :title="$options.i18n.VULNERABILITY_TAB_NAMES.DETAILS">
+          <findings-drawer-details
+            :drawer="activeElement"
+            :project="project"
+            :inside-tab="true"
+            @redirectToCodeFlowTab="redirectToCodeFlowTab()"
+          />
+        </gl-tab>
+
+        <gl-tab :title="$options.i18n.VULNERABILITY_TAB_NAMES.CODE_FLOW">
+          <div data-testid="temp-code-flow">
+            {{ $options.i18n.VULNERABILITY_TAB_NAMES.CODE_FLOW }}
+          </div>
+        </gl-tab>
+      </gl-tabs>
+      <template v-else>
+        <findings-drawer-details :drawer="activeElement" :project="project" />
+      </template>
     </template>
   </gl-drawer>
 </template>
