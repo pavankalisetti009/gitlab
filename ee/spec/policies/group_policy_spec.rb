@@ -3523,7 +3523,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         context 'when user is a member of the group' do
           before do
-            stub_feature_flags(duo_chat_requires_licensed_seat: false)
             group.add_guest(current_user)
           end
 
@@ -3565,7 +3564,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:policy) { :access_duo_chat }
 
       context 'when not on .org or .com' do
-        where(:licensed, :duo_features_enabled, :cs_matcher) do
+        where(:enabled_for_user, :duo_features_enabled, :cs_matcher) do
           true  | false | be_disallowed(policy)
           true  | true  | be_allowed(policy)
           false | false | be_disallowed(policy)
@@ -3575,8 +3574,9 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         with_them do
           before do
             allow(::Gitlab).to receive(:org_or_com?).and_return(false)
-            stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
-            stub_licensed_features(ai_chat: licensed)
+            stub_ee_application_setting(duo_features_enabled: duo_features_enabled, lock_duo_features_enabled: true)
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow(Ability).to receive(:allowed?).with(current_user, :access_duo_chat).and_return(enabled_for_user)
           end
 
           it { is_expected.to cs_matcher }

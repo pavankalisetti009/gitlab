@@ -8,12 +8,8 @@ module Ai
     GROUP_WITH_AI_ENABLED_CACHE_KEY = 'group_with_ai_enabled'
     GROUP_WITH_GA_AI_ENABLED_CACHE_KEY = 'group_with_ga_ai_enabled'
 
-    GROUP_WITH_AI_CHAT_ENABLED_CACHE_PERIOD = 1.hour
-    GROUP_WITH_AI_CHAT_ENABLED_CACHE_KEY = 'group_with_ai_chat_enabled'
     GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY = 'group_ids_with_ai_chat_enabled'
-
-    GROUP_REQUIRES_LICENSED_SEAT_FOR_CHAT_CACHE_PERIOD = 10.minutes
-    GROUP_REQUIRES_LICENSED_SEAT_FOR_CHAT_CACHE_KEY = 'group_requires_licensed_seat_for_chat'
+    GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_PERIOD = 1.hour
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
 
@@ -53,60 +49,31 @@ module Ai
           id: group_ids_from_project_authorizaton | group_ids_from_memberships | group_ids_from_linked_groups
         ).pluck(Arel.sql('traversal_ids[1]')).uniq
       end
-      # rubocop: enable Database/AvoidUsingPluckWithoutLimit
+      # rubocop: enable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
 
       def any_group_with_ai_available?
-        Rails.cache.fetch(['users', id, GROUP_WITH_AI_ENABLED_CACHE_KEY],
-          expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD) do
+        Rails.cache.fetch(
+          ['users', id, GROUP_WITH_AI_ENABLED_CACHE_KEY],
+          expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD
+        ) do
           member_namespaces.namespace_settings_with_ai_features_enabled.with_ai_supported_plan.any?
         end
       end
 
-      def any_group_with_ga_ai_available?(service_name)
-        Rails.cache.fetch(['users', id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY],
-          expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD) do
-          groups = member_namespaces.with_ai_supported_plan
-          groups_that_require_licensed_seat = groups.select do |group|
-            ::Feature.enabled?(:duo_chat_requires_licensed_seat, group)
-          end
-
-          if groups.any? && groups_that_require_licensed_seat.any?
-            ::CloudConnector::AvailableServices.find_by_name(service_name).allowed_for?(self)
-          else
-            groups.any?
-          end
+      def any_group_with_ga_ai_available?
+        Rails.cache.fetch(
+          ['users', id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY],
+          expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD
+        ) do
+          member_namespaces.with_ai_supported_plan.any?
         end
       end
 
       def ai_chat_enabled_namespace_ids
         Rails.cache.fetch(['users', id, GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY],
-          expires_in: GROUP_WITH_AI_CHAT_ENABLED_CACHE_PERIOD) do
+          expires_in: GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_PERIOD) do
           groups = member_namespaces.with_ai_supported_plan(:ai_chat)
           groups.pluck(Arel.sql('DISTINCT traversal_ids[1]')) # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
-        end
-      end
-
-      def any_group_with_ai_chat_available?
-        Rails.cache.fetch(['users', id, GROUP_WITH_AI_CHAT_ENABLED_CACHE_KEY],
-          expires_in: GROUP_WITH_AI_CHAT_ENABLED_CACHE_PERIOD) do
-          groups = member_namespaces.with_ai_supported_plan(:ai_chat)
-          groups_that_require_licensed_seat_for_chat = groups.select do |group|
-            ::Feature.enabled?(:duo_chat_requires_licensed_seat, group)
-          end
-
-          if groups.any? && groups_that_require_licensed_seat_for_chat.any?
-            ::CloudConnector::AvailableServices.find_by_name(:duo_chat).allowed_for?(self)
-          else
-            groups.any?
-          end
-        end
-      end
-
-      def belongs_to_group_requires_licensed_seat_for_chat?
-        Rails.cache.fetch(['users', id, GROUP_REQUIRES_LICENSED_SEAT_FOR_CHAT_CACHE_KEY],
-          expires_in: GROUP_REQUIRES_LICENSED_SEAT_FOR_CHAT_CACHE_PERIOD) do
-          group_ids = ::Feature.group_ids_for(:duo_chat_requires_licensed_seat)
-          member_namespaces.by_root_id(group_ids).any?
         end
       end
 
@@ -145,17 +112,7 @@ module Ai
 
       def namespaces_allowed_in_com(maturity)
         namespaces = member_namespaces.with_ai_supported_plan
-
-        requiring_seat = namespaces.select do |namespace|
-          ::Feature.enabled?(:duo_chat_requires_licensed_seat, namespace)
-        end
-
-        # If any namespace requires a licensed seat and we've reached this point after checking for any seat assigned
-        # to the user, they don't have access
-        return [] if requiring_seat.any?
-
         namespaces = namespaces.namespace_settings_with_ai_features_enabled if maturity != :ga
-
         namespaces.ids
       end
 
@@ -168,16 +125,11 @@ module Ai
       def clear_group_with_ai_available_cache(ids)
         cache_keys_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_ENABLED_CACHE_KEY] }
         cache_keys_ga_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY] }
-        cache_keys_ai_chat = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_CHAT_ENABLED_CACHE_KEY] }
         cache_keys_ai_chat_group_ids = Array.wrap(ids).map do |id|
           ["users", id, GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY]
         end
-        cache_keys_requires_licensed_seat = Array.wrap(ids).map do |id|
-          ["users", id, GROUP_REQUIRES_LICENSED_SEAT_FOR_CHAT_CACHE_KEY]
-        end
 
-        cache_keys = cache_keys_ai_features + cache_keys_ga_ai_features + cache_keys_ai_chat +
-          cache_keys_ai_chat_group_ids + cache_keys_requires_licensed_seat
+        cache_keys = cache_keys_ai_features + cache_keys_ai_chat_group_ids + cache_keys_ga_ai_features
         ::Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
           Rails.cache.delete_multi(cache_keys)
         end

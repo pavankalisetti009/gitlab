@@ -6,7 +6,7 @@ RSpec.describe Llm::ProductAnalytics::GenerateCubeQueryService,
   :saas,
   feature_category: :product_analytics do
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, :public) }
+  let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
   let_it_be(:project) { create(:project, :public, group: group) }
 
   let(:current_user) { user }
@@ -20,11 +20,12 @@ RSpec.describe Llm::ProductAnalytics::GenerateCubeQueryService,
   context 'when the user is permitted to generate a query for the project' do
     before_all do
       project.add_maintainer(user)
+      group.namespace_settings.update!(experiment_features_enabled: true)
     end
 
     before do
+      stub_ee_application_setting(duo_features_enabled: true, lock_duo_features_enabled: true)
       allow(Ability).to receive(:allowed?).and_return(true)
-      allow(current_user).to receive(:any_group_with_ai_available?).and_return(true)
       allow(Ability).to receive(:allowed?)
                           .with(user, :generate_cube_query, project)
                           .and_return(true)
@@ -45,7 +46,6 @@ RSpec.describe Llm::ProductAnalytics::GenerateCubeQueryService,
 
     before do
       allow(Ability).to receive(:allowed?).and_return(true)
-      allow(current_user).to receive(:any_group_with_ai_available?).and_return(true)
       allow(Ability).to receive(:allowed?)
                           .with(user, :generate_cube_query, project)
                           .and_return(false)

@@ -68,7 +68,7 @@ module EE
         @user.allowed_to_use?(:code_suggestions, service_name: :self_hosted_models)
       end
 
-      condition(:glab_ask_git_command_enabled) do
+      condition(:ai_features_enabled) do
         ::Gitlab::CurrentSettings.duo_features_enabled?
       end
 
@@ -76,33 +76,15 @@ module EE
         @user.allowed_to_use?(:glab_ask_git_command, licensed_feature: :glab_ask_git_command)
       end
 
-      rule { glab_ask_git_command_enabled & user_allowed_to_use_glab_ask_git_command }.policy do
+      rule { ai_features_enabled & user_allowed_to_use_glab_ask_git_command }.policy do
         enable :access_glab_ask_git_command
       end
 
-      condition(:duo_chat_enabled) do
-        next true if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-        next false unless ::License.feature_available?(:ai_chat)
-
+      condition(:duo_chat_enabled_for_user) do
         if duo_chat_self_hosted?
           self_hosted_models_available_for?(@user)
-        elsif duo_chat_free_access_was_cut_off?
-          duo_chat.allowed_for?(@user)
-        else # Before service start date
-          ::Gitlab::CurrentSettings.duo_features_enabled?
-        end
-      end
-
-      condition(:user_allowed_to_use_chat) do
-        next false unless @user
-        next true unless ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-
-        if duo_chat_self_hosted?
-          self_hosted_models_available_for?(@user)
-        elsif duo_chat_free_access_was_cut_off?
-          duo_chat.allowed_for?(@user)
         else
-          @user.any_group_with_ai_chat_available?
+          duo_chat.allowed_for?(@user)
         end
       end
 
@@ -210,32 +192,17 @@ module EE
         enable :admin_instance_external_audit_events
       end
 
-      rule { code_suggestions_licensed & code_suggestions_enabled_for_user }.enable :access_code_suggestions
+      rule do
+        code_suggestions_licensed & ai_features_enabled & code_suggestions_enabled_for_user
+      end.enable :access_code_suggestions
 
-      rule { user_allowed_to_use_chat & duo_chat_enabled }.enable :access_duo_chat
+      rule { ai_features_enabled & duo_chat_enabled_for_user }.enable :access_duo_chat
 
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
 
       rule { security_policy_bot }.policy do
         enable :access_git
       end
-    end
-
-    def duo_chat_free_access_was_cut_off?
-      if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-        duo_chat_free_access_was_cut_off_for_gitlab_com?
-      else
-        duo_chat_free_access_was_cut_off_for_sm?
-      end
-    end
-
-    def duo_chat_free_access_was_cut_off_for_gitlab_com?
-      !duo_chat.free_access? || user.belongs_to_group_requires_licensed_seat_for_chat?
-    end
-
-    def duo_chat_free_access_was_cut_off_for_sm?
-      ::Feature.enabled?(:duo_chat_requires_licensed_seat_sm) ||
-        !duo_chat.free_access?
     end
 
     def duo_chat

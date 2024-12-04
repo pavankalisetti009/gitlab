@@ -24,19 +24,12 @@ module Admin
 
       def ensure_feature_available!
         return if !Gitlab.org_or_com? && # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Not related to SaaS offerings
-          check_duo_visibility? &&
+          admin_display_duo_addon_settings? &&
           License.current.present? &&
           License.current.paid? &&
           Feature.enabled?(:admin_duo_page_configuration_settings, :instance)
 
         redirect_to admin_gitlab_duo_path
-      end
-
-      def check_duo_visibility?
-        visible_duo_chat = admin_display_ai_powered_chat_settings?
-        visible_duo_pro = admin_display_duo_pro_settings?
-
-        visible_duo_chat || visible_duo_pro
       end
     end
   end

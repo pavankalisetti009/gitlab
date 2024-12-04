@@ -26,11 +26,7 @@ module Admin
         tag_pair_for_link(direct_connections_docs_url))
     end
 
-    def admin_display_ai_powered_chat_settings?
-      License.feature_available?(:ai_chat) && CloudConnector::AvailableServices.find_by_name(:duo_chat).free_access?
-    end
-
-    def admin_display_duo_pro_settings?
+    def admin_display_duo_addon_settings?
       CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
     end
 
