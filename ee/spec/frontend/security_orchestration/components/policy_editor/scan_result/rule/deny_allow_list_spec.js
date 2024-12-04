@@ -1,6 +1,7 @@
 import { GlCollapsibleListbox, GlButton, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/deny_allow_list.vue';
+import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list.vue';
+import DenyAllowListModal from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list_modal.vue';
 import {
   DENIED,
   ALLOWED,
@@ -19,6 +20,7 @@ describe('DenyAllowList', () => {
   };
 
   const findTypeDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findModal = () => wrapper.findComponent(DenyAllowListModal);
   const findButton = () => wrapper.findComponent(GlButton);
 
   describe('default state', () => {
@@ -44,13 +46,13 @@ describe('DenyAllowList', () => {
       createComponent({
         props: {
           selected: ALLOWED,
-          licences: ['package-1'],
+          licenses: ['package-1'],
         },
       });
 
       expect(findTypeDropdown().props('selected')).toBe(ALLOWED);
       expect(findTypeDropdown().props('toggleText')).toBe('Allowed');
-      expect(findButton().text()).toBe('allowlist (1 licence)');
+      expect(findButton().text()).toBe('allowlist (1 license)');
     });
   });
 
@@ -58,13 +60,22 @@ describe('DenyAllowList', () => {
     it('renders denylist with multiple licences', () => {
       createComponent({
         props: {
-          licences: ['package-1', 'package-2'],
+          licenses: ['package-1', 'package-2'],
         },
       });
 
       expect(findTypeDropdown().props('selected')).toBe(DENIED);
       expect(findTypeDropdown().props('toggleText')).toBe('Denied');
       expect(findButton().text()).toBe('denylist (2 licenses)');
+    });
+  });
+
+  describe('deny allow modal', () => {
+    it('renders denylist modal', () => {
+      createComponent();
+
+      expect(findModal().exists()).toBe(true);
+      expect(findModal().props('listType')).toBe(DENIED);
     });
   });
 });

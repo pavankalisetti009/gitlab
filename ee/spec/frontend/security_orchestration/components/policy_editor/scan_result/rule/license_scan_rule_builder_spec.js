@@ -7,7 +7,7 @@ import BranchSelection from 'ee/security_orchestration/components/policy_editor/
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
 import StatusFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filter.vue';
 import LicenseFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/license_filter.vue';
-import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/deny_allow_list.vue';
+import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list.vue';
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import {
