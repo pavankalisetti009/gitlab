@@ -60,7 +60,7 @@ describe('DevopsAdoptionOverview', () => {
       it('passes the correct event when the card title is clicked', () => {
         const cards = wrapper
           .findAllComponents(DevopsAdoptionOverviewCard)
-          .filter((c) => c.props().displayMeta).wrappers;
+          .wrappers.filter((c) => c.props().displayMeta);
 
         for (const card of cards) {
           card.vm.$emit('card-title-clicked');

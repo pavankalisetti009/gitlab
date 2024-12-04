@@ -24,7 +24,7 @@ describe('Project Header', () => {
     wrapper
       .findComponent(GlDisclosureDropdown)
       .findAllComponents(GlDisclosureDropdownItem)
-      .filter((w) => w.text() === 'Remove');
+      .wrappers.find((w) => w.text() === 'Remove');
 
   beforeEach(() => {
     wrapper = shallowMountExtended(component, {
@@ -77,7 +77,7 @@ describe('Project Header', () => {
     });
 
     it('should emit a "remove" event when "remove" is clicked', async () => {
-      findRemoveButton().at(0).vm.$emit('action');
+      findRemoveButton().vm.$emit('action');
       await nextTick();
 
       expect(wrapper.emitted('remove')).toContainEqual([mockProject.remove_path]);
