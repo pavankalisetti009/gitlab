@@ -7,7 +7,7 @@ import SelfHostedModelForm from 'ee/pages/admin/ai/self_hosted_models/components
 import updateSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
 import EditSelfHostedModel from 'ee/pages/admin/ai/self_hosted_models/components/edit_self_hosted_model.vue';
 import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/self_hosted_models/constants';
-import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import getSelfHostedModelByIdQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_model_by_id.query.graphql';
 import { createAlert } from '~/alert';
 import { mockSelfHostedModel } from './mock_data';
 
@@ -28,7 +28,7 @@ describe('EditSelfHostedModel', () => {
   });
 
   const createComponent = async ({
-    apolloHandlers = [[getSelfHostedModelsQuery, getSelfHostedModelQueryHandler]],
+    apolloHandlers = [[getSelfHostedModelByIdQuery, getSelfHostedModelQueryHandler]],
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
@@ -81,7 +81,7 @@ describe('EditSelfHostedModel', () => {
     describe('due to a general error', () => {
       it('displays an error message', async () => {
         await createComponent({
-          apolloHandlers: [[getSelfHostedModelsQuery, jest.fn().mockRejectedValue('ERROR')]],
+          apolloHandlers: [[getSelfHostedModelByIdQuery, jest.fn().mockRejectedValue('ERROR')]],
         });
 
         expect(createAlert).toHaveBeenCalledWith(
@@ -103,7 +103,7 @@ describe('EditSelfHostedModel', () => {
 
       it('displays an error message', async () => {
         await createComponent({
-          apolloHandlers: [[getSelfHostedModelsQuery, getSelfHostedModelErrorHandler]],
+          apolloHandlers: [[getSelfHostedModelByIdQuery, getSelfHostedModelErrorHandler]],
         });
 
         expect(createAlert).toHaveBeenCalledWith(

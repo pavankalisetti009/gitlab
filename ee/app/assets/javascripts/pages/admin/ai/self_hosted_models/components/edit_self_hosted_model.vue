@@ -3,7 +3,7 @@ import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import updateSelfHostedModelMutation from '../graphql/mutations/update_self_hosted_model.mutation.graphql';
-import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
+import getSelfHostedModelByIdQuery from '../graphql/queries/get_self_hosted_model_by_id.query.graphql';
 import { SELF_HOSTED_MODEL_MUTATIONS } from '../constants';
 import SelfHostedModelForm from './self_hosted_model_form.vue';
 
@@ -38,7 +38,7 @@ export default {
   },
   apollo: {
     selfHostedModel: {
-      query: getSelfHostedModelsQuery,
+      query: getSelfHostedModelByIdQuery,
       variables() {
         return {
           id: convertToGraphQLId('Ai::SelfHostedModel', this.modelId),

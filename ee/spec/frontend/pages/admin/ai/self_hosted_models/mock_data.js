@@ -4,7 +4,7 @@ export const mockSelfHostedModel = {
   model: 'Mistral',
   endpoint: 'https://mock-endpoint.com',
   identifier: 'provider/some-model-1',
-  hasApiToken: true,
+  apiToken: 'mock-api-token-123',
   featureSettings: {
     nodes: [],
   },
