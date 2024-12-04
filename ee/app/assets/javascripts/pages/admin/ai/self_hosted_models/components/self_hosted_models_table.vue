@@ -53,7 +53,7 @@ export default {
     },
     {
       key: 'model',
-      label: s__('AdminSelfHostedModels|Model'),
+      label: s__('AdminSelfHostedModels|Model family'),
       thClass: 'gl-w-4/20',
       tdClass: 'gl-content-center',
     },
