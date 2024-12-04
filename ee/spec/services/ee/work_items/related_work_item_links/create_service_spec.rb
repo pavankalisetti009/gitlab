@@ -88,23 +88,38 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
       end
 
       before do
-        stub_licensed_features(epics: true, related_epics: true)
+        stub_licensed_features(epics: true, related_epics: true, blocked_work_items: true)
       end
 
       it_behaves_like 'successful response', link_type: 'blocks'
+      it_behaves_like 'successful response', link_type: 'is_blocked_by'
 
       context 'when one work item is not an epic' do
         let_it_be(:issue_work_item) { create(:work_item, :issue, namespace: group) }
 
-        let(:params) do
-          { target_issuable: [issue_work_item], link_type: 'blocks' }
+        shared_examples 'successful execution' do
+          it 'does not try to sync' do
+            expect(::Epic::RelatedEpicLink).not_to receive(:find_or_initialize_from_work_item_link)
+
+            expect { link_items }.to not_change { Epic::RelatedEpicLink.count }
+              .and change { link_class.count }.by(1)
+          end
         end
 
-        it 'does not try to sync it to a related epic link' do
-          expect(::Epic::RelatedEpicLink).not_to receive(:find_or_initialize_from_work_item_link)
+        context 'when target is not a work item' do
+          let(:params) do
+            { target_issuable: [issue_work_item], link_type: 'blocks' }
+          end
 
-          expect { link_items }.to not_change { Epic::RelatedEpicLink.count }
-            .and change { link_class.count }.by(1)
+          it_behaves_like 'successful execution'
+        end
+
+        context 'when source is not a work item' do
+          let(:params) do
+            { target_issuable: [issue_work_item], link_type: 'is_blocked_by' }
+          end
+
+          it_behaves_like 'successful execution'
         end
       end
 
