@@ -10,7 +10,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
 
   describe '#perform' do
     subject(:run_worker) do
-      described_class.new.perform(group_id, true, excluded_projects_ids)
+      described_class.new.perform(group_id, true, nil, excluded_projects_ids)
     end
 
     before do
@@ -37,7 +37,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
     end
 
     include_examples 'an idempotent worker' do
-      let(:job_args) { [group.id, true, excluded_projects_ids] }
+      let(:job_args) { [group.id, true, nil, excluded_projects_ids] }
     end
   end
 end
