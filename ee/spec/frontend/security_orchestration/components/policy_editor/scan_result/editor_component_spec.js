@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import { GlEmptyState } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
@@ -97,6 +98,9 @@ describe('EditorComponent', () => {
     handler = mockLinkedSppItemsResponse(),
   } = {}) => {
     wrapper = shallowMountExtended(EditorComponent, {
+      directives: {
+        GlTooltip: createMockDirective('gl-tooltip'),
+      },
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
@@ -148,6 +152,8 @@ describe('EditorComponent', () => {
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findAllActionSections = () => wrapper.findAllComponents(ActionSection);
   const findAddRuleButton = () => wrapper.findByTestId('add-rule');
+  const findTooltip = () =>
+    getBinding(wrapper.findByTestId('add-rule-wrapper').element, 'gl-tooltip');
   const findAllDisabledComponents = () => wrapper.findAllComponents(DimDisableContainer);
   const findAllRuleSections = () => wrapper.findAllComponents(RuleSection);
   const findSettingsSection = () => wrapper.findComponent(SettingsSection);
@@ -278,13 +284,23 @@ describe('EditorComponent', () => {
         expect(findAllRuleSections()).toHaveLength(rulesCount + 1);
       });
 
-      it('hides add button when the limit of five rules has been reached', () => {
+      it('shows correct label for add rule button', () => {
+        factory();
+        expect(findAddRuleButton().text()).toBe('Add new rule');
+        expect(findAddRuleButton().props('disabled')).toBe(false);
+        expect(findTooltip().value.disabled).toBe(true);
+      });
+
+      it('disables add button when the limit of 5 rules has been reached', () => {
         const limit = 5;
         const { id, ...rule } = mockDefaultBranchesScanResultObject.rules[0];
-        uniqueId.mockRestore();
         factoryWithExistingPolicy({ policy: { rules: [rule, rule, rule, rule, rule] } });
         expect(findAllRuleSections()).toHaveLength(limit);
-        expect(findAddRuleButton().exists()).toBe(false);
+        expect(findAddRuleButton().props('disabled')).toBe(true);
+        expect(findTooltip().value).toMatchObject({
+          disabled: false,
+          title: 'You can add a maximum of 5 rules.',
+        });
       });
 
       it('updates an existing rule', async () => {
