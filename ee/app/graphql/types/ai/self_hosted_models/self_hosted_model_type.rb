@@ -8,6 +8,7 @@ module Types
         graphql_name 'AiSelfHostedModel'
         description 'Self-hosted LLM servers'
 
+        field :api_token, String, null: true, description: 'Optional API key for the self-hosted model server.'
         field :created_at, Types::TimeType, null: false, description: 'Timestamp of creation.'
         field :endpoint, String, null: false, description: 'Endpoint of the self-hosted model server.'
         field :has_api_token, Boolean,

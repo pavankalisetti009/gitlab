@@ -1,16 +1,15 @@
-query getSelfHostedModels {
-  aiSelfHostedModels(first: 100) {
+query getSelfHostedModelById($id: AiSelfHostedModelID) {
+  aiSelfHostedModels(id: $id) {
     nodes {
       id
       name
       model
       identifier
       endpoint
-      hasApiToken
+      apiToken
       featureSettings {
         nodes {
           feature
-          title
         }
       }
     }
