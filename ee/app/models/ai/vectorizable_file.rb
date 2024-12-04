@@ -20,5 +20,9 @@ module Ai
     has_many :attachments, class_name: 'Ai::AgentVersionAttachment', foreign_key: :ai_vectorizable_file_id,
       inverse_of: :file
     has_many :versions, through: :attachments, source: :version
+
+    def uploads_sharding_key
+      { project_id: project_id }
+    end
   end
 end
