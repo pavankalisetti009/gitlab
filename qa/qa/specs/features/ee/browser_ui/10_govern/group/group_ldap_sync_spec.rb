@@ -159,7 +159,7 @@ module QA
       end
 
       def signin_as_user(user_name)
-        user = Struct.new(:ldap_username, :ldap_password).new(user_name, 'password')
+        user = Struct.new(:username, :password).new(user_name, 'password')
 
         Page::Main::Menu.perform(&:sign_out_if_signed_in)
         Runtime::Browser.visit(:gitlab, Page::Main::Login)
