@@ -10,6 +10,7 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:dast_pre_scan_verification, @project)
+        push_frontend_feature_flag(:dast_ui_additional_variables, @project, type: :wip)
       end
 
       feature_category :dynamic_application_security_testing

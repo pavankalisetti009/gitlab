@@ -18,6 +18,7 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BaseDastProfileForm from '../../components/base_dast_profile_form.vue';
 import dastProfileFormMixin from '../../dast_profile_form_mixin';
 import TooltipIcon from '../../dast_scanner_profiles/components/tooltip_icon.vue';
+import DastVariablesFormGroup from '../../components/dast_variables_form_group.vue';
 import {
   MAX_CHAR_LIMIT_EXCLUDED_URLS,
   MAX_CHAR_LIMIT_REQUEST_HEADERS,
@@ -78,6 +79,7 @@ export default {
   components: {
     BaseDastProfileForm,
     DastSiteAuthSection,
+    DastVariablesFormGroup,
     GlFormGroup,
     GlFormInput,
     GlFormRadioGroup,
@@ -452,5 +454,7 @@ export default {
       :is-edit-mode="isEdit"
       :stacked="stacked"
     />
+
+    <dast-variables-form-group v-if="glFeatures.dastUiAdditionalVariables" class="gl-mb-6" />
   </base-dast-profile-form>
 </template>

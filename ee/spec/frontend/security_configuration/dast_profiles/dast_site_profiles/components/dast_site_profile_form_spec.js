@@ -4,6 +4,7 @@ import { GlForm, GlSprintf } from '@gitlab/ui';
 import { within } from '@testing-library/dom';
 import merge from 'lodash/merge';
 import siteProfileWithSecrets from 'test_fixtures/security_configuration/dast_profiles/dast_site_profile_with_secrets.json';
+import DastVariablesFormGroup from 'ee/security_configuration/dast_profiles/components/dast_variables_form_group.vue';
 import BaseDastProfileForm from 'ee/security_configuration/dast_profiles/components/base_dast_profile_form.vue';
 import DastSiteAuthSection from 'ee/security_configuration/dast_profiles/dast_site_profiles/components/dast_site_auth_section.vue';
 import DastSiteProfileForm from 'ee/security_configuration/dast_profiles/dast_site_profiles/components/dast_site_profile_form.vue';
@@ -64,6 +65,7 @@ describe('DastSiteProfileForm', () => {
       .find('[data-testid="request-headers-tooltip"]')
       .find('a')
       .attributes('href');
+  const findDastVariablesFormGroup = () => wrapper.findComponent(DastVariablesFormGroup);
 
   const setFieldValue = async (field, value) => {
     await field.setValue(value);
@@ -410,6 +412,27 @@ describe('DastSiteProfileForm', () => {
 
     it('should disable the profile name field', () => {
       expect(findProfileNameInput().attributes('disabled')).toBeDefined();
+    });
+  });
+
+  it('does not render DastVariablesFormGroup', () => {
+    createShallowComponent();
+    expect(findDastVariablesFormGroup().exists()).toBe(false);
+  });
+
+  describe('DastVariablesFormGroup', () => {
+    beforeEach(() => {
+      createShallowComponent({
+        provide: {
+          glFeatures: {
+            dastUiAdditionalVariables: true,
+          },
+        },
+      });
+    });
+
+    it('renders DastVariablesFormGroup when feature flag is enabled', () => {
+      expect(findDastVariablesFormGroup().exists()).toBe(true);
     });
   });
 });
