@@ -113,7 +113,7 @@ RSpec.describe Projects::RegisterSuggestedReviewersProjectService, :saas, featur
 
           context 'when token creation succeeds', :aggregate_failures do
             let(:token_response) do
-              ServiceResponse.success(payload: { access_token: build(:personal_access_token) })
+              ServiceResponse.success(payload: { access_token: create(:personal_access_token) })
             end
 
             context 'when suggested reviewers client succeeds' do
