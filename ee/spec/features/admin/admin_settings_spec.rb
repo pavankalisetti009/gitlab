@@ -377,7 +377,7 @@ RSpec.describe 'Admin updates EE-only settings' do
           end
 
           page.within('.modal') do
-            click_button 'Approve 1 user'
+            click_button 'Proceed and approve 1 user'
           end
 
           expect(current_settings.new_user_signups_cap).to be_nil
@@ -445,7 +445,7 @@ RSpec.describe 'Admin updates EE-only settings' do
           case button_effect
           when :shows_confirmation_modal
             expect(page).to have_selector('.modal')
-            expect(page).to have_css('.modal .modal-body', text: 'By making this change, you will automatically approve 1 user who is pending approval.')
+            expect(page).to have_css('.modal .modal-body', text: 'By changing this setting, you can also automatically approve 1 user who is pending approval.')
           when :submits_form
             expect(page).to have_content 'Application settings saved successfully'
           end

@@ -291,7 +291,7 @@ RSpec.describe ApplicationSettings::UpdateService do
         end
 
         context 'when decreasing new user cap' do
-          let(:opts) { { new_user_signups_cap: 8 } }
+          let(:opts) { { new_user_signups_cap: 8, pending_user_auto_approval: 'true' } }
 
           include_examples 'worker is not called'
         end
@@ -299,13 +299,25 @@ RSpec.describe ApplicationSettings::UpdateService do
         context 'when increasing new user cap' do
           let(:opts) { { new_user_signups_cap: 15 } }
 
-          include_examples 'worker is called'
+          include_examples 'worker is not called'
+
+          context 'when auto approval is enabled' do
+            let(:opts) { { new_user_signups_cap: 15, pending_user_auto_approval: 'true' } }
+
+            include_examples 'worker is called'
+          end
         end
 
         context 'when changing user cap to nil' do
           let(:opts) { { new_user_signups_cap: nil } }
 
-          include_examples 'worker is called'
+          include_examples 'worker is not called'
+
+          context 'when auto approval is enabled' do
+            let(:opts) { { new_user_signups_cap: nil, pending_user_auto_approval: 'true' } }
+
+            include_examples 'worker is called'
+          end
         end
       end
     end
