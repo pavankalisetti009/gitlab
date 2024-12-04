@@ -13,9 +13,17 @@ RSpec.describe Authz::Group, feature_category: :permissions do
   let_it_be(:child_group) { create(:group, parent: group) }
   let_it_be(:other_groups) { create_list(:group, 3) }
 
-  let_it_be(:admin_runners_role) { create(:member_role, :guest, :admin_runners, namespace: root_group) }
-  let_it_be(:admin_vulnerability_role) { create(:member_role, :guest, :admin_vulnerability, namespace: root_group) }
-  let_it_be(:read_dependency_role) { create(:member_role, :guest, :read_dependency, namespace: root_group) }
+  let_it_be(:admin_runners_role) do
+    create(:member_role, :guest, :admin_runners, namespace: root_group)
+  end
+
+  let_it_be(:admin_vulnerability_role) do
+    create(:member_role, :guest, :admin_vulnerability, namespace: root_group)
+  end
+
+  let_it_be(:read_dependency_role) do
+    create(:member_role, :guest, :read_dependency, namespace: root_group)
+  end
 
   before do
     stub_licensed_features(custom_roles: true)

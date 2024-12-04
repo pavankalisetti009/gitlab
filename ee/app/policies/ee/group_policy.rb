@@ -231,6 +231,10 @@ module EE
         end
       end
 
+      rule { custom_role_enables_read_code }.policy do
+        enable :read_code
+      end
+
       rule { owner & unique_project_download_limit_enabled }.policy do
         enable :ban_group_member
       end

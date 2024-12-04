@@ -516,22 +516,28 @@ module Search
           return [] unless user
 
           search_level = options.fetch(:search_level).to_sym
+          features = Array.wrap(options[:features])
 
           allowed_traversal_ids = case search_level
                                   when :global
-                                    authorized_groups = ::Search::GroupsFinder.new(user: user).execute
-                                    ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
+                                    authorized_traversal_ids_for_global(user, features)
                                   when :group
-                                    authorized_traversal_ids_for_groups(user, options[:group_ids])
+                                    authorized_traversal_ids_for_groups(user, options[:group_ids], features)
                                   when :project
-                                    authorized_traversal_ids_for_projects(user, options[:project_ids])
+                                    authorized_traversal_ids_for_projects(user, options[:project_ids], features)
                                   end
 
           allowed_traversal_ids.map { |id| "#{id.join('-')}-" }
         end
 
-        def authorized_traversal_ids_for_groups(user, namespace_ids)
-          authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+        def authorized_traversal_ids_for_global(user, features)
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: { features: features }).execute
+
+          ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
+        end
+
+        def authorized_traversal_ids_for_groups(user, namespace_ids, features)
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: { features: features }).execute
           namespaces = Namespace.id_in(namespace_ids)
 
           return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
@@ -551,8 +557,8 @@ module Search
           end
         end
 
-        def authorized_traversal_ids_for_projects(user, project_ids)
-          authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+        def authorized_traversal_ids_for_projects(user, project_ids, features)
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: { features: features }).execute
           namespace_ids = Project.id_in(project_ids).select(:namespace_id)
           namespaces = Namespace.id_in(namespace_ids)
 

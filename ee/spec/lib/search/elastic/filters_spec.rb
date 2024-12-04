@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
-  let_it_be(:user) { create(:user) }
+  let_it_be_with_reload(:user) { create(:user) }
   let(:query_hash) { { query: { bool: { filter: [], must_not: [], must: [], should: [] } } } }
 
   shared_examples 'does not modify the query_hash' do
@@ -2741,24 +2741,20 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       described_class.by_search_level_and_membership(query_hash: query_hash, options: options)
     end
 
-    let_it_be(:user_with_access) { user }
-
     let_it_be(:grp_public) { create(:group, :public) }
     let_it_be(:grp_public_prj_public) { create(:project, :public, group: grp_public) }
     let_it_be(:grp_public_prj_internal) { create(:project, :internal, group: grp_public) }
 
-    let_it_be(:sub_grp_internal) { create(:group, :internal, parent: grp_public, developers: user_with_access) }
+    let_it_be(:sub_grp_internal) { create(:group, :internal, parent: grp_public) }
     let_it_be(:sub_grp_internal_prj_internal) { create(:project, :internal, group: sub_grp_internal) }
     let_it_be(:sub_grp_internal_prj_private) { create(:project, :private, group: sub_grp_internal) }
 
     let_it_be(:sub_grp_private) { create(:group, :private, parent: grp_public) }
-    let_it_be(:sub_grp_private_prj_private) do
-      create(:project, :private, developers: user_with_access, group: sub_grp_private)
-    end
+    let_it_be(:sub_grp_private_prj_private) { create(:project, :private, group: sub_grp_private) }
 
     let_it_be(:grp_private) { create(:group, :private) }
     let_it_be(:grp_private_prj_private) { create(:project, :private, group: grp_private) }
-    let_it_be(:grp_shared) { create(:group, :private, developers: user_with_access) }
+    let_it_be(:grp_shared) { create(:group, :private) }
     let_it_be(:grp_shared_prj_private_link) do
       create(:project_group_link, :reporter, project: grp_private_prj_private, group: grp_shared)
     end
@@ -2766,10 +2762,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     let_it_be(:grp_private_2) { create(:group, :private) }
     let_it_be(:sub_grp_private_2) { create(:group, :private, parent: grp_private_2) }
     let_it_be(:sub_grp_private_2_prj_private) { create(:project, :private, group: sub_grp_private_2) }
-    let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: grp_private_2) }
-    let_it_be(:member) do
-      create(:group_member, :guest, member_role: role, user: user_with_access, source: grp_private_2)
-    end
 
     let(:auth_projects) { [] }
     let(:auth_groups) { [] }
@@ -2795,7 +2787,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: [],
           group_ids: [],
           search_level: :foobar,
-          features: [:issues, :repository]
+          features: :repository
         }
       end
 
@@ -2812,8 +2804,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: [],
           group_ids: [],
           search_level: search_level,
-          features: [:issues, :repository],
-          project_visibility_level_field: :visibility_level
+          features: :repository
         }
       end
 
@@ -2825,7 +2816,11 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when user has access' do
-        let(:user) { user_with_access }
+        let_it_be(:read_code_role) { create(:member_role, :guest, :read_code, namespace: grp_private_2) }
+        let_it_be(:admin_runners_role) do
+          create(:member_role, :guest, :admin_runners, namespace: grp_private, read_code: false)
+        end
+
         let(:auth_projects) { [grp_private_prj_private, sub_grp_private_prj_private] }
         let(:auth_groups) { [grp_private_2, grp_shared, sub_grp_internal] }
         let(:expected_access_filter) do
@@ -2838,6 +2833,15 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ],
                 minimum_should_match: 1 } }
           ]
+        end
+
+        before_all do
+          sub_grp_internal.add_developer(user)
+          sub_grp_private_prj_private.add_developer(user)
+          grp_shared.add_developer(user)
+
+          create(:group_member, :guest, member_role: read_code_role, user: user, source: grp_private_2)
+          create(:group_member, :guest, member_role: admin_runners_role, user: user, source: grp_private)
         end
 
         it_behaves_like 'a query filtered by search level and membership'
@@ -2866,7 +2870,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: [],
           group_ids: groups.map(&:id),
           search_level: search_level,
-          features: [:issues, :repository],
+          features: :repository,
           project_visibility_level_field: :visibility_level
         }
       end
@@ -2894,7 +2898,11 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when user has access' do
-        let(:user) { user_with_access }
+        let_it_be(:read_code_role) { create(:member_role, :guest, :read_code, namespace: grp_private_2) }
+        let_it_be(:admin_runners_role) do
+          create(:member_role, :guest, :admin_runners, namespace: grp_private, read_code: false)
+        end
+
         let(:expected_access_filter) do
           [group_filter].tap do |filters|
             filters << if auth_projects.any? || auth_groups.any?
@@ -2903,6 +2911,15 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                          user_public_access_filter
                        end
           end
+        end
+
+        before_all do
+          sub_grp_internal.add_developer(user)
+          sub_grp_private_prj_private.add_developer(user)
+          grp_shared.add_developer(user)
+
+          create(:group_member, :guest, member_role: read_code_role, user: user, source: grp_private_2)
+          create(:group_member, :guest, member_role: admin_runners_role, user: user, source: grp_private)
         end
 
         # rubocop:disable Layout/LineLength -- splitting the table syntax affects readability
@@ -2977,7 +2994,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: projects.map(&:id),
           group_ids: groups.map(&:id),
           search_level: search_level,
-          features: [:issues, :repository],
+          features: :repository,
           project_visibility_level_field: :visibility_level
         }
       end
@@ -3008,7 +3025,11 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when user has access' do
-        let(:user) { user_with_access }
+        let_it_be(:read_code_role) { create(:member_role, :guest, :read_code, namespace: grp_private_2) }
+        let_it_be(:admin_runners_role) do
+          create(:member_role, :guest, :admin_runners, namespace: grp_private, read_code: false)
+        end
+
         let(:expected_access_filter) do
           [project_filter].tap do |filters|
             filters << if auth_projects.any? || auth_groups.any?
@@ -3017,6 +3038,15 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                          user_public_access_filter
                        end
           end
+        end
+
+        before_all do
+          sub_grp_internal.add_developer(user)
+          sub_grp_private_prj_private.add_developer(user)
+          grp_shared.add_developer(user)
+
+          create(:group_member, :guest, member_role: read_code_role, user: user, source: grp_private_2)
+          create(:group_member, :guest, member_role: admin_runners_role, user: user, source: grp_private)
         end
 
         where(:groups, :projects, :auth_projects, :auth_groups) do
@@ -3091,6 +3121,59 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
     end
 
+    context 'when multiple features are provided' do
+      let(:options) do
+        {
+          current_user: nil,
+          project_ids: [],
+          group_ids: [],
+          search_level: :global,
+          features: [:issues, :merge_requests]
+        }
+      end
+
+      it 'applies both access levels to the query' do
+        expected_access_filter = [
+          {
+            bool: {
+              _name: "filters:permissions:global",
+              minimum_should_match: 1,
+              should: [{
+                bool: {
+                  must: contain_exactly(
+                    {
+                      terms: {
+                        _name: "filters:permissions:global:visibility_level:public",
+                        visibility_level: contain_exactly(::Gitlab::VisibilityLevel::PUBLIC)
+                      }
+                    }
+                  ),
+                  should: contain_exactly(
+                    {
+                      terms: {
+                        _name: "filters:permissions:global:issues_access_level:enabled",
+                        issues_access_level: contain_exactly(::ProjectFeature::ENABLED)
+                      }
+                    },
+                    {
+                      terms: {
+                        _name: "filters:permissions:global:merge_requests_access_level:enabled",
+                        merge_requests_access_level: contain_exactly(::ProjectFeature::ENABLED)
+                      }
+                    }
+                  ),
+                  minimum_should_match: 1
+                }
+              }]
+            }
+          }
+        ]
+
+        actual_filter = by_search_level_and_membership.dig(:query, :bool, :filter)
+        expect(actual_filter).to match(expected_access_filter)
+      end
+    end
+
     def member_filter_for_namespace(namespace)
       {
         prefix: {
@@ -3127,12 +3210,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             should: contain_exactly(
               {
                 terms: {
-                  _name: "filters:permissions:#{search_level}:issues_access_level:enabled_or_private",
-                  issues_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
-                }
-              },
-              {
-                terms: {
                   _name: "filters:permissions:#{search_level}:repository_access_level:enabled_or_private",
                   repository_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
                 }
@@ -3166,12 +3243,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           should: contain_exactly(
             {
               terms: {
-                _name: "filters:permissions:#{search_level}:issues_access_level:enabled",
-                issues_access_level: contain_exactly(::ProjectFeature::ENABLED)
-              }
-            },
-            {
-              terms: {
                 _name: "filters:permissions:#{search_level}:repository_access_level:enabled",
                 repository_access_level: contain_exactly(::ProjectFeature::ENABLED)
               }
@@ -3202,12 +3273,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             }
           ],
           should: contain_exactly(
-            {
-              terms: {
-                _name: "filters:permissions:#{search_level}:issues_access_level:enabled",
-                issues_access_level: contain_exactly(::ProjectFeature::ENABLED)
-              }
-            },
             {
               terms: {
                 _name: "filters:permissions:#{search_level}:repository_access_level:enabled",
@@ -3268,12 +3333,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       should: contain_exactly(
                         {
                           terms: {
-                            _name: "filters:permissions:#{search_level}:issues_access_level:enabled_or_private",
-                            issues_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
-                          }
-                        },
-                        {
-                          terms: {
                             _name: "filters:permissions:#{search_level}:repository_access_level:enabled_or_private",
                             repository_access_level: contain_exactly(::ProjectFeature::ENABLED,
                               ::ProjectFeature::PRIVATE)
@@ -3305,12 +3364,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             {
               bool: {
                 should: match_array([
-                  {
-                    terms: {
-                      _name: "filters:permissions:#{search_level}:issues_access_level:enabled_or_private",
-                      issues_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
-                    }
-                  },
                   {
                     terms: {
                       _name: "filters:permissions:#{search_level}:repository_access_level:enabled_or_private",

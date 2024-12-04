@@ -6,7 +6,7 @@ introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/20277
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/issues/376180
 feature_category: source_code_management
 milestone: '15.7'
-group_ability: false
+group_ability: true
 project_ability: true
 skip_seat_consumption: true
 feature_flag: customizable_roles

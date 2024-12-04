@@ -479,7 +479,8 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       let_it_be(:object) { build_stubbed(:group) }
       let_it_be(:abilities) do
         described_class.all_customizable_permissions.select do |_k, v|
-          v[:group_ability] && v[:available_from_access_level]
+          # read_code is only available with access_level permissions for projects
+          v[:group_ability] && v[:available_from_access_level] && v[:name].to_sym != :read_code
         end.values
       end
 
