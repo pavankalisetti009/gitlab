@@ -23602,6 +23602,9 @@ msgstr ""
 msgid "FindingsDrawer|SAST Finding"
 msgstr ""
 
+msgid "FindingsDrawer|View code flow"
+msgstr ""
+
 msgid "Fingerprint (MD5)"
 msgstr ""
 

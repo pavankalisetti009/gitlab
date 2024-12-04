@@ -58,6 +58,7 @@ exports[`FindingsDrawer General Rendering matches the snapshot with detected bad
     >
       <ul
         class="!gl-pb-0 gl-border-b-initial gl-list-none gl-mb-0"
+        data-testid="drawer-container"
       >
         <li
           class="gl-mb-4"
@@ -282,6 +283,7 @@ exports[`FindingsDrawer General Rendering matches the snapshot with dismissed ba
     >
       <ul
         class="!gl-pb-0 gl-border-b-initial gl-list-none gl-mb-0"
+        data-testid="drawer-container"
       >
         <li
           class="gl-mb-4"

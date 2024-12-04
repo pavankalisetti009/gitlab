@@ -1,7 +1,9 @@
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import FindingsDrawerDetails from 'ee/diffs/components/shared/findings_drawer_details.vue';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import {
+  mockFindingDetails,
   mockFindingDetected,
+  mockFindingDismissed,
   mockFindingsMultiple,
   mockProject,
 } from 'jest/diffs/mock_data/findings_drawer';
@@ -14,18 +16,26 @@ describe('Findings Drawer Details', () => {
     project: mockProject,
   };
 
-  const createWrapper = (findingDetailsOverrides = {}) => {
+  const createWrapper = (
+    findingDetailsOverrides = {},
+    { vulnerabilityCodeFlow = false, mrVulnerabilityCodeFlow = false } = {},
+  ) => {
     const propsData = {
       drawer: findingDetailsProps.drawer,
       project: findingDetailsProps.project,
+      insideTab: false,
       ...findingDetailsOverrides,
     };
 
-    wrapper = shallowMountExtended(FindingsDrawerDetails, {
+    wrapper = mountExtended(FindingsDrawerDetails, {
       propsData,
+      provide: {
+        glFeatures: { vulnerabilityCodeFlow, mrVulnerabilityCodeFlow },
+      },
     });
   };
 
+  const getById = (id) => wrapper.findByTestId(id);
   const findTitle = () => wrapper.findByTestId('findings-drawer-title');
 
   describe('General Rendering', () => {
@@ -49,6 +59,74 @@ describe('Findings Drawer Details', () => {
     it('watcher sets active index on drawer prop change', () => {
       createWrapper({ drawer: mockFindingsMultiple[2] });
       expect(findTitle().props().value).toBe(mockFindingsMultiple[2].title);
+    });
+  });
+
+  describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are enabled', () => {
+    describe('when `details` object is not empty', () => {
+      beforeEach(() => {
+        createWrapper(
+          {
+            insideTab: true,
+            drawer: {
+              ...mockFindingDismissed,
+              details: mockFindingDetails,
+            },
+          },
+          {
+            vulnerabilityCodeFlow: true,
+            mrVulnerabilityCodeFlow: true,
+          },
+        );
+      });
+
+      it('should add class `gl-pl-0`', () => {
+        expect(getById('drawer-container').classes('gl-pl-0')).toBe(true);
+      });
+
+      it('should show code flow button', () => {
+        expect(getById('code-flow-button').exists()).toBe(true);
+      });
+    });
+
+    describe('when `details` object is empty', () => {
+      beforeEach(() => {
+        createWrapper(
+          { insideTab: false },
+          {
+            vulnerabilityCodeFlow: true,
+            mrVulnerabilityCodeFlow: true,
+          },
+        );
+      });
+
+      it('should not add class `gl-pl-0`', () => {
+        expect(getById('drawer-container').classes('gl-pl-0')).toBe(false);
+      });
+
+      it('should not show code flow button', () => {
+        expect(getById('code-flow-button').exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are disabled', () => {
+    beforeEach(() => {
+      createWrapper(
+        {},
+        {
+          vulnerabilityCodeFlow: false,
+          mrVulnerabilityCodeFlow: false,
+        },
+      );
+    });
+
+    it('should add class `gl-pl-0`', () => {
+      expect(getById('drawer-container').classes('gl-pl-0')).toBe(false);
+    });
+
+    it('should not show code flow button', () => {
+      expect(getById('code-flow-button').exists()).toBe(false);
     });
   });
 });

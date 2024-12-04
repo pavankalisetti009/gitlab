@@ -1,5 +1,7 @@
 <script>
-import { GlBadge, GlLink } from '@gitlab/ui';
+import { GlBadge, GlButton, GlLink } from '@gitlab/ui';
+import { VULNERABILITY_DETAIL_CODE_FLOWS } from 'ee/security_dashboard/constants';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { __, s__ } from '~/locale';
 import { SAST_FINDING_DISMISSED } from '~/diffs/constants';
 import DrawerItem from './findings_drawer_item.vue';
@@ -7,7 +9,8 @@ import DrawerItem from './findings_drawer_item.vue';
 export default {
   name: 'FindingsDrawerDetails',
   DrawerItem,
-  components: { DrawerItem, GlBadge, GlLink },
+  components: { DrawerItem, GlBadge, GlLink, GlButton },
+  mixins: [glFeatureFlagMixin()],
   props: {
     drawer: {
       type: Object,
@@ -18,6 +21,11 @@ export default {
       required: false,
       default: () => {},
     },
+    insideTab: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     findingsStatus() {
@@ -25,6 +33,16 @@ export default {
     },
     isCodeQuality() {
       return this.drawer.scale === this.$options.codeQuality;
+    },
+    showCodeFlowTabs() {
+      const codeFlowData = this.drawer.details?.find(
+        (detail) => detail.type === VULNERABILITY_DETAIL_CODE_FLOWS,
+      );
+      return (
+        this.glFeatures.vulnerabilityCodeFlow &&
+        this.glFeatures.mrVulnerabilityCodeFlow &&
+        codeFlowData?.items?.length > 0
+      );
     },
   },
   methods: {
@@ -43,12 +61,17 @@ export default {
     codeQuality: s__('FindingsDrawer|Code Quality'),
     sast: __('SAST'),
     engine: __('Engine'),
+    codeFlowButton: s__('FindingsDrawer|View code flow'),
   },
 };
 </script>
 
 <template>
-  <ul class="gl-mb-0 gl-list-none !gl-pb-0 gl-border-b-initial">
+  <ul
+    class="gl-mb-0 gl-list-none !gl-pb-0 gl-border-b-initial"
+    :class="{ 'gl-pl-0': insideTab }"
+    data-testid="drawer-container"
+  >
     <drawer-item
       v-if="drawer.title"
       :description="$options.i18n.name"
@@ -85,6 +108,19 @@ export default {
         <span v-else-if="drawer.location">
           {{ drawer.location.file }}:{{ drawer.location.startLine }}
         </span>
+      </template>
+    </drawer-item>
+
+    <drawer-item v-if="showCodeFlowTabs" data-testid="code-flow-button">
+      <template #value>
+        <gl-button
+          category="primary"
+          variant="default"
+          data-testid="show-code-flow"
+          @click="$emit('redirectToCodeFlowTab')"
+        >
+          {{ $options.i18n.codeFlowButton }}
+        </gl-button>
       </template>
     </drawer-item>
 
