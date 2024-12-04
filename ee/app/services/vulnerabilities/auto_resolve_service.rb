@@ -119,7 +119,7 @@ module Vulnerabilities
 
         {
           note_id: id,
-          action: 'vulnerability_resolve',
+          action: 'vulnerability_resolved',
           created_at: now,
           updated_at: now
         }

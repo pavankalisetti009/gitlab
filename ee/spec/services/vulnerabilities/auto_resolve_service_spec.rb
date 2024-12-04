@@ -74,7 +74,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         "changed vulnerability status to Resolved and the following comment: \"#{comment}\""
       )
       expect(last_note).to be_system
-      expect(last_note.system_note_metadata.action).to eq('vulnerability_resolve')
+      expect(last_note.system_note_metadata.action).to eq('vulnerability_resolved')
     end
 
     it 'updates the statistics', :sidekiq_inline do
