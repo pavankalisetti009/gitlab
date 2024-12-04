@@ -243,6 +243,17 @@ To integrate its output:
 
 You can also use or adapt the [Pylint CI/CD component](https://gitlab.com/explore/catalog/eakca1/codequality-os-scanners-integration) to run the scan and integrate its output with Code Quality.
 
+#### Ruff
+
+If you already have a [Ruff](https://docs.astral.sh/ruff/) job in your CI/CD pipelines, you should add a report to send its output to Code Quality.
+To integrate its output:
+
+1. Add the argument `--output-format=gitlab` to the command you use to run Ruff.
+1. Change your `ruff check` command to send its output to a file.
+1. Declare a [`codequality` report artifact](../yaml/artifacts_reports.md#artifactsreportscodequality) that points to the location of the report file.
+
+You can also use or adapt the [documented Ruff GitLab CI/CD integration](https://docs.astral.sh/ruff/integrations/#gitlab-cicd) to run the scan and integrate its output with Code Quality.
+
 #### golangci-lint
 
 If you already have a [`golangci-lint`](https://golangci-lint.run/) job in your CI/CD pipelines, you should add a report to send its output to Code Quality.
