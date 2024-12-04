@@ -6,8 +6,9 @@ module Gitlab
       class VerifySelfHostedSetup
         attr_reader :ai_gateway_url
 
-        def initialize
-          @root_user = User.find_by_id(1)
+        def initialize(username)
+          @user = User.find_by_username!(username || 'root')
+
           @ai_gateway_url = ::Gitlab::AiGateway.self_hosted_url
         end
 
@@ -37,12 +38,12 @@ module Gitlab
         def verify_license_access!
           print "Verifying license access to code suggestions..."
 
-          if Ability.allowed?(@root_user, :access_code_suggestions)
+          if Ability.allowed?(@user, :access_code_suggestions)
             puts "✔"
             return true
           end
 
-          puts("Access invalid, debugging cause")
+          puts("User #{@user.username} has no access to code suggestions, debugging cause")
 
           if ::License.feature_available?(:code_suggestions)
             raise <<~MSG
