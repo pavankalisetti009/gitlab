@@ -42,24 +42,15 @@ module CloudConnector
 
       override :access_token
       def access_token(resource = nil, extra_claims: {})
-        if Feature.enabled?(:cloud_connector_jwt_replace, gitlab_org_group)
-          ::Gitlab::CloudConnector::JsonWebToken.new(
-            issuer: Doorkeeper::OpenidConnect.configuration.issuer,
-            audience: backend,
-            subject: Gitlab::CurrentSettings.uuid,
-            realm: ::CloudConnector.gitlab_realm,
-            scopes: scopes_for(resource),
-            ttl: 1.hour,
-            extra_claims: extra_claims
-          ).encode(@key_loader.signing_key)
-        else
-          ::Gitlab::CloudConnector::SelfIssuedToken.new(
-            audience: backend,
-            subject: Gitlab::CurrentSettings.uuid,
-            scopes: scopes_for(resource),
-            extra_claims: extra_claims
-          ).encoded
-        end
+        ::Gitlab::CloudConnector::JsonWebToken.new(
+          issuer: Doorkeeper::OpenidConnect.configuration.issuer,
+          audience: backend,
+          subject: Gitlab::CurrentSettings.uuid,
+          realm: ::CloudConnector.gitlab_realm,
+          scopes: scopes_for(resource),
+          ttl: 1.hour,
+          extra_claims: extra_claims
+        ).encode(@key_loader.signing_key)
       end
 
       private
