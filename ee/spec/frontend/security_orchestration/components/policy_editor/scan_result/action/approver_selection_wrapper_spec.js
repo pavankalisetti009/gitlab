@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 import { GlForm, GlFormInput, GlCollapsibleListbox, GlSprintf, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
-import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import ApproverSelectionWrapper from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_selection_wrapper.vue';
 import GroupSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/group_select.vue';
 import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/user_select.vue';
@@ -225,10 +225,13 @@ describe('ApproverSelectionWrapper', () => {
       );
     });
 
-    it('marks as disabled already selected items', () => {
+    it('marks as disabled already selected items with selected items', () => {
       factory({
         propsData: {
           availableTypes: [APPROVER_TYPE_LIST_ITEMS[0], APPROVER_TYPE_LIST_ITEMS[1]],
+          existingApprovers: {
+            [GROUP_TYPE]: [{ id: 1, type: GROUP_TYPE }],
+          },
         },
         stubs: { GlCollapsibleListbox },
       });
@@ -242,6 +245,17 @@ describe('ApproverSelectionWrapper', () => {
         value: GROUP_TYPE,
         disabled: true,
       });
+    });
+
+    it('does not mark as disabled already selected items without selected items', () => {
+      factory({
+        propsData: {
+          availableTypes: [APPROVER_TYPE_LIST_ITEMS[0], APPROVER_TYPE_LIST_ITEMS[1]],
+        },
+        stubs: { GlCollapsibleListbox },
+      });
+
+      expect(findApproverTypeDropdown().findComponent(GlBadge).exists()).toBe(false);
     });
 
     it('does not emit event for already selected item', () => {
@@ -275,6 +289,9 @@ describe('ApproverSelectionWrapper', () => {
       factory({
         propsData: {
           availableTypes: [APPROVER_TYPE_LIST_ITEMS[1], APPROVER_TYPE_LIST_ITEMS[2]],
+          existingApprovers: {
+            [ROLE_TYPE]: [{ id: 1, type: ROLE_TYPE }],
+          },
         },
         stubs: { GlCollapsibleListbox },
       });
