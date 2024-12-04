@@ -59,8 +59,8 @@ describe('ProductAnalyticsGroupUsageOverview', () => {
         expect(findStatisticsCard().props()).toMatchObject({
           description: 'Events received since Jan 01, 2023',
           percentage: 12,
-          totalValue: '1,000,000',
-          usageValue: '123,456',
+          totalValue: 1000000,
+          usageValue: 123456,
         });
       });
     });

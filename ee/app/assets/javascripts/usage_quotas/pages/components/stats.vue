@@ -24,7 +24,7 @@ export default {
 
 <template>
   <statistics-card
-    :usage-value="`${deploymentsCount}`"
+    :usage-value="deploymentsCount"
     :total-value="deploymentsLimit"
     :description="$options.i18n.description"
     :help-link="$options.static.helpLink"

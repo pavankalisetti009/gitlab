@@ -38,7 +38,7 @@ describe('MonthlyUnitsUsageSummary', () => {
         usageValue: defaultProps.monthlyUnitsUsed,
         totalValue: defaultProps.monthlyUnitsLimit,
         totalUnit: 'units',
-        percentage: Number(defaultProps.monthlyUnitsUsedPercentage),
+        percentage: defaultProps.monthlyUnitsUsedPercentage,
       }),
     );
   });
@@ -54,7 +54,7 @@ describe('MonthlyUnitsUsageSummary', () => {
       createComponent({
         props: {
           monthlyUnitsLimit: 'Unlimited',
-          monthlyUnitsUsedPercentage: '0',
+          monthlyUnitsUsedPercentage: 0,
           displayMinutesAvailableData: false,
         },
       });
@@ -77,7 +77,7 @@ describe('MonthlyUnitsUsageSummary', () => {
       createComponent({
         props: {
           monthlyUnitsLimit: 'Not supported',
-          monthlyUnitsUsedPercentage: '0',
+          monthlyUnitsUsedPercentage: 0,
           anyProjectEnabled: false,
           displayMinutesAvailableData: false,
         },

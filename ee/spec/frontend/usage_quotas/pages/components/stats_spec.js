@@ -30,7 +30,7 @@ describe('PagesDeploymentsStats', () => {
 
   it('passes correct props to StatisticsCard', () => {
     const statisticsCard = wrapper.findComponent(StatisticsCard);
-    expect(statisticsCard.props('usageValue')).toBe(`${deploymentsCount}`);
+    expect(statisticsCard.props('usageValue')).toBe(deploymentsCount);
     expect(statisticsCard.props('totalValue')).toBe(deploymentsLimit);
     expect(statisticsCard.props('description')).toBe('Parallel deployments');
     expect(statisticsCard.props('helpLink')).toBe(

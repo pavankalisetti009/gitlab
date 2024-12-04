@@ -7,6 +7,8 @@ import {
   GlProgressBar,
   GlSkeletonLoader,
 } from '@gitlab/ui';
+import { isNil } from 'lodash';
+import { formatNumber } from '~/locale';
 
 export default {
   name: 'StatisticsCard',
@@ -16,7 +18,7 @@ export default {
   },
   props: {
     usageValue: {
-      type: String,
+      type: [Number, String],
       required: false,
       default: null,
     },
@@ -26,7 +28,7 @@ export default {
       default: null,
     },
     totalValue: {
-      type: String,
+      type: [Number, String],
       required: false,
       default: null,
     },
@@ -86,6 +88,12 @@ export default {
       default: false,
     },
   },
+  methods: {
+    isNil,
+    formatValue(input) {
+      return Number.isInteger(input) ? formatNumber(input) : input;
+    },
+  },
 };
 </script>
 
@@ -104,17 +112,17 @@ export default {
     <template v-else>
       <div class="gl-flex gl-justify-between">
         <p
-          v-if="usageValue"
+          v-if="!isNil(usageValue) && usageValue !== ''"
           class="gl-mb-3 gl-text-size-h-display gl-font-bold"
           :data-testid="summaryDataTestid"
         >
-          {{ usageValue }}
+          {{ formatValue(usageValue) }}
           <span v-if="usageUnit" data-testid="denominator-usage-unit" class="gl-text-lg">{{
             usageUnit
           }}</span>
           <span v-if="totalValue" data-testid="denominator-total">
             /
-            {{ totalValue }}
+            {{ formatValue(totalValue) }}
             <span v-if="totalUnit" class="gl-text-lg" data-testid="denominator-total-unit">{{
               totalUnit
             }}</span>

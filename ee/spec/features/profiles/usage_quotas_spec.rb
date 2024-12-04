@@ -30,7 +30,7 @@ RSpec.describe 'Profile > Usage Quota', :js, feature_category: :consumables_cost
       false | 300  | 500 | '300 units / Not supported'
       true  | 300  | nil | '300 / Unlimited units'
       true  | 300  | 500 | '300 / 500 units'
-      true  | 1000 | 500 | '1000 / 500 units'
+      true  | 1000 | 500 | '1,000 / 500 units'
     end
 
     with_them do

@@ -6,7 +6,11 @@ import PagesDeploymentsApp from './components/app.vue';
 export const parseProvideData = (el) => {
   const { fullPath, deploymentsLimit, deploymentsCount } = el.dataset;
 
-  return { fullPath, deploymentsLimit, deploymentsCount };
+  return {
+    fullPath,
+    deploymentsLimit: parseInt(deploymentsLimit, 10),
+    deploymentsCount: parseInt(deploymentsCount, 10),
+  };
 };
 
 export const getPagesTabMetadata = () => {

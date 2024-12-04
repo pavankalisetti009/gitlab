@@ -9,15 +9,15 @@ export default {
   components: { StatisticsCard },
   props: {
     monthlyUnitsUsed: {
-      type: String,
+      type: Number,
       required: true,
     },
     monthlyUnitsLimit: {
-      type: String,
+      type: [Number, String],
       required: true,
     },
     monthlyUnitsUsedPercentage: {
-      type: String,
+      type: Number,
       required: true,
     },
     lastResetDate: {

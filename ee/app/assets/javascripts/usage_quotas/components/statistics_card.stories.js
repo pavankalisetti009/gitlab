@@ -17,8 +17,8 @@ const Template = (_, { argTypes }) => ({
 export const Default = Template.bind({});
 
 Default.args = {
-  usageValue: '1,400',
-  totalValue: '1,500',
+  usageValue: 1400,
+  totalValue: 'Unlimited',
   description: 'Additional minutes used',
   helpLink: 'dummy.com/link',
   helpLabel: 'Help link label, used for aria-label',
