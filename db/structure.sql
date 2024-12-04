@@ -1988,6 +1988,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_7b378a0c402b() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_7de792ddbc05() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -13758,7 +13774,8 @@ CREATE TABLE issue_user_mentions (
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
-    note_id bigint
+    note_id bigint,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE issue_user_mentions_id_seq
@@ -30730,6 +30747,8 @@ CREATE INDEX index_issue_on_project_id_state_id_and_blocking_issues_count ON iss
 
 CREATE INDEX index_issue_tracker_data_on_integration_id ON issue_tracker_data USING btree (integration_id);
 
+CREATE INDEX index_issue_user_mentions_on_namespace_id ON issue_user_mentions USING btree (namespace_id);
+
 CREATE UNIQUE INDEX index_issue_user_mentions_on_note_id ON issue_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
 
 CREATE INDEX index_issues_on_author_id ON issues USING btree (author_id);
@@ -35428,6 +35447,8 @@ CREATE TRIGGER trigger_77d9fbad5b12 BEFORE INSERT OR UPDATE ON packages_debian_p
 
 CREATE TRIGGER trigger_7a8b08eed782 BEFORE INSERT OR UPDATE ON boards_epic_board_positions FOR EACH ROW EXECUTE FUNCTION trigger_7a8b08eed782();
 
+CREATE TRIGGER trigger_7b378a0c402b BEFORE INSERT OR UPDATE ON issue_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_7b378a0c402b();
+
 CREATE TRIGGER trigger_7de792ddbc05 BEFORE INSERT OR UPDATE ON dast_site_validations FOR EACH ROW EXECUTE FUNCTION trigger_7de792ddbc05();
 
 CREATE TRIGGER trigger_7e2eed79e46e BEFORE INSERT OR UPDATE ON abuse_reports FOR EACH ROW EXECUTE FUNCTION trigger_7e2eed79e46e();
@@ -36990,6 +37011,9 @@ ALTER TABLE ONLY project_mirror_data
 
 ALTER TABLE ONLY environments
     ADD CONSTRAINT fk_d1c8c1da6a FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY issue_user_mentions
+    ADD CONSTRAINT fk_d1f967521a FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE p_ci_builds
     ADD CONSTRAINT fk_d3130c9a7f_p FOREIGN KEY (partition_id, commit_id) REFERENCES p_ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
