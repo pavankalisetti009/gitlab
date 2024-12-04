@@ -2,16 +2,19 @@
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { buildFiltersFromLicenseRule } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import {
+  buildFiltersFromLicenseRule,
+  getDefaultRule,
+  LICENSE_STATES,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
 import RuleMultiSelect from '../../rule_multi_select.vue';
 import SectionLayout from '../../section_layout.vue';
-import { getDefaultRule, LICENSE_STATES } from '../lib/rules';
 import StatusFilter from './scan_filters/status_filter.vue';
 import LicenseFilter from './scan_filters/license_filter.vue';
-import DenyAllowList from './scan_filters/deny_allow_list.vue';
+import DenyAllowList from './deny_allow_list.vue';
 import {
   FILTERS_STATUS_INDEX,
   STATUS,
@@ -66,19 +69,19 @@ export default {
     };
   },
   computed: {
-    showLicenceExcludePackages() {
+    showLicenseExcludePackages() {
       return this.glFeatures.excludeLicensePackages;
     },
     showDenyAllowListFilter() {
-      return this.showLicenceExcludePackages && this.isFilterSelected(this.$options.ALLOW_DENY);
+      return this.showLicenseExcludePackages && this.isFilterSelected(this.$options.ALLOW_DENY);
     },
     filters() {
-      return this.showLicenceExcludePackages
+      return this.showLicenseExcludePackages
         ? LICENCE_FILTERS
         : [LICENCE_FILTERS[FILTERS_STATUS_INDEX]];
     },
     filtersTooltip() {
-      return this.showLicenceExcludePackages ? '' : this.$options.i18n.tooltipFilterDisabledTitle;
+      return this.showLicenseExcludePackages ? '' : this.$options.i18n.tooltipFilterDisabledTitle;
     },
     branchExceptions() {
       return this.initRule.branch_exceptions;
@@ -203,7 +206,7 @@ export default {
         />
 
         <scan-filter-selector
-          :disabled="!showLicenceExcludePackages"
+          :disabled="!showLicenseExcludePackages"
           :filters="filters"
           :tooltip-title="filtersTooltip"
           :should-disable-filter="shouldDisableFilterSelector"

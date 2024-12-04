@@ -2,18 +2,24 @@
 import { GlCollapsibleListbox, GlSprintf, GlButton, GlIcon } from '@gitlab/ui';
 import { s__, n__, sprintf } from '~/locale';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
-import { ALLOWED_DENIED_OPTIONS, ALLOWED_DENIED_LISTBOX_ITEMS, DENIED } from './constants';
+import {
+  ALLOWED_DENIED_OPTIONS,
+  ALLOWED_DENIED_LISTBOX_ITEMS,
+  DENIED,
+} from './scan_filters/constants';
+import DenyAllowListModal from './deny_allow_list_modal.vue';
 
 export default {
   ALLOWED_DENIED_LISTBOX_ITEMS,
   i18n: {
-    denyListText: s__('ScanResultPolicy|denylist (%{licenceCount} %{licences})'),
-    allowListText: s__('ScanResultPolicy|allowlist (%{licenceCount} %{licences})'),
+    denyListText: s__('ScanResultPolicy|denylist (%{licenseCount} %{licenses})'),
+    allowListText: s__('ScanResultPolicy|allowlist (%{licenseCount} %{licenses})'),
     label: s__('ScanResultPolicy|License is:'),
     message: s__('ScanResultPolicy|%{listType} according to the %{buttonType}'),
   },
   name: 'DenyAllowList',
   components: {
+    DenyAllowListModal,
     GlButton,
     GlCollapsibleListbox,
     GlIcon,
@@ -26,7 +32,7 @@ export default {
       required: false,
       default: DENIED,
     },
-    licences: {
+    licenses: {
       type: Array,
       required: false,
       default: () => [],
@@ -36,11 +42,11 @@ export default {
     buttonText() {
       const { denyListText, allowListText } = this.$options.i18n;
       const message = this.selected === DENIED ? denyListText : allowListText;
-      const licences = n__('licence', 'licenses', this.licences.length);
+      const licenses = n__('license', 'licenses', this.licenses.length);
 
       return sprintf(message, {
-        licenceCount: this.licences.length,
-        licences,
+        licenseCount: this.licenses.length,
+        licenses,
       });
     },
     toggleText() {
@@ -50,6 +56,9 @@ export default {
   methods: {
     selectListType(type) {
       this.$emit('select-type', type);
+    },
+    showModal() {
+      this.$refs.modal.showModalWindow();
     },
   },
 };
@@ -73,12 +82,14 @@ export default {
           />
         </template>
         <template #buttonType>
-          <gl-button category="primary" variant="link">
+          <gl-button category="primary" variant="link" @click="showModal">
             {{ buttonText }}
             <gl-icon name="pencil" />
           </gl-button>
         </template>
       </gl-sprintf>
+
+      <deny-allow-list-modal ref="modal" :list-type="selected" />
     </template>
   </section-layout>
 </template>
