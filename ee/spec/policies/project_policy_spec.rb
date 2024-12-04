@@ -4046,6 +4046,27 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe 'access to project for duo workflow' do
+    let_it_be_with_reload(:project) { public_project }
+
+    where(:current_user, :token_info, :duo_features_enabled, :cs_matcher) do
+      ref(:guest)      | nil                               | true  | be_allowed(:read_project)
+      ref(:guest)      | { token_scopes: [:ai_workflows] } | true  | be_allowed(:read_project)
+      ref(:guest)      | { token_scopes: [:ai_workflows] } | false | be_disallowed(:read_project, :admin_project)
+      ref(:guest)      | { token_scopes: [:other_scope] }  | true  | be_allowed(:read_project)
+      ref(:maintainer) | { token_scopes: [:ai_workflows] } | false | be_disallowed(:read_project, :admin_project)
+    end
+
+    with_them do
+      before do
+        project.update!(duo_features_enabled: duo_features_enabled)
+        ::Current.token_info = token_info
+      end
+
+      it { is_expected.to cs_matcher }
+    end
+  end
+
   describe 'on_demand_scans_enabled policy' do
     let(:current_user) { owner }
     let(:permissions) { [:read_on_demand_dast_scan, :create_on_demand_dast_scan, :edit_on_demand_dast_scan] }

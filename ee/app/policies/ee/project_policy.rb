@@ -1058,6 +1058,8 @@ module EE
         ai_review_mr_enabled &
           user_allowed_to_use_ai_review_mr
       end.enable :access_ai_review_mr
+
+      rule { duo_workflow_token & ~duo_features_enabled }.prevent_all
     end
 
     override :lookup_access_level!
