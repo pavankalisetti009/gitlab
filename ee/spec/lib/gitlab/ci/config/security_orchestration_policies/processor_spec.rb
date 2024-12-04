@@ -323,15 +323,18 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
               variables: {
                 DAST_VERSION: 5,
                 SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
+                DAST_IMAGE_SUFFIX: '',
                 GIT_STRATEGY: 'none'
               },
               allow_failure: true,
               script: ['/analyze'],
               artifacts: {
                 access: 'developer',
+                paths: ["gl-dast-*.*"],
                 reports: {
                   dast: 'gl-dast-report.json'
-                }
+                },
+                when: 'always'
               },
               dast_configuration: {
                 site_profile: dast_site_profile.name,
@@ -339,7 +342,7 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
               },
               rules: [
                 { if: '$CI_GITLAB_FIPS_MODE == "true"', variables: { DAST_IMAGE_SUFFIX: "-fips" } },
-                { if: '$CI_GITLAB_FIPS_MODE != "true"', variables: { DAST_IMAGE_SUFFIX: "" } }
+                { when: 'on_success' }
               ]
             }
           end
