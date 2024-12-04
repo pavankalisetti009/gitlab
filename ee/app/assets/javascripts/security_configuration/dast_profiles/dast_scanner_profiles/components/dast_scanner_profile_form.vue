@@ -14,6 +14,7 @@ import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BaseDastProfileForm from '../../components/base_dast_profile_form.vue';
 import dastProfileFormMixin from '../../dast_profile_form_mixin';
+import DastVariablesFormGroup from '../../components/dast_variables_form_group.vue';
 import { SCAN_TYPE, SCAN_TYPE_OPTIONS } from '../constants';
 import dastScannerProfileCreateMutation from '../graphql/dast_scanner_profile_create.mutation.graphql';
 import dastScannerProfileUpdateMutation from '../graphql/dast_scanner_profile_update.mutation.graphql';
@@ -30,6 +31,7 @@ export default {
   name: 'DastScannerProfileForm',
   components: {
     BaseDastProfileForm,
+    DastVariablesFormGroup,
     GlFormCheckbox,
     GlFormGroup,
     GlFormInput,
@@ -267,6 +269,11 @@ export default {
           }}</gl-form-checkbox>
         </gl-form-group>
       </div>
+
+      <dast-variables-form-group
+        v-if="glFeatures.dastUiAdditionalVariables"
+        class="gl-mb-3 gl-mt-4"
+      />
     </gl-form-group>
   </base-dast-profile-form>
 </template>

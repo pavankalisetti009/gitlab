@@ -17362,6 +17362,9 @@ msgstr ""
 msgid "DastConfig|Not enabled"
 msgstr ""
 
+msgid "DastProfiles| Customize the behavior of DAST using additional variables. For a full list of available variables, refer to the %{linkStart}DAST documentation%{linkEnd}."
+msgstr ""
+
 msgid "DastProfiles|%{linkStart}Headers may appear in vulnerability reports%{linkEnd}."
 msgstr ""
 
@@ -17386,7 +17389,13 @@ msgstr ""
 msgid "DastProfiles|Active"
 msgstr ""
 
+msgid "DastProfiles|Add variable"
+msgstr ""
+
 msgid "DastProfiles|Additional request headers (optional)"
+msgstr ""
+
+msgid "DastProfiles|Additional variables"
 msgstr ""
 
 msgid "DastProfiles|Are you sure you want to delete this profile?"

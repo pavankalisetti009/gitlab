@@ -1,6 +1,7 @@
 import { GlForm } from '@gitlab/ui';
 import { within } from '@testing-library/dom';
 import merge from 'lodash/merge';
+import DastVariablesFormGroup from 'ee/security_configuration/dast_profiles/components/dast_variables_form_group.vue';
 import BaseDastProfileForm from 'ee/security_configuration/dast_profiles/components/base_dast_profile_form.vue';
 import DastScannerProfileForm from 'ee/security_configuration/dast_profiles/dast_scanner_profiles/components/dast_scanner_profile_form.vue';
 import { SCAN_TYPE } from 'ee/security_configuration/dast_profiles/dast_scanner_profiles/constants';
@@ -39,6 +40,7 @@ describe('DastScannerProfileForm', () => {
   const findSpiderTimeoutInput = () => wrapper.findByTestId('spider-timeout-input');
   const findTargetTimeoutInput = () => wrapper.findByTestId('target-timeout-input');
   const findScanType = () => wrapper.findByTestId('scan-type-option');
+  const findDastVariablesFormGroup = () => wrapper.findComponent(DastVariablesFormGroup);
 
   const setFieldValue = async (field, value) => {
     await field.setValue(value);
@@ -195,6 +197,27 @@ describe('DastScannerProfileForm', () => {
 
     it('should disable the profile name field', () => {
       expect(findProfileNameInput().attributes('disabled')).toBeDefined();
+    });
+  });
+
+  it('does not render DastVariablesFormGroup', () => {
+    createShallowComponent();
+    expect(findDastVariablesFormGroup().exists()).toBe(false);
+  });
+
+  describe('DastVariablesFormGroup', () => {
+    beforeEach(() => {
+      createShallowComponent({
+        provide: {
+          glFeatures: {
+            dastUiAdditionalVariables: true,
+          },
+        },
+      });
+    });
+
+    it('renders DastVariablesFormGroup when feature flag is enabled', () => {
+      expect(findDastVariablesFormGroup().exists()).toBe(true);
     });
   });
 });
