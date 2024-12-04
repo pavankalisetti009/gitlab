@@ -9,7 +9,7 @@ RSpec.describe UsersStatistics do
 
   describe '#billable' do
     it 'sums users statistics values excluding blocked users and bots' do
-      expect(users_statistics.billable).to eq(74)
+      expect(users_statistics.billable).to eq(81)
     end
 
     context 'when there is an ultimate license' do
@@ -18,14 +18,14 @@ RSpec.describe UsersStatistics do
       end
 
       it 'excludes blocked users, bots, guest users, users without a group or project and minimal access users' do
-        expect(users_statistics.billable).to eq(43)
+        expect(users_statistics.billable).to eq(50)
       end
     end
   end
 
   describe '#active' do
     it 'includes minimal access roles' do
-      expect(users_statistics.active).to eq(76)
+      expect(users_statistics.active).to eq(83)
     end
   end
 

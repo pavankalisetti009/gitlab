@@ -32,6 +32,7 @@ module EE
 
     def base_billable_users
       [
+        with_highest_role_planner,
         with_highest_role_reporter,
         with_highest_role_developer,
         with_highest_role_maintainer,

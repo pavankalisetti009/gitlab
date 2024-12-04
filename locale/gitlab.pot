@@ -3755,6 +3755,9 @@ msgstr ""
 msgid "AdminArea|Owner"
 msgstr ""
 
+msgid "AdminArea|Planner"
+msgstr ""
+
 msgid "AdminArea|Projects"
 msgstr ""
 
