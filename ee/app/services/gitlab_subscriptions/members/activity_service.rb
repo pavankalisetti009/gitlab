@@ -20,17 +20,23 @@ module GitlabSubscriptions
       def execute
         return ServiceResponse.error(message: 'Invalid params') unless namespace&.group_namespace? && user
 
-        try_obtain_lease do
+        response = try_obtain_lease do
           if seat_assignment
             seat_assignment.update!(last_activity_on: Time.current)
           else
+            break unless user_is_a_member?
+
             GitlabSubscriptions::SeatAssignment.create!(
               namespace: namespace, user: user, last_activity_on: Time.current
             )
           end
         end
 
-        ServiceResponse.success(message: 'Member activity tracked')
+        if response
+          ServiceResponse.success(message: 'Member activity tracked')
+        else
+          ServiceResponse.error(message: 'Member activity could not be tracked')
+        end
       end
 
       private
@@ -53,6 +59,10 @@ module GitlabSubscriptions
 
       def seat_assignment
         @seat_assignment ||= GitlabSubscriptions::SeatAssignment.find_by_namespace_and_user(namespace, user)
+      end
+
+      def user_is_a_member?
+        ::Member.in_hierarchy(namespace).with_user(user).exists?
       end
     end
   end
