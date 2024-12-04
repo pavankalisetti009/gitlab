@@ -184,4 +184,32 @@ describe('StatisticsCard', () => {
       expect(summaryBlock.text()).toMatchInterpolatedText('0 / 1');
     });
   });
+
+  describe('formatting numbers', () => {
+    it.each`
+      totalValue        | type        | outputType            | output
+      ${1234}           | ${'number'} | ${'formatted number'} | ${'1,234'}
+      ${'Sample usage'} | ${'string'} | ${'is'}               | ${'Sample usage'}
+    `('displays totalValue as $outputType if it is a $type', ({ totalValue, output }) => {
+      createComponent({
+        usageValue: '1000',
+        totalValue,
+      });
+      expect(findTotalBlock().text()).toContain(output);
+    });
+
+    it.each`
+      usageValue        | type        | outputType            | output
+      ${0}              | ${'number'} | ${'formatted number'} | ${'0'}
+      ${4321}           | ${'number'} | ${'formatted number'} | ${'4,321'}
+      ${'Sample usage'} | ${'string'} | ${'is'}               | ${'Sample usage'}
+    `('displays usageValue as $outputType if it is a $type', ({ usageValue, output }) => {
+      createComponent({
+        usageValue,
+        totalValue: '1234',
+        summaryDataTestid: 'summary',
+      });
+      expect(wrapper.findByTestId('summary').text()).toContain(output);
+    });
+  });
 });

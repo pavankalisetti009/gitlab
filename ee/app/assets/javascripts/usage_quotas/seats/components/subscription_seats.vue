@@ -109,9 +109,7 @@ export default {
     displayedTotalSeats() {
       if (this.activeTrial) return this.$options.i18n.unlimited;
 
-      return this.totalSeatsAvailable
-        ? String(this.totalSeatsAvailable)
-        : this.$options.i18n.unlimited;
+      return this.totalSeatsAvailable ? this.totalSeatsAvailable : this.$options.i18n.unlimited;
     },
     showUpgradeInfoCard() {
       if (!this.hasNoSubscription) {
@@ -187,7 +185,7 @@ export default {
           :help-tooltip="seatsInUseTooltipText"
           :description="seatsInUseText"
           :percentage="seatsInUsePercentage"
-          :usage-value="String(totalSeatsInUse)"
+          :usage-value="totalSeatsInUse"
           :total-value="displayedTotalSeats"
           data-testid="seats-in-use"
         />

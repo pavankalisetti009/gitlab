@@ -90,7 +90,7 @@ RSpec.describe 'Groups > Usage Quotas > Pipelines tab', :js, feature_category: :
 
     it 'has correct tracking setup and shows correct group quota and projects info' do
       within_testid('pipelines-tab-app') do
-        expect(page).to have_content("1000 / 500 units")
+        expect(page).to have_content("1,000 / 500 units")
       end
 
       within_testid('pipelines-quota-tab-project-table') do

@@ -132,8 +132,8 @@ describe('Subscription Seats', () => {
           ...defaultProps,
           description: 'Seats in use / Seats in subscription',
           percentage: 67,
-          totalValue: '3',
-          usageValue: '2',
+          totalValue: 3,
+          usageValue: 2,
           helpTooltip: null,
         });
       });
@@ -189,7 +189,7 @@ describe('Subscription Seats', () => {
             description: 'Free seats used',
             percentage: 0,
             totalValue: 'Unlimited',
-            usageValue: '2',
+            usageValue: 2,
             helpTooltip: null,
           });
         });
@@ -215,7 +215,7 @@ describe('Subscription Seats', () => {
               description: 'Seats in use / Seats in subscription',
               percentage: 0,
               totalValue: 'Unlimited',
-              usageValue: '2',
+              usageValue: 2,
               helpTooltip: null,
             });
           });
@@ -242,8 +242,8 @@ describe('Subscription Seats', () => {
             ...defaultProps,
             description: 'Seats in use / Seats available',
             percentage: 40,
-            totalValue: '5',
-            usageValue: '2',
+            totalValue: 5,
+            usageValue: 2,
             helpTooltip: 'Free groups are limited to 5 seats.',
           });
         });
@@ -269,7 +269,7 @@ describe('Subscription Seats', () => {
               description: 'Seats in use / Seats available',
               percentage: 0,
               totalValue: 'Unlimited',
-              usageValue: '2',
+              usageValue: 2,
               helpTooltip: 'Free tier and trial groups can invite a maximum of 20 members per day.',
             });
           });

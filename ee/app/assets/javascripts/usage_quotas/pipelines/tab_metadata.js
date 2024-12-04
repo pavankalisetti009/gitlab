@@ -33,13 +33,13 @@ export const parseProvideData = (el) => {
     ciMinutesAnyProjectEnabled: parseBoolean(ciMinutesAnyProjectEnabled),
     ciMinutesDisplayMinutesAvailableData: parseBoolean(ciMinutesDisplayMinutesAvailableData),
     ciMinutesLastResetDate,
+    ciMinutesMonthlyMinutesUsed: parseInt(ciMinutesMonthlyMinutesUsed, 10),
+    ciMinutesPurchasedMinutesUsed: parseInt(ciMinutesPurchasedMinutesUsed, 10),
+    ciMinutesMonthlyMinutesUsedPercentage: parseInt(ciMinutesMonthlyMinutesUsedPercentage, 10),
+    ciMinutesPurchasedMinutesUsedPercentage: parseInt(ciMinutesPurchasedMinutesUsedPercentage, 10),
     // Limit and Usage could be a number or a string (e.g. `Unlimited`) so we shouldn't parse these
     ciMinutesMonthlyMinutesLimit,
-    ciMinutesMonthlyMinutesUsed,
-    ciMinutesMonthlyMinutesUsedPercentage,
     ciMinutesPurchasedMinutesLimit,
-    ciMinutesPurchasedMinutesUsed,
-    ciMinutesPurchasedMinutesUsedPercentage,
     buyAdditionalMinutesPath,
     buyAdditionalMinutesTarget,
   };

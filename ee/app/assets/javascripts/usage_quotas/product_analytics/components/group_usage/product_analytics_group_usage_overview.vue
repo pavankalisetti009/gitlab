@@ -1,5 +1,5 @@
 <script>
-import { formatNumber, sprintf, s__ } from '~/locale';
+import { sprintf, s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { SHORT_DATE_FORMAT } from '~/vue_shared/constants';
 
@@ -41,12 +41,6 @@ export default {
 
       return Math.min(used, 100);
     },
-    formattedEventsUsed() {
-      return formatNumber(this.eventsUsed);
-    },
-    formattedStoredEventsLimit() {
-      return formatNumber(this.storedEventsLimit);
-    },
     showStatisticsCard() {
       return this.isLoading || this.storedEventsLimit !== null;
     },
@@ -58,8 +52,8 @@ export default {
   <statistics-card
     v-if="showStatisticsCard"
     :loading="isLoading"
-    :usage-value="formattedEventsUsed"
-    :total-value="formattedStoredEventsLimit"
+    :usage-value="eventsUsed"
+    :total-value="storedEventsLimit"
     :description="description"
     :percentage="eventsUsedPercentage"
   />

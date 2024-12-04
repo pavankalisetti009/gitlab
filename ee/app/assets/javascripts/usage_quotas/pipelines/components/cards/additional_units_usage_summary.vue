@@ -8,15 +8,15 @@ export default {
   components: { StatisticsCard },
   props: {
     additionalUnitsUsed: {
-      type: String,
+      type: Number,
       required: true,
     },
     additionalUnitsLimit: {
-      type: String,
+      type: [Number, String],
       required: true,
     },
     additionalUnitsUsedPercentage: {
-      type: String,
+      type: Number,
       required: true,
     },
   },
@@ -32,7 +32,7 @@ export default {
     :total-value="additionalUnitsLimit"
     :total-unit="$options.UNITS"
     :description="$options.ADDITIONAL_UNITS"
-    :percentage="Number(additionalUnitsUsedPercentage)"
+    :percentage="additionalUnitsUsedPercentage"
     :help-link="$options.HELP_PAGE_LINK"
     :help-label="$options.ADDITIONAL_UNITS"
     summary-data-testid="additional-compute-minutes"
