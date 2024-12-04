@@ -1,13 +1,13 @@
 import { GlCollapsibleListbox, GlDaterangePicker, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import DateRangeFilter from '~/vue_shared/components/customizable_dashboard/filters/date_range_filter.vue';
+import DateRangeFilter from 'ee/analytics/analytics_dashboards/components/filters/date_range_filter.vue';
 import {
   DATE_RANGE_OPTIONS,
   DEFAULT_SELECTED_OPTION_INDEX,
   TODAY,
-} from '~/vue_shared/components/customizable_dashboard/filters/constants';
-import { dateRangeOptionToFilter } from '~/vue_shared/components/customizable_dashboard/utils';
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import { dateRangeOptionToFilter } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 
 describe('DateRangeFilter', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

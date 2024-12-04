@@ -1,7 +1,7 @@
 <script>
 import { GlCollapsibleListbox, GlDaterangePicker, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { n__ } from '~/locale';
-import { dateRangeOptionToFilter, getDateRangeOption } from '../utils';
+import { dateRangeOptionToFilter, getDateRangeOption } from './utils';
 import { TODAY, DATE_RANGE_OPTIONS, DEFAULT_SELECTED_OPTION_INDEX } from './constants';
 
 export default {
