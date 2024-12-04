@@ -105,6 +105,11 @@ export default {
       default: SUFFIX_ON_CONFLICT,
     },
   },
+  data() {
+    return {
+      dirty: false,
+    };
+  },
   computed: {
     fileBlockMessage() {
       return this.$options.i18n.pipelineFilePathCopy[this.strategy];
@@ -120,7 +125,10 @@ export default {
       return !this.isValidFilePath || this.doesFileExist;
     },
     filePathState() {
-      return this.isValidFilePath && this.doesFileExist;
+      if (this.isValidFilePath) {
+        return this.doesFileExist;
+      }
+      return !this.dirty;
     },
     filePathValidationError() {
       if (!this.isValidFilePath) {
@@ -155,6 +163,7 @@ export default {
   },
   methods: {
     updatedFilePath(value) {
+      this.dirty = true;
       this.$emit('update-file-path', value);
     },
     setStrategy(strategy) {

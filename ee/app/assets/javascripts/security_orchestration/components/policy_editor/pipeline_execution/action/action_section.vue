@@ -92,7 +92,9 @@ export default {
       });
     },
     updatedFilePath(path) {
-      this.setCiConfigurationPath({ ...this.ciConfigurationPath, file: path });
+      const { file, ...configuration } = this.ciConfigurationPath;
+
+      this.setCiConfigurationPath({ ...configuration, ...(path ? { file: path } : {}) });
     },
     updateSuffix(suffix) {
       this.$emit('changed', 'suffix', suffix);

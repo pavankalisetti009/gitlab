@@ -43,8 +43,8 @@ describe('CodeBlockFilePath', () => {
   };
 
   const findFormInput = () => wrapper.findComponent(GlFormInput);
-  const findFormInputGroup = () => wrapper.findComponent(GlFormInputGroup);
-  const findFormGroup = () => wrapper.findComponent(GlFormGroup);
+  const findFilePathInput = () => wrapper.findComponent(GlFormInputGroup);
+  const findFilePathWrapper = () => wrapper.findComponent(GlFormGroup);
   const findGlSprintf = () => wrapper.findComponent(GlSprintf);
   const findIcon = () => wrapper.findComponent(GlIcon);
   const findGroupProjectsDropdown = () => wrapper.findComponent(GroupProjectsDropdown);
@@ -61,9 +61,9 @@ describe('CodeBlockFilePath', () => {
     });
 
     it('renders file path', () => {
-      expect(findFormGroup().exists()).toBe(true);
-      expect(findFormInputGroup().exists()).toBe(true);
-      expect(findFormInputGroup().attributes().disabled).toBe('true');
+      expect(findFilePathWrapper().exists()).toBe(true);
+      expect(findFilePathInput().exists()).toBe(true);
+      expect(findFilePathInput().attributes().disabled).toBe('true');
       expect(findTruncate().props('text')).toBe('No project selected');
     });
 
@@ -136,7 +136,7 @@ describe('CodeBlockFilePath', () => {
         },
       });
 
-      expect(findFormInputGroup().attributes('value')).toBe('filePath');
+      expect(findFilePathInput().attributes('value')).toBe('filePath');
     });
 
     it('has fallback values', () => {
@@ -191,7 +191,7 @@ describe('CodeBlockFilePath', () => {
     it('can select file path', () => {
       createComponent();
 
-      findFormInputGroup().vm.$emit('input', 'file-path');
+      findFilePathInput().vm.$emit('input', 'file-path');
 
       expect(wrapper.emitted('update-file-path')).toEqual([['file-path']]);
     });
@@ -222,20 +222,12 @@ describe('CodeBlockFilePath', () => {
   });
 
   describe('validation', () => {
-    it('is valid by default', () => {
-      createComponent({ propsData: { selectedProject: { id: PROJECT_ID } } });
-      expect(findRefSelector().props('state')).toBe(true);
-      expect(findFormInputGroup().attributes('state')).toBe(undefined);
-      expect(findFormGroup().attributes('state')).toBe(undefined);
-    });
-
     describe('project and ref selectors', () => {
       it.each`
         title                                                         | filePath | doesFileExist | output
+        ${'is valid when the file path is not provided'}              | ${null}  | ${false}      | ${true}
         ${'is valid when the file at the file path exists'}           | ${'ref'} | ${true}       | ${true}
         ${'is invalid when the file at the file path does not exist'} | ${'ref'} | ${false}      | ${false}
-        ${'is valid when the file path is not provided'}              | ${null}  | ${true}       | ${true}
-        ${'is valid when the file path is not provided'}              | ${null}  | ${false}      | ${true}
       `('$title', ({ filePath, doesFileExist, output }) => {
         createComponent({
           propsData: {
@@ -252,10 +244,9 @@ describe('CodeBlockFilePath', () => {
     describe('file path selector', () => {
       it.each`
         title                                                         | filePath | doesFileExist | state        | message
+        ${'is valid when the file path is not provided initially'}    | ${null}  | ${false}      | ${'true'}    | ${"The file path can't be empty"}
         ${'is valid when the file exists at the file path'}           | ${'ref'} | ${true}       | ${'true'}    | ${''}
         ${'is invalid when the file does not exist at the file path'} | ${'ref'} | ${false}      | ${undefined} | ${"The file at that project, ref, and path doesn't exist"}
-        ${'is invalid when the file path is not provided'}            | ${null}  | ${true}       | ${undefined} | ${"The file path can't be empty"}
-        ${'is invalid when the file path is not provided'}            | ${null}  | ${false}      | ${undefined} | ${"The file path can't be empty"}
       `('$title', ({ filePath, doesFileExist, state, message }) => {
         createComponent({
           propsData: {
@@ -263,9 +254,24 @@ describe('CodeBlockFilePath', () => {
             doesFileExist,
           },
         });
-        expect(findFormInputGroup().attributes('state')).toBe(state);
-        expect(findFormGroup().attributes('state')).toBe(state);
-        expect(findFormGroup().attributes('invalid-feedback')).toBe(message);
+        expect(findFilePathInput().attributes('state')).toBe(state);
+        expect(findFilePathWrapper().attributes('state')).toBe(state);
+        expect(findFilePathWrapper().attributes('invalid-feedback')).toBe(message);
+      });
+
+      it('is invalid when the file path is empty and has been modified by the user', async () => {
+        createComponent({
+          propsData: {
+            filePath: null,
+            doesFileExist: false,
+          },
+        });
+        await findFilePathInput().vm.$emit('input', '');
+        expect(findFilePathInput().attributes('state')).toBe(undefined);
+        expect(findFilePathWrapper().attributes('state')).toBe(undefined);
+        expect(findFilePathWrapper().attributes('invalid-feedback')).toBe(
+          "The file path can't be empty",
+        );
       });
     });
 
