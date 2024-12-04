@@ -24,40 +24,15 @@ module Ai
       private
 
       def handle_status_event
-        case @status_event
-        when "finish"
-          unless @workflow.can_finish?
-            return error_response("Can not finish workflow that has status #{@workflow.human_status_name}")
-          end
-
-          @workflow.finish
-        when "drop"
-          unless @workflow.can_drop?
-            return error_response("Can not drop workflow that has status #{@workflow.human_status_name}")
-          end
-
-          @workflow.drop
-        when "start"
-          unless @workflow.can_start?
-            return error_response("Can not start workflow that has status #{@workflow.human_status_name}")
-          end
-
-          @workflow.start
-        when "pause"
-          unless @workflow.can_pause?
-            return error_response("Can not pause workflow that has status #{@workflow.human_status_name}")
-          end
-
-          @workflow.pause
-        when "resume"
-          unless @workflow.can_resume?
-            return error_response("Can not resume workflow that has status #{@workflow.human_status_name}")
-          end
-
-          @workflow.resume
-        else
+        unless %(finish drop start pause resume stop).include?(@status_event)
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
+
+        unless @workflow.status_events.include?(@status_event.to_sym)
+          return error_response("Can not #{@status_event} workflow that has status #{@workflow.human_status_name}")
+        end
+
+        @workflow.fire_status_event(@status_event)
 
         GraphqlTriggers.workflow_events_updated(@workflow.checkpoints.last) if @workflow.checkpoints.any?
 

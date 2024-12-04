@@ -73,6 +73,14 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(workflow.reload.human_status_name).to eq("paused")
       end
 
+      it "can stop a workflow", :aggregate_failures do
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:message]).to eq("Workflow status updated")
+        expect(workflow.reload.human_status_name).to eq("stopped")
+      end
+
       context "when initial status is paused" do
         let(:workflow_initial_status_enum) { 2 } # status paused
 
@@ -113,6 +121,17 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
 
         expect(result[:status]).to eq(:error)
         expect(result[:message]).to eq("Can not finish workflow that has status failed")
+        expect(result[:reason]).to eq(:bad_request)
+        expect(workflow.reload.human_status_name).to eq("failed")
+      end
+
+      it "does not stop failed workflow", :aggregate_failures do
+        workflow.drop
+
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to eq("Can not stop workflow that has status failed")
         expect(result[:reason]).to eq(:bad_request)
         expect(workflow.reload.human_status_name).to eq("failed")
       end

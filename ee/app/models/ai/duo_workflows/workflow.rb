@@ -86,11 +86,16 @@ module Ai
           transition [:created, :running, :paused] => :failed
         end
 
+        event :stop do
+          transition [:created, :running, :paused] => :stopped
+        end
+
         state :created, value: 0
         state :running, value: 1
         state :paused, value: 2
         state :finished, value: 3
         state :failed, value: 4
+        state :stopped, value: 5
       end
     end
   end
