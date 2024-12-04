@@ -8,7 +8,23 @@ import {
 import { initServicePingSettingsClickTracking } from 'ee/registration_features_discovery_message';
 import { createAlert } from '~/alert';
 import { initMergeRequestMergeChecksApp } from 'ee/merge_checks';
+import { initDormantUsersInputSection } from '~/pages/admin/application_settings/account_and_limits';
 import { __ } from '~/locale';
+
+/**
+ * Sets up logic inside "Dormant members" subsection:
+ * - checkbox enables/disables additional input
+ * - shows/hides an inline error on input validation
+ */
+function initDeactivateDormantMembersPeriodInputSection() {
+  initDormantUsersInputSection(
+    'group_remove_dormant_members',
+    'group_remove_dormant_members_period',
+    'group_remove_dormant_members_period_error',
+  );
+}
+
+initDeactivateDormantMembersPeriodInputSection();
 
 initGroupPermissionsFormSubmit();
 

@@ -1,4 +1,5 @@
 - return unless ::Feature.enabled?(:group_remove_dormant_members, @group)
+- return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 - return unless @group.root?
 
 .form-group

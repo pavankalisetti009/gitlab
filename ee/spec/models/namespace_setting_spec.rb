@@ -188,6 +188,21 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(settings.new_user_signups_cap).to eq(5)
       end
     end
+
+    describe 'remove_dormant_members' do
+      let(:subgroup) { create(:group, :nested) }
+
+      it { expect(subgroup.namespace_settings).to validate_inclusion_of(:remove_dormant_members).in_array([false]) }
+    end
+
+    describe 'remove_dormant_members_period' do
+      it do
+        expect(settings).to validate_numericality_of(:remove_dormant_members_period)
+          .only_integer
+          .is_greater_than_or_equal_to(90)
+          .is_less_than_or_equal_to(1827)
+      end
+    end
   end
 
   describe '.duo_features_set' do

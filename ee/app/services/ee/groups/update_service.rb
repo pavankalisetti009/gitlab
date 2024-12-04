@@ -5,7 +5,9 @@ module EE
     module UpdateService
       extend ::Gitlab::Utils::Override
       EE_SETTINGS_PARAMS = [
-        :prevent_forking_outside_group
+        :prevent_forking_outside_group,
+        :remove_dormant_members,
+        :remove_dormant_members_period
       ].freeze
 
       override :execute
