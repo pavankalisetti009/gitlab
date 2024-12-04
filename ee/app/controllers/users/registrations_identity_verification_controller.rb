@@ -108,6 +108,10 @@ module Users
     end
 
     def confirm_user
+      # Reset the unconfirmed email in case users attempted to register before
+      # email_confirmation_setting=hard was required for identity verification
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/505444
+      @user.update_column(:unconfirmed_email, nil) if @user.unconfirmed_email
       @user.confirm
       log_event(:email, :success)
     end
