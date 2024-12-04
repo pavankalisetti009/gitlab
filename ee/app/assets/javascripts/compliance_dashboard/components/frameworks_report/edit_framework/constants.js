@@ -131,4 +131,8 @@ continue to take precedence over the new pipeline execution policy.`),
   projectsInfoText: s__(
     'ComplianceFrameworks|Go to the %{linkStart}compliance center / project page%{linkEnd} to apply projects for this framework.',
   ),
+  requirementRemovedMessage: s__('ComplianceFrameworks|Requirement removed.'),
+  requirementDeleteError: s__(
+    'ComplianceFrameworks|An error occurred while deleting the requirement.',
+  ),
 };

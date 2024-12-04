@@ -1,5 +1,11 @@
 <script>
-import { GlLoadingIcon, GlTable, GlButton } from '@gitlab/ui';
+import {
+  GlLoadingIcon,
+  GlTable,
+  GlButton,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+} from '@gitlab/ui';
 
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -17,6 +23,8 @@ export default {
     GlLoadingIcon,
     GlTable,
     GlButton,
+    GlDisclosureDropdown,
+    GlDisclosureDropdownItem,
   },
   props: {
     requirements: {
@@ -84,6 +92,12 @@ export default {
       thClass: 'gl-w-1 !gl-border-t-0',
       tdClass: '!gl-bg-white',
     },
+    {
+      key: 'action',
+      label: s__('ComplianceFrameworks|Action'),
+      thClass: 'gl-w-1 !gl-border-t-0 gl-w-1/10',
+      tdClass: '!gl-bg-white',
+    },
   ],
   i18n: {
     requirements: s__('ComplianceFrameworks|Requirements'),
@@ -91,7 +105,7 @@ export default {
       'ComplianceFrameworks|Configure requirements set forth by laws, regulations, and industry standards.',
     ),
     actionEdit: __('Edit'),
-    actionDelete: __('Remove'),
+    actionDelete: __('Delete'),
     newRequirement: s__('ComplianceFrameworks|New requirement'),
   },
   emptyRequirement,
@@ -130,6 +144,23 @@ export default {
             {{ control.name }}
           </li>
         </ul>
+      </template>
+
+      <template #cell(action)="{ index }">
+        <gl-disclosure-dropdown
+          icon="ellipsis_v"
+          text-sr-only
+          category="tertiary"
+          placement="right"
+          boundary="viewport"
+          no-caret
+        >
+          <gl-disclosure-dropdown-item data-testid="delete-action" @action="$emit('delete', index)">
+            <template #list-item>
+              {{ $options.i18n.actionDelete }}
+            </template>
+          </gl-disclosure-dropdown-item>
+        </gl-disclosure-dropdown>
       </template>
 
       <template #table-busy>

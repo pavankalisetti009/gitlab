@@ -2,7 +2,7 @@
 import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
 import produce from 'immer';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { sprintf } from '~/locale';
+import { sprintf, __ } from '~/locale';
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
 import {
   getSubmissionParams,
@@ -16,6 +16,7 @@ import createComplianceFrameworkMutation from '../../../graphql/mutations/create
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from '../../../graphql/mutations/delete_compliance_framework.mutation.graphql';
 import createRequirementMutation from '../../../graphql/mutations/create_compliance_requirement.mutation.graphql';
+import deleteRequirementMutation from '../../../graphql/mutations/delete_compliance_requirement.mutation.graphql';
 import getComplianceFrameworkQuery from './graphql/get_compliance_framework.query.graphql';
 import DeleteModal from './components/delete_modal.vue';
 import BasicInformationSection from './components/basic_information_section.vue';
@@ -251,7 +252,7 @@ export default {
 
       await Promise.all(createRequirementPromises);
     },
-    async createRequirement(requirement, frameworkId) {
+    async createRequirement(requirement, frameworkId, index = null) {
       const { data } = await this.$apollo.mutate({
         mutation: createRequirementMutation,
         variables: {
@@ -266,7 +267,7 @@ export default {
         ...(this.isNewFramework
           ? {}
           : {
-              update: this.updateRequirementCache,
+              update: (cache, result) => this.updateRequirementCacheOnCreate(cache, result, index),
             }),
       });
       const errors = data?.createComplianceRequirement?.errors;
@@ -275,7 +276,7 @@ export default {
         throw new Error(errors[0]);
       }
     },
-    updateRequirementCache(cache, { data: { createComplianceRequirement } }) {
+    updateRequirementCacheOnCreate(cache, { data: { createComplianceRequirement } }, index = null) {
       const newRequirement = createComplianceRequirement?.requirement;
       const errors = createComplianceRequirement?.errors;
 
@@ -292,7 +293,11 @@ export default {
           (f) => f.id === this.graphqlId,
         );
         if (framework) {
-          framework.complianceRequirements.nodes.push(newRequirement);
+          if (index !== null) {
+            framework.complianceRequirements.nodes.splice(index, 0, newRequirement);
+          } else {
+            framework.complianceRequirements.nodes.push(newRequirement);
+          }
         }
       });
 
@@ -302,16 +307,91 @@ export default {
         data: updatedData,
       });
     },
-    async updateRequirements(requirement) {
+    async handleCreateRequirement(requirement, index = null) {
       if (this.isNewFramework) {
-        this.requirements.push(requirement);
+        if (index !== null) {
+          this.requirements.splice(index, 0, requirement);
+        } else {
+          this.requirements.push(requirement);
+        }
       } else {
         try {
-          await this.createRequirement(requirement, this.graphqlId);
+          await this.createRequirement(requirement, this.graphqlId, index);
         } catch (error) {
           this.setError(error, error);
         }
       }
+    },
+    async handleDeleteRequirement(index) {
+      const requirementToDelete = this.requirements[index];
+      if (this.isNewFramework) {
+        this.requirements.splice(index, 1);
+        this.showUndoDeleteRequirementToast(requirementToDelete, index);
+      } else if (requirementToDelete.id) {
+        try {
+          await this.deleteRequirement(requirementToDelete.id);
+          this.showUndoDeleteRequirementToast(requirementToDelete, index);
+        } catch (error) {
+          this.setError(error, error);
+        }
+      }
+    },
+    showUndoDeleteRequirementToast(requirementToDelete, index) {
+      this.$toast.show(this.$options.i18n.requirementRemovedMessage, {
+        action: {
+          text: __('Undo'),
+          onClick: (_, toast) => {
+            this.handleCreateRequirement(requirementToDelete, index);
+            toast.hide();
+          },
+        },
+      });
+    },
+    async deleteRequirement(requirementId) {
+      const { data } = await this.$apollo.mutate({
+        mutation: deleteRequirementMutation,
+        variables: {
+          input: {
+            id: requirementId,
+          },
+        },
+        update: (cache, result) =>
+          this.updateRequirementCacheOnDelete(cache, result, requirementId),
+      });
+
+      const errors = data?.deleteComplianceRequirement?.errors;
+      if (errors && errors.length) {
+        throw new Error(errors[0]);
+      }
+    },
+
+    updateRequirementCacheOnDelete(cache, { data: { deleteComplianceRequirement } }, id) {
+      const errors = deleteComplianceRequirement?.errors;
+      if (errors && errors.length) {
+        return;
+      }
+
+      const sourceData = cache.readQuery({
+        query: getComplianceFrameworkQuery,
+        variables: this.queryVariables,
+      });
+
+      const updatedData = produce(sourceData, (draft) => {
+        const framework = draft.namespace.complianceFrameworks.nodes.find(
+          (f) => f.id === this.graphqlId,
+        );
+        if (framework) {
+          framework.complianceRequirements.nodes = framework.complianceRequirements.nodes.filter(
+            (req) => req.id !== id,
+          );
+        }
+      });
+
+      cache.writeQuery({
+        query: getComplianceFrameworkQuery,
+        variables: this.queryVariables,
+        data: updatedData,
+      });
     },
     async deleteFramework() {
       this.isDeleting = true;
@@ -369,7 +449,8 @@ export default {
           v-if="adherenceV2Enabled"
           :requirements="requirements"
           :is-new-framework="isNewFramework"
-          @save="updateRequirements"
+          @save="handleCreateRequirement"
+          @delete="handleDeleteRequirement"
         />
 
         <policies-section

@@ -1,4 +1,4 @@
-import { GlTable } from '@gitlab/ui';
+import { GlTable, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
@@ -26,6 +26,7 @@ describe('Requirements section', () => {
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
   const findNewRequirementButton = () => wrapper.findByTestId('add-requirement-button');
   const findRequirementModal = () => wrapper.findComponent(RequirementModal);
+  const findDeleteAction = () => wrapper.findByTestId('delete-action');
 
   const createComponent = async (controlsQueryHandlerMockResponse = controlsQueryHandler) => {
     const mockApollo = createMockApollo([[controlsQuery, controlsQueryHandlerMockResponse]]);
@@ -36,6 +37,7 @@ describe('Requirements section', () => {
         isNewFramework: true,
       },
       apolloProvider: mockApollo,
+      stubs: { GlDisclosureDropdown, GlDisclosureDropdownItem },
     });
 
     await waitForPromises();
@@ -134,6 +136,17 @@ describe('Requirements section', () => {
         captureException: true,
         error,
       });
+    });
+  });
+
+  describe('Delete requirement', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('emits a delete event with the correct index when delete action is clicked', async () => {
+      await findDeleteAction().vm.$emit('action');
+      expect(wrapper.emitted('delete')).toStrictEqual([[0]]);
     });
   });
 });
