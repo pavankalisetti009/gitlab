@@ -3,7 +3,7 @@
 module CiCd
   class SetupProject < ::BaseService
     def execute
-      return if project.import_url.blank?
+      return if project.safe_import_url.blank?
 
       update_project
       disable_project_features

@@ -508,7 +508,7 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
             request
 
             expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response['message']['import_url']).to eq(
+            expect(json_response['message']['unsafe_import_url']).to eq(
               ['is blocked: Only allowed schemes are http, https, ssh, git']
             )
           end

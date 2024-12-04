@@ -51,7 +51,7 @@ module CiCd
       end
 
       def import_uri
-        URI.parse(@project.import_url)
+        URI.parse(@project.unsafe_import_url)
       end
     end
   end

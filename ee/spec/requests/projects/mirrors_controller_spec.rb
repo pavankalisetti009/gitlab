@@ -34,7 +34,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
       expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
       expect(flash[:notice]).to include("Mirroring settings were successfully updated")
 
-      expect(project.reload.import_url).to eq 'https://example.com'
+      expect(project.reload.unsafe_import_url).to eq 'https://example.com'
     end
 
     it 'complains about passing an empty URL' do
