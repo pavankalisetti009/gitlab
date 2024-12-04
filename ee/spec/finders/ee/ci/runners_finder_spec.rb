@@ -69,7 +69,7 @@ RSpec.describe Ci::RunnersFinder, '#execute', feature_category: :fleet_visibilit
         end
 
         context 'with user as group owner' do
-          let_it_be(:user) { create(:user).tap { |user| group.add_owner(user) } }
+          let_it_be(:user) { create(:user, owner_of: group) }
 
           context 'with direct membership' do
             let(:extra_params) { { membership: :direct } }
@@ -105,7 +105,7 @@ RSpec.describe Ci::RunnersFinder, '#execute', feature_category: :fleet_visibilit
         end
 
         context 'with user as project owner' do
-          let_it_be(:user) { create(:user).tap { |user| project.add_owner(user) } }
+          let_it_be(:user) { create(:user, owner_of: project) }
 
           it 'raises an error' do
             expect { execute }.to raise_error(
