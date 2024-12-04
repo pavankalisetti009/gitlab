@@ -4,12 +4,12 @@ module QA
   RSpec.describe 'Govern' do
     describe 'Group access', :requires_admin, :skip_live_env, :blocking, product_group: :authentication do
       let!(:current_ip_address) do
-        Flow::Login.while_signed_in(as: user) { Runtime::UserStore.admin_user.get_user_ip_address(user.id) }
+        Flow::Login.while_signed_in(as: user) { Runtime::User::Store.admin_user.get_user_ip_address(user.id) }
       end
 
-      let(:user) { Runtime::UserStore.test_user }
+      let(:user) { Runtime::User::Store.test_user }
       let(:api_client) { user.api_client }
-      let(:admin_api_client) { Runtime::UserStore.admin_api_client }
+      let(:admin_api_client) { Runtime::User::Store.admin_api_client }
 
       let(:sandbox_group) { create(:sandbox, api_client: admin_api_client) }
       let(:group) { create(:group, sandbox: sandbox_group, api_client: admin_api_client) }

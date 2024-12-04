@@ -7,7 +7,7 @@ module QA
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')
       end
 
-      let(:test_token) { Runtime::UserStore.test_user.create_personal_access_token!(use_for_api_client: false).token }
+      let(:test_token) { Runtime::User::Store.test_user.create_personal_access_token!(use_for_api_client: false).token }
 
       before do
         enable_secret_protection unless Runtime::Env.running_on_dot_com?

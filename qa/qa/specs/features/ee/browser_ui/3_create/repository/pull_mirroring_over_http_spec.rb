@@ -3,6 +3,8 @@
 module QA
   RSpec.describe 'Create' do
     describe 'Pull mirror a repository over HTTP', product_group: :source_code do
+      let(:user) { Runtime::User::Store.test_user }
+
       it 'configures and syncs a (pull) mirrored repository with password auth', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347764' do
         Flow::Login.sign_in
 
@@ -13,7 +15,7 @@ module QA
           project_push.commit_message = 'Add README.md'
         end
         source_project_uri = source.project.repository_http_location.uri
-        source_project_uri.user = CGI.escape(Runtime::User.admin_username)
+        source_project_uri.user = CGI.escape(user.username)
 
         target_project = create(:project, name: 'pull-mirror-target-project')
         target_project.visit!
@@ -25,8 +27,8 @@ module QA
             mirror_settings.repository_url = source_project_uri
             mirror_settings.mirror_direction = 'Pull'
             mirror_settings.authentication_method = 'Password'
-            mirror_settings.username = Runtime::User.admin_username
-            mirror_settings.password = Runtime::User.admin_password
+            mirror_settings.username = user.username
+            mirror_settings.password = user.password
             mirror_settings.mirror_repository
             mirror_settings.update_uri(source_project_uri)
 
