@@ -18,6 +18,8 @@ describe('TrialWidget component', () => {
   const findWidgetTitle = () => wrapper.findByTestId('widget-title');
   const findCtaButton = () => wrapper.findByTestId('learn-about-features-btn');
   const findUpgradeButton = () => wrapper.findByTestId('upgrade-options-btn');
+  const findCTAHandRaiseLeadButton = () => wrapper.findByTestId('cta-hand-raise-lead-btn');
+
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
 
@@ -97,14 +99,14 @@ describe('TrialWidget component', () => {
           createComponent({ daysRemaining: 20, percentageComplete: 67 });
         });
 
-        it('renders the CTA link', () => {
-          expect(findCtaButton().attributes('href')).toBe('/purchase');
+        it('renders the hand raise modal CTA', () => {
+          expect(findCTAHandRaiseLeadButton().props('buttonText')).toBe('Upgrade');
         });
 
         it('should track the click upgrade link event', () => {
           const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
-          findCtaButton().vm.$emit('click', { stopPropagation });
+          findCTAHandRaiseLeadButton().vm.$emit('click', { stopPropagation });
 
           expect(trackEventSpy).toHaveBeenCalledWith(
             'click_upgrade_link_on_trial_widget',
@@ -127,7 +129,7 @@ describe('TrialWidget component', () => {
       });
 
       it('renders the upgrade options text', () => {
-        expect(findCtaButton().text()).toBe('Upgrade');
+        expect(findCTAHandRaiseLeadButton().props('buttonText')).toBe('Upgrade');
       });
     });
 
