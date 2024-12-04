@@ -71,7 +71,7 @@ module EE
       end
 
       def joining_a_project?
-        ::Gitlab::Utils.to_boolean(params[:joining_project], default: false)
+        ::Gitlab::Utils.to_boolean(user.onboarding_status_joining_project, default: false)
       end
 
       def email_opt_in?

@@ -43,8 +43,9 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       is_expected.to have_button('_button_text_')
     end
 
-    it 'has the joining_project fields' do
-      is_expected.to have_selector('#joining_project_true')
+    it 'has the joining_project fields', :aggregate_failures do
+      is_expected.to have_selector('#user_onboarding_status_joining_project_true')
+      is_expected.to have_selector('#user_onboarding_status_joining_project_false')
     end
 
     it 'renders a select and text field for additional information' do

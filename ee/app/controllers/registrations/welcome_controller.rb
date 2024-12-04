@@ -65,17 +65,25 @@ module Registrations
     end
 
     def update_params
-      params.require(:user)
-            .permit(:role, :setup_for_company, :registration_objective)
-            .merge(params.permit(:jobs_to_be_done_other))
-            .merge(user_onboarding_status_params)
-            .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
+      base_params = params
+                      .require(:user)
+                      .permit(:role, :setup_for_company, :registration_objective, :onboarding_status_joining_project)
+                      .merge(params.permit(:jobs_to_be_done_other))
+                      .merge(onboarding_registration_type_params)
+                      .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
+
+      # Since onboarding_status_joining_project is not a real db column(jsonb attribute), we need to convert it to
+      # boolean at this level.
+      base_params[:onboarding_status_joining_project] =
+        ::Gitlab::Utils.to_boolean(base_params[:onboarding_status_joining_project])
+
+      base_params
     end
 
-    def user_onboarding_status_params
+    def onboarding_registration_type_params
       return {} unless onboarding_status_presenter.convert_to_automatic_trial?
 
-      # Now we are in automatic trial and we'll update our status as such, initial_registration_type
+      # Now we are in automatic trial, and we'll update our status as such, initial_registration_type
       # will be how we know if they weren't a trial originally from here on out.
       { onboarding_status_registration_type: ::Onboarding::REGISTRATION_TYPE[:trial] }
     end

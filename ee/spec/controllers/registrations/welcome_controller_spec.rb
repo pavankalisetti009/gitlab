@@ -95,15 +95,14 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
     let(:setup_for_company) { 'false' }
     let(:joining_project) { 'false' }
     let(:extra_params) { {} }
-    let(:extra_user_params) { {} }
     let(:update_params) do
       {
         user: {
           role: 'software_developer',
           setup_for_company: setup_for_company,
-          registration_objective: 'code_storage'
-        }.merge(extra_user_params),
-        joining_project: joining_project,
+          registration_objective: 'code_storage',
+          onboarding_status_joining_project: joining_project
+        },
         jobs_to_be_done_other: '_jobs_to_be_done_other_',
         glm_source: 'some_source',
         glm_content: 'some_content'
@@ -158,6 +157,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               user.reset
 
               expect(user.onboarding_in_progress).to be(false)
+              expect(user.onboarding_status_joining_project).to be(true)
               expect(response).to redirect_to dashboard_projects_path
             end
 
@@ -192,8 +192,41 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 path = new_users_sign_up_group_path
 
                 expect(user.onboarding_in_progress).to be(true)
+                expect(user.onboarding_status_joining_project).to be(false)
                 expect(response).to redirect_to path
               end
+            end
+          end
+
+          context 'when joining_project is not provided' do
+            let(:update_params) do
+              {
+                user: {
+                  role: 'software_developer',
+                  setup_for_company: setup_for_company
+                }
+              }
+            end
+
+            it 'defaults to creating a group' do
+              patch_update
+              user.reset
+              path = new_users_sign_up_group_path
+
+              expect(user.onboarding_in_progress).to be(true)
+              expect(user.onboarding_status_joining_project).to be_nil
+              expect(response).to redirect_to path
+            end
+
+            it 'does not track join a project event' do
+              patch_update
+
+              expect_no_snowplow_event(
+                category: 'registrations:welcome:update',
+                action: 'select_button',
+                user: user,
+                label: 'join_a_project'
+              )
             end
           end
 
@@ -316,6 +349,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
                   expect(user.onboarding_in_progress).to be(true)
                   expect(user.onboarding_status_step_url).to eq(path)
+                  expect(user.onboarding_status_joining_project).to be(false)
                   expect(response).to redirect_to path
                 end
               end
@@ -339,6 +373,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
                 expect(user.onboarding_in_progress).to be(true)
                 expect(user.onboarding_status_step_url).to eq(path)
+                expect(user.onboarding_status_joining_project).to be(false)
                 expect(response).to redirect_to path
               end
             end
@@ -417,7 +452,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
         context 'when failed request' do
           subject(:patch_update) do
-            patch :update, params: { user: { role: 'software_developer' }, joining_project: 'true' }
+            patch :update, params: { user: { role: 'software_developer', onboarding_status_joining_project: 'true' } }
           end
 
           before do

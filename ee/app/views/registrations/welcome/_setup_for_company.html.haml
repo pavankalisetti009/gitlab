@@ -3,7 +3,7 @@
 - else
   .row
     .form-group.col-sm-12
-      = f.label :setup_for_company, onboarding_status_presenter.setup_for_company_label_text, class: 'label-bold'
+      = f.label :setup_for_company, onboarding_status_presenter.setup_for_company_label_text
       .gl-flex.gl-flex-col
         .gl-grow{ data: { testid: 'setup-for-just-me-content' } }
           = f.gitlab_ui_radio_component :setup_for_company, false, _('Just me'),
