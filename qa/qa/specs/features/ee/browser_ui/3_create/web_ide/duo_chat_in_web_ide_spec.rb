@@ -24,7 +24,7 @@ module QA
       end
 
       let(:project) { create(:project, :with_readme, name: 'webide-duo-chat-project') }
-      let(:token) { Runtime::UserStore.default_api_client.personal_access_token }
+      let(:token) { Runtime::User::Store.default_api_client.personal_access_token }
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
       # Determine whether we are running against dotcom or a self managed cloud connector by checking
       # the base_url of the direct connection endpoint. This lets us determine the expected response.

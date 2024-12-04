@@ -37,7 +37,7 @@ module QA
         }
       end
 
-      let(:token) { Runtime::UserStore.user_api_client.personal_access_token }
+      let(:token) { Runtime::User::Store.user_api_client.personal_access_token }
 
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
 
@@ -154,7 +154,7 @@ module QA
         end
 
         context 'on Self-managed', :orchestrated do
-          let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+          let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
 
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
@@ -199,7 +199,7 @@ module QA
         end
 
         context 'on Self-managed', :orchestrated do
-          let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+          let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
 
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
@@ -231,7 +231,7 @@ module QA
           end
 
           context 'on Self-managed', :orchestrated do
-            let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+            let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
 
             context 'with a valid license' do
               context 'with a Duo Enterprise add-on' do

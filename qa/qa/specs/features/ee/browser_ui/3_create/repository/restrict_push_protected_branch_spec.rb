@@ -119,7 +119,7 @@ module QA
         it_behaves_like 'user without push access', :user_developer, 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436937'
       end
 
-      def login(as_user: Runtime::UserStore.test_user)
+      def login(as_user: Runtime::User::Store.test_user)
         Page::Main::Menu.perform(&:sign_out_if_signed_in)
 
         Runtime::Browser.visit(:gitlab, Page::Main::Login)

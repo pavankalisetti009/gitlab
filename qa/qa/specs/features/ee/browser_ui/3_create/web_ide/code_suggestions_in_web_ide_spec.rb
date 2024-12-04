@@ -7,7 +7,7 @@ module QA
     describe 'Code Suggestions in Web IDE' do
       include_context "Web IDE test prep"
 
-      let(:api_client) { Runtime::UserStore.default_api_client }
+      let(:api_client) { Runtime::User::Store.default_api_client }
       let(:project) { create(:project, :with_readme, name: 'webide-code-suggestions-project', api_client: api_client) }
       let(:file_name) { 'new_file.rb' }
       let(:prompt_data) { 'def reverse_string' }
@@ -82,8 +82,8 @@ module QA
       end
 
       context 'on Self-managed', :orchestrated do
-        let(:api_client) { Runtime::UserStore.admin_api_client }
-        let(:user) { Runtime::UserStore.admin_user }
+        let(:api_client) { Runtime::User::Store.admin_api_client }
+        let(:user) { Runtime::User::Store.admin_user }
 
         context 'with a valid license' do
           context 'with a Duo Enterprise add-on' do
