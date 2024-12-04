@@ -44,7 +44,7 @@ module SystemNotes
       def formatted_comment(comment)
         return unless comment.present?
 
-        format(' and the following comment: "%{comment}"', comment: comment)
+        format(' with the following comment: "%{comment}"', comment: comment)
       end
     end
 

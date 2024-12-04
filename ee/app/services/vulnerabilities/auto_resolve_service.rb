@@ -112,7 +112,8 @@ module Vulnerabilities
 
     def comment(vulnerability)
       rule = rules_by_vulnerability[vulnerability]
-      _("Auto-resolved by vulnerability management policy") + " #{rule.security_policy.name}"
+      format(_("Auto-resolved by the vulnerability management policy named '%{policy_name}'"),
+        policy_name: rule.security_policy.name)
     end
 
     def user

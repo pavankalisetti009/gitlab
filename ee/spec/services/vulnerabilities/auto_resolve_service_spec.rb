@@ -22,7 +22,11 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
 
   let(:vulnerability_ids) { [vulnerability.id] }
 
-  let(:comment) { _("Auto-resolved by vulnerability management policy") + " #{security_policy_name}" }
+  let(:comment) do
+    format(_("Auto-resolved by the vulnerability management policy named '%{policy_name}'"),
+      policy_name: security_policy_name)
+  end
+
   let(:security_policy_name) { policy.name }
 
   subject(:service) { described_class.new(project, vulnerability_ids) }
@@ -68,7 +72,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(last_note.project).to eq(project)
       expect(last_note.namespace_id).to eq(project.project_namespace_id)
       expect(last_note.note).to eq(
-        "changed vulnerability status to Resolved and the following comment: \"#{comment}\""
+        "changed vulnerability status to Resolved with the following comment: \"#{comment}\""
       )
       expect(last_note).to be_system
     end
