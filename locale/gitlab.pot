@@ -25285,6 +25285,12 @@ msgstr ""
 msgid "GlobalSearch|Archived"
 msgstr ""
 
+msgid "GlobalSearch|Author"
+msgstr ""
+
+msgid "GlobalSearch|Author not included"
+msgstr ""
+
 msgid "GlobalSearch|Branch not included"
 msgstr ""
 
