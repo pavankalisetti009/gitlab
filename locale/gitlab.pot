@@ -23650,9 +23650,6 @@ msgstr ""
 msgid "Finished"
 msgstr ""
 
-msgid "First Seen"
-msgstr ""
-
 msgid "First day of the week"
 msgstr ""
 
@@ -31877,9 +31874,6 @@ msgid "Last Accessed On"
 msgstr ""
 
 msgid "Last GitLab activity"
-msgstr ""
-
-msgid "Last Seen"
 msgstr ""
 
 msgid "Last Used"
