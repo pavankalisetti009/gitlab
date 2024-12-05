@@ -37,6 +37,10 @@ module Onboarding
       true
     end
 
+    def self.include_existing_plan_for_iterable?
+      true
+    end
+
     def self.continue_full_onboarding?
       false
     end

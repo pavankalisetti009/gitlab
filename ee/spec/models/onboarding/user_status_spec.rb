@@ -70,4 +70,39 @@ RSpec.describe Onboarding::UserStatus, feature_category: :onboarding do
       end
     end
   end
+
+  describe '#existing_plan' do
+    let(:registration_type) { 'invite' }
+    let(:member) { build(:group_member) }
+    let(:members) { [member] }
+    let(:user) { build(:user, onboarding_status_registration_type: registration_type, members: members) }
+
+    subject { described_class.new(user).existing_plan }
+
+    it { is_expected.to eq({ existing_plan: 'default' }) }
+
+    context 'when it is a free registration' do
+      let(:registration_type) { 'free' }
+
+      it { is_expected.to eq({}) }
+    end
+
+    context 'when there are no members' do
+      let(:members) { [] }
+
+      it { is_expected.to eq({}) }
+    end
+
+    context 'when there are multiple members it picks the last one' do
+      let(:last_group) { build(:group) }
+      let(:last_member) { build(:group_member, source: last_group) }
+      let(:members) { [member, last_member] }
+
+      before do
+        allow(last_group).to receive(:actual_plan_name).and_return('ultimate')
+      end
+
+      it { is_expected.to eq({ existing_plan: 'ultimate' }) }
+    end
+  end
 end
