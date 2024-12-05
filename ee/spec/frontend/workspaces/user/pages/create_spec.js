@@ -1,25 +1,15 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { cloneDeep } from 'lodash';
-import {
-  GlForm,
-  GlFormSelect,
-  GlIcon,
-  GlLink,
-  GlSprintf,
-  GlFormInput,
-  GlFormInputGroup,
-  GlPopover,
-} from '@gitlab/ui';
+import { GlForm, GlFormSelect, GlSprintf, GlFormInput, GlFormInputGroup } from '@gitlab/ui';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import SearchProjectsListbox from 'ee/workspaces/user/components/search_projects_listbox.vue';
 import GetProjectDetailsQuery from 'ee/workspaces/common/components/get_project_details_query.vue';
 import WorkspaceVariables from 'ee/workspaces/user/components/workspace_variables.vue';
-import WorkspaceCreate, { devfileHelpPath, i18n } from 'ee/workspaces/user/pages/create.vue';
+import WorkspaceCreate, { i18n } from 'ee/workspaces/user/pages/create.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import {
   DEFAULT_DESIRED_STATE,
   ROUTES,
@@ -135,9 +125,6 @@ describe('workspaces/user/pages/create.vue', () => {
       mocks: {
         $router: mockRouter,
       },
-      directives: {
-        GlTooltip: createMockDirective('gl-tooltip'),
-      },
     });
   };
 
@@ -157,12 +144,9 @@ describe('workspaces/user/pages/create.vue', () => {
   const findDevfileRefRefSelector = () => findDevfileRefField().findComponent(RefSelector);
   const findDevfileRefFieldParts = () => {
     const field = findDevfileRefField();
-    const icon = field.findComponent(GlIcon);
-
     return {
-      label: field.find('label').text(),
-      icon: icon.attributes('name'),
-      iconTooltip: getBinding(icon.element, 'gl-tooltip').value,
+      label: field.attributes('label'),
+      labelDescription: field.attributes('labeldescription'),
     };
   };
 
@@ -171,15 +155,12 @@ describe('workspaces/user/pages/create.vue', () => {
   const findDevfilePathInput = () => findDevfilePathInputGroup().findComponent(GlFormInput);
   const findDevfilePathFieldParts = () => {
     const field = findDevfilePathField();
-    const popover = field.findComponent(GlPopover);
-
     return {
-      label: field.find('label').text(),
+      label: field.attributes('label'),
       inputPrepend: findDevfilePathInputGroup().text(),
       inputPlaceholder: findDevfilePathInput().attributes('placeholder'),
-      popoverText: popover.text(),
-      popoverLinkHref: popover.findComponent(GlLink).attributes('href'),
-      popoverLinkText: popover.findComponent(GlLink).text(),
+      description: field.attributes('description'),
+      labelDescription: field.attributes('labeldescription'),
     };
   };
 
@@ -310,9 +291,8 @@ describe('workspaces/user/pages/create.vue', () => {
     describe('devfile ref field', () => {
       it('renders parts', () => {
         expect(findDevfileRefFieldParts()).toEqual({
-          label: 'Git reference',
-          icon: 'information-o',
-          iconTooltip: 'The branch, tag, or commit hash GitLab uses to create your workspace.',
+          label: 'Project reference',
+          labelDescription: 'The source branch, tag, or commit hash of your workspace.',
         });
       });
     });
@@ -323,11 +303,10 @@ describe('workspaces/user/pages/create.vue', () => {
           inputPrepend: 'gitlab-org / gitlab /',
           inputPlaceholder: 'Path to devfile',
           label: 'Devfile location',
-          popoverLinkHref: devfileHelpPath,
-          popoverLinkText: 'Learn more.',
-          popoverText: expect.stringMatching(
-            `${i18n.form.devfileLocation.contentParagraph1} ${i18n.form.devfileLocation.contentParagraph2}`,
+          labelDescription: expect.stringMatching(
+            `${i18n.form.devfileLocation.labelDescriptionContent}`,
           ),
+          description: expect.stringMatching(`${i18n.form.devfileLocation.descriptionContent}`),
         });
       });
     });
