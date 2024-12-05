@@ -35,7 +35,34 @@ module EE
 
         override :promote_to_map
         def promote_to_map
-          super.merge(key_result: 'Objective')
+          super.merge(key_result: ['Objective'], issue: super['issue'].push('Epic'))
+        end
+
+        override :apply_type_commands
+        def apply_type_commands(new_type, command)
+          return super unless command == :promote_to && new_type.epic?
+
+          begin
+            Epics::IssuePromoteService
+              .new(container: quick_action_target.container, current_user: current_user)
+              .execute(quick_action_target)
+
+            success_msg[command]
+          rescue StandardError
+            error_msg(:not_found, action: 'promote')
+          end
+        end
+
+        override :validate_promote_to
+        def validate_promote_to(type)
+          return super unless type&.epic?
+
+          container = quick_action_target.container
+          issue_group = container.is_a?(Group) ? container : container.group
+
+          return if quick_action_target.can_be_promoted_to_epic?(current_user, issue_group)
+
+          error_msg(:not_found, action: 'promote')
         end
 
         override :type_change_allowed?
