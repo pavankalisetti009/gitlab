@@ -163,7 +163,7 @@ The code flow information is shown the **Code flow** tab and includes:
 - The steps from source to sink.
 - The relevant files, including code snippets.
 
-![A code flow of a Python application across two files](../vulnerabilities/img/example_code_flow_of_python_applications_v17_3.png)
+![A code flow of a Python application across two files](../vulnerabilities/img/code_flow_view_v17_7.png)
 
 ### Code flow feature availability
 
