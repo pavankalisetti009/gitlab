@@ -153,7 +153,7 @@ export default {
     },
   },
   SPANS_LIMIT,
-  relatedIssuesHelpPath: helpPagePath('/operations/tracing', {
+  relatedIssuesHelpPath: helpPagePath('/development/tracing', {
     anchor: 'create-an-issue-for-a-trace',
   }),
   relatedIssuesId: uniqueId('related-issues-'),

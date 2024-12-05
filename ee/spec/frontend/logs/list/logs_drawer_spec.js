@@ -103,7 +103,7 @@ describe('LogsDrawer', () => {
       issues: [],
       fetchingIssues: false,
       error: null,
-      helpPath: helpPagePath('/operations/logs', {
+      helpPath: helpPagePath('/development/logs', {
         anchor: 'create-an-issue-for-a-log',
       }),
     });
