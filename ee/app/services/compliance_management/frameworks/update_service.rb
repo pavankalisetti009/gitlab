@@ -46,7 +46,7 @@ module ComplianceManagement
             author: current_user,
             scope: framework.namespace,
             target: framework,
-            message: "Changed compliance framework's #{attribute} from #{changes[0]} to #{changes[1]}"
+            message: %(Changed compliance framework's "#{attribute}" from "#{changes[0]}" to "#{changes[1]}")
           }
 
           ::Gitlab::Audit::Auditor.audit(audit_context)
