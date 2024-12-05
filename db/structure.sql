@@ -6087,6 +6087,55 @@ CREATE SEQUENCE ai_code_suggestion_events_id_seq
 
 ALTER SEQUENCE ai_code_suggestion_events_id_seq OWNED BY ai_code_suggestion_events.id;
 
+CREATE TABLE ai_conversation_messages (
+    id bigint NOT NULL,
+    thread_id bigint NOT NULL,
+    agent_version_id bigint,
+    organization_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    role smallint NOT NULL,
+    has_feedback boolean DEFAULT false,
+    extras jsonb DEFAULT '{}'::jsonb NOT NULL,
+    error_details jsonb DEFAULT '{}'::jsonb NOT NULL,
+    content text NOT NULL,
+    request_xid text,
+    message_xid text,
+    referer_url text,
+    CONSTRAINT check_0fe78937e4 CHECK ((char_length(content) <= 524288)),
+    CONSTRAINT check_8daec62ec9 CHECK ((char_length(request_xid) <= 255)),
+    CONSTRAINT check_b14b137e02 CHECK ((char_length(message_xid) <= 255)),
+    CONSTRAINT check_f36c73d1d9 CHECK ((char_length(referer_url) <= 255))
+);
+
+CREATE SEQUENCE ai_conversation_messages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ai_conversation_messages_id_seq OWNED BY ai_conversation_messages.id;
+
+CREATE TABLE ai_conversation_threads (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    last_updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    conversation_type smallint NOT NULL
+);
+
+CREATE SEQUENCE ai_conversation_threads_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ai_conversation_threads_id_seq OWNED BY ai_conversation_threads.id;
+
 CREATE TABLE ai_feature_settings (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -23118,6 +23167,10 @@ ALTER TABLE ONLY ai_agents ALTER COLUMN id SET DEFAULT nextval('ai_agents_id_seq
 
 ALTER TABLE ONLY ai_code_suggestion_events ALTER COLUMN id SET DEFAULT nextval('ai_code_suggestion_events_id_seq'::regclass);
 
+ALTER TABLE ONLY ai_conversation_messages ALTER COLUMN id SET DEFAULT nextval('ai_conversation_messages_id_seq'::regclass);
+
+ALTER TABLE ONLY ai_conversation_threads ALTER COLUMN id SET DEFAULT nextval('ai_conversation_threads_id_seq'::regclass);
+
 ALTER TABLE ONLY ai_feature_settings ALTER COLUMN id SET DEFAULT nextval('ai_feature_settings_id_seq'::regclass);
 
 ALTER TABLE ONLY ai_self_hosted_models ALTER COLUMN id SET DEFAULT nextval('ai_self_hosted_models_id_seq'::regclass);
@@ -24947,6 +25000,12 @@ ALTER TABLE ONLY ai_agents
 
 ALTER TABLE ONLY ai_code_suggestion_events
     ADD CONSTRAINT ai_code_suggestion_events_pkey PRIMARY KEY (id, "timestamp");
+
+ALTER TABLE ONLY ai_conversation_messages
+    ADD CONSTRAINT ai_conversation_messages_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY ai_conversation_threads
+    ADD CONSTRAINT ai_conversation_threads_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ai_feature_settings
     ADD CONSTRAINT ai_feature_settings_pkey PRIMARY KEY (id);
@@ -29149,6 +29208,20 @@ CREATE UNIQUE INDEX index_ai_agents_on_project_id_and_name ON ai_agents USING bt
 CREATE INDEX index_ai_code_suggestion_events_on_organization_id ON ONLY ai_code_suggestion_events USING btree (organization_id);
 
 CREATE INDEX index_ai_code_suggestion_events_on_user_id ON ONLY ai_code_suggestion_events USING btree (user_id);
+
+CREATE INDEX index_ai_conversation_messages_on_agent_version_id ON ai_conversation_messages USING btree (agent_version_id);
+
+CREATE INDEX index_ai_conversation_messages_on_message_xid ON ai_conversation_messages USING btree (message_xid);
+
+CREATE INDEX index_ai_conversation_messages_on_organization_id ON ai_conversation_messages USING btree (organization_id);
+
+CREATE INDEX index_ai_conversation_messages_on_thread_id_and_created_at ON ai_conversation_messages USING btree (thread_id, created_at);
+
+CREATE INDEX index_ai_conversation_threads_on_last_updated_at ON ai_conversation_threads USING btree (last_updated_at);
+
+CREATE INDEX index_ai_conversation_threads_on_organization_id ON ai_conversation_threads USING btree (organization_id);
+
+CREATE INDEX index_ai_conversation_threads_on_user_id_and_last_updated_at ON ai_conversation_threads USING btree (user_id, last_updated_at);
 
 CREATE INDEX index_ai_feature_settings_on_ai_self_hosted_model_id ON ai_feature_settings USING btree (ai_self_hosted_model_id);
 
@@ -35414,6 +35487,8 @@ ALTER INDEX p_ci_job_artifacts_expire_at_job_id_idx1 ATTACH PARTITION tmp_index_
 
 ALTER INDEX p_ci_builds_token_encrypted_partition_id_idx ATTACH PARTITION unique_ci_builds_token_encrypted_and_partition_id;
 
+CREATE TRIGGER ai_conversation_threads_loose_fk_trigger AFTER DELETE ON ai_conversation_threads REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
+
 CREATE TRIGGER assign_ci_runner_taggings_id_trigger BEFORE INSERT ON ci_runner_taggings FOR EACH ROW EXECUTE FUNCTION assign_ci_runner_taggings_id_value();
 
 CREATE TRIGGER assign_p_ci_build_tags_id_trigger BEFORE INSERT ON p_ci_build_tags FOR EACH ROW EXECUTE FUNCTION assign_p_ci_build_tags_id_value();
@@ -35811,6 +35886,9 @@ CREATE TRIGGER trigger_update_vulnerability_reads_on_vulnerability_update AFTER 
 CREATE TRIGGER users_loose_fk_trigger AFTER DELETE ON users REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
 CREATE TRIGGER virtual_registries_packages_maven_upstreams_loose_fk_trigger AFTER DELETE ON virtual_registries_packages_maven_upstreams REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
+
+ALTER TABLE ONLY ai_conversation_threads
+    ADD CONSTRAINT fk_00234c7444 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY deployments
     ADD CONSTRAINT fk_009fd21147 FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
@@ -36481,6 +36559,9 @@ ALTER TABLE ONLY import_placeholder_memberships
 ALTER TABLE p_ci_builds
     ADD CONSTRAINT fk_6661f4f0e8 FOREIGN KEY (resource_group_id) REFERENCES ci_resource_groups(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY ai_conversation_messages
+    ADD CONSTRAINT fk_68774ec148 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY remote_development_agent_configs
     ADD CONSTRAINT fk_6a09894a0f FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -36982,6 +37063,9 @@ ALTER TABLE ONLY status_check_responses
 ALTER TABLE ONLY packages_dependency_links
     ADD CONSTRAINT fk_b5c56b6ede FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY ai_conversation_messages
+    ADD CONSTRAINT fk_b5d715b1e4 FOREIGN KEY (agent_version_id) REFERENCES ai_agent_versions(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_b5df066d8f FOREIGN KEY (framework_id) REFERENCES compliance_management_frameworks(id) ON DELETE CASCADE;
 
@@ -37263,6 +37347,9 @@ ALTER TABLE ONLY sbom_occurrences
 
 ALTER TABLE ONLY todos
     ADD CONSTRAINT fk_d94154aa95 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_conversation_threads
+    ADD CONSTRAINT fk_d97014a270 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY label_links
     ADD CONSTRAINT fk_d97dd08678 FOREIGN KEY (label_id) REFERENCES labels(id) ON DELETE CASCADE;
