@@ -6,29 +6,41 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillComplianceViolationNullTarge
   feature_category: :compliance_management do
   let(:connection) { ApplicationRecord.connection }
 
+  let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:users) { table(:users) }
 
   let(:merge_requests) { table(:merge_requests) }
   let(:violating_user) { users.create!(username: 'john_doe', email: 'johndoe@gitlab.com', projects_limit: 2) }
+  let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
   let!(:namespace) do
-    namespaces.create!(name: 'root-group', path: 'root', type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [new_group.id])
-    end
+    namespaces
+      .create!(name: 'root-group', path: 'root', type: 'Group', organization_id: organization.id)
+      .tap do |new_group|
+        new_group.update!(traversal_ids: [new_group.id])
+      end
   end
 
-  let!(:group_1) { namespaces.create!(name: 'random-group', path: 'random', type: 'Group') }
-  let!(:group_2) { namespaces.create!(name: 'random-group-2', path: 'random-2', type: 'Group') }
+  let!(:group_1) do
+    namespaces.create!(name: 'random-group', path: 'random', type: 'Group', organization_id: organization.id)
+  end
+
+  let!(:group_2) do
+    namespaces.create!(name: 'random-group-2', path: 'random-2', type: 'Group', organization_id: organization.id)
+  end
 
   let!(:nested_group) do
-    namespaces.create!(name: 'nested-group', path: 'root/nested_group', type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [namespace.id, new_group.id])
-    end
+    namespaces
+      .create!(name: 'nested-group', path: 'root/nested_group', type: 'Group', organization_id: organization.id)
+      .tap do |new_group|
+        new_group.update!(traversal_ids: [namespace.id, new_group.id])
+      end
   end
 
   let!(:project_1) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: nested_group.id,
       project_namespace_id: nested_group.id,
       name: 'test project',
@@ -38,6 +50,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillComplianceViolationNullTarge
 
   let!(:project_2) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: group_1.id,
       project_namespace_id: group_1.id,
       name: 'test project-2',
@@ -47,6 +60,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillComplianceViolationNullTarge
 
   let!(:project_3) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: group_2.id,
       project_namespace_id: group_2.id,
       name: 'test project-3',

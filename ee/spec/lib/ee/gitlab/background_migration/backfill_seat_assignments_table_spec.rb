@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, feature_category: :seat_cost_management do
   let!(:users) { table(:users) }
+  let!(:organizations) { table(:organizations) }
   let!(:namespaces) { table(:namespaces) }
   let!(:projects) { table(:projects) }
   let!(:members) { table(:members) }
@@ -13,26 +14,35 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, featur
   let!(:user) { users.create!(name: 'test-1', email: 'test@example.com', projects_limit: 5) }
   let!(:other_user) { users.create!(name: 'test-2', email: 'test-2@example.com', projects_limit: 5) }
 
+  let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+
   let!(:root_group) do
-    namespaces.create!(name: 'root-group', path: 'root-group', type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [new_group.id])
-    end
+    namespaces
+      .create!(name: 'root-group', path: 'root-group', type: 'Group', organization_id: organization.id)
+      .tap do |new_group|
+        new_group.update!(traversal_ids: [new_group.id])
+      end
   end
 
   let!(:sub_group) do
-    namespaces.create!(name: 'subgroup', path: 'subgroup', parent_id: root_group.id, type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [root_group.id, new_group.id])
-    end
+    namespaces
+      .create!(name: 'sub', path: 'sub', parent_id: root_group.id, type: 'Group', organization_id: organization.id)
+      .tap do |new_group|
+        new_group.update!(traversal_ids: [root_group.id, new_group.id])
+      end
   end
 
   let!(:other_root_group) do
-    namespaces.create!(name: 'other root group', path: 'other-root-group', type: 'Group').tap do |new_group|
-      new_group.update!(traversal_ids: [new_group.id])
-    end
+    namespaces
+      .create!(name: 'other root group', path: 'other-root-group', type: 'Group', organization_id: organization.id)
+      .tap do |new_group|
+        new_group.update!(traversal_ids: [new_group.id])
+      end
   end
 
   let!(:project) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: root_group.id,
       project_namespace_id: root_group.id,
       name: 'group project',
@@ -42,12 +52,17 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, featur
 
   let!(:project_sub) do
     projects.create!(
-      namespace_id: sub_group.id, project_namespace_id: sub_group.id, name: 'subgroup project', path: 'subgroup-project'
+      organization_id: organization.id,
+      namespace_id: sub_group.id,
+      project_namespace_id: sub_group.id,
+      name: 'subgroup project',
+      path: 'subgroup-project'
     )
   end
 
   let!(:project_other) do
     projects.create!(
+      organization_id: organization.id,
       namespace_id: other_root_group.id,
       project_namespace_id: other_root_group.id,
       name: 'other group project',
