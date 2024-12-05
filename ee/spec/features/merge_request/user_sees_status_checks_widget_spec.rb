@@ -48,6 +48,8 @@ RSpec.describe 'Merge request > User sees status checks widget', :js, feature_ca
 
   context 'user is authorized' do
     before do
+      stub_feature_flags(mr_reports_tab: false)
+
       project.add_maintainer(user)
       sign_in(user)
 

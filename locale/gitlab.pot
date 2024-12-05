@@ -13452,6 +13452,9 @@ msgstr ""
 msgid "Collapse merge details"
 msgstr ""
 
+msgid "Collapse merge request reports"
+msgstr ""
+
 msgid "Collapse milestones"
 msgstr ""
 
@@ -22611,6 +22614,9 @@ msgid "Expand merge checks"
 msgstr ""
 
 msgid "Expand merge details"
+msgstr ""
+
+msgid "Expand merge request reports"
 msgstr ""
 
 msgid "Expand milestones"
@@ -33966,6 +33972,9 @@ msgid "Merge now and restart train"
 msgstr ""
 
 msgid "Merge options"
+msgstr ""
+
+msgid "Merge reports (%{reportsCount}):"
 msgstr ""
 
 msgid "Merge request"
