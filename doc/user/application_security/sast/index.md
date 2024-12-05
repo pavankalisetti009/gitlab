@@ -65,7 +65,7 @@ The following table lists the GitLab tiers in which each feature is available.
 | Feature                                                                                  | In Free & Premium      | In Ultimate            |
 |:-----------------------------------------------------------------------------------------|:-----------------------|:-----------------------|
 | Basic scanning with [open-source analyzers](#supported-languages-and-frameworks)         | **{check-circle}** Yes | **{check-circle}** Yes |
-| Downloadable [SAST JSON report](#output)                                                 | **{check-circle}** Yes | **{check-circle}** Yes |
+| Downloadable [SAST JSON report](#download-a-sast-report)                                 | **{check-circle}** Yes | **{check-circle}** Yes |
 | Cross-file, cross-function scanning with [GitLab Advanced SAST](gitlab_advanced_sast.md) | **{dotted-circle}** No | **{check-circle}** Yes |
 | New findings in [merge request widget](#merge-request-widget)                            | **{dotted-circle}** No | **{check-circle}** Yes |
 | New findings in [merge request changes view](#merge-request-changes-view)                | **{dotted-circle}** No | **{check-circle}** Yes |
@@ -87,10 +87,15 @@ Before you run a SAST analyzer in your instance, make sure you have the followin
 
 ## Supported languages and frameworks
 
-GitLab SAST supports scanning a variety of programming languages and frameworks.
+GitLab SAST uses different scanning technologies depending on which programming languages are found in your project's source code.
+Most languages are covered by [GitLab Advanced SAST](gitlab_advanced_sast.md) or by Semgrep-based scanning with [GitLab-managed rules](rules.md).
+
 After you [enable SAST](#configuration), the right set of analyzers runs automatically even if your project uses more than one language.
 
-For more information about our plans for language support in SAST, see the [category direction page](https://about.gitlab.com/direction/secure/static-analysis/sast/#language-support).
+For nearly all languages, GitLab SAST scans your source code directly, rather than requiring you to modify your build configuration or compile it to a binary first.
+Only the SpotBugs-based analyzer, which is used to scan Groovy code, requires compilation.
+
+For more information about our plans for language support in SAST, see the [category direction page](https://about.gitlab.com/direction/application_security_testing/static-analysis/sast/).
 
 | Language / framework         | [Analyzer](analyzers.md) used for scanning                                                                                                | Minimum supported GitLab version  |
 |------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
@@ -185,12 +190,12 @@ Advanced vulnerability tracking is available in a subset of the [supported langu
 
 - C, in the Semgrep-based only
 - C++, in the Semgrep-based only
-- C#, in the Advanced SAST and Semgrep-based analyzer only
-- Go, in the Advanced SAST and Semgrep-based analyzer only
-- Java, in the Advanced SAST and Semgrep-based analyzer only
-- JavaScript, in the Advanced SAST and Semgrep-based analyzer only
+- C#, in the Advanced SAST and Semgrep-based analyzers
+- Go, in the Advanced SAST and Semgrep-based analyzers
+- Java, in the Advanced SAST and Semgrep-based analyzers
+- JavaScript, in the Advanced SAST and Semgrep-based analyzers
 - PHP, in the Semgrep-based analyzer only
-- Python, in the Advanced SAST and Semgrep-based analyzer only
+- Python, in the Advanced SAST and Semgrep-based analyzers
 - Ruby, in the Semgrep-based analyzer only
 
 Support for more languages and analyzers is tracked in [this epic](https://gitlab.com/groups/gitlab-org/-/epics/5144).
@@ -240,12 +245,18 @@ A FIPS-compliant image is only available for the Advanced SAST and Semgrep-based
 WARNING:
 To use SAST in a FIPS-compliant manner, you must [exclude other analyzers from running](analyzers.md#customize-analyzers). If you use a FIPS-enabled image to run Advanced SAST or Semgrep in [a runner with non-root user](https://docs.gitlab.com/runner/install/kubernetes_helm_chart_configuration.html#run-with-non-root-user), you must update the `run_as_user` attribute under `runners.kubernetes.pod_security_context` to use the ID of `gitlab` user [created by the image](https://gitlab.com/gitlab-org/security-products/analyzers/semgrep/-/blob/a5d822401014f400b24450c92df93467d5bbc6fd/Dockerfile.fips#L58), which is `1000`.
 
-## Output
+## Vulnerability details
 
-SAST outputs the file `gl-sast-report.json` as a job artifact. The file contains details of all
-detected vulnerabilities. You can
-[download](../../../ci/jobs/job_artifacts.md#download-job-artifacts) the file for processing
-outside GitLab.
+SAST vulnerabilities are named according to the primary Common Weakness Enumeration (CWE) identifier for the discovered vulnerability.
+Read the description of each vulnerability finding to learn more about the specific issue that the scanner has detected.
+
+For more information on SAST coverage, see [SAST rules](rules.md).
+
+## Download a SAST report
+
+Each SAST analyzer outputs a JSON report as a job artifact.
+The file contains details of all detected vulnerabilities.
+You can [download](../../../ci/jobs/job_artifacts.md#download-job-artifacts) the file for processing outside GitLab.
 
 For more information, see:
 
@@ -254,11 +265,16 @@ For more information, see:
 
 ## View SAST results
 
-The [SAST report file](#output) is processed by GitLab and the details are shown in the UI:
+DETAILS:
+**Tier:** Ultimate
+**Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
-- Merge request widget
-- Merge request changes view
-- Vulnerability report
+In Ultimate, the [SAST report file](#download-a-sast-report) is processed by GitLab and the details are shown in the UI:
+
+- [Merge request widget](#merge-request-widget)
+- [Merge request changes view](#merge-request-changes-view)
+- [Vulnerability report](../vulnerability_report/index.md)
+- [Pipeline security report](../vulnerability_report/pipeline.md)
 
 A pipeline consists of multiple jobs, including SAST and DAST scanning. If any job fails to finish
 for any reason, the security dashboard does not show SAST scanner output. For example, if the SAST
@@ -267,21 +283,17 @@ the analyzer outputs an [exit code](../../../development/integrations/secure.md#
 
 ### Merge request widget
 
-DETAILS:
-**Tier:** Ultimate
-**Offering:** GitLab.com, Self-managed, GitLab Dedicated
+SAST results display in the merge request widget area if a report from the target branch is available for comparison.
+The merge request widget shows:
 
-SAST results display in the merge request widget area if a report from the target
-branch is available for comparison. The merge request widget displays SAST results and resolutions that
-were introduced by the changes made in the merge request.
+- new SAST findings that are introduced by the MR.
+- existing findings that are resolved by the MR.
+
+The results are compared using [Advanced Vulnerability Tracking](#advanced-vulnerability-tracking) whenever it is available.
 
 ![Security Merge request widget](img/sast_mr_widget_v16_7.png)
 
 ### Merge request changes view
-
-DETAILS:
-**Tier:** Ultimate
-**Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
 > - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/10959) in GitLab 16.6 with a [flag](../../../administration/feature_flags.md) named `sast_reports_in_inline_diff`. Disabled by default.
 > - Enabled by default in GitLab 16.8.
@@ -311,6 +323,8 @@ To configure SAST for a project you can:
 You can enable SAST across many projects by [enforcing scan execution](../index.md#enforce-scan-execution).
 
 To configure Advanced SAST (available in GitLab Ultimate only), follow these [instructions](gitlab_advanced_sast.md#configuration).
+
+You can [change configuration variables](index.md#available-cicd-variables) or [customize detection rules](customize_rulesets.md) if needed, but GitLab SAST is designed to be used in its default configuration.
 
 ### Configure SAST in your CI/CD YAML
 
