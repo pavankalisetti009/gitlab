@@ -5,20 +5,9 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::DiscoverDuoProComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
-  let(:license) { build_stubbed(:license, plan: License::PREMIUM_PLAN) }
-  let(:duo_buy_now_url) do
-    host = ::Gitlab::Routing.url_helpers.subscription_portal_url
-    id = namespace.id
-    "#{host}/subscriptions/new?gl_namespace_id=#{id}&plan_id=plan_id&subscription_id=0000&transaction=duo_pro_seats"
-  end
+  let(:duo_buy_now_url) { ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(namespace.id) }
 
   subject(:component) { render_inline(described_class.new(namespace: namespace)) && page_scope }
-
-  before do
-    allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
-      allow(instance).to receive(:execute).and_return([Hashie::Mash.new({ id: "plan_id", code: "premium" })])
-    end
-  end
 
   context 'when rendering the hero section' do
     let(:page_scope) { find_by_testid('hero-section') }
@@ -110,16 +99,6 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoProComponent, :aggregate_failures
         attributes = { action: 'click_buy_now', label: cta_tracking_label }
         is_expected.to have_tracking(attributes.merge(testid: 'buy-now-top'))
         is_expected.to have_tracking(attributes.merge(testid: 'buy-now-bottom'))
-      end
-
-      context 'when duo_pro_buy_now_cdot_links is disabled' do
-        before do
-          stub_feature_flags(duo_pro_buy_now_cdot_links: false)
-        end
-
-        it 'has correct track label for the buy now links for the trial status' do
-          is_expected.to have_selector("a[href='#{group_settings_gitlab_duo_path(namespace)}']", count: 2)
-        end
       end
     end
 
