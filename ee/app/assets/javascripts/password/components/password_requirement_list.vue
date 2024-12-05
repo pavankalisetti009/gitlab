@@ -8,6 +8,7 @@ import { THOUSAND } from '~/lib/utils/constants';
 
 import {
   COMMON,
+  USER_INFO,
   INVALID_FORM_CLASS,
   INVALID_INPUT_CLASS,
   PASSWORD_REQUIREMENTS_ID,
@@ -44,6 +45,21 @@ export default {
     };
   },
   computed: {
+    form() {
+      return this.passwordInputElement.form;
+    },
+    firstName() {
+      return this.form.elements.new_user_first_name;
+    },
+    lastName() {
+      return this.form.elements.new_user_last_name;
+    },
+    username() {
+      return this.form.elements.new_user_username;
+    },
+    email() {
+      return this.form.elements.new_user_email;
+    },
     anyInvalidRule() {
       return this.ruleList.some((rule) => !rule.valid) && !this.isEmptyPasswordLegal;
     },
@@ -70,23 +86,45 @@ export default {
     },
   },
   mounted() {
-    const formElement = this.passwordInputElement.form;
-
     this.passwordInputElement.setAttribute('aria-describedby', PASSWORD_REQUIREMENTS_ID);
     this.passwordInputElement.addEventListener('input', () => {
       this.password = this.passwordInputElement.value;
     });
 
-    formElement.querySelector('[type="submit"]').addEventListener('click', () => {
+    if (this.firstName) {
+      this.firstName.addEventListener('input', () => {
+        this.checkValidity(this.findRule(USER_INFO));
+      });
+    }
+
+    if (this.lastName) {
+      this.lastName.addEventListener('input', () => {
+        this.checkValidity(this.findRule(USER_INFO));
+      });
+    }
+
+    if (this.username) {
+      this.username.addEventListener('input', () => {
+        this.checkValidity(this.findRule(USER_INFO));
+      });
+    }
+
+    if (this.email) {
+      this.email.addEventListener('input', () => {
+        this.checkValidity(this.findRule(USER_INFO));
+      });
+    }
+
+    this.form.querySelector('[type="submit"]').addEventListener('click', () => {
       this.submitted = true;
       if (this.anyInvalidRule) {
         this.passwordInputElement.focus();
         this.passwordInputElement.classList.add(INVALID_INPUT_CLASS);
-        formElement.classList.add(INVALID_FORM_CLASS);
+        this.form.classList.add(INVALID_FORM_CLASS);
       }
     });
 
-    formElement.addEventListener('submit', (e) => {
+    this.form.addEventListener('submit', (e) => {
       if (this.anyInvalidRule) {
         e.preventDefault();
         e.stopPropagation();
@@ -94,8 +132,8 @@ export default {
     });
   },
   methods: {
-    validatePasswordComplexity(password) {
-      UsersApi.validatePasswordComplexity(password)
+    validatePasswordComplexity() {
+      UsersApi.validatePasswordComplexity(this.passwordComplexityParams())
         .then(({ data }) =>
           entries(data).forEach(([key, value]) => this.setRuleValidity(key, !value)),
         )
@@ -105,11 +143,11 @@ export default {
           }),
         );
     },
-    debouncedComplexityValidation: debounce(function complexityValidation(password) {
-      this.validatePasswordComplexity(password);
+    debouncedComplexityValidation: debounce(function complexityValidation() {
+      this.validatePasswordComplexity();
     }, THOUSAND),
     checkValidity(rule) {
-      if (rule.type === COMMON) {
+      if ([COMMON, USER_INFO].includes(rule.type)) {
         this.checkComplexity(rule);
       } else {
         this.setRuleValidity(rule.type, rule.reg.test(this.password));
@@ -117,7 +155,7 @@ export default {
     },
     checkComplexity(rule) {
       if (this.password) {
-        this.debouncedComplexityValidation(this.password);
+        this.debouncedComplexityValidation();
       } else {
         this.setRuleValidity(rule.type, false);
       }
@@ -145,6 +183,15 @@ export default {
       return {
         [this.$options.RED_TEXT_CLASS]: this.submitted && !rule.valid,
         [this.$options.GREEN_TEXT_CLASS]: rule.valid,
+      };
+    },
+    passwordComplexityParams() {
+      return {
+        ...(this.firstName && { first_name: this.firstName.value }),
+        ...(this.lastName && { last_name: this.lastName.value }),
+        ...(this.username && { username: this.username.value }),
+        ...(this.email && { email: this.email.value }),
+        password: this.password,
       };
     },
   },

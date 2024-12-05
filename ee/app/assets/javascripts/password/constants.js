@@ -2,6 +2,7 @@ import { s__ } from '~/locale';
 
 export const LENGTH = 'length';
 export const COMMON = 'common';
+export const USER_INFO = 'user_info';
 export const NUMBER = 'number';
 export const UPPERCASE = 'uppercase';
 export const LOWERCASE = 'lowercase';
@@ -25,6 +26,9 @@ export const PASSWORD_RULE_MAP = {
   },
   [COMMON]: {
     text: s__('Password|cannot use common phrases (e.g. "password")'),
+  },
+  [USER_INFO]: {
+    text: s__('Password|cannot include your name, username, or email'),
   },
   [NUMBER]: {
     reg: /\p{N}/u,
