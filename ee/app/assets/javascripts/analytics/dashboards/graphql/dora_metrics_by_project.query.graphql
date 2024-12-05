@@ -9,7 +9,7 @@ query doraMetricsByProjectQuery(
 ) {
   group(fullPath: $fullPath) {
     id
-    projects(after: $after, includeSubgroups: true) {
+    projects(after: $after) {
       pageInfo {
         endCursor
         hasNextPage
