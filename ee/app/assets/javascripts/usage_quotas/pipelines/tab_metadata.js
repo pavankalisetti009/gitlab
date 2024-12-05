@@ -1,6 +1,7 @@
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from 'ee/usage_quotas/shared/provider';
+import { isNumeric } from '~/lib/utils/number_utils';
 import { PIPELINES_TAB_METADATA_EL_SELECTOR } from '../constants';
 import PipelineUsageApp from './components/app.vue';
 
@@ -37,9 +38,13 @@ export const parseProvideData = (el) => {
     ciMinutesPurchasedMinutesUsed: parseInt(ciMinutesPurchasedMinutesUsed, 10),
     ciMinutesMonthlyMinutesUsedPercentage: parseInt(ciMinutesMonthlyMinutesUsedPercentage, 10),
     ciMinutesPurchasedMinutesUsedPercentage: parseInt(ciMinutesPurchasedMinutesUsedPercentage, 10),
-    // Limit and Usage could be a number or a string (e.g. `Unlimited`) so we shouldn't parse these
-    ciMinutesMonthlyMinutesLimit,
-    ciMinutesPurchasedMinutesLimit,
+    // Limit could be a number or a string (e.g. `Unlimited`) so we parseInt these conditionally
+    ciMinutesMonthlyMinutesLimit: isNumeric(ciMinutesMonthlyMinutesLimit)
+      ? parseInt(ciMinutesMonthlyMinutesLimit, 10)
+      : ciMinutesMonthlyMinutesLimit,
+    ciMinutesPurchasedMinutesLimit: isNumeric(ciMinutesPurchasedMinutesLimit)
+      ? parseInt(ciMinutesPurchasedMinutesLimit, 10)
+      : ciMinutesPurchasedMinutesLimit,
     buyAdditionalMinutesPath,
     buyAdditionalMinutesTarget,
   };
