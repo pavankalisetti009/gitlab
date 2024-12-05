@@ -8,6 +8,7 @@ code_generations:
     - codestral
     - deepseekcoder
     - mistral
+    - mixtral
     - llama3
     - claude_3
     - gpt
@@ -21,6 +22,7 @@ code_completions:
     - codestral
     - deepseekcoder
     - mistral
+    - mixtral
     - llama3
     - claude_3
     - gpt
@@ -58,5 +60,6 @@ duo_chat_fix_code:
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
+    - mixtral
     - claude_3
     - gpt

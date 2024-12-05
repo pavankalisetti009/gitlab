@@ -5,6 +5,7 @@ module Admin
     module SelfHostedModelsHelper
       MODEL_NAME_MAPPER = {
         "mistral" => "Mistral",
+        "mixtral" => "Mixtral",
         "llama3" => "Llama 3",
         "codegemma" => "CodeGemma",
         "codestral" => "Mistral Codestral",
