@@ -73,7 +73,7 @@ support the following features:
 - [Scan projects](index.md#supported-languages-and-frameworks)
 - Multi-project support
 - [Offline support](index.md#running-sast-in-an-offline-environment)
-- [Output results in JSON report format](index.md#output)
+- [Output results in JSON report format](index.md#download-a-sast-report)
 - [SELinux support](index.md#running-sast-in-selinux)
 
 ## Post analyzers
