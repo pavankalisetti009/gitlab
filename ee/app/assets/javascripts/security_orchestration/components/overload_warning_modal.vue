@@ -12,7 +12,7 @@ export default {
     },
     title: s__('ScanExecutionPolicy|Potential overload for infrastructure'),
     footerTitle: s__(
-      'ScanExecutionPolicy|Are you sure you want to create merge request fot this policy?',
+      'ScanExecutionPolicy|Are you sure you want to create merge request for this policy?',
     ),
     content: s__(
       'ScanExecutionPolicy|This scan execution policy will generate a large number of pipelines, which can have a significant performance impact. To reduce potential performance issues, consider creating separate policies for smaller subsets of projects.',
