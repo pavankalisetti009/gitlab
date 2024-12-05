@@ -14,7 +14,7 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
 
   describe 'GET /:project/-/pipelines' do
     describe 'when namespace is in read-only mode' do
-      it 'does not render Run pipeline link' do
+      it 'does not render New pipeline link' do
         allow_next_found_instance_of(Namespace) do |instance|
           allow(instance).to receive(:read_only?).and_return(true)
         end
@@ -22,7 +22,7 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
         visit project_pipelines_path(project)
         wait_for_requests
         expect(page).to have_content('Show Pipeline ID')
-        expect(page).not_to have_link('Run pipeline')
+        expect(page).not_to have_link('New pipeline')
       end
     end
   end
@@ -55,7 +55,7 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
       end
 
       subject(:run_pipeline) do
-        find_by_testid('run-pipeline-button', text: 'Run pipeline').click
+        find_by_testid('run-pipeline-button', text: 'New pipeline').click
 
         wait_for_requests
       end
