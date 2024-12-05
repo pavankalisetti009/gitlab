@@ -590,6 +590,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
             expect(result_rule).to be_report_approver
             expect(result_rule.report_type).to eq(report_type.to_s)
             expect(result_rule.orchestration_policy_idx).to be 1
+            expect(result_rule.approval_policy_action_idx).to be 0
             expect(result_rule.approval_policy_rule_id).to eq(approval_policy_rule.id)
             expect(result_rule.scanners).to contain_exactly('sast')
             expect(result_rule.severity_levels).to contain_exactly('high')
@@ -718,7 +719,10 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
       subject { create(:approval_project_rule, :scan_finding) }
 
       it 'is invalid when name not unique within scan result policy, rule type and project' do
-        is_expected.to validate_uniqueness_of(:name).scoped_to([:project_id, :rule_type, :security_orchestration_policy_configuration_id, :orchestration_policy_idx])
+        is_expected.to validate_uniqueness_of(:name).scoped_to([
+          :project_id, :rule_type, :security_orchestration_policy_configuration_id,
+          :orchestration_policy_idx, :approval_policy_action_idx
+        ])
       end
 
       context 'when no protected branches are selected and is not applied to all protected branches' do

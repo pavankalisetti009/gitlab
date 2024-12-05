@@ -111,7 +111,15 @@ class ApprovalWrappedRule
     merge_request
       .approval_rules.for_policy_configuration(policy_configuration_id)
       .for_policy_index(approval_rule.orchestration_policy_idx)
-      .select(:report_type, :name, :approvals_required)
+      .select(:report_type, :name, :approvals_required, :approval_policy_action_idx)
+  end
+
+  def policy_has_multiple_actions?
+    policy_configuration = approval_rule.security_orchestration_policy_configuration
+    return false unless policy_configuration
+    return false unless Feature.enabled?(:multiple_approval_actions, policy_configuration.source)
+
+    scan_result_policies.any? { |rule| rule.approval_policy_action_idx > 0 }
   end
 
   # Number of approvals remaining (excluding existing approvals)
@@ -138,7 +146,11 @@ class ApprovalWrappedRule
   def name
     return approval_rule.name unless approval_rule.from_scan_result_policy?
 
-    approval_rule.policy_name
+    if policy_has_multiple_actions?
+      "#{approval_rule.policy_name} - Action #{approval_rule.approval_policy_action_idx + 1}"
+    else
+      approval_rule.policy_name
+    end
   end
 
   private

@@ -16,7 +16,11 @@ module Approvals
 
     def grouped_merge_request_rules
       approval_rules.group_by do |rule|
-        [rule.security_orchestration_policy_configuration_id, rule.orchestration_policy_idx]
+        [
+          rule.security_orchestration_policy_configuration_id,
+          rule.orchestration_policy_idx,
+          rule.approval_policy_action_idx
+        ]
       end
     end
 

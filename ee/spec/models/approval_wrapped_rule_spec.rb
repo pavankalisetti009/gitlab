@@ -265,6 +265,49 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
       expect(rule.report_type).to eq('scan_finding')
       expect(rule.name).to eq(scan_finding_approval_rule.name)
       expect(rule.approvals_required).to eq(scan_finding_approval_rule.approvals_required)
+      expect(rule.approval_policy_action_idx).to eq(scan_finding_approval_rule.approval_policy_action_idx)
+    end
+  end
+
+  describe '#policy_has_multiple_actions?' do
+    let_it_be(:policy_configuration) do
+      create(:security_orchestration_policy_configuration, project: merge_request.project)
+    end
+
+    let_it_be(:scan_finding_approval_rule) do
+      create(:approval_merge_request_rule,
+        report_type: :scan_finding,
+        merge_request: merge_request,
+        orchestration_policy_idx: 0,
+        approval_policy_action_idx: 0,
+        security_orchestration_policy_configuration: policy_configuration
+      )
+    end
+
+    subject { described_class.new(merge_request, scan_finding_approval_rule).policy_has_multiple_actions? }
+
+    it { is_expected.to eq(false) }
+
+    context 'when multiple_approval_actions is disabled' do
+      before do
+        stub_feature_flags(multiple_approval_actions: false)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'with multiple approval_policy_action_idx' do
+      before do
+        create(:approval_merge_request_rule,
+          report_type: :scan_finding,
+          merge_request: merge_request,
+          orchestration_policy_idx: 0,
+          approval_policy_action_idx: 1,
+          security_orchestration_policy_configuration: policy_configuration
+        )
+      end
+
+      it { is_expected.to eq(true) }
     end
   end
 
@@ -403,15 +446,47 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
 
   describe '#name' do
     let(:rule_name) { 'approval rule 2' }
-    let(:rule) { create(:approval_merge_request_rule, report_type: report_type, name: rule_name) }
+    let(:rule) do
+      create(:approval_merge_request_rule,
+        merge_request: merge_request,
+        report_type: report_type,
+        name: rule_name
+      )
+    end
 
     context 'with report_type set to scan_finding' do
       let(:report_type) { :scan_finding }
       let(:expected_rule_name) { 'approval rule' }
+      let(:policy_configuration) { create(:security_orchestration_policy_configuration, project: merge_request.project) }
+
+      let(:rule) do
+        create(:approval_merge_request_rule,
+          merge_request: merge_request,
+          security_orchestration_policy_configuration: policy_configuration,
+          report_type: report_type,
+          name: rule_name
+        )
+      end
 
       it 'returns rule name without the sequential notation' do
         expect(approval_wrapped_rule.name).not_to eq(rule_name)
         expect(approval_wrapped_rule.name).to eq(expected_rule_name)
+      end
+
+      context 'when policy has multiple actions' do
+        before do
+          create(:approval_merge_request_rule,
+            report_type: report_type,
+            merge_request: merge_request,
+            name: rule_name,
+            orchestration_policy_idx: rule.orchestration_policy_idx,
+            security_orchestration_policy_configuration: policy_configuration,
+            approval_policy_action_idx: 1)
+        end
+
+        it 'returns rule name with action index suffix' do
+          expect(approval_wrapped_rule.name).to eq("#{expected_rule_name} - Action 1")
+        end
       end
     end
 

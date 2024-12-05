@@ -12,6 +12,11 @@ class ApprovalProjectRule < ApplicationRecord
   NEWLY_DETECTED_STATES = { NEWLY_DETECTED.to_sym => 0, NEW_NEEDS_TRIAGE.to_sym => 5, NEW_DISMISSED.to_sym => 6 }.freeze
   APPROVAL_VULNERABILITY_STATES = ::Enums::Vulnerability.vulnerability_states.merge(NEWLY_DETECTED_STATES).freeze
   APPROVAL_PROJECT_RULE_CREATION_EVENT = 'approval_project_rule_created'
+  REPORT_APPROVER_ATTRIBUTES = %w[
+    approvals_required name orchestration_policy_idx scanners severity_levels
+    vulnerability_states vulnerabilities_allowed security_orchestration_policy_configuration_id
+    scan_result_policy_id approval_policy_rule_id approval_policy_action_idx
+  ].freeze
 
   belongs_to :project
   has_and_belongs_to_many :protected_branches
@@ -53,7 +58,12 @@ class ApprovalProjectRule < ApplicationRecord
   alias_method :code_owner, :code_owner?
 
   validates :name, uniqueness: { scope: [:project_id, :rule_type] }, unless: :scan_finding?
-  validates :name, uniqueness: { scope: [:project_id, :rule_type, :security_orchestration_policy_configuration_id, :orchestration_policy_idx] }, if: :scan_finding?
+  validates :name, uniqueness: {
+    scope: [
+      :project_id, :rule_type, :security_orchestration_policy_configuration_id,
+      :orchestration_policy_idx, :approval_policy_action_idx
+    ]
+  }, if: :scan_finding?
   validate :validate_security_report_approver_name
   validates :rule_type, uniqueness: { scope: :project_id, message: proc { _('any-approver for the project already exists') } }, if: :any_approver?
   validates :scanners, if: :scanners_changed?, inclusion: { in: SUPPORTED_SCANNERS }
@@ -179,7 +189,7 @@ class ApprovalProjectRule < ApplicationRecord
 
   def report_approver_attributes
     attributes
-      .slice('approvals_required', 'name', 'orchestration_policy_idx', 'scanners', 'severity_levels', 'vulnerability_states', 'vulnerabilities_allowed', 'security_orchestration_policy_configuration_id', 'scan_result_policy_id', 'approval_policy_rule_id')
+      .slice(*REPORT_APPROVER_ATTRIBUTES)
       .merge(
         users: users,
         groups: groups,
