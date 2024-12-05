@@ -9,7 +9,6 @@ import TasksByTypeFilters from 'ee/analytics/cycle_analytics/components/tasks_by
 import {
   TASKS_BY_TYPE_SUBJECT_ISSUE,
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-  TASKS_BY_TYPE_FILTERS,
 } from 'ee/analytics/cycle_analytics/constants';
 import createStore from 'ee/analytics/cycle_analytics/store';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -54,29 +53,22 @@ describe('TasksByTypeFilters', () => {
       expect(findSubjectFilters().props().value).toBe(TASKS_BY_TYPE_SUBJECT_ISSUE);
     });
 
-    it('emits the `update-filter` event when a subject filter is clicked', () => {
-      expect(wrapper.emitted('update-filter')).toBeUndefined();
+    it('emits the `set-subject` event when a subject filter is clicked', () => {
+      expect(wrapper.emitted('set-subject')).toBeUndefined();
 
       findSubjectFilters().vm.$emit('input', TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
 
-      expect(wrapper.emitted('update-filter').length).toBe(1);
-      expect(wrapper.emitted('update-filter')[0]).toEqual([
-        {
-          filter: TASKS_BY_TYPE_FILTERS.SUBJECT,
-          value: TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-        },
-      ]);
+      expect(wrapper.emitted('set-subject').length).toBe(1);
+      expect(wrapper.emitted('set-subject')[0][0]).toEqual(TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
     });
 
-    it('emits the `update-filter` event when a label is selected', () => {
-      expect(wrapper.emitted('update-filter')).toBeUndefined();
+    it('emits the `toggle-label` event when a label is selected', () => {
+      expect(wrapper.emitted('toggle-label')).toBeUndefined();
 
       findCollapsibleListbox().vm.$emit('select', groupLabels[0].title);
 
-      expect(wrapper.emitted('update-filter').length).toBe(1);
-      expect(wrapper.emitted('update-filter')[0]).toEqual([
-        { filter: TASKS_BY_TYPE_FILTERS.LABEL, value: groupLabels[0] },
-      ]);
+      expect(wrapper.emitted('toggle-label').length).toBe(1);
+      expect(wrapper.emitted('toggle-label')[0][0]).toEqual(groupLabels[0]);
     });
 
     it('renders the count of currently selected labels', () => {
@@ -116,7 +108,7 @@ describe('TasksByTypeFilters', () => {
 
     it('should not allow adding a label', () => {
       findCollapsibleListbox().vm.$emit('select', [...selectedLabelNames, groupLabels[2].title]);
-      expect(wrapper.emitted('update-filter')).toBeUndefined();
+      expect(wrapper.emitted('toggle-label')).toBeUndefined();
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Only 2 labels can be selected at this time',
         variant: VARIANT_INFO,
@@ -125,10 +117,8 @@ describe('TasksByTypeFilters', () => {
 
     it('should allow removing a label', () => {
       findCollapsibleListbox().vm.$emit('select', [groupLabels[0].title]);
-      expect(wrapper.emitted('update-filter').length).toBe(1);
-      expect(wrapper.emitted('update-filter')[0]).toEqual([
-        { filter: TASKS_BY_TYPE_FILTERS.LABEL, value: groupLabels[1] },
-      ]);
+      expect(wrapper.emitted('toggle-label').length).toBe(1);
+      expect(wrapper.emitted('toggle-label')[0][0]).toEqual(groupLabels[1]);
     });
   });
 

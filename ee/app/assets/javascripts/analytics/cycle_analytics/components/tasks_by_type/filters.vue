@@ -7,11 +7,7 @@ import { removeFlash } from '~/analytics/shared/utils';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__, n__, sprintf } from '~/locale';
 import { getGroupLabels } from 'ee/api/analytics_api';
-import {
-  TASKS_BY_TYPE_FILTERS,
-  TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS,
-  TASKS_BY_TYPE_MAX_LABELS,
-} from '../../constants';
+import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_MAX_LABELS } from '../../constants';
 import { DATA_REFETCH_DELAY } from '../../../shared/constants';
 
 export default {
@@ -130,10 +126,7 @@ export default {
         return;
       }
 
-      this.$emit('update-filter', {
-        filter: TASKS_BY_TYPE_FILTERS.LABEL,
-        value: this.findLabel(title),
-      });
+      this.$emit('toggle-label', this.findLabel(title));
     },
     createMaxLabelsSelectedAlert() {
       const { maxLabels } = this;
@@ -147,7 +140,6 @@ export default {
       this.searchTerm = value;
     },
   },
-  TASKS_BY_TYPE_FILTERS,
 };
 </script>
 <template>
@@ -187,10 +179,7 @@ export default {
             :value="subjectFilter"
             :options="subjectFilterOptions"
             data-testid="type-of-work-filters-subject"
-            @input="
-              (value) =>
-                $emit('update-filter', { filter: $options.TASKS_BY_TYPE_FILTERS.SUBJECT, value })
-            "
+            @input="(value) => $emit('set-subject', value)"
           />
         </div>
       </template>

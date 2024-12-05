@@ -8,15 +8,13 @@ import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
 import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/type_of_work_charts_loader.vue';
 import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/type_of_work_charts.vue';
-import typeOfWorkModule from 'ee/analytics/cycle_analytics/store/modules/type_of_work';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-  TASKS_BY_TYPE_FILTERS,
   TASKS_BY_TYPE_SUBJECT_ISSUE,
 } from 'ee/analytics/cycle_analytics/constants';
 import { createAlert } from '~/alert';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
-import { rawTasksByTypeData, groupLabelNames, endpoints } from '../mock_data';
+import { rawTasksByTypeData, groupLabels, groupLabelNames, endpoints } from '../mock_data';
 
 Vue.use(Vuex);
 jest.mock('~/alert');
@@ -24,9 +22,6 @@ jest.mock('~/alert');
 describe('TypeOfWorkChartsLoader', () => {
   let wrapper;
   let mock;
-
-  const fetchTopRankedGroupLabels = jest.fn();
-  const setTasksByTypeFilters = jest.fn();
 
   const cycleAnalyticsRequestParams = {
     project_ids: null,
@@ -37,7 +32,7 @@ describe('TypeOfWorkChartsLoader', () => {
     assignee_username: null,
   };
 
-  const createStore = (state) =>
+  const createStore = () =>
     new Vuex.Store({
       state: {
         namespace: {
@@ -49,30 +44,11 @@ describe('TypeOfWorkChartsLoader', () => {
       getters: {
         cycleAnalyticsRequestParams: () => cycleAnalyticsRequestParams,
       },
-      modules: {
-        typeOfWork: {
-          ...typeOfWorkModule,
-          state: {
-            subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
-            ...typeOfWorkModule.state,
-            ...state,
-          },
-          getters: {
-            ...typeOfWorkModule.getters,
-            selectedLabelNames: () => groupLabelNames,
-          },
-          actions: {
-            ...typeOfWorkModule.actions,
-            fetchTopRankedGroupLabels,
-            setTasksByTypeFilters,
-          },
-        },
-      },
     });
 
-  const createWrapper = ({ state = {} } = {}) => {
+  const createWrapper = () => {
     wrapper = shallowMount(TypeOfWorkChartsLoader, {
-      store: createStore(state),
+      store: createStore(),
     });
 
     return waitForPromises();
@@ -91,7 +67,7 @@ describe('TypeOfWorkChartsLoader', () => {
 
   describe('when loading', () => {
     beforeEach(() => {
-      createWrapper({ state: { isLoading: true } });
+      createWrapper();
     });
 
     it('renders skeleton loader', () => {
@@ -101,17 +77,27 @@ describe('TypeOfWorkChartsLoader', () => {
 
   describe('with data', () => {
     beforeEach(() => {
+      mock.onGet(endpoints.tasksByTypeTopLabelsData).replyOnce(HTTP_STATUS_OK, groupLabels);
       mock.onGet(endpoints.tasksByTypeData).replyOnce(HTTP_STATUS_OK, rawTasksByTypeData);
       return createWrapper();
     });
 
-    it('calls the `fetchTopRankedGroupLabels` action', () => {
-      expect(fetchTopRankedGroupLabels).toHaveBeenCalled();
+    it('fetches top group labels', () => {
+      expect(mock.history.get.length).toBe(2);
+      expect(mock.history.get[0]).toEqual(
+        expect.objectContaining({
+          url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type/top_labels',
+          params: {
+            ...cycleAnalyticsRequestParams,
+            subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
+          },
+        }),
+      );
     });
 
     it('fetches tasks by type', () => {
-      expect(mock.history.get.length).toBe(1);
-      expect(mock.history.get[0]).toEqual(
+      expect(mock.history.get.length).toBe(2);
+      expect(mock.history.get[1]).toEqual(
         expect.objectContaining({
           url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type',
           params: {
@@ -124,35 +110,51 @@ describe('TypeOfWorkChartsLoader', () => {
     });
 
     it('renders the type of work charts', () => {
-      expect(findTypeOfWorkCharts().exists()).toBe(true);
+      expect(findTypeOfWorkCharts().props()).toEqual(
+        expect.objectContaining({
+          subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
+          selectedLabelNames: groupLabelNames,
+        }),
+      );
     });
 
     it('does not render the loading icon', () => {
       expect(findLoader().exists()).toBe(false);
     });
 
-    describe('when update filter is emitted', () => {
-      const payload = {
-        filter: TASKS_BY_TYPE_FILTERS.SUBJECT,
-        value: TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-      };
-
+    describe('when `toggle-label` is emitted', () => {
       beforeEach(() => {
-        findTypeOfWorkCharts(wrapper).vm.$emit('update-filter', payload);
-      });
-
-      it('calls the setTasksByTypeFilters method', () => {
-        expect(setTasksByTypeFilters).toHaveBeenCalledWith(expect.any(Object), payload);
+        findTypeOfWorkCharts(wrapper).vm.$emit('toggle-label', groupLabels[0]);
       });
 
       it('refetches the tasks by type', () => {
-        expect(mock.history.get.length).toBe(2);
-        expect(mock.history.get[1]).toEqual(
+        expect(mock.history.get.length).toBe(3);
+        expect(mock.history.get[2]).toEqual(
           expect.objectContaining({
             url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type',
             params: {
               ...cycleAnalyticsRequestParams,
               subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
+              label_names: groupLabelNames.slice(1),
+            },
+          }),
+        );
+      });
+    });
+
+    describe('when `set-subject` is emitted', () => {
+      beforeEach(() => {
+        findTypeOfWorkCharts(wrapper).vm.$emit('set-subject', TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
+      });
+
+      it('refetches the tasks by type', () => {
+        expect(mock.history.get.length).toBe(3);
+        expect(mock.history.get[2]).toEqual(
+          expect.objectContaining({
+            url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type',
+            params: {
+              ...cycleAnalyticsRequestParams,
+              subject: TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
               label_names: groupLabelNames,
             },
           }),
@@ -161,8 +163,61 @@ describe('TypeOfWorkChartsLoader', () => {
     });
   });
 
+  describe('when fetch top labels returns 200 with a data error', () => {
+    beforeEach(() => {
+      mock
+        .onGet(endpoints.tasksByTypeTopLabelsData)
+        .replyOnce(HTTP_STATUS_OK, { error: 'Too much data' });
+      return createWrapper();
+    });
+
+    it('does not show an alert', () => {
+      expect(createAlert).not.toHaveBeenCalled();
+    });
+
+    it('does not request tasks by type', () => {
+      expect(mock.history.get.length).toBe(1);
+      expect(mock.history.get[0]).toEqual(
+        expect.objectContaining({
+          url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type/top_labels',
+        }),
+      );
+    });
+  });
+
+  describe('when fetch top labels throws an error', () => {
+    beforeEach(() => {
+      mock
+        .onGet(endpoints.tasksByTypeTopLabelsData)
+        .replyOnce(HTTP_STATUS_NOT_FOUND, { error: 'error' });
+      return createWrapper();
+    });
+
+    it('shows an error alert', () => {
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'There was an error fetching the top labels for the selected group',
+      });
+    });
+
+    it('does not request tasks by type', () => {
+      expect(mock.history.get.length).toBe(1);
+      expect(mock.history.get[0]).toEqual(
+        expect.objectContaining({
+          url: '/fake/group/path/-/analytics/type_of_work/tasks_by_type/top_labels',
+        }),
+      );
+    });
+
+    it('passes an error message to the type of work charts', () => {
+      expect(findTypeOfWorkCharts().props().errorMessage).toEqual(
+        'Request failed with status code 404',
+      );
+    });
+  });
+
   describe('when tasks by type returns 200 with a data error', () => {
     beforeEach(() => {
+      mock.onGet(endpoints.tasksByTypeTopLabelsData).replyOnce(HTTP_STATUS_OK, groupLabels);
       mock.onGet(endpoints.tasksByTypeData).replyOnce(HTTP_STATUS_OK, { error: 'Too much data' });
       return createWrapper();
     });
@@ -174,6 +229,7 @@ describe('TypeOfWorkChartsLoader', () => {
 
   describe('when tasks by type throws an error', () => {
     beforeEach(() => {
+      mock.onGet(endpoints.tasksByTypeTopLabelsData).replyOnce(HTTP_STATUS_OK, groupLabels);
       mock.onGet(endpoints.tasksByTypeData).replyOnce(HTTP_STATUS_NOT_FOUND, { error: 'error' });
       return createWrapper();
     });

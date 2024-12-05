@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import { GlAlert } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
@@ -7,10 +8,8 @@ import TasksByTypeChart from 'ee/analytics/cycle_analytics/components/tasks_by_t
 import TasksByTypeFilters from 'ee/analytics/cycle_analytics/components/tasks_by_type/filters.vue';
 import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/type_of_work_charts.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
-import typeOfWorkModule from 'ee/analytics/cycle_analytics/store/modules/type_of_work';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-  TASKS_BY_TYPE_FILTERS,
   TASKS_BY_TYPE_SUBJECT_ISSUE,
 } from 'ee/analytics/cycle_analytics/constants';
 import { tasksByTypeData, groupLabelNames } from '../mock_data';
@@ -33,20 +32,6 @@ describe('TypeOfWorkCharts', () => {
         selectedProjectIds: () => [],
         ...rootGetters,
       },
-      modules: {
-        typeOfWork: {
-          ...typeOfWorkModule,
-          state: {
-            subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
-            ...typeOfWorkModule.state,
-            ...state,
-          },
-          getters: {
-            ...typeOfWorkModule.getters,
-            selectedLabelNames: () => groupLabelNames,
-          },
-        },
-      },
     });
 
   const createWrapper = ({ state = {}, rootGetters = {}, props = {} } = {}) => {
@@ -58,6 +43,8 @@ describe('TypeOfWorkCharts', () => {
       },
       propsData: {
         chartData: tasksByTypeData,
+        subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
+        selectedLabelNames: groupLabelNames,
         ...props,
       },
     });
@@ -68,6 +55,7 @@ describe('TypeOfWorkCharts', () => {
   const findSubjectFilters = () => wrapper.findComponent(TasksByTypeFilters);
   const findTasksByTypeChart = () => wrapper.findComponent(TasksByTypeChart);
   const findNoDataAvailableState = () => wrapper.findComponent(NoDataAvailableState);
+  const findErrorAlert = () => wrapper.findComponent(GlAlert);
 
   describe('with data', () => {
     beforeEach(() => {
@@ -96,15 +84,18 @@ describe('TypeOfWorkCharts', () => {
       );
     });
 
-    it('emits the update-filter when a filter is selected', () => {
-      const payload = {
-        filter: TASKS_BY_TYPE_FILTERS.SUBJECT,
-        value: TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-      };
+    it('emits `set-subject` when a subject is selected', () => {
+      findSubjectFilters().vm.$emit('set-subject', TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
 
-      findSubjectFilters().vm.$emit('update-filter', payload);
+      expect(wrapper.emitted('set-subject')[0][0]).toEqual(TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST);
+    });
 
-      expect(wrapper.emitted('update-filter')[0][0]).toEqual(payload);
+    it('emits `toggle-label` when a label is selected', () => {
+      const testLabel = 'mylabel';
+
+      findSubjectFilters().vm.$emit('toggle-label', testLabel);
+
+      expect(wrapper.emitted('toggle-label')[0][0]).toEqual(testLabel);
     });
   });
 
@@ -137,6 +128,18 @@ describe('TypeOfWorkCharts', () => {
 
     it('renders the no data available message', () => {
       expect(findNoDataAvailableState().exists()).toBe(true);
+    });
+  });
+
+  describe('with errorMessage', () => {
+    const errorMessage = 'whoopsie!';
+
+    beforeEach(() => {
+      createWrapper({ props: { chartData: { data: [] }, errorMessage } });
+    });
+
+    it('shows the message in an error alert', () => {
+      expect(findErrorAlert().text()).toEqual(errorMessage);
     });
   });
 });
