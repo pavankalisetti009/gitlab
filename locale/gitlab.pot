@@ -41019,6 +41019,9 @@ msgstr ""
 msgid "Pipeline|Run merge request pipeline"
 msgstr ""
 
+msgid "Pipeline|Run new pipeline"
+msgstr ""
+
 msgid "Pipeline|Run pipeline"
 msgstr ""
 
