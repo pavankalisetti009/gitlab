@@ -144,6 +144,7 @@ module EE
               namespace_id: namespace.id,
               name: namespace.name,
               full_path: namespace.full_path,
+              path: group&.path || nil,
               avatar_url: namespace.avatar_url
             }
           end
