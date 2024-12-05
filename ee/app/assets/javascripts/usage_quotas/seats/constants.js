@@ -115,15 +115,7 @@ export const emailNotVisibleTooltipText = s__(
   'Billing|An email address is only visible for users with public emails.',
 );
 export const filterUsersPlaceholder = __('Filter users');
-export const seatsInSubscriptionTextForFreePlan = s__('Billings|Free seats used');
-export const seatsInSubscriptionText = s__('Billings|Seats in use / Seats in subscription');
-export const seatsAvailableText = s__('Billings|Seats in use / Seats available');
-export const seatsTooltipText = s__('Billings|Free groups are limited to %{number} seats.');
-export const seatsTooltipTrialText = s__(
-  'Billings|Free tier and trial groups can invite a maximum of 20 members per day.',
-);
 export const inASeatLabel = s__('Billings|In a seat');
-export const unlimited = __('Unlimited');
 export const seatsUsedText = __('Max seats used');
 export const seatsUsedHelpText = __('Learn more about max seats used');
 export const seatsOwedText = __('Seats owed');
