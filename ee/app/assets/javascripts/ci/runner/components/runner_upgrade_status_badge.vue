@@ -59,7 +59,7 @@ export default {
             label: I18N_UPGRADE_STATUS_RECOMMENDED,
             tooltip: I18N_UPGRADE_STATUS_RECOMMENDED_TOOLTIP,
             popover: s__(
-              'Runners|%{upgradeLinkStart}Upgrade GitLab Runner%{upgradeLinkEnd} to match your GitLab version. This upgrade is highly recommended for this runner and may contain security or compatibilty fixes. %{versionLinkStart}Major and minor versions%{versionLinkEnd} must match.',
+              'Runners|%{upgradeLinkStart}Upgrade GitLab Runner%{upgradeLinkEnd} to match your GitLab version. This upgrade is highly recommended for this runner and may contain security or compatibility fixes. %{versionLinkStart}Major and minor versions%{versionLinkEnd} must match.',
             ),
           };
         default:
