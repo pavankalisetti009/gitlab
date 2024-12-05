@@ -62814,6 +62814,12 @@ msgstr ""
 msgid "WorkItem|Comments only"
 msgstr ""
 
+msgid "WorkItem|Confidentiality turned off."
+msgstr ""
+
+msgid "WorkItem|Confidentiality turned on."
+msgstr ""
+
 msgid "WorkItem|Configure work items such as epics, issues, and tasks to represent how your team works."
 msgstr ""
 
