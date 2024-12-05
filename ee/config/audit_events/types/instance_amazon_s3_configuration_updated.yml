@@ -1,6 +1,6 @@
 ---
 name: instance_amazon_s3_configuration_updated
-description: Triggered when instance-level Amazon S3 configuration for audit events streaming is updated
+description: Instance-level Amazon S3 configuration for audit events streaming is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/423235
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138310
 feature_category: audit_events
