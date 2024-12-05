@@ -2,11 +2,6 @@
 
 module EE
   module MembersHelper
-    def members_page?
-      current_path?('groups/group_members#index') ||
-        current_path?('projects/project_members#index')
-    end
-
     private
 
     def member_header_manage_namespace_members_text(namespace)
