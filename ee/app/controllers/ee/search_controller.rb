@@ -54,10 +54,8 @@ module EE
 
       before_action only: :show do
         push_frontend_feature_flag(:zoekt_multimatch_frontend, current_user)
-      end
-
-      before_action only: :show do
         push_frontend_feature_flag(:search_mr_filter_source_branch, current_user)
+        push_frontend_feature_flag(:search_mr_filter_author, current_user)
       end
 
       after_action :run_index_integrity_worker, only: :show, if: :no_results_for_group_or_project_blobs_advanced_search?
