@@ -39,22 +39,23 @@ module EE
         def insert_gilab_duo_menu
           return unless !gitlab_com_subscription? && License.current&.paid?
 
-          if ::Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-            insert_menu_after(
-              ::Sidebars::Admin::Menus::SubscriptionMenu,
-              ::Sidebars::Admin::Menus::CodeSuggestionsMenu.new(context)
-            )
+          insert_menu_after(
+            ::Sidebars::Admin::Menus::SubscriptionMenu,
+            ::Sidebars::Admin::Menus::CodeSuggestionsMenu.new(context)
+          )
 
-            insert_menu_after(
-              ::Sidebars::Admin::Menus::CodeSuggestionsMenu,
-              ::Sidebars::Admin::Menus::SelfHostedModelsMenu.new(context)
-            )
-          else
-            insert_menu_after(
-              ::Sidebars::Admin::Menus::SubscriptionMenu,
-              ::Sidebars::Admin::Menus::CodeSuggestionsMenu.new(context)
-            )
-          end
+          return unless self_hosted_models_enabled?
+
+          insert_menu_after(
+            ::Sidebars::Admin::Menus::CodeSuggestionsMenu,
+            ::Sidebars::Admin::Menus::SelfHostedModelsMenu.new(context)
+          )
+        end
+
+        def self_hosted_models_enabled?
+          ::Feature.enabled?(:ai_custom_model) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+            License.current&.ultimate? &&
+            GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
         end
       end
     end
