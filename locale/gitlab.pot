@@ -59059,8 +59059,10 @@ msgstr ""
 msgid "Unlimited"
 msgstr ""
 
-msgid "UnlimitedMembersDuringTrialAlert|During your trial, invite as many members as you like to %{group_or_project} to collaborate with you."
-msgstr ""
+msgid "UnlimitedMembersDuringTrialAlert|During your trial, invite as many members as you like to %{name} to collaborate with you. When your trial ends, you'll have a maximum of %{limit} member on the Free tier, or you can get more by upgrading to a paid tier."
+msgid_plural "UnlimitedMembersDuringTrialAlert|During your trial, invite as many members as you like to %{name} to collaborate with you. When your trial ends, you'll have a maximum of %{limit} members on the Free tier, or you can get more by upgrading to a paid tier."
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "UnlimitedMembersDuringTrialAlert|Explore paid plans"
 msgstr ""
@@ -62294,11 +62296,6 @@ msgstr ""
 
 msgid "When you transfer your project to a group, you can easily manage multiple projects, view usage quotas for storage, compute minutes, and users, and start a trial or upgrade to a paid tier."
 msgstr ""
-
-msgid "When your trial ends, you'll have a maximum of %d member on the Free tier, or you can get more by upgrading to a paid tier."
-msgid_plural "When your trial ends, you'll have a maximum of %d members on the Free tier, or you can get more by upgrading to a paid tier."
-msgstr[0] ""
-msgstr[1] ""
 
 msgid "When your trial ends, you'll move to the Free tier, which has a limit of %{free_user_limit} seat. %{free_user_limit} seat will remain active, and members not occupying a seat will have the %{link_start}Over limit status%{link_end} and lose access to this group."
 msgid_plural "When your trial ends, you'll move to the Free tier, which has a limit of %{free_user_limit} seats. %{free_user_limit} seats will remain active, and members not occupying a seat will have the %{link_start}Over limit status%{link_end} and lose access to this group."
