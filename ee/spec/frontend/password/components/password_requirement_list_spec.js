@@ -13,6 +13,7 @@ import {
   INVALID_FORM_CLASS,
   I18N,
   COMMON,
+  USER_INFO,
 } from 'ee/password/constants';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -56,7 +57,8 @@ describe('Password requirement list component', () => {
   beforeEach(() => {
     setHTMLFixture(`
       <form>
-        <input autocomplete="new-password" class="form-control gl-form-input ${PASSWORD_INPUT_CLASS}" type="password" name="user[password]" id="user_password">
+        <input id="new_user_first_name" name="new_user[first_name]" type="text">
+        <input autocomplete="new-password" class="form-control gl-form-input ${PASSWORD_INPUT_CLASS}" type="password" name="new_user[password]" id="new_user_password">
         <input type="submit" name="commit" value="Submit">
       </form>
     `);
@@ -177,11 +179,11 @@ describe('Password requirement list component', () => {
     },
   );
 
-  describe('common rule type', () => {
+  describe('password complexity rules', () => {
     const password = '11111111';
 
     beforeEach(() => {
-      createComponent({ props: { allowNoPassword: false, ruleTypes: [COMMON] } });
+      createComponent({ props: { allowNoPassword: false, ruleTypes: [COMMON, USER_INFO] } });
     });
 
     it('shows the list as secondary text', () => {
@@ -190,11 +192,11 @@ describe('Password requirement list component', () => {
       ).toBe(true);
     });
 
-    describe('when there is common phrases error', () => {
+    describe('when there are errors', () => {
       beforeEach(() => {
         mockAxios
-          .onPost(PASSWORD_COMPLEXITY_PATH, { password })
-          .reply(HTTP_STATUS_OK, { [COMMON]: true });
+          .onPost(PASSWORD_COMPLEXITY_PATH, { user: { password, first_name: '' } })
+          .reply(HTTP_STATUS_OK, { [COMMON]: true, [USER_INFO]: true });
       });
 
       it('shows red text on rule and red border on input after submit', async () => {
@@ -212,19 +214,20 @@ describe('Password requirement list component', () => {
 
         const errorRules = findRuleTextsByClass(RED_TEXT_CLASS);
 
-        expect(errorRules.length).toBe(1);
+        expect(errorRules.length).toBe(2);
         expect(errorRules.at(0).text()).toBe('cannot use common phrases (e.g. "password")');
+        expect(errorRules.at(1).text()).toBe('cannot include your name, username, or email');
         expect(findRuleTextsByClass(GREEN_TEXT_CLASS).length).toBe(0);
         expect(findForm().classList.contains(INVALID_FORM_CLASS)).toBe(true);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(true);
       });
     });
 
-    describe('when there is no common phrases error', () => {
+    describe('when there are no errors', () => {
       beforeEach(() => {
         mockAxios
-          .onPost(PASSWORD_COMPLEXITY_PATH, { password })
-          .reply(HTTP_STATUS_OK, { [COMMON]: false });
+          .onPost(PASSWORD_COMPLEXITY_PATH, { user: { password, first_name: '' } })
+          .reply(HTTP_STATUS_OK, { [COMMON]: false, [USER_INFO]: false });
       });
 
       it('shows green text on rule', async () => {
@@ -238,8 +241,9 @@ describe('Password requirement list component', () => {
 
         const validRules = findRuleTextsByClass(GREEN_TEXT_CLASS);
 
-        expect(validRules.length).toBe(1);
+        expect(validRules.length).toBe(2);
         expect(validRules.at(0).text()).toBe('cannot use common phrases (e.g. "password")');
+        expect(validRules.at(1).text()).toBe('cannot include your name, username, or email');
         expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(0);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(false);
       });

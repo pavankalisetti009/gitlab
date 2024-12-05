@@ -39735,6 +39735,9 @@ msgstr ""
 msgid "Password|To be satisfied"
 msgstr ""
 
+msgid "Password|cannot include your name, username, or email"
+msgstr ""
+
 msgid "Password|cannot use common phrases (e.g. \"password\")"
 msgstr ""
 

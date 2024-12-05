@@ -3,10 +3,8 @@ import axios from '~/lib/utils/axios_utils';
 
 export const PASSWORD_COMPLEXITY_PATH = '/users/password/complexity';
 
-export function validatePasswordComplexity(password) {
+export function validatePasswordComplexity(newUserParams) {
   const url = buildApiUrl(PASSWORD_COMPLEXITY_PATH);
 
-  const params = { password };
-
-  return axios.post(url, params);
+  return axios.post(url, { user: newUserParams });
 }
