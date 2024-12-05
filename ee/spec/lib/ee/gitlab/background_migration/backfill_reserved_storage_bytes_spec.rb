@@ -30,7 +30,11 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillReservedStorageBytes, featur
     )
   end
 
-  let!(:namespace) { namespaces.create!(name: 'my test group1', path: 'my-test-group1') }
+  let!(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
+  let!(:namespace) do
+    namespaces.create!(name: 'my test group1', path: 'my-test-group1', organization_id: organization.id)
+  end
+
   let!(:root_storage_statistic) { root_storage_statistics.create!(namespace_id: namespace.id, repository_size: 10) }
   let!(:zoekt_enabled_namespace) { zoekt_enabled_namespaces.create!(root_namespace_id: namespace.id) }
   let!(:replica) do
@@ -43,7 +47,10 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillReservedStorageBytes, featur
     )
   end
 
-  let!(:namespace2) { namespaces.create!(name: 'my test group2', path: 'my-test-group2') }
+  let!(:namespace2) do
+    namespaces.create!(name: 'my test group2', path: 'my-test-group2', organization_id: organization.id)
+  end
+
   let!(:root_storage_statistic2) { root_storage_statistics.create!(namespace_id: namespace2.id, repository_size: 20) }
   let!(:zoekt_enabled_namespace2) { zoekt_enabled_namespaces.create!(root_namespace_id: namespace2.id) }
   let!(:replica2) do
