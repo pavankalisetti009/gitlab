@@ -978,6 +978,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_05cc4448a8aa() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."protected_branch_namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."protected_branch_namespace_id"
+  FROM "protected_branches"
+  WHERE "protected_branches"."id" = NEW."protected_branch_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_05ce163deddf() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -1019,6 +1035,22 @@ IF NEW."project_id" IS NULL THEN
   INTO NEW."project_id"
   FROM "approval_project_rules"
   WHERE "approval_project_rules"."id" = NEW."approval_project_rule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_0aea02e5a699() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."protected_branch_project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."protected_branch_project_id"
+  FROM "protected_branches"
+  WHERE "protected_branches"."id" = NEW."protected_branch_id";
 END IF;
 
 RETURN NEW;
@@ -18619,7 +18651,9 @@ CREATE TABLE protected_branch_merge_access_levels (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     user_id bigint,
-    group_id bigint
+    group_id bigint,
+    protected_branch_project_id bigint,
+    protected_branch_namespace_id bigint
 );
 
 CREATE SEQUENCE protected_branch_merge_access_levels_id_seq
@@ -28961,6 +28995,10 @@ CREATE INDEX idx_projects_id_created_at_disable_overriding_approvers_true ON pro
 
 CREATE INDEX idx_projects_on_repository_storage_last_repository_updated_at ON projects USING btree (id, repository_storage, last_repository_updated_at);
 
+CREATE INDEX idx_protected_branch_merge_access_levels_protected_branch_names ON protected_branch_merge_access_levels USING btree (protected_branch_namespace_id);
+
+CREATE INDEX idx_protected_branch_merge_access_levels_protected_branch_proje ON protected_branch_merge_access_levels USING btree (protected_branch_project_id);
+
 CREATE INDEX idx_reminder_frequency_on_work_item_progresses ON work_item_progresses USING btree (reminder_frequency);
 
 CREATE INDEX idx_sbom_components_on_name_gin ON sbom_components USING gin (name gin_trgm_ops);
@@ -35517,11 +35555,15 @@ CREATE TRIGGER trigger_02450faab875 BEFORE INSERT OR UPDATE ON vulnerability_occ
 
 CREATE TRIGGER trigger_038fe84feff7 BEFORE INSERT OR UPDATE ON approvals FOR EACH ROW EXECUTE FUNCTION trigger_038fe84feff7();
 
+CREATE TRIGGER trigger_05cc4448a8aa BEFORE INSERT OR UPDATE ON protected_branch_merge_access_levels FOR EACH ROW EXECUTE FUNCTION trigger_05cc4448a8aa();
+
 CREATE TRIGGER trigger_05ce163deddf BEFORE INSERT OR UPDATE ON status_check_responses FOR EACH ROW EXECUTE FUNCTION trigger_05ce163deddf();
 
 CREATE TRIGGER trigger_0a1b0adcf686 BEFORE INSERT OR UPDATE ON packages_debian_project_components FOR EACH ROW EXECUTE FUNCTION trigger_0a1b0adcf686();
 
 CREATE TRIGGER trigger_0a29d4d42b62 BEFORE INSERT OR UPDATE ON approval_project_rules_protected_branches FOR EACH ROW EXECUTE FUNCTION trigger_0a29d4d42b62();
+
+CREATE TRIGGER trigger_0aea02e5a699 BEFORE INSERT OR UPDATE ON protected_branch_merge_access_levels FOR EACH ROW EXECUTE FUNCTION trigger_0aea02e5a699();
 
 CREATE TRIGGER trigger_0c326daf67cf BEFORE INSERT OR UPDATE ON analytics_cycle_analytics_value_stream_settings FOR EACH ROW EXECUTE FUNCTION trigger_0c326daf67cf();
 
@@ -36220,6 +36262,9 @@ ALTER TABLE ONLY operations_feature_flags_issues
 
 ALTER TABLE ONLY push_event_payloads
     ADD CONSTRAINT fk_36c74129da FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY protected_branch_merge_access_levels
+    ADD CONSTRAINT fk_37ab3dd3ba FOREIGN KEY (protected_branch_project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY protected_tag_create_access_levels
     ADD CONSTRAINT fk_386a642e13 FOREIGN KEY (deploy_key_id) REFERENCES keys(id) ON DELETE CASCADE;
@@ -37507,6 +37552,9 @@ ALTER TABLE ONLY scan_result_policy_violations
 
 ALTER TABLE ONLY analytics_devops_adoption_segments
     ADD CONSTRAINT fk_f5aa768998 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY protected_branch_merge_access_levels
+    ADD CONSTRAINT fk_f5acff2bb8 FOREIGN KEY (protected_branch_namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY boards_epic_list_user_preferences
     ADD CONSTRAINT fk_f5f2fe5c1f FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
