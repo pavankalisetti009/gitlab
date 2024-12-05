@@ -7,7 +7,7 @@ query projectPipelineExecutionPolicies(
 ) {
   namespace: project(fullPath: $fullPath) {
     id
-    pipelineExecutionPolicies(relationship: $relationship) {
+    pipelineExecutionPolicies(relationship: $relationship, includeUnscoped: false) {
       nodes {
         name
         yaml
