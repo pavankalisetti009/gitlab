@@ -37741,6 +37741,7 @@ LLMs supported by the self-hosted model features.
 | <a id="aiacceptedselfhostedmodelsgpt"></a>`GPT` | GPT: Suitable for code suggestions. |
 | <a id="aiacceptedselfhostedmodelsllama3"></a>`LLAMA3` | LLaMA 3: Suitable for code suggestions and duo chat. |
 | <a id="aiacceptedselfhostedmodelsmistral"></a>`MISTRAL` | Mistral: Suitable for code suggestions and duo chat. |
+| <a id="aiacceptedselfhostedmodelsmixtral"></a>`MIXTRAL` | Mixtral: Suitable for code suggestions and duo chat. |
 
 ### `AiAction`
 
