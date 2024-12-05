@@ -182,6 +182,7 @@ module GitlabSubscriptions
       requested_changes_block_merge_request
       project_saved_replies
       default_roles_assignees
+      ci_component_usages_in_projects
     ].freeze
 
     ULTIMATE_FEATURES = %i[

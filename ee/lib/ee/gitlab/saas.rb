@@ -34,6 +34,7 @@ module EE
           ci_runners_allowed_plans
           limit_normalized_email_reuse
           secret_detection_service
+          ci_component_usages_in_projects
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'

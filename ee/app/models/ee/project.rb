@@ -219,6 +219,8 @@ module EE
       elastic_index_dependant_association :milestones, on_change: :visibility_level
       elastic_index_dependant_association :milestones, on_change: :archived
 
+      scope :with_namespaces, -> { includes(:namespace) }
+      scope :by_ids, ->(ids) { where(id: ids) }
       scope :mirror, -> { where(mirror: true) }
 
       scope :mirrors_to_sync, ->(freeze_at, limit: nil, offset_at: nil) do
