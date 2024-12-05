@@ -48303,7 +48303,7 @@ msgstr ""
 msgid "ScanExecutionPolicy|Add new condition"
 msgstr ""
 
-msgid "ScanExecutionPolicy|Are you sure you want to create merge request fot this policy?"
+msgid "ScanExecutionPolicy|Are you sure you want to create merge request for this policy?"
 msgstr ""
 
 msgid "ScanExecutionPolicy|Back to edit policy"
