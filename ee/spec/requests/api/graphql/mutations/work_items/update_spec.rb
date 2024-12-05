@@ -954,6 +954,39 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
     end
   end
 
+  context 'when promoting to epic type' do
+    let_it_be(:work_item) { create(:work_item, :issue, project: project) }
+
+    let(:input) { { 'descriptionWidget' => { 'description' => "/promote_to epic" } } }
+    let(:current_user) { reporter }
+    let(:fields) do
+      <<~FIELDS
+        workItem {
+          workItemType {
+            name
+          }
+        }
+        errors
+      FIELDS
+    end
+
+    before do
+      stub_licensed_features(epics: true)
+    end
+
+    it 'promotes issue to epic' do
+      expect do
+        post_graphql_mutation(mutation, current_user: current_user)
+        work_item.reload
+      end.to change { work_item.state }
+         .and change { WorkItem.count }.by(1)
+
+      new_work_item = WorkItem.last
+      expect(work_item.promoted_to_epic_id).to eq(new_work_item.synced_epic.id)
+      expect(response).to have_gitlab_http_status(:success)
+    end
+  end
+
   context 'with hierarchy widget input' do
     let(:widgets_response) { mutation_response['workItem']['widgets'] }
     let(:fields) do

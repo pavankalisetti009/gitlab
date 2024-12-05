@@ -1634,11 +1634,26 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       let(:content) { '/promote_to objective' }
 
       context 'when work item supports promotion' do
-        let_it_be(:key_result) { build(:work_item, :key_result, project: project) }
+        context 'with key result' do
+          let_it_be(:key_result) { build(:work_item, :key_result, project: project) }
 
-        it 'includes the value' do
-          _, explanations = service.explain(content, key_result)
-          expect(explanations).to eq(['Promotes item to objective.'])
+          it 'includes the value' do
+            _, explanations = service.explain(content, key_result)
+            expect(explanations).to eq(['Promotes item to objective.'])
+          end
+        end
+
+        context 'with issue' do
+          let_it_be(:issue) { build(:work_item, :issue, project: project) }
+
+          where(type: %w[incident epic])
+
+          with_them do
+            it 'includes the type in the explanation' do
+              _, explanations = service.explain("/promote_to #{type}", issue)
+              expect(explanations).to eq(["Promotes item to #{type}."])
+            end
+          end
         end
       end
 
