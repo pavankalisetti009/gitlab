@@ -4,6 +4,6 @@ feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/474285
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165174
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/483066
 milestone: '17.5'
-group: group::threat insights
+group: group::security infrastructure
 type: gitlab_com_derisk
 default_enabled: false
