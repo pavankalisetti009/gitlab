@@ -2897,6 +2897,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_dbe374a57cbb() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_dc13168b8025() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -20265,7 +20281,8 @@ CREATE TABLE status_page_published_incidents (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    issue_id bigint NOT NULL
+    issue_id bigint NOT NULL,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE status_page_published_incidents_id_seq
@@ -32770,6 +32787,8 @@ CREATE INDEX index_status_check_responses_on_project_id ON status_check_response
 
 CREATE UNIQUE INDEX index_status_page_published_incidents_on_issue_id ON status_page_published_incidents USING btree (issue_id);
 
+CREATE INDEX index_status_page_published_incidents_on_namespace_id ON status_page_published_incidents USING btree (namespace_id);
+
 CREATE INDEX index_status_page_settings_on_project_id ON status_page_settings USING btree (project_id);
 
 CREATE INDEX index_subscription_add_on_purchases_on_namespace_id_add_on_id ON subscription_add_on_purchases USING btree (namespace_id, subscription_add_on_id);
@@ -35872,6 +35891,8 @@ CREATE TRIGGER trigger_dadd660afe2c BEFORE INSERT OR UPDATE ON packages_debian_g
 
 CREATE TRIGGER trigger_dbdd61a66a91 BEFORE INSERT OR UPDATE ON agent_activity_events FOR EACH ROW EXECUTE FUNCTION trigger_dbdd61a66a91();
 
+CREATE TRIGGER trigger_dbe374a57cbb BEFORE INSERT OR UPDATE ON status_page_published_incidents FOR EACH ROW EXECUTE FUNCTION trigger_dbe374a57cbb();
+
 CREATE TRIGGER trigger_dc13168b8025 BEFORE INSERT OR UPDATE ON vulnerability_flags FOR EACH ROW EXECUTE FUNCTION trigger_dc13168b8025();
 
 CREATE TRIGGER trigger_delete_project_namespace_on_project_delete AFTER DELETE ON projects FOR EACH ROW WHEN ((old.project_namespace_id IS NOT NULL)) EXECUTE FUNCTION delete_associated_project_namespace();
@@ -37066,6 +37087,9 @@ ALTER TABLE ONLY merge_requests_closing_issues
 
 ALTER TABLE ONLY issue_assignment_events
     ADD CONSTRAINT fk_a989e2acd0 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY status_page_published_incidents
+    ADD CONSTRAINT fk_a9fb727793 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ssh_signatures
     ADD CONSTRAINT fk_aa1efbe865 FOREIGN KEY (key_id) REFERENCES keys(id) ON DELETE SET NULL;
