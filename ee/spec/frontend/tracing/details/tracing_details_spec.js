@@ -148,7 +148,7 @@ describe('TracingDetails', () => {
       issues: [],
       fetchingIssues: false,
       error: null,
-      helpPath: helpPagePath('/operations/tracing', {
+      helpPath: helpPagePath('/development/tracing', {
         anchor: 'create-an-issue-for-a-trace',
       }),
     });

@@ -113,7 +113,7 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
-  relatedIssuesHelpPath: helpPagePath('/operations/logs', {
+  relatedIssuesHelpPath: helpPagePath('/development/logs', {
     anchor: 'create-an-issue-for-a-log',
   }),
   relatedIssuesId: uniqueId('related-issues-'),

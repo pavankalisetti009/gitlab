@@ -45,7 +45,7 @@ export default {
     ),
     docsLinkText: s__(`ObservabilityLogs|Learn more.`),
   },
-  docsLink: `${DOCS_URL_IN_EE_DIR}/operations/logs`,
+  docsLink: `${DOCS_URL_IN_EE_DIR}/development/logs`,
   props: {
     observabilityClient: {
       required: true,
