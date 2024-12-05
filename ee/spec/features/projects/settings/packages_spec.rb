@@ -12,7 +12,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
   before do
     stub_licensed_features(dependency_proxy_for_packages: true)
     stub_config(dependency_proxy: { enabled: true })
-
+    stub_feature_flags(reorganize_project_level_registry_settings: false)
     sign_in(user)
   end
 
