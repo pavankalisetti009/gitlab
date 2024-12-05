@@ -22227,7 +22227,7 @@ CREATE TABLE workspaces (
     url_prefix text,
     url_query_string text,
     workspaces_agent_config_version integer NOT NULL,
-    desired_config_generator_version integer DEFAULT 1,
+    desired_config_generator_version integer,
     CONSTRAINT check_15543fb0fa CHECK ((char_length(name) <= 64)),
     CONSTRAINT check_157d5f955c CHECK ((char_length(namespace) <= 64)),
     CONSTRAINT check_2b401b0034 CHECK ((char_length(deployment_resource_version) <= 64)),

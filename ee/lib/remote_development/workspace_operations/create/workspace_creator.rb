@@ -41,8 +41,6 @@ module RemoteDevelopment
           workspace.namespace = workspace_namespace
           workspace.desired_state = desired_state
           workspace.actual_state = CREATION_REQUESTED
-          workspace.desired_config_generator_version =
-            RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
           workspace.max_hours_before_termination = max_hours_before_termination
           workspace.devfile_ref = devfile_ref
           workspace.devfile_path = devfile_path
