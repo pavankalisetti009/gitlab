@@ -23,7 +23,7 @@ module Gitlab
     end
 
     def self.self_hosted_url
-      ::Ai::Setting.instance.ai_gateway_url || ENV["AI_GATEWAY_URL"]
+      ::Ai::Setting.instance&.ai_gateway_url || ENV["AI_GATEWAY_URL"]
     end
 
     # Exposes the state of a feature flag to the AI Gateway code.
