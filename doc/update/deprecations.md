@@ -175,6 +175,26 @@ automatically from GitLab 16.0 onwards.
 
 <div class="deprecation breaking-change" data-milestone="19.0">
 
+### Slack notifications integration
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">15.9</span>
+- Removal in GitLab <span class="milestone">19.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/435909).
+
+</div>
+
+As we're consolidating all Slack capabilities into the
+GitLab for Slack app, we've deprecated the Slack notifications
+integration.
+Use the GitLab for Slack app to manage notifications
+to your Slack workspace.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="19.0">
+
 ### The `Project.services` GraphQL field is deprecated
 
 <div class="deprecation-notes">
@@ -973,26 +993,6 @@ For details, see [epic 7633](https://gitlab.com/groups/gitlab-org/-/epics/7633).
 This new architecture introduces a new method for registering runners and eliminates the legacy
 [runner registration token](https://docs.gitlab.com/ee/security/token_overview.html#runner-registration-tokens).
 In GitLab 18.0, only the runner registration methods implemented in the new GitLab Runner token architecture will be supported.
-
-</div>
-
-<div class="deprecation breaking-change" data-milestone="18.0">
-
-### Slack notifications integration
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">15.9</span>
-- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/435909).
-
-</div>
-
-As we're consolidating all Slack capabilities into the
-GitLab for Slack app, we've deprecated the Slack notifications
-integration.
-Use the GitLab for Slack app to manage notifications
-to your Slack workspace.
 
 </div>
 
