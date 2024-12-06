@@ -5,8 +5,13 @@ module Ai
     self.table_name = "ai_settings"
 
     validates :ai_gateway_url, length: { maximum: 2048 }, allow_nil: true
+    validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
+
     validate :validate_ai_gateway_url
     validate :validates_singleton
+
+    belongs_to :amazon_q_oauth_application, class_name: 'Doorkeeper::Application', optional: true
+    belongs_to :amazon_q_service_account_user, class_name: 'User', optional: true
 
     def self.instance
       first || create!(defaults)
