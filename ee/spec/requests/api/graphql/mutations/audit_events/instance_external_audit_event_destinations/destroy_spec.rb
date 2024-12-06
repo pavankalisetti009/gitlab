@@ -21,6 +21,8 @@ RSpec.describe 'Destroy an instance external audit event destination', feature_c
 
   let_it_be(:current_user) { admin }
 
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
+
   shared_examples 'a mutation that does not destroy a destination' do
     it 'does not destroy the destination' do
       expect { post_graphql_mutation(mutation, current_user: current_user) }
@@ -73,6 +75,14 @@ RSpec.describe 'Destroy an instance external audit event destination', feature_c
 
         it_behaves_like 'a mutation that returns top-level errors',
           errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
+      end
+
+      context 'when paired destination exists' do
+        let(:paired_model) do
+          create(:audit_events_instance_external_streaming_destination, legacy_destination_ref: destination.id)
+        end
+
+        it_behaves_like 'deletes paired destination', :destination
       end
     end
 

@@ -61,6 +61,14 @@ RSpec.describe 'Delete external audit event destinations for groups', feature_ca
           expect(mutation_response).to include('errors' => ['error message'])
         end
       end
+
+      context 'when paired destination exists' do
+        let(:paired_model) do
+          create(:external_audit_event_destination, stream_destination_id: destination.id)
+        end
+
+        it_behaves_like 'deletes paired destination', :destination
+      end
     end
 
     context 'when current user is a group maintainer' do
