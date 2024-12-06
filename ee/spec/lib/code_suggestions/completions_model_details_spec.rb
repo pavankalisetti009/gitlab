@@ -9,25 +9,8 @@ RSpec.describe CodeSuggestions::CompletionsModelDetails, feature_category: :code
   describe '#current_model' do
     subject(:model_details) { completions_model_details.current_model }
 
-    context 'when codestral FF is enabled' do
-      before do
-        stub_feature_flags(use_codestral_for_code_completions: true)
-        stub_feature_flags(fireworks_qwen_code_completion: false)
-      end
-
-      it 'returns the correct code completions model metadata' do
-        expected_medata = {
-          model_provider: 'vertex-ai',
-          model_name: 'codestral@2405'
-        }
-
-        expect(model_details).to eq(expected_medata)
-      end
-    end
-
     context 'when fireworks qwen FF is enabled' do
       before do
-        stub_feature_flags(use_codestral_for_code_completions: false)
         stub_feature_flags(fireworks_qwen_code_completion: true)
       end
 
@@ -43,7 +26,6 @@ RSpec.describe CodeSuggestions::CompletionsModelDetails, feature_category: :code
 
     context 'when code completions FFs are disabled' do
       before do
-        stub_feature_flags(use_codestral_for_code_completions: false)
         stub_feature_flags(fireworks_qwen_code_completion: false)
       end
 
