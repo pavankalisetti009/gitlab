@@ -184,7 +184,7 @@ describe('Subscription User List', () => {
       it('shows the correct avatarLabeled length', () => {
         const avatarLabeledList = findTable().findAllComponents(GlAvatarLabeled);
 
-        expect(avatarLabeledList.length).toBe(6);
+        expect(avatarLabeledList).toHaveLength(6);
       });
 
       it('passes the correct props to avatarLabeled', () => {
@@ -198,7 +198,7 @@ describe('Subscription User List', () => {
       it('shows the correct avatarLinks length', () => {
         const avatarLinks = findTable().findAllComponents(GlAvatarLink);
 
-        expect(avatarLinks.length).toBe(6);
+        expect(avatarLinks).toHaveLength(6);
       });
 
       it('passes the correct props to avatarLink', () => {
