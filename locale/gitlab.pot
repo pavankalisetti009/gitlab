@@ -35344,6 +35344,9 @@ msgstr ""
 msgid "ModelRegistry|Author"
 msgstr ""
 
+msgid "ModelRegistry|CI Job"
+msgstr ""
+
 msgid "ModelRegistry|Created"
 msgstr ""
 
@@ -35351,6 +35354,9 @@ msgid "ModelRegistry|Created by"
 msgstr ""
 
 msgid "ModelRegistry|Latest version"
+msgstr ""
+
+msgid "ModelRegistry|MLflow Run ID"
 msgstr ""
 
 msgid "ModelRegistry|Model name"
@@ -35363,6 +35369,9 @@ msgid "ModelRegistry|New model"
 msgstr ""
 
 msgid "ModelRegistry|New version"
+msgstr ""
+
+msgid "ModelRegistry|Status"
 msgstr ""
 
 msgid "ModelRegistry|Version"
