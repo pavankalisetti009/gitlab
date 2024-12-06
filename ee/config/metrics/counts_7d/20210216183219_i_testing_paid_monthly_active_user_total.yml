@@ -4,6 +4,8 @@ key_path: counts_weekly.aggregated_metrics.i_testing_paid_monthly_active_user_to
 description: Aggregated count of users who have engaged with a Premium or Ultimate
   tier testing feature per week.
 product_group: pipeline_execution
+product_categories:
+- code_testing
 value_type: number
 status: active
 time_frame: 7d
