@@ -82,7 +82,7 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
       end
 
       it 'creates the note text correctly' do
-        expect(subject.note).to eq('reverted vulnerability status to Detected and the following comment: "test"')
+        expect(subject.note).to eq('reverted vulnerability status to Detected with the following comment: "test"')
       end
     end
 
