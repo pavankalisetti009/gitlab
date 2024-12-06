@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_mode, feature_category: :fleet_visibility do
+RSpec.describe ::Ci::Runners::CollectQueueingHistoryService,
+  :click_house, :enable_admin_mode, feature_category: :fleet_visibility do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:instance_runner) { create(:ci_runner, :instance, :with_runner_manager) }
@@ -44,14 +45,14 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
     end
 
     it 'returns error' do
-      expect(result.error?).to eq(true)
+      expect(result.error?).to be(true)
       expect(result.errors).to contain_exactly('ClickHouse database is not configured')
     end
   end
 
   shared_examples 'returns Not allowed error' do
     it 'returns error' do
-      expect(result.error?).to eq(true)
+      expect(result.error?).to be(true)
       expect(result.errors).to contain_exactly('Not allowed')
     end
   end
@@ -79,8 +80,8 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
       let(:percentiles) { [88] }
 
       it 'returns an error' do
-        expect(result.error?).to eq(true)
-        expect(result.errors).to eq(['At least one of 50, 75, 90, 95, 99 percentiles should be requested'])
+        expect(result.error?).to be(true)
+        expect(result.errors).to contain_exactly('At least one of 50, 75, 90, 95, 99 percentiles should be requested')
       end
     end
 
@@ -99,16 +100,16 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
         insert_ci_builds_to_click_house([build])
 
-        expect(result.success?).to eq(true)
-        expect(result.payload).to eq([
+        expect(result.success?).to be(true)
+        expect(result.payload).to contain_exactly(
           { 'p90' => 2.5.seconds, 'p95' => 2.5.seconds, 'time' => starting_time }
-        ])
+        )
       end
     end
 
     it 'returns empty result if there is no data in ClickHouse' do
-      expect(result.success?).to eq(true)
-      expect(result.payload).to eq([])
+      expect(result.success?).to be(true)
+      expect(result.payload).to be_empty
     end
 
     context 'with different build statuses' do
@@ -130,11 +131,11 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
         end
 
         it 'returns equal percentiles for a single build', :freeze_time do
-          expect(result.success?).to eq(true)
-          expect(result.payload).to eq([
+          expect(result.success?).to be(true)
+          expect(result.payload).to contain_exactly(
             { 'p50' => 2.seconds, 'p75' => 2.seconds, 'p90' => 2.seconds, 'p95' => 2.seconds, 'p99' => 2.seconds,
               'time' => starting_time }
-          ])
+          )
         end
       end
     end
@@ -154,7 +155,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
       insert_ci_builds_to_click_house(builds)
 
-      expect(result.success?).to eq(true)
+      expect(result.success?).to be(true)
 
       expect(result.payload).to eq([
         { 'p50' => 6.minutes, 'p75' => 6.minutes, 'p90' => 6.minutes, 'p95' => 6.minutes, 'p99' => 6.minutes,
@@ -180,7 +181,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
       insert_ci_builds_to_click_house(builds)
 
-      expect(result.success?).to eq(true)
+      expect(result.success?).to be(true)
 
       payload = result.payload.first
       p50 = payload['p50']
@@ -214,7 +215,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
       insert_ci_builds_to_click_house(builds)
 
-      expect(result.success?).to eq(true)
+      expect(result.success?).to be(true)
 
       expect(result.payload).to eq([
         { 'p50' => 1.minute, 'p75' => 1.minute, 'p90' => 1.minute, 'p95' => 1.minute, 'p99' => 1.minute,
@@ -253,7 +254,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
         insert_ci_builds_to_click_house(builds)
 
-        expect(result.success?).to eq(true)
+        expect(result.success?).to be(true)
 
         expect(result.payload).to eq([
           { 'p50' => 1.minute, 'p75' => 1.minute, 'p90' => 1.minute, 'p95' => 1.minute, 'p99' => 1.minute,
@@ -268,7 +269,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
       let(:to_time) { 190.minutes.after(starting_time) }
 
       it 'returns error' do
-        expect(result.error?).to eq(true)
+        expect(result.error?).to be(true)
 
         expect(result.errors).to contain_exactly('Maximum of 37 5-minute intervals can be requested')
       end
@@ -312,7 +313,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
       insert_ci_builds_to_click_house(builds)
 
-      expect(result.success?).to eq(true)
+      expect(result.success?).to be(true)
 
       expect(result.payload).to contain_exactly(
         { 'p50' => 3.seconds, 'p75' => 3.seconds, 'p90' => 3.seconds, 'p95' => 3.seconds, 'p99' => 3.seconds,
@@ -355,12 +356,12 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
       insert_ci_builds_to_click_house(builds)
 
-      expect(result.success?).to eq(true)
+      expect(result.success?).to be(true)
 
-      expect(result.payload).to eq([
+      expect(result.payload).to contain_exactly(
         { 'p50' => 3.seconds, 'p75' => 3.seconds, 'p90' => 3.seconds, 'p95' => 3.seconds, 'p99' => 3.seconds,
           'time' => starting_time + 10.minutes }
-      ])
+      )
     end
   end
 end

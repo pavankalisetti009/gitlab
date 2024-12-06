@@ -14,7 +14,7 @@ module Resolvers
         description: 'End of the requested time frame. Defaults to the current time.'
 
       def resolve(lookahead:, from_time: nil, to_time: nil, runner_type: nil, owner_namespace: nil)
-        result = ::Ci::CollectQueueingHistoryService.new(current_user: current_user,
+        result = ::Ci::Runners::CollectQueueingHistoryService.new(current_user: current_user,
           percentiles: selected_percentiles(lookahead),
           runner_type: runner_type,
           from_time: from_time,
@@ -30,7 +30,7 @@ module Resolvers
       private
 
       def selected_percentiles(lookahead)
-        ::Ci::CollectQueueingHistoryService::ALLOWED_PERCENTILES.filter do |p|
+        ::Ci::Runners::CollectQueueingHistoryService::ALLOWED_PERCENTILES.filter do |p|
           lookahead.selection(:time_series).selects?("p#{p}")
         end
       end
