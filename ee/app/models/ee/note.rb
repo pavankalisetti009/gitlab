@@ -75,6 +75,11 @@ module EE
       super.merge(banzai_epic_context_params)
     end
 
+    override :store_mentions_after_commit?
+    def store_mentions_after_commit?
+      user_mention_class == VulnerabilityUserMention
+    end
+
     override :for_issuable?
     def for_issuable?
       for_epic? || super
