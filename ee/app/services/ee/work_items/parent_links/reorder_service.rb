@@ -115,6 +115,13 @@ module EE
           super
         end
 
+        override :can_add_to_parent?
+        def can_add_to_parent?(parent_work_item)
+          return true if synced_work_item
+
+          super
+        end
+
         override :linkable?
         def linkable?(work_item)
           return true if synced_work_item
