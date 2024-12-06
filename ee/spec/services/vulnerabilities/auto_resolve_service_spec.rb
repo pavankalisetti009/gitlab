@@ -50,7 +50,10 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(vulnerability.resolved_at).to eq(Time.current)
       expect(vulnerability.auto_resolved).to be(true)
 
-      expect { resolved_vulnerability.reload }.to change { resolved_vulnerability.updated_at }
+      # Ruby has nanosecond precision on timestamps, while Postgress has microsecond precision.
+      # This causes the timestamp to be rounded down to the nearest microsecond when the record is reloaded.
+      # We need to make the comparison in microseconds to avoid a false-negative.
+      expect { resolved_vulnerability.reload }.not_to change { resolved_vulnerability.updated_at.floor(6) }
     end
 
     it 'inserts a state transition for each vulnerability' do
@@ -76,6 +79,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         "changed vulnerability status to Resolved with the following comment: \"#{comment}\""
       )
       expect(last_note).to be_system
+      expect(last_note.system_note_metadata.action).to eq('vulnerability_resolved')
     end
 
     it 'updates the statistics', :sidekiq_inline do
