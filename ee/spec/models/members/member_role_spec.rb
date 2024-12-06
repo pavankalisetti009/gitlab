@@ -22,7 +22,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
     it do
       is_expected.to validate_inclusion_of(:base_access_level)
-        .in_array(::Gitlab::Access.options_with_minimal_access.values.freeze)
+        .in_array(::Gitlab::Access.options_for_custom_roles.values.freeze)
     end
 
     describe 'name uniqueness validation' do

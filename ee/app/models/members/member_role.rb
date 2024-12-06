@@ -7,7 +7,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
 
   # base_access_level is validated against this array,
   # so a migration may be needed if you change it
-  LEVELS = ::Gitlab::Access.options_with_minimal_access.values.freeze
+  LEVELS = ::Gitlab::Access.options_for_custom_roles.values.freeze
 
   has_many :members
   has_many :saml_providers

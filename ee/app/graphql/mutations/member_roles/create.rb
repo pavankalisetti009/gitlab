@@ -9,7 +9,7 @@ module Mutations
       include Mutations::ResolvesNamespace
 
       argument :base_access_level,
-        ::Types::MemberAccessLevelEnum,
+        ::Types::Members::MemberRoles::AccessLevelEnum,
         required: true,
         description: 'Base access level for the custom role.'
 

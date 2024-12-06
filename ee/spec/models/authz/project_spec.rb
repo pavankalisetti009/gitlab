@@ -19,7 +19,7 @@ RSpec.describe Authz::Project, feature_category: :permissions do
 
   let_it_be(:admin_runners_role) { create(:member_role, :guest, :admin_runners, namespace: root_group) }
   let_it_be(:admin_vulnerability_role) { create(:member_role, :guest, :admin_vulnerability, namespace: root_group) }
-  let_it_be(:archive_project_role) { create(:member_role, :owner, :archive_project, namespace: root_group) }
+  let_it_be(:archive_project_role) { create(:member_role, :maintainer, :archive_project, namespace: root_group) }
   let_it_be(:read_dependency_role) { create(:member_role, :guest, :read_dependency, namespace: root_group) }
 
   before do
