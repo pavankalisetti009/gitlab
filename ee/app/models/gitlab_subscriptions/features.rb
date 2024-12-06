@@ -11,6 +11,7 @@ module GitlabSubscriptions
     # For all other features, use `project.feature_available?` or `namespace.feature_available?` when possible.
     GLOBAL_FEATURES = %i[
       admin_audit_log
+      amazon_q
       auditor_user
       custom_file_templates
       custom_project_templates
@@ -186,15 +187,16 @@ module GitlabSubscriptions
     ].freeze
 
     ULTIMATE_FEATURES = %i[
+      ai_agents
       ai_config_chat
       ai_features
-      ai_workflows
-      glab_ask_git_command
-      ai_agents
       ai_review_mr
+      ai_workflows
+      amazon_q
       api_discovery
       api_fuzzing
       auto_rollback
+      glab_ask_git_command
       cluster_receptive_agents
       cluster_image_scanning
       external_status_checks
