@@ -28,21 +28,6 @@ RSpec.describe Ci::SyncReportsToReportApprovalRulesWorker, feature_category: :so
 
         described_class.new.perform(pipeline.id)
       end
-
-      context "when feature flag is disabled" do
-        before do
-          stub_feature_flags(update_approval_rules_for_related_mrs: false)
-        end
-
-        it "does not enqueue UpdateApprovalRulesForRelatedMrsWorker" do
-          expect(Ci::SyncReportsToApprovalRulesService).to receive(:new)
-            .with(pipeline).once.and_return(sync_service)
-
-          expect(Ci::UpdateApprovalRulesForRelatedMrsWorker).not_to receive(:perform_async)
-
-          described_class.new.perform(pipeline.id)
-        end
-      end
     end
 
     context 'when pipeline is missing' do
