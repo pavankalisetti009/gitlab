@@ -57,7 +57,6 @@ module IdentityVerifiable
 
   def identity_verification_enabled?
     return false unless ::Gitlab::Saas.feature_available?(:identity_verification)
-    return false unless ::Feature.enabled?(:opt_in_identity_verification, self, type: :gitlab_com_derisk)
 
     # When no verification methods are available i.e. both phone number and
     # credit card verifications are disabled
