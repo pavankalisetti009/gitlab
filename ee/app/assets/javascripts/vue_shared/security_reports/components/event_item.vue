@@ -52,6 +52,11 @@ export default {
       required: false,
       default: true,
     },
+    isSystemNote: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     noteId() {
@@ -72,6 +77,7 @@ export default {
         :author="author"
         :created-at="createdAt"
         :show-spinner="false"
+        :is-system-note="isSystemNote"
         class="gl-pb-0 gl-pl-0"
       >
         <slot name="header-message"><template v-if="createdAt">&middot;</template></slot>

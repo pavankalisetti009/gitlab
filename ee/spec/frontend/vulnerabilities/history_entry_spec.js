@@ -50,6 +50,7 @@ describe('History Entry', () => {
       author: systemNote.author,
       createdAt: systemNote.createdAt,
       iconName: systemNote.systemNoteIconName,
+      isSystemNote: true,
     });
   });
 
