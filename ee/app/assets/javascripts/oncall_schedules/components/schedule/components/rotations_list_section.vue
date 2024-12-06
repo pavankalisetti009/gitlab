@@ -1,11 +1,5 @@
 <script>
-import {
-  GlButtonGroup,
-  GlButton,
-  GlLoadingIcon,
-  GlTooltipDirective,
-  GlModalDirective,
-} from '@gitlab/ui';
+import { GlButton, GlLoadingIcon, GlTooltipDirective, GlModalDirective } from '@gitlab/ui';
 import ScheduleShiftWrapper from 'ee/oncall_schedules/components/schedule/components/shifts/components/schedule_shift_wrapper.vue';
 import {
   editRotationModalId,
@@ -27,7 +21,6 @@ export default {
   deleteRotationModalId,
   components: {
     GlButton,
-    GlButtonGroup,
     GlLoadingIcon,
     CurrentDayIndicator,
     ScheduleShiftWrapper,
@@ -120,30 +113,29 @@ export default {
             :data-testid="`rotation-name-${rotation.id}`"
             >{{ rotation.name }}</span
           >
-          <gl-button-group
+          <div
             v-if="userCanCreateSchedule"
             class="gl-px-2"
             data-testid="rotation-edit-button-group"
           >
             <gl-button
               v-gl-modal="editRotationModalId"
-              v-gl-tooltip
+              v-gl-tooltip="{ boundary: 'viewport' }"
               category="tertiary"
               :title="$options.i18n.editRotationLabel"
               icon="pencil"
               :aria-label="$options.i18n.editRotationLabel"
               @click="setRotationToUpdate(rotation)"
-            />
-            <gl-button
+            /><gl-button
               v-gl-modal="deleteRotationModalId"
-              v-gl-tooltip
+              v-gl-tooltip="{ boundary: 'viewport' }"
               category="tertiary"
               :title="$options.i18n.deleteRotationLabel"
               icon="remove"
               :aria-label="$options.i18n.deleteRotationLabel"
               @click="setRotationToUpdate(rotation)"
             />
-          </gl-button-group>
+          </div>
         </span>
         <span
           class="timeline-cell gl-relative gl-float-left gl-overflow-hidden"

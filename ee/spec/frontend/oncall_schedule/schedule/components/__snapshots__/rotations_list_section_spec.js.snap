@@ -18,7 +18,7 @@ exports[`RotationsListSectionComponent when the timeframe includes today renders
         >
           Rotation 242
         </span>
-        <gl-button-group-stub
+        <div
           class="gl-px-2"
           data-testid="rotation-edit-button-group"
         >
@@ -44,7 +44,7 @@ exports[`RotationsListSectionComponent when the timeframe includes today renders
             title="Delete rotation"
             variant="default"
           />
-        </gl-button-group-stub>
+        </div>
       </span>
       <span
         class="gl-float-left gl-overflow-hidden gl-relative timeline-cell"

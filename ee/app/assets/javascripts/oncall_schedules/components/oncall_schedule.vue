@@ -301,8 +301,13 @@ export default {
             <gl-disclosure-dropdown-item
               :key="$options.i18n.deleteScheduleLabel"
               v-gl-modal="deleteScheduleModalId"
-              :item="$options.editDeleteDisclosureItems.delete"
-            />
+            >
+              <template #list-item>
+                <span class="gl-text-danger">{{
+                  $options.editDeleteDisclosureItems.delete.text
+                }}</span>
+              </template>
+            </gl-disclosure-dropdown-item>
           </gl-disclosure-dropdown>
           <gl-button
             v-gl-tooltip.hover
