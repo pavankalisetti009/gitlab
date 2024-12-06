@@ -10,8 +10,6 @@ data_source: database
 instrumentation_class: CountSecurePipelinesMetric
 options:
   scan_type: dast
-distribution:
-- ee
 tiers:
 - ultimate
 milestone: "<13.9"

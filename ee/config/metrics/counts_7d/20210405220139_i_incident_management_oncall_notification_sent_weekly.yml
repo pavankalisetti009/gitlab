@@ -13,8 +13,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
   - i_incident_management_oncall_notification_sent
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

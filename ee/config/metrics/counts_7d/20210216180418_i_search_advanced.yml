@@ -13,8 +13,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
   - i_search_advanced
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

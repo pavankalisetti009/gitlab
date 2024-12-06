@@ -10,8 +10,6 @@ instrumentation_class: CountSecurePipelinesMetric
 options:
   scan_type: api_fuzzing
 data_category: operational
-distribution:
-- ee
 tiers:
 - ultimate
 milestone: "<13.9"

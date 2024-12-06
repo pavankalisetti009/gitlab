@@ -11,8 +11,6 @@ instrumentation_class: CountSecurePipelinesMetric
 options:
   scan_type: coverage_fuzzing
 data_category: operational
-distribution:
-- ee
 tiers:
 - ultimate
 milestone: "<13.9"

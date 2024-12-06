@@ -36,7 +36,5 @@ events:
 - name: users_visiting_audit_events
   unique: user.id
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate

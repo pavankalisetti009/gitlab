@@ -10,8 +10,6 @@ time_frame: "28d"
 data_source: database
 data_category: operational
 instrumentation_class: CountEventStreamingDestinationsMetric
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type:

@@ -16,8 +16,6 @@ events:
     filter:
       label: metrics
 data_category: optional
-distribution:
-- ee
 tiers:
 - premium
 - ultimate
