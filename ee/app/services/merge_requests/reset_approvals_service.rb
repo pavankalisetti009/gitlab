@@ -23,6 +23,11 @@ module MergeRequests
         else
           reset_approvals(merge_request, newrev, patch_id_sha: mr_patch_id_sha)
         end
+
+        # Note: When we remove the 10 second delay in
+        # ee/app/services/ee/merge_requests/refresh_service.rb :51
+        # We should be able to remove this
+        AutoMergeProcessWorker.perform_async(merge_request.id) if merge_request.auto_merge_enabled?
       end
     end
 
