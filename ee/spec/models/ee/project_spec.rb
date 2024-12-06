@@ -499,6 +499,21 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       it { is_expected.to contain_exactly(project_1) }
     end
 
+    describe 'jira_subscription_exists?' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:jira_connect_subscription) { create(:jira_connect_subscription, namespace: project.namespace) }
+
+      subject { project.jira_subscription_exists? }
+
+      it { is_expected.to eq(true) }
+
+      it 'is false when the GitLab for Jira Cloud integration is blocked by settings' do
+        allow(Integrations::JiraCloudApp).to receive(:blocked_by_settings?).and_return(true)
+
+        is_expected.to eq(false)
+      end
+    end
+
     describe '.not_aimed_for_deletion' do
       let_it_be(:project) { create(:project) }
       let_it_be(:delayed_deletion_project) { create(:project, marked_for_deletion_at: Date.current) }

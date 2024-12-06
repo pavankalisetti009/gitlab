@@ -92,10 +92,12 @@ module EE
             available_integration_names(include_disabled: true, include_blocked_by_settings: true)
           end
 
-          def blocked_by_settings?
+          def blocked_by_settings?(log: false)
             return false if instance_allows_all_integrations?
 
-            ::Gitlab::CurrentSettings.allowed_integrations.exclude?(to_param)
+            ::Gitlab::CurrentSettings.allowed_integrations.exclude?(to_param).tap do |is_blocked|
+              ::Gitlab::IntegrationsLogger.info(message: "#{title} blocked by settings") if is_blocked && log
+            end
           end
 
           private

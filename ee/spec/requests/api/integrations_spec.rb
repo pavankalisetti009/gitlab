@@ -137,6 +137,18 @@ RSpec.describe API::Integrations, feature_category: :integrations do
     end
   end
 
+  describe 'POST /slack/trigger' do
+    before do
+      stub_application_setting(slack_app_verification_token: 'token')
+    end
+
+    let(:integration) { ::Integrations::GitlabSlackApplication.to_param }
+
+    subject(:request) { post api('/slack/trigger'), params: { token: 'token', text: 'help' } }
+
+    it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :not_found
+  end
+
   describe 'POST /projects/:id/integrations/slack_slash_commands/trigger' do
     before_all do
       create(:slack_slash_commands_integration, project: project)

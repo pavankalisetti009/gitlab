@@ -33,6 +33,20 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
     it { is_expected.to contain_exactly(setting_1) }
   end
 
+  describe '.has_confluence?' do
+    let_it_be(:setting) { create(:project_setting, has_confluence: true) }
+
+    subject { setting }
+
+    it { is_expected.to have_confluence }
+
+    it 'is false when the confluence integration is blocked by settings' do
+      allow(Integrations::Confluence).to receive(:blocked_by_settings?).and_return(true)
+
+      is_expected.not_to have_confluence
+    end
+  end
+
   describe 'all_or_none_product_analytics_attributes_set' do
     let_it_be(:setting) { create(:project_setting) }
 
