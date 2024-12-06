@@ -12,7 +12,5 @@ data_category: optional
 events:
   - name: g_project_management_epic_blocking_added
     unique: user.id
-distribution:
-- ee
 tiers:
 - ultimate

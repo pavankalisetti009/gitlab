@@ -14,7 +14,5 @@ events:
     unique: user.id
     filter:
       label: license_compliance
-distribution:
-- ee
 tiers:
 - ultimate

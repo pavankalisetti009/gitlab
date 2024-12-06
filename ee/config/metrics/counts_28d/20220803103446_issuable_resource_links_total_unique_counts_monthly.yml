@@ -18,8 +18,6 @@ events:
 - name: incident_management_issuable_resource_link_visited
   unique: user.id
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

@@ -10,8 +10,6 @@ data_source: database
 instrumentation_class: CountSecurityScansMetric
 options:
   scan_type: api_fuzzing
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type: [customer_health_score]

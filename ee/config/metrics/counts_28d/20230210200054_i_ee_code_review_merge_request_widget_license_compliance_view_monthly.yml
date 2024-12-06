@@ -16,7 +16,5 @@ events:
     filter:
       label: license_compliance
 data_category: optional
-distribution:
-- ee
 tiers:
 - ultimate

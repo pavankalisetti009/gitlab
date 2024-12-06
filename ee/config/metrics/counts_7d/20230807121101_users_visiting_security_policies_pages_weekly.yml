@@ -16,7 +16,5 @@ events:
 - name: users_creating_merge_requests_with_security_policies
   unique: user.id
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate

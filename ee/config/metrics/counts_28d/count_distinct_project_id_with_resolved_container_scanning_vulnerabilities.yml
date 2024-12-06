@@ -12,7 +12,5 @@ introduced_by_url: 'https://gitlab.com/gitlab-org/gitlab/-/merge_requests/170661
 time_frame: 28d
 data_source: database
 data_category: optional
-distribution:
-- ee
 tiers:
 - ultimate

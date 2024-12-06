@@ -13,8 +13,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
   - g_project_management_users_updating_epic_board_names
-distribution:
-- ee
 tiers:
 - premium
 - ultimate
