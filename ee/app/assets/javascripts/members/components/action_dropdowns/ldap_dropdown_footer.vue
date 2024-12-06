@@ -36,7 +36,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-border-t gl-border-gray-200 gl-p-2">
+  <div class="gl-border-t gl-border-strong gl-p-2">
     <gl-button category="tertiary" class="gl-w-full" @click="handleClick">
       {{ s__('Members|Revert to LDAP synced settings') }}
     </gl-button>

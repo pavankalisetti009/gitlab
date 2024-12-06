@@ -324,7 +324,7 @@ export default {
   },
   HISTORY_REPLACE_UPDATE_METHOD,
   FORM_GROUP_CLASS: 'gl-w-full sm:gl-w-3/10 gl-min-w-20 gl-m-0',
-  FORM_INPUT_CLASS: 'form-control gl-mr-4 gl-border-gray-200',
+  FORM_INPUT_CLASS: 'form-control gl-mr-4 gl-border-strong',
 };
 </script>
 
