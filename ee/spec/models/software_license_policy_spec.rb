@@ -3,9 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_analysis do
-  let(:software_license_policy) { build(:software_license_policy) }
-
-  subject { software_license_policy }
+  subject(:software_license_policy) { build(:software_license_policy) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
@@ -22,13 +20,13 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     it { is_expected.to validate_length_of(:software_license_spdx_identifier).is_at_most(255) }
 
     context 'when not associated with a software_license or custom_software_license' do
-      let(:software_license_policy) { build(:software_license_policy, software_license: nil, custom_software_license: nil) }
+      subject { build(:software_license_policy, software_license: nil, custom_software_license: nil) }
 
       it { is_expected.not_to be_valid }
     end
 
     context 'when associated with a software_license' do
-      let(:software_license_policy) { create(:software_license_policy, software_license: build(:software_license), custom_software_license: nil) }
+      subject { create(:software_license_policy, software_license: build(:software_license), custom_software_license: nil) }
 
       it { is_expected.to be_valid }
 
@@ -36,14 +34,17 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when associated with a custom_software_license' do
+      subject { build(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
+
       let_it_be(:project) { create(:project) }
       let_it_be(:custom_software_license) { create(:custom_software_license) }
-      let_it_be(:software_license_policy) { build(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
 
       it { is_expected.to be_valid }
 
       context 'when uniqueness is enforced' do
-        let!(:software_license_policy) { create(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
+        before do
+          create(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license)
+        end
 
         context 'with same custom_license, project, and scan_result_policy' do
           let(:message) { 'Custom software license has already been taken' }
@@ -57,9 +58,21 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
         end
       end
     end
+
+    context 'when associated with both software_license and custom_software_license' do
+      subject { build(:software_license_policy, project: project, software_license: software_license, custom_software_license: custom_software_license) }
+
+      let_it_be(:project) { create(:project) }
+      let_it_be(:software_license) { create(:software_license) }
+      let_it_be(:custom_software_license) { create(:custom_software_license) }
+
+      it { is_expected.to be_valid }
+    end
   end
 
-  shared_examples 'find license by name' do
+  describe ".with_license_by_name" do
+    subject { described_class.with_license_by_name(name) }
+
     context 'when the feature flag static_licenses is disabled' do
       before do
         stub_feature_flags(static_licenses: false)
@@ -70,16 +83,22 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
       let!(:apache_policy) { create(:software_license_policy, software_license: apache) }
       let!(:apache) { create(:software_license, :apache_2_0) }
 
-      it 'finds a license by an exact match' do
-        expect(subject.with_license_by_name(mit.name)).to match_array([mit_policy])
+      context 'with an exact match' do
+        let(:name) { mit.name }
+
+        it { is_expected.to match_array([mit_policy]) }
       end
 
-      it 'finds a license by a case insensitive match' do
-        expect(subject.with_license_by_name('mIt lICENSE')).to match_array([mit_policy])
+      context 'with a case insensitive match' do
+        let(:name) { 'mIt lICENSE' }
+
+        it { is_expected.to match_array([mit_policy]) }
       end
 
-      it 'finds multiple licenses' do
-        expect(subject.with_license_by_name([mit.name, apache.name])).to match_array([mit_policy, apache_policy])
+      context 'with multiple names' do
+        let(:name) { [mit.name, apache.name] }
+
+        it { is_expected.to match_array([mit_policy, apache_policy]) }
       end
     end
 
@@ -92,32 +111,28 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
       let(:apache_license_spdx_identifier) { 'Apache-2.0' }
       let!(:apache_policy) { create(:software_license_policy, software_license_spdx_identifier: apache_license_spdx_identifier) }
 
-      it 'finds a license by an exact match' do
-        expect(subject.with_license_by_name(mit_license_name)).to match_array([mit_policy])
+      context 'with an exact match' do
+        let(:name) { mit_license_name }
+
+        it { is_expected.to match_array([mit_policy]) }
       end
 
-      it 'finds a license by a case insensitive match' do
-        expect(subject.with_license_by_name('mIt lICENSE')).to match_array([mit_policy])
+      context 'with a case insensitive match' do
+        let(:name) { 'mIt lICENSE' }
+
+        it { is_expected.to match_array([mit_policy]) }
       end
 
-      it 'finds multiple licenses' do
-        expect(subject.with_license_by_name([mit_license_name, apache_license_name])).to match_array([mit_policy, apache_policy])
+      context 'with multiple names' do
+        let(:name) { [mit_license_name, apache_license_name] }
+
+        it { is_expected.to match_array([mit_policy, apache_policy]) }
       end
     end
-  end
-
-  describe ".with_license_by_name" do
-    subject { described_class }
-
-    it_behaves_like 'find license by name'
   end
 
   describe ".with_license_or_custom_license_by_name" do
-    subject { described_class }
-
-    context 'when related to software license' do
-      it_behaves_like 'find license by name'
-    end
+    subject { described_class.with_license_or_custom_license_by_name(name) }
 
     context 'when related to a custom software license' do
       let_it_be(:custom_software_license) { create(:custom_software_license, name: 'Custom-License') }
@@ -136,16 +151,22 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
           custom_software_license: other_custom_software_license)
       end
 
-      it 'finds a custom license by an exact match' do
-        expect(subject.with_license_or_custom_license_by_name(custom_software_license.name)).to match_array([custom_software_license_policy])
+      context 'with an exact match' do
+        let(:name) { custom_software_license.name }
+
+        it { is_expected.to match_array([custom_software_license_policy]) }
       end
 
-      it 'finds a custom license by a case insensitive match' do
-        expect(subject.with_license_or_custom_license_by_name('cuStom-LiCense')).to match_array([custom_software_license_policy])
+      context 'with a case insensitive match' do
+        let(:name) { 'cuStom-LiCensE' }
+
+        it { is_expected.to match_array([custom_software_license_policy]) }
       end
 
-      it 'finds multiple custom licenses' do
-        expect(subject.with_license_or_custom_license_by_name([custom_software_license.name, other_custom_software_license.name])).to match_array([custom_software_license_policy, other_custom_software_license_policy])
+      context 'with multiple custom names' do
+        let(:name) { [custom_software_license.name, other_custom_software_license.name] }
+
+        it { is_expected.to match_array([custom_software_license_policy, other_custom_software_license_policy]) }
       end
     end
   end
@@ -205,11 +226,12 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
       end
 
       context 'when associated with a custom_software_license' do
+        subject(:software_license_policy) { build(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
+
         let_it_be(:project) { create(:project) }
         let_it_be(:custom_software_license) { create(:custom_software_license) }
-        let_it_be(:software_license_policy) { build(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
 
-        specify { expect(subject.name).to eql(subject.custom_software_license.name) }
+        specify { expect(software_license_policy.name).to eql(software_license_policy.custom_software_license.name) }
       end
     end
   end
