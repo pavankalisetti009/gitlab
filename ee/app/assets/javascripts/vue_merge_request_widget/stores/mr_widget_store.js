@@ -35,6 +35,7 @@ export default class MergeRequestStore extends CEMergeRequestStore {
     this.mergeRequestApproversAvailable = data.merge_request_approvers_available;
     this.aiCommitMessageEnabled = data.aiCommitMessageEnabled;
     this.pathLocksPath = data.path_locks_path;
+    this.hasPolicies = data.hasPolicies || false;
 
     this.initBrowserPerformanceReport(data);
     this.initLoadPerformanceReport(data);
