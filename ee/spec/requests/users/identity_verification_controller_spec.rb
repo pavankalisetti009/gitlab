@@ -47,14 +47,6 @@ RSpec.describe Users::IdentityVerificationController, :clean_gitlab_redis_sessio
 
       it_behaves_like 'handles the request based on content type'
     end
-
-    context 'when opt_in_identity_verification feature flag is disabled' do
-      before do
-        stub_feature_flags(opt_in_identity_verification: false)
-      end
-
-      it_behaves_like 'handles the request based on content type'
-    end
   end
 
   describe 'GET show' do

@@ -40,22 +40,16 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     subject { user.identity_verification_enabled? }
 
-    context 'when verification methods are available' do
-      where(:feature_available, :feature_flag_enabled, :result) do
-        false | false | false
-        true  | false | false
-        false | true  | false
-        true  | true  | true
+    context 'when running in SaaS' do
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when running in self-managed' do
+      before do
+        stub_saas_features(identity_verification: false)
       end
 
-      with_them do
-        before do
-          stub_saas_features(identity_verification: feature_available)
-          stub_feature_flags(opt_in_identity_verification: feature_flag_enabled)
-        end
-
-        it { is_expected.to eq(result) }
-      end
+      it { is_expected.to eq(false) }
     end
 
     context 'when verification methods are unavailable' do
