@@ -2,6 +2,8 @@
 key_path: usage_activity_by_stage_monthly.release.environments_approval_required
 description: Protected environments that require approval with approval rules by month
 product_group: environments
+product_categories:
+- continuous_delivery
 value_type: number
 status: active
 milestone: "15.1"
