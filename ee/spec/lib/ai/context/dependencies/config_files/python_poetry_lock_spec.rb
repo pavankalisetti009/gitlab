@@ -34,7 +34,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPoetryLock, feature
         TOML
       end
 
-      let(:expected_parsing_error_message) { 'TOML error - Key "version" is defined more than once' }
+      let(:expected_parsing_error_message) { 'error parsing TOML: Key "version" is defined more than once' }
     end
   end
 
