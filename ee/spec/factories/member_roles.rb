@@ -34,5 +34,11 @@ FactoryBot.define do
 
       member_role.read_code = true
     end
+
+    trait(:admin) do
+      base_access_level { nil }
+      read_code { false }
+      read_admin_dashboard { true }
+    end
   end
 end

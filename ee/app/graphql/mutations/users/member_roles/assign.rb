@@ -1,0 +1,53 @@
+# frozen_string_literal: true
+
+module Mutations
+  module Users
+    module MemberRoles
+      class Assign < BaseMutation
+        graphql_name 'MemberRoleToUserAssign'
+
+        authorize :admin_member_role
+
+        include ::GitlabSubscriptions::SubscriptionHelper
+
+        argument :user_id, Types::GlobalIDType[::User],
+          required: true,
+          description: 'Global ID of the user to be assigned to a custom role.'
+
+        argument :member_role_id, Types::GlobalIDType[::MemberRole],
+          required: true,
+          description: 'Global ID of the custom role to be assigned to a user.'
+
+        field :user_member_role, ::Types::Users::UserMemberRoleType,
+          description: 'Created user member role.', null: true
+
+        def ready?(**args)
+          raise_resource_not_available_error! if gitlab_com_subscription?
+
+          raise_resource_not_available_error! unless Feature.enabled?(:custom_ability_read_admin_dashboard,
+            current_user)
+
+          raise_resource_not_available_error! unless current_user.can?(:admin_member_role)
+
+          super
+        end
+
+        def resolve(**args)
+          user = ::Gitlab::Graphql::Lazy.force(find_object(id: args[:user_id]))
+          member_role = ::Gitlab::Graphql::Lazy.force(find_object(id: args[:member_role_id]))
+
+          params = { user: user, member_role: member_role }
+
+          response = ::Users::MemberRoles::AssignService.new(current_user, params).execute
+
+          raise_resource_not_available_error! if response.error? && response.reason == :unauthorized
+
+          {
+            user_member_role: response.payload[:user_member_role],
+            errors: response.errors
+          }
+        end
+      end
+    end
+  end
+end
