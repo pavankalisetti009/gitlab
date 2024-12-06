@@ -45,13 +45,7 @@ module Llm
     end
 
     def user_can_send_to_ai?
-      return true unless ::Gitlab.com?
-
-      if ai_action.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.ga.keys)
-        user.any_group_with_ga_ai_available?
-      else
-        user.any_group_with_ai_available?
-      end
+      user.allowed_to_use?(ai_action)
     end
 
     def prompt_message

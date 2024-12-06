@@ -22,6 +22,7 @@ RSpec.describe Llm::GenerateDescriptionService, :saas, feature_category: :team_p
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?)
         .with(user, :generate_description, resource).and_return(generate_description_license_enabled)
+      allow(user).to receive(:allowed_to_use?).with(:generate_description).and_return(true)
     end
 
     subject { service.execute }

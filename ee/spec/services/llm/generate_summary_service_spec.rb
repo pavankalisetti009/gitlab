@@ -20,6 +20,7 @@ RSpec.describe Llm::GenerateSummaryService, :saas, feature_category: :ai_abstrac
 
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?).with(user, :summarize_comments, resource).and_return(summarize_notes_enabled)
+      allow(user).to receive(:allowed_to_use?).with(:summarize_comments).and_return(true)
     end
 
     subject { described_class.new(current_user, resource, {}).execute }

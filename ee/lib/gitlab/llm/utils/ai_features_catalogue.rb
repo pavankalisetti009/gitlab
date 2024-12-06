@@ -41,15 +41,6 @@ module Gitlab
             self_managed: false,
             internal: false
           },
-          explain_code: {
-            service_class: ::Gitlab::Llm::VertexAi::Completions::ExplainCode,
-            prompt_class: ::Gitlab::Llm::VertexAi::Templates::ExplainCode,
-            feature_category: :ai_abstraction_layer,
-            execute_method: ::Llm::ExplainCodeService,
-            maturity: :experimental,
-            self_managed: false,
-            internal: false
-          },
           generate_description: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::GenerateDescription,
             prompt_class: ::Gitlab::Llm::Templates::GenerateDescription,
