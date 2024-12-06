@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial flow for user picking company and creating a project', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Trial flow for user picking company and creating a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method, :tracking_events_key) do
     [
       ['with regular trial sign up', ->(params) { trial_registration_sign_up(params) }, :trial_regular_signup],
@@ -11,8 +11,7 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
   end
 
   with_them do
-    it 'registers the user and creates a group and project reaching onboarding', :with_default_organization,
-      :snowplow_micro, :sidekiq_inline do
+    it 'registers the user and creates a group and project reaching onboarding', :snowplow_micro, :sidekiq_inline do
       sign_up_method.call(glm_params)
 
       ensure_onboarding { expect_to_see_welcome_form }
@@ -43,8 +42,7 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
   end
 
   context 'when last name is missing for SSO and has to be filled in' do
-    it 'registers the user, creates a group and project reaching onboarding', :with_default_organization,
-      :sidekiq_inline do
+    it 'registers the user, creates a group and project reaching onboarding', :sidekiq_inline do
       sso_trial_registration_sign_up(name: 'Registering')
 
       ensure_onboarding { expect_to_see_welcome_form }

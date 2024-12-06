@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Standard flow for user picking company and creating a project', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Standard flow for user picking company and creating a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular sign up', ->(params = {}) { regular_sign_up(params) }],
@@ -11,7 +11,7 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
   end
 
   with_them do
-    context 'when opting into a trial', :with_default_organization do
+    context 'when opting into a trial' do
       it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline do
         sign_up_method.call(glm_params)
 
@@ -37,7 +37,7 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
     end
   end
 
-  context 'when last name is missing for SSO and has to be filled in', :with_default_organization do
+  context 'when last name is missing for SSO and has to be filled in' do
     it 'registers the user, has some lead submission failures and creates a group and project reaching onboarding' do
       sso_sign_up(name: 'Registering')
 

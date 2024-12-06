@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Standard flow for user picking just me and creating a project', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Standard flow for user picking just me and creating a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular sign up', -> { regular_sign_up }],
@@ -11,8 +11,7 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
   end
 
   with_them do
-    it 'registers the user and creates a group and project reaching onboarding', :with_default_organization,
-      :sidekiq_inline do
+    it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline do
       sign_up_method.call
 
       expect_to_see_welcome_form
@@ -31,7 +30,7 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
   end
 
   context 'when template was selected' do
-    it 'creates a project from given template', :with_default_organization, :sidekiq_inline do
+    it 'creates a project from given template', :sidekiq_inline do
       regular_sign_up
 
       expect_to_see_welcome_form

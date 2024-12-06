@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Single sign on for signing up through sign in flow for user picking company and creating a project', :js, :saas_registration, feature_category: :onboarding do
-  context 'when opting into a trial', :with_default_organization do
+RSpec.describe 'Single sign on for signing up through sign in flow for user picking company and creating a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
+  context 'when opting into a trial' do
     it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline do
       sso_signup_through_signin
 

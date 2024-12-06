@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Registration with the email opt in value', :js, :saas_registration, :with_default_organization, feature_category: :onboarding do
+RSpec.describe 'Registration with the email opt in value', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
   shared_examples 'toggles email opt-in checkbox' do
     it 'toggles the omniauth form actions' do
       visit path
