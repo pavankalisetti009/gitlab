@@ -140,6 +140,24 @@ describe('Identifier Token component', () => {
       expect(eventSpy).toHaveBeenCalledTimes(1);
     });
 
+    // See discussion: https://gitlab.com/gitlab-org/gitlab/-/issues/452492#note_2243422709
+    it('does not emit double quote encapsulated identifiers', async () => {
+      const identifier = 'A1:2017 CVE-xyz';
+
+      eventSpy = jest.fn();
+      eventHub.$on('filters-changed', eventSpy);
+
+      // The Filtered Search sends a quoted text when there are characters like `/`, `:`.
+      // This makes sure we test sending raw values.
+      await selectOption(`"${identifier}"`);
+
+      expect(eventSpy).toHaveBeenCalledWith({
+        identifierName: identifier,
+      });
+
+      expect(eventSpy).toHaveBeenCalledTimes(1);
+    });
+
     it('shows an error message when query fails', async () => {
       createWrapper({
         active: true,

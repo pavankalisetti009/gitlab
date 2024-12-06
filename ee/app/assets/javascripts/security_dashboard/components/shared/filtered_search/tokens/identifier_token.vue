@@ -112,7 +112,9 @@ export default {
       }
     },
     emitFiltersChanged() {
-      eventHub.$emit('filters-changed', { identifierName: this.selectedIdentifier });
+      eventHub.$emit('filters-changed', {
+        identifierName: this.selectedIdentifier.replace(/^"|"$/g, ''),
+      });
     },
     isIdentifierSelected(identifier) {
       return this.selectedIdentifier === identifier;
