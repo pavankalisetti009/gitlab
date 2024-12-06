@@ -83,7 +83,7 @@ RSpec.describe Llm::BaseService, feature_category: :ai_abstraction_layer do
       let_it_be(:resource) { create(:issue, project: project) }
 
       before do
-        allow(user).to receive(:any_group_with_ai_available?).and_return(true)
+        allow(user).to receive(:allowed_to_use?).and_return(true)
       end
 
       it_behaves_like 'authorizing a resource'
@@ -91,6 +91,7 @@ RSpec.describe Llm::BaseService, feature_category: :ai_abstraction_layer do
 
     context 'when user has access as a member' do
       before do
+        allow(user).to receive(:allowed_to_use?).and_return(true)
         group.add_developer(user)
       end
 
@@ -103,13 +104,18 @@ RSpec.describe Llm::BaseService, feature_category: :ai_abstraction_layer do
       end
 
       context 'when experimental features are disabled for the group' do
+        before do
+          allow(user).to receive(:allowed_to_use?).and_return(false)
+        end
+
         include_context 'with experiment features disabled for group'
 
         it_behaves_like 'returns an error'
 
         context 'when feature is in ga' do
           before do
-            allow(user).to receive(:any_group_with_ga_ai_available?).and_return(true)
+            allow(user).to receive(:allowed_to_use?).and_return(true)
+
             stub_const('::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST',
               { action_name => { self_managed: false, maturity: :ga } })
           end
@@ -166,8 +172,7 @@ RSpec.describe Llm::BaseService, feature_category: :ai_abstraction_layer do
 
     context 'when user has access' do
       before do
-        project.add_developer(user)
-        group.add_developer(user)
+        allow(user).to receive(:allowed_to_use?).and_return(true)
       end
 
       it_behaves_like 'authorizing a resource'

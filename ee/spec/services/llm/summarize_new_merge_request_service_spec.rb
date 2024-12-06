@@ -23,6 +23,7 @@ RSpec.describe Llm::SummarizeNewMergeRequestService, :saas, feature_category: :c
         .to receive(:allowed?)
         .with(user, :summarize_new_merge_request, project)
         .and_return(summarize_new_merge_request_enabled)
+      allow(user).to receive(:allowed_to_use?).with(:summarize_new_merge_request).and_return(true)
     end
 
     subject { described_class.new(current_user, project, {}).execute }

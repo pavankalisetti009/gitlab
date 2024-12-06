@@ -29,6 +29,7 @@ RSpec.describe Llm::ProductAnalytics::GenerateCubeQueryService,
       allow(Ability).to receive(:allowed?)
                           .with(user, :generate_cube_query, project)
                           .and_return(true)
+      allow(user).to receive(:allowed_to_use?).with(:generate_cube_query).and_return(true)
     end
 
     let(:action_name) { :generate_cube_query }
