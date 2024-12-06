@@ -222,7 +222,7 @@ export default {
           :min="$options.minValue"
           :max="$options.maxValue"
           data-testid="work-item-progress-input"
-          class="hide-unfocused-input-decoration work-item-field-value !gl-max-w-full !gl-border-solid hover:!gl-border-gray-200"
+          class="hide-unfocused-input-decoration work-item-field-value !gl-max-w-full !gl-border-solid hover:!gl-border-strong"
           :placeholder="placeholder"
           :state="isValidProgress"
           width="sm"

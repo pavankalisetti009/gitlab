@@ -330,7 +330,7 @@ export default {
             type="text"
             :placeholder="s__('Analytics|Enter a visualization title')"
             :aria-label="s__('Analytics|Visualization title')"
-            class="form-control gl-mr-4 gl-border-gray-200"
+            class="form-control gl-mr-4 gl-border-strong"
             data-testid="visualization-title-input"
             :state="!titleValidationError"
             required
