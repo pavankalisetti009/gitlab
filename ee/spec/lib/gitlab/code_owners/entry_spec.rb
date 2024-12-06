@@ -5,7 +5,7 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
   subject(:entry) do
     described_class.new(
       "/**/file",
-      "@user jane@gitlab.org @group @group/nested-group",
+      "@user jane@gitlab.org @group @group/nested-group @@maintainer @@developers @@maintainer",
       "Documentation"
     )
   end
@@ -41,13 +41,7 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
   describe '#role_approvers' do
     let(:project) { build(:project) }
 
-    it 'raises an error if no roles have been added' do
-      expect { entry.role_approvers(project) }.to raise_error(/not loaded/)
-    end
-
-    it 'returns the roles in an array' do
-      entry.add_matching_roles_from([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
-
+    it 'returns the unique roles in an array' do
       expect(entry.role_approvers(project)).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
     end
 
@@ -77,7 +71,6 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
 
       entry.add_matching_groups_from(Group.with_users)
       entry.add_matching_users_from([user])
-      entry.add_matching_roles_from([])
 
       expect(entry.all_users(project)).to contain_exactly(user, group_user)
     end
@@ -163,16 +156,6 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
 
         expect(entry.users).to contain_exactly(user)
       end
-    end
-  end
-
-  describe '#add_matching_roles_from' do
-    let(:project) { build(:project) }
-
-    it 'returns only mentioned roles' do
-      entry.add_matching_roles_from([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
-
-      expect(entry.role_approvers(project)).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
     end
   end
 
