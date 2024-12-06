@@ -13,9 +13,9 @@ export const DEPENDENCIES_TABLE_I18N = {
   projects: s__('Dependencies|Projects'),
   vulnerabilities: s__('Dependencies|Vulnerabilities'),
   tooltipText: s__(
-    'Dependencies|The component dependency path is based on the lock file. There may be several paths. In these cases, the longest path is displayed.',
+    'Dependencies|The location includes the lock file. For transitive dependencies a list of its direct dependents is shown.',
   ),
-  tooltipMoreText: s__('Dependencies|Learn more about dependency paths'),
-  locationDependencyTitle: s__('Dependencies|Location and dependency path'),
+  tooltipMoreText: s__('Dependencies|Learn more about direct dependents'),
+  locationDependencyTitle: s__('Dependencies|List of direct dependents'),
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
 };

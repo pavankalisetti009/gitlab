@@ -100,17 +100,9 @@ export default {
       <gl-popover
         :target="() => $refs.moreLink.$el"
         placement="top"
-        :title="s__('Dependencies|Dependency path')"
+        :title="s__('Dependencies|Direct dependents')"
       >
         <dependency-path-viewer :dependencies="ancestors" />
-
-        <!-- footer -->
-        <div class="gl-mt-4">
-          <gl-icon class="!gl-align-middle" name="information" :size="12" variant="info" />
-          <span class="gl-align-middle gl-text-subtle">
-            {{ s__('Dependencies|There may be multiple paths') }}
-          </span>
-        </div>
       </gl-popover>
     </span>
   </gl-intersperse>
