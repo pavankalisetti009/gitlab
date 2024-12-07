@@ -180,6 +180,11 @@ On GitLab self-managed, you can activate the view by [enabling the required feat
 
 If you encounter issues while using GitLab Advanced SAST, refer to the [troubleshooting guide](troubleshooting.md).
 
+## Customize Advanced SAST
+
+You can disable Advanced SAST rules or edit their metadata, just as you can other analyzers.
+For details, see [Customize rulesets](customize_rulesets.md#disable-predefined-advanced-sast-rules).
+
 ## Feedback
 
 Feel free to add your feedback in the dedicated [issue 466322](https://gitlab.com/gitlab-org/gitlab/-/issues/466322).
