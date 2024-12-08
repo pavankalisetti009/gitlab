@@ -342,6 +342,7 @@ export default {
     </gl-table>
     <framework-info-drawer
       :group-path="groupPath"
+      :project-path="projectPath"
       :root-ancestor="rootAncestor"
       :framework="selectedFramework"
       @close="closeDrawer"
