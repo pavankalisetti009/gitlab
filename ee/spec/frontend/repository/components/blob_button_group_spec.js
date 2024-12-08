@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import LockButton from 'ee_component/repository/components/lock_button.vue';
+import LockFileButton from 'ee_component/repository/components/lock_file_button.vue';
 import BlobButtonGroup from '~/repository/components/blob_button_group.vue';
 
 const DEFAULT_PROPS = {
@@ -36,12 +36,12 @@ describe('EE BlobButtonGroup component', () => {
         ...DEFAULT_INJECT,
       },
       stubs: {
-        LockButton,
+        LockFileButton,
       },
     });
   };
 
-  const findLockButton = () => wrapper.findComponent(LockButton);
+  const findLockFileButton = () => wrapper.findComponent(LockFileButton);
 
   beforeEach(() => {
     createComponent();
@@ -57,9 +57,9 @@ describe('EE BlobButtonGroup component', () => {
   });
 
   it('renders the lock button', () => {
-    expect(findLockButton().exists()).toBe(true);
+    expect(findLockFileButton().exists()).toBe(true);
 
-    expect(findLockButton().props()).toMatchObject({
+    expect(findLockFileButton().props()).toMatchObject({
       canLock: true,
       isLocked: false,
       name: 'some name',
