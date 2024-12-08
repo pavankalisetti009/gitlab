@@ -3,7 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 
 import VueApollo from 'vue-apollo';
-import LockButton from 'ee_component/repository/components/lock_button.vue';
+import LockFileButton from 'ee_component/repository/components/lock_file_button.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
 
@@ -15,7 +15,7 @@ const DEFAULT_PROPS = {
   canLock: true,
 };
 
-describe('LockButton component', () => {
+describe('LockFileButton component', () => {
   let wrapper;
 
   const createMockApolloProvider = (resolverMock) => {
@@ -24,7 +24,7 @@ describe('LockButton component', () => {
   };
 
   const createComponent = (props = {}, lockMutation = jest.fn()) => {
-    wrapper = shallowMount(LockButton, {
+    wrapper = shallowMount(LockFileButton, {
       apolloProvider: createMockApolloProvider(lockMutation),
       propsData: {
         ...DEFAULT_PROPS,
@@ -36,7 +36,7 @@ describe('LockButton component', () => {
   describe('lock button', () => {
     let lockMutationMock;
     const mockEvent = { preventDefault: jest.fn() };
-    const findLockButton = () => wrapper.findComponent(GlButton);
+    const findLockFileButton = () => wrapper.findComponent(GlButton);
     const findModal = () => wrapper.findComponent(GlModal);
     const clickSubmit = () => findModal().vm.$emit('primary', mockEvent);
     const clickHide = () => findModal().vm.$emit('hide', mockEvent);
@@ -48,7 +48,7 @@ describe('LockButton component', () => {
     it('disables the lock button if canLock is set to false', () => {
       createComponent({ canLock: false });
 
-      expect(findLockButton().props('disabled')).toBe(true);
+      expect(findLockFileButton().props('disabled')).toBe(true);
     });
 
     it.each`
@@ -58,26 +58,26 @@ describe('LockButton component', () => {
     `('renders the $label button label', ({ isLocked, label }) => {
       createComponent({ isLocked });
 
-      expect(findLockButton().text()).toContain(label);
+      expect(findLockFileButton().text()).toContain(label);
     });
 
-    it('sets loading prop to true when LockButton was clicked', async () => {
+    it('sets loading prop to true when LockFileButton was clicked', async () => {
       createComponent();
-      findLockButton().vm.$emit('click');
+      findLockFileButton().vm.$emit('click');
       await clickSubmit();
 
-      expect(findLockButton().props('loading')).toBe(true);
+      expect(findLockFileButton().props('loading')).toBe(true);
     });
 
     it('displays a confirm modal when the lock button is clicked', () => {
       createComponent();
-      findLockButton().vm.$emit('click');
+      findLockFileButton().vm.$emit('click');
       expect(findModal().text()).toBe('Are you sure you want to lock some_file.js?');
     });
 
     it('should hide the confirm modal when a hide action is triggered', async () => {
       createComponent();
-      await findLockButton().vm.$emit('click');
+      await findLockFileButton().vm.$emit('click');
       expect(findModal().props('visible')).toBe(true);
 
       await clickHide();
@@ -87,7 +87,7 @@ describe('LockButton component', () => {
     it('executes a lock mutation once lock is confirmed', () => {
       lockMutationMock = jest.fn().mockRejectedValue('Test');
       createComponent({}, lockMutationMock);
-      findLockButton().vm.$emit('click');
+      findLockFileButton().vm.$emit('click');
       clickSubmit();
       expect(lockMutationMock).toHaveBeenCalledWith({
         filePath: 'some/path',
@@ -98,7 +98,7 @@ describe('LockButton component', () => {
 
     it('does not execute a lock mutation if lock not confirmed', () => {
       createComponent({}, lockMutationMock);
-      findLockButton().vm.$emit('click');
+      findLockFileButton().vm.$emit('click');
 
       expect(lockMutationMock).not.toHaveBeenCalled();
     });
