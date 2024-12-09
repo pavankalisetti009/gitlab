@@ -9,8 +9,6 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/64601
 time_frame: all
 data_source: database
 data_category: operational
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type: [customer_health_score]

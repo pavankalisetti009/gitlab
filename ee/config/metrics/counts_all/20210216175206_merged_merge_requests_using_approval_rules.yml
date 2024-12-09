@@ -8,8 +8,6 @@ status: broken
 repair_issue_url: https://gitlab.com/gitlab-data/analytics/-/issues/11466
 time_frame: all
 data_source: database
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

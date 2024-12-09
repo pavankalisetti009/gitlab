@@ -14,7 +14,5 @@ data_category: optional
 events:
   - name: value_streams_dashboard_viewed
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate

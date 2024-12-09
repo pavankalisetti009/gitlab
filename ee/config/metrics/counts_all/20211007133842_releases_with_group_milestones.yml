@@ -13,8 +13,6 @@ data_source: database
 instrumentation_class: 'CountUsersAssociatingGroupMilestonesToReleasesMetric'
 data_category: optional
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

@@ -10,8 +10,6 @@ options:
   secure_type: dast
 data_source: database
 data_category: operational
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type:

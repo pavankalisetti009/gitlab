@@ -16,7 +16,5 @@ events:
   filter:
     label: status_checks
     property: success
-distribution:
-- ee
 tiers:
 - ultimate

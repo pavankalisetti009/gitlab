@@ -16,7 +16,5 @@ events:
   filter:
     label: status_checks
     property: warning
-distribution:
-- ee
 tiers:
 - ultimate

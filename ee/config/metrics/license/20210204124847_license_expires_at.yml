@@ -12,8 +12,6 @@ data_source: license
 instrumentation_class: LicenseMetric
 options:
   attribute: expires_at
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

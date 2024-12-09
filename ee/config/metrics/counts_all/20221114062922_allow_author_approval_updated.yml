@@ -13,8 +13,6 @@ instrumentation_class: RedisMetric
 options:
   prefix: audit_events
   event: allow_author_approval_updated
-distribution:
-- ee
 tiers:
 - ultimate
 milestone_removed: "17.1"
