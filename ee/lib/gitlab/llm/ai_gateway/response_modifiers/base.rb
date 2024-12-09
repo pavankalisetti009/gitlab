@@ -25,6 +25,8 @@ module Gitlab
           private
 
           def error_from_response
+            return if ai_response.nil?
+
             detail = ai_response['detail']
 
             [detail.is_a?(String) ? detail : detail&.dig(0, 'msg')].compact
