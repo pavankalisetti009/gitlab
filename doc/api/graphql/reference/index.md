@@ -18446,6 +18446,27 @@ Information about a connected Agent.
 | <a id="agentmetadatapodnamespace"></a>`podNamespace` | [`String`](#string) | Namespace of the pod running the Agent. |
 | <a id="agentmetadataversion"></a>`version` | [`String`](#string) | Agent version tag. |
 
+### `AgentVersionWarning`
+
+Version-related warning for a connected Agent.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentversionwarningmessage"></a>`message` | [`String`](#string) | Warning message related to the version. |
+| <a id="agentversionwarningtype"></a>`type` | [`String`](#string) | Warning type related to the version. |
+
+### `AgentWarning`
+
+Warning object for a connected Agent.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentwarningversion"></a>`version` | [`AgentVersionWarning`](#agentversionwarning) | Agent warning related to the version. |
+
 ### `AggregationStatus`
 
 #### Fields
@@ -21207,6 +21228,7 @@ Connection details for an Agent.
 | <a id="connectedagentconnectedat"></a>`connectedAt` | [`Time`](#time) | When the connection was established. |
 | <a id="connectedagentconnectionid"></a>`connectionId` | [`BigInt`](#bigint) | ID of the connection. |
 | <a id="connectedagentmetadata"></a>`metadata` | [`AgentMetadata`](#agentmetadata) | Information about the Agent. |
+| <a id="connectedagentwarnings"></a>`warnings` | [`[AgentWarning!]`](#agentwarning) | Agent warnings list. |
 
 ### `ContactStateCounts`
 
