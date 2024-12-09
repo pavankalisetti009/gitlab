@@ -170,7 +170,7 @@ module IdentityVerifiable
   def verification_method_enabled?(method)
     case method
     when 'phone'
-      Feature.enabled?(:identity_verification_phone_number, self) &&
+      ::Gitlab::CurrentSettings.phone_verification_enabled &&
         !PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
     when 'credit_card'
       Feature.enabled?(:identity_verification_credit_card, self)
