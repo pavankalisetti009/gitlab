@@ -239,6 +239,9 @@ module QA
 
           def generate_commit
             click_element('generate-commit-message')
+          end
+
+          def insert_commit
             click_element('insert-commit-message')
           end
 
