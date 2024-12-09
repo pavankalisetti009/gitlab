@@ -1,16 +1,19 @@
 <script>
-import { GlModal, GlTableLite, GlButton } from '@gitlab/ui';
+import { GlModal, GlTableLite, GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { s__, __, sprintf } from '~/locale';
-import { NO_EXCEPTION_KEY } from 'ee/security_orchestration/components/policy_editor/constants';
-import { DENIED } from './scan_filters/constants';
+import {
+  EXCEPTION_KEY,
+  NO_EXCEPTION_KEY,
+} from 'ee/security_orchestration/components/policy_editor/constants';
+import { DENIED, UNKNOWN_LICENSE } from './scan_filters/constants';
 import DenyAllowLicenses from './deny_allow_licenses.vue';
 import DenyAllowListExceptions from './deny_allow_list_exceptions.vue';
 
-const createLicenseObject = () => ({
-  license: undefined,
-  exceptions: [],
-  exceptionsType: NO_EXCEPTION_KEY,
+const createLicenseObject = ({ license, exceptions = [] } = {}) => ({
+  license,
+  exceptions,
+  exceptionsType: exceptions?.length > 0 ? EXCEPTION_KEY : NO_EXCEPTION_KEY,
   id: uniqueId('license_'),
 });
 
@@ -27,6 +30,7 @@ export default {
     denySecondTableHeader: s__('ScanResultPolicy|Deny except on'),
     allowSecondTableHeader: s__('ScanResultPolicy|Allow except on'),
     addLicenseButton: s__('ScanResultPolicy|Add new license'),
+    disabledTooltip: s__('ScanResultPolicy|All licenses have been selected'),
   },
   name: 'DenyAllowListModal',
   components: {
@@ -36,20 +40,39 @@ export default {
     GlModal,
     GlTableLite,
   },
+  directives: { GlTooltip: GlTooltipDirective },
+  inject: ['parsedSoftwareLicenses'],
   props: {
     listType: {
       type: String,
       required: false,
       default: DENIED,
     },
+    licenses: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
-      items: [createLicenseObject()],
+      items: this.mapLicenses(this.licenses),
       selectedExceptionType: NO_EXCEPTION_KEY,
     };
   },
   computed: {
+    allSelected() {
+      return this.allLicenses.length === this.alreadySelectedLicenses.length;
+    },
+    allLicenses() {
+      return [UNKNOWN_LICENSE, ...this.parsedSoftwareLicenses];
+    },
+    alreadySelectedLicenses() {
+      return this.items.map((item) => item.license).filter(Boolean);
+    },
+    disabledTooltip() {
+      return this.allSelected ? this.$options.i18n.disabledTooltip : '';
+    },
     isDeniedList() {
       return this.listType === DENIED;
     },
@@ -103,16 +126,34 @@ export default {
         },
       ];
     },
+    mappedAndFilteredItems() {
+      return this.items
+        .filter(({ license }) => Boolean(license))
+        .map(({ license, exceptions }) => ({ license, exceptions }));
+    },
+  },
+  /**
+   * when modal was initially opened and licenses selected,
+   * opening modal again won't trigger data
+   */
+  watch: {
+    licenses(licenses) {
+      this.items = this.mapLicenses(licenses);
+    },
   },
   methods: {
     addLicense() {
       this.items = [...this.items, createLicenseObject()];
+    },
+    mapLicenses(licenses) {
+      return licenses.length > 0 ? licenses.map(createLicenseObject) : [createLicenseObject()];
     },
     showModalWindow() {
       this.$refs.modal.show();
     },
     hideModalWindow() {
       this.$refs.modal.hide();
+      this.$emit('select-license', []);
     },
     selectExceptionType(value, item) {
       const index = this.items.findIndex(({ id }) => id === item.id);
@@ -124,6 +165,9 @@ export default {
     },
     removeItem(id) {
       this.items = this.items.filter((item) => item.id !== id);
+    },
+    selectLicenses() {
+      this.$emit('select-licenses', this.mappedAndFilteredItems);
     },
   },
 };
@@ -138,12 +182,19 @@ export default {
     scrollable
     content-class="security-policies-license-modal-min-height"
     modal-id="deny-allow-list-modal"
+    @canceled="hideModalWindow"
+    @primary="selectLicenses"
   >
     <p>{{ modalDescription }}</p>
 
     <gl-table-lite :fields="tableFields" :items="items" table-class="gl-border-b" stacked="md">
       <template #cell(licenses)="{ item = {} }">
-        <deny-allow-licenses :selected="item.license" @select="selectLicense($event, item)" />
+        <deny-allow-licenses
+          :all-licenses="allLicenses"
+          :already-selected-licenses="alreadySelectedLicenses"
+          :selected="item.license"
+          @select="selectLicense($event, item)"
+        />
       </template>
       <template #cell(exceptions)="{ item = {} }">
         <deny-allow-list-exceptions
@@ -158,22 +209,31 @@ export default {
             icon="remove"
             category="tertiary"
             :aria-label="__('Remove')"
-            data-testid="remove-rule"
+            data-testid="remove-license"
             @click="removeItem(item.id)"
           />
         </div>
       </template>
     </gl-table-lite>
 
-    <gl-button
-      data-testid="add-license"
-      class="gl-mt-4"
-      category="secondary"
-      variant="confirm"
-      size="small"
-      @click="addLicense"
+    <span
+      v-gl-tooltip="{
+        disabled: !allSelected,
+        title: disabledTooltip,
+      }"
+      data-testid="add-license-tooltip"
     >
-      {{ $options.i18n.addLicenseButton }}
-    </gl-button>
+      <gl-button
+        :disabled="allSelected"
+        data-testid="add-license"
+        class="gl-mt-4"
+        category="secondary"
+        variant="confirm"
+        size="small"
+        @click="addLicense"
+      >
+        {{ $options.i18n.addLicenseButton }}
+      </gl-button>
+    </span>
   </gl-modal>
 </template>
