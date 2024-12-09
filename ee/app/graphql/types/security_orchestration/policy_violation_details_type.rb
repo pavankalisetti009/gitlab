@@ -12,6 +12,11 @@ module Types
         method: :violations,
         description: 'Information about policies that were violated.'
 
+      field :violations_count,
+        type: GraphQL::Types::Int,
+        null: false,
+        description: 'Total count of violations.'
+
       field :new_scan_finding,
         type: [Types::SecurityOrchestration::PolicyScanFindingViolationType],
         null: false,

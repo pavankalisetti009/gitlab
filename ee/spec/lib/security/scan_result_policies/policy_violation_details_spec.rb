@@ -595,4 +595,15 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       )
     end
   end
+
+  describe '#violations_count' do
+    before do
+      build_violation_details(policy3, violations: { any_merge_request: { commits: true } })
+      build_violation_details(policy1, violations: { license_scanning: { 'MIT License' => %w[B C D] } })
+    end
+
+    it 'counts all violations' do
+      expect(details.violations_count).to eq(2)
+    end
+  end
 end

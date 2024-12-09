@@ -31154,6 +31154,7 @@ Represents the details of merge request approval policy violations.
 | <a id="policyviolationdetailsnewscanfinding"></a>`newScanFinding` | [`[PolicyScanFindingViolation!]!`](#policyscanfindingviolation) | Represents the newly detected violations of `scan_finding` rules. |
 | <a id="policyviolationdetailspolicies"></a>`policies` | [`[PolicyViolationInfo!]!`](#policyviolationinfo) | Information about policies that were violated. |
 | <a id="policyviolationdetailspreviousscanfinding"></a>`previousScanFinding` | [`[PolicyScanFindingViolation!]!`](#policyscanfindingviolation) | Represents the violations of `scan_finding` rules for previously existing vulnerabilities. |
+| <a id="policyviolationdetailsviolationscount"></a>`violationsCount` | [`Int!`](#int) | Total count of violations. |
 
 ### `PolicyViolationInfo`
 
