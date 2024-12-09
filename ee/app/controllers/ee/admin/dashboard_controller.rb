@@ -13,6 +13,15 @@ module EE
 
         @license = License.current
       end
+
+      private
+
+      override :authenticate_admin!
+      def authenticate_admin!
+        return if can?(current_user, :read_admin_dashboard)
+
+        super
+      end
     end
   end
 end

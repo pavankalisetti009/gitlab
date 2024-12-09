@@ -8,5 +8,6 @@ feature_category: admin
 milestone: '17.6'
 group_ability: false
 project_ability: false
+admin_ability: true
 requirements: []
 available_from_access_level:

@@ -26,6 +26,10 @@ module Authz
         attributes.fetch(:project_ability, false)
       end
 
+      def admin_ability_enabled?
+        attributes.fetch(:admin_ability, false)
+      end
+
       private
 
       attr_reader :ability_name

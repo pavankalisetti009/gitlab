@@ -117,12 +117,16 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
       create(:member_role, :reporter, :instance, name: 'reporter plus (instance-level)')
     end
 
+    let_it_be(:member_role_admin) do
+      create(:member_role, :admin, name: 'admin member role')
+    end
+
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
       stub_licensed_features(custom_roles: true)
     end
 
-    shared_examples 'returning all custom roles' do
+    shared_examples 'returning all non-admin custom roles' do
       it 'returns all roles for the root group' do
         expect(presenter.valid_member_roles).to match_array(
           [
@@ -167,7 +171,7 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
         root_group.add_guest(user)
       end
 
-      it_behaves_like 'returning all custom roles'
+      it_behaves_like 'returning all non-admin custom roles'
     end
 
     context 'when the user is a member of subgroup group' do
@@ -175,7 +179,7 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
         subgroup.add_guest(user)
       end
 
-      it_behaves_like 'returning all custom roles'
+      it_behaves_like 'returning all non-admin custom roles'
     end
 
     context 'when on self-managed', :enable_admin_mode do

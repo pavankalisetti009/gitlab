@@ -2932,6 +2932,7 @@ Gitlab/BoundedContexts:
     - 'ee/app/models/path_lock.rb'
     - 'ee/app/models/preloaders/environments/protected_environment_preloader.rb'
     - 'ee/app/models/preloaders/user_member_roles_in_groups_preloader.rb'
+    - 'ee/app/models/preloaders/user_member_roles_for_admin_preloader.rb'
     - 'ee/app/models/preloaders/user_member_roles_in_projects_preloader.rb'
     - 'ee/app/models/product_analytics/dashboard.rb'
     - 'ee/app/models/product_analytics/funnel.rb'

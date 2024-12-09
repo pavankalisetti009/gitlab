@@ -283,7 +283,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
   describe 'custom roles' do
     describe 'admin_member_role' do
-      let(:permissions) { [:admin_member_role] }
+      let(:permissions) { [:admin_member_role, :read_admin_member_role] }
 
       context 'when custom_roles feature is enabled' do
         before do
@@ -870,6 +870,29 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
     context 'when regular user' do
       it { is_expected.to be_disallowed(:manage_ai_settings) }
+    end
+  end
+
+  context 'custom permissions' do
+    context 'when a user is assigned custom role with :read_admin_dashboard true' do
+      let_it_be(:role) { create(:member_role, :admin) }
+      let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: current_user) }
+
+      context 'when custom_roles feature is enabled' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it { is_expected.to be_allowed(:read_admin_dashboard, :access_admin_area) }
+      end
+
+      context 'when custom_roles feature is disabled' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it { is_expected.to be_disallowed(:read_admin_dashboard, :access_admin_area) }
+      end
     end
   end
 end
