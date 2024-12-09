@@ -70,7 +70,7 @@ components:
       memoryRequest: 256Mi
       cpuLimit: 500m
       cpuRequest: 100m
-  - name: gl-cloner-injector
+  - name: gl-project-cloner
     container:
       image: alpine/git:2.45.2
       volumeMounts:
@@ -117,11 +117,11 @@ components:
 events:
   preStart:
     - gl-tools-injector-command
-    - gl-cloner-injector-command
+    - gl-project-cloner-command
 commands:
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector
-  - id: gl-cloner-injector-command
+  - id: gl-project-cloner-command
     apply:
-      component: gl-cloner-injector
+      component: gl-project-cloner
