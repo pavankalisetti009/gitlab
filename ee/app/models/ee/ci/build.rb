@@ -192,12 +192,21 @@ module EE
 
         pages_config.tap do |pages_options|
           pages_options[:path_prefix] = ExpandVariables.expand(pages_options[:path_prefix].to_s, -> {
-            variables.sort_and_expand_all
+            pages_base_variables.sort_and_expand_all
           })
         end
       end
 
       private
+
+      # all variables that can be used as a value in pages_options
+      def pages_base_variables
+        ::Gitlab::Ci::Variables::Collection.new
+         .concat(persisted_variables)
+         .concat(scoped_variables)
+         .concat(job_variables)
+         .concat(persisted_environment_variables)
+      end
 
       def variables_hash
         @variables_hash ||= variables.to_h do |variable|
