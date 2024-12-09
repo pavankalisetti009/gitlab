@@ -1,7 +1,6 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import { UNKNOWN_LICENSE } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 
 export default {
   i18n: {
@@ -13,25 +12,40 @@ export default {
   components: {
     GlCollapsibleListbox,
   },
-  inject: ['parsedSoftwareLicenses'],
   props: {
     selected: {
       type: Object,
       required: false,
       default: undefined,
     },
+    alreadySelectedLicenses: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+    allLicenses: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   computed: {
-    allLicenses() {
-      return [UNKNOWN_LICENSE, ...this.parsedSoftwareLicenses];
+    allSelected() {
+      return this.allLicenses.length === this.alreadySelectedLicenses.length;
+    },
+    unselectedLicenses() {
+      const alreadySelectedValues = this.alreadySelectedLicenses.map(({ value }) => value);
+      return this.allLicenses.filter(({ value }) => !alreadySelectedValues.includes(value));
     },
     licenses() {
-      const groups = [
-        {
+      const groups = [];
+
+      if (!this.allSelected) {
+        groups.unshift({
           text: this.$options.i18n.licenses,
-          options: this.allLicenses,
-        },
-      ];
+          options: this.unselectedLicenses.filter(({ value }) => value !== this.selected?.value),
+        });
+      }
 
       if (this.selected) {
         groups.unshift({

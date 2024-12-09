@@ -26,6 +26,7 @@ import {
   validateBranchProjectFormat,
   getMergeRequestConfig,
   policyToYaml,
+  parseAllowDenyLicenseList,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -38,6 +39,10 @@ import {
   mockDastScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import {
+  ALLOWED,
+  DENIED,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 jest.mock('ee/security_orchestration/utils');
@@ -593,6 +598,20 @@ describe('mapBranchesToExceptions', () => {
         site_profile: required_site_profile
         scanner_profile: required_scanner_profile
 `);
+    });
+  });
+
+  describe('parseAllowDenyLicenseList', () => {
+    it.each`
+      rule                                                                            | output
+      ${undefined}                                                                    | ${{ isDenied: false, licenses: [] }}
+      ${null}                                                                         | ${{ isDenied: false, licenses: [] }}
+      ${{}}                                                                           | ${{ isDenied: false, licenses: [] }}
+      ${{ licenses: { [ALLOWED]: [{ license: { text: 'text', value: 'value' } }] } }} | ${{ isDenied: false, licenses: [{ license: { text: 'text', value: 'value' } }] }}
+      ${{ licenses: { [DENIED]: [{ license: { text: 'text', value: 'value' } }] } }}  | ${{ isDenied: true, licenses: [{ license: { text: 'text', value: 'value' } }] }}
+      ${{ licenses: { invalid: [{ license: { text: 'text', value: 'value' } }] } }}   | ${{ isDenied: false, licenses: [] }}
+    `('parse licenses from rule', ({ rule, output }) => {
+      expect(parseAllowDenyLicenseList(rule)).toEqual(output);
     });
   });
 });

@@ -78,4 +78,35 @@ describe('DenyAllowList', () => {
       expect(findModal().props('listType')).toBe(DENIED);
     });
   });
+
+  describe('select licenses', () => {
+    const LICENSES = [
+      {
+        text: 'Licence 1',
+        value: 'licence_1',
+      },
+      {
+        text: 'Licence 2',
+        value: 'licence_2',
+      },
+    ];
+
+    it('selects licenses', () => {
+      createComponent();
+
+      findModal().vm.$emit('select-licenses', LICENSES);
+
+      expect(wrapper.emitted('select-licenses')).toEqual([[LICENSES]]);
+    });
+
+    it('renders selected licences', () => {
+      createComponent({
+        props: {
+          licenses: LICENSES,
+        },
+      });
+
+      expect(findModal().props('licenses')).toEqual(LICENSES);
+    });
+  });
 });
