@@ -10,29 +10,53 @@ module GitlabSubscriptions
       feature_category :subscription_management
       idempotent!
 
+      BATCH_SIZE = 100
+
       def perform
         GitlabSubscriptions::AddOnPurchase
-          .includes(:add_on, :assigned_users, :namespace) # rubocop: disable CodeReuse/ActiveRecord -- Avoid N+1 queries
+          .includes(:add_on, :assigned_users, :namespace) # rubocop:disable CodeReuse/ActiveRecord -- Avoid N+1 queries
           .each_batch do |add_on_purchases|
             add_on_purchases.ready_for_cleanup.each do |add_on_purchase|
-              deleted_assigned_users = GitlabSubscriptions::UserAddOnAssignment # rubocop: disable Cop/DestroyAll -- https://gitlab.com/gitlab-org/gitlab/-/merge_requests/171331#note_2189629294
-                .for_add_on_purchases(add_on_purchase)
-                .destroy_all
+              assigned_users = add_on_purchase.assigned_users
+              count = assigned_users.count
 
-              log_event(add_on_purchase, deleted_assigned_users.count) if deleted_assigned_users.count > 0
+              assigned_users.each_batch(of: BATCH_SIZE) do |user_add_on_assigments|
+                log_deletion(add_on_purchase, user_add_on_assigments.pluck_user_ids)
+
+                user_add_on_assigments.destroy_all # rubocop:disable Cop/DestroyAll -- https://gitlab.com/gitlab-org/gitlab/-/merge_requests/171331#note_2189629294
+              end
+
+              log_summary(add_on_purchase, count) if count > 0
             end
           end
       end
 
       private
 
-      def log_event(add_on_purchase, deleted_assigned_users_count)
+      def log_deletion(add_on_purchase, user_ids)
         Gitlab::AppLogger.info(
-          add_on: add_on_purchase.add_on.name,
-          message: 'User add-on assignments for GitlabSubscriptions::AddOnPurchase were deleted via scheduled CronJob',
-          namespace: add_on_purchase.namespace&.path,
-          user_add_on_assignments_count: deleted_assigned_users_count
+          **shared_log_attributes(add_on_purchase).merge(
+            message: 'CleanupWorker destroyed UserAddOnAssignments',
+            user_ids: user_ids
+          )
         )
+      end
+
+      def log_summary(add_on_purchase, deleted_assigned_users_count)
+        Gitlab::AppLogger.info(
+          **shared_log_attributes(add_on_purchase).merge(
+            message: 'CleanupWorker UserAddOnAssignments deletion summary',
+            user_add_on_assignments_count: deleted_assigned_users_count
+          )
+        )
+      end
+
+      def shared_log_attributes(add_on_purchase)
+        {
+          add_on: add_on_purchase.add_on.name,
+          add_on_purchase: add_on_purchase.id,
+          namespace: add_on_purchase.namespace&.path
+        }
       end
     end
   end

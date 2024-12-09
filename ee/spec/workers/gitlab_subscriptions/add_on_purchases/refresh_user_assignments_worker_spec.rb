@@ -110,12 +110,20 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker
 
     it 'logs an info about assignments refreshed' do
       expect(Gitlab::AppLogger).to receive(:info).with(
+        message: 'Ineligible UserAddOnAssignments destroyed',
+        user_ids: [user_1.id, user_2.id],
+        add_on: add_on_purchase.add_on.name,
+        add_on_purchase: add_on_purchase.id,
+        namespace: namespace.path
+      ).ordered
+
+      expect(Gitlab::AppLogger).to receive(:info).with(
         message: 'AddOnPurchase user assignments refreshed in bulk',
         deleted_assignments_count: 2,
         add_on: add_on_purchase.add_on.name,
         add_on_purchase_id: add_on_purchase.id,
         namespace_id: namespace.id
-      )
+      ).ordered
 
       subject.perform(root_namespace_id)
     end

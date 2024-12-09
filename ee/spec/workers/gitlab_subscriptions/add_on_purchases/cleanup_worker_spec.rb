@@ -9,6 +9,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
   it { expect(described_class.get_feature_category).to eq(:subscription_management) }
 
   describe '#perform' do
+    let_it_be(:add_on_name) { 'code_suggestions' }
+    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+    let_it_be(:expires_on) { 1.day.from_now }
+    let_it_be(:namespace_path) { 'Socotra' }
+
+    let(:namespace) { create(:group, path: namespace_path) }
     let!(:add_on_purchase) do
       create(
         :gitlab_subscription_add_on_purchase,
@@ -17,10 +23,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
         namespace: namespace
       )
     end
-
-    let(:add_on) { create(:gitlab_subscription_add_on) }
-    let(:namespace) { create(:group) }
-    let(:expires_on) { 1.day.from_now }
 
     it_behaves_like 'an idempotent worker' do
       subject(:worker) { described_class.new }
@@ -43,8 +45,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
         end
 
         context 'with assigned_users' do
-          let(:user_1) { create(:user) }
-          let(:user_2) { create(:user) }
+          let_it_be(:user_1) { create(:user) }
+          let_it_be(:user_2) { create(:user) }
+          let_it_be(:message_deletion) { 'CleanupWorker destroyed UserAddOnAssignments' }
+          let_it_be(:message_summary) { 'CleanupWorker UserAddOnAssignments deletion summary' }
 
           let!(:user_add_on_assignment_1) do
             create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user_1)
@@ -54,19 +58,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
             create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user_2)
           end
 
-          let(:message) do
-            'User add-on assignments for GitlabSubscriptions::AddOnPurchase were deleted via scheduled CronJob'
-          end
-
-          let(:expected_log) do
-            {
-              add_on: add_on.name,
-              message: message,
-              namespace: namespace.path,
-              user_add_on_assignments_count: 2
-            }
-          end
-
           it 'destroys add-on purchase assigned users' do
             worker.perform
 
@@ -74,25 +65,79 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
             expect(add_on_purchase.assigned_users).to be_empty
           end
 
-          it 'logs the deletion' do
-            expect(Gitlab::AppLogger).to receive(:info).with(expected_log)
+          it 'logs the deletion and the summary' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              add_on: add_on_name,
+              add_on_purchase: add_on_purchase.id,
+              message: message_deletion,
+              namespace: namespace_path,
+              user_ids: [user_1.id, user_2.id]
+            ).ordered
+
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              add_on: add_on_name,
+              add_on_purchase: add_on_purchase.id,
+              message: message_summary,
+              namespace: namespace_path,
+              user_add_on_assignments_count: 2
+            ).ordered
 
             worker.perform
           end
 
-          context 'without namespace' do
-            let(:namespace) { nil }
-            let(:expected_log) do
-              {
-                add_on: add_on.name,
-                message: message,
-                namespace: nil,
-                user_add_on_assignments_count: 2
-              }
+          context 'with multiple batches' do
+            before do
+              stub_const('GitlabSubscriptions::AddOnPurchases::CleanupWorker::BATCH_SIZE', 1)
             end
 
+            it 'logs for every batch a deletion log' do
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                add_on: add_on_name,
+                add_on_purchase: add_on_purchase.id,
+                message: message_deletion,
+                namespace: namespace_path,
+                user_ids: [user_1.id]
+              ).ordered
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                add_on: add_on_name,
+                add_on_purchase: add_on_purchase.id,
+                message: message_deletion,
+                namespace: namespace_path,
+                user_ids: [user_2.id]
+              ).ordered
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                add_on: add_on_name,
+                add_on_purchase: add_on_purchase.id,
+                message: message_summary,
+                namespace: namespace_path,
+                user_add_on_assignments_count: 2
+              ).ordered
+
+              worker.perform
+            end
+          end
+
+          context 'without namespace' do
+            let(:namespace) { nil }
+
             it 'logs the deletion with blank namespace' do
-              expect(Gitlab::AppLogger).to receive(:info).with(expected_log)
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                add_on: add_on_name,
+                add_on_purchase: add_on_purchase.id,
+                message: message_deletion,
+                namespace: nil,
+                user_ids: [user_1.id, user_2.id]
+              ).ordered
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                add_on: add_on_name,
+                add_on_purchase: add_on_purchase.id,
+                message: message_summary,
+                namespace: nil,
+                user_add_on_assignments_count: 2
+              ).ordered
 
               worker.perform
             end

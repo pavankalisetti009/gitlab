@@ -39,9 +39,11 @@ module GitlabSubscriptions
 
       def log_event
         Gitlab::AppLogger.info(
-          message: 'AddOnPurchase user assignment destroyed',
+          message: 'CleanupUserAddOnAssignmentWorker destroyed UserAddOnAssignment',
           user: user.username.to_s,
+          user_id: user_id,
           add_on: add_on_purchase.add_on.name,
+          add_on_purchase: add_on_purchase.id,
           namespace: root_namespace.path
         )
       end
