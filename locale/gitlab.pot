@@ -43118,9 +43118,6 @@ msgstr ""
 msgid "ProjectOverview|You don't have permission to fork this project"
 msgstr ""
 
-msgid "ProjectOverview|You have reached your project limit"
-msgstr ""
-
 msgid "ProjectOverview|You must sign in to star a project"
 msgstr ""
 
