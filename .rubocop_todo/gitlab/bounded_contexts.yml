@@ -504,6 +504,8 @@ Gitlab/BoundedContexts:
     - 'app/graphql/types/kas/agent_configuration_type.rb'
     - 'app/graphql/types/kas/agent_connection_type.rb'
     - 'app/graphql/types/kas/agent_metadata_type.rb'
+    - 'app/graphql/types/kas/agent_version_warning_type.rb'
+    - 'app/graphql/types/kas/agent_warning_type.rb'
     - 'app/graphql/types/key_type.rb'
     - 'app/graphql/types/label_type.rb'
     - 'app/graphql/types/limited_countable_connection_type.rb'
