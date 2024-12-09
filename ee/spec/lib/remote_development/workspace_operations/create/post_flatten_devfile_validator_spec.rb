@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'fast_spec_helper'
 
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevfileValidator, feature_category: :workspaces do
   include ResultMatchers

@@ -1,20 +1,21 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComponentInjector, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComponentInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let_it_be(:group) { create(:group, name: "test-group") }
-  let_it_be(:project) do
-    create(:project, :in_group, :repository, path: "test-project", namespace: group)
+  let(:project_path) { "test-project" }
+  let(:project) do
+    http_url_to_repo = "#{root_url}test-group/#{project_path}.git"
+    instance_double("Project", path: project_path, http_url_to_repo: http_url_to_repo) # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   end
 
-  let(:input_processed_devfile_name) { 'example.tools-injected-devfile.yaml' }
+  let(:input_processed_devfile_name) { 'example.main-container-updated-devfile.yaml' }
   let(:input_processed_devfile) { YAML.safe_load(read_devfile(input_processed_devfile_name)).to_h }
-  let(:expected_processed_devfile_name) { 'example.project-cloner-injected-devfile.yaml' }
+  let(:expected_processed_devfile_name) { 'example.project-cloner-inserted-devfile.yaml' }
   let(:expected_processed_devfile) { YAML.safe_load(read_devfile(expected_processed_devfile_name)).to_h }
-  let(:component_name) { "gl-cloner-injector" }
+  let(:component_name) { "gl-project-cloner" }
   let(:context) do
     {
       params: {
@@ -34,7 +35,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
   end
 
   subject(:returned_value) do
-    described_class.inject(context)
+    described_class.insert(context)
   end
 
   it "injects the project cloner component" do

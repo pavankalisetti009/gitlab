@@ -2,12 +2,12 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInjector, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:input_processed_devfile_name) { 'example.flattened-devfile.yaml' }
   let(:input_processed_devfile) { YAML.safe_load(read_devfile(input_processed_devfile_name)).to_h }
-  let(:expected_processed_devfile_name) { 'example.tools-injected-devfile.yaml' }
+  let(:expected_processed_devfile_name) { 'example.tools-injector-inserted-devfile.yaml' }
   let(:expected_processed_devfile) { YAML.safe_load(read_devfile(expected_processed_devfile_name)).to_h }
   let(:tools_injector_image_from_settings) do
     "registry.gitlab.com/gitlab-org/remote-development/gitlab-workspaces-tools:2.0.0"
@@ -35,10 +35,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInj
   end
 
   subject(:returned_value) do
-    described_class.inject(context)
+    described_class.insert(context)
   end
 
-  it 'injects the tools injector component' do
+  it 'inserts the tools injector component' do
     expect(returned_value[:processed_devfile]).to eq(expected_processed_devfile)
   end
 
@@ -48,15 +48,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInj
     it 'uses image override' do
       image_from_processed_devfile = returned_value[:processed_devfile]["components"][2]["container"]["image"]
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
-    end
-  end
-
-  context "when vscode_extensions_gallery_metadata Web IDE setting is disabled" do
-    let(:expected_processed_devfile_name) { 'example.tools-injected-marketplace-disabled-devfile.yaml' }
-    let(:vscode_extensions_gallery_metadata_enabled) { false }
-
-    it 'injects the tools injector component' do
-      expect(returned_value[:processed_devfile]).to eq(expected_processed_devfile)
     end
   end
 end

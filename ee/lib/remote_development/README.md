@@ -610,11 +610,11 @@ The `invoke_rop_steps` method is the entry into the matcher. It accepts as a par
 
 ```ruby
       let(:rop_steps) do
-            [
-                [RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInjector, :map],
-                [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then]
-            ]
-      end
+  [
+    [RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInserter, :map],
+    [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then]
+  ]
+end
 ```
 
 It expects the array to specify step classes in the same order as the chain of the ROP main class being tested. It returns a `match` block that will be configured by matcher chain methods.
