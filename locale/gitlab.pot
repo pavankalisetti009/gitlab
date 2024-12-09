@@ -17440,6 +17440,12 @@ msgstr ""
 msgid "DastProfiles|/graphql"
 msgstr ""
 
+msgid "DastProfiles|A comma-separated list of actions to be run after login but before login verification. Currently supports `click` actions."
+msgstr ""
+
+msgid "DastProfiles|A comma-separated list of selectors representing elements to click on prior to entering the DAST_AUTH_USERNAME and DAST_AUTH_PASSWORD into the login form."
+msgstr ""
+
 msgid "DastProfiles|A passive scan monitors all HTTP messages (requests and responses) sent to the target. An active scan attacks the target to find potential vulnerabilities."
 msgstr ""
 
@@ -17456,6 +17462,9 @@ msgid "DastProfiles|API endpoint URL"
 msgstr ""
 
 msgid "DastProfiles|Active"
+msgstr ""
+
+msgid "DastProfiles|Add DAST variable"
 msgstr ""
 
 msgid "DastProfiles|Add variable"
@@ -17528,6 +17537,9 @@ msgid "DastProfiles|Debug messages"
 msgstr ""
 
 msgid "DastProfiles|Delete profile"
+msgstr ""
+
+msgid "DastProfiles|Disables clearing of username and password fields before attempting manual login. Set to false by default."
 msgstr ""
 
 msgid "DastProfiles|Edit profile"
@@ -17611,6 +17623,9 @@ msgstr ""
 msgid "DastProfiles|No site profiles created yet"
 msgstr ""
 
+msgid "DastProfiles|No variables found"
+msgstr ""
+
 msgid "DastProfiles|Not Validated"
 msgstr ""
 
@@ -17665,10 +17680,16 @@ msgstr ""
 msgid "DastProfiles|Scanner profiles"
 msgstr ""
 
+msgid "DastProfiles|Search..."
+msgstr ""
+
 msgid "DastProfiles|Select a scanner profile to run a DAST scan"
 msgstr ""
 
 msgid "DastProfiles|Select a site profile to run a DAST scan"
+msgstr ""
+
+msgid "DastProfiles|Select a variable"
 msgstr ""
 
 msgid "DastProfiles|Select scanner profile"
@@ -17704,10 +17725,16 @@ msgstr ""
 msgid "DastProfiles|Target timeout"
 msgstr ""
 
+msgid "DastProfiles|The maximum amount of time to wait for the active scan phase of the scan to complete. Defaults to 3h."
+msgstr ""
+
 msgid "DastProfiles|The maximum number of minutes allowed for the crawler to traverse the site."
 msgstr ""
 
 msgid "DastProfiles|The maximum number of seconds allowed for the site under test to respond to a request."
+msgstr ""
+
+msgid "DastProfiles|The number of active checks to run in parallel. Defaults to 3."
 msgstr ""
 
 msgid "DastProfiles|This profile is currently being used in a policy."
@@ -17741,6 +17768,12 @@ msgid "DastProfiles|Validated"
 msgstr ""
 
 msgid "DastProfiles|Validation status"
+msgstr ""
+
+msgid "DastProfiles|Value"
+msgstr ""
+
+msgid "DastProfiles|Variable"
 msgstr ""
 
 msgid "DastProfiles|Website"
