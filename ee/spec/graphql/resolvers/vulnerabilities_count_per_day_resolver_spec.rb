@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Resolvers::VulnerabilitiesCountPerDayResolver, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
-  subject(:ordered_history) { resolve(described_class, obj: group, args: args, ctx: { current_user: current_user }) }
+  subject(:ordered_history) { resolve(described_class, obj: operate_on, args: args, ctx: { current_user: current_user }) }
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, namespace: group) }
@@ -21,35 +21,108 @@ RSpec.describe Resolvers::VulnerabilitiesCountPerDayResolver, feature_category: 
       stub_licensed_features(security_dashboard: true)
     end
 
-    context 'when the current user has access' do
-      before do
-        group.add_maintainer(current_user)
+    context 'when operated on a project' do
+      let_it_be(:operate_on) { project }
+
+      context 'when the current user has access' do
+        before do
+          project.add_maintainer(current_user)
+        end
+
+        it 'fetches historical vulnerability data from the start date to the end date' do
+          travel_to(Date.new(2019, 10, 31)) do
+            create(:vulnerability_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, project: project)
+            create(:vulnerability_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, project: project)
+            create(:vulnerability_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, project: project)
+            create(:vulnerability_historical_statistic, date: start_date + 4.days, total: 2, critical: 2, high: 0, project: project_2)
+
+            expected_history = [
+              { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
+              { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
+              { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
+              { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
+              { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
+              { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
+              { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
+            ].as_json
+
+            expect(ordered_history.as_json).to match_array(expected_history)
+          end
+        end
       end
 
-      it 'fetches historical vulnerability data from the start date to the end date' do
-        travel_to(Date.new(2019, 10, 31)) do
-          create(:vulnerability_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, project: project)
-          create(:vulnerability_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, project: project)
-          create(:vulnerability_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, project: project_2)
-
-          expected_history = [
-            { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
-            { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
-            { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
-            { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
-            { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
-            { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
-            { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
-          ].as_json
-
-          expect(ordered_history.as_json).to match_array(expected_history)
+      context 'when the current user does not have access' do
+        it 'returns an empty response' do
+          expect(ordered_history).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
         end
       end
     end
 
-    context 'when the current user does not have access' do
-      it 'returns an empty response' do
-        expect(ordered_history).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
+    context 'when operated on a group' do
+      let_it_be(:operate_on) { group }
+
+      context 'when the current user has access' do
+        before do
+          group.add_maintainer(current_user)
+        end
+
+        context 'when using namespace based historical statistics' do
+          before do
+            stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: true)
+          end
+
+          it 'fetches historical vulnerability data from the start date to the end date' do
+            travel_to(Date.new(2019, 10, 31)) do
+              create(:vulnerability_namespace_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, namespace: group)
+              create(:vulnerability_namespace_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, namespace: group)
+              create(:vulnerability_namespace_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, namespace: group)
+
+              expected_history = [
+                { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
+                { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
+                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
+                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
+                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
+                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
+                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
+              ].as_json
+
+              expect(ordered_history.as_json).to match_array(expected_history)
+            end
+          end
+        end
+
+        context 'when using project based historical statistics' do
+          before do
+            stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: false)
+          end
+
+          it 'fetches historical vulnerability data from the start date to the end date' do
+            travel_to(Date.new(2019, 10, 31)) do
+              create(:vulnerability_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, project: project)
+              create(:vulnerability_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, project: project)
+              create(:vulnerability_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, project: project_2)
+
+              expected_history = [
+                { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
+                { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
+                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
+                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
+                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
+                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
+                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
+              ].as_json
+
+              expect(ordered_history.as_json).to match_array(expected_history)
+            end
+          end
+        end
+      end
+
+      context 'when the current user does not have access' do
+        it 'returns an empty response' do
+          expect(ordered_history).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
+        end
       end
     end
   end

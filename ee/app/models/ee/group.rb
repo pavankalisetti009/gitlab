@@ -723,7 +723,11 @@ module EE
     end
 
     def vulnerability_historical_statistics
-      ::Vulnerabilities::HistoricalStatistic.for_project(projects_for_group_and_its_subgroups_without_deleted)
+      if ::Feature.enabled?(:use_namespace_historical_statistics_for_group_security_dashboard, self)
+        ::Vulnerabilities::NamespaceHistoricalStatistic.for_namespace_and_descendants(self)
+      else
+        ::Vulnerabilities::HistoricalStatistic.for_project(projects_for_group_and_its_subgroups_without_deleted)
+      end
     end
 
     def max_personal_access_token_lifetime_from_now
