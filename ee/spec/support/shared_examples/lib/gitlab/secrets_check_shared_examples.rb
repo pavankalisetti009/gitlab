@@ -927,6 +927,148 @@ RSpec.shared_examples 'scan detected secrets' do
   end
 end
 
+RSpec.shared_examples 'processes hunk headers' do
+  using RSpec::Parameterized::TableSyntax
+
+  let(:hunk_header_regex) { described_class::HUNK_HEADER_REGEX }
+
+  context 'with valid hunk headers' do
+    where(:hunk_header, :expected_offset) do
+      [
+        ['@@ -5 +15 @@', 15],
+        ['@@ -0,0 +10 @@', 10],
+        ['@@ -45,7 +60,8 @@', 60],
+        ['@@ -20 +25 @@ def my_method(args)', 25],
+        ['@@ -500,50 +600,55 @@ # comment !@@#$%^&*()', 600],
+        ["@@ -10 +15 @@\toptional section heading", 15],
+        ['@@ -15 +20 @@    optional section heading', 20]
+      ]
+    end
+
+    with_them do
+      it 'processes valid hunk header with correct offset' do
+        hunk_info = hunk_header_regex.match(hunk_header)
+        offset = hunk_info[2].to_i
+
+        expect(hunk_header).to match(hunk_header_regex)
+        expect(offset).to eq(expected_offset)
+
+        diff_blob = Gitlab::GitalyClient::DiffBlob.new(
+          left_blob_id: Gitlab::Git::SHA1_BLANK_SHA,
+          right_blob_id: new_blob_reference,
+          patch: "#{hunk_header}\n+BASE_URL=https://foo.bar\n\\ No newline at end of file\n",
+          status: :STATUS_END_OF_PATCH,
+          binary: false,
+          over_patch_bytes_limit: false
+        )
+
+        expected_payload = { id: new_blob_reference, data: 'BASE_URL=https://foo.bar', offset: expected_offset }
+
+        expect_next_instance_of(described_class) do |instance|
+          expect(instance).to receive(:get_diffs)
+            .once
+            .and_return([diff_blob])
+
+          expect(instance).to receive(:parse_diffs).once.and_wrap_original do |m, *args|
+            result = m.call(*args)
+            expect(result).to eq([expected_payload])
+            result
+          end
+        end
+
+        expect(secret_detection_logger).to receive(:info)
+          .once
+          .with(message: log_messages[:secrets_not_found])
+
+        expect { subject.validate! }.not_to raise_error
+      end
+    end
+  end
+
+  context 'with invalid hunk headers' do
+    where(:hunk_header) do
+      [
+        ['@@ -1 +1'],
+        ['@@ malformed header @@'],
+        ['@@ - + @@ class MyClass'],
+        ['@@ -1 + @@'],
+        ['@@ -a +b @@'],
+        ['@@ -1 +1 +1 @@']
+      ]
+    end
+
+    with_them do
+      it 'does not match invalid hunk header and skips parsing the diff' do
+        error_msg = "Could not process hunk header: #{hunk_header.strip}, skipped parsing diff: #{new_blob_reference}"
+
+        diff_blob = Gitlab::GitalyClient::DiffBlob.new(
+          left_blob_id: Gitlab::Git::SHA1_BLANK_SHA,
+          right_blob_id: new_blob_reference,
+          patch: "#{hunk_header}\n+BASE_URL=https://foo.bar\n\\ No newline at end of file\n",
+          status: :STATUS_END_OF_PATCH,
+          binary: false,
+          over_patch_bytes_limit: false
+        )
+
+        expect(hunk_header).not_to match(hunk_header_regex)
+
+        expect_next_instance_of(described_class) do |instance|
+          expect(instance).to receive(:get_diffs)
+            .once
+            .and_return([diff_blob])
+        end
+
+        expect(secret_detection_logger).to receive(:error)
+          .once
+          .with(message: error_msg)
+
+        expect(secret_detection_logger).to receive(:error)
+          .once
+          .with(message: error_messages[:invalid_input_error])
+
+        expect { subject.validate! }.not_to raise_error
+      end
+    end
+  end
+
+  context 'with valid and invalid hunk headers' do
+    it 'skips parsing the diff and logs an error when an invalid hunk header is present' do
+      valid_header = "@@ -1 +1 @@"
+      invalid_header = "@@ malformed header @@"
+      valid_header2 = "@@ -22,1 +22,1 @@"
+
+      patch = "#{valid_header}\n+line 1\n#{invalid_header}\n+line 2\n#{valid_header2}\n+line 3\n"
+
+      error_msg = "Could not process hunk header: #{invalid_header.strip}, skipped parsing diff: #{new_blob_reference}"
+
+      diff_blob = Gitlab::GitalyClient::DiffBlob.new(
+        left_blob_id: Gitlab::Git::SHA1_BLANK_SHA,
+        right_blob_id: new_blob_reference,
+        patch: patch,
+        status: :STATUS_END_OF_PATCH,
+        binary: false,
+        over_patch_bytes_limit: false
+      )
+
+      expect_next_instance_of(described_class) do |instance|
+        expect(instance).to receive(:get_diffs)
+          .once
+          .and_return([diff_blob])
+      end
+
+      expect(secret_detection_logger).to receive(:error)
+        .once
+        .with(message: error_msg)
+
+      expect(secret_detection_logger).to receive(:error)
+        .once
+        .with(message: error_messages[:invalid_input_error])
+
+      expect { subject.validate! }.not_to raise_error
+    end
+  end
+end
+
 RSpec.shared_examples 'scan detected secrets in diffs' do
   include_context 'secrets check context'
 
