@@ -221,6 +221,13 @@ which is enforced to prevent from abusing this endpoint.
 
 The **rate limit** is 6 requests per minute per user (authenticated) or per IP address (unauthenticated).
 
+### Changelog generation
+
+There is a rate limit per user per project on the `:id/repository/changelog` endpoint. This is to mitigate attempts to misuse the endpoint.
+The rate limit is shared between GET and POST actions.
+
+The **rate limit** is 5 calls per minute per user per project.
+
 ## Troubleshooting
 
 ### Rack Attack is denylisting the load balancer
