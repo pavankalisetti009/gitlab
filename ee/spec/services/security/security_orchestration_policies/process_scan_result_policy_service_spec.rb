@@ -117,6 +117,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with role_approvers' do
+      let_it_be(:custom_role) { create(:member_role, namespace: project.group) }
+
       let(:policy) do
         build(:scan_result_policy,
           name: 'Test Policy',
@@ -124,7 +126,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
             type: 'require_approval',
             approvals_required: 1,
             user_approvers: [approver.username],
-            role_approvers: ['developer']
+            role_approvers: ['developer', custom_role.id]
           }]
         )
       end
@@ -142,7 +144,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
       it 'creates scan_result_policy_read' do
         expect { subject }.to change { Security::ScanResultPolicyRead.count }.by(1)
-        expect(project.approval_rules.first.scan_result_policy_read.role_approvers).to match_array([Gitlab::Access::DEVELOPER])
+
+        scan_result_policy_read = project.scan_result_policy_reads.first
+        expect(scan_result_policy_read.custom_roles).to match_array([custom_role.id])
+        expect(scan_result_policy_read.role_approvers).to match_array([Gitlab::Access::DEVELOPER])
       end
     end
 
