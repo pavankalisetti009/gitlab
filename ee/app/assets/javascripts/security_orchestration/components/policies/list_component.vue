@@ -452,10 +452,9 @@ export default {
         <div class="gl-flex gl-justify-end gl-gap-4 md:gl-justify-start">
           <gl-icon
             v-gl-tooltip-directive.left="tooltipContent(enabled)"
-            class="gl-text-gray-200"
             :aria-label="tooltipContent(enabled)"
-            :class="{ 'gl-text-green-700': enabled }"
             name="check-circle-filled"
+            :variant="enabled ? 'success' : 'disabled'"
           />
 
           <breaking-changes-icon
