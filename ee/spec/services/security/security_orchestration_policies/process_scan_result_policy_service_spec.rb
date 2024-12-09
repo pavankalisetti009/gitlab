@@ -89,6 +89,39 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
     end
 
+    context 'with multiple require_approval actions' do
+      let_it_be(:developer) { create(:user) }
+      let(:policy) do
+        build(:scan_result_policy, name: 'Test Policy',
+          actions: [
+            { type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] },
+            { type: 'require_approval', approvals_required: 1, role_approvers: ['developer'] }
+          ]
+        )
+      end
+
+      before_all do
+        group.add_developer(developer)
+      end
+
+      it 'creates multiple approval rules with approvers', :aggregate_failures do
+        expect { subject }.to change { project.approval_rules.count }.by(2)
+
+        first_approval_rule = project.approval_rules.first
+        second_approval_rule = project.approval_rules.last
+
+        expect(first_approval_rule.approvers).to contain_exactly(approver)
+        expect(second_approval_rule.approvers).to contain_exactly(developer)
+        expect(first_approval_rule.approval_policy_action_idx).to eq(0)
+        expect(second_approval_rule.approval_policy_action_idx).to eq(1)
+      end
+
+      it 'creates scan_result_policy_reads with action_idx' do
+        expect { subject }.to change { project.scan_result_policy_reads.count }.by(2)
+        expect(project.scan_result_policy_reads.map(&:action_idx)).to contain_exactly(0, 1)
+      end
+    end
+
     context 'without any rule of the scan_finding type' do
       let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: [{ type: 'another_one' }]) }
 
