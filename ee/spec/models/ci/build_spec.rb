@@ -299,6 +299,43 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         end
       end
     end
+
+    describe 'pages variables', feature_category: :pages do
+      before do
+        stub_pages_setting(enabled: true)
+      end
+
+      where(:options, :ci_pages_hostname_value, :ci_pages_url_value) do
+        { pages: {} }                     | 'group1.example.com' | 'http://group1.example.com/project-1'
+        { pages: { path_prefix: 'foo' } } | 'group1.example.com' | 'http://group1.example.com/project-1/foo'
+        { pages: { path_prefix: nil } }   | 'group1.example.com' | 'http://group1.example.com/project-1'
+        { pages: { path_prefix: '$CI_COMMIT_BRANCH' } } | 'group1.example.com' | 'http://group1.example.com/project-1/master'
+      end
+
+      with_them do
+        let(:job) do
+          create(:ci_build, pipeline: pipeline, options: options)
+        end
+
+        it "includes CI_PAGES_* variables" do
+          expect(subject.to_runner_variables).to include(
+            { key: 'CI_PAGES_HOSTNAME', value: ci_pages_hostname_value, public: true, masked: false },
+            { key: 'CI_PAGES_URL', value: ci_pages_url_value, public: true, masked: false }
+          )
+        end
+      end
+
+      context 'when it is not a pages job' do
+        let(:job) do
+          create(:ci_build, pipeline: pipeline, options: { pages: false })
+        end
+
+        it "does not include CI_PAGES_* variables" do
+          expect(subject.to_runner_variables).not_to include(a_hash_including(key: 'CI_PAGES_HOSTNAME'))
+          expect(subject.to_runner_variables).not_to include(a_hash_including(key: 'CI_PAGES_URL'))
+        end
+      end
+    end
   end
 
   describe '#has_security_reports?' do
