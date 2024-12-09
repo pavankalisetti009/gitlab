@@ -5,6 +5,8 @@ module Mutations
     class Action < BaseMutation
       graphql_name 'AiAction'
 
+      include ::Gitlab::Llm::Concerns::Logger
+
       MUTUALLY_EXCLUSIVE_ARGUMENTS_ERROR = 'Only one method argument is required'
 
       ::Gitlab::Llm::Utils::AiFeaturesCatalogue.external.each_key do |method|
@@ -47,8 +49,35 @@ module Mutations
         super
       end
 
+      # rubocop:disable GraphQL/GraphqlName -- This is unrelated to GraphQL schema.
+      class UnsafeSanitizedPrinter < GraphQL::Language::SanitizedPrinter
+        def redact_argument_value?(...)
+          false
+        end
+      end
+      # rubocop:enable GraphQL/GraphqlName
+
+      def sanitized_query_string
+        return unless Feature.enabled?(:expanded_ai_logging, current_user)
+
+        # rubocop:disable GitlabSecurity/PublicSend -- Workaround for the GraphQL Ruby gem.
+        context.query.send(:with_prepared_ast) do
+          UnsafeSanitizedPrinter.new(context.query, inline_variables: true).sanitized_query_string
+        end
+        # rubocop:enable GitlabSecurity/PublicSend
+      end
+
       def resolve(**attributes)
         verify_rate_limit!
+
+        log_conditional_info(
+          current_user,
+          message: "Received AiAction mutation GraphQL query",
+          event_name: 'ai_action_mutation',
+          ai_component: 'abstraction_layer',
+          user_id: current_user.id,
+          graphql_query: sanitized_query_string
+        )
 
         resource_id, method, options = extract_method_params!(attributes)
 

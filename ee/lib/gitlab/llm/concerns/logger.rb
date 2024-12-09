@@ -46,7 +46,8 @@ module Gitlab
             Attribute.new(:event_type, String),
             Attribute.new(:error_type, String),
             Attribute.new(:fragment, String),
-            Attribute.new(:ai_response_server, String)
+            Attribute.new(:ai_response_server, String),
+            Attribute.new(:graphql_query, String)
           ].freeze
 
         def self.included(base)
