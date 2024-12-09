@@ -21803,6 +21803,9 @@ msgstr ""
 msgid "Environment|Unknown"
 msgstr ""
 
+msgid "Environment|View details."
+msgstr ""
+
 msgid "Environment|You don't have permission to view all the namespaces in the cluster. If a namespace is not shown, you can still enter its name to select it."
 msgstr ""
 
