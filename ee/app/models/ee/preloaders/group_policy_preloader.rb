@@ -10,7 +10,7 @@ module EE
         super
 
         ::Preloaders::GroupRootAncestorPreloader.new(groups, root_ancestor_preloads).execute
-        ::Gitlab::GroupPlansPreloader.new.preload(groups) if ::Gitlab::CurrentSettings.should_check_namespace_plan?
+        ::Gitlab::GroupPlansPreloader.new.preload(groups)
       end
 
       private

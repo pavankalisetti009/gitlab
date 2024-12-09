@@ -804,14 +804,6 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         it { is_expected.to eq(false) }
       end
 
-      context 'when the feature is disabled' do
-        before do
-          stub_feature_flags(unverified_account_group_creation_limit: false)
-        end
-
-        it { is_expected.to eq(false) }
-      end
-
       context 'when the user is already identity verified' do
         before do
           allow(user).to receive(:identity_verified?).and_return(true)

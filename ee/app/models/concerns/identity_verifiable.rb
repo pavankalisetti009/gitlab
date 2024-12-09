@@ -255,7 +255,6 @@ module IdentityVerifiable
   end
 
   def reached_top_level_group_limit?
-    return false unless ::Feature.enabled?(:unverified_account_group_creation_limit, self, type: :gitlab_com_derisk)
     return false if identity_verified?
 
     created_top_level_group_count >= ::Gitlab::CurrentSettings.unverified_account_group_creation_limit
