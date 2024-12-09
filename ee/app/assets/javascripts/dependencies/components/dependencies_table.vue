@@ -109,7 +109,7 @@ export default {
     // slot. So, create a deep clone of them here to avoid mutating the
     // `dependencies` prop.
     // We also make sure that `vulnerabilities` is always defined to prevent rendering
-    // errors when the user is allowe to see dependencies but not their vulnerabilities.
+    // errors when the user is allowed to see dependencies but not their vulnerabilities.
     transformDependenciesForUI(dependencies) {
       return dependencies.map(({ vulnerabilities, ...dep }) => ({
         ...cloneDeep(dep),
@@ -135,8 +135,9 @@ export default {
   ],
   projectFields: [
     ...sharedFields,
-    { key: 'isVulnerable', label: '', tdClass: tdClass(['gl-text-right']) },
+    { key: 'isVulnerable', label: DEPENDENCIES_TABLE_I18N.vulnerabilities },
   ],
+
   DEPENDENCIES_PER_PAGE: 20,
   DEPENDENCY_PATH_LINK: `${DOCS_URL_IN_EE_DIR}/user/application_security/dependency_list/#dependency-paths`,
   i18n: DEPENDENCIES_TABLE_I18N,

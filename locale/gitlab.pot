@@ -18577,6 +18577,9 @@ msgstr ""
 msgid "Dependencies|Unknown path"
 msgstr ""
 
+msgid "Dependencies|Vulnerabilities"
+msgstr ""
+
 msgid "Dependencies|Vulnerable components"
 msgstr ""
 
