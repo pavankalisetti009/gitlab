@@ -219,16 +219,40 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
           context 'when changing parent and reordering' do
             include_context 'with new parent that has children'
 
-            before do
-              work_item.synced_epic&.update!(parent: parent.synced_epic)
+            context 'when work_item_parent_link FK is already set' do
+              before do
+                work_item.synced_epic&.update!(parent: parent.synced_epic, work_item_parent_link: work_item.parent_link)
+              end
+
+              it 'updates work item parent and legacy epic parent' do
+                expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
+                                    .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
+                                                                                        .to(new_parent.synced_epic)
+                                    .and change {
+                                           work_item.synced_epic.reload.work_item_parent_link.work_item_parent
+                                         }.to(new_parent)
+
+                expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item,
+                  new_sibling2])
+              end
             end
 
-            it 'updates work item parent and legacy epic parent' do
-              expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
-                                   .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
-                                                                                      .to(new_parent.synced_epic)
+            context 'when work_item_parent_link FK was not already set' do
+              before do
+                work_item.synced_epic&.update!(parent: parent.synced_epic)
+              end
 
-              expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+              it 'updates work item parent and legacy epic parent and sets the FK' do
+                expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
+                                    .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
+                                                                                        .to(new_parent.synced_epic)
+                                    .and change { work_item.synced_epic.reload.work_item_parent_link }
+                                        .from(nil)
+                                        .to(work_item.parent_link)
+
+                expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item,
+                  new_sibling2])
+              end
             end
           end
 

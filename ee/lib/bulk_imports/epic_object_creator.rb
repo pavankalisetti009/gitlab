@@ -61,10 +61,15 @@ module BulkImports
         existing_parent_link = epic.work_item&.parent_link
         return if existing_parent_link.present?
 
-        ::WorkItems::ParentLinks::CreateService.new(
+        result = ::WorkItems::ParentLinks::CreateService.new(
           epic.parent.work_item, current_user,
           { target_issuable: epic.work_item, synced_work_item: true, relative_position: epic.relative_position }
         ).execute
+
+        return unless result[:status] == :success
+
+        epic.work_item_parent_link_id = result[:created_references].first.id
+        epic.save(touch: false)
       end
 
       def handle_epic_issue(relation_object)

@@ -14,6 +14,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     let_it_be(:other_parent_epic) { create(:epic, :with_synced_work_item, group: group) }
     let_it_be(:other_child_epic) { create(:epic, :with_synced_work_item, parent: other_parent_epic, group: group) }
 
+    let(:link_service_class) { nil }
     let(:params) { { issuable_references: [child_work_item], synced_work_item: synced_work_item_param } }
 
     subject(:create_link) { described_class.new(parent_work_item, user, params).execute }
@@ -37,27 +38,18 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     end
 
     shared_examples 'creates parent link only' do |system_notes_count: 2|
-      it 'creates parent link without calling legacy epic services' do
-        allow(::Epics::EpicLinks::CreateService).to receive(:new).and_call_original
+      it 'creates parent links' do
         allow(::EpicIssues::CreateService).to receive(:new).and_call_original
-
-        expect(::Epics::EpicLinks::CreateService).not_to receive(:new)
         expect(::EpicIssues::CreateService).not_to receive(:new)
+
         expect { create_link }.to change { WorkItems::ParentLink.count }.by(1)
                               .and change { Note.count }.by(system_notes_count)
+                              .and not_change { EpicIssue.count }
       end
     end
 
     shared_examples 'creates parent link and deletes legacy link' do
-      let(:create_service) { "#{link_service_class}::CreateService".constantize }
-      let(:destroy_service) { "#{link_service_class}::DestroyService".constantize }
-
-      it 'creates parent link and remove previous legacy parent epic' do
-        allow(create_service).to receive(:new).and_call_original
-        allow(destroy_service).to receive(:new).and_call_original
-        expect(create_service).not_to receive(:new)
-        expect(destroy_service).to receive(:new)
-
+      it 'creates parent link and removes previous legacy parent epic' do
         expect { create_link }.to change { child_work_item.reload.work_item_parent }.to(parent_work_item)
           .and change { legacy_child.reload.try(relationship) }.to(nil)
           .and change { Note.count }.by(2)
@@ -75,9 +67,14 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     shared_examples 'link creation with failures' do
       context 'when creating legacy epic link fails' do
         before do
-          allow_next_instance_of(link_service_class) do |instance|
-            allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
+          if link_service_class
+            allow_next_instance_of(link_service_class) do |instance|
+              allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
+            end
           end
+
+          errors = ActiveModel::Errors.new(legacy_child).tap { |e| e.add(:base, 'Some error') }
+          allow(legacy_child).to receive_messages(save: false, errors: errors)
         end
 
         it 'does not create a work item parent link or set the parent epic' do
@@ -305,7 +302,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
             create_link
           end
 
-          it 'syncs parent epic and creates notes only for the work items' do
+          it 'syncs parent epic, sets the FK and creates notes only for the work items' do
             expect { create_link }.to change { child_epic.reload.parent }.to(parent_epic)
               .and change { WorkItems::ParentLink.count }.by(1)
               .and change { Note.count }.by(2)
@@ -313,13 +310,13 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
               .and not_change { child_epic.own_notes.count }
 
             expect(child_epic.relative_position).to eq(child_work_item.parent_link.relative_position)
+            expect(child_epic.work_item_parent_link).to eq(child_work_item.parent_link)
 
             expect(parent_work_item.notes.last.note).to eq("added #{child_work_item.to_reference} as child epic")
             expect(child_work_item.notes.last.note).to eq("added #{parent_work_item.to_reference} as parent epic")
           end
 
           it_behaves_like 'link creation with failures' do
-            let(:link_service_class) { ::Epics::EpicLinks::CreateService }
             let(:legacy_child) { child_epic }
             let(:relationship) { :parent }
           end
