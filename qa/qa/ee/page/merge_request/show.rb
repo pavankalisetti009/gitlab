@@ -129,6 +129,16 @@ module QA
             end
           end
 
+          def click_resolve_with_ai
+            click_element('resolve-with-ai')
+            wait_for_requests
+          end
+
+          def click_finding_resolution_mr_link
+            click_element('merge-request-link')
+            wait_for_requests
+          end
+
           def dismiss_vulnerability_with_comment(name, comment)
             expand_vulnerability_report
             click_vulnerability(name)
