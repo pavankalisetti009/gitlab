@@ -1138,10 +1138,12 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
             context "with role_approvers" do
               before do
-                action[:role_approvers] = %w[guest reporter]
+                action[:role_approvers] = ['guest', 'reporter', 123]
               end
 
-              specify { expect(errors).to be_empty }
+              specify do
+                expect(errors).to be_empty
+              end
 
               context "with invalid role" do
                 before do
@@ -1149,8 +1151,9 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                 end
 
                 specify do
-                  expect(errors.count).to be(1)
+                  expect(errors.count).to be(2)
                   expect(errors.first).to match("property '/#{type}/0/actions/0/role_approvers/0' is not one of")
+                  expect(errors.last).to match("property '/#{type}/0/actions/0/role_approvers/0' is not of type: integer")
                 end
               end
             end

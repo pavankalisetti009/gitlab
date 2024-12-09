@@ -221,6 +221,7 @@ module Security
           license_states: rule_content[:license_states],
           match_on_inclusion_license: rule_content[:match_on_inclusion_license] || false,
           role_approvers: role_access_levels(approval_action&.dig(:role_approvers)),
+          custom_roles: custom_role_approvers(approval_action&.dig(:role_approvers)),
           vulnerability_attributes: rule_content[:vulnerability_attributes],
           project_id: project.id,
           age_operator: rule_content.dig(:vulnerability_age, :operator),
@@ -241,6 +242,13 @@ module Security
         roles_map = Gitlab::Access.sym_options_with_owner
         role_approvers
           .filter_map { |role| roles_map[role.to_sym] if role.to_s.in?(Security::ScanResultPolicy::ALLOWED_ROLES) }
+      end
+
+      # TODO: Will be removed with https://gitlab.com/gitlab-org/gitlab/-/issues/504296
+      def custom_role_approvers(role_approvers)
+        return [] unless role_approvers
+
+        role_approvers.select { |role| role.is_a?(Integer) }
       end
 
       def protected_branch_ids(approval_policy_rule)
