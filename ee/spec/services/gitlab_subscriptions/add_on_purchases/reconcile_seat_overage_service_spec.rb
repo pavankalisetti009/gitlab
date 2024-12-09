@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService, feature_category: :seat_cost_management do
-  let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, created_at: 1.week.ago) }
+  let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, created_at: 1.week.ago) }
 
   subject(:service_response) { described_class.new(add_on_purchase: add_on_purchase).execute }
 
@@ -18,6 +18,25 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService,
     context 'when there is overage' do
       let(:user_1) { create(:user) }
       let(:user_2) { create(:user) }
+
+      let(:expected_log_destruction) do
+        {
+          message: 'ReconcileSeatOverageService destroyed UserAddOnAssignments',
+          user_ids: [user_2.id],
+          add_on: 'code_suggestions',
+          add_on_purchase: add_on_purchase.id,
+          namespace: add_on_purchase.namespace.path
+        }
+      end
+
+      let(:expected_log_summary) do
+        {
+          message: 'ReconcileSeatOverageService removed AddOnPurchase seat overage',
+          add_on: 'code_suggestions',
+          add_on_purchase: add_on_purchase.id,
+          deleted_overage_count: 1
+        }
+      end
 
       before do
         add_on_purchase.assigned_users.create!(user: user_1)
@@ -43,13 +62,9 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService,
           .and not_change { Rails.cache.read(user_1_cache_key) }
       end
 
-      it 'logs an info about overage seats reconciled' do
-        expect(Gitlab::AppLogger).to receive(:info).with(
-          message: 'AddOnPurchase seat overage was reconciled',
-          deleted_overage_count: 1,
-          add_on: add_on_purchase.add_on.name,
-          add_on_purchase_id: add_on_purchase.id
-        )
+      it 'logs destruction in batches and summary' do
+        expect(Gitlab::AppLogger).to receive(:info).with(expected_log_destruction).ordered
+        expect(Gitlab::AppLogger).to receive(:info).with(expected_log_summary).ordered
 
         service_response
       end

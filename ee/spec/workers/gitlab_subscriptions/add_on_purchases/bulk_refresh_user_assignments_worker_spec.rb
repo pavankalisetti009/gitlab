@@ -30,8 +30,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::BulkRefreshUserAssignmentsWo
         create(:gitlab_subscription_add_on_purchase, add_on: add_on, last_assigned_users_refreshed_at: 1.day.ago)
       end
 
+      let_it_be(:user) { create(:user) }
+
       before_all do
-        add_on_purchase_stale.assigned_users.create!(user: create(:user))
+        add_on_purchase_stale.assigned_users.create!(user: user)
       end
 
       describe 'idempotence' do
@@ -77,11 +79,19 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::BulkRefreshUserAssignmentsWo
 
       it 'logs info when assignments are refreshed' do
         expect(Gitlab::AppLogger).to receive(:info).with(
+          message: 'Ineligible UserAddOnAssignments destroyed',
+          user_ids: [user.id],
+          add_on: add_on.name,
+          add_on_purchase: add_on_purchase_stale.id,
+          namespace: add_on_purchase_stale.namespace.path
+        ).ordered
+
+        expect(Gitlab::AppLogger).to receive(:info).with(
           message: 'AddOnPurchase user assignments refreshed via scheduled CronJob',
           deleted_assignments_count: 1,
           add_on: add_on_purchase_stale.add_on.name,
           namespace: add_on_purchase_stale.namespace.path
-        )
+        ).ordered
 
         perform_work
       end
@@ -96,11 +106,19 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::BulkRefreshUserAssignmentsWo
 
         it 'successfully refreshes the assigned users for stale add_on_purchases' do
           expect(Gitlab::AppLogger).to receive(:info).with(
+            message: 'Ineligible UserAddOnAssignments destroyed',
+            user_ids: [blocked_user.id],
+            add_on: add_on.name,
+            add_on_purchase: add_on_purchase_stale.id,
+            namespace: nil
+          ).ordered
+
+          expect(Gitlab::AppLogger).to receive(:info).with(
             message: 'AddOnPurchase user assignments refreshed via scheduled CronJob',
             deleted_assignments_count: 1,
             add_on: add_on_purchase_stale.add_on.name,
             namespace: nil
-          )
+          ).ordered
 
           expect do
             perform_work
