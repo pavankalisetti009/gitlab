@@ -33,9 +33,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
-  describe '#build_policy_pipelines!' do
-    subject(:perform) { context.build_policy_pipelines!(ci_testing_partition_id) }
-
+  shared_context 'with mocked policy configs' do
     let(:namespace_content) { { job: { script: 'namespace script' } } }
     let(:namespace_config) { build(:pipeline_execution_policy_config, content: namespace_content) }
 
@@ -49,6 +47,12 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
         allow(instance).to receive(:configs).and_return(policy_configs)
       end
     end
+  end
+
+  describe '#build_policy_pipelines!' do
+    subject(:perform) { context.build_policy_pipelines!(ci_testing_partition_id) }
+
+    include_context 'with mocked policy configs'
 
     it 'sets policy_pipelines' do
       perform
@@ -223,19 +227,41 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
   describe '#has_overriding_execution_policy_pipelines?' do
     subject { context.has_overriding_execution_policy_pipelines? }
 
-    include_context 'with mocked policy_pipelines'
+    include_context 'with mocked policy configs'
 
-    it { is_expected.to eq(false) }
+    context 'without policy configs' do
+      let(:policy_configs) { [] }
 
-    context 'with policy_pipelines' do
-      let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
+      it { is_expected.to eq(false) }
+    end
+
+    context 'with policy configs' do
+      let(:policy_configs) { [project_config, namespace_config] }
+
+      include_context 'with mocked policy_pipelines'
 
       it { is_expected.to eq(false) }
 
-      context 'and overriding policy_pipelines' do
-        let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
+      context 'and at least one config having strategy override_project_ci' do
+        let(:namespace_config) do
+          build(:pipeline_execution_policy_config, :override_project_ci, content: namespace_content)
+        end
 
         it { is_expected.to eq(true) }
+
+        context 'when feature flag "policies_always_override_project_ci" is disabled' do
+          before do
+            stub_feature_flags(policies_always_override_project_ci: false)
+          end
+
+          it { is_expected.to eq(false) }
+
+          context 'when overriding policy_pipelines are present' do
+            let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
+
+            it { is_expected.to eq(true) }
+          end
+        end
       end
     end
   end

@@ -54,9 +54,11 @@ module Gitlab
           end
 
           def has_overriding_execution_policy_pipelines?
-            return false unless has_execution_policy_pipelines?
-
-            policy_pipelines.any?(&:strategy_override_project_ci?)
+            if ::Feature.enabled?(:policies_always_override_project_ci, project)
+              policies.any?(&:strategy_override_project_ci?)
+            else
+              policy_pipelines.any?(&:strategy_override_project_ci?)
+            end
           end
 
           def collect_declared_stages!(new_stages)
