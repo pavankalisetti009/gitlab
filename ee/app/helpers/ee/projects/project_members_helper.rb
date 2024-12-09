@@ -7,13 +7,14 @@ module EE
 
       override :project_members_app_data
       def project_members_app_data(
-        project, members:, invited:, access_requests:, include_relations:, search:, pending_members_count:
+        project, members:, invited:, access_requests:, include_relations:, search:,
+        pending_members_count:
       )
         super.merge(
           manage_member_roles_path: manage_member_roles_path(project),
-          promotion_request: { total_items: pending_members_count },
           can_approve_access_requests: can_approve_access_requests(project),
-          namespace_user_limit: ::Namespaces::FreeUserCap.dashboard_limit
+          namespace_user_limit: ::Namespaces::FreeUserCap.dashboard_limit,
+          promotion_request: { enabled: member_promotion_management_enabled?, total_items: pending_members_count }
         )
       end
 
