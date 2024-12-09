@@ -895,6 +895,14 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     subject { group.licensed_feature_available?(feature) }
 
     it_behaves_like 'feature available'
+
+    context 'when use_actual_plan_in_license_check is disabled' do
+      before do
+        stub_feature_flags(use_actual_plan_in_license_check: false)
+      end
+
+      it_behaves_like 'feature available'
+    end
   end
 
   describe '#feature_available_non_trial?', :saas do

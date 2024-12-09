@@ -26,9 +26,7 @@ module Ci
         namespace_ids.each_batch(of: GROUP_BATCH_SIZE) do |namespace_id_batch|
           selected_namespaces = Namespace.find(namespace_id_batch.ids)
 
-          if ::Gitlab::CurrentSettings.should_check_namespace_plan?
-            ::Gitlab::GroupPlansPreloader.new.preload(selected_namespaces)
-          end
+          ::Gitlab::GroupPlansPreloader.new.preload(selected_namespaces)
 
           selected_namespace_ids = selected_namespaces
             .filter { |namespace| namespace.licensed_feature_available?(:stale_runner_cleanup_for_namespace) }

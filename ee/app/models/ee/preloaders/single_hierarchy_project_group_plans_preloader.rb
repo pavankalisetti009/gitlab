@@ -4,6 +4,7 @@ module EE
   module Preloaders
     module SingleHierarchyProjectGroupPlansPreloader
       def execute
+        return if ::Feature.enabled?(:use_actual_plan_in_license_check, ::Feature.current_request)
         return unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
         return unless project = projects.take
 

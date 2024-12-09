@@ -258,7 +258,11 @@ module EE
     def feature_available_in_plan?(feature)
       available_features = strong_memoize(:features_available_in_plan) do
         Hash.new do |h, f|
-          h[f] = (plans.map(&:name) & GitlabSubscriptions::Features.saas_plans_with_feature(f)).any?
+          h[f] = if ::Feature.enabled?(:use_actual_plan_in_license_check, ::Feature.current_request)
+                   GitlabSubscriptions::Features.saas_plans_with_feature(f).include?(actual_plan.name)
+                 else
+                   (plans.map(&:name) & GitlabSubscriptions::Features.saas_plans_with_feature(f)).any?
+                 end
         end
       end
 
@@ -281,6 +285,13 @@ module EE
           hosted_plan_for(subscription) || ::Plan.free
         end
       end
+    end
+
+    # This is used to manually set the plan when preloading for a set of namespaces
+    def actual_plan=(plan)
+      preloaded_plan = plan || ::Plan.free
+
+      ::Gitlab::SafeRequestStore.write(actual_plan_store_key, preloaded_plan) if preloaded_plan
     end
 
     def has_subscription?
