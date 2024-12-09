@@ -39,4 +39,8 @@ export const TRIAL_WIDGET = {
   },
   containerId: 'trial-sidebar-widget',
   trialUpgradeThresholdDays: 30,
+  clickUpgradeLinkEventAction: 'click_upgrade_link_on_trial_widget',
+  clickLearnMoreLinkEventAction: 'click_learn_more_link_on_trial_widget',
+  clickSeeUpgradeOptionsLinkEventAction: 'click_see_upgrade_options_link_on_trial_widget',
+  clickDismissButtonEventAction: 'click_dismiss_button_on_trial_widget',
 };
