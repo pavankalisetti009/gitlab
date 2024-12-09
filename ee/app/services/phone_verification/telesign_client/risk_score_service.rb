@@ -17,7 +17,7 @@ module PhoneVerification
       end
 
       def execute
-        return success unless Feature.enabled?(:telesign_intelligence, type: :ops)
+        return success unless ::Gitlab::CurrentSettings.telesign_intelligence_enabled
 
         phoneid_client = TelesignEnterprise::PhoneIdClient.new(customer_id, api_key)
 
