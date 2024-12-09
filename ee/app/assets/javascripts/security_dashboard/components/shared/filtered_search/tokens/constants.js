@@ -1,4 +1,4 @@
-import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
+import { OPERATORS_OR, OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import StatusToken from './status_token.vue';
 import ActivityToken from './activity_token.vue';
 import SeverityToken from './severity_token.vue';
@@ -6,6 +6,7 @@ import ToolToken from './tool_token.vue';
 import ImageToken from './image_token.vue';
 import ClusterToken from './cluster_token.vue';
 import ProjectToken from './project_token.vue';
+import IdentifierToken from './identifier_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -68,4 +69,13 @@ export const PROJECT_TOKEN_DEFINITION = {
   unique: true,
   token: ProjectToken,
   operators: OPERATORS_OR,
+};
+
+export const IDENTIFIER_TOKEN_DEFINITION = {
+  type: 'identifier',
+  title: IdentifierToken.i18n.label,
+  multiSelect: false,
+  unique: true,
+  token: IdentifierToken,
+  operators: OPERATORS_IS,
 };

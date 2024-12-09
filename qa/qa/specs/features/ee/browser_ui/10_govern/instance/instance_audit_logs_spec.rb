@@ -51,7 +51,7 @@ module QA
           key = Resource::SSHKey.fabricate_via_browser_ui! do |resource|
             resource.title = "key for audit event test #{Time.now.to_f}"
             # All tests are running as admin so in order for key to be deleted, it needs to have admin api client
-            resource.api_client = Runtime::UserStore.admin_api_client
+            resource.api_client = Runtime::User::Store.admin_api_client
           end
         end
 

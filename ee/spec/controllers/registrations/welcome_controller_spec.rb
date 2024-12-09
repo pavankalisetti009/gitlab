@@ -238,9 +238,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               {
                 registration_objective: 'code_storage',
                 role: 'software_developer',
-                jobs_to_be_done_other: '_jobs_to_be_done_other_',
-                glm_source: 'some_source',
-                glm_content: 'some_content'
+                jobs_to_be_done_other: '_jobs_to_be_done_other_'
               }
             end
 
@@ -338,9 +336,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                   expected_params = {
                     registration_objective: 'code_storage',
                     role: 'software_developer',
-                    jobs_to_be_done_other: '_jobs_to_be_done_other_',
-                    glm_source: 'some_source',
-                    glm_content: 'some_content'
+                    jobs_to_be_done_other: '_jobs_to_be_done_other_'
                   }
 
                   patch_update
@@ -356,16 +352,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             end
 
             context 'when it is not a trial' do
-              let(:expected_params) do
-                {
-                  registration_objective: 'code_storage',
-                  role: 'software_developer',
-                  jobs_to_be_done_other: '_jobs_to_be_done_other_',
-                  glm_source: 'some_source',
-                  glm_content: 'some_content'
-                }
-              end
-
               specify do
                 patch_update
                 user.reset

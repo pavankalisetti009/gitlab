@@ -540,6 +540,11 @@ module EE
           description: 'Traces attached to the project.',
           resolver: ::Resolvers::Observability::TracesResolver
 
+        field :component_usages, ::Types::Ci::Catalog::Resources::Components::UsageType.connection_type,
+          null: true,
+          description: 'Component(s) used by the project.',
+          resolver: ::Resolvers::Ci::Catalog::Resources::Components::ProjectUsageResolver
+
         field :security_exclusions,
           ::Types::Security::ProjectSecurityExclusionType.connection_type,
           null: true,

@@ -26,9 +26,7 @@ module Registrations
       if result.success?
         track_event('successfully_submitted_form', onboarding_status_presenter.tracking_label)
 
-        response = Onboarding::StatusStepUpdateService.new(
-          current_user, new_users_sign_up_group_path(::Onboarding::StatusPresenter.glm_tracking_params(params))
-        ).execute
+        response = Onboarding::StatusStepUpdateService.new(current_user, new_users_sign_up_group_path).execute
 
         redirect_to response[:step_url]
       else
@@ -45,7 +43,6 @@ module Registrations
 
     def permitted_params
       params.permit(
-        *::Onboarding::StatusPresenter::GLM_PARAMS,
         *::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS,
         :company_name,
         :company_size,

@@ -16,7 +16,5 @@ events:
     filter:
       label: status_checks
 data_category: optional
-distribution:
-- ee
 tiers:
 - ultimate

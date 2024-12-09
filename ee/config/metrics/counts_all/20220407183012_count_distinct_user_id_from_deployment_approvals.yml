@@ -2,6 +2,8 @@
 key_path: usage_activity_by_stage.release.users_creating_deployment_approvals
 description: Users who have used the deployment approvals feature by all time
 product_group: environments
+product_categories:
+- continuous_delivery
 value_type: number
 status: active
 milestone: "14.10"

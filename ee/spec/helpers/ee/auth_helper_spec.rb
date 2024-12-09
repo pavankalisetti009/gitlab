@@ -185,7 +185,7 @@ RSpec.describe EE::AuthHelper do
 
       context 'with basic rules' do
         it 'returns basic list' do
-          expect(password_rule_list(true)).to match_array([:length, :common])
+          expect(password_rule_list(true)).to match_array([:length, :common, :user_info])
         end
 
         context 'when display_password_requirements is disabled' do
@@ -209,7 +209,7 @@ RSpec.describe EE::AuthHelper do
 
         it 'returns all rules' do
           expect(password_rule_list(true))
-            .to match_array([:length, :common, :number, :symbol, :lowercase, :uppercase])
+            .to match_array([:length, :common, :user_info, :number, :symbol, :lowercase, :uppercase])
         end
       end
     end

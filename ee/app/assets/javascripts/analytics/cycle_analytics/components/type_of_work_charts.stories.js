@@ -8,7 +8,7 @@ export default {
   decorators: [withVuexStore],
 };
 
-const createStoryWithState = ({ state = {} }) => {
+const createStoryWithState = () => {
   return (args, { argTypes, createVuexStore }) => ({
     components: { TypeOfWorkCharts },
     props: Object.keys(argTypes),
@@ -23,26 +23,21 @@ const createStoryWithState = ({ state = {} }) => {
       getters: {
         selectedProjectIds: () => [],
       },
-      modules: {
-        typeOfWork: {
-          namespaced: true,
-          state,
-          getters: {
-            selectedLabelNames: () => [],
-          },
-        },
-      },
     }),
   });
 };
 
-export const Default = createStoryWithState({}).bind({});
+export const Default = createStoryWithState().bind({});
 Default.args = { chartData: tasksByTypeChartData };
 
-export const NoData = createStoryWithState({}).bind({});
+export const SelectedLabels = createStoryWithState().bind({});
+SelectedLabels.args = {
+  chartData: tasksByTypeChartData,
+  selectedLabelNames: [defaultGroupLabels[0].title],
+};
+
+export const NoData = createStoryWithState().bind({});
 NoData.args = { chartData: { data: [] } };
 
-export const ErrorMessage = createStoryWithState({
-  state: { errorMessage: 'Failed to load chart' },
-}).bind({});
-ErrorMessage.args = { chartData: { data: [] } };
+export const ErrorMessage = createStoryWithState().bind({});
+ErrorMessage.args = { chartData: { data: [] }, errorMessage: 'Failed to load chart' };

@@ -4,6 +4,7 @@ module Gitlab
   module LicenseScanning
     class PackageLicenses
       include Gitlab::InternalEventsTracking
+      include Gitlab::Utils::StrongMemoize
 
       BATCH_SIZE = 700
       UNKNOWN_LICENSE = {
@@ -136,7 +137,7 @@ module Gitlab
 
         packages_for_batch.each do |package|
           requested_data_for_package(package).each do |component|
-            license_ids = package.license_ids_for(version: component[:version])
+            license_ids = license_ids_for(package, component[:version])
 
             next if license_ids.empty?
 
@@ -147,6 +148,12 @@ module Gitlab
             counts[:with_scan_results] += 1
             counts[:without_scan_results] -= 1
           end
+        end
+      end
+
+      def license_ids_for(package, version)
+        strong_memoize_with(:license_ids_for, package, version) do
+          package.license_ids_for(version: version)
         end
       end
 

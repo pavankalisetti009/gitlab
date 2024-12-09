@@ -1,5 +1,6 @@
+---
 name: user_activate
-description: Event triggered on user activate action
+description: A user is activated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/13473
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/121708
 feature_category: "user_management"

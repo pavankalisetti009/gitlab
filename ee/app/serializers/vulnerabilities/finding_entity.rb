@@ -60,22 +60,6 @@ class Vulnerabilities::FindingEntity < Grape::Entity
   expose :state
   expose :scan
 
-  expose :epss_score do |occurrence|
-    occurrence.cve_enrichment&.epss_score
-  end
-
-  expose :is_known_exploit do |occurrence|
-    occurrence.cve_enrichment&.is_known_exploit
-  end
-
-  expose :cvss_v2 do |occurrence|
-    occurrence.advisory&.cvss_v2
-  end
-
-  expose :cvss_v3 do |occurrence|
-    occurrence.advisory&.cvss_v3
-  end
-
   expose :blob_path do |occurrence|
     occurrence.present(presenter_class: Vulnerabilities::FindingPresenter).blob_path
   end

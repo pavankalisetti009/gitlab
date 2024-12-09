@@ -78,7 +78,7 @@ module QA
       end
 
       context "with pre-existing dashboard", only: { subdomain: :staging } do
-        let!(:user) { Runtime::User.admin }
+        let!(:user) { Runtime::User::Store.admin_user }
 
         let!(:group) { build(:sandbox, api_client: admin_api_client, path: 'optimize-vsa-test').reload! }
 

@@ -46,4 +46,10 @@ RSpec.describe UserPermissionExportUpload, type: :model do
       end
     end
   end
+
+  describe '#uploads_sharding_key' do
+    it 'returns empty hash' do
+      expect(upload.uploads_sharding_key).to eq({})
+    end
+  end
 end

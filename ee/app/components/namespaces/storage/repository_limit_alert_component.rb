@@ -90,7 +90,7 @@ module Namespaces
           Kernel.format(
             s_(
               "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, " \
-              "or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end}  " \
+              "or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} " \
               "and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
             ),
             text_args

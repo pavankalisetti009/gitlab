@@ -115,29 +115,30 @@ module EE
         field :duo_workflow_events, ::Types::Ai::DuoWorkflows::WorkflowEventType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowEventsResolver,
           experiment: { milestone: '17.2' },
-          description: 'List the events for a Duo Workflow'
+          description: 'List the events for a Duo Workflow.'
 
         field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver,
           experiment: { milestone: '17.2' },
-          description: 'List the workflows owned by the current user'
+          description: 'List the workflows owned by the current user.'
 
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
           experiment: { milestone: '16.4' },
-          description: 'Time taken for CI jobs to be picked up by runner by percentile.',
+          description: 'Time taken for CI jobs to be picked up by runner by percentile. ' \
+            'Enable the ClickHouse database backend to use this query.',
           resolver: ::Resolvers::Ci::InstanceQueueingHistoryResolver,
           extras: [:lookahead]
         field :runner_usage_by_project,
           [::Types::Ci::RunnerUsageByProjectType],
           null: true,
-          description: 'Runner usage by project.',
+          description: 'Runner usage by project. Enable the ClickHouse database backend to use this query.',
           resolver: ::Resolvers::Ci::RunnerUsageByProjectResolver
         field :runner_usage,
           [::Types::Ci::RunnerUsageType],
           null: true,
-          description: 'Runner usage by runner.',
+          description: 'Runner usage by runner. Enable the ClickHouse database backend to use this query.',
           resolver: ::Resolvers::Ci::RunnerUsageResolver
 
         field :instance_google_cloud_logging_configurations,

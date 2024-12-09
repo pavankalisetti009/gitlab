@@ -92,7 +92,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     context "when using codegecko for code suggestion task" do
       before do
         stub_feature_flags(incident_fail_over_completion_provider: false)
-        stub_feature_flags(use_codestral_for_code_completions: false)
       end
 
       it_behaves_like 'code suggestion task' do
@@ -100,33 +99,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         let(:model_engine) { 'vertex-ai' }
         let(:expected_body) do
           {
-            "current_file" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "sor",
-              "content_below_cursor" => "som"
-            },
-            "telemetry" => [{ "model_engine" => "vertex-ai" }],
-            "prompt_version" => 1
-          }
-        end
-
-        let(:expected_feature_name) { :code_suggestions }
-      end
-    end
-
-    context "when using codestral for code suggestion task" do
-      before do
-        stub_feature_flags(incident_fail_over_completion_provider: false)
-        stub_feature_flags(use_codestral_for_code_completions: true)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:model_family) { :vertex_ai }
-        let(:model_engine) { 'vertex-ai' }
-        let(:expected_body) do
-          {
-            "model_name" => "codestral@2405",
-            "model_provider" => "vertex-ai",
             "current_file" => {
               "file_name" => "test.py",
               "content_above_cursor" => "sor",
@@ -168,7 +140,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     context "when using fireworks qwen for code suggestion task" do
       before do
         stub_feature_flags(incident_fail_over_completion_provider: false)
-        stub_feature_flags(use_codestral_for_code_completions: false)
         stub_feature_flags(fireworks_qwen_code_completion: true)
       end
 

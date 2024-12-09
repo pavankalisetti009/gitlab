@@ -55,4 +55,13 @@ RSpec.describe Dependencies::DependencyListExport::Part, feature_category: :depe
       let_it_be(:model) { create(:dependency_list_export_part, organization: parent) }
     end
   end
+
+  describe '#uploads_sharding_key' do
+    it 'returns organization_id' do
+      organization = build_stubbed(:organization)
+      export_part = build_stubbed(:dependency_list_export_part, organization: organization)
+
+      expect(export_part.uploads_sharding_key).to eq(organization_id: organization.id)
+    end
+  end
 end

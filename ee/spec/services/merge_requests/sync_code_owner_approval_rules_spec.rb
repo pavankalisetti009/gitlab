@@ -6,31 +6,32 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
   let_it_be_with_reload(:merge_request) { create(:merge_request) }
   let_it_be(:rb_owners) { create_list(:user, 2) }
   let_it_be(:doc_owners) { create_list(:user, 2) }
-  let_it_be(:rb_role_approvers) { [Gitlab::Access::REPORTER, Gitlab::Access::DEVELOPER] }
-  let_it_be(:doc_role_approvers) { [Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER] }
+  let(:rb_role_approvers) { [Gitlab::Access::DEVELOPER] }
+  let(:rb_role_approvers_text) { '@@developer' }
+  let(:doc_role_approvers) { [Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER] }
+  let(:doc_role_approvers_text) { '@@developer @@maintainer' }
   let_it_be(:rb_group_owners) { create_list(:group, 2) }
   let_it_be(:doc_group_owners) { create_list(:group, 2) }
   let_it_be(:rb_approvals_required) { 2 }
   let_it_be(:doc_approvals_required) { 3 }
 
   let(:rb_entry) do
-    build_entry('*.rb', rb_owners, rb_group_owners, rb_role_approvers, 'codeowners', rb_approvals_required)
+    build_entry('*.rb', rb_owners, rb_group_owners, rb_role_approvers_text, 'codeowners', rb_approvals_required)
   end
 
   let(:doc_entry) do
-    build_entry('doc/*', doc_owners, doc_group_owners, doc_role_approvers, 'codeowners', doc_approvals_required)
+    build_entry('doc/*', doc_owners, doc_group_owners, doc_role_approvers_text, 'codeowners', doc_approvals_required)
   end
 
   let(:entries) { [rb_entry, doc_entry] }
   let(:params) { {} }
 
   def build_entry(pattern, users, groups, roles, section = Gitlab::CodeOwners::Section::DEFAULT, approvals_required = 0)
-    text = (users + groups).map(&:to_reference).join(' ')
+    text = "#{(users + groups).map(&:to_reference).join(' ')} #{roles}"
     entry = Gitlab::CodeOwners::Entry.new(pattern, text, section, false, approvals_required)
 
     entry.add_matching_users_from(users)
     entry.add_matching_groups_from(groups)
-    entry.add_matching_roles_from(roles)
 
     entry
   end
@@ -74,7 +75,7 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
 
     context 'when an outdated rule has the same pattern as the section' do
       let(:entries) { [section_code_owner_rule] }
-      let(:section_code_owner_rule) { build_entry('*', rb_owners, rb_group_owners, rb_role_approvers, 'Rb owners') }
+      let(:section_code_owner_rule) { build_entry('*', rb_owners, rb_group_owners, '', 'Rb owners') }
 
       it 'deletes rules that are not relevant anymore' do
         default_section_rule = create(:code_owner_rule, merge_request: merge_request, name: '*')
@@ -105,8 +106,8 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
     end
 
     context 'when multiple rules for the same pattern with different sections are specified' do
-      let(:rb_entry) { build_entry('doc/', rb_owners, rb_group_owners, rb_role_approvers, 'Rb owners') }
-      let(:doc_entry) { build_entry('doc/', doc_owners, doc_group_owners, doc_role_approvers, 'Doc owners') }
+      let(:rb_entry) { build_entry('doc/', rb_owners, rb_group_owners, rb_role_approvers_text, 'Rb owners') }
+      let(:doc_entry) { build_entry('doc/', doc_owners, doc_group_owners, doc_role_approvers_text, 'Doc owners') }
 
       it 'creates and updates the rules that are mapped to the entries' do
         expect { service.execute }.to change { merge_request.approval_rules.count }.by(2)

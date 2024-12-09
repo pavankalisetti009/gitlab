@@ -34,9 +34,5 @@ module EE
     def stub_smartcard_setting(messages)
       allow(::Gitlab.config.smartcard).to receive_messages(to_settings(messages))
     end
-
-    def stub_elasticsearch_setting(messages)
-      allow(::Gitlab.config.elasticsearch).to receive_messages(to_settings(messages))
-    end
   end
 end

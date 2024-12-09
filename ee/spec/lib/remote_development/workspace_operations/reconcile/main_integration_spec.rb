@@ -556,7 +556,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
     context 'when receiving agent updates for a workspace which does not exist in the db' do
       let(:nonexistent_workspace) do
-        instance_double("RemoteDevelopment::Workspace", id: 1, name: 'x', namespace: 'x', agent: agent) # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+        instance_double(
+          "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+          id: 1, name: 'x', namespace: 'x', agent: agent,
+          desired_config_generator_version:
+            ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+        )
       end
 
       let(:workspace_agent_info) do

@@ -14,8 +14,6 @@ options:
   prefix: value_streams_dashboard
   event: views
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate
 milestone_removed: "16.5"

@@ -11,8 +11,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
   - p_analytics_repo
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

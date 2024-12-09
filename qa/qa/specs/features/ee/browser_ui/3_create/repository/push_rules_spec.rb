@@ -3,7 +3,7 @@
 module QA
   RSpec.describe 'Create' do
     describe 'Push rules', :requires_admin, product_group: :source_code do
-      let!(:creator) { Runtime::UserStore.test_user }
+      let!(:creator) { Runtime::User::Store.test_user }
       let!(:project) { create(:project, :with_readme) }
 
       let(:file_name_limitation) { 'denied_file' }

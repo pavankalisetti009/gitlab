@@ -37,4 +37,13 @@ RSpec.describe Vulnerabilities::Remediation, feature_category: :vulnerability_ma
       let_it_be(:model) { create(:vulnerabilities_remediation, project: parent) }
     end
   end
+
+  describe '#uploads_sharding_key' do
+    it 'returns project_id' do
+      project = build_stubbed(:project)
+      remediation = build_stubbed(:vulnerabilities_remediation, project_id: project.id)
+
+      expect(remediation.uploads_sharding_key).to eq(project_id: project.id)
+    end
+  end
 end

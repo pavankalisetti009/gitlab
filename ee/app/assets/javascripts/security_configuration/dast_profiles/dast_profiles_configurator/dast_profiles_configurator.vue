@@ -29,7 +29,7 @@ export default {
   i18n: {
     dastConfigurationHeader: s__('OnDemandScans|DAST configuration'),
     dastConfigurationDescription: s__(
-      "OnDemandScans|DAST scans for vulnerabilities in your project's running application, website, or API.  For details of all configuration options, see the %{linkStart}GitLab DAST documentation%{linkEnd}.",
+      "OnDemandScans|DAST scans for vulnerabilities in your project's running application, website, or API. For details of all configuration options, see the %{linkStart}GitLab DAST documentation%{linkEnd}.",
     ),
   },
   components: {

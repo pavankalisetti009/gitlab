@@ -316,6 +316,51 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
           end
         end
       end
+
+      context 'with multiple assignees', :sidekiq_inline do
+        let_it_be(:project) { create(:project, :public, group: group) }
+
+        let_it_be(:users) do
+          users = build_list(:user, 15)
+          user_attributes = users.map { |user| user.attributes.except('id', 'otp_secret') }
+          user_ids = User.insert_all(user_attributes, returning: :id).rows.flatten
+
+          level = NotificationSetting.levels[::User::DEFAULT_NOTIFICATION_LEVEL]
+          users_global_notifications = user_ids.map do |user_id|
+            { user_id: user_id, source_id: nil, source_type: nil, level: level, created_at: Time.current }
+          end
+          NotificationSetting.insert_all(users_global_notifications)
+
+          User.id_in(user_ids)
+        end
+
+        let(:params) { { title: 'Title', description: 'Description', assignee_ids: users.map(&:id) } }
+
+        it 'does not raise `ThresholdExceededError` error' do
+          expect { service.execute }.not_to raise_error
+        end
+
+        it 'keeps queries count under threshold' do
+          new_users = create_list(:user, 2)
+          params = { title: 'Title', description: 'Description', assignee_ids: new_users.map(&:id) }
+
+          control = ActiveRecord::QueryRecorder.new do
+            described_class.new(container: project, current_user: user, params: params).execute
+          end
+
+          # Currently, when creating an issue we create each issue_assignee record separately, so we fire 6 queries for
+          # each one of those:
+          # - load the user
+          # - validates that username is unique, see User model
+          # - validates `ensure_namespace_correct`, see User model
+          # - check user within namespace_bans within EE
+          # - validates user is the unique assignee in scope of the issue, see IssueAssignee model
+          # - inserts the issue assignee record
+          #
+          # So we add these as a threshold to the control query: 33*5
+          expect { service.execute }.not_to exceed_query_limit(control).with_threshold(15 * 6)
+        end
+      end
     end
 
     context 'when zoom and severity quick action is used together' do

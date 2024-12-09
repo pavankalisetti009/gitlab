@@ -11,6 +11,7 @@ module Types
         value 'CODELLAMA', 'Code-Llama Instruct: Suitable for code suggestions.', value: 'codellama'
         value 'CODESTRAL', 'Codestral: Suitable for code suggestions.', value: 'codestral'
         value 'MISTRAL', 'Mistral: Suitable for code suggestions and duo chat.', value: 'mistral'
+        value 'MIXTRAL', 'Mixtral: Suitable for code suggestions and duo chat.', value: 'mixtral'
         value 'DEEPSEEKCODER', description: 'Deepseek Coder base or instruct.', value: 'deepseekcoder'
         value 'LLAMA3', description: 'LLaMA 3: Suitable for code suggestions and duo chat.', value: 'llama3'
         value 'CLAUDE_3', description: 'Claude 3 model family, suitable for code generation and duo chat.',

@@ -65,15 +65,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
           variables: {
             DAST_VERSION: 5,
             SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
+            DAST_IMAGE_SUFFIX: '',
             GIT_STRATEGY: 'none'
           },
           allow_failure: true,
           script: ['/analyze'],
-          artifacts: { access: 'developer', reports: { dast: 'gl-dast-report.json' } },
+          artifacts: { access: 'developer', paths: ["gl-dast-*.*"], reports: { dast: 'gl-dast-report.json' }, when: 'always' },
           dast_configuration: { site_profile: site_profile.name, scanner_profile: scanner_profile.name },
           rules: [
             { if: '$CI_GITLAB_FIPS_MODE == "true"', variables: { DAST_IMAGE_SUFFIX: "-fips" } },
-            { if: '$CI_GITLAB_FIPS_MODE != "true"', variables: { DAST_IMAGE_SUFFIX: "" } }
+            { when: 'on_success' }
           ]
         },
         'dast-on-demand-1': {

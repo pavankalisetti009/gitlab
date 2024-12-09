@@ -4928,6 +4928,9 @@ msgstr ""
 msgid "AdminUsers|user cap"
 msgstr ""
 
+msgid "Administrator"
+msgstr ""
+
 msgid "Administrator Account Setup"
 msgstr ""
 
@@ -6009,6 +6012,9 @@ msgstr ""
 msgid "An error occurred while drawing job relationship links."
 msgstr ""
 
+msgid "An error occurred while editing lock information, please try again."
+msgstr ""
+
 msgid "An error occurred while enabling Service Desk."
 msgstr ""
 
@@ -6055,6 +6061,9 @@ msgid "An error occurred while fetching label colors."
 msgstr ""
 
 msgid "An error occurred while fetching labels, please try again."
+msgstr ""
+
+msgid "An error occurred while fetching lock information, please try again."
 msgstr ""
 
 msgid "An error occurred while fetching participants"
@@ -7410,6 +7419,9 @@ msgstr ""
 msgid "Are you sure you want to %{action} %{name}?"
 msgstr ""
 
+msgid "Are you sure you want to %{action} this directory?"
+msgstr ""
+
 msgid "Are you sure you want to approve %{user}?"
 msgstr ""
 
@@ -8217,7 +8229,7 @@ msgstr ""
 msgid "Auto-cancel redundant pipelines"
 msgstr ""
 
-msgid "Auto-resolved by vulnerability management policy"
+msgid "Auto-resolved by the vulnerability management policy named '%{policy_name}'"
 msgstr ""
 
 msgid "AutoDevOps|%{auto_devops_start}Automate building, testing, and deploying%{auto_devops_end} your applications based on your continuous integration and delivery configuration. %{quickstart_start}How do I get started?%{quickstart_end}"
@@ -8961,10 +8973,16 @@ msgstr ""
 msgid "Billings|In a seat"
 msgstr ""
 
+msgid "Billings|Open source Plan Seats used"
+msgstr ""
+
 msgid "Billings|Seats in use / Seats available"
 msgstr ""
 
 msgid "Billings|Seats in use / Seats in subscription"
+msgstr ""
+
+msgid "Billings|You have unlimited seat count."
 msgstr ""
 
 msgid "Billing|%d user has been successfully assigned a seat."
@@ -13452,6 +13470,9 @@ msgstr ""
 msgid "Collapse merge details"
 msgstr ""
 
+msgid "Collapse merge request reports"
+msgstr ""
+
 msgid "Collapse milestones"
 msgstr ""
 
@@ -14183,7 +14204,7 @@ msgstr ""
 msgid "ComplianceFrameworks|There can be only one default framework."
 msgstr ""
 
-msgid "ComplianceFrameworks|To link this policy and framework,  edit  the policy's scope."
+msgid "ComplianceFrameworks|To link this policy and framework, edit the policy's scope."
 msgstr ""
 
 msgid "ComplianceFrameworks|To unlink this policy and framework, edit the policy's scope."
@@ -14723,7 +14744,7 @@ msgstr ""
 msgid "Confirm"
 msgstr ""
 
-msgid "Confirm Enrollement"
+msgid "Confirm Enrollment"
 msgstr ""
 
 msgid "Confirm approval"
@@ -14965,6 +14986,9 @@ msgid "ContainerRegistry|Container protection rule deleted."
 msgstr ""
 
 msgid "ContainerRegistry|Container protection rule updated."
+msgstr ""
+
+msgid "ContainerRegistry|Container registry"
 msgstr ""
 
 msgid "ContainerRegistry|Container registry cleanup policies"
@@ -15221,6 +15245,9 @@ msgstr ""
 msgid "ContainerRegistry|Tags with names that match this regex pattern are removed. %{linkStart}View regex examples.%{linkEnd}"
 msgstr ""
 
+msgid "ContainerRegistry|The %{linkStart}GitLab Container Registry%{linkEnd} is a secure and private registry for container images. It’s built on open source software and completely integrated within GitLab. Use GitLab CI/CD to create and publish images. Use the GitLab API to manage the registry across groups and projects."
+msgstr ""
+
 msgid "ContainerRegistry|The %{linkStart}next-generation container registry%{linkEnd} is now available for upgrade on self-managed instances. This upgraded registry supports online garbage collection, and has significant performance and reliability improvements."
 msgstr ""
 
@@ -15272,7 +15299,7 @@ msgstr ""
 msgid "ContainerRegistry|Users with at least the Developer role for this project will be able to push and delete container images to this repository path."
 msgstr ""
 
-msgid "ContainerRegistry|We are having trouble connecting to the Container Registry. Please try refreshing the page. If this error persists, please review  %{docLinkStart}the troubleshooting documentation%{docLinkEnd}."
+msgid "ContainerRegistry|We are having trouble connecting to the Container Registry. Please try refreshing the page. If this error persists, please review %{docLinkStart}the troubleshooting documentation%{docLinkEnd}."
 msgstr ""
 
 msgid "ContainerRegistry|When a container repository is protected, only certain user roles can push the protected container image, which helps to avoid tampering with the container image."
@@ -21614,7 +21641,7 @@ msgstr ""
 msgid "Environments|Select namespace"
 msgstr ""
 
-msgid "Environments|Select which environments to clean up.     Protected environments are excluded. Learn more about cleaning up environments."
+msgid "Environments|Select which environments to clean up. Protected environments are excluded. Learn more about cleaning up environments."
 msgstr ""
 
 msgid "Environments|Show all"
@@ -22607,6 +22634,9 @@ msgstr ""
 msgid "Expand merge details"
 msgstr ""
 
+msgid "Expand merge request reports"
+msgstr ""
+
 msgid "Expand milestones"
 msgstr ""
 
@@ -22754,7 +22784,7 @@ msgstr ""
 msgid "ExternalAuthorization|Certificate used to authenticate with the external authorization service. If blank, the server certificate is validated when accessing over HTTPS."
 msgstr ""
 
-msgid "ExternalAuthorization|Classification label to use when requesting authorization if no specific  label is defined on the project."
+msgid "ExternalAuthorization|Classification label to use when requesting authorization if no specific label is defined on the project."
 msgstr ""
 
 msgid "ExternalAuthorization|Client authorization certificate"
@@ -25265,6 +25295,12 @@ msgid "GlobalSearch|All available groups"
 msgstr ""
 
 msgid "GlobalSearch|Archived"
+msgstr ""
+
+msgid "GlobalSearch|Author"
+msgstr ""
+
+msgid "GlobalSearch|Author not included"
 msgstr ""
 
 msgid "GlobalSearch|Branch not included"
@@ -32601,6 +32637,9 @@ msgstr ""
 msgid "Lock File?"
 msgstr ""
 
+msgid "Lock directory?"
+msgstr ""
+
 msgid "Lock discussion"
 msgstr ""
 
@@ -33962,6 +34001,9 @@ msgstr ""
 msgid "Merge options"
 msgstr ""
 
+msgid "Merge reports (%{reportsCount}):"
+msgstr ""
+
 msgid "Merge request"
 msgstr ""
 
@@ -35215,6 +35257,9 @@ msgstr ""
 msgid "ModelRegistry|New model"
 msgstr ""
 
+msgid "ModelRegistry|New version"
+msgstr ""
+
 msgid "ModelRegistry|Version"
 msgstr ""
 
@@ -35662,7 +35707,7 @@ msgstr ""
 msgid "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, or %{purchase_more_link_start}purchase more storage%{link_end}."
 msgstr ""
 
-msgid "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end}  and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
+msgid "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
 msgstr ""
 
 msgid "NamespaceStorageSize|You have consumed all available storage and you can't push or add large files to projects over the free tier limit (%{free_size_limit})."
@@ -37701,6 +37746,9 @@ msgstr ""
 msgid "Oh no!"
 msgstr ""
 
+msgid "Ok"
+msgstr ""
+
 msgid "Okay"
 msgstr ""
 
@@ -37931,7 +37979,7 @@ msgstr ""
 msgid "OnDemandScans|DAST configuration"
 msgstr ""
 
-msgid "OnDemandScans|DAST scans for vulnerabilities in your project's running application, website, or API.  For details of all configuration options, see the %{linkStart}GitLab DAST documentation%{linkEnd}."
+msgid "OnDemandScans|DAST scans for vulnerabilities in your project's running application, website, or API. For details of all configuration options, see the %{linkStart}GitLab DAST documentation%{linkEnd}."
 msgstr ""
 
 msgid "OnDemandScans|Define the fundamental configuration options for your on-demand scan."
@@ -39411,6 +39459,9 @@ msgstr ""
 msgid "PackageRegistry|When a package with same name and version is uploaded to the registry, more assets are added to the package. To save storage space, keep only the most recent assets."
 msgstr ""
 
+msgid "PackageRegistry|With the GitLab package registry, you can use GitLab as a private or public registry for a variety of %{linkStart}supported package managers%{linkEnd}. You can publish and share packages, which can be consumed as a dependency in downstream projects."
+msgstr ""
+
 msgid "PackageRegistry|Yes, delete package"
 msgstr ""
 
@@ -39721,6 +39772,9 @@ msgid "Password|Satisfied"
 msgstr ""
 
 msgid "Password|To be satisfied"
+msgstr ""
+
+msgid "Password|cannot include your name, username, or email"
 msgstr ""
 
 msgid "Password|cannot use common phrases (e.g. \"password\")"
@@ -40668,7 +40722,7 @@ msgstr ""
 msgid "Pipelines|Full configuration is view only"
 msgstr ""
 
-msgid "Pipelines|Get familiar with GitLab CI syntax by setting up a simple pipeline running a  \"Hello world\" script to see how it runs, explore how CI/CD works."
+msgid "Pipelines|Get familiar with GitLab CI syntax by setting up a simple pipeline running a \"Hello world\" script to see how it runs, explore how CI/CD works."
 msgstr ""
 
 msgid "Pipelines|Get started with GitLab CI/CD"
@@ -41014,6 +41068,9 @@ msgid "Pipeline|Run for branch name or tag"
 msgstr ""
 
 msgid "Pipeline|Run merge request pipeline"
+msgstr ""
+
+msgid "Pipeline|Run new pipeline"
 msgstr ""
 
 msgid "Pipeline|Run pipeline"
@@ -42953,16 +43010,28 @@ msgstr ""
 msgid "ProjectMaintenance|Enter multiple entries on separate lines."
 msgstr ""
 
-msgid "ProjectMaintenance|Enter the following to confirm:"
+msgid "ProjectMaintenance|Go to housekeeping"
 msgstr ""
 
-msgid "ProjectMaintenance|Go to housekeeping"
+msgid "ProjectMaintenance|Historical tags and branches based on the old commit history might no longer work correctly."
 msgstr ""
 
 msgid "ProjectMaintenance|How do I get a list of object IDs?"
 msgstr ""
 
+msgid "ProjectMaintenance|How does blobs removal work?"
+msgstr ""
+
+msgid "ProjectMaintenance|Local copies become incompatible with the updated repository and must be re-cloned."
+msgstr ""
+
 msgid "ProjectMaintenance|Manage repository storage and cleanup."
+msgstr ""
+
+msgid "ProjectMaintenance|Open merge requests might fail to merge and require manual rebasing."
+msgstr ""
+
+msgid "ProjectMaintenance|Pipelines referencing old commit SHAs might break and require reconfiguration."
 msgstr ""
 
 msgid "ProjectMaintenance|Provide a list of blob object IDs to be removed."
@@ -42992,9 +43061,6 @@ msgstr ""
 msgid "ProjectMaintenance|Remove blobs"
 msgstr ""
 
-msgid "ProjectMaintenance|Removing blobs by ID cannot be undone. Are you sure you want to continue?"
-msgstr ""
-
 msgid "ProjectMaintenance|Something went wrong while redacting text."
 msgstr ""
 
@@ -43017,6 +43083,9 @@ msgid "ProjectMaintenance|Yes, redact matching strings"
 msgstr ""
 
 msgid "ProjectMaintenance|Yes, remove blobs"
+msgstr ""
+
+msgid "ProjectMaintenance|You are about to permanently remove blobs from this project."
 msgstr ""
 
 msgid "ProjectMaintenance|You will receive an email notification when the process is complete. Run housekeeping to remove old versions from repository."
@@ -44165,6 +44234,9 @@ msgid "Projects|An error occurred deleting the project. Please refresh the page 
 msgstr ""
 
 msgid "Projects|Projects are where you can store your code, access issues, wiki, and other features of GitLab."
+msgstr ""
+
+msgid "Projects|Scheduled for deletion on %{date}"
 msgstr ""
 
 msgid "Projects|You don't have any projects yet."
@@ -46931,7 +47003,7 @@ msgstr[1] ""
 msgid "Runners|%{upgradeLinkStart}Upgrade GitLab Runner%{upgradeLinkEnd} to match your GitLab version. %{versionLinkStart}Major and minor versions%{versionLinkEnd} must match."
 msgstr ""
 
-msgid "Runners|%{upgradeLinkStart}Upgrade GitLab Runner%{upgradeLinkEnd} to match your GitLab version. This upgrade is highly recommended for this runner and may contain security or compatibilty fixes. %{versionLinkStart}Major and minor versions%{versionLinkEnd} must match."
+msgid "Runners|%{upgradeLinkStart}Upgrade GitLab Runner%{upgradeLinkEnd} to match your GitLab version. This upgrade is highly recommended for this runner and may contain security or compatibility fixes. %{versionLinkStart}Major and minor versions%{versionLinkEnd} must match."
 msgstr ""
 
 msgid "Runners|1. Configure your Google Cloud project"
@@ -48261,7 +48333,7 @@ msgstr ""
 msgid "ScanExecutionPolicy|Add new condition"
 msgstr ""
 
-msgid "ScanExecutionPolicy|Are you sure you want to create merge request fot this policy?"
+msgid "ScanExecutionPolicy|Are you sure you want to create merge request for this policy?"
 msgstr ""
 
 msgid "ScanExecutionPolicy|Back to edit policy"
@@ -50800,6 +50872,9 @@ msgstr ""
 msgid "SecurityReports|Ensure that %{trackingStart}issue tracking%{trackingEnd} is enabled for this project and you have %{permissionsStart}permission to create new issues%{permissionsEnd}."
 msgstr ""
 
+msgid "SecurityReports|Enter at least 3 characters to view available identifiers."
+msgstr ""
+
 msgid "SecurityReports|Error fetching the vulnerability counts. Please check your network connection and try again."
 msgstr ""
 
@@ -50834,6 +50909,9 @@ msgid "SecurityReports|Has merge request"
 msgstr ""
 
 msgid "SecurityReports|Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. %{linkStart}Learn more.%{linkEnd}"
+msgstr ""
+
+msgid "SecurityReports|Identifier"
 msgstr ""
 
 msgid "SecurityReports|If you were expecting vulnerabilities to be shown here, check that you've completed the %{linkStart}security scanning prerequisites%{linkEnd}, or check the other vulnerability types in the tabs above."
@@ -50885,6 +50963,9 @@ msgid "SecurityReports|Monitored projects"
 msgstr ""
 
 msgid "SecurityReports|New feature: Grouping"
+msgstr ""
+
+msgid "SecurityReports|No identifiers found."
 msgstr ""
 
 msgid "SecurityReports|No longer detected"
@@ -51001,6 +51082,9 @@ msgid "SecurityReports|There was an error fetching the finding. Please try again
 msgstr ""
 
 msgid "SecurityReports|There was an error fetching the finding. The security report for this pipeline may have expired. To generate a new security report, go the %{boldStart}Pipelines%{boldEnd} tab and run a pipeline."
+msgstr ""
+
+msgid "SecurityReports|There was an error fetching the identifiers for this project. Please try again later."
 msgstr ""
 
 msgid "SecurityReports|There was an error reverting the dismissal."
@@ -59026,8 +59110,10 @@ msgstr ""
 msgid "Unlimited"
 msgstr ""
 
-msgid "UnlimitedMembersDuringTrialAlert|During your trial, invite as many members as you like to %{group_or_project} to collaborate with you."
-msgstr ""
+msgid "UnlimitedMembersDuringTrialAlert|During your trial, invite as many members as you like to %{name} to collaborate with you. When your trial ends, you'll have a maximum of %{limit} member on the Free tier, or you can get more by upgrading to a paid tier."
+msgid_plural "UnlimitedMembersDuringTrialAlert|During your trial, invite as many members as you like to %{name} to collaborate with you. When your trial ends, you'll have a maximum of %{limit} members on the Free tier, or you can get more by upgrading to a paid tier."
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "UnlimitedMembersDuringTrialAlert|Explore paid plans"
 msgstr ""
@@ -62262,11 +62348,6 @@ msgstr ""
 msgid "When you transfer your project to a group, you can easily manage multiple projects, view usage quotas for storage, compute minutes, and users, and start a trial or upgrade to a paid tier."
 msgstr ""
 
-msgid "When your trial ends, you'll have a maximum of %d member on the Free tier, or you can get more by upgrading to a paid tier."
-msgid_plural "When your trial ends, you'll have a maximum of %d members on the Free tier, or you can get more by upgrading to a paid tier."
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "When your trial ends, you'll move to the Free tier, which has a limit of %{free_user_limit} seat. %{free_user_limit} seat will remain active, and members not occupying a seat will have the %{link_start}Over limit status%{link_end} and lose access to this group."
 msgid_plural "When your trial ends, you'll move to the Free tier, which has a limit of %{free_user_limit} seats. %{free_user_limit} seats will remain active, and members not occupying a seat will have the %{link_start}Over limit status%{link_end} and lose access to this group."
 msgstr[0] ""
@@ -62782,6 +62863,12 @@ msgid "WorkItem|Comment & reopen %{workItemType}"
 msgstr ""
 
 msgid "WorkItem|Comments only"
+msgstr ""
+
+msgid "WorkItem|Confidentiality turned off."
+msgstr ""
+
+msgid "WorkItem|Confidentiality turned on."
 msgstr ""
 
 msgid "WorkItem|Configure work items such as epics, issues, and tasks to represent how your team works."
@@ -65165,6 +65252,9 @@ msgid "ciReport|API Fuzzing"
 msgstr ""
 
 msgid "ciReport|API fuzzing"
+msgstr ""
+
+msgid "ciReport|Advanced SAST Scanning"
 msgstr ""
 
 msgid "ciReport|All tools"

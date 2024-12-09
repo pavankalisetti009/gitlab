@@ -32,11 +32,6 @@ module PackageMetadata
     end
 
     scope :with_affected_packages, -> { includes(:affected_packages) }
-    scope :by_cve, ->(cve) {
-      where("EXISTS (SELECT 1 FROM jsonb_array_elements(identifiers) AS identifier
-             WHERE identifier->>'type' ILIKE 'cve'
-             AND identifier->>'name' = ?)", cve)
-    }
 
     def from_container_scanning?
       source_xid == 'trivy-db'

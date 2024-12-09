@@ -5,7 +5,6 @@ import filters from '~/vue_shared/components/filtered_search_bar/store/modules/f
 import * as actions from './actions';
 import * as getters from './getters';
 import durationChart from './modules/duration_chart/index';
-import typeOfWork from './modules/type_of_work/index';
 import mutations from './mutations';
 import state from './state';
 
@@ -17,5 +16,5 @@ export default () =>
     getters,
     mutations,
     state,
-    modules: { durationChart, typeOfWork, filters },
+    modules: { durationChart, filters },
   });

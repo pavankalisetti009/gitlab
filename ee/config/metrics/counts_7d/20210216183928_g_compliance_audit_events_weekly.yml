@@ -11,8 +11,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
   - g_compliance_audit_events
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

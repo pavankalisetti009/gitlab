@@ -2,8 +2,8 @@
 
 module Registrations
   class StandardNamespaceCreateService < BaseNamespaceCreateService
-    def initialize(user, glm_params:, group_params:, project_params:)
-      super(user, glm_params: glm_params, group_params: group_params)
+    def initialize(user, group_params:, project_params:)
+      super(user, group_params: group_params)
 
       @project_params = project_params.dup
     end

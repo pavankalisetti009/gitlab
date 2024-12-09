@@ -17,7 +17,5 @@ events:
     filter:
       label: license_compliance
       property: success
-distribution:
-- ee
 tiers:
 - ultimate

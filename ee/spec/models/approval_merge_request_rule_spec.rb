@@ -63,7 +63,7 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       subject { create(:approval_merge_request_rule, :scan_finding, merge_request: merge_request) }
 
       it 'is invalid when name not unique within scan result policy, rule type and merge request' do
-        is_expected.to validate_uniqueness_of(:name).scoped_to([:merge_request_id, :rule_type, :section, :security_orchestration_policy_configuration_id, :orchestration_policy_idx])
+        is_expected.to validate_uniqueness_of(:name).scoped_to([:merge_request_id, :rule_type, :section, :security_orchestration_policy_configuration_id, :orchestration_policy_idx, :approval_policy_action_idx])
       end
     end
 

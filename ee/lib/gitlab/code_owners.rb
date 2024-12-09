@@ -58,7 +58,10 @@ module Gitlab
                 # NOTE: The sha could be the same as the head_commit_sha if there is only 1 commit and that got amended.
                 paths_for_merge_request(merge_request, merge_request_diff)
               else
-                merge_request_diff.compare_with(sha).modified_paths
+                ::MergeRequests::MergeRequestDiffComparison
+                  .new(merge_request_diff)
+                  .compare_with(sha)
+                  .modified_paths
               end
 
       Loader.new(

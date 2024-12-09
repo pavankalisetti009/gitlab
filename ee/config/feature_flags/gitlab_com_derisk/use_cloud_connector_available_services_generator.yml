@@ -1,0 +1,9 @@
+---
+name: use_cloud_connector_available_services_generator
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/504576
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/174566
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/507518
+milestone: '17.7'
+group: group::cloud connector
+type: gitlab_com_derisk
+default_enabled: false

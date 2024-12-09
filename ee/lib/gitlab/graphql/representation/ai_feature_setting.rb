@@ -17,7 +17,9 @@ module Gitlab
             indexed_self_hosted_models = ::Ai::SelfHostedModel.all.group_by(&:model)
 
             feature_settings.map do |feature_setting|
-              valid_models = feature_setting.compatible_llms.flat_map do |model|
+              compatible_llms = feature_setting.compatible_llms || []
+
+              valid_models = compatible_llms.flat_map do |model|
                 indexed_self_hosted_models[model] || []
               end
 

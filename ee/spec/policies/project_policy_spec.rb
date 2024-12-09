@@ -25,7 +25,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
   context 'basic permissions' do
     let(:additional_guest_permissions) { %i[read_limit_alert] }
-    let(:additional_planner_permissions) { [:read_software_license_policy] }
     let(:additional_reporter_permissions) do
       %i[read_software_license_policy admin_value_stream read_product_analytics]
     end
@@ -1157,7 +1156,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
         end
 
-        %w[owner maintainer developer reporter planner].each do |role|
+        %w[owner maintainer developer reporter].each do |role|
           context "with #{role}" do
             let(:current_user) { send(role) }
 
@@ -1165,7 +1164,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
         end
 
-        %w[anonymous non_member guest].each do |role|
+        %w[anonymous non_member guest planner].each do |role|
           context "with #{role}" do
             let(:current_user) { send(role) }
 
@@ -1195,7 +1194,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with private project' do
         let(:project) { private_project }
 
-        where(role: %w[owner maintainer developer reporter planner])
+        where(role: %w[owner maintainer developer reporter])
 
         with_them do
           let(:current_user) { public_send(role) }
@@ -1215,7 +1214,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
         end
 
-        %w[anonymous non_member guest].each do |role|
+        %w[anonymous non_member guest planner].each do |role|
           context "with #{role}" do
             let(:current_user) { send(role) }
 

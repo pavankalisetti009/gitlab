@@ -175,6 +175,42 @@ automatically from GitLab 16.0 onwards.
 
 <div class="deprecation breaking-change" data-milestone="19.0">
 
+### Slack notifications integration
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">15.9</span>
+- Removal in GitLab <span class="milestone">19.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/435909).
+
+</div>
+
+As we're consolidating all Slack capabilities into the
+GitLab for Slack app, we've deprecated the Slack notifications
+integration.
+Use the GitLab for Slack app to manage notifications
+to your Slack workspace.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="19.0">
+
+### The `Project.services` GraphQL field is deprecated
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">15.9</span>
+- Removal in GitLab <span class="milestone">19.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/388424).
+
+</div>
+
+The `Project.services` GraphQL field is deprecated. A `Project.integrations` field is proposed instead in [issue 389904](https://gitlab.com/gitlab-org/gitlab/-/issues/389904).
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="19.0">
+
 ### `workflow:rules` templates
 
 <div class="deprecation-notes">
@@ -521,6 +557,35 @@ If you manage your own NGINX RBAC rules, but you also want to take advantage of 
 We plan to remove this fallback support and support for NGINX controller image v1.3.1 in GitLab 18.0.
 
 You can read more about it in the [charts release page](https://docs.gitlab.com/charts/releases/8_0.html#upgrade-to-86x-851-843-836).
+
+</div>
+
+<div class="deprecation " data-milestone="18.0">
+
+### Gitaly rate limiting
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.7</span>
+- Removal in GitLab <span class="milestone">18.0</span>
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitaly/-/issues/5011).
+
+</div>
+
+Because of the highly variable nature of Git operations and repository latencies, Gitaly
+[RPC-based rate limiting](https://docs.gitlab.com/ee/administration/gitaly/monitoring.html#monitor-gitaly-rate-limiting)
+is ineffective. Configuring proper rate limits is challenging and often becomes obsolete quickly because harmful
+actions rarely generate enough requests per second to stand out.
+
+Gitaly already supports [concurrency limiting](https://docs.gitlab.com/ee/administration/gitaly/concurrency_limiting.html) and an
+[adaptive limiting add-on](https://docs.gitlab.com/ee/administration/gitaly/concurrency_limiting.html#adaptive-concurrency-limiting),
+which have proven to work well in production.
+
+Because Gitaly is not directly exposed to external networks and external protection layers, such as load balancers,
+provide better safeguards, rate limiting is less effective.
+
+Therefore, we're depecating rate limiting in favor of the more reliable concurrency limiting. Gitaly RPC-based
+rate limiting will be removed in GitLab 18.0.
 
 </div>
 
@@ -962,26 +1027,6 @@ In GitLab 18.0, only the runner registration methods implemented in the new GitL
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
-### Slack notifications integration
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">15.9</span>
-- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/435909).
-
-</div>
-
-As we're consolidating all Slack capabilities into the
-GitLab for Slack app, we've deprecated the Slack notifications
-integration.
-Use the GitLab for Slack app to manage notifications
-to your Slack workspace.
-
-</div>
-
-<div class="deprecation breaking-change" data-milestone="18.0">
-
 ### Support for REST API endpoints that reset runner registration tokens
 
 <div class="deprecation-notes">
@@ -1022,22 +1067,6 @@ From GitLab 18.0 and later, the runner registration methods implemented by the n
 </div>
 
 We will be transitioning to a new IID as a result of moving requirements to a [work item type](https://docs.gitlab.com/ee/development/work_items.html#work-items-and-work-item-types). Users should begin using the new IID as support for the legacy IID and existing formatting will end in GitLab 18.0. The legacy requirement IID remains available until its removal in GitLab 18.0.
-
-</div>
-
-<div class="deprecation breaking-change" data-milestone="18.0">
-
-### The `Project.services` GraphQL field is deprecated
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">15.9</span>
-- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/388424).
-
-</div>
-
-The `Project.services` GraphQL field is deprecated. A `Project.integrations` field is proposed instead in [issue 389904](https://gitlab.com/gitlab-org/gitlab/-/issues/389904).
 
 </div>
 
@@ -2863,6 +2892,7 @@ the GitLab 17.0 release:
 - DAST: version 4
 - DAST API: version 3
 - Fuzz API: version 3
+- IaC Scanning: version 4
 - Secret Detection: version 5
 - Static Application Security Testing (SAST): version 4 of [all analyzers](https://docs.gitlab.com/ee/user/application_security/sast/analyzers/)
   - `brakeman`

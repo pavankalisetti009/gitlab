@@ -15,7 +15,13 @@ module EE
     end
 
     def complexity
-      render json: { common: Security::WeakPasswords.common_phrases_in_password?(complexity_password) }
+      user = ::User.new(new_user_params)
+      user.name = "#{user.first_name} #{user.last_name}"
+
+      render json: {
+        common: Security::WeakPasswords.common_phrases_in_password?(user.password),
+        user_info: Security::WeakPasswords.user_info_in_password?(user.password, user)
+      }
     end
 
     private
@@ -35,8 +41,8 @@ module EE
       })
     end
 
-    def complexity_password
-      params.require(:password)
+    def new_user_params
+      params.require(:user).permit(:first_name, :last_name, :username, :email, :password)
     end
   end
 end

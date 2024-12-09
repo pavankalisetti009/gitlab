@@ -9,6 +9,10 @@ class IssuableMetricImage < ApplicationRecord
     project&.feature_available?(:incident_metric_upload)
   end
 
+  def uploads_sharding_key
+    { namespace_id: issue&.namespace_id }
+  end
+
   private
 
   def local_path

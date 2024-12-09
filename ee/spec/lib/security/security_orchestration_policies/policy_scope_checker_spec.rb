@@ -24,6 +24,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
         }
       end
 
+      it_behaves_like 'internal event tracking' do
+        let(:category) { described_class.name }
+        let(:event) { 'check_policy_scope_for_security_policy' }
+        let(:label) { 'compliance_framework' }
+      end
+
       context 'when project does not have compliance framework set' do
         it { is_expected.to eq false }
       end
@@ -91,6 +97,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
           end
 
           it { is_expected.to eq false }
+
+          it_behaves_like 'internal event tracking' do
+            let(:category) { described_class.name }
+            let(:event) { 'check_policy_scope_for_security_policy' }
+            let(:label) { 'project' }
+          end
         end
 
         context 'when included project scope is matching project id' do
@@ -158,6 +170,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
           end
 
           it { is_expected.to eq false }
+
+          it_behaves_like 'internal event tracking' do
+            let(:category) { described_class.name }
+            let(:event) { 'check_policy_scope_for_security_policy' }
+            let(:label) { 'group' }
+          end
         end
 
         context 'when included group scope is matching project distant ancestor group id' do

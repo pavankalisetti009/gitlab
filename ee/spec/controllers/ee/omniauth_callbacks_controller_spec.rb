@@ -287,7 +287,6 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
       let(:extra_params) { { bogus: 'bogus', onboarding_status_email_opt_in: 'true' } }
       let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
       let(:registration_params) { extra_params.merge(glm_params) }
-      let(:redirect_params) { glm_params }
 
       subject(:post_create) { post provider }
 

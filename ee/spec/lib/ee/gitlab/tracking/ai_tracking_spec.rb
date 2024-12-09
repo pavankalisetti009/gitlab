@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_management do
   describe '.track_event', :freeze_time, :click_house do
-    subject(:track_event) { described_class.track_event(event_name, event_context) }
+    subject(:track_event) { described_class.track_event(event_name, **event_context) }
 
     let(:current_user) { build_stubbed(:user) }
 
@@ -48,6 +48,12 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         expect_next_instance_of(model_class, expected_event_hash) do |instance|
           expect(instance).to receive(:store_to_clickhouse).once
         end
+
+        track_event
+      end
+
+      it 'creates an event with correct attributes' do
+        expect(model_class).to receive(:new).with(expected_event_hash)
 
         track_event
       end

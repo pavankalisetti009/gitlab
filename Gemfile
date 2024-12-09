@@ -32,7 +32,7 @@ gem 'bundler-checksum', '~> 0.1.0', path: 'vendor/gems/bundler-checksum', requir
 if next?
   gem 'rails', '~> 7.1.4', feature_category: :shared
 else
-  gem 'rails', '~> 7.0.8.4', feature_category: :shared
+  gem 'rails', '~> 7.0.8.6', feature_category: :shared
 end
 
 gem 'activerecord-gitlab', path: 'gems/activerecord-gitlab' # rubocop:todo Gemfile/MissingFeatureCategory
@@ -292,7 +292,7 @@ gem 'gitlab-sidekiq-fetcher',
   feature_category: :scalability
 
 # Cron Parser
-gem 'fugit', '~> 1.8.1' # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'fugit', '~> 1.11.1', feature_category: :continuous_integration
 
 # HTTP requests
 gem 'httparty', '~> 0.21.0' # rubocop:todo Gemfile/MissingFeatureCategory
@@ -392,13 +392,13 @@ gem 'sentry-sidekiq', '~> 5.21.0', feature_category: :observability
 
 # PostgreSQL query parsing
 #
-gem 'pg_query', '~> 5.1.0', feature_category: :database
+gem 'pg_query', '~> 6.0.0', feature_category: :database
 
 gem 'gitlab-schema-validation', path: 'gems/gitlab-schema-validation' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'gitlab-http', path: 'gems/gitlab-http' # rubocop:todo Gemfile/MissingFeatureCategory
 
 gem 'premailer-rails', '~> 1.12.0', feature_category: :notifications
-gem 'gitlab-labkit', '~> 0.36.0', feature_category: :shared
+gem 'gitlab-labkit', '~> 0.37.0', feature_category: :shared
 gem 'thrift', '>= 0.16.0' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # I18n

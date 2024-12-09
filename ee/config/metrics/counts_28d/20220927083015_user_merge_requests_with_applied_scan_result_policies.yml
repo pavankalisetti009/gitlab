@@ -12,7 +12,5 @@ time_frame: 28d
 data_source: database
 data_category: operational
 instrumentation_class: CountUserMergeRequestsWithAppliedScanResultPoliciesMetric
-distribution:
-- ee
 tiers:
 - ultimate

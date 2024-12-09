@@ -3,6 +3,11 @@
 # CLOUD CONNECTOR CONFIGURATION
 # =============================
 #
+# DEPRECATED
+# DO NOT UPDATE THIS FILE
+#
+# For new services or unit primitives, please add them to:
+# https://gitlab.com/gitlab-org/cloud-connector/gitlab-cloud-connector/-/tree/main/config
 services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
   anthropic_proxy:
     backend: 'gitlab-ai-gateway'
@@ -74,9 +79,9 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - include_dependency_context
           - include_file_context
           - include_issue_context
+          - include_local_git_context
           - include_merge_request_context
           - include_snippet_context
-          - include_local_git_context
           - refactor_code
           - write_tests
   duo_workflow:
@@ -195,17 +200,17 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - ask_issue
           - ask_merge_request
           - complete_code
-          - generate_code
           - documentation_search
           - duo_chat
           - explain_code
           - fix_code
+          - generate_code
           - include_dependency_context
           - include_file_context
           - include_issue_context
+          - include_local_git_context
           - include_merge_request_context
           - include_snippet_context
-          - include_local_git_context
           - refactor_code
           - write_tests
   summarize_comments:
@@ -256,7 +261,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
     bundled_with:
       duo_enterprise:
         unit_primitives:
-          - explain_code
           - generate_commit_message
           - generate_cube_query
           - glab_ask_git_command

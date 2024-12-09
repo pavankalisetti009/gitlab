@@ -331,6 +331,33 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
             it_behaves_like 'does not create parent link'
           end
+
+          context 'without membership on the group' do
+            let_it_be_with_reload(:group) { create(:group, :private) }
+            let_it_be_with_reload(:project) { create(:project, :private, group: group) }
+            let_it_be_with_reload(:user) { create(:user, guest_of: project) }
+            let_it_be_with_reload(:child_work_item) { create(:work_item, :issue, namespace: group) }
+            let_it_be(:parent_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+            it_behaves_like 'does not create parent link'
+          end
+        end
+      end
+
+      context 'when user is only member of a project in the group' do
+        let_it_be_with_reload(:group) { create(:group, :private) }
+        let_it_be_with_reload(:project) { create(:project, :private, group: group) }
+        let_it_be_with_reload(:user) { create(:user, guest_of: project) }
+        let_it_be_with_reload(:child_work_item) { create(:work_item, :issue, project: project) }
+        let_it_be(:parent_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+        let(:synced_work_item_param) { false }
+
+        it 'sets the parent correctly and syncs it' do
+          expect { create_link }.to change { WorkItems::ParentLink.count }.by(1)
+
+          expect(child_work_item.reload.work_item_parent).to eq(parent_work_item)
+          expect(parent_work_item.synced_epic.reload.issues).to match_array([Issue.find(child_work_item.id)])
+          expect(create_link[:status]).to eq(:success)
         end
       end
     end

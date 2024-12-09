@@ -18,8 +18,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
     - clusters_using_network_policies_ui
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type: []

@@ -17,12 +17,28 @@ RSpec.describe AuditEvents::Group::ExternalStreamingDestination, feature_categor
   describe 'Validations' do
     let_it_be(:group) { create(:group) }
 
-    it 'validates uniqueness of name scoped to namespace' do
+    it 'validates uniqueness of name scoped to category, and group_id' do
       create(:audit_events_group_external_streaming_destination, name: 'Test Destination', group: group)
       destination = build(:audit_events_group_external_streaming_destination, name: 'Test Destination', group: group)
 
       expect(destination).not_to be_valid
       expect(destination.errors.full_messages).to include('Name has already been taken')
+
+      group2 = create(:group)
+      destination2 = build(:audit_events_group_external_streaming_destination, name: 'Test Destination', group: group2)
+
+      expect(destination2).to be_valid
+    end
+
+    it 'allows duplicate name in different categories' do
+      create(:audit_events_group_external_streaming_destination, name: 'Test Destination', group: group)
+      aws_destination = create(:audit_events_group_external_streaming_destination, :aws,
+        name: 'Test Destination', group: group)
+      gcp_destination = create(:audit_events_group_external_streaming_destination, :gcp,
+        name: 'Test Destination', group: group)
+
+      expect(aws_destination).to be_valid
+      expect(gcp_destination).to be_valid
     end
 
     describe '#no_more_than_5_namespace_filters?' do

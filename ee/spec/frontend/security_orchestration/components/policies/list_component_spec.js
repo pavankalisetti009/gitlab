@@ -234,10 +234,10 @@ describe('List component', () => {
         const icon = findStatusCells().at(0).find('svg');
 
         expect(icon.exists()).toBe(true);
-        expect(icon.classes()).toContain('gl-text-green-700');
         expect(icon.props()).toMatchObject({
           name: 'check-circle-filled',
           ariaLabel: 'The policy is enabled',
+          variant: 'success',
         });
       });
 
@@ -245,8 +245,8 @@ describe('List component', () => {
         const icon = findStatusCells().at(2).find('svg');
 
         expect(icon.exists()).toBe(true);
-        expect(icon.attributes('class')).toContain('gl-text-gray-200');
         expect(icon.props('ariaLabel')).toBe('The policy is disabled');
+        expect(icon.props('variant')).toBe('disabled');
       });
 
       describe('breaking changes icon', () => {
@@ -256,11 +256,15 @@ describe('List component', () => {
           expect(icons.at(0).props('name')).toBe('check-circle-filled');
         };
 
-        const expectRenderedBreakingChangesIcon = (expectedContent, expectedLink) => {
+        const expectRenderedBreakingChangesIcon = (
+          expectedContent,
+          expectedLink,
+          expectedVariant,
+        ) => {
           const firstCell = findStatusCells().at(0);
           const icon = firstCell.findAll('svg');
           expect(icon.at(0).props('name')).toBe('check-circle-filled');
-          expect(icon.at(0).classes()).toContain('gl-text-gray-200');
+          expect(icon.at(0).props('variant')).toBe(expectedVariant);
           expect(icon.at(1).props('name')).toBe('error');
 
           expect(firstCell.findComponent(GlLink).attributes('href')).toBe(expectedLink);
@@ -301,6 +305,7 @@ describe('List component', () => {
           expectRenderedBreakingChangesIcon(
             'You must edit the policy and replace the deprecated syntax (test, test1). For details on its replacement, see the policy documentation.',
             '/help/user/application_security/policies/merge_request_approval_policies#merge-request-approval-policies-schema',
+            'disabled',
           );
         });
 
@@ -320,6 +325,7 @@ describe('List component', () => {
           expectRenderedBreakingChangesIcon(
             'Policy contains deprecated syntax (test).',
             '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
+            'success',
           );
         });
       });

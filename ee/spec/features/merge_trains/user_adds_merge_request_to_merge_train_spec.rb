@@ -88,24 +88,6 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
 
           expect(page).to have_content("Merged")
         end
-
-        context 'when merge_when_checks_pass_merge_train is off' do
-          before do
-            stub_feature_flags(merge_when_checks_pass_merge_train: false)
-          end
-
-          it 'displays the expected content', :js, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/471186' do
-            expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
-
-            find_by_testid('pipeline-mini-graph-dropdown-toggle').click
-            page.within '.ci-job-component' do
-              expect(page).to have_selector('[data-testid="ci-icon"]')
-              expect(page).not_to have_selector('.retry')
-            end
-
-            expect(page).to have_content("Merged")
-          end
-        end
       end
 
       context "when user clicks 'Remove from merge train' button" do
@@ -224,96 +206,6 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
           page.within('.mr-state-widget') do
             expect(page).not_to have_content("Set by #{user.name} to start a merge train when all merge checks pass")
             expect(page).to have_button('Set to auto-merge')
-          end
-        end
-      end
-    end
-
-    context 'when merge_when_checks_pass_merge_train is off' do
-      before do
-        stub_feature_flags(merge_when_checks_pass_merge_train: false)
-      end
-
-      it "shows 'Merge' button with 'Add to merge train when pipeline succeeds' helper text" do
-        visit project_merge_request_path(project, merge_request)
-
-        expect(page).to have_button('Merge')
-        expect(page).to have_content('Add to merge train when pipeline succeeds')
-      end
-
-      context 'when merge_trains EEP license is not available' do
-        before do
-          stub_licensed_features(merge_trains: false)
-        end
-
-        it "does not show 'Add to merge train when pipeline succeeds' helper text" do
-          visit project_merge_request_path(project, merge_request)
-
-          expect(page).not_to have_content('Add to merge train when pipeline succeeds')
-        end
-      end
-
-      context "when user clicks 'Add to merge train when pipeline succeeds' button" do
-        before do
-          visit project_merge_request_path(project, merge_request)
-          click_button 'Set to auto-merge'
-          wait_for_requests
-        end
-
-        it 'shows merge request will be added to merge train when pipeline succeeds' do
-          page.within('.mr-state-widget') do
-            expect(page).to have_content("Set by #{user.name} to start a merge train when the pipeline succeeds")
-            expect(page).to have_content('Source branch will not be deleted.')
-            expect(page).to have_button('Cancel auto-merge')
-          end
-        end
-
-        context 'when pipeline succeeds' do
-          before do
-            merge_request.head_pipeline.succeed!
-            visit project_merge_request_path(project, merge_request)
-          end
-
-          it 'adds the MR to the merge train but not yet merged' do
-            expect(page).to have_content("Added to the merge train by #{user.name}")
-            expect(page).to have_content('Source branch will not be deleted.')
-            expect(page).to have_button('Remove from merge train')
-
-            expect(page).not_to have_content("Merged")
-          end
-
-          context 'when the merge train pipeline passes' do
-            let(:project) { create(:project, :repository) }
-            let(:user) { project.owner }
-
-            it 'merges the MR' do
-              merge_request.merge_train_car.pipeline.builds.map(&:success!)
-
-              expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
-
-              find_by_testid('pipeline-mini-graph-dropdown-toggle').click
-              page.within '.ci-job-component' do
-                expect(page).to have_selector('[data-testid="ci-icon"]')
-                expect(page).not_to have_selector('.retry')
-              end
-
-              expect(page).to have_content("Merged")
-            end
-          end
-        end
-
-        context "when user clicks 'Cancel auto-merge' button" do
-          before do
-            click_button 'Cancel auto-merge'
-          end
-
-          it 'cancels automatic merge' do
-            wait_for_requests
-
-            page.within('.mr-state-widget') do
-              expect(page).not_to have_content("Set by #{user.name} to start a merge train when the pipeline succeeds")
-              expect(page).to have_button('Set to auto-merge')
-            end
           end
         end
       end

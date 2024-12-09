@@ -87,6 +87,14 @@ module Dependencies
       created_at < MAX_EXPORT_DURATION.ago
     end
 
+    def uploads_sharding_key
+      {
+        organization_id: organization_id,
+        namespace_id: group_id,
+        project_id: project_id
+      }
+    end
+
     private
 
     def only_one_exportable

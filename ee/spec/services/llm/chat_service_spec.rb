@@ -24,10 +24,24 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
       stub_application_setting(use_clickhouse_for_analytics: true)
 
       expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
-                                                .with('request_duo_chat_response', user: user)
+                                                .with('request_duo_chat_response', hash_including(user: user))
                                                 .and_call_original
 
       described_class.new(user, resource, options).execute
+    end
+
+    context 'when move_ai_tracking_to_instrumentation_layer is disabled' do
+      before do
+        stub_feature_flags(move_ai_tracking_to_instrumentation_layer: false)
+      end
+
+      it 'tracks AI metric' do
+        expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
+                                                  .with('request_duo_chat_response', hash_including(user: user))
+                                                  .and_call_original
+
+        described_class.new(user, resource, options).execute
+      end
     end
   end
 
@@ -92,50 +106,6 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
         it 'returns an error' do
           expect(Llm::CompletionWorker).not_to receive(:perform_for)
           expect(subject.execute).to be_error
-        end
-      end
-
-      context 'when an agent is passed' do
-        before do
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?)
-                              .with(user, :read_ai_agents, project)
-                              .and_return(true)
-        end
-
-        let(:resource) { user }
-        let(:options) { default_options.merge(agent_version_id: agent_version.to_gid) }
-        let(:action_name) { :chat }
-
-        it_behaves_like 'schedules completion worker' do
-          let(:expected_options) { default_options.merge(agent_version_id: agent_version.id) }
-        end
-
-        it_behaves_like 'llm service caches user request'
-        it_behaves_like 'service emitting message for user prompt'
-
-        context 'when ai agent is not found' do
-          let(:agent_version_id) { "gid://gitlab/Ai::AgentVersion/#{non_existing_record_id}" }
-          let(:options) { default_options.merge(agent_version_id: GitlabSchema.parse_gid(agent_version_id)) }
-
-          it 'returns an error' do
-            expect(Llm::CompletionWorker).not_to receive(:perform_for)
-            expect(subject.execute).to be_error
-          end
-        end
-
-        context 'when user is not allowed to read the ai agent' do
-          before do
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?)
-                                .with(user, :read_ai_agents, project)
-                                .and_return(false)
-          end
-
-          it 'is an invalid request' do
-            expect(Llm::CompletionWorker).not_to receive(:perform_for)
-            expect(subject.execute).to be_error
-          end
         end
       end
 
@@ -250,52 +220,6 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
           it 'returns an error' do
             expect(Llm::CompletionWorker).not_to receive(:perform_for)
             expect(subject.execute).to be_error
-          end
-        end
-
-        context 'when an agent is passed' do
-          before do
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?)
-                                .with(user, :read_ai_agents, project)
-                                .and_return(true)
-
-            group.add_developer(user)
-          end
-
-          let(:resource) { user }
-          let(:options) { default_options.merge(agent_version_id: agent_version.to_gid) }
-          let(:action_name) { :chat }
-
-          it_behaves_like 'schedules completion worker' do
-            let(:expected_options) { default_options.merge(agent_version_id: agent_version.id) }
-          end
-
-          it_behaves_like 'llm service caches user request'
-          it_behaves_like 'service emitting message for user prompt'
-
-          context 'when ai agent is not found' do
-            let(:agent_version_id) { "gid://gitlab/Ai::AgentVersion/#{non_existing_record_id}" }
-            let(:options) { default_options.merge(agent_version_id: GitlabSchema.parse_gid(agent_version_id)) }
-
-            it 'returns an error' do
-              expect(Llm::CompletionWorker).not_to receive(:perform_for)
-              expect(subject.execute).to be_error
-            end
-          end
-
-          context 'when user is not allowed to read the ai agent' do
-            before do
-              allow(Ability).to receive(:allowed?).and_call_original
-              allow(Ability).to receive(:allowed?)
-                                  .with(user, :read_ai_agents, project)
-                                  .and_return(false)
-            end
-
-            it 'is an invalid request' do
-              expect(Llm::CompletionWorker).not_to receive(:perform_for)
-              expect(subject.execute).to be_error
-            end
           end
         end
       end

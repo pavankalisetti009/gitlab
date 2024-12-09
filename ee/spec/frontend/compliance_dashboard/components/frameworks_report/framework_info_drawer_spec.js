@@ -1,4 +1,4 @@
-import { GlLabel, GlButton, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlBadge, GlLabel, GlButton, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createFramework } from 'ee_jest/compliance_dashboard/mock_data';
@@ -12,6 +12,7 @@ describe('FrameworkInfoDrawer component', () => {
   };
 
   const GROUP_PATH = 'foo';
+  const PROJECT_PATH = 'bar';
 
   const defaultFramework = createFramework({ id: 1, isDefault: true, projects: 3 });
   const nonDefaultFramework = createFramework({ id: 2 });
@@ -35,9 +36,11 @@ describe('FrameworkInfoDrawer component', () => {
   const findProjectsTitle = () => wrapper.findByTestId('sidebar-projects-title');
   const findProjectsLinks = () =>
     wrapper.findByTestId('sidebar-projects').findAllComponents(GlLink);
+  const findProjectsCount = () => wrapper.findByTestId('sidebar-projects').findComponent(GlBadge);
   const findPoliciesTitle = () => wrapper.findByTestId('sidebar-policies-title');
   const findPoliciesLinks = () =>
     wrapper.findByTestId('sidebar-policies').findAllComponents(GlLink);
+  const findPoliciesCount = () => wrapper.findByTestId('sidebar-policies').findComponent(GlBadge);
   const findPopover = () => wrapper.findByTestId('edit-framework-popover');
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -64,6 +67,7 @@ describe('FrameworkInfoDrawer component', () => {
       createComponent({
         props: {
           groupPath: GROUP_PATH,
+          projectPath: PROJECT_PATH,
           rootAncestor: {
             path: GROUP_PATH,
           },
@@ -123,7 +127,11 @@ describe('FrameworkInfoDrawer component', () => {
       });
 
       it('renders the Associated Projects accordion', () => {
-        expect(findProjectsTitle().text()).toBe(`Associated Projects (${associatedProjectsCount})`);
+        expect(findProjectsTitle().text()).toBe(`Associated Projects`);
+      });
+
+      it('renders the Associated Projects count', () => {
+        expect(findProjectsCount().text()).toBe(`${associatedProjectsCount}`);
       });
 
       it('renders the Associated Projects list', () => {
@@ -135,7 +143,11 @@ describe('FrameworkInfoDrawer component', () => {
       });
 
       it('renders the Policies accordion', () => {
-        expect(findPoliciesTitle().text()).toBe(`Policies (${policiesCount})`);
+        expect(findPoliciesTitle().text()).toBe(`Policies`);
+      });
+
+      it('renders the Policies count', () => {
+        expect(findPoliciesCount().text()).toBe(`${policiesCount}`);
       });
 
       it('renders the Policies list', () => {
@@ -143,6 +155,7 @@ describe('FrameworkInfoDrawer component', () => {
         expect(findPoliciesLinks().at(0).attributes('href')).toBe(
           `/group-policies/${defaultFramework.scanResultPolicies.nodes[0].name}/edit?type=approval_policy`,
         );
+        expect(findPoliciesLinks().at(1).attributes('href')).toBe(`/bar/security/policies`);
       });
 
       it('does not render edit button popover', () => {

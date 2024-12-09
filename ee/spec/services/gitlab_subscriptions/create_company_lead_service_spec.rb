@@ -41,10 +41,6 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
         base_params.merge(jtbd: nil)
       end
 
-      let(:service_params) do
-        params.merge({ glm_source: 'some_source', glm_content: 'some_content' })
-      end
-
       before do
         subscription_portal_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
 
@@ -58,7 +54,7 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
           .with(params.merge(client_params))
           .and_call_original
 
-        described_class.new(user: user, params: service_params).execute
+        described_class.new(user: user, params: params).execute
       end
     end
 
@@ -66,7 +62,11 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
       let(:path) { '' }
 
       before do
-        user.update!(onboarding_status_initial_registration_type: 'free')
+        user.update!(
+          onboarding_status_initial_registration_type: 'free',
+          onboarding_status_glm_source: 'some_source',
+          onboarding_status_glm_content: 'some_content'
+        )
       end
 
       it_behaves_like 'correct client attributes' do
@@ -82,6 +82,13 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
 
     context 'when creating a trial' do
       let(:path) { '' }
+
+      before do
+        user.update!(
+          onboarding_status_glm_source: 'some_source',
+          onboarding_status_glm_content: 'some_content'
+        )
+      end
 
       it_behaves_like 'correct client attributes' do
         let(:client_params) do

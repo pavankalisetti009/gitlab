@@ -258,7 +258,6 @@ end
 Gitlab.ee do
   Settings['elasticsearch'] ||= {}
   Settings.elasticsearch['enabled'] = false if Settings.elasticsearch['enabled'].nil?
-  Settings.elasticsearch['url'] = ENV['ELASTIC_URL'] || "http://localhost:9200"
   Settings.elasticsearch['indexer_path'] ||= Gitlab::Utils.which('gitlab-elasticsearch-indexer')
 end
 
@@ -736,6 +735,9 @@ Settings.cron_jobs['database_monitor_locked_tables_cron_worker']['job_class'] = 
 Settings.cron_jobs['merge_requests_process_scheduled_merge'] ||= {}
 Settings.cron_jobs['merge_requests_process_scheduled_merge']['cron'] ||= '*/1 * * * *'
 Settings.cron_jobs['merge_requests_process_scheduled_merge']['job_class'] = 'MergeRequests::ProcessScheduledMergeWorker'
+Settings.cron_jobs['ci_schedule_old_pipelines_removal_cron_worker'] ||= {}
+Settings.cron_jobs['ci_schedule_old_pipelines_removal_cron_worker']['cron'] ||= '*/11 * * * *'
+Settings.cron_jobs['ci_schedule_old_pipelines_removal_cron_worker']['job_class'] = 'Ci::ScheduleOldPipelinesRemovalCronWorker'
 
 Gitlab.ee do
   Settings.cron_jobs['analytics_devops_adoption_create_all_snapshots_worker'] ||= {}

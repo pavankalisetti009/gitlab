@@ -8,8 +8,9 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, :public, :repository, name: 'awesome project', group: group) }
   let(:fields) { all_graphql_fields_for(Types::Search::Blob::BlobSearchType, max_depth: 4) }
+  let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}" } }
 
-  let(:query) { graphql_query_for(:blobSearch, { search: 'test', group_id: "gid://gitlab/Group/#{group.id}" }, fields) }
+  let(:query) { graphql_query_for(:blobSearch, arguments, fields) }
 
   before do
     stub_licensed_features(zoekt_code_search: true)
@@ -90,6 +91,38 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       expect(chunk).to include('lines', 'matchCountInChunk')
       line = chunk['lines'].first
       expect(line).to include('lineNumber', 'richText', 'text')
+    end
+
+    context 'when project is archived' do
+      before do
+        project.update!(archived: true)
+      end
+
+      it 'does not return archived projects by default' do
+        post_graphql(query, current_user: current_user)
+        expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
+        expect(graphql_data_at(:blobSearch, :files)).to be_empty
+      end
+
+      context 'when include_archived is true' do
+        let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
+
+        it 'returns archived projects' do
+          post_graphql(query, current_user: current_user)
+          expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
+          expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
+        end
+      end
+
+      context 'when include_archived is false' do
+        let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: false } }
+
+        it 'does not return archived projects' do
+          post_graphql(query, current_user: current_user)
+          expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
+          expect(graphql_data_at(:blobSearch, :files)).to be_empty
+        end
+      end
     end
   end
 

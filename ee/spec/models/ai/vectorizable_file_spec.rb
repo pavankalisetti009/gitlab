@@ -31,4 +31,13 @@ RSpec.describe Ai::VectorizableFile, type: :model, feature_category: :mlops do
       expect(file.errors.full_messages).to include("File is too big (should be at most 100 MiB)")
     end
   end
+
+  describe '#uploads_sharding_key' do
+    it 'returns project_id' do
+      project = build_stubbed(:project)
+      file = build_stubbed(:ai_vectorizable_file, project: project)
+
+      expect(file.uploads_sharding_key).to eq(project_id: project.id)
+    end
+  end
 end

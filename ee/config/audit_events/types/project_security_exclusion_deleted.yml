@@ -1,6 +1,6 @@
 ---
 name: project_security_exclusion_deleted
-description: Triggered when a project security exclusion is deleted
+description: A project security exclusion is deleted
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/492464
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166511
 feature_category: secret_detection

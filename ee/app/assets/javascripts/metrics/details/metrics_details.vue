@@ -286,7 +286,7 @@ export default {
     },
   },
   EMPTY_CHART_SVG,
-  relatedIssuesHelpPath: helpPagePath('/operations/metrics', {
+  relatedIssuesHelpPath: helpPagePath('/development/metrics', {
     anchor: 'create-an-issue-for-a-metric',
   }),
   relatedIssuesId: uniqueId('related-issues-'),

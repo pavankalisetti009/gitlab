@@ -8,8 +8,6 @@ data_category: optional
 status: active
 milestone: '17.6'
 time_frame: 28d
-distribution:
-- ee
 tiers:
 - ultimate
 events:

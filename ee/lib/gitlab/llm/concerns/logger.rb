@@ -22,6 +22,7 @@ module Gitlab
             Attribute.new(:completion_service_name, String),
             Attribute.new(:llm_answer_content, String),
             Attribute.new(:duo_chat_error_code, String),
+            Attribute.new(:ai_error_code, String),
             Attribute.new(:error, String),
             Attribute.new(:source, String),
             Attribute.new(:response_from_llm, String),

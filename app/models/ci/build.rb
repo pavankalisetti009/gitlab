@@ -759,7 +759,7 @@ module Ci
     def valid_token?(token)
       jwt = ::Ci::JobToken::Jwt.decode(token)
       if jwt
-        jwt.subject == self
+        jwt.job == self
       else
         self.token && token.present? && ActiveSupport::SecurityUtils.secure_compare(token, self.token)
       end
@@ -1201,9 +1201,9 @@ module Ci
     end
 
     def token
-      return super unless Feature.enabled?(:ci_job_token_jwt, user)
+      return encoded_jwt if user&.has_composite_identity? || Feature.enabled?(:ci_job_token_jwt, user)
 
-      encoded_jwt
+      super
     end
 
     protected

@@ -196,7 +196,6 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
       let(:extra_params) { { onboarding_status_email_opt_in: 'true' } }
       let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
       let(:registration_params) { { **glm_params, bogus: 'bogus' } }
-      let(:redirect_params) { glm_params }
       let(:params) { registration_params }
 
       before do

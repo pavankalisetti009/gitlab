@@ -377,6 +377,41 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.by_ids' do
+      let_it_be(:project_1) { create(:project) }
+      let_it_be(:project_2) { create(:project) }
+      let_it_be(:project_3) { create(:project) }
+
+      it 'returns projects with the specified ids' do
+        expect(described_class.by_ids([project_1.id, project_2.id]))
+          .to contain_exactly(project_1, project_2)
+      end
+
+      it 'returns empty when no matching ids exist' do
+        expect(described_class.by_ids([non_existing_record_id]))
+          .to be_empty
+      end
+    end
+
+    describe '.with_namespaces' do
+      let_it_be(:project) { create(:project) }
+
+      it 'preloads the namespace association' do
+        projects = described_class.with_namespaces.to_a
+        project = projects.first
+
+        expect(project.association(:namespace)).to be_loaded
+      end
+
+      it 'avoids N+1 queries' do
+        control = ActiveRecord::QueryRecorder.new { described_class.with_namespaces.map(&:namespace) }
+
+        create(:project)
+
+        expect { described_class.with_namespaces.map(&:namespace) }.not_to exceed_query_limit(control)
+      end
+    end
+
     describe '.with_wiki_enabled' do
       it 'returns a project' do
         project = create(:project_empty_repo, wiki_access_level: ProjectFeature::ENABLED)
@@ -462,6 +497,21 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       subject { described_class.has_vulnerabilities }
 
       it { is_expected.to contain_exactly(project_1) }
+    end
+
+    describe 'jira_subscription_exists?' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:jira_connect_subscription) { create(:jira_connect_subscription, namespace: project.namespace) }
+
+      subject { project.jira_subscription_exists? }
+
+      it { is_expected.to eq(true) }
+
+      it 'is false when the GitLab for Jira Cloud integration is blocked by settings' do
+        allow(Integrations::JiraCloudApp).to receive(:blocked_by_settings?).and_return(true)
+
+        is_expected.to eq(false)
+      end
     end
 
     describe '.not_aimed_for_deletion' do

@@ -24,7 +24,6 @@ module Gitlab
 
           UsersLoader.new(@project, extractor).load_to(entries)
           GroupsLoader.new(@project, extractor).load_to(entries)
-          RolesLoader.new(@project, extractor).load_to(entries) if Feature.enabled?(:codeowner_role_approvers, @project)
 
           entries
         end

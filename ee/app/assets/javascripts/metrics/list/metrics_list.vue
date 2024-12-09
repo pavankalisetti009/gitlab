@@ -55,7 +55,7 @@ export default {
     ),
     docsLinkText: s__(`ObservabilityMetrics|Learn more.`),
   },
-  docsLink: `${DOCS_URL_IN_EE_DIR}/operations/metrics`,
+  docsLink: `${DOCS_URL_IN_EE_DIR}/development/metrics`,
   props: {
     observabilityClient: {
       required: true,

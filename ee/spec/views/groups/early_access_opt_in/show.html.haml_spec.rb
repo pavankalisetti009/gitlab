@@ -30,7 +30,7 @@ RSpec.describe 'groups/early_access_opt_in/show', :saas, type: :view, feature_ca
   end
 
   it 'has a confirm enrollment button' do
-    expect(rendered).to have_button('Confirm Enrollement',
+    expect(rendered).to have_button('Confirm Enrollment',
       type: 'submit'
     )
   end

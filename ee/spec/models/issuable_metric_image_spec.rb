@@ -84,4 +84,14 @@ RSpec.describe IssuableMetricImage, feature_category: :observability do
       end
     end
   end
+
+  describe '#uploads_sharding_key' do
+    it 'returns namespace_id' do
+      namespace = build_stubbed(:namespace)
+      issue = build_stubbed(:issue, namespace: namespace)
+      issuable_metric_image = build_stubbed(:issuable_metric_image, issue: issue)
+
+      expect(issuable_metric_image.uploads_sharding_key).to eq(namespace_id: namespace.id)
+    end
+  end
 end

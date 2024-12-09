@@ -14,7 +14,7 @@ DETAILS:
 > - [Changed](https://gitlab.com/groups/gitlab-org/-/epics/12729) to Beta and made available on GitLab.com in GitLab 17.1.
 > - [Enabled on self-managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/156907) in GitLab 17.2 [with flags](../../../../administration/feature_flags.md) named `pre_receive_secret_detection_beta_release` and `pre_receive_secret_detection_push_check`.
 > - Feature flag `pre_receive_secret_detection_beta_release` [removed](https://gitlab.com/gitlab-org/gitlab/-/issues/472418) in GitLab 17.4.
-> - [Generally available](https://gitlab.com/groups/gitlab-org/-/epics/13107) in GitLab 17.5. Feature flag `pre_receive_secret_detection_push_check` removed.
+> - [Generally available](https://gitlab.com/groups/gitlab-org/-/epics/13107) in GitLab 17.5.
 
 Secret push protection blocks secrets such as keys and API tokens from being pushed to GitLab. The
 content of each [file or commit](#coverage) is checked for secrets when pushed to GitLab. By
@@ -58,16 +58,16 @@ protection.
 
 ## Enable secret push protection
 
-On GitLab Dedicated and Self-managed instances, secret push protection must be enabled for the entire instance and then you must enable it per project.
+On GitLab Dedicated and Self-managed instances, you must:
 
-On GitLab.com, this setting has been enabled for the entire instance. You must enable it per project.
+1. [Allow secret push protection on the entire instance](#allow-the-use-of-secret-push-protection-in-your-gitlab-instance).
+1. [Enable secret push protection per project](#enable-secret-push-protection-in-a-project).
+
+On GitLab.com, you must enable secret push protection per project.
 
 ### Allow the use of secret push protection in your GitLab instance
 
-NOTE:
-Setting this option gives permission for projects in your GitLab instance to turn on secret push protection.
-To use secret push protection, you must also enable it in each project. For details,
-see [enable secret push protection in a project](#enable-secret-push-protection-in-a-project).
+On GitLab Dedicated and Self-managed instances, you must allow secret push protection before you can enable it in a project.
 
 Prerequisites:
 
@@ -80,11 +80,14 @@ To allow the use of secret push protection in your GitLab instance:
 1. Select **Settings > Security and compliance**.
 1. Under **Secret detection**, select or clear **Allow secret push protection**.
 
+Secret push protection is allowed on the instance. To use this feature, you must enable it per project.
+
 ### Enable secret push protection in a project
 
 Prerequisites:
 
 - You must have at least the Maintainer role for the project.
+- On GitLab Dedicated and Self-managed, you must allow secret push protection on the instance.
 
 To enable secret push protection in a project:
 

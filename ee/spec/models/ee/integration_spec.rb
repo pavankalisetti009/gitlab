@@ -104,6 +104,12 @@ RSpec.describe Integration, feature_category: :integrations do
 
     it { is_expected.not_to be_blocked_by_settings }
 
+    it 'does not log when log: true is passed' do
+      expect(Gitlab::IntegrationsLogger).not_to receive(:info)
+
+      integration_class.blocked_by_settings?(log: true)
+    end
+
     context 'when application settings do not allow all integrations' do
       before do
         stub_application_setting(allow_all_integrations: false)
@@ -111,6 +117,19 @@ RSpec.describe Integration, feature_category: :integrations do
       end
 
       it { is_expected.to be_blocked_by_settings }
+
+      it 'does not log by default' do
+        expect(Gitlab::IntegrationsLogger).not_to receive(:info)
+
+        integration_class.blocked_by_settings?
+      end
+
+      it 'logs when log: true is passed' do
+        expect(Gitlab::IntegrationsLogger)
+          .to receive(:info).with(message: "#{integration_class.title} blocked by settings")
+
+        integration_class.blocked_by_settings?(log: true)
+      end
 
       context 'when integration is in allowlist' do
         before do

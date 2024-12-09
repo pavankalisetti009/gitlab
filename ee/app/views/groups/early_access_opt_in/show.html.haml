@@ -15,7 +15,7 @@
               = _('%{link_start}Communication Preference Center%{link_end}.').html_safe % { link_start: early_access_link_start, link_end: '</a>'.html_safe }
 
           - c.with_footer do
-            = f.submit _('Confirm Enrollement'), data: { testid: 'confirm-early-access-enrollment-button' }, pajamas_button: true
+            = f.submit _('Confirm Enrollment'), data: { testid: 'confirm-early-access-enrollment-button' }, pajamas_button: true
 
             = render Pajamas::ButtonComponent.new(variant: :info, href: edit_group_path(@group)) do
               = _('Cancel')

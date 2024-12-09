@@ -27,7 +27,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       processed_devfile: example_processed_devfile,
       user: user,
       agent: agent,
-      workspaces_agent_config: workspaces_agent_config
+      workspaces_agent_config: workspaces_agent_config,
+      desired_config_generator_version:
+        ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
     )
   end
   # rubocop:enable RSpec/VerifiedDoubleReference

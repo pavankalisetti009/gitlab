@@ -5,9 +5,9 @@ module QA
     module Resource
       module Settings
         class Elasticsearch < QA::Resource::Base
-          attr_accessor :es_enabled
-          attr_accessor :es_indexing
-          attr_accessor :es_url
+          uses_admin_api_client
+
+          attr_accessor :es_enabled, :es_indexing, :es_url
 
           def initialize
             @es_enabled = true
@@ -19,9 +19,7 @@ module QA
             QA::Page::Main::Menu.perform(&:go_to_admin_area)
             QA::Page::Admin::Menu.perform(&:go_to_advanced_search)
             QA::EE::Page::Admin::Settings::Component::Elasticsearch.perform do |es|
-              if es.has_no_indexing_checkbox_element?
-                es.click_expand_advanced_search
-              end
+              es.click_expand_advanced_search if es.has_no_indexing_checkbox_element?
 
               es.check_indexing if @es_indexing
               es.check_search if @es_enabled

@@ -113,7 +113,7 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
-  relatedIssuesHelpPath: helpPagePath('/operations/logs', {
+  relatedIssuesHelpPath: helpPagePath('/development/logs', {
     anchor: 'create-an-issue-for-a-log',
   }),
   relatedIssuesId: uniqueId('related-issues-'),
@@ -167,7 +167,7 @@ export default {
               v-for="line in section.content"
               :key="line.name"
               data-testid="section-line"
-              class="gl-border-b-1 gl-border-b-gray-200 gl-py-5 gl-border-b-solid"
+              class="gl-border-b-1 gl-border-b-strong gl-py-5 gl-border-b-solid"
             >
               <label data-testid="section-line-name">{{ line.name }}</label>
               <div data-testid="section-line-value" class="gl-wrap-anywhere">

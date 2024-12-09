@@ -229,6 +229,7 @@ Returns [`BlobSearch`](#blobsearch).
 | ---- | ---- | ----------- |
 | <a id="queryblobsearchchunkcount"></a>`chunkCount` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Maximum chunks per file. |
 | <a id="queryblobsearchgroupid"></a>`groupId` **{warning-solid}** | [`GroupID`](#groupid) | **Introduced** in GitLab 17.2. **Status**: Experiment. Group to search in. |
+| <a id="queryblobsearchincludearchived"></a>`includeArchived` **{warning-solid}** | [`Boolean`](#boolean) | **Introduced** in GitLab 17.7. **Status**: Experiment. Includes archived projects in the search. Always true for project search. Default is false. |
 | <a id="queryblobsearchpage"></a>`page` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Page number to fetch the results. |
 | <a id="queryblobsearchperpage"></a>`perPage` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Number of results per page. |
 | <a id="queryblobsearchprojectid"></a>`projectId` **{warning-solid}** | [`ProjectID`](#projectid) | **Introduced** in GitLab 17.2. **Status**: Experiment. Project to search in. |
@@ -342,7 +343,7 @@ Returns [`CiStage`](#cistage).
 
 ### `Query.ciQueueingHistory`
 
-Time taken for CI jobs to be picked up by runner by percentile.
+Time taken for CI jobs to be picked up by runner by percentile. Enable the ClickHouse database backend to use this query.
 
 DETAILS:
 **Introduced** in GitLab 16.4.
@@ -1045,7 +1046,7 @@ Returns [`RunnerSetup`](#runnersetup).
 
 ### `Query.runnerUsage`
 
-Runner usage by runner.
+Runner usage by runner. Enable the ClickHouse database backend to use this query.
 
 Returns [`[CiRunnerUsage!]`](#cirunnerusage).
 
@@ -1061,7 +1062,7 @@ Returns [`[CiRunnerUsage!]`](#cirunnerusage).
 
 ### `Query.runnerUsageByProject`
 
-Runner usage by project.
+Runner usage by project. Enable the ClickHouse database backend to use this query.
 
 Returns [`[CiRunnerUsageByProject!]`](#cirunnerusagebyproject).
 
@@ -1719,7 +1720,6 @@ Input type: `AiActionInput`
 | <a id="mutationaiactionchat"></a>`chat` | [`AiChatInput`](#aichatinput) | Input for chat AI action. |
 | <a id="mutationaiactionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaiactionclientsubscriptionid"></a>`clientSubscriptionId` | [`String`](#string) | Client generated ID that can be subscribed to, to receive a response for the mutation. |
-| <a id="mutationaiactionexplaincode"></a>`explainCode` | [`AiExplainCodeInput`](#aiexplaincodeinput) | Input for explain_code AI action. |
 | <a id="mutationaiactionexplainvulnerability"></a>`explainVulnerability` | [`AiExplainVulnerabilityInput`](#aiexplainvulnerabilityinput) | Input for explain_vulnerability AI action. |
 | <a id="mutationaiactiongeneratecommitmessage"></a>`generateCommitMessage` | [`AiGenerateCommitMessageInput`](#aigeneratecommitmessageinput) | Input for generate_commit_message AI action. |
 | <a id="mutationaiactiongeneratecubequery"></a>`generateCubeQuery` | [`AiGenerateCubeQueryInput`](#aigeneratecubequeryinput) | Input for generate_cube_query AI action. |
@@ -7088,6 +7088,30 @@ Input type: `MemberRoleDeleteInput`
 | <a id="mutationmemberroledeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationmemberroledeletememberrole"></a>`memberRole` | [`MemberRole`](#memberrole) | Deleted member role. |
 
+### `Mutation.memberRoleToUserAssign`
+
+DETAILS:
+**Introduced** in GitLab 17.7.
+**Status**: Experiment.
+
+Input type: `MemberRoleToUserAssignInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmemberroletouserassignclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmemberroletouserassignmemberroleid"></a>`memberRoleId` | [`MemberRoleID!`](#memberroleid) | Global ID of the custom role to be assigned to a user. |
+| <a id="mutationmemberroletouserassignuserid"></a>`userId` | [`UserID!`](#userid) | Global ID of the user to be assigned to a custom role. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmemberroletouserassignclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmemberroletouserassignerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationmemberroletouserassignusermemberrole"></a>`userMemberRole` | [`UserMemberRole`](#usermemberrole) | Created user member role. |
+
 ### `Mutation.memberRoleUpdate`
 
 Input type: `MemberRoleUpdateInput`
@@ -12173,6 +12197,29 @@ The edge type for [`CiCatalogResourceComponent`](#cicatalogresourcecomponent).
 | <a id="cicatalogresourcecomponentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="cicatalogresourcecomponentedgenode"></a>`node` | [`CiCatalogResourceComponent`](#cicatalogresourcecomponent) | The item at the end of the edge. |
 
+#### `CiCatalogResourceComponentUsageConnection`
+
+The connection type for [`CiCatalogResourceComponentUsage`](#cicatalogresourcecomponentusage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourcecomponentusageconnectionedges"></a>`edges` | [`[CiCatalogResourceComponentUsageEdge]`](#cicatalogresourcecomponentusageedge) | A list of edges. |
+| <a id="cicatalogresourcecomponentusageconnectionnodes"></a>`nodes` | [`[CiCatalogResourceComponentUsage]`](#cicatalogresourcecomponentusage) | A list of nodes. |
+| <a id="cicatalogresourcecomponentusageconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `CiCatalogResourceComponentUsageEdge`
+
+The edge type for [`CiCatalogResourceComponentUsage`](#cicatalogresourcecomponentusage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourcecomponentusageedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="cicatalogresourcecomponentusageedgenode"></a>`node` | [`CiCatalogResourceComponentUsage`](#cicatalogresourcecomponentusage) | The item at the end of the edge. |
+
 #### `CiCatalogResourceConnection`
 
 The connection type for [`CiCatalogResource`](#cicatalogresource).
@@ -16021,6 +16068,29 @@ The edge type for [`PipelineManualVariable`](#pipelinemanualvariable).
 | <a id="pipelinemanualvariableedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="pipelinemanualvariableedgenode"></a>`node` | [`PipelineManualVariable`](#pipelinemanualvariable) | The item at the end of the edge. |
 
+#### `PipelineMessageConnection`
+
+The connection type for [`PipelineMessage`](#pipelinemessage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelinemessageconnectionedges"></a>`edges` | [`[PipelineMessageEdge]`](#pipelinemessageedge) | A list of edges. |
+| <a id="pipelinemessageconnectionnodes"></a>`nodes` | [`[PipelineMessage]`](#pipelinemessage) | A list of nodes. |
+| <a id="pipelinemessageconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `PipelineMessageEdge`
+
+The edge type for [`PipelineMessage`](#pipelinemessage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelinemessageedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="pipelinemessageedgenode"></a>`node` | [`PipelineMessage`](#pipelinemessage) | The item at the end of the edge. |
+
 #### `PipelineScheduleConnection`
 
 The connection type for [`PipelineSchedule`](#pipelineschedule).
@@ -18017,6 +18087,7 @@ A user with add-on data.
 | <a id="addonuserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="addonuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="addonusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="addonusertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="addonuseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="addonuseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="addonuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -18973,6 +19044,7 @@ Core representation of a GitLab user.
 | <a id="autocompleteduserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="autocompleteduserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="autocompletedusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="autocompletedusertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="autocompleteduseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="autocompleteduseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="autocompleteduserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -19894,6 +19966,18 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="cicatalogresourcecomponentinputregex"></a>`regex` | [`String`](#string) | Pattern that the input value must match. Only applicable to string inputs. |
 | <a id="cicatalogresourcecomponentinputrequired"></a>`required` | [`Boolean`](#boolean) | Indicates if an input is required. |
 | <a id="cicatalogresourcecomponentinputtype"></a>`type` | [`CiCatalogResourceComponentInputType`](#cicatalogresourcecomponentinputtype) | Type of the input. |
+
+### `CiCatalogResourceComponentUsage`
+
+Represents a component usage in a project.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourcecomponentusagelastuseddate"></a>`lastUsedDate` | [`ISO8601Date`](#iso8601date) | When the component was last used. |
+| <a id="cicatalogresourcecomponentusagename"></a>`name` | [`String`](#string) | Name of the component. |
+| <a id="cicatalogresourcecomponentusageversion"></a>`version` | [`String`](#string) | Version of the component. |
 
 ### `CiCatalogResourceVersion`
 
@@ -21074,7 +21158,7 @@ Represents a ComplianceRequirement associated with a ComplianceFramework.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="compliancerequirementcontrolexpression"></a>`controlExpression` | [`String!`](#string) | Control expression of the compliance requirement. |
+| <a id="compliancerequirementcontrolexpression"></a>`controlExpression` | [`String`](#string) | Control expression of the compliance requirement. |
 | <a id="compliancerequirementdescription"></a>`description` | [`String!`](#string) | Description of the compliance requirement. |
 | <a id="compliancerequirementid"></a>`id` | [`ID!`](#id) | Compliance requirement ID. |
 | <a id="compliancerequirementname"></a>`name` | [`String!`](#string) | Name of the compliance requirement. |
@@ -21513,6 +21597,7 @@ The currently authenticated GitLab user.
 | <a id="currentuserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="currentuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="currentusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="currentusertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="currentuseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="currentuseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="currentuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -24590,7 +24675,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.ciQueueingHistory`
 
-Time taken for CI jobs to be picked up by this group's runners by percentile. Available to users with Maintainer role for the group.
+Time taken for CI jobs to be picked up by this group's runners by percentile. Available to users with Maintainer role for the group. Enable the ClickHouse database backend to use this query.
 
 DETAILS:
 **Introduced** in GitLab 16.11.
@@ -27472,6 +27557,7 @@ A user assigned to a merge request.
 | <a id="mergerequestassigneestate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestassigneestatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestassigneetwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestassigneetype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestassigneeuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestassigneeuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestassigneeusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -27877,6 +27963,7 @@ The author of the merge request.
 | <a id="mergerequestauthorstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestauthorstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestauthortwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestauthortype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestauthoruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestauthoruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestauthorusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -28328,6 +28415,7 @@ A user participating in a merge request.
 | <a id="mergerequestparticipantstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestparticipantstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestparticipanttwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestparticipanttype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestparticipantuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestparticipantuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestparticipantusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -28752,6 +28840,7 @@ A user assigned to a merge request as a reviewer.
 | <a id="mergerequestreviewerstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestreviewerstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestreviewertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestreviewertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestrevieweruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestrevieweruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestreviewerusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -30561,6 +30650,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="pipelinedetailedstatus"></a>`detailedStatus` | [`DetailedStatus!`](#detailedstatus) | Detailed status of the pipeline. |
 | <a id="pipelinedownstream"></a>`downstream` | [`PipelineConnection`](#pipelineconnection) | Pipelines the pipeline will trigger. (see [Connections](#connections)) |
 | <a id="pipelineduration"></a>`duration` | [`Int`](#int) | Duration of the pipeline in seconds. |
+| <a id="pipelineerrormessages"></a>`errorMessages` | [`PipelineMessageConnection`](#pipelinemessageconnection) | Pipeline error messages. (see [Connections](#connections)) |
 | <a id="pipelinefailurereason"></a>`failureReason` | [`String`](#string) | Reason why the pipeline failed. |
 | <a id="pipelinefinishedat"></a>`finishedAt` | [`Time`](#time) | Timestamp of the pipeline's completion. |
 | <a id="pipelineid"></a>`id` | [`ID!`](#id) | ID of the pipeline. |
@@ -30595,7 +30685,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="pipelineuser"></a>`user` | [`UserCore`](#usercore) | Pipeline user. |
 | <a id="pipelineuserpermissions"></a>`userPermissions` | [`PipelinePermissions!`](#pipelinepermissions) | Permissions for the current user on the resource. |
 | <a id="pipelineusesneeds"></a>`usesNeeds` | [`Boolean`](#boolean) | Indicates if the pipeline has jobs with `needs` dependencies. |
-| <a id="pipelinewarningmessages"></a>`warningMessages` | [`[PipelineMessage!]`](#pipelinemessage) | Pipeline warning messages. |
+| <a id="pipelinewarningmessages"></a>`warningMessages` | [`PipelineMessageConnection`](#pipelinemessageconnection) | Pipeline warning messages. (see [Connections](#connections)) |
 | <a id="pipelinewarnings"></a>`warnings` | [`Boolean!`](#boolean) | Indicates if a pipeline has warnings. |
 | <a id="pipelineyamlerrormessages"></a>`yamlErrorMessages` | [`String`](#string) | Pipeline YAML errors. |
 | <a id="pipelineyamlerrors"></a>`yamlErrors` | [`Boolean!`](#boolean) | If the pipeline has YAML errors. |
@@ -31129,6 +31219,7 @@ Project-level settings for product analytics provider.
 | <a id="projectciupstreamprojectsubscriptions"></a>`ciUpstreamProjectSubscriptions` **{warning-solid}** | [`CiProjectSubscriptionConnection`](#ciprojectsubscriptionconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Pipeline subscriptions where this project is the downstream project.When an upstream project's pipeline completes, a pipeline is triggered in the downstream project (this project). |
 | <a id="projectcodecoveragesummary"></a>`codeCoverageSummary` | [`CodeCoverageSummary`](#codecoveragesummary) | Code coverage summary associated with the project. |
 | <a id="projectcomplianceframeworks"></a>`complianceFrameworks` | [`ComplianceFrameworkConnection`](#complianceframeworkconnection) | Compliance frameworks associated with the project. (see [Connections](#connections)) |
+| <a id="projectcomponentusages"></a>`componentUsages` | [`CiCatalogResourceComponentUsageConnection`](#cicatalogresourcecomponentusageconnection) | Component(s) used by the project. (see [Connections](#connections)) |
 | <a id="projectcontainerexpirationpolicy"></a>`containerExpirationPolicy` **{warning-solid}** | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | **Deprecated** in GitLab 17.5. Use `container_tags_expiration_policy`. |
 | <a id="projectcontainerregistryenabled"></a>`containerRegistryEnabled` | [`Boolean`](#boolean) | Indicates if Container Registry is enabled for the current user. |
 | <a id="projectcontainerregistryprotectionrules"></a>`containerRegistryProtectionRules` **{warning-solid}** | [`ContainerRegistryProtectionRuleConnection`](#containerregistryprotectionruleconnection) | **Introduced** in GitLab 16.10. **Status**: Experiment. Container protection rules for the project. |
@@ -35540,6 +35631,7 @@ Core representation of a GitLab user.
 | <a id="usercorestate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="usercorestatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="usercoretwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="usercoretype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="usercoreuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="usercoreuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="usercoreusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -35902,6 +35994,16 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoreworkspacesids"></a>`ids` | [`[RemoteDevelopmentWorkspaceID!]`](#remotedevelopmentworkspaceid) | Filter workspaces by workspace GlobalIDs. For example, `["gid://gitlab/RemoteDevelopment::Workspace/1"]`. |
 | <a id="usercoreworkspacesincludeactualstates"></a>`includeActualStates` **{warning-solid}** | [`[String!]`](#string) | **Deprecated** in GitLab 16.7. Use actual_states instead. |
 | <a id="usercoreworkspacesprojectids"></a>`projectIds` | [`[ProjectID!]`](#projectid) | Filter workspaces by project GlobalIDs. |
+
+### `UserMemberRole`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="usermemberroleid"></a>`id` | [`GlobalID!`](#globalid) | Global ID of the user member role association. |
+| <a id="usermemberrolememberrole"></a>`memberRole` | [`MemberRole!`](#memberrole) | Member Role to which the user belongs. |
+| <a id="usermemberroleuser"></a>`user` | [`UserCore!`](#usercore) | User to which the member role belongs. |
 
 ### `UserMergeRequestInteraction`
 
@@ -37238,7 +37340,7 @@ Represents a development widget.
 | <a id="workitemwidgetdevelopmentclosingmergerequests"></a>`closingMergeRequests` | [`WorkItemClosingMergeRequestConnection`](#workitemclosingmergerequestconnection) | Merge requests that will close the work item when merged. (see [Connections](#connections)) |
 | <a id="workitemwidgetdevelopmentfeatureflags"></a>`featureFlags` | [`FeatureFlagConnection`](#featureflagconnection) | Feature flags associated with the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgetdevelopmentrelatedbranches"></a>`relatedBranches` | [`WorkItemRelatedBranchConnection`](#workitemrelatedbranchconnection) | Branches that have referred to the work item, but do not have an associated merge request. (see [Connections](#connections)) |
-| <a id="workitemwidgetdevelopmentrelatedmergerequests"></a>`relatedMergeRequests` **{warning-solid}** | [`MergeRequestConnection`](#mergerequestconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Merge requests where the work item has been mentioned. Not implemented, returns empty list. |
+| <a id="workitemwidgetdevelopmentrelatedmergerequests"></a>`relatedMergeRequests` **{warning-solid}** | [`MergeRequestConnection`](#mergerequestconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Merge requests where the work item has been mentioned. This field can only be resolved for one work item in any single request. |
 | <a id="workitemwidgetdevelopmenttype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 | <a id="workitemwidgetdevelopmentwillautoclosebymergerequest"></a>`willAutoCloseByMergeRequest` | [`Boolean!`](#boolean) | Whether the work item will automatically be closed when a closing merge request is merged. |
 
@@ -37681,6 +37783,7 @@ LLMs supported by the self-hosted model features.
 | <a id="aiacceptedselfhostedmodelsgpt"></a>`GPT` | GPT: Suitable for code suggestions. |
 | <a id="aiacceptedselfhostedmodelsllama3"></a>`LLAMA3` | LLaMA 3: Suitable for code suggestions and duo chat. |
 | <a id="aiacceptedselfhostedmodelsmistral"></a>`MISTRAL` | Mistral: Suitable for code suggestions and duo chat. |
+| <a id="aiacceptedselfhostedmodelsmixtral"></a>`MIXTRAL` | Mixtral: Suitable for code suggestions and duo chat. |
 
 ### `AiAction`
 
@@ -37722,17 +37825,9 @@ AI features that can be configured in the settings.
 | <a id="aifeaturescode_completions"></a>`CODE_COMPLETIONS` | Code completion feature setting. |
 | <a id="aifeaturescode_generations"></a>`CODE_GENERATIONS` | Code generation feature setting. |
 | <a id="aifeaturesduo_chat"></a>`DUO_CHAT` | Duo chat feature setting. |
-| <a id="aifeaturesduo_chat_ci_editor_assistant"></a>`DUO_CHAT_CI_EDITOR_ASSISTANT` | Duo chat ci editor assistant feature setting. |
-| <a id="aifeaturesduo_chat_epic_reader"></a>`DUO_CHAT_EPIC_READER` | Duo chat epic reader feature setting. |
 | <a id="aifeaturesduo_chat_explain_code"></a>`DUO_CHAT_EXPLAIN_CODE` | Duo chat explain code feature setting. |
-| <a id="aifeaturesduo_chat_explain_vulnerability"></a>`DUO_CHAT_EXPLAIN_VULNERABILITY` | Duo chat explain vulnerability feature setting. |
 | <a id="aifeaturesduo_chat_fix_code"></a>`DUO_CHAT_FIX_CODE` | Duo chat fix code feature setting. |
-| <a id="aifeaturesduo_chat_gitlab_documentation"></a>`DUO_CHAT_GITLAB_DOCUMENTATION` | Duo chat gitlab documentation feature setting. |
-| <a id="aifeaturesduo_chat_issue_reader"></a>`DUO_CHAT_ISSUE_READER` | Duo chat issue reader feature setting. |
-| <a id="aifeaturesduo_chat_merge_request_reader"></a>`DUO_CHAT_MERGE_REQUEST_READER` | Duo chat merge request reader feature setting. |
 | <a id="aifeaturesduo_chat_refactor_code"></a>`DUO_CHAT_REFACTOR_CODE` | Duo chat refactor code feature setting. |
-| <a id="aifeaturesduo_chat_summarize_comments"></a>`DUO_CHAT_SUMMARIZE_COMMENTS` | Duo chat summarize comment feature setting. |
-| <a id="aifeaturesduo_chat_troubleshoot_job"></a>`DUO_CHAT_TROUBLESHOOT_JOB` | Duo chat troubleshoot job feature setting. |
 | <a id="aifeaturesduo_chat_write_tests"></a>`DUO_CHAT_WRITE_TESTS` | Duo chat write test feature setting. |
 
 ### `AiMessageRole`
@@ -40783,6 +40878,31 @@ Possible states of a user.
 | <a id="userstatedeactivated"></a>`deactivated` | User is no longer active and cannot use the system. |
 | <a id="userstateldap_blocked"></a>`ldap_blocked` | User has been blocked by the system. |
 
+### `UserType`
+
+Possible types of user.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="usertypeadmin_bot"></a>`ADMIN_BOT` | Admin bot. |
+| <a id="usertypealert_bot"></a>`ALERT_BOT` | Alert bot. |
+| <a id="usertypeautomation_bot"></a>`AUTOMATION_BOT` | Automation bot. |
+| <a id="usertypeduo_code_review_bot"></a>`DUO_CODE_REVIEW_BOT` | Duo code review bot. |
+| <a id="usertypeghost"></a>`GHOST` | Ghost. |
+| <a id="usertypehuman"></a>`HUMAN` | Human. |
+| <a id="usertypeimport_user"></a>`IMPORT_USER` | Import user. |
+| <a id="usertypellm_bot"></a>`LLM_BOT` | Llm bot. |
+| <a id="usertypemigration_bot"></a>`MIGRATION_BOT` | Migration bot. |
+| <a id="usertypeplaceholder"></a>`PLACEHOLDER` | Placeholder. |
+| <a id="usertypeproject_bot"></a>`PROJECT_BOT` | Project bot. |
+| <a id="usertypesecurity_bot"></a>`SECURITY_BOT` | Security bot. |
+| <a id="usertypesecurity_policy_bot"></a>`SECURITY_POLICY_BOT` | Security policy bot. |
+| <a id="usertypeservice_account"></a>`SERVICE_ACCOUNT` | Service account. |
+| <a id="usertypeservice_user"></a>`SERVICE_USER` | Service user. |
+| <a id="usertypesuggested_reviewers_bot"></a>`SUGGESTED_REVIEWERS_BOT` | Suggested reviewers bot. |
+| <a id="usertypesupport_bot"></a>`SUPPORT_BOT` | Support bot. |
+| <a id="usertypevisual_review_bot"></a>`VISUAL_REVIEW_BOT` | Visual review bot. |
+
 ### `ValueStreamDashboardMetric`
 
 Possible identifier types for a measurement.
@@ -43075,6 +43195,7 @@ Implementations:
 | <a id="userstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="userstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="usertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="usertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="useruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="useruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="userusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -43513,24 +43634,6 @@ see the associated mutation type above.
 | <a id="aicurrentfileinputcontentbelowcursor"></a>`contentBelowCursor` | [`String`](#string) | Content below cursor. |
 | <a id="aicurrentfileinputfilename"></a>`fileName` | [`String!`](#string) | File name. |
 | <a id="aicurrentfileinputselectedtext"></a>`selectedText` | [`String!`](#string) | Selected text. |
-
-### `AiExplainCodeInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="aiexplaincodeinputmessages"></a>`messages` | [`[AiExplainCodeMessageInput!]!`](#aiexplaincodemessageinput) | Code messages that is passed to be explained by AI. |
-| <a id="aiexplaincodeinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
-
-### `AiExplainCodeMessageInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="aiexplaincodemessageinputcontent"></a>`content` | [`String!`](#string) | Content of the message. |
-| <a id="aiexplaincodemessageinputrole"></a>`role` | [`String!`](#string) | Role of the message (system, user, assistant). |
 
 ### `AiExplainVulnerabilityInput`
 

@@ -9,8 +9,6 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/329897
 time_frame: 28d
 data_source: database
 data_category: operational
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type: [customer_health_score]

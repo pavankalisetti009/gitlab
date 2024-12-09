@@ -22,10 +22,15 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
 
   let(:vulnerability_ids) { [vulnerability.id] }
 
-  let(:comment) { _("Auto-resolved by vulnerability management policy") + " #{security_policy_name}" }
-  let(:security_policy_name) { policy.name }
+  let(:comment) do
+    format(_("Auto-resolved by the vulnerability management policy named '%{policy_name}'"),
+      policy_name: security_policy_name)
+  end
 
-  subject(:service) { described_class.new(project, vulnerability_ids) }
+  let(:security_policy_name) { policy.name }
+  let(:budget) { 1000 }
+
+  subject(:service) { described_class.new(project, vulnerability_ids, budget) }
 
   before_all do
     project.add_guest(user)
@@ -45,7 +50,10 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(vulnerability.resolved_at).to eq(Time.current)
       expect(vulnerability.auto_resolved).to be(true)
 
-      expect { resolved_vulnerability.reload }.to change { resolved_vulnerability.updated_at }
+      # Ruby has nanosecond precision on timestamps, while Postgress has microsecond precision.
+      # This causes the timestamp to be rounded down to the nearest microsecond when the record is reloaded.
+      # We need to make the comparison in microseconds to avoid a false-negative.
+      expect { resolved_vulnerability.reload }.not_to change { resolved_vulnerability.updated_at.floor(6) }
     end
 
     it 'inserts a state transition for each vulnerability' do
@@ -68,9 +76,10 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(last_note.project).to eq(project)
       expect(last_note.namespace_id).to eq(project.project_namespace_id)
       expect(last_note.note).to eq(
-        "changed vulnerability status to Resolved and the following comment: \"#{comment}\""
+        "changed vulnerability status to Resolved with the following comment: \"#{comment}\""
       )
       expect(last_note).to be_system
+      expect(last_note.system_note_metadata.action).to eq('vulnerability_resolved')
     end
 
     it 'updates the statistics', :sidekiq_inline do
@@ -150,7 +159,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
 
       it 'does not introduce N+1 queries' do
         control = ActiveRecord::QueryRecorder.new do
-          described_class.new(project, vulnerability_ids).execute
+          described_class.new(project, vulnerability_ids, budget).execute
         end
 
         new_vulnerability = create(:vulnerability, :with_findings, project: project)
@@ -167,8 +176,16 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         )
 
         expect do
-          described_class.new(project, vulnerability_ids).execute
+          described_class.new(project, vulnerability_ids, budget).execute
         end.not_to exceed_query_limit(control)
+      end
+
+      it 'respects the budget' do
+        result = described_class.new(project, vulnerability_ids, 1).execute
+
+        expect(result.payload[:count]).to eq(1)
+        expect(vulnerabilities[0].reload).to be_auto_resolved
+        expect(vulnerabilities[1].reload).not_to be_auto_resolved
       end
     end
   end

@@ -34,10 +34,8 @@ module Ai
             dig_in(parsed, 'package').try(:map) do |dep|
               Lib.new(name: dig_in(dep, 'name'), version: dig_in(dep, 'version'))
             end
-          rescue Gitlab::Utils::TomlParser::ParseError
-            raise ParsingError, 'content is not valid TOML'
-          rescue TomlRB::Error => e
-            raise ParsingError, "TOML error - #{e.message}"
+          rescue Gitlab::Utils::TomlParser::ParseError => e
+            raise ParsingError, e.message
           end
         end
       end

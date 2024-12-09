@@ -400,6 +400,8 @@ GET /projects/:id/integrations/clickup
 > - `use_inherited_settings` parameter [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/467089) in GitLab 17.2 [with a flag](../administration/feature_flags.md) named `integration_api_inheritance`. Disabled by default.
 > - `use_inherited_settings` parameter [generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/467186) in GitLab 17.3. Feature flag `integration_api_inheritance` removed.
 
+Use a Confluence Cloud Workspace as your project wiki.
+
 ### Set up Confluence Workspace
 
 Set up the Confluence Workspace integration for a project.
@@ -874,8 +876,6 @@ GET /projects/:id/integrations/github
 ```
 
 ## GitLab for Jira Cloud app
-
-> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/460663) in GitLab 17.2 [with a flag](../administration/feature_flags.md) named `enable_jira_connect_configuration`. Disabled by default.
 
 The GitLab for Jira Cloud app integration is enabled or disabled automatically through [group linking and unlinking in Jira](../integration/jira/connect-app.md#configure-the-gitlab-for-jira-cloud-app). You cannot enable or disable the integration with the GitLab integrations form or the API.
 

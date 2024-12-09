@@ -2,10 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_category: :system_access do
+RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
   include LoginHelpers
 
-  let(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let(:user) { create(:user, organizations: [organization]) }
   let(:scim_token) { create(:scim_oauth_access_token, group: nil) }
 
   before do
@@ -243,7 +244,7 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
           create(:user, email: email)
 
           expect(::EE::Gitlab::Scim::ProvisioningService).to receive(:new).with(
-            hash_including(organization_id: Organizations::Organization.default_organization.id)
+            hash_including(organization_id: organization.id)
           ).and_call_original
 
           api_request

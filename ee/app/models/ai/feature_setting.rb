@@ -11,18 +11,10 @@ module Ai
     }.freeze
 
     FLAGGED_FEATURES = {
-      duo_chat_issue_reader: 3,
-      duo_chat_gitlab_documentation: 4,
-      duo_chat_epic_reader: 5,
-      duo_chat_ci_editor_assistant: 6,
-      duo_chat_explain_code: 7,
-      duo_chat_write_tests: 8,
-      duo_chat_refactor_code: 9,
-      duo_chat_fix_code: 10,
-      duo_chat_explain_vulnerability: 11,
-      duo_chat_troubleshoot_job: 12,
-      duo_chat_summarize_comments: 13,
-      duo_chat_merge_request_reader: 14
+      duo_chat_explain_code: 3,
+      duo_chat_write_tests: 4,
+      duo_chat_refactor_code: 5,
+      duo_chat_fix_code: 6
     }.freeze
 
     FEATURE_METADATA_PATH = Rails.root.join('ee/lib/gitlab/ai/feature_settings/feature_metadata.yml')

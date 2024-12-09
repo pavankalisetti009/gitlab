@@ -1,6 +1,6 @@
 ---
 name: update_mismatched_group_saml_extern_uid
-description: Triggered when the external UID is changed on a SAML identity.
+description: The external UID is changed on a SAML identity
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/382256
 # Was more of a direct follow up to this comment than the issue above:
 # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/103687#note_1173317699

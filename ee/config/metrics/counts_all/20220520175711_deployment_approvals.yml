@@ -2,6 +2,8 @@
 key_path: usage_activity_by_stage.release.deployment_approvals
 description: Count of deployment approvals
 product_group: environments
+product_categories:
+- continuous_delivery
 value_type: number
 status: active
 milestone: "15.1"

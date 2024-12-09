@@ -15,7 +15,7 @@ module QA
       let(:project_file_content) { "elasticsearch: #{SecureRandom.hex(8)}" }
       let(:non_member_user) { create(:user, :with_personal_access_token) }
       let(:non_member_api_client) { non_member_user.api_client }
-      let(:api_client) { Runtime::UserStore.user_api_client }
+      let(:api_client) { Runtime::User::Store.user_api_client }
 
       let(:project) { create(:project, name: "api-es-#{SecureRandom.hex(8)}") }
 

@@ -4,9 +4,10 @@ module Vulnerabilities
   class AutoResolveService
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(project, vulnerability_ids)
+    def initialize(project, vulnerability_ids, budget)
       @project = project
       @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).unresolved
+      @budget = budget
     end
 
     def execute
@@ -23,10 +24,10 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :vulnerability_reads
+    attr_reader :project, :vulnerability_reads, :budget
 
     def vulnerabilities_to_resolve
-      rules_by_vulnerability.keys
+      rules_by_vulnerability.keys.first(budget)
     end
 
     def rules_by_vulnerability
@@ -72,7 +73,10 @@ module Vulnerabilities
           updated_at: now
         )
       end
-      Note.insert_all!(system_note_attrs)
+      Note.transaction do
+        results = Note.insert_all!(system_note_attrs, returning: %w[id])
+        SystemNoteMetadata.insert_all!(note_metadata_attrs(results))
+      end
     end
 
     def state_transition_attrs
@@ -110,9 +114,23 @@ module Vulnerabilities
       end
     end
 
+    def note_metadata_attrs(results)
+      results.map do |row|
+        id = row['id']
+
+        {
+          note_id: id,
+          action: 'vulnerability_resolved',
+          created_at: now,
+          updated_at: now
+        }
+      end
+    end
+
     def comment(vulnerability)
       rule = rules_by_vulnerability[vulnerability]
-      _("Auto-resolved by vulnerability management policy") + " #{rule.security_policy.name}"
+      format(_("Auto-resolved by the vulnerability management policy named '%{policy_name}'"),
+        policy_name: rule.security_policy.name)
     end
 
     def user

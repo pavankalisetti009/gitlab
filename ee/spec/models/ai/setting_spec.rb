@@ -3,6 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
+  describe 'associations' do
+    it 'has expected associations' do
+      is_expected.to belong_to(:amazon_q_oauth_application).class_name('Doorkeeper::Application').optional
+      is_expected.to belong_to(:amazon_q_service_account_user).class_name('User').optional
+    end
+  end
+
   describe 'validations' do
     subject(:setting) { described_class.instance }
 
@@ -93,5 +100,7 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         expect(described_class.count).to eq(1)
       end
     end
+
+    it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
   end
 end

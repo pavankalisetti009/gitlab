@@ -35,4 +35,13 @@ RSpec.describe Vulnerabilities::Export::Part, type: :model, feature_category: :v
       let_it_be(:model) { create(:vulnerability_export_part, organization: parent) }
     end
   end
+
+  describe '#uploads_sharding_key' do
+    it 'returns organization_id' do
+      organization = build_stubbed(:organization)
+      export_part = build_stubbed(:vulnerability_export_part, organization: organization)
+
+      expect(export_part.uploads_sharding_key).to eq(organization_id: organization.id)
+    end
+  end
 end
