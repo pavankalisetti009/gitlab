@@ -121,6 +121,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
 
       it_behaves_like 'cloneable and moveable work item'
       it_behaves_like 'cloneable and moveable widget data'
+      it_behaves_like 'cloneable and moveable for ee widget data'
     end
   end
 end
