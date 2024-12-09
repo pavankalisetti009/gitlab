@@ -28,7 +28,10 @@ module Llm
         namespace: namespace,
         feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, service_name: :duo_chat)
       )
-      Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response', user: user)
+
+      if Feature.disabled?(:move_ai_tracking_to_instrumentation_layer, user)
+        Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response', user: user)
+      end
 
       prompt_message.save!
       GraphqlTriggers.ai_completion_response(prompt_message)
