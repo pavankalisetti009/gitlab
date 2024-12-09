@@ -7,6 +7,7 @@ import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { stopPropagation } from 'ee_jest/admin/test_helpers';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -77,6 +78,20 @@ describe('TrialWidget component', () => {
         expect(findCtaButton().attributes('href')).toBe('/discover');
       });
 
+      it('should track the click learn more link event', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        findCtaButton().vm.$emit('click', { stopPropagation });
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_learn_more_link_on_trial_widget',
+          {
+            label: 'gitlab_duo_enterprise',
+          },
+          undefined,
+        );
+      });
+
       describe('when under the threshold days', () => {
         beforeEach(() => {
           createComponent({ daysRemaining: 20, percentageComplete: 67 });
@@ -84,6 +99,20 @@ describe('TrialWidget component', () => {
 
         it('renders the CTA link', () => {
           expect(findCtaButton().attributes('href')).toBe('/purchase');
+        });
+
+        it('should track the click upgrade link event', () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+          findCtaButton().vm.$emit('click', { stopPropagation });
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_upgrade_link_on_trial_widget',
+            {
+              label: 'gitlab_duo_enterprise',
+            },
+            undefined,
+          );
         });
       });
     });
@@ -126,6 +155,20 @@ describe('TrialWidget component', () => {
 
       it('renders the dismiss button', () => {
         expect(findDismissButton().exists()).toBe(true);
+      });
+
+      it('should track the see upgrade options click event', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        findUpgradeButton().vm.$emit('click', { stopPropagation });
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_see_upgrade_options_link_on_trial_widget',
+          {
+            label: 'gitlab_duo_enterprise',
+          },
+          undefined,
+        );
       });
 
       describe('dismissal', () => {
@@ -176,27 +219,6 @@ describe('TrialWidget component', () => {
           );
         });
       });
-    });
-  });
-
-  describe('cta tracking', () => {
-    it('tracks click with correct action and label', () => {
-      createComponent();
-
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-      findCtaButton().vm.$emit('click', {
-        stopPropagation: jest.fn(),
-        target: { textContent: 'Learn more' },
-      });
-
-      expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_learn_more_link_on_trial_widget',
-        {
-          label: 'gitlab_duo_enterprise',
-        },
-        undefined,
-      );
     });
   });
 
