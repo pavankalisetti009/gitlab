@@ -10,6 +10,7 @@ import {
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import DastVariablesModal from './dast_variables_modal.vue';
 
 const mockVariables = [
   { variable: 'DAST_CHECKS_TO_EXCLUDE', value: '552.2,78.1' },
@@ -36,6 +37,7 @@ export default {
     GlTable,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
+    DastVariablesModal,
   },
   props: {
     stacked: {
@@ -43,10 +45,10 @@ export default {
       required: false,
       default: true,
     },
-    variables: {
+    value: {
       type: Array,
       required: false,
-      default: () => [],
+      default: () => mockVariables,
     },
   },
   data() {
@@ -56,27 +58,50 @@ export default {
         { key: 'value', label: __('Value') },
         { key: 'actions', label: '' },
       ],
+      existingVariables: this.value,
+      additionalVariables: [],
     };
   },
   computed: {
-    additionalVariables() {
-      return this.variables.length > 0 ? this.variables : mockVariables;
+    variableList() {
+      return [...this.existingVariables, ...this.additionalVariables];
+    },
+  },
+  watch: {
+    variableList(newValue) {
+      this.$emit('input', newValue);
     },
   },
   methods: {
-    addVariable() {
-      this.$emit('addVariable');
+    showAddVariableModal() {
+      this.$refs.addVariableModal.show();
     },
+    addVariableToList(newVariable) {
+      this.additionalVariables.push(newVariable);
+    },
+    deleteVariableFromList(item) {
+      const { variable: variableToBeDeleted } = item;
+      this.existingVariables = this.existingVariables.filter(
+        ({ variable }) => variable !== variableToBeDeleted,
+      );
+      this.additionalVariables = this.additionalVariables.filter(
+        ({ variable }) => variable !== variableToBeDeleted,
+      );
+    },
+    updateVariable(item) {
+      return item;
+    },
+
     editItem(item) {
       return {
         text: __('Edit'),
-        action: () => this.prepareExclusionEdit(item),
+        action: () => this.updateVariable(item),
       };
     },
     deleteItem(item) {
       return {
         text: __('Delete'),
-        action: () => this.prepareExclusionDeletion(item),
+        action: () => this.deleteVariableFromList(item),
         extraAttrs: {
           class: '!gl-text-danger',
         },
@@ -103,7 +128,7 @@ export default {
         </gl-sprintf>
       </template>
       <gl-table
-        :items="additionalVariables"
+        :items="variableList"
         :fields="fields"
         bordered
         hover
@@ -122,9 +147,15 @@ export default {
             <gl-disclosure-dropdown-item :item="deleteItem(item)" />
           </gl-disclosure-dropdown> </template
       ></gl-table>
-      <gl-button data-testid="additional-variables-btn" variant="confirm" category="secondary">
+      <gl-button
+        data-testid="additional-variables-btn"
+        variant="confirm"
+        category="secondary"
+        @click="showAddVariableModal"
+      >
         {{ $options.i18n.addVariableButtonLabel }}
       </gl-button>
     </gl-form-group>
+    <dast-variables-modal ref="addVariableModal" @addVariable="addVariableToList" />
   </div>
 </template>
