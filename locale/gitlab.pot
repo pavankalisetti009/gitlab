@@ -59720,6 +59720,9 @@ msgstr ""
 msgid "Unauthorized to create a package protection rule"
 msgstr ""
 
+msgid "Unauthorized to create a protection rule for container image tags"
+msgstr ""
+
 msgid "Unauthorized to create an environment"
 msgstr ""
 
@@ -59729,10 +59732,16 @@ msgstr ""
 msgid "Unauthorized to delete a package protection rule"
 msgstr ""
 
+msgid "Unauthorized to delete a protection rule for container image tags"
+msgstr ""
+
 msgid "Unauthorized to update a container registry protection rule"
 msgstr ""
 
 msgid "Unauthorized to update a package protection rule"
+msgstr ""
+
+msgid "Unauthorized to update a protection rule for container image tags"
 msgstr ""
 
 msgid "Unauthorized to update the environment"
@@ -66383,6 +66392,9 @@ msgid "contacts can only be added to root groups and groups configured as CRM ta
 msgstr ""
 
 msgid "container registry images"
+msgstr ""
+
+msgid "container_protection_tag_rule and current_user must be set"
 msgstr ""
 
 msgid "contains URLs that exceed the %{limit} character limit"
