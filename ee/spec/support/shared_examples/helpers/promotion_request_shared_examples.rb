@@ -1,21 +1,27 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'adding promotion_request_count in app data' do
-  context 'when pending_members_count is nil' do
-    let!(:pending_members_count) { nil }
+RSpec.shared_examples 'adding promotion_request in app data' do
+  context 'when the feature is enabled' do
+    let!(:pending_members_count) { 2 }
 
-    it 'returns `promotion_request_count` property with []' do
-      expect(helper_app_data[:promotion_request]).to include({ total_items: nil })
+    before do
+      allow(helper).to receive(:member_promotion_management_enabled?).and_return(true)
+    end
+
+    it 'returns `promotion_request_count` property with nil' do
+      expect(helper_app_data[:promotion_request]).to include({ enabled: true, total_items: 2 })
     end
   end
 
-  context 'when pending_members is not nil' do
-    let!(:pending_members_count) do
-      create_list(:member_approval, 2, type, member_namespace: member_namespace)
+  context 'when the feature is disabled' do
+    let!(:pending_members_count) { nil }
+
+    before do
+      allow(helper).to receive(:member_promotion_management_enabled?).and_return(false)
     end
 
-    it 'returns valid `promotion_request_count`' do
-      expect(helper_app_data[:promotion_request].keys).to match_array([:total_items])
+    it 'returns `promotion_request_count` property with nil' do
+      expect(helper_app_data[:promotion_request]).to include({ enabled: false, total_items: nil })
     end
   end
 end

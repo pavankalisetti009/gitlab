@@ -52,7 +52,7 @@ RSpec.describe Projects::ProjectMembersHelper do
         access_requests: [],
         include_relations: [:inherited, :direct],
         search: nil,
-        pending_members_count: []
+        pending_members_count: nil
       )
     end
 
@@ -87,11 +87,11 @@ RSpec.describe Projects::ProjectMembersHelper do
 
     let(:pending_members_count) { nil }
 
-    context 'with promotion_request_count' do
+    context 'with promotion_request feature' do
       let(:type) { :for_project_member }
       let(:member_namespace) { project.project_namespace }
 
-      it_behaves_like 'adding promotion_request_count in app data'
+      it_behaves_like 'adding promotion_request in app data'
     end
 
     context 'with `can_approve_access_requests`' do
