@@ -9542,6 +9542,28 @@ Input type: `SetContainerScanningForRegistryInput`
 | <a id="mutationsetcontainerscanningforregistrycontainerscanningforregistryenabled"></a>`containerScanningForRegistryEnabled` | [`Boolean`](#boolean) | Whether the feature is enabled. |
 | <a id="mutationsetcontainerscanningforregistryerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
+### `Mutation.setGroupSecretPushProtection`
+
+Enable or disable Secret Push Protection for a group.
+
+Input type: `SetGroupSecretPushProtectionInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetgroupsecretpushprotectionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetgroupsecretpushprotectionnamespacepath"></a>`namespacePath` | [`ID!`](#id) | Full path of the group. |
+| <a id="mutationsetgroupsecretpushprotectionprojectstoexclude"></a>`projectsToExclude` | [`[Int!]`](#int) | IDs of projects to exclude from the feature. |
+| <a id="mutationsetgroupsecretpushprotectionsecretpushprotectionenabled"></a>`secretPushProtectionEnabled` | [`Boolean!`](#boolean) | Whether to enable the feature. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetgroupsecretpushprotectionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetgroupsecretpushprotectionerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
 ### `Mutation.setPreReceiveSecretDetection`
 
 Enable/disable secret push protection for the given project.
