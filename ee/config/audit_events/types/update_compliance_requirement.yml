@@ -1,6 +1,6 @@
 ---
 name: update_compliance_requirement
-description: Triggered when a compliance framework requirement is updated.
+description: A compliance framework requirement is updated.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/470695
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/169485
 milestone: '17.7'
