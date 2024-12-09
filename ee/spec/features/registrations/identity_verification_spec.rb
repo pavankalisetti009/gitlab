@@ -442,10 +442,9 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
   end
 
   describe 'user that already went through identity verification' do
-    context 'when the user is medium risk but phone verification feature-flag is turned off' do
+    context 'when the user is medium risk but phone verification application setting is turned off' do
       before do
-        stub_feature_flags(identity_verification_phone_number: false)
-
+        stub_application_setting(phone_verification_enabled: false)
         visit new_user_registration_path
 
         sign_up(arkose: { risk: :medium })
@@ -462,9 +461,9 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
 
         user_signs_out
 
-        # even though the phone verification feature-flag is turned back on
+        # even though the phone verification application setting is turned back on
         # when the user logs in next, they will not be asked to do identity verification again
-        stub_feature_flags(identity_verification_phone_number: true)
+        stub_application_setting(phone_verification_enabled: true)
 
         gitlab_sign_in(user, password: new_user.password)
 
