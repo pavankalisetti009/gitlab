@@ -17,6 +17,7 @@ module Gitlab
           resolve_vulnerability: {
             service_class: ::Gitlab::Llm::Completions::ResolveVulnerability,
             prompt_class: ::Gitlab::Llm::Templates::Vulnerabilities::ResolveVulnerability,
+            aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::ResolveVulnerability,
             feature_category: :vulnerability_management,
             execute_method: ::Llm::ResolveVulnerabilityService,
             maturity: :ga,

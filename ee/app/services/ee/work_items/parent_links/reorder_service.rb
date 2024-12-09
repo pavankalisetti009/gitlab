@@ -99,7 +99,7 @@ module EE
               # set work_item_syncing to skip the validation EpicIssue#check_existing_parent_link
               { epic: link.work_item_parent.synced_epic, work_item_syncing: true }
             when ::Epic
-              { parent: link.work_item_parent.synced_epic }
+              { parent: link.work_item_parent.synced_epic, work_item_parent_link: link }
             end
 
           return if link.work_item_parent == synced_moving_object.try(parent_attributes.keys[0])
