@@ -182,14 +182,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
       it { is_expected.to eq(false) }
     end
 
-    context 'when merge_when_checks_pass_merge_train is false' do
-      before do
-        stub_feature_flags(merge_when_checks_pass_merge_train: false)
-      end
-
-      it { is_expected.to eq(false) }
-    end
-
     context 'when the MR does not have ci enabled' do
       before do
         allow(merge_request).to receive(:has_ci_enabled?).and_return(false)
