@@ -91,15 +91,22 @@
             "minItems": 1,
             "additionalItems": false,
             "items": {
-              "type": "string",
-              "enum": [
-                "guest",
-                "reporter",
-                "developer",
-                "maintainer",
-                "owner"
-              ],
-              "minLength": 1
+              "minLength": 1,
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "guest",
+                    "reporter",
+                    "developer",
+                    "maintainer",
+                    "owner"
+                  ]
+                },
+                {
+                  "type": "integer"
+                }
+              ]
             }
           },
           "enabled": {
