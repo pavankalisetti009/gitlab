@@ -5,7 +5,14 @@ import { evictCache, fetchCount } from '../graphql/utils';
 import { UPDATE_TOTAL_ITEMS } from './mutation_types';
 
 /** @type {import('vuex').Action<any, any>} */
-export const invalidatePromotionRequestsData = async ({ commit }, { context, group, project }) => {
+export const invalidatePromotionRequestsData = async (
+  { commit, state },
+  { context, group, project },
+) => {
+  if (!state.enabled) {
+    return;
+  }
+
   // Evict cache for PromotionRequestsTabApp (../components/app.vue) component GraphQL data. So that
   // when the tab is re-opened — instead of displaying the stale cache data, the list would be
   // refetched.

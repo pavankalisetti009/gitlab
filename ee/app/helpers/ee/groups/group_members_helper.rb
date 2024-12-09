@@ -30,7 +30,7 @@ module EE::Groups::GroupMembersHelper
       can_filter_by_enterprise: group.domain_verification_available? && can?(current_user, :admin_group_member, group),
       banned: group_members_list_data(group, banned),
       manage_member_roles_path: manage_member_roles_path(group),
-      promotion_request: { total_items: pending_members_count },
+      promotion_request: { enabled: member_promotion_management_enabled?, total_items: pending_members_count },
       can_approve_access_requests: !::Namespaces::FreeUserCap::Enforcement.new(group.root_ancestor).reached_limit?,
       namespace_user_limit: ::Namespaces::FreeUserCap.dashboard_limit
     })

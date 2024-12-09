@@ -10,7 +10,7 @@ describe('Actions', () => {
   let state;
 
   beforeEach(() => {
-    state = {};
+    state = { enabled: true };
     evictCache.mockReturnValue(null);
     fetchCount.mockResolvedValue(0);
   });
@@ -41,6 +41,14 @@ describe('Actions', () => {
         [{ type: types.UPDATE_TOTAL_ITEMS, payload: count }],
         [],
       );
+    });
+
+    it('will do nothing if the feature is disabled', async () => {
+      state = { enabled: false };
+
+      await testAction(invalidatePromotionRequestsData, { context, group, project }, state, [], []);
+
+      expect(evictCache).not.toHaveBeenCalled();
     });
   });
 });

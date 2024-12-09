@@ -1,5 +1,6 @@
-export default ({ totalItems }) => ({
+export default ({ enabled = false, totalItems = 0 }) => ({
+  enabled,
   pagination: {
-    totalItems: totalItems ?? 0,
+    totalItems,
   },
 });

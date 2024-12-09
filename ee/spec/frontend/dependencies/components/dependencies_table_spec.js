@@ -157,7 +157,7 @@ describe('DependenciesTable component', () => {
   describe('given an empty list of dependencies', () => {
     describe.each`
       namespaceType | expectedLabels
-      ${'project'}  | ${['Component', 'Packager', 'Location', 'License', '' /* the last column has no heading, so the label is just an empty string */]}
+      ${'project'}  | ${['Component', 'Packager', 'Location', 'License', 'Vulnerabilities']}
       ${'group'}    | ${['Component', 'Packager', 'Location', 'License', 'Projects']}
     `('with namespaceType set to "$namespaceType"', ({ namespaceType, expectedLabels }) => {
       beforeEach(() => {

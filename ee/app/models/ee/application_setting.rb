@@ -49,7 +49,8 @@ module EE
 
       jsonb_accessor :identity_verification_settings,
         soft_phone_verification_transactions_daily_limit: [:integer, { default: 16_000 }],
-        unverified_account_group_creation_limit: [:integer, { default: 2 }]
+        unverified_account_group_creation_limit: [:integer, { default: 2 }],
+        phone_verification_enabled: [:boolean, { default: true }]
 
       validates :identity_verification_settings, json_schema: { filename: "identity_verification_settings" }
 

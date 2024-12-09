@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Epic work item', :js, feature_category: :team_planning do
+RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
   include DragTo
   include ListboxHelpers
   include WorkItemFeedbackHelpers
@@ -101,6 +101,18 @@ RSpec.describe 'Epic work item', :js, feature_category: :team_planning do
           end
         end
       end
+    end
+  end
+
+  context 'without epics license' do
+    before do
+      stub_licensed_features(epics: false)
+      sign_in(user)
+      visit work_items_path
+    end
+
+    it 'shows 404' do
+      expect(page).to have_content 'Page not found'
     end
   end
 end

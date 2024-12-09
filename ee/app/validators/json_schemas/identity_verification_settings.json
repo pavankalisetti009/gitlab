@@ -11,6 +11,10 @@
     "unverified_account_group_creation_limit": {
       "type": "integer",
       "description": "Limit for number of top-level groups an unverified account can create"
+    },
+    "phone_verification_enabled": {
+      "type": "boolean",
+      "description": "Whether phone number verification is an available identity verification method"
     }
   }
 }

@@ -2,35 +2,42 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Create work item epic', :js, feature_category: :team_planning do
+RSpec.describe 'Create epic work item', :js, feature_category: :team_planning do
+  include Spec::Support::Helpers::ModalHelpers
+
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, :public) }
+  let_it_be(:group) { create(:group, :public, developers: user) }
 
-  before_all do
-    group.add_owner(user)
-    group.add_maintainer(user)
-    group.add_developer(user)
-  end
-
-  context 'when we click on new epic' do
+  context 'when on group work items list' do
     before do
-      stub_licensed_features(epics: true, subepics: true, issuable_health_status: true, epic_colors: true)
+      stub_licensed_features(epics: true, epic_colors: true, issuable_health_status: true, subepics: true)
       sign_in(user)
-      visit group_work_items_path(group)
-      click_link 'New epic'
+      visit group_epics_path(group)
     end
 
-    it 'shows the modal' do
-      expect(page).to have_selector('[id="create-work-item-modal"]')
-    end
+    context 'when "New epic" button is clicked' do
+      before do
+        click_link 'New epic'
+      end
 
-    it 'has the expected widgets', :aggregate_failures do
-      expect(page).to have_selector('[data-testid="work-item-description-wrapper"]')
-      expect(page).to have_selector('[data-testid="work-item-assignees"]')
-      expect(page).to have_selector('[data-testid="work-item-labels"]')
-      expect(page).to have_selector('[data-testid="work-item-rolledup-dates"]')
-      expect(page).to have_selector('[data-testid="work-item-health-status"]')
-      expect(page).to have_selector('[data-testid="work-item-color"]')
+      it 'creates an epic work item', :aggregate_failures do
+        within_modal do
+          # check all the widgets are rendered
+          expect(page).to have_selector('[data-testid="work-item-description-wrapper"]')
+          expect(page).to have_selector('[data-testid="work-item-assignees"]')
+          expect(page).to have_selector('[data-testid="work-item-labels"]')
+          expect(page).to have_selector('[data-testid="work-item-rolledup-dates"]')
+          expect(page).to have_selector('[data-testid="work-item-health-status"]')
+          expect(page).to have_selector('[data-testid="work-item-color"]')
+
+          send_keys 'I am a new epic'
+          click_button 'Create epic'
+          page.refresh
+        end
+
+        expect(page).to have_link 'I am a new epic'
+        expect(page).to have_css '[data-testid="epic-icon"]'
+      end
     end
   end
 end

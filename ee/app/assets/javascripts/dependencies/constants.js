@@ -11,6 +11,7 @@ export const DEPENDENCIES_TABLE_I18N = {
   unknown: s__('Dependencies|unknown'),
   license: s__('Dependencies|License'),
   projects: s__('Dependencies|Projects'),
+  vulnerabilities: s__('Dependencies|Vulnerabilities'),
   tooltipText: s__(
     'Dependencies|The component dependency path is based on the lock file. There may be several paths. In these cases, the longest path is displayed.',
   ),
