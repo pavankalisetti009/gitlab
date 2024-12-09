@@ -10,8 +10,6 @@ status: removed
 milestone_removed: "14.0"
 time_frame: all
 data_source: database
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type: []

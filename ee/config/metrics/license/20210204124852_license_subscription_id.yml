@@ -12,8 +12,6 @@ instrumentation_class: LicenseMetric
 options:
   attribute: subscription_id
 data_category: standard
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

@@ -15,8 +15,6 @@ data_source: database
 instrumentation_class: LicenseMetric
 options:
   attribute: daily_billable_users_count
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

@@ -7,8 +7,6 @@ status: active
 time_frame: all
 data_source: database
 data_category: optional
-distribution:
-- ee
 tiers:
 - ultimate
 milestone: "<13.9"

@@ -12,8 +12,6 @@ instrumentation_class: UserCapSettingEnabledMetric
 time_frame: none
 data_source: database
 data_category: optional
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

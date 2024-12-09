@@ -10,8 +10,6 @@ time_frame: all
 data_source: internal_events
 events:
 - name: view_productivity_analytics
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

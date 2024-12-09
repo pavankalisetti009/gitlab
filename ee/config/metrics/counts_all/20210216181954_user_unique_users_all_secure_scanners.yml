@@ -12,8 +12,6 @@ options:
   secure_type: all
 time_frame: all
 data_source: database
-distribution:
-- ee
 tiers:
 - ultimate
 - premium

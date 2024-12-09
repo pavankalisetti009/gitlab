@@ -15,7 +15,5 @@ events:
 - name: expand_merge_request_widget
   filter:
     label: status_checks
-distribution:
-- ee
 tiers:
 - ultimate

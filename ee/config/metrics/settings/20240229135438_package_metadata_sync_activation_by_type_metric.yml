@@ -11,8 +11,6 @@ data_source: system
 data_category: optional
 instrumentation_class: PackageRegistryMetadataSyncActivationByTypeMetric
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate
 value_json_schema: "config/metrics/objects_schemas/package_registry_metadata_sync_activation_by_type_metric.json"
