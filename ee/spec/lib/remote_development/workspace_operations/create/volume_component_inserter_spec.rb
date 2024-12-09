@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInjector, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let(:input_processed_devfile_name) { 'example.project-cloner-injected-devfile.yaml' }
+  let(:input_processed_devfile_name) { 'example.project-cloner-inserted-devfile.yaml' }
   let(:input_processed_devfile) { YAML.safe_load(read_devfile(input_processed_devfile_name)).to_h }
   let(:expected_processed_devfile_name) { 'example.processed-devfile.yaml' }
   let(:expected_processed_devfile) { YAML.safe_load(read_devfile(expected_processed_devfile_name)).to_h }
@@ -24,7 +24,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentIn
   end
 
   subject(:returned_value) do
-    described_class.inject(context)
+    described_class.insert(context)
   end
 
   it "injects the workspace volume component" do

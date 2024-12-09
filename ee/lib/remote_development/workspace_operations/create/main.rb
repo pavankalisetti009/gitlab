@@ -20,9 +20,10 @@ module RemoteDevelopment
               .and_then(DevfileFlattener.method(:flatten))
               .and_then(PostFlattenDevfileValidator.method(:validate))
               .map(VolumeDefiner.method(:define))
-              .map(ToolsComponentInjector.method(:inject))
-              .map(ProjectClonerComponentInjector.method(:inject))
-              .map(VolumeComponentInjector.method(:inject))
+              .map(ToolsInjectorComponentInserter.method(:insert))
+              .map(MainComponentUpdater.method(:update))
+              .map(ProjectClonerComponentInserter.method(:insert))
+              .map(VolumeComponentInserter.method(:insert))
               .and_then(Creator.method(:create))
 
           # rubocop:disable Lint/DuplicateBranch -- Rubocop doesn't know the branches are different due to destructuring

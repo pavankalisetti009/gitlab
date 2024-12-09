@@ -3,12 +3,12 @@
 module RemoteDevelopment
   module WorkspaceOperations
     module Create
-      class ProjectClonerComponentInjector
+      class ProjectClonerComponentInserter
         include Messages
 
         # @param [Hash] context
         # @return [Hash]
-        def self.inject(context)
+        def self.insert(context)
           context => {
             processed_devfile: Hash => processed_devfile,
             volume_mounts: Hash => volume_mounts,
@@ -18,7 +18,7 @@ module RemoteDevelopment
           volume_mounts => { data_volume: Hash => data_volume }
           data_volume => { path: String => volume_path }
           params => {
-            project: Project => project,
+            project: project,
             devfile_ref: String => devfile_ref,
           }
           settings => {
@@ -70,7 +70,7 @@ module RemoteDevelopment
           #       implement better error handling to allow cloner to be able to deal with different categories of errors
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/408451
           cloner_component = {
-            'name' => 'gl-cloner-injector',
+            'name' => 'gl-project-cloner',
             'container' => {
               'image' => image,
               'args' => [container_args],
@@ -95,7 +95,7 @@ module RemoteDevelopment
 
           # create a command that will invoke the cloner
           cloner_command = {
-            'id' => 'gl-cloner-injector-command',
+            'id' => 'gl-project-cloner-command',
             'apply' => {
               'component' => cloner_component['name']
             }

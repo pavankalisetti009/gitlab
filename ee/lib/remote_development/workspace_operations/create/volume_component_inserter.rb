@@ -3,12 +3,12 @@
 module RemoteDevelopment
   module WorkspaceOperations
     module Create
-      class VolumeComponentInjector
+      class VolumeComponentInserter
         include Messages
 
         # @param [Hash] context
         # @return [Hash]
-        def self.inject(context)
+        def self.insert(context)
           context => { processed_devfile: Hash => processed_devfile, volume_mounts: Hash => volume_mounts }
           volume_mounts => { data_volume: Hash => data_volume }
           data_volume => {

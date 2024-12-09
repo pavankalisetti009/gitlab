@@ -838,7 +838,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 ],
                 image: "alpine/git:2.45.2",
                 imagePullPolicy: "Always",
-                name: "gl-cloner-injector-gl-cloner-injector-command-1",
+                name: "gl-project-cloner-gl-project-cloner-command-1",
                 resources: {
                   limits: {
                     cpu: "500m",

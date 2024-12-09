@@ -7,7 +7,7 @@ starterProjects:
         remote: origin
         revision: main
       remotes:
-        origin: https://example.com/path/to/repository
+        origin: http://localhost/path/to/repository
     subDir: app
 components:
   - name: example
