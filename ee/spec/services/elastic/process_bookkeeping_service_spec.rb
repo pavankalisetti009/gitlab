@@ -540,13 +540,16 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       end
 
       it 'does not have N+1 queries for merge_requests' do
-        merge_requests = create_list(:merge_request, 2)
+        merge_requests = create_list(:merge_request, 2, :with_assignee)
 
         described_class.track!(*merge_requests)
 
         control = ActiveRecord::QueryRecorder.new(skip_cached: false) { described_class.new.execute }
 
-        merge_requests += create_list(:merge_request, 3)
+        user = create(:user)
+        merge_requests += create_list(:merge_request, 3, :with_assignee) do |mr|
+          mr.assignee_ids << user.id
+        end
 
         described_class.track!(*merge_requests)
 
