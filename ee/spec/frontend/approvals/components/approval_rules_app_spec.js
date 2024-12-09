@@ -323,4 +323,15 @@ describe('EE Approvals App', () => {
       });
     });
   });
+
+  describe('description slot', () => {
+    it('renders description slot content when provided', () => {
+      const descriptionText = 'Custom description text';
+      slots.description = `<div class="custom-description">${descriptionText}</div>`;
+
+      factory();
+
+      expect(wrapper.find('.custom-description').text()).toBe(descriptionText);
+    });
+  });
 });
