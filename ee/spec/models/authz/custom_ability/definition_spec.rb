@@ -8,12 +8,14 @@ RSpec.describe Authz::CustomAbility::Definition, feature_category: :permissions 
   let(:ability_name) { :admin_group_member }
   let(:project_ability) { true }
   let(:group_ability) { true }
+  let(:admin_ability) { true }
   let(:definition_sample) do
     {
       admin_group_member: {
         name: 'admin_group_member',
         group_ability: group_ability,
-        project_ability: project_ability
+        project_ability: project_ability,
+        admin_ability: admin_ability
       }
     }
   end
@@ -77,6 +79,24 @@ RSpec.describe Authz::CustomAbility::Definition, feature_category: :permissions 
 
     context 'when project ability is restricted' do
       let(:project_ability) { false }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when ability does not exist' do
+      let(:ability_name) { :unknown }
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
+  describe '#admin_ability_enabled?' do
+    subject { definition.admin_ability_enabled? }
+
+    it { is_expected.to be_truthy }
+
+    context 'when admin ability is restricted' do
+      let(:admin_ability) { false }
 
       it { is_expected.to be_falsey }
     end

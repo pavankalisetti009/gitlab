@@ -28,7 +28,7 @@ module MemberRoles
       items = MemberRole.all
       items = by_parent(items)
       items = by_id(items)
-      items = for_instance(items)
+      items = by_type(items)
 
       sort(items)
     end
@@ -39,6 +39,7 @@ module MemberRoles
       return unless gitlab_com_subscription?
       return if params[:parent].present?
       return if params[:id].present?
+      return if params[:admin_roles].present?
 
       raise ArgumentError, 'at least one filter param, :parent or :id has to be provided'
     end
@@ -60,6 +61,12 @@ module MemberRoles
       items.by_namespace(allowed_namespace_ids(items))
     end
 
+    def for_admin(items)
+      return items.none unless can_return_admin_roles?
+
+      items.admin
+    end
+
     def sort(items)
       order_by = ALLOWED_SORT_VALUES.include?(params[:order_by]) ? params[:order_by] : DEFAULT_SORT_VALUE
       order_direction = ALLOWED_SORT_DIRECTIONS.include?(params[:sort]) ? params[:sort] : DEFAULT_SORT_DIRECTION
@@ -68,12 +75,19 @@ module MemberRoles
       items.order(order_by => order_direction) # rubocop:disable CodeReuse/ActiveRecord -- simple ordering
     end
 
-    def for_instance(items)
+    def by_type(items)
+      return for_admin(items) if params[:admin_roles]
       return items if gitlab_com_subscription?
 
       return MemberRole.none unless allowed_read_member_role?
 
       items.for_instance
+    end
+
+    def can_return_admin_roles?
+      return false if gitlab_com_subscription?
+
+      current_user.can?(:read_admin_member_role)
     end
 
     def allowed_namespace_ids(items)

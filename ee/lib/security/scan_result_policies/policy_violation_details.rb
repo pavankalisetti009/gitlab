@@ -67,6 +67,13 @@ module Security
       end
       strong_memoize_attr :violations
 
+      def violations_count
+        new_scan_finding_violations.count +
+          previous_scan_finding_violations.count +
+          license_scanning_violations.count +
+          any_merge_request_violations.count
+      end
+
       def fail_closed_policies(report_type = nil)
         filtered_violations = violations.reject(&:warning)
 

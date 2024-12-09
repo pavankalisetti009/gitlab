@@ -49,6 +49,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
 
   scope :by_namespace, ->(group_ids) { where(namespace_id: group_ids) }
   scope :for_instance, -> { where(namespace_id: nil) }
+  scope :non_admin, -> { where.not(base_access_level: nil) }
+  scope :admin, -> { where(base_access_level: nil) }
 
   scope :with_members_count, -> do
     left_outer_joins(:members)
@@ -100,6 +102,10 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
 
     def all_customizable_group_permissions
       MemberRole.all_customizable_permissions.select { |_k, v| v[:group_ability] }.keys
+    end
+
+    def all_customizable_admin_permissions
+      MemberRole.all_customizable_permissions.select { |_k, v| v[:admin_ability] }.keys
     end
 
     def customizable_permissions_exempt_from_consuming_seat

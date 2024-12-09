@@ -4,7 +4,7 @@ module Authz
   class CustomAbility
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(user, resource)
+    def initialize(user, resource = nil)
       @user = user
       @resource = resource
     end
@@ -18,7 +18,7 @@ module Authz
     end
 
     class << self
-      def allowed?(user, ability_name, resource)
+      def allowed?(user, ability_name, resource = nil)
         new(user, resource).allowed?(ability_name)
       end
     end
@@ -32,12 +32,15 @@ module Authz
       return false unless user.is_a?(User)
       return false if resource.is_a?(::Group) && !ability.group_ability_enabled?
       return false if resource.is_a?(::Project) && !ability.project_ability_enabled?
+      return false if resource.blank? && !ability.admin_ability_enabled?
       return false unless ::MemberRole.permission_enabled?(ability.name, user)
 
       custom_roles_enabled?
     end
 
     def custom_roles_enabled?
+      return License.feature_available?(:custom_roles) if resource.blank?
+
       return true unless resource.respond_to?(:custom_roles_enabled?)
 
       resource.custom_roles_enabled?
@@ -53,6 +56,8 @@ module Authz
 
     def abilities_for
       case resource
+      when nil
+        ::Authz::Admin.new(user).permitted
       when ::Project
         abilities_for_projects([resource]).fetch(resource.id, [])
       when ::Group
