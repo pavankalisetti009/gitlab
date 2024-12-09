@@ -1,6 +1,6 @@
 ---
 name: require_reauthentication_to_approve_updated
-description: Triggered when the setting for requiring reauthentication for merge requqest approvals is updated
+description: The setting for requiring reauthentication for merge requqest approvals is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/431346
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/150710
 feature_category: source_code_management

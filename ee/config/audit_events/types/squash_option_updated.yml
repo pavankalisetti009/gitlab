@@ -1,6 +1,6 @@
 ---
 name: squash_option_updated
-description: Triggered when squash option setting is updated
+description: Squash option setting is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/301124
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/84624
 milestone: '15.0'

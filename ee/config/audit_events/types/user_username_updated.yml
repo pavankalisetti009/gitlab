@@ -1,5 +1,6 @@
+---
 name: user_username_updated
-description: Event triggered on updating a user's username
+description: A user's username is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369329
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/106086
 milestone: '15.7'
