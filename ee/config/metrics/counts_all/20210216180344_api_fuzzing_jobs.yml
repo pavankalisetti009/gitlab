@@ -10,8 +10,6 @@ instrumentation_class: CountCiBuildsMetric
 options:
   secure_type: apifuzzer_fuzz
 data_source: database
-distribution:
-- ee
 tiers:
 - ultimate
 performance_indicator_type: []

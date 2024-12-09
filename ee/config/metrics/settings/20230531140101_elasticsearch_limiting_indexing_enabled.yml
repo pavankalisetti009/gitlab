@@ -8,8 +8,6 @@ status: active
 time_frame: none
 data_source: system
 instrumentation_class: AdvancedSearch::LimitedIndexingMetric
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

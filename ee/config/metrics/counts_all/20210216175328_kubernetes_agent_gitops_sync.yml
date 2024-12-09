@@ -14,8 +14,6 @@ instrumentation_class: RedisMetric
 options:
   prefix: kubernetes_agent
   event: gitops_sync
-distribution:
-- ee
 tiers:
 - premium
 - ultimate
