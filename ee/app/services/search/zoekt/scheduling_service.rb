@@ -142,6 +142,8 @@ module Search
         )
 
         namespaces_to_move.each_slice(100) do |namespace_ids|
+          ::Search::Zoekt::EnabledNamespace.for_root_namespace_id(namespace_ids).update_last_used_storage_bytes!
+
           ::Search::Zoekt::Replica.for_namespace(namespace_ids).each_batch do |batch|
             batch.delete_all
           end

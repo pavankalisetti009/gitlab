@@ -20,6 +20,8 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
 
       expect(described_class.new(namespace: subgroup)).to be_invalid
     end
+
+    it { expect(described_class).to validate_jsonb_schema(['zoekt_enabled_namespaces_metadata']) }
   end
 
   describe 'scopes' do
@@ -127,6 +129,85 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
           zoekt_enabled_namespace_ultimate_grace_period,
           zoekt_enabled_namespace_ultimate
         )
+      end
+    end
+  end
+
+  describe '.update_last_used_storage_bytes!' do
+    let_it_be_with_reload(:enabled_namespace) { create(:zoekt_enabled_namespace) }
+
+    subject(:update_last_used_storage_bytes) { described_class.update_last_used_storage_bytes! }
+
+    context 'when there are no replicas or indices' do
+      it 'updates metadata with zero bytes' do
+        expect { update_last_used_storage_bytes }
+          .to change { enabled_namespace.reload.metadata['last_used_storage_bytes'] }
+          .from(nil).to(0)
+      end
+    end
+
+    context 'when there are replicas and indices with storage bytes' do
+      let_it_be(:replica1) { create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica2) { create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace) }
+
+      before do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, used_storage_bytes: 100)
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, used_storage_bytes: 200)
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica2, used_storage_bytes: 150)
+      end
+
+      it 'updates metadata with the maximum sum of used storage bytes' do
+        expect { update_last_used_storage_bytes }
+          .to change { enabled_namespace.reload.metadata['last_used_storage_bytes'] }
+          .from(nil).to(300)
+      end
+    end
+
+    context 'when there are replicas with no indices' do
+      before do
+        create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace)
+      end
+
+      it 'updates metadata with zero bytes' do
+        expect { update_last_used_storage_bytes }
+          .to change { enabled_namespace.reload.metadata['last_used_storage_bytes'] }
+          .from(nil).to(0)
+      end
+    end
+
+    context 'when there are multiple replicas with different total storage bytes' do
+      let_it_be(:replica1) { create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica2) { create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica3) { create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace) }
+
+      before do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, used_storage_bytes: 100)
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica2, used_storage_bytes: 200)
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica2, used_storage_bytes: 300)
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica3, used_storage_bytes: 150)
+      end
+
+      it 'updates metadata with the maximum sum of used storage bytes' do
+        expect { update_last_used_storage_bytes }
+          .to change { enabled_namespace.reload.metadata['last_used_storage_bytes'] }
+          .from(nil).to(500)
+      end
+    end
+
+    context 'when metadata already contains last_used_storage_bytes' do
+      before do
+        enabled_namespace.update_column(:metadata, { last_used_storage_bytes: 1000, other_key: 'value' })
+        create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace) do |replica|
+          create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica, used_storage_bytes: 500)
+        end
+      end
+
+      it 'updates only the last_used_storage_bytes in metadata' do
+        expect { update_last_used_storage_bytes }
+          .to change { enabled_namespace.reload.metadata['last_used_storage_bytes'] }
+          .from(1000).to(500)
+
+        expect(enabled_namespace.metadata['other_key']).to eq('value')
       end
     end
   end
