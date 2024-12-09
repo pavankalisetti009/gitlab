@@ -109,6 +109,10 @@ export default {
       </gl-button>
     </template>
 
+    <template #description>
+      <slot name="description"></slot>
+    </template>
+
     <gl-loading-icon v-if="!hasLoaded" size="sm" class="gl-m-5" />
     <template v-else>
       <slot name="rules"></slot>
