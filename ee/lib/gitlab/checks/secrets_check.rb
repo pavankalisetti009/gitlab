@@ -43,7 +43,12 @@ module Gitlab
         raw_value: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RAW_VALUE
       }.freeze
       UNKNOWN_EXCLUSION_TYPE = ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
-      HUNK_HEADER_REGEX = /\A@@ -\d+(,\d+)? \+(\d+)(,\d+)? @@\Z/
+
+      # HUNK_HEADER_REGEX matches a line starting with @@, followed by - and digits (starting line number
+      # and range in the original file, comma and more digits optional), then + and digits (starting line number
+      # and range in the new file, comma and more digits optional), ending with @@.
+      # Allows for optional section headings after the final @@.
+      HUNK_HEADER_REGEX = /\A@@ -\d+(,\d+)? \+(\d+)(,\d+)? @@.*\Z/
 
       # Maximum depth any path exclusion can have.
       MAX_PATH_EXCLUSIONS_DEPTH = 20
@@ -248,9 +253,11 @@ module Gitlab
         if use_diff_scan?
           payloads = get_diffs
 
-          payloads.flat_map do |payload|
+          payloads = payloads.flat_map do |payload|
             parse_diffs(payload)
           end
+
+          payloads.compact.empty? ? nil : payloads
         else
           payloads = ::Gitlab::Checks::ChangedBlobs.new(
             project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
@@ -341,6 +348,16 @@ module Gitlab
       #  }]
 
       def parse_diffs(diff)
+        hunk_headers = diff.patch.each_line.select { |line| line.start_with?("@@") }
+        invalid_hunk = hunk_headers.find { |header| !header.match(HUNK_HEADER_REGEX) }
+
+        if invalid_hunk
+          secret_detection_logger.error(
+            message: "Could not process hunk header: #{invalid_hunk.strip}, skipped parsing diff: #{diff.right_blob_id}"
+          )
+          return []
+        end
+
         diff_parsed_lines = []
         current_line_number = 0
         added_content = ''
@@ -359,6 +376,7 @@ module Gitlab
               added_content = ''
               offset = nil
             end
+
           # Line added in this commit
           elsif line.start_with?('+')
             added_content += line[1..] # Add the line content without '+'

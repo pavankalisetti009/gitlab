@@ -91,6 +91,7 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             context 'when the spp_scan_diffs flag is enabled' do
               it_behaves_like 'diff scan passed'
               it_behaves_like 'scan detected secrets in diffs'
+              it_behaves_like 'processes hunk headers'
 
               context 'when the protocol is web' do
                 subject(:secrets_check) { described_class.new(changes_access_web) }
