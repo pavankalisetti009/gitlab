@@ -40,6 +40,15 @@ export default {
         ? this.$options.i18n.secondFilterLabel
         : this.$options.i18n.firstFilterLabel;
     },
+    secondFilterLabelClasses() {
+      const baseClasses = '!gl-text-base !gl-w-12 !gl-pl-0';
+
+      if (this.allFiltersSelected) {
+        return baseClasses;
+      }
+
+      return `${baseClasses} !gl-font-bold`;
+    },
   },
   methods: {
     isFilterSelected(filter) {
@@ -100,7 +109,7 @@ export default {
         :filter="$options.PREVIOUSLY_EXISTING"
         :label="secondFilterLabel"
         :selected="selected[$options.PREVIOUSLY_EXISTING]"
-        label-classes="!gl-text-base !gl-w-12 !gl-pl-0"
+        :label-classes="secondFilterLabelClasses"
         class="gl-w-full md:gl-items-center"
         :class="{ 'gl-pt-2': allFiltersSelected }"
         @input="setStatuses($event, $options.PREVIOUSLY_EXISTING)"
