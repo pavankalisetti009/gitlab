@@ -56,6 +56,10 @@ module QA
       it 'displays vulnerabilities in merge request widget', :smoke,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348031' do
         Page::MergeRequest::Show.perform do |merge_request|
+          # skip test when mr_reports_tab FF is enabled as it is WIP
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/466223
+          skip('mr_reports_tab FF is WIP') if merge_request.has_reports_tab?
+
           expect(merge_request).to have_vulnerability_report
           expect(merge_request).to have_vulnerability_count
 
