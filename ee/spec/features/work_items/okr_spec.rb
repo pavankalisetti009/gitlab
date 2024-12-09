@@ -114,7 +114,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
           wait_for_all_requests
 
-          within_testid('work-item-detail-modal') do
+          within_testid('work-item-drawer') do
             expect(page).to have_content('0%')
           end
         end
@@ -133,18 +133,18 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
           wait_for_all_requests
         end
 
-        within_testid('work-item-detail-modal') do
+        within_testid('work-item-drawer') do
           create_okr('objective', 'Child objective 1')
           expect(page).to have_content('Child objective 1')
 
-          click_button 'Close'
+          find_by_testid('close-icon', match: :first).click
         end
 
         visit work_items_path
         wait_for_all_requests
 
         within_testid('work-item-tree') do
-          within_testid('widget-body') do
+          within_testid('crud-body') do
             click_button 'Expand'
 
             wait_for_all_requests
@@ -153,9 +153,9 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
           end
         end
 
-        within_testid('tree-children') do
-          find_by_testid('links-child').hover
-          find_by_testid('remove-work-item-link').click
+        within_testid('child-items-container', match: :first) do
+          find_by_testid('links-child', match: :first).hover
+          find_by_testid('remove-work-item-link', match: :first).click
 
           wait_for_all_requests
 
