@@ -40,6 +40,8 @@ module EE
         user.email_changed? && user.enterprise_user? && !user.skip_enterprise_user_email_change_restrictions?
       }
 
+      validates :composite_identity_enforced, inclusion: { in: [false] }, unless: -> { service_account? }
+
       after_create :perform_user_cap_check
       after_create :associate_with_enterprise_group
       after_update :email_changed_hook, if: :saved_change_to_email?
@@ -663,6 +665,20 @@ module EE
         .reorder(nil)
 
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
+    end
+
+    override :composite_identity_enforced
+    def composite_identity_enforced
+      return false unless ::License.feature_available?(:composite_identity_auth)
+
+      read_attribute(:composite_identity_enforced)
+    end
+
+    override :composite_identity_enforced=
+    def composite_identity_enforced=(value)
+      return unless ::License.feature_available?(:composite_identity_auth)
+
+      write_attribute(:composite_identity_enforced, value)
     end
 
     protected
