@@ -18,6 +18,7 @@ import {
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
   ALLOW_DENY,
+  ALLOWED,
   DENIED,
   FILTERS_STATUS_INDEX,
   LICENCE_FILTERS,
@@ -194,6 +195,11 @@ describe('LicenseScanRuleBuilder', () => {
   });
 
   describe('allow deny list filter', () => {
+    const LICENSES = [1, 2].map((id) => ({
+      exceptions: [],
+      license: { text: `License_${id}`, value: `license_${id}` },
+    }));
+
     it('does not render deny allow list', () => {
       factory();
 
@@ -221,7 +227,7 @@ describe('LicenseScanRuleBuilder', () => {
 
       expect(findDenyAllowList().exists()).toBe(true);
       expect(wrapper.emitted('changed')).toEqual([
-        [expect.objectContaining({ licenses: { denied: [] } })],
+        [expect.objectContaining({ licenses: { [ALLOWED]: [] } })],
       ]);
     });
 
@@ -280,6 +286,44 @@ describe('LicenseScanRuleBuilder', () => {
 
       expect(findDenyAllowList().exists()).toBe(false);
       expect(wrapper.emitted('changed')[1]).toEqual([licenseScanBuildRule()]);
+    });
+
+    it('selects licenses', async () => {
+      factory({
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      await findScanFilterSelector().vm.$emit('select', ALLOW_DENY);
+      await findDenyAllowList().vm.$emit('select-licenses', LICENSES);
+
+      expect(wrapper.emitted('changed')[1]).toEqual([
+        {
+          ...licenseScanBuildRule(),
+          licenses: { [ALLOWED]: LICENSES },
+        },
+      ]);
+    });
+
+    it('renders selected licenses from allow deny list', () => {
+      factory({
+        props: {
+          initRule: {
+            ...licenseScanBuildRule(),
+            licenses: { [DENIED]: LICENSES },
+          },
+        },
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      expect(findDenyAllowList().props('licenses')).toEqual(LICENSES);
     });
   });
 });

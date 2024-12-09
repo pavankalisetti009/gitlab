@@ -6,11 +6,13 @@ import { UNKNOWN_LICENSE } from 'ee/security_orchestration/components/policy_edi
 describe('DenyAllowLicenses', () => {
   let wrapper;
 
+  const LICENSE = { text: 'License', value: 'license' };
+
   const createComponent = ({ propsData } = {}) => {
     wrapper = shallowMountExtended(DenyAllowLicenses, {
-      propsData,
-      provide: {
-        parsedSoftwareLicenses: [],
+      propsData: {
+        allLicenses: [UNKNOWN_LICENSE],
+        ...propsData,
       },
     });
   };
@@ -37,10 +39,51 @@ describe('DenyAllowLicenses', () => {
 
     it('renders selected license', () => {
       createComponent({
-        propsData: { selected: { value: 'license', text: 'License' } },
+        propsData: { selected: LICENSE },
       });
 
       expect(findListBox().props('selected')).toEqual('license');
+    });
+  });
+
+  describe('already selected licenses', () => {
+    it('does not render licenses already selected in other dropdowns', () => {
+      createComponent({
+        propsData: {
+          allLicenses: [UNKNOWN_LICENSE, LICENSE],
+          alreadySelectedLicenses: [UNKNOWN_LICENSE],
+        },
+      });
+
+      expect(findListBox().props('items')).toEqual([{ options: [LICENSE], text: 'Licenses' }]);
+    });
+
+    it('does not render selected licenses twice', () => {
+      createComponent({
+        propsData: {
+          allLicenses: [UNKNOWN_LICENSE, LICENSE],
+          selected: UNKNOWN_LICENSE,
+        },
+      });
+
+      expect(findListBox().props('items')).toEqual([
+        { text: 'Selected', options: [UNKNOWN_LICENSE] },
+        { text: 'Licenses', options: [LICENSE] },
+      ]);
+    });
+
+    it('only renders selected section when all licenses selected', () => {
+      createComponent({
+        propsData: {
+          allLicenses: [UNKNOWN_LICENSE, LICENSE],
+          selected: UNKNOWN_LICENSE,
+          alreadySelectedLicenses: [UNKNOWN_LICENSE, LICENSE],
+        },
+      });
+
+      expect(findListBox().props('items')).toEqual([
+        { text: 'Selected', options: [UNKNOWN_LICENSE] },
+      ]);
     });
   });
 });

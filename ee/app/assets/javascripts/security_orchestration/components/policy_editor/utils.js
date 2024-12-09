@@ -10,6 +10,10 @@ import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
 
 import {
+  ALLOWED,
+  DENIED,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import {
   BRANCHES_KEY,
   BRANCH_TYPE_KEY,
   DEFAULT_MR_TITLE,
@@ -704,4 +708,20 @@ export const policyToYaml = (policy, type) => {
   }
 
   return policyBodyToYaml(policy);
+};
+
+/**
+ * Parse licenses from rule
+ * @param rule
+ * @returns {{licenses: (*|*[]), isDenied: boolean}}
+ */
+export const parseAllowDenyLicenseList = (rule = {}) => {
+  const { licenses = {} } = rule || {};
+  const isDenied = DENIED in licenses;
+  const KEY = isDenied ? DENIED : ALLOWED;
+
+  return {
+    licenses: licenses?.[KEY] || [],
+    isDenied,
+  };
 };

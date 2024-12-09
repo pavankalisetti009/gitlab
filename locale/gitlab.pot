@@ -48501,6 +48501,9 @@ msgstr ""
 msgid "ScanResultPolicy|Age is:"
 msgstr ""
 
+msgid "ScanResultPolicy|All licenses have been selected"
+msgstr ""
+
 msgid "ScanResultPolicy|Allow except on"
 msgstr ""
 
