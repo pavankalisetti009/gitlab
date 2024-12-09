@@ -55354,6 +55354,9 @@ msgstr ""
 msgid "The Mattermost token."
 msgstr ""
 
+msgid "The Microsoft Teams webhook (for example, `https://outlook.office.com/webhook/...`)."
+msgstr ""
+
 msgid "The Planner role is suitable for team members who need to manage projects and track work items but do not need to contribute code."
 msgstr ""
 
