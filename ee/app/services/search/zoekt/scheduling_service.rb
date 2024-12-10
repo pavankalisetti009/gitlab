@@ -12,6 +12,7 @@ module Search
         index_mismatched_watermark_check
         index_should_be_marked_as_orphaned_check
         index_to_delete_check
+        indices_to_evict_check
         initial_indexing
         lost_nodes_check
         mark_indices_as_ready
@@ -401,6 +402,14 @@ module Search
               Search::Zoekt::RepoToIndexEvent.new(data: { zoekt_repo_ids: batch.pluck_primary_key })
             )
           end
+        end
+      end
+
+      def indices_to_evict_check
+        Search::Zoekt::Index.critical_watermark_exceeded.each_batch do |batch|
+          Gitlab::EventStore.publish(
+            Search::Zoekt::IndexToEvictEvent.new(data: { index_ids: batch.pluck_primary_key })
+          )
         end
       end
 
