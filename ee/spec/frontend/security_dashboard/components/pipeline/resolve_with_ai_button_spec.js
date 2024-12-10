@@ -39,6 +39,7 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
   };
 
   const findButton = () => wrapper.findComponent(GlButton);
+  const findInfoPopover = () => wrapper.findComponent(ResolveWithAiInfoPopover);
   const clickButton = () => findButton().vm.$emit('click');
 
   describe('initial render', () => {
@@ -66,7 +67,7 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
 
       expect(buttonId).toEqual(expect.any(String));
       expect(buttonId).not.toHaveLength(0);
-      expect(wrapper.findComponent(ResolveWithAiInfoPopover).props('target')).toBe(buttonId);
+      expect(findInfoPopover().props('target')).toBe(buttonId);
     });
 
     it.each([true, false])(
@@ -76,9 +77,7 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
           propsData: { showPublicProjectWarning },
         });
 
-        expect(
-          wrapper.findComponent(ResolveWithAiInfoPopover).props('showPublicProjectWarning'),
-        ).toBe(showPublicProjectWarning);
+        expect(findInfoPopover().props('showPublicProjectWarning')).toBe(showPublicProjectWarning);
       },
     );
   });
@@ -122,6 +121,17 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
       await nextTick();
 
       expect(findButton().props('loading')).toBe(true);
+    });
+
+    it('does not render the info popover', async () => {
+      createWrapperWithApollo();
+
+      expect(findInfoPopover().exists()).toBe(true);
+
+      clickButton();
+      await nextTick();
+
+      expect(findInfoPopover().exists()).toBe(false);
     });
 
     describe('vulnerability finding', () => {
