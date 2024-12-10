@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import App from 'ee/merge_requests/reports/components/app.vue';
-import routes from 'ee/merge_requests/reports/routes';
+import App from '~/merge_requests/reports/components/app.vue';
+import routes from '~/merge_requests/reports/routes';
 
 Vue.use(VueRouter);
 
