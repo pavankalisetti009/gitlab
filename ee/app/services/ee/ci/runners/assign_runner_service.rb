@@ -20,7 +20,19 @@ module EE
         def audit_event
           return if quiet
 
-          ::AuditEvents::RunnerCustomAuditEventService.new(runner, user, project, AUDIT_MESSAGE).track_event
+          ::Gitlab::Audit::Auditor.audit(
+            name: 'ci_runner_assigned_to_project',
+            author: user,
+            scope: project,
+            target: runner,
+            target_details: runner_path,
+            message: AUDIT_MESSAGE)
+        end
+
+        def runner_path
+          url_helpers = ::Gitlab::Routing.url_helpers
+
+          runner.owner ? url_helpers.project_runner_path(runner.owner, runner) : nil
         end
       end
     end
