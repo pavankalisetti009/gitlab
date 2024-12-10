@@ -328,6 +328,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           policy_scope: {},
           metadata: {},
           pipeline_config_strategy: 'inject_ci',
+          skip_ci: { allowed: false },
           content: { include: [{ file: "compliance-pipeline.yml", project: "compliance-project" }] }
         )
       end

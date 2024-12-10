@@ -27,5 +27,13 @@ FactoryBot.define do
     trait :suffix_never do
       policy factory: [:pipeline_execution_policy, :suffix_never]
     end
+
+    trait :skip_ci_allowed do
+      policy factory: [:pipeline_execution_policy, :skip_ci_allowed]
+    end
+
+    trait :skip_ci_disallowed do
+      policy factory: [:pipeline_execution_policy, :skip_ci_disallowed]
+    end
   end
 end

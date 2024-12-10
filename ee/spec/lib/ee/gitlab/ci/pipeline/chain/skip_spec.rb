@@ -18,6 +18,12 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
   let(:step) { described_class.new(pipeline, command) }
 
   describe '#skipped?' do
+    shared_examples_for 'breaks the chain' do
+      it 'breaks the chain' do
+        expect(step.break?).to be true
+      end
+    end
+
     context 'when pipeline has not been skipped' do
       it 'does not break the chain' do
         expect(step.break?).to be false
@@ -29,14 +35,24 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
         allow(pipeline).to receive(:git_commit_message).and_return('commit message [ci skip]')
       end
 
-      it 'breaks the chain' do
-        expect(step.break?).to be true
-      end
+      it_behaves_like 'breaks the chain'
 
-      context 'when pipeline execution policies are present' do
+      context 'when there are no pipeline execution policies defined' do
         before do
           command.pipeline_policy_context = instance_double(
             Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+            has_execution_policy_pipelines?: false
+          )
+        end
+
+        it_behaves_like 'breaks the chain'
+      end
+
+      context 'when pipeline execution policies are not allowing skip' do
+        before do
+          command.pipeline_policy_context = instance_double(
+            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+            skip_ci_allowed?: false,
             has_execution_policy_pipelines?: true
           )
         end
@@ -44,6 +60,18 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
         it 'does not break the chain' do
           expect(step.break?).to be false
         end
+      end
+
+      context 'when pipeline execution policies are allowing skip' do
+        before do
+          command.pipeline_policy_context = instance_double(
+            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+            skip_ci_allowed?: true,
+            has_execution_policy_pipelines?: true
+          )
+        end
+
+        it_behaves_like 'breaks the chain'
       end
     end
   end

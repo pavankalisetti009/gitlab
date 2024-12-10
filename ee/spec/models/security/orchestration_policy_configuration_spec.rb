@@ -1635,6 +1635,101 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           end
         end
       end
+
+      describe 'skip_ci' do
+        let(:policy) { { pipeline_execution_policy: [build(:pipeline_execution_policy)] } }
+
+        context 'when skip_ci is not provided' do
+          it 'does not return any errors' do
+            valid_policy = policy.deep_dup
+            valid_policy[:pipeline_execution_policy][0].delete(:skip_ci)
+
+            expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to be_empty
+          end
+        end
+
+        context 'when skip_ci is allowed' do
+          it 'does not return any errors' do
+            valid_policy = policy.deep_dup
+            valid_policy[:pipeline_execution_policy][0][:skip_ci] = { allowed: true }
+
+            expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to be_empty
+          end
+
+          context 'and has allowlist provided' do
+            it 'does not return any errors' do
+              valid_policy = policy.deep_dup
+              valid_policy[:pipeline_execution_policy][0][:skip_ci] = { allowed: true, allowlist: { users: [{ id: 123 }] } }
+
+              expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to be_empty
+            end
+          end
+        end
+
+        context 'when skip_ci is disallowed' do
+          it 'does not return any errors' do
+            valid_policy = policy.deep_dup
+            valid_policy[:pipeline_execution_policy][0][:skip_ci] = { allowed: false }
+
+            expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to be_empty
+          end
+
+          context 'and has allowlist provided' do
+            it 'does not return any errors' do
+              valid_policy = policy.deep_dup
+              valid_policy[:pipeline_execution_policy][0][:skip_ci] = { allowed: false, allowlist: { users: [{ id: 123 }] } }
+
+              expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to be_empty
+            end
+          end
+        end
+
+        context 'when skip_ci is nil' do
+          it 'returns errors' do
+            valid_policy = policy.deep_dup
+            valid_policy[:pipeline_execution_policy][0][:skip_ci] = nil
+
+            expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to contain_exactly(
+              "property '/pipeline_execution_policy/0/skip_ci' is not of type: object"
+            )
+          end
+        end
+
+        context 'when skip_ci is empty' do
+          it 'returns errors' do
+            valid_policy = policy.deep_dup
+            valid_policy[:pipeline_execution_policy][0][:skip_ci] = {}
+
+            expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to contain_exactly(
+              "property '/pipeline_execution_policy/0/skip_ci' is missing required keys: allowed"
+            )
+          end
+        end
+
+        context 'when skip_ci is invalid' do
+          context 'when allowlist is in wrong format' do
+            it 'returns errors' do
+              valid_policy = policy.deep_dup
+              valid_policy[:pipeline_execution_policy][0][:skip_ci] = { allowed: 'invalid' }
+
+              expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to contain_exactly(
+                "property '/pipeline_execution_policy/0/skip_ci/allowed' is not of type: boolean"
+              )
+            end
+          end
+
+          context 'when users id is in wrong format' do
+            it 'returns errors' do
+              valid_policy = policy.deep_dup
+              valid_policy[:pipeline_execution_policy][0][:skip_ci] = { allowed: false, allowlist: { users: [{ id: '123' }] } }
+
+              expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(valid_policy)).to contain_exactly(
+                "property '/pipeline_execution_policy/0/skip_ci/allowlist/users/0/id' is not of type: integer"
+              )
+            end
+          end
+        end
+      end
     end
 
     context 'when file is valid' do

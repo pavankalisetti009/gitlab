@@ -21,6 +21,14 @@ FactoryBot.define do
       policy_config factory: [:pipeline_execution_policy_config, :suffix_never]
     end
 
+    trait :skip_ci_allowed do
+      policy_config factory: [:pipeline_execution_policy_config, :skip_ci_allowed]
+    end
+
+    trait :skip_ci_disallowed do
+      policy_config factory: [:pipeline_execution_policy_config, :skip_ci_disallowed]
+    end
+
     transient do
       job_script { nil }
     end

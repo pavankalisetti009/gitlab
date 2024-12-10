@@ -8,9 +8,11 @@ module Security
 
       DEFAULT_SUFFIX_STRATEGY = 'on_conflict'
       SUFFIX_STRATEGIES = { on_conflict: 'on_conflict', never: 'never' }.freeze
+      DEFAULT_SKIP_CI_STRATEGY = { allowed: false }.freeze
       POLICY_JOB_SUFFIX = ':policy'
 
-      attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index, :name
+      attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index, :name,
+        :skip_ci_strategy
 
       def initialize(policy:, policy_project_id:, policy_index:)
         @content = policy.fetch(:content).to_yaml
@@ -19,6 +21,7 @@ module Security
         @config_strategy = policy.fetch(:pipeline_config_strategy).to_sym
         @suffix_strategy = policy[:suffix] || DEFAULT_SUFFIX_STRATEGY
         @name = policy.fetch(:name)
+        @skip_ci_strategy = policy[:skip_ci].presence || DEFAULT_SKIP_CI_STRATEGY
       end
 
       def strategy_override_project_ci?
@@ -34,6 +37,15 @@ module Security
 
       def suffix_on_conflict?
         suffix_strategy == SUFFIX_STRATEGIES[:on_conflict]
+      end
+
+      def skip_ci_allowed?(user_id)
+        allowed = skip_ci_strategy[:allowed]
+        allowlist = skip_ci_strategy.dig(:allowlist, :users)
+
+        return allowed if allowed || allowlist.blank?
+
+        allowlist.any? { |user| user[:id] == user_id }
       end
     end
   end
