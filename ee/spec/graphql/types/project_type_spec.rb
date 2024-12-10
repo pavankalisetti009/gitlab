@@ -144,7 +144,7 @@ RSpec.describe GitlabSchema.types['Project'] do
     subject { GitlabSchema.execute(query, context: { current_user: user }).as_json }
 
     before do
-      create(:ci_build, :success, :sast, pipeline: pipeline)
+      create(:ci_build, :success, :sast, name: "semgrep-sast", pipeline: pipeline)
       create(:ci_build, :success, :dast, pipeline: pipeline)
       create(:ci_build, :success, :license_scanning, pipeline: pipeline)
       create(:ci_build, :pending, :secret_detection, pipeline: pipeline)

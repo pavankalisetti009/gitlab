@@ -7,7 +7,7 @@ RSpec.describe ::EE::ProjectSecurityScannersInformation do
   let(:pipeline) { create(:ci_pipeline, project: project, sha: project.commit.id, ref: project.default_branch) }
 
   before do
-    create(:ci_build, :success, :sast, pipeline: pipeline)
+    create(:ci_build, :success, :sast, name: 'semgrep-sast', pipeline: pipeline)
     create(:ci_build, :success, :dast, pipeline: pipeline)
     create(:ci_build, :success, :license_scanning, pipeline: pipeline)
     create(:ci_build, :pending, :secret_detection, pipeline: pipeline)
