@@ -46,6 +46,12 @@ module Gitlab
             policy_pipelines.present?
           end
 
+          def skip_ci_allowed?
+            return true unless has_execution_policy_pipelines?
+
+            policy_pipelines.all? { |policy_pipeline| policy_pipeline.skip_ci_allowed?(command.current_user&.id) }
+          end
+
           def has_overriding_execution_policy_pipelines?
             return false unless has_execution_policy_pipelines?
 

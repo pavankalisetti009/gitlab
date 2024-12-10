@@ -84,7 +84,8 @@ FactoryBot.define do
       content do
         {
           content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-          pipeline_config_strategy: 'inject_ci'
+          pipeline_config_strategy: 'inject_ci',
+          skip_ci: { allowed: false }
         }
       end
     end
@@ -209,7 +210,7 @@ FactoryBot.define do
 
   factory :pipeline_execution_policy,
     class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
-      :suffix) do
+      :suffix, :skip_ci) do
     skip_create
 
     initialize_with do
@@ -221,8 +222,9 @@ FactoryBot.define do
       policy_scope = attributes[:policy_scope]
       metadata = attributes[:metadata]
       suffix = attributes[:suffix]
+      skip_ci = attributes[:skip_ci]
 
-      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata, suffix).to_h
+      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata, suffix, skip_ci).to_h
     end
 
     sequence(:name) { |n| "test-pipeline-execution-policy-#{n}" }
@@ -233,6 +235,7 @@ FactoryBot.define do
     policy_scope { {} }
     metadata { {} }
     suffix { nil }
+    skip_ci { { allowed: false } }
 
     trait :override_project_ci do
       pipeline_config_strategy { 'override_project_ci' }
@@ -244,6 +247,14 @@ FactoryBot.define do
 
     trait :suffix_never do
       suffix { 'never' }
+    end
+
+    trait :skip_ci_allowed do
+      skip_ci { { allowed: true } }
+    end
+
+    trait :skip_ci_disallowed do
+      skip_ci { { allowed: false } }
     end
 
     trait :with_policy_scope do

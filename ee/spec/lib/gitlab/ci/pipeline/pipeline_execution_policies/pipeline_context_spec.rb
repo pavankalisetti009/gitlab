@@ -343,4 +343,37 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       end
     end
   end
+
+  describe '#skip_ci_allowed?' do
+    subject { context.skip_ci_allowed? }
+
+    include_context 'with mocked policy_pipelines'
+
+    it { is_expected.to eq(true) }
+
+    context 'with policy_pipelines' do
+      context 'without skip_ci specified' do
+        let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
+
+        it { is_expected.to eq(false) }
+      end
+
+      context 'when all policy_pipelines allows skip_ci' do
+        let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :skip_ci_allowed) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when at least one policy_pipeline disallows skip_ci' do
+        let(:policy_pipelines) do
+          [
+            *build_list(:pipeline_execution_policy_pipeline, 2, :skip_ci_allowed),
+            *build_list(:pipeline_execution_policy_pipeline, 2, :skip_ci_disallowed)
+          ]
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
 end

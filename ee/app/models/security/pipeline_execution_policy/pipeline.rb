@@ -11,7 +11,8 @@ module Security
 
       attr_reader :pipeline, :policy_config
 
-      delegate :suffix_strategy, :suffix, :suffix_on_conflict?, :strategy_override_project_ci?, to: :policy_config
+      delegate :suffix_strategy, :suffix, :suffix_on_conflict?, :strategy_override_project_ci?, :skip_ci_allowed?,
+        to: :policy_config
     end
   end
 end

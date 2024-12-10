@@ -33,4 +33,20 @@ RSpec.describe Security::PipelineExecutionPolicy::Pipeline, feature_category: :s
       it { is_expected.to be(true) }
     end
   end
+
+  describe '#skip_ci_allowed?' do
+    subject { instance.skip_ci_allowed?(123) }
+
+    context 'when skip_ci is disallowed' do
+      let(:policy_config) { build(:pipeline_execution_policy_config, :skip_ci_disallowed) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when skip_ci is allowed' do
+      let(:policy_config) { build(:pipeline_execution_policy_config, :skip_ci_allowed) }
+
+      it { is_expected.to be(true) }
+    end
+  end
 end
