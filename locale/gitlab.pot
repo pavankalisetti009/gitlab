@@ -14654,6 +14654,9 @@ msgstr ""
 msgid "Confidentiality"
 msgstr ""
 
+msgid "Confidentiality controls have moved to the issue actions menu (%{icon}) at the top of the page."
+msgstr ""
+
 msgid "Configuration help"
 msgstr ""
 
@@ -53126,6 +53129,9 @@ msgid "Something went wrong while fetching the environments for this merge reque
 msgstr ""
 
 msgid "Something went wrong while fetching the packages list."
+msgstr ""
+
+msgid "Something went wrong while getting %{issuableType} confidentiality status."
 msgstr ""
 
 msgid "Something went wrong while obtaining the Let's Encrypt certificate."
