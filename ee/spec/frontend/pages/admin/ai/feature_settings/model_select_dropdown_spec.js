@@ -88,6 +88,7 @@ describe('ModelSelectDropdown', () => {
       'Model 1 (Mistral)',
       'Model 2 (Code Llama)',
       'Model 3 (CodeGemma)',
+      'GitLab AI Vendor',
       'Disabled',
     ]);
   });
@@ -98,28 +99,68 @@ describe('ModelSelectDropdown', () => {
     expect(findButton().text()).toBe('Add self-hosted model');
   });
 
-  describe('when no model is selected and the feature is not disabled', () => {
-    it('displays the correct text on the dropdown button', () => {
-      createComponent();
-
-      expect(findSelectDropdownButtonText().text()).toBe('Select a self-hosted model');
-    });
-  });
-
   describe('when an update is saving', () => {
     it('renders the loading state', async () => {
       createComponent();
 
       await findSelectDropdownButtonText().trigger('click');
-      await findSelectDropdown().vm.$emit('select', 'DISABLED');
+      await findSelectDropdown().vm.$emit('select', 'disabled');
 
       expect(findSelectDropdown().props('loading')).toBe(true);
     });
   });
 
-  describe('when an update succeeds', () => {
+  describe('Updating the feature setting', () => {
     beforeEach(() => {
       createComponent();
+    });
+
+    describe('with a vendored model', () => {
+      it('calls the update mutation with the right input', async () => {
+        await findSelectDropdown().vm.$emit('select', 'vendored');
+
+        await waitForPromises();
+
+        expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            feature: 'CODE_GENERATIONS',
+            provider: 'VENDORED',
+            aiSelfHostedModelId: null,
+          },
+        });
+      });
+    });
+
+    describe('with a self-hosted model', () => {
+      it('calls the update mutation with the right input', async () => {
+        await findSelectDropdown().vm.$emit('select', 1);
+
+        await waitForPromises();
+
+        expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            feature: 'CODE_GENERATIONS',
+            provider: 'SELF_HOSTED',
+            aiSelfHostedModelId: 1,
+          },
+        });
+      });
+    });
+
+    describe('disabling the feature', () => {
+      it('calls the update mutation with the right input', async () => {
+        await findSelectDropdown().vm.$emit('select', 'disabled');
+
+        await waitForPromises();
+
+        expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            feature: 'CODE_GENERATIONS',
+            provider: 'DISABLED',
+            aiSelfHostedModelId: null,
+          },
+        });
+      });
     });
 
     it('displays a success toast', async () => {
@@ -143,10 +184,11 @@ describe('ModelSelectDropdown', () => {
       expect(getFeatureSettingsSuccessHandler).toHaveBeenCalled();
     });
 
-    describe('when the feature has been disabled', () => {
+    describe('when the feature state is changed', () => {
       it('displays the correct text on the dropdown button', async () => {
-        await findSelectDropdownButtonText().trigger('click');
-        await findSelectDropdown().vm.$emit('select', 'DISABLED');
+        expect(findSelectDropdownButtonText().text()).toBe('GitLab AI Vendor');
+
+        await findSelectDropdown().vm.$emit('select', 'disabled');
 
         await waitForPromises();
 
@@ -197,7 +239,7 @@ describe('ModelSelectDropdown', () => {
     });
 
     it('does not update the selected option', () => {
-      expect(findSelectDropdownButtonText().text()).toBe('Select a self-hosted model');
+      expect(findSelectDropdownButtonText().text()).toBe('GitLab AI Vendor');
     });
 
     it('displays an error message', () => {
