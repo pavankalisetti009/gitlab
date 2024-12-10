@@ -1,9 +1,12 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
 import { GlDrawer, GlTab, GlTabs } from '@gitlab/ui';
+// eslint-disable-next-line no-restricted-imports
+import Vuex from 'vuex';
 import FindingsDrawer from 'ee/diffs/components/shared/findings_drawer.vue';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { VULNERABILITY_TAB_NAMES } from 'ee/vulnerabilities/constants';
 import FindingsDrawerDetails from 'ee/diffs/components/shared/findings_drawer_details.vue';
+import VulnerabilityCodeFlow from 'ee/vue_shared/components/code_flow/vulnerability_code_flow.vue';
 import {
   mockFindingDismissed,
   mockFindingDetected,
@@ -11,6 +14,8 @@ import {
   mockFindingsMultiple,
   mockFindingDetails,
 } from 'jest/diffs/mock_data/findings_drawer';
+
+Vue.use(Vuex);
 
 describe('FindingsDrawer', () => {
   let wrapper;
@@ -20,24 +25,37 @@ describe('FindingsDrawer', () => {
     project: mockProject,
   };
 
-  const createWrapper = (
+  const createWrapper = ({
     findingDrawerOverrides = {},
-    { vulnerabilityCodeFlow = false, mrVulnerabilityCodeFlow = false } = {},
-  ) => {
+    featureFlags = { vulnerabilityCodeFlow: false, mrVulnerabilityCodeFlow: false },
+    mountFn = mountExtended,
+  } = {}) => {
     const propsData = {
       drawer: findingDrawerProps.drawer,
       project: findingDrawerProps.project,
       ...findingDrawerOverrides,
     };
 
-    wrapper = mountExtended(FindingsDrawer, {
+    const store = new Vuex.Store({
+      modules: {
+        diffs: {
+          namespaced: true,
+          state: {
+            branchName: 'test-branch',
+          },
+        },
+      },
+    });
+
+    wrapper = mountFn(FindingsDrawer, {
       propsData,
       provide: {
-        glFeatures: { vulnerabilityCodeFlow, mrVulnerabilityCodeFlow },
+        glFeatures: {
+          vulnerabilityCodeFlow: featureFlags.vulnerabilityCodeFlow,
+          mrVulnerabilityCodeFlow: featureFlags.mrVulnerabilityCodeFlow,
+        },
       },
-      stubs: {
-        GlTabs,
-      },
+      store,
     });
   };
 
@@ -45,9 +63,10 @@ describe('FindingsDrawer', () => {
   const findNextButton = () => wrapper.findByTestId('findings-drawer-next-button');
   const findTitle = () => wrapper.findByTestId('findings-drawer-title');
   const findVulnerabilityDetails = () => wrapper.findComponent(FindingsDrawerDetails);
-  const findVulnerabilityCodeFlow = () => wrapper.findByTestId('temp-code-flow');
+  const findVulnerabilityCodeFlow = () => wrapper.findComponent(VulnerabilityCodeFlow);
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
+  const findTabAtIndex = (index) => findAllTabs().at(index);
 
   describe('General Rendering', () => {
     beforeEach(() => {
@@ -73,19 +92,25 @@ describe('FindingsDrawer', () => {
 
   describe('Prev/Next Buttons with Multiple Items', () => {
     it('renders prev/next buttons when there are multiple items', () => {
-      createWrapper({ drawer: { findings: mockFindingsMultiple, index: 0 } });
+      createWrapper({
+        findingDrawerOverrides: { drawer: { findings: mockFindingsMultiple, index: 0 } },
+      });
       expect(findPreviousButton().exists()).toBe(true);
       expect(findNextButton().exists()).toBe(true);
     });
 
     it('does not render prev/next buttons when there is only one item', () => {
-      createWrapper({ drawer: { findings: [mockFindingDismissed], index: 0 } });
+      createWrapper({
+        findingDrawerOverrides: { drawer: { findings: [mockFindingDismissed], index: 0 } },
+      });
       expect(findPreviousButton().exists()).toBe(false);
       expect(findNextButton().exists()).toBe(false);
     });
 
     it('calls prev method on prev button click and loops correct drawerIndex', async () => {
-      createWrapper({ drawer: { findings: mockFindingsMultiple, index: 0 } });
+      createWrapper({
+        findingDrawerOverrides: { drawer: { findings: mockFindingsMultiple, index: 0 } },
+      });
       expect(findTitle().text()).toBe(`Name ${mockFindingsMultiple[0].title}`);
 
       await findPreviousButton().trigger('click');
@@ -98,7 +123,9 @@ describe('FindingsDrawer', () => {
     });
 
     it('calls next method on next button click', async () => {
-      createWrapper({ drawer: { findings: mockFindingsMultiple, index: 0 } });
+      createWrapper({
+        findingDrawerOverrides: { drawer: { findings: mockFindingsMultiple, index: 0 } },
+      });
       expect(findTitle().text()).toBe(`Name ${mockFindingsMultiple[0].title}`);
 
       await findNextButton().trigger('click');
@@ -118,8 +145,8 @@ describe('FindingsDrawer', () => {
   describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are enabled', () => {
     describe('when `details` object is not empty', () => {
       beforeEach(() => {
-        createWrapper(
-          {
+        createWrapper({
+          findingDrawerOverrides: {
             drawer: {
               findings: [
                 {
@@ -130,11 +157,12 @@ describe('FindingsDrawer', () => {
               index: 0,
             },
           },
-          {
+          featureFlags: {
             vulnerabilityCodeFlow: true,
             mrVulnerabilityCodeFlow: true,
           },
-        );
+          mountFn: shallowMountExtended,
+        });
       });
 
       it('tabs should be shown', () => {
@@ -147,25 +175,24 @@ describe('FindingsDrawer', () => {
         ${VULNERABILITY_TAB_NAMES.DETAILS}   | ${findVulnerabilityDetails}  | ${0}
         ${VULNERABILITY_TAB_NAMES.CODE_FLOW} | ${findVulnerabilityCodeFlow} | ${1}
       `('Tabs', ({ title, finderFn, index }) => {
+        it(`renders tab with a title ${title} at index ${index}`, () => {
+          expect(findTabAtIndex(index).attributes('title')).toBe(title);
+        });
+
         it(`renders ${title} component`, () => {
-          if (index === 0) {
-            expect(finderFn().exists()).toBe(true);
-          } else {
-            expect(finderFn().text()).toBe(title);
-          }
+          expect(finderFn().exists()).toBe(true);
         });
       });
     });
 
     describe('when `details` object is empty', () => {
       beforeEach(() => {
-        createWrapper(
-          {},
-          {
+        createWrapper({
+          featureFlags: {
             vulnerabilityCodeFlow: true,
             mrVulnerabilityCodeFlow: true,
           },
-        );
+        });
       });
 
       it('does not show the tabs', () => {
@@ -181,8 +208,8 @@ describe('FindingsDrawer', () => {
   describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are disabled', () => {
     describe('when `details` object is not empty', () => {
       beforeEach(() => {
-        createWrapper(
-          {
+        createWrapper({
+          findingDrawerOverrides: {
             drawer: {
               findings: [
                 {
@@ -193,11 +220,11 @@ describe('FindingsDrawer', () => {
               index: 0,
             },
           },
-          {
+          featureFlags: {
             vulnerabilityCodeFlow: false,
             mrVulnerabilityCodeFlow: false,
           },
-        );
+        });
       });
 
       it('does not show the tabs', () => {
@@ -211,13 +238,12 @@ describe('FindingsDrawer', () => {
 
     describe('when `details` object is empty', () => {
       beforeEach(() => {
-        createWrapper(
-          {},
-          {
+        createWrapper({
+          featureFlags: {
             vulnerabilityCodeFlow: false,
             mrVulnerabilityCodeFlow: false,
           },
-        );
+        });
       });
 
       it('does not show the tabs', () => {
