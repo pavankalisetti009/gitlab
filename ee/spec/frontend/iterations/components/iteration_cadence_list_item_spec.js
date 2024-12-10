@@ -1,7 +1,8 @@
-import { GlDisclosureDropdown, GlInfiniteScroll, GlModal, GlSkeletonLoader } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlInfiniteScroll, GlModal } from '@gitlab/ui';
 import { RouterLinkStub } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import IterationCadenceListItem from 'ee/iterations/components/iteration_cadence_list_item.vue';
 import TimeboxStatusBadge from 'ee/iterations/components/timebox_status_badge.vue';
 import { CADENCE_AND_DUE_DATE_DESC } from 'ee/iterations/constants';
@@ -107,6 +108,7 @@ describe('IterationCadenceListItem component', () => {
           },
         }),
         RouterLink: RouterLinkStub,
+        CrudComponent,
       },
       provide: {
         fullPath,
@@ -126,8 +128,8 @@ describe('IterationCadenceListItem component', () => {
     return nextTick();
   }
 
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
-  const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findAddIterationButton = () => wrapper.findByTestId('add-cadence');
   const findIterationItemText = (i) => wrapper.findAllByTestId('iteration-item').at(i).text();
   const findDurationBadge = () => wrapper.findByTestId('duration-badge');
@@ -184,7 +186,7 @@ describe('IterationCadenceListItem component', () => {
       expand();
       await waitForPromises();
 
-      expect(findLoader().exists()).toBe(false);
+      expect(findCrudComponent().props('is-loading')).toBe(undefined);
       expect(wrapper.text()).toContain(text);
     },
   );
@@ -290,7 +292,7 @@ describe('IterationCadenceListItem component', () => {
     await expand();
     await waitForPromises();
 
-    expect(findLoader().exists()).toBe(false);
+    expect(findCrudComponent().props('is-loading')).toBe(undefined);
     expect(wrapper.text()).toContain('Error loading iterations');
   });
 
