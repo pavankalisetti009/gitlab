@@ -19,13 +19,7 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
         stub_env('CLOUD_CONNECTOR_SELF_SIGN_TOKENS', '1')
       end
 
-      it 'returns SelfSigned::SelfManaged outside of development' do
-        is_expected.to be_a_kind_of(CloudConnector::SelfManaged::AccessDataReader)
-      end
-
-      it 'returns SelfSigned::AccessDataReader in development' do
-        stub_rails_env('development')
-
+      it 'returns SelfSigned::AccessDataReader' do
         is_expected.to be_a_kind_of(CloudConnector::SelfSigned::AccessDataReader)
       end
     end

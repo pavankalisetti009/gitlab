@@ -2,32 +2,31 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy for Packages',
+RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy for Packages', :js,
   feature_category: :package_registry do
   let_it_be(:user) { create(:user) }
   let_it_be(:project, reload: true) { create(:project, namespace: user.namespace) }
 
-  subject(:visit_page) { visit project_settings_packages_and_registries_path(project) }
-
   before do
     stub_licensed_features(dependency_proxy_for_packages: true)
     stub_config(dependency_proxy: { enabled: true })
-    stub_feature_flags(reorganize_project_level_registry_settings: false)
     sign_in(user)
   end
 
-  context 'as owner', :js do
-    it 'passes axe automated accessibility testing' do
-      visit_page
+  it 'passes axe automated accessibility testing' do
+    visit_page
 
-      wait_for_requests
+    click_button 'Expand Package registry'
 
-      expect(page).to be_axe_clean.within('[data-testid="packages-and-registries-project-settings"]') # rubocop:todo Capybara/TestidFinders -- Doesn't cover use case, see https://gitlab.com/gitlab-org/gitlab/-/issues/442224
-                                  .skipping :'heading-order'
-    end
+    wait_for_requests
 
+    expect(page).to be_axe_clean.within('[data-testid="packages-and-registries-project-settings"]') # rubocop:todo Capybara/TestidFinders -- Doesn't cover use case, see https://gitlab.com/gitlab-org/gitlab/-/issues/442224
+                                .skipping :'heading-order', :'link-in-text-block'
+  end
+
+  shared_examples 'dependency proxy settings' do
     it 'shows available section' do
-      visit_page
+      visit_method
 
       within_testid('dependency-proxy-settings') do
         expect(page).to have_text 'Dependency Proxy'
@@ -35,7 +34,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
     end
 
     it 'allows toggling dependency proxy & adding maven URL' do
-      visit_page
+      visit_method
 
       within_testid('dependency-proxy-settings') do
         click_button class: 'gl-toggle'
@@ -47,7 +46,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
     end
 
     it 'allows filling complete form' do
-      visit_page
+      visit_method
 
       within_testid('dependency-proxy-settings') do
         click_button class: 'gl-toggle'
@@ -61,7 +60,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
     end
 
     it 'shows an error when username is supplied without password' do
-      visit_page
+      visit_method
 
       within_testid('dependency-proxy-settings') do
         fill_in('Username', with: 'user1')
@@ -77,7 +76,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
       end
 
       it 'allows clearing username' do
-        visit_page
+        visit_method
 
         within_testid('dependency-proxy-settings') do
           fill_in('Username', with: '')
@@ -87,5 +86,40 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
         expect(page).to have_content('Settings saved successfully.')
       end
     end
+  end
+
+  it_behaves_like 'dependency proxy settings' do
+    let(:visit_method) { visit_and_expand_section }
+  end
+
+  context 'with feature flag disabled' do
+    before do
+      stub_feature_flags(reorganize_project_level_registry_settings: false)
+    end
+
+    it 'passes axe automated accessibility testing' do
+      visit_page
+
+      wait_for_requests
+
+      expect(page).to be_axe_clean.within('[data-testid="packages-and-registries-project-settings"]') # rubocop:todo Capybara/TestidFinders -- Doesn't cover use case, see https://gitlab.com/gitlab-org/gitlab/-/issues/442224
+                                  .skipping :'heading-order'
+    end
+
+    it_behaves_like 'dependency proxy settings' do
+      let(:visit_method) { visit_page }
+    end
+  end
+
+  private
+
+  def visit_page
+    visit project_settings_packages_and_registries_path(project)
+  end
+
+  def visit_and_expand_section
+    visit_page
+
+    click_button 'Expand Package registry'
   end
 end

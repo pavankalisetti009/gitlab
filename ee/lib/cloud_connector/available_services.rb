@@ -31,10 +31,7 @@ module CloudConnector
         return true if service_name == :self_hosted_models
 
         # All remaining code paths require requesting self-signed tokens.
-        return false unless Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
-
-        # Permit self-signed tokens in development for testing purposes.
-        Rails.env.development?
+        Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
       end
       # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
     end
