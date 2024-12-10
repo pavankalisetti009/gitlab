@@ -10670,6 +10670,9 @@ msgstr ""
 msgid "CICD|Automatic deployment to staging, manual deployment to production"
 msgstr ""
 
+msgid "CICD|Automatic pipeline cleanup"
+msgstr ""
+
 msgid "CICD|CI/CD job token allowlist"
 msgstr ""
 
@@ -10689,9 +10692,6 @@ msgid "CICD|Default to Auto DevOps pipeline"
 msgstr ""
 
 msgid "CICD|Default to Auto DevOps pipeline for all projects"
-msgstr ""
-
-msgid "CICD|Delete old pipelines"
 msgstr ""
 
 msgid "CICD|Deployment strategy"
@@ -10742,7 +10742,7 @@ msgstr ""
 msgid "CICD|Pipelines and jobs cannot be cancelled"
 msgstr ""
 
-msgid "CICD|Pipelines older than the configured time are deleted. Leave empty to never delete pipelines automatically. The default unit is in days, but you can use other units, for example %{code_open}15 days%{code_close}, %{code_open}1 month%{code_close}, %{code_open}1 year%{code_close}. Minimum value is 1 day and maximum value is 1 year."
+msgid "CICD|Pipelines older than the configured time are deleted. Leave empty to never delete pipelines automatically. The default unit is in seconds, but you can use other units, for example %{code_open}15 days%{code_close}, %{code_open}1 month%{code_close}, %{code_open}1 year%{code_close}. Can be between 1 day to 1 year. Subject to the %{terms_link}."
 msgstr ""
 
 msgid "CICD|Prevent CI/CD job tokens from this project from being used to access other projects unless the other project is added to the allowlist. It is a security risk to disable this feature, because unauthorized projects might attempt to retrieve an active token and access the API. %{linkStart}Learn more%{linkEnd}."
