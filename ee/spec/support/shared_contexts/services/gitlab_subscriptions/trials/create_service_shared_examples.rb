@@ -88,12 +88,11 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
   context 'in the existing namespace flow' do
     let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
     let(:namespace_id) { group.id.to_s }
-    let(:extra_params) { { trial_entity: '_entity_' } }
-    let(:trial_params) { { namespace_id: namespace_id }.merge(extra_params) }
+    let(:trial_params) { { namespace_id: namespace_id } }
 
     shared_examples 'starts a trial' do
       it do
-        expect_apply_trial_success(user, group, extra_params: extra_params.merge(existing_group_attrs(group)))
+        expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_success
         expect(execute.payload).to eq({ namespace: group })
@@ -115,7 +114,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
       context 'when a valid namespace_id of non zero and new_group_name is present' do
         # This can *currently* happen on validation failure for creating
         # a new namespace.
-        let(:trial_params) { { new_group_name: 'gitlab', namespace_id: group.id, trial_entity: '_entity_' } }
+        let(:trial_params) { { new_group_name: 'gitlab', namespace_id: group.id } }
 
         context 'with the namespace_id' do
           it_behaves_like 'starts a trial'
@@ -125,7 +124,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
 
     context 'when trial creation is not successful' do
       it 'returns an error indicating trial failed' do
-        expect_apply_trial_fail(user, group, extra_params: extra_params.merge(existing_group_attrs(group)))
+        expect_apply_trial_fail(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_error
         expect(execute.reason).to eq(:trial_failed)
@@ -270,11 +269,10 @@ RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
   end
 
   let(:namespace_id) { namespace.id.to_s }
-  let(:extra_params) { { trial_entity: '_entity_' } }
-  let(:trial_params) { { namespace_id: namespace_id }.merge(extra_params) }
+  let(:trial_params) { { namespace_id: namespace_id } }
 
   it 'tracks when trial registration is successful', :clean_gitlab_redis_shared_state do
-    expect_apply_trial_success(user, namespace, extra_params: extra_params.merge(existing_group_attrs(namespace)))
+    expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
 
     expect do
       execute
@@ -300,7 +298,7 @@ RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
   end
 
   it 'tracks when trial registration fails', :clean_gitlab_redis_shared_state do
-    expect_apply_trial_fail(user, namespace, extra_params: extra_params.merge(existing_group_attrs(namespace)))
+    expect_apply_trial_fail(user, namespace, extra_params: existing_group_attrs(namespace))
 
     expect do
       execute

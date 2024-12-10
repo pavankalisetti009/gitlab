@@ -193,6 +193,6 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       expect(page).to have_text('New group name')
     end
 
-    fill_in_trial_form_for_new_group(name: name, glm_source: nil)
+    fill_in_trial_form_for_new_group(name: name)
   end
 end

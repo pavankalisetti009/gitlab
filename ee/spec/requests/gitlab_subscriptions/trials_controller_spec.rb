@@ -150,13 +150,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
       }.with_indifferent_access
     end
 
-    let(:trial_params) do
-      {
-        trial_entity: '_trial_entity_',
-        organization_id: anything
-      }.merge(namespace_id).with_indifferent_access
-    end
-
+    let(:trial_params) { { organization_id: anything }.merge(namespace_id).with_indifferent_access }
     let(:base_params) { lead_params.merge(trial_params).merge(glm_params).merge(step: step) }
 
     subject(:post_create) do

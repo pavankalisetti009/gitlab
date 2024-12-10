@@ -252,30 +252,6 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     end
   end
 
-  describe '#should_ask_company_question?' do
-    let(:params) { ActionController::Parameters.new(url_params) }
-
-    before do
-      allow(helper).to receive(:params).and_return(params)
-    end
-
-    subject { helper.should_ask_company_question? }
-
-    where(:url_params, :result) do
-      { glm_source: 'about.gitlab.com' }  | false
-      { glm_source: 'learn.gitlab.com' }  | false
-      { glm_source: 'docs.gitlab.com' }   | false
-      { glm_source: 'abouts.gitlab.com' } | true
-      { glm_source: 'about.gitlab.org' }  | true
-      { glm_source: 'about.gitlob.com' }  | true
-      {}                                  | true
-    end
-
-    with_them do
-      it { is_expected.to eq(result) }
-    end
-  end
-
   describe '#show_tier_badge_for_new_trial?' do
     where(:trials_available?, :paid?, :private?, :never_had_trial?, :authorized, :result) do
       false | false | true | true | true | false
