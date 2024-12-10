@@ -16,6 +16,10 @@ module Resolvers
         argument :include_archived, GraphQL::Types::Boolean, required: false, default_value: false,
           experiment: { milestone: '17.7' },
           description: 'Includes archived projects in the search. Always true for project search. Default is false.'
+        argument :include_forked, GraphQL::Types::Boolean, required: false, default_value: false,
+          experiment: { milestone: '17.7' },
+          description: "Includes forked projects in the search. Always true for project search. \
+            Not available for global search. Default is false."
         argument :page, type: GraphQL::Types::Int, required: false, default_value: 1, experiment: { milestone: '17.2' },
           description: 'Page number to fetch the results.'
         argument :per_page, type: GraphQL::Types::Int, required: false, experiment: { milestone: '17.2' },
@@ -34,10 +38,19 @@ module Resolvers
           verify_repository_ref!(args[:repository_ref])
 
           @search_service = SearchService.new(current_user, {
-            group_id: args[:group_id]&.model_id, project_id: args[:project_id]&.model_id, search: args[:search],
-            page: args[:page], per_page: args[:per_page], multi_match_enabled: true, chunk_count: args[:chunk_count],
-            scope: 'blobs', regex: args[:regex], include_archived: args[:include_archived]
+            group_id: args[:group_id]&.model_id,
+            project_id: args[:project_id]&.model_id,
+            search: args[:search],
+            page: args[:page],
+            per_page: args[:per_page],
+            multi_match_enabled: true,
+            chunk_count: args[:chunk_count],
+            scope: 'blobs',
+            regex: args[:regex],
+            include_archived: args[:include_archived],
+            include_forked: args[:include_forked]
           })
+
           @search_level = @search_service.level
           verify_global_search_is_allowed!
           @search_type = @search_service.search_type
