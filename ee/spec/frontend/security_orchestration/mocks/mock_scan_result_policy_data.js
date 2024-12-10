@@ -294,6 +294,7 @@ export const mockApprovalSettingsScanResultObject = {
   approval_settings: {
     block_branch_modification: true,
     prevent_pushing_and_force_pushing: true,
+    prevent_approval_by_author: true,
   },
 };
 
@@ -424,6 +425,7 @@ export const mockProjectApprovalSettingsScanResultManifest = mockDefaultBranches
 approval_settings:
   block_branch_modification: true
   prevent_pushing_and_force_pushing: true
+  prevent_approval_by_author: true
 `,
   )
   .concat(`fallback_behavior:\n  fail: open`);
@@ -474,7 +476,11 @@ export const mockProjectApprovalSettingsScanResultPolicy = {
   ...defaultScanResultPolicy,
   name: 'low vulnerability SAST approvals',
   yaml: mockProjectApprovalSettingsScanResultManifest,
-  approval_settings: { block_branch_modification: true, prevent_pushing_and_force_pushing: true },
+  approval_settings: {
+    block_branch_modification: true,
+    prevent_pushing_and_force_pushing: true,
+    prevent_approval_by_author: true,
+  },
 };
 
 export const mockScanResultPoliciesResponse = [
