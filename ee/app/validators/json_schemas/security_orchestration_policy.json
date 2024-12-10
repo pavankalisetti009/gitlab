@@ -269,6 +269,38 @@
               }
             ]
           },
+          "skip_ci": {
+            "description": "Defines whether it should be allowed to use skip_ci directive when policy is enforced.",
+            "type": "object",
+            "properties": {
+              "allowed": {
+                "type": "boolean"
+              },
+              "allowlist": {
+                "type": "object",
+                "description": "A list of user IDs that are allowed to use skip_ci if it is generally not allowed.",
+                "properties": {
+                  "users": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "allowed"
+            ]
+          },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
           },

@@ -4,6 +4,7 @@ import {
 } from '~/vue_shared/components/resource_lists/utils';
 import {
   deleteParams,
+  renderRestoreSuccessToast,
   renderDeleteSuccessToast,
 } from 'ee/vue_shared/components/resource_lists/utils';
 import toast from '~/vue_shared/plugins/global_toast';
@@ -40,6 +41,18 @@ const MOCK_PROJECT_PENDING_DELETION = {
   markedForDeletionOn: '2024-03-24',
   permanentDeletionDate: '2024-03-31',
 };
+
+describe('renderRestoreSuccessToast', () => {
+  const MOCK_TYPE = 'Project';
+
+  it('calls toast correctly', () => {
+    renderRestoreSuccessToast(MOCK_PROJECT_PENDING_DELETION, MOCK_TYPE);
+
+    expect(toast).toHaveBeenCalledWith(
+      `${MOCK_TYPE} '${MOCK_PROJECT_PENDING_DELETION.name}' has been successfully restored.`,
+    );
+  });
+});
 
 describe('renderDeleteSuccessToast', () => {
   const MOCK_TYPE = 'Project';

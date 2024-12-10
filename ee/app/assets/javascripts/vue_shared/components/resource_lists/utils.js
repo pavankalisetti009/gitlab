@@ -9,6 +9,15 @@ import { sprintf, __ } from '~/locale';
 // eslint-disable-next-line import/export
 export * from '~/vue_shared/components/resource_lists/utils';
 
+export const renderRestoreSuccessToast = (item, type) => {
+  toast(
+    sprintf(__("%{type} '%{name}' has been successfully restored."), {
+      type,
+      name: item.name,
+    }),
+  );
+};
+
 // Exports override for EE
 // eslint-disable-next-line import/export
 export const renderDeleteSuccessToast = (item, type) => {

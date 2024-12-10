@@ -13,7 +13,7 @@ module Security
     POLICY_CONTENT_FIELDS = {
       approval_policy: %i[actions approval_settings fallback_behavior policy_tuning],
       scan_execution_policy: %i[actions],
-      pipeline_execution_policy: %i[content pipeline_config_strategy suffix],
+      pipeline_execution_policy: %i[content pipeline_config_strategy suffix skip_ci],
       vulnerability_management_policy: %i[actions],
       pipeline_execution_schedule_policy: %i[content schedule]
     }.freeze

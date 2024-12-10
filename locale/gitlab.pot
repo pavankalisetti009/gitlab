@@ -1483,6 +1483,9 @@ msgstr ""
 msgid "%{total} warnings found: showing first %{warningsDisplayed}"
 msgstr ""
 
+msgid "%{type} '%{name}' has been successfully restored."
+msgstr ""
+
 msgid "%{type} '%{name}' is being deleted."
 msgstr ""
 
@@ -44380,6 +44383,9 @@ msgstr ""
 msgid "Projects|An error occurred deleting the project. Please refresh the page to try again."
 msgstr ""
 
+msgid "Projects|An error occurred restoring the project. Please refresh the page to try again."
+msgstr ""
+
 msgid "Projects|Projects are where you can store your code, access issues, wiki, and other features of GitLab."
 msgstr ""
 
@@ -62842,16 +62848,25 @@ msgstr ""
 msgid "WorkItemCustomField|Add option"
 msgstr ""
 
+msgid "WorkItemCustomField|An error occurred while loading the custom field"
+msgstr ""
+
 msgid "WorkItemCustomField|An error occurred while saving the custom field"
 msgstr ""
 
 msgid "WorkItemCustomField|At least one option is required."
 msgstr ""
 
+msgid "WorkItemCustomField|Edit custom field"
+msgstr ""
+
 msgid "WorkItemCustomField|Name"
 msgstr ""
 
 msgid "WorkItemCustomField|Name is required."
+msgstr ""
+
+msgid "WorkItemCustomField|New custom field"
 msgstr ""
 
 msgid "WorkItemCustomField|Options"
@@ -63066,9 +63081,6 @@ msgstr ""
 msgid "WorkItem|Due"
 msgstr ""
 
-msgid "WorkItem|Edit field"
-msgstr ""
-
 msgid "WorkItem|Epic"
 msgstr ""
 
@@ -63172,9 +63184,6 @@ msgid "WorkItem|New %{workItemName}"
 msgstr ""
 
 msgid "WorkItem|New %{workItemType}"
-msgstr ""
-
-msgid "WorkItem|New custom field"
 msgstr ""
 
 msgid "WorkItem|New related %{workItemType}"

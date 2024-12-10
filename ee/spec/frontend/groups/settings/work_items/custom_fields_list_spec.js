@@ -5,7 +5,7 @@ import { GlBadge } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import CreateCustomField from 'ee/groups/settings/work_items/create_custom_field.vue';
+import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields_list.vue';
 import groupCustomFieldsQuery from 'ee/groups/settings/work_items/group_custom_fields.query.graphql';
 
@@ -154,7 +154,7 @@ describe('CustomFieldsTable', () => {
 
     expect(customFieldsResponse).toHaveBeenCalledTimes(1);
 
-    wrapper.findComponent(CreateCustomField).vm.$emit('created');
+    wrapper.findComponent(CustomFieldForm).vm.$emit('created');
 
     expect(customFieldsResponse).toHaveBeenCalledTimes(2);
   });
