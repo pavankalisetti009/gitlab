@@ -11,13 +11,15 @@ RSpec.describe Import::GithubService, feature_category: :importers do
   let(:user_namespace_path) { user.namespace_path }
   let(:optional_stages) { nil }
   let(:timeout_strategy) { "optimistic" }
+  let(:pagination_limit) { nil }
   let(:params) do
     {
       repo_id: 123,
       new_name: 'new_repo',
       target_namespace: user_namespace_path,
       optional_stages: optional_stages,
-      timeout_strategy: timeout_strategy
+      timeout_strategy: timeout_strategy,
+      pagination_limit: pagination_limit
     }
   end
 
@@ -34,7 +36,8 @@ RSpec.describe Import::GithubService, feature_category: :importers do
       .to receive(:write)
       .with(
         optional_stages: optional_stages,
-        timeout_strategy: timeout_strategy
+        timeout_strategy: timeout_strategy,
+        pagination_limit: pagination_limit
       )
   end
 
@@ -58,7 +61,8 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(settings)
           .to have_received(:write)
           .with(optional_stages: nil,
-            timeout_strategy: timeout_strategy
+            timeout_strategy: timeout_strategy,
+            pagination_limit: pagination_limit
           )
         expect_snowplow_event(
           category: 'Import::GithubService',
@@ -83,7 +87,8 @@ RSpec.describe Import::GithubService, feature_category: :importers do
           .to have_received(:write)
           .with(
             optional_stages: nil,
-            timeout_strategy: timeout_strategy
+            timeout_strategy: timeout_strategy,
+            pagination_limit: pagination_limit
           )
         expect_snowplow_event(
           category: 'Import::GithubService',
@@ -118,7 +123,8 @@ RSpec.describe Import::GithubService, feature_category: :importers do
             .to have_received(:write)
             .with(
               optional_stages: nil,
-              timeout_strategy: timeout_strategy
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
             )
           expect_snowplow_event(
             category: 'Import::GithubService',
@@ -154,7 +160,8 @@ RSpec.describe Import::GithubService, feature_category: :importers do
           .to have_received(:write)
           .with(
             optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy
+            timeout_strategy: timeout_strategy,
+            pagination_limit: pagination_limit
           )
       end
     end
@@ -169,7 +176,24 @@ RSpec.describe Import::GithubService, feature_category: :importers do
           .to have_received(:write)
           .with(
             optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy
+            timeout_strategy: timeout_strategy,
+            pagination_limit: pagination_limit
+          )
+      end
+    end
+
+    context 'when pagination limit param is present' do
+      let(:pagination_limit) { 50 }
+
+      it 'saves pagination limit to import_data' do
+        github_importer.execute(access_params, :github)
+
+        expect(settings)
+          .to have_received(:write)
+          .with(
+            optional_stages: optional_stages,
+            timeout_strategy: timeout_strategy,
+            pagination_limit: pagination_limit
           )
       end
     end
@@ -182,7 +206,8 @@ RSpec.describe Import::GithubService, feature_category: :importers do
           .to have_received(:write)
           .with(
             optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy
+            timeout_strategy: timeout_strategy,
+            pagination_limit: pagination_limit
           )
       end
     end
