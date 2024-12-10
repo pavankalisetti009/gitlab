@@ -18,6 +18,12 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     { current_file: { file_name: 'test.py', content_above_cursor: 'sor', content_below_cursor: 'som' } }
   end
 
+  let(:client) { nil }
+
+  subject(:task) do
+    described_class.new(params: params, unsafe_passthrough_params: unsafe_params, client: client)
+  end
+
   context 'when using saas anthropic model' do
     before do
       allow(CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages)
@@ -86,7 +92,50 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
       )
     end
 
-    subject(:task) { described_class.new(params: params, unsafe_passthrough_params: unsafe_params) }
+    let(:expected_body) do
+      {
+        'current_file' => {
+          'content_above_cursor' => 'sor',
+          'content_below_cursor' => 'som',
+          'file_name' => 'test.py'
+        },
+        'prompt_components' => [
+          {
+            'payload' => {
+              'content_above_cursor' => 'some content_above_cursor',
+              'content_below_cursor' => 'some content_below_cursor',
+              'file_name' => 'test.py',
+              'language_identifier' => 'Python',
+              'prompt_enhancer' => {
+                'examples_array' => [
+                  {
+                    'example' => 'class Project:\\n  def __init__(self, name, public):{{cursor}}\\n\\n ',
+                    'response' => "return self.visibility == 'PUBLIC'",
+                    'trigger_type' => 'comment'
+                  },
+                  {
+                    'example' => "# get the current user's name from the session data\\n{{cursor}}",
+                    'response' => "username = session['username']\\nreturn username",
+                    'trigger_type' => 'comment'
+                  }
+                ],
+                'trimmed_content_above_cursor' => 'some content_above_cursor',
+                'trimmed_content_below_cursor' => 'some content_below_cursor',
+                'related_files' => '',
+                'related_snippets' => '',
+                'libraries' => '',
+                'user_instruction' => 'Generate the best possible code based on instructions.'
+              },
+              'prompt_id' => 'code_suggestions/generations'
+            },
+            'type' => 'code_editor_generation'
+          }
+        ],
+        'telemetry' => [{ 'model_engine' => 'anthropic' }]
+      }
+    end
+
+    let(:expected_feature_name) { :code_suggestions }
 
     it 'calls code creation Anthropic' do
       task.body
@@ -96,50 +145,36 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
 
     it_behaves_like 'code suggestion task' do
       let(:endpoint_path) { 'v3/code/completions' }
-      let(:expected_body) do
-        {
-          'current_file' => {
-            'content_above_cursor' => 'sor',
-            'content_below_cursor' => 'som',
-            'file_name' => 'test.py'
-          },
-          'prompt_components' => [
-            {
-              'payload' => {
-                'content_above_cursor' => 'some content_above_cursor',
-                'content_below_cursor' => 'some content_below_cursor',
-                'file_name' => 'test.py',
-                'language_identifier' => 'Python',
-                'prompt_enhancer' => {
-                  'examples_array' => [
-                    {
-                      'example' => 'class Project:\\n  def __init__(self, name, public):{{cursor}}\\n\\n ',
-                      'response' => "return self.visibility == 'PUBLIC'",
-                      'trigger_type' => 'comment'
-                    },
-                    {
-                      'example' => "# get the current user's name from the session data\\n{{cursor}}",
-                      'response' => "username = session['username']\\nreturn username",
-                      'trigger_type' => 'comment'
-                    }
-                  ],
-                  'trimmed_content_above_cursor' => 'some content_above_cursor',
-                  'trimmed_content_below_cursor' => 'some content_below_cursor',
-                  'related_files' => '',
-                  'related_snippets' => '',
-                  'libraries' => '',
-                  'user_instruction' => 'Generate the best possible code based on instructions.'
-                },
-                'prompt_id' => 'code_suggestions/generations'
-              },
-              'type' => 'code_editor_generation'
-            }
-          ],
-          'telemetry' => [{ 'model_engine' => 'anthropic' }]
-        }
+    end
+
+    context 'when a client is provided' do
+      let(:client) { CodeSuggestions::Client.new(headers) }
+
+      context 'when the client supports SSE streaming' do
+        let(:headers) { { 'X-Supports-Sse-Streaming' => 'true' } }
+
+        it_behaves_like 'code suggestion task' do
+          let(:endpoint_path) { 'v4/code/suggestions' }
+        end
+
+        context 'when FF `enable_code_generation_sse_stream_v4_endpoint` is disabled' do
+          before do
+            stub_feature_flags(enable_code_generation_sse_stream_v4_endpoint: false)
+          end
+
+          it_behaves_like 'code suggestion task' do
+            let(:endpoint_path) { 'v3/code/completions' }
+          end
+        end
       end
 
-      let(:expected_feature_name) { :code_suggestions }
+      context 'when the client does not support SSE streaming' do
+        let(:headers) { {} }
+
+        it_behaves_like 'code suggestion task' do
+          let(:endpoint_path) { 'v3/code/completions' }
+        end
+      end
     end
   end
 
@@ -157,10 +192,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
         current_file: current_file,
         generation_type: 'empty_function'
       }
-    end
-
-    subject(:task) do
-      described_class.new(params: params, unsafe_passthrough_params: unsafe_params)
     end
 
     context 'on setting the provider as `self_hosted`' do
