@@ -20,10 +20,34 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipEnforcer, feature_category: :s
     expect(described_class.new(group).can_add_user?(non_saml_user)).to be_falsey
   end
 
-  it 'does not allow adding a user with an inactive scim identity for the group' do
-    create(:scim_identity, group: group, user: user, active: false)
+  context 'when the user has an inactive scim identity' do
+    before do
+      stub_licensed_features(extended_audit_events: true)
+      create(:scim_identity, group: group, user: user, active: false)
+    end
 
-    expect(described_class.new(group).can_add_user?(user)).to be_falsey
+    it 'does not allow adding a user with an inactive scim identity for the group' do
+      expect(described_class.new(group).can_add_user?(user)).to be_falsey
+    end
+
+    it 'logs an audit event' do
+      expect { described_class.new(group).can_add_user?(user) }.to change { AuditEvent.count }.by(1)
+
+      expect(AuditEvent.last).to have_attributes({
+        attributes: hash_including({
+          "entity_id" => group.id,
+          "entity_type" => "Group",
+          "author_id" => user.id,
+          "target_details" => user.username,
+          "target_id" => user.id
+        }),
+        details: hash_including({
+          custom_message: "User cannot be added to group due to inactive SCIM identity",
+          target_type: "User",
+          target_details: user.username
+        })
+      })
+    end
   end
 
   it 'does allow adding a user with an active scim identity for the group' do
