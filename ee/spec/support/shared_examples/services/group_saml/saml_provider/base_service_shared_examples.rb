@@ -113,3 +113,39 @@ RSpec.shared_examples 'SamlProvider service toggles Group Managed Accounts' do
     end
   end
 end
+
+RSpec.shared_examples 'SamlProvider service toggles Password authentication for Enterprise users' do
+  context 'when enabling disable_password_authentication_for_enterprise_users' do
+    let(:params) do
+      attributes_for(:saml_provider, disable_password_authentication_for_enterprise_users: true)
+    end
+
+    it 'updates disable_password_authentication_for_enterprise_users boolean to true' do
+      expect do
+        service.execute
+        group.reload
+      end.to change { group.saml_provider&.disable_password_authentication_for_enterprise_users }.to(true)
+
+      expect(AuditEvent.last.details[:custom_message]).to match(/disable_password_authentication_for_enterprise_users changed([\w\s]*)to true/)
+    end
+  end
+
+  context 'when disabling disable_password_authentication_for_enterprise_users' do
+    before do
+      group.saml_provider.update!(disable_password_authentication_for_enterprise_users: true)
+    end
+
+    let(:params) do
+      attributes_for(:saml_provider, disable_password_authentication_for_enterprise_users: false)
+    end
+
+    it 'updates disable_password_authentication_for_enterprise_users boolean to false' do
+      expect do
+        service.execute
+        group.reload
+      end.to change { group.saml_provider&.disable_password_authentication_for_enterprise_users }.to(false)
+
+      expect(AuditEvent.last.details[:custom_message]).to match(/disable_password_authentication_for_enterprise_users changed([\w\s]*)to false/)
+    end
+  end
+end

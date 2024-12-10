@@ -15,4 +15,5 @@ RSpec.describe GroupSaml::SamlProvider::UpdateService, feature_category: :system
 
   include_examples 'base SamlProvider service'
   include_examples 'SamlProvider service toggles Group Managed Accounts'
+  include_examples 'SamlProvider service toggles Password authentication for Enterprise users'
 end
