@@ -6,12 +6,13 @@ module Security
       include ::Gitlab::Utils::StrongMemoize
       include Security::SecurityOrchestrationPolicies::CadenceChecker
 
-      ValidationError = Struct.new(:field, :level, :message, :title)
+      ValidationError = Struct.new(:field, :level, :message, :title, :index)
 
       DEFAULT_VALIDATION_ERROR_FIELD = :base
 
       # rubocop:disable Metrics/CyclomaticComplexity -- flat branching
       # rubocop:disable Metrics/PerceivedComplexity -- policy validation
+      # rubocop:disable Metrics/AbcSize -- policy validation
       def execute
         return error_with_title(s_('SecurityOrchestration|Empty policy name')) if blank_name?
 
@@ -29,24 +30,47 @@ module Security
         return error_with_title(s_('SecurityOrchestration|Vulnerability age requires previously existing vulnerability states (detected, confirmed, resolved, or dismissed)'), field: :vulnerability_age) if invalid_vulnerability_age?
         return error_with_title(s_('SecurityOrchestration|Invalid Compliance Framework ID(s)'), field: :compliance_frameworks) if invalid_compliance_framework_ids?
 
-        return error_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :approvers_ids) if required_approvals_exceed_eligible_approvers?
+        if required_approvals_exceed_eligible_approvers?
+          if multiple_approval_actions_enabled?
+            return errors_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :actions, indices: multiple_approvals_failed_action_indices)
+          end
+
+          return error_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :approvers_ids)
+        end
+
         return error_with_title(s_('SecurityOrchestration|Cadence is invalid'), field: :cadence) if invalid_cadence?
 
         success
       end
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
+      # rubocop:enable Metrics/AbcSize
 
       private
 
+      def errors_with_title(message, field: DEFAULT_VALIDATION_ERROR_FIELD, title: nil, level: :error, indices: [])
+        validation_errors = indices.map { |index| ValidationError.new(field, level, message, title, index).to_h }
+
+        construct_errors([message], validation_errors)
+      end
+
       def error_with_title(message, field: DEFAULT_VALIDATION_ERROR_FIELD, title: nil, level: :error)
+        construct_errors([message], [ValidationError.new(field, level, message, title, 0).to_h])
+      end
+
+      def construct_errors(messages, validation_errors)
         pass_back = {
-          details: [message],
-          validation_errors: [ValidationError.new(field, level, message, title).to_h]
+          details: messages,
+          validation_errors: validation_errors
         }
 
         error(s_('SecurityOrchestration|Invalid policy'), :bad_request, pass_back: pass_back)
       end
+
+      def multiple_approval_actions_enabled?
+        Feature.enabled?(:multiple_approval_actions, container)
+      end
+      strong_memoize_attr :multiple_approval_actions_enabled?
 
       def policy_disabled?
         !policy&.[](:enabled)
@@ -118,13 +142,11 @@ module Security
       end
 
       def required_approvals_exceed_eligible_approvers?
-        approvals_required? && approvals_required_exceed_approvers?
+        multiple_approvals_failed_action_indices&.any?
       end
 
-      def approvals_required?
-        return false unless validate_approvals_required?
-        return false unless scan_result_policy?
-        return false unless action = approval_requiring_action
+      def approvals_required?(action)
+        return false unless action
 
         # For group-level policies the number of role_approvers is project-dependent
         return false if group_container? && action.key?(:role_approvers)
@@ -132,8 +154,10 @@ module Security
         action.key?(:approvals_required)
       end
 
-      def approvals_required_exceed_approvers?
-        approvals_required = approval_requiring_action[:approvals_required]
+      def multiple_approvals_failed_action_indices
+        return [] unless validate_approvals_required?
+        return [] unless scan_result_policy?
+        return [] if approval_requiring_actions.blank?
 
         result = ::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService.new(
           policy: policy,
@@ -141,9 +165,20 @@ module Security
           current_user: current_user
         ).execute
 
-        eligible_user_ids = Set.new
-        users, groups, roles = result.values_at(:users, :all_groups, :roles)
+        return [] unless result[:status] == :success
 
+        approval_requiring_actions.each_with_object([]).with_index do |(action, indices), index|
+          approvers = result[:approvers]&.at(index)
+          indices << index if approvers && approvals_required?(action) && invalid_approvals_required?(action, approvers)
+        end
+      end
+      strong_memoize_attr :multiple_approvals_failed_action_indices
+
+      def invalid_approvals_required?(action, approvers)
+        approvals_required = action[:approvals_required] || 0
+
+        eligible_user_ids = Set.new
+        users, groups, roles = approvers.values_at(:users, :all_groups, :roles)
         eligible_user_ids.merge(users.pluck(:id)) # rubocop:disable CodeReuse/ActiveRecord
         return false if eligible_user_ids.size >= approvals_required
 
@@ -258,13 +293,20 @@ module Security
       end
       strong_memoize_attr :approval_requiring_action
 
+      def approval_requiring_actions
+        return [approval_requiring_action] unless multiple_approval_actions_enabled?
+
+        Array.wrap(policy[:actions]).select { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
+      end
+      strong_memoize_attr :approval_requiring_actions
+
       def scan_execution_policies_action_limit
         Gitlab::CurrentSettings.scan_execution_policies_action_limit
       end
       strong_memoize_attr :scan_execution_policies_action_limit
 
       def approval_action_limit
-        Feature.enabled?(:multiple_approval_actions, container) ? Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT : 1
+        multiple_approval_actions_enabled? ? Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT : 1
       end
       strong_memoize_attr :approval_action_limit
 
