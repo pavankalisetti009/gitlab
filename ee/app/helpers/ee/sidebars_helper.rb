@@ -75,6 +75,15 @@ module EE
 
     private
 
+    override :display_admin_area_link?
+    def display_admin_area_link?
+      return true if super
+
+      return false unless ::Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
+
+      current_user&.can?(:access_admin_area)
+    end
+
     def super_sidebar_default_pins(panel_type)
       case panel_type
       when 'group'
