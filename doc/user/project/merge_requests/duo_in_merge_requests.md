@@ -116,7 +116,7 @@ by using GitLab Duo Merge Commit Message Generation.
 1. Select **Code > Merge requests** and find your merge request.
 1. Select the **Edit commit message** checkbox on the merge widget.
 1. Select **Generate commit message**.
-1. Review the commit message provide and choose **Insert** to add it to the commit.
+1. Review the commit message provided and choose **Insert** to add it to the commit.
 
 **Data usage**: When you use this feature, the following data is sent to the large language model:
 
