@@ -139,6 +139,24 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver do
         expect(joint_instance['user_id']).to eq(user.id)
       end
     end
+
+    context 'vulnerabilities' do
+      let(:finding) { create(:vulnerabilities_finding, :with_pipeline) }
+      let!(:vulnerability) { create(:vulnerability, :detected, project: project, findings: [finding]) }
+
+      let(:vulnerability_json) { get_json(full_path, exportable_path, :vulnerabilities).first }
+
+      it 'exports and imports vulnerabilities' do
+        project.project_setting.update!(has_vulnerabilities: true)
+        expect(project_tree_saver.save).to be true
+        expect(vulnerability_json['title']).to eq(vulnerability.title)
+        expect(vulnerability_json['severity']).to eq(vulnerability.severity)
+        expect(vulnerability_json['report_type']).to eq(vulnerability.report_type)
+        expect(vulnerability_json['description']).to eq(vulnerability.description)
+        expect(vulnerability_json['author_id']).to eq(vulnerability.author_id)
+        expect(get_json(full_path, exportable_path, :vulnerabilities).count).to eq(project.vulnerabilities.count)
+      end
+    end
   end
 
   it_behaves_like "EE saves project tree successfully"

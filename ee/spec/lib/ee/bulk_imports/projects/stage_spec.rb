@@ -6,7 +6,10 @@ RSpec.describe BulkImports::Projects::Stage do
   let(:entity) { create(:bulk_import_entity) }
   let(:expected_pipelines) do
     [
-      { stage: 4, pipeline: BulkImports::Projects::Pipelines::PushRulePipeline }
+      { stage: 4, pipeline: BulkImports::Projects::Pipelines::PushRulePipeline },
+      { stage: 6,
+        minimum_source_version: '17.7.0',
+        pipeline: BulkImports::Projects::Pipelines::VulnerabilitiesPipeline }
     ]
   end
 
