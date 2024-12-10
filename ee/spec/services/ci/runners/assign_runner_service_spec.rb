@@ -8,7 +8,6 @@ RSpec.describe ::Ci::Runners::AssignRunnerService, '#execute', feature_category:
   let_it_be(:project_runner) { create(:ci_runner, :project, projects: [owner_project]) }
 
   let(:params) { {} }
-  let(:audit_service) { instance_double(::AuditEvents::RunnerCustomAuditEventService) }
 
   subject(:execute) { described_class.new(project_runner, new_project, user, **params).execute }
 
@@ -17,7 +16,7 @@ RSpec.describe ::Ci::Runners::AssignRunnerService, '#execute', feature_category:
 
     it 'does not call assign_to on runner and returns error response', :aggregate_failures do
       expect(project_runner).not_to receive(:assign_to)
-      expect(::AuditEvents::RunnerCustomAuditEventService).not_to receive(:new)
+      expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
       expect(execute).to be_error
       expect(execute.reason).to eq :not_authorized_to_assign_runner
@@ -25,15 +24,19 @@ RSpec.describe ::Ci::Runners::AssignRunnerService, '#execute', feature_category:
   end
 
   context 'with admin user', :enable_admin_mode do
-    let(:user) { create_default(:admin) }
+    let(:user) { create(:admin) }
 
     context 'with assign_to returning true' do
-      it 'calls track_event on RunnerCustomAuditEventService and returns success response', :aggregate_failures do
+      it 'calls track_event on Gitlab::Audit::Auditor and returns success response', :aggregate_failures do
         expect(project_runner).to receive(:assign_to).with(new_project, user).once.and_return(true)
-        expect(audit_service).to receive(:track_event).once.and_return('track_event_return_value')
-        expect(::AuditEvents::RunnerCustomAuditEventService).to receive(:new)
-          .with(project_runner, user, new_project, 'Assigned CI runner to project')
-          .once.and_return(audit_service)
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with({
+          name: 'ci_runner_assigned_to_project',
+          author: user,
+          scope: new_project,
+          target: project_runner,
+          target_details: ::Gitlab::Routing.url_helpers.project_runner_path(owner_project, project_runner),
+          message: 'Assigned CI runner to project'
+        })
 
         is_expected.to be_success
       end
@@ -41,9 +44,9 @@ RSpec.describe ::Ci::Runners::AssignRunnerService, '#execute', feature_category:
       context 'when quiet is set to true' do
         let(:params) { { quiet: true } }
 
-        it 'does not call RunnerCustomAuditEventService and returns success response', :aggregate_failures do
+        it 'does not call Gitlab::Audit::Auditor and returns success response', :aggregate_failures do
           expect(project_runner).to receive(:assign_to).with(new_project, user).once.and_return(true)
-          expect(::AuditEvents::RunnerCustomAuditEventService).not_to receive(:new)
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
           is_expected.to be_success
         end
@@ -51,9 +54,9 @@ RSpec.describe ::Ci::Runners::AssignRunnerService, '#execute', feature_category:
     end
 
     context 'with assign_to returning false' do
-      it 'does not call RunnerCustomAuditEventService and returns error response', :aggregate_failures do
+      it 'does not call Gitlab::Audit::Auditor and returns error response', :aggregate_failures do
         expect(project_runner).to receive(:assign_to).with(new_project, user).once.and_return(false)
-        expect(::AuditEvents::RunnerCustomAuditEventService).not_to receive(:new)
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
         is_expected.to be_error
         expect(execute.reason).to eq :runner_error

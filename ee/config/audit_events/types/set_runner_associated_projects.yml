@@ -7,4 +7,4 @@ feature_category: "runner"
 milestone: "15.4"
 saved_to_database: true
 streamed: true
-scope: [User]
+scope: [Project]
