@@ -40,30 +40,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     ])
   end
 
-  context 'when search_auth_filter_for_work_items feature flag is false' do
-    before do
-      stub_feature_flags(search_auth_filter_for_work_items: false)
-    end
-
-    it 'contains all expected filters' do
-      assert_names_in_query(build,
-        with: %w[
-          work_item:multi_match:or:search_terms
-          work_item:multi_match:and:search_terms
-          work_item:multi_match_phrase:search_terms
-          filters:not_hidden
-          filters:not_work_item_type_ids
-          filters:non_archived
-          filters:non_confidential
-          filters:confidential
-          filters:confidential:as_author
-          filters:confidential:as_assignee
-          filters:confidential:project:membership:id
-        ],
-        without: %w[filters:permissions:global])
-    end
-  end
-
   describe 'query' do
     context 'when query is an iid' do
       let(:query) { '#1' }
@@ -342,16 +318,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
     describe 'authorization' do
       it_behaves_like 'a query filtered by project authorization'
-
-      context 'when search_auth_filter_for_work_items feature flag is false' do
-        before do
-          stub_feature_flags(search_auth_filter_for_work_items: false)
-        end
-
-        it 'applies authorization filters' do
-          assert_names_in_query(build, with: %w[filters:project:membership:id])
-        end
-      end
     end
 
     describe 'labels' do
