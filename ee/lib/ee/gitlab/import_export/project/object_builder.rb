@@ -28,6 +28,8 @@ module EE
           def find
             return if group_relation_without_group?
             return find_iteration if iteration?
+            return find_scanner if scanner?
+            return find_identifier if identifier?
 
             super
           end
@@ -41,12 +43,28 @@ module EE
               .where(iterations_cadence: { title: attributes['iterations_cadence']&.title })
               .find_by(where_clause)
           end
+
+          def find_scanner
+            Vulnerabilities::Scanner.find_or_create_by(attributes)
+          end
+
+          def find_identifier
+            Vulnerabilities::Identifier.find_or_create_by(attributes)
+          end
           # rubocop: enable CodeReuse/ActiveRecord
 
           private
 
           def iteration?
             klass == Iteration
+          end
+
+          def scanner?
+            klass == Vulnerabilities::Scanner
+          end
+
+          def identifier?
+            klass == Vulnerabilities::Identifier
           end
 
           override :group_level_object?

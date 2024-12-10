@@ -7,6 +7,7 @@ module Types
     description 'Security policy validation error'
 
     field :field, GraphQL::Types::String, null: false, description: 'Error field.'
+    field :index, GraphQL::Types::Int, null: true, description: 'Index of the errored action.'
     field :level, GraphQL::Types::String, null: false, description: 'Error level.'
     field :message, GraphQL::Types::String, null: false, description: 'Error message.'
     field :title, GraphQL::Types::String, null: true, description: 'Error title.'
