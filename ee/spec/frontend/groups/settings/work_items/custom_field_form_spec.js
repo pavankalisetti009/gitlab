@@ -2,8 +2,10 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CreateCustomField from 'ee/groups/settings/work_items/create_custom_field.vue';
+import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import createCustomFieldMutation from 'ee/groups/settings/work_items/create_custom_field.mutation.graphql';
+import updateCustomFieldMutation from 'ee/groups/settings/work_items/update_custom_field.mutation.graphql';
+import groupCustomFieldQuery from 'ee/groups/settings/work_items/group_custom_field.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -12,10 +14,11 @@ Vue.use(VueApollo);
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
-describe('CreateCustomField', () => {
+describe('CustomFieldForm', () => {
   let wrapper;
 
   const findToggleModalButton = () => wrapper.findByTestId('toggle-modal');
+  const findEditButton = () => wrapper.findByTestId('toggle-edit-modal');
   const findModal = () => wrapper.findComponent(GlModal);
   const findFieldTypeSelect = () => wrapper.find('#field-type');
   const findFieldNameFormGroup = () => wrapper.find('[label-for="field-name"]');
@@ -29,6 +32,7 @@ describe('CreateCustomField', () => {
   const findRemoveSelectButtonAt = (i) => wrapper.findByTestId(`remove-select-option-${i}`);
 
   const findSaveCustomFieldButton = () => wrapper.findByTestId('save-custom-field');
+  const findUpdateCustomFieldButton = () => wrapper.findByTestId('update-custom-field');
 
   const mockCreateFieldResponse = {
     data: {
@@ -41,21 +45,55 @@ describe('CreateCustomField', () => {
     },
   };
 
+  const mockUpdateFieldResponse = {
+    data: {
+      customFieldUpdate: {
+        customField: {
+          id: 'gid://gitlab/Issuables::CustomField/13',
+          name: 'Updated Field',
+        },
+        errors: [],
+      },
+    },
+  };
+
+  const mockExistingField = {
+    id: 'gid://gitlab/Issuables::CustomField/13',
+    name: 'Existing Field',
+    fieldType: 'SINGLE_SELECT',
+    active: true,
+    updatedAt: '2023-01-01T00:00:00Z',
+    createdAt: '2023-01-01T00:00:00Z',
+    selectOptions: [
+      { id: '1', value: 'Option 1' },
+      { id: '2', value: 'Option 2' },
+    ],
+    workItemTypes: [{ id: '1', name: 'Issue' }],
+  };
+
   const fullPath = 'group/subgroup';
 
   const createComponent = ({
     props = {},
     createFieldResponse = {},
+    updateFieldResponse = {},
+    existingFieldResponse = {},
     createFieldHandler = jest.fn().mockResolvedValue(createFieldResponse),
+    updateFieldHandler = jest.fn().mockResolvedValue(updateFieldResponse),
+    existingFieldHandler = jest.fn().mockResolvedValue(existingFieldResponse),
   } = {}) => {
-    wrapper = shallowMountExtended(CreateCustomField, {
+    wrapper = shallowMountExtended(CustomFieldForm, {
       propsData: {
         ...props,
       },
       provide: {
         fullPath,
       },
-      apolloProvider: createMockApollo([[createCustomFieldMutation, createFieldHandler]]),
+      apolloProvider: createMockApollo([
+        [createCustomFieldMutation, createFieldHandler],
+        [updateCustomFieldMutation, updateFieldHandler],
+        [groupCustomFieldQuery, existingFieldHandler],
+      ]),
       stubs: {
         GlModal,
       },
@@ -63,9 +101,14 @@ describe('CreateCustomField', () => {
   };
 
   describe('initial rendering', () => {
-    it('renders create field button', () => {
+    it('renders create field button when not editing', () => {
       createComponent();
       expect(findToggleModalButton().text()).toBe('Create field');
+    });
+
+    it('renders edit button when editing', () => {
+      createComponent({ props: { customFieldId: '13' } });
+      expect(findEditButton().exists()).toBe(true);
     });
 
     it('modal is hidden by default', () => {
@@ -78,7 +121,12 @@ describe('CreateCustomField', () => {
     it('shows modal when create button is clicked', async () => {
       createComponent();
       await findToggleModalButton().vm.$emit('click');
-      await nextTick();
+      expect(findModal().props('visible')).toBe(true);
+    });
+
+    it('shows modal when edit button is clicked', async () => {
+      createComponent({ props: { customFieldId: '13' } });
+      await findEditButton().vm.$emit('click');
       expect(findModal().props('visible')).toBe(true);
     });
 
@@ -143,13 +191,12 @@ describe('CreateCustomField', () => {
   });
 
   describe('saveCustomField', () => {
-    it('calls mutation with correct variables', async () => {
+    it('calls create mutation with correct variables when creating', async () => {
       const createFieldHandler = jest.fn().mockResolvedValue(mockCreateFieldResponse);
       createComponent({ createFieldHandler });
 
       await findToggleModalButton().vm.$emit('click');
 
-      // set field inputs
       await findFieldTypeSelect().vm.$emit('input', 'TEXT');
       await findFieldNameInput().vm.$emit('input', 'Test Field');
 
@@ -166,6 +213,40 @@ describe('CreateCustomField', () => {
         name: 'Test Field',
         fieldType: 'TEXT',
         selectOptions: undefined,
+      });
+    });
+
+    it('calls update mutation with correct variables when editing', async () => {
+      const updateFieldHandler = jest.fn().mockResolvedValue(mockUpdateFieldResponse);
+      const existingFieldHandler = jest
+        .fn()
+        .mockResolvedValue({ data: { group: { id: '1', customField: mockExistingField } } });
+      createComponent({
+        props: { customFieldId: 'gid://gitlab/Issuables::CustomField/13' },
+        updateFieldHandler,
+        existingFieldHandler,
+      });
+
+      await findEditButton().vm.$emit('click');
+      await waitForPromises();
+
+      await findFieldNameInput().vm.$emit('input', 'Updated Field');
+
+      await nextTick();
+
+      findUpdateCustomFieldButton().vm.$emit('click');
+
+      await waitForPromises();
+
+      expect(Sentry.captureException).not.toHaveBeenCalled();
+
+      expect(updateFieldHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/Issuables::CustomField/13',
+        name: 'Updated Field',
+        selectOptions: [
+          { id: '1', value: 'Option 1' },
+          { id: '2', value: 'Option 2' },
+        ],
       });
     });
 
@@ -204,7 +285,6 @@ describe('CreateCustomField', () => {
       createComponent({ createFieldResponse: errorResponse });
       await findToggleModalButton().vm.$emit('click');
 
-      // set field inputs
       await findFieldTypeSelect().vm.$emit('input', 'TEXT');
       await findFieldNameInput().vm.$emit('input', 'Test Field');
 
@@ -213,6 +293,43 @@ describe('CreateCustomField', () => {
       await waitForPromises();
 
       expect(Sentry.captureException).toHaveBeenCalled();
+    });
+  });
+
+  describe('edit mode', () => {
+    it('loads existing field data when editing', async () => {
+      const existingFieldHandler = jest
+        .fn()
+        .mockResolvedValue({ data: { group: { id: '1', customField: mockExistingField } } });
+      createComponent({
+        props: { customFieldId: 'gid://gitlab/Issuables::CustomField/13' },
+        existingFieldHandler,
+      });
+
+      await findEditButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(Sentry.captureException).not.toHaveBeenCalled();
+
+      expect(findFieldNameInput().attributes().value).toBe('Existing Field');
+      expect(findFieldTypeSelect().exists()).toBe(false);
+      expect(findAddSelectInputAt(0).attributes().value).toBe('Option 1');
+      expect(findAddSelectInputAt(1).attributes().value).toBe('Option 2');
+    });
+
+    it('hides field type select when editing', async () => {
+      const existingFieldHandler = jest
+        .fn()
+        .mockResolvedValue({ data: { group: { id: '1', customField: mockExistingField } } });
+      createComponent({
+        props: { customFieldId: 'gid://gitlab/Issuables::CustomField/13' },
+        existingFieldHandler,
+      });
+
+      await findEditButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(findFieldTypeSelect().exists()).toBe(false);
     });
   });
 });
