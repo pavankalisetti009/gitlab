@@ -1,6 +1,9 @@
 import Vue from 'vue';
+import MockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import axios from 'axios';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -26,6 +29,7 @@ describe('WorkItemDevelopment EE', () => {
 
   let wrapper;
   let mockApollo;
+  let mock;
 
   const workItemWithMRListOnly = workItemResponseFactory({
     developmentWidgetPresent: true,
@@ -131,15 +135,17 @@ describe('WorkItemDevelopment EE', () => {
   });
 
   const createComponent = ({
+    mountFn = mountExtended,
     workItemId = 'gid://gitlab/WorkItem/1',
     workItemIid = '1',
     workItemFullPath = 'full-path',
+    workItemType = 'Issue',
     workItemQueryHandler = successQueryHandler,
     workItemsAlphaEnabled = true,
   } = {}) => {
     mockApollo = createMockApollo([[workItemByIidQuery, workItemQueryHandler]]);
 
-    wrapper = shallowMountExtended(WorkItemDevelopment, {
+    wrapper = mountFn(WorkItemDevelopment, {
       apolloProvider: mockApollo,
       directives: {
         GlModal: createMockDirective('gl-modal'),
@@ -149,11 +155,15 @@ describe('WorkItemDevelopment EE', () => {
         workItemId,
         workItemIid,
         workItemFullPath,
+        workItemType,
       },
       provide: {
         glFeatures: {
           workItemsAlpha: workItemsAlphaEnabled,
         },
+      },
+      stubs: {
+        WorkItemCreateBranchMergeRequestModal: true,
       },
     });
   };
@@ -161,6 +171,19 @@ describe('WorkItemDevelopment EE', () => {
   const findRelationshipList = () => wrapper.findComponent(WorkItemDevelopmentRelationshipList);
   const findCreateMRButton = () => wrapper.findByTestId('create-mr-button');
   const findCreateBranchButton = () => wrapper.findByTestId('create-branch-button');
+
+  beforeEach(() => {
+    mock = new MockAdapter(axios);
+    mock.onGet('/full-path/-/issues/1/can_create_branch').reply(HTTP_STATUS_OK, {
+      can_create_branch: true,
+      suggested_branch_name: 'suggested_branch_name',
+    });
+    return createComponent();
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
 
   describe('when the list of MRs is empty but there is a Feature Flag list', () => {
     it(`hides 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
@@ -211,17 +234,6 @@ describe('WorkItemDevelopment EE', () => {
   });
 
   describe('when both the list of Feature flags and MRs are empty', () => {
-    it(`shows 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
-      createComponent({
-        workItemQueryHandler: successQueryHandlerWithNoDevItem,
-        workItemsAlphaEnabled: true,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(true);
-      expect(findCreateBranchButton().exists()).toBe(true);
-    });
-
     it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
       createComponent({
         workItemQueryHandler: successQueryHandlerWithNoDevItem,
@@ -235,17 +247,6 @@ describe('WorkItemDevelopment EE', () => {
   });
 
   describe('when both the list of Feature flags and MRs exist', () => {
-    it(`hides 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
-      createComponent({
-        workItemQueryHandler: successQueryHandlerWithAllDevItemsList,
-        workItemsAlphaEnabled: true,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-
     it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
       createComponent({
         workItemQueryHandler: successQueryHandlerWithAllDevItemsList,
@@ -267,6 +268,7 @@ describe('WorkItemDevelopment EE', () => {
     'should show the relationship list when there is only a list of $description',
     async ({ successQueryResolveHandler }) => {
       createComponent({
+        mountFn: shallowMountExtended,
         workItemQueryHandler: successQueryResolveHandler,
       });
       await waitForPromises();

@@ -1,11 +1,10 @@
 <script>
-import { GlIcon, GlTooltip, GlLink } from '@gitlab/ui';
+import { GlIcon, GlLink } from '@gitlab/ui';
 import { __ } from '~/locale';
 
 export default {
   components: {
     GlIcon,
-    GlTooltip,
     GlLink,
   },
   props: {
@@ -29,21 +28,14 @@ export default {
 </script>
 
 <template>
-  <div
-    ref="flagInfo"
-    class="gl-grid-cols-[auto, 1fr] gl-grid gl-w-fit gl-gap-2 gl-gap-5 gl-p-2 gl-pl-0 gl-pr-3"
-  >
+  <div ref="flagInfo" class="gl-flex gl-items-center gl-gap-3">
+    <gl-icon :name="icon(itemContent)" :class="iconColor(itemContent)" />
     <gl-link
       :href="itemContent.path"
-      class="gl-truncate gl-text-default hover:gl-text-default hover:gl-underline"
+      class="gl-truncate gl-font-semibold gl-text-default hover:gl-text-default hover:gl-underline"
     >
-      <gl-icon :name="icon(itemContent)" :class="iconColor(itemContent)" />
       {{ itemContent.name }}
     </gl-link>
-    <gl-tooltip :target="() => $refs.flagInfo" placement="top">
-      <span class="gl-inline-block gl-font-bold"> {{ __('Feature flag') }} </span>
-      <span class="gl-inline-block">{{ itemContent.name }} {{ itemContent.reference }}</span>
-      <span class="gl-inline-block gl-text-subtle">{{ flagStatus(itemContent) }}</span>
-    </gl-tooltip>
+    <span class="gl-inline-block gl-text-subtle">{{ itemContent.reference }}</span>
   </div>
 </template>
