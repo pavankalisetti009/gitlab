@@ -65,7 +65,7 @@ module Gitlab
         end
 
         def organization
-          @organization ||= Organizations::Organization.default_organization
+          @organization ||= ::Organizations::Organization.default_organization
         end
       end
     end
