@@ -16,6 +16,7 @@ import { stubComponent } from 'helpers/stub_component';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import {
   createComplianceFrameworksResponse,
@@ -36,6 +37,9 @@ Vue.use(VueApollo);
 
 describe('ProjectsTable component', () => {
   let wrapper;
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   let apolloProvider;
   let updateComplianceFrameworkMockResponse;
   let toastMock;
@@ -274,7 +278,7 @@ describe('ProjectsTable component', () => {
     });
 
     function itCallsUpdateFrameworksMutation(operations) {
-      const isBulkAction = operations.lenght > 1;
+      const isBulkAction = operations.length > 1;
       it('calls mutation', () => {
         expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledTimes(operations.length);
         operations.forEach((operation) => {
@@ -296,6 +300,18 @@ describe('ProjectsTable component', () => {
       it('emits update event', async () => {
         await waitForPromises();
         expect(wrapper.emitted('updated')).toHaveLength(1);
+      });
+
+      it('tracks update_compliance_framework event', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        await waitForPromises();
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'apply_compliance_framework',
+          {
+            property: operations.map((operation) => operation.projectId).join(','),
+          },
+          undefined,
+        );
       });
 
       if (isBulkAction) {

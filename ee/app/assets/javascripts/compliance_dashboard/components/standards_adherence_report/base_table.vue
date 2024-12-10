@@ -3,6 +3,7 @@ import { GlAlert, GlTable, GlIcon, GlLink, GlLoadingIcon } from '@gitlab/ui';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import InternalEvents from '~/tracking/internal_events';
 import getProjectComplianceStandardsGroupAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_group_adherence.query.graphql';
 import getProjectComplianceStandardsProjectAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_project_adherence.query.graphql';
 import FrameworksInfo from '../shared/frameworks_info.vue';
@@ -30,6 +31,7 @@ export default {
     Pagination,
     FrameworksInfo,
   },
+  mixins: [InternalEvents.mixin()],
   inject: ['rootAncestorPath'],
   props: {
     groupPath: {
@@ -208,6 +210,10 @@ export default {
       if (this.drawerId === item.id) {
         this.closeDrawer();
       } else {
+        this.trackEvent('click_standards_adherence_item_details', {
+          property: item.id,
+        });
+
         this.openDrawer(item);
       }
     },

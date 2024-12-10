@@ -15,11 +15,15 @@ import { ROUTE_STANDARDS_ADHERENCE } from 'ee/compliance_dashboard/constants';
 import { createComplianceAdherencesResponse } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworksInfo from 'ee/compliance_dashboard/components/shared/frameworks_info.vue';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 Vue.use(VueApollo);
 
 describe('AdherencesBaseTable component', () => {
   let wrapper;
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   let $router;
   let apolloProvider;
 
@@ -369,6 +373,21 @@ describe('AdherencesBaseTable component', () => {
         expect(findFixSuggestionSidebar().props('showDrawer')).toBe(true);
         expect(findFixSuggestionSidebar().props('adherence')).toStrictEqual(
           wrapper.vm.adherences.list[0],
+        );
+      });
+
+      it('tracks click_standards_adherence_item_details event', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        await openSidebar();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_standards_adherence_item_details',
+          {
+            property:
+              defaultAdherencesResponse.data.container.projectComplianceStandardsAdherence.nodes[0]
+                .id,
+          },
+          undefined,
         );
       });
     });
