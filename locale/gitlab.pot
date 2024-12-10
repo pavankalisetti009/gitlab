@@ -65045,9 +65045,6 @@ msgstr ""
 msgid "[Supports GitLab-flavored markdown, including quick actions]"
 msgstr ""
 
-msgid "[redacted]"
-msgstr ""
-
 msgid "`.campfirenow.com` subdomain when you're signed in."
 msgstr ""
 
