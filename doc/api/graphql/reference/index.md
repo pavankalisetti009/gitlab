@@ -34580,6 +34580,7 @@ Security policy validation error.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="securitypolicyvalidationerrorfield"></a>`field` | [`String!`](#string) | Error field. |
+| <a id="securitypolicyvalidationerrorindex"></a>`index` | [`Int`](#int) | Index of the errored action. |
 | <a id="securitypolicyvalidationerrorlevel"></a>`level` | [`String!`](#string) | Error level. |
 | <a id="securitypolicyvalidationerrormessage"></a>`message` | [`String!`](#string) | Error message. |
 | <a id="securitypolicyvalidationerrortitle"></a>`title` | [`String`](#string) | Error title. |
