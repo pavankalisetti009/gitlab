@@ -52,9 +52,9 @@ export default {
   <div class="merge-request-analytics-wrapper">
     <page-heading :heading="__('Merge request analytics')" />
     <div
-      class="gl-flex gl-flex-col gl-justify-between gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-gray-10 gl-py-3 gl-border-b-solid gl-border-t-solid lg:gl-flex-row"
+      class="gl-flex gl-flex-col gl-justify-between gl-gap-4 gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-subtle gl-p-5 gl-border-b-solid gl-border-t-solid lg:gl-flex-row"
     >
-      <filter-bar class="gl-mb-2 gl-grow lg:gl-mb-0 lg:gl-ml-3" />
+      <filter-bar class="gl-grow" />
       <date-range
         :start-date="startDate"
         :end-date="endDate"
