@@ -6,7 +6,7 @@ FactoryBot.define do
     node { association(:zoekt_node) }
     replica { association(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
     namespace_id { zoekt_enabled_namespace.root_namespace_id }
-    reserved_storage_bytes { 10 }
+    reserved_storage_bytes { 100 }
     state { Search::Zoekt::Replica.states.fetch(:pending) }
 
     trait :overprovisioned do
@@ -34,6 +34,13 @@ FactoryBot.define do
       after(:build) do |index|
         index.used_storage_bytes = (index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_HIGH_WATERMARK) + 1
         index.watermark_level = Search::Zoekt::Index.watermark_levels[:high_watermark_exceeded]
+      end
+    end
+
+    trait :critical_watermark_exceeded do
+      after(:build) do |index|
+        index.used_storage_bytes = (index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_CRITICAL_WATERMARK) + 1
+        index.watermark_level = Search::Zoekt::Index.watermark_levels[:critical_watermark_exceeded]
       end
     end
   end
