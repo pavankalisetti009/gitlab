@@ -1483,6 +1483,9 @@ msgstr ""
 msgid "%{total} warnings found: showing first %{warningsDisplayed}"
 msgstr ""
 
+msgid "%{type} '%{name}' has been successfully restored."
+msgstr ""
+
 msgid "%{type} '%{name}' is being deleted."
 msgstr ""
 
@@ -44378,6 +44381,9 @@ msgid "ProjectsNew|Your project will be created at:"
 msgstr ""
 
 msgid "Projects|An error occurred deleting the project. Please refresh the page to try again."
+msgstr ""
+
+msgid "Projects|An error occurred restoring the project. Please refresh the page to try again."
 msgstr ""
 
 msgid "Projects|Projects are where you can store your code, access issues, wiki, and other features of GitLab."
