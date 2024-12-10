@@ -213,6 +213,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       let(:ideal_percent) { Search::Zoekt::Index::STORAGE_IDEAL_PERCENT_USED }
       let(:low_watermark) { Search::Zoekt::Index::STORAGE_LOW_WATERMARK }
       let(:high_watermark) { Search::Zoekt::Index::STORAGE_HIGH_WATERMARK }
+      let(:critical_watermark) { Search::Zoekt::Index::STORAGE_CRITICAL_WATERMARK }
       let(:mismatched_indices) { described_class.with_mismatched_watermark_levels }
 
       before do
@@ -282,6 +283,31 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         )
 
         expect { mismatched_indices }.not_to raise_error
+      end
+
+      it 'returns indices where watermark_level is mismatched (critical)' do
+        # Setup a record that should be critical but has incorrect watermark_level
+        create(
+          :zoekt_index,
+          used_storage_bytes: (critical_watermark * 100) + 1,
+          reserved_storage_bytes: 100,
+          watermark_level: :high_watermark_exceeded # Incorrect level
+        )
+
+        expect(mismatched_indices.count).to eq(1)
+        expect(mismatched_indices.first.watermark_level).to eq('high_watermark_exceeded')
+      end
+
+      it 'correctly identifies critical watermark level' do
+        # Setup a record with correct critical watermark level
+        create(
+          :zoekt_index,
+          used_storage_bytes: (critical_watermark * 100) + 1,
+          reserved_storage_bytes: 100,
+          watermark_level: :critical_watermark_exceeded
+        )
+
+        expect(mismatched_indices).to be_empty
       end
     end
   end

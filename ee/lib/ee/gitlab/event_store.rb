@@ -203,6 +203,9 @@ module EE
 
           store.subscribe ::Search::Zoekt::RepoToIndexEventWorker,
             to: ::Search::Zoekt::RepoToIndexEvent
+
+          store.subscribe ::Search::Zoekt::IndexToEvictEventWorker,
+            to: ::Search::Zoekt::IndexToEvictEvent
         end
 
         def subscribe_to_members_added_event(store)

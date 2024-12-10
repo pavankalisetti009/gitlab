@@ -13,6 +13,7 @@ module Search
       STORAGE_IDEAL_PERCENT_USED = 0.4
       STORAGE_LOW_WATERMARK = 0.7
       STORAGE_HIGH_WATERMARK = 0.85
+      STORAGE_CRITICAL_WATERMARK = 0.90
 
       belongs_to :zoekt_enabled_namespace, inverse_of: :indices, class_name: '::Search::Zoekt::EnabledNamespace'
       belongs_to :node, foreign_key: :zoekt_node_id, inverse_of: :indices, class_name: '::Search::Zoekt::Node'
@@ -89,7 +90,9 @@ module Search
               THEN #{watermark_levels[:healthy]}
             WHEN (used_storage_bytes / NULLIF(reserved_storage_bytes, 0)::float) < #{STORAGE_HIGH_WATERMARK}
               THEN #{watermark_levels[:low_watermark_exceeded]}
-            ELSE #{watermark_levels[:high_watermark_exceeded]}
+            WHEN (used_storage_bytes / NULLIF(reserved_storage_bytes, 0)::float) < #{STORAGE_CRITICAL_WATERMARK}
+              THEN #{watermark_levels[:high_watermark_exceeded]}
+            ELSE #{watermark_levels[:critical_watermark_exceeded]}
           END != watermark_level
         SQL
       end
@@ -155,8 +158,9 @@ module Search
         when 0...STORAGE_IDEAL_PERCENT_USED then :overprovisioned
         when STORAGE_IDEAL_PERCENT_USED...STORAGE_LOW_WATERMARK then :healthy
         when STORAGE_LOW_WATERMARK...STORAGE_HIGH_WATERMARK then :low_watermark_exceeded
+        when STORAGE_HIGH_WATERMARK...STORAGE_CRITICAL_WATERMARK then :high_watermark_exceeded
         else
-          :high_watermark_exceeded
+          :critical_watermark_exceeded
         end
       end
 

@@ -798,4 +798,15 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect { execute_task }.to publish_event(Search::Zoekt::RepoToIndexEvent).with(expected_data)
     end
   end
+
+  describe '#indices_to_evict_check' do
+    let(:task) { :indices_to_evict_check }
+    let_it_be(:index_over_critical_watermark) { create(:zoekt_index, watermark_level: :critical_watermark_exceeded) }
+    let_it_be(:another_index) { create(:zoekt_index) }
+
+    it 'publishes an IndexToEvictEvent with critical watermark' do
+      expected_data = { index_ids: [index_over_critical_watermark.id] }
+      expect { execute_task }.to publish_event(Search::Zoekt::IndexToEvictEvent).with(expected_data)
+    end
+  end
 end
