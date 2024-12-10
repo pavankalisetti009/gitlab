@@ -71,6 +71,13 @@ module EE
       })
     end
 
+    override :group_merge_requests_list_data
+    def group_merge_requests_list_data(group, current_user)
+      super.merge({
+        has_scoped_labels_feature: group.licensed_feature_available?(:scoped_labels).to_s
+      })
+    end
+
     private
 
     def show_iv_alert_for_mr?(merge_request)
