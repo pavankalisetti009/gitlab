@@ -50716,6 +50716,9 @@ msgstr ""
 msgid "SecurityReports|A comment is required when dismissing."
 msgstr ""
 
+msgid "SecurityReports|A dismissal reason is required."
+msgstr ""
+
 msgid "SecurityReports|Activity"
 msgstr ""
 
@@ -50767,6 +50770,9 @@ msgstr ""
 msgid "SecurityReports|Cluster"
 msgstr ""
 
+msgid "SecurityReports|Comment (required)"
+msgstr ""
+
 msgid "SecurityReports|Configure security testing"
 msgstr ""
 
@@ -50800,13 +50806,10 @@ msgstr ""
 msgid "SecurityReports|Development vulnerabilities"
 msgstr ""
 
-msgid "SecurityReports|Dismiss as"
-msgstr ""
-
 msgid "SecurityReports|Dismiss vulnerability"
 msgstr ""
 
-msgid "SecurityReports|Dismissal comment"
+msgid "SecurityReports|Dismissal reason (required)"
 msgstr ""
 
 msgid "SecurityReports|Dismissed (all reasons)"
@@ -50989,10 +50992,10 @@ msgstr ""
 msgid "SecurityReports|Select a project to add by using the project search field above."
 msgstr ""
 
-msgid "SecurityReports|Set dismissal reason"
+msgid "SecurityReports|Select dismissal reason"
 msgstr ""
 
-msgid "SecurityReports|Set status"
+msgid "SecurityReports|Select status"
 msgstr ""
 
 msgid "SecurityReports|Severity"
@@ -51211,9 +51214,6 @@ msgid "Select a new namespace"
 msgstr ""
 
 msgid "Select a project"
-msgstr ""
-
-msgid "Select a reason"
 msgstr ""
 
 msgid "Select a repository containing templates for common files."
