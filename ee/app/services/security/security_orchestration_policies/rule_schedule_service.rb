@@ -40,11 +40,26 @@ module Security
       end
 
       def schedule_scans_using_a_worker(branches, schedule)
-        branches.map do |branch|
-          ::Security::ScanExecutionPolicies::CreatePipelineWorker.perform_async(project.id,
-            current_user.id,
-            schedule.id,
-            branch)
+        policy_configuration = schedule.security_orchestration_policy_configuration
+
+        if Feature.enabled?(:scan_execution_pipeline_concurrency_control,
+          policy_configuration.namespace) && schedule.time_window
+          time_window = schedule.time_window
+
+          branches.map do |branch|
+            ::Security::ScanExecutionPolicies::CreatePipelineWorker.perform_in(Random.rand(time_window).seconds,
+              project.id,
+              current_user.id,
+              schedule.id,
+              branch)
+          end
+        else
+          branches.map do |branch|
+            ::Security::ScanExecutionPolicies::CreatePipelineWorker.perform_async(project.id,
+              current_user.id,
+              schedule.id,
+              branch)
+          end
         end
       end
     end

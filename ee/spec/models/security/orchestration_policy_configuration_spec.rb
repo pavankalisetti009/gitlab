@@ -778,6 +778,117 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
               expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/cadence' does not match pattern")
             end
           end
+
+          context "with time window" do
+            context "when the distribution and the value are valid" do
+              let(:rule) do
+                {
+                  type: 'schedule',
+                  branches: %w[master],
+                  cadence: '5 4 * * *',
+                  time_window: {
+                    distribution: 'random',
+                    value: 3600
+                  }
+                }
+              end
+
+              specify { expect(errors).to be_empty }
+            end
+
+            context "when the distribution is missing" do
+              let(:rule) do
+                {
+                  type: 'schedule',
+                  branches: %w[master],
+                  cadence: '5 4 * * *',
+                  time_window: {
+                    value: 3600
+                  }
+                }
+              end
+
+              specify do
+                expect(errors.count).to be(1)
+                expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/time_window' is missing required keys: distribution")
+              end
+            end
+
+            context "when the distribution is invalid" do
+              let(:rule) do
+                {
+                  type: 'schedule',
+                  branches: %w[master],
+                  cadence: '5 4 * * *',
+                  time_window: {
+                    distribution: 'invalid distribution',
+                    value: 3600
+                  }
+                }
+              end
+
+              specify do
+                expect(errors.count).to be(1)
+                expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/time_window/distribution' is not one of: [\"random\"]")
+              end
+            end
+
+            context "when the value is missing" do
+              let(:rule) do
+                {
+                  type: 'schedule',
+                  branches: %w[master],
+                  cadence: '5 4 * * *',
+                  time_window: {
+                    distribution: 'random'
+                  }
+                }
+              end
+
+              specify do
+                expect(errors.count).to be(1)
+                expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/time_window' is missing required keys: value")
+              end
+            end
+
+            context "when the value is smaller than the minimum allowed" do
+              let(:rule) do
+                {
+                  type: 'schedule',
+                  branches: %w[master],
+                  cadence: '5 4 * * *',
+                  time_window: {
+                    distribution: 'random',
+                    value: 1
+                  }
+                }
+              end
+
+              specify do
+                expect(errors.count).to be(1)
+                expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/time_window/value' is invalid: error_type=minimum")
+              end
+            end
+
+            context "when the value is greater than the maximum allowed" do
+              let(:rule) do
+                {
+                  type: 'schedule',
+                  branches: %w[master],
+                  cadence: '5 4 * * *',
+                  time_window: {
+                    distribution: 'random',
+                    value: 99999
+                  }
+                }
+              end
+
+              specify do
+                expect(errors.count).to be(1)
+                expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/time_window/value' is invalid: error_type=maximum")
+              end
+            end
+          end
         end
 
         context "with schedule type and agent" do

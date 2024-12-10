@@ -79,5 +79,9 @@ module Security
     def worker_cron_expression
       Settings.cron_jobs['security_orchestration_policy_rule_schedule_worker']['cron']
     end
+
+    def time_window
+      policy&.dig(:rules, rule_index, :time_window, :value).to_i
+    end
   end
 end

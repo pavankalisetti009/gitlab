@@ -373,6 +373,58 @@ RSpec.describe Security::OrchestrationPolicyRuleSchedule, feature_category: :sec
     end
   end
 
+  describe '#time_window' do
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+    let_it_be(:rule_schedule) do
+      create(:security_orchestration_policy_rule_schedule, security_orchestration_policy_configuration: policy_configuration)
+    end
+
+    let(:policy) do
+      {
+        name: 'Scheduled DAST 1',
+        description: 'This policy runs DAST every 20 mins',
+        enabled: true,
+        rules: rules,
+        actions: [
+          { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' }
+        ]
+      }
+    end
+
+    subject { rule_schedule.time_window }
+
+    before do
+      allow(rule_schedule).to receive(:policy).and_return(policy)
+    end
+
+    context 'when time_window is not defined in the rule' do
+      let(:rules) do
+        [{ type: 'schedule', branches: %w[production], cadence: '*/20 * * * *' }]
+      end
+
+      it { is_expected.to be_zero }
+    end
+
+    context 'when time_window is defined in the rule' do
+      let(:time_window_value) { 3600 }
+
+      let(:rules) do
+        [{
+          type: 'schedule',
+          branches: %w[master],
+          cadence: '5 4 * * *',
+          time_window: {
+            distribution: 'random',
+            value: time_window_value
+          }
+        }]
+      end
+
+      it { is_expected.to eq(time_window_value) }
+    end
+  end
+
   it_behaves_like 'includes Limitable concern' do
     subject { build(:security_orchestration_policy_rule_schedule, security_orchestration_policy_configuration: create(:security_orchestration_policy_configuration)) }
   end
