@@ -105,10 +105,6 @@ DETAILS:
 > - Feature flag `generate_commit_message_flag` [enabled by default](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158339) in GitLab 17.2.
 > - Feature flag `generate_commit_message_flag` [removed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173262) in GitLab 17.7.
 
-FLAG:
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-
 When preparing to merge your merge request, edit the proposed merge commit message
 by using GitLab Duo Merge Commit Message Generation.
 
