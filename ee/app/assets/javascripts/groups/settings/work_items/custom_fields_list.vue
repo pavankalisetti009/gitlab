@@ -1,18 +1,19 @@
 <script>
-import { GlBadge, GlButton, GlIntersperse, GlSprintf, GlTable } from '@gitlab/ui';
+import { GlBadge, GlButton, GlIntersperse, GlLoadingIcon, GlSprintf, GlTable } from '@gitlab/ui';
 import { humanize } from '~/lib/utils/text_utility';
 import { __, n__, s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import CreateCustomField from './create_custom_field.vue';
+import CustomFieldForm from './custom_field_form.vue';
 import groupCustomFieldsQuery from './group_custom_fields.query.graphql';
 
 export default {
   components: {
-    CreateCustomField,
+    CustomFieldForm,
     GlBadge,
     GlButton,
     GlIntersperse,
+    GlLoadingIcon,
     GlSprintf,
     GlTable,
     TimeagoTooltip,
@@ -23,6 +24,11 @@ export default {
       customFields: [],
       customFieldsForList: [],
     };
+  },
+  computed: {
+    isLoading() {
+      return this.$apollo.queries.customFields.loading;
+    },
   },
   apollo: {
     customFields: {
@@ -101,20 +107,24 @@ export default {
       class="gl-font-lg gl-border gl-flex gl-items-center gl-rounded-t-base gl-border-b-0 gl-px-5 gl-py-4 gl-font-bold"
     >
       {{ s__('WorkItem|Active custom fields') }}
-      <gl-badge v-if="!$apollo.queries.customFields.loading" class="gl-mx-4">
+      <gl-badge v-if="!isLoading" class="gl-mx-4">
         <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
         {{ customFields.count }}/50
       </gl-badge>
 
-      <create-custom-field class="gl-ml-auto" @created="$apollo.queries.customFields.refetch()" />
+      <custom-field-form class="gl-ml-auto" @created="$apollo.queries.customFields.refetch()" />
     </div>
     <gl-table
       :items="customFieldsForList"
       :fields="$options.fields"
+      :busy="isLoading"
       outlined
       responsive
       class="gl-rounded-b-base !gl-bg-gray-10"
     >
+      <template #table-busy>
+        <gl-loading-icon size="lg" class="gl-my-5" />
+      </template>
       <template #cell(show_details)="row">
         <gl-button
           :aria-label="s__('WorkItem|Toggle details')"
@@ -142,8 +152,11 @@ export default {
       <template #cell(lastModified)="{ item }">
         <timeago-tooltip :time="item.updatedAt" />
       </template>
-      <template #cell(actions)>
-        <gl-button :aria-label="s__('WorkItem|Edit field')" icon="pencil" category="tertiary" />
+      <template #cell(actions)="{ item }">
+        <custom-field-form
+          :custom-field-id="item.id"
+          @updated="$apollo.queries.customFields.refetch()"
+        />
       </template>
       <template #row-details="{ item }">
         <div class="gl-border gl-col-span-5 gl-mt-3 gl-rounded-lg gl-bg-default gl-p-5">
