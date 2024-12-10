@@ -12,7 +12,9 @@ module EE
         def execute
           scopes = runner_scopes # Save the scopes before destroying the record
 
-          super.tap { audit_event(scopes) }
+          super.tap do |result|
+            audit_event(scopes) if result.success?
+          end
         end
 
         private
@@ -30,8 +32,17 @@ module EE
 
         def audit_event(scopes)
           scopes.each do |scope|
-            ::AuditEvents::UnregisterRunnerAuditEventService.new(runner, author, scope).track_event
+            ::AuditEvents::RunnerAuditEventService.new(
+              runner, author, scope,
+              name: 'ci_runner_unregistered', message: audit_message, runner_contacted_at: runner.contacted_at
+            ).track_event
           end
+        end
+
+        def audit_message
+          return 'Unregistered %{runner_type} CI runner, never contacted' if runner.contacted_at.nil?
+
+          'Unregistered %{runner_type} CI runner, last contacted %{runner_contacted_at}'
         end
       end
     end
