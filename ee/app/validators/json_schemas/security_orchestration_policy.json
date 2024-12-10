@@ -499,6 +499,30 @@
                   "type": "string",
                   "description": "Time zone to apply to the cadence. Value must be an IANA Time Zone Database identifier, for example: `America/New_York`."
                 },
+                "time_window": {
+                  "description": "Specifies for how long the scheduled scans are allowed to run",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "distribution": {
+                      "description": "Specifies how the scheduled scans should be distributed.",
+                      "type": "string",
+                      "enum": [
+                        "random"
+                      ]
+                    },
+                    "value": {
+                      "description": "Specifies the time window in seconds. Min: 1 hours, Max: 24 hours",
+                      "type": "integer",
+                      "minimum": 3600,
+                      "maximum": 86400
+                    }
+                  },
+                  "required": [
+                    "distribution",
+                    "value"
+                  ]
+                },
                 "agents": {
                   "type": "object",
                   "description": "Specifies names of the GitLab agents where cluster image scanning will run.",

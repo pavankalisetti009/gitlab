@@ -29,6 +29,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
 
     before do
       stub_licensed_features(security_on_demand_scans: true)
+      stub_feature_flags(scan_execution_pipeline_concurrency_control: false)
 
       project.repository.create_branch('production', project.default_branch)
 
@@ -55,6 +56,30 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         end
 
         service.execute(schedule)
+      end
+
+      context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
+        before do
+          stub_feature_flags(scan_execution_pipeline_concurrency_control: true)
+        end
+
+        context 'when the time_window is available' do
+          before do
+            policy[:rules].first.merge!({ time_window: { distribution: 'random', value: 3600 } })
+          end
+
+          it 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch with a random delay' do
+            existing_branches.each do |branch|
+              expect(::Security::ScanExecutionPolicies::CreatePipelineWorker).to(
+                receive(:perform_in)
+                  .with(ActiveSupport::Duration, project.id, current_user.id, schedule.id, branch)
+                  .and_call_original
+              )
+            end
+
+            service.execute(schedule)
+          end
+        end
       end
     end
 
