@@ -11,7 +11,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-text-gray-400">
+  <div class="gl-text-subtle">
     {{ title }}
   </div>
 </template>

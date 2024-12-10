@@ -113,6 +113,7 @@ module API
 
           task = ::CodeSuggestions::TaskFactory.new(
             current_user,
+            client: ::CodeSuggestions::Client.new(headers),
             params: declared_params(params),
             unsafe_passthrough_params: params.except(:private_token)
           ).task

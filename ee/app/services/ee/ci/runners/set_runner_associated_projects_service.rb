@@ -16,7 +16,7 @@ module EE
         def audit_event_service(result)
           return if result.error?
 
-          audit_context = {
+          ::Gitlab::Audit::Auditor.audit(
             name: 'set_runner_associated_projects',
             author: current_user,
             scope: runner.owner,
@@ -27,9 +27,7 @@ module EE
               action: :custom,
               added_project_ids: result.payload[:added_to_projects].map(&:id),
               deleted_from_projects: result.payload[:deleted_from_projects].map(&:id)
-            }
-          }
-          ::Gitlab::Audit::Auditor.audit(audit_context)
+            })
 
           audit_project_events(
             result.payload[:added_to_projects], EE::Ci::Runners::AssignRunnerService::AUDIT_MESSAGE)
@@ -45,7 +43,13 @@ module EE
 
         def audit_project_events(projects, audit_message)
           projects.each do |project|
-            ::AuditEvents::RunnerCustomAuditEventService.new(runner, current_user, project, audit_message).track_event
+            ::Gitlab::Audit::Auditor.audit(
+              name: 'set_runner_associated_projects',
+              author: current_user,
+              scope: project,
+              target: runner,
+              target_details: runner_path,
+              message: audit_message)
           end
         end
       end

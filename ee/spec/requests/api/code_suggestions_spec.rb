@@ -417,6 +417,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               expect(::CodeSuggestions::TaskFactory).to receive(:new)
                 .with(
                   current_user,
+                  client: kind_of(CodeSuggestions::Client),
                   params: hash_including(intent: 'completion'),
                   unsafe_passthrough_params: kind_of(Hash)
                 ).and_call_original
@@ -432,6 +433,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               expect(::CodeSuggestions::TaskFactory).to receive(:new)
                 .with(
                   current_user,
+                  client: kind_of(CodeSuggestions::Client),
                   params: hash_including(intent: 'generation'),
                   unsafe_passthrough_params: kind_of(Hash)
                 ).and_call_original
@@ -448,6 +450,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(stream: true),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -463,6 +466,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(generation_type: 'small_file'),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -478,6 +482,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(project_path: 'group/test-project'),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -493,6 +498,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(user_instruction: 'Generate tests for this file'),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -523,6 +529,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(context: additional_params[:context]),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
