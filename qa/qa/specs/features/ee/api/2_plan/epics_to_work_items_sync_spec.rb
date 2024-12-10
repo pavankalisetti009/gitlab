@@ -11,7 +11,7 @@ module QA
       let(:milestone_due_date) { (Date.today + 120).iso8601 }
       let(:fixed_start_date) { Date.today.iso8601 }
       let(:fixed_due_date) { (Date.today + 90).iso8601 }
-      let(:api_client) { QA::Runtime::UserStore.user_api_client }
+      let(:api_client) { QA::Runtime::User::Store.user_api_client }
       let(:group) { create(:group, path: "epic-work-item-group-#{SecureRandom.hex(8)}") }
       let(:project) { create(:project, name: "epic-work-item-project-#{SecureRandom.hex(8)}", group: group) }
       let(:allowed_time_offset) { 1.second }
