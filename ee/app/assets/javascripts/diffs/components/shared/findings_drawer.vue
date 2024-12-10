@@ -8,6 +8,8 @@ import {
   GlTabs,
   GlTab,
 } from '@gitlab/ui';
+// eslint-disable-next-line no-restricted-imports
+import { mapState } from 'vuex';
 import { VULNERABILITY_TAB_NAMES } from 'ee/vulnerabilities/constants';
 import { VULNERABILITY_DETAIL_CODE_FLOWS } from 'ee/security_dashboard/constants';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
@@ -15,6 +17,7 @@ import { getSeverity } from '~/ci/reports/utils';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
+import VulnerabilityCodeFlow from 'ee/vue_shared/components/code_flow/vulnerability_code_flow.vue';
 import FindingsDrawerDetails from './findings_drawer_details.vue';
 
 export const i18n = {
@@ -33,6 +36,7 @@ export default {
   codeQuality,
   components: {
     FindingsDrawerDetails,
+    VulnerabilityCodeFlow,
     GlDrawer,
     GlButton,
     GlButtonGroup,
@@ -62,8 +66,12 @@ export default {
     };
   },
   computed: {
+    ...mapState('diffs', ['branchName']),
     getDrawerHeaderHeight() {
       return getContentWrapperHeight();
+    },
+    projectFullPath() {
+      return this.project?.fullPath;
     },
     isCodeQuality() {
       return this.activeElement.scale === this.$options.codeQuality;
@@ -96,6 +104,7 @@ export default {
       } else {
         this.drawerIndex -= 1;
       }
+      this.tabIndex = 0;
     },
     next() {
       if (this.drawerIndex === this.drawer.findings.length - 1) {
@@ -103,6 +112,7 @@ export default {
       } else {
         this.drawerIndex += 1;
       }
+      this.tabIndex = 0;
     },
     redirectToCodeFlowTab() {
       this.tabIndex = 1;
@@ -172,9 +182,12 @@ export default {
         </gl-tab>
 
         <gl-tab :title="$options.i18n.VULNERABILITY_TAB_NAMES.CODE_FLOW">
-          <div data-testid="temp-code-flow">
-            {{ $options.i18n.VULNERABILITY_TAB_NAMES.CODE_FLOW }}
-          </div>
+          <vulnerability-code-flow
+            :branch-ref="branchName"
+            :details="activeElement.details[0]"
+            :project-full-path="projectFullPath"
+            :show-code-flow-file-viewer="false"
+          />
         </gl-tab>
       </gl-tabs>
       <template v-else>
