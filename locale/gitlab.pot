@@ -33120,6 +33120,9 @@ msgstr ""
 msgid "Manage secret detection behavior for all projects in your GitLab instance"
 msgstr ""
 
+msgid "Manage templates..."
+msgstr ""
+
 msgid "Manage two-factor authentication"
 msgstr ""
 
