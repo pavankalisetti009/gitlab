@@ -30,7 +30,10 @@ module EE
               threshold: application_settings.soft_phone_verification_transactions_daily_limit,
               interval: 1.day
             },
-            hard_phone_verification_transactions_limit: { threshold: 20_000, interval: 1.day },
+            hard_phone_verification_transactions_limit: {
+              threshold: application_settings.hard_phone_verification_transactions_daily_limit,
+              interval: 1.day
+            },
             container_scanning_for_registry_scans: { threshold: 50, interval: 1.day }
           }).freeze
         end

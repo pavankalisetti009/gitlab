@@ -11,6 +11,7 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter do
         stub_application_setting(max_number_of_repository_downloads: 1)
         stub_application_setting(max_number_of_repository_downloads_within_time_period: 60)
         stub_application_setting(soft_phone_verification_transactions_daily_limit: 60)
+        stub_application_setting(hard_phone_verification_transactions_daily_limit: 100)
       end
 
       it 'includes values for unique_project_downloads_for_application', :aggregate_failures do
@@ -48,6 +49,11 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter do
         values = rate_limits[:soft_phone_verification_transactions_limit]
         expect(values).to eq(threshold: 60, interval: 1.day)
       end
+
+      it 'includes values for hard_phone_verification_transactions_daily_limit' do
+        values = rate_limits[:hard_phone_verification_transactions_limit]
+        expect(values).to eq(threshold: 100, interval: 1.day)
+      end
     end
 
     context 'when namespace-level rate limits are configured' do
@@ -60,6 +66,11 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter do
       it 'includes fixed default values for soft_phone_verification_transactions_limit' do
         values = rate_limits[:soft_phone_verification_transactions_limit]
         expect(values).to eq(threshold: 16000, interval: 1.day)
+      end
+
+      it 'includes fixed default values for hard_phone_verification_transactions_limit' do
+        values = rate_limits[:hard_phone_verification_transactions_limit]
+        expect(values).to eq(threshold: 20000, interval: 1.day)
       end
     end
   end
