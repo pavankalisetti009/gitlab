@@ -85,7 +85,7 @@ module GitlabSubscriptions
     end
 
     def trial_params
-      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :new_group_name, :namespace_id, :trial_entity)
+      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :new_group_name, :namespace_id)
       .with_defaults(organization_id: Current.organization_id).to_h
     end
 

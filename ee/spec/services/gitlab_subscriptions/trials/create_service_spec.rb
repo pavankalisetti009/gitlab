@@ -120,9 +120,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
     context 'when in the create group flow' do
       let(:step) { described_class::TRIAL }
-      let(:extra_params) do
-        { trial_entity: '_entity_', organization_id: organization.id, with_add_on: true, add_on_name: "duo_enterprise" }
-      end
+      let(:extra_params) { { organization_id: organization.id, with_add_on: true, add_on_name: "duo_enterprise" } }
 
       let(:trial_params) do
         { new_group_name: 'gitlab', namespace_id: '0' }.merge(extra_params)

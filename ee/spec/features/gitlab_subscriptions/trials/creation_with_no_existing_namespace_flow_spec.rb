@@ -86,7 +86,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         expect_to_be_on_namespace_creation_without_company_question
 
-        fill_in_trial_form_for_new_group(glm_source: glm_source)
+        fill_in_trial_form_for_new_group
 
         submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
 
@@ -108,7 +108,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         expect_to_be_on_namespace_creation
 
-        fill_in_trial_form_for_new_group(glm_source: glm_source)
+        fill_in_trial_form_for_new_group
 
         submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
 
@@ -194,13 +194,11 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
   def expect_to_be_on_namespace_creation
     expect(page).to have_content('New group name')
-    expect(page).to have_content('Who will be using GitLab?')
     expect(page).not_to have_content('This trial is for')
   end
 
   def expect_to_be_on_namespace_creation_without_company_question
     expect(page).to have_content('New group name')
-    expect(page).not_to have_content('Who will be using GitLab?')
     expect(page).not_to have_content('This trial is for')
   end
 end

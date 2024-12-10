@@ -34,12 +34,11 @@ module Features
     end
 
     def expect_to_be_on_duo_pro_namespace_selection
-      expect(page).to have_content('This subscription is for')
+      expect(page).to have_content('Apply your GitLab Duo Pro trial to an existing group')
     end
 
     def expect_to_be_on_namespace_selection
       expect(page).to have_content('This trial is for')
-      expect(page).to have_content('Who will be using GitLab?')
     end
 
     def expect_to_have_namespace_creation_errors(group_name: '_invalid group name_', error_message: 'Group URL can')
@@ -77,16 +76,14 @@ module Features
 
     def fill_in_trial_selection_form(from: 'Select a group', group_select: true)
       select_from_listbox group.name, from: from if group_select
-      choose :trial_entity_company
     end
 
     def fill_in_duo_enterprise_trial_selection_form(from: 'Select a group', group_select: true)
       select_from_listbox group.name, from: from if group_select
     end
 
-    def fill_in_trial_form_for_new_group(name: 'gitlab', glm_source: nil)
+    def fill_in_trial_form_for_new_group(name: 'gitlab')
       fill_in 'new_group_name', with: name
-      choose :trial_entity_company if glm_source != 'about.gitlab.com'
     end
 
     def form_data
@@ -152,7 +149,7 @@ module Features
       stub_apply_trial(
         namespace_id: group.id,
         result: result,
-        extra_params: extra_with_glm_source(extra_params).merge(existing_group_attrs)
+        extra_params: extra_params.merge(existing_group_attrs)
       )
       stub_duo_landing_page_data
 
@@ -160,7 +157,7 @@ module Features
     end
 
     def submit_new_group_trial_selection_form(result: ServiceResponse.success, extra_params: {})
-      stub_apply_trial(result: result, extra_params: extra_with_glm_source(extra_params))
+      stub_apply_trial(result: result, extra_params: extra_params)
       stub_duo_landing_page_data
 
       click_button 'Activate my trial'
@@ -178,12 +175,6 @@ module Features
     def stub_duo_landing_page_data
       stub_licensed_features(code_suggestions: true)
       stub_signing_key
-    end
-
-    def extra_with_glm_source(extra_params)
-      extra_params[:trial_entity] = 'company' unless extra_params[:glm_source] == 'about.gitlab.com'
-
-      extra_params
     end
 
     def existing_group_attrs
@@ -266,12 +257,12 @@ module Features
       wait_for_requests
     end
 
-    def stub_apply_duo_pro_trial(result: ServiceResponse.success, extra_params: {})
+    def stub_apply_duo_pro_trial(result: ServiceResponse.success)
       trial_user_params = {
         namespace_id: group.id,
         gitlab_com_trial: true,
         sync_to_gl: true
-      }.merge(existing_group_attrs).merge(extra_params)
+      }.merge(existing_group_attrs)
 
       service_params = {
         trial_user_information: trial_user_params,
@@ -374,7 +365,7 @@ module Features
     end
 
     def submit_duo_pro_trial_selection_form(result: ServiceResponse.success)
-      stub_apply_duo_pro_trial(result: result, extra_params: { trial_entity: 'company' })
+      stub_apply_duo_pro_trial(result: result)
       stub_duo_landing_page_data
 
       click_button 'Activate my trial'

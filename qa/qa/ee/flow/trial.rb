@@ -24,7 +24,6 @@ module QA
 
           EE::Page::Trials::Select.perform do |select|
             select.trial_for = group.path
-            select.click_trial_for_company_option
             select.click_start_your_free_trial_button
           end
         end
