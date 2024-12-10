@@ -1,0 +1,60 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_chat do
+  describe 'associations' do
+    it { is_expected.to have_many(:messages).class_name('Ai::Conversation::Message') }
+    it { is_expected.to belong_to(:organization).class_name('Organizations::Organization') }
+    it { is_expected.to belong_to(:user) }
+  end
+
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:conversation_type) }
+    it { is_expected.to validate_presence_of(:user_id) }
+  end
+
+  describe 'enums' do
+    it { is_expected.to define_enum_for(:conversation_type).with_values(duo_chat: 1) }
+  end
+
+  describe 'scopes' do
+    describe '.expired' do
+      subject(:expired_threads) { described_class.expired }
+
+      let_it_be(:old_thread) { create(:ai_conversation_thread, last_updated_at: 31.days.ago) }
+      let_it_be(:recent_thread) { create(:ai_conversation_thread, last_updated_at: 29.days.ago) }
+      let_it_be(:current_thread) { create(:ai_conversation_thread, last_updated_at: Time.current) }
+
+      it 'returns threads older than 30 days' do
+        expect(expired_threads).to contain_exactly(old_thread)
+      end
+    end
+  end
+
+  describe 'callbacks' do
+    describe 'before_validation :populate_organization_id' do
+      let(:thread) { build(:ai_conversation_thread, user: user) }
+      let(:user) { create(:user, :with_namespace) }
+
+      it 'sets organization_id from user namespace' do
+        thread.valid?
+        expect(thread.organization_id).to eq(user.namespace.organization_id)
+      end
+
+      context 'when user has no namespace' do
+        let_it_be(:organization) { create(:organization, :default) }
+        let(:user) { create(:user, namespace: nil) }
+
+        it 'sets defautl organization_id' do
+          thread.valid?
+          expect(thread.organization_id).to eq(Organizations::Organization::DEFAULT_ORGANIZATION_ID)
+        end
+      end
+    end
+  end
+
+  it_behaves_like 'it has loose foreign keys' do
+    let(:factory_name) { :ai_conversation_thread }
+  end
+end

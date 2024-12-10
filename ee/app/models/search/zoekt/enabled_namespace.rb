@@ -31,6 +31,8 @@ module Search
         joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
       end
 
+      validates :metadata, json_schema: { filename: 'zoekt_enabled_namespaces_metadata' }
+
       def self.destroy_namespaces_with_expired_subscriptions!
         before_date = Date.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD
 
@@ -47,6 +49,20 @@ module Search
 
           where(root_namespace_id: namespace_to_remove_ids).find_each(&:destroy)
         end
+      end
+
+      def self.update_last_used_storage_bytes!
+        find_each(&:update_last_used_storage_bytes!)
+      end
+
+      def update_last_used_storage_bytes!
+        size = replicas.joins(:indices)
+                       .group('zoekt_replicas.id')
+                       .pluck('sum(zoekt_indices.used_storage_bytes)') # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- It is limited by the number of replicas. Right now it's one
+                       .max
+                       .to_i
+
+        update_column(:metadata, metadata.merge(last_used_storage_bytes: size))
       end
 
       private

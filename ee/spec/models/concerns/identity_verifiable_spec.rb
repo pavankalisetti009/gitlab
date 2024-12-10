@@ -40,30 +40,22 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     subject { user.identity_verification_enabled? }
 
-    context 'when verification methods are available' do
-      where(:feature_available, :feature_flag_enabled, :result) do
-        false | false | false
-        true  | false | false
-        false | true  | false
-        true  | true  | true
+    context 'when running in SaaS' do
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when running in self-managed' do
+      before do
+        stub_saas_features(identity_verification: false)
       end
 
-      with_them do
-        before do
-          stub_saas_features(identity_verification: feature_available)
-          stub_feature_flags(opt_in_identity_verification: feature_flag_enabled)
-        end
-
-        it { is_expected.to eq(result) }
-      end
+      it { is_expected.to eq(false) }
     end
 
     context 'when verification methods are unavailable' do
       before do
-        stub_feature_flags(
-          identity_verification_phone_number: false,
-          identity_verification_credit_card: false
-        )
+        stub_application_setting(phone_verification_enabled: false)
+        stub_feature_flags(identity_verification_credit_card: false)
       end
 
       context 'when the user is not active' do
@@ -354,7 +346,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         user.add_identity_verification_exemption('test') if identity_verification_exempt
 
         stub_feature_flags(identity_verification_credit_card: credit_card)
-        stub_feature_flags(identity_verification_phone_number: phone_number)
+        stub_application_setting(phone_verification_enabled: phone_number)
       end
 
       it { is_expected.to eq(result) }
@@ -390,29 +382,25 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     context 'when flag is enabled for a specific user' do
       let_it_be(:another_user) { create(:user) }
 
-      where(:risk_band, :credit_card, :phone_number, :result) do
-        'High'   | true  | false | %w[email credit_card]
-        'Medium' | false | true  | %w[email phone]
+      where(:risk_band, :credit_card, :result) do
+        'High'   | true   | %w[email phone credit_card]
+        'High'   | false  | %w[email phone]
       end
 
       with_them do
         before do
-          stub_feature_flags(
-            identity_verification_phone_number: false,
-            identity_verification_credit_card: false
-          )
+          stub_feature_flags(identity_verification_credit_card: false)
 
           add_user_risk_band(risk_band)
           create(:user_custom_attribute, key: UserCustomAttribute::ARKOSE_RISK_BAND, value: risk_band,
             user: another_user)
 
-          stub_feature_flags(identity_verification_phone_number: user) if phone_number
           stub_feature_flags(identity_verification_credit_card: user) if credit_card
         end
 
         it 'only affects that user' do
           expect(user.required_identity_verification_methods).to eq(result)
-          expect(another_user.required_identity_verification_methods).to eq(%w[email])
+          expect(another_user.required_identity_verification_methods).to eq(%w[email phone])
         end
       end
     end
@@ -732,7 +720,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     with_them do
       before do
         stub_feature_flags(identity_verification_credit_card: credit_card)
-        stub_feature_flags(identity_verification_phone_number: phone_number)
+        stub_application_setting(phone_verification_enabled: phone_number)
 
         allow(user).to receive(:required_identity_verification_methods).and_return(required_verification_methods)
         user.add_phone_number_verification_exemption if phone_exempt
@@ -812,14 +800,6 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
       context 'when the group is a subgroup' do
         let(:group) { build(:group, parent: top_level_group) }
-
-        it { is_expected.to eq(false) }
-      end
-
-      context 'when the feature is disabled' do
-        before do
-          stub_feature_flags(unverified_account_group_creation_limit: false)
-        end
 
         it { is_expected.to eq(false) }
       end

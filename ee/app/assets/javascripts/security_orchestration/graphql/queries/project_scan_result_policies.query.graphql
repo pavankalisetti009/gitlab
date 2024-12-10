@@ -7,7 +7,7 @@ query projectScanResultPolicies(
 ) {
   namespace: project(fullPath: $fullPath) {
     id
-    scanResultPolicies(relationship: $relationship) {
+    scanResultPolicies(relationship: $relationship, includeUnscoped: false) {
       nodes {
         name
         yaml

@@ -729,5 +729,54 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
         end
       end
     end
+
+    context 'when processing identical components' do
+      let_it_be(:components_to_fetch) do
+        [
+          Hashie::Mash.new({ name: "beego", purl_type: "golang", version: "v1.10.0", path: nil }),
+          Hashie::Mash.new({ name: "beego", purl_type: "golang", version: "v1.10.0", path: nil }),
+          Hashie::Mash.new({ name: "camelcase", purl_type: "npm", version: "1.2.1", path: "" }),
+          Hashie::Mash.new({ name: "camelcase", purl_type: "npm", version: "4.1.0", path: "package-lock.json" }),
+          Hashie::Mash.new({ name: "cliui", purl_type: "npm", version: "2.1.0", path: "package-lock.json" }),
+          Hashie::Mash.new({ name: "cliui", purl_type: "npm", version: "2.1.0", path: "package-lock.json" }),
+          Hashie::Mash.new({ name: "cliui", purl_type: "golang", version: "2.1.0", path: "package-lock.json" }),
+          Hashie::Mash.new({ name: "cliui", purl_type: "golang", version: "2.1.1", path: "package-lock.json" })
+        ]
+      end
+
+      let(:package1) do
+        instance_double(PackageMetadata::Package, name: "beego", purl_type: "golang",
+          license_ids_for: [1])
+      end
+
+      let(:package2) do
+        instance_double(PackageMetadata::Package, name: "camelcase", purl_type: "npm",
+          license_ids_for: [1])
+      end
+
+      let(:package3) do
+        instance_double(PackageMetadata::Package, name: "cliui", purl_type: "npm",
+          license_ids_for: [1])
+      end
+
+      let(:package4) do
+        instance_double(PackageMetadata::Package, name: "cliui", purl_type: "golang",
+          license_ids_for: [1])
+      end
+
+      it 'only calls the model once to get licenses for a package' do
+        expect(PackageMetadata::Package)
+          .to receive(:packages_for)
+          .with(components: components_to_fetch)
+          .and_return([package1, package2, package3, package4])
+
+        fetch
+
+        expect(package1).to have_received(:license_ids_for).exactly(1).times
+        expect(package2).to have_received(:license_ids_for).exactly(2).times
+        expect(package3).to have_received(:license_ids_for).exactly(1).times
+        expect(package4).to have_received(:license_ids_for).exactly(2).times
+      end
+    end
   end
 end

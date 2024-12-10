@@ -37,7 +37,5 @@ events:
   unique: user.id
 performance_indicator_type:
 - smau
-distribution:
-- ee
 tiers:
 - ultimate

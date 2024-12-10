@@ -55,8 +55,6 @@ FactoryBot.define do
       pipeline { nil }
       vulnerability_project { vulnerability&.project || pipeline&.project || project }
       false_positive { false }
-      advisory { nil }
-      cve_enrichment { nil }
     end
 
     name { 'Cipher with no integrity' }

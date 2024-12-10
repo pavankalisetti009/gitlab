@@ -9,8 +9,6 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168096
 time_frame: none
 data_source: database
 data_category: optional
-instrumentation_class: MemberManagementEnabledMetric 
-distribution:
-- ee
+instrumentation_class: MemberManagementEnabledMetric
 tiers:
 - ultimate

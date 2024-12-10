@@ -219,6 +219,8 @@ module EE
       elastic_index_dependant_association :milestones, on_change: :visibility_level
       elastic_index_dependant_association :milestones, on_change: :archived
 
+      scope :with_namespaces, -> { includes(:namespace) }
+      scope :by_ids, ->(ids) { where(id: ids) }
       scope :mirror, -> { where(mirror: true) }
 
       scope :mirrors_to_sync, ->(freeze_at, limit: nil, offset_at: nil) do
@@ -1433,6 +1435,11 @@ module EE
       @vulnerability_quota ||= Vulnerabilities::Quota.new(self)
     end
 
+    override :jira_subscription_exists?
+    def jira_subscription_exists?
+      !::Integrations::JiraCloudApp.blocked_by_settings? && super
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key
@@ -1502,7 +1509,7 @@ module EE
 
       if ::Gitlab::CurrentSettings.should_check_namespace_plan? && namespace
         globally_available &&
-          (open_source_license_granted? || namespace.feature_available_in_plan?(feature))
+          (namespace.feature_available_in_plan?(feature) || open_source_license_granted?)
       else
         globally_available
       end

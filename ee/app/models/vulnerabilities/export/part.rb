@@ -21,6 +21,10 @@ module Vulnerabilities
       def retrieve_upload(_identifier, paths)
         Upload.find_by(model: self, path: paths)
       end
+
+      def uploads_sharding_key
+        { organization_id: organization_id }
+      end
     end
   end
 end

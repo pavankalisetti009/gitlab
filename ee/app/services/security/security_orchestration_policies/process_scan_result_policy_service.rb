@@ -108,6 +108,7 @@ module Security
           license_states: rule[:license_states],
           match_on_inclusion_license: rule[:match_on_inclusion_license] || false,
           role_approvers: role_access_levels(approval_action&.dig(:role_approvers)),
+          custom_roles: custom_role_approvers(approval_action&.dig(:role_approvers)),
           vulnerability_attributes: rule[:vulnerability_attributes],
           project_id: project.id,
           age_operator: rule.dig(:vulnerability_age, :operator),
@@ -195,6 +196,12 @@ module Security
           user: author,
           container: project.namespace,
           search_globally: search_groups_globally?).execute(include_inaccessible: true)
+      end
+
+      def custom_role_approvers(role_approvers)
+        return [] unless role_approvers
+
+        role_approvers.select { |role| role.is_a?(Integer) }
       end
 
       def role_access_levels(role_approvers)

@@ -78,13 +78,6 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
   describe '#create' do
     using RSpec::Parameterized::TableSyntax
 
-    let(:glm_params) do
-      {
-        glm_source: 'some_source',
-        glm_content: 'some_content'
-      }
-    end
-
     let(:params) do
       {
         company_name: 'GitLab',
@@ -93,7 +86,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
         country: 'US',
         state: 'CA',
         website_url: 'gitlab.com'
-      }.merge(glm_params)
+      }
     end
 
     subject(:post_create) { post :create, params: params }
@@ -115,7 +108,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
         post :create, params: params
 
         expect(response).to have_gitlab_http_status(:redirect)
-        expect(response).to redirect_to(new_users_sign_up_group_path(glm_params))
+        expect(response).to redirect_to(new_users_sign_up_group_path)
       end
 
       context 'when it is a trial registration' do
@@ -157,7 +150,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
       end
 
       context 'when saving onboarding_status_step_url' do
-        let(:path) { new_users_sign_up_group_path(glm_params) }
+        let(:path) { new_users_sign_up_group_path }
 
         before do
           allow_next_instance_of(GitlabSubscriptions::CreateCompanyLeadService) do |service|
@@ -233,7 +226,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
           post :create, params: params
 
           expect(response).to have_gitlab_http_status(:redirect)
-          expect(response).to redirect_to(new_users_sign_up_group_path(glm_params))
+          expect(response).to redirect_to(new_users_sign_up_group_path)
         end
       end
     end

@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class PolicyScopeChecker
+      include Gitlab::InternalEventsTracking
+
       def initialize(project:)
         @project = project
       end
@@ -33,6 +35,9 @@ module Security
 
       def applicable_for_compliance_framework?(policy_scope)
         policy_scope_compliance_frameworks = policy_scope[:compliance_frameworks].to_a
+
+        track_policy_scope_check(:compliance_framework, [policy_scope_compliance_frameworks])
+
         return true if policy_scope_compliance_frameworks.blank?
 
         compliance_framework_ids = project.compliance_framework_ids
@@ -45,6 +50,8 @@ module Security
         policy_scope_included_projects = policy_scope.dig(:projects, :including).to_a
         policy_scope_excluded_projects = policy_scope.dig(:projects, :excluding).to_a
 
+        track_policy_scope_check(:project, [policy_scope_included_projects, policy_scope_excluded_projects])
+
         return false if policy_scope_excluded_projects.any? { |policy_project| policy_project[:id] == project.id }
         return true if policy_scope_included_projects.blank?
 
@@ -55,6 +62,8 @@ module Security
         policy_scope_included_groups = policy_scope.dig(:groups, :including).to_a
         policy_scope_excluded_groups = policy_scope.dig(:groups, :excluding).to_a
 
+        track_policy_scope_check(:group, [policy_scope_included_groups, policy_scope_excluded_groups])
+
         return true if policy_scope_included_groups.blank? && policy_scope_excluded_groups.blank?
 
         ancestor_group_ids = project.group&.self_and_ancestor_ids.to_a
@@ -63,6 +72,18 @@ module Security
         return true if policy_scope_included_groups.blank?
 
         policy_scope_included_groups.any? { |policy_group| policy_group[:id].in?(ancestor_group_ids) }
+      end
+
+      def track_policy_scope_check(policy_scope_type, collections)
+        return if collections.all?(&:blank?)
+
+        track_internal_event(
+          'check_policy_scope_for_security_policy',
+          project: project,
+          additional_properties: {
+            label: policy_scope_type.to_s # Type of the scope (project, group, compliance_framework)
+          }
+        )
       end
     end
   end

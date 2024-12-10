@@ -57,7 +57,6 @@ module IdentityVerifiable
 
   def identity_verification_enabled?
     return false unless ::Gitlab::Saas.feature_available?(:identity_verification)
-    return false unless ::Feature.enabled?(:opt_in_identity_verification, self, type: :gitlab_com_derisk)
 
     # When no verification methods are available i.e. both phone number and
     # credit card verifications are disabled
@@ -171,7 +170,7 @@ module IdentityVerifiable
   def verification_method_enabled?(method)
     case method
     when 'phone'
-      Feature.enabled?(:identity_verification_phone_number, self) &&
+      ::Gitlab::CurrentSettings.phone_verification_enabled &&
         !PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
     when 'credit_card'
       Feature.enabled?(:identity_verification_credit_card, self)
@@ -256,7 +255,6 @@ module IdentityVerifiable
   end
 
   def reached_top_level_group_limit?
-    return false unless ::Feature.enabled?(:unverified_account_group_creation_limit, self, type: :gitlab_com_derisk)
     return false if identity_verified?
 
     created_top_level_group_count >= ::Gitlab::CurrentSettings.unverified_account_group_creation_limit

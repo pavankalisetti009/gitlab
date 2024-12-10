@@ -1,0 +1,96 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe 'Assigning a user to a member role', feature_category: :permissions do
+  include GraphqlHelpers
+
+  let_it_be_with_reload(:current_user) { create(:admin) }
+
+  let_it_be(:user) { create(:user) }
+  let_it_be(:member_role) { create(:member_role, :admin) }
+
+  let(:user_global_id) { GitlabSchema.id_from_object(user).to_s }
+  let(:member_role_global_id) { GitlabSchema.id_from_object(member_role).to_s }
+
+  let(:input) do
+    {
+      user_id: user_global_id,
+      member_role_id: member_role_global_id
+    }
+  end
+
+  let(:fields) do
+    <<~FIELDS
+      errors
+      userMemberRole {
+        id
+        user {
+          id
+        }
+        memberRole {
+          id
+        }
+      }
+    FIELDS
+  end
+
+  let(:mutation) { graphql_mutation(:member_role_to_user_assign, input, fields) }
+
+  subject(:assign_member_role) { graphql_mutation_response(:member_role_to_user_assign) }
+
+  def mutation_response
+    graphql_mutation_response('memberRoleToUserAssign')
+  end
+
+  before do
+    stub_licensed_features(custom_roles: true)
+  end
+
+  context 'when current user is not an admin', :enable_admin_mode do
+    before do
+      current_user.update!(admin: false)
+    end
+
+    it_behaves_like 'a mutation that returns a top-level access error',
+      errors: ["The resource that you are attempting to access does not exist or " \
+        "you don't have permission to perform this action"]
+  end
+
+  context 'when current user is an admin', :enable_admin_mode do
+    context 'when custom_ability_read_admin_dashboard FF is disabled' do
+      before do
+        stub_feature_flags(custom_ability_read_admin_dashboard: false)
+      end
+
+      it_behaves_like 'a mutation that returns a top-level access error',
+        errors: ["The resource that you are attempting to access does not exist or " \
+          "you don't have permission to perform this action"]
+    end
+
+    context 'when custom_ability_read_admin_dashboard FF is enabled' do
+      context 'when on SaaS' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        it_behaves_like 'a mutation that returns a top-level access error',
+          errors: ["The resource that you are attempting to access does not exist or " \
+            "you don't have permission to perform this action"]
+      end
+
+      context 'when on self-managed' do
+        it 'returns correct response', :aggregate_failures do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          response_object = mutation_response['userMemberRole']
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(mutation_response['errors']).to be_empty
+          expect(response_object['user']['id']).to eq(user_global_id)
+          expect(response_object['memberRole']['id']).to eq(member_role_global_id)
+        end
+      end
+    end
+  end
+end

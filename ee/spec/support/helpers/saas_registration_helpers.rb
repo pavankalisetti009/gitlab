@@ -391,7 +391,7 @@ module SaasRegistrationHelpers
       ).and_call_original
   end
 
-  def fill_in_company_form(with_last_name: false, glm: true, success: true)
+  def fill_in_company_form(with_last_name: false, success: true)
     result = if success
                ServiceResponse.success
              else
@@ -400,7 +400,7 @@ module SaasRegistrationHelpers
 
     expect(GitlabSubscriptions::CreateCompanyLeadService).to receive(:new).with(
       user: user,
-      params: company_params(user, glm: glm)
+      params: company_params(user)
     ).and_return(instance_double(GitlabSubscriptions::CreateCompanyLeadService, execute: result))
 
     fill_in_company_user_last_name if with_last_name
@@ -420,8 +420,8 @@ module SaasRegistrationHelpers
     fill_in 'website_url', with: 'https://gitlab.com'
   end
 
-  def company_params(user, glm: true)
-    base_params = ActionController::Parameters.new(
+  def company_params(user)
+    ActionController::Parameters.new(
       company_name: 'Test Company',
       company_size: '1-99',
       first_name: user.first_name,
@@ -435,10 +435,6 @@ module SaasRegistrationHelpers
       registration_objective: 'other',
       jobs_to_be_done_other: 'My reason'
     ).permit!
-
-    return base_params unless glm
-
-    base_params.merge(glm_params)
   end
 
   def premium_plan_id

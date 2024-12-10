@@ -229,6 +229,8 @@ Returns [`BlobSearch`](#blobsearch).
 | ---- | ---- | ----------- |
 | <a id="queryblobsearchchunkcount"></a>`chunkCount` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Maximum chunks per file. |
 | <a id="queryblobsearchgroupid"></a>`groupId` **{warning-solid}** | [`GroupID`](#groupid) | **Introduced** in GitLab 17.2. **Status**: Experiment. Group to search in. |
+| <a id="queryblobsearchincludearchived"></a>`includeArchived` **{warning-solid}** | [`Boolean`](#boolean) | **Introduced** in GitLab 17.7. **Status**: Experiment. Includes archived projects in the search. Always true for project search. Default is false. |
+| <a id="queryblobsearchincludeforked"></a>`includeForked` **{warning-solid}** | [`Boolean`](#boolean) | **Introduced** in GitLab 17.7. **Status**: Experiment. Includes forked projects in the search. Always true for project search. Not available for global search. Default is false. |
 | <a id="queryblobsearchpage"></a>`page` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Page number to fetch the results. |
 | <a id="queryblobsearchperpage"></a>`perPage` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Number of results per page. |
 | <a id="queryblobsearchprojectid"></a>`projectId` **{warning-solid}** | [`ProjectID`](#projectid) | **Introduced** in GitLab 17.2. **Status**: Experiment. Project to search in. |
@@ -342,7 +344,7 @@ Returns [`CiStage`](#cistage).
 
 ### `Query.ciQueueingHistory`
 
-Time taken for CI jobs to be picked up by runner by percentile.
+Time taken for CI jobs to be picked up by runner by percentile. Enable the ClickHouse database backend to use this query.
 
 DETAILS:
 **Introduced** in GitLab 16.4.
@@ -706,7 +708,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryissuessearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="queryissuessort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="queryissuesstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="queryissuessubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="queryissuessubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="queryissuestypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="queryissuesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="queryissuesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -1045,7 +1047,7 @@ Returns [`RunnerSetup`](#runnersetup).
 
 ### `Query.runnerUsage`
 
-Runner usage by runner.
+Runner usage by runner. Enable the ClickHouse database backend to use this query.
 
 Returns [`[CiRunnerUsage!]`](#cirunnerusage).
 
@@ -1061,7 +1063,7 @@ Returns [`[CiRunnerUsage!]`](#cirunnerusage).
 
 ### `Query.runnerUsageByProject`
 
-Runner usage by project.
+Runner usage by project. Enable the ClickHouse database backend to use this query.
 
 Returns [`[CiRunnerUsageByProject!]`](#cirunnerusagebyproject).
 
@@ -1719,7 +1721,6 @@ Input type: `AiActionInput`
 | <a id="mutationaiactionchat"></a>`chat` | [`AiChatInput`](#aichatinput) | Input for chat AI action. |
 | <a id="mutationaiactionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaiactionclientsubscriptionid"></a>`clientSubscriptionId` | [`String`](#string) | Client generated ID that can be subscribed to, to receive a response for the mutation. |
-| <a id="mutationaiactionexplaincode"></a>`explainCode` | [`AiExplainCodeInput`](#aiexplaincodeinput) | Input for explain_code AI action. |
 | <a id="mutationaiactionexplainvulnerability"></a>`explainVulnerability` | [`AiExplainVulnerabilityInput`](#aiexplainvulnerabilityinput) | Input for explain_vulnerability AI action. |
 | <a id="mutationaiactiongeneratecommitmessage"></a>`generateCommitMessage` | [`AiGenerateCommitMessageInput`](#aigeneratecommitmessageinput) | Input for generate_commit_message AI action. |
 | <a id="mutationaiactiongeneratecubequery"></a>`generateCubeQuery` | [`AiGenerateCubeQueryInput`](#aigeneratecubequeryinput) | Input for generate_cube_query AI action. |
@@ -3639,7 +3640,7 @@ Input type: `CreateComplianceRequirementInput`
 | <a id="mutationcreatecompliancerequirementerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationcreatecompliancerequirementrequirement"></a>`requirement` | [`ComplianceRequirement`](#compliancerequirement) | Created compliance requirement. |
 
-### `Mutation.createContainerRegistryProtectionRule`
+### `Mutation.createContainerProtectionRepositoryRule`
 
 Creates a protection rule to restrict access to a project's container registry. Available only when feature flag `container_registry_protected_containers` is enabled.
 
@@ -3647,25 +3648,25 @@ DETAILS:
 **Introduced** in GitLab 16.6.
 **Status**: Experiment.
 
-Input type: `CreateContainerRegistryProtectionRuleInput`
+Input type: `CreateContainerProtectionRepositoryRuleInput`
 
 #### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationcreatecontainerregistryprotectionruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationcreatecontainerregistryprotectionruleminimumaccesslevelfordelete"></a>`minimumAccessLevelForDelete` | [`ContainerRegistryProtectionRuleAccessLevel`](#containerregistryprotectionruleaccesslevel) | Minimum GitLab access level required to delete container images from the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can delete container images. Introduced in GitLab 16.6: **Status**: Experiment. |
-| <a id="mutationcreatecontainerregistryprotectionruleminimumaccesslevelforpush"></a>`minimumAccessLevelForPush` | [`ContainerRegistryProtectionRuleAccessLevel`](#containerregistryprotectionruleaccesslevel) | Minimum GitLab access level required to push container images to the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can push container images. Introduced in GitLab 16.6: **Status**: Experiment. |
-| <a id="mutationcreatecontainerregistryprotectionruleprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project where a protection rule is located. |
-| <a id="mutationcreatecontainerregistryprotectionrulerepositorypathpattern"></a>`repositoryPathPattern` | [`String!`](#string) | Container repository path pattern protected by the protection rule. For example, `my-project/my-container-*`. Wildcard character `*` allowed. Introduced in GitLab 16.6: **Status**: Experiment. |
+| <a id="mutationcreatecontainerprotectionrepositoryruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationcreatecontainerprotectionrepositoryruleminimumaccesslevelfordelete"></a>`minimumAccessLevelForDelete` | [`ContainerProtectionRepositoryRuleAccessLevel`](#containerprotectionrepositoryruleaccesslevel) | Minimum GitLab access level required to delete container images from the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can delete container images. Introduced in GitLab 16.6: **Status**: Experiment. |
+| <a id="mutationcreatecontainerprotectionrepositoryruleminimumaccesslevelforpush"></a>`minimumAccessLevelForPush` | [`ContainerProtectionRepositoryRuleAccessLevel`](#containerprotectionrepositoryruleaccesslevel) | Minimum GitLab access level required to push container images to the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can push container images. Introduced in GitLab 16.6: **Status**: Experiment. |
+| <a id="mutationcreatecontainerprotectionrepositoryruleprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project where a protection rule is located. |
+| <a id="mutationcreatecontainerprotectionrepositoryrulerepositorypathpattern"></a>`repositoryPathPattern` | [`String!`](#string) | Container repository path pattern protected by the protection rule. For example, `my-project/my-container-*`. Wildcard character `*` allowed. Introduced in GitLab 16.6: **Status**: Experiment. |
 
 #### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationcreatecontainerregistryprotectionruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationcreatecontainerregistryprotectionrulecontainerregistryprotectionrule"></a>`containerRegistryProtectionRule` **{warning-solid}** | [`ContainerRegistryProtectionRule`](#containerregistryprotectionrule) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.6. |
-| <a id="mutationcreatecontainerregistryprotectionruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationcreatecontainerprotectionrepositoryruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationcreatecontainerprotectionrepositoryrulecontainerprotectionrepositoryrule"></a>`containerProtectionRepositoryRule` **{warning-solid}** | [`ContainerProtectionRepositoryRule`](#containerprotectionrepositoryrule) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.6. |
+| <a id="mutationcreatecontainerprotectionrepositoryruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
 ### `Mutation.createCustomEmoji`
 
@@ -4486,7 +4487,7 @@ Input type: `DeleteAnnotationInput`
 | <a id="mutationdeleteannotationclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationdeleteannotationerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
-### `Mutation.deleteContainerRegistryProtectionRule`
+### `Mutation.deleteContainerProtectionRepositoryRule`
 
 Deletes a container registry protection rule. Available only when feature flag `container_registry_protected_containers` is enabled.
 
@@ -4494,22 +4495,22 @@ DETAILS:
 **Introduced** in GitLab 16.7.
 **Status**: Experiment.
 
-Input type: `DeleteContainerRegistryProtectionRuleInput`
+Input type: `DeleteContainerProtectionRepositoryRuleInput`
 
 #### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationdeletecontainerregistryprotectionruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationdeletecontainerregistryprotectionruleid"></a>`id` | [`ContainerRegistryProtectionRuleID!`](#containerregistryprotectionruleid) | Global ID of the container registry protection rule to delete. |
+| <a id="mutationdeletecontainerprotectionrepositoryruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdeletecontainerprotectionrepositoryruleid"></a>`id` | [`ContainerRegistryProtectionRuleID!`](#containerregistryprotectionruleid) | Global ID of the container registry protection rule to delete. |
 
 #### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationdeletecontainerregistryprotectionruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationdeletecontainerregistryprotectionrulecontainerregistryprotectionrule"></a>`containerRegistryProtectionRule` **{warning-solid}** | [`ContainerRegistryProtectionRule`](#containerregistryprotectionrule) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
-| <a id="mutationdeletecontainerregistryprotectionruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationdeletecontainerprotectionrepositoryruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdeletecontainerprotectionrepositoryrulecontainerprotectionrepositoryrule"></a>`containerProtectionRepositoryRule` **{warning-solid}** | [`ContainerProtectionRepositoryRule`](#containerprotectionrepositoryrule) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
+| <a id="mutationdeletecontainerprotectionrepositoryruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
 ### `Mutation.deletePackagesProtectionRule`
 
@@ -7088,6 +7089,30 @@ Input type: `MemberRoleDeleteInput`
 | <a id="mutationmemberroledeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationmemberroledeletememberrole"></a>`memberRole` | [`MemberRole`](#memberrole) | Deleted member role. |
 
+### `Mutation.memberRoleToUserAssign`
+
+DETAILS:
+**Introduced** in GitLab 17.7.
+**Status**: Experiment.
+
+Input type: `MemberRoleToUserAssignInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmemberroletouserassignclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmemberroletouserassignmemberroleid"></a>`memberRoleId` | [`MemberRoleID!`](#memberroleid) | Global ID of the custom role to be assigned to a user. |
+| <a id="mutationmemberroletouserassignuserid"></a>`userId` | [`UserID!`](#userid) | Global ID of the user to be assigned to a custom role. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmemberroletouserassignclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmemberroletouserassignerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationmemberroletouserassignusermemberrole"></a>`userMemberRole` | [`UserMemberRole`](#usermemberrole) | Created user member role. |
+
 ### `Mutation.memberRoleUpdate`
 
 Input type: `MemberRoleUpdateInput`
@@ -9518,6 +9543,28 @@ Input type: `SetContainerScanningForRegistryInput`
 | <a id="mutationsetcontainerscanningforregistrycontainerscanningforregistryenabled"></a>`containerScanningForRegistryEnabled` | [`Boolean`](#boolean) | Whether the feature is enabled. |
 | <a id="mutationsetcontainerscanningforregistryerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
+### `Mutation.setGroupSecretPushProtection`
+
+Enable or disable Secret Push Protection for a group.
+
+Input type: `SetGroupSecretPushProtectionInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetgroupsecretpushprotectionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetgroupsecretpushprotectionnamespacepath"></a>`namespacePath` | [`ID!`](#id) | Full path of the group. |
+| <a id="mutationsetgroupsecretpushprotectionprojectstoexclude"></a>`projectsToExclude` | [`[Int!]`](#int) | IDs of projects to exclude from the feature. |
+| <a id="mutationsetgroupsecretpushprotectionsecretpushprotectionenabled"></a>`secretPushProtectionEnabled` | [`Boolean!`](#boolean) | Whether to enable the feature. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetgroupsecretpushprotectionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetgroupsecretpushprotectionerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
 ### `Mutation.setPreReceiveSecretDetection`
 
 Enable/disable secret push protection for the given project.
@@ -10106,7 +10153,7 @@ Input type: `UpdateContainerExpirationPolicyInput`
 | <a id="mutationupdatecontainerexpirationpolicycontainertagsexpirationpolicy"></a>`containerTagsExpirationPolicy` | [`ContainerTagsExpirationPolicy`](#containertagsexpirationpolicy) | Container tags expiration policy after mutation. |
 | <a id="mutationupdatecontainerexpirationpolicyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
-### `Mutation.updateContainerRegistryProtectionRule`
+### `Mutation.updateContainerProtectionRepositoryRule`
 
 Updates a container registry protection rule to restrict access to project containers. You can prevent users without certain roles from altering containers. Available only when feature flag `container_registry_protected_containers` is enabled.
 
@@ -10114,25 +10161,25 @@ DETAILS:
 **Introduced** in GitLab 16.7.
 **Status**: Experiment.
 
-Input type: `UpdateContainerRegistryProtectionRuleInput`
+Input type: `UpdateContainerProtectionRepositoryRuleInput`
 
 #### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationupdatecontainerregistryprotectionruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationupdatecontainerregistryprotectionruleid"></a>`id` | [`ContainerRegistryProtectionRuleID!`](#containerregistryprotectionruleid) | Global ID of the container registry protection rule to be updated. |
-| <a id="mutationupdatecontainerregistryprotectionruleminimumaccesslevelfordelete"></a>`minimumAccessLevelForDelete` **{warning-solid}** | [`ContainerRegistryProtectionRuleAccessLevel`](#containerregistryprotectionruleaccesslevel) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
-| <a id="mutationupdatecontainerregistryprotectionruleminimumaccesslevelforpush"></a>`minimumAccessLevelForPush` **{warning-solid}** | [`ContainerRegistryProtectionRuleAccessLevel`](#containerregistryprotectionruleaccesslevel) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
-| <a id="mutationupdatecontainerregistryprotectionrulerepositorypathpattern"></a>`repositoryPathPattern` **{warning-solid}** | [`String`](#string) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
+| <a id="mutationupdatecontainerprotectionrepositoryruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationupdatecontainerprotectionrepositoryruleid"></a>`id` | [`ContainerRegistryProtectionRuleID!`](#containerregistryprotectionruleid) | Global ID of the container registry protection rule to be updated. |
+| <a id="mutationupdatecontainerprotectionrepositoryruleminimumaccesslevelfordelete"></a>`minimumAccessLevelForDelete` **{warning-solid}** | [`ContainerProtectionRepositoryRuleAccessLevel`](#containerprotectionrepositoryruleaccesslevel) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
+| <a id="mutationupdatecontainerprotectionrepositoryruleminimumaccesslevelforpush"></a>`minimumAccessLevelForPush` **{warning-solid}** | [`ContainerProtectionRepositoryRuleAccessLevel`](#containerprotectionrepositoryruleaccesslevel) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
+| <a id="mutationupdatecontainerprotectionrepositoryrulerepositorypathpattern"></a>`repositoryPathPattern` **{warning-solid}** | [`String`](#string) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
 
 #### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationupdatecontainerregistryprotectionruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationupdatecontainerregistryprotectionrulecontainerregistryprotectionrule"></a>`containerRegistryProtectionRule` **{warning-solid}** | [`ContainerRegistryProtectionRule`](#containerregistryprotectionrule) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
-| <a id="mutationupdatecontainerregistryprotectionruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationupdatecontainerprotectionrepositoryruleclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationupdatecontainerprotectionrepositoryrulecontainerprotectionrepositoryrule"></a>`containerProtectionRepositoryRule` **{warning-solid}** | [`ContainerProtectionRepositoryRule`](#containerprotectionrepositoryrule) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 16.7. |
+| <a id="mutationupdatecontainerprotectionrepositoryruleerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
 ### `Mutation.updateDependencyProxyImageTtlGroupPolicy`
 
@@ -11302,7 +11349,7 @@ Input type: `WorkItemExportInput`
 | <a id="mutationworkitemexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="mutationworkitemexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
 | <a id="mutationworkitemexportstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
-| <a id="mutationworkitemexportsubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.5. |
+| <a id="mutationworkitemexportsubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="mutationworkitemexporttypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 #### Fields
@@ -12172,6 +12219,29 @@ The edge type for [`CiCatalogResourceComponent`](#cicatalogresourcecomponent).
 | ---- | ---- | ----------- |
 | <a id="cicatalogresourcecomponentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="cicatalogresourcecomponentedgenode"></a>`node` | [`CiCatalogResourceComponent`](#cicatalogresourcecomponent) | The item at the end of the edge. |
+
+#### `CiCatalogResourceComponentUsageConnection`
+
+The connection type for [`CiCatalogResourceComponentUsage`](#cicatalogresourcecomponentusage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourcecomponentusageconnectionedges"></a>`edges` | [`[CiCatalogResourceComponentUsageEdge]`](#cicatalogresourcecomponentusageedge) | A list of edges. |
+| <a id="cicatalogresourcecomponentusageconnectionnodes"></a>`nodes` | [`[CiCatalogResourceComponentUsage]`](#cicatalogresourcecomponentusage) | A list of nodes. |
+| <a id="cicatalogresourcecomponentusageconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `CiCatalogResourceComponentUsageEdge`
+
+The edge type for [`CiCatalogResourceComponentUsage`](#cicatalogresourcecomponentusage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourcecomponentusageedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="cicatalogresourcecomponentusageedgenode"></a>`node` | [`CiCatalogResourceComponentUsage`](#cicatalogresourcecomponentusage) | The item at the end of the edge. |
 
 #### `CiCatalogResourceConnection`
 
@@ -13102,28 +13172,28 @@ The edge type for [`ConnectedAgent`](#connectedagent).
 | <a id="connectedagentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="connectedagentedgenode"></a>`node` | [`ConnectedAgent`](#connectedagent) | The item at the end of the edge. |
 
-#### `ContainerRegistryProtectionRuleConnection`
+#### `ContainerProtectionRepositoryRuleConnection`
 
-The connection type for [`ContainerRegistryProtectionRule`](#containerregistryprotectionrule).
-
-##### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="containerregistryprotectionruleconnectionedges"></a>`edges` | [`[ContainerRegistryProtectionRuleEdge]`](#containerregistryprotectionruleedge) | A list of edges. |
-| <a id="containerregistryprotectionruleconnectionnodes"></a>`nodes` | [`[ContainerRegistryProtectionRule]`](#containerregistryprotectionrule) | A list of nodes. |
-| <a id="containerregistryprotectionruleconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
-
-#### `ContainerRegistryProtectionRuleEdge`
-
-The edge type for [`ContainerRegistryProtectionRule`](#containerregistryprotectionrule).
+The connection type for [`ContainerProtectionRepositoryRule`](#containerprotectionrepositoryrule).
 
 ##### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="containerregistryprotectionruleedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
-| <a id="containerregistryprotectionruleedgenode"></a>`node` | [`ContainerRegistryProtectionRule`](#containerregistryprotectionrule) | The item at the end of the edge. |
+| <a id="containerprotectionrepositoryruleconnectionedges"></a>`edges` | [`[ContainerProtectionRepositoryRuleEdge]`](#containerprotectionrepositoryruleedge) | A list of edges. |
+| <a id="containerprotectionrepositoryruleconnectionnodes"></a>`nodes` | [`[ContainerProtectionRepositoryRule]`](#containerprotectionrepositoryrule) | A list of nodes. |
+| <a id="containerprotectionrepositoryruleconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `ContainerProtectionRepositoryRuleEdge`
+
+The edge type for [`ContainerProtectionRepositoryRule`](#containerprotectionrepositoryrule).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="containerprotectionrepositoryruleedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="containerprotectionrepositoryruleedgenode"></a>`node` | [`ContainerProtectionRepositoryRule`](#containerprotectionrepositoryrule) | The item at the end of the edge. |
 
 #### `ContainerRepositoryConnection`
 
@@ -16021,6 +16091,29 @@ The edge type for [`PipelineManualVariable`](#pipelinemanualvariable).
 | <a id="pipelinemanualvariableedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="pipelinemanualvariableedgenode"></a>`node` | [`PipelineManualVariable`](#pipelinemanualvariable) | The item at the end of the edge. |
 
+#### `PipelineMessageConnection`
+
+The connection type for [`PipelineMessage`](#pipelinemessage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelinemessageconnectionedges"></a>`edges` | [`[PipelineMessageEdge]`](#pipelinemessageedge) | A list of edges. |
+| <a id="pipelinemessageconnectionnodes"></a>`nodes` | [`[PipelineMessage]`](#pipelinemessage) | A list of nodes. |
+| <a id="pipelinemessageconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `PipelineMessageEdge`
+
+The edge type for [`PipelineMessage`](#pipelinemessage).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelinemessageedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="pipelinemessageedgenode"></a>`node` | [`PipelineMessage`](#pipelinemessage) | The item at the end of the edge. |
+
 #### `PipelineScheduleConnection`
 
 The connection type for [`PipelineSchedule`](#pipelineschedule).
@@ -18017,6 +18110,7 @@ A user with add-on data.
 | <a id="addonuserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="addonuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="addonusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="addonusertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="addonuseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="addonuseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="addonuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -18094,7 +18188,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="addonuserassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="addonuserassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="addonuserassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="addonuserassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="addonuserassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="addonuserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="addonuserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -18149,7 +18243,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="addonuserauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="addonuserauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="addonuserauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="addonuserauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="addonuserauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="addonuserauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="addonuserauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -18261,7 +18355,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="addonuserreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="addonuserreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="addonuserreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="addonuserreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="addonuserreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="addonuserreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="addonuserreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -18422,6 +18516,27 @@ Information about a connected Agent.
 | <a id="agentmetadatapodname"></a>`podName` | [`String`](#string) | Name of the pod running the Agent. |
 | <a id="agentmetadatapodnamespace"></a>`podNamespace` | [`String`](#string) | Namespace of the pod running the Agent. |
 | <a id="agentmetadataversion"></a>`version` | [`String`](#string) | Agent version tag. |
+
+### `AgentVersionWarning`
+
+Version-related warning for a connected Agent.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentversionwarningmessage"></a>`message` | [`String`](#string) | Warning message related to the version. |
+| <a id="agentversionwarningtype"></a>`type` | [`String`](#string) | Warning type related to the version. |
+
+### `AgentWarning`
+
+Warning object for a connected Agent.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentwarningversion"></a>`version` | [`AgentVersionWarning`](#agentversionwarning) | Agent warning related to the version. |
 
 ### `AggregationStatus`
 
@@ -18973,6 +19088,7 @@ Core representation of a GitLab user.
 | <a id="autocompleteduserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="autocompleteduserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="autocompletedusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="autocompletedusertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="autocompleteduseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="autocompleteduseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="autocompleteduserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -19030,7 +19146,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="autocompleteduserassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="autocompleteduserassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="autocompleteduserassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="autocompleteduserassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="autocompleteduserassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="autocompleteduserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="autocompleteduserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19085,7 +19201,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="autocompleteduserauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="autocompleteduserauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="autocompleteduserauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="autocompleteduserauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="autocompleteduserauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="autocompleteduserauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="autocompleteduserauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19209,7 +19325,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="autocompleteduserreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="autocompleteduserreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="autocompleteduserreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="autocompleteduserreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="autocompleteduserreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="autocompleteduserreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="autocompleteduserreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -19600,7 +19716,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="boardepicancestorssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="boardepicancestorssort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="boardepicancestorsstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="boardepicancestorssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="boardepicancestorssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="boardepicancestorstimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="boardepicancestorstoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="boardepicancestorsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -19638,7 +19754,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="boardepicchildrensearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="boardepicchildrensort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="boardepicchildrenstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="boardepicchildrensubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="boardepicchildrensubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="boardepicchildrentimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="boardepicchildrentoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="boardepicchildrenupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -19894,6 +20010,18 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="cicatalogresourcecomponentinputregex"></a>`regex` | [`String`](#string) | Pattern that the input value must match. Only applicable to string inputs. |
 | <a id="cicatalogresourcecomponentinputrequired"></a>`required` | [`Boolean`](#boolean) | Indicates if an input is required. |
 | <a id="cicatalogresourcecomponentinputtype"></a>`type` | [`CiCatalogResourceComponentInputType`](#cicatalogresourcecomponentinputtype) | Type of the input. |
+
+### `CiCatalogResourceComponentUsage`
+
+Represents a component usage in a project.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourcecomponentusagelastuseddate"></a>`lastUsedDate` | [`ISO8601Date`](#iso8601date) | When the component was last used. |
+| <a id="cicatalogresourcecomponentusagename"></a>`name` | [`String`](#string) | Name of the component. |
+| <a id="cicatalogresourcecomponentusageversion"></a>`version` | [`String`](#string) | Version of the component. |
 
 ### `CiCatalogResourceVersion`
 
@@ -21074,7 +21202,7 @@ Represents a ComplianceRequirement associated with a ComplianceFramework.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="compliancerequirementcontrolexpression"></a>`controlExpression` | [`String!`](#string) | Control expression of the compliance requirement. |
+| <a id="compliancerequirementcontrolexpression"></a>`controlExpression` | [`String`](#string) | Control expression of the compliance requirement. |
 | <a id="compliancerequirementdescription"></a>`description` | [`String!`](#string) | Description of the compliance requirement. |
 | <a id="compliancerequirementid"></a>`id` | [`ID!`](#id) | Compliance requirement ID. |
 | <a id="compliancerequirementname"></a>`name` | [`String!`](#string) | Name of the compliance requirement. |
@@ -21184,6 +21312,7 @@ Connection details for an Agent.
 | <a id="connectedagentconnectedat"></a>`connectedAt` | [`Time`](#time) | When the connection was established. |
 | <a id="connectedagentconnectionid"></a>`connectionId` | [`BigInt`](#bigint) | ID of the connection. |
 | <a id="connectedagentmetadata"></a>`metadata` | [`AgentMetadata`](#agentmetadata) | Information about the Agent. |
+| <a id="connectedagentwarnings"></a>`warnings` | [`[AgentWarning!]`](#agentwarning) | Agent warnings list. |
 
 ### `ContactStateCounts`
 
@@ -21215,7 +21344,7 @@ A tag expiration policy designed to keep only the images that matter most.
 | <a id="containerexpirationpolicyolderthan"></a>`olderThan` | [`ContainerExpirationPolicyOlderThanEnum`](#containerexpirationpolicyolderthanenum) | Tags older than the given age will expire. |
 | <a id="containerexpirationpolicyupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the container expiration policy was updated. |
 
-### `ContainerRegistryProtectionRule`
+### `ContainerProtectionRepositoryRule`
 
 A container repository protection rule designed to prevent users with a certain access level or lower from altering the container registry.
 
@@ -21223,10 +21352,10 @@ A container repository protection rule designed to prevent users with a certain 
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="containerregistryprotectionruleid"></a>`id` **{warning-solid}** | [`ContainerRegistryProtectionRuleID!`](#containerregistryprotectionruleid) | **Introduced** in GitLab 16.6. **Status**: Experiment. ID of the container repository protection rule. |
-| <a id="containerregistryprotectionruleminimumaccesslevelfordelete"></a>`minimumAccessLevelForDelete` **{warning-solid}** | [`ContainerRegistryProtectionRuleAccessLevel`](#containerregistryprotectionruleaccesslevel) | **Introduced** in GitLab 16.6. **Status**: Experiment. Minimum GitLab access level required to delete container images from the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can delete container images. |
-| <a id="containerregistryprotectionruleminimumaccesslevelforpush"></a>`minimumAccessLevelForPush` **{warning-solid}** | [`ContainerRegistryProtectionRuleAccessLevel`](#containerregistryprotectionruleaccesslevel) | **Introduced** in GitLab 16.6. **Status**: Experiment. Minimum GitLab access level required to push container images to the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can push container images. |
-| <a id="containerregistryprotectionrulerepositorypathpattern"></a>`repositoryPathPattern` **{warning-solid}** | [`String!`](#string) | **Introduced** in GitLab 16.6. **Status**: Experiment. Container repository path pattern protected by the protection rule. For example, `my-project/my-container-*`. Wildcard character `*` allowed. |
+| <a id="containerprotectionrepositoryruleid"></a>`id` **{warning-solid}** | [`ContainerRegistryProtectionRuleID!`](#containerregistryprotectionruleid) | **Introduced** in GitLab 16.6. **Status**: Experiment. ID of the container repository protection rule. |
+| <a id="containerprotectionrepositoryruleminimumaccesslevelfordelete"></a>`minimumAccessLevelForDelete` **{warning-solid}** | [`ContainerProtectionRepositoryRuleAccessLevel`](#containerprotectionrepositoryruleaccesslevel) | **Introduced** in GitLab 16.6. **Status**: Experiment. Minimum GitLab access level required to delete container images from the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can delete container images. |
+| <a id="containerprotectionrepositoryruleminimumaccesslevelforpush"></a>`minimumAccessLevelForPush` **{warning-solid}** | [`ContainerProtectionRepositoryRuleAccessLevel`](#containerprotectionrepositoryruleaccesslevel) | **Introduced** in GitLab 16.6. **Status**: Experiment. Minimum GitLab access level required to push container images to the container repository. For example, `MAINTAINER`, `OWNER`, or `ADMIN`. If the value is `nil`, the minimum access level is ignored. Users with at least the Developer role can push container images. |
+| <a id="containerprotectionrepositoryrulerepositorypathpattern"></a>`repositoryPathPattern` **{warning-solid}** | [`String!`](#string) | **Introduced** in GitLab 16.6. **Status**: Experiment. Container repository path pattern protected by the protection rule. For example, `my-project/my-container-*`. Wildcard character `*` allowed. |
 
 ### `ContainerRepository`
 
@@ -21513,6 +21642,7 @@ The currently authenticated GitLab user.
 | <a id="currentuserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="currentuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="currentusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="currentusertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="currentuseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="currentuseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="currentuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -21570,7 +21700,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -21627,7 +21757,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserassigneeorreviewermergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserassigneeorreviewermergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserassigneeorreviewermergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserassigneeorreviewermergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserassigneeorreviewermergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserassigneeorreviewermergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserassigneeorreviewermergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserassigneeorreviewermergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -21682,7 +21812,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -21794,7 +21924,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="currentuserreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="currentuserreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="currentuserreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="currentuserreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="currentuserreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="currentuserreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -23289,7 +23419,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="epicancestorssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="epicancestorssort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="epicancestorsstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="epicancestorssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="epicancestorssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="epicancestorstimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="epicancestorstoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="epicancestorsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -23327,7 +23457,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="epicchildrensearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="epicchildrensort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="epicchildrenstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="epicchildrensubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="epicchildrensubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="epicchildrentimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="epicchildrentoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="epicchildrenupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -24590,7 +24720,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.ciQueueingHistory`
 
-Time taken for CI jobs to be picked up by this group's runners by percentile. Available to users with Maintainer role for the group.
+Time taken for CI jobs to be picked up by this group's runners by percentile. Available to users with Maintainer role for the group. Enable the ClickHouse database backend to use this query.
 
 DETAILS:
 **Introduced** in GitLab 16.11.
@@ -24959,7 +25089,7 @@ Returns [`Epic`](#epic).
 | <a id="groupepicsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupepicsort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="groupepicstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="groupepicsubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupepicsubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="groupepictimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="groupepictoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="groupepicupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -25017,7 +25147,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupepicssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupepicssort"></a>`sort` | [`EpicSort`](#epicsort) | List epics by sort order. |
 | <a id="groupepicsstate"></a>`state` | [`EpicState`](#epicstate) | Filter epics by state. |
-| <a id="groupepicssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Epics the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupepicssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Epics the current user is subscribed to. |
 | <a id="groupepicstimeframe"></a>`timeframe` | [`Timeframe`](#timeframe) | List items overlapping the given timeframe. |
 | <a id="groupepicstoplevelhierarchyonly"></a>`topLevelHierarchyOnly` | [`Boolean`](#boolean) | Filter epics with a top-level hierarchy. |
 | <a id="groupepicsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Epics updated after this date. |
@@ -25132,7 +25262,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupissuessearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupissuessort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="groupissuesstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="groupissuessubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupissuessubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="groupissuestypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="groupissuesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="groupissuesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -25305,7 +25435,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="groupmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="groupmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="groupmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="groupmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="groupmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="groupmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -25910,7 +26040,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="groupworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="groupworkitemstatecountsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="groupworkitemstatecountsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="groupworkitemstatecountssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupworkitemstatecountssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="groupworkitemstatecountstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ##### `Group.workItemTypes`
@@ -25968,7 +26098,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="groupworkitemsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="groupworkitemsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="groupworkitemssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="groupworkitemssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="groupworkitemstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ### `GroupAuditEventNamespaceFilter`
@@ -27472,6 +27602,7 @@ A user assigned to a merge request.
 | <a id="mergerequestassigneestate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestassigneestatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestassigneetwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestassigneetype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestassigneeuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestassigneeuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestassigneeusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -27529,7 +27660,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneeassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestassigneeassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestassigneeassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestassigneeassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestassigneeassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestassigneeassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestassigneeassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestassigneeassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27584,7 +27715,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneeauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestassigneeauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestassigneeauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestassigneeauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestassigneeauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestassigneeauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestassigneeauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestassigneeauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27696,7 +27827,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneereviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestassigneereviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestassigneereviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestassigneereviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestassigneereviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27877,6 +28008,7 @@ The author of the merge request.
 | <a id="mergerequestauthorstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestauthorstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestauthortwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestauthortype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestauthoruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestauthoruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestauthorusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -27934,7 +28066,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestauthorassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestauthorassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestauthorassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestauthorassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestauthorassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestauthorassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestauthorassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -27989,7 +28121,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestauthorauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestauthorauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestauthorauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestauthorauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestauthorauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestauthorauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestauthorauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28101,7 +28233,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestauthorreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestauthorreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestauthorreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestauthorreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28328,6 +28460,7 @@ A user participating in a merge request.
 | <a id="mergerequestparticipantstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestparticipantstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestparticipanttwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestparticipanttype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestparticipantuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestparticipantuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestparticipantusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -28385,7 +28518,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestparticipantassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestparticipantassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestparticipantassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestparticipantassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestparticipantassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestparticipantassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestparticipantassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28440,7 +28573,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestparticipantauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestparticipantauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestparticipantauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestparticipantauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestparticipantauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestparticipantauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestparticipantauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28552,7 +28685,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestparticipantreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestparticipantreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestparticipantreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28752,6 +28885,7 @@ A user assigned to a merge request as a reviewer.
 | <a id="mergerequestreviewerstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="mergerequestreviewerstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestreviewertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="mergerequestreviewertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="mergerequestrevieweruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="mergerequestrevieweruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestreviewerusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -28809,7 +28943,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestreviewerassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestreviewerassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestreviewerassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestreviewerassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestreviewerassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestreviewerassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestreviewerassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28864,7 +28998,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestreviewerauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestreviewerauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestreviewerauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestreviewerauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestreviewerauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestreviewerauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestreviewerauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -28976,7 +29110,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="mergerequestreviewerreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="mergerequestreviewerreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="mergerequestreviewerreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -30561,6 +30695,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="pipelinedetailedstatus"></a>`detailedStatus` | [`DetailedStatus!`](#detailedstatus) | Detailed status of the pipeline. |
 | <a id="pipelinedownstream"></a>`downstream` | [`PipelineConnection`](#pipelineconnection) | Pipelines the pipeline will trigger. (see [Connections](#connections)) |
 | <a id="pipelineduration"></a>`duration` | [`Int`](#int) | Duration of the pipeline in seconds. |
+| <a id="pipelineerrormessages"></a>`errorMessages` | [`PipelineMessageConnection`](#pipelinemessageconnection) | Pipeline error messages. (see [Connections](#connections)) |
 | <a id="pipelinefailurereason"></a>`failureReason` | [`String`](#string) | Reason why the pipeline failed. |
 | <a id="pipelinefinishedat"></a>`finishedAt` | [`Time`](#time) | Timestamp of the pipeline's completion. |
 | <a id="pipelineid"></a>`id` | [`ID!`](#id) | ID of the pipeline. |
@@ -30595,7 +30730,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="pipelineuser"></a>`user` | [`UserCore`](#usercore) | Pipeline user. |
 | <a id="pipelineuserpermissions"></a>`userPermissions` | [`PipelinePermissions!`](#pipelinepermissions) | Permissions for the current user on the resource. |
 | <a id="pipelineusesneeds"></a>`usesNeeds` | [`Boolean`](#boolean) | Indicates if the pipeline has jobs with `needs` dependencies. |
-| <a id="pipelinewarningmessages"></a>`warningMessages` | [`[PipelineMessage!]`](#pipelinemessage) | Pipeline warning messages. |
+| <a id="pipelinewarningmessages"></a>`warningMessages` | [`PipelineMessageConnection`](#pipelinemessageconnection) | Pipeline warning messages. (see [Connections](#connections)) |
 | <a id="pipelinewarnings"></a>`warnings` | [`Boolean!`](#boolean) | Indicates if a pipeline has warnings. |
 | <a id="pipelineyamlerrormessages"></a>`yamlErrorMessages` | [`String`](#string) | Pipeline YAML errors. |
 | <a id="pipelineyamlerrors"></a>`yamlErrors` | [`Boolean!`](#boolean) | If the pipeline has YAML errors. |
@@ -31064,6 +31199,7 @@ Represents the details of merge request approval policy violations.
 | <a id="policyviolationdetailsnewscanfinding"></a>`newScanFinding` | [`[PolicyScanFindingViolation!]!`](#policyscanfindingviolation) | Represents the newly detected violations of `scan_finding` rules. |
 | <a id="policyviolationdetailspolicies"></a>`policies` | [`[PolicyViolationInfo!]!`](#policyviolationinfo) | Information about policies that were violated. |
 | <a id="policyviolationdetailspreviousscanfinding"></a>`previousScanFinding` | [`[PolicyScanFindingViolation!]!`](#policyscanfindingviolation) | Represents the violations of `scan_finding` rules for previously existing vulnerabilities. |
+| <a id="policyviolationdetailsviolationscount"></a>`violationsCount` | [`Int!`](#int) | Total count of violations. |
 
 ### `PolicyViolationInfo`
 
@@ -31129,9 +31265,10 @@ Project-level settings for product analytics provider.
 | <a id="projectciupstreamprojectsubscriptions"></a>`ciUpstreamProjectSubscriptions` **{warning-solid}** | [`CiProjectSubscriptionConnection`](#ciprojectsubscriptionconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Pipeline subscriptions where this project is the downstream project.When an upstream project's pipeline completes, a pipeline is triggered in the downstream project (this project). |
 | <a id="projectcodecoveragesummary"></a>`codeCoverageSummary` | [`CodeCoverageSummary`](#codecoveragesummary) | Code coverage summary associated with the project. |
 | <a id="projectcomplianceframeworks"></a>`complianceFrameworks` | [`ComplianceFrameworkConnection`](#complianceframeworkconnection) | Compliance frameworks associated with the project. (see [Connections](#connections)) |
+| <a id="projectcomponentusages"></a>`componentUsages` | [`CiCatalogResourceComponentUsageConnection`](#cicatalogresourcecomponentusageconnection) | Component(s) used by the project. (see [Connections](#connections)) |
 | <a id="projectcontainerexpirationpolicy"></a>`containerExpirationPolicy` **{warning-solid}** | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | **Deprecated** in GitLab 17.5. Use `container_tags_expiration_policy`. |
+| <a id="projectcontainerprotectionrepositoryrules"></a>`containerProtectionRepositoryRules` **{warning-solid}** | [`ContainerProtectionRepositoryRuleConnection`](#containerprotectionrepositoryruleconnection) | **Introduced** in GitLab 16.10. **Status**: Experiment. Container protection rules for the project. |
 | <a id="projectcontainerregistryenabled"></a>`containerRegistryEnabled` | [`Boolean`](#boolean) | Indicates if Container Registry is enabled for the current user. |
-| <a id="projectcontainerregistryprotectionrules"></a>`containerRegistryProtectionRules` **{warning-solid}** | [`ContainerRegistryProtectionRuleConnection`](#containerregistryprotectionruleconnection) | **Introduced** in GitLab 16.10. **Status**: Experiment. Container protection rules for the project. |
 | <a id="projectcontainerrepositoriescount"></a>`containerRepositoriesCount` | [`Int!`](#int) | Number of container repositories in the project. |
 | <a id="projectcontainertagsexpirationpolicy"></a>`containerTagsExpirationPolicy` | [`ContainerTagsExpirationPolicy`](#containertagsexpirationpolicy) | Container tags expiration policy of the project. |
 | <a id="projectcorpuses"></a>`corpuses` | [`CoverageFuzzingCorpusConnection`](#coveragefuzzingcorpusconnection) | Find corpuses of the project. (see [Connections](#connections)) |
@@ -31979,7 +32116,7 @@ Returns [`Issue`](#issue).
 | <a id="projectissuesearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectissuesort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="projectissuestate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="projectissuesubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectissuesubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="projectissuetypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="projectissueupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="projectissueupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -32030,7 +32167,7 @@ Returns [`IssueStatusCountsType`](#issuestatuscountstype).
 | <a id="projectissuestatuscountsreleasetag"></a>`releaseTag` | [`[String!]`](#string) | Release tag associated with the issue's milestone. |
 | <a id="projectissuestatuscountsreleasetagwildcardid"></a>`releaseTagWildcardId` | [`ReleaseTagWildcardId`](#releasetagwildcardid) | Filter issues by release tag ID wildcard. |
 | <a id="projectissuestatuscountssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
-| <a id="projectissuestatuscountssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectissuestatuscountssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="projectissuestatuscountstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="projectissuestatuscountsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="projectissuestatuscountsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -32088,7 +32225,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectissuessearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectissuessort"></a>`sort` | [`IssueSort`](#issuesort) | Sort issues by the criteria. |
 | <a id="projectissuesstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the issue. |
-| <a id="projectissuessubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Issues the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectissuessubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Issues the current user is subscribed to. |
 | <a id="projectissuestypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter issues by the given issue types. |
 | <a id="projectissuesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Issues updated after the date. |
 | <a id="projectissuesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Issues updated before the date. |
@@ -32301,7 +32438,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="projectmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="projectmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="projectmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="projectmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="projectmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="projectmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -33168,7 +33305,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="projectworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="projectworkitemstatecountsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="projectworkitemstatecountsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="projectworkitemstatecountssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectworkitemstatecountssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="projectworkitemstatecountstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ##### `Project.workItemTypes`
@@ -33223,7 +33360,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="projectworkitemsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
 | <a id="projectworkitemsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
-| <a id="projectworkitemssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Work items the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="projectworkitemssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="projectworkitemstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
 
 ### `ProjectCiCdSetting`
@@ -34444,6 +34581,7 @@ Security policy validation error.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="securitypolicyvalidationerrorfield"></a>`field` | [`String!`](#string) | Error field. |
+| <a id="securitypolicyvalidationerrorindex"></a>`index` | [`Int`](#int) | Index of the errored action. |
 | <a id="securitypolicyvalidationerrorlevel"></a>`level` | [`String!`](#string) | Error level. |
 | <a id="securitypolicyvalidationerrormessage"></a>`message` | [`String!`](#string) | Error message. |
 | <a id="securitypolicyvalidationerrortitle"></a>`title` | [`String`](#string) | Error title. |
@@ -35540,6 +35678,7 @@ Core representation of a GitLab user.
 | <a id="usercorestate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="usercorestatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="usercoretwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="usercoretype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="usercoreuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="usercoreuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="usercoreusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -35597,7 +35736,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoreassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="usercoreassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="usercoreassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="usercoreassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="usercoreassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="usercoreassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="usercoreassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="usercoreassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -35652,7 +35791,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoreauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="usercoreauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="usercoreauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="usercoreauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="usercoreauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="usercoreauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="usercoreauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="usercoreauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -35764,7 +35903,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercorereviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="usercorereviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="usercorereviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="usercorereviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="usercorereviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="usercorereviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="usercorereviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="usercorereviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -35902,6 +36041,16 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoreworkspacesids"></a>`ids` | [`[RemoteDevelopmentWorkspaceID!]`](#remotedevelopmentworkspaceid) | Filter workspaces by workspace GlobalIDs. For example, `["gid://gitlab/RemoteDevelopment::Workspace/1"]`. |
 | <a id="usercoreworkspacesincludeactualstates"></a>`includeActualStates` **{warning-solid}** | [`[String!]`](#string) | **Deprecated** in GitLab 16.7. Use actual_states instead. |
 | <a id="usercoreworkspacesprojectids"></a>`projectIds` | [`[ProjectID!]`](#projectid) | Filter workspaces by project GlobalIDs. |
+
+### `UserMemberRole`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="usermemberroleid"></a>`id` | [`GlobalID!`](#globalid) | Global ID of the user member role association. |
+| <a id="usermemberrolememberrole"></a>`memberRole` | [`MemberRole!`](#memberrole) | Member Role to which the user belongs. |
+| <a id="usermemberroleuser"></a>`user` | [`UserCore!`](#usercore) | User to which the member role belongs. |
 
 ### `UserMergeRequestInteraction`
 
@@ -37238,7 +37387,7 @@ Represents a development widget.
 | <a id="workitemwidgetdevelopmentclosingmergerequests"></a>`closingMergeRequests` | [`WorkItemClosingMergeRequestConnection`](#workitemclosingmergerequestconnection) | Merge requests that will close the work item when merged. (see [Connections](#connections)) |
 | <a id="workitemwidgetdevelopmentfeatureflags"></a>`featureFlags` | [`FeatureFlagConnection`](#featureflagconnection) | Feature flags associated with the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgetdevelopmentrelatedbranches"></a>`relatedBranches` | [`WorkItemRelatedBranchConnection`](#workitemrelatedbranchconnection) | Branches that have referred to the work item, but do not have an associated merge request. (see [Connections](#connections)) |
-| <a id="workitemwidgetdevelopmentrelatedmergerequests"></a>`relatedMergeRequests` **{warning-solid}** | [`MergeRequestConnection`](#mergerequestconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Merge requests where the work item has been mentioned. Not implemented, returns empty list. |
+| <a id="workitemwidgetdevelopmentrelatedmergerequests"></a>`relatedMergeRequests` **{warning-solid}** | [`MergeRequestConnection`](#mergerequestconnection) | **Introduced** in GitLab 17.6. **Status**: Experiment. Merge requests where the work item has been mentioned. This field can only be resolved for one work item in any single request. |
 | <a id="workitemwidgetdevelopmenttype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 | <a id="workitemwidgetdevelopmentwillautoclosebymergerequest"></a>`willAutoCloseByMergeRequest` | [`Boolean!`](#boolean) | Whether the work item will automatically be closed when a closing merge request is merged. |
 
@@ -37681,6 +37830,7 @@ LLMs supported by the self-hosted model features.
 | <a id="aiacceptedselfhostedmodelsgpt"></a>`GPT` | GPT: Suitable for code suggestions. |
 | <a id="aiacceptedselfhostedmodelsllama3"></a>`LLAMA3` | LLaMA 3: Suitable for code suggestions and duo chat. |
 | <a id="aiacceptedselfhostedmodelsmistral"></a>`MISTRAL` | Mistral: Suitable for code suggestions and duo chat. |
+| <a id="aiacceptedselfhostedmodelsmixtral"></a>`MIXTRAL` | Mixtral: Suitable for code suggestions and duo chat. |
 
 ### `AiAction`
 
@@ -37722,17 +37872,9 @@ AI features that can be configured in the settings.
 | <a id="aifeaturescode_completions"></a>`CODE_COMPLETIONS` | Code completion feature setting. |
 | <a id="aifeaturescode_generations"></a>`CODE_GENERATIONS` | Code generation feature setting. |
 | <a id="aifeaturesduo_chat"></a>`DUO_CHAT` | Duo chat feature setting. |
-| <a id="aifeaturesduo_chat_ci_editor_assistant"></a>`DUO_CHAT_CI_EDITOR_ASSISTANT` | Duo chat ci editor assistant feature setting. |
-| <a id="aifeaturesduo_chat_epic_reader"></a>`DUO_CHAT_EPIC_READER` | Duo chat epic reader feature setting. |
 | <a id="aifeaturesduo_chat_explain_code"></a>`DUO_CHAT_EXPLAIN_CODE` | Duo chat explain code feature setting. |
-| <a id="aifeaturesduo_chat_explain_vulnerability"></a>`DUO_CHAT_EXPLAIN_VULNERABILITY` | Duo chat explain vulnerability feature setting. |
 | <a id="aifeaturesduo_chat_fix_code"></a>`DUO_CHAT_FIX_CODE` | Duo chat fix code feature setting. |
-| <a id="aifeaturesduo_chat_gitlab_documentation"></a>`DUO_CHAT_GITLAB_DOCUMENTATION` | Duo chat gitlab documentation feature setting. |
-| <a id="aifeaturesduo_chat_issue_reader"></a>`DUO_CHAT_ISSUE_READER` | Duo chat issue reader feature setting. |
-| <a id="aifeaturesduo_chat_merge_request_reader"></a>`DUO_CHAT_MERGE_REQUEST_READER` | Duo chat merge request reader feature setting. |
 | <a id="aifeaturesduo_chat_refactor_code"></a>`DUO_CHAT_REFACTOR_CODE` | Duo chat refactor code feature setting. |
-| <a id="aifeaturesduo_chat_summarize_comments"></a>`DUO_CHAT_SUMMARIZE_COMMENTS` | Duo chat summarize comment feature setting. |
-| <a id="aifeaturesduo_chat_troubleshoot_job"></a>`DUO_CHAT_TROUBLESHOOT_JOB` | Duo chat troubleshoot job feature setting. |
 | <a id="aifeaturesduo_chat_write_tests"></a>`DUO_CHAT_WRITE_TESTS` | Duo chat write test feature setting. |
 
 ### `AiMessageRole`
@@ -38470,15 +38612,15 @@ Values for sorting contacts.
 | <a id="containerexpirationpolicyolderthanenumsixty_days"></a>`SIXTY_DAYS` | 60 days until tags are automatically removed. |
 | <a id="containerexpirationpolicyolderthanenumthirty_days"></a>`THIRTY_DAYS` | 30 days until tags are automatically removed. |
 
-### `ContainerRegistryProtectionRuleAccessLevel`
+### `ContainerProtectionRepositoryRuleAccessLevel`
 
 Access level of a container registry protection rule resource.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="containerregistryprotectionruleaccessleveladmin"></a>`ADMIN` **{warning-solid}** | **Introduced** in GitLab 16.6. **Status**: Experiment. Admin access. |
-| <a id="containerregistryprotectionruleaccesslevelmaintainer"></a>`MAINTAINER` **{warning-solid}** | **Introduced** in GitLab 16.6. **Status**: Experiment. Maintainer access. |
-| <a id="containerregistryprotectionruleaccesslevelowner"></a>`OWNER` **{warning-solid}** | **Introduced** in GitLab 16.6. **Status**: Experiment. Owner access. |
+| <a id="containerprotectionrepositoryruleaccessleveladmin"></a>`ADMIN` **{warning-solid}** | **Introduced** in GitLab 16.6. **Status**: Experiment. Admin access. |
+| <a id="containerprotectionrepositoryruleaccesslevelmaintainer"></a>`MAINTAINER` **{warning-solid}** | **Introduced** in GitLab 16.6. **Status**: Experiment. Maintainer access. |
+| <a id="containerprotectionrepositoryruleaccesslevelowner"></a>`OWNER` **{warning-solid}** | **Introduced** in GitLab 16.6. **Status**: Experiment. Owner access. |
 
 ### `ContainerRepositoryCleanupStatus`
 
@@ -40783,6 +40925,31 @@ Possible states of a user.
 | <a id="userstatedeactivated"></a>`deactivated` | User is no longer active and cannot use the system. |
 | <a id="userstateldap_blocked"></a>`ldap_blocked` | User has been blocked by the system. |
 
+### `UserType`
+
+Possible types of user.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="usertypeadmin_bot"></a>`ADMIN_BOT` | Admin bot. |
+| <a id="usertypealert_bot"></a>`ALERT_BOT` | Alert bot. |
+| <a id="usertypeautomation_bot"></a>`AUTOMATION_BOT` | Automation bot. |
+| <a id="usertypeduo_code_review_bot"></a>`DUO_CODE_REVIEW_BOT` | Duo code review bot. |
+| <a id="usertypeghost"></a>`GHOST` | Ghost. |
+| <a id="usertypehuman"></a>`HUMAN` | Human. |
+| <a id="usertypeimport_user"></a>`IMPORT_USER` | Import user. |
+| <a id="usertypellm_bot"></a>`LLM_BOT` | Llm bot. |
+| <a id="usertypemigration_bot"></a>`MIGRATION_BOT` | Migration bot. |
+| <a id="usertypeplaceholder"></a>`PLACEHOLDER` | Placeholder. |
+| <a id="usertypeproject_bot"></a>`PROJECT_BOT` | Project bot. |
+| <a id="usertypesecurity_bot"></a>`SECURITY_BOT` | Security bot. |
+| <a id="usertypesecurity_policy_bot"></a>`SECURITY_POLICY_BOT` | Security policy bot. |
+| <a id="usertypeservice_account"></a>`SERVICE_ACCOUNT` | Service account. |
+| <a id="usertypeservice_user"></a>`SERVICE_USER` | Service user. |
+| <a id="usertypesuggested_reviewers_bot"></a>`SUGGESTED_REVIEWERS_BOT` | Suggested reviewers bot. |
+| <a id="usertypesupport_bot"></a>`SUPPORT_BOT` | Support bot. |
+| <a id="usertypevisual_review_bot"></a>`VISUAL_REVIEW_BOT` | Visual review bot. |
+
 ### `ValueStreamDashboardMetric`
 
 Possible identifier types for a measurement.
@@ -43075,6 +43242,7 @@ Implementations:
 | <a id="userstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="userstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="usertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
+| <a id="usertype"></a>`type` | [`UserType!`](#usertype) | Type of the user. |
 | <a id="useruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
 | <a id="useruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="userusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
@@ -43132,7 +43300,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userassignedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="userassignedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="userassignedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="userassignedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="userassignedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="userassignedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="userassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="userassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -43187,7 +43355,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userauthoredmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="userauthoredmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="userauthoredmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="userauthoredmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="userauthoredmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="userauthoredmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="userauthoredmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="userauthoredmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -43299,7 +43467,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userreviewrequestedmergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
 | <a id="userreviewrequestedmergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
 | <a id="userreviewrequestedmergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
-| <a id="userreviewrequestedmergerequestssubscribed"></a>`subscribed` **{warning-solid}** | [`SubscriptionStatus`](#subscriptionstatus) | **Introduced** in GitLab 17.5. **Status**: Experiment. Merge requests the current user is subscribed to. Is ignored if `filter_subscriptions` feature flag is disabled. |
+| <a id="userreviewrequestedmergerequestssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Merge requests the current user is subscribed to. |
 | <a id="userreviewrequestedmergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
 | <a id="userreviewrequestedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="userreviewrequestedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
@@ -43513,24 +43681,6 @@ see the associated mutation type above.
 | <a id="aicurrentfileinputcontentbelowcursor"></a>`contentBelowCursor` | [`String`](#string) | Content below cursor. |
 | <a id="aicurrentfileinputfilename"></a>`fileName` | [`String!`](#string) | File name. |
 | <a id="aicurrentfileinputselectedtext"></a>`selectedText` | [`String!`](#string) | Selected text. |
-
-### `AiExplainCodeInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="aiexplaincodeinputmessages"></a>`messages` | [`[AiExplainCodeMessageInput!]!`](#aiexplaincodemessageinput) | Code messages that is passed to be explained by AI. |
-| <a id="aiexplaincodeinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
-
-### `AiExplainCodeMessageInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="aiexplaincodemessageinputcontent"></a>`content` | [`String!`](#string) | Content of the message. |
-| <a id="aiexplaincodemessageinputrole"></a>`role` | [`String!`](#string) | Role of the message (system, user, assistant). |
 
 ### `AiExplainVulnerabilityInput`
 
@@ -43962,7 +44112,8 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestsresolvernegatedparamsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Filters merge requests to exclude any that are approved by usernames in the given array. |
 | <a id="mergerequestsresolvernegatedparamsassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Filters merge requests to exclude any that are assigned to the usernames in the given array. |
 | <a id="mergerequestsresolvernegatedparamsauthorusername"></a>`authorUsername` | [`String`](#string) | Filters merge requests to exclude any that are authored by the given user. |
-| <a id="mergerequestsresolvernegatedparamslabels"></a>`labels` | [`[String!]`](#string) | Filters merge requests to exclude any that have the labels provided in the given array. |
+| <a id="mergerequestsresolvernegatedparamslabelname"></a>`labelName` | [`[String!]`](#string) | Filters merge requests to exclude any that have the labels provided in the given array. |
+| <a id="mergerequestsresolvernegatedparamslabels"></a>`labels` **{warning-solid}** | [`[String!]`](#string) | **Deprecated:** Use `labelName`. Deprecated in GitLab 17.7. |
 | <a id="mergerequestsresolvernegatedparamsmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Filters merge requests to those not in the given milestone. |
 | <a id="mergerequestsresolvernegatedparamsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filters merge requests to those without the given reaction from the authenticated user. |
 | <a id="mergerequestsresolvernegatedparamsreleasetag"></a>`releaseTag` | [`String`](#string) | Filters merge requests to those without the given release tag. |

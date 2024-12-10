@@ -2,18 +2,17 @@
 import {
   GlAlert,
   GlButton,
-  GlCollapse,
   GlDisclosureDropdown,
   GlIcon,
   GlInfiniteScroll,
   GlModal,
-  GlSkeletonLoader,
 } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { STATUS_CLOSED, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { fetchPolicies } from '~/lib/graphql';
 import { __, s__ } from '~/locale';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { getIterationPeriod } from '../utils';
 import { CADENCE_AND_DUE_DATE_DESC } from '../constants';
 import groupQuery from '../queries/group_iterations_in_cadence.query.graphql';
@@ -43,13 +42,12 @@ export default {
   components: {
     GlAlert,
     GlButton,
-    GlCollapse,
     GlDisclosureDropdown,
     GlIcon,
     GlInfiniteScroll,
     GlModal,
-    GlSkeletonLoader,
     TimeboxStatusBadge,
+    CrudComponent,
   },
   apollo: {
     workspace: {
@@ -127,6 +125,7 @@ export default {
           text: i18n.deleteCadence,
           action: this.showModal,
           extraAttrs: {
+            class: '!gl-text-danger',
             'data-testid': 'delete-cadence',
           },
         },
@@ -251,92 +250,98 @@ export default {
 };
 </script>
 <template>
-  <li class="!gl-py-0">
-    <div class="gl-flex gl-items-center">
-      <gl-button
-        variant="link"
-        class="gl-mr-auto gl-min-w-0 !gl-px-3 !gl-py-5 gl-font-bold !gl-text-default"
-        :aria-expanded="expanded"
-        @click="expanded = !expanded"
-      >
-        <gl-icon
-          name="chevron-right"
-          class="gl-transition-all"
-          :class="{ 'gl-rotate-90': expanded }"
-        /><span class="gl-ml-2">{{ title }}</span>
-      </gl-button>
-      <span
-        v-if="showDurationBadget"
-        class="gl-mr-5 gl-hidden sm:gl-inline-block"
-        data-testid="duration-badge"
-      >
-        <gl-icon name="clock" class="gl-mr-3" />
-        {{ n__('Every week', 'Every %d weeks', durationInWeeks) }}</span
-      >
-      <gl-disclosure-dropdown
-        v-if="canEditCadence"
-        ref="menu"
-        category="tertiary"
-        data-testid="cadence-options-button"
-        icon="ellipsis_v"
-        placement="bottom-end"
-        no-caret
-        text-sr-only
-        :items="actionItems"
-      />
-      <gl-modal
-        ref="modal"
-        :modal-id="`${cadenceId}-delete-modal`"
-        :title="i18n.modalTitle"
-        :ok-title="i18n.modalConfirm"
-        ok-variant="danger"
-        @hidden="focusMenu"
-        @ok="$emit('delete-cadence', cadenceId)"
-      >
-        {{ i18n.modalText }}
-      </gl-modal>
-    </div>
-
+  <div>
     <gl-alert v-if="error" variant="danger" :dismissible="true" @dismiss="error = ''">
       {{ error }}
     </gl-alert>
 
-    <gl-collapse :visible="expanded">
-      <div v-if="loading && iterations.length === 0" class="gl-p-5">
-        <gl-skeleton-loader :lines="2" />
-      </div>
-
-      <gl-infinite-scroll
-        v-else-if="iterations.length || loading"
-        :fetched-items="iterations.length"
-        :max-list-height="250"
-        @bottomReached="fetchMore"
-      >
-        <template #items>
-          <ol class="gl-pl-0">
-            <li
-              v-for="iteration in iterations"
-              :key="iteration.id"
-              class="gl-border-t-1 gl-border-default gl-bg-gray-10 gl-p-5 gl-border-t-solid"
-            >
-              <router-link
-                :to="path(iteration.id)"
-                data-testid="iteration-item"
-                :data-qa-title="getIterationPeriod(iteration)"
-              >
-                {{ getIterationPeriod(iteration) }}
-              </router-link>
-              <timebox-status-badge v-if="showStateBadge" :state="iteration.state" />
-            </li>
-          </ol>
-          <div v-if="loading" class="gl-p-5">
-            <gl-skeleton-loader :lines="2" />
-          </div>
-        </template>
-      </gl-infinite-scroll>
-      <template v-else-if="!loading">
-        <p class="gl-px-7">{{ i18n.noResults[iterationState] }}</p>
+    <crud-component
+      is-collapsible
+      :collapsed="!expanded"
+      class="!gl-mt-3"
+      header-class="!gl-flex-nowrap"
+      title-class="gl-flex-wrap"
+      @expanded="expanded = true"
+      @collapsed="expanded = false"
+    >
+      <template #title>
+        <gl-button
+          variant="link"
+          class="gl-grow !gl-no-underline !gl-shadow-none"
+          button-text-classes="gl-text-left !gl-whitespace-normal gl-inline-flex gl-flex-wrap gl-justify-between gl-gap-2 gl-w-full"
+          tabindex="-1"
+          @click="expanded = !expanded"
+        >
+          <span class="gl-text-strong">{{ title }}</span>
+          <span
+            v-if="showDurationBadget"
+            class="gl-shrink-0 gl-text-sm gl-text-subtle"
+            data-testid="duration-badge"
+          >
+            <gl-icon name="clock" class="gl-mr-2" />
+            {{ n__('Every week', 'Every %d weeks', durationInWeeks) }}</span
+          >
+        </gl-button>
       </template>
-    </gl-collapse>
-  </li>
+
+      <template #actions>
+        <gl-disclosure-dropdown
+          v-if="canEditCadence"
+          ref="menu"
+          size="small"
+          category="tertiary"
+          data-testid="cadence-options-button"
+          icon="ellipsis_v"
+          placement="bottom-end"
+          no-caret
+          text-sr-only
+          :items="actionItems"
+        />
+      </template>
+
+      <template v-if="!iterations || iterations.length === 0" #empty>
+        {{ i18n.noResults[iterationState] }}
+      </template>
+
+      <template #default>
+        <gl-infinite-scroll
+          :fetched-items="iterations.length"
+          :max-list-height="250"
+          @bottomReached="fetchMore"
+        >
+          <template #items>
+            <ul class="content-list">
+              <li
+                v-for="iteration in iterations"
+                :key="iteration.id"
+                class="!gl-flex gl-flex-wrap gl-items-baseline gl-text-left"
+              >
+                <router-link
+                  class="gl-grow"
+                  :to="path(iteration.id)"
+                  data-testid="iteration-item"
+                  :data-qa-title="getIterationPeriod(iteration)"
+                >
+                  {{ getIterationPeriod(iteration) }}
+                </router-link>
+                <timebox-status-badge v-if="showStateBadge" :state="iteration.state" />
+              </li>
+            </ul>
+          </template>
+        </gl-infinite-scroll>
+      </template>
+    </crud-component>
+
+    <gl-modal
+      ref="modal"
+      :modal-id="`${cadenceId}-delete-modal`"
+      :title="i18n.modalTitle"
+      :ok-title="i18n.modalConfirm"
+      ok-variant="danger"
+      @hidden="focusMenu"
+      @ok="$emit('delete-cadence', cadenceId)"
+    >
+      {{ i18n.modalText }}
+    </gl-modal>
+  </div>
 </template>

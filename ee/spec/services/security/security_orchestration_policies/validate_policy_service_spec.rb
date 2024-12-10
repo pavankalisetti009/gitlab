@@ -30,14 +30,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it { expect(result[:status]).to eq(:success) }
     end
 
-    shared_examples 'sets validation errors' do |message:, field: described_class::DEFAULT_VALIDATION_ERROR_FIELD, level: :error, title: nil|
+    shared_examples 'sets validation errors' do |message:, field: described_class::DEFAULT_VALIDATION_ERROR_FIELD, level: :error, title: nil, index: 0|
       describe 'validation errors' do
         subject(:errors) { result[:validation_errors] }
 
         specify { expect(errors).to be_one }
 
         specify do
-          expect(errors.first).to include(field: field, level: level, message: message, title: title || anything)
+          expect(errors.first).to include(field: field, level: level, message: message, title: title || anything, index: index)
         end
       end
     end
@@ -266,9 +266,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             end
 
             it_behaves_like 'sets validation errors',
-              field: :approvers_ids,
+              field: :actions,
               message: 'Required approvals exceed eligible approvers.',
-              title: 'Logic error'
+              title: 'Logic error',
+              index: 0
           end
 
           shared_examples 'passes validation' do
@@ -289,6 +290,61 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             end
 
             it_behaves_like 'passes validation'
+          end
+
+          context 'with feature flag disabled with user_approvers' do
+            let(:action) do
+              {
+                type: 'require_approval',
+                user_approvers: [user.username]
+              }
+            end
+
+            before do
+              action[:approvals_required] = 2
+              stub_feature_flags(multiple_approval_actions: false)
+            end
+
+            it_behaves_like 'sets validation errors',
+              field: :approvers_ids,
+              message: 'Required approvals exceed eligible approvers.',
+              title: 'Logic error',
+              index: 0
+          end
+
+          context 'with multiple actions' do
+            subject(:errors) { result[:validation_errors] }
+
+            let(:action) do
+              {
+                type: 'require_approval',
+                user_approvers: [user.username]
+              }
+            end
+
+            before do
+              policy[:actions] = [action, action]
+            end
+
+            context 'with user_approvers with exceeding approvals_required' do
+              before do
+                action[:approvals_required] = 2
+              end
+
+              it 'fails validation for multiple errors' do
+                expect(errors.length).to eq(2)
+                expect(errors[0]).to include(field: :actions, level: :error, message: 'Required approvals exceed eligible approvers.', title: 'Logic error', index: 0)
+                expect(errors[1]).to include(field: :actions, level: :error, message: 'Required approvals exceed eligible approvers.', title: 'Logic error', index: 1)
+              end
+            end
+
+            context 'with sufficient approvals_required' do
+              before do
+                action[:approvals_required] = 1
+              end
+
+              it_behaves_like 'passes validation'
+            end
           end
 
           context 'with user_approvers' do
@@ -590,7 +646,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
 
     shared_examples 'checks scan execution policy action limit' do
       let(:limit) { Gitlab::CurrentSettings.scan_execution_policies_action_limit }
-      let(:action) { { scan: 'container_scanning' } }
+      let(:action) do
+        {
+          scan: 'container_scanning'
+        }
+      end
 
       context 'when below limit' do
         before do

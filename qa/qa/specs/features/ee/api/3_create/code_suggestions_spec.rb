@@ -37,7 +37,7 @@ module QA
         }
       end
 
-      let(:token) { Runtime::UserStore.user_api_client.personal_access_token }
+      let(:token) { Runtime::User::Store.user_api_client.personal_access_token }
 
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
 
@@ -62,23 +62,6 @@ module QA
 
           expect_status_code(200, response)
           verify_suggestion(response, expected_v2_response_data)
-        end
-      end
-
-      shared_examples 'direct code completion' do |testcase|
-        it 'returns a completion directly from AI gateway', testcase: testcase do
-          response = get_direct_suggestion(prompt_data)
-
-          expect_status_code(200, response)
-          verify_suggestion(response, expected_v2_response_data)
-        end
-      end
-
-      shared_examples 'direct code generation' do |testcase|
-        it 'refuses a code generation request directly from AI gateway', testcase: testcase do
-          response = get_direct_suggestion(prompt_data, 'generations')
-
-          expect_status_code(403, response)
         end
       end
 
@@ -143,31 +126,25 @@ module QA
         context 'on SaaS', :smoke, :external_ai_provider,
           only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
-          it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
-          it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
           context 'with context' do
             let(:prompt_data) { super().merge(context: context) }
 
             it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500005'
-            it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491518'
           end
         end
 
         context 'on Self-managed', :orchestrated do
-          let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+          let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
 
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
                 it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
-                it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
-                it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
 
                 context 'with context' do
                   let(:prompt_data) { super().merge(context: context) }
 
                   it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500006'
-                  it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
                 end
               end
             end
@@ -199,7 +176,7 @@ module QA
         end
 
         context 'on Self-managed', :orchestrated do
-          let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+          let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
 
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
@@ -231,12 +208,108 @@ module QA
           end
 
           context 'on Self-managed', :orchestrated do
-            let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+            let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
 
             context 'with a valid license' do
               context 'with a Duo Enterprise add-on' do
                 context 'when seat is assigned', :blocking, :ai_gateway do
                   it_behaves_like 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462968'
+                end
+              end
+            end
+          end
+        end
+      end
+
+      context 'when direct access', feature_flag: { name: :incident_fail_over_completion_provider } do
+        shared_examples 'direct code completion' do |testcase|
+          it 'returns a completion directly from AI gateway', testcase: testcase do
+            failed_over = Runtime::Feature.enabled?("incident_fail_over_completion_provider")
+
+            if failed_over
+              expect { get_direct_suggestion(prompt_data) }.to raise_error(RuntimeError, "Unexpected status code 403")
+            else
+              response = get_direct_suggestion(prompt_data)
+              expect_status_code(200, response)
+              verify_suggestion(response, expected_v2_response_data)
+            end
+          end
+        end
+
+        shared_examples 'direct code generation' do |testcase|
+          it 'refuses a code generation request directly from AI gateway', testcase: testcase do
+            failed_over = Runtime::Feature.enabled?("incident_fail_over_completion_provider")
+
+            if failed_over
+              expect { get_direct_suggestion(prompt_data, 'generations') }
+                .to raise_error(RuntimeError, "Unexpected status code 403")
+            else
+              response = get_direct_suggestion(prompt_data, 'generations')
+              expect_status_code(403, response)
+            end
+          end
+        end
+
+        let(:prompt_data) do
+          {
+            prompt_version: 1,
+            telemetry: [],
+            current_file: {
+              file_name: '/test.rb',
+              content_above_cursor: content_above_cursor,
+              content_below_cursor: "\n\n\n\n\n",
+              language_identifier: 'ruby'
+            },
+            intent: 'completion'
+          }.compact
+        end
+
+        let(:content_above_cursor) do
+          <<-RUBY_PROMPT.chomp
+            class Vehicle
+              attr_accessor :make, :model, :year
+
+              def drive
+                puts "Driving the \#{make} \#{model} from \#{year}."
+              end
+
+              def reverse
+                puts "Reversing the \#{make} \#{model} from \#{year}."
+              end
+
+              def honk_horn(sound)
+                puts "Beep beep the \#{make} \#{model} from \#{year} is honking its horn. \#{sound}"
+              end
+            end
+
+            vehicle = Vehicle.new
+            vehicle.
+          RUBY_PROMPT
+        end
+
+        # When incident_fail_over_completion_provider is enabled, getting the
+        # connection details for a direct connection will return a 403
+        # Since we need to check the feature flag to determine this we require
+        # cannot run this spec on canary/production
+        context 'on SaaS when direct connection', :smoke, :external_ai_provider,
+          only: { pipeline: %w[staging-canary staging] } do
+          it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
+          it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
+        end
+
+        context 'on Self-managed', :orchestrated do
+          let(:token) { Runtime::User::Store.admin_api_client.personal_access_token }
+
+          context 'with a valid license' do
+            context 'with a Duo Enterprise add-on' do
+              context 'when seat is assigned', :blocking, :ai_gateway do
+                it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
+                it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
+
+                context 'with context' do
+                  let(:prompt_data) { super().merge(context: context) }
+
+                  it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
                 end
               end
             end

@@ -1006,11 +1006,27 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
 
         it 'only loads plans once' do
-          expect(Plan).to receive(:hosted_plans_for_namespaces).once.and_call_original
+          expect_next_found_instance_of(GitlabSubscription) do |subscription|
+            expect(subscription).to receive(:hosted_plan).once.and_call_original
+          end
 
           get api("/groups/#{group.id}/projects", user), params: { include_subgroups: true }
 
           expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'when use_actual_plan_in_license_check is disabled' do
+          before do
+            stub_feature_flags(use_actual_plan_in_license_check: false)
+          end
+
+          it 'only loads plans once' do
+            expect(Plan).to receive(:hosted_plans_for_namespaces).once.and_call_original
+
+            get api("/groups/#{group.id}/projects", user), params: { include_subgroups: true }
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
         end
       end
 

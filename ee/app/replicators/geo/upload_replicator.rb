@@ -12,20 +12,27 @@ module Geo
       model_record.retrieve_uploader
     end
 
-    # Do not allow download unless the upload's owner `model` is present.
+    # Do not attempt download unless the upload's owner `model` is present.
     # Otherwise, attempting to build file paths will raise an exception.
     def predownload_validation_failure
-      error_message = super
+      error_message = model_is_missing_error_message
       return error_message if error_message
 
+      super
+    end
+
+    def calculate_checksum
+      error_message = model_is_missing_error_message
+      raise error_message if error_message
+
+      super
+    end
+
+    def model_is_missing_error_message
       upload = model_record
+      return if upload.model.present?
 
-      unless upload.model.present?
-        missing_model = "#{upload.model_type} with ID #{upload.model_id}"
-        return "The model which owns Upload with ID #{upload.id} is missing: #{missing_model}"
-      end
-
-      nil
+      "The model which owns this Upload is missing. Upload ID##{upload.id}, #{upload.model_type} ID##{upload.model_id}"
     end
   end
 end

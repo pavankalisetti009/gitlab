@@ -2,20 +2,10 @@
 import { GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState, mapGetters } from 'vuex';
-import {
-  seatsAvailableText,
-  seatsInSubscriptionText,
-  seatsInSubscriptionTextForFreePlan,
-  seatsInUseLink,
-  seatsTooltipText,
-  seatsTooltipTrialText,
-  unlimited,
-} from 'ee/usage_quotas/seats/constants';
-import { sprintf } from '~/locale';
-import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
-import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_seats_card.vue';
-import { updateSubscriptionPlanApolloCache } from 'ee/usage_quotas/seats/graphql/utils';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
+import { updateSubscriptionPlanApolloCache } from 'ee/usage_quotas/seats/graphql/utils';
+import SubscriptionSeatsStatisticsCard from 'ee/usage_quotas/seats/components/subscription_seats_statistics_card.vue';
+import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_seats_card.vue';
 import PublicNamespacePlanInfoCard from 'ee/usage_quotas/seats/components/public_namespace_plan_info_card.vue';
 import SubscriptionUpgradeInfoCard from './subscription_upgrade_info_card.vue';
 import SubscriptionUserList from './subscription_user_list.vue';
@@ -27,7 +17,7 @@ export default {
   },
   components: {
     PublicNamespacePlanInfoCard,
-    StatisticsCard,
+    SubscriptionSeatsStatisticsCard,
     StatisticsSeatsCard,
     SubscriptionUpgradeInfoCard,
     SubscriptionUserList,
@@ -60,7 +50,6 @@ export default {
       'namespaceId',
       'hasError',
       'seatsInSubscription',
-      'seatsInUse',
       'maxSeatsUsed',
       'seatsOwed',
       'addSeatsHref',
@@ -68,48 +57,11 @@ export default {
       'maxFreeNamespaceSeats',
       'explorePlansPath',
       'hasLimitedFreePlan',
-      'hasReachedFreePlanLimit',
       'activeTrial',
     ]),
     ...mapGetters(['hasFreePlan', 'isLoading']),
     isPublicFreeNamespace() {
       return this.hasFreePlan && this.isPublicNamespace;
-    },
-    seatsInUsePercentage() {
-      if (this.totalSeatsAvailable == null || this.activeTrial) {
-        return 0;
-      }
-
-      return Math.round((this.totalSeatsInUse * 100) / this.totalSeatsAvailable);
-    },
-    totalSeatsAvailable() {
-      if (this.hasNoSubscription) {
-        return this.hasLimitedFreePlan ? this.maxFreeNamespaceSeats : null;
-      }
-      return this.seatsInSubscription;
-    },
-    totalSeatsInUse() {
-      return this.billableMembersCount;
-    },
-    seatsInUseText() {
-      if (this.hasFreePlan) {
-        return this.$options.i18n.seatsInSubscriptionTextForFreePlan;
-      }
-
-      return this.hasLimitedFreePlan
-        ? this.$options.i18n.seatsAvailableText
-        : this.$options.i18n.seatsInSubscriptionText;
-    },
-    seatsInUseTooltipText() {
-      if (!this.hasLimitedFreePlan) return null;
-      if (this.activeTrial) return this.$options.i18n.seatsTooltipTrialText;
-
-      return sprintf(this.$options.i18n.seatsTooltipText, { number: this.maxFreeNamespaceSeats });
-    },
-    displayedTotalSeats() {
-      if (this.activeTrial) return this.$options.i18n.unlimited;
-
-      return this.totalSeatsAvailable ? this.totalSeatsAvailable : this.$options.i18n.unlimited;
     },
     showUpgradeInfoCard() {
       if (!this.hasNoSubscription) {
@@ -141,17 +93,6 @@ export default {
   methods: {
     ...mapActions(['receiveBillableMembersListError']),
   },
-  helpLinks: {
-    seatsInUseLink,
-  },
-  i18n: {
-    seatsInSubscriptionTextForFreePlan,
-    seatsAvailableText,
-    seatsInSubscriptionText,
-    seatsTooltipTrialText,
-    seatsTooltipText,
-    unlimited,
-  },
 };
 </script>
 
@@ -180,14 +121,9 @@ export default {
         </div>
       </div>
       <div v-else class="gl-grid gl-gap-5 md:gl-grid-cols-2">
-        <statistics-card
-          :help-link="$options.helpLinks.seatsInUseLink"
-          :help-tooltip="seatsInUseTooltipText"
-          :description="seatsInUseText"
-          :percentage="seatsInUsePercentage"
-          :usage-value="totalSeatsInUse"
-          :total-value="displayedTotalSeats"
-          data-testid="seats-in-use"
+        <subscription-seats-statistics-card
+          :seats-in-subscription="seatsInSubscription"
+          :billable-members-count="billableMembersCount"
         />
         <subscription-upgrade-info-card
           v-if="showUpgradeInfoCard"

@@ -238,7 +238,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     before do
       allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
-      stub_feature_flags(use_codestral_for_code_completions: false)
       stub_feature_flags(fireworks_qwen_code_completion: false)
     end
 
@@ -418,6 +417,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               expect(::CodeSuggestions::TaskFactory).to receive(:new)
                 .with(
                   current_user,
+                  client: kind_of(CodeSuggestions::Client),
                   params: hash_including(intent: 'completion'),
                   unsafe_passthrough_params: kind_of(Hash)
                 ).and_call_original
@@ -433,6 +433,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               expect(::CodeSuggestions::TaskFactory).to receive(:new)
                 .with(
                   current_user,
+                  client: kind_of(CodeSuggestions::Client),
                   params: hash_including(intent: 'generation'),
                   unsafe_passthrough_params: kind_of(Hash)
                 ).and_call_original
@@ -449,6 +450,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(stream: true),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -464,6 +466,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(generation_type: 'small_file'),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -479,6 +482,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(project_path: 'group/test-project'),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -494,6 +498,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(user_instruction: 'Generate tests for this file'),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -524,6 +529,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
               .with(
                 current_user,
+                client: kind_of(CodeSuggestions::Client),
                 params: hash_including(context: additional_params[:context]),
                 unsafe_passthrough_params: kind_of(Hash)
               ).and_call_original
@@ -923,11 +929,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'base_url' => ::Gitlab::AiGateway.url,
               'expires_at' => expected_expiration,
               'token' => token,
-              'headers' => expected_headers,
-              'model_details' => {
-                'model_provider' => 'vertex-ai',
-                'model_name' => 'codestral@2405'
-              }
+              'headers' => expected_headers
             }
           end
 
@@ -940,7 +942,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           context 'when code completions FFs are disabled' do
             before do
-              stub_feature_flags(use_codestral_for_code_completions: false)
               stub_feature_flags(fireworks_qwen_code_completion: false)
             end
 

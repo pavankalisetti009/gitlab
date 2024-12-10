@@ -14,8 +14,6 @@ performance_indicator_type: []
 options:
   events:
   - users_clicking_registration_features_offer
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

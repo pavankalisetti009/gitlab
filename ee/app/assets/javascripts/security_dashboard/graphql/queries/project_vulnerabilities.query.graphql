@@ -19,6 +19,7 @@ query projectVulnerabilities(
   $hasMergeRequest: Boolean
   $hasRemediations: Boolean
   $hasAiResolution: Boolean
+  $identifierName: String
   $includeExternalIssueLinks: Boolean = false
   $vetEnabled: Boolean = false
   $clusterAgentId: [ClustersAgentID!]
@@ -47,6 +48,7 @@ query projectVulnerabilities(
       clusterAgentId: $clusterAgentId
       owaspTopTen: $owaspTopTen
       image: $image
+      identifierName: $identifierName
     ) {
       nodes {
         ...VulnerabilityFragment

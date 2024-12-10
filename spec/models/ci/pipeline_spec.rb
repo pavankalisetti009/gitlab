@@ -26,6 +26,8 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
   it { is_expected.to belong_to(:pipeline_schedule) }
   it { is_expected.to belong_to(:merge_request) }
   it { is_expected.to belong_to(:external_pull_request) }
+  it { is_expected.to belong_to(:ci_ref).class_name('Ci::Ref').inverse_of(:pipelines).with_foreign_key(:ci_ref_id) }
+  it { is_expected.to belong_to(:trigger).class_name('Ci::Trigger').inverse_of(:pipelines) }
 
   it { is_expected.to have_many(:statuses) }
   it { is_expected.to have_many(:trigger_requests).with_foreign_key(:commit_id).inverse_of(:pipeline) }
@@ -484,25 +486,32 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
     end
   end
 
-  describe '.created_after' do
+  context 'with created filters' do
     let_it_be(:old_pipeline) { create(:ci_pipeline, created_at: 1.week.ago) }
-    let_it_be(:pipeline) { create(:ci_pipeline) }
-
-    subject { described_class.created_after(1.day.ago) }
-
-    it 'returns the pipeline' do
-      is_expected.to contain_exactly(pipeline)
-    end
-  end
-
-  describe '.created_before_id' do
-    let_it_be(:pipeline) { create(:ci_pipeline) }
     let_it_be(:new_pipeline) { create(:ci_pipeline) }
 
-    subject { described_class.created_before_id(new_pipeline.id) }
+    describe '.created_after' do
+      subject { described_class.created_after(1.day.ago) }
 
-    it 'returns the pipeline' do
-      is_expected.to contain_exactly(pipeline)
+      it 'returns the newer pipeline' do
+        is_expected.to contain_exactly(new_pipeline)
+      end
+    end
+
+    describe '.created_before' do
+      subject { described_class.created_before(1.day.ago) }
+
+      it 'returns the older pipeline' do
+        is_expected.to contain_exactly(old_pipeline)
+      end
+    end
+
+    describe '.created_before_id' do
+      subject { described_class.created_before_id(new_pipeline.id) }
+
+      it 'returns the pipeline' do
+        is_expected.to contain_exactly(old_pipeline)
+      end
     end
   end
 

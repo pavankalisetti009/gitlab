@@ -11,7 +11,6 @@ import {
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
 import DependencyLocation from './dependency_location.vue';
@@ -61,7 +60,6 @@ export default {
     GlLink,
     GlLoadingIcon,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     dependencies: {
@@ -109,7 +107,7 @@ export default {
     // slot. So, create a deep clone of them here to avoid mutating the
     // `dependencies` prop.
     // We also make sure that `vulnerabilities` is always defined to prevent rendering
-    // errors when the user is allowe to see dependencies but not their vulnerabilities.
+    // errors when the user is allowed to see dependencies but not their vulnerabilities.
     transformDependenciesForUI(dependencies) {
       return dependencies.map(({ vulnerabilities, ...dep }) => ({
         ...cloneDeep(dep),
@@ -135,8 +133,9 @@ export default {
   ],
   projectFields: [
     ...sharedFields,
-    { key: 'isVulnerable', label: '', tdClass: tdClass(['gl-text-right']) },
+    { key: 'isVulnerable', label: DEPENDENCIES_TABLE_I18N.vulnerabilities },
   ],
+
   DEPENDENCIES_PER_PAGE: 20,
   DEPENDENCY_PATH_LINK: `${DOCS_URL_IN_EE_DIR}/user/application_security/dependency_list/#dependency-paths`,
   i18n: DEPENDENCIES_TABLE_I18N,

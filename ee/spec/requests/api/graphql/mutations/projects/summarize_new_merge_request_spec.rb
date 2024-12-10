@@ -26,11 +26,12 @@ RSpec.describe 'AiAction for Summarize New Merge Request', :saas, feature_catego
     end
   end
 
+  include_context 'with duo enterprise addon'
+
   before do
     stub_ee_application_setting(should_check_namespace_plan: true)
     stub_licensed_features(summarize_new_merge_request: true, ai_features: true, experimental_features: true)
     allow(Ability).to receive(:allowed?).and_call_original
-    allow(Ability).to receive(:allowed?).with(current_user, :summarize_new_merge_request, project).and_return(true)
     group.namespace_settings.update!(experiment_features_enabled: true)
   end
 

@@ -13,7 +13,8 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
         { modelValue: "GPT", modelName: "GPT" },
         { modelValue: "LLAMA3", modelName: "Llama 3" },
         { modelValue: "MISTRAL", modelName: "Mistral" },
-        { modelValue: "CODESTRAL", modelName: "Mistral Codestral" }
+        { modelValue: "CODESTRAL", modelName: "Mistral Codestral" },
+        { modelValue: "MIXTRAL", modelName: "Mixtral" }
       ]
 
       expect(helper.model_choices_as_options).to eq(expected_result)

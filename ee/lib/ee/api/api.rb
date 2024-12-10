@@ -16,6 +16,7 @@ module EE
         mount ::API::Clusters::AgentUrlConfigurations
         mount ::API::ProjectApprovalRules
         mount ::API::ProjectSecuritySettings
+        mount ::API::GroupSecuritySettings
         mount ::API::GroupApprovalRules
         mount ::API::StatusChecks
         mount ::API::ProjectApprovalSettings

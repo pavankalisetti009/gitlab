@@ -1,24 +1,27 @@
 import { GlModal, GlTableLite } from '@gitlab/ui';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
 import DenyAllowListModal from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list_modal.vue';
 import DenyAllowLicenses from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_licenses.vue';
 import DenyAllowExceptions from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list_exceptions.vue';
+import { UNKNOWN_LICENSE } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 
 describe('DenyAllowListModal', () => {
   let wrapper;
 
-  const createComponent = ({ propsData } = {}) => {
-    wrapper = shallowMountExtended(DenyAllowListModal, {
+  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
+    wrapper = mountExtended(DenyAllowListModal, {
+      directives: {
+        GlTooltip: createMockDirective('gl-tooltip'),
+      },
       propsData,
       provide: {
         parsedSoftwareLicenses: [],
+        ...provide,
       },
       stubs: {
         GlModal: stubComponent(GlModal, {
-          template: RENDER_ALL_SLOTS_TEMPLATE,
-        }),
-        GlTableLite: stubComponent(GlTableLite, {
           template: RENDER_ALL_SLOTS_TEMPLATE,
         }),
       },
@@ -27,19 +30,121 @@ describe('DenyAllowListModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findTable = () => wrapper.findComponent(GlTableLite);
+  const findTableRows = () => findTable().find('tbody').findAll('tr');
   const findLicenses = () => wrapper.findAllComponents(DenyAllowLicenses);
   const findExceptions = () => wrapper.findAllComponents(DenyAllowExceptions);
+  const findAddLicenseButton = () => wrapper.findByTestId('add-license');
+  const findRemoveLicenseButton = () => wrapper.findByTestId('remove-license');
+  const findTooltip = () =>
+    getBinding(wrapper.findByTestId('add-license-tooltip').element, 'gl-tooltip');
 
   describe('default rendering', () => {
-    it('renders table with one selected row', () => {
+    beforeEach(() => {
       createComponent();
+    });
 
+    it('renders table with one selected row', () => {
       expect(findTable().exists()).toBe(true);
       expect(findLicenses()).toHaveLength(1);
       expect(findExceptions()).toHaveLength(1);
 
       expect(findModal().props('title')).toBe('Edit denylist');
       expect(findModal().props('actionPrimary').text).toBe('Save denylist');
+    });
+
+    it('adds new license row', async () => {
+      expect(findTableRows()).toHaveLength(1);
+
+      await findAddLicenseButton().vm.$emit('click');
+
+      expect(findTableRows()).toHaveLength(2);
+    });
+
+    it('adds removes license row', async () => {
+      await findAddLicenseButton().vm.$emit('click');
+      expect(findTableRows()).toHaveLength(2);
+
+      await findRemoveLicenseButton().vm.$emit('click');
+      expect(findTableRows()).toHaveLength(1);
+    });
+  });
+
+  describe('selecting a license', () => {
+    const LICENSES = [
+      {
+        text: 'Licence 1',
+        value: 'licence_1',
+      },
+      {
+        text: 'Licence 2',
+        value: 'licence_2',
+      },
+    ];
+
+    it('selects multiple licenses', async () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+      });
+
+      await findAddLicenseButton().vm.$emit('click');
+
+      const licenses = findLicenses();
+
+      expect(licenses.at(0).props('allLicenses')).toEqual([UNKNOWN_LICENSE, ...LICENSES]);
+
+      await licenses.at(0).vm.$emit('select', LICENSES[0], LICENSES[0]);
+      await licenses.at(1).vm.$emit('select', LICENSES[1], LICENSES[1]);
+
+      await findModal().vm.$emit('primary');
+
+      expect(wrapper.emitted('select-licenses')).toEqual([
+        [
+          [
+            { exceptions: [], license: LICENSES[0] },
+            { exceptions: [], license: LICENSES[1] },
+          ],
+        ],
+      ]);
+    });
+
+    it('disables add license button when all licenses already selected', async () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+        propsData: {
+          licenses: [{ license: UNKNOWN_LICENSE }, ...LICENSES.map((license) => ({ license }))],
+        },
+      });
+
+      await findAddLicenseButton().vm.$emit('click');
+
+      expect(findAddLicenseButton().props('disabled')).toBe(true);
+
+      expect(findTooltip().value).toMatchObject({
+        disabled: false,
+        title: 'All licenses have been selected',
+      });
+    });
+
+    it('resets licenses when type changes', async () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+        propsData: {
+          licenses: LICENSES.map((license) => ({ license })),
+        },
+      });
+
+      expect(findTableRows()).toHaveLength(2);
+
+      await wrapper.setProps({ licenses: [] });
+
+      expect(findTableRows()).toHaveLength(1);
+      expect(findLicenses().at(0).props('selected')).toEqual(undefined);
     });
   });
 });

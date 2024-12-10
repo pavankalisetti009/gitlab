@@ -10,8 +10,6 @@ instrumentation_class: CountUsersCreatingCiBuildsMetric
 options:
   secure_type: container_scanning
 data_source: database
-distribution:
-- ee
 tiers:
 - ultimate
 - premium

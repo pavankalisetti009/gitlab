@@ -40,7 +40,7 @@ export const i18n = {
     `ComplianceFrameworks|To unlink this policy and framework, edit the policy's scope.`,
   ),
   policiesUnlinkedTooltip: s__(
-    `ComplianceFrameworks|To link this policy and framework,  edit  the policy's scope.`,
+    `ComplianceFrameworks|To link this policy and framework, edit the policy's scope.`,
   ),
 
   addFrameworkTitle: s__('ComplianceFrameworks|New compliance framework'),

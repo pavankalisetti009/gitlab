@@ -8,8 +8,10 @@ module EE
 
         override :execute
         def execute
+          path = runner_path
+
           super.tap do |result|
-            audit_event if result.success?
+            audit_event(path) if result.success?
           end
         end
 
@@ -17,8 +19,20 @@ module EE
 
         AUDIT_MESSAGE = 'Unassigned CI runner from project'
 
-        def audit_event
-          ::AuditEvents::RunnerCustomAuditEventService.new(runner, user, project, AUDIT_MESSAGE).track_event
+        def audit_event(runner_path)
+          ::Gitlab::Audit::Auditor.audit(
+            name: 'ci_runner_unassigned_from_project',
+            author: user,
+            scope: project,
+            target: runner,
+            target_details: runner_path,
+            message: AUDIT_MESSAGE)
+        end
+
+        def runner_path
+          url_helpers = ::Gitlab::Routing.url_helpers
+
+          runner.owner ? url_helpers.project_runner_path(runner.owner, runner) : nil
         end
       end
     end

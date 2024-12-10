@@ -112,6 +112,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
       end
 
       context 'with role_approvers' do
+        let_it_be(:custom_role) { create(:member_role, namespace: project.group) }
+        let_it_be(:developer) { create(:user) }
+
         before do
           security_policy.update!(
             content: {
@@ -119,15 +122,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
                 type: 'require_approval',
                 approvals_required: 1,
                 user_approvers: [approver.username],
-                role_approvers: ['developer']
+                role_approvers: ['developer', custom_role.id]
               }]
             }
           )
 
           project.add_developer(developer) # rubocop:disable RSpec/BeforeAllRoleAssignment -- Does not work in before_all
         end
-
-        let_it_be(:developer) { create(:user) }
 
         it 'creates approval rules with role approvers' do
           expect { create_rules }.to change { project.approval_rules.count }.by(1)
@@ -136,8 +137,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
 
         it 'creates scan_result_policy_read' do
           expect { create_rules }.to change { Security::ScanResultPolicyRead.count }.by(1)
-          expect(project.approval_rules.first.scan_result_policy_read.role_approvers)
-            .to match_array([Gitlab::Access::DEVELOPER])
+
+          scan_result_policy_read = project.scan_result_policy_reads.first
+          expect(scan_result_policy_read.custom_roles).to match_array([custom_role.id])
+          expect(scan_result_policy_read.role_approvers).to match_array([Gitlab::Access::DEVELOPER])
         end
       end
 

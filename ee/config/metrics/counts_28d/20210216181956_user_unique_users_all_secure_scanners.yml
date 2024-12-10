@@ -12,8 +12,6 @@ data_source: database
 instrumentation_class: CountUsersCreatingCiBuildsMetric
 options:
   secure_type: all
-distribution:
-- ee
 tiers:
 - ultimate
 - premium

@@ -122,7 +122,9 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         let_it_be(:ns) { create(:group, root_storage_statistics: namespace_statistics) }
         let_it_be(:enabled_ns) { create(:zoekt_enabled_namespace, namespace: ns) }
         let_it_be(:zoekt_index2) do
-          create(:zoekt_index, node: node_out_of_storage, zoekt_enabled_namespace: enabled_ns)
+          create(:zoekt_index, node: node_out_of_storage,
+            zoekt_enabled_namespace: enabled_ns,
+            used_storage_bytes: node_out_of_storage.used_bytes)
         end
 
         it 'removes extra indices and logs' do
@@ -144,6 +146,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           )
 
           expect { execute_task }.to change { Search::Zoekt::Replica.count }.from(2).to(1)
+          expect(enabled_ns.reload.metadata['last_used_storage_bytes']).to eq(node_out_of_storage.used_bytes)
         end
 
         it 'keeps search enabled for the enabled namespace' do

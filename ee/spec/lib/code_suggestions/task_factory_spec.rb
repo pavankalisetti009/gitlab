@@ -7,6 +7,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
 
   describe '.task' do
     let_it_be(:current_user) { create(:user) }
+    let(:client) { CodeSuggestions::Client.new({}) }
     let(:file_name) { 'python.py' }
     let(:content_above_cursor) { 'some content_above_cursor' }
     let(:content_below_cursor) { 'some content_below_cursor' }
@@ -36,7 +37,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       }
     end
 
-    subject(:get_task) { described_class.new(current_user, params: params).task }
+    subject(:get_task) { described_class.new(current_user, client: client, params: params).task }
 
     shared_examples 'correct task initializer' do
       it 'creates task with correct params' do
@@ -68,6 +69,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       let(:expected_params) do
         {
           current_user: current_user,
+          client: client,
           params: params,
           unsafe_passthrough_params: {}
         }
@@ -86,6 +88,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         let(:expected_params) do
           {
             current_user: current_user,
+            client: client,
             params: params,
             unsafe_passthrough_params: {}
           }
@@ -104,6 +107,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       let(:expected_params) do
         {
           current_user: current_user,
+          client: client,
           params: params,
           unsafe_passthrough_params: {}
         }
@@ -158,6 +162,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         let(:expected_params) do
           {
             current_user: current_user,
+            client: client,
             params: params,
             unsafe_passthrough_params: {}
           }
@@ -174,6 +179,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         let(:expected_params) do
           {
             current_user: current_user,
+            client: client,
             params: params.except(:user_instruction, :context).merge(
               instruction: instruction,
               content_above_cursor: content_above_cursor,

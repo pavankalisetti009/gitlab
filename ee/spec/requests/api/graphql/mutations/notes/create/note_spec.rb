@@ -47,18 +47,19 @@ RSpec.describe 'Adding a Note to an Epic', feature_category: :portfolio_manageme
 
     context 'when body contains quick actions' do
       let_it_be(:project) { create(:project, group: group) }
-      let_it_be(:noteable) { create(:work_item, project: project) }
+      let_it_be(:noteable) { create(:work_item, :issue, project: project) }
 
       let(:variables_extra) { {} }
 
       before do
-        stub_licensed_features(issuable_health_status: true, issue_weights: true)
+        stub_licensed_features(issuable_health_status: true, issue_weights: true, epics: true)
       end
 
       it_behaves_like 'work item supports weights widget updates via quick actions'
       it_behaves_like 'work item does not support weights widget updates via quick actions'
       it_behaves_like 'work item supports health status widget updates via quick actions'
       it_behaves_like 'work item does not support health status widget updates via quick actions'
+      it_behaves_like 'work item supports promotion via quick actions'
     end
 
     context 'with work item epic' do

@@ -7,6 +7,7 @@ import {
   getDefaultRule,
   LICENSE_STATES,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
@@ -60,12 +61,12 @@ export default {
   },
   licenseStatuses: LICENSE_STATES,
   data() {
-    const { licenses = {} } = this.initRule || {};
-    const isDenied = DENIED in licenses;
+    const { licenses, isDenied } = parseAllowDenyLicenseList(this.initRule);
 
     return {
       selectedFilters: buildFiltersFromLicenseRule(this.initRule),
       excludeListType: isDenied ? DENIED : ALLOWED,
+      licenses,
     };
   },
   computed: {
@@ -119,7 +120,12 @@ export default {
     },
     selectExcludeListType(type) {
       this.excludeListType = type;
+      this.licenses = [];
       this.triggerChanged({ licenses: { [type]: [] } });
+    },
+    selectLicenses(licenses) {
+      this.licenses = licenses;
+      this.triggerChanged({ licenses: { [this.excludeListType]: licenses } });
     },
     isFilterSelected(filter) {
       return Boolean(this.selectedFilters[filter]);
@@ -136,7 +142,7 @@ export default {
       const rule = { ...this.initRule };
 
       if (value) {
-        rule.licenses = { denied: [] };
+        rule.licenses = { [ALLOWED]: [] };
       } else {
         delete rule.licenses;
       }
@@ -201,8 +207,10 @@ export default {
         <deny-allow-list
           v-if="showDenyAllowListFilter"
           :selected="excludeListType"
+          :licenses="licenses"
           @remove="selectFilter($options.ALLOW_DENY, false)"
           @select-type="selectExcludeListType"
+          @select-licenses="selectLicenses"
         />
 
         <scan-filter-selector

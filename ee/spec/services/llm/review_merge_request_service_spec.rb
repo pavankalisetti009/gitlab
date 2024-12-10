@@ -27,6 +27,7 @@ RSpec.describe Llm::ReviewMergeRequestService, :saas, feature_category: :code_re
         .to receive(:ai_review_merge_request_allowed?)
         .with(user)
         .and_return(ai_review_merge_request_allowed?)
+      allow(user).to receive(:allowed_to_use?).with(:review_merge_request).and_return(true)
     end
 
     subject { described_class.new(current_user, resource, options).execute }

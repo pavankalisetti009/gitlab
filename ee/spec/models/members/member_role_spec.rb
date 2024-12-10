@@ -271,6 +271,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     let_it_be(:group) { create(:group) }
     let_it_be(:member_role_1) { create(:member_role, :guest, name: 'Tester', namespace: group) }
     let_it_be(:member_role_2) { create(:member_role, :guest, name: 'Manager', namespace: group) }
+    let_it_be(:admin_member_role) { create(:member_role, :admin) }
     let_it_be(:group_2_member_role) { create(:member_role, :guest, name: 'Actor') }
 
     describe '.elevating' do
@@ -297,6 +298,8 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
 
       it 'returns nothing when there are no elevating permissions' do
+        admin_member_role.destroy! # the admin role is elevating we need to destroy it before
+
         create(:member_role)
 
         expect(described_class.elevating).to be_empty
@@ -326,6 +329,18 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
     end
 
+    describe '#non_admin' do
+      it 'returns only non-admin member roles' do
+        expect(described_class.non_admin).to match_array([member_role_1, member_role_2, group_2_member_role])
+      end
+    end
+
+    describe '#admin' do
+      it 'returns only admin member roles' do
+        expect(described_class.admin).to match_array([admin_member_role])
+      end
+    end
+
     describe '.with_members_count' do
       let_it_be(:member_role_1_members) do
         create_list(:group_member, 3, :developer, {
@@ -345,7 +360,8 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         expect(described_class.with_members_count.map { |x| [x.id, x.members_count] }).to match_array([
           [member_role_1.id, 3],
           [member_role_2.id, 2],
-          [group_2_member_role.id, 0]
+          [group_2_member_role.id, 0],
+          [admin_member_role.id, 0]
         ])
       end
     end

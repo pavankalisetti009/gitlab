@@ -11,8 +11,6 @@ time_frame: all
 data_source: database
 data_category: optional
 instrumentation_class: CountProjectsWithDependencyProxyForMavenPackagesMetric
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

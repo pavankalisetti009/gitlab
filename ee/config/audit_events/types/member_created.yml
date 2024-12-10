@@ -1,6 +1,6 @@
 ---
 name: member_created
-description: Triggered when a membership is created
+description: A membership is created
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/374112
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/109711
 feature_category: compliance_management

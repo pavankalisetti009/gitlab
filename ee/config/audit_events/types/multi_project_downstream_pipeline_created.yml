@@ -1,6 +1,6 @@
 ---
 name: multi_project_downstream_pipeline_created
-description: Triggered when multi project downstream pipeline is created
+description: Multi project downstream pipeline is created
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/481325
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168626
 feature_category: continuous-integration

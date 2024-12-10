@@ -10,8 +10,6 @@ instrumentation_class: HistoricalMaxUsersMetric
 time_frame: none
 data_source: license
 data_category: subscription
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

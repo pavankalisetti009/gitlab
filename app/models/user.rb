@@ -283,6 +283,7 @@ class User < ApplicationRecord
   belongs_to :created_by, class_name: 'User', optional: true
 
   has_many :organization_users, class_name: 'Organizations::OrganizationUser', inverse_of: :user
+
   has_many :organizations, through: :organization_users, class_name: 'Organizations::Organization', inverse_of: :users,
     disable_joins: true
   has_many :owned_organizations, -> { where(organization_users: { access_level: Gitlab::Access::OWNER }) },
@@ -469,6 +470,7 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :user_preference, update_only: true
   accepts_nested_attributes_for :user_detail, update_only: true
   accepts_nested_attributes_for :credit_card_validation, update_only: true, allow_destroy: true
+  accepts_nested_attributes_for :organization_users, update_only: true
 
   state_machine :state, initial: :active do
     # state_machine uses this method at class loading time to fetch the default
@@ -2050,7 +2052,9 @@ class User < ApplicationRecord
 
   def notification_email_for(notification_group)
     # Return group-specific email address if present, otherwise return global notification email address
-    group_email = if notification_group && notification_group.respond_to?(:notification_email_for)
+    group_email = if notification_settings.loaded?
+                    closest_notification_email_in_group_hierarchy(notification_group)
+                  elsif notification_group && notification_group.respond_to?(:notification_email_for)
                     notification_group.notification_email_for(self)
                   end
 
@@ -2059,25 +2063,9 @@ class User < ApplicationRecord
 
   def notification_settings_for(source, inherit: false)
     if notification_settings.loaded?
-      notification_settings.find do |notification|
-        notification.source_type == source.class.base_class.name &&
-          notification.source_id == source.id
-      end
+      notification_setting_find_by_source(source)
     else
-      notification_settings.find_or_initialize_by(source: source) do |ns|
-        next unless source.is_a?(Group) && inherit
-
-        # If we're here it means we're trying to create a NotificationSetting for a group that doesn't have one.
-        # Find the closest parent with a notification_setting that's not Global level, or that has an email set.
-        ancestor_ns = source
-                        .notification_settings(hierarchy_order: :asc)
-                        .where(user: self)
-                        .find_by('level != ? OR notification_email IS NOT NULL', NotificationSetting.levels[:global])
-        # Use it to seed the settings
-        ns.assign_attributes(ancestor_ns&.slice(*NotificationSetting.allowed_fields))
-        ns.source = source
-        ns.user = self
-      end
+      notification_setting_find_or_initialize_by_source(source, inherit)
     end
   end
 
@@ -2091,10 +2079,38 @@ class User < ApplicationRecord
   def global_notification_setting
     return @global_notification_setting if defined?(@global_notification_setting)
 
+    # lookup in preloaded notification settings first, before making another query
+    if notification_settings.loaded?
+      @global_notification_setting = notification_settings.find do |notification|
+        notification.source_id.nil? && notification.source_type.nil?
+      end
+
+      return @global_notification_setting if @global_notification_setting.present?
+    end
+
     @global_notification_setting = notification_settings.find_or_initialize_by(source: nil)
     @global_notification_setting.update(level: NotificationSetting.levels[DEFAULT_NOTIFICATION_LEVEL]) unless @global_notification_setting.persisted?
 
     @global_notification_setting
+  end
+
+  # Returns the notification_setting of the lowest group in hierarchy with non global level
+  def closest_non_global_group_notification_setting(group)
+    return unless group
+
+    notification_level = NotificationSetting.levels[:global]
+
+    if notification_settings.loaded?
+      group.self_and_ancestors_asc.find do |group|
+        notification_setting = notification_setting_find_by_source(group)
+
+        next unless notification_setting
+        next if NotificationSetting.levels[notification_setting&.level] == notification_level
+        break notification_setting if notification_setting.present?
+      end
+    else
+      group.notification_settings(hierarchy_order: :asc).where(user: self).where.not(level: notification_level).first
+    end
   end
 
   def merge_request_dashboard_enabled?
@@ -2530,6 +2546,10 @@ class User < ApplicationRecord
     false
   end
 
+  def uploads_sharding_key
+    {}
+  end
+
   protected
 
   # override, from Devise::Validatable
@@ -2567,6 +2587,38 @@ class User < ApplicationRecord
   end
 
   private
+
+  def notification_setting_find_by_source(source)
+    notification_settings.find do |notification|
+      notification.source_type == source.class.base_class.name && notification.source_id == source.id
+    end
+  end
+
+  def closest_notification_email_in_group_hierarchy(source_group)
+    return unless source_group
+
+    source_group.self_and_ancestors_asc.find do |group|
+      notification_setting = notification_setting_find_by_source(group)
+
+      next unless notification_setting
+      break notification_setting.notification_email if notification_setting.notification_email.present?
+    end
+  end
+
+  def notification_setting_find_or_initialize_by_source(source, inherit)
+    notification_settings.find_or_initialize_by(source: source) do |ns|
+      next unless source.is_a?(Group) && inherit
+
+      # If we're here it means we're trying to create a NotificationSetting for a group that doesn't have one.
+      # Find the closest parent with a notification_setting that's not Global level, or that has an email set.
+      ancestor_ns = source.notification_settings(hierarchy_order: :asc).where(user: self)
+                      .find_by('level != ? OR notification_email IS NOT NULL', NotificationSetting.levels[:global])
+      # Use it to seed the settings
+      ns.assign_attributes(ancestor_ns&.slice(*NotificationSetting.allowed_fields))
+      ns.source = source
+      ns.user = self
+    end
+  end
 
   def disable_password_authentication_for_sso_users?
     ::Gitlab::CurrentSettings.disable_password_authentication_for_users_with_sso_identities? && omniauth_user?

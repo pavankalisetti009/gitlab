@@ -28,7 +28,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         end
 
         it 'calls AutoResolveService on missing_ids' do
-          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id]) do |service|
+          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id], 1000) do |service|
             expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: { count: 1 }))
           end
 
@@ -65,7 +65,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           # twice then it will fail.
           # This expectation confirms that the first vulnerability is successfully passed on to the auto-resolve
           # service and the second is not.
-          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id]) do |service|
+          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id], 1) do |service|
             expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: { count: 1 }))
           end
 

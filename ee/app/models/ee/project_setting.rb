@@ -3,6 +3,7 @@
 module EE
   module ProjectSetting
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
 
     prepended do
       cascading_attr :duo_features_enabled, :spp_repository_pipeline_access
@@ -53,6 +54,10 @@ module EE
         .new(project.group, project: project)
         .selective_code_owner_removals
         .value
+    end
+
+    def has_confluence?
+      super && !::Integrations::Confluence.blocked_by_settings?(log: true)
     end
   end
 end

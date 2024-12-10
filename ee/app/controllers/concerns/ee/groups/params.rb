@@ -29,7 +29,9 @@ module EE
           :membership_lock,
           :repository_size_limit,
           :new_user_signups_cap,
-          :seat_control
+          :seat_control,
+          :remove_dormant_members,
+          :remove_dormant_members_period
         ].tap do |params_ee|
           params_ee << { insight_attributes: [:id, :project_id, :_destroy] } if current_group&.insights_available?
 

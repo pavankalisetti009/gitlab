@@ -54,6 +54,11 @@ export default {
         ? this.$options.trialWidget.i18n.upgradeText
         : this.$options.trialWidget.i18n.learnMore;
     },
+    ctaEventName() {
+      return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
+        ? this.$options.trialWidget.clickUpgradeLinkEventAction
+        : this.$options.trialWidget.clickLearnMoreLinkEventAction;
+    },
     isTrialActive() {
       return this.daysRemaining > 0;
     },
@@ -65,9 +70,13 @@ export default {
     },
   },
   methods: {
-    onCtaClick(e) {
-      const linkText = snakeCase(e.target.textContent);
-      this.trackEvent(`click_${linkText}_link_on_trial_widget`, {
+    onCtaClick() {
+      this.trackEvent(this.ctaEventName, {
+        label: this.trackingLabel,
+      });
+    },
+    onSeeUpgradeOptionsClick() {
+      this.trackEvent(this.$options.trialWidget.clickSeeUpgradeOptionsLinkEventAction, {
         label: this.trackingLabel,
       });
     },
@@ -83,7 +92,9 @@ export default {
 
       this.isDismissed = true;
 
-      this.trackEvent('click_dismiss_button_on_trial_widget', { label: this.trackingLabel });
+      this.trackEvent(this.$options.trialWidget.clickDismissButtonEventAction, {
+        label: this.trackingLabel,
+      });
     },
   },
 };
@@ -143,7 +154,7 @@ export default {
               class="gl-center gl-mb-1 gl-text-sm gl-font-bold gl-text-blue-700 gl-no-underline hover:gl-no-underline"
               data-testid="upgrade-options-btn"
               :title="ctaText"
-              @click.stop="onCtaClick"
+              @click.stop="onSeeUpgradeOptionsClick"
             >
               {{ $options.trialWidget.i18n.seeUpgradeOptionsText }}
             </gl-link>

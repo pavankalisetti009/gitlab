@@ -37,6 +37,7 @@ the Vulnerability Report's [Activity filter](../vulnerability_report/index.md#ac
 DETAILS:
 **Tier:** Ultimate with GitLab Duo Enterprise - [Start a trial](https://about.gitlab.com/solutions/gitlab-duo-pro/sales/?type=free-trial)
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
+**LLM:** Anthropic [Claude 3 Haiku](https://docs.anthropic.com/en/docs/about-claude/models#claude-3-a-new-generation-of-ai)
 
 > - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/10368) in GitLab 16.0 as an [experiment](../../../policy/development_stages_support.md#experiment) on GitLab.com.
 > - Promoted to [beta](../../../policy/development_stages_support.md#beta) status in GitLab 16.2.
@@ -97,6 +98,7 @@ DETAILS:
 **Tier:** Ultimate with GitLab Duo Enterprise - [Start a trial](https://about.gitlab.com/solutions/gitlab-duo-pro/sales/?type=free-trial)
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
 **Status:** Beta
+**LLM:** Anthropic [Claude 3.5 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-5-sonnet)
 
 > - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/10779) in GitLab 16.7 as an [experiment](../../../policy/development_stages_support.md#experiment) on GitLab.com.
 > - Changed to beta in GitLab 17.3.
@@ -274,7 +276,7 @@ A vulnerability's code flow is the path the data takes from the user input (sour
 For details on how to view a vulnerability's code flow, see
 [Vulnerability code flow](../sast/gitlab_advanced_sast.md#vulnerability-code-flow).
 
-![A code flow of a Python application across two files](img/example_code_flow_of_python_applications_v17_3.png)
+![A code flow of a Python application across two files](img/code_flow_view_v17_7.png)
 
 ## Vulnerability status values
 

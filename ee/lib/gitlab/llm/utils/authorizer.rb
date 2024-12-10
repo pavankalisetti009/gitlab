@@ -54,8 +54,7 @@ module Gitlab
           log_info(message: "Resource not found",
             event_name: 'permission_denied',
             ai_component: 'abstraction_layer',
-            duo_chat_error_code: "M3003",
-            source: 'authorizer')
+            ai_error_code: "M3003")
           s_("AI|I'm sorry, I can't generate a response. You might want to try again. " \
             "You could also be getting this error because the items you're asking about " \
             "either don't exist, you don't have access to them, or your session has expired.")
@@ -65,7 +64,7 @@ module Gitlab
           log_info(message: "No access to Duo Chat",
             event_name: 'permission_denied',
             ai_component: 'abstraction_layer',
-            duo_chat_error_code: "M3004")
+            ai_error_code: "M3004")
           s_("AI|I'm sorry, I can't generate a response. You do not have access to GitLab Duo Chat.")
         end
 
@@ -73,7 +72,7 @@ module Gitlab
           log_info(message: "AI is disabled",
             event_name: 'permission_denied',
             ai_component: 'abstraction_layer',
-            duo_chat_error_code: "M3002")
+            ai_error_code: "M3002")
           s_("AI|I am sorry, I cannot access the information you are asking about. " \
             "A group or project owner has turned off Duo features in this group or project.")
         end

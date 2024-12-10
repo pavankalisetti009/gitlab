@@ -89,6 +89,14 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
     end
   end
 
+  describe 'default values' do
+    it 'has correct default values' do
+      expect(workspace.desired_config_generator_version).to eq(
+        RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+      )
+    end
+  end
+
   describe '#url' do
     it 'returns calculated url' do
       expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent_dns_zone}/?folder=dir%2Ffile")

@@ -30,6 +30,10 @@ class UserPermissionExportUpload < ApplicationRecord
     state :failed, value: 3
   end
 
+  def uploads_sharding_key
+    {}
+  end
+
   private
 
   def file_presence

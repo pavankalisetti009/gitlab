@@ -3,6 +3,10 @@ abuse_report_assignees:
   - table: users
     column: user_id
     on_delete: async_delete
+ai_conversation_messages:
+  - table: ai_conversation_threads
+    column: thread_id
+    on_delete: async_delete
 application_settings:
   - table: push_rules
     column: push_rule_id
@@ -376,6 +380,13 @@ namespace_details:
 namespaces:
   - table: organizations
     column: organization_id
+    on_delete: async_delete
+notes:
+  - table: vulnerabilities
+    column: noteable_id
+    conditions:
+      - column: noteable_type
+        value: "Vulnerability"
     on_delete: async_delete
 notification_settings:
   - table: users

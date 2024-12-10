@@ -10,8 +10,6 @@ data_source: database
 instrumentation_class: ApprovalProjectRulesWithUserMetric
 options:
   count_type: more_approvers_than_required
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

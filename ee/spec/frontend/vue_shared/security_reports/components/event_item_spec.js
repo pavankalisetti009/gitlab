@@ -38,6 +38,7 @@ describe('Event Item', () => {
         author: propsData.author,
         createdAt: propsData.createdAt,
         showSpinner: false,
+        isSystemNote: false,
       });
     });
 
@@ -125,5 +126,21 @@ describe('Event Item', () => {
       expect(noteHeader().props('createdAt')).toBe('');
       expect(noteHeader().text()).not.toContain('·');
     });
+  });
+
+  it('passes `isSystemNote` prop to note header component', () => {
+    const propsData = {
+      id: 123,
+      createdAt: 'createdAt',
+      headerMessage: 'header message',
+      author: {
+        name: 'Tanuki',
+        username: 'gitlab',
+      },
+      isSystemNote: true,
+    };
+    mountComponent({ propsData });
+
+    expect(noteHeader().props('isSystemNote')).toBe(true);
   });
 });

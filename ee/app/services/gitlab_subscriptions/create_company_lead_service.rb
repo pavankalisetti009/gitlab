@@ -34,8 +34,13 @@ module GitlabSubscriptions
         work_email: user.email,
         setup_for_company: user.setup_for_company,
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-        opt_in: user.onboarding_status_email_opt_in
+        opt_in: user.onboarding_status_email_opt_in,
+        **glm_params
       }
+    end
+
+    def glm_params
+      { glm_content: user.onboarding_status_glm_content, glm_source: user.onboarding_status_glm_source }.compact
     end
 
     def remapping_for_api(params)

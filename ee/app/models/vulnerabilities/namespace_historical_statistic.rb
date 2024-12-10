@@ -24,5 +24,23 @@ module Vulnerabilities
     scope :older_than, ->(days:) {
       where('"vulnerability_namespace_historical_statistics"."date" < (now() - interval ?)', "#{days} days")
     }
+
+    scope :for_namespace_and_descendants, ->(namespace) do
+      where("traversal_ids >= ('{?}')", namespace.traversal_ids)
+        .where("traversal_ids < ('{?}')", namespace.next_traversal_ids)
+    end
+
+    scope :between_dates, ->(start_date, end_date) { where(date: start_date..end_date) }
+    scope :aggregated_by_date, -> do
+      select(
+        arel_table[:date],
+        arel_table[:total].sum.as('total'),
+        *::Enums::Vulnerability.severity_levels.map { |severity, _| arel_table[severity].sum.as(severity.to_s) }
+      )
+    end
+    scope :grouped_by_date, ->(sort = :asc) do
+      group(:date)
+        .order(date: sort)
+    end
   end
 end

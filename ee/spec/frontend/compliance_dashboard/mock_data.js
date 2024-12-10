@@ -295,6 +295,7 @@ export const createFramework = ({
           namespace: {
             id: `gid://gitlab/Group/${id}`,
             name: 'foo',
+            fullPath: 'foo',
           },
         },
       },
@@ -305,6 +306,7 @@ export const createFramework = ({
           namespace: {
             id: `gid://gitlab/Group/${id}`,
             name: 'bar',
+            fullPath: 'bar',
           },
         },
       },

@@ -109,11 +109,11 @@ RSpec.describe 'Database schema',
       ci_pipeline_schedule_variables: %w[project_id],
       ci_pipeline_variables: %w[partition_id pipeline_id project_id],
       ci_pipelines_config: %w[partition_id project_id],
-      ci_pipelines: %w[partition_id auto_canceled_by_partition_id project_id user_id merge_request_id], # LFKs are defined on the routing table
+      ci_pipelines: %w[partition_id auto_canceled_by_partition_id project_id user_id merge_request_id trigger_id], # LFKs are defined on the routing table
       ci_secure_file_states: %w[project_id],
       ci_unit_test_failures: %w[project_id],
       ci_resources: %w[project_id],
-      p_ci_pipelines: %w[partition_id auto_canceled_by_partition_id auto_canceled_by_id],
+      p_ci_pipelines: %w[partition_id auto_canceled_by_partition_id auto_canceled_by_id trigger_id],
       p_ci_runner_machine_builds: %w[project_id],
       ci_runner_taggings: %w[runner_id sharding_key_id], # The sharding_key_id value is meant to populate the partitioned table, no other usage. The runner_id FK exists at the partition level
       ci_runner_taggings_instance_type: %w[sharding_key_id], # This field is always NULL in this partition
@@ -217,7 +217,7 @@ RSpec.describe 'Database schema',
       taggings: %w[tag_id taggable_id tagger_id],
       timelogs: %w[user_id],
       todos: %w[target_id commit_id],
-      uploads: %w[model_id],
+      uploads: %w[model_id organization_id namespace_id project_id],
       user_agent_details: %w[subject_id],
       users: %w[color_mode_id color_scheme_id created_by_id theme_id managing_group_id],
       users_star_projects: %w[user_id],
@@ -412,6 +412,7 @@ RSpec.describe 'Database schema',
     # These pre-existing columns does not use a schema validation yet
     let(:ignored_jsonb_columns_map) do
       {
+        "Ai::Conversation::Message" => %w[extras error_details],
         "ApplicationSetting" => %w[repository_storages_weighted],
         "AlertManagement::Alert" => %w[payload],
         "Ci::BuildMetadata" => %w[config_options config_variables],

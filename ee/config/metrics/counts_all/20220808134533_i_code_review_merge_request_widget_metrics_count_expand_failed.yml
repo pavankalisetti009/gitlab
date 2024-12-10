@@ -16,8 +16,6 @@ events:
   filter:
     label: metrics
     property: failed
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

@@ -348,6 +348,9 @@ RSpec.configure do |config|
       # Our test suite is setup to test plain text editor by default with separate tests just
       # for the rich text editor. Switch the flag off to continue testing the same way as before
       stub_feature_flags(rich_text_editor_as_default: false)
+
+      # we need the `cleanup_data_source_work_item_data` disabled by default to prevent deletion of some data
+      stub_feature_flags(cleanup_data_source_work_item_data: false)
     else
       unstub_all_feature_flags
     end
@@ -601,6 +604,16 @@ module UsersInternalAllowExclusiveLease
       else
         super
       end
+    end
+
+    # TODO: Until https://gitlab.com/gitlab-org/gitlab/-/issues/442780 is resolved we're creating internal users in the
+    # first organization as a temporary workaround. Many specs lack an organization in the database, causing foreign key
+    # constraint violations when creating internal users. We're not seeding organizations before all specs for
+    # performance.
+    def create_unique_internal(scope, username, email_pattern, &creation_block)
+      Organizations::Organization.first || FactoryBot.create(:organization)
+
+      super
     end
   end
 end

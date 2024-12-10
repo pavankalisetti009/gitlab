@@ -137,4 +137,12 @@ RSpec.describe 'admin/application_settings/general.html.haml' do
       expect(rendered).to render_template('admin/application_settings/_private_profile_restrictions')
     end
   end
+
+  describe 'AmazonQ settings', feature_category: :ai_abstraction_layer do
+    it 'renders correct ee partial' do
+      render
+
+      expect(rendered).to render_template('admin/application_settings/_amazon_q')
+    end
+  end
 end

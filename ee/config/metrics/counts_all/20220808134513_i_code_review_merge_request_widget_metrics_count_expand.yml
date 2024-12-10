@@ -15,8 +15,6 @@ events:
 - name: expand_merge_request_widget
   filter:
     label: metrics
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

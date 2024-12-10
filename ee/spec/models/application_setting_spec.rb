@@ -35,6 +35,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.allowed_integrations).to eq([]) }
     it { expect(setting.seat_control).to eq(0) }
     it { expect(setting.soft_phone_verification_transactions_daily_limit).to eq(16000) }
+    it { expect(setting.phone_verification_enabled).to eq(true) }
     it { expect(setting.secret_detection_service_url).to eq('') }
     it { expect(setting.secret_detection_service_auth_token).to eq(nil) }
     it { expect(setting.unverified_account_group_creation_limit).to eq(2) }
@@ -42,6 +43,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe 'validations' do
     it { expect(described_class).to validate_jsonb_schema(['application_setting_cluster_agents']) }
+    it { expect(described_class).to validate_jsonb_schema(['identity_verification_settings']) }
 
     describe 'mirror', feature_category: :source_code_management do
       it { is_expected.to validate_numericality_of(:mirror_max_delay).only_integer }

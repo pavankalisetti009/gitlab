@@ -42,7 +42,7 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
 
   describe 'json' do
     let_it_be(:label) { create(:label) }
-    let_it_be(:merge_request) { create(:labeled_merge_request, labels: [label]) }
+    let_it_be(:merge_request) { create(:labeled_merge_request, :with_assignee, labels: [label]) }
 
     let(:expected_hash) do
       merge_request.attributes.extract!(
@@ -70,7 +70,8 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
         'archived' => merge_request.target_project.archived?,
         'schema_version' => Elastic::Latest::MergeRequestInstanceProxy::SCHEMA_VERSION,
         'hashed_root_namespace_id' => merge_request.target_project.namespace.hashed_root_namespace_id,
-        'label_ids' => [label.id.to_s]
+        'label_ids' => [label.id.to_s],
+        'assignee_ids' => merge_request.assignee_ids.map(&:to_s)
       )
     end
 
@@ -78,14 +79,19 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
       merge_request.project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
     end
 
-    it 'does not include label_ids or traversal_ids if add_label_ids_to_merge_request is not finished' do
+    it 'does not include label_ids, traversal_ids or assignee_ids if add_label_ids_to_merge_request is not finished' do
       set_elasticsearch_migration_to :add_label_ids_to_merge_request, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids', 'traversal_ids'))
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids', 'traversal_ids', 'assignee_ids'))
     end
 
-    it 'does not include traversal_ids if add_traversal_ids_to_merge_requests is not finished' do
+    it 'does not include traversal_ids or assignee_ids if add_traversal_ids_to_merge_requests is not finished' do
       set_elasticsearch_migration_to :add_traversal_ids_to_merge_requests, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('traversal_ids'))
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('traversal_ids', 'assignee_ids'))
+    end
+
+    it 'does not include assignee_ids if add_assignees_to_merge_requests is not finished' do
+      set_elasticsearch_migration_to :add_assignees_to_merge_requests, including: false
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('assignee_ids'))
     end
 
     it 'returns json with all needed elements' do

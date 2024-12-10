@@ -34,6 +34,7 @@ export default {
       :author="systemNote.author"
       :created-at="systemNote.createdAt"
       :icon-name="systemNote.systemNoteIconName"
+      is-system-note
       icon-class="timeline-icon m-0"
       class="m-3"
     >

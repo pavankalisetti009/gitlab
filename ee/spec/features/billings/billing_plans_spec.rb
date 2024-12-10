@@ -288,7 +288,13 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
 
   context 'group billing page' do
     let(:namespace) { create(:group) }
-    let!(:group_member) { create(:group_member, :owner, group: namespace, user: user) }
+
+    before do
+      namespace.add_owner(user)
+      # post_create_member_hook creates a subscription due to a license check.
+      # We delete it here so that subscription creation in the tests below do not violate the unique constraint
+      namespace.gitlab_subscription.destroy!
+    end
 
     context 'when a group is the top-level group' do
       let(:page_path) { group_billings_path(namespace) }

@@ -65,7 +65,7 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
         expect(last_note.project).to eq(project)
         expect(last_note.namespace_id).to eq(project.project_namespace_id)
         expect(last_note.note).to eq(
-          "changed vulnerability status to Dismissed: Used In Tests and the following comment: \"#{comment}\""
+          "changed vulnerability status to Dismissed: Used In Tests with the following comment: \"#{comment}\""
         )
         expect(last_note).to be_system
       end

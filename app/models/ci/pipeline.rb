@@ -62,6 +62,7 @@ module Ci
     belongs_to :merge_request, class_name: 'MergeRequest'
     belongs_to :external_pull_request, class_name: 'Ci::ExternalPullRequest'
     belongs_to :ci_ref, class_name: 'Ci::Ref', foreign_key: :ci_ref_id, inverse_of: :pipelines
+    belongs_to :trigger, class_name: 'Ci::Trigger', inverse_of: :pipelines
 
     has_internal_id :iid, scope: :project, presence: false,
       track_if: -> { !importing? },
@@ -445,6 +446,7 @@ module Ci
     end
     scope :for_status, ->(status) { where(status: status) }
     scope :created_after, ->(time) { where(arel_table[:created_at].gt(time)) }
+    scope :created_before, ->(time) { where(arel_table[:created_at].lt(time)) }
     scope :created_before_id, ->(id) { where(arel_table[:id].lt(id)) }
     scope :before_pipeline, ->(pipeline) { created_before_id(pipeline.id).outside_pipeline_family(pipeline) }
     scope :with_pipeline_source, ->(source) { where(source: source) }

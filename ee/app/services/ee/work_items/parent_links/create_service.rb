@@ -24,7 +24,7 @@ module EE
             ApplicationRecord.transaction do
               parent_link = super
               parent_link.work_item_syncing = true # set this attribute to skip the validation validate_legacy_hierarchy
-              create_synced_epic_link!(work_item) if parent_link.save
+              create_synced_epic_link!(parent_link, work_item) if parent_link.save
 
               parent_link
             end
@@ -61,8 +61,36 @@ module EE
           super
         end
 
-        def create_synced_epic_link!(work_item)
-          result = work_item.work_item_type.epic? ? handle_epic_link(work_item) : handle_epic_issue(work_item)
+        override :can_add_to_parent?
+        def can_add_to_parent?(parent_work_item)
+          return true if synced_work_item
+
+          # For legacy epics, we allow to add child items to the epic, when the user only has read access to the group.
+          # This could be the case when the group is public, or also when the group is private, but the user
+          # has access to a project within the group.
+          #
+          # The ideal solution would be to have a Policy that takes into account the work item's namespace
+          # (group or project) for both the child and the parent, and the user's access to each namespace.
+          # However, this is a larger piece of work and we're deciding how to change policies for work items in
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/505855, which might make this change obsolete.
+          #
+          # To keep the same business logic that we had for legacy epics, we for now add this specific check and
+          # and only check for `read` access for the parents, when they are group level work items.
+          #
+          # Once decision has been made, we can refactor the existing `admin_parent_link` policy.
+          if parent_work_item.epic_work_item? && parent_work_item.resource_parent.is_a?(Group)
+            return can?(current_user, :read_work_item, parent_work_item)
+          end
+
+          super
+        end
+
+        def create_synced_epic_link!(parent_link, work_item)
+          result = if work_item.work_item_type.epic?
+                     handle_epic_link(parent_link, work_item)
+                   else
+                     handle_epic_issue(work_item)
+                   end
 
           return result if result[:status] == :success
 
@@ -85,17 +113,21 @@ module EE
           end
         end
 
-        def handle_epic_link(work_item)
+        def handle_epic_link(parent_link, work_item)
           success_result = { status: :success }
           legacy_child_epic = work_item.synced_epic
           return success_result unless legacy_child_epic
 
           if sync_epic_link?
-            ::Epics::EpicLinks::CreateService.new(
-              issuable.synced_epic,
-              current_user,
-              { target_issuable: legacy_child_epic, synced_epic: true }
-            ).execute
+            legacy_child_epic.parent = issuable.synced_epic
+            legacy_child_epic.move_to_start
+            legacy_child_epic.work_item_parent_link = parent_link
+
+            if legacy_child_epic.save(touch: false)
+              { status: :success }
+            else
+              { status: :error, message: legacy_child_epic.errors.map(&:message).to_sentence }
+            end
           elsif legacy_child_epic.parent.present?
             ::Epics::EpicLinks::DestroyService.new(legacy_child_epic, current_user, synced_epic: true).execute
           else

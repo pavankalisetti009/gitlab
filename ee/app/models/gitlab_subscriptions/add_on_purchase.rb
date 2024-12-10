@@ -101,6 +101,7 @@ module GitlabSubscriptions
       assigned_users.each_batch(of: batch_size) do |batch|
         ineligible_user_ids = filter_ineligible_assigned_user_ids(batch.pluck_user_ids.to_set)
 
+        log_ineligible_users_add_on_assignments_deletion(ineligible_user_ids) if ineligible_user_ids.present?
         deleted_assignments_count += batch.for_user_ids(ineligible_user_ids).delete_all
 
         cache_keys = ineligible_user_ids.map do |user_id|
@@ -120,6 +121,16 @@ module GitlabSubscriptions
     end
 
     private
+
+    def log_ineligible_users_add_on_assignments_deletion(user_ids)
+      Gitlab::AppLogger.info(
+        message: 'Ineligible UserAddOnAssignments destroyed',
+        user_ids: user_ids.to_a,
+        add_on: add_on.name,
+        add_on_purchase: id,
+        namespace: namespace&.path
+      )
+    end
 
     def filter_ineligible_assigned_user_ids(assigned_user_ids)
       return assigned_user_ids - saas_eligible_user_ids if namespace

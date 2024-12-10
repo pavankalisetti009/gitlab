@@ -1,7 +1,7 @@
 <script>
 import {
-  GlDrawer,
   GlBadge,
+  GlDrawer,
   GlButton,
   GlLabel,
   GlLink,
@@ -36,6 +36,11 @@ export default {
       required: false,
       default: null,
     },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     framework: {
       type: Object,
       required: false,
@@ -64,7 +69,10 @@ export default {
       return Boolean(this.framework.default);
     },
     associatedProjectsTitle() {
-      return `${this.$options.i18n.associatedProjects} (${this.framework.projects.nodes.length})`;
+      return this.$options.i18n.associatedProjects;
+    },
+    associatedProjectsCount() {
+      return this.framework.projects.nodes.length;
     },
     policies() {
       return [
@@ -74,7 +82,10 @@ export default {
       ];
     },
     policiesTitle() {
-      return `${this.$options.i18n.policies} (${this.policies.length})`;
+      return this.$options.i18n.policies;
+    },
+    policiesCount() {
+      return this.policies.length;
     },
     normalisedFrameworkId() {
       return getIdFromGraphQLId(this.framework.id);
@@ -86,6 +97,10 @@ export default {
         // eslint-disable-next-line no-underscore-dangle
         (o) => o.typeName === policy.__typename,
       );
+
+      if (policy.source.namespace.fullPath !== this.groupPath) {
+        return `/${this.projectPath}/security/policies`;
+      }
 
       return `${this.groupSecurityPoliciesPath}/${policy.name}/edit?type=${urlParameter}`;
     },
@@ -217,10 +232,13 @@ export default {
           </span>
         </div>
         <div v-if="framework.projects" class="gl-border-t" data-testid="sidebar-projects">
-          <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
-            {{ associatedProjectsTitle }}
-          </h3>
-          <ul class="gl-pl-6">
+          <div class="gl-flex gl-items-center gl-gap-1">
+            <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
+              {{ associatedProjectsTitle }}
+            </h3>
+            <gl-badge class="gl-ml-3" variant="muted">{{ associatedProjectsCount }}</gl-badge>
+          </div>
+          <ul class="gl-pl-5">
             <li
               v-for="associatedProject in framework.projects.nodes"
               :key="associatedProject.id"
@@ -231,21 +249,17 @@ export default {
           </ul>
         </div>
         <div class="gl-border-t" data-testid="sidebar-policies">
-          <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
-            {{ policiesTitle }}
-          </h3>
-          <div v-if="policies.length">
-            <div
-              v-for="(policy, idx) in policies"
-              :key="idx"
-              class="gl-m-4 gl-flex gl-flex-col gl-items-start"
-            >
-              <gl-link :href="getPolicyEditUrl(policy)">{{ policy.name }}</gl-link>
-              <gl-badge v-if="policy.source.namespace.fullPath !== groupPath" variant="muted">
-                {{ policy.source.namespace.name }}
-              </gl-badge>
-            </div>
+          <div class="gl-flex gl-items-center gl-gap-1">
+            <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
+              {{ policiesTitle }}
+            </h3>
+            <gl-badge class="gl-ml-3" variant="muted">{{ policiesCount }}</gl-badge>
           </div>
+          <ul v-if="policies.length" class="gl-pl-5">
+            <li v-for="(policy, idx) in policies" :key="idx" class="gl-mt-1">
+              <gl-link :href="getPolicyEditUrl(policy)">{{ policy.name }}</gl-link>
+            </li>
+          </ul>
         </div>
       </div>
     </template>

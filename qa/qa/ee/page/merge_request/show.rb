@@ -62,6 +62,12 @@ module QA
               view 'ee/app/assets/javascripts/vue_shared/security_reports/components/event_item.vue' do
                 element 'event-item-content'
               end
+
+              view 'ee/app/assets/javascripts/vue_merge_request_widget/components/ai_commit_message.vue' do
+                element 'generate-commit-message'
+                element 'insert-commit-message'
+                element 'ai-commit-message-row'
+              end
             end
           end
 
@@ -121,6 +127,16 @@ module QA
             wait_until(reload: false) do
               find_element('vulnerability-modal-content')
             end
+          end
+
+          def click_resolve_with_ai
+            click_element('resolve-with-ai')
+            wait_for_requests
+          end
+
+          def click_finding_resolution_mr_link
+            click_element('merge-request-link')
+            wait_for_requests
           end
 
           def dismiss_vulnerability_with_comment(name, comment)
@@ -232,12 +248,15 @@ module QA
           end
 
           def generate_commit
-            click_button('Generate commit message')
-            click_button('Insert')
+            click_element('generate-commit-message')
           end
 
-          def commit_message
-            find('#merge-message-edit').value
+          def insert_commit
+            click_element('insert-commit-message')
+          end
+
+          def ai_commit_message
+            find_element('ai-commit-message-row').text
           end
 
           private

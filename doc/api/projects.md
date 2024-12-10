@@ -1425,7 +1425,7 @@ Supported general project attributes:
 | `merge_trains_skip_train_allowed`                  | boolean | No                             | Allows merge train merge requests to be merged without waiting for pipelines to finish. |
 | `mirror_trigger_builds`                            | boolean | No                             | Pull mirroring triggers builds. Premium and Ultimate only. |
 | `mirror`                                           | boolean | No                             | Enables pull mirroring in a project. Premium and Ultimate only. |
-| `namespace_id`                                     | integer | No                             | Namespace for the new project (defaults to the current user's namespace). |
+| `namespace_id`                                     | integer | No                             | Namespace for the new project. Specify a group ID or subgroup ID. If not provided, defaults to the current user's personal namespace. |
 | `only_allow_merge_if_all_discussions_are_resolved` | boolean | No                             | Set whether merge requests can only be merged when all the discussions are resolved. |
 | `only_allow_merge_if_all_status_checks_passed`     | boolean | No                             | Indicates that merges of merge requests should be blocked unless all status checks have passed. Defaults to false. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/369859) in GitLab 15.5 with feature flag `only_allow_merge_if_all_status_checks_passed` disabled by default. Ultimate only. |
 | `only_allow_merge_if_pipeline_succeeds`            | boolean | No                             | Set whether merge requests can only be merged with successful pipelines. This setting is named [**Pipelines must succeed**](../user/project/merge_requests/auto_merge.md#require-a-successful-pipeline-for-merge) in the project settings. |
@@ -1635,6 +1635,7 @@ Supported general project attributes:
 | `build_timeout`                                    | integer           | No       | The maximum amount of time, in seconds, that a job can run. |
 | `ci_config_path`                                   | string            | No       | The path to CI configuration file. |
 | `ci_default_git_depth`                             | integer           | No       | Default number of revisions for [shallow cloning](../ci/pipelines/settings.md#limit-the-number-of-changes-fetched-during-clone). |
+| `ci_delete_pipelines_in_seconds`                   | integer           | No       | Pipelines older than the configured time are deleted. |
 | `ci_forward_deployment_enabled`                    | boolean           | No       | Enable or disable [prevent outdated deployment jobs](../ci/pipelines/settings.md#prevent-outdated-deployment-jobs). |
 | `ci_forward_deployment_rollback_allowed`           | boolean           | No       | Enable or disable [allow job retries for rollback deployments](../ci/pipelines/settings.md#prevent-outdated-deployment-jobs). |
 | `ci_allow_fork_pipelines_to_run_in_parent_project` | boolean           | No       | Enable or disable [running pipelines in the parent project for merge requests from forks](../ci/pipelines/merge_request_pipelines.md#run-pipelines-in-the-parent-project). _([Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/325189) in GitLab 15.3.)_ |

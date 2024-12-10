@@ -58,10 +58,10 @@ module Registrations
     def service_instance
       if import?
         Registrations::ImportNamespaceCreateService
-          .new(current_user, glm_params: glm_params, group_params: group_params)
+          .new(current_user, group_params: group_params)
       else
         Registrations::StandardNamespaceCreateService
-          .new(current_user, glm_params: glm_params, group_params: group_params, project_params: project_params)
+          .new(current_user, group_params: group_params, project_params: project_params)
       end
     end
 
@@ -133,11 +133,7 @@ module Registrations
     end
 
     def general_params
-      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :import_url)
-    end
-
-    def glm_params
-      ::Onboarding::StatusPresenter.glm_tracking_params(params) # rubocop:disable Rails/StrongParams -- strong params are used in the method being called.
+      params.permit(:import_url)
     end
   end
 end

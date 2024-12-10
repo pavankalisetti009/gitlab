@@ -48,7 +48,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
       end
 
       it 'does not render licensed feature sections' do
-        expect(page).not_to have_css 'h2', text: 'Merge request approvals'
+        expect(page).not_to have_text 'Approval rules'
         expect(page).not_to have_css 'h2', text: 'Status checks'
       end
     end
@@ -90,7 +90,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
         expect(page).to have_css 'h2', text: 'Protect branch'
         expect(page).to have_text 'Allowed to push and merge'
         expect(page).to have_text 'Allowed to merge'
-        expect(page).to have_css 'h2', text: 'Merge request approvals'
+        expect(page).to have_text 'Approval rules'
         expect(page).to have_css 'h2', text: 'Status checks'
       end
 

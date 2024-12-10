@@ -723,6 +723,12 @@ API/GrapeArrayMissingCoerce:
     - 'lib/**/api/**/*.rb'
     - 'ee/**/api/**/*.rb'
 
+API/ClassLevelAllowAccessWithScope:
+  Enabled: true
+  Include:
+    - 'lib/**/api/**/*.rb'
+    - 'ee/lib/**/api/**/*.rb'
+
 Cop/SidekiqOptionsQueue:
   Enabled: true
   Exclude:
@@ -1000,6 +1006,7 @@ Cop/UserAdmin:
     - 'lib/gitlab/auth/current_user_mode.rb'
     - 'spec/**/*.rb'
     - 'ee/spec/**/*.rb'
+    - 'qa/**/*.rb'
 
 Style/InlineDisableAnnotation:
   Enabled: true

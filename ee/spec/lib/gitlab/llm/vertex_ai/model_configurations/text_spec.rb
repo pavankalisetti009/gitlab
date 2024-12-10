@@ -6,10 +6,12 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::Text, feature_categor
   let_it_be(:host) { 'cloud.gitlab.com' }
   let_it_be(:project) { 'PROJECT' }
   let_it_be(:user) { create(:user) }
+  let_it_be(:host_url) { 'https://cloud.gitlab.com/ai' }
 
   subject(:text) { described_class.new(user: user) }
 
   before do
+    allow(Gitlab::AiGateway).to receive(:url).and_return(host_url)
     stub_application_setting(vertex_ai_host: host)
     stub_application_setting(vertex_ai_project: project)
   end
@@ -30,8 +32,7 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::Text, feature_categor
   end
 
   describe '#url' do
-    it 'returns correct url replacing default value',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480562' do
+    it 'returns correct url replacing default value' do
       expect(subject.url).to eq(
         'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/text-bison:predict'
       )
@@ -39,7 +40,7 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::Text, feature_categor
   end
 
   describe '#as_json' do
-    it 'returns serializable attributes', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480561' do
+    it 'returns serializable attributes' do
       attrs = {
         vertex_ai_host: host,
         vertex_ai_project: project,

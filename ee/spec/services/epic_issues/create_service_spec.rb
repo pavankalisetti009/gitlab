@@ -117,6 +117,22 @@ RSpec.describe EpicIssues::CreateService, feature_category: :portfolio_managemen
         stub_licensed_features(epics: true)
       end
 
+      context 'when user is only member of a project in the group' do
+        let_it_be_with_reload(:group) { create(:group, :private) }
+        let_it_be_with_reload(:project) { create(:project, :private, group: group) }
+        let_it_be_with_reload(:user) { create(:user, guest_of: project) }
+        let_it_be_with_reload(:valid_reference) { create(:issue, project: project).to_reference(full: true) }
+
+        subject { assign_issue([valid_reference]) }
+
+        it 'sets the parent correctly' do
+          expect { subject }.to change { EpicIssue.count }.by(1)
+            .and(change { WorkItems::ParentLink.count }.by(1))
+
+          expect(subject[:status]).to eq(:success)
+        end
+      end
+
       context 'when user has permissions to link the issue' do
         let(:user) { guest }
 

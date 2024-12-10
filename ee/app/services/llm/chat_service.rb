@@ -21,16 +21,6 @@ module Llm
         return error(MISSING_RESOURCE_ID_MESSAGE)
       end
 
-      if options[:agent_version_id]
-        agent_version = Ai::AgentVersion.find_by_id(options[:agent_version_id].model_id)
-        return error(agent_not_found_message) if agent_version.nil?
-
-        return error(insufficient_agent_permission_message) unless Ability.allowed?(user, :read_ai_agents,
-          agent_version.project)
-
-        @options = options.merge(agent_version_id: agent_version.id)
-      end
-
       track_internal_event(
         'request_duo_chat_response',
         user: user,
@@ -38,7 +28,10 @@ module Llm
         namespace: namespace,
         feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, service_name: :duo_chat)
       )
-      Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response', user: user)
+
+      if Feature.disabled?(:move_ai_tracking_to_instrumentation_layer, user)
+        Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response', user: user)
+      end
 
       prompt_message.save!
       GraphqlTriggers.ai_completion_response(prompt_message)

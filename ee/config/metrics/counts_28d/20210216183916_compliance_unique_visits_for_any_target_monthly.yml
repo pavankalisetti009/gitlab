@@ -19,8 +19,6 @@ events:
   unique: user.id
 - name: a_compliance_audit_events_api
   unique: user.id
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

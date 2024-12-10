@@ -3,12 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions do
-  let(:klass) do
-    Class.new(described_class) do
-      def feature_setting_name
-        :code_generations
+  let(:klass) { ChildTaskClass }
+
+  before do
+    stub_const('ChildTaskClass',
+      Class.new(described_class) do
+        def feature_setting_name
+          :code_generations
+        end
       end
-    end
+    )
   end
 
   describe '#endpoint' do

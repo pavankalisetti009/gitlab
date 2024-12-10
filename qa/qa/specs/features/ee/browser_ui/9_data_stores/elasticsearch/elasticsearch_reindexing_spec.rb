@@ -10,11 +10,11 @@ module QA
       :skip_live_env
     ) do
       include Runtime::Fixtures
-      let(:api_client) { Runtime::API::Client.new(:gitlab) }
+      let(:admin_api_client) { Runtime::User::Store.admin_api_client }
       let(:project_file_name) { 'elasticsearch.rb' }
       let(:project_file_content) { "Some file content #{SecureRandom.hex(8)}" }
       let(:project) { create(:project, name: 'testing_elasticsearch_indexing') }
-      let(:elasticsearch_original_state_on?) { Runtime::Search.elasticsearch_on?(api_client) }
+      let(:elasticsearch_original_state_on?) { Runtime::Search.elasticsearch_on?(admin_api_client) }
 
       before do
         QA::EE::Resource::Settings::Elasticsearch.fabricate_via_api! unless elasticsearch_original_state_on?

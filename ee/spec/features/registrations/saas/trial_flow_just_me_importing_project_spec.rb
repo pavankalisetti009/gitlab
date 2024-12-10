@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial flow for user picking just me and importing a project', :js, :saas_registration, :with_default_organization, feature_category: :onboarding do
+RSpec.describe 'Trial flow for user picking just me and importing a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular trial sign up', -> { trial_registration_sign_up }],
@@ -21,7 +21,7 @@ RSpec.describe 'Trial flow for user picking just me and importing a project', :j
 
       expect_to_see_company_form
 
-      fill_in_company_form(glm: false)
+      fill_in_company_form
       click_on 'Continue'
 
       expect_to_see_group_and_project_creation_form

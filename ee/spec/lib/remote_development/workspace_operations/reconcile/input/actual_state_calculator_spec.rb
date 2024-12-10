@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'fast_spec_helper'
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
@@ -47,7 +47,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
         let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 
         let(:workspace) do
-          instance_double("RemoteDevelopment::Workspace", id: 1, name: 'name', namespace: 'namespace', agent: agent) # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+          instance_double(
+            "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+            id: 1, name: 'name', namespace: 'namespace', agent: agent,
+            desired_config_generator_version:
+              ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+          )
         end
 
         let(:latest_k8s_deployment_info) do

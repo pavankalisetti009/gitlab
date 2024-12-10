@@ -36,9 +36,8 @@ module Gitlab
 
       def role_approvers(project)
         return [] unless Feature.enabled?(:codeowner_role_approvers, project)
-        raise "CodeOwners roles for #{owner_line} not loaded" unless defined?(@roles)
 
-        @roles.to_a
+        roles
       end
 
       def groups
@@ -59,12 +58,6 @@ module Gitlab
 
         matching_users = new_users.select { |u| matching_user?(u) }
         @users.merge(matching_users)
-      end
-
-      def add_matching_roles_from(new_roles)
-        @roles ||= Set.new
-
-        @roles.merge(new_roles)
       end
 
       def optional?
@@ -97,6 +90,10 @@ module Gitlab
 
       def names
         @names ||= extractor.names.map(&:downcase)
+      end
+
+      def roles
+        @roles ||= extractor.roles
       end
 
       def matching_group?(group)

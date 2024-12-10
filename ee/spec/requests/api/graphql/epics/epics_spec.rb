@@ -163,16 +163,6 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
 
       expect_epics_response([subscribed_epic, unsubscribed_epic, regular_epic], node_path: node_path)
     end
-
-    context 'when filter_subscriptions feature flag disabled' do
-      it 'does not filter out subscribed epics' do
-        stub_feature_flags(filter_subscriptions: false)
-
-        post_graphql(epics_query(group, subscribed: :EXPLICITLY_SUBSCRIBED), current_user: user)
-
-        expect_epics_response([subscribed_epic, unsubscribed_epic, regular_epic], node_path: node_path)
-      end
-    end
   end
 
   context 'when query for epics with events' do

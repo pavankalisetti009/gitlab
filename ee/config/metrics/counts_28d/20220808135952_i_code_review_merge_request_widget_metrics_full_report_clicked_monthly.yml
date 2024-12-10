@@ -16,8 +16,6 @@ events:
     unique: user.id
     filter:
       label: metrics
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

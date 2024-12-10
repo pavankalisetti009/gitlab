@@ -16,16 +16,23 @@ describe('UsersApi', () => {
 
   describe('validatePasswordComplexity', () => {
     const expectedUrl = '/users/password/complexity';
-    const params = { password: '_password_' };
 
-    it('sends password parameter', async () => {
+    const params = {
+      first_name: '_first_name_',
+      last_name: '_last_name_',
+      username: '_username_',
+      email: '_email_',
+      password: '_password_',
+    };
+
+    it('sends user parameters', async () => {
       jest.spyOn(axios, 'post');
       mock.onPost(expectedUrl).replyOnce(HTTP_STATUS_OK, []);
 
-      const { data } = await UsersApi.validatePasswordComplexity(params.password);
+      const { data } = await UsersApi.validatePasswordComplexity(params);
 
       expect(data).toEqual([]);
-      expect(axios.post).toHaveBeenCalledWith(expectedUrl, params);
+      expect(axios.post).toHaveBeenCalledWith(expectedUrl, { user: params });
     });
   });
 });

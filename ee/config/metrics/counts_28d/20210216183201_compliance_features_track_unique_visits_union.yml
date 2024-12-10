@@ -19,8 +19,6 @@ events:
   unique: user.id
 - name: i_compliance_credential_inventory
   unique: user.id
-distribution:
-- ee
 tiers:
 - premium
 - ultimate

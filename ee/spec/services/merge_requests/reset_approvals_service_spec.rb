@@ -58,6 +58,35 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       end
     end
 
+    shared_examples_for "Executing automerge process worker" do
+      context 'when auto merge is enabled' do
+        it 'calls automerge process worker' do
+          expect(AutoMergeProcessWorker).to receive(:perform_async).with(merge_request.id)
+
+          action
+        end
+      end
+
+      context 'when auto merge is not enabled' do
+        let(:merge_request) do
+          create(:merge_request,
+            author: current_user,
+            source_project: project,
+            source_branch: 'master',
+            target_branch: 'feature',
+            target_project: project,
+            merge_user: user,
+            reviewers: [owner])
+        end
+
+        it 'does not call automerge process worker' do
+          expect(AutoMergeProcessWorker).not_to receive(:perform_async)
+
+          action
+        end
+      end
+    end
+
     context 'as default' do
       let(:patch_id_sha) { nil }
 
@@ -104,6 +133,10 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         merge_request.reload
 
         expect(merge_request.approval_state.temporarily_unapproved?).to be_falsey
+      end
+
+      it_behaves_like 'Executing automerge process worker' do
+        let(:action) { service.execute('refs/heads/master', newrev) }
       end
 
       it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
@@ -201,6 +234,10 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
 
         expect(merge_request.approvals).to be_empty
         expect(approval_todos(merge_request)).to be_empty
+      end
+
+      it_behaves_like 'Executing automerge process worker' do
+        let(:action) { service.execute('refs/heads/master', newrev, skip_reset_checks: true) }
       end
 
       it_behaves_like 'MergeRequests::ApprovalsResetEvent published' do

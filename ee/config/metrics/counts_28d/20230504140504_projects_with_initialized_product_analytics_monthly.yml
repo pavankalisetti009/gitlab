@@ -14,7 +14,5 @@ options:
     - "project_initialized_product_analytics"
 instrumentation_class: RedisHLLMetric
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate

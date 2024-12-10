@@ -310,14 +310,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   def create_config_to_apply(workspace:, **args)
-    latest_desired_config_generator_version =
-      ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
-
-    desired_config_generator_version = if workspace.respond_to?(:desired_config_generator_version)
-                                         workspace.desired_config_generator_version
-                                       else
-                                         latest_desired_config_generator_version
-                                       end
+    desired_config_generator_version = workspace.desired_config_generator_version
 
     method_name = "create_config_to_apply_v#{desired_config_generator_version}"
     send(method_name, workspace: workspace, **args)
@@ -845,7 +838,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 ],
                 image: "alpine/git:2.45.2",
                 imagePullPolicy: "Always",
-                name: "gl-cloner-injector-gl-cloner-injector-command-1",
+                name: "gl-project-cloner-gl-project-cloner-command-1",
                 resources: {
                   limits: {
                     cpu: "500m",

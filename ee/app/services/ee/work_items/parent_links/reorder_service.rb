@@ -99,7 +99,7 @@ module EE
               # set work_item_syncing to skip the validation EpicIssue#check_existing_parent_link
               { epic: link.work_item_parent.synced_epic, work_item_syncing: true }
             when ::Epic
-              { parent: link.work_item_parent.synced_epic }
+              { parent: link.work_item_parent.synced_epic, work_item_parent_link: link }
             end
 
           return if link.work_item_parent == synced_moving_object.try(parent_attributes.keys[0])
@@ -110,6 +110,13 @@ module EE
 
         override :can_admin_link?
         def can_admin_link?(work_item)
+          return true if synced_work_item
+
+          super
+        end
+
+        override :can_add_to_parent?
+        def can_add_to_parent?(parent_work_item)
           return true if synced_work_item
 
           super

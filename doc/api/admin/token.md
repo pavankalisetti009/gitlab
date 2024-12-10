@@ -17,25 +17,22 @@ DETAILS:
 > - [OAuth application secrets added](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/172985) in GitLab 17.7.
 > - [Cluster agent tokens added](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/172932) in GitLab 17.7.
 > - [Runner authentication tokens added](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173987) in GitLab 17.7.
+> - [Pipeline trigger tokens added](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/174030) in GitLab 17.7.
 
 FLAG:
 The availability of this feature is controlled by a feature flag.
 For more information, see the history.
 This feature is available for testing, but not ready for production use.
 
-Administrators can use this API to retrieve information about arbitrary tokens. Unlike other API endpoints that expose token information, such as the
-[Personal access token API](../personal_access_tokens.md#get-single-personal-access-token), this endpoint allows administrators to retrieve token information without knowing the type of
-the token.
+Use this API to retrieve details about arbitrary tokens. Unlike other APIs that expose token information, this API allows you to retrieve details without knowing the specific type of token.
 
 Prerequisites:
 
-- You must be an administrator.
+- You must have administrator access to the instance.
 
-## Identify Token
+## Get information on a token
 
-Returns information about a token.
-
-Supported tokens:
+Gets information for a given token. This endpoint supports the following tokens:
 
 - [Personal access tokens](../../user/profile/personal_access_tokens.md)
 - [Impersonation tokens](../../api/rest/authentication.md#impersonation-tokens)
@@ -44,6 +41,7 @@ Supported tokens:
 - [OAuth application secrets](../../integration/oauth_provider.md)
 - [Cluster agent tokens](../../security/tokens/index.md#gitlab-cluster-agent-tokens)
 - [Runner authentication tokens](../../security/tokens/index.md#runner-authentication-tokens)
+- [Pipeline trigger tokens](../../ci/triggers/index.md#create-a-pipeline-trigger-token)
 
 ```plaintext
 POST /api/v4/admin/token
@@ -51,9 +49,9 @@ POST /api/v4/admin/token
 
 Supported attributes:
 
-| Attribute    | Type    | Required | Description                      |
-|--------------|---------|----------|----------------------------------|
-| `token`      | string  | Yes      | Token that should be identified. |
+| Attribute    | Type    | Required | Description                 |
+|--------------|---------|----------|-----------------------------|
+| `token`      | string  | Yes      | Existing token to identify. |
 
 If successful, returns [`200`](../rest/troubleshooting.md#status-codes) and information about the token.
 

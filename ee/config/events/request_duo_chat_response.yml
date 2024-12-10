@@ -14,3 +14,5 @@ distributions:
 tiers:
 - premium
 - ultimate
+extra_tracking_classes:
+- Gitlab::Tracking::AiTracking

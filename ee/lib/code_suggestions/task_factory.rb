@@ -4,8 +4,9 @@ module CodeSuggestions
   class TaskFactory
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(current_user, params:, unsafe_passthrough_params: {})
+    def initialize(current_user, client:, params:, unsafe_passthrough_params: {})
       @current_user = current_user
+      @client = client
       @params = params
       @params = params.except(:user_instruction, :context) if Feature.disabled?(:code_suggestions_context, current_user)
       @unsafe_passthrough_params = unsafe_passthrough_params
@@ -28,8 +29,8 @@ module CodeSuggestions
 
     private
 
-    attr_reader :current_user, :params, :unsafe_passthrough_params, :content_above_cursor, :content_below_cursor,
-      :intent
+    attr_reader :current_user, :client, :params, :unsafe_passthrough_params, :content_above_cursor,
+      :content_below_cursor, :intent
 
     def extract_instruction(file_content)
       CodeSuggestions::InstructionsExtractor
@@ -41,7 +42,8 @@ module CodeSuggestions
       CodeSuggestions::Tasks::CodeCompletion.new(
         params: params,
         unsafe_passthrough_params: unsafe_passthrough_params,
-        current_user: current_user
+        current_user: current_user,
+        client: client
       )
     end
 
@@ -49,7 +51,8 @@ module CodeSuggestions
       CodeSuggestions::Tasks::CodeGeneration.new(
         params: code_generation_params(instruction),
         unsafe_passthrough_params: unsafe_passthrough_params,
-        current_user: current_user
+        current_user: current_user,
+        client: client
       )
     end
 

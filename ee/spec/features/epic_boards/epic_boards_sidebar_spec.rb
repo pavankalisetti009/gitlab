@@ -307,7 +307,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
         end
       end
 
-      it 'marks a todo as done' do
+      it 'marks a todo as done', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484463' do
         click_card(card)
         wait_for_requests
 

@@ -42,18 +42,38 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
         expected_runner_url = ::Gitlab::Routing.url_helpers.project_runner_path(
           project_runner.owner,
           project_runner)
+        common_attrs = {
+          author: user,
+          target: project_runner,
+          target_details: expected_runner_url
+        }
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
           a_hash_including(
+            **common_attrs,
             name: 'set_runner_associated_projects',
-            author: user,
+            message: 'Changed CI runner project assignments',
             scope: owner_project,
-            target: project_runner,
-            target_details: expected_runner_url,
             additional_details: {
               action: :custom,
               deleted_from_projects: [existing_project.id],
               added_project_ids: new_projects.map(&:id)
             }
+          )).and_call_original
+        new_projects.each do |new_project|
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            a_hash_including(
+              **common_attrs,
+              name: 'set_runner_associated_projects',
+              message: 'Assigned CI runner to project',
+              scope: new_project
+            )).and_call_original
+        end
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          a_hash_including(
+            **common_attrs,
+            name: 'set_runner_associated_projects',
+            message: 'Unassigned CI runner from project',
+            scope: existing_project
           )).and_call_original
 
         expect(execute).to be_success
@@ -63,12 +83,13 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
         expect(event.author).to eq(user)
         expect(event.target_id).to eq(project_runner.id)
         expect(event.target_type).to eq(Ci::Runner.name)
-        expect(event.details).to include(
+        expect(event.details).to match(a_hash_including(
           custom_message: 'Changed CI runner project assignments',
+          event_name: 'set_runner_associated_projects',
           author_name: user.name,
-          action: :custom,
+          target_details: expected_runner_url,
           deleted_from_projects: [existing_project.id],
-          added_project_ids: new_projects.map(&:id))
+          added_project_ids: new_projects.map(&:id)))
 
         new_projects.each do |new_project|
           event = AuditEvent.by_entity_id(new_project).last
@@ -85,6 +106,8 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
         expect(event.details[:custom_message]).to include('Unassigned CI runner from project')
         expect(event.target_id).to eq(project_runner.id)
         expect(event.target_type).to eq(Ci::Runner.name)
+        expect(event.target_details).to eq(
+          ::Gitlab::Routing.url_helpers.project_runner_path(owner_project, project_runner))
       end
     end
 

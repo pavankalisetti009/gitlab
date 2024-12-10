@@ -2,21 +2,21 @@
 
 RSpec.shared_context 'ProjectPolicy context' do
   let_it_be(:anonymous) { nil }
-  let_it_be(:guest) { create(:user) }
-  let_it_be(:planner) { create(:user) }
-  let_it_be(:reporter) { create(:user) }
-  let_it_be(:developer) { create(:user) }
-  let_it_be(:maintainer) { create(:user) }
-  let_it_be(:inherited_guest) { create(:user) }
-  let_it_be(:inherited_planner) { create(:user) }
-  let_it_be(:inherited_reporter) { create(:user) }
-  let_it_be(:inherited_developer) { create(:user) }
-  let_it_be(:inherited_maintainer) { create(:user) }
-  let_it_be(:organization) { create(:organization, :default) }
-  let_it_be(:owner) { create(:user, namespace: create(:user_namespace, organization: organization)) }
-  let_it_be(:organization_owner) { create(:user, :organization_owner) }
-  let_it_be(:admin) { create(:admin) }
-  let_it_be(:non_member) { create(:user) }
+  let_it_be_with_reload(:guest) { create(:user) }
+  let_it_be_with_reload(:planner) { create(:user) }
+  let_it_be_with_reload(:reporter) { create(:user) }
+  let_it_be_with_reload(:developer) { create(:user) }
+  let_it_be_with_reload(:maintainer) { create(:user) }
+  let_it_be_with_reload(:inherited_guest) { create(:user) }
+  let_it_be_with_reload(:inherited_planner) { create(:user) }
+  let_it_be_with_reload(:inherited_reporter) { create(:user) }
+  let_it_be_with_reload(:inherited_developer) { create(:user) }
+  let_it_be_with_reload(:inherited_maintainer) { create(:user) }
+  let_it_be_with_reload(:organization) { create(:organization, :default) }
+  let_it_be_with_reload(:owner) { create(:user, namespace: create(:user_namespace, organization: organization)) }
+  let_it_be_with_reload(:organization_owner) { create(:user, :organization_owner) }
+  let_it_be_with_reload(:admin) { create(:admin) }
+  let_it_be_with_reload(:non_member) { create(:user) }
   let_it_be_with_refind(:group) { create(:group, :public) }
   let_it_be_with_refind(:private_project) { create(:project, :private, namespace: owner.namespace) }
   let_it_be_with_refind(:internal_project) { create(:project, :internal, namespace: owner.namespace) }
@@ -34,7 +34,7 @@ RSpec.shared_context 'ProjectPolicy context' do
     ]
   end
 
-  let(:base_planner_permissions) do
+  let(:planner_permissions) do
     base_guest_permissions +
       %i[
         admin_issue admin_issue_board admin_issue_board_list admin_label admin_milestone
@@ -118,13 +118,11 @@ RSpec.shared_context 'ProjectPolicy context' do
 
   # Used in EE specs
   let(:additional_guest_permissions) { [] }
-  let(:additional_planner_permissions) { [] }
   let(:additional_reporter_permissions) { [] }
   let(:additional_maintainer_permissions) { [] }
   let(:additional_owner_permissions) { [] }
 
   let(:guest_permissions) { base_guest_permissions + additional_guest_permissions }
-  let(:planner_permissions) { base_planner_permissions + additional_planner_permissions }
   let(:reporter_permissions) { base_reporter_permissions + additional_reporter_permissions }
   let(:maintainer_permissions) { base_maintainer_permissions + additional_maintainer_permissions }
   let(:owner_permissions) { base_owner_permissions + additional_owner_permissions }

@@ -32,7 +32,7 @@ module SecretsManagement
       # branch and environments will then allow pipelines to access the secret.
 
       # Create the secret itself.
-      custom_metadata = { description: description } if description
+      custom_metadata = { environment: environment, branch: branch, description: description }.compact
       client.create_kv_secret(
         secrets_manager.ci_secrets_mount_path,
         secrets_manager.ci_data_path(name),

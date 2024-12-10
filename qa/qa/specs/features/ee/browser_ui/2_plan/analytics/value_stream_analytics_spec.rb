@@ -78,7 +78,7 @@ module QA
       end
 
       context "with pre-existing dashboard", only: { subdomain: :staging } do
-        let!(:user) { Runtime::User.admin }
+        let!(:user) { Runtime::User::Store.admin_user }
 
         let!(:group) { build(:sandbox, api_client: admin_api_client, path: 'optimize-vsa-test').reload! }
 
@@ -111,7 +111,7 @@ module QA
             vsa_page.select_custom_date_range(from: "2023-06-10", to: "2023-07-10")
             aggregate_failures "Checking lifecycle metrics" do
               expect(vsa_page.lifecycle_metric(:lead_time)).to eq("852.7 days")
-              expect(vsa_page.lifecycle_metric(:cycle_time)).to eq("1.4 days")
+              expect(vsa_page.lifecycle_metric(:cycle_time)).to eq("1.41 days")
               expect(vsa_page.lifecycle_metric(:issues)).to eq(33)
               expect(vsa_page.lifecycle_metric(:commits)).to eq(86)
               expect(vsa_page.lifecycle_metric(:deploys)).to eq(4)

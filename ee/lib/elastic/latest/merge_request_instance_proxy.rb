@@ -3,7 +3,7 @@
 module Elastic
   module Latest
     class MergeRequestInstanceProxy < ApplicationInstanceProxy
-      SCHEMA_VERSION = 24_11
+      SCHEMA_VERSION = 24_49
       def as_indexed_json(_options = {})
         # We don't use as_json(only: ...) because it calls all virtual and serialized attributtes
         # https://gitlab.com/gitlab-org/gitlab/issues/349
@@ -47,6 +47,10 @@ module Elastic
 
         if ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_merge_requests)
           data['traversal_ids'] = target.project.elastic_namespace_ancestry
+        end
+
+        if ::Elastic::DataMigrationService.migration_has_finished?(:add_assignees_to_merge_requests)
+          data['assignee_ids'] = target.assignee_ids.map(&:to_s)
         end
 
         data.merge(generic_attributes)

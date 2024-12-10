@@ -14,8 +14,6 @@ options:
   events:
   - g_metrics_comparison_page
 performance_indicator_type: []
-distribution:
-- ee
 tiers:
 - ultimate
 milestone_removed: '17.0'

@@ -15,6 +15,7 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
       docs/CODEOWNERS @owner-1 owner2@gitlab.org @owner-3 @documentation-owner
       spec/* @test-owner @test-group @test-group/nested-group
       app/* @@developer
+      config/* @@maintainers
     CODEOWNERS
   end
 
@@ -140,6 +141,17 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
         it 'contains no approvers' do
           expect(loader.entries).to contain_exactly(expected_entry)
           expect(loader.members).to be_empty
+        end
+      end
+
+      context 'for multiple paths' do
+        let(:paths) { ['app/accounts_helper.rb', 'spec/entry_spec.rb', 'config/boot.rb'] }
+
+        it 'loads 3 entries' do
+          other_entry_1 = Gitlab::CodeOwners::Entry.new('spec/*', '@test-owner @test-group @test-group/nested-group')
+          other_entry_2 = Gitlab::CodeOwners::Entry.new('config/*', '@@maintainers')
+
+          expect(loader.entries).to contain_exactly(expected_entry, other_entry_1, other_entry_2)
         end
       end
     end

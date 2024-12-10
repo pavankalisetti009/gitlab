@@ -42,7 +42,7 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
 
     context 'with SAST report' do
       before do
-        create(:ci_build, :sast, pipeline: pipeline, status: 'success')
+        create(:ci_build, :sast, name: 'semgrep-sast', pipeline: pipeline, status: 'success')
       end
 
       it 'shows SAST is enabled' do

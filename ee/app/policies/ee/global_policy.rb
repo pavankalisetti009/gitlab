@@ -123,6 +123,10 @@ module EE
         License.feature_available?(:remote_development)
       end
 
+      condition(:custom_role_enables_read_admin_dashboard) do
+        ::Authz::CustomAbility.allowed?(@user, :read_admin_dashboard)
+      end
+
       rule { ~anonymous & remote_development_feature_licensed }.policy do
         enable :access_workspaces_feature
       end
@@ -150,6 +154,7 @@ module EE
       rule { admin & custom_roles_allowed }.policy do
         enable :admin_member_role
         enable :view_member_roles
+        enable :read_admin_member_role
       end
 
       rule { admin & default_roles_assignees_allowed }.policy do
@@ -202,6 +207,11 @@ module EE
 
       rule { security_policy_bot }.policy do
         enable :access_git
+      end
+
+      rule { custom_role_enables_read_admin_dashboard }.policy do
+        enable :access_admin_area
+        enable :read_admin_dashboard
       end
     end
 

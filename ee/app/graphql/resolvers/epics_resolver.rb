@@ -57,9 +57,7 @@ module Resolvers
       description: 'Filter by reaction emoji applied by the current user.'
 
     argument :subscribed, Types::Issuables::SubscriptionStatusEnum,
-      description: 'Epics the current user is subscribed to. Is ignored if ' \
-        '`filter_subscriptions` feature flag is disabled.',
-      experiment: { milestone: '17.5' },
+      description: 'Epics the current user is subscribed to.',
       required: false
 
     argument :created_after, Types::TimeType,
@@ -145,7 +143,6 @@ module Resolvers
       params = transform_args(args)
       params[:not] = params[:not].to_h if params[:not]
       params[:or] = params[:or].to_h if params[:or]
-      params.delete(:subscribed) if Feature.disabled?(:filter_subscriptions, current_user)
 
       rewrite_param_name(params[:or], :author_usernames, :author_username)
       rewrite_param_name(params[:or], :label_names, :label_name)

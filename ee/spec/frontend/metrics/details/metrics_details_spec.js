@@ -692,7 +692,7 @@ describe('MetricsDetails', () => {
       issues: [],
       fetchingIssues: false,
       error: null,
-      helpPath: helpPagePath('/operations/metrics', {
+      helpPath: helpPagePath('/development/metrics', {
         anchor: 'create-an-issue-for-a-metric',
       }),
     });

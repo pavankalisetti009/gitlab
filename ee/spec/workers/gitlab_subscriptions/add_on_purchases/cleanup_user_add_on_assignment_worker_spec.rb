@@ -104,9 +104,11 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
 
     it 'logs an info about user assignment destroyed' do
       expect(Gitlab::AppLogger).to receive(:info).with(
-        message: 'AddOnPurchase user assignment destroyed',
+        message: 'CleanupUserAddOnAssignmentWorker destroyed UserAddOnAssignment',
         user: remove_user.username.to_s,
+        user_id: remove_user.id,
         add_on: add_on_purchase.add_on.name,
+        add_on_purchase: add_on_purchase.id,
         namespace: namespace.path
       )
 

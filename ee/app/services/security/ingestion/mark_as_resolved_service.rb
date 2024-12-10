@@ -69,9 +69,11 @@ module Security
 
       def auto_resolve(missing_ids)
         return unless auto_resolve_enabled?
-        return unless auto_resolved_count < AUTO_RESOLVE_LIMIT
 
-        result = Vulnerabilities::AutoResolveService.new(project, missing_ids).execute
+        budget = AUTO_RESOLVE_LIMIT - auto_resolved_count
+        return unless budget > 0
+
+        result = Vulnerabilities::AutoResolveService.new(project, missing_ids, budget).execute
 
         @auto_resolved_count += result.payload[:count] if result.success?
       end

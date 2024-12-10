@@ -6,6 +6,7 @@ RSpec.describe Gitlab::BackgroundMigration::MigrateRemainingSoftwareLicenseWitho
   let(:software_licenses_table) { table(:software_licenses) }
   let(:custom_software_licenses_table) { table(:custom_software_licenses) }
   let(:software_license_policies_table) { table(:software_license_policies) }
+  let(:organizations_table) { table(:organizations) }
   let(:projects_table) { table(:projects) }
   let(:namespace_table) { table(:namespaces) }
 
@@ -37,8 +38,19 @@ RSpec.describe Gitlab::BackgroundMigration::MigrateRemainingSoftwareLicenseWitho
     let!(:software_licenses_without_spdx) { software_licenses_table.create!(name: 'Custom License') }
 
     context 'when the software licenses is linked to a software license policy' do
-      let!(:namespace) { namespace_table.create!(name: 'namespace', path: 'namespace') }
-      let!(:project) { projects_table.create!(namespace_id: namespace.id, project_namespace_id: namespace.id) }
+      let!(:organization) { organizations_table.create!(name: 'organization', path: 'organization') }
+      let!(:namespace) do
+        namespace_table.create!(name: 'namespace', path: 'namespace', organization_id: organization.id)
+      end
+
+      let!(:project) do
+        projects_table.create!(
+          namespace_id: namespace.id,
+          project_namespace_id: namespace.id,
+          organization_id: organization.id
+        )
+      end
+
       let!(:software_license_policy) do
         software_license_policies_table.create!(project_id: project.id,
           software_license_id: software_licenses_without_spdx.id)
@@ -54,9 +66,14 @@ RSpec.describe Gitlab::BackgroundMigration::MigrateRemainingSoftwareLicenseWitho
       end
 
       context 'when the same software license is linked to software license policies from different projects' do
-        let!(:namespace_2) { namespace_table.create!(name: 'namespace 2', path: 'namespace 2') }
+        let!(:organization_2) { organizations_table.create!(name: 'organization 2', path: 'organization 2') }
+        let!(:namespace_2) do
+          namespace_table.create!(name: 'namespace 2', path: 'namespace 2', organization_id: organization.id)
+        end
+
         let!(:project_2) do
-          projects_table.create!(namespace_id: namespace_2.id, project_namespace_id: namespace_2.id)
+          projects_table.create!(namespace_id: namespace_2.id, project_namespace_id: namespace_2.id,
+            organization_id: organization.id)
         end
 
         let!(:software_license_policy_2) do

@@ -538,9 +538,9 @@ module EE
         prevent(*create_read_update_admin_destroy(:iteration))
       end
 
-      rule { dependency_scanning_enabled & can?(:download_code) }.enable :read_dependency
+      rule { dependency_scanning_enabled & can?(:download_code) & ~planner }.enable :read_dependency
 
-      rule { license_scanning_enabled & can?(:download_code) }.enable :read_licenses
+      rule { license_scanning_enabled & can?(:download_code) & ~planner }.enable :read_licenses
 
       rule { can?(:read_licenses) }.enable :read_software_license_policy
 

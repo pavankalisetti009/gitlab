@@ -5,11 +5,17 @@ module RemoteDevelopment
     include Sortable
     include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :desired_config_generator_version
 
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
     belongs_to :agent, class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :workspaces
     belongs_to :personal_access_token, inverse_of: :workspace
+
+    attribute :desired_config_generator_version,
+      default: ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
 
     # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
     # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
@@ -19,6 +25,7 @@ module RemoteDevelopment
     validates :user, presence: true
     validates :agent, presence: true
     validates :personal_access_token, presence: true
+    validates :desired_config_generator_version, presence: true
     validates :workspaces_agent_config_version, presence: true, if: -> {
       agent&.unversioned_latest_workspaces_agent_config
     }

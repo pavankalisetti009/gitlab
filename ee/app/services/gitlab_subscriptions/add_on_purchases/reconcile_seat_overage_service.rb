@@ -27,6 +27,7 @@ module GitlabSubscriptions
         user_ids_to_delete = user_ids_with_delete_priority.first(overage_count)
 
         user_ids_to_delete.each_slice(BATCH_SIZE) do |user_ids|
+          log_reconcile_user_add_on_assignments_deletion(user_ids)
           removed_seats_count += add_on_purchase.assigned_users.by_user(user_ids).delete_all
 
           cache_keys = user_ids.map do |user_id|
@@ -64,12 +65,22 @@ module GitlabSubscriptions
         ).execute.then(&:payload)
       end
 
+      def log_reconcile_user_add_on_assignments_deletion(user_ids)
+        Gitlab::AppLogger.info(
+          message: 'ReconcileSeatOverageService destroyed UserAddOnAssignments',
+          user_ids: user_ids.to_a,
+          add_on: add_on_purchase.add_on.name,
+          add_on_purchase: add_on_purchase.id,
+          namespace: add_on_purchase.namespace&.path
+        )
+      end
+
       def log_event(deleted_count)
         Gitlab::AppLogger.info(
-          message: 'AddOnPurchase seat overage was reconciled',
+          message: 'ReconcileSeatOverageService removed AddOnPurchase seat overage',
           deleted_overage_count: deleted_count,
           add_on: add_on_purchase.add_on.name,
-          add_on_purchase_id: add_on_purchase.id
+          add_on_purchase: add_on_purchase.id
         )
       end
     end

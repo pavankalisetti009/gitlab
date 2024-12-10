@@ -144,7 +144,7 @@ export default {
       this.selectedActivities = [];
       this.emitFiltersChanged();
     },
-    setSelectedValue(keyWhenTrue, keyWhenFalse) {
+    setSelectedStatus(keyWhenTrue, keyWhenFalse) {
       // The variables can be true, false, or unset, so we need to use if/else-if here instead
       // of if/else.
       if (this.selectedActivities.includes(ITEMS[keyWhenTrue].value)) return true;
@@ -154,13 +154,13 @@ export default {
     emitFiltersChanged() {
       this.querySyncValues = this.selectedActivities;
       eventHub.$emit('filters-changed', {
-        hasResolution: this.setSelectedValue('NO_LONGER_DETECTED', 'STILL_DETECTED'),
-        hasIssues: this.setSelectedValue('HAS_ISSUE', 'DOES_NOT_HAVE_ISSUE'),
-        hasMergeRequest: this.setSelectedValue('HAS_MERGE_REQUEST', 'DOES_NOT_HAVE_MERGE_REQUEST'),
-        hasRemediations: this.setSelectedValue('HAS_SOLUTION', 'DOES_NOT_HAVE_SOLUTION'),
+        hasResolution: this.setSelectedStatus('NO_LONGER_DETECTED', 'STILL_DETECTED'),
+        hasIssues: this.setSelectedStatus('HAS_ISSUE', 'DOES_NOT_HAVE_ISSUE'),
+        hasMergeRequest: this.setSelectedStatus('HAS_MERGE_REQUEST', 'DOES_NOT_HAVE_MERGE_REQUEST'),
+        hasRemediations: this.setSelectedStatus('HAS_SOLUTION', 'DOES_NOT_HAVE_SOLUTION'),
         ...(this.showAiResolutionFilter
           ? {
-              hasAiResolution: this.setSelectedValue(
+              hasAiResolution: this.setSelectedStatus(
                 'AI_RESOLUTION_AVAILABLE',
                 'AI_RESOLUTION_UNAVAILABLE',
               ),

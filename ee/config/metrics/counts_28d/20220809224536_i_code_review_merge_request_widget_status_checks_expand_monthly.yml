@@ -16,7 +16,5 @@ events:
     unique: user.id
     filter:
       label: status_checks
-distribution:
-- ee
 tiers:
 - ultimate

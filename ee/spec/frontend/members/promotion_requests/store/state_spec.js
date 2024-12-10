@@ -1,9 +1,19 @@
 import createState from 'ee/members/promotion_requests/store/state';
-import { pagination } from '../mock_data';
 
 describe('Promotion requests store state', () => {
   it('inits the state', () => {
-    const state = createState(pagination);
-    expect(state).toEqual({ pagination });
+    const state = createState({ enabled: true, totalItems: 2 });
+    expect(state).toEqual({
+      enabled: true,
+      pagination: { totalItems: 2 },
+    });
+  });
+
+  it('applies defaults', () => {
+    const state = createState({});
+    expect(state).toEqual({
+      enabled: false,
+      pagination: { totalItems: 0 },
+    });
   });
 });

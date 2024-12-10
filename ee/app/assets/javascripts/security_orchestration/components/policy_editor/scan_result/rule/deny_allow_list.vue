@@ -60,6 +60,9 @@ export default {
     showModal() {
       this.$refs.modal.showModalWindow();
     },
+    selectLicenses(licenses) {
+      this.$emit('select-licenses', licenses);
+    },
   },
 };
 </script>
@@ -89,7 +92,12 @@ export default {
         </template>
       </gl-sprintf>
 
-      <deny-allow-list-modal ref="modal" :list-type="selected" />
+      <deny-allow-list-modal
+        ref="modal"
+        :licenses="licenses"
+        :list-type="selected"
+        @select-licenses="selectLicenses"
+      />
     </template>
   </section-layout>
 </template>

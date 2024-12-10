@@ -117,6 +117,8 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
       end
 
       it 'displays lifecycle metrics', :aggregate_failures do
+        expect(vsa_metrics_titles.length).to eq 4
+
         lead_time = page.all(card_metric_selector).first
 
         expect(lead_time).to have_content(_('Lead time'))

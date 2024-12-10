@@ -20,8 +20,6 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
   before do
     allow(view).to receive(:onboarding_status_presenter).and_return(onboarding_status_presenter)
     allow(view).to receive(:current_user).and_return(build_stubbed(:user))
-    controller.params[:glm_content] = '_glm_content_'
-    controller.params[:glm_source] = '_glm_source_'
 
     render
   end
@@ -30,7 +28,7 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
 
   context 'with basic form items' do
     it do
-      is_expected.to have_css('form[action="/users/sign_up/welcome?glm_content=_glm_content_&glm_source=_glm_source_"]')
+      is_expected.to have_css('form[action="/users/sign_up/welcome"]')
     end
 
     it { is_expected.to have_tracking(action: 'render', label: 'free_registration') }

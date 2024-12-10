@@ -146,6 +146,7 @@ module EE
         mount_mutation ::Mutations::Security::ProjectSecurityExclusionUpdate
         mount_mutation ::Mutations::Security::ProjectSecurityExclusionDelete
         mount_mutation ::Mutations::Users::Abuse::NamespaceBans::Destroy
+        mount_mutation ::Mutations::Users::MemberRoles::Assign, experiment: { milestone: '17.7' }
         mount_mutation ::Mutations::AuditEvents::ExternalAuditEventDestinations::Create
         mount_mutation ::Mutations::AuditEvents::ExternalAuditEventDestinations::Destroy
         mount_mutation ::Mutations::AuditEvents::ExternalAuditEventDestinations::Update
@@ -191,6 +192,7 @@ module EE
             'epic](https://gitlab.com/groups/gitlab-org/-/epics/11474) for more information'
         }
         mount_mutation ::Mutations::Security::CiConfiguration::SetPreReceiveSecretDetection
+        mount_mutation ::Mutations::Security::CiConfiguration::SetGroupSecretPushProtection
         mount_mutation ::Mutations::Security::CiConfiguration::SetContainerScanningForRegistry
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Destroy
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Update

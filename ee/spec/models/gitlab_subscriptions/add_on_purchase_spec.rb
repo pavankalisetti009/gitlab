@@ -735,10 +735,20 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
   end
 
   describe '#delete_ineligible_user_assignments_in_batches!' do
-    let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+    let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
 
     let_it_be(:eligible_user) { create(:user) }
     let_it_be(:ineligible_user) { create(:user) }
+
+    let(:expected_log) do
+      {
+        message: 'Ineligible UserAddOnAssignments destroyed',
+        user_ids: [ineligible_user.id],
+        add_on: 'code_suggestions',
+        add_on_purchase: add_on_purchase.id,
+        namespace: add_on_purchase.namespace.path
+      }
+    end
 
     subject(:result) { add_on_purchase.delete_ineligible_user_assignments_in_batches! }
 
@@ -748,16 +758,32 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         add_on_purchase.assigned_users.create!(user: ineligible_user)
       end
 
-      it 'removes only ineligible user assignments' do
-        add_on_purchase.namespace.add_guest(eligible_user)
+      it 'does not log' do
+        expect(Gitlab::AppLogger).not_to receive(:info).with(expected_log)
 
-        expect(add_on_purchase.reload.assigned_users.count).to eq(2)
+        result
+      end
 
-        expect do
-          expect(result).to eq(1)
-        end.to change { add_on_purchase.reload.assigned_users.count }.by(-1)
+      context 'with ineligible user' do
+        before do
+          add_on_purchase.namespace.add_guest(eligible_user)
+        end
 
-        expect(add_on_purchase.reload.assigned_users.where(user: eligible_user).count).to eq(1)
+        it 'removes only ineligible user assignments' do
+          expect(add_on_purchase.reload.assigned_users.count).to eq(2)
+
+          expect do
+            expect(result).to eq(1)
+          end.to change { add_on_purchase.reload.assigned_users.count }.by(-1)
+
+          expect(add_on_purchase.reload.assigned_users.where(user: eligible_user).count).to eq(1)
+        end
+
+        it 'logs deleted user add-on assignements' do
+          expect(Gitlab::AppLogger).to receive(:info).with(expected_log)
+
+          result
+        end
       end
 
       it 'accepts batch_size and deletes the assignments in batch' do
