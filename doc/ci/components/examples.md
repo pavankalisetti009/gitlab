@@ -180,7 +180,7 @@ spec:
         - relaxed
 ---
 
-.my-component:enable_special_caching:false:
+.my-component:cache_mode:default:
   extends: null
 
 .my-component:cache_mode:aggressive:
