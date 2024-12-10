@@ -439,14 +439,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
           ensure_elasticsearch_index!
         end
 
-        context 'when search_auth_filter_for_work_items flag is false' do
-          before do
-            stub_feature_flags(search_auth_filter_for_work_items: false)
-          end
-
-          it_behaves_like 'search respects visibility'
-        end
-
         it_behaves_like 'search respects visibility'
       end
     end

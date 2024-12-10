@@ -120,7 +120,7 @@ describe('HealthCheckList', () => {
       });
 
       it('disables run health check button', () => {
-        expect(findRunHealthCheckButton().attributes('disabled')).toBe('true');
+        expect(findRunHealthCheckButton().attributes().disabled).toBe('true');
         expect(findRunHealthCheckButton().props('loading')).toBe(true);
       });
 
@@ -153,7 +153,7 @@ describe('HealthCheckList', () => {
       });
 
       it('does not disable run health check button', () => {
-        expect(findRunHealthCheckButton().attributes('disabled')).toBeUndefined();
+        expect(findRunHealthCheckButton().attributes().disabled).toBeUndefined();
         expect(findRunHealthCheckButton().props('loading')).toBe(false);
       });
     });
@@ -191,7 +191,7 @@ describe('HealthCheckList', () => {
       });
 
       it('disables run health check button', () => {
-        expect(findRunHealthCheckButton().attributes('disabled')).toBe('true');
+        expect(findRunHealthCheckButton().attributes().disabled).toBe('true');
         expect(findRunHealthCheckButton().props('loading')).toBe(true);
       });
 
@@ -235,7 +235,7 @@ describe('HealthCheckList', () => {
       });
 
       it('does not disable run health check button', () => {
-        expect(findRunHealthCheckButton().attributes('disabled')).toBeUndefined();
+        expect(findRunHealthCheckButton().attributes().disabled).toBeUndefined();
         expect(findRunHealthCheckButton().props('loading')).toBe(false);
       });
 
@@ -353,7 +353,7 @@ describe('HealthCheckList', () => {
       const button = wrapper.findByTestId('download-report-button');
 
       expect(button.exists()).toBe(true); // Check if the button is present
-      expect(button.attributes('disabled')).toBeUndefined(); // Button should be enabled
+      expect(button.attributes().disabled).toBeUndefined(); // Button should be enabled
     });
 
     it('disables the download button when loading', async () => {
@@ -364,7 +364,7 @@ describe('HealthCheckList', () => {
       const button = wrapper.findByTestId('download-report-button');
 
       expect(button.exists()).toBe(true); // Check if the button is present
-      expect(button.attributes('disabled')).toBe('true'); // Button should be disabled with value "true"
+      expect(button.attributes().disabled).toBe('true'); // Button should be disabled with value "true"
     });
   });
 });
