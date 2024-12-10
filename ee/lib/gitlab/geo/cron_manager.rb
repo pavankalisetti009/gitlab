@@ -81,11 +81,7 @@ module Gitlab
       def configure_primary
         disable!(SECONDARY_GEO_JOBS)
 
-        if Feature.enabled?(:stop_bulk_sidekiq_job_activation) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- No actor needed
-          enable!(GEO_ALWAYS_ENABLED_JOBS + PRIMARY_GEO_JOBS)
-        else
-          enable_all_except!(SECONDARY_GEO_JOBS)
-        end
+        enable!(GEO_ALWAYS_ENABLED_JOBS + PRIMARY_GEO_JOBS)
       end
 
       def configure_secondary
@@ -98,11 +94,7 @@ module Gitlab
       def configure_non_geo_site
         disable!(GEO_JOBS)
 
-        if Feature.enabled?(:stop_bulk_sidekiq_job_activation) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- No actor needed
-          enable!(COMMON_GEO_AND_NON_GEO_JOBS)
-        else
-          enable_all_except!(GEO_JOBS)
-        end
+        enable!(COMMON_GEO_AND_NON_GEO_JOBS)
       end
 
       def enable!(names)

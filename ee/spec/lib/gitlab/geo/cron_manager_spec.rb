@@ -85,10 +85,8 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
         expect(repository_check_job).to be_enabled
       end
 
-      context 'with enabled feature flag stop_bulk_sidekiq_job_activation' do
-        it 'does not enable non-geo jobs' do
-          expect(ldap_test_job).not_to be_enabled
-        end
+      it 'does not enable non-geo jobs' do
+        expect(ldap_test_job).not_to be_enabled
       end
 
       context 'No connection' do
@@ -97,18 +95,6 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
 
           expect { manager.execute }.not_to change { count_enabled(geo_jobs + non_geo_jobs) }
         end
-      end
-    end
-
-    context 'with geo primary and disabled feature flag stop_bulk_sidekiq_job_activation' do
-      before do
-        stub_feature_flags(stop_bulk_sidekiq_job_activation: false)
-
-        manager.execute
-      end
-
-      it 'enables non-geo jobs' do
-        expect(ldap_test_job).to be_enabled
       end
     end
 
@@ -165,23 +151,8 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
         expect(repository_check_job).to be_enabled
       end
 
-      context 'with enabled feature flag stop_bulk_sidekiq_job_activation' do
-        it 'does not enable non-geo jobs' do
-          expect(ldap_test_job).not_to be_enabled
-        end
-      end
-    end
-
-    context 'with non geo and disabled feature flag stop_bulk_sidekiq_job_activation' do
-      before do
-        stub_feature_flags(stop_bulk_sidekiq_job_activation: false)
-        allow(GeoNode).to receive(:current_node).and_return nil
-
-        manager.execute
-      end
-
-      it 'enables non-geo jobs' do
-        expect(ldap_test_job).to be_enabled
+      it 'does not enable non-geo jobs' do
+        expect(ldap_test_job).not_to be_enabled
       end
     end
   end
