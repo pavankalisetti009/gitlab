@@ -38,6 +38,11 @@ describe('Vulnerability Footer', () => {
     relatedIssuesHelpPath: 'help/path',
     pipeline: {},
     mergeRequestLinks: [],
+    representationInformation: {
+      resolvedInCommitShaLink: 'https://gitlab.com/gitlab-org/gitlab/-/commit/0123456789',
+      resolvedInCommitSha: '0123456789',
+    },
+    resolvedOnDefaultBranch: false,
   };
 
   let discussion1;
@@ -61,9 +66,17 @@ describe('Vulnerability Footer', () => {
       },
     });
 
-  const createWrapper = ({ properties, queryHandler, mountOptions } = {}) => {
+  const createWrapper = ({
+    properties,
+    queryHandler,
+    mountOptions,
+    vulnerabilityRepresentationFlag = true,
+  } = {}) => {
     wrapper = shallowMountExtended(VulnerabilityFooter, {
       propsData: { vulnerability: { ...vulnerability, ...properties } },
+      provide: {
+        glFeatures: { vulnerabilityRepresentationInformation: vulnerabilityRepresentationFlag },
+      },
       apolloProvider: createMockApollo([[vulnerabilityDiscussionsQuery, queryHandler]]),
       ...mountOptions,
     });
@@ -348,11 +361,81 @@ describe('Vulnerability Footer', () => {
       },
     );
 
-    it('does not show the detection note when the vulnerability has no pipeline (e.g.: was manually created)', () => {
-      createWrapper({ properties: { pipeline: null } });
+    describe('when the pipeline is null (vulnerability has been created manually)', () => {
+      it('should not show the status description by default', () => {
+        createWrapper({ properties: { pipeline: null } });
+        expect(statusDescription().exists()).toBe(false);
+      });
 
-      expect(detectionNote().exists()).toBe(false);
+      it('should not show the status description when the vulnerability is resolved on the default branch and there is no representation information', () => {
+        createWrapper({
+          properties: {
+            pipeline: null,
+            resolvedOnDefaultBranch: true,
+            representationInformation: null,
+          },
+        });
+        expect(statusDescription().exists()).toBe(false);
+      });
+
+      it('should show the status description when the vulnerability is resolved on the default branch and there is respresentation information', () => {
+        createWrapper({
+          properties: {
+            pipeline: null,
+            resolvedOnDefaultBranch: true,
+            representationInformation: vulnerability.representationInformation,
+          },
+        });
+        expect(statusDescription().exists()).toBe(true);
+      });
     });
+
+    describe('when the vulnerability is resolved on the default branch and there is representation information', () => {
+      it('should pass the correct props to the detection note', () => {
+        createWrapper({
+          properties: {
+            resolvedOnDefaultBranch: true,
+            representationInformation: vulnerability.representationInformation,
+          },
+        });
+
+        expect(statusDescription().props('vulnerability')).toMatchObject({
+          resolvedOnDefaultBranch: true,
+          representationInformation: vulnerability.representationInformation,
+        });
+      });
+    });
+
+    it.each`
+      representationInformation                  | resolvedOnDefaultBranch | vulnerabilityRepresentationFlag | shouldIncludeRepresentationInfo
+      ${vulnerability.representationInformation} | ${true}                 | ${true}                         | ${true}
+      ${vulnerability.representationInformation} | ${false}                | ${true}                         | ${false}
+      ${null}                                    | ${true}                 | ${true}                         | ${false}
+      ${null}                                    | ${false}                | ${true}                         | ${false}
+      ${vulnerability.representationInformation} | ${true}                 | ${false}                        | ${false}
+      ${vulnerability.representationInformation} | ${false}                | ${false}                        | ${false}
+      ${null}                                    | ${true}                 | ${false}                        | ${false}
+    `(
+      'shows representation information: "$shouldIncludeRepresentationInfo" when feature flag is "$vulnerabilityRepresentationFlag", resolvedOnDefaultBranch is "$resolvedOnDefaultBranch" and representationInformation is "$representationInformation"',
+      ({
+        resolvedOnDefaultBranch,
+        vulnerabilityRepresentationFlag,
+        representationInformation,
+        shouldIncludeRepresentationInfo,
+      }) => {
+        createWrapper({
+          properties: {
+            resolvedOnDefaultBranch,
+            representationInformation,
+          },
+          vulnerabilityRepresentationFlag,
+        });
+
+        expect(Boolean(statusDescription().props('vulnerability').representationInformation)).toBe(
+          shouldIncludeRepresentationInfo,
+        );
+      },
+    );
   });
 
   describe('generic report', () => {
