@@ -382,4 +382,11 @@ RSpec.describe Note, feature_category: :team_planning do
       end
     end
   end
+
+  context 'with loose foreign key on dast_pre_scan_verifications.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:vulnerability) }
+      let_it_be(:model) { create(:note, noteable: parent, project: parent.project) }
+    end
+  end
 end
