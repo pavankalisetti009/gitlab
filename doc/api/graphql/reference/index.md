@@ -44110,7 +44110,8 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestsresolvernegatedparamsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Filters merge requests to exclude any that are approved by usernames in the given array. |
 | <a id="mergerequestsresolvernegatedparamsassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Filters merge requests to exclude any that are assigned to the usernames in the given array. |
 | <a id="mergerequestsresolvernegatedparamsauthorusername"></a>`authorUsername` | [`String`](#string) | Filters merge requests to exclude any that are authored by the given user. |
-| <a id="mergerequestsresolvernegatedparamslabels"></a>`labels` | [`[String!]`](#string) | Filters merge requests to exclude any that have the labels provided in the given array. |
+| <a id="mergerequestsresolvernegatedparamslabelname"></a>`labelName` | [`[String!]`](#string) | Filters merge requests to exclude any that have the labels provided in the given array. |
+| <a id="mergerequestsresolvernegatedparamslabels"></a>`labels` **{warning-solid}** | [`[String!]`](#string) | **Deprecated:** Use `labelName`. Deprecated in GitLab 17.7. |
 | <a id="mergerequestsresolvernegatedparamsmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Filters merge requests to those not in the given milestone. |
 | <a id="mergerequestsresolvernegatedparamsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filters merge requests to those without the given reaction from the authenticated user. |
 | <a id="mergerequestsresolvernegatedparamsreleasetag"></a>`releaseTag` | [`String`](#string) | Filters merge requests to those without the given release tag. |
