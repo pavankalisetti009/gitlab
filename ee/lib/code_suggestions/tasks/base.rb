@@ -6,19 +6,25 @@ module CodeSuggestions
       AI_GATEWAY_CONTENT_SIZE = 100_000
 
       delegate :base_url, :self_hosted?, :feature_setting, :feature_name, :feature_disabled?, to: :model_details
+      delegate :supports_sse_streaming?, to: :client
 
-      def initialize(params: {}, unsafe_passthrough_params: {}, current_user: nil)
+      def initialize(params: {}, unsafe_passthrough_params: {}, current_user: nil, client: nil)
         @model_details = ModelDetails.new(current_user: current_user, feature_setting_name: feature_setting_name)
         @params = params
         @unsafe_passthrough_params = unsafe_passthrough_params
+        @client = client || CodeSuggestions::Client.new({})
         @current_user = current_user
       end
 
       def endpoint
-        # TODO: After their migration to AIGW, both generations and
-        # completions will use the same `/completions` endpoint in v3.
+        # TODO: After their migration to AIGW, both generations and completions will
+        # use the same v3 `/completions` endpoint or v4 `/suggestions` endpoint.
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/477891.
-        if endpoint_name == "generations" && !self_hosted?
+        if task_name == 'code_generation' && !self_hosted?
+          if supports_sse_streaming? && Feature.enabled?(:enable_code_generation_sse_stream_v4_endpoint, current_user)
+            return "#{base_url}/v4/code/suggestions"
+          end
+
           "#{base_url}/v3/code/completions"
         else
           "#{base_url}/v2/code/#{endpoint_name}"
@@ -35,7 +41,7 @@ module CodeSuggestions
 
       private
 
-      attr_reader :params, :unsafe_passthrough_params, :model_details, :current_user
+      attr_reader :params, :unsafe_passthrough_params, :model_details, :client, :current_user
 
       def endpoint_name
         raise NotImplementedError
@@ -44,6 +50,10 @@ module CodeSuggestions
       # override this method in Tasks::Completion/Generation classes
       def feature_setting_name
         raise NotImplementedError
+      end
+
+      def task_name
+        self.class.name.demodulize.underscore
       end
 
       def trim_content_params(body_params)
