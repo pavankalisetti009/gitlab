@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :component,
+RSpec.describe Namespaces::Storage::NamespaceLimit::PreEnforcementAlertComponent, :saas, type: :component,
   feature_category: :consumables_cost_management do
   using RSpec::Parameterized::TableSyntax
   include NamespaceStorageHelpers
@@ -27,7 +27,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
     end
 
     before do
-      group.add_guest(user)
+      stub_member_access_level(group, guest: user)
       exceed_user_cap(group)
       enforce_free_user_caps
     end
@@ -42,7 +42,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
   describe 'enforcement phases' do
     context 'when namespace is in pre-enforcement phase and no enforcement is set' do
       before do
-        group.add_guest(user)
+        stub_member_access_level(group, guest: user)
       end
 
       it 'renders the alert' do
@@ -54,7 +54,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
 
     context 'when namespace is in the phased rollout of enforcement' do
       before do
-        group.add_guest(user)
+        stub_member_access_level(group, guest: user)
         enforce_namespace_storage_limit(group)
       end
 
@@ -81,7 +81,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
       # the dashboard limit is stored in the storage_size_limit plan limit
 
       before do
-        group.add_guest(user)
+        stub_member_access_level(group, guest: user)
         enforce_namespace_storage_limit(group)
       end
 
@@ -105,7 +105,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
 
   context 'when user is allowed to see and dismiss' do
     before do
-      group.add_guest(user)
+      stub_member_access_level(group, guest: user)
     end
 
     it 'indicates the storage limit will be enforced soon in the alert text' do
