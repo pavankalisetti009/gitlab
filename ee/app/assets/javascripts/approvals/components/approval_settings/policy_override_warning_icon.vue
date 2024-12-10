@@ -24,12 +24,16 @@ export default {
   },
   inject: {
     fullPath: {
-      default: '',
+      type: String,
+    },
+    isGroup: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
     ...mapState({
-      scanResultPolicies: (state) => state.securityOrchestrationModule?.scanResultPolicies || [],
+      scanResultPolicies: (state) => state.securityOrchestrationModule.scanResultPolicies || [],
     }),
     policiesWithMergeRequestSettingsOverride() {
       return this.scanResultPolicies.filter(
@@ -48,9 +52,8 @@ export default {
     },
   },
   created() {
-    if (this.fullPath) {
-      this.fetchScanResultPolicies({ fullPath: this.fullPath });
-    }
+    const { fullPath, isGroup } = this;
+    this.fetchScanResultPolicies({ fullPath, isGroup });
   },
   methods: {
     ...mapActions('securityOrchestrationModule', ['fetchScanResultPolicies']),
