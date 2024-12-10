@@ -2,6 +2,7 @@
 - context = local_assigns.fetch(:context)
 
 - if context.root?
-  = render Namespaces::Storage::PreEnforcementAlertComponent.new(context: context, user: current_user)
+  = render Namespaces::Storage::NamespaceLimit::PreEnforcementAlertComponent.new(context: context, user: current_user)
 - else
-  = render Namespaces::Storage::SubgroupPreEnforcementAlertComponent.new(context: context, user: current_user)
+  = render Namespaces::Storage::NamespaceLimit::SubgroupPreEnforcementAlertComponent.new(context: context,
+    user: current_user)

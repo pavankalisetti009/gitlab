@@ -2,12 +2,13 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::UserPreEnforcementAlertComponent, :saas, feature_category: :consumables_cost_management, type: :component do
+RSpec.describe Namespaces::Storage::NamespaceLimit::UserPreEnforcementAlertComponent, :saas, type: :component,
+  feature_category: :consumables_cost_management do
   include ActionView::Helpers::NumberHelper
   include NamespaceStorageHelpers
   include StorageHelper
 
-  let_it_be_with_refind(:user) { create(:user) }
+  let_it_be_with_refind(:user) { create(:user, :with_namespace) }
 
   subject(:component) { described_class.new(context: user.namespace, user: user) }
 

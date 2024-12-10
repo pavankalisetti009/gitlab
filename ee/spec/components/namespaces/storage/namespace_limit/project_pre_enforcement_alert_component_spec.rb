@@ -2,7 +2,8 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::ProjectPreEnforcementAlertComponent, :saas, feature_category: :consumables_cost_management, type: :component do
+RSpec.describe Namespaces::Storage::NamespaceLimit::ProjectPreEnforcementAlertComponent, :saas, type: :component,
+  feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
 
   let_it_be_with_refind(:group) { create(:group, :with_root_storage_statistics) }
