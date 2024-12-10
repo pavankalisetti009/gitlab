@@ -19554,9 +19554,6 @@ msgstr ""
 msgid "Developer"
 msgstr ""
 
-msgid "Developer (default)"
-msgstr ""
-
 msgid "Development widget is not enabled for this work item type"
 msgstr ""
 
