@@ -55,6 +55,7 @@ module Search
                 dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
                 method: {
                   name: 'hnsw',
+                  engine: 'nmslib',
                   space_type: 'cosinesimil',
                   parameters: {
                     ef_construction: OPENSEARCH_EF_CONSTRUCTION,
