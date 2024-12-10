@@ -13,6 +13,11 @@ module EE
             push_rule: {
               pipeline: ::BulkImports::Projects::Pipelines::PushRulePipeline,
               stage: 4
+            },
+            vulnerabilities: {
+              pipeline: ::BulkImports::Projects::Pipelines::VulnerabilitiesPipeline,
+              minimum_source_version: '17.7.0',
+              stage: 6
             }
           }
         end

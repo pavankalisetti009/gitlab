@@ -379,4 +379,69 @@ RSpec.describe Gitlab::ImportExport::Project::TreeRestorer, feature_category: :i
       end
     end
   end
+
+  # rubocop:disable RSpec/InstanceVariable -- Want to reuse the @project
+  describe 'vulnerabilities' do
+    before_all do
+      @user = create(:user)
+
+      RSpec::Mocks.with_temporary_scope do
+        @project = create(:project, :repository, name: 'project', path: 'project')
+        @shared = @project.import_export_shared
+
+        setup_import_export_config('complex')
+        setup_reader
+
+        allow_next_instance_of(Repository) do |instance|
+          allow(instance).to receive(:fetch_source_branch!).and_return(true)
+        end
+        allow_next_instance_of(Gitlab::Git::Repository) do |instance|
+          allow(instance).to receive(:branch_exists?).and_return(false)
+        end
+
+        expect(@shared).not_to receive(:error)
+        allow_next_instance_of(Gitlab::Git::Repository) do |instance|
+          allow(instance).to receive(:create_branch)
+        end
+
+        project_tree_restorer = described_class.new(user: @user, shared: @shared, project: @project)
+
+        @restored_project_json = Gitlab::ExclusiveLease.skipping_transaction_check do
+          project_tree_restorer.restore
+        end
+      end
+    end
+
+    it 'restores vulnerabilities' do
+      expect(@project.vulnerabilities.count).to eq(3)
+    end
+
+    it 'restores vulnerability findings' do
+      vulnerability = @project.vulnerabilities.find_by(title: 'Regular expression with non-literal value')
+      finding = vulnerability.finding
+
+      expect(finding.severity).to eq('medium')
+      expect(finding.report_type).to eq('sast')
+      expect(finding.project_fingerprint).to eq('4ce7494840bb1882d5a9003b0f272f8e3e22c7a5')
+      expect(finding.location_fingerprint).to eq('4f7a2fffbb791c4cc8d1454db40b80f7fa9ed5be')
+    end
+
+    it 'restores vulnerability reads' do
+      vulnerability = @project.vulnerabilities.find_by(title: 'Incorrect regular expression')
+      read = vulnerability.vulnerability_read
+
+      expect(read.scanner.external_id).to eq('semgrep')
+      expect(read.scanner.name).to eq('Semgrep')
+      expect(read.scanner.vendor).to eq('GitLab')
+    end
+
+    it 'restores vulnerability metadata' do
+      vulnerability = @project.vulnerabilities.find_by(title: 'Regular expression with non-literal value')
+      finding = vulnerability.finding
+
+      expect(finding.metadata_version).to eq('15.1.4')
+      expect(finding.raw_metadata).to include('Regular expression with non-literal value')
+    end
+  end
+  # rubocop:enable RSpec/InstanceVariable
 end
