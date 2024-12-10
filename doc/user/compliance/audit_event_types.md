@@ -307,6 +307,7 @@ Audit event types belong to the following product categories.
 
 | Name | Description | Saved to database | Introduced in | Scope |
 |:------------|:------------|:------------------|:---------|:--------------|:--------------|
+| [`ci_runner_created`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173885) | Triggered when a runner is created | **{check-circle}** Yes | GitLab [17.7](https://gitlab.com/gitlab-org/gitlab/-/issues/503315) | Instance, Group, Project |
 | [`ci_runner_usage_export`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/139578) | A runner usage report is generated | **{check-circle}** Yes | GitLab [16.8](https://gitlab.com/gitlab-org/gitlab/-/issues/426560) | Instance |
 | [`ci_runners_bulk_deleted`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173886) | Triggered when runners are deleted in bulk | **{check-circle}** Yes | GitLab [17.7](https://gitlab.com/gitlab-org/gitlab/-/issues/503315) | User |
 
@@ -591,6 +592,7 @@ Audit event types belong to the following product categories.
 | [`authenticated_with_group_saml`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/28575) | Successfully signing in with SAML authentication | **{check-circle}** Yes | GitLab [12.10](https://gitlab.com/gitlab-org/gitlab/-/issues/35710) | Group |
 | [`ban_user`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/116103) | A user is banned, unbanned, blocked, or unblocked | **{check-circle}** Yes | GitLab [15.11](https://gitlab.com/gitlab-org/gitlab/-/issues/377620) | User |
 | [`change_membership_state`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/87924) | A user's membership is updated | **{check-circle}** Yes | GitLab [15.1](https://gitlab.com/gitlab-org/gitlab/-/issues/362200) | Group |
+| [`inactive_scim_user_cannot_be_added`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173879) | A user cannot be added to a group during SAML authentication when their SCIM identity is inactive | **{check-circle}** Yes | GitLab [17.7](https://gitlab.com/gitlab-org/gitlab/-/issues/422582) | Group |
 | [`password_reset_failed`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/129079) | A password reset fails for a user | **{dotted-circle}** No | GitLab [16.4](https://gitlab.com/gitlab-org/gitlab/-/issues/377762) | User |
 | [`unban_user`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/116221) | A user is unbanned | **{check-circle}** Yes | GitLab [15.11](https://gitlab.com/gitlab-org/gitlab/-/issues/377620) | User |
 | [`unblock_user`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/115727) | A user is banned | **{check-circle}** Yes | GitLab [15.11](https://gitlab.com/gitlab-org/gitlab/-/issues/377620) | User |

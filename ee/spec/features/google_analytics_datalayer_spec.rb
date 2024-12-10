@@ -59,7 +59,6 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
       prevent_submit_for('.js-saas-trial-group')
 
       fill_in 'new_group_name', with: group.name
-      find('#trial_entity_company').click
       click_button 'Activate my trial'
 
       data_layer = execute_script('return window.dataLayer')
@@ -85,7 +84,6 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
       prevent_submit_for('.js-saas-duo-pro-trial-group')
 
       select_from_listbox group.name, from: 'Select a group'
-      find('#trial_entity_company').click
       click_button 'Activate my trial'
 
       data_layer = execute_script('return window.dataLayer')

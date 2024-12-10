@@ -12,7 +12,11 @@ module Gitlab
           return true unless root_group.saml_provider&.enforced_sso?
           return true if user.project_bot? || user.security_policy_bot?
           return true if user.service_account? && user_provisioned_by_group?(user)
-          return false if inactive_scim_identity_for_group?(user)
+
+          if inactive_scim_identity_for_group?(user)
+            log_audit_event(user, root_group)
+            return false
+          end
 
           GroupSamlIdentityFinder.new(user: user).find_linked(group: root_group)
         end
@@ -31,6 +35,18 @@ module Gitlab
 
         def user_provisioned_by_group?(user)
           user.provisioned_by_group_id == root_group.id
+        end
+
+        def log_audit_event(user, root_group)
+          audit_context = {
+            name: "inactive_scim_user_cannot_be_added",
+            author: user,
+            scope: root_group,
+            target: user,
+            target_details: user.username,
+            message: "User cannot be added to group due to inactive SCIM identity"
+          }
+          ::Gitlab::Audit::Auditor.audit(audit_context)
         end
       end
     end

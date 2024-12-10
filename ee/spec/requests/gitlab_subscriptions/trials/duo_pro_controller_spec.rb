@@ -164,10 +164,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       }.with_indifferent_access
     end
 
-    let(:trial_params) do
-      { trial_entity: '_trial_entity_' }.merge(namespace_id).with_indifferent_access
-    end
-
+    let(:trial_params) { namespace_id.with_indifferent_access }
     let(:base_params) { lead_params.merge(trial_params).merge(step: step) }
 
     subject(:post_create) do

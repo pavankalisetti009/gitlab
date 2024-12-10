@@ -2,8 +2,6 @@
 
 module GitlabSubscriptions
   module TrialsHelper
-    TRIAL_ONBOARDING_SOURCE_URLS = %w[about.gitlab.com docs.gitlab.com learn.gitlab.com].freeze
-
     def create_lead_form_data(eligible_namespaces)
       submit_path = trials_path(
         step: GitlabSubscriptions::Trials::CreateService::LEAD,
@@ -29,10 +27,6 @@ module GitlabSubscriptions
       )
 
       _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
-    end
-
-    def should_ask_company_question?
-      TRIAL_ONBOARDING_SOURCE_URLS.exclude?(::Onboarding::StatusPresenter.glm_tracking_attributes(params)[:glm_source])
     end
 
     def trial_namespace_selector_data(namespaces, namespace_create_errors)

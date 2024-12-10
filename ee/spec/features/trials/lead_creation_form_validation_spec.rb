@@ -50,7 +50,6 @@ RSpec.describe 'Trial lead form submission and validation', :saas, :js, feature_
       click_button 'Continue'
 
       expect(page).to have_content('Activate my trial')
-      expect(page).to have_content('Who will be using GitLab?')
     end
 
     def fill_in_company_information
