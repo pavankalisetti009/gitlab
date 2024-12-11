@@ -16,7 +16,7 @@ module Security
       # StoreGroupedScansService returns true only when it creates a `security_scans` record.
       # To avoid resource wastage we are skipping the reports ingestion when there are no new scans, but
       # we sync the rules as it might cause inconsistent state if we skip.
-      results = grouped_report_artifacts.map { |artifacts| StoreGroupedScansService.execute(artifacts) }
+      results = grouped_report_artifacts.map { |artifacts| StoreGroupedScansService.execute(artifacts, pipeline) }
 
       sync_findings_to_approval_rules unless pipeline.default_branch?
       return unless results.any?(true)

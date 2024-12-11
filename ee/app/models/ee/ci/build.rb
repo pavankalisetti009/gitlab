@@ -46,6 +46,15 @@ module EE
         delegate :variable_value, to: :secrets_integration
 
         scope :license_scan, -> { joins(:job_artifacts).merge(::Ci::JobArtifact.of_report_type(:license_scanning)) }
+        scope :with_reports_of_type, ->(report_type) do
+          # EE::Enums::Ci::JobArtifact::EE_REPORT_FILE_TYPES has a key
+          # of 'dependency_list' which maps to
+          # 'dependency_scanning'. Pretty much everywhere else in the
+          # codebase we use the naming convention of {report}_scanning
+          report_type = report_type.to_sym.then { |r| r == :dependency_scanning ? :dependency_list : r }
+
+          joins(:job_artifacts).merge(::Ci::JobArtifact.of_report_type(report_type.to_sym))
+        end
         scope :sbom_generation, -> { joins(:job_artifacts).merge(::Ci::JobArtifact.of_report_type(:sbom)) }
         scope :max_build_id_by, ->(build_name, ref, project_path) do
           select("max(#{quoted_table_name}.id) as id")

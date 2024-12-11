@@ -58,7 +58,7 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
       # This causes the job artifacts to be ingested and security_findings
       # records to be created with the correct associations to scanners
       # and the pipeline.
-      Security::StoreGroupedScansService.new([dast_artifact, sast_artifact]).execute
+      Security::StoreGroupedScansService.new([dast_artifact, sast_artifact], pipeline).execute
     end
   end
 

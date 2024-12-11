@@ -70,8 +70,8 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           it 'executes only for artifacts where the feature is available' do
             store_group_of_artifacts
 
-            expect(Security::StoreGroupedScansService).to have_received(:execute).with([sast_artifact])
-            expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([dast_artifact])
+            expect(Security::StoreGroupedScansService).to have_received(:execute).with([sast_artifact], pipeline)
+            expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([dast_artifact], pipeline)
           end
         end
 
