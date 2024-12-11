@@ -65,3 +65,36 @@ export const headerAppInjected = {
     'https://gitlab.com/example-group/example-project/-/jobs/artifacts/main/download?job=build',
   ],
 };
+
+export const userPermissionsMock = {
+  pushCode: true,
+  forkProject: true,
+  downloadCode: true,
+  createMergeRequestIn: true,
+  adminPathLocks: true,
+  __typename: 'ProjectPermissions',
+};
+
+export const projectMock = {
+  data: {
+    project: {
+      __typename: 'Project',
+      id: 'gid://gitlab/Project/7',
+      userPermissions: userPermissionsMock,
+    },
+  },
+};
+
+export const userMock = {
+  data: {
+    currentUser: {
+      __typename: 'CurrentUser',
+      id: 'gid://gitlab/User/1',
+      username: 'root',
+      name: 'Administrator',
+      avatarUrl: 'https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80',
+      webUrl: '/root',
+      webPath: '/root',
+    },
+  },
+};
