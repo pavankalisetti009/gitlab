@@ -22,7 +22,7 @@ module Mutations
 
         authorize :enable_pre_receive_secret_detection
 
-        def resolve(namespace_path:, secret_push_protection_enabled:, projects_to_exclude:)
+        def resolve(namespace_path:, secret_push_protection_enabled:, projects_to_exclude: [])
           group = authorized_find!(group_path: namespace_path)
 
           raise_resource_not_available_error! 'Setting only available for group namespaces.' unless group.is_a? Group

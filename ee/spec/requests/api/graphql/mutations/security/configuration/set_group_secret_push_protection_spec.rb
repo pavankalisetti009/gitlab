@@ -8,14 +8,18 @@ RSpec.describe 'Setting Group Secret Push Protection', feature_category: :secret
   let(:mutation_name) { 'SetGroupSecretPushProtection' }
   let_it_be(:namespace) { create(:group) }
   let_it_be(:current_user) { create(:user) }
-  let(:projects_to_exclude) { [] }
   let(:enable) { true }
+  let(:mutation_params) do
+    {
+      namespace_path: namespace.full_path,
+      secret_push_protection_enabled: enable
+    }
+  end
+
   let(:mutation) do
     graphql_mutation(
       mutation_name,
-      namespace_path: namespace.full_path,
-      secret_push_protection_enabled: enable,
-      projects_to_exclude: projects_to_exclude
+      **mutation_params
     )
   end
 
@@ -77,6 +81,10 @@ RSpec.describe 'Setting Group Secret Push Protection', feature_category: :secret
           context 'with excluded projects' do
             let_it_be(:project1) { create(:project, namespace: namespace) }
             let_it_be(:project2) { create(:project, namespace: namespace) }
+            let(:mutation_params) do
+              super().merge(projects_to_exclude: [project1.id, project2.id])
+            end
+
             let(:projects_to_exclude) { [project1.id, project2.id] }
 
             it 'calls the worker with excluded projects' do
