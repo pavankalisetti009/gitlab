@@ -29,6 +29,10 @@ module EE
           other: 8
         }
       end
+
+      def self.onboarding_status_registration_objectives
+        ::UserDetail::REGISTRATION_OBJECTIVE_PAIRS
+      end
     end
   end
 end
