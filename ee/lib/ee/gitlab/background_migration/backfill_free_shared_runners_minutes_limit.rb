@@ -10,9 +10,10 @@ module EE
         prepended do
           operation_name :backfill_free_shared_runners_minutes_limit
           scope_to ->(relation) do
-            relation.where(type: 'Group', parent_id: nil)
+            relation.where(type: 'User', parent_id: nil)
           end
         end
+
         class Namespace < ::ApplicationRecord
           self.table_name = 'namespaces'
         end

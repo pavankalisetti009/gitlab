@@ -7,7 +7,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillFreeSharedRunnersMinutesLimi
   let(:start_id) { namespaces.minimum(:id) }
   let(:end_id) { namespaces.maximum(:id) }
   let!(:namespace_free_without_limit) do
-    namespaces.create!(name: 'free_namespace_no_limit', path: 'free-namespace-no-limit', type: 'Group')
+    namespaces.create!(name: 'free_namespace_no_limit', path: 'free-namespace-no-limit', type: 'User')
   end
 
   let!(:namespace_free_with_limit_1) do
@@ -15,7 +15,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillFreeSharedRunnersMinutesLimi
       name: 'free_namespace_limit_1',
       path: 'free-namespace-limit-1',
       shared_runners_minutes_limit: 400,
-      type: 'Group'
+      type: 'User'
     )
   end
 
@@ -24,13 +24,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillFreeSharedRunnersMinutesLimi
       name: 'free_namespace_limit_2',
       path: 'free-namespace-limit-2',
       shared_runners_minutes_limit: 10_000,
-      type: 'Group'
+      type: 'User'
     )
   end
 
   let!(:namespace_paid) do
     namespaces.create!(name: 'paid_namespace', path: 'paid-namespace', shared_runners_minutes_limit: 10_000,
-      type: 'Group')
+      type: 'User')
   end
 
   subject(:migration) do
