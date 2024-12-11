@@ -12,28 +12,42 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
   let_it_be(:artifact_2) { create(:ee_ci_job_artifact, report_type, job: build_2) }
   let_it_be(:artifact_3) { create(:ee_ci_job_artifact, report_type, job: build_3) }
   let_it_be(:artifact_with_missing_version) { create(:ee_ci_job_artifact, :dast_missing_version, job: build_4) }
+  let_it_be(:pipeline) { artifact_1.job.pipeline }
+  let_it_be(:pipeline_id) { pipeline.id }
 
   let(:artifacts) { [artifact_1, artifact_2, artifact_3, artifact_with_missing_version] }
+
+  before do
+    allow(Ci::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
+  end
+
+  shared_examples_for 'handling the security MR widget caching' do
+    it 'sets the expected redis cache value' do
+      store_scan_group
+
+      expect(Ci::CompareSecurityReportsService).to have_received(:set_security_report_type_to_ready).with(pipeline_id: pipeline_id, report_type: report_type.to_s)
+    end
+  end
 
   describe '.execute' do
     let(:mock_service_object) { instance_double(described_class, execute: true) }
 
-    subject(:execute) { described_class.execute(artifacts) }
+    subject(:execute) { described_class.execute(artifacts, pipeline) }
 
     before do
-      allow(described_class).to receive(:new).with(artifacts).and_return(mock_service_object)
+      allow(described_class).to receive(:new).with(artifacts, pipeline).and_return(mock_service_object)
     end
 
     it 'delegates the call to an instance of `Security::StoreGroupedScansService`' do
       execute
 
-      expect(described_class).to have_received(:new).with(artifacts)
+      expect(described_class).to have_received(:new).with(artifacts, pipeline)
       expect(mock_service_object).to have_received(:execute)
     end
   end
 
   describe '#execute' do
-    let(:service_object) { described_class.new(artifacts) }
+    let(:service_object) { described_class.new(artifacts, pipeline) }
     let(:empty_set) { Set.new }
 
     subject(:store_scan_group) { service_object.execute }
@@ -55,6 +69,8 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
 
         expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(expected_error)
       end
+
+      it_behaves_like 'handling the security MR widget caching'
     end
 
     context 'when there is no error' do
@@ -179,6 +195,8 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
           expect(Security::StoreScanService).to have_received(:execute).with(artifact_1, empty_set, true).ordered
         end
       end
+
+      it_behaves_like 'handling the security MR widget caching'
     end
   end
 end

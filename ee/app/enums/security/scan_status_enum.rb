@@ -17,5 +17,7 @@ module Security
       preparation_failed value: 5, description: N_('Report couldn\'t be prepared.')
       purged value: 6, description: N_('Report for the scan has been removed from the database.')
     end
+
+    TERMINAL_STATUSES = [:succeeded, :job_failed, :report_error, :preparation_failed, :purged].freeze
   end
 end

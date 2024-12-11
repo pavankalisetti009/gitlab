@@ -40,6 +40,29 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     let(:job) { job }
   end
 
+  describe '.with_security_reports_of_type' do
+    subject(:builds) { described_class.with_reports_of_type(report_to_filter) }
+
+    before_all do
+      EE::Enums::Ci::JobArtifact.security_report_file_types.each do |type|
+        create(:ee_ci_job_artifact, type.to_sym)
+      end
+    end
+
+    shared_examples 'it only includes builds of provided report type' do |report_type|
+      let(:report_to_filter) { report_type }
+      let(:result) { builds.flat_map { |b| b.job_artifacts.security_reports.flat_map(&:file_type) } }
+
+      it "filters by the given report type: #{report_type}" do
+        expect(result).to contain_exactly(report_type)
+      end
+    end
+
+    EE::Enums::Ci::JobArtifact.security_report_file_types.each do |type|
+      it_behaves_like 'it only includes builds of provided report type', type
+    end
+  end
+
   describe '.license_scan' do
     subject(:build) { described_class.license_scan.first }
 

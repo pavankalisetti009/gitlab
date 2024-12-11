@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerability_management do
+RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_state, feature_category: :vulnerability_management do
   subject { service.execute(base_pipeline, head_pipeline) }
 
   let_it_be(:project) { create(:project, :repository) }
@@ -79,6 +79,16 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
       compare_keys = collect_ids(subject[:data]['fixed'])
       expect(compare_keys).to match_array(expected_fixed_keys)
     end
+
+    context 'with migrate_mr_security_widget_to_security_findings_table disabled' do
+      before do
+        stub_feature_flags(migrate_mr_security_widget_to_security_findings_table: false)
+      end
+
+      it 'does not query the database' do
+        expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+      end
+    end
   end
 
   shared_examples_for 'when head pipeline has corrupted scanning reports' do
@@ -95,6 +105,99 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
 
       expect(result[:status]).to eq(:error)
       expect(result[:status_reason]).to include('JSON parsing failed')
+    end
+  end
+
+  shared_examples_for 'when a pipeline has scan that is not in the `succeeded` state' do
+    let_it_be(:base_pipeline) { test_pipelines[:default_base] }
+    let_it_be(:head_pipeline) { test_pipelines[:"with_#{scan_type}_feature_branch"] }
+
+    let_it_be(:incomplete_scan) do
+      create(
+        :security_scan,
+        build: head_pipeline.builds.last,
+        status: :created,
+        scan_type: scan_type
+      )
+    end
+
+    it 'reports status as parsing' do
+      expect(subject[:status]).to eq(:parsing)
+    end
+
+    it 'has the parsing payload' do
+      payload = subject[:key]
+      expect(payload).to include(base_pipeline.id, head_pipeline.id)
+    end
+
+    context 'when the transitioning cache key exists' do
+      before do
+        described_class.set_security_mr_widget_to_polling(pipeline_id: base_pipeline.id)
+        described_class.set_security_mr_widget_to_polling(pipeline_id: head_pipeline.id)
+      end
+
+      it 'reports status as parsing' do
+        expect(subject[:status]).to eq(:parsing)
+      end
+
+      it 'does not query the database' do
+        expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+      end
+
+      context 'when report type cache key exists' do
+        before do
+          described_class.set_security_report_type_to_ready(pipeline_id: base_pipeline.id, report_type: scan_type)
+          described_class.set_security_report_type_to_ready(pipeline_id: head_pipeline.id, report_type: scan_type)
+        end
+
+        it 'reports status as parsed' do
+          expect(subject[:status]).to eq(:parsed)
+        end
+
+        it 'does not query the database' do
+          expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+        end
+      end
+    end
+  end
+
+  describe '.transition_cache_key' do
+    subject { described_class.transition_cache_key(pipeline_id: pipeline.id) }
+
+    let_it_be(:pipeline) { test_pipelines[:default_base] }
+
+    it { is_expected.to eq("security_mr_widget::report_parsing_check::#{pipeline.id}:transitioning") }
+
+    context 'when pipeline_id is nil' do
+      it 'returns nil' do
+        expect(described_class.transition_cache_key(pipeline_id: nil)).to be_nil
+      end
+    end
+
+    context 'when pipeline_id is not present' do
+      it 'returns nil' do
+        expect(described_class.transition_cache_key(pipeline_id: '')).to be_nil
+      end
+    end
+  end
+
+  describe '.ready_cache_key' do
+    subject { described_class.ready_cache_key(pipeline_id: pipeline.id, report_type: 'foo') }
+
+    let_it_be(:pipeline) { test_pipelines[:default_base] }
+
+    it { is_expected.to eq("security_mr_widget::report_parsing_check::foo::#{pipeline.id}") }
+
+    context 'when pipeline_id is nil' do
+      it 'returns nil' do
+        expect(described_class.ready_cache_key(pipeline_id: nil)).to be_nil
+      end
+    end
+
+    context 'when pipeline_id is not present' do
+      it 'returns nil' do
+        expect(described_class.ready_cache_key(pipeline_id: '')).to be_nil
+      end
     end
   end
 
@@ -120,6 +223,7 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
         end
 
         it_behaves_like 'when head pipeline has corrupted scanning reports'
+        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
 
       context 'with container_scanning' do
@@ -136,6 +240,7 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
         end
 
         it_behaves_like 'when head pipeline has corrupted scanning reports'
+        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
 
       context 'with dast' do
@@ -150,6 +255,8 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
           let(:expected_added_keys) { %w[10027] }
           it_behaves_like 'serializes `found_by_pipeline` attribute'
         end
+
+        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
 
       context 'with sast' do
@@ -164,6 +271,8 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
           let(:expected_added_keys) { %w[ECB_MODE] }
           it_behaves_like 'serializes `found_by_pipeline` attribute'
         end
+
+        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
 
       context 'with secret detection' do
@@ -181,6 +290,8 @@ RSpec.describe Ci::CompareSecurityReportsService, feature_category: :vulnerabili
           it 'returns nil for the "added" field' do
             expect(subject[:data]['added'].first).to be_nil
           end
+
+          it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
         end
       end
     end

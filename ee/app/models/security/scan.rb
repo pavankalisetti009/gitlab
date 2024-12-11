@@ -43,6 +43,7 @@ module Security
     scope :ordered_by_created_at_and_id, -> { order(:created_at, :id) }
     scope :with_warnings, -> { where("jsonb_array_length(COALESCE(info->'warnings', '[]'::jsonb)) > 0") }
     scope :with_errors, -> { where("jsonb_array_length(COALESCE(info->'errors', '[]'::jsonb)) > 0") }
+    scope :not_in_terminal_state, -> { where.not(status: Security::ScanStatusEnum::TERMINAL_STATUSES) }
 
     delegate :name, to: :build
     alias_attribute :type, :scan_type
