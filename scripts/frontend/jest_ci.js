@@ -38,7 +38,10 @@ function parseArgumentsAndEnvironment() {
       '--fixtures',
       'Only run specs which rely on generated fixtures. The default is to only run specs which do not rely on generated fixtures.',
     )
-    .option('--coverage', 'Tell Jest to generate coverage. The default is not to.')
+    .option(
+      '--coverage',
+      "Tell Jest to generate coverage. If not specified, it's enabled only on non-FOSS branch or tag pipelines under Vue 2, non-predictive runs.",
+    )
     .parse(process.argv);
 
   if (!IS_CI) {
@@ -72,11 +75,18 @@ function parseArgumentsAndEnvironment() {
     }
   }
 
+  const coverage =
+    program.coverage ||
+    (!process.env.CI_MERGE_REQUEST_IID &&
+      !/^as-if-foss\//.test(process.env.CI_COMMIT_BRANCH) &&
+      !program.vue3 &&
+      !program.predictive);
+
   return {
     vue3: program.vue3,
     predictive: program.predictive,
     fixtures: program.fixtures,
-    coverage: program.coverage,
+    coverage,
     nodeIndex: process.env.CI_NODE_INDEX ?? '1',
     nodeTotal: process.env.CI_NODE_TOTAL ?? '1',
     changedFiles,
