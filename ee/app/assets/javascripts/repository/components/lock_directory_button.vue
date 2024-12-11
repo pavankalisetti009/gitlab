@@ -1,7 +1,10 @@
 <script>
 import { GlButton, GlTooltipDirective, GlModal, GlModalDirective } from '@gitlab/ui';
-import { sprintf, __ } from '~/locale';
+import { __ } from '~/locale';
+import { createAlert } from '~/alert';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
+import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 
 export default {
   name: 'LockDirectoryButton',
@@ -37,29 +40,50 @@ export default {
       required: true,
     },
   },
+  apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
+    projectInfo: {
+      query: projectInfoQuery,
+      variables() {
+        return {
+          projectPath: this.projectPath,
+        };
+      },
+      update({ project }) {
+        this.canAdminLocks = project.userPermissions.adminPathLocks;
+        this.canPushCode = project.userPermissions.pushCode;
+      },
+      error() {
+        this.onFetchError();
+      },
+    },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
+    currentUser: {
+      query: currentUserQuery,
+      update({ currentUser }) {
+        this.user = { ...currentUser };
+      },
+      error() {
+        this.onFetchError();
+      },
+    },
+  },
   data() {
     return {
       canAdminLocks: false,
       canPushCode: false,
       allPathLocks: [],
       pathLock: {},
-      user: {
-        id: 'gid://gitlab/User/1',
-        username: 'root',
-        name: __('Administrator'),
-        avatarUrl: 'https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80',
-        webUrl: '/root',
-        webPath: '/root',
-      },
+      user: {},
       isLocked: false,
     };
   },
   computed: {
     showLockButton() {
-      return Boolean(this.glFeatures.fileLocks && this.user.id);
+      return Boolean(this.glFeatures.fileLocks && this.user?.id);
     },
     isLoading() {
-      return false;
+      return this.$apollo?.queries.projectInfo.loading;
     },
     buttonLabel() {
       return this.isLocked ? __('Unlock') : __('Lock');
@@ -68,21 +92,28 @@ export default {
       return this.isLocked ? 'unlock' : 'lock';
     },
     isDisabled() {
-      return false;
+      return !this.canAdminLocks || !this.canPushCode;
     },
     tooltipText() {
+      if (!this.canPushCode) {
+        return __('You do not have permission to lock this');
+      }
+
       return '';
     },
     modalId() {
       return `lock-directory-modal-${this.path.replaceAll('/', '-')}`;
     },
     modalContent() {
-      return sprintf(__('Are you sure you want to %{action} this directory?'), {
-        action: this.buttonLabel.toLowerCase(),
-      });
+      return this.isLocked
+        ? __('Are you sure you want to unlock this directory?')
+        : __('Are you sure you want to lock this directory?');
     },
   },
   methods: {
+    onFetchError() {
+      createAlert({ message: this.$options.i18n.fetchError });
+    },
     toggleLock() {
       this.isLocked = !this.isLocked;
     },
