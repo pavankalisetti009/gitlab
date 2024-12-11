@@ -12,6 +12,9 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
     create(:dependency_proxy_packages_setting, :maven, project: project)
   end
 
+  let(:sha1_checksum_header) { ::API::Helpers::Packages::Maven::SHA1_CHECKSUM_HEADER }
+  let(:md5_checksum_header) { ::API::Helpers::Packages::Maven::MD5_CHECKSUM_HEADER }
+
   describe 'GET /api/v4/projects/:project_id/dependency_proxy/packages/maven/*path/:file_name' do
     let(:path) { 'foo/bar/1.2.3' }
     let(:file_name) { 'foo.bar-1.2.3.pom' }
@@ -199,6 +202,40 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
               it_behaves_like 'returning response status', params[:expected_status] if params[:expected_status]
               it_behaves_like 'tracking an internal event', from_cache: true if params[:expected_status] == :ok
               it_behaves_like params[:shared_example] if params[:shared_example]
+
+              if params[:expected_status] == :ok
+                it 'returns the correct checksums' do
+                  subject
+
+                  expect(response).to have_gitlab_http_status(:ok)
+                  expect(response.headers[sha1_checksum_header]).to be_an_instance_of(String)
+                  expect(response.headers[md5_checksum_header]).to be_an_instance_of(String)
+                end
+
+                context 'with FIPS mode', :fips_mode do
+                  it 'returns the correct checksums' do
+                    subject
+
+                    expect(response).to have_gitlab_http_status(:ok)
+                    expect(response.headers[sha1_checksum_header]).to be_an_instance_of(String)
+                    expect(response.headers[md5_checksum_header]).to be_nil
+                  end
+                end
+
+                context 'with packages_maven_remote_included_checksum disabled' do
+                  before do
+                    stub_feature_flags(packages_maven_remote_included_checksum: false)
+                  end
+
+                  it 'does not return any checksum' do
+                    subject
+
+                    expect(response).to have_gitlab_http_status(:ok)
+                    expect(response.headers[sha1_checksum_header]).to be_nil
+                    expect(response.headers[md5_checksum_header]).to be_nil
+                  end
+                end
+              end
             end
           end
 
