@@ -46,6 +46,10 @@ module Gitlab
       def full_path
         nil
       end
+
+      def impersonated?
+        false
+      end
     end
   end
 end
