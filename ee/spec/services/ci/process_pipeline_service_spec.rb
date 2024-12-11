@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ci::ProcessPipelineService, '#execute', feature_category: :continuous_integration do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, maintainers: user) }
-  let_it_be(:downstream) { create(:project, :repository, developers: user) }
+  let_it_be_with_reload(:downstream) { create(:project, :repository, developers: user) }
 
   let_it_be(:pipeline) do
     create(:ci_empty_pipeline, ref: 'master', project: project, user: user)
@@ -19,6 +19,7 @@ RSpec.describe Ci::ProcessPipelineService, '#execute', feature_category: :contin
 
   describe 'cross-project pipelines' do
     before do
+      downstream.update!(ci_pipeline_variables_minimum_override_role: :developer)
       create_processable(:build, name: 'build', ci_stage: build_stage, stage_idx: build_stage.position)
       create_processable(
         :bridge, :variables, name: 'cross', ci_stage: test_stage, downstream: downstream, stage_idx: test_stage.position

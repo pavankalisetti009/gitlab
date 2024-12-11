@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Creating a DAST Site Token', feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:project) { create(:project, :repository) }
   let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_site) { create(:dast_site, project: project) }
   let_it_be(:dast_site_token) { create(:dast_site_token, project: project, url: dast_site.url) }
@@ -26,6 +26,10 @@ RSpec.describe 'Creating a DAST Site Token', feature_category: :dynamic_applicat
   it_behaves_like 'an on-demand scan mutation when user cannot run an on-demand scan'
 
   it_behaves_like 'an on-demand scan mutation when user can run an on-demand scan' do
+    before do
+      project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+    end
+
     it 'returns the dast_site_validation id' do
       subject
 

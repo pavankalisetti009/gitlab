@@ -15589,6 +15589,7 @@ CREATE TABLE namespace_settings (
     token_expiry_notify_inherited boolean DEFAULT true NOT NULL,
     resource_access_token_notify_inherited boolean,
     lock_resource_access_token_notify_inherited boolean DEFAULT false NOT NULL,
+    pipeline_variables_default_role smallint DEFAULT 2 NOT NULL,
     CONSTRAINT check_0ba93c78c7 CHECK ((char_length(default_branch_name) <= 255)),
     CONSTRAINT namespace_settings_unique_project_download_limit_alertlist_size CHECK ((cardinality(unique_project_download_limit_alertlist) <= 100)),
     CONSTRAINT namespace_settings_unique_project_download_limit_allowlist_size CHECK ((cardinality(unique_project_download_limit_allowlist) <= 100))

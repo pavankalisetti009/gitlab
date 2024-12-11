@@ -16,6 +16,7 @@ RSpec.describe Mutations::DastSiteValidations::Create do
   subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
+    project.update!(ci_pipeline_variables_minimum_override_role: :developer)
     stub_licensed_features(security_on_demand_scans: true)
   end
 
