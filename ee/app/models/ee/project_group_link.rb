@@ -3,6 +3,8 @@
 module EE
   module ProjectGroupLink
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
+    include ProjectLinksHelper
 
     prepended do
       include ::MemberRoles::MemberRoleRelation
@@ -47,6 +49,13 @@ module EE
             "of the root ancestor group. Go to the group's 'Settings &gt; General' page "\
             "and check 'Restrict membership by email domain'."))
       end
+    end
+
+    override :human_access
+    def human_access
+      return member_role.name if member_role && custom_role_for_project_link_enabled?(project)
+
+      super
     end
   end
 end

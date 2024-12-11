@@ -118,4 +118,50 @@ profile expires_at from nil to #{expiry_date}",
       end
     end
   end
+
+  context 'with member_role_id param', :saas do
+    let_it_be(:current_member_role) { create(:member_role, namespace: project.root_ancestor) }
+    let_it_be(:new_member_role) { create(:member_role, namespace: project.root_ancestor) }
+
+    let_it_be(:link) do
+      create(:project_group_link, project: project, group: group, group_access: current_member_role.base_access_level,
+        member_role: current_member_role)
+    end
+
+    let(:group_link_params) do
+      super().merge({ group_access: current_member_role.base_access_level, member_role_id: new_member_role.id })
+    end
+
+    before do
+      stub_licensed_features(custom_roles: true)
+    end
+
+    shared_examples_for 'does update the link\'s member role' do
+      specify do
+        expect { execute_update_service }.not_to change { link.reload.member_role_id }
+      end
+    end
+
+    it 'updates the link\'s member role' do
+      expect { execute_update_service }.to change {
+        link.reload.member_role_id
+      }.from(current_member_role.id).to(new_member_role.id)
+    end
+
+    context 'when assign_custom_roles_to_project_links_saas feature flag is disabled' do
+      before do
+        stub_feature_flags(assign_custom_roles_to_project_links_saas: false)
+      end
+
+      it_behaves_like 'does update the link\'s member role'
+    end
+
+    context 'when custom roles feature is not available' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it_behaves_like 'does update the link\'s member role'
+    end
+  end
 end

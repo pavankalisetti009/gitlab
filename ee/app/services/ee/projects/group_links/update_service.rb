@@ -5,6 +5,7 @@ module EE
     module GroupLinks
       module UpdateService
         extend ::Gitlab::Utils::Override
+        include ProjectLinksHelper
 
         override :execute
         def execute(group_link_params)
@@ -14,6 +15,13 @@ module EE
         end
 
         private
+
+        override :permitted_attributes
+        def permitted_attributes
+          return super unless custom_role_for_project_link_enabled?(group_link.project)
+
+          super + %i[member_role_id]
+        end
 
         def send_audit_event
           return unless saved_changes_present?
