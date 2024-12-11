@@ -6,9 +6,21 @@ import DenyAllowLicenses from 'ee/security_orchestration/components/policy_edito
 import DenyAllowExceptions from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list_exceptions.vue';
 import { UNKNOWN_LICENSE } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
+import { NO_EXCEPTION_KEY } from 'ee/security_orchestration/components/policy_editor/constants';
 
 describe('DenyAllowListModal', () => {
   let wrapper;
+
+  const LICENSES = [
+    {
+      text: 'License 1',
+      value: 'license_1',
+    },
+    {
+      text: 'License 2',
+      value: 'license_2',
+    },
+  ];
 
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = mountExtended(DenyAllowListModal, {
@@ -70,17 +82,6 @@ describe('DenyAllowListModal', () => {
   });
 
   describe('selecting a license', () => {
-    const LICENSES = [
-      {
-        text: 'Licence 1',
-        value: 'licence_1',
-      },
-      {
-        text: 'Licence 2',
-        value: 'licence_2',
-      },
-    ];
-
     it('selects multiple licenses', async () => {
       createComponent({
         provide: {
@@ -115,7 +116,7 @@ describe('DenyAllowListModal', () => {
           parsedSoftwareLicenses: LICENSES,
         },
         propsData: {
-          licenses: [{ license: UNKNOWN_LICENSE }, ...LICENSES.map((license) => ({ license }))],
+          licenses: [...LICENSES.map((license) => ({ license }))],
         },
       });
 
@@ -145,6 +146,81 @@ describe('DenyAllowListModal', () => {
 
       expect(findTableRows()).toHaveLength(1);
       expect(findLicenses().at(0).props('selected')).toEqual(undefined);
+    });
+  });
+
+  describe('selecting exceptions', () => {
+    const VALID_EXCEPTIONS = [
+      {
+        fullPath: 'project',
+        file: 'test',
+        value: 'test@project',
+      },
+      {
+        fullPath: 'project',
+        file: 'test1',
+        value: 'test1@project',
+      },
+    ];
+
+    it('selects exceptions for selected license', () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+        propsData: {
+          licenses: LICENSES.map((license) => ({ license, exceptions: [] })),
+        },
+      });
+
+      findExceptions().at(0).vm.$emit('input', VALID_EXCEPTIONS);
+      findModal().vm.$emit('primary');
+
+      expect(wrapper.emitted('select-licenses')).toEqual([
+        [
+          [
+            { exceptions: VALID_EXCEPTIONS, license: LICENSES[0] },
+            { exceptions: [], license: LICENSES[1] },
+          ],
+        ],
+      ]);
+    });
+
+    it('renders selected exceptions', () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+        propsData: {
+          licenses: LICENSES.map((license) => ({ license, exceptions: VALID_EXCEPTIONS })),
+        },
+      });
+
+      expect(findExceptions().at(0).props('exceptions')).toEqual(VALID_EXCEPTIONS);
+      expect(findExceptions().at(1).props('exceptions')).toEqual(VALID_EXCEPTIONS);
+    });
+
+    it('selects exception type end resets exceptions', () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+        propsData: {
+          licenses: LICENSES.map((license) => ({ license, exceptions: VALID_EXCEPTIONS })),
+        },
+      });
+
+      findExceptions().at(0).vm.$emit('select-exception-type', NO_EXCEPTION_KEY);
+      findModal().vm.$emit('primary');
+
+      expect(wrapper.emitted('select-licenses')).toEqual([
+        [
+          [
+            { exceptions: [], license: LICENSES[0] },
+            { exceptions: VALID_EXCEPTIONS, license: LICENSES[1] },
+          ],
+        ],
+      ]);
     });
   });
 });

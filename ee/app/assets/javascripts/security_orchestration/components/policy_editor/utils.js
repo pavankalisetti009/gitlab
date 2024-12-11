@@ -447,17 +447,21 @@ export const mapExceptionsListBoxItem = (item, index) => {
 /**
  * convert branch and full_path to branch
  * full format branch-name@fullPath
- * @param branches
+ * @param items
+ * @param itemKey select property of an objects that is applied before @
  * @returns {*}
  */
-export const mapBranchesToString = (branches = []) => {
-  return branches
+export const mapObjectsToString = (items = [], itemKey = 'name') => {
+  return items
     .filter(Boolean)
-    .map(({ name = '', fullPath = '', full_path = '' }) => {
+    .map((item) => {
+      const { fullPath = '', full_path = '' } = item;
+      const prependValue = item[itemKey] || '';
+
       // eslint-disable-next-line camelcase
       const path = fullPath || full_path;
 
-      return `${name}${path ? '@' : ''}${path}`;
+      return `${prependValue}${path ? '@' : ''}${path}`;
     })
     .filter(Boolean)
     .join(', ');
@@ -486,15 +490,17 @@ export const hasDuplicates = (branches = []) => {
 
 /**
  * Extract branches with wrong format
- * @param branches
+ * @param items
+ * @param key
+ * @param mapKey
  * @returns {*[]}
  */
-export const findBranchesWithErrors = (branches = []) => {
-  if (!branches) return [];
+export const findItemsWithErrors = (items = [], key = 'value', mapKey = 'name') => {
+  if (!items) return [];
 
-  return branches
-    ?.filter(({ value }) => !validateBranchProjectFormat(value))
-    ?.map(({ name }) => name);
+  return items
+    ?.filter((item) => !validateBranchProjectFormat(item[key]))
+    ?.map((item) => item[mapKey]);
 };
 
 /**

@@ -82,12 +82,12 @@ describe('DenyAllowList', () => {
   describe('select licenses', () => {
     const LICENSES = [
       {
-        text: 'Licence 1',
-        value: 'licence_1',
+        text: 'License 1',
+        value: 'license_1',
       },
       {
-        text: 'Licence 2',
-        value: 'licence_2',
+        text: 'License 2',
+        value: 'license_2',
       },
     ];
 
