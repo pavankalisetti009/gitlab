@@ -28665,6 +28665,12 @@ msgstr ""
 msgid "Import|Partially completed"
 msgstr ""
 
+msgid "Import|Placeholder user record reassignment complete"
+msgstr ""
+
+msgid "Import|Rescheduling placeholder user records reassignment: database health"
+msgstr ""
+
 msgid "Import|Show errors"
 msgstr ""
 
