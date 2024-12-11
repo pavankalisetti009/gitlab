@@ -1,6 +1,7 @@
 <script>
 import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
 import produce from 'immer';
+import InternalEvents from '~/tracking/internal_events';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf, __ } from '~/locale';
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
@@ -38,6 +39,7 @@ export default {
     GlLoadingIcon,
     GlTooltip,
   },
+  mixins: [InternalEvents.mixin()],
   inject: [
     'pipelineConfigurationFullPathEnabled',
     'groupPath',
@@ -188,6 +190,11 @@ export default {
       if (errors && errors.length) {
         throw new Error(errors[0]);
       }
+
+      this.trackEvent('create_compliance_framework', {
+        property: framework.id,
+      });
+
       return framework.id;
     },
     async updateFramework(params) {

@@ -1,5 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlKeysetPagination, GlLoadingIcon, GlTable } from '@gitlab/ui';
+import InternalEvents from '~/tracking/internal_events';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__ } from '~/locale';
 import { sortObjectToString, sortStringToObject } from '~/lib/utils/table_utility';
@@ -41,6 +42,7 @@ export default {
     ViolationFilter,
     UrlSync,
   },
+  mixins: [InternalEvents.mixin()],
   inject: ['rootAncestorPath'],
   props: {
     mergeCommitsCsvExportPath: {
@@ -159,6 +161,9 @@ export default {
       if (!mergeRequest || this.drawerId === id) {
         this.closeDrawer();
       } else {
+        this.trackEvent('click_violations_report_item', {
+          property: id,
+        });
         this.openDrawer(id, mergeRequest);
       }
     },

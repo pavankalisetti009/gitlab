@@ -18,6 +18,7 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import {
   createComplianceFrameworksReportResponse,
@@ -36,6 +37,8 @@ const $toast = {
 
 describe('Edit Framework Form', () => {
   let wrapper;
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   const adherenceV2Enabled = true;
   const propsData = {
     id: '1',
@@ -249,6 +252,34 @@ describe('Edit Framework Form', () => {
     await waitForPromises();
     expect(stubHandlers.find((handler) => handler[0] === mutation)[1]).toHaveBeenCalled();
     expect(successHandler).toHaveBeenCalled();
+  });
+
+  it('tracks event of compliance framework creation', async () => {
+    const response = createComplianceFrameworkMutationResponse(
+      'createComplianceFramework',
+      'framework',
+    );
+
+    wrapper = createComponent(mountExtended, {
+      requestHandlers: [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [createComplianceFrameworkMutation, jest.fn().mockResolvedValue(response)],
+      ],
+      routeParams: {},
+    });
+    const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    await waitForPromises();
+
+    const form = wrapper.find('form');
+    await form.trigger('submit');
+    await waitForPromises();
+    expect(trackEventSpy).toHaveBeenCalledWith(
+      'create_compliance_framework',
+      {
+        property: response.data.createComplianceFramework.framework.id,
+      },
+      undefined,
+    );
   });
 
   describe('Creating requirements', () => {
