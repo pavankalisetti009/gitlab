@@ -22,7 +22,7 @@ RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category
 
       expect(page).to have_current_path(users_sign_up_welcome_path)
 
-      select 'Software Developer', from: 'user_role'
+      select 'Software Developer', from: 'user_onboarding_status_role'
       choose 'user_setup_for_company_true'
       choose 'Join a project'
       click_button 'Continue'

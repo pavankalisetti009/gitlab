@@ -29,7 +29,7 @@ RSpec.describe 'Start trial from external site without confirmation', :with_curr
 
     fill_in_sign_up_form(user)
 
-    select 'Software Developer', from: 'user_role'
+    select 'Software Developer', from: 'user_onboarding_status_role'
     choose 'My company or team'
     click_button 'Continue'
 

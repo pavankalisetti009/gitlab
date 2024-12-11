@@ -94,14 +94,17 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
   describe '#update' do
     let(:setup_for_company) { 'false' }
     let(:joining_project) { 'false' }
+    let(:role) { 'software_developer' }
+    let(:onboarding_status_role) { nil }
     let(:extra_params) { {} }
     let(:update_params) do
       {
         user: {
-          role: 'software_developer',
+          role: role,
           setup_for_company: setup_for_company,
           registration_objective: 'code_storage',
-          onboarding_status_joining_project: joining_project
+          onboarding_status_joining_project: joining_project,
+          onboarding_status_role: onboarding_status_role
         },
         jobs_to_be_done_other: '_jobs_to_be_done_other_',
         glm_source: 'some_source',
@@ -132,6 +135,30 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             patch_update
 
             expect(controller.current_user.registration_objective).to eq('code_storage')
+          end
+        end
+      end
+
+      context 'with role updates' do
+        before do
+          patch_update
+          user.reset
+        end
+
+        context 'when role field is provided' do
+          it 'sets role and onboarding_status_role' do
+            expect(user.role).to eq('software_developer')
+            expect(user.onboarding_status_role).to eq(0)
+          end
+        end
+
+        context 'when onboarding_status_role field is provided' do
+          let(:role) { nil }
+          let(:onboarding_status_role) { '2' }
+
+          it 'sets onboarding_status_role and role' do
+            expect(user.role).to eq('devops_engineer')
+            expect(user.onboarding_status_role).to eq(2)
           end
         end
       end
