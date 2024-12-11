@@ -5,7 +5,6 @@ require 'spec_helper'
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- Needed in specs
 
 RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnerabilities, feature_category: :vulnerability_management do
-  let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:project_settings) { table(:project_settings) }
@@ -18,8 +17,11 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
   let(:integrations) { table(:integrations) }
   let(:jira_tracker_data_table) { table(:jira_tracker_data) }
 
-  let!(:organization) { organizations.create!(name: 'organization', path: 'organization') }
-  let!(:namespace) { namespaces.create!(name: "test-1", path: "test-1", owner_id: user.id) }
+  let!(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
+  let!(:namespace) do
+    namespaces.create!(name: "test-1", path: "test-1", owner_id: user.id, organization_id: organization.id)
+  end
+
   let!(:project_setting) { project_settings.create!(project_id: project.id, has_vulnerabilities: true) }
   let(:scanner) { scanners.create!(project_id: project.id, external_id: 'external_id', name: 'Test Scanner') }
 
