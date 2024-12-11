@@ -169,6 +169,7 @@ export default {
   >
     {{ s__('AI|Resolve with AI') }}
     <resolve-with-ai-info-popover
+      v-if="!isResolving"
       target="resolve-with-ai-button"
       :show-public-project-warning="showPublicProjectWarning"
     />
