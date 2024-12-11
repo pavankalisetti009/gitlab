@@ -145,16 +145,7 @@ module GitlabSubscriptions
 
     override :buy_now_link
     def buy_now_link
-      return group_settings_gitlab_duo_path(namespace) unless Feature.enabled?(:duo_pro_buy_now_cdot_links, namespace)
-
-      plan = GitlabSubscriptions::FetchSubscriptionPlansService
-        .new(plan: :premium)
-        .execute
-        .find { |plan| plan.code == "premium" } # rubocop:disable Gitlab/FinderWithFindBy -- FetchSubscriptionPlansService is not a finder
-
-      GitlabSubscriptions::PurchaseUrlBuilder
-        .new(plan_id: plan.id, namespace: namespace)
-        .build(subscription_id: License.current.subscription_id, transaction: "duo_pro_seats")
+      ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(namespace.id)
     end
 
     override :hero_video
