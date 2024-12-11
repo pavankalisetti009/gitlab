@@ -14,7 +14,7 @@ import {
 
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
-
+import InternalEvents from '~/tracking/internal_events';
 import CreateForm from 'ee/groups/settings/compliance_frameworks/components/create_form.vue';
 import EditForm from 'ee/groups/settings/compliance_frameworks/components/edit_form.vue';
 import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
@@ -47,6 +47,7 @@ export default {
     GlAlert,
     GlSprintf,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     projects: {
       type: Array,
@@ -175,6 +176,11 @@ export default {
         if (errors.length) {
           throw errors[0];
         }
+
+        this.trackEvent('apply_compliance_framework', {
+          property: operations.map((entry) => entry.projectId).join(','),
+        });
+
         if (isBulkAction) {
           this.$toast.show(this.$options.i18n.successUpdateToastMessage, {
             action: {

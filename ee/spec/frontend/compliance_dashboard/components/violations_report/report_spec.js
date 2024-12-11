@@ -14,6 +14,7 @@ import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_ba
 import { mapViolations } from 'ee/compliance_dashboard/graphql/mappers';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import UrlSync, { URL_SET_PARAMS_STRATEGY } from '~/vue_shared/components/url_sync.vue';
 import { stubComponent } from 'helpers/stub_component';
 import { sortObjectToString } from '~/lib/utils/table_utility';
@@ -31,6 +32,7 @@ Vue.use(VueApollo);
 
 describe('ComplianceViolationsReport component', () => {
   let wrapper;
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const mergeCommitsCsvExportPath = '/csv';
   const groupPath = 'group-path';
@@ -279,6 +281,21 @@ describe('ComplianceViolationsReport component', () => {
           );
           expect(findMergeRequestDrawer().props('project')).toStrictEqual(
             drawerData.mergeRequest.project,
+          );
+        });
+
+        it('tracks click_violations_report_item event', async () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+          const drawerData = mapViolations(violations)[0];
+
+          await rowAction(0);
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_violations_report_item',
+            {
+              property: drawerData.id,
+            },
+            undefined,
           );
         });
 
