@@ -15,7 +15,6 @@ import {
 } from '~/vue_shared/components/customizable_dashboard/utils';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
 import { updateApolloCache } from '../utils';
@@ -64,7 +63,7 @@ export default {
     GlSprintf,
     UrlSync,
   },
-  mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
+  mixins: [InternalEvents.mixin()],
   inject: {
     customDashboardsProject: {
       type: Object,
@@ -169,8 +168,7 @@ export default {
     editingEnabled() {
       return (
         this.currentDashboard.userDefined &&
-        (this.currentDashboard.slug !== CUSTOM_VALUE_STREAM_DASHBOARD ||
-          this.glFeatures.enableVsdVisualEditor)
+        this.currentDashboard.slug !== CUSTOM_VALUE_STREAM_DASHBOARD
       );
     },
     queryParams() {
