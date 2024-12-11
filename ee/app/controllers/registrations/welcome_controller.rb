@@ -67,7 +67,13 @@ module Registrations
     def update_params
       base_params = params
                       .require(:user)
-                      .permit(:role, :setup_for_company, :registration_objective, :onboarding_status_joining_project)
+                      .permit(
+                        :role,
+                        :setup_for_company,
+                        :registration_objective,
+                        :onboarding_status_joining_project,
+                        :onboarding_status_role
+                      )
                       .merge(params.permit(:jobs_to_be_done_other))
                       .merge(onboarding_registration_type_params)
                       .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
@@ -76,6 +82,14 @@ module Registrations
       # boolean at this level.
       base_params[:onboarding_status_joining_project] =
         ::Gitlab::Utils.to_boolean(base_params[:onboarding_status_joining_project])
+
+      # Duplicate role information for role and onboarding_status_role
+      if base_params[:role].present?
+        base_params[:onboarding_status_role] = ::UserDetail.onboarding_status_roles[base_params[:role]]
+      else
+        base_params[:onboarding_status_role] = base_params[:onboarding_status_role].to_i
+        base_params[:role] = ::UserDetail.onboarding_status_roles.key(base_params[:onboarding_status_role])
+      end
 
       base_params
     end

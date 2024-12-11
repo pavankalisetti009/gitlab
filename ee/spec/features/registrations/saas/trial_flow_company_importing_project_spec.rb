@@ -38,7 +38,7 @@ RSpec.describe 'Trial flow for user picking company and importing a project', :j
   end
 
   def fills_in_welcome_form
-    select 'Software Developer', from: 'user_role'
+    select 'Software Developer', from: 'user_onboarding_status_role'
     select 'A different reason', from: 'user_registration_objective'
     fill_in 'Why are you signing up? (optional)', with: 'My reason'
 
@@ -50,7 +50,7 @@ RSpec.describe 'Trial flow for user picking company and importing a project', :j
 
     page.within(welcome_form_selector) do
       expect(page).to have_content('Role')
-      expect(page).to have_field('user_role', valid: false)
+      expect(page).to have_field('user_onboarding_status_role', valid: false)
       expect(page).to have_field('user_setup_for_company_true', valid: false)
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).not_to have_content('What would you like to do?')

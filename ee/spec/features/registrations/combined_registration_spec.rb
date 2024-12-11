@@ -21,6 +21,7 @@ RSpec.describe 'Registration group and project creation flow', :with_current_org
 
     expect(page).to have_content('Welcome to GitLab') # rubocop:disable RSpec/ExpectInHook
 
+    select 'Software Developer', from: 'user_onboarding_status_role'
     choose 'Just me'
     choose 'Create a new project'
     click_on 'Continue'

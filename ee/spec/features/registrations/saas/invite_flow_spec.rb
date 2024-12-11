@@ -113,7 +113,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
   end
 
   def fill_in_welcome_form
-    select 'Software Developer', from: 'user_role'
+    select 'Software Developer', from: 'user_onboarding_status_role'
     select 'A different reason', from: 'user_registration_objective'
     fill_in 'Why are you signing up? (optional)', with: 'My reason'
   end
