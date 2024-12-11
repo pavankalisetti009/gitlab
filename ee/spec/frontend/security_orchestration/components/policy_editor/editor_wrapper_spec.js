@@ -281,6 +281,7 @@ describe('EditorWrapper component', () => {
     describe('error handling', () => {
       const createError = (cause) => ({ message: 'There was an error', cause });
       const approverCause = { field: 'approvers_ids' };
+      const approverCauseMultipleAction = { field: 'actions' };
       const branchesCause = { field: 'branches' };
       const unknownCause = { field: 'unknown' };
 
@@ -297,6 +298,28 @@ describe('EditorWrapper component', () => {
         await nextTick();
         expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([
           ['action', '0', 'approvers_ids', [approverCause]],
+        ]);
+        expect(findErrorAlert().exists()).toBe(false);
+      });
+
+      it('passes down an error with the cause of `action` and does not display an error when ff is enabled', async () => {
+        const error = createError([approverCauseMultipleAction]);
+        goToPolicyMR.mockRejectedValue(error);
+        factory({
+          provide: {
+            assignedPolicyProject: existingAssignedPolicyProject,
+            glFeatures: { multipleApprovalActions: true },
+          },
+        });
+        await findScanExecutionPolicyEditor().vm.$emit('save', {
+          action: SECURITY_POLICY_ACTIONS.APPEND,
+          policy: mockDastScanExecutionManifest,
+          isActiveRuleMode: true,
+        });
+        await waitForPromises();
+        await nextTick();
+        expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([
+          ['action', '0', 'actions', [approverCauseMultipleAction]],
         ]);
         expect(findErrorAlert().exists()).toBe(false);
       });

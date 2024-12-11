@@ -1,6 +1,6 @@
 <script>
 import { GlModal, GlTableLite, GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { uniqueId } from 'lodash';
+import { uniqueId, uniqWith, isEqual } from 'lodash';
 import { s__, __, sprintf } from '~/locale';
 import {
   EXCEPTION_KEY,
@@ -62,7 +62,7 @@ export default {
   },
   computed: {
     allSelected() {
-      return this.allLicenses.length === this.alreadySelectedLicenses.length;
+      return this.allLicenses.length === this.items.length;
     },
     allLicenses() {
       return [UNKNOWN_LICENSE, ...this.parsedSoftwareLicenses];
@@ -105,7 +105,7 @@ export default {
             : this.$options.i18n.allowTableHeader,
           thAttr: { 'data-testid': 'list-type-th' },
           thClass: '!gl-pl-0',
-          tdClass: '!gl-pl-0 !gl-border-none !gl-align-middle',
+          tdClass: '!gl-pl-0 !gl-border-none !gl-pb-3',
         },
         {
           key: 'exceptions',
@@ -114,7 +114,7 @@ export default {
             : this.$options.i18n.allowSecondTableHeader,
           thAttr: { 'data-testid': 'exception-th' },
           thClass: '!gl-pl-0',
-          tdClass: '!gl-pl-0 !gl-border-none !gl-align-middle',
+          tdClass: '!gl-pl-0 !gl-border-none !gl-pb-3',
         },
         {
           key: 'actions',
@@ -122,14 +122,14 @@ export default {
           columnClass: 'gl-w-4/20',
           thAttr: { 'data-testid': 'actions-th' },
           thClass: '!gl-pl-0',
-          tdClass: '!gl-pl-0 !gl-border-none gl-text-right !gl-align-middle',
+          tdClass: '!gl-pl-0 !gl-border-none gl-text-right !gl-pb-3',
         },
       ];
     },
     mappedAndFilteredItems() {
       return this.items
         .filter(({ license }) => Boolean(license))
-        .map(({ license, exceptions }) => ({ license, exceptions }));
+        .map(({ license, exceptions }) => ({ license, exceptions: uniqWith(exceptions, isEqual) }));
     },
   },
   /**
@@ -142,6 +142,15 @@ export default {
     },
   },
   methods: {
+    itemsWithoutDuplicatesInExceptions() {
+      return this.items.map((item) => ({
+        ...item,
+        exceptions: uniqWith(item.exceptions, isEqual),
+      }));
+    },
+    hasSelectedLicense(item) {
+      return Boolean(item.license);
+    },
     addLicense() {
       this.items = [...this.items, createLicenseObject()];
     },
@@ -157,7 +166,7 @@ export default {
     },
     selectExceptionType(value, item) {
       const index = this.items.findIndex(({ id }) => id === item.id);
-      this.items.splice(index, 1, { ...item, exceptionsType: value });
+      this.items.splice(index, 1, { ...item, exceptionsType: value, exceptions: [] });
     },
     selectLicense(license, item) {
       const index = this.items.findIndex(({ id }) => id === item.id);
@@ -167,7 +176,12 @@ export default {
       this.items = this.items.filter((item) => item.id !== id);
     },
     selectLicenses() {
+      this.items = this.itemsWithoutDuplicatesInExceptions();
       this.$emit('select-licenses', this.mappedAndFilteredItems);
+    },
+    setExceptions(exceptions, item) {
+      const index = this.items.findIndex(({ id }) => id === item.id);
+      this.items.splice(index, 1, { ...item, exceptions });
     },
   },
 };
@@ -198,9 +212,11 @@ export default {
       </template>
       <template #cell(exceptions)="{ item = {} }">
         <deny-allow-list-exceptions
+          :disabled="!hasSelectedLicense(item)"
           :exception-type="item.exceptionsType"
           :exceptions="item.exceptions"
           @select-exception-type="selectExceptionType($event, item)"
+          @input="setExceptions($event, item)"
         />
       </template>
       <template #cell(actions)="{ item = {} }">

@@ -1,6 +1,7 @@
 <script>
 import { GlAlert, GlFormGroup, GlFormSelect } from '@gitlab/ui';
 import getSecurityPolicyProjectSub from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_TYPES } from '../../constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
 import { fromYaml } from '../utils';
@@ -55,6 +56,7 @@ export default {
     ScanResultPolicyEditor,
     VulnerabilityManagementPolicyEditor,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     assignedPolicyProject: { default: null },
     existingPolicy: { default: null },
@@ -83,6 +85,9 @@ export default {
     };
   },
   computed: {
+    hasMultipleApproversActionsEnabled() {
+      return this.glFeatures.multipleApprovalActions;
+    },
     isEditing() {
       return Boolean(this.existingPolicy);
     },
@@ -117,7 +122,9 @@ export default {
       const newErrorSources = [];
       // Emit error for alert
       if (this.isActiveRuleMode && error.cause?.length) {
-        const ACTION_ERROR_FIELD = 'approvers_ids';
+        const ACTION_ERROR_FIELD = this.hasMultipleApproversActionsEnabled
+          ? 'actions'
+          : 'approvers_ids';
         const actionErrors = error.cause.filter((cause) => ACTION_ERROR_FIELD === cause.field);
 
         if (error.cause.length > actionErrors.length) {
@@ -127,7 +134,7 @@ export default {
         // Errors due to the approvers ids do not show up at the top level, so we do not
         // call setError
         if (actionErrors.length) {
-          newErrorSources.push(['action', '0', 'approvers_ids', actionErrors]);
+          newErrorSources.push(['action', '0', ACTION_ERROR_FIELD, actionErrors]);
         }
       } else if (error.message.toLowerCase().includes('graphql')) {
         this.setError(GRAPHQL_ERROR_MESSAGE);
