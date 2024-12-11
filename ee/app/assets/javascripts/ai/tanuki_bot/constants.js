@@ -27,3 +27,5 @@ export const ERROR_MESSAGE = s__(
 
 export const TANUKI_BOT_TRACKING_EVENT_NAME = 'ask_gitlab_chat';
 export const TANUKI_BOT_FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/408527';
+
+export const WIDTH_OFFSET = 10;

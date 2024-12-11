@@ -15,7 +15,8 @@ import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.gr
 import Tracking from '~/tracking';
 import { i18n, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES } from '../constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES, WIDTH_OFFSET } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
 export default {
@@ -42,7 +43,7 @@ export default {
     DuoChatCallout,
     TanukiBotSubscriptions,
   },
-  mixins: [Tracking.mixin()],
+  mixins: [Tracking.mixin(), glFeatureFlagsMixin()],
   provide() {
     return {
       renderGFM,
@@ -104,6 +105,10 @@ export default {
       cancelledRequestIds: [],
       completedRequestId: null,
       aiSlashCommands: [],
+      width: 400,
+      height: window.innerHeight,
+      minWidth: 400,
+      minHeight: 400,
     };
   },
   computed: {
@@ -114,6 +119,21 @@ export default {
       }
 
       return this.resourceId || this.userId;
+    },
+    shouldRenderResizable() {
+      return this.glFeatures.duoChatDynamicDimension;
+    },
+    dimensions() {
+      return {
+        width: this.width,
+        height: this.height,
+        top: this.top,
+        maxHeight: this.maxHeight,
+        maxWidth: this.maxWidth,
+        minWidth: this.minWidth,
+        minHeight: this.minHeight,
+        left: this.left,
+      };
     },
     hasCommands() {
       return this.duoChatGlobalState.commands.length > 0;
@@ -129,8 +149,34 @@ export default {
       },
     },
   },
+  mounted() {
+    this.setDimensions();
+    window.addEventListener('resize', this.onWindowResize);
+  },
+  beforeDestroy() {
+    // Remove the event listener when the component is destroyed
+    window.removeEventListener('resize', this.onWindowResize);
+  },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
+    setDimensions() {
+      this.updateDimensions();
+    },
+    updateDimensions(width, height) {
+      this.maxWidth = window.innerWidth - WIDTH_OFFSET;
+      this.maxHeight = window.innerHeight;
+
+      this.width = Math.min(width || this.width, this.maxWidth);
+      this.height = Math.min(height || this.height, this.maxHeight);
+      this.top = window.innerHeight - this.height;
+      this.left = window.innerWidth - this.width;
+    },
+    onChatResize(e) {
+      this.updateDimensions(e.width, e.height);
+    },
+    onWindowResize() {
+      this.updateDimensions();
+    },
     isClearOrResetMessage(question) {
       return [GENIE_CHAT_CLEAR_MESSAGE, GENIE_CHAT_RESET_MESSAGE].includes(question);
     },
@@ -277,9 +323,11 @@ export default {
         id="duo-chat"
         :slash-commands="aiSlashCommands"
         :title="$options.i18n.gitlabChat"
+        :dimensions="dimensions"
         :messages="messages"
         :error="error"
         :is-loading="loading"
+        :should-render-resizable="shouldRenderResizable"
         :predefined-prompts="$options.i18n.predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"
@@ -289,6 +337,7 @@ export default {
         @send-chat-prompt="onSendChatPrompt"
         @chat-hidden="onChatClose"
         @track-feedback="onTrackFeedback"
+        @chat-resize="onChatResize"
       />
     </div>
     <duo-chat-callout @callout-dismissed="onCalloutDismissed" />

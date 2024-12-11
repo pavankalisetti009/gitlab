@@ -9,7 +9,7 @@ import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
 import { GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
-import { TANUKI_BOT_TRACKING_EVENT_NAME } from 'ee/ai/tanuki_bot/constants';
+import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
@@ -82,6 +82,7 @@ describeSkipVue3(skipReason, () => {
   const createComponent = ({
     initialState = {},
     propsData = { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID },
+    glFeatures = { duoChatDynamicDimension: false },
   } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
@@ -101,6 +102,9 @@ describeSkipVue3(skipReason, () => {
       store,
       apolloProvider,
       propsData,
+      provide: {
+        glFeatures,
+      },
     });
   };
 
@@ -609,6 +613,70 @@ describeSkipVue3(skipReason, () => {
         // commands have been cleared out
         expect(duoChatGlobalState.commands).toHaveLength(0);
       });
+    });
+  });
+
+  describe('Resizable Dimensions', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isShown = true;
+      createComponent();
+    });
+
+    it('initializes dimensions correctly on mount', () => {
+      createComponent();
+      expect(wrapper.vm.width).toBe(400);
+      expect(wrapper.vm.height).toBe(window.innerHeight);
+      expect(wrapper.vm.maxWidth).toBe(window.innerWidth - WIDTH_OFFSET);
+      expect(wrapper.vm.maxHeight).toBe(window.innerHeight);
+    });
+
+    it('updates dimensions correctly when `chat-resize` event is emitted', async () => {
+      const newWidth = 600;
+      const newHeight = 500;
+      const chat = findDuoChat();
+      chat.vm.$emit('chat-resize', { width: newWidth, height: newHeight });
+      await nextTick();
+
+      expect(wrapper.vm.width).toBe(newWidth);
+      expect(wrapper.vm.height).toBe(newHeight);
+    });
+
+    it('ensures dimensions do not exceed maxWidth or maxHeight', async () => {
+      const newWidth = window.innerWidth + 100;
+      const newHeight = window.innerHeight + 100;
+      const chat = findDuoChat();
+
+      chat.vm.$emit('chat-resize', { width: newWidth, height: newHeight });
+      await nextTick();
+
+      expect(wrapper.vm.width).toBe(window.innerWidth - WIDTH_OFFSET);
+      expect(wrapper.vm.height).toBe(window.innerHeight);
+    });
+
+    it('updates dimensions when the window is resized', async () => {
+      createComponent();
+      window.innerWidth = 1200;
+      window.innerHeight = 800;
+
+      window.dispatchEvent(new Event('resize'));
+      await nextTick();
+
+      expect(wrapper.vm.maxWidth).toBe(1200 - WIDTH_OFFSET);
+      expect(wrapper.vm.maxHeight).toBe(800);
+    });
+
+    it('renders DuoChat with shouldRenderResizable=false when duoChatDynamicDimension flag is false', () => {
+      createComponent({ glFeatures: { duoChatDynamicDimension: false } });
+      const duoChat = findDuoChat();
+      expect(duoChat.exists()).toBe(true);
+      expect(duoChat.props('shouldRenderResizable')).toBe(false);
+    });
+
+    it('renders DuoChat with shouldRenderResizable=true when duoChatDynamicDimension flag is true', () => {
+      createComponent({ glFeatures: { duoChatDynamicDimension: true } });
+      const duoChat = findDuoChat();
+      expect(duoChat.exists()).toBe(true);
+      expect(duoChat.props('shouldRenderResizable')).toBe(true);
     });
   });
 });
