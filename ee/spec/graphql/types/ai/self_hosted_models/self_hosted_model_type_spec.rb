@@ -13,6 +13,7 @@ RSpec.describe GitlabSchema.types['AiSelfHostedModel'], feature_category: :"self
       id
       name
       model
+      model_display_name
       endpoint
       identifier
       has_api_token
@@ -26,7 +27,8 @@ RSpec.describe GitlabSchema.types['AiSelfHostedModel'], feature_category: :"self
     it 'returns the correct values' do
       expect(resolve_field(:id, self_hosted_model)).to eq(self_hosted_model.to_gid)
       expect(resolve_field(:name, self_hosted_model)).to eq('mistral-7b-ollama-api')
-      expect(resolve_field(:model, self_hosted_model)).to eq('DeepSeek Coder')
+      expect(resolve_field(:model, self_hosted_model)).to eq('deepseekcoder')
+      expect(resolve_field(:model_display_name, self_hosted_model)).to eq('DeepSeek Coder')
       expect(resolve_field(:endpoint, self_hosted_model)).to eq('http://localhost:11434/v1')
       expect(resolve_field(:identifier, self_hosted_model)).to eq('provider/some-model')
       expect(resolve_field(:has_api_token, self_hosted_model)).to be(true)

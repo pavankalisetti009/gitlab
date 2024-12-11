@@ -21,12 +21,14 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
               id
               name
               model
+              modelDisplayName
             }
             validModels {
               nodes {
                 id
                 name
                 model
+                modelDisplayName
               }
             }
           }
@@ -113,12 +115,14 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                   id
                   name
                   model
+                  modelDisplayName
                 }
                 validModels {
                   nodes {
                     id
                     name
                     model
+                    modelDisplayName
                   }
                 }
               }
@@ -185,7 +189,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     {
       'id' => self_hosted.to_global_id.to_s,
       'name' => self_hosted.name,
-      'model' => model_name_mapper[self_hosted.model]
+      'model' => self_hosted.model,
+      'modelDisplayName' => model_name_mapper[self_hosted.model]
     }
   end
 end

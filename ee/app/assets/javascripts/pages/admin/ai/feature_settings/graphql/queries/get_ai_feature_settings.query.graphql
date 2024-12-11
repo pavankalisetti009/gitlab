@@ -7,14 +7,13 @@ query getAiFeatureSetting {
       provider
       selfHostedModel {
         id
-        name
-        model
       }
       validModels {
         nodes {
           id
           name
           model
+          modelDisplayName
         }
       }
     }

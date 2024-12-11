@@ -85,9 +85,9 @@ describe('ModelSelectDropdown', () => {
     const modelOptions = findSelectDropdown().props('items');
 
     expect(modelOptions.map((model) => model.text)).toEqual([
-      'Model 1 (mistral)',
-      'Model 2 (codellama)',
-      'Model 3 (codegemma)',
+      'Model 1 (Mistral)',
+      'Model 2 (Code Llama)',
+      'Model 3 (CodeGemma)',
       'Disabled',
     ]);
   });
@@ -164,7 +164,7 @@ describe('ModelSelectDropdown', () => {
         await waitForPromises();
 
         expect(findSelectDropdownButtonText().text()).toBe(
-          `${selectedModel.name} (${selectedModel.model})`,
+          `${selectedModel.name} (${selectedModel.modelDisplayName})`,
         );
       });
     });

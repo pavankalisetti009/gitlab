@@ -19,7 +19,8 @@ module Types
           null: false,
           description: 'ID of the self-hosted model server.'
         field :identifier, String, null: true, description: 'Identifier for 3rd party model provider.'
-        field :model, String, null: false, description: 'Display name of the AI model deployed.'
+        field :model, String, null: false, description: 'AI model deployed.'
+        field :model_display_name, String, null: false, description: 'Display name of the AI model deployed.'
         field :name, String, null: false, description: 'Deployment name of the self-hosted model.'
         field :updated_at, Types::TimeType, null: true, description: 'Timestamp of last update.'
 
@@ -32,8 +33,7 @@ module Types
           object.api_token.present?
         end
 
-        def model
-          # Return the model's display name instead of the enum value
+        def model_display_name
           ::Admin::Ai::SelfHostedModelsHelper::MODEL_NAME_MAPPER[object.model] || object.model.humanize
         end
       end
