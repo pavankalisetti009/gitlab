@@ -20,7 +20,7 @@ module Gitlab
           DEFAULT_SOURCE = 'GitLab EE'
           TEMPERATURE = 0.1
           STOP_WORDS = ["\n\nHuman", "Observation:"].freeze
-          DEFAULT_MAX_TOKENS = 4096
+          DEFAULT_MAX_TOKENS = 8192
 
           def initialize(user, service_name: :duo_chat, tracking_context: {})
             @user = user
