@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe 'Group wikis', :js, feature_category: :wiki do
+RSpec.describe 'Group wikis', :js, feature_category: :wiki, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/508966' do
   include WikiHelpers
 
   let_it_be(:user) { create(:user) }
