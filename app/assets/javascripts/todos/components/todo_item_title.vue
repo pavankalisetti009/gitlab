@@ -79,7 +79,6 @@ export default {
      * Full title line of the todo title + full reference, joined by a middot
      */
     todoTitle() {
-      // Full title line of the todo title + full reference, joined by a middot
       return [this.targetName, this.targetFullReference].filter(Boolean).join(' · ');
     },
     /**
