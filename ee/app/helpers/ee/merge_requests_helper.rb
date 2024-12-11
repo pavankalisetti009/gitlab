@@ -66,7 +66,8 @@ module EE
     override :project_merge_requests_list_data
     def project_merge_requests_list_data(project, current_user)
       super.merge({
-        merge_trains_path: merge_trains_available?(project) && can?(current_user, :read_merge_train, project) ? project_merge_trains_path(project) : nil
+        merge_trains_path: merge_trains_available?(project) && can?(current_user, :read_merge_train, project) ? project_merge_trains_path(project) : nil,
+        has_scoped_labels_feature: project.licensed_feature_available?(:scoped_labels).to_s
       })
     end
 
