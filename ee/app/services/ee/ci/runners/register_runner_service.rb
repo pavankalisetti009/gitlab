@@ -16,8 +16,13 @@ module EE
         private
 
         def audit_event(runner)
-          ::AuditEvents::RegisterRunnerAuditEventService.new(runner, registration_token, token_scope)
-            .track_event
+          return unless runner.valid?
+
+          ::AuditEvents::RunnerAuditEventService.new(
+            runner, registration_token, token_scope,
+            name: 'ci_runner_registered', message: 'Registered %{runner_type} CI runner',
+            token_field: :runner_registration_token
+          ).track_event
         end
       end
     end

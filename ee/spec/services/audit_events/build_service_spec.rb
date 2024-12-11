@@ -154,6 +154,26 @@ RSpec.describe AuditEvents::BuildService do
           expect(event.author_name).to eq('An unauthenticated user')
         end
       end
+
+      context 'when author is a CiRunnerTokenAuthor' do
+        let(:service) do
+          described_class.new(
+            author: ::Gitlab::Audit::CiRunnerTokenAuthor.new(
+              entity_type: 'Group',
+              entity_path: 'a/b',
+              runner_authentication_token: 'token'
+            ),
+            scope: scope,
+            target: target,
+            message: message
+          )
+        end
+
+        it 'sets author as unauthenticated user' do
+          expect(event.author).to be_an_instance_of(::Gitlab::Audit::UnauthenticatedAuthor)
+          expect(event.author_name).to eq('Authentication token: token')
+        end
+      end
     end
 
     context 'when not licensed' do
