@@ -147,6 +147,22 @@ module EE
       update_work_item_for_note!
     end
 
+    def authored_by_duo_bot?
+      author == ::Users::Internal.duo_code_review_bot
+    end
+
+    def duo_bot_mentioned?
+      duo_code_review_bot = ::Users::Internal.duo_code_review_bot
+
+      # We don't want the bot to talk to itself
+      return false if authored_by_duo_bot?
+
+      # We only care about threads that Duo Code Review created
+      return false unless discussion.first_note.author == duo_code_review_bot
+
+      mentioned_users.include?(duo_code_review_bot)
+    end
+
     private
 
     def update_work_item_for_note!

@@ -1893,6 +1893,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: merge_requests_duo_code_review_chat
+  :worker_name: MergeRequests::DuoCodeReviewChatWorker
+  :feature_category: :code_review_workflow
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
 - :name: merge_requests_fetch_suggested_reviewers
   :worker_name: MergeRequests::FetchSuggestedReviewersWorker
   :feature_category: :code_review_workflow

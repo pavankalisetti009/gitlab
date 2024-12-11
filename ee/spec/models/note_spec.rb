@@ -389,4 +389,92 @@ RSpec.describe Note, feature_category: :team_planning do
       let_it_be(:model) { create(:note, noteable: parent, project: parent.project) }
     end
   end
+
+  describe '#authored_by_duo_bot?' do
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+    let_it_be(:note) do
+      create(
+        :diff_note_on_merge_request,
+        noteable: merge_request,
+        project: project,
+        author: ::Users::Internal.duo_code_review_bot
+      )
+    end
+
+    subject(:authored_by_duo_bot?) { note.authored_by_duo_bot? }
+
+    it 'returns true' do
+      expect(authored_by_duo_bot?).to be(true)
+    end
+
+    context 'when author is not GitLab Duo' do
+      before do
+        allow(note).to receive(:author).and_return(project.creator)
+      end
+
+      it 'returns false' do
+        expect(authored_by_duo_bot?).to be(false)
+      end
+    end
+  end
+
+  describe '#duo_bot_mentioned?' do
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+    let(:first_discussion_note) do
+      create(
+        :diff_note_on_merge_request,
+        noteable: merge_request,
+        project: project,
+        author: ::Users::Internal.duo_code_review_bot
+      )
+    end
+
+    let(:note) do
+      create(
+        :diff_note_on_merge_request,
+        noteable: merge_request,
+        project: project,
+        discussion_id: first_discussion_note.discussion_id,
+        note: "@#{::Users::Internal.duo_code_review_bot.username} Hello!"
+      )
+    end
+
+    subject(:duo_bot_mentioned?) { note.duo_bot_mentioned? }
+
+    it 'returns true' do
+      expect(duo_bot_mentioned?).to be(true)
+    end
+
+    context 'when note is not part of a Duo Code Review thread' do
+      let(:first_discussion_note) do
+        create(
+          :diff_note_on_merge_request,
+          noteable: merge_request,
+          project: project
+        )
+      end
+
+      it 'returns false' do
+        expect(duo_bot_mentioned?).to be(false)
+      end
+    end
+
+    context 'when note does not mention GitLab Duo' do
+      let(:note) do
+        create(
+          :diff_note_on_merge_request,
+          noteable: merge_request,
+          project: project,
+          discussion_id: first_discussion_note.discussion_id
+        )
+      end
+
+      it 'returns false' do
+        expect(duo_bot_mentioned?).to be(false)
+      end
+    end
+  end
 end
