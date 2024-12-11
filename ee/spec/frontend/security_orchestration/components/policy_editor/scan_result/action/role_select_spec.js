@@ -224,6 +224,12 @@ describe('RoleSelect component', () => {
           await wrapper.setProps({ existingApprovers: [customRole.id] });
           expect(wrapper.emitted('error')).toBeUndefined();
         });
+
+        it('does not emit an invalid role error for custom roles that exist before the custom roles load', async () => {
+          createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
+          await wrapper.setProps({ existingApprovers: [customRole.id] });
+          expect(wrapper.emitted('error')).toBeUndefined();
+        });
       });
 
       describe('with invalid approvers', () => {

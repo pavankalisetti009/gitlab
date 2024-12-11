@@ -63,7 +63,7 @@ export default {
       return this.customRoles.length && this.glFeatures.securityPolicyCustomRoles;
     },
     hasValidRoles() {
-      return this.existingApprovers.every(this.isRoleValid);
+      return this.$apollo.loading || this.existingApprovers.every(this.isRoleValid);
     },
     items() {
       const roles = [{ text: this.$options.i18n.standardRoleText, options: this.roles }];
