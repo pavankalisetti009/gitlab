@@ -759,6 +759,14 @@ class Namespace < ApplicationRecord
     { organization_id: organization_id }
   end
 
+  def pipeline_variables_default_role
+    return namespace_settings.pipeline_variables_default_role if namespace_settings.present?
+
+    # We could have old namespaces that don't have an associated `namespace_settings` record.
+    # To avoid returning `nil` we return the database-level default.
+    NamespaceSetting.column_defaults['pipeline_variables_default_role']
+  end
+
   private
 
   def require_organization?

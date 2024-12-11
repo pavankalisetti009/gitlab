@@ -6,8 +6,12 @@ RSpec.describe API::Ci::Triggers, feature_category: :pipeline_composition do
   include AfterNextHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, :auto_devops, creator: user) }
+  let_it_be_with_reload(:project) { create(:project, :repository, :auto_devops, creator: user) }
   let_it_be(:other_project) { create(:project) }
+
+  before do
+    project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+  end
 
   describe 'POST /projects/:project_id/trigger/pipeline' do
     context 'when triggering a pipeline from a job token' do

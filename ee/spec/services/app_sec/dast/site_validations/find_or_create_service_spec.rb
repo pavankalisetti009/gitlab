@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe AppSec::Dast::SiteValidations::FindOrCreateService do
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:project) { create(:project, :repository) }
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:dast_site) { create(:dast_site, project: project) }
   let_it_be(:dast_site_token) { create(:dast_site_token, project: project, url: dast_site.url) }
@@ -11,6 +11,10 @@ RSpec.describe AppSec::Dast::SiteValidations::FindOrCreateService do
   let(:params) { { dast_site_token: dast_site_token, url_path: SecureRandom.hex, validation_strategy: :text_file } }
 
   subject { described_class.new(container: project, current_user: developer, params: params).execute }
+
+  before do
+    project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+  end
 
   describe 'execute', :clean_gitlab_redis_shared_state do
     context 'when the licensed feature is available' do
