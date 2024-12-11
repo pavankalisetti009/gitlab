@@ -8,12 +8,13 @@ module Security
     LEASE_TRY_AFTER = 3.seconds
     LEASE_NAMESPACE = "store_grouped_scans"
 
-    def self.execute(artifacts)
-      new(artifacts).execute
+    def self.execute(artifacts, pipeline)
+      new(artifacts, pipeline).execute
     end
 
-    def initialize(artifacts)
+    def initialize(artifacts, pipeline)
       @artifacts = artifacts
+      @pipeline = pipeline
       @known_keys = Set.new
     end
 
@@ -25,18 +26,19 @@ module Security
       end
     rescue Gitlab::Ci::Parsers::ParserError => error
       Gitlab::ErrorTracking.track_exception(error)
+    ensure
+      ::Ci::CompareSecurityReportsService.set_security_report_type_to_ready(
+        pipeline_id: pipeline.id,
+        report_type: report_type
+      )
     end
 
     private
 
-    attr_reader :artifacts, :known_keys
+    attr_reader :artifacts, :pipeline, :known_keys
 
     def lease_key
-      "#{LEASE_NAMESPACE}:#{pipeline_id}:#{report_type}"
-    end
-
-    def pipeline_id
-      artifacts.first&.job&.pipeline_id
+      "#{LEASE_NAMESPACE}:#{pipeline.id}:#{report_type}"
     end
 
     def report_type

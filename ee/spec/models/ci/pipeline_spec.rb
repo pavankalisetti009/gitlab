@@ -173,6 +173,45 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
+  describe 'Security MR Widget' do
+    shared_examples_for 'manages the MR security widget polling status' do |transition|
+      subject(:transition_pipeline) { pipeline.update!(status_event: transition) }
+
+      let(:redis_spy) { instance_spy(Redis) }
+      let(:pipeline_id) { pipeline.id }
+      let(:cache_key) { Ci::CompareSecurityReportsService.transition_cache_key(pipeline_id: pipeline_id) }
+
+      it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
+        expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
+
+        transition_pipeline
+
+        expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer))
+      end
+
+      context 'when the security scans can not be stored for the pipeline' do
+        before do
+          allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+        end
+
+        it 'deletes the polling cache key' do
+          expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:twice)
+
+          transition_pipeline
+
+          expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer)).once
+          expect(redis_spy).to have_received(:del).with(cache_key).once
+        end
+      end
+    end
+
+    it_behaves_like 'manages the MR security widget polling status', :block
+    it_behaves_like 'manages the MR security widget polling status', :cancel
+    it_behaves_like 'manages the MR security widget polling status', :drop
+    it_behaves_like 'manages the MR security widget polling status', :skip
+    it_behaves_like 'manages the MR security widget polling status', :succeed
+  end
+
   describe '::Security::StoreScansWorker' do
     shared_examples_for 'storing the security scans' do |transition|
       subject(:transition_pipeline) { pipeline.update!(status_event: transition) }
