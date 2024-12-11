@@ -1041,149 +1041,33 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         group.add_developer(user)
       end
 
-      it 'returns only events authored by current user' do
-        group_audit_event = create(:group_audit_event, entity_id: group.id, author_id: user.id)
-        create(:group_audit_event, entity_id: group.id, author_id: another_user.id)
-
-        get api(path, user)
-
-        expect_response_contain_exactly(group_audit_event.id)
-      end
-    end
-
-    context 'when authenticated, as a group owner' do
-      context 'audit events feature is not available' do
+      context 'when read_audit_events_from_new_tables is disabled' do
         before do
-          stub_licensed_features(audit_events: false)
+          stub_feature_flags(read_audit_events_from_new_tables: false)
         end
 
-        it_behaves_like '403 response' do
-          let(:request) { get api(path, user) }
+        it 'returns only events authored by current user' do
+          group_audit_event = create(:group_audit_event, entity_id: group.id, author_id: user.id)
+          create(:group_audit_event, entity_id: group.id, author_id: another_user.id)
+
+          get api(path, user)
+
+          expect_response_contain_exactly(group_audit_event.id)
         end
       end
 
-      context 'audit events feature is available' do
-        let_it_be(:group_audit_event_1) { create(:group_audit_event, created_at: Date.new(2000, 1, 10), entity_id: group.id) }
-        let_it_be(:group_audit_event_2) { create(:group_audit_event, created_at: Date.new(2000, 1, 15), entity_id: group.id) }
-        let_it_be(:group_audit_event_3) { create(:group_audit_event, created_at: Date.new(2000, 1, 20), entity_id: group.id) }
-
+      context 'when read_audit_events_from_new_tables is enabled' do
         before do
-          stub_licensed_features(audit_events: true)
+          stub_feature_flags(read_audit_events_from_new_tables: true)
         end
 
-        it 'returns 200 response' do
-          get api(path, user)
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-
-        it 'includes the correct pagination headers' do
-          audit_events_counts = 3
+        it 'returns only events authored by current user' do
+          group_audit_event = create(:audit_events_group_audit_event, group_id: group.id, author_id: user.id)
+          create(:audit_events_group_audit_event, group_id: group.id, author_id: another_user.id)
 
           get api(path, user)
 
-          expect(response).to include_pagination_headers
-          expect(response.headers['X-Total']).to eq(audit_events_counts.to_s)
-          expect(response.headers['X-Page']).to eq('1')
-        end
-
-        it 'does not include audit events of a different group' do
-          group = create(:group)
-          audit_event = create(:group_audit_event, created_at: Date.new(2000, 1, 20), entity_id: group.id)
-
-          get api(path, user)
-
-          audit_event_ids = json_response.map { |audit_event| audit_event['id'] }
-
-          expect(audit_event_ids).not_to include(audit_event.id)
-        end
-
-        context 'parameters' do
-          it_behaves_like 'an endpoint with keyset pagination' do
-            let(:first_record) { group_audit_event_3 }
-            let(:second_record) { group_audit_event_2 }
-            let(:api_call) { api(path, admin, admin_mode: true) }
-          end
-
-          context 'created_before parameter' do
-            it "returns audit events created before the given parameter" do
-              created_before = '2000-01-20T00:00:00.060Z'
-
-              get api(path, user), params: { created_before: created_before }
-
-              expect(json_response.size).to eq 3
-              expect(json_response.first["id"]).to eq(group_audit_event_3.id)
-              expect(json_response.last["id"]).to eq(group_audit_event_1.id)
-            end
-          end
-
-          context 'created_after parameter' do
-            it "returns audit events created after the given parameter" do
-              created_after = '2000-01-12T00:00:00.060Z'
-
-              get api(path, user), params: { created_after: created_after }
-
-              expect(json_response.size).to eq 2
-              expect(json_response.first["id"]).to eq(group_audit_event_3.id)
-              expect(json_response.last["id"]).to eq(group_audit_event_2.id)
-            end
-          end
-        end
-
-        context 'response schema' do
-          it 'matches the response schema' do
-            get api(path, user)
-
-            expect(response).to match_response_schema('public_api/v4/audit_events', dir: 'ee')
-          end
-        end
-
-        context 'Snowplow event tracking' do
-          it_behaves_like 'Snowplow event tracking with RedisHLL context' do
-            subject(:api_request) { get api(path, user) }
-
-            let(:category) { 'EE::API::Groups' }
-            let(:action) { 'group_audit_event_request' }
-            let(:project) { nil }
-            let(:namespace) { group }
-            let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
-          end
-        end
-      end
-    end
-  end
-
-  describe 'GET group/:id/audit_events/:audit_event_id' do
-    let(:path) { "/groups/#{group.id}/audit_events/#{group_audit_event.id}" }
-
-    let_it_be(:group_audit_event) { create(:group_audit_event, created_at: Date.new(2000, 1, 10), entity_id: group.id) }
-
-    it_behaves_like 'inaccessable by reporter role and lower'
-
-    context 'when authenticated, as a member' do
-      let_it_be(:developer) { create(:user) }
-
-      before do
-        stub_licensed_features(audit_events: true)
-        group.add_developer(developer)
-      end
-
-      it 'returns 200 response' do
-        audit_event = create(:group_audit_event, entity_id: group.id, author_id: developer.id)
-        path = "/groups/#{group.id}/audit_events/#{audit_event.id}"
-
-        get api(path, developer)
-
-        expect(response).to have_gitlab_http_status(:ok)
-      end
-
-      context 'existing audit event of a different user' do
-        let_it_be(:audit_event) { create(:group_audit_event, entity_id: group.id, author_id: another_user.id) }
-
-        let(:path) { "/groups/#{group.id}/audit_events/#{audit_event.id}" }
-
-        it_behaves_like '404 response' do
-          let(:request) { get api(path, developer) }
+          expect_response_contain_exactly(group_audit_event.id)
         end
       end
     end
@@ -1204,18 +1088,79 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
           stub_licensed_features(audit_events: true)
         end
 
-        context 'existent audit event' do
+        context 'when read_audit_events_from_new_tables is disabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: false)
+          end
+
+          let_it_be(:group_audit_event_1) { create(:group_audit_event, created_at: Date.new(2000, 1, 10), entity_id: group.id) }
+          let_it_be(:group_audit_event_2) { create(:group_audit_event, created_at: Date.new(2000, 1, 15), entity_id: group.id) }
+          let_it_be(:group_audit_event_3) { create(:group_audit_event, created_at: Date.new(2000, 1, 20), entity_id: group.id) }
+
           it 'returns 200 response' do
             get api(path, user)
 
             expect(response).to have_gitlab_http_status(:ok)
           end
 
+          it 'includes the correct pagination headers' do
+            audit_events_counts = 3
+
+            get api(path, user)
+
+            expect(response).to include_pagination_headers
+            expect(response.headers['X-Total']).to eq(audit_events_counts.to_s)
+            expect(response.headers['X-Page']).to eq('1')
+          end
+
+          it 'does not include audit events of a different group' do
+            group = create(:group)
+            audit_event = create(:group_audit_event, created_at: Date.new(2000, 1, 20), entity_id: group.id)
+
+            get api(path, user)
+
+            audit_event_ids = json_response.map { |audit_event| audit_event['id'] }
+
+            expect(audit_event_ids).not_to include(audit_event.id)
+          end
+
+          context 'parameters' do
+            it_behaves_like 'an endpoint with keyset pagination' do
+              let(:first_record) { group_audit_event_3 }
+              let(:second_record) { group_audit_event_2 }
+              let(:api_call) { api(path, admin, admin_mode: true) }
+            end
+
+            context 'created_before parameter' do
+              it "returns audit events created before the given parameter" do
+                created_before = '2000-01-20T00:00:00.060Z'
+
+                get api(path, user), params: { created_before: created_before }
+
+                expect(json_response.size).to eq 3
+                expect(json_response.first["id"]).to eq(group_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(group_audit_event_1.id)
+              end
+            end
+
+            context 'created_after parameter' do
+              it "returns audit events created after the given parameter" do
+                created_after = '2000-01-12T00:00:00.060Z'
+
+                get api(path, user), params: { created_after: created_after }
+
+                expect(json_response.size).to eq 2
+                expect(json_response.first["id"]).to eq(group_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(group_audit_event_2.id)
+              end
+            end
+          end
+
           context 'response schema' do
             it 'matches the response schema' do
               get api(path, user)
 
-              expect(response).to match_response_schema('public_api/v4/audit_event', dir: 'ee')
+              expect(response).to match_response_schema('public_api/v4/audit_events', dir: 'ee')
             end
           end
 
@@ -1230,32 +1175,322 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
               let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
             end
           end
+        end
 
-          context 'invalid audit_event_id' do
-            let(:path) { "/groups/#{group.id}/audit_events/an-invalid-id" }
+        context 'when read_audit_events_from_new_tables is enabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: true)
+          end
 
-            it_behaves_like '400 response' do
-              let(:request) { get api(path, user) }
+          let_it_be(:group_audit_event_1) { create(:audit_events_group_audit_event, created_at: Date.new(2000, 1, 10), group_id: group.id) }
+          let_it_be(:group_audit_event_2) { create(:audit_events_group_audit_event, created_at: Date.new(2000, 1, 15), group_id: group.id) }
+          let_it_be(:group_audit_event_3) { create(:audit_events_group_audit_event, created_at: Date.new(2000, 1, 20), group_id: group.id) }
+
+          it 'returns 200 response' do
+            get api(path, user)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+
+          it 'includes the correct pagination headers' do
+            audit_events_counts = 3
+
+            get api(path, user)
+
+            expect(response).to include_pagination_headers
+            expect(response.headers['X-Total']).to eq(audit_events_counts.to_s)
+            expect(response.headers['X-Page']).to eq('1')
+          end
+
+          it 'does not include audit events of a different group' do
+            group = create(:group)
+            audit_event = create(:audit_events_group_audit_event, created_at: Date.new(2000, 1, 20), group_id: group.id)
+
+            get api(path, user)
+
+            audit_event_ids = json_response.map { |audit_event| audit_event['id'] }
+
+            expect(audit_event_ids).not_to include(audit_event.id)
+          end
+
+          context 'parameters' do
+            it_behaves_like 'an endpoint with keyset pagination' do
+              let(:first_record) { group_audit_event_3 }
+              let(:second_record) { group_audit_event_2 }
+              let(:api_call) { api(path, admin, admin_mode: true) }
+            end
+
+            context 'created_before parameter' do
+              it "returns audit events created before the given parameter" do
+                created_before = '2000-01-20T00:00:00.060Z'
+
+                get api(path, user), params: { created_before: created_before }
+
+                expect(json_response.size).to eq 3
+                expect(json_response.first["id"]).to eq(group_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(group_audit_event_1.id)
+              end
+            end
+
+            context 'created_after parameter' do
+              it "returns audit events created after the given parameter" do
+                created_after = '2000-01-12T00:00:00.060Z'
+
+                get api(path, user), params: { created_after: created_after }
+
+                expect(json_response.size).to eq 2
+                expect(json_response.first["id"]).to eq(group_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(group_audit_event_2.id)
+              end
             end
           end
 
-          context 'non existent audit event' do
-            context 'non existent audit event of a group' do
-              let(:path) { "/groups/#{group.id}/audit_events/666777" }
+          context 'response schema' do
+            it 'matches the response schema' do
+              get api(path, user)
 
-              it_behaves_like '404 response' do
+              expect(response).to match_response_schema('public_api/v4/audit_events', dir: 'ee')
+            end
+          end
+
+          context 'Snowplow event tracking' do
+            it_behaves_like 'Snowplow event tracking with RedisHLL context' do
+              subject(:api_request) { get api(path, user) }
+
+              let(:category) { 'EE::API::Groups' }
+              let(:action) { 'group_audit_event_request' }
+              let(:project) { nil }
+              let(:namespace) { group }
+              let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe 'GET group/:id/audit_events/:audit_event_id' do
+    let(:path) { "/groups/#{group.id}/audit_events/#{group_audit_event.id}" }
+
+    context 'when read_audit_events_from_new_tables is disabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: false)
+      end
+
+      let_it_be(:group_audit_event) { create(:group_audit_event, created_at: Date.new(2000, 1, 10), entity_id: group.id) }
+
+      it_behaves_like 'inaccessable by reporter role and lower'
+
+      context 'when authenticated, as a member' do
+        let_it_be(:developer) { create(:user) }
+
+        before do
+          stub_licensed_features(audit_events: true)
+          group.add_developer(developer)
+        end
+
+        it 'returns 200 response' do
+          audit_event = create(:group_audit_event, entity_id: group.id, author_id: developer.id)
+          path = "/groups/#{group.id}/audit_events/#{audit_event.id}"
+
+          get api(path, developer)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'existing audit event of a different user' do
+          let_it_be(:audit_event) { create(:group_audit_event, entity_id: group.id, author_id: another_user.id) }
+
+          let(:path) { "/groups/#{group.id}/audit_events/#{audit_event.id}" }
+
+          it_behaves_like '404 response' do
+            let(:request) { get api(path, developer) }
+          end
+        end
+      end
+
+      context 'when authenticated, as a group owner' do
+        context 'audit events feature is not available' do
+          before do
+            stub_licensed_features(audit_events: false)
+          end
+
+          it_behaves_like '403 response' do
+            let(:request) { get api(path, user) }
+          end
+        end
+
+        context 'audit events feature is available' do
+          before do
+            stub_licensed_features(audit_events: true)
+          end
+
+          context 'existent audit event' do
+            it 'returns 200 response' do
+              get api(path, user)
+
+              expect(response).to have_gitlab_http_status(:ok)
+            end
+
+            context 'response schema' do
+              it 'matches the response schema' do
+                get api(path, user)
+
+                expect(response).to match_response_schema('public_api/v4/audit_event', dir: 'ee')
+              end
+            end
+
+            context 'Snowplow event tracking' do
+              it_behaves_like 'Snowplow event tracking with RedisHLL context' do
+                subject(:api_request) { get api(path, user) }
+
+                let(:category) { 'EE::API::Groups' }
+                let(:action) { 'group_audit_event_request' }
+                let(:project) { nil }
+                let(:namespace) { group }
+                let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
+              end
+            end
+
+            context 'invalid audit_event_id' do
+              let(:path) { "/groups/#{group.id}/audit_events/an-invalid-id" }
+
+              it_behaves_like '400 response' do
                 let(:request) { get api(path, user) }
               end
             end
 
-            context 'existing audit event of a different group' do
-              let(:new_group) { create(:group) }
-              let(:audit_event) { create(:group_audit_event, created_at: Date.new(2000, 1, 10), entity_id: new_group.id) }
+            context 'non existent audit event' do
+              context 'non existent audit event of a group' do
+                let(:path) { "/groups/#{group.id}/audit_events/666777" }
 
-              let(:path) { "/groups/#{group.id}/audit_events/#{audit_event.id}" }
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
+              end
 
-              it_behaves_like '404 response' do
+              context 'existing audit event of a different group' do
+                let(:new_group) { create(:group) }
+                let(:audit_event) { create(:group_audit_event, created_at: Date.new(2000, 1, 10), entity_id: new_group.id) }
+
+                let(:path) { "/groups/#{group.id}/audit_events/#{audit_event.id}" }
+
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    context 'when read_audit_events_from_new_tables is enabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: true)
+      end
+
+      let_it_be(:group_audit_event) { create(:audit_events_group_audit_event, created_at: Date.new(2000, 1, 10), group_id: group.id) }
+
+      it_behaves_like 'inaccessable by reporter role and lower'
+
+      context 'when authenticated, as a member' do
+        let_it_be(:developer) { create(:user) }
+
+        before do
+          stub_licensed_features(audit_events: true)
+          group.add_developer(developer)
+        end
+
+        it 'returns 200 response' do
+          audit_event = create(:audit_events_group_audit_event, group_id: group.id, author_id: developer.id)
+          path = "/groups/#{group.id}/audit_events/#{audit_event.id}"
+
+          get api(path, developer)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'existing audit event of a different user' do
+          let_it_be(:audit_event) { create(:audit_events_group_audit_event, group_id: group.id, author_id: another_user.id) }
+
+          let(:path) { "/groups/#{group.id}/audit_events/#{audit_event.id}" }
+
+          it_behaves_like '404 response' do
+            let(:request) { get api(path, developer) }
+          end
+        end
+      end
+
+      context 'when authenticated, as a group owner' do
+        context 'audit events feature is not available' do
+          before do
+            stub_licensed_features(audit_events: false)
+          end
+
+          it_behaves_like '403 response' do
+            let(:request) { get api(path, user) }
+          end
+        end
+
+        context 'audit events feature is available' do
+          before do
+            stub_licensed_features(audit_events: true)
+          end
+
+          context 'existent audit event' do
+            it 'returns 200 response' do
+              get api(path, user)
+
+              expect(response).to have_gitlab_http_status(:ok)
+            end
+
+            context 'response schema' do
+              it 'matches the response schema' do
+                get api(path, user)
+
+                expect(response).to match_response_schema('public_api/v4/audit_event', dir: 'ee')
+              end
+            end
+
+            context 'Snowplow event tracking' do
+              it_behaves_like 'Snowplow event tracking with RedisHLL context' do
+                subject(:api_request) { get api(path, user) }
+
+                let(:category) { 'EE::API::Groups' }
+                let(:action) { 'group_audit_event_request' }
+                let(:project) { nil }
+                let(:namespace) { group }
+                let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
+              end
+            end
+
+            context 'invalid audit_event_id' do
+              let(:path) { "/groups/#{group.id}/audit_events/an-invalid-id" }
+
+              it_behaves_like '400 response' do
                 let(:request) { get api(path, user) }
+              end
+            end
+
+            context 'non existent audit event' do
+              context 'non existent audit event of a group' do
+                let(:path) { "/groups/#{group.id}/audit_events/666777" }
+
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
+              end
+
+              context 'existing audit event of a different group' do
+                let(:new_group) { create(:group) }
+                let(:audit_event) { create(:audit_events_group_audit_event, created_at: Date.new(2000, 1, 10), group_id: new_group.id) }
+
+                let(:path) { "/groups/#{group.id}/audit_events/#{audit_event.id}" }
+
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
               end
             end
           end
