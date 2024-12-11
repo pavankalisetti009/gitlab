@@ -19,7 +19,6 @@ import { stubComponent } from 'helpers/stub_component';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import PermissionsSelector from 'ee/roles_and_permissions/components/permissions_selector.vue';
-import { BASE_ROLES } from '~/access_level/constants';
 import { getMemberRoleQueryResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -94,7 +93,20 @@ describe('CreateMemberRole', () => {
     beforeEach(() => createComponent());
 
     it('shows the role dropdown with the expected options', () => {
-      expect(findRoleDropdown().props('items')).toBe(BASE_ROLES);
+      const expectedOptions = [
+        'MINIMAL_ACCESS',
+        'GUEST',
+        'PLANNER',
+        'REPORTER',
+        'DEVELOPER',
+        'MAINTAINER',
+      ];
+
+      expect(
+        findRoleDropdown()
+          .props('items')
+          .map((role) => role.value),
+      ).toStrictEqual(expectedOptions);
     });
 
     it('shows submit button', () => {
