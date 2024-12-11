@@ -90,5 +90,15 @@ RSpec.shared_examples 'service account creation with customized params' do
       expect(result.status).to eq(:error)
       expect(result.message).to eq('Username has already been taken')
     end
+
+    it 'throws error when the username is assigned to another project pages unique domain' do
+      # Simulate the existing domain being in use
+      create(:project_setting, pages_unique_domain: 'test')
+
+      result = service.execute
+
+      expect(result.status).to eq(:error)
+      expect(result.message).to eq('Username has already been taken')
+    end
   end
 end
