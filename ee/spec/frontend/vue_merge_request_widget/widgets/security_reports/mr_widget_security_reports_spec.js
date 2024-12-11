@@ -3,11 +3,14 @@ import { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
+import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
+import { TEST_HOST } from 'helpers/test_constants';
 import MRSecurityWidget from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_reports.vue';
 import VulnerabilityFindingModal from 'ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import { historyPushState } from '~/lib/utils/common_utils';
 import api from '~/api';
 import Widget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
@@ -19,6 +22,10 @@ import {
 } from '~/lib/utils/http_status';
 
 jest.mock('~/vue_shared/components/user_callout_dismisser.vue', () => ({ render: () => {} }));
+jest.mock('~/lib/utils/common_utils', () => ({
+  ...jest.requireActual('~/lib/utils/common_utils'),
+  historyPushState: jest.fn(),
+}));
 
 describe('MR Widget Security Reports', () => {
   let wrapper;
@@ -770,6 +777,48 @@ describe('MR Widget Security Reports', () => {
         sourceProjectFullPath,
         branchRef: sourceBranch,
         showAiResolution: true,
+      });
+    });
+
+    describe('resolve with AI', () => {
+      beforeEach(async () => {
+        await createComponentExpandWidgetAndOpenModal();
+      });
+      const aiCommentUrl = `${TEST_HOST}/project/merge_requests/2#note_1`;
+      const addCommentToDOM = () => {
+        const comment = document.createElement('div');
+        comment.id = 'note_1';
+        document.body.appendChild(comment);
+      };
+
+      useMockLocationHelper();
+
+      it('closes the modal when the "resolveWithAiSuccess" event is emitted', async () => {
+        findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
+        await nextTick();
+
+        expect(findStandaloneModal().exists()).toBe(false);
+      });
+
+      it('does a hard-reload when the comment note that is added by the AI-action is not yet on the page', async () => {
+        expect(window.location.reload).not.toHaveBeenCalled();
+
+        findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
+        await nextTick();
+
+        expect(historyPushState).toHaveBeenCalledWith(aiCommentUrl);
+        expect(window.location.reload).toHaveBeenCalled();
+      });
+
+      it('scrolls to the comment with no hard-reload when the comment note that is added by the AI-action is on the page', async () => {
+        addCommentToDOM();
+
+        expect(window.location.assign).not.toHaveBeenCalled();
+
+        findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
+        await nextTick();
+
+        expect(window.location.assign).toHaveBeenCalledWith(aiCommentUrl);
       });
     });
 
