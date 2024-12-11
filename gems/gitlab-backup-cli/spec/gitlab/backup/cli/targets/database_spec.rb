@@ -116,7 +116,7 @@ RSpec.describe Gitlab::Backup::Cli::Targets::Database do
   end
 
   def mock_databases_collection(dbname)
-    allow_next_instance_of(Gitlab::Backup::Cli::Services::Databases) do |databases|
+    allow_next_instance_of(Gitlab::Backup::Cli::Services::Postgres) do |databases|
       entry = databases.send(:entries).find { |db| db.configuration.name == dbname }
 
       allow(databases).to receive(:each).and_yield(entry)

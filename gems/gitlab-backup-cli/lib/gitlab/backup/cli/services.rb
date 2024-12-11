@@ -5,7 +5,7 @@ module Gitlab
     module Cli
       module Services
         autoload :Database, 'gitlab/backup/cli/services/database'
-        autoload :Databases, 'gitlab/backup/cli/services/databases'
+        autoload :Postgres, 'gitlab/backup/cli/services/postgres'
       end
     end
   end

@@ -29,10 +29,10 @@ module Gitlab
           def dump(destination_dir)
             FileUtils.mkdir_p(destination_dir)
 
-            databases = Gitlab::Backup::Cli::Services::Databases.new(context)
+            postgres = Gitlab::Backup::Cli::Services::Postgres.new(context)
 
             # Phase 1: trigger snapshot generation (quick)
-            databases.each do |database|
+            postgres.each do |database|
               dump_file_name = file_name(destination_dir, database)
 
               database.export_snapshot!
@@ -41,7 +41,7 @@ module Gitlab
             end
 
             # Phase 2: Run PgDump based on snapshot_id (slow)
-            databases.each do |database| # rubocop:disable Style/CombinableLoops -- export needs to happen first
+            postgres.each do |database| # rubocop:disable Style/CombinableLoops -- export needs to happen first
               pg_database_name = database.configuration.database
               dump_file_name = file_name(destination_dir, database)
 
@@ -64,7 +64,7 @@ module Gitlab
           end
 
           def restore(source)
-            databases = Gitlab::Backup::Cli::Services::Databases.new(context)
+            databases = Gitlab::Backup::Cli::Services::Postgres.new(context)
 
             databases.each do |db|
               database_name = db.configuration.name
