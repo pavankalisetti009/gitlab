@@ -7,9 +7,9 @@ RSpec.describe Gitlab::Com, feature_category: :shared do
   it { expect(described_class.l2_cache_backend).to eq(Rails.cache) }
 
   describe '.gitlab_com_group_member?' do
-    subject { described_class.gitlab_com_group_member?(user_or_id) }
+    subject(:gitlab_com_group_member?) { described_class.gitlab_com_group_member?(user_or_id) }
 
-    let(:user) { create(:user) }
+    let_it_be(:user) { create(:user) }
     let(:user_or_id) { user }
 
     before do
@@ -68,6 +68,16 @@ RSpec.describe Gitlab::Com, feature_category: :shared do
         end
 
         it_behaves_like 'allowed user IDs are cached'
+
+        it 'caches the IDs in the request store', :request_store do
+          gitlab_com_group_member?
+
+          expect do
+            expect(described_class.l1_cache_backend).not_to receive(:fetch)
+            expect(described_class.l2_cache_backend).not_to receive(:fetch)
+            expect(gitlab_com_group_member?).to be_truthy
+          end.not_to exceed_query_limit(0)
+        end
       end
     end
 
