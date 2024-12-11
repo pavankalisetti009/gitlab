@@ -728,6 +728,16 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe '#allowed_integrations_raw=' do
+    before do
+      setting.allowed_integrations_raw = '["asana","jira"]'
+    end
+
+    it 'sets allowed_integrations' do
+      expect(setting.allowed_integrations).to contain_exactly('asana', 'jira')
+    end
+  end
+
   describe '#seat_control_user_cap?' do
     context 'when seat_control is set to user cap' do
       before do
