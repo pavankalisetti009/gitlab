@@ -56,9 +56,10 @@ module Gitlab
                 Gitlab::Backup::Cli::Output.error "------ END ERRORS -------"
               end
 
-              database.release_snapshot! if database.snapshot_id
-
               raise Errors::DatabaseBackupError.new(database.connection_params, dump_file_name) unless status.success?
+            ensure
+              database.release_snapshot!
+              database.restore_timeouts!
             end
           end
 
@@ -103,7 +104,9 @@ module Gitlab
                 Gitlab::Backup::Cli::Output.error "------ END ERRORS -------"
               end
 
-              raise Gitlab::Backup::Cli::Error, 'Restore failed' unless status.success?
+              unless status.success?
+                raise Gitlab::Backup::Cli::Errors::DatabaseRestoreError.new(database.connection_params, db_file_name)
+              end
             end
           end
 

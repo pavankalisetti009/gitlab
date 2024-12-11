@@ -73,7 +73,6 @@ module Gitlab
 
             connection.rollback_transaction
             @snapshot_id = nil
-            restore_timeouts!
           end
 
           def disable_timeouts!
