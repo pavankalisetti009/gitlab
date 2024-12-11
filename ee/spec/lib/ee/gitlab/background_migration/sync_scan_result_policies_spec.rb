@@ -10,16 +10,16 @@ RSpec.describe Gitlab::BackgroundMigration::SyncScanResultPolicies, feature_cate
     let(:pause_ms) { 0 }
     let(:connection) { ApplicationRecord.connection }
 
-    let(:organizations) { table(:organizations) }
     let(:projects) { table(:projects) }
     let(:namespaces) { table(:namespaces) }
     let(:security_orchestration_policy_configurations) { table(:security_orchestration_policy_configurations) }
 
-    let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+    let(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
 
     let(:group_namespace) do
-      namespaces.create!(name: 'group_1', path: 'group_1', type: 'Group').tap do |group|
-        group.update!(traversal_ids: [group.id], organization_id: organization.id)
+      namespaces.create!(name: 'group_1', path: 'group_1', type: 'Group',
+        organization_id: organization.id).tap do |group|
+        group.update!(traversal_ids: [group.id])
       end
     end
 
