@@ -46001,16 +46001,7 @@ msgstr ""
 msgid "Replace all labels"
 msgstr ""
 
-msgid "Replace audio"
-msgstr ""
-
 msgid "Replace file"
-msgstr ""
-
-msgid "Replace image"
-msgstr ""
-
-msgid "Replace video"
 msgstr ""
 
 msgid "Replaced all labels with %{label_references} %{label_text}."
