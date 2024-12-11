@@ -94,6 +94,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
   end
 
   before do
+    project.update!(ci_pipeline_variables_minimum_override_role: :developer)
     stub_licensed_features(security_orchestration_policies: true)
   end
 

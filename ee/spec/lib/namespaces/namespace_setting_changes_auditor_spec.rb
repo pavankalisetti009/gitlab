@@ -122,7 +122,8 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         lock_math_rendering_limits_enabled enable_auto_assign_gitlab_duo_pro_seats early_access_program_participant
         lock_duo_features_enabled allow_merge_without_pipeline only_allow_merge_if_pipeline_succeeds
         lock_spp_repository_pipeline_access spp_repository_pipeline_access archived
-        resource_access_token_notify_inherited lock_resource_access_token_notify_inherited]
+        resource_access_token_notify_inherited lock_resource_access_token_notify_inherited
+        pipeline_variables_default_role]
 
       columns_to_audit = Namespaces::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 

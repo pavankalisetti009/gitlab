@@ -3,13 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe AppSec::Dast::SiteValidations::RunnerService do
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:project) { create(:project, :repository) }
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:dast_site_token) { create(:dast_site_token, project: project) }
   let_it_be(:dast_site_validation) { create(:dast_site_validation, dast_site_token: dast_site_token) }
 
   subject do
     described_class.new(project: project, current_user: developer, params: { dast_site_validation: dast_site_validation }).execute
+  end
+
+  before do
+    project.update!(ci_pipeline_variables_minimum_override_role: :developer)
   end
 
   describe 'execute' do

@@ -36,6 +36,8 @@ RSpec.describe Ci::PipelineTriggerService, feature_category: :continuous_integra
           let(:range) { '192.168.0.0/24' }
 
           it 'triggers a pipeline' do
+            project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+
             expect { result }.to change { Ci::Pipeline.count }.by(1)
           end
         end
@@ -51,6 +53,8 @@ RSpec.describe Ci::PipelineTriggerService, feature_category: :continuous_integra
 
       context 'group without restriction' do
         it 'triggers a pipeline' do
+          project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+
           expect { result }.to change { Ci::Pipeline.count }.by(1)
         end
       end
