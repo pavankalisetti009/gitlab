@@ -1,16 +1,12 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
-import Vue, { nextTick } from 'vue';
-import VueRouter from 'vue-router';
+import { nextTick } from 'vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
 import SeverityToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/severity_token.vue';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-Vue.use(VueRouter);
-
 describe('Severity Token component', () => {
   let wrapper;
-  let router;
 
   const mockConfig = {
     multiSelect: true,
@@ -24,10 +20,7 @@ describe('Severity Token component', () => {
     stubs,
     mountFn = shallowMountExtended,
   } = {}) => {
-    router = new VueRouter({ mode: 'history' });
-
     wrapper = mountFn(SeverityToken, {
-      router,
       propsData: {
         config: mockConfig,
         value,
