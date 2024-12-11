@@ -50,6 +50,16 @@ RSpec.describe Gitlab::Backup::Cli::Targets::Database do
       database.dump(destination)
     end
 
+    it 'restores timeout after dumping' do
+      mock_database_dump!
+
+      expect_next_instance_of(Gitlab::Backup::Cli::Services::Database) do |db|
+        expect(db).to receive(:restore_timeouts!).and_call_original
+      end.at_least(:once)
+
+      database.dump(destination)
+    end
+
     it 'raises an error if the dump fails' do
       false_command = Gitlab::Backup::Cli::Shell::Command.new(%q(false))
       replace_database_dump_command!(false_command)
