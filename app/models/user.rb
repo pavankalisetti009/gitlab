@@ -2542,9 +2542,8 @@ class User < ApplicationRecord
     true
   end
 
-  # Deprecated method. We are currently transitioning to the use of composite_identity_enforced attribute
   def has_composite_identity?
-    false
+    composite_identity_enforced
   end
 
   def composite_identity_enforced
