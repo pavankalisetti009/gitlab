@@ -28,40 +28,57 @@ module Security
       attr_reader :policy_configuration, :policy, :project, :author, :policy_index, :real_policy_index
 
       def create_new_approval_rules
-        send_bot_message_action = policy[:actions]&.find do |action|
-          action[:type] == Security::ScanResultPolicy::SEND_BOT_MESSAGE
-        end
-
         policy[:rules]&.first(Security::ScanResultPolicy::RULES_LIMIT)&.each_with_index do |rule, rule_index|
           next unless rule_type_allowed?(rule[:type])
 
-          scan_result_policy_read = create_scan_result_policy(
-            rule, require_approval_action, send_bot_message_action, project, rule_index
-          )
-
-          approval_policy_rule = Security::ApprovalPolicyRule
-            .by_policy_rule_index(policy_configuration, policy_index: real_policy_index, rule_index: rule_index)
-
-          if license_finding?(rule)
-            if Feature.enabled?(:bulk_create_scan_result_policies, project)
-              bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
-            else
-              create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
-            end
+          if approval_actions.empty?
+            process_rule(rule, rule_index)
+            next
           end
 
-          next unless create_approval_rule?(rule)
-
-          ::ApprovalRules::CreateService.new(project, author,
-            rule_params(rule, rule_index, require_approval_action, scan_result_policy_read, approval_policy_rule)
-          ).execute
+          approval_actions.each_with_index do |approval_action, action_index|
+            process_rule(rule, rule_index, approval_action, action_index)
+          end
         end
       end
 
-      def require_approval_action
-        policy[:actions]&.find { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
+      def process_rule(rule, rule_index, approval_action = nil, action_index = 0)
+        scan_result_policy_read = create_scan_result_policy(
+          rule, approval_action, rule_index, action_index
+        )
+
+        approval_policy_rule = Security::ApprovalPolicyRule.by_policy_rule_index(
+          policy_configuration, policy_index: real_policy_index, rule_index: rule_index
+        )
+
+        if license_finding?(rule)
+          if Feature.enabled?(:bulk_create_scan_result_policies, project)
+            bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
+          else
+            create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
+          end
+        end
+
+        return unless create_approval_rule?(rule)
+
+        ::ApprovalRules::CreateService.new(project, author,
+          rule_params(
+            rule, rule_index, approval_action, scan_result_policy_read, approval_policy_rule, action_index
+          )
+        ).execute
       end
-      strong_memoize_attr :require_approval_action
+
+      def send_bot_message_action
+        policy[:actions]&.find do |action|
+          action[:type] == Security::ScanResultPolicy::SEND_BOT_MESSAGE
+        end
+      end
+      strong_memoize_attr :send_bot_message_action
+
+      def approval_actions
+        Array.wrap(policy[:actions]&.select { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL })
+      end
+      strong_memoize_attr :approval_actions
 
       def create_approval_rule?(rule)
         return true if rule[:type] != Security::ScanResultPolicy::ANY_MERGE_REQUEST
@@ -69,7 +86,7 @@ module Security
         # For `any_merge_request` rules, the approval rules can be created without approvers and can override
         # project approval settings in general.
         # The violations in this case are handled via SyncAnyMergeRequestRulesService
-        require_approval_action.present?
+        approval_actions.present?
       end
 
       def license_finding?(rule)
@@ -101,10 +118,11 @@ module Security
         end
       end
 
-      def create_scan_result_policy(rule, approval_action, send_bot_message_action, project, rule_index)
+      def create_scan_result_policy(rule, approval_action, rule_index, action_index = 0)
         policy_configuration.scan_result_policy_reads.create!(
           orchestration_policy_idx: policy_index,
           rule_idx: rule_index,
+          action_idx: action_index,
           license_states: rule[:license_states],
           match_on_inclusion_license: rule[:match_on_inclusion_license] || false,
           role_approvers: role_access_levels(approval_action&.dig(:role_approvers)),
@@ -122,7 +140,7 @@ module Security
         )
       end
 
-      def rule_params(rule, rule_index, action_info, scan_result_policy_read, approval_policy_rule)
+      def rule_params(rule, rule_index, action_info, scan_result_policy_read, approval_policy_rule, action_index = 0)
         rule_params = {
           skip_authorization: true,
           approvals_required: action_info&.dig(:approvals_required) || 0,
@@ -137,6 +155,7 @@ module Security
           security_orchestration_policy_configuration_id: policy_configuration.id,
           scan_result_policy_id: scan_result_policy_read&.id,
           approval_policy_rule_id: approval_policy_rule&.id,
+          approval_policy_action_idx: action_index,
           permit_inaccessible_groups: true
         }
 
