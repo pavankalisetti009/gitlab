@@ -1,9 +1,0 @@
----
-name: stop_bulk_sidekiq_job_activation
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/488887
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166652
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/502865
-milestone: '17.6'
-group: group::provision
-type: experiment
-default_enabled: false
