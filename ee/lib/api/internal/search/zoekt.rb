@@ -38,6 +38,7 @@ module API
                   if Feature.disabled?(:zoekt_internal_api_register_nodes, type: :ops) || node.save_debounce
                     { id: node.id, truncate: new_node }.tap do |resp|
                       resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
+                      resp[:optimized_performance] = Feature.enabled?(:zoekt_optimized_performance_indexing)
                       resp[:pull_frequency] = node.task_pull_frequency
                       if Feature.enabled?(:zoekt_critical_watermark_stop_indexing)
                         resp[:stop_indexing] = node.watermark_exceeded_critical?
