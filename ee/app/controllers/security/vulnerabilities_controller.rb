@@ -12,6 +12,7 @@ module Security
       push_frontend_feature_flag(:vulnerability_report_owasp_2021, current_user)
       push_frontend_feature_flag(:vulnerability_report_vr_badge, current_user, type: :beta)
       push_frontend_feature_flag(:vulnerability_report_vr_filter, current_user, type: :beta)
+      push_frontend_feature_flag(:vulnerability_report_security_scores, current_user, type: :beta)
 
       push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerable, user: current_user)
     end

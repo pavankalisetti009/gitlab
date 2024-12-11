@@ -1706,6 +1706,9 @@ msgid_plural "+%d more"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "+%{count} more"
+msgstr ""
+
 msgid "+%{more_assignees_count}"
 msgstr ""
 
@@ -50953,6 +50956,9 @@ msgstr ""
 msgid "SecurityReports|All tools"
 msgstr ""
 
+msgid "SecurityReports|CVSS v%{version}:"
+msgstr ""
+
 msgid "SecurityReports|Change status"
 msgstr ""
 
@@ -51028,6 +51034,9 @@ msgstr ""
 msgid "SecurityReports|Download scanned URLs"
 msgstr ""
 
+msgid "SecurityReports|EPSS:"
+msgstr ""
+
 msgid "SecurityReports|Edit dismissal"
 msgstr ""
 
@@ -51092,6 +51101,9 @@ msgid "SecurityReports|Issue"
 msgstr ""
 
 msgid "SecurityReports|Issues created from a vulnerability cannot be removed."
+msgstr ""
+
+msgid "SecurityReports|KEV:"
 msgstr ""
 
 msgid "SecurityReports|Learn more about security configuration"
