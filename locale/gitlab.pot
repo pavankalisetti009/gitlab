@@ -40770,6 +40770,9 @@ msgstr ""
 msgid "Pipelines|Owner"
 msgstr ""
 
+msgid "Pipelines|Pipeline %{linkStart}#%{pipelineId}%{linkEnd} %{status}"
+msgstr ""
+
 msgid "Pipelines|Pipeline editor"
 msgstr ""
 
@@ -41179,12 +41182,6 @@ msgid "Pipeline|merged results"
 msgstr ""
 
 msgid "Pipeline|on"
-msgstr ""
-
-msgid "Pipeline|with stage"
-msgstr ""
-
-msgid "Pipeline|with stages"
 msgstr ""
 
 msgid "PivotalTrackerService|Add commit messages as comments to Pivotal Tracker stories."
@@ -56040,6 +56037,9 @@ msgid "There was a problem fetching the latest pipeline status."
 msgstr ""
 
 msgid "There was a problem fetching the merge pipeline."
+msgstr ""
+
+msgid "There was a problem fetching the pipeline metadata."
 msgstr ""
 
 msgid "There was a problem fetching the pipeline mini graph."
