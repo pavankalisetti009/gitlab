@@ -4040,10 +4040,16 @@ msgstr ""
 msgid "AdminSettings|All new projects can use instance runners by default."
 msgstr ""
 
+msgid "AdminSettings|Allow all integrations"
+msgstr ""
+
 msgid "AdminSettings|Allow contribution mapping to administrators %{allow_contribution_mapping_to_admins_link_start}%{icon}%{allow_contribution_mapping_to_admins_link_end}"
 msgstr ""
 
 msgid "AdminSettings|Allow migrating GitLab groups and projects by direct transfer"
+msgstr ""
+
+msgid "AdminSettings|Allow only integrations on this allowlist"
 msgstr ""
 
 msgid "AdminSettings|Allow runner registration token"
@@ -4217,6 +4223,9 @@ msgstr ""
 msgid "AdminSettings|Instance runners expiration"
 msgstr ""
 
+msgid "AdminSettings|Integration settings"
+msgstr ""
+
 msgid "AdminSettings|Keep the latest artifacts for all jobs in the latest successful pipelines"
 msgstr ""
 
@@ -4227,6 +4236,9 @@ msgid "AdminSettings|Limit the amount of namespace and project data to index"
 msgstr ""
 
 msgid "AdminSettings|Make new users' profiles private by default"
+msgstr ""
+
+msgid "AdminSettings|Manage which integrations can be enabled on this instance."
 msgstr ""
 
 msgid "AdminSettings|Maximum downstream pipeline trigger rate"

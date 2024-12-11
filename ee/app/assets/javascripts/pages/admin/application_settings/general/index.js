@@ -6,6 +6,7 @@ import { initAdminDeletionProtectionSettings } from 'ee/admin/application_settin
 import { initMaintenanceModeSettings } from 'ee/maintenance_mode_settings';
 import { initServicePingSettingsClickTracking } from 'ee/registration_features_discovery_message';
 import { initInputCopyToggleVisibility } from '~/vue_shared/components/form';
+import initAllowedIntegrations from './integrations_settings';
 
 initAdminDeletionProtectionSettings();
 initMaintenanceModeSettings();
@@ -14,3 +15,4 @@ initAddLicenseApp();
 initScimTokenApp();
 initPrivateProfileRestrictions();
 initInputCopyToggleVisibility();
+initAllowedIntegrations();

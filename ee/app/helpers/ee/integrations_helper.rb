@@ -91,6 +91,20 @@ module EE
       }
     end
 
+    def integrations_allow_list_data
+      integrations = Integration.available_integration_names(include_blocked_by_settings: true).map do |integration|
+        model = Integration.integration_name_to_model(integration)
+
+        { title: model.title, name: model.to_param }
+      end
+
+      {
+        integrations: integrations.to_json,
+        allow_all_integrations: @application_setting.integrations['allow_all_integrations'].to_s,
+        allowed_integrations: @application_setting.integrations['allowed_integrations'].to_json
+      }
+    end
+
     private
 
     # Use this method when dealing with issue data from external services

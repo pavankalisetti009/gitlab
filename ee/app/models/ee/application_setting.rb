@@ -331,6 +331,10 @@ module EE
       end
     end
 
+    def allowed_integrations_raw=(value)
+      self.allowed_integrations = ::Gitlab::Json.parse(value)
+    end
+
     def max_auth_lifetime
       if ::Feature.enabled?(:buffered_token_expiration_limit)
         400

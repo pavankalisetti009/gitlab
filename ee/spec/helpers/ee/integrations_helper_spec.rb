@@ -154,6 +154,38 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
     end
   end
 
+  describe '#integrations_allow_list_data' do
+    let_it_be(:allow_all_integrations) { false }
+    let_it_be(:allowed_integrations) { ['jira'] }
+    let_it_be(:application_setting) do
+      build_stubbed(:application_setting, integrations: {
+        allow_all_integrations: allow_all_integrations, allowed_integrations: allowed_integrations
+      })
+    end
+
+    subject(:allow_list_data) { helper.integrations_allow_list_data }
+
+    before do
+      helper.instance_variable_set(:@application_setting, application_setting)
+    end
+
+    it 'includes integrations list as JSON' do
+      integrations = Gitlab::Json.parse(allow_list_data[:integrations])
+
+      expect(integrations).to be_an_instance_of(Array)
+      expect(integrations).to include(
+        { 'title' => 'Slack notifications', 'name' => 'slack' }
+      )
+    end
+
+    it 'includes setting values' do
+      is_expected.to include(
+        allow_all_integrations: 'false',
+        allowed_integrations: '["jira"]'
+      )
+    end
+  end
+
   describe '#jira_issues_show_data' do
     subject { helper.jira_issues_show_data }
 
