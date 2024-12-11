@@ -71,11 +71,37 @@ RSpec.describe 'Groups > Audit events', :js, feature_category: :audit_events do
     let_it_be(:entity) { group }
 
     describe 'filter by date' do
-      let_it_be(:audit_event_1) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: 5.days.ago) }
-      let_it_be(:audit_event_2) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: 3.days.ago) }
-      let_it_be(:audit_event_3) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: Date.current) }
+      let_it_be(:old_audit_event_1) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: 5.days.ago) }
+      let_it_be(:old_audit_event_2) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: 3.days.ago) }
+      let_it_be(:old_audit_event_3) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: Date.current) }
 
-      it_behaves_like 'audit events date filter'
+      let_it_be(:new_audit_event_1) { create(:audit_events_group_audit_event, group_id: group.id, created_at: 5.days.ago) }
+      let_it_be(:new_audit_event_2) { create(:audit_events_group_audit_event, group_id: group.id, created_at: 3.days.ago) }
+      let_it_be(:new_audit_event_3) { create(:audit_events_group_audit_event, group_id: group.id, created_at: Date.current) }
+
+      context 'when read_audit_events_from_new_tables is disabled' do
+        before do
+          stub_feature_flags(read_audit_events_from_new_tables: false)
+        end
+
+        it_behaves_like 'audit events date filter' do
+          let(:audit_event_1) { old_audit_event_1 }
+          let(:audit_event_2) { old_audit_event_2 }
+          let(:audit_event_3) { old_audit_event_3 }
+        end
+      end
+
+      context 'when read_audit_events_from_new_tables is enabled' do
+        before do
+          stub_feature_flags(read_audit_events_from_new_tables: true)
+        end
+
+        it_behaves_like 'audit events date filter' do
+          let(:audit_event_1) { new_audit_event_1 }
+          let(:audit_event_2) { new_audit_event_2 }
+          let(:audit_event_3) { new_audit_event_3 }
+        end
+      end
     end
 
     context 'signed in as a developer' do
@@ -84,11 +110,35 @@ RSpec.describe 'Groups > Audit events', :js, feature_category: :audit_events do
       end
 
       describe 'filter by author' do
-        let_it_be(:audit_event_1) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: Date.today, ip_address: '1.1.1.1', author_id: alex.id) }
-        let_it_be(:audit_event_2) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: Date.today, ip_address: '0.0.0.0', author_id: user.id) }
+        let_it_be(:old_audit_event_1) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: Date.today, ip_address: '1.1.1.1', author_id: alex.id) }
+        let_it_be(:old_audit_event_2) { create(:group_audit_event, entity_type: 'Group', entity_id: group.id, created_at: Date.today, ip_address: '0.0.0.0', author_id: user.id) }
+
+        let_it_be(:new_audit_event_1) { create(:audit_events_group_audit_event, group_id: group.id, created_at: Date.today, ip_address: '1.1.1.1', author_id: alex.id) }
+        let_it_be(:new_audit_event_2) { create(:audit_events_group_audit_event, group_id: group.id, created_at: Date.today, ip_address: '0.0.0.0', author_id: user.id) }
+
         let_it_be(:author) { user }
 
-        it_behaves_like 'audit events author filtering without entity admin permission'
+        context 'when read_audit_events_from_new_tables is disabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: false)
+          end
+
+          it_behaves_like 'audit events author filtering without entity admin permission' do
+            let(:audit_event_1) { old_audit_event_1 }
+            let(:audit_event_2) { old_audit_event_2 }
+          end
+        end
+
+        context 'when read_audit_events_from_new_tables is enabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: true)
+          end
+
+          it_behaves_like 'audit events author filtering without entity admin permission' do
+            let(:audit_event_1) { new_audit_event_1 }
+            let(:audit_event_2) { new_audit_event_2 }
+          end
+        end
       end
     end
   end

@@ -42,12 +42,20 @@ class Groups::AuditEventsController < Groups::ApplicationController
 
   def events
     strong_memoize(:events) do
-      level = Gitlab::Audit::Levels::Group.new(group: group)
-      events = AuditEventFinder
-        .new(level: level, params: audit_params)
-        .execute
-        .page(pagination_params[:page])
-        .without_count
+      if ::Feature.enabled?(:read_audit_events_from_new_tables, group)
+        events = ::AuditEvents::GroupAuditEventFinder
+                   .new(group: group, params: audit_params)
+                   .execute
+                   .page(pagination_params[:page])
+                   .without_count
+      else
+        level = Gitlab::Audit::Levels::Group.new(group: group)
+        events = AuditEventFinder
+                   .new(level: level, params: audit_params)
+                   .execute
+                   .page(pagination_params[:page])
+                   .without_count
+      end
 
       Gitlab::Audit::Events::Preloader.preload!(events)
     end

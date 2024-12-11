@@ -1,55 +1,16 @@
 # frozen_string_literal: true
 
 module AuditEvents
-  class ProjectAuditEventFinder
-    include CreatedAtFilter
-    include FinderMethods
-
+  class ProjectAuditEventFinder < BaseAuditEventFinder
     def initialize(project:, params: {})
+      super(params: params)
       @project = project
-      @params = params
-    end
-
-    def execute
-      audit_events = init_collection
-      audit_events = by_created_at(audit_events)
-      audit_events = by_author(audit_events)
-
-      sort(audit_events)
     end
 
     private
 
-    attr_reader :params
-
     def init_collection
       ::AuditEvents::ProjectAuditEvent.by_project(@project.id)
-    end
-
-    def by_author(audit_events)
-      if valid_author_username?
-        audit_events = audit_events.by_author_username(params[:author_username])
-      elsif valid_author_id?
-        audit_events = audit_events.by_author_id(params[:author_id])
-      end
-
-      audit_events
-    end
-
-    def sort(audit_events)
-      audit_events.order_by(params[:sort])
-    end
-
-    def valid_author_id?
-      params[:author_id].to_i.nonzero?
-    end
-
-    def valid_username?(username)
-      username.present? && username.length >= User::MIN_USERNAME_LENGTH && username.length <= User::MAX_USERNAME_LENGTH
-    end
-
-    def valid_author_username?
-      valid_username?(params[:author_username])
     end
   end
 end
