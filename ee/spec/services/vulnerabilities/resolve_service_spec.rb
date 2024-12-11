@@ -40,6 +40,12 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
         end
       end
 
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'resolve_vulnerability' }
+        let(:category) { described_class.name }
+        subject(:service_action) { resolve_vulnerability }
+      end
+
       context 'when marking a Vulnerability as auto-resolved' do
         let(:auto_resolved) { true }
 
