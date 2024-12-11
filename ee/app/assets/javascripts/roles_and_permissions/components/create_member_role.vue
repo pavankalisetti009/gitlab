@@ -12,7 +12,7 @@ import {
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { sprintf, s__, __ } from '~/locale';
-import { BASE_ROLES } from '~/access_level/constants';
+import { BASE_ROLES_WITHOUT_OWNER } from '~/access_level/constants';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -147,7 +147,7 @@ export default {
       // Return the role name, or "Select a role" if we're creating a new role and a base role hasn't been
       // selected yet.
       return baseAccessLevel
-        ? BASE_ROLES.find(({ value }) => value === baseAccessLevel).text
+        ? BASE_ROLES_WITHOUT_OWNER.find(({ value }) => value === baseAccessLevel).text
         : this.$options.i18n.baseRolePlaceholder;
     },
   },
@@ -211,7 +211,7 @@ export default {
       }
     },
   },
-  BASE_ROLES,
+  BASE_ROLES_WITHOUT_OWNER,
 };
 </script>
 
@@ -280,7 +280,7 @@ export default {
         :variant="isBaseRoleValid ? 'default' : 'danger'"
         block
         class="gl-w-30"
-        :items="$options.BASE_ROLES"
+        :items="$options.BASE_ROLES_WITHOUT_OWNER"
         :disabled="isEditing"
         :toggle-text="roleDropdownText"
       />
