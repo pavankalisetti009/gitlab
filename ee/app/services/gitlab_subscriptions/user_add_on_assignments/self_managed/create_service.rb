@@ -5,16 +5,16 @@ module GitlabSubscriptions
     module SelfManaged
       class CreateService < ::GitlabSubscriptions::UserAddOnAssignments::BaseCreateService
         include Gitlab::Utils::StrongMemoize
-
-        def execute
-          super.tap do |response|
-            send_duo_seat_assignment_email if should_send_duo_seat_assignment_email? response
-          end
-        end
+        extend ::Gitlab::Utils::Override
 
         private
 
-        attr_reader :add_on_purchase, :user
+        override :after_success_hook
+        def after_success_hook
+          super
+
+          send_duo_seat_assignment_email if Feature.enabled?(:duo_seat_assignment_email_for_sm, :instance)
+        end
 
         def eligible_for_gitlab_duo_pro_seat?
           user.eligible_for_self_managed_gitlab_duo_pro?
@@ -24,12 +24,6 @@ module GitlabSubscriptions
         def send_duo_seat_assignment_email
           DuoSeatAssignmentMailer.duo_pro_email(user).deliver_later if add_on_purchase.add_on.code_suggestions?
           DuoSeatAssignmentMailer.duo_enterprise_email(user).deliver_later if add_on_purchase.add_on.duo_enterprise?
-        end
-
-        def should_send_duo_seat_assignment_email?(response)
-          Feature.enabled?(:duo_seat_assignment_email_for_sm, :instance) &&
-            !user_already_assigned? &&
-            response.success?
         end
       end
     end

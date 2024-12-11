@@ -4,16 +4,15 @@ module GitlabSubscriptions
   module UserAddOnAssignments
     module Saas
       class CreateService < ::GitlabSubscriptions::UserAddOnAssignments::Saas::CreateWithoutNotificationService
-        def execute
-          super.tap do |response|
-            create_iterable_trigger if should_trigger_duo_iterable? response
-          end
-        end
+        extend ::Gitlab::Utils::Override
 
         private
 
-        def should_trigger_duo_iterable?(response)
-          response.success? && duo_pro_or_enterprise? && !user_already_assigned?
+        override :after_success_hook
+        def after_success_hook
+          super
+
+          create_iterable_trigger if duo_pro_or_enterprise?
         end
 
         def duo_pro_or_enterprise?
