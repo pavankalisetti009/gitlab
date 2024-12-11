@@ -61,12 +61,8 @@ module EE
           super
 
           link.tap do |l|
-            l.member_role_id = params[:member_role_id] if can_assign_custom_roles_to_project_links?
+            l.member_role_id = params[:member_role_id] if custom_role_for_project_link_enabled?(project)
           end
-        end
-
-        def can_assign_custom_roles_to_project_links?
-          custom_role_for_project_link_enabled?(project) && shared_with_group&.custom_roles_enabled?
         end
       end
     end

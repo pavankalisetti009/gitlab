@@ -200,12 +200,20 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
   end
 
   context 'with member_role_id param', :saas do
-    let(:member_role) { create(:member_role, namespace: project.root_ancestor) }
+    let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan) }
+
+    let_it_be(:paid_group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let_it_be(:project) { create(:project, namespace: paid_group) }
+
+    let(:member_role) { create(:member_role, namespace: paid_group) }
     let(:opts) { super().merge({ member_role_id: member_role.id }) }
 
     subject(:service) { described_class.new(project, group, user, opts) }
 
     before do
+      stub_licensed_features(custom_roles: true)
+      stub_ee_application_setting(should_check_namespace_plan: true)
+
       group.add_developer(user)
     end
 
@@ -218,11 +226,7 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
       end
     end
 
-    context 'and custom roles feature is available' do
-      before do
-        stub_licensed_features(custom_roles: true)
-      end
-
+    context 'and custom roles feature is available on the project' do
       it 'assigns the member role' do
         result = service.execute
 
@@ -239,7 +243,7 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
       end
     end
 
-    context 'and custom roles feature is not available' do
+    context 'and custom roles feature is not available on the project' do
       before do
         stub_licensed_features(custom_roles: false)
       end

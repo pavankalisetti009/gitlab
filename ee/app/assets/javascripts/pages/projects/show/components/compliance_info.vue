@@ -60,7 +60,7 @@ export default {
 <template>
   <div
     v-if="hasComplianceFrameworks"
-    class="project-page-sidebar-block gl-border-b gl-border-gray-50 gl-py-4"
+    class="project-page-sidebar-block gl-border-b gl-border-subtle gl-py-4"
   >
     <h5 class="gl-heading-5 gl-mb-3">
       {{ s__('ComplianceFrameworks|Compliance frameworks applied') }}
