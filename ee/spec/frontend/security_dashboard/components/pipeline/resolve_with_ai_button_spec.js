@@ -14,7 +14,6 @@ import {
   MUTATION_AI_ACTION_DEFAULT_RESPONSE,
   getAiSubscriptionResponse,
 } from 'ee_jest/vulnerabilities/mock_data';
-import { visitUrl } from '~/lib/utils/url_utility';
 
 Vue.use(VueApollo);
 
@@ -238,24 +237,12 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
 
         expect(wrapper.emitted('success')).toBeUndefined();
 
-        sendSubscriptionMessage(getAiSubscriptionResponse());
+        const resultUrl = 'http://gitlab.com/project/merge_requests/2#note_1';
+        sendSubscriptionMessage(getAiSubscriptionResponse(resultUrl));
         await waitForPromises();
 
         expect(wrapper.emitted('success')).toHaveLength(1);
-      });
-
-      it('redirects to the given URL when the subscription response returns the correct content', async () => {
-        createWrapperWithApollo();
-
-        clickButton();
-
-        expect(visitUrl).not.toHaveBeenCalled();
-
-        const url = 'http://gitlab.com/project/merge_requests/2';
-        sendSubscriptionMessage(getAiSubscriptionResponse(url));
-        await waitForPromises();
-
-        expect(visitUrl).toHaveBeenCalledWith(url);
+        expect(wrapper.emitted('success')[0]).toEqual([resultUrl]);
       });
 
       describe('error handling', () => {

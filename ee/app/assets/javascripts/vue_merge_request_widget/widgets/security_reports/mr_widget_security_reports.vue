@@ -1,6 +1,7 @@
 <script>
 import { GlBadge, GlButton, GlIcon, GlLink, GlPopover } from '@gitlab/ui';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
+import { historyPushState } from '~/lib/utils/common_utils';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
 import axios from '~/lib/utils/axios_utils';
@@ -195,6 +196,19 @@ export default {
     },
   },
   methods: {
+    handleResolveWithAiSuccess(commentUrl) {
+      this.clearModalData();
+
+      const [, resultHash] = commentUrl.split('#');
+      if (resultHash && document.getElementById(resultHash)) {
+        window.location.assign(commentUrl);
+      } else {
+        // the comment has not been added to the DOM yet, so we need to hard-reload the page
+        historyPushState(commentUrl);
+        window.location.reload();
+      }
+    },
+
     updateFindingState(state) {
       this.modalData.vulnerability.state = state;
     },
@@ -407,6 +421,7 @@ export default {
         @hidden="clearModalData"
         @dismissed="updateFindingState('dismissed')"
         @detected="updateFindingState('detected')"
+        @resolveWithAiSuccess="handleResolveWithAiSuccess"
       />
       <security-training-promo-widget
         :security-configuration-path="mr.securityConfigurationPath"

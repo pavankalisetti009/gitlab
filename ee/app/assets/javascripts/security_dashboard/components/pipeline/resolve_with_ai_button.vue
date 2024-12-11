@@ -11,7 +11,6 @@ import {
   TYPENAME_MERGE_REQUEST,
   TYPENAME_VULNERABILITY,
 } from '~/graphql_shared/constants';
-import { visitUrl } from '~/lib/utils/url_utility';
 
 const CLIENT_SUBSCRIPTION_ID = uuidv4();
 
@@ -44,7 +43,7 @@ export default {
   data() {
     return {
       isResolving: false,
-      createdVulnerabiltyId: null,
+      createdVulnerabilityId: null,
     };
   },
   apollo: {
@@ -72,8 +71,7 @@ export default {
             this.handleError(errors[0]);
           } else if (content) {
             this.stopResolveWithAISubscription();
-            this.$emit('success');
-            visitUrl(content);
+            this.$emit('success', content);
           }
         },
         error(e) {
@@ -87,8 +85,8 @@ export default {
       return convertToGraphQLId(TYPENAME_MERGE_REQUEST, this.mergeRequestId);
     },
     vulnerabilityGraphqlId() {
-      if (this.createdVulnerabiltyId) {
-        return this.createdVulnerabiltyId;
+      if (this.createdVulnerabilityId) {
+        return this.createdVulnerabilityId;
       }
       if (this.vulnerabilityId) {
         return convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerabilityId);
@@ -107,7 +105,7 @@ export default {
           },
         })
         .then(({ data }) => {
-          this.createdVulnerabiltyId = data.securityFindingCreateVulnerability.vulnerability.id;
+          this.createdVulnerabilityId = data.securityFindingCreateVulnerability.vulnerability.id;
         })
         .catch((e) => {
           this.handleError(e);
