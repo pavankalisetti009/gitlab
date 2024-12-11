@@ -7,7 +7,7 @@ import {
   modifyPolicy,
   redirectToMergeRequest,
   createHumanizedScanners,
-  findBranchesWithErrors,
+  findItemsWithErrors,
   isCauseOfError,
   isValidPolicy,
   hasInvalidCron,
@@ -19,7 +19,7 @@ import {
   createProjectWithMinimumValues,
   parseCustomFileConfiguration,
   mapExceptionsListBoxItem,
-  mapBranchesToString,
+  mapObjectsToString,
   mapBranchesToExceptions,
   parseError,
   removeIdsFromPolicy,
@@ -410,7 +410,7 @@ describe('renderMultiSelectText', () => {
     });
   });
 
-  describe('mapBranchesToString', () => {
+  describe('mapObjectsToString', () => {
     it.each`
       branches                                 | expectedResult
       ${[{ name: 'test', fullPath: 'path' }]}  | ${'test@path'}
@@ -418,7 +418,7 @@ describe('renderMultiSelectText', () => {
       ${[{ invalid_name: 'name' }]}            | ${''}
       ${[undefined]}                           | ${''}
     `('should map branches to string format', ({ branches, expectedResult }) => {
-      expect(mapBranchesToString(branches)).toEqual(expectedResult);
+      expect(mapObjectsToString(branches)).toEqual(expectedResult);
     });
   });
 
@@ -484,7 +484,7 @@ describe('hasDuplicates', () => {
   });
 });
 
-describe('findBranchesWithErrors', () => {
+describe('findItemsWithErrors', () => {
   it.each`
     branches                                                                              | output
     ${[]}                                                                                 | ${[]}
@@ -494,7 +494,7 @@ describe('findBranchesWithErrors', () => {
     ${[{ name: 'name', value: 'values' }, { name: 'name1', value: 'values1' }]}           | ${['name', 'name1']}
     ${[{ name: 'name', value: 'name@values' }, { name: 'name1', value: 'name@values1' }]} | ${[]}
   `('should check if branches has duplicates', ({ branches, output }) => {
-    expect(findBranchesWithErrors(branches)).toEqual(output);
+    expect(findItemsWithErrors(branches)).toEqual(output);
   });
 });
 

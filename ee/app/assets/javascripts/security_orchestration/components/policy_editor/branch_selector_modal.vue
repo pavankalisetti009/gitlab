@@ -2,10 +2,10 @@
 import { GlButton, GlFormTextarea, GlLoadingIcon, GlModal, GlSprintf } from '@gitlab/ui';
 import { s__, __, sprintf } from '~/locale';
 import {
-  findBranchesWithErrors,
+  findItemsWithErrors,
   hasDuplicates,
   mapBranchesToExceptions,
-  mapBranchesToString,
+  mapObjectsToString,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import branchesQuery from '~/projects/settings/branch_rules/queries/branches.query.graphql';
 import { BRANCH_TYPES, REGULAR_BRANCH, PROTECTED_BRANCH } from './constants';
@@ -72,7 +72,7 @@ export default {
       return this.asyncValidationErrors.length > 0;
     },
     convertedToStringBranches() {
-      return mapBranchesToString(this.branches);
+      return mapObjectsToString(this.branches);
     },
     defaultProjectName() {
       return this.hasValidation ? undefined : this.namespacePath;
@@ -141,7 +141,7 @@ export default {
       });
     },
     async selectBranches() {
-      this.parsedWithErrorsBranches = findBranchesWithErrors(this.parsedBranches);
+      this.parsedWithErrorsBranches = findItemsWithErrors(this.parsedBranches);
       this.hasDuplicates = hasDuplicates(this.parsedBranches);
 
       if (this.hasValidationError || this.hasDuplicates) return;
