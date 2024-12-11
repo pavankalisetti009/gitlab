@@ -5,6 +5,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 import ApprovalSettings from 'ee/approvals/components/approval_settings/approval_settings.vue';
+import PolicyOverrideWarningIcon from 'ee/approvals/components/approval_settings/policy_override_warning_icon.vue';
 import {
   PROJECT_APPROVAL_SETTINGS_LABELS_I18N,
   APPROVAL_SETTINGS_I18N,
@@ -72,6 +73,7 @@ describe('ApprovalSettings', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findSaveButton = () => wrapper.findComponent(GlButton);
   const findLink = () => wrapper.findComponent(GlLink);
+  const findPolicyOverrideWarningIcon = () => wrapper.findComponent(PolicyOverrideWarningIcon);
   const findSelectiveCodeOwnersRadio = () => wrapper.findByTestId('selective-code-owner-removals');
 
   afterEach(() => {
@@ -186,6 +188,13 @@ describe('ApprovalSettings', () => {
       expect(findLink().attributes('href')).toBe(
         '/help/user/project/merge_requests/approvals/settings',
       );
+    });
+
+    it('renders the policy override warning icon', async () => {
+      createWrapper();
+      await waitForPromises();
+
+      expect(findPolicyOverrideWarningIcon().exists()).toBe(true);
     });
 
     describe('selective code owner removals', () => {

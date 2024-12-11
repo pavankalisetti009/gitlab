@@ -50407,6 +50407,9 @@ msgstr ""
 msgid "SecurityOrchestration|Policy is invalid"
 msgstr ""
 
+msgid "SecurityOrchestration|Policy override"
+msgstr ""
+
 msgid "SecurityOrchestration|Policy scope"
 msgstr ""
 
@@ -50546,6 +50549,12 @@ msgid "SecurityOrchestration|Show more projects"
 msgstr ""
 
 msgid "SecurityOrchestration|Show only linked security policy projects"
+msgstr ""
+
+msgid "SecurityOrchestration|Some settings may be affected by policy %{policyName} based on its rules."
+msgstr ""
+
+msgid "SecurityOrchestration|Some settings may be affected by the following policies based on their rules:"
 msgstr ""
 
 msgid "SecurityOrchestration|Something went wrong, unable to fetch groups"

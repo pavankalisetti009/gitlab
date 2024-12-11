@@ -16,6 +16,7 @@ import { sprintf } from '~/locale';
 import { APPROVAL_SETTINGS_I18N, TYPE_GROUP } from '../../constants';
 import ApprovalSettingsCheckbox from './approval_settings_checkbox.vue';
 import ApprovalSettingsRadio from './approval_settings_radio.vue';
+import PolicyOverrideWarningIcon from './policy_override_warning_icon.vue';
 
 export default {
   components: {
@@ -28,6 +29,7 @@ export default {
     GlLoadingIcon,
     GlLink,
     GlFormRadioGroup,
+    PolicyOverrideWarningIcon,
   },
   props: {
     approvalSettingsPath: {
@@ -175,6 +177,7 @@ export default {
         <gl-link :href="$options.links.approvalSettingsDocsPath" target="_blank">
           {{ $options.i18n.learnMore }}
         </gl-link>
+        <policy-override-warning-icon class="gl-inline-block" />
       </p>
       <gl-form-group>
         <approval-settings-checkbox
