@@ -33,12 +33,12 @@ module MemberRoles
       end
     end
 
-    private
-
     def member_role_owner
       resource = try(member_role_owner_association)
       resource.is_a?(Namespace) ? resource : resource.try(:namespace)
     end
+
+    private
 
     def validate_member_role_access_level
       return unless member_role_id && member_role_owner.custom_roles_enabled?

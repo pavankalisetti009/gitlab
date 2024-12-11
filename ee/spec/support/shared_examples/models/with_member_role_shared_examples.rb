@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'model with member role relation' do
+  let(:expected_member_role_owner) { model.group }
+
   describe 'associations', feature_category: :permissions do
     it { is_expected.to belong_to(:member_role) }
   end
@@ -145,6 +147,12 @@ RSpec.shared_examples 'model with member role relation' do
         end
       end
     end
+  end
+
+  describe '#member_role_owner' do
+    subject { model.member_role_owner }
+
+    it { is_expected.to eq expected_member_role_owner }
   end
 
   def assign_member_role(model, access_level: Gitlab::Access::DEVELOPER)

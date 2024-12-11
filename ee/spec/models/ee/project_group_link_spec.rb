@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProjectGroupLink do
+RSpec.describe ProjectGroupLink, feature_category: :system_access do
   let_it_be(:project) { create(:project) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project_group_link) { create(:project_group_link, project: project, group: group) }
@@ -167,6 +167,44 @@ RSpec.describe ProjectGroupLink do
   end
 
   it_behaves_like 'model with member role relation' do
-    subject(:model) { create(:project_group_link) }
+    let_it_be(:link) { create(:project_group_link) }
+
+    let(:expected_member_role_owner) { link.project.namespace }
+
+    subject(:model) { link }
+  end
+
+  describe '#human_access' do
+    let_it_be(:access_level) { Gitlab::Access::DEVELOPER }
+    let_it_be(:member_role) { create(:member_role, base_access_level: access_level) }
+    let_it_be(:link) { create(:project_group_link, group_access: access_level) }
+    let(:feature_available) { true }
+
+    subject(:result) { link.human_access }
+
+    before do
+      allow(link).to receive(:custom_role_for_project_link_enabled?)
+        .and_return(feature_available)
+    end
+
+    it 'returns access level name' do
+      expect(result).to eq('Developer')
+    end
+
+    context 'when member role is present' do
+      let_it_be(:link) { create(:project_group_link, member_role: member_role) }
+
+      it 'returns the member role\'s name' do
+        expect(result).to eq(member_role.name)
+      end
+
+      context 'when feature is not available' do
+        let(:feature_available) { false }
+
+        it 'returns access level name' do
+          expect(result).to eq('Developer')
+        end
+      end
+    end
   end
 end
