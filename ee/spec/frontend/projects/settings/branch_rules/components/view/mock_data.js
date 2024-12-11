@@ -179,6 +179,10 @@ export const branchProtectionsMockResponse = {
             name: 'main',
             isDefault: true,
             id: 'gid://gitlab/Projects/BranchRule/1',
+            squashOption: {
+              option: 'Encourage',
+              helpText: 'Checkbox is visible and selected by default.',
+            },
             matchingBranchesCount,
             branchProtection: {
               __typename: 'BranchProtection',
@@ -206,6 +210,7 @@ export const branchProtectionsMockResponse = {
             __typename: 'BranchRule',
             name: '*',
             id: 'gid://gitlab/Projects/BranchRule/2',
+            squashOption: null,
             isDefault: false,
             matchingBranchesCount,
             branchProtection: {

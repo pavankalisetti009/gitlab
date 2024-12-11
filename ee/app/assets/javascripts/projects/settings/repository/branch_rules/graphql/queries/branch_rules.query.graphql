@@ -7,6 +7,10 @@ query getBranchRulesEE($projectPath: ID!) {
         id
         isDefault
         matchingBranchesCount
+        squashOption {
+          option
+          helpText
+        }
         branchProtection {
           allowForcePush
           codeOwnerApprovalRequired

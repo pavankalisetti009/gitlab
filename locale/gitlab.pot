@@ -9961,6 +9961,9 @@ msgstr ""
 msgid "BranchRules|No data to display"
 msgstr ""
 
+msgid "BranchRules|No default set until defined by user"
+msgstr ""
+
 msgid "BranchRules|No matching results"
 msgstr ""
 
@@ -9971,9 +9974,6 @@ msgid "BranchRules|No one is allowed to merge changes."
 msgstr ""
 
 msgid "BranchRules|No one is allowed to push and merge changes."
-msgstr ""
-
-msgid "BranchRules|No squash settings defined"
 msgstr ""
 
 msgid "BranchRules|No status checks have been added."
