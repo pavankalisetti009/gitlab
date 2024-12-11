@@ -35,7 +35,11 @@ module Search
           break false if current_page == page_limit
 
           results[current_page] ||= []
-          chunks, match_count = chunks_for_each_file_with_limited_match_count(file[:LineMatches], file[:FileName])
+          chunks, match_count = chunks_for_each_file_with_limited_match_count(
+            file[:LineMatches],
+            file[:FileName],
+            file[:Language]&.downcase)
+
           results[current_page] << {
             path: file[:FileName],
             project_id: file[:RepositoryID].to_i,
@@ -45,12 +49,13 @@ module Search
           }
           i += 1
         end
+
         results
       end
 
       private
 
-      def chunks_for_each_file_with_limited_match_count(linematches, file_name)
+      def chunks_for_each_file_with_limited_match_count(linematches, file_name, language)
         chunks = []
         generate_chunk = true # It is set to true at the start to generate the first chunk
         chunk = { lines: {}, match_count_in_chunk: 0 }
@@ -60,18 +65,18 @@ module Search
 
           if generate_chunk
             chunk = { lines: {}, match_count_in_chunk: 0 }
-            generate_context_blobs(match, chunk, :before, file_name)
+            generate_context_blobs(match, chunk, :before, file_name, language)
           end
 
           text = Base64.decode64(match[:Line]).force_encoding('UTF-8')
           chunk[:lines][match[:LineNumber]] = {
             text: text,
-            rich_text: highlight_match(text, match[:LineFragments], file_name)
+            rich_text: highlight_match(text, match[:LineFragments], file_name, language)
           }
           match_count_per_line = match[:LineFragments].count
           chunk[:match_count_in_chunk] += match_count_per_line
           # Generate lines after the match for the context
-          generate_context_blobs(match, chunk, :after, file_name)
+          generate_context_blobs(match, chunk, :after, file_name, language)
           generate_chunk = linematches[count_idx.next].nil? ||
             (linematches[count_idx.next][:LineNumber] - match[:LineNumber]).abs > NEW_CHUNK_THRESHOLD
 
@@ -85,7 +90,7 @@ module Search
         [chunks, limited_match_count_per_file]
       end
 
-      def generate_context_blobs(match, chunk, context, file_name)
+      def generate_context_blobs(match, chunk, context, file_name, language)
         context_encoded_string = if context == :before
                                    return if match[:LineNumber] == 1 # There is no before context if first line is match
 
@@ -104,14 +109,14 @@ module Search
           decoded_context_array.reverse_each.with_index(1) do |line, line_idx|
             unless chunk[:lines][match[:LineNumber] - line_idx]
               chunk[:lines][match[:LineNumber] - line_idx] =
-                { text: line, rich_text: syntax_decorate(file_name, line) }
+                { text: line, rich_text: syntax_decorate(file_name, line, language) }
             end
           end
         else
           decoded_context_array.each.with_index(1) do |line, line_idx|
             unless chunk[:lines][match[:LineNumber] + line_idx]
               chunk[:lines][match[:LineNumber] + line_idx] =
-                { text: line, rich_text: syntax_decorate(file_name, line) }
+                { text: line, rich_text: syntax_decorate(file_name, line, language) }
             end
           end
         end
@@ -126,20 +131,20 @@ module Search
         }
       end
 
-      def highlight_match(text, match_line_fragments, file_name)
+      def highlight_match(text, match_line_fragments, file_name, language)
         ranges = match_line_fragments.map do |fragment|
           fragment[:LineOffset]..(fragment[:LineOffset] + fragment[:MatchLength] - 1)
         end
         line = Gitlab::StringRangeMarker.new(text).mark(ranges) do |text|
           "#{HIGHLIGHT_START_TAG}#{text}#{HIGHLIGHT_END_TAG}"
         end
-        syntax_decorated_line = syntax_decorate(file_name, line)
+        syntax_decorated_line = syntax_decorate(file_name, line, language)
         replacements = { HIGHLIGHT_START_TAG => '<b>', HIGHLIGHT_END_TAG => '</b>' }
         syntax_decorated_line.gsub(%r{(#{HIGHLIGHT_START_TAG}|#{HIGHLIGHT_END_TAG})}o, replacements)
       end
 
-      def syntax_decorate(file_name, line)
-        Gitlab::Highlight.highlight(file_name, line)
+      def syntax_decorate(file_name, line, language)
+        Gitlab::Highlight.highlight(file_name, line, language: language)
       end
     end
   end

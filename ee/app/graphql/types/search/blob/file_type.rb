@@ -22,7 +22,8 @@ module Types
           description: 'Total number of matches per file.'
 
         field :match_count, GraphQL::Types::Int, null: true, experiment: { milestone: '17.2' },
-          description: "Matches per file in maximum #{::Search::Zoekt::MultiMatch::MAX_CHUNKS_PER_FILE} chunks."
+          description: "Matches per file up to a max of #{::Search::Zoekt::MultiMatch::MAX_CHUNKS_PER_FILE} chunks. \
+            Default is #{::Search::Zoekt::MultiMatch::DEFAULT_REQUESTED_CHUNK_SIZE}"
         # rubocop:enable GraphQL/ExtractType
 
         field :chunks, [::Types::Search::Blob::ChunkType], null: true, experiment: { milestone: '17.2' },
