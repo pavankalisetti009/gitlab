@@ -3,6 +3,7 @@
 module Vulnerabilities
   class AutoResolveService
     include Gitlab::Utils::StrongMemoize
+    include Gitlab::InternalEventsTracking
 
     def initialize(project, vulnerability_ids, budget)
       @project = project
@@ -73,10 +74,19 @@ module Vulnerabilities
           updated_at: now
         )
       end
+
       Note.transaction do
         results = Note.insert_all!(system_note_attrs, returning: %w[id])
         SystemNoteMetadata.insert_all!(note_metadata_attrs(results))
       end
+
+      track_internal_event(
+        'autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set',
+        project: project,
+        additional_properties: {
+          value: vulnerabilities_to_resolve.size
+        }
+      )
     end
 
     def state_transition_attrs
