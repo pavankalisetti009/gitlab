@@ -37,7 +37,7 @@ module Billing
     end
 
     def card_classes
-      "gl-text-left gl-mt-7 gl-mr-7 gl-border-none billing-plan-card"
+      "gl-text-left gl-mt-7 gl-mr-7 gl-border-none billing-plan-card gl-bg-transparent"
     end
 
     def card_testid
@@ -45,7 +45,7 @@ module Billing
     end
 
     def header_classes
-      return "gl-border-none gl-bg-transparent gl-p-0 gl-h-0\!" if trial?
+      return "gl-border-none gl-p-0 gl-h-0\!" if trial?
 
       "gl-text-center gl-border-none gl-p-0 gl-leading-28 #{plan.header_classes}"
     end
@@ -66,7 +66,7 @@ module Billing
     end
 
     def footer_classes
-      "gl-border-none gl-bg-transparent gl-px-0"
+      "gl-border-none gl-px-0"
     end
 
     def name
@@ -181,7 +181,6 @@ module Billing
           }
         },
         'ultimate' => {
-          header_classes: "gl-bg-transparent",
           card_body_border_classes: "gl-rounded-tr-base gl-rounded-tl-base",
           elevator_pitch: s_("BillingPlans|For enterprises looking to deliver software faster"),
           features_elevator_pitch: s_("BillingPlans|Everything from Premium, plus:"),
