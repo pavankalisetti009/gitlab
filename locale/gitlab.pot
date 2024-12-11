@@ -60202,6 +60202,12 @@ msgstr ""
 msgid "UserMapping|For more information, see accept contribution reassignment (%{help_link}). If you do not recognize this request, report abuse (%{report_link})."
 msgstr ""
 
+msgid "UserMapping|Full user details could not be fetched from source instance. %{linkStart}Why are placeholder users created%{linkEnd}?"
+msgstr ""
+
+msgid "UserMapping|Full user details missing"
+msgstr ""
+
 msgid "UserMapping|How do I accept reassignments?"
 msgstr ""
 
@@ -60371,6 +60377,9 @@ msgid "UserMapping|Upload the completed CSV file."
 msgstr ""
 
 msgid "UserMapping|Use a CSV file to reassign contributions from placeholder users to existing group members. For more information, see %{linkStart}reassign contributions and memberships%{linkEnd}."
+msgstr ""
+
+msgid "UserMapping|User ID"
 msgstr ""
 
 msgid "UserMapping|You can assign only active users with regular or auditor access. To assign users with administrator access, ask your GitLab administrator to enable the \"Allow contribution mapping to admins\" setting."
