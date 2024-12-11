@@ -21,13 +21,15 @@ module Gitlab
 
     # rubocop: disable CodeReuse/ActiveRecord
     def self.gitlab_com_user_ids
-      l1_cache_backend.fetch(ALLOWED_USER_IDS_KEY, expires_in: EXPIRY_TIME_L1_CACHE) do
-        l2_cache_backend.fetch(ALLOWED_USER_IDS_KEY, expires_in: EXPIRY_TIME_L2_CACHE) do
-          group = Group.top_level.find_by(path: GITLAB_COM_GROUP)
-          if group
-            group.members.pluck_user_ids.to_set
-          else
-            []
+      Gitlab::SafeRequestStore.fetch(:gitlab_com_user_ids) do
+        l1_cache_backend.fetch(ALLOWED_USER_IDS_KEY, expires_in: EXPIRY_TIME_L1_CACHE) do
+          l2_cache_backend.fetch(ALLOWED_USER_IDS_KEY, expires_in: EXPIRY_TIME_L2_CACHE) do
+            group = Group.top_level.find_by(path: GITLAB_COM_GROUP)
+            if group
+              group.members.pluck_user_ids.to_set
+            else
+              []
+            end
           end
         end
       end
