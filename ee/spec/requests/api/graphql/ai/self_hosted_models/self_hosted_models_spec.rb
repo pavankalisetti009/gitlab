@@ -26,7 +26,8 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
       {
         "id" => self_hosted.to_global_id.to_s,
         "name" => self_hosted.name,
-        "model" => model_name_mapper[self_hosted.model],
+        "model" => self_hosted.model,
+        "modelDisplayName" => model_name_mapper[self_hosted.model],
         "endpoint" => self_hosted.endpoint,
         "hasApiToken" => self_hosted.api_token.present?
       }
@@ -43,6 +44,7 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
           id
           name
           model
+          modelDisplayName
           endpoint
           hasApiToken
         }
@@ -100,6 +102,7 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
             id
             name
             model
+            modelDisplayName
             endpoint
             apiToken
           }
@@ -112,7 +115,8 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
       [
         { "id" => self_hosted_models.first.to_global_id.to_s,
           "name" => self_hosted_models.first.name,
-          "model" => model_name_mapper[self_hosted_models.first.model],
+          "model" => self_hosted_models.first.model,
+          "modelDisplayName" => model_name_mapper[self_hosted_models.first.model],
           "endpoint" => self_hosted_models.first.endpoint,
           "apiToken" => self_hosted_models.first.api_token }
       ]

@@ -174,7 +174,7 @@ export default {
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"
           ><rect y="6" :width="item.loaderWidth.model" height="36" rx="10" />
         </gl-skeleton-loader>
-        <span v-else>{{ item.model }}</span>
+        <span v-else>{{ item.modelDisplayName }}</span>
       </template>
       <template #cell(endpoint)="{ item }">
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"

@@ -47,9 +47,9 @@ export default {
   },
   computed: {
     dropdownItems() {
-      const modelOptions = this.compatibleModels.map((model) => ({
-        value: model.id,
-        text: `${model.name} (${model.model})`,
+      const modelOptions = this.compatibleModels.map(({ name, modelDisplayName, id }) => ({
+        value: id,
+        text: `${name} (${modelDisplayName})`,
       }));
 
       // Add an option to disable the feature
@@ -68,7 +68,7 @@ export default {
         return s__('AdminAIPoweredFeatures|Disabled');
       }
       if (this.selectedModel) {
-        return `${this.selectedModel?.name} (${this.selectedModel?.model})`;
+        return `${this.selectedModel.name} (${this.selectedModel.modelDisplayName})`;
       }
 
       return s__('AdminAIPoweredFeatures|Select a self-hosted model');

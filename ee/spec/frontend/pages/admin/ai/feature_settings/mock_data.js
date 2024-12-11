@@ -1,7 +1,7 @@
 export const mockSelfHostedModels = [
-  { id: 1, name: 'Model 1', model: 'mistral' },
-  { id: 2, name: 'Model 2', model: 'codellama' },
-  { id: 3, name: 'Model 3', model: 'codegemma' },
+  { id: 1, name: 'Model 1', model: 'mistral', modelDisplayName: 'Mistral' },
+  { id: 2, name: 'Model 2', model: 'codellama', modelDisplayName: 'Code Llama' },
+  { id: 3, name: 'Model 3', model: 'codegemma', modelDisplayName: 'CodeGemma' },
 ];
 
 export const mockAiFeatureSettings = [
