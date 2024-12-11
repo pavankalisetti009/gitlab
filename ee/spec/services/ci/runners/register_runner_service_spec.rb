@@ -5,20 +5,15 @@ require 'spec_helper'
 RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, feature_category: :fleet_visibility do
   let(:registration_token) { 'abcdefg123456' }
   let(:token) {}
-  let(:audit_service) { instance_double(::AuditEvents::RunnerAuditEventService) }
+  let(:audit_service) { instance_double(::AuditEvents::RegisterRunnerAuditEventService) }
   let(:runner) { execute.payload[:runner] }
-  let(:common_kwargs) do
-    {
-      name: 'ci_runner_registered',
-      message: s_('Runners|Registered %{runner_type} CI runner'),
-      token_field: :runner_registration_token
-    }
-  end
 
   before do
     stub_application_setting(runners_registration_token: registration_token)
     stub_application_setting(valid_runner_registrars: ApplicationSetting::VALID_RUNNER_REGISTRAR_TYPES)
     stub_application_setting(allow_runner_registration_token: true)
+
+    expect(audit_service).to receive(:track_event).once.and_return('track_event_return_value')
   end
 
   subject(:execute) { described_class.new(token, {}).execute }
@@ -32,15 +27,32 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
   end
 
   shared_examples 'a service logging a runner registration audit event' do
-    it 'returns newly-created runner' do
-      expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-        .with(last_ci_runner, token, token_scope, **common_kwargs)
-        .and_return(audit_service)
-      expect(audit_service).to receive(:track_event).once
+    it 'returns newly-created Runner' do
+      expect(::AuditEvents::RegisterRunnerAuditEventService).to receive(:new)
+        .with(last_ci_runner, token, token_scope)
+        .once.and_return(audit_service)
 
       expect(execute).to be_success
 
       expect(runner).to eq(::Ci::Runner.last)
+    end
+  end
+
+  shared_examples 'a service logging a failed runner registration audit event' do
+    before do
+      expect(::AuditEvents::RegisterRunnerAuditEventService).to receive(:new)
+        .with(a_ci_runner_with_errors, token, token_scope)
+        .once.and_return(audit_service)
+    end
+
+    it 'returns a Runner' do
+      expect(execute).to be_success
+
+      expect(runner).to be_an_instance_of(::Ci::Runner)
+    end
+
+    it 'returns a non-persisted Runner' do
+      expect(runner.persisted?).to be_falsey
     end
   end
 
@@ -58,6 +70,15 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
     let(:token_scope) { project }
 
     it_behaves_like 'a service logging a runner registration audit event'
+
+    context 'when it exceeds the application limits' do
+      before do
+        create(:ci_runner, :project, :online, projects: [project])
+        create(:plan_limits, :default_plan, ci_registered_project_runners: 1)
+      end
+
+      it_behaves_like 'a service logging a failed runner registration audit event'
+    end
   end
 
   context 'when group token is used' do
@@ -67,5 +88,14 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
     let(:token_scope) { group }
 
     it_behaves_like 'a service logging a runner registration audit event'
+
+    context 'when it exceeds the application limits' do
+      before do
+        create(:ci_runner, :group, :online, groups: [group])
+        create(:plan_limits, :default_plan, ci_registered_group_runners: 1)
+      end
+
+      it_behaves_like 'a service logging a failed runner registration audit event'
+    end
   end
 end
