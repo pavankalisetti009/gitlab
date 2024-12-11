@@ -301,7 +301,7 @@ RSpec.describe 'Login', feature_category: :system_access do
     let_it_be(:user) { create(:omniauth_user, password_automatically_set: false) }
 
     before do
-      stub_ee_application_setting(disable_password_authentication_for_users_with_sso_identities?: true)
+      stub_application_setting(disable_password_authentication_for_users_with_sso_identities: true)
     end
 
     it 'does not allow password authentication' do
