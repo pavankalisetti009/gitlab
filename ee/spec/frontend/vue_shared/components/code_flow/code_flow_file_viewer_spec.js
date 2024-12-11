@@ -4,7 +4,7 @@ import Vue from 'vue';
 import CodeFlowFileViewer from 'ee/vue_shared/components/code_flow/code_flow_file_viewer.vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
-import BlobHeader from '~/blob/components/blob_header.vue';
+import BlobFilepath from '~/blob/components/blob_header_filepath.vue';
 
 Vue.use(VueApollo);
 
@@ -67,12 +67,12 @@ describe('Vulnerability Code Flow File Viewer component', () => {
         selectedStepNumber: defaultProps.selectedStepNumber,
         ...props,
       },
-      stubs: { GlSprintf, GlButton, BlobHeader },
+      stubs: { GlSprintf, GlButton, BlobFilepath },
     });
   };
 
   const findVulFileContentViewer = () => wrapper.findComponent(VulnerabilityFileContentViewer);
-  const findBlobHeader = () => wrapper.findComponent(BlobHeader);
+  const findBlobFilepath = () => wrapper.findComponent(BlobFilepath);
   const findFileTitle = () => wrapper.findByTestId('file-title-content');
   const findGlAlert = () => wrapper.findComponent(GlAlert);
   const findExpandTopButton = () => wrapper.findByTestId('expand-top-lines');
@@ -102,7 +102,7 @@ describe('Vulnerability Code Flow File Viewer component', () => {
 
     it('shows the source code without markdown', () => {
       createWrapper();
-      expect(findBlobHeader().exists()).toBe(true);
+      expect(findBlobFilepath().exists()).toBe(true);
       expect(findCollapseExpandButton().exists()).toBe(true);
       expect(findVulFileContentViewer().exists()).toBe(false);
     });

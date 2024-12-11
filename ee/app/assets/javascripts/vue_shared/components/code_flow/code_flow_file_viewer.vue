@@ -2,7 +2,7 @@
 import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
 import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
-import BlobHeader from '~/blob/components/blob_header.vue';
+import BlobFilepath from '~/blob/components/blob_header_filepath.vue';
 import { __, s__ } from '~/locale';
 import { highlightContent } from '~/highlight_js';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -15,11 +15,12 @@ import markMultipleLines from './plugins/mark_multiple_lines';
 export default {
   name: 'CodeFlowFileViewer',
   components: {
-    BlobHeader,
+    BlobFilepath,
     VulnerabilityFileContentViewer,
     GlButton,
     GlSprintf,
     GlAlert,
+    WebIdeLink: () => import('ee_else_ce/vue_shared/components/web_ide_link.vue'),
   },
   props: {
     hlInfo: {
@@ -158,25 +159,41 @@ export default {
     </gl-alert>
 
     <template v-else>
-      <blob-header
-        :blob="blobInfo"
-        :show-blob-size="false"
-        show-path-as-link
-        hide-default-actions
-        edit-button-variant="default"
-      >
-        <template #prepend>
-          <gl-button
-            class="gl-mr-2"
-            category="tertiary"
-            size="small"
-            :icon="collapseIcon"
-            :aria-label="labelToggleFile"
-            data-testid="collapse-expand-file"
-            @click="handleToggleFile"
+      <div class="file-title-flex-parent">
+        <div class="gl-flex">
+          <blob-filepath
+            :blob="blobInfo"
+            :show-path="true"
+            :show-as-link="true"
+            :show-blob-size="false"
+          >
+            <template #filepath-prepend>
+              <gl-button
+                class="gl-mr-2"
+                category="tertiary"
+                size="small"
+                :icon="collapseIcon"
+                :aria-label="labelToggleFile"
+                data-testid="collapse-expand-file"
+                @click="handleToggleFile"
+              />
+            </template>
+          </blob-filepath>
+        </div>
+
+        <div class="file-actions gl-flex gl-flex-wrap">
+          <web-ide-link
+            button-variant="default"
+            class="gl-mr-3"
+            :edit-url="blobInfo.editBlobPath"
+            :web-ide-url="blobInfo.ideEditPath"
+            show-edit-button
+            is-blob
+            disable-fork-modal
+            v-on="$listeners"
           />
-        </template>
-      </blob-header>
+        </div>
+      </div>
 
       <div
         v-if="expanded"
