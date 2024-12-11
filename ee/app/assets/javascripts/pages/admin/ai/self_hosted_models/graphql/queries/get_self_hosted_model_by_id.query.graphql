@@ -4,6 +4,7 @@ query getSelfHostedModelById($id: AiSelfHostedModelID) {
       id
       name
       model
+      modelDisplayName
       identifier
       endpoint
       apiToken
