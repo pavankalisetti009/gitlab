@@ -157,6 +157,51 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       let_it_be(:vulnerabilities) { create_list(:vulnerability, 2, :with_findings, project: project) }
       let_it_be(:vulnerability_ids) { vulnerabilities.map(&:id) }
 
+      describe 'internal event tracking' do
+        let(:event) { 'autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set' }
+        let(:distinct_count_weekly) do
+          'redis_hll_counters.count_distinct_project_id_from_vulnerability_auto_resolution_weekly'
+        end
+
+        let(:distinct_count_monthly) do
+          'redis_hll_counters.count_distinct_project_id_from_vulnerability_auto_resolution_monthly'
+        end
+
+        let(:distinct_count_total) { 'redis_hll_counters.count_distinct_project_id_from_vulnerability_auto_resolution' }
+        let(:total_count_weekly) do
+          'sums.count_total_autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set_weekly'
+        end
+
+        let(:total_count_monthly) do
+          'sums.count_total_autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set_monthly'
+        end
+
+        let(:total_count) do
+          'sums.count_total_autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set'
+        end
+
+        let(:additional_properties) do
+          {
+            value: vulnerabilities.size
+          }
+        end
+
+        it 'tracks internal events', :clean_gitlab_redis_shared_state, :aggregate_failures do
+          expect { service.execute }
+            .to trigger_internal_events(event)
+            .with(
+              project: project,
+              namespace: project.namespace,
+              additional_properties: additional_properties
+            ).and increment_usage_metrics(distinct_count_weekly).by(1)
+              .and increment_usage_metrics(distinct_count_monthly).by(1)
+              .and increment_usage_metrics(distinct_count_total).by(1)
+              .and increment_usage_metrics(total_count_weekly).by(2)
+              .and increment_usage_metrics(total_count_monthly).by(2)
+              .and increment_usage_metrics(total_count).by(2)
+        end
+      end
+
       it 'does not introduce N+1 queries' do
         control = ActiveRecord::QueryRecorder.new do
           described_class.new(project, vulnerability_ids, budget).execute
