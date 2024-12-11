@@ -10,6 +10,7 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
   let_it_be(:auditor) { create(:user, auditor: true) }
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:events) { create_list(:group_audit_event, 5, entity_id: group.id) }
+  let_it_be(:new_events) { create_list(:audit_events_group_audit_event, 5, group_id: group.id) }
 
   describe 'GET #index' do
     let(:sort) { nil }
@@ -25,15 +26,36 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
 
         allow(Gitlab::Audit::Levels::Group).to receive(:new).and_return(level)
         allow(AuditEventFinder).to receive(:new).and_call_original
+        allow(AuditEvents::GroupAuditEventFinder).to receive(:new).and_call_original
       end
 
       shared_examples 'AuditEventFinder params' do
-        it 'has the correct params' do
-          request
+        context 'when read_audit_events_from_new_tables is disabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: false)
+          end
 
-          expect(AuditEventFinder).to have_received(:new).with(
-            level: level, params: audit_events_params
-          )
+          it 'has the correct params' do
+            request
+
+            expect(AuditEventFinder).to have_received(:new).with(
+              level: level, params: audit_events_params
+            )
+          end
+        end
+
+        context 'when read_audit_events_from_new_tables is enabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: true)
+          end
+
+          it 'has the correct params' do
+            request
+
+            expect(AuditEvents::GroupAuditEventFinder).to have_received(:new).with(
+              group: group, params: audit_events_params
+            )
+          end
         end
       end
 
@@ -64,13 +86,34 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
 
       context 'ordering' do
         shared_examples 'orders by id descending' do
-          it 'orders by id descending' do
-            request
+          context 'when read_audit_events_from_new_tables is disabled' do
+            before do
+              stub_feature_flags(read_audit_events_from_new_tables: false)
+            end
 
-            actual_event_ids = assigns(:events).map { |event| event[:id] }
-            expected_event_ids = events.map(&:id).reverse
+            it 'orders by id descending' do
+              request
 
-            expect(actual_event_ids).to eq(expected_event_ids)
+              actual_event_ids = assigns(:events).map { |event| event[:id] }
+              expected_event_ids = events.map(&:id).reverse
+
+              expect(actual_event_ids).to eq(expected_event_ids)
+            end
+          end
+
+          context 'when read_audit_events_from_new_tables is enabled' do
+            before do
+              stub_feature_flags(read_audit_events_from_new_tables: true)
+            end
+
+            it 'orders by id descending' do
+              request
+
+              actual_event_ids = assigns(:events).map { |event| event[:id] }
+              expected_event_ids = new_events.map(&:id).reverse
+
+              expect(actual_event_ids).to eq(expected_event_ids)
+            end
           end
         end
 
@@ -87,13 +130,34 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
         context 'when sorting by oldest events first' do
           let(:sort) { 'created_asc' }
 
-          it 'orders by id ascending' do
-            request
+          context 'when read_audit_events_from_new_tables is disabled' do
+            before do
+              stub_feature_flags(read_audit_events_from_new_tables: false)
+            end
 
-            actual_event_ids = assigns(:events).map { |event| event[:id] }
-            expected_event_ids = events.map(&:id)
+            it 'orders by id ascending' do
+              request
 
-            expect(actual_event_ids).to eq(expected_event_ids)
+              actual_event_ids = assigns(:events).map { |event| event[:id] }
+              expected_event_ids = events.map(&:id)
+
+              expect(actual_event_ids).to eq(expected_event_ids)
+            end
+          end
+
+          context 'when read_audit_events_from_new_tables is enabled' do
+            before do
+              stub_feature_flags(read_audit_events_from_new_tables: true)
+            end
+
+            it 'orders by id ascending' do
+              request
+
+              actual_event_ids = assigns(:events).map { |event| event[:id] }
+              expected_event_ids = new_events.map(&:id)
+
+              expect(actual_event_ids).to eq(expected_event_ids)
+            end
           end
         end
 
