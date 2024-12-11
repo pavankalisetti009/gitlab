@@ -43,10 +43,9 @@ RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnera
     project.add_developer(user)
   end
 
-  context 'when feature flag is enabled' do
+  context 'when security_dashboard feature is licensed' do
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(cve_enrichment_querying: true)
     end
 
     it 'returns cve enrichment' do
@@ -99,20 +98,6 @@ RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnera
       )
 
       expect { post_graphql(query, current_user: user) }.not_to exceed_query_limit(control)
-    end
-  end
-
-  context 'when feature flag is disabled' do
-    before do
-      stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(cve_enrichment_querying: false)
-    end
-
-    it 'returns nil for cve enrichment' do
-      post_graphql(query, current_user: user)
-
-      expect(data).to contain_exactly(
-        { "cveEnrichment" => nil })
     end
   end
 end
