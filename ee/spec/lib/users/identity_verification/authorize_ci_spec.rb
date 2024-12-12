@@ -69,9 +69,9 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
           let(:error_message) { 'Identity verification is required in order to run CI jobs' }
         end
 
-        context 'when the feature flag is disabled' do
+        context 'when the application setting is disabled' do
           before do
-            stub_feature_flags(ci_requires_identity_verification_on_free_plan: false)
+            stub_application_setting(ci_requires_identity_verification_on_free_plan: false)
           end
 
           it { expect { authorize }.not_to raise_error }
@@ -112,9 +112,9 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
 
       it { is_expected.to eq(false) }
 
-      context 'when the feature flag is disabled' do
+      context 'when the application setting is disabled' do
         before do
-          stub_feature_flags(ci_requires_identity_verification_on_free_plan: false)
+          stub_application_setting(ci_requires_identity_verification_on_free_plan: false)
         end
 
         it { is_expected.to eq(true) }
