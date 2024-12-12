@@ -9,7 +9,7 @@ import {
 
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
-import { emptyRequirement } from '../constants';
+import { emptyRequirement, requirementEvents } from '../constants';
 
 import complianceRequirementControlsQuery from '../../../../graphql/compliance_requirement_controls.query.graphql';
 import EditSection from './edit_section.vue';
@@ -57,20 +57,48 @@ export default {
       complianceRequirementControls: [],
     };
   },
+  computed: {
+    requirementsWithControls() {
+      return this.requirements.map((requirement) => {
+        const controls = this.getControls(requirement.controlExpression);
+        return {
+          ...requirement,
+          controls,
+        };
+      });
+    },
+  },
   methods: {
-    showRequirementModal(requirement) {
-      this.requirementToEdit = requirement;
+    showRequirementModal(requirement, index = null) {
+      this.requirementToEdit = { ...requirement, index };
       this.$nextTick(() => {
         this.$refs.requirementModal.show();
       });
     },
+    handleCreate({ requirement, index }) {
+      this.$emit(requirementEvents.create, { requirement, index });
+      this.requirementToEdit = null;
+    },
+    handleUpdate({ requirement, index }) {
+      this.$emit(requirementEvents.update, { requirement, index });
+      this.requirementToEdit = null;
+    },
     getControls(controlExpression) {
-      const parsedExpression = JSON.parse(controlExpression);
-      return parsedExpression.conditions
-        .map((condition) =>
-          this.complianceRequirementControls.find((control) => control.id === condition.id),
-        )
-        .filter(Boolean);
+      if (!controlExpression) {
+        return [];
+      }
+      try {
+        const parsedExpression = JSON.parse(controlExpression);
+        const conditions = parsedExpression.conditions || [];
+
+        return conditions
+          .map((condition) =>
+            this.complianceRequirementControls.find((control) => control.id === condition.id),
+          )
+          .filter(Boolean);
+      } catch (error) {
+        return [];
+      }
     },
   },
   tableFields: [
@@ -109,6 +137,7 @@ export default {
     newRequirement: s__('ComplianceFrameworks|New requirement'),
   },
   emptyRequirement,
+  requirementEvents,
 };
 </script>
 <template>
@@ -121,7 +150,7 @@ export default {
       v-if="requirements.length"
       ref="requirementsTable"
       class="requirements-table gl-mb-6"
-      :items="requirements"
+      :items="requirementsWithControls"
       :fields="$options.tableFields"
       responsive
       stacked="md"
@@ -136,26 +165,35 @@ export default {
         {{ item.description }}
       </template>
       <template #cell(controls)="{ item }">
-        <ul
-          v-if="item.controlExpression && getControls(item.controlExpression).length"
-          class="gl-m-0 gl-p-0"
-        >
-          <li v-for="control in getControls(item.controlExpression)" :key="control.id">
+        <ul v-if="item.controls.length" class="gl-m-0 gl-p-0">
+          <li v-for="control in item.controls" :key="control.id">
             {{ control.name }}
           </li>
         </ul>
       </template>
 
-      <template #cell(action)="{ index }">
+      <template #cell(action)="{ item, index }">
         <gl-disclosure-dropdown
           icon="ellipsis_v"
           text-sr-only
           category="tertiary"
-          placement="right"
+          placement="bottom-end"
           boundary="viewport"
           no-caret
         >
-          <gl-disclosure-dropdown-item data-testid="delete-action" @action="$emit('delete', index)">
+          <gl-disclosure-dropdown-item
+            data-testid="edit-action"
+            @action="showRequirementModal(item, index)"
+          >
+            <template #list-item>
+              {{ $options.i18n.actionEdit }}
+            </template>
+          </gl-disclosure-dropdown-item>
+
+          <gl-disclosure-dropdown-item
+            data-testid="delete-action"
+            @action="$emit($options.requirementEvents.delete, index)"
+          >
             <template #list-item>
               {{ $options.i18n.actionDelete }}
             </template>
@@ -182,7 +220,8 @@ export default {
       :requirement-controls="complianceRequirementControls"
       :requirement="requirementToEdit"
       :is-new-framework="isNewFramework"
-      @save="$emit('save', $event)"
+      @[$options.requirementEvents.create]="handleCreate"
+      @[$options.requirementEvents.update]="handleUpdate"
     />
   </edit-section>
 </template>

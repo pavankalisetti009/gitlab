@@ -42,7 +42,7 @@ query getComplianceFrameworkWithPolicies(
             id
             name
             description
-            controlExpression @client
+            controlExpression
           }
         }
         projects {

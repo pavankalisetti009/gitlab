@@ -9,15 +9,18 @@ import {
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RequirementModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirement_modal.vue';
-import { emptyRequirement } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
+import {
+  emptyRequirement,
+  requirementEvents,
+} from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 import waitForPromises from 'helpers/wait_for_promises';
-import { mockRequirementControls } from 'ee_jest/compliance_dashboard/mock_data';
+import { mockRequirementControls, mockRequirements } from 'ee_jest/compliance_dashboard/mock_data';
 
 describe('RequirementModal', () => {
   let wrapper;
 
   const defaultProps = {
-    requirement: { ...emptyRequirement },
+    requirement: { ...emptyRequirement, index: null },
     requirementControls: mockRequirementControls,
     isNewFramework: true,
   };
@@ -126,19 +129,22 @@ describe('RequirementModal', () => {
       expect(findTooltip().attributes('title')).toBe('You can create a maximum of 5 controls');
     });
 
-    it('emits save event with requirement data including selected controls', async () => {
+    it('emits create event with requirement data including selected controls', async () => {
       const name = 'Test Name';
       const description = 'Test Description';
       await fillForm(name, description, ['scanner_sast_running', 'default_branch_protected']);
       submitModalForm();
       await waitForPromises();
-      expect(wrapper.emitted('save')).toMatchObject([
+      expect(wrapper.emitted(requirementEvents.create)).toMatchObject([
         [
           {
-            description,
-            name,
-            controlExpression:
-              '{"operator":"AND","conditions":[{"id":"scanner_sast_running"},{"id":"default_branch_protected"}]}',
+            index: null,
+            requirement: {
+              description,
+              name,
+              controlExpression:
+                '{"operator":"AND","conditions":[{"id":"scanner_sast_running","field":"scanner_sast_running","operator":"=","value":true},{"id":"default_branch_protected","field":"default_branch_protected","operator":"=","value":true}]}',
+            },
           },
         ],
       ]);
@@ -152,6 +158,35 @@ describe('RequirementModal', () => {
         expect.arrayContaining([expect.objectContaining({ value: 'scanner_sast_running' })]),
       );
     });
+  });
+
+  it('emits update event with correct data including controls when editing an existing requirement', async () => {
+    createComponent({
+      requirement: { ...mockRequirements[0], index: 0 },
+      isNewFramework: false,
+      requirementControls: mockRequirementControls,
+    });
+    await fillForm('Updated Name', 'Updated Description', [
+      'scanner_sast_running',
+      'default_branch_protected',
+    ]);
+    submitModalForm();
+    await waitForPromises();
+    expect(wrapper.emitted(requirementEvents.update)).toEqual([
+      [
+        {
+          requirement: {
+            name: 'Updated Name',
+            description: 'Updated Description',
+            id: mockRequirements[0].id,
+            __typename: 'ComplianceManagement::Requirement',
+            controlExpression:
+              '{"operator":"AND","conditions":[{"id":"scanner_sast_running","field":"scanner_sast_running","operator":"=","value":true},{"id":"default_branch_protected","field":"default_branch_protected","operator":"=","value":true}]}',
+          },
+          index: 0,
+        },
+      ],
+    ]);
   });
 
   describe('Validation', () => {
@@ -187,12 +222,15 @@ describe('RequirementModal', () => {
       await fillForm(name, description);
       submitModalForm();
       await waitForPromises();
-      expect(wrapper.emitted('save')).toEqual([
+      expect(wrapper.emitted(requirementEvents.create)).toEqual([
         [
           {
-            description,
-            name,
-            controlExpression: null,
+            index: null,
+            requirement: {
+              description,
+              name,
+              controlExpression: null,
+            },
           },
         ],
       ]);

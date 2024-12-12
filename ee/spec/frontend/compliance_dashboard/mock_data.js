@@ -441,10 +441,7 @@ export const mockRequirements = [
     id: 'gid://gitlab/ComplianceManagement::Requirement/1',
     name: 'SOC2',
     description: 'Controls for SOC2',
-    controlExpression: JSON.stringify({
-      operator: 'AND',
-      conditions: [{ id: 'minimum_approvals_required' }],
-    }),
+    controlExpression: null,
     __typename: 'ComplianceManagement::Requirement',
   },
   {
