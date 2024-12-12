@@ -8,6 +8,7 @@ module Search
       include NamespaceValidateable
       include Gitlab::Loggable
 
+      DEFAULT_RESERVED_STORAGE_BYTES = 1.gigabyte.freeze
       SEARCHEABLE_STATES = %i[ready].freeze
       SHOULD_BE_DELETED_STATES = %i[orphaned pending_deletion].freeze
       STORAGE_IDEAL_PERCENT_USED = 0.4
@@ -122,7 +123,7 @@ module Search
         #
         # Note: this will also **decrease** the reservation if the total needed is now lower.
         new_reserved_bytes = [ideal_reserved_storage_bytes, max_reservable_storage_bytes].min
-
+        new_reserved_bytes = DEFAULT_RESERVED_STORAGE_BYTES if new_reserved_bytes == 0
         return if new_reserved_bytes == reserved_storage_bytes
 
         self.reserved_storage_bytes = new_reserved_bytes

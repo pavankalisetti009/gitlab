@@ -451,6 +451,16 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         expect { idx.update_reserved_storage_bytes! }.to raise_error expected_error_message
       end
     end
+
+    context 'when used_storage_bytes is 0' do
+      let_it_be(:index) { create(:zoekt_index, used_storage_bytes: 0) }
+
+      it 'sets reserved_storage_bytes to DEFAULT_RESERVED_STORAGE_BYTES and watermark_level to overprovisioned' do
+        index.update_reserved_storage_bytes!
+        expect(index.reload.reserved_storage_bytes).to eq described_class::DEFAULT_RESERVED_STORAGE_BYTES
+        expect(index).to be_overprovisioned
+      end
+    end
   end
 
   describe '#free_storage_bytes' do
