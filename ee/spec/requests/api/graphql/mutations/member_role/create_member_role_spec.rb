@@ -10,7 +10,8 @@ RSpec.describe 'creating member role', feature_category: :permissions do
 
   let(:name) { 'member role name' }
   let(:group_path) { group.path }
-  let(:permissions) { MemberRole.all_customizable_permissions.keys.map(&:to_s).map(&:upcase) }
+  let(:permissions) { MemberRole.all_customizable_standard_permissions.keys.map(&:to_s).map(&:upcase) }
+  let(:enabled_permissions_result) { MemberRole.all_customizable_standard_permissions.keys }
   let(:input) do
     {
       group_path: group_path,
@@ -41,26 +42,6 @@ RSpec.describe 'creating member role', feature_category: :permissions do
 
   before_all do
     group.add_owner(current_user)
-  end
-
-  shared_examples 'a mutation that creates a member role' do
-    it 'returns success', :aggregate_failures do
-      post_graphql_mutation(mutation, current_user: current_user)
-
-      expect(graphql_errors).to be_nil
-
-      expect(create_member_role['memberRole']['enabledPermissions']['nodes'].flat_map(&:values))
-        .to match_array(permissions)
-    end
-
-    it 'creates the member role', :aggregate_failures do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }
-        .to change { MemberRole.count }.by(1)
-
-      member_role = MemberRole.last
-
-      expect(member_role.read_vulnerability).to eq(true)
-    end
   end
 
   context 'without the custom roles feature' do

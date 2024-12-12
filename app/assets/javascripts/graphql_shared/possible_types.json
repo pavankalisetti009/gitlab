@@ -177,6 +177,7 @@
     "Note"
   ],
   "RoleInterface": [
+    "AdminMemberRole",
     "MemberRole",
     "StandardRole"
   ],

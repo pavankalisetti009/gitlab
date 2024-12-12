@@ -92,8 +92,12 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       Gitlab::CustomRoles::Definition.all
     end
 
-    def admin_permissions
-      [:read_admin_dashboard]
+    def all_customizable_standard_permissions
+      MemberRole.all_customizable_permissions.select { |_k, v| !v[:admin_ability] }
+    end
+
+    def all_customizable_admin_permissions
+      MemberRole.all_customizable_permissions.select { |_k, v| v[:admin_ability] }
     end
 
     def all_customizable_project_permissions
@@ -104,7 +108,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       MemberRole.all_customizable_permissions.select { |_k, v| v[:group_ability] }.keys
     end
 
-    def all_customizable_admin_permissions
+    def all_customizable_admin_permission_keys
       MemberRole.all_customizable_permissions.select { |_k, v| v[:admin_ability] }.keys
     end
 
@@ -132,7 +136,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   private
 
   def admin_related_permissions
-    self.class.admin_permissions & permissions.symbolize_keys.keys
+    self.class.all_customizable_admin_permission_keys & permissions.symbolize_keys.keys
   end
 
   def admin_related_role?

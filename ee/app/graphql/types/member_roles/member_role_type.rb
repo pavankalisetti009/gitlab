@@ -21,7 +21,7 @@ module Types
         description: 'Base access level for the custom role.'
 
       field :enabled_permissions,
-        ::Types::MemberRoles::CustomizablePermissionType.connection_type,
+        ::Types::Members::CustomizableStandardPermissionType.connection_type,
         null: false,
         experiment: { milestone: '16.5' },
         description: 'Array of all permissions enabled for the custom role.'
