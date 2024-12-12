@@ -17,13 +17,8 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import highlightMixin from '~/repository/mixins/highlight_mixin';
 import getRefMixin from '~/repository/mixins/get_ref';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import {
-  simpleViewerMock,
-  richViewerMock,
-  projectMock,
-  userPermissionsMock,
-  propsMock,
-} from 'jest/repository/mock_data';
+import { simpleViewerMock, richViewerMock, propsMock } from 'jest/repository/mock_data';
+import { projectMock, userPermissionsMock } from 'ee_jest/repository/mock_data';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 
 jest.mock('~/lib/utils/common_utils');
