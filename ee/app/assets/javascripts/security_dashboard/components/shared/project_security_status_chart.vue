@@ -35,7 +35,7 @@ export default {
       [SEVERITY_GROUP_D]: 'gl-text-red-700',
       [SEVERITY_GROUP_C]: 'gl-text-orange-600',
       [SEVERITY_GROUP_B]: 'gl-text-orange-400',
-      [SEVERITY_GROUP_A]: 'gl-text-green-500',
+      [SEVERITY_GROUP_A]: 'gl-text-success',
     },
     severityLevels: {
       [SEVERITY_LEVEL_CRITICAL]: 'gl-text-red-800',

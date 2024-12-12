@@ -54,7 +54,7 @@ export const healthStatusIconMap = {
 };
 
 export const healthStatusColorMap = {
-  [HEALTH_STATUS_ON_TRACK]: 'gl-text-green-500',
+  [HEALTH_STATUS_ON_TRACK]: 'gl-text-success',
   [HEALTH_STATUS_NEEDS_ATTENTION]: 'gl-text-orange-500',
   [HEALTH_STATUS_AT_RISK]: 'gl-text-red-500',
 };

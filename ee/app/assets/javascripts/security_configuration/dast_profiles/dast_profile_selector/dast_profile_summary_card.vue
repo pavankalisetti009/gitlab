@@ -72,9 +72,9 @@ export default {
             v-if="isProfileInUse"
             v-gl-tooltip="$options.i18n.selectedProfileTooltip"
             data-testid="in-use-label"
-            class="gl-pl-2 gl-text-green-500"
+            class="gl-pl-2 gl-text-success"
           >
-            <gl-icon name="check-circle-filled" :size="16" />
+            <gl-icon name="check-circle-filled" :size="16" variant="success" />
             {{ $options.i18n.selectedProfileLabel }}
           </span>
         </div>

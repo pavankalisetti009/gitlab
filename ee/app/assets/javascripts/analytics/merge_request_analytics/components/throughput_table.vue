@@ -309,10 +309,10 @@ export default {
               </li>
               <li
                 v-if="item.approvedBy.nodes.length"
-                class="gl-text-green-500"
+                class="gl-text-success"
                 :data-testid="$options.testIds.APPROVED"
               >
-                <gl-icon name="approval" class="gl-mr-2" /><span>{{
+                <gl-icon name="approval" class="gl-mr-2" variant="success" /><span>{{
                   formatApprovalText(item.approvedBy.nodes.length)
                 }}</span>
               </li>
@@ -349,7 +349,7 @@ export default {
 
       <template #cell(line_changes)="{ item }">
         <div :data-testid="$options.testIds.LINE_CHANGES">
-          <span class="gl-font-bold gl-text-green-500">{{
+          <span class="gl-font-bold gl-text-success">{{
             formatLineChangeAdditions(item.diffStatsSummary.additions)
           }}</span>
           <span class="gl-font-bold gl-text-red-500">{{

@@ -133,8 +133,8 @@ export default {
     <slot name="additional-details"></slot>
 
     <info-row v-if="showStatus" :label="$options.i18n.statusTitle">
-      <div v-if="policy.enabled" class="gl-text-green-500" data-testid="enabled-status-text">
-        <gl-icon name="check-circle-filled" class="gl-mr-3" />{{ statusLabel }}
+      <div v-if="policy.enabled" class="gl-text-success" data-testid="enabled-status-text">
+        <gl-icon name="check-circle-filled" class="gl-mr-3" variant="success" />{{ statusLabel }}
       </div>
       <div v-else class="gl-text-subtle" data-testid="not-enabled-status-text">
         {{ statusLabel }}

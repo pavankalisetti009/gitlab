@@ -297,8 +297,8 @@ export default {
         <span v-if="isFailedStatus(status)" class="gl-text-red-500">
           <gl-icon name="status_failed" /> {{ __('Fail') }}
         </span>
-        <span v-else class="gl-text-green-500">
-          <gl-icon name="status_success" /> {{ __('Success') }}
+        <span v-else class="gl-text-success">
+          <gl-icon name="status_success" variant="success" /> {{ __('Success') }}
         </span>
       </template>
 

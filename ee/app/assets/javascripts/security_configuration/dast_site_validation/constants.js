@@ -57,7 +57,7 @@ export const DAST_SITE_VALIDATION_STATUS_PROPS = {
   [DAST_SITE_VALIDATION_STATUS.PASSED]: {
     labelText: s__('DastSiteValidation|Validated'),
     name: 'status-success',
-    class: 'gl-text-green-500',
+    class: 'gl-text-success',
     title: s__(
       'DastSiteValidation|Validation succeeded. Both active and passive scans can be run against the target site.',
     ),
