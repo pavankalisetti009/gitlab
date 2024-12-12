@@ -23,6 +23,8 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
         .to have_and_belong_to_many(:external_status_checks)
         .class_name('::MergeRequests::ExternalStatusCheck')
     end
+
+    it { is_expected.to have_one(:squash_option) }
   end
 
   shared_examples 'uniqueness validation' do |access_level_class|

@@ -17,6 +17,17 @@ module EE
             type: ::Types::BranchRules::ExternalStatusCheckType.connection_type,
             null: true,
             description: 'External status checks configured for this branch rule.'
+
+          field :squash_option,
+            type: ::Types::Projects::BranchRules::SquashOptionType,
+            null: true,
+            description: 'The default behavior for squashing in merge requests. ' \
+              'Returns null if `branch_rule_squash_settings` feature flag is disabled.',
+            experiment: { milestone: '17.7' }
+
+          def squash_option
+            object.squash_option if ::Feature.enabled?(:branch_rule_squash_settings, object.project)
+          end
         end
       end
     end

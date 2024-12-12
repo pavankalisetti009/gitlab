@@ -19,6 +19,8 @@ module EE
       scope :preload_access_levels, -> { preload(:push_access_levels, :merge_access_levels, :unprotect_access_levels) }
 
       attr_accessor :protected_from_deletion
+
+      has_one :squash_option, class_name: 'Projects::BranchRules::SquashOption'
     end
 
     class_methods do
