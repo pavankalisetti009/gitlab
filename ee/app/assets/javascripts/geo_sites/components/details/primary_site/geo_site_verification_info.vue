@@ -1,9 +1,10 @@
 <script>
-import { GlCard, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
+import { GlCard, GlPopover, GlLink } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapGetters } from 'vuex';
 import { HELP_INFO_URL } from 'ee/geo_sites/constants';
 import { s__, __ } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import GeoSiteProgressBar from '../geo_site_progress_bar.vue';
 
 export default {
@@ -20,10 +21,10 @@ export default {
   },
   components: {
     GlCard,
-    GlIcon,
     GlPopover,
     GlLink,
     GeoSiteProgressBar,
+    HelpIcon,
   },
   props: {
     site: {
@@ -45,11 +46,7 @@ export default {
   <gl-card header-class="gl-flex gl-items-center">
     <template #header>
       <h5 class="gl-my-0">{{ $options.i18n.verificationInfo }}</h5>
-      <gl-icon
-        ref="verificationInfo"
-        name="question-o"
-        class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
-      />
+      <help-icon ref="verificationInfo" class="gl-ml-2" />
       <gl-popover
         :target="() => $refs.verificationInfo && $refs.verificationInfo.$el"
         placement="top"

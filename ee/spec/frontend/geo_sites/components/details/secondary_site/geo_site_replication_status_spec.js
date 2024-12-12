@@ -1,6 +1,7 @@
 import { GlPopover, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteReplicationStatus from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_status.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { REPLICATION_STATUS_UI, REPLICATION_PAUSE_URL } from 'ee/geo_sites/constants';
 import { MOCK_SECONDARY_SITE } from 'ee_jest/geo_sites/mock_data';
 
@@ -17,11 +18,14 @@ describe('GeoSiteReplicationStatus', () => {
         ...defaultProps,
         ...props,
       },
+      stubs: {
+        HelpIcon,
+      },
     });
   };
 
   const findReplicationStatusText = () => wrapper.findByTestId('replication-status-text');
-  const findQuestionIcon = () => wrapper.findComponent({ ref: 'replicationStatus' });
+  const findQuestionIcon = () => wrapper.findComponent(HelpIcon);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findGlPopoverLink = () => findGlPopover().findComponent(GlLink);
 

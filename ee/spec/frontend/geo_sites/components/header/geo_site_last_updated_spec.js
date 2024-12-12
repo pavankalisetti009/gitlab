@@ -1,5 +1,6 @@
-import { GlPopover, GlLink, GlIcon, GlSprintf } from '@gitlab/ui';
+import { GlPopover, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import GeoSiteLastUpdated from 'ee/geo_sites/components/header/geo_site_last_updated.vue';
 import {
   HELP_SITE_HEALTH_URL,
@@ -26,12 +27,12 @@ describe('GeoSiteLastUpdated', () => {
         ...defaultProps,
         ...props,
       },
-      stubs: { GlSprintf },
+      stubs: { GlSprintf, HelpIcon },
     });
   };
 
   const findMainText = () => wrapper.findByTestId('last-updated-main-text');
-  const findGlIcon = () => wrapper.findComponent(GlIcon);
+  const findGlIcon = () => wrapper.findComponent(HelpIcon);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findPopoverText = () => wrapper.findByTestId('geo-last-updated-text');
   const findPopoverLink = () => findGlPopover().findComponent(GlLink);
