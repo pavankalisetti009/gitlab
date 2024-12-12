@@ -27,7 +27,7 @@ module API
         ).execute
 
         if response.status == :success
-          present response.payload, with: ::API::Entities::UserSafe, current_user: current_user
+          present response.payload[:user], with: ::API::Entities::UserSafe, current_user: current_user
         elsif response.reason == :forbidden
           forbidden!(response.message)
         else

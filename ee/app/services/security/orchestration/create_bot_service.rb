@@ -19,18 +19,22 @@ module Security
         end
 
         User.transaction do
-          bot_user = ::Users::CreateBotService.new(
+          response = ::Users::CreateBotService.new(
             current_user,
             bot_user_params
           ).execute
 
-          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-            %w[members notification_settings events projects], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424290'
-          ) do
-            if skip_authorization
-              project.add_guest(bot_user)
-            else
-              project.add_guest(bot_user, current_user: current_user)
+          if response.success?
+            bot_user = response.payload[:user]
+
+            Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+              %w[members notification_settings events projects], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424290'
+            ) do
+              if skip_authorization
+                project.add_guest(bot_user)
+              else
+                project.add_guest(bot_user, current_user: current_user)
+              end
             end
           end
         end

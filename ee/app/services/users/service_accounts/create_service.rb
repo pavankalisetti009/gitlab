@@ -17,11 +17,7 @@ module Users
 
         return error(error_messages[:no_seats], :forbidden) unless ultimate? || seats_available?
 
-        user = create_user
-
-        return error(user.errors.full_messages.to_sentence, :bad_request) unless user.persisted?
-
-        success(user)
+        create_user
       end
 
       private
@@ -79,10 +75,6 @@ module Users
 
       def error(message, reason)
         ServiceResponse.error(message: message, reason: reason)
-      end
-
-      def success(user)
-        ServiceResponse.success(payload: user)
       end
 
       def ultimate?

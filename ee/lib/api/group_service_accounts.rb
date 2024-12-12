@@ -54,7 +54,7 @@ module API
                        .execute
 
           if response.status == :success
-            present response.payload, with: Entities::UserSafe, current_user: current_user
+            present response.payload[:user], with: Entities::UserSafe, current_user: current_user
           else
             bad_request!(response.message)
           end

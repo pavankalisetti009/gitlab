@@ -33,7 +33,7 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
           # user creation will also send confirmaiton instructions which is also audited
           allow(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(name: 'email_confirmation_sent'))
 
-          user = service.execute
+          user = service.execute.payload[:user]
 
           expect(AuditEvent.last).to have_attributes(
             author_id: current_user.id,

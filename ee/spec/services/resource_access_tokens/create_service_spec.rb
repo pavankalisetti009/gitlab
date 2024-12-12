@@ -149,7 +149,7 @@ RSpec.describe ResourceAccessTokens::CreateService, feature_category: :system_ac
 
               before do
                 allow_next_instance_of(ResourceAccessTokens::CreateService) do |service|
-                  allow(service).to receive(:create_user).and_return(user)
+                  allow(service).to receive(:create_user).and_return(ServiceResponse.success(payload: { user: user }))
                   allow(service).to receive(:create_membership).and_return(unpersisted_member)
                 end
 
