@@ -32,7 +32,8 @@ module Search
         }
       }
 
-      project_count = client.count(index: Project.index_name, routing: project.es_id, body: query)['count']
+      project_count = client.count(index: Project.index_name, routing: project.es_parent, body: query)['count']
+
       project_count == 0
     end
 
