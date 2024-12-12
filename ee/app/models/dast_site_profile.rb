@@ -5,7 +5,6 @@ class DastSiteProfile < Gitlab::Database::SecApplicationRecord
                       Dast::SiteProfileSecretVariable::REQUEST_HEADERS].freeze
 
   include Sanitizable
-  include Gitlab::Utils::StrongMemoize
 
   belongs_to :project
   belongs_to :dast_site
@@ -200,18 +199,9 @@ class DastSiteProfile < Gitlab::Database::SecApplicationRecord
   end
 
   def api_secret_variable(key, value)
-    secret = if ci_optimize_memory_for_variables_enabled?
-               value.to_hash_variable
-             else
-               value.to_runner_variable
-             end
+    secret = value.to_hash_variable
 
     secret[:key] = Dast::SiteProfileSecretVariable::API_SCAN_VARIABLES_MAP[key]
     secret
   end
-
-  def ci_optimize_memory_for_variables_enabled?
-    ::Feature.enabled?(:ci_optimize_memory_for_variables, project)
-  end
-  strong_memoize_attr :ci_optimize_memory_for_variables_enabled?
 end
