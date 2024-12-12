@@ -809,4 +809,20 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect { execute_task }.to publish_event(Search::Zoekt::IndexToEvictEvent).with(expected_data)
     end
   end
+
+  describe '#adjust_indices_reserved_storage_bytes' do
+    let(:task) { :adjust_indices_reserved_storage_bytes }
+    let_it_be(:overprovisioned_pending) { create(:zoekt_index, :overprovisioned) }
+    let_it_be(:overprovisioned_ready) { create(:zoekt_index, :overprovisioned, :ready) }
+    let_it_be(:high_watermark_exceeded_pending) { create(:zoekt_index, :high_watermark_exceeded) }
+    let_it_be(:high_watermark_exceeded_ready) { create(:zoekt_index, :high_watermark_exceeded, :ready) }
+    let_it_be(:healthy) { create(:zoekt_index, :healthy) }
+
+    it 'publishes an AdjustIndicesReservedStorageBytesEvent for required indices' do
+      expected = {
+        index_ids: [overprovisioned_ready, high_watermark_exceeded_pending, high_watermark_exceeded_ready].map(&:id)
+      }
+      expect { execute_task }.to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent).with(expected)
+    end
+  end
 end

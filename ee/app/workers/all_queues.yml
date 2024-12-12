@@ -2253,6 +2253,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: search_zoekt_adjust_indices_reserved_storage_bytes_event
+  :worker_name: Search::Zoekt::AdjustIndicesReservedStorageBytesEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: search_zoekt_default_branch_changed
   :worker_name: Search::Zoekt::DefaultBranchChangedWorker
   :feature_category: :global_search
