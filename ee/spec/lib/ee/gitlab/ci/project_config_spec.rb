@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
   let(:ref) { 'master' }
   let(:has_execution_policy_pipelines) { false }
   let(:pipeline_policy_context) do
-    Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
   end
 
   before do

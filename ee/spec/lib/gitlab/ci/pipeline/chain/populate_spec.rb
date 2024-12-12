@@ -31,7 +31,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Populate, feature_category: :pipelin
         current_user: user,
         origin_ref: 'master',
         pipeline_policy_context: instance_double(
-          Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+          Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
           policy_pipelines: [build(:pipeline_execution_policy_pipeline)]),
         seeds_block: nil)
     end

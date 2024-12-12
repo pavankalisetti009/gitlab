@@ -39,7 +39,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
   before do
     stub_ci_pipeline_yaml_file(YAML.dump(config)) if config
-    allow(command.pipeline_policy_context).to receive(:policy_pipelines).and_return(execution_policy_pipelines)
+    allow(command.pipeline_policy_context.pipeline_execution_context)
+      .to receive(:policy_pipelines).and_return(execution_policy_pipelines)
   end
 
   describe '#perform!' do
@@ -381,7 +382,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
         end
 
         before do
-          allow(command.pipeline_policy_context).to receive(:override_policy_stages).and_return(%w[policy-test])
+          allow(command.pipeline_policy_context.pipeline_execution_context)
+            .to receive(:override_policy_stages).and_return(%w[policy-test])
         end
 
         it 'uses override_policy_stages to inject jobs' do
@@ -424,7 +426,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
       let(:execution_policy_config) { build(:pipeline_execution_policy_config) }
 
       before do
-        allow(command.pipeline_policy_context).to receive(:current_policy).and_return(execution_policy_config)
+        allow(command.pipeline_policy_context.pipeline_execution_context)
+          .to receive(:current_policy).and_return(execution_policy_config)
       end
 
       it 'does not change pipeline stages' do

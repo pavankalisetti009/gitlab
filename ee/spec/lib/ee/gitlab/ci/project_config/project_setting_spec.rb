@@ -9,7 +9,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig::ProjectSetting, feature_category: :con
   let(:has_overriding_execution_policy_pipelines) { false }
 
   let(:pipeline_policy_context) do
-    Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
   end
 
   let(:config_content_result) do

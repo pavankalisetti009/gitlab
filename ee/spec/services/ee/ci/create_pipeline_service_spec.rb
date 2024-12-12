@@ -189,7 +189,7 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
 
     context 'when used with `pipeline_policy_context` param' do
       let(:pipeline_policy_context) do
-        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+        Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
       end
 
       it 'does not raise an error' do

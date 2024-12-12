@@ -141,7 +141,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
 
     before do
       command.pipeline_policy_context = instance_double(
-        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+        Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
         has_execution_policy_pipelines?: true,
         has_overriding_execution_policy_pipelines?: has_overriding_policy_pipelines
       )

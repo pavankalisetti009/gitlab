@@ -15,7 +15,7 @@ module EE
 
             override :pipeline_policy_context
             def pipeline_policy_context
-              self[:pipeline_policy_context] ||= ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(
+              self[:pipeline_policy_context] ||= ::Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(
                 project: project,
                 command: self
               )

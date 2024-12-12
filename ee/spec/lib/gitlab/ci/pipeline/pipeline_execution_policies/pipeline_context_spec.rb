@@ -3,7 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext, feature_category: :security_policy_management do
-  subject(:context) { described_class.new(project: project, command: command) }
+  subject(:context) { execution_policies_pipeline_context.pipeline_execution_context }
+
+  let(:execution_policies_pipeline_context) do
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
+  end
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }

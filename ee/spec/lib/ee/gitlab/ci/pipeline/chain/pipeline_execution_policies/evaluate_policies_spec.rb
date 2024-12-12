@@ -11,7 +11,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::EvaluateP
   let(:creating_policy_pipeline) { nil }
   let(:pipeline_policy_context) do
     instance_double(
-      Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+      Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
       creating_policy_pipeline?: creating_policy_pipeline
     )
   end
