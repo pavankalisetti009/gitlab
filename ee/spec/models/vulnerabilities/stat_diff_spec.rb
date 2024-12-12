@@ -10,27 +10,17 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
   let(:update_vulnerability) {}
 
   describe '#update_required?' do
-    subject(:update_required?) do
-      temp_cross_modification_wrap do
-        update_vulnerability.then do
-          stat_diff.update_required?
-        end
-      end
-    end
+    subject(:update_required?) { update_vulnerability.then { stat_diff.update_required? } }
 
     context 'when the vulnerability is destroyed' do
-      let(:update_vulnerability) { temp_cross_modification_wrap { vulnerability.destroy! } }
+      let(:update_vulnerability) { vulnerability.destroy! }
 
       it { is_expected.to be_truthy }
     end
 
     context 'when the vulnerability is not destroyed' do
       context 'when the severity is changed' do
-        let(:update_vulnerability) do
-          temp_cross_modification_wrap do
-            vulnerability.update_attribute(:severity, :critical)
-          end
-        end
+        let(:update_vulnerability) { vulnerability.update_attribute(:severity, :critical) }
 
         it { is_expected.to be_truthy }
       end
@@ -56,7 +46,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
           end
 
           with_them do
-            let(:update_vulnerability) { temp_cross_modification_wrap { vulnerability.update_attribute(:state, to) } }
+            let(:update_vulnerability) { vulnerability.update_attribute(:state, to) }
 
             before do
               vulnerability.update_attribute(:state, from)
@@ -67,11 +57,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
         end
 
         context 'when the state is not changed' do
-          let(:update_vulnerability) do
-            temp_cross_modification_wrap do
-              vulnerability.update_attribute(:title, 'New Title')
-            end
-          end
+          let(:update_vulnerability) { vulnerability.update_attribute(:title, 'New Title') }
 
           it { is_expected.to be_falsey }
         end
@@ -80,10 +66,10 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
   end
 
   describe '#changes' do
-    subject(:changes) { temp_cross_modification_wrap { update_vulnerability.then { stat_diff.changes } } }
+    subject(:changes) { update_vulnerability.then { stat_diff.changes } }
 
     context 'when the vulnerability is destroyed' do
-      let(:update_vulnerability) { temp_cross_modification_wrap { vulnerability.destroy! } }
+      let(:update_vulnerability) { vulnerability.destroy! }
       let(:expected_changes) { { 'total' => -1, 'high' => -1 } }
 
       it { is_expected.to eq(expected_changes) }
@@ -92,12 +78,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
     context 'when the vulnerability is not destroyed' do
       context 'when the severity is changed' do
         context 'when the state is not changed' do
-          let(:update_vulnerability) do
-            temp_cross_modification_wrap do
-              vulnerability.update_attribute(:severity, :critical)
-            end
-          end
-
+          let(:update_vulnerability) { vulnerability.update_attribute(:severity, :critical) }
           let(:expected_changes) { { 'total' => 0, 'high' => -1, 'critical' => 1 } }
 
           it { is_expected.to eq(expected_changes) }
@@ -123,11 +104,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
           end
 
           with_them do
-            let(:update_vulnerability) do
-              temp_cross_modification_wrap do
-                vulnerability.update!(state: to, severity: :critical)
-              end
-            end
+            let(:update_vulnerability) { vulnerability.update!(state: to, severity: :critical) }
 
             before do
               vulnerability.update_attribute(:state, from)
@@ -159,10 +136,10 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
           end
 
           with_them do
-            let(:update_vulnerability) { temp_cross_modification_wrap { vulnerability.update_attribute(:state, to) } }
+            let(:update_vulnerability) { vulnerability.update_attribute(:state, to) }
 
             before do
-              temp_cross_modification_wrap { vulnerability.update_attribute(:state, from) }
+              vulnerability.update_attribute(:state, from)
             end
 
             it { is_expected.to eq(expected_changes) }
@@ -170,12 +147,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
         end
 
         context 'when the state is not changed' do
-          let(:update_vulnerability) do
-            temp_cross_modification_wrap do
-              vulnerability.update_attribute(:title, 'New Title')
-            end
-          end
-
+          let(:update_vulnerability) { vulnerability.update_attribute(:title, 'New Title') }
           let(:expected_changes) { { 'total' => 0 } }
 
           it { is_expected.to eq(expected_changes) }
@@ -191,7 +163,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
       let(:expected_attribute_names) { %w[total high] }
 
       before do
-        temp_cross_modification_wrap { vulnerability.destroy! }
+        vulnerability.destroy!
       end
 
       it { is_expected.to eq(expected_attribute_names) }
@@ -215,7 +187,7 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
       let(:expected_values) { [-1, -1] }
 
       before do
-        temp_cross_modification_wrap { vulnerability.destroy! }
+        vulnerability.destroy!
       end
 
       it { is_expected.to eq(expected_values) }
@@ -229,17 +201,6 @@ RSpec.describe Vulnerabilities::StatDiff, feature_category: :vulnerability_manag
       end
 
       it { is_expected.to eq(expected_values) }
-    end
-  end
-
-  def temp_cross_modification_wrap
-    Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-      %w[
-        vulnerabilities
-        notes
-      ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486250'
-    ) do
-      yield
     end
   end
 end
