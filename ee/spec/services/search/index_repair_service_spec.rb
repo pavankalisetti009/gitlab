@@ -13,8 +13,7 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
   subject(:service) { described_class.new(project: project) }
 
   before do
-    allow(service).to receive(:logger).and_return(logger)
-    allow(service).to receive(:client).and_return(client)
+    allow(service).to receive_messages(logger: logger, client: client)
     allow(logger).to receive(:warn)
   end
 
@@ -134,7 +133,7 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         allow(client).to receive(:count).with(
           index: Project.index_name,
           body: project_body,
-          routing: project.es_id
+          routing: project.es_parent
         ).and_return({ 'count' => 1 })
       end
 
@@ -161,7 +160,7 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         allow(client).to receive(:count).with(
           index: Project.index_name,
           body: project_body,
-          routing: project.es_id
+          routing: project.es_parent
         ).and_return({ 'count' => 1 })
       end
 
@@ -279,7 +278,7 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         allow(client).to receive(:count).with(
           index: Project.index_name,
           body: project_body,
-          routing: project.es_id
+          routing: project.es_parent
         ).and_return({ 'count' => 0 })
       end
 
