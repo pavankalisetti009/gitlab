@@ -166,13 +166,9 @@ describe('IterationDropdown', () => {
 
       expect(dropdownItems.at(0).text()).toContain('No iteration');
 
-      expect(dropdownItems.at(3).text()).toContain(
-        getIterationPeriod(TEST_ITERATIONS[0], null, true),
-      );
+      expect(dropdownItems.at(3).text()).toContain(getIterationPeriod(TEST_ITERATIONS[0]));
       expect(dropdownItems.at(3).text()).toContain('Test Title');
-      expect(dropdownItems.at(4).text()).toContain(
-        getIterationPeriod(TEST_ITERATIONS[2], null, true),
-      );
+      expect(dropdownItems.at(4).text()).toContain(getIterationPeriod(TEST_ITERATIONS[2]));
     });
 
     it('does not re-query if opened again', async () => {
@@ -188,11 +184,11 @@ describe('IterationDropdown', () => {
         iteration: IterationDropdown.noIteration,
       },
       {
-        text: getIterationPeriod(TEST_ITERATIONS[0], null, true),
+        text: getIterationPeriod(TEST_ITERATIONS[0]),
         iteration: TEST_ITERATIONS[0],
       },
       {
-        text: getIterationPeriod(TEST_ITERATIONS[1], null, true),
+        text: getIterationPeriod(TEST_ITERATIONS[1]),
         iteration: TEST_ITERATIONS[1],
       },
     ])("when iteration '%s' is selected", ({ text, iteration }) => {

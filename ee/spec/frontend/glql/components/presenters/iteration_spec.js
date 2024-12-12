@@ -15,9 +15,9 @@ describe('IterationPresenter', () => {
   const findLink = () => wrapper.findComponent(GlLink);
 
   it.each`
-    iterationType                            | iteration                | expectedText1                      | expectedText2                                | expectedLinkHref
-    ${'an iteration with automatic cadence'} | ${MOCK_ITERATION}        | ${'testt'}                         | ${'Oct 1 - Oct 14, 2024'}                    | ${'https://gitlab.com/groups/gitlab-org/-/iterations/1'}
-    ${'an iteration with manual cadence'}    | ${MOCK_ITERATION_MANUAL} | ${'AAAA Manual iteration cadence'} | ${'Nov 1 - Nov 30, 2024 • Manual iteration'} | ${'https://gitlab.com/groups/gitlab-org/-/iterations/3508'}
+    iterationType                            | iteration                | expectedText1                      | expectedText2                            | expectedLinkHref
+    ${'an iteration with automatic cadence'} | ${MOCK_ITERATION}        | ${'testt'}                         | ${'Oct 1 – 14'}                          | ${'https://gitlab.com/groups/gitlab-org/-/iterations/1'}
+    ${'an iteration with manual cadence'}    | ${MOCK_ITERATION_MANUAL} | ${'AAAA Manual iteration cadence'} | ${'Nov 1 – 30, 2024 • Manual iteration'} | ${'https://gitlab.com/groups/gitlab-org/-/iterations/3508'}
   `(
     'correctly renders $iterationType',
     ({ iteration, expectedText1, expectedText2, expectedLinkHref }) => {

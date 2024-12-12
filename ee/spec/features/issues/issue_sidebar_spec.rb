@@ -191,14 +191,14 @@ RSpec.describe 'Issue Sidebar', feature_category: :team_planning do
 
         within_testid('iteration-edit') do
           expect(page).to have_text(iteration_cadence.title)
-          expect(page).to have_text(iteration.period)
+          expect(page).to have_content(iteration_period(iteration, use_thin_space: false))
         end
 
-        select_iteration(iteration.period)
+        select_iteration(iteration_period(iteration))
 
         within_testid('select-iteration') do
           expect(page).to have_text(iteration_cadence.title)
-          expect(page).to have_text(iteration_period_display_no_year(iteration))
+          expect(page).to have_content(iteration_period(iteration, use_thin_space: false))
         end
 
         find_and_click_edit_iteration
@@ -223,10 +223,10 @@ RSpec.describe 'Issue Sidebar', feature_category: :team_planning do
             wait_for_requests
 
             expect(page).to have_text(plan_cadence.title)
-            expect(page).to have_text(plan_iteration.period)
+            expect(page).to have_text(iteration_period(plan_iteration, use_thin_space: false))
             expect(page).not_to have_text(iteration_cadence.title)
-            expect(page).not_to have_text(iteration.period)
-            expect(page).not_to have_text(iteration2.period)
+            expect(page).not_to have_content(iteration_period(iteration, use_thin_space: false))
+            expect(page).not_to have_content(iteration_period(iteration2, use_thin_space: false))
           end
         end
       end
@@ -235,7 +235,7 @@ RSpec.describe 'Issue Sidebar', feature_category: :team_planning do
         find_and_click_edit_iteration
 
         within_testid('iteration-edit') do
-          expect(page).not_to have_content iteration2.period
+          expect(page).not_to have_content(iteration_period(iteration2, use_thin_space: false))
         end
       end
     end

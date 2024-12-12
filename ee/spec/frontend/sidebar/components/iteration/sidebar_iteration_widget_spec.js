@@ -119,12 +119,12 @@ describe('SidebarIterationWidget', () => {
 
       // mockIteration2 has a title
       expect(findIterationCadenceTitleAt(0)).toContain(mockIteration2.iterationCadence.title);
-      expect(findIterationItemsTextAt(0)).toContain(getIterationPeriod(mockIteration2, null, true));
+      expect(findIterationItemsTextAt(0)).toContain(getIterationPeriod(mockIteration2));
       expect(findIterationItemsTextAt(0)).toContain(mockIteration2.title);
 
       // mockIteration1 has no title
       expect(findIterationCadenceTitleAt(1)).toContain(mockIteration1.iterationCadence.title);
-      expect(findIterationItemsTextAt(1)).toContain(getIterationPeriod(mockIteration1, null, true));
+      expect(findIterationItemsTextAt(1)).toContain(getIterationPeriod(mockIteration1));
     });
   });
 });

@@ -25,15 +25,15 @@ RSpec.describe 'User views iteration cadences', :js, feature_category: :team_pla
     expect(page).to have_title('Iteration cadences')
     expect(page).to have_content(cadence.title)
     expect(page).to have_content(other_cadence.title)
-    expect(page).not_to have_content(iteration_in_cadence.period)
-    expect(page).not_to have_content(iteration_in_other_cadence.period)
+    expect(page).not_to have_content(iteration_period(iteration_in_cadence, use_thin_space: false))
+    expect(page).not_to have_content(iteration_period(iteration_in_other_cadence, use_thin_space: false))
 
     click_button cadence.title
 
-    expect(page).to have_content(iteration_period_display(iteration_in_cadence))
+    expect(page).to have_content(iteration_period(iteration_in_cadence, use_thin_space: false))
     expect(page).not_to have_content(subgroup_cadence.title)
-    expect(page).not_to have_content(iteration_in_other_cadence.period)
-    expect(page).not_to have_content(closed_iteration_in_cadence.period)
+    expect(page).not_to have_content(iteration_period(iteration_in_other_cadence, use_thin_space: false))
+    expect(page).not_to have_content(iteration_period(closed_iteration_in_cadence, use_thin_space: false))
   end
 
   it 'only shows completed iterations on Done tab', :aggregate_failures do
@@ -41,8 +41,8 @@ RSpec.describe 'User views iteration cadences', :js, feature_category: :team_pla
     click_link 'Done'
     click_button cadence.title
 
-    expect(page).not_to have_content(iteration_in_cadence.period)
-    expect(page).to have_content(iteration_period_display(closed_iteration_in_cadence))
+    expect(page).not_to have_content(iteration_period(iteration_in_cadence, use_thin_space: false))
+    expect(page).to have_content(iteration_period(closed_iteration_in_cadence, use_thin_space: false))
   end
 
   it 'shows inherited cadences in subgroup', :aggregate_failures do

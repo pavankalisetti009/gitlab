@@ -4,6 +4,7 @@ require "spec_helper"
 
 RSpec.describe "User creates issue", :js, :saas, feature_category: :team_planning do
   include ListboxHelpers
+  include Features::IterationHelpers
 
   let_it_be_with_reload(:group) { create(:group_with_plan, plan: :ultimate_plan) }
 
@@ -146,7 +147,7 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
       click_button 'Select iteration'
       select_listbox_item(iteration.title)
 
-      expect(page).to have_button(iteration.period)
+      expect(page).to have_button(iteration_period(iteration))
 
       click_button 'Create issue'
 

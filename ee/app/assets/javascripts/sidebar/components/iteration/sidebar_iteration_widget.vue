@@ -84,7 +84,7 @@ export default {
       >
         <div>
           <gl-icon name="iteration" class="gl-mr-1" />
-          {{ getIterationPeriod(currentAttribute, true) }}
+          {{ getIterationPeriod(currentAttribute) }}
         </div>
         <iteration-title v-if="currentAttribute.title" :title="currentAttribute.title" />
       </gl-link>
@@ -98,7 +98,7 @@ export default {
       >
         <gl-icon :aria-label="__('Iteration')" name="iteration" />
         <span class="collapse-truncated-title gl-px-3 gl-pt-2 gl-text-sm">
-          {{ getIterationPeriod(currentAttribute, true) }}
+          {{ getIterationPeriod(currentAttribute) }}
         </span>
       </div>
     </template>

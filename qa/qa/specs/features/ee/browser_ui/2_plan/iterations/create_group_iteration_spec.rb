@@ -17,7 +17,7 @@ module QA
         let(:start_date) { current_date_yyyy_mm_dd }
         let(:due_date) { thirteen_days_from_now_yyyy_mm_dd }
         let(:description) { "This is a group to test automatic iterations." }
-        let(:iteration_period) { "Feb 1 - Feb 14, #{future_year}" }
+        let(:iteration_period) { "Feb 1 – 14, #{future_year}" }
         let!(:iteration_group) do
           create(:group, path: "group-to-test-creating-automatic-iterations-#{SecureRandom.hex(8)}")
         end
@@ -42,7 +42,7 @@ module QA
 
             EE::Page::Group::Iteration::Show.perform do |iteration|
               aggregate_failures "automatic iteration created successfully" do
-                expect(iteration).to have_content(iteration_period)
+                expect(iteration).to have_content("Feb 1 – 14, #{future_year}")
                 expect(iteration).to have_burndown_chart
                 expect(iteration).to have_burnup_chart
               end
@@ -56,7 +56,7 @@ module QA
         let(:start_date) { current_date_yyyy_mm_dd }
         let(:due_date) { next_month_yyyy_mm_dd }
         let(:description) { "This is a group to test manual iterations." }
-        let(:iteration_period) { "Feb 1 - Mar 1, #{future_year}" }
+        let(:iteration_period) { "Feb 1 – Mar 1, #{future_year}" }
 
         let!(:iteration_group) do
           create(:group, path: "group-to-test-creating-manual-iterations-#{SecureRandom.hex(8)}")
@@ -74,7 +74,7 @@ module QA
 
             EE::Page::Group::Iteration::Show.perform do |iteration|
               aggregate_failures "manual iteration created successfully" do
-                expect(iteration).to have_content(iteration_period)
+                expect(iteration).to have_content("Feb 1 – Mar 1, #{future_year}")
                 expect(iteration).to have_burndown_chart
                 expect(iteration).to have_burnup_chart
               end

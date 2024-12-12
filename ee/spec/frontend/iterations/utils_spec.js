@@ -7,28 +7,28 @@ import { mockIterationsWithCadences, mockIterationsWithoutCadences } from './moc
 
 describe('getIterationPeriod', () => {
   it.each`
-    scenario                                                                                                       | usedInIssue | startYear | dueYear | currentYear | expected
-    ${'formatted for use in an issue and the start and due years are different'}                                   | ${true}     | ${2021}   | ${2022} | ${2024}     | ${'Feb 10, 2021 - Feb 17, 2022'}
-    ${'formatted for use in an issue and the start, due and current years are all the same'}                       | ${true}     | ${2021}   | ${2021} | ${2021}     | ${'Feb 10 - Feb 17'}
-    ${'formatted for use in an issue and the start and due years are the same, but they are not the current year'} | ${true}     | ${2021}   | ${2021} | ${2024}     | ${'Feb 10 - Feb 17, 2021'}
-    ${'the start and due years are different'}                                                                     | ${false}    | ${2021}   | ${2022} | ${2024}     | ${'Feb 10, 2021 - Feb 17, 2022'}
-    ${'the start and due years are the same'}                                                                      | ${false}    | ${2021}   | ${2021} | ${2024}     | ${'Feb 10 - Feb 17, 2021'}
+    scenario                                                                                                       | startYear | dueYear | currentYear | expected
+    ${'formatted for use in an issue and the start and due years are different'}                                   | ${2021}   | ${2022} | ${2024}     | ${'Feb 10, 2021 – Feb 17, 2022'}
+    ${'formatted for use in an issue and the start, due and current years are all the same'}                       | ${2021}   | ${2021} | ${2021}     | ${'Feb 10 – 17, 2021'}
+    ${'formatted for use in an issue and the start and due years are the same, but they are not the current year'} | ${2021}   | ${2021} | ${2024}     | ${'Feb 10 – 17, 2021'}
+    ${'the start and due years are different'}                                                                     | ${2021}   | ${2022} | ${2024}     | ${'Feb 10, 2021 – Feb 17, 2022'}
+    ${'the start and due years are the same'}                                                                      | ${2021}   | ${2021} | ${2024}     | ${'Feb 10 – 17, 2021'}
   `(
     'returns correctly formatted iteration period when $scenario',
-    ({ startYear, dueYear, currentYear, usedInIssue, expected }) => {
+    ({ startYear, dueYear, currentYear, expected }) => {
       const iterationDates = {
         startDate: new Date(startYear, 1, 10),
         dueDate: new Date(dueYear, 1, 17),
       };
       Date.now = jest.fn(() => new Date(currentYear, 1, 10));
 
-      expect(getIterationPeriod(iterationDates, usedInIssue)).toBe(expected);
+      expect(getIterationPeriod(iterationDates)).toBe(expected);
     },
   );
 });
 
 describe('groupByIterationCadences', () => {
-  const period = 'Nov 23, 2021 - Nov 30, 2021';
+  const period = 'Nov 23 – 30, 2021';
   const expected = [
     {
       id: 1,
@@ -62,7 +62,7 @@ describe('groupByIterationCadences', () => {
 });
 
 describe('groupOptionsByIterationCadences', () => {
-  const text = 'Nov 23, 2021 - Nov 30, 2021';
+  const text = 'Nov 23 – 30, 2021';
   const expected = [
     {
       text: 'cadence 1',

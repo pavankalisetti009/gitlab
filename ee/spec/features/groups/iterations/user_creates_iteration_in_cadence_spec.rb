@@ -36,7 +36,7 @@ RSpec.describe 'User creates iteration in a cadence', :js, feature_category: :te
     aggregate_failures do
       expect(page).to have_content(title)
       expect(page).to have_content(desc)
-      expect(page).to have_content(iteration_period_display(iteration))
+      expect(page).to have_content(iteration_period(iteration, use_thin_space: false))
       expect(page).to have_current_path(group_iteration_cadence_iteration_path(group, iteration_cadence_id: cadence.id, id: iteration.id))
     end
   end
