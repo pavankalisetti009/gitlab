@@ -6,7 +6,6 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
   let_it_be(:developer) { create(:user) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:project) { create(:project, :repository, :private) }
-
   let(:params) { {} }
 
   before do
@@ -17,6 +16,8 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
   end
 
   describe 'GET #index' do
+    subject(:show_dependency_list) { get project_dependencies_path(project) }
+
     include_context '"Security and compliance" permissions' do
       let(:user) { developer }
       let(:valid_request) { get project_dependencies_path(project) }
@@ -159,6 +160,12 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
         it_behaves_like 'tracks govern usage event', 'users_visiting_dependencies' do
           let(:request) { get project_dependencies_path(project, format: :html) }
         end
+
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'visit_dependency_list' }
+          let(:category) { described_class.name }
+          subject(:service_action) { show_dependency_list }
+        end
       end
 
       context 'when licensed feature is unavailable' do
@@ -178,6 +185,10 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
 
         it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
           let(:request) { get project_dependencies_path(project, format: :html) }
+        end
+
+        it 'does not record events or metrics' do
+          expect { valid_request }.not_to trigger_internal_events('visit_dependency_list')
         end
       end
     end
@@ -205,6 +216,10 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
 
       it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
         let(:request) { get project_dependencies_path(project, format: :html) }
+      end
+
+      it 'does not record events or metrics' do
+        expect { valid_request }.not_to trigger_internal_events('visit_dependency_list')
       end
     end
   end

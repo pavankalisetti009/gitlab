@@ -3,6 +3,7 @@
 module Groups
   class DependenciesController < Groups::ApplicationController
     include GovernUsageGroupTracking
+    include Gitlab::InternalEventsTracking
 
     before_action only: :index do
       push_frontend_feature_flag(:group_level_dependencies_filtering_by_packager, group)
@@ -23,7 +24,11 @@ module Groups
       respond_to do |format|
         format.html do
           set_below_group_limit
-
+          track_internal_event(
+            "visit_dependency_list",
+            user: current_user,
+            namespace: group
+          )
           render status: :ok
         end
         format.json do
