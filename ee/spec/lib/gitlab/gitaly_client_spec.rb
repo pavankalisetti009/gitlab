@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::GitalyClient, feature_category: :gitaly do
   context 'with composite identities', :request_store do
-    let(:primary_user) { create(:user, :service_account) }
+    let(:primary_user) { create(:user, :service_account, composite_identity_enforced: true) }
     let(:scoped_user) { create(:user) }
     let(:identity) { ::Gitlab::Auth::Identity.fabricate(primary_user) }
     let(:gitaly_context) do
@@ -12,8 +12,6 @@ RSpec.describe Gitlab::GitalyClient, feature_category: :gitaly do
     end
 
     before do
-      stub_licensed_features(composite_identity_auth: true)
-      primary_user.update!(composite_identity_enforced: true)
       identity.link!(scoped_user)
     end
 

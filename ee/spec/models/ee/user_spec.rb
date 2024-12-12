@@ -203,10 +203,6 @@ RSpec.describe User, feature_category: :system_access do
     describe 'composite_identity_enforced' do
       let(:user) { build(:user) }
 
-      before do
-        stub_licensed_features(composite_identity_auth: true)
-      end
-
       context 'when user is not a service account' do
         it 'is valid when composite_identity_enforced is false' do
           user.composite_identity_enforced = false
@@ -3576,59 +3572,6 @@ RSpec.describe User, feature_category: :system_access do
 
     it 'returns groups not aimed for deletion where epic events occured' do
       expect(subject).to contain_exactly(group_with_events)
-    end
-  end
-
-  describe '#composite_identity_enforced' do
-    let(:user) { create(:user, :service_account) }
-
-    before do
-      stub_licensed_features(composite_identity_auth: true)
-      user.write_attribute(:composite_identity_enforced, true)
-    end
-
-    it 'returns the attribute' do
-      expect(user.composite_identity_enforced).to be true
-    end
-
-    context 'when licensed feature is not available' do
-      before do
-        stub_licensed_features(composite_identity_auth: false)
-      end
-
-      it 'does not return the attribute' do
-        expect(user.composite_identity_enforced).to be false
-      end
-    end
-  end
-
-  describe '#composite_identity_enforced=' do
-    let(:user) { create(:user, :service_account) }
-
-    before do
-      stub_licensed_features(composite_identity_auth: true)
-    end
-
-    it 'writes the attribute' do
-      expect(user.composite_identity_enforced).to be false
-
-      user.composite_identity_enforced = true
-
-      expect(user.composite_identity_enforced).to be true
-    end
-
-    context 'when licensed feature is not available' do
-      before do
-        stub_licensed_features(composite_identity_auth: false)
-      end
-
-      it 'does not write the attribute' do
-        expect(user.composite_identity_enforced).to be false
-
-        user.composite_identity_enforced = true
-
-        expect(user.composite_identity_enforced).to be false
-      end
     end
   end
 

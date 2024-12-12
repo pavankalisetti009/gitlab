@@ -13,7 +13,6 @@ module GitlabSubscriptions
       admin_audit_log
       amazon_q
       auditor_user
-      composite_identity_auth
       custom_file_templates
       custom_project_templates
       db_load_balancing
@@ -197,7 +196,6 @@ module GitlabSubscriptions
       api_discovery
       api_fuzzing
       auto_rollback
-      composite_identity_auth
       glab_ask_git_command
       cluster_receptive_agents
       cluster_image_scanning
