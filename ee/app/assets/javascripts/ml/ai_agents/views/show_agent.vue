@@ -1,5 +1,6 @@
 <script>
-import { GlExperimentBadge, GlDuoChat, GlEmptyState, GlLoadingIcon, GlButton } from '@gitlab/ui';
+import { GlExperimentBadge, GlEmptyState, GlLoadingIcon, GlButton } from '@gitlab/ui';
+import { DuoChat } from '@gitlab/duo-ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
@@ -20,7 +21,7 @@ export default {
   components: {
     TitleArea,
     GlExperimentBadge,
-    GlDuoChat,
+    DuoChat,
     GlEmptyState,
     GlLoadingIcon,
     GlButton,
@@ -154,7 +155,7 @@ export default {
         </template>
       </title-area>
 
-      <gl-duo-chat
+      <duo-chat
         :messages="messages"
         :error="error"
         :is-loading="isLoading"
