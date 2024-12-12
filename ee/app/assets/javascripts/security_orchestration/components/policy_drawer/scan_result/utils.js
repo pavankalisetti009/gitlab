@@ -403,10 +403,11 @@ export const mapApproversToArray = (approvers) => {
     return [];
   }
 
-  const { allGroups = [], roles = [], users = [] } = approvers || {};
+  const { allGroups = [], customRoles = [], roles = [], users = [] } = approvers || {};
 
   return [
     ...allGroups,
+    ...customRoles,
     ...roles
       .map((role) => {
         return {

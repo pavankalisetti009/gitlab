@@ -590,26 +590,37 @@ export const mockScanResultPoliciesResponse = [
   mockGroupScanResultPolicy,
 ];
 
-export const createRequiredApprovers = (count) => {
-  const approvers = [];
-  for (let i = 1; i <= count; i += 1) {
-    let approver = { webUrl: `webUrl${i}` };
-    if (i % 3 === 0) {
-      approver = 'Owner';
-    } else if (i % 2 === 0) {
-      // eslint-disable-next-line no-underscore-dangle
-      approver.__typename = 'UserCore';
-      approver.name = `username${i}`;
-      approver.id = `gid://gitlab/User/${i}`;
-    } else {
-      // eslint-disable-next-line no-underscore-dangle
-      approver.__typename = 'Group';
-      approver.fullPath = `grouppath${i}`;
-      approver.id = `gid://gitlab/Group/${i}`;
-    }
-    approvers.push(approver);
-  }
-  return approvers;
+export const createApprovers = ({
+  group = false,
+  user = false,
+  role = false,
+  customRole = false,
+}) => {
+  const mockUser = {
+    webUrl: `webUrl1`,
+    __typename: 'UserCore',
+    name: `username1`,
+    id: `gid://gitlab/User/1`,
+  };
+
+  const mockGroup = {
+    webUrl: `webUrl2`,
+    __typename: 'Group',
+    fullPath: `grouppath2`,
+    id: `gid://gitlab/Group/2`,
+  };
+
+  const mockCustomRole = {
+    __typename: 'MemberRole',
+    name: `Custom`,
+    id: `gid://gitlab/MemberRole/3`,
+  };
+
+  return []
+    .concat(group ? mockGroup : [])
+    .concat(user ? mockUser : [])
+    .concat(role ? 'Owner' : [])
+    .concat(customRole ? mockCustomRole : []);
 };
 
 export const mockFallbackInvalidScanResultManifest = mockDefaultBranchesScanResultManifest.concat(

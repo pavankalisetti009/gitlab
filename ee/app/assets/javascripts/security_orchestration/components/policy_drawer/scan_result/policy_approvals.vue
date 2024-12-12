@@ -3,7 +3,7 @@ import { GlSprintf, GlLink } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
 import { s__, n__, __, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_USER } from '~/graphql_shared/constants';
+import { TYPENAME_MEMBER_ROLE, TYPENAME_USER } from '~/graphql_shared/constants';
 
 const THRESHOLD_FOR_APPROVERS = 3;
 
@@ -56,6 +56,9 @@ export default {
     },
   },
   methods: {
+    isCustomRoleType(approver) {
+      return approver?.id?.includes(TYPENAME_MEMBER_ROLE);
+    },
     isRoleType(approver) {
       return typeof approver === 'string';
     },
@@ -112,6 +115,9 @@ export default {
       <template #approvers>
         <span v-for="approver in displayedApprovers" :key="approver.id || approver">
           <span v-if="isRoleType(approver)" :data-testid="approver">{{ approver }}</span>
+          <span v-else-if="isCustomRoleType(approver)" :data-testid="approver.name">{{
+            approver.name
+          }}</span>
           <gl-link
             v-else
             :href="approver.webUrl"

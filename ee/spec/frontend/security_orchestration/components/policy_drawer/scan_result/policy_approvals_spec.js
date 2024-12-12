@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { GlLink } from '@gitlab/ui';
 import PolicyApprovals from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_approvals.vue';
-import { createRequiredApprovers } from '../../../mocks/mock_scan_result_policy_data';
+import { createApprovers } from '../../../mocks/mock_scan_result_policy_data';
 
 describe('PolicyApprovals component', () => {
   let wrapper;
@@ -17,12 +17,11 @@ describe('PolicyApprovals component', () => {
   };
 
   describe.each`
-    approvalsRequired | approvers                     | expectedTestIds                                                                                                                                                                                 | expectedApprovalText | expectedApproverText
-    ${1}              | ${createRequiredApprovers(1)} | ${[['data-testid', 'gid://gitlab/Group/1']]}                                                                                                                                                    | ${'approval'}        | ${/grouppath1/}
-    ${3}              | ${createRequiredApprovers(1)} | ${[['data-testid', 'gid://gitlab/Group/1']]}                                                                                                                                                    | ${'approvals'}       | ${/grouppath1/}
-    ${1}              | ${createRequiredApprovers(2)} | ${[['data-testid', 'gid://gitlab/Group/1'], ['data-testid', 'gid://gitlab/User/2']]}                                                                                                            | ${'approval'}        | ${/grouppath1[^]*and[^]*username2/}
-    ${1}              | ${createRequiredApprovers(3)} | ${[['data-testid', 'gid://gitlab/Group/1'], ['data-testid', 'gid://gitlab/User/2'], ['data-testid', 'Owner']]}                                                                                  | ${'approval'}        | ${/grouppath1[^]*,[^]*username2[^]*and[^]*Owner[^]/}
-    ${1}              | ${createRequiredApprovers(5)} | ${[['data-testid', 'gid://gitlab/Group/1'], ['data-testid', 'gid://gitlab/User/2'], ['data-testid', 'Owner'], ['data-testid', 'gid://gitlab/Group/4'], ['data-testid', 'gid://gitlab/User/5']]} | ${'approval'}        | ${/grouppath1[^]*,[^]*username2[^]*,[^]*Owner[^]*and 2 more/}
+    approvalsRequired | approvers                                                         | expectedTestIds                                                                                   | expectedApprovalText | expectedApproverText
+    ${1}              | ${createApprovers({ group: true })}                               | ${[['data-testid', 'gid://gitlab/Group/2']]}                                                      | ${'approval'}        | ${/grouppath2/}
+    ${3}              | ${createApprovers({ group: true })}                               | ${[['data-testid', 'gid://gitlab/Group/2']]}                                                      | ${'approvals'}       | ${/grouppath2/}
+    ${1}              | ${createApprovers({ group: true, user: true })}                   | ${[['data-testid', 'gid://gitlab/Group/2'], ['data-testid', 'gid://gitlab/User/1']]}              | ${'approval'}        | ${/grouppath2[^]*and[^]*username1/}
+    ${1}              | ${createApprovers({ group: true, role: true, customRole: true })} | ${[['data-testid', 'gid://gitlab/Group/2'], ['data-testid', 'Owner'], ['data-testid', 'Custom']]} | ${'approval'}        | ${/grouppath2[^]*Owner[^]*and[^]*Custom[^]/}
   `(
     'with $approvalsRequired approval required and $approvers.length approvers',
     ({
@@ -68,7 +67,7 @@ describe('PolicyApprovals component', () => {
 
   describe('not last item text', () => {
     it('does not render last item text if it is not a last item', () => {
-      factory({ action: { approvals_required: 1 }, approvers: createRequiredApprovers(5) });
+      factory({ action: { approvals_required: 1 }, approvers: createApprovers({ group: true }) });
 
       expect(wrapper.text()).toContain('approval');
       expect(wrapper.text()).not.toContain('if any of the following occur:');
@@ -86,7 +85,11 @@ describe('PolicyApprovals component', () => {
   describe('last item', () => {
     it('does not render separator for last item', () => {
       const action = { approvals_required: 1 };
-      factory({ action, approvers: createRequiredApprovers(3), isLastItem: true });
+      factory({
+        action,
+        approvers: createApprovers({ group: true, user: true, role: true }),
+        isLastItem: true,
+      });
 
       expect(findSeparator().exists()).toBe(false);
     });
