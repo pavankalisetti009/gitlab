@@ -1,7 +1,8 @@
-import { GlCard, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
+import { GlCard, GlPopover, GlLink } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteProgressBar from 'ee/geo_sites/components/details/geo_site_progress_bar.vue';
 import GeoSiteVerificationInfo from 'ee/geo_sites/components/details/primary_site/geo_site_verification_info.vue';
@@ -30,12 +31,12 @@ describe('GeoSiteVerificationInfo', () => {
         ...defaultProps,
         ...props,
       },
-      stubs: { GlCard },
+      stubs: { GlCard, HelpIcon },
     });
   };
 
   const findGlCard = () => wrapper.findComponent(GlCard);
-  const findGlIcon = () => wrapper.findComponent(GlIcon);
+  const findGlIcon = () => wrapper.findComponent(HelpIcon);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findGlPopoverLink = () => findGlPopover().findComponent(GlLink);
   const findGeoSiteProgressBarTitles = () => wrapper.findAllByTestId('verification-bar-title');
@@ -53,7 +54,7 @@ describe('GeoSiteVerificationInfo', () => {
 
       it('renders the question icon correctly', () => {
         expect(findGlIcon().exists()).toBe(true);
-        expect(findGlIcon().props('name')).toBe('question-o');
+        expect(findGlIcon().attributes('name')).toBe('question-o');
       });
 
       it('renders the GlPopover always', () => {

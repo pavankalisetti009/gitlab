@@ -1,6 +1,7 @@
 <script>
-import { GlFormGroup, GlFormSelect, GlFormCheckbox, GlLink, GlIcon, GlPopover } from '@gitlab/ui';
+import { GlFormGroup, GlFormSelect, GlFormCheckbox, GlLink, GlPopover } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { SELECTIVE_SYNC_MORE_INFO, OBJECT_STORAGE_MORE_INFO } from '../constants';
 import GeoSiteFormNamespaces from './geo_site_form_namespaces.vue';
 import GeoSiteFormShards from './geo_site_form_shards.vue';
@@ -36,8 +37,8 @@ export default {
     GeoSiteFormShards,
     GlFormCheckbox,
     GlLink,
-    GlIcon,
     GlPopover,
+    HelpIcon,
   },
   props: {
     siteData: {
@@ -81,12 +82,7 @@ export default {
           <label for="site-selective-synchronization-field" class="gl-mb-0">{{
             $options.i18n.selectiveSyncFieldLabel
           }}</label>
-          <gl-icon
-            ref="selectiveSyncPopover"
-            tabindex="0"
-            name="question-o"
-            class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
-          />
+          <help-icon ref="selectiveSyncPopover" tabindex="0" class="gl-ml-2" />
           <gl-popover
             :target="() => $refs.selectiveSyncPopover.$el"
             placement="top"
@@ -145,12 +141,7 @@ export default {
           <label for="site-object-storage-field" class="gl-mb-0">{{
             $options.i18n.objectStorageFieldLabel
           }}</label>
-          <gl-icon
-            ref="objectStoragePopover"
-            tabindex="0"
-            name="question-o"
-            class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
-          />
+          <help-icon ref="objectStoragePopover" tabindex="0" class="gl-ml-2" />
           <gl-popover
             :target="() => $refs.objectStoragePopover.$el"
             placement="top"

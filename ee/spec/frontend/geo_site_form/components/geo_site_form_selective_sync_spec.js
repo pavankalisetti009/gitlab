@@ -1,8 +1,9 @@
-import { GlFormGroup, GlSprintf, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
+import { GlFormGroup, GlSprintf, GlPopover, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteFormNamespaces from 'ee/geo_site_form/components/geo_site_form_namespaces.vue';
 import GeoSiteFormSelectiveSync from 'ee/geo_site_form/components/geo_site_form_selective_sync.vue';
 import GeoSiteFormShards from 'ee/geo_site_form/components/geo_site_form_shards.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { SELECTIVE_SYNC_MORE_INFO, OBJECT_STORAGE_MORE_INFO } from 'ee/geo_site_form/constants';
 import {
   MOCK_SITE,
@@ -22,7 +23,7 @@ describe('GeoSiteFormSelectiveSync', () => {
 
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(GeoSiteFormSelectiveSync, {
-      stubs: { GlFormGroup, GlSprintf },
+      stubs: { GlFormGroup, GlSprintf, HelpIcon },
       propsData: {
         ...defaultProps,
         ...props,
@@ -34,7 +35,7 @@ describe('GeoSiteFormSelectiveSync', () => {
     wrapper.findComponent({ ref: 'geoSiteFormSelectiveSyncContainer' });
   const findGeoSiteFormSyncTypeFormGroup = () => wrapper.findByTestId('selective-sync-form-group');
   const findGeoSiteFormSyncTypePopoverIcon = () =>
-    findGeoSiteFormSyncTypeFormGroup().findComponent(GlIcon);
+    findGeoSiteFormSyncTypeFormGroup().findComponent(HelpIcon);
   const findGeoSiteFormSyncTypePopover = () =>
     findGeoSiteFormSyncTypeFormGroup().findComponent(GlPopover);
   const findGeoSiteFormSyncTypePopoverLink = () =>
@@ -43,7 +44,7 @@ describe('GeoSiteFormSelectiveSync', () => {
   const findGeoSiteFormObjectStorageFormGroup = () =>
     wrapper.findByTestId('object-storage-form-group');
   const findGeoSiteFormObjectStoragePopoverIcon = () =>
-    findGeoSiteFormObjectStorageFormGroup().findComponent(GlIcon);
+    findGeoSiteFormObjectStorageFormGroup().findComponent(HelpIcon);
   const findGeoSiteFormObjectStoragePopover = () =>
     findGeoSiteFormObjectStorageFormGroup().findComponent(GlPopover);
   const findGeoSiteFormObjectStoragePopoverLink = () =>
@@ -74,7 +75,7 @@ describe('GeoSiteFormSelectiveSync', () => {
     describe('selective sync type popover', () => {
       it('renders the question icon correctly', () => {
         expect(findGeoSiteFormSyncTypePopoverIcon().exists()).toBe(true);
-        expect(findGeoSiteFormSyncTypePopoverIcon().props('name')).toBe('question-o');
+        expect(findGeoSiteFormSyncTypePopoverIcon().attributes('name')).toBe('question-o');
       });
 
       it('renders the GlPopover', () => {
@@ -95,7 +96,7 @@ describe('GeoSiteFormSelectiveSync', () => {
     describe('object storage popover', () => {
       it('renders the question icon correctly', () => {
         expect(findGeoSiteFormObjectStoragePopoverIcon().exists()).toBe(true);
-        expect(findGeoSiteFormObjectStoragePopoverIcon().props('name')).toBe('question-o');
+        expect(findGeoSiteFormObjectStoragePopoverIcon().attributes('name')).toBe('question-o');
       });
 
       it('renders the GlPopover', () => {

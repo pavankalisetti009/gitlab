@@ -1,7 +1,8 @@
 <script>
-import { GlIcon, GlPopover, GlLink } from '@gitlab/ui';
+import { GlPopover, GlLink } from '@gitlab/ui';
 import { REPLICATION_STATUS_UI, REPLICATION_PAUSE_URL } from 'ee/geo_sites/constants';
 import { __, s__ } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'GeoSiteReplicationStatus',
@@ -10,9 +11,9 @@ export default {
     learnMore: __('Learn more'),
   },
   components: {
-    GlIcon,
     GlPopover,
     GlLink,
+    HelpIcon,
   },
   props: {
     site: {
@@ -40,11 +41,7 @@ export default {
       data-testid="replication-status-text"
       >{{ replicationStatusUi.text }}</span
     >
-    <gl-icon
-      ref="replicationStatus"
-      name="question-o"
-      class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
-    />
+    <help-icon ref="replicationStatus" class="gl-ml-2" />
     <gl-popover
       :target="() => $refs.replicationStatus && $refs.replicationStatus.$el"
       placement="top"

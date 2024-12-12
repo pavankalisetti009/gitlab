@@ -1,5 +1,5 @@
 <script>
-import { GlPopover, GlLink, GlIcon, GlSprintf } from '@gitlab/ui';
+import { GlPopover, GlLink, GlSprintf } from '@gitlab/ui';
 import {
   HELP_SITE_HEALTH_URL,
   GEO_TROUBLESHOOTING_URL,
@@ -7,6 +7,7 @@ import {
 } from 'ee/geo_sites/constants';
 import { s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'GeoSiteLastUpdated',
@@ -19,9 +20,9 @@ export default {
   components: {
     GlPopover,
     GlLink,
-    GlIcon,
     GlSprintf,
     TimeAgo,
+    HelpIcon,
   },
   props: {
     statusCheckTimestamp: {
@@ -65,12 +66,7 @@ export default {
         </template>
       </gl-sprintf>
     </span>
-    <gl-icon
-      ref="lastUpdated"
-      tabindex="0"
-      name="question-o"
-      class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
-    />
+    <help-icon ref="lastUpdated" tabindex="0" class="gl-ml-2" />
     <gl-popover :target="() => $refs.lastUpdated.$el" placement="top">
       <p class="gl-text-base" data-testid="geo-last-updated-text">
         <gl-sprintf :message="$options.i18n.timeAgoPopoverText">
