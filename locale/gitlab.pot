@@ -41840,6 +41840,9 @@ msgstr ""
 msgid "Preferences|Enable Gitpod integration"
 msgstr ""
 
+msgid "Preferences|Enable default text editor"
+msgstr ""
+
 msgid "Preferences|Enable exact code search"
 msgstr ""
 
