@@ -7,3 +7,5 @@
 
   .light
     = s_('GroupSAML|as %{access_level}') % { access_level: group_link_role_name(saml_group_link) }
+    - if duo_seat_assignment_available?(group) && saml_group_link.assign_duo_seats?
+      = s_('GroupSAML|with GitLab Duo seat assignment')

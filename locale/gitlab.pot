@@ -26715,6 +26715,9 @@ msgstr ""
 msgid "GroupSAML|Are you sure you want to reset the SCIM token? SCIM provisioning will stop working until the new token is updated."
 msgstr ""
 
+msgid "GroupSAML|Assign GitLab Duo seats to users in this group"
+msgstr ""
+
 msgid "GroupSAML|Before disabling password authentication, enable SAML authentication."
 msgstr ""
 
@@ -26844,6 +26847,9 @@ msgstr ""
 msgid "GroupSAML|Use SAML group links to manage group membership using SAML."
 msgstr ""
 
+msgid "GroupSAML|Users in this SAML group will be assigned a GitLab Duo Pro or GitLab Duo Enterprise seat, if available"
+msgstr ""
+
 msgid "GroupSAML|Valid SAML Response"
 msgstr ""
 
@@ -26854,6 +26860,9 @@ msgid "GroupSAML|must match stored NameID of \"%{extern_uid}\" to identify user 
 msgstr ""
 
 msgid "GroupSAML|recommend persistent ID instead of email"
+msgstr ""
+
+msgid "GroupSAML|with GitLab Duo seat assignment"
 msgstr ""
 
 msgid "GroupSaml|Copy SCIM API endpoint URL"
