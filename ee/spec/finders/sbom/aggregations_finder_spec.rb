@@ -127,12 +127,30 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
       end
 
       shared_examples 'can sort in both asc and desc order' do |sort_by|
+        let(:expected_order_pattern) do
+          # overridden for :primary_license_spdx_identifier as that is
+          # a jsonb column
+          /ORDER BY "(?:sbom|inner)_occurrences"."#{sort_by}".*?(?=LIMIT)/im
+        end
+
         context 'in ascending order' do
           let(:params) { { sort_by: sort_by, sort: direction } }
           let(:direction) { :asc }
 
           it "returns occurrences in ascending order of #{sort_by}" do
             expect(execute.to_a).to eq(expected_asc)
+          end
+
+          it 'ensures consistent sorting in all ordering clauses' do
+            recorder = ActiveRecord::QueryRecorder.new { execute.to_a }
+
+            sbom_order_clause, inner_order_clause = recorder.log.join(' ').scan(expected_order_pattern)
+            sbom_order_clause.gsub!("sbom_occurrences", "occurrences")
+            inner_order_clause.gsub!("inner_occurrences", "occurrences")
+
+            expect(sbom_order_clause).not_to be_empty
+            expect(inner_order_clause).not_to be_empty
+            expect(sbom_order_clause).to eq(inner_order_clause)
           end
         end
 
@@ -142,6 +160,18 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
 
           it "returns occurrences in descending order of #{sort_by}" do
             expect(execute.to_a).to eq(expected_desc)
+          end
+
+          it 'ensures consistent sorting in all ordering clauses' do
+            recorder = ActiveRecord::QueryRecorder.new { execute.to_a }
+
+            sbom_order_clause, inner_order_clause = recorder.log.join(' ').scan(expected_order_pattern)
+            sbom_order_clause.gsub!("sbom_occurrences", "occurrences")
+            inner_order_clause.gsub!("inner_occurrences", "occurrences")
+
+            expect(sbom_order_clause).not_to be_empty
+            expect(inner_order_clause).not_to be_empty
+            expect(sbom_order_clause).to eq(inner_order_clause)
           end
         end
       end
@@ -176,6 +206,10 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
           let_it_be(:mit_apache) { occurrence_2 }
           let_it_be(:mpl) { occurrence_3 }
           let_it_be(:apache) { occurrence_4 }
+
+          let(:expected_order_pattern) do
+            /ORDER BY \("(?:sbom|inner)_occurrences"."licenses" -> 0 ->> 'spdx_identifier'\)::text.*?(?=LIMIT)/im
+          end
 
           let(:expected_asc) { [apache, mit_apache, mpl, blank_license_array, null_fields] }
           let(:expected_desc) { [null_fields, blank_license_array, mpl, mit_apache, apache] }
