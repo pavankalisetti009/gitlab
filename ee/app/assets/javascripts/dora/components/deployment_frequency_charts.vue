@@ -74,6 +74,10 @@ export default {
       type: String,
       default: '',
     },
+    shouldRenderDoraCharts: {
+      type: Boolean,
+      default: false,
+    },
   },
   chartInDays: {
     [LAST_WEEK]: 7,
@@ -437,6 +441,7 @@ export default {
             :request-params="getMetricsRequestParams(selectedChart)"
             :filter-fn="$options.filterFn"
             :query-type="$options.ALL_METRICS_QUERY_TYPE"
+            :is-licensed="shouldRenderDoraCharts"
           />
         </div>
       </template>

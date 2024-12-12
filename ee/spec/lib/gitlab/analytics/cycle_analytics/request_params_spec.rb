@@ -224,7 +224,8 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::RequestParams, feature_categor
           namespace: {
             name: root_group.name,
             full_path: "groups/#{root_group.full_path}",
-            type: "Group"
+            type: "Group",
+            path: root_group.path
           }
         }))
       end

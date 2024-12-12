@@ -120,10 +120,12 @@ export const buildCycleAnalyticsInitialData = ({
   namespaceName = null,
   namespaceFullPath = null,
   namespaceType = null,
+  namespacePath = null,
   canEdit = false,
   enableVsdLink = false,
   enableCustomizableStages = false,
   enableProjectsFilter = false,
+  canReadCycleAnalytics = false,
 } = {}) => ({
   selectedValueStream: buildValueStreamFromJson(valueStream),
   group: groupId
@@ -166,12 +168,14 @@ export const buildCycleAnalyticsInitialData = ({
     name: namespaceName,
     fullPath: namespaceFullPath,
     type: namespaceType,
+    path: namespacePath,
   },
   canEdit: parseBoolean(canEdit),
   enableVsdLink: parseBoolean(enableVsdLink),
   enableCustomizableStages: parseBoolean(enableCustomizableStages),
   enableProjectsFilter: parseBoolean(enableProjectsFilter),
   projectId: parseInt(projectId, 10),
+  canReadCycleAnalytics: parseBoolean(canReadCycleAnalytics),
 });
 
 /**

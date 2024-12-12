@@ -23,7 +23,7 @@ import {
   initialPaginationQuery,
   selectedProjects as rawSelectedProjects,
 } from 'jest/analytics/cycle_analytics/mock_data';
-import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
+import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { toYmd } from '~/analytics/shared/utils';
 import PathNavigation from '~/analytics/cycle_analytics/components/path_navigation.vue';
 import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
@@ -184,7 +184,7 @@ describe('EE Value Stream Analytics component', () => {
   const findAggregationStatus = () => wrapper.findComponent(ValueStreamAggregationStatus);
   const findPathNavigation = () => wrapper.findComponent(PathNavigation);
   const findStageTable = () => wrapper.findComponent(StageTable);
-  const findOverviewMetrics = () => wrapper.findComponent(LegacyValueStreamMetrics);
+  const findOverviewMetrics = () => wrapper.findComponent(ValueStreamMetrics);
   const findFilterBar = () => wrapper.findComponent(ValueStreamFilters);
   const findDurationChart = () => wrapper.findComponent(DurationChart);
   const findDurationOverviewChart = () => wrapper.findComponent(DurationOverviewChart);
