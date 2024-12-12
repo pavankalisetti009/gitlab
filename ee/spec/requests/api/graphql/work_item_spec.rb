@@ -1231,13 +1231,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               }
               widgets {
                 type
-                ... on WorkItemWidgetRolledupDates {
+                ... on WorkItemWidgetStartAndDueDate {
+                  isFixed
+                  rollUp
                   dueDate
-                  dueDateIsFixed
                   dueDateSourcingMilestone { id }
                   dueDateSourcingWorkItem { id }
                   startDate
-                  startDateIsFixed
                   startDateSourcingMilestone { id }
                   startDateSourcingWorkItem { id }
                 }
@@ -1262,13 +1262,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               'id' => epic.to_global_id.to_s,
               'widgets' => include(
                 hash_including(
-                  'type' => 'ROLLEDUP_DATES',
+                  'type' => 'START_AND_DUE_DATE',
+                  'rollUp' => true,
+                  'isFixed' => false,
                   'dueDate' => due_date.to_date.to_s,
-                  'dueDateIsFixed' => false,
                   'dueDateSourcingMilestone' => nil,
                   'dueDateSourcingWorkItem' => nil,
                   'startDate' => start_date.to_date.to_s,
-                  'startDateIsFixed' => false,
                   'startDateSourcingMilestone' => nil,
                   'startDateSourcingWorkItem' => nil
                 )
@@ -1292,13 +1292,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               }
               widgets {
                 type
-                ... on WorkItemWidgetRolledupDates {
+                ... on WorkItemWidgetStartAndDueDate {
+                  rollUp
+                  isFixed
                   dueDate
-                  dueDateIsFixed
                   dueDateSourcingMilestone { id }
                   dueDateSourcingWorkItem { id }
                   startDate
-                  startDateIsFixed
                   startDateSourcingMilestone { id }
                   startDateSourcingWorkItem { id }
                 }
@@ -1323,15 +1323,15 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               'id' => epic.to_global_id.to_s,
               'widgets' => include(
                 hash_including(
-                  'type' => 'ROLLEDUP_DATES',
+                  'type' => 'START_AND_DUE_DATE',
+                  'rollUp' => true,
+                  'isFixed' => false,
                   'dueDate' => due_date.to_date.to_s,
-                  'dueDateIsFixed' => false,
                   'dueDateSourcingMilestone' => nil,
                   'dueDateSourcingWorkItem' => {
                     'id' => child_work_item.to_global_id.to_s
                   },
                   'startDate' => start_date.to_date.to_s,
-                  'startDateIsFixed' => false,
                   'startDateSourcingMilestone' => nil,
                   'startDateSourcingWorkItem' => {
                     'id' => child_work_item.to_global_id.to_s
@@ -1357,13 +1357,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               }
               widgets {
                 type
-                ... on WorkItemWidgetRolledupDates {
+                ... on WorkItemWidgetStartAndDueDate {
+                  rollUp
+                  isFixed
                   dueDate
-                  dueDateIsFixed
                   dueDateSourcingMilestone { id }
                   dueDateSourcingWorkItem { id }
                   startDate
-                  startDateIsFixed
                   startDateSourcingMilestone { id }
                   startDateSourcingWorkItem { id }
                 }
@@ -1388,15 +1388,15 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               'id' => epic.to_global_id.to_s,
               'widgets' => include(
                 hash_including(
-                  'type' => 'ROLLEDUP_DATES',
+                  'type' => 'START_AND_DUE_DATE',
+                  'rollUp' => true,
+                  'isFixed' => false,
                   'dueDate' => due_date.to_date.to_s,
-                  'dueDateIsFixed' => false,
                   'dueDateSourcingMilestone' => {
                     'id' => milestone.to_global_id.to_s
                   },
                   'dueDateSourcingWorkItem' => nil,
                   'startDate' => start_date.to_date.to_s,
-                  'startDateIsFixed' => false,
                   'startDateSourcingMilestone' => {
                     'id' => milestone.to_global_id.to_s
                   },

@@ -285,13 +285,13 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         end
       end
 
-      context 'for rolledup dates widget' do
+      context 'for dates widget' do
         let_it_be(:fixed_start) { 1.week.ago.to_date }
-        let_it_be(:fixed_finish) { 1.week.from_now.to_date }
+        let_it_be(:fixed_due) { 1.week.from_now.to_date }
 
         let_it_be_with_refind(:work_item) do
           create(:work_item, :epic_with_legacy_epic, namespace: group).tap do |wi|
-            wi.synced_epic.update!(start_date_fixed: fixed_start, due_date_fixed: fixed_finish)
+            wi.synced_epic.update!(start_date_fixed: fixed_start, due_date_fixed: fixed_due)
           end
         end
 
@@ -300,40 +300,39 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
             :work_items_dates_source,
             work_item: work_item,
             start_date_fixed: fixed_start,
-            due_date_fixed: fixed_finish
+            due_date_fixed: fixed_due
           )
         end
 
         context 'when widget params are present' do
           shared_examples 'toggle dates' do |fixed:|
             let_it_be(:from_condition) { !fixed }
-            let_it_be(:to_condition) { fixed }
             let_it_be(:from_start_date) { fixed ? nil : fixed_start }
-            let_it_be(:to_start_date) { fixed ? fixed_start : nil  }
-            let_it_be(:from_end_date) { fixed ? nil : fixed_finish }
-            let_it_be(:to_end_date) { fixed ? fixed_finish : nil }
+            let_it_be(:to_start_date) { fixed ? fixed_start : nil }
+            let_it_be(:from_due_date) { fixed ? nil : fixed_due }
+            let_it_be(:to_due_date) { fixed ? fixed_due : nil }
 
             let(:widget_params) do
-              { rolledup_dates_widget: { start_date_is_fixed: to_condition, due_date_is_fixed: to_condition } }
+              { start_and_due_date_widget: { is_fixed: fixed } }
             end
 
             before do
               work_item.synced_epic.update!(
                 start_date: from_start_date,
-                end_date: from_end_date,
+                end_date: from_due_date,
                 start_date_is_fixed: from_condition,
                 due_date_is_fixed: from_condition
               )
 
               dates_source.update!(
                 start_date: from_start_date,
-                due_date: from_end_date,
+                due_date: from_due_date,
                 due_date_is_fixed: from_condition,
                 start_date_is_fixed: from_condition
               )
             end
 
-            it 'updates dates' do
+            it 'updates dates', :aggregate_failures do
               expect(WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService)
                 .to receive(:new)
                 .with(WorkItem.id_in(work_item))
@@ -343,11 +342,11 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
                 .to change { work_item.reload.dates_source.start_date }.from(from_start_date).to(to_start_date)
                 .and change { work_item.start_date }.from(from_start_date).to(to_start_date)
                 .and change { work_item.synced_epic.reload.start_date }.from(from_start_date).to(to_start_date)
-                .and change { work_item.dates_source.start_date_is_fixed }.from(from_condition).to(to_condition)
-                .and change { work_item.dates_source.due_date }.from(from_end_date).to(to_end_date)
-                .and change { work_item.due_date }.from(from_end_date).to(to_end_date)
-                .and change { work_item.synced_epic.end_date }.from(from_end_date).to(to_end_date)
-                .and change { work_item.dates_source.due_date_is_fixed }.from(from_condition).to(to_condition)
+                .and change { work_item.dates_source.start_date_is_fixed }.from(from_condition).to(fixed)
+                .and change { work_item.dates_source.due_date }.from(from_due_date).to(to_due_date)
+                .and change { work_item.due_date }.from(from_due_date).to(to_due_date)
+                .and change { work_item.synced_epic.end_date }.from(from_due_date).to(to_due_date)
+                .and change { work_item.dates_source.due_date_is_fixed }.from(from_condition).to(fixed)
             end
           end
 
@@ -356,7 +355,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         end
 
         context 'when widget params are not present' do
-          let(:widget_params) { { rolledup_dates_widget: {} } }
+          let(:widget_params) { { start_and_due_date_widget: {} } }
 
           it 'does not update rolledup dates' do
             expect(WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService)

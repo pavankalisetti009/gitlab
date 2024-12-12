@@ -7,6 +7,12 @@ module EE
         extend ::Gitlab::Utils::Override
         include ::Gitlab::Utils::StrongMemoize
 
+        def after_update_commit
+          ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService
+            .new(::WorkItem.id_in(work_item.id))
+            .execute
+        end
+
         private
 
         override :build_dates_source_attributes

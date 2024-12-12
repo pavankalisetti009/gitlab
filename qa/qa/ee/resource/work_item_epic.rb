@@ -92,15 +92,13 @@ module QA
                     startDate
                   }
               }
-              ... on WorkItemWidgetRolledupDates
+              ... on WorkItemWidgetStartAndDueDate
               {
                 type
+                rollUp
+                isFixed
                 dueDate
-                dueDateFixed
-                dueDateIsFixed
                 startDate
-                startDateFixed
-                startDateIsFixed
               }
               ... on WorkItemWidgetLabels
               {
@@ -399,7 +397,6 @@ module QA
 
         protected
 
-        # rubocop:disable Metrics/AbcSize -- temp comparable for epic to work items migration
         # Return subset of fields for comparing work item epics to legacy epics
         #
         # @return [Hash]
@@ -410,12 +407,10 @@ module QA
           api_resource[:labels] = get_widget('LABELS')&.dig(:labels, :nodes)
           api_resource[:upvotes] = get_widget('AWARD_EMOJI')&.dig(:upvotes)
           api_resource[:downvotes] = get_widget('AWARD_EMOJI')&.dig(:downvotes)
-          api_resource[:start_date] = get_widget('ROLLEDUP_DATES')&.dig(:start_date)
-          api_resource[:due_date] = get_widget('ROLLEDUP_DATES')&.dig(:due_date)
-          api_resource[:start_date_is_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:start_date_is_fixed)
-          api_resource[:start_date_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:start_date_fixed)
-          api_resource[:due_date_is_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:due_date_is_fixed)
-          api_resource[:due_date_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:due_date_fixed)
+          api_resource[:is_fixed] = get_widget('START_AND_DUE_DATE')&.dig(:is_fixed)
+          api_resource[:roll_up] = get_widget('START_AND_DUE_DATE')&.dig(:roll_up)
+          api_resource[:start_date] = get_widget('START_AND_DUE_DATE')&.dig(:start_date)
+          api_resource[:due_date] = get_widget('START_AND_DUE_DATE')&.dig(:due_date)
           api_resource[:color] = get_widget('COLOR')&.dig(:color)
           api_resource[:text_color] = get_widget('COLOR')&.dig(:text_color)
 
@@ -423,12 +418,10 @@ module QA
             :title,
             :description,
             :state,
+            :is_fixed,
+            :roll_up,
             :start_date,
             :due_date,
-            :start_date_is_fixed,
-            :start_date_fixed,
-            :due_date_is_fixed,
-            :due_date_fixed,
             :confidential,
             :labels,
             :upvotes,
@@ -437,7 +430,6 @@ module QA
             :text_color
           )
         end
-        # rubocop:enable Metrics/AbcSize
 
         def convert_graphql_state_to_legacy_state(state)
           case state

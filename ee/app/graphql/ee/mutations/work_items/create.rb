@@ -23,12 +23,6 @@ module EE
             required: false,
             description: 'Iteration widget of the work item.'
 
-          argument :rolledup_dates_widget,
-            ::Types::WorkItems::Widgets::RolledupDatesInputType,
-            required: false,
-            description: 'Input for rolledup dates widget.',
-            experiment: { milestone: '16.9' }
-
           argument :color_widget, ::Types::WorkItems::Widgets::ColorInputType,
             required: false,
             description: 'Input for color widget.'
