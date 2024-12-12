@@ -250,7 +250,7 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
       let_it_be(:project) { create(:project, :repository) }
       let_it_be(:other_user) { create(:user) }
 
-      let(:service_account_user) { create(:user, :service_account) }
+      let(:service_account_user) { create(:user, :service_account, composite_identity_enforced: true) }
       let(:actor) { service_account_user }
       let(:gitaly_context) do
         {
@@ -259,8 +259,6 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
       end
 
       before do
-        stub_licensed_features(composite_identity_auth: true)
-        service_account_user.update!(composite_identity_enforced: true)
         project.add_developer(service_account_user)
         project.add_developer(user)
       end
