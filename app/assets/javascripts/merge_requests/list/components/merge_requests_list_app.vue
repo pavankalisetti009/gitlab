@@ -75,8 +75,6 @@ import MergeRequestReviewers from '~/issuable/components/merge_request_reviewers
 import IssuableByEmail from '~/issuable/components/issuable_by_email.vue';
 import setSortPreferenceMutation from '~/issues/list/queries/set_sort_preference.mutation.graphql';
 import issuableEventHub from '~/issues/list/eventhub';
-import getMergeRequestsQuery from 'ee_else_ce/merge_requests/list/queries/get_merge_requests.query.graphql';
-import getMergeRequestsCountsQuery from 'ee_else_ce/merge_requests/list/queries/get_merge_requests_counts.query.graphql';
 import { AutocompleteCache } from '../../utils/autocomplete_cache';
 import { i18n, BRANCH_LIST_REFRESH_INTERVAL } from '../constants';
 import searchLabelsQuery from '../queries/search_labels.query.graphql';
@@ -137,10 +135,13 @@ export default {
     mergeTrainsPath: { default: undefined },
     defaultBranch: { default: '' },
     initialEmail: { default: '' },
+    getMergeRequestsQuery: { default: undefined },
+    getMergeRequestsCountsQuery: { default: undefined },
+    isProject: { default: true },
   },
   data() {
     return {
-      projectId: null,
+      namespaceId: null,
       branchCacheAges: {},
       filterTokens: [],
       mergeRequests: [],
@@ -156,12 +157,14 @@ export default {
   },
   apollo: {
     mergeRequests: {
-      query: getMergeRequestsQuery,
+      query() {
+        return this.getMergeRequestsQuery;
+      },
       variables() {
         return this.queryVariables;
       },
       update(data) {
-        return data.project.mergeRequests?.nodes ?? [];
+        return data.namespace.mergeRequests?.nodes ?? [];
       },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       nextFetchPolicy: fetchPolicies.CACHE_FIRST,
@@ -170,31 +173,35 @@ export default {
         if (!data) {
           return;
         }
-        this.projectId = getIdFromGraphQLId(data.project.id);
-        this.pageInfo = data.project.mergeRequests?.pageInfo ?? {};
+        this.namespaceId = getIdFromGraphQLId(data.namespace.id);
+        this.pageInfo = data.namespace.mergeRequests?.pageInfo ?? {};
       },
       error(error) {
         this.mergeRequestsError = this.$options.i18n.errorFetchingMergeRequests;
         Sentry.captureException(error);
       },
       skip() {
-        return !this.hasAnyMergeRequests || isEmpty(this.pageParams);
+        return !this.hasAnyMergeRequests || isEmpty(this.pageParams) || !this.getMergeRequestsQuery;
       },
     },
     mergeRequestCounts: {
-      query: getMergeRequestsCountsQuery,
+      query() {
+        return this.getMergeRequestsCountsQuery;
+      },
       variables() {
         return this.queryVariables;
       },
       update(data) {
-        return data.project ?? {};
+        return data.namespace ?? {};
       },
       error(error) {
         this.mergeRequestsError = this.$options.i18n.errorFetchingCounts;
         Sentry.captureException(error);
       },
       skip() {
-        return !this.hasAnyMergeRequests || isEmpty(this.pageParams);
+        return (
+          !this.hasAnyMergeRequests || isEmpty(this.pageParams) || !this.getMergeRequestsCountsQuery
+        );
       },
     },
   },
@@ -247,7 +254,7 @@ export default {
           dataType: 'user',
           defaultUsers: [],
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-merge-requests-recent-tokens-author`,
           preloadedUsers,
           multiselect: false,
@@ -259,7 +266,7 @@ export default {
           token: UserToken,
           dataType: 'user',
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-merge-requests-recent-tokens-assignee`,
           preloadedUsers,
           multiSelect: false,
@@ -272,7 +279,7 @@ export default {
           token: UserToken,
           dataType: 'user',
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-merge-requests-recent-tokens-reviewer`,
           preloadedUsers,
           multiSelect: false,
@@ -287,7 +294,7 @@ export default {
           defaultUsers: [],
           operators: OPERATORS_IS,
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-merge_requests-recent-tokens-merged_by`,
           preloadedUsers,
           multiselect: false,
@@ -301,7 +308,7 @@ export default {
           dataType: 'user',
           operators: OPERATORS_IS,
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-merge_requests-recent-tokens-approvers`,
           preloadedUsers,
           multiSelect: false,
@@ -313,7 +320,7 @@ export default {
           token: UserToken,
           dataType: 'user',
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-merge_requests-recent-tokens-approved_by`,
           preloadedUsers,
           multiSelect: false,
@@ -326,7 +333,7 @@ export default {
           recentSuggestionsStorageKey: `${this.fullPath}-merge-requests-recent-tokens-milestone`,
           shouldSkipSort: true,
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           multiselect: false,
           unique: true,
         },
@@ -362,7 +369,7 @@ export default {
           token: GlFilteredSearchToken,
           operators: OPERATORS_IS,
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           multiselect: false,
           options: [
             { value: 'yes', title: this.$options.i18n.yes },
@@ -376,7 +383,7 @@ export default {
           icon: 'arrow-right',
           token: BranchToken,
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           fetchBranches: this.fetchTargetBranches,
         },
         {
@@ -385,7 +392,7 @@ export default {
           icon: 'branch',
           token: BranchToken,
           fullPath: this.fullPath,
-          isProject: true,
+          isProject: this.isProject,
           fetchBranches: this.fetchSourceBranches,
         },
         {
@@ -448,7 +455,7 @@ export default {
       return (
         this.$apollo.queries.mergeRequests.loading &&
         !this.$apollo.provider.clients.defaultClient.readQuery({
-          query: getMergeRequestsQuery,
+          query: this.getMergeRequestsQuery,
           variables: this.queryVariables,
         })
       );
@@ -494,8 +501,8 @@ export default {
       };
       const url = typeUrls[branchType];
 
-      return url && this.projectId
-        ? mergeUrlParams({ project_id: this.projectId }, url)
+      return url && this.namespaceId
+        ? mergeUrlParams({ [this.isProject ? 'project_id' : 'group_id']: this.namespaceId }, url)
         : typeUrls.other;
     },
     async updateBranchCache(branchType, path) {
@@ -555,10 +562,10 @@ export default {
       return this.$apollo
         .query({
           query: searchLabelsQuery,
-          variables: { fullPath: this.fullPath, search },
+          variables: { fullPath: this.fullPath, search, isProject: this.isProject },
           fetchPolicy,
         })
-        .then(({ data }) => data.project.labels.nodes)
+        .then(({ data }) => (data.project || data.group).labels.nodes)
         .then((labels) =>
           // TODO remove once we can search by title-only on the backend
           // https://gitlab.com/gitlab-org/gitlab/-/issues/346353
