@@ -5,12 +5,14 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_management do
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
+  let_it_be(:other_group) { create(:group) }
   let_it_be(:project_1) { create(:project, group: group) }
   let_it_be(:project_2) { create(:project, group: group) }
   let_it_be(:project_3) { create(:project, group: group) }
   let_it_be(:project_4) { create(:project, group: group) }
   let_it_be(:project_5) { create(:project, group: group) }
   let_it_be(:project_6) { create(:project, group: subgroup) }
+  let_it_be(:project_7) { create(:project, group: other_group) }
   let_it_be(:archived_project) { create(:project, :archived, group: group).tap { |p| create(:vulnerability_statistic, :grade_a, project: p) } }
   let_it_be(:unrelated_project) { create(:project).tap { |p| create(:vulnerability_statistic, :grade_a, project: p) } }
 
@@ -20,13 +22,15 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
   let_it_be(:vulnerability_statistic_4) { create(:vulnerability_statistic, :grade_c, project: project_4) }
   let_it_be(:vulnerability_statistic_5) { create(:vulnerability_statistic, :grade_f, project: project_5) }
   let_it_be(:vulnerability_statistic_6) { create(:vulnerability_statistic, :grade_d, project: project_6) }
+  let_it_be(:vulnerability_statistic_7) { create(:vulnerability_statistic, :grade_a, project: project_7) }
 
   describe '.grades_for' do
     let(:compare_key) { ->(projects_grade) { [projects_grade.grade, projects_grade.project_ids.sort] } }
     let(:include_subgroups) { false }
     let(:filter) { nil }
+    let(:vulnerables) { [vulnerable] }
 
-    subject(:projects_grades) { described_class.grades_for([vulnerable], filter: filter, include_subgroups: include_subgroups) }
+    subject(:projects_grades) { described_class.grades_for(vulnerables, filter: filter, include_subgroups: include_subgroups) }
 
     context 'when the given vulnerable is a Group' do
       let(:vulnerable) { group }
@@ -47,6 +51,16 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
           it 'returns the letter grades for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
           end
+
+          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
+            before do
+              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
+            end
+
+            it 'returns the letter grades for given vulnerable' do
+              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+            end
+          end
         end
 
         context 'when the filter is given' do
@@ -61,6 +75,16 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           it 'returns the filtered letter grade for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+          end
+
+          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
+            before do
+              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
+            end
+
+            it 'returns the filtered letter grade for given vulnerable' do
+              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+            end
           end
         end
       end
@@ -84,6 +108,36 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
           it 'returns the letter grades for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
           end
+
+          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
+            before do
+              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
+            end
+
+            it 'returns the letter grades for given vulnerable' do
+              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+            end
+          end
+
+          context 'when multiple batches are required' do
+            before do
+              stub_const("#{described_class}::BATCH_SIZE", 2)
+            end
+
+            it 'returns the letter grades for given vulnerable' do
+              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+            end
+
+            context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
+              before do
+                stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
+              end
+
+              it 'returns the letter grades for given vulnerable' do
+                expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+              end
+            end
+          end
         end
 
         context 'when the filter is given' do
@@ -98,6 +152,57 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           it 'returns the filtered letter grade for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+          end
+
+          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
+            before do
+              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
+            end
+
+            it 'returns the filtered letter grade for given vulnerable' do
+              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
+            end
+          end
+        end
+      end
+    end
+
+    context 'when the given vulnerables are groups' do
+      let(:vulnerables) { [group, other_group] }
+
+      # The following expectation captures a buggy behavior that is
+      # covered by https://gitlab.com/gitlab-org/gitlab/-/issues/507992.
+      # It ensures that the behavior remains unchanged
+      # as we refactor the code, until the bug is fixed.
+      it 'returns all letter grades for each vulnerable' do
+        vulnerables.each do |vulnerable|
+          expected_projects_grades = [
+            described_class.new(vulnerable, 'a', [project_1.id, project_7.id]),
+            described_class.new(vulnerable, 'b', [project_2.id, project_3.id]),
+            described_class.new(vulnerable, 'c', [project_4.id]),
+            described_class.new(vulnerable, 'f', [project_5.id])
+          ]
+
+          expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades.map(&compare_key))
+        end
+      end
+
+      context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled in one of the groups' do
+        before do
+          stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
+          stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: group)
+        end
+
+        it 'returns all letter grades for each vulnerable' do
+          vulnerables.each do |vulnerable|
+            expected_projects_grades = [
+              described_class.new(vulnerable, 'a', [project_1.id, project_7.id]),
+              described_class.new(vulnerable, 'b', [project_2.id, project_3.id]),
+              described_class.new(vulnerable, 'c', [project_4.id]),
+              described_class.new(vulnerable, 'f', [project_5.id])
+            ]
+
+            expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades.map(&compare_key))
           end
         end
       end
@@ -119,25 +224,28 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
       end
 
       context 'when the filter is not given' do
-        let(:expected_projects_grades) do
-          {
+        it 'returns the letter grades for given vulnerable' do
+          expected_projects_grades = {
             vulnerable => [
               described_class.new(vulnerable, 'a', [project_1.id]),
               described_class.new(vulnerable, 'b', [project_2.id])
             ]
           }
-        end
 
-        it 'returns the letter grades for given vulnerable' do
           expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
         end
       end
 
       context 'when the filter is given' do
         let(:filter) { :b }
-        let(:expected_projects_grades) { { vulnerable => [described_class.new(vulnerable, 'b', [project_2.id])] } }
 
         it 'returns the filtered letter grade for given vulnerable' do
+          expected_projects_grades = {
+            vulnerable => [
+              described_class.new(vulnerable, 'b', [project_2.id])
+            ]
+          }
+
           expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
         end
       end
