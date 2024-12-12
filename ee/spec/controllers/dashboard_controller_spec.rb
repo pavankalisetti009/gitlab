@@ -18,7 +18,7 @@ RSpec.describe DashboardController do
         incident = create(:incident, project: project, author: user)
         test_case = create(:quality_test_case, project: project, author: user)
 
-        get :issues, params: { author_id: user.id }
+        get :issues, params: { author_id: user.id }, format: :atom
 
         expect(assigns(:issues)).to match_array([issue, incident, test_case])
       end
