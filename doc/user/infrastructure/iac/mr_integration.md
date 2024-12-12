@@ -89,7 +89,7 @@ To manually configure a GitLab Terraform Report artifact:
      stage: build
      script:
        - terraform plan -out=$PLAN
-       - terraform show --json $PLAN | convert_report > $PLAN_JSON
+       - terraform show -json $PLAN | convert_report > $PLAN_JSON
      artifacts:
        reports:
          terraform: $PLAN_JSON
