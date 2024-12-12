@@ -3,9 +3,7 @@
 module QA
   RSpec.describe 'Plan', :blocking, product_group: :project_management do
     describe 'Read-only board configuration' do
-      let(:qa_user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:qa_user) { Runtime::User::Store.additional_test_user }
 
       let(:label_board_list) do
         EE::Resource::Board::BoardList::Project::LabelBoardList.fabricate_via_api!

@@ -35,9 +35,7 @@ module QA
       let(:premade_report_name) { "gl-container-scanning-report.json" }
       let(:premade_report_path) { "qa/ee/fixtures/secure_premade_reports/gl-container-scanning-report.json" }
       let(:commit_branch) { "new_branch_#{SecureRandom.hex(8)}" }
-      let!(:approver) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let!(:approver) { Runtime::User::Store.additional_test_user }
 
       let(:scan_result_policy_commit) do
         EE::Resource::ScanResultPolicyCommit.fabricate_via_api! do |commit|

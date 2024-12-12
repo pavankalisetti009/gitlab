@@ -13,6 +13,9 @@ module QA
         # Do not attempt to add license or perform other admin actions on live environments
         return if QA::Runtime::Env.running_on_live_env?
 
+        # Skip next actions as these require admin api client
+        return unless QA::Runtime::User::Store.admin_api_client
+
         if QA::Runtime::Env.ee_license.present?
           QA::Runtime::Logger.info("Performing initial license fabrication!")
 

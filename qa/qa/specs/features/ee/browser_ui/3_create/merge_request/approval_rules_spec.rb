@@ -2,13 +2,13 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'Approval rules', product_group: :code_review, quarantine: {
+    describe 'Approval rules', :requires_admin, product_group: :code_review, quarantine: {
       type: :bug,
       issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/423899',
       only: { pipeline: %i[canary production] }
     } do
-      let(:approver1) { Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1) }
-      let(:approver2) { Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2) }
+      let(:approver1) { create(:user) }
+      let(:approver2) { create(:user) }
       let(:project) { create(:project, name: 'approval-rules') }
 
       def login(user = nil)
@@ -23,7 +23,8 @@ module QA
         Flow::Login.sign_in
       end
 
-      it 'allows multiple approval rules with users and groups', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347771' do
+      it 'allows multiple approval rules with users and groups', :blocking,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347771' do
         # Create a merge request with 2 rules
         merge_request = Resource::MergeRequest.fabricate_via_browser_ui! do |resource|
           resource.title = 'Add a new feature'

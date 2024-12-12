@@ -24,9 +24,7 @@ module QA
     describe 'Group' do
       let(:group) { create(:group, path: "test-group-#{SecureRandom.hex(8)}") }
       let(:project) { create(:project, name: 'project-shared-with-group') }
-      let(:user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:user) { Runtime::User::Store.additional_test_user }
 
       # rubocop:disable RSpec/InstanceVariable
       before do
