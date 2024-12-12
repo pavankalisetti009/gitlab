@@ -1,8 +1,9 @@
 <script>
-import { GlButton, GlForm, GlFormGroup, GlFormInput, GlIcon, GlLink } from '@gitlab/ui';
+import { GlButton, GlForm, GlFormGroup, GlFormInput, GlLink } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import AddPipelineSubscription from '../graphql/mutations/add_pipeline_subscription.mutation.graphql';
 
 export default {
@@ -26,8 +27,8 @@ export default {
     GlForm,
     GlFormGroup,
     GlFormInput,
-    GlIcon,
     GlLink,
+    HelpIcon,
   },
   inject: {
     projectPath: {
@@ -86,7 +87,7 @@ export default {
         <template #label>
           {{ $options.i18n.formLabel }}
           <gl-link :href="$options.docsLink" target="_blank">
-            <gl-icon name="question-o" variant="info" />
+            <help-icon />
           </gl-link>
         </template>
         <gl-form-input
