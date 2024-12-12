@@ -3,15 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe VerifyPagesDomainService, feature_category: :pages do
-  subject(:service) { described_class.new(domain) }
+  let(:service) { described_class.new(domain) }
 
   describe '#execute' do
+    subject(:service_response) { service.execute }
+
     context 'when successful verification' do
       shared_examples 'schedules Groups::EnterpriseUsers::BulkAssociateByDomainWorker' do
+        it_behaves_like 'returning a success service response'
+
         it 'schedules Groups::EnterpriseUsers::BulkAssociateByDomainWorker', :aggregate_failures do
           expect(Groups::EnterpriseUsers::BulkAssociateByDomainWorker).to receive(:perform_async).with(domain.id)
 
-          expect(service.execute).to eq(status: :success)
+          service_response
+
           expect(domain).to be_verified
         end
       end
@@ -39,10 +44,14 @@ RSpec.describe VerifyPagesDomainService, feature_category: :pages do
 
     context 'when unsuccessful verification' do
       shared_examples 'does not schedule Groups::EnterpriseUsers::BulkAssociateByDomainWorker' do
+        it_behaves_like 'returning an error service response'
+        it { is_expected.to have_attributes message: "Couldn't verify #{domain.domain}" }
+
         it 'does not schedule Groups::EnterpriseUsers::BulkAssociateByDomainWorker', :aggregate_failures do
           expect(Groups::EnterpriseUsers::BulkAssociateByDomainWorker).not_to receive(:perform_async)
 
-          expect(service.execute).to eq({ status: :error, message: "Couldn't verify #{domain.domain}" })
+          service_response
+
           expect(domain).not_to be_verified
         end
       end
