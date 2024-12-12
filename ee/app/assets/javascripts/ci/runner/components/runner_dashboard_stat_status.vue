@@ -45,7 +45,7 @@ export default {
     icon() {
       switch (this.status) {
         case STATUS_ONLINE:
-          return { class: 'gl-text-green-500', name: 'status-active' };
+          return { class: 'gl-text-success', name: 'status-active' };
         case STATUS_OFFLINE:
           return { class: 'gl-text-subtle', name: 'status-waiting' };
         default:

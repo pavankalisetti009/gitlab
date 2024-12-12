@@ -54,7 +54,7 @@ export const SUMMARY_STATUS_STYLE_MAP = {
   },
   [PRE_SCAN_VERIFICATION_STATUS.COMPLETE]: {
     icon: 'check-circle',
-    iconColor: 'gl-text-green-500',
+    iconColor: 'gl-text-success',
     borderColor: 'border-color: #108548',
   },
   [PRE_SCAN_VERIFICATION_STATUS.COMPLETE_WITH_ERRORS]: {

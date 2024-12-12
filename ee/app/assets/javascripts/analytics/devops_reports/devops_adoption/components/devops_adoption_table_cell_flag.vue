@@ -31,11 +31,7 @@ export default {
 <template>
   <div>
     <div v-if="enabled" class="gl-flex gl-justify-end sm:gl-justify-start">
-      <gl-icon
-        name="status_success_solid"
-        class="gl-text-green-500"
-        :class="{ 'gl-mr-3': withText }"
-      />
+      <gl-icon name="status_success_solid" variant="success" :class="{ 'gl-mr-3': withText }" />
       <div v-if="withText">{{ __('Adopted') }}</div>
     </div>
     <div v-if="!enabled" class="gl-flex gl-justify-end sm:gl-justify-start">
