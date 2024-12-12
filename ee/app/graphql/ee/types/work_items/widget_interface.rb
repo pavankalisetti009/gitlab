@@ -24,8 +24,7 @@ module EE
             ::WorkItems::Widgets::Progress => ::Types::WorkItems::Widgets::ProgressType,
             ::WorkItems::Widgets::RequirementLegacy => ::Types::WorkItems::Widgets::RequirementLegacyType,
             ::WorkItems::Widgets::TestReports => ::Types::WorkItems::Widgets::TestReportsType,
-            ::WorkItems::Widgets::Color => ::Types::WorkItems::Widgets::ColorType,
-            ::WorkItems::Widgets::RolledupDates => ::Types::WorkItems::Widgets::RolledupDatesType
+            ::WorkItems::Widgets::Color => ::Types::WorkItems::Widgets::ColorType
           }.freeze
 
           orphan_types(*type_mappings.values)

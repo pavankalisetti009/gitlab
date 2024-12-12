@@ -287,10 +287,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
               }
               widgets {
                 type
-                  ... on WorkItemWidgetRolledupDates {
+                  ... on WorkItemWidgetStartAndDueDate {
+                    isFixed
+                    rollUp
                     startDate
-                    startDateFixed
-                    startDateIsFixed
                     startDateSourcingWorkItem {
                       id
                     }
@@ -298,9 +298,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
                       id
                     }
                     dueDate
-                    dueDateFixed
-                    dueDateIsFixed
-                    startDateSourcingWorkItem {
+                    dueDateSourcingWorkItem {
                       id
                     }
                     dueDateSourcingMilestone {
@@ -321,16 +319,15 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             {
               title: "some WI",
               workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
-              rolledupDatesWidget: {
-                startDateIsFixed: true,
-                startDateFixed: start_date.to_s,
-                dueDateIsFixed: true,
-                dueDateFixed: due_date.to_s
+              startAndDueDateWidget: {
+                isFixed: true,
+                startDate: start_date.to_s,
+                dueDate: due_date.to_s
               }
             }
           end
 
-          it "sets the work item's start and due date" do
+          it "sets the work item's start and due date", :aggregate_failures do
             expect { post_graphql_mutation(mutation, current_user: current_user) }
               .to change { WorkItem.count }
               .by(1)
@@ -338,14 +335,13 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             expect(response).to have_gitlab_http_status(:success)
             expect(type_response).to include({ 'name' => work_item_type.to_s.capitalize })
             expect(widgets_response).to include(
-              "type" => "ROLLEDUP_DATES",
+              "type" => "START_AND_DUE_DATE",
+              "isFixed" => true,
+              "rollUp" => true,
               "dueDate" => due_date.to_s,
-              "dueDateFixed" => due_date.to_s,
-              "dueDateIsFixed" => true,
               "dueDateSourcingMilestone" => nil,
+              "dueDateSourcingWorkItem" => nil,
               "startDate" => start_date.to_s,
-              "startDateFixed" => start_date.to_s,
-              "startDateIsFixed" => true,
               "startDateSourcingMilestone" => nil,
               "startDateSourcingWorkItem" => nil
             )

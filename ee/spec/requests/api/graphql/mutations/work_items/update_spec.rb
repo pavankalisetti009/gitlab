@@ -556,10 +556,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             workItem {
               widgets {
                 type
-                ... on WorkItemWidgetRolledupDates {
+                ... on WorkItemWidgetStartAndDueDate {
+                  rollUp
+                  isFixed
                   startDate
-                  startDateFixed
-                  startDateIsFixed
                   startDateSourcingWorkItem {
                     id
                   }
@@ -567,8 +567,6 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
                     id
                   }
                   dueDate
-                  dueDateFixed
-                  dueDateIsFixed
                   dueDateSourcingWorkItem {
                     id
                   }
@@ -595,11 +593,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
           let(:input) do
             {
-              "rolledupDatesWidget" => {
-                "startDateIsFixed" => true,
-                "startDateFixed" => start_date,
-                "dueDateIsFixed" => true,
-                "dueDateFixed" => due_date
+              "startAndDueDateWidget" => {
+                "isFixed" => true,
+                "startDate" => start_date,
+                "dueDate" => due_date
               }
             }
           end
@@ -610,15 +607,13 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
               expect(response).to have_gitlab_http_status(:success)
               expect(mutation_response['workItem']['widgets']).to include(
-                "type" => "ROLLEDUP_DATES",
+                "type" => "START_AND_DUE_DATE",
+                "rollUp" => true,
+                "isFixed" => true,
                 "dueDate" => due_date,
-                "dueDateFixed" => due_date,
-                "dueDateIsFixed" => true,
+                "startDate" => start_date,
                 "dueDateSourcingMilestone" => nil,
                 "dueDateSourcingWorkItem" => nil,
-                "startDate" => start_date,
-                "startDateFixed" => start_date,
-                "startDateIsFixed" => true,
                 "startDateSourcingMilestone" => nil,
                 "startDateSourcingWorkItem" => nil
               )
@@ -648,12 +643,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           end
 
           let(:input) do
-            {
-              "rolledupDatesWidget" => {
-                "startDateIsFixed" => false,
-                "dueDateIsFixed" => false
-              }
-            }
+            { "startAndDueDateWidget" => { "isFixed" => false } }
           end
 
           it "updates the work item's start and due date" do
@@ -662,15 +652,13 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             expect(response).to have_gitlab_http_status(:success)
 
             expect(mutation_response['workItem']['widgets']).to include(
-              "type" => "ROLLEDUP_DATES",
+              "type" => "START_AND_DUE_DATE",
+              "rollUp" => true,
+              "isFixed" => false,
               "dueDate" => milestone.due_date.to_s,
-              "dueDateFixed" => due_date_fixed.to_s,
-              "dueDateIsFixed" => false,
               "dueDateSourcingMilestone" => { "id" => milestone.to_gid.to_s },
               "dueDateSourcingWorkItem" => nil,
               "startDate" => milestone.start_date.to_s,
-              "startDateFixed" => start_date_fixed.to_s,
-              "startDateIsFixed" => false,
               "startDateSourcingMilestone" => { "id" => milestone.to_gid.to_s },
               "startDateSourcingWorkItem" => nil)
           end
