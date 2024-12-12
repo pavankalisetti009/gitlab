@@ -87,17 +87,22 @@ RSpec.describe EE::Groups::SettingsHelper do
     using RSpec::Parameterized::TableSyntax
     subject { helper.show_group_ai_settings? }
 
-    where(:ai_chat_enabled, :ai_features_enabled, :result) do
-      true  | true  | true
-      true  | false | true
-      false | true  | true
-      false | false | false
+    where(:ai_chat_enabled, :ai_features_enabled, :show_gitlab_duo_settings_app, :result) do
+      true  | true  | true | true
+      true  | true  | false | false
+      true  | false | true | true
+      true  | false | false | false
+      false | true  | true | true
+      false | true  | false | false
+      false | false | true | false
+      false | false | false | false
     end
 
     with_them do
       before do
         allow(group).to receive(:licensed_feature_available?).with(:ai_chat).and_return(ai_chat_enabled)
         allow(group).to receive(:licensed_feature_available?).with(:ai_features).and_return(ai_features_enabled)
+        allow(helper).to receive(:show_gitlab_duo_settings_app?).with(group).and_return(show_gitlab_duo_settings_app)
       end
 
       it "returns expected result" do
