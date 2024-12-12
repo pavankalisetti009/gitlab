@@ -55,6 +55,8 @@ module GroupSaml
           message << (', Member Role - %{member_role_id}' % { member_role_id: saml_group_link.member_role_id })
         end
 
+        message << (', Assign Duo Seats') if saml_group_link.assign_duo_seats?
+
         ::Gitlab::Audit::Auditor.audit(
           name: 'saml_group_links_created',
           author: current_user,

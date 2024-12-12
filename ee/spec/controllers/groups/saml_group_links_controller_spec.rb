@@ -108,6 +108,53 @@ RSpec.describe Groups::SamlGroupLinksController, feature_category: :system_acces
             end
           end
         end
+
+        context 'when SaaS Duo add-on is available' do
+          let_it_be(:params) do
+            route_params.merge(
+              saml_group_link: {
+                access_level: ::Gitlab::Access::REPORTER,
+                saml_group_name: saml_group_name,
+                assign_duo_seats: true
+              }
+            )
+          end
+
+          let_it_be(:add_on_purchase) do
+            create(
+              :gitlab_subscription_add_on_purchase,
+              :gitlab_duo_pro,
+              expires_on: 1.week.from_now.to_date,
+              namespace: group
+            )
+          end
+
+          before do
+            stub_saas_features(gitlab_duo_saas_only: true)
+          end
+
+          it 'responds with success' do
+            expect(::Gitlab::Audit::Auditor)
+              .to receive(:audit).with(
+                hash_including(
+                  {
+                    name: "saml_group_links_created",
+                    author: user,
+                    scope: group,
+                    target: group,
+                    message: "SAML group links created. Group Name - #{saml_group_name}, Access Level - 20, Assign Duo Seats"
+                  }
+                )
+              ).and_call_original
+
+            call_action
+
+            expect(response).to have_gitlab_http_status(:found)
+            expect(flash[:notice]).to include('New SAML group link saved.')
+            expect(AuditEvent.last.details[:custom_message])
+              .to eq("SAML group links created. Group Name - #{saml_group_name}, Access Level - 20, Assign Duo Seats")
+          end
+        end
       end
 
       context 'with missing parameters' do
@@ -118,6 +165,26 @@ RSpec.describe Groups::SamlGroupLinksController, feature_category: :system_acces
 
           expect(response).to have_gitlab_http_status(:found)
           expect(flash[:alert]).to include("Could not create SAML group link: Saml group name can't be blank.")
+        end
+      end
+
+      context 'with unpermitted parameters' do
+        let_it_be(:params) do
+          route_params.merge(
+            saml_group_link: {
+              access_level: ::Gitlab::Access::REPORTER,
+              saml_group_name: generate(:saml_group_name),
+              assign_duo_seats: true
+            }
+          )
+        end
+
+        it 'ignores the parameter' do
+          call_action
+
+          expect(response).to have_gitlab_http_status(:found)
+          expect(flash[:notice]).to include('New SAML group link saved.')
+          expect(SamlGroupLink.last).not_to be_assign_duo_seats
         end
       end
     end

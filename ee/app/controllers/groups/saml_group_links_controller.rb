@@ -43,6 +43,7 @@ module Groups
     def saml_group_link_params
       allowed_params = %i[saml_group_name access_level]
       allowed_params << :member_role_id if group.custom_roles_enabled?
+      allowed_params << :assign_duo_seats if helpers.duo_seat_assignment_available?(group)
 
       params.require(:saml_group_link).permit(allowed_params)
     end

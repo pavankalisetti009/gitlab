@@ -17,5 +17,16 @@
           .form-text.gl-text-subtle
             = s_('GroupSAML|Role to assign members of this SAML group.')
 
+      - if duo_seat_assignment_available?(group)
+        .form-group.row
+          .col-sm-2.col-form-label
+            = f.label :assign_duo_seats, _('GitLab Duo')
+          .col-sm-10.gl-pt-3
+            = f.gitlab_ui_checkbox_component :assign_duo_seats do |c|
+              - c.with_label do
+                = s_('GroupSAML|Assign GitLab Duo seats to users in this group')
+              - c.with_help_text do
+                = s_('GroupSAML|Users in this SAML group will be assigned a GitLab Duo Pro or GitLab Duo Enterprise seat, if available')
+
     .form-actions.gl-mb-5
       = f.submit _('Save'), pajamas_button: true
