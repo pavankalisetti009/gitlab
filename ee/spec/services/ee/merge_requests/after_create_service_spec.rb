@@ -102,9 +102,9 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
       end
     end
 
-    context 'when merge request has any_merge_request rules' do
+    context 'when merge request has scan_result_policy_reads targeting commits' do
       before do
-        create(:report_approver_rule, :any_merge_request, merge_request: merge_request)
+        create(:scan_result_policy_read, :targeting_commits, project: project)
       end
 
       it 'enqueues SyncAnyMergeRequestApprovalRulesWorker worker' do

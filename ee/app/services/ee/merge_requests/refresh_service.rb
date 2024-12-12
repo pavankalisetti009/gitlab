@@ -68,10 +68,10 @@ module EE
       end
 
       def sync_any_merge_request_approval_rules
+        return if project.scan_result_policy_reads.targeting_commits.none?
+
         merge_requests_for_source_branch.each do |merge_request|
-          if merge_request.approval_rules.any_merge_request.any?
-            ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)
-          end
+          ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)
         end
       end
 

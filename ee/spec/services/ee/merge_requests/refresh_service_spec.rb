@@ -183,28 +183,36 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
     end
 
     describe '#sync_any_merge_request_approval_rules' do
-      let(:irrelevant_merge_request) { another_merge_request }
-      let(:relevant_merge_request) { merge_request }
+      let(:merge_request_1) { merge_request }
+      let(:merge_request_2) { another_merge_request }
 
-      let!(:any_merge_request_approval_rule) do
-        create(:report_approver_rule, :any_merge_request, merge_request: relevant_merge_request)
-      end
+      let!(:scan_result_policy_read) { create(:scan_result_policy_read, :targeting_commits, project: project) }
 
-      it 'enqueues SyncAnyMergeRequestApprovalRulesWorker' do
+      it 'enqueues SyncAnyMergeRequestApprovalRulesWorker for all merge requests with the same source branch' do
         expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to(
-          receive(:perform_async).with(relevant_merge_request.id)
+          receive(:perform_async).with(merge_request_1.id)
         )
-        expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to(
-          receive(:perform_async).with(irrelevant_merge_request.id)
+        expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to(
+          receive(:perform_async).with(merge_request_2.id)
         )
 
         subject
       end
 
-      context 'without any_merge_request rule' do
-        let!(:any_merge_request_approval_rule) { nil }
+      context 'when scan_result_policy_read does not target commits' do
+        let!(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
 
-        it 'enqueues SyncAnyMergeRequestApprovalRulesWorker' do
+        it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
+          expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)
+
+          subject
+        end
+      end
+
+      context 'without scan_result_policy_read' do
+        let!(:scan_result_policy_read) { nil }
+
+        it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
           expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)
 
           subject

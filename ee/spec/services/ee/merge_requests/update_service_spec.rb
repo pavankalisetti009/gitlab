@@ -500,9 +500,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
     describe '#sync_any_merge_request_approval_rules' do
       let(:opts) { { target_branch: 'feature-2' } }
-      let!(:any_merge_request_approval_rule) do
-        create(:report_approver_rule, :any_merge_request, merge_request: merge_request)
-      end
+      let!(:scan_result_policy_read) { create(:scan_result_policy_read, :targeting_commits, project: project) }
 
       subject(:execute) { update_merge_request(opts) }
 
@@ -524,8 +522,18 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         end
       end
 
-      context 'without any_merge_request rule' do
-        let!(:any_merge_request_approval_rule) { nil }
+      context 'when scan_result_policy_read does not target commits' do
+        let!(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+
+        it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
+          expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)
+
+          execute
+        end
+      end
+
+      context 'without scan_result_policy_read' do
+        let!(:scan_result_policy_read) { nil }
 
         it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
           expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)

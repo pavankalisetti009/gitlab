@@ -35,7 +35,7 @@ module EE
       end
 
       def schedule_sync_for(merge_request)
-        if merge_request.approval_rules.any_merge_request.any?
+        if merge_request.project.scan_result_policy_reads.targeting_commits.any?
           # We need to make sure to run the merge request worker after hooks were called to
           # get correct commit signatures
           ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)
