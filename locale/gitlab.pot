@@ -20013,6 +20013,9 @@ msgstr ""
 msgid "Dimension"
 msgstr ""
 
+msgid "Direct"
+msgstr ""
+
 msgid "Direct members"
 msgstr ""
 
@@ -24499,6 +24502,12 @@ msgstr ""
 msgid "Geo|Data type"
 msgstr ""
 
+msgid "Geo|Database Connection Type"
+msgstr ""
+
+msgid "Geo|Database Replication status"
+msgstr ""
+
 msgid "Geo|Disabled"
 msgstr ""
 
@@ -24670,6 +24679,9 @@ msgstr ""
 msgid "Geo|Replicated data is verified with the secondary site(s) using checksums."
 msgstr ""
 
+msgid "Geo|Replicating"
+msgstr ""
+
 msgid "Geo|Replication Details"
 msgstr ""
 
@@ -24677,9 +24689,6 @@ msgid "Geo|Replication slot WAL"
 msgstr ""
 
 msgid "Geo|Replication slots"
-msgstr ""
-
-msgid "Geo|Replication status"
 msgstr ""
 
 msgid "Geo|Replication summary"
@@ -24848,6 +24857,9 @@ msgid "Geo|Verification status"
 msgstr ""
 
 msgid "Geo|Verified"
+msgstr ""
+
+msgid "Geo|Whether this site's database is connected to the primary database directly or through data replication"
 msgstr ""
 
 msgid "Geo|With GitLab Geo, you can install a special read-only and replicated instance anywhere."
