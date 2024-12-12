@@ -1,9 +1,9 @@
-- link = buy_additional_minutes_url(@namespace)
+- namespace_link = link_to @namespace.name, group_url(@namespace)
+- buy_minutes_url = buy_additional_minutes_url(@namespace)
+- usage_quotas_pipelines_url = group_usage_quotas_url(@namespace, anchor: 'pipelines-quota-tab')
 
 %p
-  - name_link = link_to @namespace.name, group_url(@namespace)
-  = html_escape(_('%{name_with_link} namespace has run out of Shared Runner compute minutes. No new jobs or pipelines in its projects will run.')) % { name_with_link: name_link.html_safe }
+  = safe_format(s_("Pipelines|The %{namespace_link} namespace has reached its shared runner compute minutes quota. For more details, see %{link_start}usage statistics%{link_end}."), tag_pair(link_to('', usage_quotas_pipelines_url), :link_start, :link_end), namespace_link: namespace_link)
+
 %p
-  = _('We recommend that you buy additional compute minutes to resume normal service.')
-%p
-  = link_to sprintf('%{link_label} →', { link_label: _('Buy more compute minutes') }), link
+  = safe_format(s_("Pipelines|To run new jobs and pipelines in this namespace's projects, %{link_start}buy additional compute minutes%{link_end}."), tag_pair(link_to("", buy_minutes_url), :link_start, :link_end))

@@ -15,13 +15,15 @@ class CiMinutesUsageMailer < ApplicationMailer
     )
   end
 
-  def notify_limit(namespace, recipients, percentage_of_available_mins)
+  def notify_limit(namespace, recipients, current_balance, total, percentage, stage_percentage)
     @namespace = namespace
-    @percentage_of_available_mins = percentage_of_available_mins
+    @current_balance = current_balance
+    @total = total
+    @percentage = percentage
 
     mail_with_locale(
       bcc: recipients,
-      subject: "Action required: Less than #{percentage_of_available_mins}% " \
+      subject: "Action required: Less than #{stage_percentage}% " \
                "of compute minutes remain for #{@namespace.name}"
     )
   end
