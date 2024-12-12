@@ -1710,18 +1710,59 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     using RSpec::Parameterized::TableSyntax
     let(:finding) { build(:vulnerabilities_finding) }
 
-    where(:finding_report_type, :cwe, :enabled_value) do
-      'sast' | 'CWE-1'  | false
-      'sast' | 'CWE-23' | true
-      'dast' | 'CWE-1'  | false
-      'dast' | 'CWE-23' | false
+    context 'when ignore_supported_cwe_list_check FF is enabled' do
+      it 'returns true irrespective of report type' do
+        expect(finding.ai_resolution_enabled?).to be true
+      end
     end
 
-    with_them do
-      it 'returns the expected value for enabled' do
-        finding.report_type = finding_report_type
-        finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: cwe)
-        expect(finding.ai_resolution_enabled?).to be enabled_value
+    context 'when ignore_supported_cwe_list_check FF is disabled' do
+      before do
+        stub_feature_flags(ignore_supported_cwe_list_check: false)
+      end
+
+      where(:finding_report_type, :cwe, :enabled_value) do
+        'sast' | 'CWE-1'  | false
+        'sast' | 'CWE-23' | true
+        'dast' | 'CWE-1'  | false
+        'dast' | 'CWE-23' | false
+      end
+
+      with_them do
+        it 'returns the expected value for enabled' do
+          finding.report_type = finding_report_type
+          finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: cwe)
+          expect(finding.ai_resolution_enabled?).to be enabled_value
+        end
+      end
+    end
+  end
+
+  describe '#ai_resolution_supported_cwe?' do
+    using RSpec::Parameterized::TableSyntax
+    let(:finding) { build(:vulnerabilities_finding) }
+
+    context 'when ignore_supported_cwe_list_check FF is enabled' do
+      it 'returns true irrespective of report type' do
+        expect(finding.ai_resolution_supported_cwe?).to be true
+      end
+    end
+
+    context 'when ignore_supported_cwe_list_check FF is disabled' do
+      before do
+        stub_feature_flags(ignore_supported_cwe_list_check: false)
+      end
+
+      where(:cwe, :enabled_value) do
+        'CWE-1'  | false
+        'CWE-23' | true
+      end
+
+      with_them do
+        it 'returns the expected value for supported cwe for sast report type' do
+          finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: cwe)
+          expect(finding.ai_resolution_supported_cwe?).to be enabled_value
+        end
       end
     end
   end

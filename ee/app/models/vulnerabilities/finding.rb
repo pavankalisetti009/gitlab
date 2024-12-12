@@ -548,7 +548,15 @@ module Vulnerabilities
     end
 
     def ai_resolution_enabled?
-      ai_resolution_available? && HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
+      ai_resolution_available? && ai_resolution_supported_cwe?
+    end
+
+    def ai_resolution_supported_cwe?
+      if ::Feature.enabled?(:ignore_supported_cwe_list_check, project)
+        true
+      else
+        HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
+      end
     end
 
     protected
