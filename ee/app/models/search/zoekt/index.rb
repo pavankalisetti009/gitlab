@@ -70,6 +70,7 @@ module Search
         where_not_exists(Repository.uncompleted.where(Repository.arel_table[:zoekt_index_id].eq(Index.arel_table[:id])))
       end
 
+      scope :should_be_reserved_storage_bytes_adjusted, -> { overprovisioned.ready.or(high_watermark_exceeded) }
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
       scope :preload_node, -> { includes(:node) }
       scope :negative_reserved_storage_bytes, -> { where('reserved_storage_bytes < 0') }

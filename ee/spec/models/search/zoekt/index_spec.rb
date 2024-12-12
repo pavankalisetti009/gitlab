@@ -133,6 +133,21 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.should_be_reserved_storage_bytes_adjusted' do
+      let_it_be(:overprovisioned_pending) { create(:zoekt_index, :overprovisioned) }
+      let_it_be(:overprovisioned_ready) { create(:zoekt_index, :overprovisioned, :ready) }
+      let_it_be(:high_watermark_exceeded_pending) { create(:zoekt_index, :high_watermark_exceeded) }
+      let_it_be(:high_watermark_exceeded_ready) { create(:zoekt_index, :high_watermark_exceeded, :ready) }
+      let_it_be(:healthy) { create(:zoekt_index, :healthy) }
+
+      subject(:scope) { described_class.should_be_reserved_storage_bytes_adjusted }
+
+      it 'returns correct indices' do
+        expect(scope).to include(overprovisioned_ready, high_watermark_exceeded_pending, high_watermark_exceeded_ready)
+        expect(scope).not_to include(overprovisioned_pending, healthy)
+      end
+    end
+
     describe '.pre_ready' do
       let_it_be(:in_progress) { create(:zoekt_index, state: :in_progress) }
       let_it_be(:initializing) { create(:zoekt_index, state: :initializing) }

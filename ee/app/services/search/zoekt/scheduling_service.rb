@@ -6,6 +6,7 @@ module Search
       include Gitlab::Loggable
 
       TASKS = %i[
+        adjust_indices_reserved_storage_bytes
         auto_index_self_managed
         dot_com_rollout
         eviction
@@ -438,6 +439,16 @@ module Search
         execute_every 10.minutes, cache_key: :lost_nodes_check do
           Node.lost.select(:id).find_each do |node|
             Gitlab::EventStore.publish(Search::Zoekt::LostNodeEvent.new(data: { zoekt_node_id: node.id }))
+          end
+        end
+      end
+
+      def adjust_indices_reserved_storage_bytes
+        execute_every 10.minutes, cache_key: :adjust_indices_reserved_storage_bytes do
+          Index.should_be_reserved_storage_bytes_adjusted.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              AdjustIndicesReservedStorageBytesEvent.new(data: { index_ids: batch.pluck_primary_key })
+            )
           end
         end
       end

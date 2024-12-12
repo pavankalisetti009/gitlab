@@ -206,6 +206,9 @@ module EE
 
           store.subscribe ::Search::Zoekt::IndexToEvictEventWorker,
             to: ::Search::Zoekt::IndexToEvictEvent
+
+          store.subscribe ::Search::Zoekt::AdjustIndicesReservedStorageBytesEventWorker,
+            to: ::Search::Zoekt::AdjustIndicesReservedStorageBytesEvent
         end
 
         def subscribe_to_members_added_event(store)

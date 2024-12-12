@@ -33435,6 +33435,8 @@ CREATE INDEX index_zentao_tracker_data_on_instance_integration_id ON zentao_trac
 
 CREATE INDEX index_zentao_tracker_data_on_integration_id ON zentao_tracker_data USING btree (integration_id);
 
+CREATE INDEX index_zoekt_indices_on_id_conditional_watermark_level_state ON zoekt_indices USING btree (id) WHERE (((watermark_level = 10) AND (state = 10)) OR (watermark_level = 60));
+
 CREATE INDEX index_zoekt_indices_on_namespace_id ON zoekt_indices USING btree (namespace_id, zoekt_enabled_namespace_id);
 
 CREATE INDEX index_zoekt_indices_on_replica_id ON zoekt_indices USING btree (zoekt_replica_id);
