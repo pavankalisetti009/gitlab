@@ -422,7 +422,6 @@ Layout/LineEndStringConcatenationIndentation:
     - 'qa/qa/specs/features/ee/browser_ui/10_govern/export_vulnerability_report_spec.rb'
     - 'qa/qa/specs/features/ee/browser_ui/9_data_stores/elasticsearch/elasticsearch_reindexing_spec.rb'
     - 'qa/qa/support/system_logs/kibana.rb'
-    - 'qa/qa/tools/reliable_report.rb'
     - 'qa/qa/tools/revoke_user_personal_access_tokens.rb'
     - 'qa/qa/tools/test_resources_handler.rb'
     - 'qa/spec/support/system_logs/kibana_spec.rb'
