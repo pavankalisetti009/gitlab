@@ -26,7 +26,10 @@ module EE
             experiment: { milestone: '17.7' }
 
           def squash_option
-            object.squash_option if ::Feature.enabled?(:branch_rule_squash_settings, object.project)
+            return unless ::Feature.enabled?(:branch_rule_squash_settings, object.project)
+            return unless object.project.licensed_feature_available?(:branch_rule_squash_options)
+
+            object.squash_option
           end
         end
       end
