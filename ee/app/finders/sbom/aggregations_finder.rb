@@ -132,7 +132,13 @@ module Sbom
     def outer_occurrences
       order = orderings.map do |column, direction|
         column_expression = column_expression(column, 'inner_occurrences')
-        direction == :desc ? column_expression.desc : column_expression.asc
+        nullable = nullable(column, direction)
+
+        # rubocop:disable GitlabSecurity/PublicSend -- Only values are :not_nullable, :nulls_last, :nulls_first
+        column_expression
+          .then { |oe| direction == :desc ? oe.desc : oe.asc }
+          .then { |oe| nullable == :not_nullable ? oe : oe.send(nullable) }
+        # rubocop:enable GitlabSecurity/PublicSend
       end
 
       Sbom::Occurrence.select(distinct(on: distinct_columns, table_name: 'inner_occurrences'))
