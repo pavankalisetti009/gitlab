@@ -46,7 +46,7 @@ export default {
       });
     },
     badgeVariant() {
-      return this.mergeRequest.approved ? 'success' : 'neutral';
+      return this.mergeRequest.approved ? 'success' : 'muted';
     },
     badgeIcon() {
       if (this.mergeRequest.approved) return 'check-circle';
