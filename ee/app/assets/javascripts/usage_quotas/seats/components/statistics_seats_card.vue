@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlIcon, GlButton, GlModalDirective, GlSkeletonLoader } from '@gitlab/ui';
+import { GlLink, GlButton, GlModalDirective, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
@@ -19,10 +19,11 @@ import Tracking from '~/tracking';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'StatisticsSeatsCard',
-  components: { GlLink, GlIcon, GlButton, LimitedAccessModal, GlSkeletonLoader },
+  components: { GlLink, GlButton, LimitedAccessModal, GlSkeletonLoader, HelpIcon },
   directives: {
     GlModalDirective,
   },
@@ -201,7 +202,7 @@ export default {
           :aria-label="$options.i18n.seatsUsedHelpText"
           class="gl-relative gl-ml-2"
         >
-          <gl-icon name="question-o" />
+          <help-icon />
         </gl-link>
       </p>
       <p
@@ -220,7 +221,7 @@ export default {
           :aria-label="$options.i18n.seatsOwedHelpText"
           class="gl-relative gl-ml-2"
         >
-          <gl-icon name="question-o" />
+          <help-icon />
         </gl-link>
       </p>
     </div>

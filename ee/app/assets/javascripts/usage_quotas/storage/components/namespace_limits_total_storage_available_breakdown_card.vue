@@ -1,8 +1,9 @@
 <script>
-import { GlIcon, GlCard } from '@gitlab/ui';
+import { GlCard } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 /**
  * NamespaceLimitsTotalStorageAvailableBreakdownCard
@@ -15,7 +16,7 @@ import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.
 
 export default {
   name: 'NamespaceLimitsTotalStorageAvailableBreakdownCard',
-  components: { GlIcon, HelpPageLink, GlCard, NumberToHumanSize },
+  components: { HelpIcon, HelpPageLink, GlCard, NumberToHumanSize },
   inject: ['namespacePlanName', 'namespaceStorageLimit'],
   props: {
     purchasedStorage: {
@@ -57,7 +58,7 @@ export default {
           class="gl-ml-2"
           :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
         >
-          <gl-icon name="question-o" />
+          <help-icon />
         </help-page-link>
       </div>
       <div v-if="loading" class="gl-animate-skeleton-loader gl-h-5 gl-w-8 gl-rounded-base"></div>

@@ -1,15 +1,9 @@
 <script>
-import {
-  GlIcon,
-  GlCard,
-  GlButton,
-  GlProgressBar,
-  GlModalDirective,
-  GlSkeletonLoader,
-} from '@gitlab/ui';
+import { GlCard, GlButton, GlProgressBar, GlModalDirective, GlSkeletonLoader } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 /**
  * ProjectLimitsExcessStorageBreakdownCard
@@ -23,7 +17,7 @@ import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.
 export default {
   name: 'ProjectLimitsExcessStorageBreakdownCard',
   components: {
-    GlIcon,
+    HelpIcon,
     HelpPageLink,
     GlCard,
     GlButton,
@@ -109,7 +103,7 @@ export default {
             class="gl-ml-2"
             :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
           >
-            <gl-icon name="question-o" />
+            <help-icon />
           </help-page-link>
         </div>
         <template v-if="purchaseStorageUrl">
