@@ -1,18 +1,12 @@
 <script>
-import {
-  GlLink,
-  GlIcon,
-  GlTooltipDirective,
-  GlButton,
-  GlProgressBar,
-  GlSkeletonLoader,
-} from '@gitlab/ui';
+import { GlLink, GlTooltipDirective, GlButton, GlProgressBar, GlSkeletonLoader } from '@gitlab/ui';
 import { isNil } from 'lodash';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { formatNumber } from '~/locale';
 
 export default {
   name: 'StatisticsCard',
-  components: { GlLink, GlIcon, GlButton, GlProgressBar, GlSkeletonLoader },
+  components: { GlLink, GlButton, GlProgressBar, GlSkeletonLoader, HelpIcon },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
@@ -151,7 +145,7 @@ export default {
           :title="helpTooltip"
           :aria-label="helpLabel"
         >
-          <gl-icon name="question-o" />
+          <help-icon />
         </gl-link>
       </p>
       <gl-progress-bar v-if="percentage !== null" class="gl-mt-5" :value="percentage" />

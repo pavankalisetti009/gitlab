@@ -5,6 +5,7 @@ import { s__, __ } from '~/locale';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import SectionedPercentageBar from '~/usage_quotas/components/sectioned_percentage_bar.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import {
   EGRESS_TYPE_ARTIFACTS,
   EGRESS_TYPE_REPOSITORY,
@@ -35,7 +36,7 @@ export default {
       thClass: ['gl-whitespace-nowrap'],
     },
   ],
-  components: { GlSkeletonLoader, GlTableLite, GlIcon, GlLink, SectionedPercentageBar },
+  components: { GlSkeletonLoader, GlTableLite, GlIcon, GlLink, SectionedPercentageBar, HelpIcon },
   props: {
     egressNodes: {
       type: Array,
@@ -178,7 +179,7 @@ export default {
             <p class="gl-mb-0 gl-font-bold">
               {{ label }}
               <gl-link :href="helpPath" target="_blank">
-                <gl-icon name="question-o" :size="12" />
+                <help-icon size="small" />
               </gl-link>
             </p>
             <p class="gl-mb-0">

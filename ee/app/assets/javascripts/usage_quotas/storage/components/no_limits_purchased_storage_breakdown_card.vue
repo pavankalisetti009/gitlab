@@ -1,13 +1,14 @@
 <script>
-import { GlIcon, GlCard, GlSkeletonLoader } from '@gitlab/ui';
+import { GlCard, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'NoLimitsPurchasedStorageBreakdownCard',
   components: {
-    GlIcon,
+    HelpIcon,
     HelpPageLink,
     GlCard,
     GlSkeletonLoader,
@@ -51,7 +52,7 @@ export default {
             class="gl-ml-2"
             :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
           >
-            <gl-icon name="question-o" />
+            <help-icon />
           </help-page-link>
         </div>
       </div>
