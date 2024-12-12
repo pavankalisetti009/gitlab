@@ -12,7 +12,7 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
   describe 'GET index' do
     context 'with HTML format' do
-      subject { get group_dependencies_path(group_id: group.full_path) }
+      subject(:show_dependency_list) { get group_dependencies_path(group_id: group.full_path) }
 
       context 'when security dashboard feature is enabled' do
         before do
@@ -44,7 +44,14 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
           end
 
           it_behaves_like 'tracks govern usage event', 'users_visiting_dependencies' do
-            let(:request) { subject }
+            let(:request) { show_dependency_list }
+          end
+
+          it_behaves_like 'internal event tracking' do
+            let(:event) { 'visit_dependency_list' }
+            let(:namespace) { group }
+            let(:category) { described_class.name }
+            subject(:service_action) { show_dependency_list }
           end
 
           context 'when the group hierarchy depth is too high' do
@@ -70,6 +77,10 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
           it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
             let(:request) { subject }
           end
+
+          it 'does not record events or metrics' do
+            expect { show_dependency_list }.not_to trigger_internal_events('visit_dependency_list')
+          end
         end
       end
 
@@ -81,7 +92,11 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
         end
 
         it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
-          let(:request) { subject }
+          let(:request) { show_dependency_list }
+        end
+
+        it 'does not record events or metrics' do
+          expect { show_dependency_list }.not_to trigger_internal_events('visit_dependency_list')
         end
       end
     end

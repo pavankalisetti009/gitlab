@@ -4,6 +4,7 @@ module Projects
   class DependenciesController < Projects::ApplicationController
     include SecurityAndCompliancePermissions
     include GovernUsageProjectTracking
+    include Gitlab::InternalEventsTracking
 
     before_action :authorize_read_dependency_list!
 
@@ -14,6 +15,11 @@ module Projects
     def index
       respond_to do |format|
         format.html do
+          track_internal_event(
+            "visit_dependency_list",
+            user: current_user,
+            project: project
+          )
           render status: :ok
         end
         format.json do
