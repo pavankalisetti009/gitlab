@@ -17,6 +17,7 @@ import createComplianceFrameworkMutation from '../../../graphql/mutations/create
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from '../../../graphql/mutations/delete_compliance_framework.mutation.graphql';
 import createRequirementMutation from '../../../graphql/mutations/create_compliance_requirement.mutation.graphql';
+import updateRequirementMutation from '../../../graphql/mutations/update_compliance_requirement.mutation.graphql';
 import deleteRequirementMutation from '../../../graphql/mutations/delete_compliance_requirement.mutation.graphql';
 import getComplianceFrameworkQuery from './graphql/get_compliance_framework.query.graphql';
 import DeleteModal from './components/delete_modal.vue';
@@ -24,7 +25,7 @@ import BasicInformationSection from './components/basic_information_section.vue'
 import RequirementsSection from './components/requirements_section.vue';
 import PoliciesSection from './components/policies_section.vue';
 import ProjectsSection from './components/projects_section.vue';
-import { i18n } from './constants';
+import { i18n, requirementEvents } from './constants';
 
 export default {
   components: {
@@ -268,6 +269,7 @@ export default {
             params: {
               name: requirement.name,
               description: requirement.description,
+              controlExpression: requirement.controlExpression,
             },
           },
         },
@@ -314,7 +316,62 @@ export default {
         data: updatedData,
       });
     },
-    async handleCreateRequirement(requirement, index = null) {
+    async updateRequirement(requirement) {
+      const { data } = await this.$apollo.mutate({
+        mutation: updateRequirementMutation,
+        variables: {
+          input: {
+            id: requirement.id,
+            params: {
+              name: requirement.name,
+              description: requirement.description,
+              controlExpression: requirement.controlExpression,
+            },
+          },
+        },
+        update: (cache, result) => this.updateRequirementCacheOnUpdate(cache, result),
+      });
+
+      const errors = data?.updateComplianceRequirement?.errors;
+
+      if (errors && errors.length) {
+        throw new Error(errors[0]);
+      }
+    },
+    updateRequirementCacheOnUpdate(cache, { data: { updateComplianceRequirement } }) {
+      const updatedRequirement = updateComplianceRequirement?.requirement;
+      const errors = updateComplianceRequirement?.errors;
+
+      if (errors && errors.length) {
+        return;
+      }
+
+      const sourceData = cache.readQuery({
+        query: getComplianceFrameworkQuery,
+        variables: this.queryVariables,
+      });
+
+      const updatedData = produce(sourceData, (draft) => {
+        const framework = draft.namespace.complianceFrameworks.nodes.find(
+          (f) => f.id === this.graphqlId,
+        );
+        if (framework) {
+          const index = framework.complianceRequirements.nodes.findIndex(
+            (req) => req.id === updatedRequirement.id,
+          );
+          if (index !== -1) {
+            framework.complianceRequirements.nodes[index] = updatedRequirement;
+          }
+        }
+      });
+
+      cache.writeQuery({
+        query: getComplianceFrameworkQuery,
+        variables: this.queryVariables,
+        data: updatedData,
+      });
+    },
+    async handleCreateRequirement({ requirement, index }) {
       if (this.isNewFramework) {
         if (index !== null) {
           this.requirements.splice(index, 0, requirement);
@@ -324,6 +381,21 @@ export default {
       } else {
         try {
           await this.createRequirement(requirement, this.graphqlId, index);
+        } catch (error) {
+          this.setError(error, error);
+        }
+      }
+    },
+    async handleUpdateRequirement({ requirement, index }) {
+      if (this.isNewFramework) {
+        if (index !== null) {
+          this.requirements.splice(index, 1, requirement);
+        }
+      } else {
+        try {
+          if (requirement?.id) {
+            await this.updateRequirement(requirement);
+          }
         } catch (error) {
           this.setError(error, error);
         }
@@ -344,11 +416,12 @@ export default {
       }
     },
     showUndoDeleteRequirementToast(requirementToDelete, index) {
+      const { id, ...requirement } = requirementToDelete;
       this.$toast.show(this.$options.i18n.requirementRemovedMessage, {
         action: {
           text: __('Undo'),
           onClick: (_, toast) => {
-            this.handleCreateRequirement(requirementToDelete, index);
+            this.handleCreateRequirement({ requirement, index });
             toast.hide();
           },
         },
@@ -431,6 +504,7 @@ export default {
     },
   },
   i18n,
+  requirementEvents,
 };
 </script>
 
@@ -456,8 +530,9 @@ export default {
           v-if="adherenceV2Enabled"
           :requirements="requirements"
           :is-new-framework="isNewFramework"
-          @save="handleCreateRequirement"
-          @delete="handleDeleteRequirement"
+          @[$options.requirementEvents.create]="handleCreateRequirement"
+          @[$options.requirementEvents.update]="handleUpdateRequirement"
+          @[$options.requirementEvents.delete]="handleDeleteRequirement"
         />
 
         <policies-section

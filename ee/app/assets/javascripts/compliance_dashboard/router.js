@@ -91,7 +91,7 @@ export function createRouter(basePath, props) {
       component: EditFramework,
     },
     {
-      path: '/frameworks/new/:id',
+      path: '/frameworks/new/success',
       name: ROUTE_NEW_FRAMEWORK_SUCCESS,
       component: NewFrameworkSuccess,
     },

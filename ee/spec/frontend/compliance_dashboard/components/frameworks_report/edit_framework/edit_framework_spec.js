@@ -12,9 +12,12 @@ import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/ed
 import createComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_framework.mutation.graphql';
-import createComplianceRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_requirement.mutation.graphql';
-import deleteComplianceRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_requirement.mutation.graphql';
+import createRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_requirement.mutation.graphql';
+import updateRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_requirement.mutation.graphql';
+import deleteRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_requirement.mutation.graphql';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { requirementEvents } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -29,6 +32,7 @@ import {
 Vue.use(VueApollo);
 
 jest.mock('~/lib/utils/url_utility');
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 const showToastMock = jest.fn();
 const $toast = {
@@ -54,6 +58,19 @@ describe('Edit Framework Form', () => {
     pipelineExecutionPolicyPath: '/policypath',
     adherenceV2Enabled,
   };
+  const requirementsData = [
+    {
+      name: 'SOC2',
+      description: 'Controls for SOC2',
+      controlExpression: null,
+    },
+    {
+      name: 'GitLab',
+      description: 'Controls used by GitLab',
+      controlExpression:
+        '{"operator":"AND","conditions":[{"id":"minimum_approvals_required"},{"id":"scanner_sast_running"}]}',
+    },
+  ];
 
   const showDeleteModal = jest.fn();
   const routerBack = jest.fn();
@@ -286,10 +303,6 @@ describe('Edit Framework Form', () => {
     let createRequirementMutationMock;
     let createFrameworkMutationMock;
     const mockFrameworkId = 'gid://gitlab/ComplianceManagement::Framework/1';
-    const requirements = [
-      { name: 'SOC2', description: 'Controls for SOC2' },
-      { name: 'GitLab', description: 'Controls used by GitLab' },
-    ];
 
     beforeEach(() => {
       createRequirementMutationMock = jest.fn().mockResolvedValue({
@@ -313,10 +326,10 @@ describe('Edit Framework Form', () => {
         );
     });
 
-    it('stores requirements locally when adding to a new framework and creates them after the framework is created', async () => {
+    it('stores requirementsData locally when adding to a new framework and creates them after the framework is created', async () => {
       const stubHandlers = [
         [createComplianceFrameworkMutation, createFrameworkMutationMock],
-        [createComplianceRequirementMutation, createRequirementMutationMock],
+        [createRequirementMutation, createRequirementMutationMock],
       ];
 
       wrapper = createComponent(mountExtended, {
@@ -333,11 +346,11 @@ describe('Edit Framework Form', () => {
 
       const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-      requirements.forEach((requirement) => {
-        requirementsSection.vm.$emit('save', requirement);
+      requirementsData.forEach((requirement, index) => {
+        requirementsSection.vm.$emit(requirementEvents.create, { requirement, index });
       });
 
-      expect(wrapper.vm.requirements).toEqual(requirements);
+      expect(wrapper.vm.requirements).toEqual(requirementsData);
       expect(createRequirementMutationMock).not.toHaveBeenCalled();
 
       const form = wrapper.find('form');
@@ -345,7 +358,7 @@ describe('Edit Framework Form', () => {
       await waitForPromises();
 
       expect(createFrameworkMutationMock).toHaveBeenCalledTimes(1);
-      expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirements.length);
+      expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirementsData.length);
 
       mockRequirements.forEach((requirement) => {
         expect(createRequirementMutationMock).toHaveBeenCalledWith(
@@ -355,6 +368,7 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
+                controlExpression: requirement.controlExpression,
               },
             },
           }),
@@ -365,7 +379,7 @@ describe('Edit Framework Form', () => {
     it('immediately calls create requirement mutation when adding a requirement to an existing framework', async () => {
       const stubHandlers = [
         [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
-        [createComplianceRequirementMutation, createRequirementMutationMock],
+        [createRequirementMutation, createRequirementMutationMock],
       ];
 
       wrapper = createComponent(mountExtended, {
@@ -379,15 +393,15 @@ describe('Edit Framework Form', () => {
 
       const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-      mockRequirements.forEach((requirement) => {
-        requirementsSection.vm.$emit('save', requirement);
+      requirementsData.forEach((requirement, index) => {
+        requirementsSection.vm.$emit(requirementEvents.create, { requirement, index });
       });
 
       await waitForPromises();
 
-      expect(createRequirementMutationMock).toHaveBeenCalledTimes(mockRequirements.length);
+      expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirementsData.length);
 
-      mockRequirements.forEach((requirement) => {
+      requirementsData.forEach((requirement) => {
         expect(createRequirementMutationMock).toHaveBeenCalledWith(
           expect.objectContaining({
             input: {
@@ -395,6 +409,7 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
+                controlExpression: requirement.controlExpression,
               },
             },
           }),
@@ -415,7 +430,7 @@ describe('Edit Framework Form', () => {
 
       const stubHandlers = [
         [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
-        [createComplianceRequirementMutation, createRequirementMutationMock],
+        [createRequirementMutation, createRequirementMutationMock],
       ];
 
       wrapper = createComponent(mountExtended, {
@@ -429,11 +444,119 @@ describe('Edit Framework Form', () => {
 
       const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-      requirementsSection.vm.$emit('save', mockRequirements[0]);
+      requirementsSection.vm.$emit(requirementEvents.create, {
+        requirement: requirementsData[0],
+        index: 0,
+      });
       await waitForPromises();
 
       expect(createRequirementMutationMock).toHaveBeenCalledTimes(1);
-      expect(wrapper.vm.errorMessage.message).toBe(errorMessage);
+      expect(Sentry.captureException).toHaveBeenCalled();
+    });
+  });
+
+  describe('Updating requirements', () => {
+    let updateRequirementMutationMock;
+
+    beforeEach(() => {
+      updateRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          updateComplianceRequirement: {
+            requirement: {
+              id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+              name: 'SOC2 Updated',
+              description: 'Updated Controls for SOC2',
+              __typename: 'ComplianceManagement::Requirement',
+            },
+            errors: [],
+          },
+        },
+      });
+    });
+
+    it('updates requirement with controlExpression when editing an existing framework', async () => {
+      const stubHandlers = [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [updateRequirementMutation, updateRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: stubHandlers,
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+      const updatedRequirement = {
+        id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+        name: 'SOC2 Updated',
+        description: 'Updated Controls for SOC2',
+      };
+
+      requirementsSection.vm.$emit(requirementEvents.update, { requirement: updatedRequirement });
+
+      await waitForPromises();
+
+      expect(updateRequirementMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            id: updatedRequirement.id,
+            params: {
+              name: updatedRequirement.name,
+              description: updatedRequirement.description,
+              controlExpression: updatedRequirement.controlExpression,
+            },
+          },
+        }),
+      );
+    });
+
+    it('handles errors during requirement update', async () => {
+      const errorMessage = 'An error occurred';
+      updateRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          updateComplianceRequirement: {
+            requirement: null,
+            errors: [errorMessage],
+          },
+        },
+      });
+
+      const stubHandlers = [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [updateRequirementMutation, updateRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: stubHandlers,
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+      const updatedRequirement = {
+        id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+        name: 'SOC2 Updated',
+        description: 'Updated Controls for SOC2',
+      };
+
+      requirementsSection.vm.$emit(requirementEvents.update, { requirement: updatedRequirement });
+
+      await waitForPromises();
+
+      expect(updateRequirementMutationMock).toHaveBeenCalled();
+
+      expect(Sentry.captureException).toHaveBeenCalled();
     });
   });
 
@@ -449,6 +572,8 @@ describe('Edit Framework Form', () => {
               id: 'gid://gitlab/ComplianceManagement::Requirement/2',
               name: 'GitLab',
               description: 'Controls used by GitLab',
+              controlExpression:
+                '{"operator":"AND","conditions":[{"id":"minimum_approvals_required"},{"id":"scanner_sast_running"}]}',
               __typename: 'ComplianceManagement::Requirement',
             },
             errors: [],
@@ -479,8 +604,8 @@ describe('Edit Framework Form', () => {
 
         const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-        mockRequirements.forEach((requirement) => {
-          requirementsSection.vm.$emit('save', requirement);
+        requirementsData.forEach((requirement, index) => {
+          requirementsSection.vm.$emit(requirementEvents.create, { requirement, index });
         });
 
         await waitForPromises();
@@ -489,20 +614,20 @@ describe('Edit Framework Form', () => {
       it('deletes and undoes delete of a requirement', async () => {
         const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-        requirementsSection.vm.$emit('delete', 1);
+        requirementsSection.vm.$emit(requirementEvents.delete, 1);
 
         await nextTick();
 
         expect(requirementsSection.props('requirements')).toEqual([
-          mockRequirements[0],
-          mockRequirements[2],
+          requirementsData[0],
+          requirementsData[2],
         ]);
 
         clickToastAction();
 
         expect(hideMock).toHaveBeenCalledTimes(1);
 
-        expect(requirementsSection.props('requirements')).toEqual(mockRequirements);
+        expect(requirementsSection.props('requirements')).toMatchObject(requirementsData);
       });
     });
 
@@ -517,8 +642,8 @@ describe('Edit Framework Form', () => {
         wrapper = createComponent(mountExtended, {
           requestHandlers: [
             [getComplianceFrameworkQuery, () => mockFrameworkResponse],
-            [createComplianceRequirementMutation, createRequirementMutationMock],
-            [deleteComplianceRequirementMutation, deleteRequirementMutationMock],
+            [createRequirementMutation, createRequirementMutationMock],
+            [deleteRequirementMutation, deleteRequirementMutationMock],
           ],
           routeParams: { id: '1' },
           provide: {
@@ -532,7 +657,7 @@ describe('Edit Framework Form', () => {
       it('deletes and undoes delete of a requirement', async () => {
         const requirementsSection = wrapper.findComponent(RequirementsSection);
 
-        requirementsSection.vm.$emit('delete', 1);
+        requirementsSection.vm.$emit(requirementEvents.delete, 1);
 
         await waitForPromises();
 
@@ -542,10 +667,7 @@ describe('Edit Framework Form', () => {
           }),
         );
 
-        expect(requirementsSection.props('requirements')).toEqual([
-          mockRequirements[0],
-          mockRequirements[2],
-        ]);
+        expect(requirementsSection.props('requirements')).toEqual([mockRequirements[0]]);
 
         expect(showToastMock).toHaveBeenCalledTimes(1);
 
@@ -560,6 +682,7 @@ describe('Edit Framework Form', () => {
               params: {
                 name: mockRequirements[1].name,
                 description: mockRequirements[1].description,
+                controlExpression: mockRequirements[1].controlExpression,
               },
             },
           }),

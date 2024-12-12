@@ -10,8 +10,14 @@ import {
   GlFormGroup,
   GlCollapsibleListbox,
 } from '@gitlab/ui';
+import { cloneDeep, omit } from 'lodash';
 import { s__, __, sprintf } from '~/locale';
-import { requirementDefaultValidationState, maxControlsNumber } from '../constants';
+import {
+  requirementDefaultValidationState,
+  maxControlsNumber,
+  requirementsDocsUrl,
+  requirementEvents,
+} from '../constants';
 
 export default {
   name: 'RequirementModal',
@@ -49,10 +55,11 @@ export default {
     };
   },
   computed: {
+    isEdit() {
+      return Boolean(this.requirementData?.id || this.requirementData?.index !== null);
+    },
     title() {
-      return this.requirementData?.id
-        ? this.$options.i18n.editText
-        : this.$options.i18n.createTitle;
+      return this.isEdit ? this.$options.i18n.editText : this.$options.i18n.createTitle;
     },
     disabledAddControlBtnText() {
       return sprintf(
@@ -70,13 +77,14 @@ export default {
       return Object.values(this.validation).every(Boolean);
     },
     modalButtonProps() {
-      const createButtonText = this.isNewFramework
-        ? this.$options.i18n.createButtonText
-        : this.$options.i18n.existingFrameworkButtonText;
-      const editButtonText = this.isNewFramework
-        ? this.$options.i18n.editText
-        : this.$options.i18n.existingFrameworkButtonText;
-      const text = this.requirementData?.id ? editButtonText : createButtonText;
+      const { createButtonText, editText, existingFrameworkButtonText } = this.$options.i18n;
+
+      let text = existingFrameworkButtonText;
+
+      if (this.isNewFramework) {
+        text = this.isEdit ? editText : createButtonText;
+      }
+
       return {
         primary: {
           text,
@@ -87,6 +95,7 @@ export default {
         },
       };
     },
+
     canAddControl() {
       return this.controlIds.length < maxControlsNumber;
     },
@@ -98,7 +107,7 @@ export default {
     requirement: {
       immediate: true,
       handler(newRequirement) {
-        this.requirementData = { ...newRequirement };
+        this.requirementData = cloneDeep(newRequirement);
         this.initializeControlIds();
         this.validation = { ...requirementDefaultValidationState };
       },
@@ -106,12 +115,7 @@ export default {
   },
   methods: {
     show() {
-      this.requirementData = { ...this.requirement };
-      this.initializeControlIds();
-      this.validation = { ...requirementDefaultValidationState };
-      this.$nextTick(() => {
-        this.$refs.modal.show();
-      });
+      this.$refs.modal.show();
     },
     initializeControlIds() {
       const conditions = this.requirementData.controlExpression
@@ -125,19 +129,25 @@ export default {
     validateForm() {
       Object.keys(this.validation).forEach(this.validateField);
     },
+    removeTypename(obj) {
+      const { __typename, ...rest } = obj;
+      return rest;
+    },
     handleSubmit(event) {
       this.validateForm();
       if (this.isFormValid) {
         const conditions = this.controlIds
           .map((controlId) => this.requirementControls.find((ctrl) => ctrl.id === controlId))
           .filter(Boolean)
-          .map((control) => ({ id: control.id, ...control.value }));
+          .map((control) => ({ id: control.id, ...omit(control.expression, '__typename') }));
 
         this.requirementData.controlExpression = conditions.length
           ? JSON.stringify({ operator: 'AND', conditions })
           : null;
 
-        this.$emit('save', this.requirementData);
+        const { index, ...requirement } = this.requirementData;
+        const eventName = this.isEdit ? requirementEvents.update : requirementEvents.create;
+        this.$emit(eventName, { requirement, index });
       } else {
         event.preventDefault();
       }
@@ -161,6 +171,7 @@ export default {
       this.controlIds.splice(index, 1, selectedValue);
     },
   },
+  requirementsDocsUrl,
   i18n: {
     createTitle: s__('ComplianceFrameworks|Create new requirement'),
     editText: s__('ComplianceFrameworks|Edit requirement'),
@@ -226,7 +237,9 @@ export default {
     <gl-badge>{{ controlsLength }}</gl-badge>
     <p>
       {{ $options.i18n.controlsText }}
-      <gl-link href="#">{{ $options.i18n.learnMore }}</gl-link>
+      <gl-link :href="$options.requirementsDocsUrl" target="_blank">{{
+        $options.i18n.learnMore
+      }}</gl-link>
     </p>
 
     <div
