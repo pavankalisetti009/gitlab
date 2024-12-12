@@ -2,7 +2,8 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::LimitAlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::NamespaceLimit::LimitAlertComponent, :saas, type: :component,
+  feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
   using RSpec::Parameterized::TableSyntax
 
@@ -52,8 +53,10 @@ RSpec.describe Namespaces::Storage::LimitAlertComponent, :saas, type: :component
       enforce_namespace_storage_limit(group)
 
       allow_next_instance_of(::Namespaces::Storage::RootSize) do |size_checker|
-        allow(size_checker).to receive(:usage_ratio).and_return(usage_ratio)
-        allow(size_checker).to receive(:above_size_limit?).and_return(above_size_limit)
+        allow(size_checker).to receive_messages(
+          usage_ratio: usage_ratio,
+          above_size_limit?: above_size_limit
+        )
       end
 
       set_dashboard_limit(group, megabytes: 5120)
@@ -177,16 +180,18 @@ RSpec.describe Namespaces::Storage::LimitAlertComponent, :saas, type: :component
       before do
         stub_saas_features(namespaces_storage_limit: namespaces_storage_limit)
 
-        allow(::Namespaces::Storage::Enforcement)
-          .to receive(:in_enforcement_rollout?).and_return(in_enforcement_rollout)
-        allow(::Namespaces::Storage::Enforcement)
-          .to receive(:enforce_limit?).and_return(enforce_limit)
+        allow(::Namespaces::Storage::Enforcement).to receive_messages(
+          in_enforcement_rollout?: in_enforcement_rollout,
+          enforce_limit?: enforce_limit
+        )
 
         allow(user).to receive(:present?).and_return(user_present)
         allow_next_instance_of(described_class) do |instance|
-          allow(instance).to receive(:user_has_access?).and_return(user_has_access)
-          allow(instance).to receive(:alert_level).and_return(alert_level)
-          allow(instance).to receive(:user_has_dismissed_alert?).and_return(user_has_dismissed_alert)
+          allow(instance).to receive_messages(
+            user_has_access?: user_has_access,
+            alert_level: alert_level,
+            user_has_dismissed_alert?: user_has_dismissed_alert
+          )
         end
       end
 
@@ -251,8 +256,10 @@ RSpec.describe Namespaces::Storage::LimitAlertComponent, :saas, type: :component
         stub_member_access_level(group, maintainer: user)
 
         allow_next_instance_of(::Namespaces::Storage::RootSize) do |size_checker|
-          allow(size_checker).to receive(:usage_ratio).and_return(usage_ratio)
-          allow(size_checker).to receive(:above_size_limit?).and_return(usage_ratio >= 1)
+          allow(size_checker).to receive_messages(
+            usage_ratio: usage_ratio,
+            above_size_limit?: usage_ratio >= 1
+          )
         end
       end
 

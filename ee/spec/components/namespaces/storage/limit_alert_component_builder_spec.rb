@@ -22,7 +22,7 @@ RSpec.describe Namespaces::Storage::LimitAlertComponentBuilder, :saas, feature_c
       end
 
       it 'builds a LimitAlertComponent' do
-        is_expected.to be_instance_of(Namespaces::Storage::LimitAlertComponent)
+        is_expected.to be_instance_of(Namespaces::Storage::NamespaceLimit::LimitAlertComponent)
       end
     end
 

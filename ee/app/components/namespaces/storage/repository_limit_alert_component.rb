@@ -2,7 +2,7 @@
 
 module Namespaces
   module Storage
-    class RepositoryLimitAlertComponent < LimitAlertComponent
+    class RepositoryLimitAlertComponent < NamespaceLimit::LimitAlertComponent
       def render?
         return false if context.is_a?(Group) && !current_page?(group_usage_quotas_path(context))
         return false if context.is_a?(Project) && context.repository_size_excess == 0
