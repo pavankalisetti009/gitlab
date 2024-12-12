@@ -1,5 +1,4 @@
-import { GlExperimentBadge, GlEmptyState } from '@gitlab/ui';
-import { DuoChat } from '@gitlab/duo-ui';
+import { GlDuoChat, GlExperimentBadge, GlEmptyState } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import { RouterLinkStub as RouterLink } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
@@ -45,7 +44,7 @@ describeSkipVue3(skipReason, () => {
   const findTitleArea = () => wrapper.findComponent(TitleArea);
   const findBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findSettingsButton = () => wrapper.findByTestId('settings-button');
-  const findDuoChat = () => wrapper.findComponent(DuoChat);
+  const findGlDuoChat = () => wrapper.findComponent(GlDuoChat);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
 
   const createWrapper = () => {
@@ -95,7 +94,7 @@ describeSkipVue3(skipReason, () => {
     });
 
     it('renders the DuoChat component', () => {
-      expect(findDuoChat().exists()).toBe(true);
+      expect(findGlDuoChat().exists()).toBe(true);
     });
   });
 
@@ -118,13 +117,13 @@ describeSkipVue3(skipReason, () => {
     });
 
     it('does set loading to `true` for a user message', async () => {
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
       await nextTick();
-      expect(findDuoChat().props('isLoading')).toBe(true);
+      expect(findGlDuoChat().props('isLoading')).toBe(true);
     });
 
     it('calls correct GraphQL mutation', async () => {
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
       await nextTick();
       expect(chatMutationHandlerMock).toHaveBeenCalledWith({
         resourceId: MOCK_USER_ID,
@@ -145,7 +144,7 @@ describeSkipVue3(skipReason, () => {
       });
 
       it('throws error and displays error message', () => {
-        expect(findDuoChat().props('error')).toBe(`Error: ${errorText}`);
+        expect(findGlDuoChat().props('error')).toBe(`Error: ${errorText}`);
       });
     });
 
@@ -154,12 +153,12 @@ describeSkipVue3(skipReason, () => {
         chatMutationHandlerMock.mockRejectedValue(new Error(errorText));
         createWrapper();
         await waitForPromises();
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
       });
 
       it('throws error and displays error message', () => {
-        expect(findDuoChat().props('error')).toBe(`Error: ${errorText}`);
+        expect(findGlDuoChat().props('error')).toBe(`Error: ${errorText}`);
       });
     });
   });
