@@ -1,7 +1,8 @@
 import { GlPopover, GlLink, GlIcon } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import component from 'ee/approvals/components/mr_widget_approval_check/approval_check_popover.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { TEST_HOST } from 'helpers/test_constants';
 
 describe('Approval Check Popover', () => {
@@ -11,8 +12,11 @@ describe('Approval Check Popover', () => {
   const popoverId = 'reportInfo-Title';
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(component, {
+    wrapper = shallowMountExtended(component, {
       propsData: { title, popoverId, ...props },
+      stubs: {
+        HelpIcon,
+      },
     });
   };
 
