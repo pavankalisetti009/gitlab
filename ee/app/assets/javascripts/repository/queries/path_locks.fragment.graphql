@@ -7,6 +7,7 @@ fragment ProjectPathLocksFragment on Project {
       user {
         id
         username
+        name
       }
     }
   }

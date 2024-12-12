@@ -76,12 +76,63 @@ export const userPermissionsMock = {
 };
 
 export const projectMock = {
-  data: {
-    project: {
-      __typename: 'Project',
-      id: 'gid://gitlab/Project/7',
-      userPermissions: userPermissionsMock,
-    },
+  __typename: 'Project',
+  id: 'gid://gitlab/Project/7',
+  userPermissions: userPermissionsMock,
+  pathLocks: {
+    __typename: 'PathLockConnection',
+    nodes: [
+      {
+        __typename: 'PathLock',
+        id: 'gid://gitlab/PathLock/2',
+        path: 'locked_file.js',
+        user: {
+          id: 'gid://gitlab/User/1',
+          username: 'root',
+          name: 'Administrator',
+          __typename: 'UserCore',
+        },
+      },
+    ],
+  },
+  repository: {
+    empty: false,
+  },
+};
+
+export const exactDirectoryLock = {
+  __typename: 'PathLock',
+  id: 'gid://gitlab/PathLock/1',
+  path: 'test/component',
+  user: {
+    __typename: 'UserCore',
+    id: 'gid://gitlab/User/2',
+    username: 'user2',
+    name: 'User2',
+  },
+};
+
+export const upstreamDirectoryLock = {
+  __typename: 'PathLock',
+  id: 'gid://gitlab/PathLock/3',
+  path: 'test',
+  user: {
+    __typename: 'UserCore',
+    id: 'gid://gitlab/User/2',
+    username: 'user2',
+    name: 'User2',
+  },
+};
+
+export const downstreamDirectoryLock = {
+  __typename: 'PathLock',
+  id: 'gid://gitlab/PathLock/2',
+  path: 'test/component/icon',
+  user: {
+    __typename: 'UserCore',
+    id: 'gid://gitlab/User/2',
+    username: 'user2',
+    name: 'User2',
   },
 };
 

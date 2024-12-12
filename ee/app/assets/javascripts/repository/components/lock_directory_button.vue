@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective, GlModal, GlModalDirective } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { sprintf, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
@@ -52,6 +52,12 @@ export default {
       update({ project }) {
         this.canAdminLocks = project.userPermissions.adminPathLocks;
         this.canPushCode = project.userPermissions.pushCode;
+        this.allPathLocks = project.pathLocks?.nodes?.map((lock) => this.mapPathLocks(lock));
+        this.pathLock =
+          this.allPathLocks.find(
+            (lock) =>
+              this.isDownstreamLock(lock) || this.isUpstreamLock(lock) || this.isExactLock(lock),
+          ) || {};
       },
       error() {
         this.onFetchError();
@@ -75,7 +81,6 @@ export default {
       allPathLocks: [],
       pathLock: {},
       user: {},
-      isLocked: false,
     };
   },
   computed: {
@@ -85,6 +90,12 @@ export default {
     isLoading() {
       return this.$apollo?.queries.projectInfo.loading;
     },
+    isLocked() {
+      return this.pathLock.isExactLock || this.pathLock.isUpstreamLock;
+    },
+    locker() {
+      return this.pathLock.user?.name || this.pathLock.user?.username;
+    },
     buttonLabel() {
       return this.isLocked ? __('Unlock') : __('Lock');
     },
@@ -92,9 +103,58 @@ export default {
       return this.isLocked ? 'unlock' : 'lock';
     },
     isDisabled() {
-      return !this.canAdminLocks || !this.canPushCode;
+      return (
+        this.pathLock.isUpstreamLock ||
+        this.pathLock.isDownstreamLock ||
+        !this.canAdminLocks ||
+        !this.canPushCode
+      );
+    },
+    getExactLockTooltip() {
+      if (!this.canAdminLocks) {
+        return sprintf(__('Locked by %{locker}. You do not have permission to unlock this'), {
+          locker: this.locker,
+        });
+      }
+      return this.pathLock.user.id === this.user.id
+        ? ''
+        : sprintf(__('Locked by %{locker}'), { locker: this.locker });
+    },
+    getUpstreamLockTooltip() {
+      const additionalPhrase = this.canAdminLocks
+        ? __('Unlock that directory in order to unlock this')
+        : __('You do not have permission to unlock it');
+      return sprintf(__('%{locker} has a lock on "%{path}". %{additionalPhrase}'), {
+        locker: this.locker,
+        path: this.pathLock.path,
+        additionalPhrase,
+      });
+    },
+    getDownstreamLockTooltip() {
+      const additionalPhrase = this.canAdminLocks
+        ? __('Unlock this in order to proceed')
+        : __('You do not have permission to unlock it');
+      return sprintf(
+        __(
+          'This directory cannot be locked while %{locker} has a lock on "%{path}". %{additionalPhrase}',
+        ),
+        {
+          locker: this.locker,
+          path: this.pathLock.path,
+          additionalPhrase,
+        },
+      );
     },
     tooltipText() {
+      if (this.pathLock.isExactLock) {
+        return this.getExactLockTooltip;
+      }
+      if (this.pathLock.isUpstreamLock) {
+        return this.getUpstreamLockTooltip;
+      }
+      if (this.pathLock.isDownstreamLock) {
+        return this.getDownstreamLockTooltip;
+      }
       if (!this.canPushCode) {
         return __('You do not have permission to lock this');
       }
@@ -114,8 +174,30 @@ export default {
     onFetchError() {
       createAlert({ message: this.$options.i18n.fetchError });
     },
+    isExactLock(lock) {
+      return lock.path === this.path;
+    },
+    isUpstreamLock(lock) {
+      return this.path.startsWith(lock.path) && this.path !== lock.path;
+    },
+    isDownstreamLock(lock) {
+      return lock.path.startsWith(this.path) && this.path !== lock.path;
+    },
+    mapPathLocks(lock) {
+      if (this.isExactLock(lock)) {
+        return { ...lock, isExactLock: true };
+      }
+      if (this.isUpstreamLock(lock)) {
+        return { ...lock, isUpstreamLock: true };
+      }
+      if (this.isDownstreamLock(lock)) {
+        return { ...lock, isDownstreamLock: true };
+      }
+      return lock;
+    },
     toggleLock() {
-      this.isLocked = !this.isLocked;
+      // will be handled in a following MR
+      return true;
     },
   },
 };
