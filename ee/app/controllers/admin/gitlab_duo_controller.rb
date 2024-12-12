@@ -14,7 +14,6 @@ module Admin
 
     before_action do
       push_frontend_feature_flag(:enable_add_on_users_filtering)
-      push_frontend_feature_flag(:duo_page_configuration_settings_box, :instance, type: :wip)
     end
 
     def show; end

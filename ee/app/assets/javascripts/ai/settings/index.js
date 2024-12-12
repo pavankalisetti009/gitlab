@@ -23,6 +23,7 @@ export const initAiSettings = (id, component) => {
     selfHostedModelsEnabled,
     aiTermsAndConditionsPath,
     onGeneralSettingsPage,
+    configurationSettingsPath,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -48,6 +49,7 @@ export const initAiSettings = (id, component) => {
       aiTermsAndConditionsPath,
       earlyAccessPath,
       onGeneralSettingsPage: parseBoolean(onGeneralSettingsPage),
+      configurationSettingsPath,
     },
     render: (createElement) =>
       createElement(component, {

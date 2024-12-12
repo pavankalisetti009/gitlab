@@ -23,7 +23,8 @@ export default {
   props: {
     redirectPath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     updateId: {
       type: String,
@@ -62,7 +63,7 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings @submit="updateSettings">
+  <ai-common-settings :is-group="true" @submit="updateSettings">
     <template #ai-common-settings-top>
       <early-access-program-banner v-if="showEarlyAccessBanner" />
     </template>

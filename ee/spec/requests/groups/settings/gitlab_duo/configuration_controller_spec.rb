@@ -20,39 +20,25 @@ RSpec.describe Groups::Settings::GitlabDuo::ConfigurationController, type: :requ
       group.add_owner(user)
     end
 
-    context 'when group_duo_page_configuration_settings feature flag is enabled' do
+    context 'when show_gitlab_duo_settings_menu_item? returns true' do
       before do
-        stub_feature_flags(group_duo_page_configuration_settings: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
+        allow(controller).to receive(:show_gitlab_duo_settings_menu_item?).and_return(true)
       end
 
-      context 'when show_gitlab_duo_settings_menu_item? returns true' do
-        before do
-          stub_saas_features(gitlab_com_subscriptions: true)
-          allow(controller).to receive(:show_gitlab_duo_settings_menu_item?).and_return(true)
-        end
+      it "renders index with 200 status code" do
+        get_index
 
-        it "renders index with 200 status code" do
-          get_index
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response).to render_template(:index)
-        end
-      end
-
-      context 'when show_gitlab_duo_settings_menu_item? returns false' do
-        before do
-          allow(controller).to receive(:show_gitlab_duo_settings_menu_item?).and_return(false)
-        end
-
-        it 'redirects to group_settings_gitlab_duo_path' do
-          get_index
-
-          expect(response).to redirect_to(group_settings_gitlab_duo_path(group))
-        end
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:index)
       end
     end
 
-    context 'when group_duo_page_configuration_settings feature flag is disabled' do
+    context 'when show_gitlab_duo_settings_menu_item? returns false' do
+      before do
+        allow(controller).to receive(:show_gitlab_duo_settings_menu_item?).and_return(false)
+      end
+
       it 'redirects to group_settings_gitlab_duo_path' do
         get_index
 

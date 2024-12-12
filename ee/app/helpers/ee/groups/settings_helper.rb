@@ -34,8 +34,8 @@ module EE
       def group_ai_general_settings_helper_data
         {
           on_general_settings_page: 'true',
-          redirect_path: edit_group_path(@group)
-        }.merge(group_ai_settings_helper_data)
+          configuration_settings_path: group_settings_gitlab_duo_path(@group)
+        }
       end
 
       def group_ai_configuration_settings_helper_data

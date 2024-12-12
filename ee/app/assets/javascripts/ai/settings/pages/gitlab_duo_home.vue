@@ -1,6 +1,5 @@
 <script>
 import { __, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_card.vue';
@@ -14,18 +13,12 @@ export default {
     DuoSeatUtilizationInfoCard,
     DuoConfigurationSettingsInfoCard,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['isSaaS'],
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
     gitlabDuoHomeSubtitle: s__(
       'AiPowered|Monitor, manage, and customize AI features to ensure efficient utilization and alignment.',
     ),
-  },
-  computed: {
-    showDuoPageConfigurationSettingsBox() {
-      return this.glFeatures.duoPageConfigurationSettingsBox;
-    },
   },
 };
 </script>
@@ -41,16 +34,13 @@ export default {
       <health-check-list v-if="!isSaaS" />
     </template>
     <template #duo-card="{ totalValue, usageValue, duoTier }">
-      <section
-        class="gl-grid gl-gap-5"
-        :class="showDuoPageConfigurationSettingsBox ? 'md:gl-grid-cols-2' : 'md:gl-grid-cols-1'"
-      >
+      <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
         <duo-seat-utilization-info-card
           :total-value="totalValue"
           :usage-value="usageValue"
           :duo-tier="duoTier"
         />
-        <duo-configuration-settings-info-card v-if="showDuoPageConfigurationSettingsBox" />
+        <duo-configuration-settings-info-card />
       </section>
     </template>
   </code-suggestions-usage>

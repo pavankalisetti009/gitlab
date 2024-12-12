@@ -6,10 +6,6 @@ module Groups
       before_action :authorize_read_usage_quotas!
       before_action :verify_usage_quotas_enabled!
 
-      before_action do
-        push_frontend_feature_flag(:duo_page_configuration_settings_box, group, type: :wip)
-      end
-
       feature_category :ai_abstraction_layer
 
       include ::Nav::GitlabDuoSettingsPage
