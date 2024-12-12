@@ -1,0 +1,9 @@
+---
+name: premium_can_trial_again
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/500359
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/174779
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/508578
+milestone: '17.7'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false

@@ -36,6 +36,8 @@ module EE
       CURRENT_ACTIVE_PLANS = [FREE, PREMIUM, ULTIMATE].freeze
 
       has_many :hosted_subscriptions, class_name: 'GitlabSubscription', foreign_key: 'hosted_plan_id'
+      has_many :gitlab_subscription_histories, inverse_of: :hosted_plan,
+        class_name: 'GitlabSubscriptions::SubscriptionHistory', foreign_key: 'hosted_plan_id'
 
       EE::Plan.private_constant :EE_ALL_PLANS, :EE_DEFAULT_PLANS
 
