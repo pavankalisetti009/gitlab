@@ -5,6 +5,7 @@ import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { toNounSeriesText } from '~/lib/utils/grammar';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import codeOwnersInfoQuery from '../../../graphql_shared/queries/code_owners_info.query.graphql';
 
 export const i18n = {
@@ -37,6 +38,7 @@ export default {
     GlCollapse,
     GlPopover,
     GlSprintf,
+    HelpIcon,
   },
   apollo: {
     project: {
@@ -186,12 +188,11 @@ export default {
       </template>
     </div>
 
-    <gl-icon
+    <help-icon
       v-if="hasCodeOwners"
       :id="$options.helpPopoverId"
       :aria-label="$options.i18n.helpText"
-      name="question-o"
-      class="gl-my-3 gl-ml-auto gl-mr-3 gl-shrink-0 gl-cursor-pointer gl-text-blue-500"
+      class="gl-my-3 gl-ml-auto gl-mr-3 gl-shrink-0"
       data-testid="help-popover-trigger"
     />
     <gl-popover
