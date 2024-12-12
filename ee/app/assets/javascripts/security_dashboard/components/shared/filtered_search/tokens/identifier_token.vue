@@ -93,16 +93,19 @@ export default {
     }
   },
   methods: {
-    resetSearchTerm() {
+    resetSearchTerm({ emit = true } = {}) {
       this.identifiers = [];
       this.searchTerm = '';
       this.selectedIdentifier = '';
-      this.emitFiltersChanged();
+
+      if (emit) {
+        this.emitFiltersChanged();
+      }
     },
     setSearchTerm({ data }) {
       // User deletes identifier using backspace
-      if (data === '') {
-        this.resetSearchTerm();
+      if (!data) {
+        this.resetSearchTerm({ emit: false });
         return;
       }
 
