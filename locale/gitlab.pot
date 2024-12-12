@@ -19584,6 +19584,9 @@ msgstr ""
 msgid "DesignManagement|Some of the designs you tried uploading did not change: %{skippedFiles}."
 msgstr ""
 
+msgid "DesignManagement|Something went wrong when reordering designs. Please try again"
+msgstr ""
+
 msgid "DesignManagement|The maximum number of designs allowed to be uploaded is %{upload_limit}. Please try again."
 msgstr ""
 
