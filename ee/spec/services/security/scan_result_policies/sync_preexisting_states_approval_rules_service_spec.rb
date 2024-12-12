@@ -95,6 +95,31 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
           scan_result_policy_read: scan_result_policy_read)
       end
 
+      context 'with non-matching vulnerabilities and merge_request targeting non-default branch' do
+        let_it_be(:vulnerabilities) do
+          create_list(:vulnerability, 5, :with_finding,
+            severity: :low,
+            report_type: :sast,
+            state: :resolved,
+            project: project
+          )
+        end
+
+        let_it_be(:merge_request, reload: true) do
+          create(:ee_merge_request, :simple, source_project: project, source_branch: 'feature',
+            target_branch: 'target')
+        end
+
+        before do
+          create(:protected_branch, name: merge_request.target_branch, project: project)
+        end
+
+        it_behaves_like 'sets approvals_required to 0'
+        it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        it_behaves_like 'does not log violations'
+        it_behaves_like 'merge request without scan result violations'
+      end
+
       context 'when vulnerabilities count matches the pre-existing states' do
         let_it_be(:vulnerabilities) do
           create_list(:vulnerability, 5, :with_finding,
