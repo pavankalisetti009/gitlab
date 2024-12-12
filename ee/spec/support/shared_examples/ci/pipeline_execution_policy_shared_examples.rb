@@ -2,7 +2,7 @@
 
 RSpec.shared_context 'with pipeline policy context' do
   let(:pipeline_policy_context) do
-    Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project, command: command)
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
   end
 
   let(:command) do
@@ -14,7 +14,7 @@ RSpec.shared_context 'with pipeline policy context' do
   let(:execution_policy_pipelines) { [] }
 
   before do
-    allow(pipeline_policy_context).to receive_messages(
+    allow(pipeline_policy_context.pipeline_execution_context).to receive_messages(
       creating_policy_pipeline?: creating_policy_pipeline,
       policy_pipelines: execution_policy_pipelines
     )

@@ -32,7 +32,7 @@ module EE
           # We instantiate default PipelineContext as fallback to validate reserved stages
           # in case `pipeline_policy_context` is not defined
           opts[:pipeline_policy_context] ||
-            ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+            ::Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
         end
 
         def validate_job_identity!(name, job)

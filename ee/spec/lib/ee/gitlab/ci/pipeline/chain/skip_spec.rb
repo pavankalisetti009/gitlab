@@ -18,12 +18,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
   let(:step) { described_class.new(pipeline, command) }
 
   describe '#skipped?' do
-    shared_examples_for 'breaks the chain' do
-      it 'breaks the chain' do
-        expect(step.break?).to be true
-      end
-    end
-
     context 'when pipeline has not been skipped' do
       it 'does not break the chain' do
         expect(step.break?).to be false
@@ -35,25 +29,15 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
         allow(pipeline).to receive(:git_commit_message).and_return('commit message [ci skip]')
       end
 
-      it_behaves_like 'breaks the chain'
-
-      context 'when there are no pipeline execution policies defined' do
-        before do
-          command.pipeline_policy_context = instance_double(
-            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
-            has_execution_policy_pipelines?: false
-          )
-        end
-
-        it_behaves_like 'breaks the chain'
+      it 'breaks the chain' do
+        expect(step.break?).to be true
       end
 
-      context 'when pipeline execution policies are not allowing skip' do
+      context 'when execution policies are not allowing skip' do
         before do
           command.pipeline_policy_context = instance_double(
-            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
-            skip_ci_allowed?: false,
-            has_execution_policy_pipelines?: true
+            Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
+            skip_ci_allowed?: false
           )
         end
 
@@ -65,13 +49,14 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
       context 'when pipeline execution policies are allowing skip' do
         before do
           command.pipeline_policy_context = instance_double(
-            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
-            skip_ci_allowed?: true,
-            has_execution_policy_pipelines?: true
+            Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
+            skip_ci_allowed?: true
           )
         end
 
-        it_behaves_like 'breaks the chain'
+        it 'breaks the chain' do
+          expect(step.break?).to be true
+        end
       end
     end
   end

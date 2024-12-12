@@ -188,11 +188,12 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
 
           context 'when in creating_policy_pipeline? is true' do
             let(:pipeline_policy_context) do
-              Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+              Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
             end
 
             before do
-              allow(pipeline_policy_context).to receive(:creating_policy_pipeline?).and_return(true)
+              allow(pipeline_policy_context.pipeline_execution_context)
+                .to receive(:creating_policy_pipeline?).and_return(true)
             end
 
             it 'does not modify the config' do

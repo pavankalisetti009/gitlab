@@ -32,7 +32,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::SecurityOrchestrationPolic
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project, current_user: user, yaml_processor_result: yaml_processor_result, save_incompleted: true,
       pipeline_policy_context: instance_double(
-        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+        Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
         creating_policy_pipeline?: creating_policy_pipeline
       )
     )

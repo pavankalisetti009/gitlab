@@ -12,7 +12,8 @@ module Gitlab
 
           attr_reader :policy_pipelines, :override_policy_stages
 
-          def initialize(project:, command: nil)
+          def initialize(context:, project:, command: nil)
+            @context = context
             @project = project
             @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
             @policy_pipelines = []
@@ -108,7 +109,7 @@ module Gitlab
                   variables_attributes: command.variables_attributes)
                 .execute(command.source,
                   content: policy.content,
-                  pipeline_policy_context: self, # propagates itself inside the policy pipeline creation
+                  pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
                   merge_request: command.merge_request, # This is for supporting merge request pipelines
                   ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
                   # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
