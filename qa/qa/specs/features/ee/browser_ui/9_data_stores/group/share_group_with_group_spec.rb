@@ -8,9 +8,7 @@ module QA
 
       let!(:project) { create(:project, :with_readme, group: target_group_with_project) }
 
-      let(:maintainer_user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:maintainer_user) { Runtime::User::Store.additional_test_user }
 
       before do
         source_group_with_members.add_member(maintainer_user, Resource::Members::AccessLevel::MAINTAINER)

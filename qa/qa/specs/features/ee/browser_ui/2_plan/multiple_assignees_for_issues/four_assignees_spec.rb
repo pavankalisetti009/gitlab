@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :smoke, product_group: :project_management do
+  RSpec.describe 'Plan', :smoke, :requires_admin, product_group: :project_management do
     describe 'Multiple assignees per issue' do
       before do
         Flow::Login.sign_in
 
-        user_1 = Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-        user_2 = Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2)
-        user_3 = Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_3, Runtime::Env.gitlab_qa_password_3)
-        user_4 = Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_4, Runtime::Env.gitlab_qa_password_4)
+        user_1 = create(:user)
+        user_2 = create(:user)
+        user_3 = create(:user)
+        user_4 = create(:user)
 
         project = create(:project, name: 'project-to-test-issue-with-multiple-assignees')
         project.add_member(user_1)

@@ -2,9 +2,9 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'Restricted protected branch push and merge', product_group: :source_code do
-      let(:user_developer) { Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1) }
-      let(:user_maintainer) { Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2) }
+    describe 'Restricted protected branch push and merge', :requires_admin, product_group: :source_code do
+      let(:user_developer) { create(:user) }
+      let(:user_maintainer) { create(:user) }
       let(:branch_name) { 'protected-branch' }
       let(:commit_message) { 'Protected push commit message' }
 

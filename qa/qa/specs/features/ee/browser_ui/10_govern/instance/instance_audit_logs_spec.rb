@@ -25,7 +25,11 @@ module QA
           invalid_user = build(:user, username: 'bad_user_name', password: 'bad_pasword')
 
           Page::Main::Login.perform do |login_page|
-            login_page.sign_in_using_credentials(user: invalid_user, skip_page_validation: true)
+            login_page.sign_in_using_credentials(
+              user: invalid_user,
+              skip_page_validation: true,
+              raise_on_invalid_login: false
+            )
           end
           sign_in
         end

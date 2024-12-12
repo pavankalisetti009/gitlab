@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'Codeowners', :smoke, product_group: :source_code do
+    describe 'Codeowners', :smoke, :requires_admin, product_group: :source_code do
       let(:files) do
         [
           {
@@ -18,13 +18,8 @@ module QA
 
       let(:project) { create(:project, name: 'codeowners') }
 
-      let(:user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
-
-      let(:user2) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2)
-      end
+      let(:user) { create(:user) }
+      let(:user2) { create(:user) }
 
       let(:codeowners_file_content) do
         <<-CONTENT
