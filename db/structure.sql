@@ -8651,8 +8651,7 @@ CREATE TABLE bulk_import_configurations (
     encrypted_access_token text,
     encrypted_access_token_iv text,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    migrate_memberships boolean DEFAULT true NOT NULL
+    updated_at timestamp with time zone NOT NULL
 );
 
 CREATE SEQUENCE bulk_import_configurations_id_seq
