@@ -52,7 +52,7 @@ module Security
       def vulnerabilities(approval_rule)
         finder_params = {
           limit: approval_rule.vulnerabilities_allowed + 1,
-          state: states_without_newly_detected(approval_rule.vulnerability_states_for_branch),
+          state: states_without_newly_detected(approval_rule.vulnerability_states),
           severity: approval_rule.severity_levels,
           report_type: approval_rule.scanners,
           fix_available: approval_rule.vulnerability_attribute_fix_available,
