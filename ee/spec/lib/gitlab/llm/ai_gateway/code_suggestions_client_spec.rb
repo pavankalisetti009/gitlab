@@ -7,6 +7,8 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   let_it_be(:instance_token) { create(:service_access_token, :active) }
   let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :code_suggestions) }
   let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
+  let(:code) { 200 }
 
   before do
     allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
@@ -14,18 +16,21 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
   end
 
-  describe "#test_completion" do
-    let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
-    let(:code) { 200 }
-
-    subject(:result) { described_class.new(user).test_completion }
-
-    shared_examples "error response" do |message|
-      it "returns an error" do
-        expect(result).to eq(message)
-      end
+  shared_examples "error response" do |message|
+    it "returns an error" do
+      expect(result).to eq(message)
     end
+  end
 
+  shared_context 'with completions' do
+    context 'when response does not contain a valid choice' do
+      let(:body) { { choices: [] } }
+
+      it_behaves_like 'error response', "Response doesn't contain a completion"
+    end
+  end
+
+  shared_context 'with tests requests' do
     before do
       stub_request(:post, /#{Gitlab::AiGateway.url}/)
         .to_return(status: code, body: body.to_json, headers: { "Content-Type" => "application/json" })
@@ -39,12 +44,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       let(:instance_token) { nil }
 
       it_behaves_like 'error response', "Access token is missing"
-    end
-
-    context 'when response does not contain a valid choice' do
-      let(:body) { { choices: [] } }
-
-      it_behaves_like 'error response', "Response doesn't contain a completion"
     end
 
     context 'when response code is not 200' do
@@ -67,6 +66,44 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
 
       it_behaves_like 'error response', 'an error'
     end
+  end
+
+  describe "#test_completion" do
+    subject(:result) { described_class.new(user).test_completion }
+
+    include_examples 'with tests requests' do
+      include_examples 'with completions'
+    end
+  end
+
+  describe '#test_model_connection', :with_cloud_connector do
+    let(:self_hosted_model) { build(:ai_self_hosted_model) }
+
+    subject(:result) { described_class.new(user).test_model_connection(self_hosted_model) }
+
+    context 'when there is no self-hosted model provided' do
+      let(:self_hosted_model) { nil }
+
+      it_behaves_like 'error response', "No self-hosted model was provided"
+    end
+
+    context 'when the AI Gateway responded with a 421 Misdirected Request' do
+      # This means that the model server returned an error
+      let(:endpoint) { "#{Gitlab::AiGateway.url}/v1/prompts/model_configuration%2Fcheck" }
+
+      before do
+        stub_request(:post, endpoint)
+          .to_return(
+            status: 421,
+            body: "{\"detail\":\"401: Unauthorized\"}",
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
+
+      it_behaves_like 'error response', "mistral-7b-ollama-api returned code 401: Unauthorized"
+    end
+
+    include_examples 'with tests requests'
   end
 
   describe '#direct_access_token', :with_cloud_connector do
