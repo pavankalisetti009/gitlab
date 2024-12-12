@@ -17,13 +17,7 @@ module Gitlab
         def test_completion
           return 'Access token is missing' unless access_token
 
-          response = Gitlab::HTTP.post(
-            task.endpoint,
-            headers: Gitlab::AiGateway.headers(user: user, service: service),
-            body: task.body,
-            timeout: COMPLETION_CHECK_TIMEOUT,
-            allow_local_requests: true
-          )
+          response = call_endpoint task.endpoint, task.body
 
           return "AI Gateway returned code #{response.code}: #{response.body}" unless response.code == 200
           return "Response doesn't contain a completion" unless choice?(response)
@@ -32,6 +26,40 @@ module Gitlab
         rescue StandardError => err
           Gitlab::ErrorTracking.track_exception(err)
           err.message
+        end
+
+        def test_model_connection(self_hosted_model)
+          return 'Access token is missing' unless access_token
+          return 'No self-hosted model was provided' unless self_hosted_model
+
+          test_task = generate_test_task(self_hosted_model)
+
+          response = call_endpoint test_task.endpoint, test_task.body
+
+          if response.code == 421 # Misdirected Request https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/421
+            # this means that the model server returned an error
+            # The body contains the error code
+
+            model_response_code = ::Gitlab::Json.parse(response.body)["detail"]
+            return "#{self_hosted_model.name} returned code #{model_response_code}"
+          end
+
+          return "AI Gateway returned code #{response.code}: #{response.body}" unless response.code == 200
+
+          nil
+        rescue StandardError => err
+          Gitlab::ErrorTracking.track_exception(err)
+          err.message
+        end
+
+        def call_endpoint(endpoint, body)
+          Gitlab::HTTP.post(
+            endpoint,
+            headers: Gitlab::AiGateway.headers(user: user, service: service),
+            body: body,
+            timeout: COMPLETION_CHECK_TIMEOUT,
+            allow_local_requests: true
+          )
         end
 
         def direct_access_token
@@ -86,15 +114,27 @@ module Gitlab
         end
 
         def task
-          params = {
+          inputs = {
             current_file: {
               file_name: 'test.rb',
               content_above_cursor: 'def hello_world'
             }
           }
-          CodeSuggestions::Tasks::CodeCompletion.new(unsafe_passthrough_params: params)
+
+          CodeSuggestions::Tasks::CodeCompletion.new(unsafe_passthrough_params: inputs)
         end
         strong_memoize_attr :task
+
+        def generate_test_task(self_hosted_model)
+          inputs = {
+            inputs: {}
+          }
+
+          AiGateway::SelfHostedModels::Tasks::ModelConfigCheck.new(
+            unsafe_passthrough_params: inputs,
+            self_hosted_model: self_hosted_model
+          )
+        end
       end
     end
   end
