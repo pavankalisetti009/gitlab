@@ -224,7 +224,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
       expect(iterationEl.exists()).toBe(true);
       expect(iterationEl.findComponent(GlIcon).props('name')).toBe('iteration');
       expect(wrapper.findByTestId('iteration-value').text().trim()).toBe(
-        'Dec 19, 2023 - Jan 15, 2024',
+        'Dec 19, 2023 – Jan 15, 2024',
       );
     });
 
@@ -246,7 +246,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
         `${ITERATION.iteration.title}`,
       );
       expect(wrapper.findByTestId('iteration-period-text').text().trim()).toBe(
-        `Dec 19, 2023 - Jan 15, 2024`,
+        'Dec 19, 2023 – Jan 15, 2024',
       );
     });
   });

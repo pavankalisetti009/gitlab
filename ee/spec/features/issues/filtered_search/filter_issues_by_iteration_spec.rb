@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Filter issues by iteration', :js, feature_category: :team_planning do
   include FilteredSearchHelpers
+  include Features::IterationHelpers
 
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:project) { create(:project, :public, group: group) }
@@ -67,7 +68,7 @@ RSpec.describe 'Filter issues by iteration', :js, feature_category: :team_planni
 
       context 'when passing specific iteration by period' do
         before do
-          select_tokens 'Iteration', '=', iteration_1.period, submit: true
+          select_tokens 'Iteration', '=', iteration_period(iteration_1), submit: true
         end
 
         it_behaves_like 'filters issues by iteration'
@@ -89,7 +90,7 @@ RSpec.describe 'Filter issues by iteration', :js, feature_category: :team_planni
         end
 
         context 'with specific iteration' do
-          let(:iteration_item) { iteration_1.period }
+          let(:iteration_item) { iteration_period(iteration_1) }
 
           it_behaves_like 'filters issues by negated iteration'
         end
@@ -116,13 +117,13 @@ RSpec.describe 'Filter issues by iteration', :js, feature_category: :team_planni
           # cadence 1 grouping
           expect(page).to have_css('li:nth-child(6)', text: 'Any')
           expect(page).to have_css('li:nth-child(7)', text: 'Current')
-          expect(page).to have_css('li:nth-child(8)', text: iteration_3.period)
-          expect(page).to have_css('li:nth-child(9)', text: iteration_1.period)
+          expect(page).to have_css('li:nth-child(8)', text: iteration_period(iteration_3, use_thin_space: false))
+          expect(page).to have_css('li:nth-child(9)', text: iteration_period(iteration_1, use_thin_space: false))
           # cadence 2 grouping
           expect(page).to have_css('li:nth-child(11)', text: cadence_2.title)
           expect(page).to have_css('li:nth-child(12)', text: 'Any')
           expect(page).to have_css('li:nth-child(13)', text: 'Current')
-          expect(page).to have_css('li:nth-child(14)', text: iteration_2.period)
+          expect(page).to have_css('li:nth-child(14)', text: iteration_period(iteration_2, use_thin_space: false))
         end
       end
     end

@@ -22,7 +22,7 @@ export default {
   <span v-if="data"
     ><span class="gl-text-subtle">{{ data.iterationCadence.title }}</span> &bull;
     <gl-link :href="data.webUrl"
-      >{{ getIterationPeriod(data, true)
+      >{{ getIterationPeriod(data)
       }}<span v-if="data.title"> &bull; {{ data.title }}</span></gl-link
     ></span
   >

@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Issue board filters', :js, feature_category: :team_planning do
   include FilteredSearchHelpers
+  include Features::IterationHelpers
 
   let_it_be(:group)   { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -55,7 +56,7 @@ RSpec.describe 'Issue board filters', :js, feature_category: :team_planning do
     it 'loads all the iterations when opened and submit one as filter', :aggregate_failures do
       expect_board_list_issue_count(3)
 
-      select_tokens('Iteration', '=', iteration.period, submit: true)
+      select_tokens('Iteration', '=', iteration_period(iteration), submit: true)
 
       expect_board_list_issue_count(1)
       expect_board_list_to_contain(issue_2)
@@ -148,7 +149,8 @@ RSpec.describe 'Issue board filters', :js, feature_category: :team_planning do
 
       visit_project_board
 
-      select_tokens('Health', '=', 'None', 'Weight', '!=', '2', 'Epic', '=', 'None', 'Iteration', '=', iteration.period)
+      select_tokens('Health', '=', 'None', 'Weight', '!=', '2', 'Epic', '=', 'None', 'Iteration', '=',
+        iteration_period(iteration))
       send_keys 'Other title', :enter, :enter
 
       expect_board_list_issue_count(1)

@@ -25,7 +25,7 @@ RSpec.describe 'User views iteration', feature_category: :team_planning do
         aggregate_failures 'shows iteration info and dates' do
           expect(page).to have_content(iteration.title)
           expect(page).to have_content(iteration.description)
-          expect(page).to have_content(iteration_period_display(iteration))
+          expect(page).to have_content(iteration_period(iteration, use_thin_space: false))
         end
 
         aggregate_failures 'shows correct summary information' do

@@ -59,7 +59,7 @@ RSpec.describe 'User edits iteration', feature_category: :team_planning do
               expect(page).to have_content(updated_title)
               expect(page).to have_content(updated_desc)
               expect(page).to have_content(new_start_date.strftime('%b %-d'))
-              expect(page).to have_content(new_due_date.strftime('%b %-d, %Y'))
+              expect(page).to have_content(new_due_date.strftime('%-d, %Y'))
               expect(page).to have_current_path(iteration_page)
             end
           end

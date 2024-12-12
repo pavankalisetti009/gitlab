@@ -272,12 +272,12 @@ describe('Iterations report', () => {
 
       it('shows status and date in header', () => {
         const shortStartDate = formatDate(mockIterationNode.startDate, 'mmm d');
-        const dueDate = formatDate(mockIterationNode.dueDate, 'mmm d, yyyy');
+
         expect(wrapper.findComponent(TimeboxStatusBadge).props('state')).toContain(
           mockIterationNode.state,
         );
         expect(findTopbar().text()).toContain(shortStartDate);
-        expect(findTopbar().text()).toContain(dueDate);
+        expect(findTopbar().text()).toContain('Feb 10 – 17');
       });
 
       it('hides empty region and loading spinner', () => {

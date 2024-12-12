@@ -39,7 +39,7 @@ RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
         aggregate_failures 'expect title, description, and dates' do
           expect(page).to have_content(iteration.title)
           expect(page).to have_content(iteration.description)
-          expect(page).to have_content(iteration_period_display(iteration))
+          expect(page).to have_content(iteration_period(iteration, use_thin_space: false))
         end
 
         aggregate_failures 'expect summary information' do
@@ -99,7 +99,7 @@ RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
 
           click_button manual_cadence.title
 
-          expect(page).not_to have_content(iteration_period_display(iteration))
+          expect(page).not_to have_content(iteration_period(iteration, use_thin_space: false))
         end
       end
 

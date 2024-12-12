@@ -129,16 +129,12 @@ describe('BoardAddNewColumn', () => {
   };
 
   const expectIterationWithTitle = () => {
-    expect(findIterationItemAt(1).text()).toContain(
-      getIterationPeriod(mockIterations[1], null, true),
-    );
+    expect(findIterationItemAt(1).text()).toContain(getIterationPeriod(mockIterations[1]));
     expect(findIterationItemAt(1).text()).toContain(mockIterations[1].title);
   };
 
   const expectIterationWithoutTitle = () => {
-    expect(findIterationItemAt(0).text()).toContain(
-      getIterationPeriod(mockIterations[0], null, true),
-    );
+    expect(findIterationItemAt(0).text()).toContain(getIterationPeriod(mockIterations[0]));
     expect(findIterationItemAt(0).findComponent(IterationTitle).exists()).toBe(false);
   };
 

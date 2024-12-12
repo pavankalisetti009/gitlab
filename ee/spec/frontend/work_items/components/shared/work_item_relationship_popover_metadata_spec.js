@@ -45,7 +45,7 @@ describe('WorkItemPopoverMetadataEE', () => {
   it('renders item iteration icon and name', () => {
     expect(findIteration().exists()).toBe(true);
     expect(findIteration().findComponent(GlIcon).props('name')).toBe('iteration');
-    expect(findIterationPeriod().text()).toContain('Dec 19, 2023 - Jan 15, 2024');
+    expect(findIterationPeriod().text()).toContain('Dec 19, 2023 – Jan 15, 2024');
   });
 
   it('renders item start and due dates icon and text', () => {
@@ -64,6 +64,6 @@ describe('WorkItemPopoverMetadataEE', () => {
       `${mockIteration.iteration.iterationCadence.title}`,
     );
     expect(findIterationName().text()).toContain(`${mockIteration.iteration.title}`);
-    expect(findIterationValue().text()).toContain(`Dec 19, 2023 - Jan 15, 2024`);
+    expect(findIterationValue().text()).toContain('Dec 19, 2023 – Jan 15, 2024');
   });
 });
