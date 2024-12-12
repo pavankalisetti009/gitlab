@@ -44,8 +44,8 @@ describe('MergeTrainFailedPipelineConfirmationDialog', () => {
     });
 
     it('should render informational text explaining why merging immediately can be dangerous', () => {
-      expect(trimText(wrapper.text())).toContain(
-        "Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. %{docsLinkStart}What are the risks?%{docsLinkEnd}. Cancel Merge now and restart train",
+      expect(trimText(wrapper.text())).toMatchInterpolatedText(
+        "Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. What are the risks? Cancel Merge now and restart train",
       );
     });
 
