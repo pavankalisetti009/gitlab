@@ -49,7 +49,7 @@ export const THROUGHPUT_TABLE_TEST_IDS = {
 };
 
 export const PIPELINE_STATUS_ICON_CLASSES = {
-  status_success: 'gl-text-green-500',
+  status_success: 'gl-text-success',
   status_failed: 'gl-text-red-500',
   status_pending: 'gl-text-orange-500',
   default: 'gl-text-grey-500',

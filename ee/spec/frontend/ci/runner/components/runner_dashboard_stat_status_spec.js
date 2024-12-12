@@ -29,9 +29,9 @@ describe('RunnerDashboardStatStatus', () => {
 
   describe.each`
     scope            | status            | title        | icon                | iconClass
-    ${INSTANCE_TYPE} | ${STATUS_ONLINE}  | ${'Online'}  | ${'status-active'}  | ${'gl-text-green-500'}
+    ${INSTANCE_TYPE} | ${STATUS_ONLINE}  | ${'Online'}  | ${'status-active'}  | ${'gl-text-success'}
     ${INSTANCE_TYPE} | ${STATUS_OFFLINE} | ${'Offline'} | ${'status-waiting'} | ${'gl-text-subtle'}
-    ${GROUP_TYPE}    | ${STATUS_ONLINE}  | ${'Online'}  | ${'status-active'}  | ${'gl-text-green-500'}
+    ${GROUP_TYPE}    | ${STATUS_ONLINE}  | ${'Online'}  | ${'status-active'}  | ${'gl-text-success'}
     ${GROUP_TYPE}    | ${STATUS_OFFLINE} | ${'Offline'} | ${'status-waiting'} | ${'gl-text-subtle'}
   `(
     'for runner of scope $scope and runner status $status',
