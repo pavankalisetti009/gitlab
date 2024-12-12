@@ -402,6 +402,59 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.by_subscription_history_for_expired_duo_enterprise_add_on', :saas do
+      let_it_be(:namespace) do
+        create(:group_with_plan, plan: :free_plan) do |n|
+          # create subscription history naturally
+          n.gitlab_subscription.update!(hosted_plan: create(:premium_plan))
+        end
+      end
+
+      let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+      subject do
+        latest_history = GitlabSubscriptions::SubscriptionHistory.latest_updated_history_by_hosted_plan_id(
+          ::Plan.by_name(::Plan::FREE).select(:id), described_class.id_in(namespace.id).select(:id)
+        )
+
+        described_class.by_subscription_history_for_expired_duo_enterprise_add_on(latest_history)
+      end
+
+      context 'when namespace has an expired duo enterprise add-on' do
+        before do
+          create(
+            :gitlab_subscription_add_on_purchase,
+            namespace: namespace, add_on: duo_enterprise_add_on, expires_on: 2.days.ago
+          )
+        end
+
+        it { is_expected.to contain_exactly(namespace) }
+      end
+
+      context 'when namespace has a non-expired duo enterprise add-on' do
+        before do
+          create(
+            :gitlab_subscription_add_on_purchase,
+            namespace: namespace, add_on: duo_enterprise_add_on, expires_on: 2.days.from_now
+          )
+        end
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when namespace has a different type of add-on' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace, expires_on: 2.days.ago)
+        end
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when namespace has no add-ons' do
+        it { is_expected.to be_empty }
+      end
+    end
+
     describe '.not_duo_pro_or_no_add_on', :saas do
       let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, plan: :ultimate_plan) }
       let_it_be(:namespace_with_duo_pro) { create(:group_with_plan, plan: :ultimate_plan) }

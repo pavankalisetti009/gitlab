@@ -6,6 +6,8 @@ RSpec.describe Namespaces::TrialEligibleFinder, feature_category: :subscription_
   describe '#execute', :saas do
     let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
     let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+    let_it_be(:free_plan) { create(:free_plan) }
+    let_it_be(:premium_plan) { create(:premium_plan) }
 
     context 'with no params' do
       let_it_be(:namespace) { create(:group) }
@@ -77,71 +79,158 @@ RSpec.describe Namespaces::TrialEligibleFinder, feature_category: :subscription_
             create(:gitlab_subscription_add_on_purchase, add_on: duo_enterprise_add_on, namespace: regular_namespace)
           end
 
-          it 'is not eligible for the trial' do
-            is_expected.to eq([namespace_with_premium_plan, namespace_with_free_plan])
+          it { is_expected.to eq([namespace_with_premium_plan, namespace_with_free_plan]) }
+        end
+
+        context 'when the namespace last trialed as free and is now premium' do
+          before_all do
+            create(
+              :gitlab_subscription_history, :update,
+              namespace: namespace_with_premium_plan,
+              hosted_plan: free_plan
+            )
+          end
+
+          context 'and the duo enterprise add on is an expired trial before the namespace changed to premium' do
+            before_all do
+              create(
+                :gitlab_subscription_add_on_purchase, :expired_trial,
+                add_on: duo_enterprise_add_on, namespace: namespace_with_premium_plan
+              )
+            end
+
+            it { is_expected.to eq(eligible_namespaces) }
+
+            context 'and feature flag premium_can_trial_again is disabled' do
+              before do
+                stub_feature_flags(premium_can_trial_again: false)
+              end
+
+              it { is_expected.to eq([namespace_with_free_plan, regular_namespace]) }
+            end
+
+            context 'when a duo pro add on exists on a namespace' do
+              context 'and a namespace has an active trial' do
+                before do
+                  create(
+                    :gitlab_subscription_add_on_purchase, :active_trial,
+                    add_on: duo_pro_add_on, namespace: namespace_with_premium_plan
+                  )
+                end
+
+                it { is_expected.to eq([namespace_with_free_plan, regular_namespace]) }
+              end
+
+              context 'and a namespace has an active purchase' do
+                before do
+                  create(
+                    :gitlab_subscription_add_on_purchase,
+                    add_on: duo_pro_add_on, namespace: namespace_with_premium_plan
+                  )
+                end
+
+                it { is_expected.to eq(eligible_namespaces) }
+              end
+            end
+          end
+
+          context 'when the duo enterprise add on expired trial after the namespace changed to premium' do
+            before do
+              create(
+                :gitlab_subscription_add_on_purchase, :expired_trial,
+                add_on: duo_enterprise_add_on, namespace: namespace_with_premium_plan,
+                expires_on: 1.day.from_now
+              )
+            end
+
+            it { is_expected.to eq([namespace_with_free_plan, regular_namespace]) }
+          end
+        end
+
+        context 'when the namespace last trialed state was not free' do
+          before_all do
+            # This is not a real scenario as premium->premium wouldn't trigger an entry in this table,
+            # but it's a valid scenario to verify our conditions of only looking for the last free state only.
+            create(
+              :gitlab_subscription_history, :update,
+              namespace: namespace_with_premium_plan,
+              hosted_plan: premium_plan
+            )
+          end
+
+          context 'and the duo enterprise add on is an expired trial before the namespace changed to premium' do
+            before_all do
+              create(
+                :gitlab_subscription_add_on_purchase, :expired_trial,
+                add_on: duo_enterprise_add_on, namespace: namespace_with_premium_plan
+              )
+            end
+
+            it { is_expected.to eq([namespace_with_free_plan, regular_namespace]) }
           end
         end
 
         context 'when a duo pro add on exists on a namespace' do
+          before_all do
+            create(
+              :gitlab_subscription_add_on_purchase, :expired_trial,
+              add_on: duo_enterprise_add_on, namespace: namespace_with_premium_plan
+            )
+          end
+
           context 'and a namespace has an active purchase' do
             before do
-              create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: regular_namespace)
+              create(
+                :gitlab_subscription_add_on_purchase,
+                add_on: duo_pro_add_on, namespace: namespace_with_premium_plan
+              )
             end
 
-            it 'is eligible for the trial' do
-              is_expected.to eq(eligible_namespaces)
-            end
+            it { is_expected.to eq(eligible_namespaces) }
           end
 
           context 'and a namespace has an expired purchase' do
             before do
               create(
-                :gitlab_subscription_add_on_purchase, :expired, add_on: duo_pro_add_on, namespace: regular_namespace
+                :gitlab_subscription_add_on_purchase, :expired,
+                add_on: duo_pro_add_on, namespace: namespace_with_premium_plan
               )
             end
 
-            it 'is eligible for the trial' do
-              is_expected.to eq(eligible_namespaces)
-            end
+            it { is_expected.to eq(eligible_namespaces) }
           end
 
           context 'and a namespace has an active trial' do
             before do
               create(
                 :gitlab_subscription_add_on_purchase,
-                :active_trial, add_on: duo_pro_add_on, namespace: regular_namespace
+                :active_trial, add_on: duo_pro_add_on, namespace: namespace_with_premium_plan
               )
             end
 
-            it 'is not eligible for the trial' do
-              is_expected.to eq([namespace_with_premium_plan, namespace_with_free_plan])
-            end
+            it { is_expected.to eq([namespace_with_free_plan, regular_namespace]) }
           end
 
           context 'and a namespace has an expired trial' do
             before do
               create(
                 :gitlab_subscription_add_on_purchase,
-                :expired_trial, add_on: duo_pro_add_on, namespace: regular_namespace
+                :expired_trial, add_on: duo_pro_add_on, namespace: namespace_with_premium_plan
               )
             end
 
-            it 'is eligible for the trial' do
-              is_expected.to eq(eligible_namespaces)
-            end
+            it { is_expected.to eq(eligible_namespaces) }
           end
 
           context 'and a namespace has a future active trial' do
             before do
               create(
                 :gitlab_subscription_add_on_purchase,
-                :future_dated, add_on: duo_pro_add_on, trial: true, namespace: regular_namespace
+                :future_dated, add_on: duo_pro_add_on, trial: true, namespace: namespace_with_premium_plan
               )
             end
 
-            it 'is eligible for the trial' do
-              is_expected.to eq(eligible_namespaces)
-            end
+            it { is_expected.to eq(eligible_namespaces) }
           end
         end
       end

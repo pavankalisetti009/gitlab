@@ -10,5 +10,13 @@ FactoryBot.define do
 
       history.gitlab_subscription_id = gitlab_subscription.id if history.namespace.gitlab_subscription.present?
     end
+
+    trait :update do
+      change_type { :gitlab_subscription_updated }
+    end
+
+    trait :destroyed do
+      change_type { :gitlab_subscription_destroyed }
+    end
   end
 end

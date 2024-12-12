@@ -3,6 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Plan, feature_category: :subscription_management do
+  it 'has subscription history relation' do
+    is_expected
+      .to(
+        have_many(:gitlab_subscription_histories)
+          .class_name('GitlabSubscriptions::SubscriptionHistory')
+          .with_foreign_key(:hosted_plan_id).inverse_of(:hosted_plan)
+      )
+  end
+
   describe '#paid?' do
     subject { plan.paid? }
 

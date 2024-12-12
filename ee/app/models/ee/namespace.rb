@@ -84,6 +84,20 @@ module EE
           .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
 
+      scope :by_subscription_history_for_expired_duo_enterprise_add_on, ->(latest_history) do
+        subscription_add_on_purchases = GitlabSubscriptions::AddOnPurchase.arel_table
+        add_ons = GitlabSubscriptions::AddOn.arel_table
+
+        joins(subscription_add_on_purchases: :add_on)
+           .joins(
+             arel_table.join(latest_history, Arel::Nodes::InnerJoin)
+                       .on(latest_history[:namespace_id].eq(arel_table[:id]))
+                       .join_sources
+           )
+           .where(latest_history[:last_created_at].gt(subscription_add_on_purchases[:expires_on]))
+           .where(add_ons[:name].eq(:duo_enterprise))
+      end
+
       scope :not_duo_pro_or_no_add_on, -> do
         # We return any namespace that does not have a duo pro add on.
         # We get all namespaces that do not have an add on from the left_joins and the

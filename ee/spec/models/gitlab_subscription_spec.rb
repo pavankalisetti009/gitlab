@@ -670,7 +670,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         )
     end
 
-    context 'before_update', :freeze_time do
+    context 'for before_update', :freeze_time do
       let(:gitlab_subscription) do
         create(
           :gitlab_subscription,
@@ -694,6 +694,22 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
             'max_seats_used' => 42,
             'seats' => 13
           )
+        end
+
+        context 'when a namespace changes their plan' do
+          let(:free_plan) { create(:free_plan) }
+          let(:gitlab_subscription) do
+            create(:gitlab_subscription, hosted_plan: free_plan)
+          end
+
+          it 'logs history with the free plan' do
+            expect do
+              gitlab_subscription.update!(hosted_plan: create(:premium_plan))
+            end.to change { GitlabSubscriptions::SubscriptionHistory.count }.by(1)
+
+            expect(GitlabSubscriptions::SubscriptionHistory.last.attributes)
+              .to include('hosted_plan_id' => free_plan.id)
+          end
         end
       end
 
