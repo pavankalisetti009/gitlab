@@ -29,11 +29,7 @@ module CloudConnector
       end
 
       def access_record_data
-        if Feature.enabled?(:use_cloud_connector_available_services_generator, :instance)
-          Gitlab::CloudConnector::AvailableServicesGenerator.new.generate('gitlab-com')
-        else
-          YAML.load_file(Rails.root.join('ee/config/cloud_connector/access_data.yml'))
-        end
+        Gitlab::CloudConnector::AvailableServicesGenerator.new.generate('gitlab-com')
       end
 
       def build_available_service_data(name, access_data)
