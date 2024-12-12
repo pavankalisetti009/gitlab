@@ -95,7 +95,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
       let_it_be(:note1) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Some pig') }
       let_it_be(:note2) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Terrific') }
       let_it_be(:note3) { create(:note, :internal, noteable: project_work_item, project: project, note: "Radiant") }
-
       let(:expected_hash) do
         base_work_item_hash.merge(
           root_namespace_id: project_work_item.namespace.root_ancestor.id,
@@ -119,6 +118,12 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
         expect(indexed_json[:notes_internal]).not_to include('Radiant')
         expect(indexed_json[:notes_internal]).to eq("Newest\n…")
+      end
+
+      it 'does not include system notes' do
+        create(:note, :system, noteable: project_work_item, project: project, note: "Enchanting!")
+
+        expect(indexed_json[:notes]).not_to include('Enchanting!')
       end
 
       context 'when add_work_item_type_correct_id migration is not complete' do

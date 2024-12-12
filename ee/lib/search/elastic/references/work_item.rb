@@ -69,7 +69,7 @@ module Search
         private
 
         def populate_notes(target, data)
-          notes_internal, notes = target.notes.partition(&:internal)
+          notes_internal, notes = target.notes.user.partition(&:internal)
 
           internal_notes = notes_internal.sort_by(&:created_at).reverse.map(&:note).join("\n").presence
           data['notes_internal'] = internal_notes.truncate_bytes(NOTES_MAXIMUM_BYTES) if internal_notes
