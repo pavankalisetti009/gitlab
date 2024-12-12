@@ -109,7 +109,7 @@ class GraphqlController < ApplicationController
   # `rescue_from StandardError` above would prevent these from bubbling up to ApplicationController.
   # These also return errors in a JSON format similar to GraphQL errors.
   rescue_from ActionController::InvalidAuthenticityToken do |exception|
-    render_error(exception.message, status: :forbidden)
+    render_error(exception.message, status: :unprocessable_entity)
   end
 
   rescue_from Gitlab::Auth::TooManyIps do |exception|
