@@ -23,10 +23,12 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
 
   context 'for signed in user' do
     let(:child_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+    let(:linked_item) { child_item }
 
     before do
       stub_feature_flags(notifications_todos_buttons: false)
-      stub_licensed_features(epic_colors: true, epics: true, issuable_health_status: true, subepics: true)
+      stub_licensed_features(epic_colors: true, epics: true, issuable_health_status: true, linked_items_epics: true,
+        related_epics: true, subepics: true)
       sign_in(user)
       visit work_items_path
       close_work_item_feedback_popover_if_present
@@ -44,6 +46,7 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
     it_behaves_like 'work items title'
     it_behaves_like 'work items award emoji'
     it_behaves_like 'work items hierarchy', 'work-item-tree', :epic
+    it_behaves_like 'work items linked items', true
     it_behaves_like 'work items toggle status button'
 
     it_behaves_like 'work items todos'
