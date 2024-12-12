@@ -57,8 +57,7 @@ module Gitlab
         # Return early and do not perform the check:
         #   1. unless license is ultimate
         #   2. unless application setting is enabled
-        #   3. unless instance is a Gitlab Dedicated instance or feature flag is enabled for this project
-        #   4. unless project setting is enabled
+        #   3. unless project setting is enabled
         #   4. if it is a delete branch/tag operation, as it would require scanning the entire revision history
         #   5. if options are passed for us to skip the check
 
@@ -135,16 +134,6 @@ module Gitlab
 
       def run_pre_receive_secret_detection?
         Gitlab::CurrentSettings.current_application_settings.pre_receive_secret_detection_enabled &&
-          (enabled_for_non_dedicated_project? || enabled_for_dedicated_project?)
-      end
-
-      def enabled_for_non_dedicated_project?
-        ::Feature.enabled?(:pre_receive_secret_detection_push_check, project) &&
-          project.security_setting&.pre_receive_secret_detection_enabled
-      end
-
-      def enabled_for_dedicated_project?
-        ::Gitlab::CurrentSettings.gitlab_dedicated_instance &&
           project.security_setting&.pre_receive_secret_detection_enabled
       end
 
