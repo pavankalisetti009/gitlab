@@ -322,6 +322,7 @@ module EE
         arkose_labs_public_api_key
         telesign_api_key
         telesign_customer_xid
+        ci_requires_identity_verification_on_free_plan
       ]
     end
 

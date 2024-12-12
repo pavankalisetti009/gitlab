@@ -45,7 +45,7 @@ module Users
       end
 
       def identity_verification_enabled_for_ci?
-        ::Feature.enabled?(:ci_requires_identity_verification_on_free_plan, project, type: :gitlab_com_derisk)
+        ::Gitlab::CurrentSettings.ci_requires_identity_verification_on_free_plan
       end
 
       def project_requires_verified_user?
