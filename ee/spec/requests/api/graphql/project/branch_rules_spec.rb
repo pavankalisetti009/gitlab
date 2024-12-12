@@ -40,6 +40,14 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
             branchRules {
               nodes {
                 matchingBranchesCount
+                squashOption{
+                  option
+                }
+                externalStatusChecks{
+                  nodes{
+                    name
+                  }
+                }
               }
             }
           }

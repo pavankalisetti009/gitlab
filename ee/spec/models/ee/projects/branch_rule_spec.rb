@@ -10,6 +10,7 @@ RSpec.describe Projects::BranchRule, feature_category: :source_code_management d
 
   it 'delegates methods to protected branch' do
     expect(branch_rule).to delegate_method(:external_status_checks).to(:protected_branch)
+    expect(branch_rule).to delegate_method(:squash_option).to(:protected_branch)
   end
 
   describe '#approval_project_rules' do

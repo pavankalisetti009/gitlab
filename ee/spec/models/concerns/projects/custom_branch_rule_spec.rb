@@ -28,4 +28,10 @@ RSpec.describe Projects::CustomBranchRule, feature_category: :source_code_manage
       expect { subject.external_status_checks }.to raise_error(NotImplementedError)
     end
   end
+
+  describe '#squash_option' do
+    it 'returns nil' do
+      expect(instance.squash_option).to be_nil
+    end
+  end
 end

@@ -64,6 +64,10 @@ module Projects
       nil
     end
 
+    def squash_option
+      nil
+    end
+
     def created_at
       [
         *external_status_checks.map(&:created_at),

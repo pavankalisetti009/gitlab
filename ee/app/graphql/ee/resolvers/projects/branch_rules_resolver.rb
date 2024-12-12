@@ -43,7 +43,8 @@ module EE
         def preloads
           super.merge(
             approval_rules: { approval_project_rules_with_unique_policies: [:users, :group_users] },
-            external_status_checks: :external_status_checks
+            external_status_checks: :external_status_checks,
+            squash_option: :squash_option
           )
         end
 
