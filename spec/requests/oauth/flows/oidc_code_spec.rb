@@ -13,7 +13,8 @@ RSpec.describe 'Gitlab OIDC Authorization Code Flow', feature_category: :system_
       client_id: client_id,
       response_type: 'code',
       redirect_uri: application.redirect_uri,
-      scope: 'openid profile email api'
+      scope: 'openid profile email api',
+      nonce: 'nonce'
     }
   end
 
@@ -44,6 +45,13 @@ RSpec.describe 'Gitlab OIDC Authorization Code Flow', feature_category: :system_
     context 'with valid params' do
       it 'redirects to the authorization endpoint' do
         post '/oauth/authorize', params: authorization_params
+
+        expect(response).to have_gitlab_http_status(:found)
+        expect(response.location).to start_with(application.redirect_uri)
+      end
+
+      it 'redirects to the authorization endpoint even if the nonce is missing' do
+        post '/oauth/authorize', params: authorization_params.except(:nonce)
 
         expect(response).to have_gitlab_http_status(:found)
         expect(response.location).to start_with(application.redirect_uri)
