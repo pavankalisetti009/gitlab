@@ -5,7 +5,7 @@ module Namespaces
     class LimitAlertComponentBuilder
       def self.build(context:, user:)
         if Enforcement.enforce_limit?(context.root_ancestor)
-          LimitAlertComponent.new(context: context, user: user)
+          NamespaceLimit::LimitAlertComponent.new(context: context, user: user)
         else
           RepositoryLimitAlertComponent.new(context: context, user: user)
         end
