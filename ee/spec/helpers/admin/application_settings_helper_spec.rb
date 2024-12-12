@@ -34,15 +34,10 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     describe '#admin_ai_general_settings_helper_data' do
       subject(:admin_ai_general_settings_helper_data) { helper.admin_ai_general_settings_helper_data }
 
-      before do
-        allow(helper).to receive(:ai_settings_helper_data).and_return({ base_data: 'data' })
-      end
-
       it 'returns the expected data' do
         expect(admin_ai_general_settings_helper_data).to include(
           on_general_settings_page: 'true',
-          redirect_path: '/admin/application_settings/general',
-          base_data: 'data'
+          configuration_settings_path: '/admin/gitlab_duo'
         )
       end
     end

@@ -5216,6 +5216,9 @@ msgstr ""
 msgid "AiPowered|Features are not available. However, any group, subgroup, or project can turn them on."
 msgstr ""
 
+msgid "AiPowered|GitLab Duo settings have moved"
+msgstr ""
+
 msgid "AiPowered|Help make the next releases of GitLab better. As a member of the GitLab Early Access Program, you can take part in shaping GitLab by letting us know what you think of GitLab Duo experimental and beta features. How does this program work?"
 msgstr ""
 
@@ -5258,10 +5261,16 @@ msgstr ""
 msgid "AiPowered|Start date: %{startDate}"
 msgstr ""
 
+msgid "AiPowered|To make it easier to configure GitLab Duo, the settings have moved to a more visible location. To access them, go to "
+msgstr ""
+
 msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
 msgstr ""
 
 msgid "AiPowered|Turn on self-hosted models"
+msgstr ""
+
+msgid "AiPowered|View GitLab Duo settings"
 msgstr ""
 
 msgid "AiPowered|When GitLab Duo is not available, experiment and beta features cannot be turned on."

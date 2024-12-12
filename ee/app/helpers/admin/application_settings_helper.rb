@@ -50,8 +50,8 @@ module Admin
     def admin_ai_general_settings_helper_data
       {
         on_general_settings_page: 'true',
-        redirect_path: general_admin_application_settings_path
-      }.merge(ai_settings_helper_data)
+        configuration_settings_path: admin_gitlab_duo_path
+      }
     end
 
     def admin_ai_configuration_settings_helper_data

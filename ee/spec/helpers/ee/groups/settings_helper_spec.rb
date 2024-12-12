@@ -36,15 +36,10 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe '#group_ai_general_settings_helper_data' do
     subject(:group_ai_general_settings_helper_data) { helper.group_ai_general_settings_helper_data }
 
-    before do
-      allow(helper).to receive(:group_ai_settings_helper_data).and_return({ base_data: 'data' })
-    end
-
     it 'returns the expected data' do
       expect(group_ai_general_settings_helper_data).to include(
         on_general_settings_page: 'true',
-        redirect_path: edit_group_path(group),
-        base_data: 'data'
+        configuration_settings_path: helper.group_settings_gitlab_duo_path(group)
       )
     end
   end

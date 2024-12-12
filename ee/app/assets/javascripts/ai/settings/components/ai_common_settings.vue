@@ -34,10 +34,25 @@ export default {
       'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
     ),
     configurationPageTitle: s__('AiPowered|Configuration'),
+    movedAlertTitle: s__('AiPowered|GitLab Duo settings have moved'),
+    movedAlertDescriptionText: s__(
+      'AiPowered|To make it easier to configure GitLab Duo, the settings have moved to a more visible location. To access them, go to ',
+    ),
+    movedAlertButton: s__('AiPowered|View GitLab Duo settings'),
   },
-  inject: ['duoAvailability', 'experimentFeaturesEnabled', 'onGeneralSettingsPage'],
+  inject: [
+    'duoAvailability',
+    'experimentFeaturesEnabled',
+    'onGeneralSettingsPage',
+    'configurationSettingsPath',
+  ],
   props: {
     hasParentFormChanged: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    isGroup: {
       type: Boolean,
       required: false,
       default: false,
@@ -89,6 +104,10 @@ export default {
     disableExperimentCheckbox() {
       return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
     },
+    movedAlertDescription() {
+      const path = this.isGroup ? 'Settings > GitLab Duo' : 'Admin Area > GitLab Duo';
+      return `${this.$options.i18n.movedAlertDescriptionText}%{linkStart}${path}%{linkEnd}.`;
+    },
   },
   methods: {
     submitForm() {
@@ -111,32 +130,22 @@ export default {
   <div>
     <template v-if="onGeneralSettingsPage">
       <settings-block class="gl-mb-5 !gl-pt-5" :title="$options.i18n.settingsBlockTitle">
-        <template #description>
-          <gl-sprintf :message="$options.i18n.settingsBlockDescription">
-            <template #link="{ content }">
-              <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
-            </template>
-          </gl-sprintf>
-        </template>
         <template #default>
-          <gl-form @submit.prevent="submitForm">
-            <slot name="ai-common-settings-top"></slot>
-            <duo-availability :duo-availability="availability" @change="onRadioChanged" />
-            <duo-experiment-beta-features
-              :experiment-features-enabled="experimentsEnabled"
-              :disabled-checkbox="disableExperimentCheckbox"
-              @change="onCheckboxChanged"
-            />
-            <slot name="ai-common-settings-bottom"></slot>
-            <gl-alert v-if="showWarning" :dismissible="false" variant="warning">{{
-              warningMessage
-            }}</gl-alert>
-            <div class="gl-mt-6">
-              <gl-button type="submit" variant="confirm" :disabled="!hasFormChanged">
-                {{ $options.i18n.confirmButtonText }}
-              </gl-button>
-            </div>
-          </gl-form>
+          <gl-alert
+            variant="info"
+            :title="$options.i18n.movedAlertTitle"
+            :dismissible="false"
+            class="gl-mb-5"
+            data-testid="duo-moved-settings-alert"
+          >
+            <gl-sprintf :message="movedAlertDescription">
+              <template #link="{ content }">
+                <gl-link class="!gl-no-underline" :href="configurationSettingsPath">{{
+                  content
+                }}</gl-link>
+              </template>
+            </gl-sprintf>
+          </gl-alert>
         </template>
       </settings-block>
     </template>
@@ -146,7 +155,7 @@ export default {
           <span data-testid="configuration-page-subtitle">
             <gl-sprintf :message="$options.i18n.settingsBlockDescription">
               <template #link="{ content }">
-                <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
+                <gl-link :href="$options.aiFeaturesHelpPath">{{ content }}</gl-link>
               </template>
             </gl-sprintf>
           </span>
@@ -161,9 +170,13 @@ export default {
           @change="onCheckboxChanged"
         />
         <slot name="ai-common-settings-bottom"></slot>
-        <gl-alert v-if="showWarning" :dismissible="false" variant="warning">{{
-          warningMessage
-        }}</gl-alert>
+        <gl-alert
+          v-if="showWarning"
+          :dismissible="false"
+          variant="warning"
+          data-testid="duo-settings-show-warning-alert"
+          >{{ warningMessage }}</gl-alert
+        >
         <div class="gl-mt-6">
           <gl-button type="submit" variant="confirm" :disabled="!hasFormChanged">
             {{ $options.i18n.confirmButtonText }}

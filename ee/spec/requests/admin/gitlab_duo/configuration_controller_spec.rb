@@ -66,20 +66,8 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
           allow(Gitlab).to receive(:com?).and_return(false)
         end
 
-        context 'with a paid license and feature enabled' do
-          before do
-            stub_feature_flags(admin_duo_page_configuration_settings: true)
-          end
-
+        context 'with a paid license' do
           it_behaves_like 'renders duo settings form'
-        end
-
-        context 'with feature flag disabled' do
-          before do
-            stub_feature_flags(admin_duo_page_configuration_settings: false)
-          end
-
-          it_behaves_like 'redirects configuration path'
         end
       end
 

@@ -25,7 +25,8 @@ export default {
   props: {
     redirectPath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     duoProVisible: {
       type: Boolean,
@@ -102,7 +103,11 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings :has-parent-form-changed="hasFormChanged" @submit="updateSettings">
+  <ai-common-settings
+    :is-group="false"
+    :has-parent-form-changed="hasFormChanged"
+    @submit="updateSettings"
+  >
     <template #ai-common-settings-bottom>
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
       <ai-models-form v-if="duoProVisible" @change="onAiModelsFormChange" />
