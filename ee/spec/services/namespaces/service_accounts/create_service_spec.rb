@@ -5,8 +5,6 @@ require 'spec_helper'
 RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :user_management do
   shared_examples 'service account creation failure' do
     it 'produces an error', :aggregate_failures do
-      result = service.execute
-
       expect(result.status).to eq(:error)
       expect(result.message).to eq(
         s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
@@ -37,8 +35,6 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         let(:license) { create(:license, plan: License::STARTER_PLAN) }
 
         it 'raises error' do
-          result = service.execute
-
           expect(result.status).to eq(:error)
           expect(result.message).to include('No more seats are available to create Service Account User')
         end
@@ -52,8 +48,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         end
 
         it 'sets provisioned by group' do
-          result = service.execute
-          expect(result.payload.provisioned_by_group_id).to eq(group.id)
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
         end
 
         context 'when the group is invalid' do
@@ -80,8 +75,6 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           end
 
           it 'raises error' do
-            result = service.execute
-
             expect(result.status).to eq(:error)
             expect(result.message).to include('No more seats are available to create Service Account User')
           end
@@ -97,9 +90,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           end
 
           it 'sets provisioned by group' do
-            result = service.execute
-
-            expect(result.payload.provisioned_by_group_id).to eq(group.id)
+            expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
           end
 
           context 'when the group is invalid' do
@@ -169,5 +160,9 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         end
       end
     end
+  end
+
+  def result
+    service.execute
   end
 end

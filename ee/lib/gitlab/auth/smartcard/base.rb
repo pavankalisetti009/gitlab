@@ -33,9 +33,15 @@ module Gitlab
         def find_or_create_user
           return unless valid?
 
-          user = find_user
-          user ||= create_identity_for_existing_user
-          user ||= create_user if allow_signup?
+          user = find_user || create_identity_for_existing_user
+
+          return user unless allow_signup?
+
+          if user.nil?
+            response = create_user
+            user = response.payload[:user] if response.success?
+          end
+
           user
         end
 
