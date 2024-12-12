@@ -47,6 +47,37 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '#enabled?' do
+    context 'with args' do
+      let(:namespace) { build(:project_namespace) }
+      let(:user) { build(:user) }
+
+      where(:duo_availability, :user_can_access_duo_features, :result) do
+        :default_on  | true | true
+        :default_on  | false | false
+        :never_on    | true  | false
+        :never_on    | false | false
+        :default_off | true  | true
+        :default_off | false | false
+      end
+
+      with_them do
+        before do
+          allow(described_class).to receive_messages(
+            feature_available?: true,
+            connected?: true
+          )
+          allow(::Gitlab::CurrentSettings).to receive_messages(
+            duo_availability: duo_availability
+          )
+          allow(user).to receive(:can?).with(:access_duo_features, namespace).and_return(user_can_access_duo_features)
+        end
+
+        it { expect(described_class.enabled?(user: user, namespace: namespace)).to eq(result) }
+      end
+    end
+  end
+
   describe '#should_block_service_account?' do
     where(:availability, :expectation) do
       "default_on"  | false

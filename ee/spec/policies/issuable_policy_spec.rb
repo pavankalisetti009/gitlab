@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IssuablePolicy, :models do
+RSpec.describe IssuablePolicy, :models, feature_category: :team_planning do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:non_member) { create(:user) }
@@ -194,6 +194,62 @@ RSpec.describe IssuablePolicy, :models do
             expect(permissions(reporter, incident_issue)).to be_allowed(:admin_issuable_resource_link)
             expect(permissions(reporter, incident_issue)).to be_allowed(:read_issuable_resource_link)
           end
+        end
+      end
+    end
+
+    describe 'trigger_amazon_q' do
+      let_it_be(:project) { create(:project, :private) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+      let(:user) { developer }
+      let(:amazon_q_enabled) { true }
+
+      before do
+        allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
+        allow(::Ai::AmazonQ).to receive(:enabled?).with(
+          user: user,
+          namespace: project.project_namespace
+        ).and_return(amazon_q_enabled)
+      end
+
+      it 'allows on an issue authored by a guest' do
+        expect(permissions(user, guest_issue)).to be_allowed(:trigger_amazon_q)
+      end
+
+      it 'allows on non-persisted issues' do
+        issue = build(:issue, project: project)
+
+        expect(permissions(user, issue)).to be_allowed(:trigger_amazon_q)
+      end
+
+      it 'allows on merge request' do
+        expect(permissions(user, merge_request)).to be_allowed(:trigger_amazon_q)
+      end
+
+      it 'disallows non-member' do
+        expect(permissions(non_member, merge_request)).to be_disallowed(:trigger_amazon_q)
+      end
+
+      it 'disallows work items without a project' do
+        # note: We might want to do this in the future, but for now we're using the project_namespace for this check
+        epic = build(:epic, group: project.group)
+
+        expect(permissions(user, epic)).to be_disallowed(:trigger_amazon_q)
+      end
+
+      context 'when user is not developer+' do
+        let(:user) { reporter }
+
+        it 'disallows reporter' do
+          expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
+        end
+      end
+
+      context 'when Amazon Q is disabled' do
+        let(:amazon_q_enabled) { false }
+
+        it 'disallows user' do
+          expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
         end
       end
     end
