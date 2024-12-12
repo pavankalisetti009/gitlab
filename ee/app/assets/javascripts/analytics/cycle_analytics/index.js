@@ -1,11 +1,11 @@
 import { GlToast } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import createDefaultClient from '~/lib/graphql';
 import {
   extractFilterQueryParameters,
   extractPaginationQueryParameters,
 } from '~/analytics/shared/utils';
+import { defaultClient } from '~/analytics/shared/graphql/client';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import { buildCycleAnalyticsInitialData } from '../shared/utils';
 import CycleAnalytics from './components/base.vue';
@@ -14,9 +14,7 @@ import createStore from './store';
 Vue.use(GlToast);
 Vue.use(VueApollo);
 
-const apolloProvider = new VueApollo({
-  defaultClient: createDefaultClient(),
-});
+const apolloProvider = new VueApollo({ defaultClient });
 
 export default () => {
   const el = document.querySelector('#js-cycle-analytics');

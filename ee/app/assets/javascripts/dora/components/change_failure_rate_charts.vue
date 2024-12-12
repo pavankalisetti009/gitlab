@@ -52,6 +52,10 @@ export default {
       type: String,
       default: '',
     },
+    shouldRenderDoraCharts: {
+      type: Boolean,
+      default: false,
+    },
   },
   chartInDays: {
     [LAST_WEEK]: 7,
@@ -198,6 +202,7 @@ export default {
           :request-params="getMetricsRequestParams(selectedChart)"
           :filter-fn="$options.extractFailureRateMetrics"
           :query-type="$options.DORA_METRICS_QUERY_TYPE"
+          :is-licensed="shouldRenderDoraCharts"
         />
       </template>
       <template #tooltip-title> {{ tooltipTitle }} </template>

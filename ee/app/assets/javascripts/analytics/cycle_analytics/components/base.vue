@@ -3,9 +3,9 @@
 import { mapActions, mapState, mapGetters } from 'vuex';
 import { GlEmptyState } from '@gitlab/ui';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
-import { VSA_METRICS_GROUPS } from '~/analytics/shared/constants';
+import { VSA_METRICS_GROUPS, FLOW_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
 import { generateValueStreamsDashboardLink } from '~/analytics/shared/utils';
-import LegacyValueStreamMetrics from '~/analytics/shared/components/legacy_value_stream_metrics.vue';
+import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import PathNavigation from '~/analytics/cycle_analytics/components/path_navigation.vue';
 import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
 import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_stream_filters.vue';
@@ -34,7 +34,7 @@ export default {
     ValueStreamAggregatingWarning,
     ValueStreamEmptyState,
     ValueStreamFilters,
-    LegacyValueStreamMetrics,
+    ValueStreamMetrics,
     ValueStreamSelect,
     UrlSync,
     DurationOverviewChart,
@@ -81,6 +81,8 @@ export default {
       'enableCustomizableStages',
       'predefinedDateRange',
       'enableVsdLink',
+      'namespace',
+      'canReadCycleAnalytics',
     ]),
     ...mapGetters([
       'hasNoAccessError',
@@ -92,6 +94,7 @@ export default {
       'isOverviewStageSelected',
       'selectedStageCount',
       'hasValueStreams',
+      'isProjectNamespace',
     ]),
     isWaitingForNextAggregation() {
       return Boolean(this.selectedValueStream && !this.aggregation.lastRunAt);
@@ -157,6 +160,9 @@ export default {
     dashboardsPath() {
       return this.showDashboardsLink ? generateValueStreamsDashboardLink(this.namespacePath) : null;
     },
+    isAllowed() {
+      return this.canReadCycleAnalytics;
+    },
   },
   methods: {
     ...mapActions([
@@ -199,6 +205,7 @@ export default {
     triggers: 'hover',
     placement: 'left',
   },
+  FLOW_METRICS_QUERY_TYPE,
 };
 </script>
 <template>
@@ -260,13 +267,15 @@ export default {
         "
       />
       <template v-else>
-        <legacy-value-stream-metrics
+        <value-stream-metrics
           v-if="isOverviewStageSelected"
-          :request-path="namespacePath"
+          :request-path="namespace.path"
           :request-params="cycleAnalyticsRequestParams"
-          :requests="$options.METRICS_REQUESTS"
           :group-by="$options.VSA_METRICS_GROUPS"
           :dashboards-path="dashboardsPath"
+          :query-type="$options.FLOW_METRICS_QUERY_TYPE"
+          :is-project-namespace="isProjectNamespace"
+          :is-licensed="isAllowed"
         />
         <div :class="[isOverviewStageSelected ? 'gl-mt-2' : 'gl-mt-6']">
           <duration-overview-chart v-if="isOverviewStageSelected" class="gl-mb-6" />

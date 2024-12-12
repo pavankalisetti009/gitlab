@@ -193,7 +193,7 @@ RSpec.describe 'Project > Value stream analytics', :js, feature_category: :value
             it 'renders vsa metrics' do
               aggregate_failures 'with relevant values' do
                 expect(vsa_metrics_titles.length).to eq 4
-                expect(vsa_metrics_titles).to match_array ["Cycle time", "Deploys", "Lead time", "New issue"]
+                expect(vsa_metrics_titles).to match_array ["Cycle time", "Deploys", "Lead time", "New issues"]
 
                 expect(vsa_metrics_values).to match_array %w[1 1 2 2]
               end
@@ -210,7 +210,7 @@ RSpec.describe 'Project > Value stream analytics', :js, feature_category: :value
             it 'renders vsa metrics' do
               aggregate_failures 'with relevant values' do
                 expect(vsa_metrics_titles.length).to eq 4
-                expect(vsa_metrics_titles).to match_array ["Cycle time", "Deploys", "Lead time", "New issue"]
+                expect(vsa_metrics_titles).to match_array ["Cycle time", "Deploys", "Lead time", "New issues"]
 
                 expect(vsa_metrics_values).to match_array %w[1 1 2 2]
               end

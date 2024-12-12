@@ -56,6 +56,7 @@ export default () => ({
     nextRunAt: null,
   },
   canEdit: false,
+  canReadCycleAnalytics: false,
   enableVsdLink: false,
   enableCustomizableStages: false,
   enableProjectsFilter: false,

@@ -17,6 +17,7 @@ module EE
               attrs[:projects] = group_projects(project_ids) if group.present? && project_ids.present?
               attrs[:enable_tasks_by_type_chart] = 'true' if group.present?
               attrs[:enable_customizable_stages] = 'true' if licensed?
+              attrs[:can_read_cycle_analytics] = 'true' if can_read_cycle_analytics?
               attrs[:enable_projects_filter] = 'true' if group.present? || namespace.is_a?(Group)
               attrs[:enable_vsd_link] = 'true' if render_value_stream_dashboard_link?
               attrs[:can_edit] = 'true' if licensed? && ::Gitlab::Analytics::CycleAnalytics.allowed_to_edit?(
@@ -66,6 +67,10 @@ module EE
 
           private
 
+          def can_read_cycle_analytics?
+            licensed? && can?(current_user, :read_cycle_analytics, namespace)
+          end
+
           def render_value_stream_dashboard_link?
             (licensed? && group.present?) ||
               (licensed? && project.present? && project.group.present? && can?(current_user,
@@ -93,6 +98,7 @@ module EE
             {
               name: group.name,
               full_path: "groups/#{group.full_path}",
+              path: group.full_path,
               type: namespace.type
             }
           end

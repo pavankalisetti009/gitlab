@@ -117,6 +117,7 @@ export default {
       aggregation = {},
       namespace = {},
       canEdit = false,
+      canReadCycleAnalytics = false,
       enableVsdLink = false,
       enableCustomizableStages = false,
       enableProjectsFilter = false,
@@ -133,6 +134,7 @@ export default {
     state.defaultStageConfig = defaultStageConfig;
     state.namespace = namespace;
     state.canEdit = canEdit;
+    state.canReadCycleAnalytics = canReadCycleAnalytics;
     state.enableVsdLink = enableVsdLink;
     state.enableCustomizableStages = enableCustomizableStages;
     state.enableProjectsFilter = enableProjectsFilter;

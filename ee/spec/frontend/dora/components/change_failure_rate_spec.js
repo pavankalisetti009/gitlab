@@ -34,6 +34,7 @@ describe('change_failure_rate_charts.vue', () => {
   const defaultMountOptions = {
     provide: {
       projectPath: 'test/project',
+      shouldRenderDoraCharts: true,
     },
   };
 
@@ -120,10 +121,15 @@ describe('change_failure_rate_charts.vue', () => {
         expect(metricsComponent.exists()).toBe(true);
       });
 
+      it('sets the `isLicensed` prop', () => {
+        expect(findValueStreamMetrics().props('isLicensed')).toBe(true);
+      });
+
       it('correctly computes the requestParams', () => {
         const metricsComponent = findValueStreamMetrics();
         expect(metricsComponent.props('requestParams')).toMatchObject({
           created_after: '2015-06-04T00:00:00+0000',
+          created_before: '2015-07-04T00:00:00+0000',
         });
       });
     });
