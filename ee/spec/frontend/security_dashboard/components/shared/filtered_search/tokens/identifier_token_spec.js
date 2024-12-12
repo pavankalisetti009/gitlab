@@ -176,14 +176,19 @@ describe('Identifier Token component', () => {
     it('clears data when user presses backspace', async () => {
       await searchTerm('cve-2022-123');
 
-      eventSpy = jest.fn();
-      eventHub.$on('filters-changed', eventSpy);
+      wrapper.vm.resetSearchTerm = jest.fn();
 
       await searchTerm('');
 
-      expect(eventSpy).toHaveBeenCalledWith({
-        identifierName: '',
-      });
+      expect(wrapper.vm.resetSearchTerm).toHaveBeenCalledWith({ emit: false });
+
+      // Also test that `null` value is working when `multiSelect=false`
+      // This aligns with the behaviour when `multiSelect=true`
+      wrapper.vm.resetSearchTerm = jest.fn();
+
+      await searchTerm(null);
+
+      expect(wrapper.vm.resetSearchTerm).toHaveBeenCalledWith({ emit: false });
     });
 
     it('clears data when user destroys the token', async () => {
