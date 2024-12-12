@@ -246,6 +246,99 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
       end
     end
 
+    context 'with a service account', :request_store do
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be(:other_user) { create(:user) }
+
+      let(:service_account_user) { create(:user, :service_account) }
+      let(:actor) { service_account_user }
+      let(:gitaly_context) do
+        {
+          'scoped-user-id' => user.id.to_s
+        }.to_json
+      end
+
+      before do
+        stub_licensed_features(composite_identity_auth: true)
+        service_account_user.update!(composite_identity_enforced: true)
+        project.add_developer(service_account_user)
+        project.add_developer(user)
+      end
+
+      def request
+        post(
+          api("/internal/allowed"),
+          params: {
+            user_id: service_account_user.id,
+            project: full_path_for(project),
+            gl_repository: gl_repository_for(project),
+            action: 'git-upload-pack',
+            protocol: 'ssh',
+            gitaly_client_context_bin: Base64.encode64(gitaly_context)
+          },
+          headers: gitlab_shell_internal_api_request_header
+        )
+      end
+
+      it 'returns 200 and links the composite identity' do
+        expect(::Gitlab::Auth::Identity).to receive(:link_from_scoped_user_id).with(service_account_user, user.id).and_call_original
+
+        request
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      context 'with a scoped user with no access' do
+        let(:gitaly_context) do
+          {
+            'scoped-user-id' => other_user.id.to_s
+          }.to_json
+        end
+
+        it 'returns 404' do
+          expect(::Gitlab::Auth::Identity).to receive(:link_from_scoped_user_id).with(service_account_user, other_user.id).and_call_original
+
+          request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'with an unknown scoped user ID' do
+        let(:gitaly_context) do
+          {
+            'scoped-user-id' => '0'
+          }.to_json
+        end
+
+        it 'returns a 404' do
+          request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'with an invalid gitaly_context' do
+        let(:gitaly_context) { "[]" }
+
+        it 'returns 400' do
+          request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      context 'with malformed gitaly_context' do
+        let(:gitaly_context) { "\x00" }
+
+        it 'returns 400' do
+          request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+
     context 'maintenance mode enabled' do
       let_it_be(:project) { create(:project, :repository) }
 

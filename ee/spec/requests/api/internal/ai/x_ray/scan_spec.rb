@@ -155,7 +155,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
               let(:hostname) { 'gitlab.local' }
 
               before do
-                stub_config(gitlab: {
+                stub_config_setting({
                   protocol: 'http',
                   host: hostname,
                   url: "http://#{hostname}",
@@ -394,7 +394,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
               let(:hostname) { 'gitlab.local' }
 
               before do
-                stub_config(gitlab: {
+                stub_config_setting({
                   protocol: 'http',
                   host: hostname,
                   url: "http://#{hostname}",
