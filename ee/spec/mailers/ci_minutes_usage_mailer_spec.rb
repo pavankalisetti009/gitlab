@@ -20,7 +20,7 @@ RSpec.describe CiMinutesUsageMailer do
       "Action required: There are no remaining compute minutes for #{namespace.name}"
     end
 
-    let(:body_text) { "has run out of Shared Runner compute minutes" }
+    let(:body_text) { "has reached its shared runner compute minutes quota" }
 
     subject { described_class.notify(namespace, recipients) }
 
@@ -40,14 +40,18 @@ RSpec.describe CiMinutesUsageMailer do
   end
 
   describe '#notify_limit' do
-    let(:percent) { 30 }
+    let(:current_balance) { 800 }
+    let(:total) { 1000 }
+    let(:percent) { 20 }
+    let(:stage_percentage) { 25 }
+
     let(:subject_text) do
-      "Action required: Less than #{percent}% of compute minutes remain for #{namespace.name}"
+      "Action required: Less than #{stage_percentage}% of compute minutes remain for #{namespace.name}"
     end
 
-    let(:body_text) { "has #{percent}% or less Shared Runner compute minutes" }
+    let(:body_text) { "has #{current_balance} / #{total} (#{percent}%) shared runner compute minutes remaining" }
 
-    subject { described_class.notify_limit(namespace, recipients, percent) }
+    subject { described_class.notify_limit(namespace, recipients, current_balance, total, percent, stage_percentage) }
 
     context 'when it is a group' do
       it_behaves_like 'mail format'

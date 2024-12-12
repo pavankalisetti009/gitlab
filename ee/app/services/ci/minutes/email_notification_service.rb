@@ -38,7 +38,8 @@ module Ci
 
         namespace_usage.update!(notification_level: current_alert_percentage)
 
-        CiMinutesUsageMailer.notify_limit(namespace, recipients, current_alert_percentage).deliver_later
+        CiMinutesUsageMailer.notify_limit(namespace, recipients, notification.current_balance, notification.total,
+          notification.percentage, current_alert_percentage).deliver_later
       end
 
       def recipients

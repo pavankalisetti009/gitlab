@@ -10,19 +10,20 @@ RSpec.describe Ci::Minutes::EmailNotificationService, feature_category: :hosted_
 
     subject { described_class.new(project).execute }
 
-    where(:monthly_minutes_limit, :minutes_used, :current_notification_level, :new_notification_level, :result) do
-      1000 | 500  | 100 | 100 | [false]
-      1000 | 800  | 100 | 25  | [true, 25]
-      1000 | 800  | 25  | 25  | [false]
-      1000 | 950  | 100 | 5   | [true, 5]
-      1000 | 950  | 30  | 5   | [true, 5]
-      1000 | 950  | 5   | 5   | [false]
-      1000 | 1000 | 100 | 0   | [true, 0]
-      1000 | 1000 | 25  | 0   | [true, 0]
-      1000 | 1000 | 5   | 0   | [true, 0]
-      1000 | 1001 | 5   | 0   | [true, 0]
-      1000 | 1000 | 0   | 0   | [false]
-      0    | 1000 | 100 | 100 | [false]
+    where(:monthly_minutes_limit, :minutes_used, :minutes_left, :percent_left, :current_notification_level,
+      :new_notification_level, :result) do
+      1000 | 500  | 500 | 50 | 100 | 100 | [false]
+      1000 | 800  | 200 | 20 | 100 | 25  | [true, 25]
+      1000 | 800  | 200 | 20 | 25  | 25  | [false]
+      1000 | 950  |  50 |  5 | 100 | 5   | [true, 5]
+      1000 | 950  |  50 |  5 | 30  | 5   | [true, 5]
+      1000 | 950  |  50 |  5 | 5   | 5   | [false]
+      1000 | 1000 |   0 |  0 | 100 | 0   | [true, 0]
+      1000 | 1000 |   0 |  0 | 25  | 0   | [true, 0]
+      1000 | 1000 |   0 |  0 | 5   | 0   | [true, 0]
+      1000 | 1001 |   0 |  0 | 5   | 0   | [true, 0]
+      1000 | 1000 |   0 |  0 | 0   | 0   | [false]
+      0    | 1000 |   0 |  0 | 100 | 100 | [false]
     end
 
     with_them do
@@ -34,7 +35,8 @@ RSpec.describe Ci::Minutes::EmailNotificationService, feature_category: :hosted_
             if level_notified > 0
               expect(CiMinutesUsageMailer)
                 .to receive(:notify_limit)
-                .with(namespace, match_array(recipients), level_notified)
+                .with(namespace, match_array(recipients),
+                  minutes_left, monthly_minutes_limit, percent_left, level_notified)
                 .and_call_original
             else
               expect(CiMinutesUsageMailer)

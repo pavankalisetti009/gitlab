@@ -43,6 +43,18 @@ module Ci
         PERCENTAGES[stage]
       end
 
+      def total
+        context.total
+      end
+
+      def current_balance
+        context.current_balance
+      end
+
+      def percentage
+        context.percent_total_minutes_remaining.to_i
+      end
+
       def eligible_for_notifications?
         context.shared_runners_minutes_limit_enabled?
       end
@@ -62,8 +74,6 @@ module Ci
       end
 
       def calculate_notification_stage
-        percentage = context.percent_total_minutes_remaining.to_i
-
         if percentage <= PERCENTAGES[:exceeded]
           :exceeded
         elsif percentage <= PERCENTAGES[:danger]
@@ -104,9 +114,9 @@ module Ci
           "are used up, no new jobs or pipelines will run in this namespace's projects."
         ) % {
           namespace_name: context.namespace_name,
-          current_balance: context.current_balance,
-          total: context.total,
-          percentage: context.percent_total_minutes_remaining.to_i
+          current_balance: current_balance,
+          total: total,
+          percentage: percentage
         }
       end
     end
