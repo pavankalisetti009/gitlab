@@ -7,6 +7,8 @@ class Groups::Security::DashboardController < Groups::ApplicationController
   feature_category :vulnerability_management
   urgency :low
   track_govern_activity 'security_dashboard', :show, conditions: :dashboard_available?
+  track_internal_event :show, name: 'visit_security_dashboard', category: name,
+    conditions: -> { dashboard_available? }
 
   def show
     render :unavailable unless dashboard_available?

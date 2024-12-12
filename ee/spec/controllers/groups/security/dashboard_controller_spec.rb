@@ -11,7 +11,7 @@ RSpec.describe Groups::Security::DashboardController, feature_category: :vulnera
   end
 
   describe 'GET show' do
-    subject { get :show, params: { group_id: group.to_param } }
+    subject(:show_security_dashboard) { get :show, params: { group_id: group.to_param } }
 
     context 'when security dashboard feature is enabled' do
       before do
@@ -29,6 +29,13 @@ RSpec.describe Groups::Security::DashboardController, feature_category: :vulnera
         it_behaves_like 'tracks govern usage event', 'users_visiting_security_dashboard' do
           let(:request) { subject }
         end
+
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'visit_security_dashboard' }
+          let(:namespace) { group }
+          let(:category) { described_class.name }
+          subject(:service_action) { show_security_dashboard }
+        end
       end
 
       context 'when user is not allowed to access group security dashboard' do
@@ -37,6 +44,10 @@ RSpec.describe Groups::Security::DashboardController, feature_category: :vulnera
 
         it_behaves_like "doesn't track govern usage event", 'users_visiting_security_dashboard' do
           let(:request) { subject }
+        end
+
+        it 'does not record events or metrics' do
+          expect { show_security_dashboard }.not_to trigger_internal_events('visit_security_dashboard')
         end
       end
     end
@@ -47,6 +58,10 @@ RSpec.describe Groups::Security::DashboardController, feature_category: :vulnera
 
       it_behaves_like "doesn't track govern usage event", 'users_visiting_security_dashboard' do
         let(:request) { subject }
+      end
+
+      it 'does not record events or metrics' do
+        expect { show_security_dashboard }.not_to trigger_internal_events('visit_security_dashboard')
       end
     end
   end
