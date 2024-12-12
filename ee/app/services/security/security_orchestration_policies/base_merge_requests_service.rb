@@ -38,7 +38,7 @@ module Security
       end
 
       def sync_any_merge_request_approval_rules(merge_request)
-        return unless merge_request.approval_rules.any_merge_request.any?
+        return if merge_request.project.scan_result_policy_reads.targeting_commits.none?
 
         ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)
       end

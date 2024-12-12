@@ -48,5 +48,9 @@ FactoryBot.define do
     trait :fail_closed do
       fallback_behavior { { fail: "closed" } }
     end
+
+    trait :targeting_commits do
+      commits { :any }
+    end
   end
 end

@@ -120,12 +120,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsS
       end
     end
 
-    context "when merge request has `any_merge_request` rules" do
-      let_it_be(:any_merge_request_project_approval_rule) do
-        create(:approval_project_rule, :any_merge_request,
-          project: project,
-          security_orchestration_policy_configuration: policy_configuration
-        )
+    context "when scan_result_policy_read targets commits" do
+      let_it_be(:scan_result_policy_read) do
+        create(:scan_result_policy_read, :targeting_commits, project: project,
+          security_orchestration_policy_configuration: policy_configuration)
       end
 
       it "enqueues SyncAnyMergeRequestApprovalRulesWorker with opened merge requests" do
