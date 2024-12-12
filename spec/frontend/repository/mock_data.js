@@ -191,6 +191,7 @@ export const headerAppInjected = {
   canCollaborate: true,
   canEditTree: true,
   canPushCode: true,
+  canPushToBranch: true,
   originalBranch: 'main',
   selectedBranch: 'feature/new-ui',
   newBranchPath: '/project/new-branch',

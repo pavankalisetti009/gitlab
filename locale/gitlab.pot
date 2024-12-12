@@ -23130,6 +23130,9 @@ msgstr ""
 msgid "Failed to delete custom emoji. Please try again."
 msgstr ""
 
+msgid "Failed to delete file! Please try again."
+msgstr ""
+
 msgid "Failed to deploy to"
 msgstr ""
 
@@ -25061,6 +25064,9 @@ msgid "GitLab version"
 msgstr ""
 
 msgid "GitLab will create a branch in your fork and start a merge request."
+msgstr ""
+
+msgid "GitLab will create a default branch, %{branchName}, and commit your changes."
 msgstr ""
 
 msgid "GitLab.com (SaaS)"
@@ -46196,9 +46202,6 @@ msgstr ""
 msgid "Replace all labels"
 msgstr ""
 
-msgid "Replace file"
-msgstr ""
-
 msgid "Replaced all labels with %{label_references} %{label_text}."
 msgstr ""
 
@@ -59617,9 +59620,6 @@ msgid "Upload could not be deleted."
 msgstr ""
 
 msgid "Upload file"
-msgstr ""
-
-msgid "Upload new file"
 msgstr ""
 
 msgid "Uploaded date"
