@@ -995,8 +995,7 @@ module EE
       end
 
       condition(:pre_receive_secret_detection_available) do
-        @subject.licensed_feature_available?(:pre_receive_secret_detection) &&
-          (::Gitlab::CurrentSettings.gitlab_dedicated_instance? || ::Feature.enabled?(:pre_receive_secret_detection_push_check, @subject))
+        @subject.licensed_feature_available?(:pre_receive_secret_detection)
       end
 
       rule { pre_receive_secret_detection_available & can?(:maintainer_access) }.policy do

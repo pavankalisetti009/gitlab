@@ -34,47 +34,56 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
           project.security_setting.update!(pre_receive_secret_detection_enabled: true)
         end
 
-        context 'when the push check feature flag is disabled' do
-          before do
-            stub_feature_flags(pre_receive_secret_detection_push_check: false)
-          end
-
+        context 'when license is not ultimate' do
           it_behaves_like 'skips the push check'
         end
 
-        context 'when the push check feature flag is enabled' do
-          # pre_receive_secret_detection_push_check: true by default
-          context 'when license is not ultimate' do
+        context 'when license is ultimate' do
+          before do
+            stub_licensed_features(pre_receive_secret_detection: true)
+          end
+
+          it_behaves_like "skips sending requests to the SDS"
+
+          context 'when deleting the branch' do
+            # We instantiate the described class with delete_changes_access object to ensure
+            # this spec example works as it uses repository.blank_ref to denote a branch deletion.
+            subject(:secrets_check) { described_class.new(delete_changes_access) }
+
             it_behaves_like 'skips the push check'
           end
 
-          context 'when license is ultimate' do
+          context 'when SDS URL is defined' do
             before do
-              stub_licensed_features(pre_receive_secret_detection: true)
+              stub_application_setting(secret_detection_service_url: 'https://example.com')
             end
 
-            it_behaves_like "skips sending requests to the SDS"
+            it_behaves_like 'skips sending requests to the SDS'
+          end
 
-            context 'when deleting the branch' do
-              # We instantiate the described class with delete_changes_access object to ensure
-              # this spec example works as it uses repository.blank_ref to denote a branch deletion.
-              subject(:secrets_check) { described_class.new(delete_changes_access) }
-
-              it_behaves_like 'skips the push check'
+          context 'when the spp_scan_diffs flag is disabled' do
+            before do
+              stub_feature_flags(spp_scan_diffs: false)
             end
 
-            context 'when SDS URL is defined' do
-              before do
-                stub_application_setting(secret_detection_service_url: 'https://example.com')
-              end
+            it_behaves_like 'entire file scan passed'
+            it_behaves_like 'scan detected secrets'
+            it_behaves_like 'scan detected secrets but some errors occured'
+            it_behaves_like 'scan timed out'
+            it_behaves_like 'scan failed to initialize'
+            it_behaves_like 'scan failed with invalid input'
+            it_behaves_like 'scan skipped due to invalid status'
+            it_behaves_like 'scan skipped when a commit has special bypass flag'
+            it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
+            it_behaves_like 'scan discarded secrets because they match exclusions'
+          end
 
-              it_behaves_like 'skips sending requests to the SDS'
-            end
+          context 'when the spp_scan_diffs flag is enabled' do
+            it_behaves_like 'diff scan passed'
+            it_behaves_like 'scan detected secrets in diffs'
 
-            context 'when the spp_scan_diffs flag is disabled' do
-              before do
-                stub_feature_flags(spp_scan_diffs: false)
-              end
+            context 'when the protocol is web' do
+              subject(:secrets_check) { described_class.new(changes_access_web) }
 
               it_behaves_like 'entire file scan passed'
               it_behaves_like 'scan detected secrets'
@@ -101,58 +110,28 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               end
             end
           end
-        end
 
-        context 'when instance is not dedicated' do
-          before do
-            Gitlab::CurrentSettings.update!(gitlab_dedicated_instance: false)
-            stub_feature_flags(spp_scan_diffs: false)
-          end
-
-          context 'when license is not ultimate' do
-            it_behaves_like 'skips the push check'
-          end
-
-          context 'when license is ultimate' do
+          context 'when SDS URL is set' do
             before do
-              stub_licensed_features(pre_receive_secret_detection: true)
+              stub_application_setting(secret_detection_service_url: 'https://example.com')
             end
 
-            context 'when SDS URL is set' do
+            it_behaves_like 'skips sending requests to the SDS'
+
+            context 'when instance is GitLab.com' do
               before do
-                stub_application_setting(secret_detection_service_url: 'https://example.com')
+                stub_saas_features(secret_detection_service: true)
               end
 
-              it_behaves_like 'skips sending requests to the SDS'
+              it_behaves_like 'sends requests to the SDS'
 
-              context 'when on Gitlab.com' do
+              context 'when `use_secret_detection_service` is disabled`' do
                 before do
-                  stub_saas_features(secret_detection_service: true)
+                  stub_feature_flags(use_secret_detection_service: false)
                 end
 
-                it_behaves_like 'sends requests to the SDS'
-
-                context 'when `use_secret_detection_service` is disabled`' do
-                  before do
-                    stub_feature_flags(use_secret_detection_service: false)
-                  end
-
-                  it_behaves_like 'skips sending requests to the SDS'
-                end
+                it_behaves_like 'skips sending requests to the SDS'
               end
-            end
-
-            # We do not need to duplicate the other tests that are also running
-            # for Dedicated instances When we consolidate and no longer have to check
-            # instance type, we should use the full suite of specs we're running for Dedicated.
-            it_behaves_like 'scan detected secrets'
-
-            context 'when feature flag is disabled' do
-              before do
-                stub_feature_flags(pre_receive_secret_detection_push_check: false)
-              end
-
-              it_behaves_like 'skips the push check'
             end
           end
         end
