@@ -51,15 +51,21 @@ describe('GeoSiteReplicationStatus', () => {
     });
 
     describe.each`
-      enabled  | uiData
-      ${true}  | ${REPLICATION_STATUS_UI.enabled}
-      ${false} | ${REPLICATION_STATUS_UI.disabled}
-    `(`conditionally`, ({ enabled, uiData }) => {
+      enabled  | dbReplicationLagSeconds | uiData
+      ${true}  | ${null}                 | ${REPLICATION_STATUS_UI.disabled}
+      ${true}  | ${-1}                   | ${REPLICATION_STATUS_UI.enabled}
+      ${true}  | ${0}                    | ${REPLICATION_STATUS_UI.enabled}
+      ${true}  | ${12}                   | ${REPLICATION_STATUS_UI.enabled}
+      ${false} | ${null}                 | ${REPLICATION_STATUS_UI.disabled}
+      ${false} | ${-1}                   | ${REPLICATION_STATUS_UI.paused}
+      ${false} | ${0}                    | ${REPLICATION_STATUS_UI.paused}
+      ${false} | ${12}                   | ${REPLICATION_STATUS_UI.paused}
+    `(`conditionally`, ({ enabled, dbReplicationLagSeconds, uiData }) => {
       beforeEach(() => {
-        createComponent({ site: { enabled } });
+        createComponent({ site: { enabled, dbReplicationLagSeconds } });
       });
 
-      describe(`when enabled is ${enabled}`, () => {
+      describe(`when enabled is ${enabled} and replication lag is ${dbReplicationLagSeconds}`, () => {
         it(`renders the replication status text correctly`, () => {
           expect(findReplicationStatusText().classes(uiData.color)).toBe(true);
           expect(findReplicationStatusText().text()).toBe(uiData.text);

@@ -1,5 +1,6 @@
 import { GlCard } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import GeoSiteDatabaseConnectionType from 'ee/geo_sites/components/details/secondary_site/geo_site_database_connection_type.vue';
 import GeoSiteReplicationCounts from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_counts.vue';
 import GeoSiteReplicationStatus from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_status.vue';
 import GeoSiteReplicationSummary from 'ee/geo_sites/components/details/secondary_site/geo_site_replication_summary.vue';
@@ -27,6 +28,9 @@ describe('GeoSiteReplicationSummary', () => {
   const findGeoSiteReplicationCounts = () => wrapper.findComponent(GeoSiteReplicationCounts);
   const findGeoSiteSyncSettings = () => wrapper.findComponent(GeoSiteSyncSettings);
 
+  const findGeoSiteDatabaseConnectionType = () =>
+    wrapper.findComponent(GeoSiteDatabaseConnectionType);
+
   describe('template', () => {
     beforeEach(() => {
       createComponent();
@@ -34,6 +38,10 @@ describe('GeoSiteReplicationSummary', () => {
 
     it('renders the geo site replication status', () => {
       expect(findGeoSiteReplicationStatus().exists()).toBe(true);
+    });
+
+    it('renders the geo site database connection type', () => {
+      expect(findGeoSiteDatabaseConnectionType().exists()).toBe(true);
     });
 
     it('renders the geo site replication counts', () => {

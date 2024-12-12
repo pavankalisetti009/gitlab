@@ -22,7 +22,10 @@ export default {
   },
   computed: {
     replicationStatusUi() {
-      return this.site.enabled ? REPLICATION_STATUS_UI.enabled : REPLICATION_STATUS_UI.disabled;
+      if (this.site.dbReplicationLagSeconds !== null) {
+        return this.site.enabled ? REPLICATION_STATUS_UI.enabled : REPLICATION_STATUS_UI.paused;
+      }
+      return REPLICATION_STATUS_UI.disabled;
     },
   },
   REPLICATION_PAUSE_URL,

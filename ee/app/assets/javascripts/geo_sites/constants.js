@@ -59,9 +59,22 @@ export const REPLICATION_STATUS_UI = {
     color: 'gl-text-green-600',
     text: __('Enabled'),
   },
-  disabled: {
+  paused: {
     color: 'gl-text-orange-600',
     text: __('Paused'),
+  },
+  disabled: {
+    color: 'gl-text-red-600',
+    text: __('Disabled'),
+  },
+};
+
+export const DB_CONNECTION_TYPE_UI = {
+  direct: {
+    text: __('Direct'),
+  },
+  replicating: {
+    text: s__('Geo|Replicating'),
   },
 };
 
