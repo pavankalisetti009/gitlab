@@ -55,7 +55,7 @@ export default {
     skipTitle: __(`Merge now and don't restart train`),
     cancel: __('Cancel'),
     restartInfo: s__(
-      `mrWidget|Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. %{docsLinkStart}What are the risks?%{docsLinkEnd}.`,
+      `mrWidget|Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. %{linkStart}What are the risks?%{linkEnd}`,
     ),
     skipInfo: s__(
       'mrWidget|Merging immediately is not recommended. The merged changes could cause pipeline failures on the target branch, and the changes will not be validated against the commits being added by the merge requests currently in the merge train. Read the %{linkStart}documentation%{linkEnd} for more information.',
