@@ -7,7 +7,7 @@ module Namespaces
         if Enforcement.enforce_limit?(context.root_ancestor)
           NamespaceLimit::LimitAlertComponent.new(context: context, user: user)
         else
-          RepositoryLimitAlertComponent.new(context: context, user: user)
+          RepositoryLimit::LimitAlertComponent.new(context: context, user: user)
         end
       end
     end

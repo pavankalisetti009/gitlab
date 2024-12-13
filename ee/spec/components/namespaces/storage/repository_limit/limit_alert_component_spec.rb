@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::RepositoryLimit::LimitAlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
   let(:group) { build_stubbed(:group, gitlab_subscription: build_stubbed(:gitlab_subscription)) }
   let(:project_over_limit) { build_stubbed(:project, namespace: group) }
   let(:project_under_limit) { build_stubbed(:project, namespace: group) }
@@ -51,11 +51,15 @@ RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: 
 
     context 'when namespace has no additional storage and is above size limit' do
       before do
-        allow(group).to receive(:repository_size_excess_project_count).and_return(1)
-        allow(group).to receive(:additional_purchased_storage_size).and_return(0)
+        allow(group).to receive_messages(
+          repository_size_excess_project_count: 1,
+          additional_purchased_storage_size: 0
+        )
         allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
-          allow(size_checker).to receive(:usage_ratio).and_return(1)
-          allow(size_checker).to receive(:above_size_limit?).and_return(true)
+          allow(size_checker).to receive_messages(
+            usage_ratio: 1,
+            above_size_limit?: true
+          )
         end
       end
 
@@ -101,8 +105,10 @@ RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: 
         before do
           allow(group).to receive(:additional_purchased_storage_size).and_return(1)
           allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
-            allow(size_checker).to receive(:usage_ratio).and_return(1)
-            allow(size_checker).to receive(:above_size_limit?).and_return(true)
+            allow(size_checker).to receive_messages(
+              usage_ratio: 1,
+              above_size_limit?: true
+            )
           end
         end
 
@@ -123,8 +129,10 @@ RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: 
         allow(Ability).to receive(:allowed?).with(user, :owner_access, group).and_return(false)
         allow(Ability).to receive(:allowed?).with(user, :owner_access, project_over_limit).and_return(false)
         allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
-          allow(size_checker).to receive(:usage_ratio).and_return(1)
-          allow(size_checker).to receive(:above_size_limit?).and_return(true)
+          allow(size_checker).to receive_messages(
+            usage_ratio: 1,
+            above_size_limit?: true
+          )
         end
       end
 
@@ -142,11 +150,15 @@ RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: 
 
         allow(Ability).to receive(:allowed?).with(user, :owner_access, project_under_limit).and_return(true)
         allow(Ability).to receive(:allowed?).with(user, :read_limit_alert, project_under_limit).and_return(true)
-        allow(group).to receive(:repository_size_excess_project_count).and_return(1)
-        allow(group).to receive(:additional_purchased_storage_size).and_return(0)
+        allow(group).to receive_messages(
+          repository_size_excess_project_count: 1,
+          additional_purchased_storage_size: 0
+        )
         allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
-          allow(size_checker).to receive(:usage_ratio).and_return(1)
-          allow(size_checker).to receive(:above_size_limit?).and_return(true)
+          allow(size_checker).to receive_messages(
+            usage_ratio: 1,
+            above_size_limit?: false
+          )
         end
       end
 
@@ -162,10 +174,14 @@ RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: 
       before do
         root_storage_size = ::Namespaces::Storage::RootExcessSize.new(group)
 
-        allow(root_storage_size).to receive(:usage_ratio).and_return(1)
-        allow(root_storage_size).to receive(:above_size_limit?).and_return(true)
-        allow(group).to receive(:repository_size_excess_project_count).and_return(1)
-        allow(group).to receive(:additional_purchased_storage_size).and_return(0)
+        allow(root_storage_size).to receive_messages(
+          usage_ratio: 1,
+          above_size_limit?: true
+        )
+        allow(group).to receive_messages(
+          repository_size_excess_project_count: 1,
+          additional_purchased_storage_size: 0
+        )
         allow(group.root_ancestor).to receive(:root_storage_size).and_return(root_storage_size)
 
         allow(Ability).to receive(:allowed?).with(user, :owner_access, group).and_return(true)

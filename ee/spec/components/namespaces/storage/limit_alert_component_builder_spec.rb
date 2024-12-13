@@ -21,14 +21,14 @@ RSpec.describe Namespaces::Storage::LimitAlertComponentBuilder, :saas, feature_c
         enforce_namespace_storage_limit(group)
       end
 
-      it 'builds a LimitAlertComponent' do
+      it 'builds a NamespaceLimit::LimitAlertComponent' do
         is_expected.to be_instance_of(Namespaces::Storage::NamespaceLimit::LimitAlertComponent)
       end
     end
 
     context 'when repository limit is enforced' do
-      it 'builds a RepositoryLimitAlertComponent' do
-        is_expected.to be_instance_of(Namespaces::Storage::RepositoryLimitAlertComponent)
+      it 'builds a RepositoryLimit::LimitAlertComponent' do
+        is_expected.to be_instance_of(Namespaces::Storage::RepositoryLimit::LimitAlertComponent)
       end
     end
   end
