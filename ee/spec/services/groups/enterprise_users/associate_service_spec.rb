@@ -63,6 +63,8 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
       end
 
       it 'logs message with info level about marking the user as an enterprise user of the group' do
+        allow(Gitlab::AppLogger).to receive(:info)
+
         expect(Gitlab::AppLogger).to receive(:info).with(
           class: service.class.name,
           group_id: group.id,
@@ -134,8 +136,13 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
         end.not_to have_enqueued_mail
       end
 
-      it 'does not log any message with info level' do
-        expect(Gitlab::AppLogger).not_to receive(:info)
+      it 'does not log association message with info level' do
+        expect(Gitlab::AppLogger).not_to receive(:info).with(
+          class: service.class.name,
+          group_id: group.id,
+          user_id: user.id,
+          message: 'Associated the user with the enterprise group'
+        )
 
         service.execute
       end

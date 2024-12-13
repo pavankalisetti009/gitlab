@@ -136,6 +136,8 @@ RSpec.describe 'UserAddOnAssignmentRemove', feature_category: :seat_cost_managem
 
   shared_examples 'success response' do
     it 'returns expected response' do
+      allow(Gitlab::AppLogger).to receive(:info)
+
       expect(Gitlab::AppLogger).to receive(:info).with(
         message: 'User AddOn assignment removed',
         username: remove_user.username.to_s,

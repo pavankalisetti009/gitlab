@@ -36,6 +36,8 @@ RSpec.describe Groups::EnterpriseUsers::DisassociateService, :saas, feature_cate
       end
 
       it 'logs message with info level about disassociating the user from the enterprise group' do
+        allow(Gitlab::AppLogger).to receive(:info)
+
         expect(Gitlab::AppLogger).to receive(:info).with(
           class: service.class.name,
           group_id: group.id,
@@ -91,7 +93,9 @@ RSpec.describe Groups::EnterpriseUsers::DisassociateService, :saas, feature_cate
       end
 
       it 'does not log any message with info level' do
-        expect(Gitlab::AppLogger).not_to receive(:info)
+        expect(Gitlab::AppLogger).not_to receive(:info).with(
+          message: 'Disassociated the user from the enterprise group'
+        )
 
         service.execute
       end

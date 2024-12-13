@@ -75,6 +75,8 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
       end
 
       it 'logs the restore' do
+        allow(Gitlab::AppLogger).to receive(:info)
+
         expect(::Gitlab::AppLogger).to receive(:info).with("User #{user.id} restored group #{group.full_path}")
 
         subject
