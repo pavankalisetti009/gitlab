@@ -87,6 +87,20 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
         end
       end
 
+      context 'when user is an auditor' do
+        before do
+          allow(user).to receive(:auditor?).and_return(true)
+        end
+
+        it 'returns the auditor badge' do
+          expect(subject).to eq(
+            [
+              { text: 'Auditor', variant: 'neutral' }
+            ]
+          )
+        end
+      end
+
       it { expect(subject).not_to eq([text: 'Is using seat', variant: 'light']) }
     end
 
@@ -110,6 +124,21 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
                 { text: 'Admin', variant: 'success' },
                 { text: 'Is using seat', variant: 'neutral' },
                 { text: "It's you!", variant: 'muted' }
+              ]
+            )
+          end
+        end
+
+        context 'when user is an auditor' do
+          before do
+            allow(user).to receive(:auditor?).and_return(true)
+          end
+
+          it 'returns the auditor badge' do
+            expect(subject).to eq(
+              [
+                { text: 'Auditor', variant: 'neutral' },
+                { text: 'Is using seat', variant: 'neutral' }
               ]
             )
           end
