@@ -22902,10 +22902,19 @@ msgstr ""
 msgid "ExperimentTracking|Candidate"
 msgstr ""
 
+msgid "ExperimentTracking|Create candidate using MLflow"
+msgstr ""
+
 msgid "ExperimentTracking|Metric value"
 msgstr ""
 
+msgid "ExperimentTracking|No candidates"
+msgstr ""
+
 msgid "ExperimentTracking|Performance"
+msgstr ""
+
+msgid "ExperimentTracking|Performance graph will be shown when candidates with logged metrics are available"
 msgstr ""
 
 msgid "Experiments"
