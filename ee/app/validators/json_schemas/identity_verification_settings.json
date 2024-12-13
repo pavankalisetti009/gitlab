@@ -23,6 +23,10 @@
     "ci_requires_identity_verification_on_free_plan": {
       "type": "boolean",
       "description": "Whether identity verification is required for users on the free plan to run pipelines"
+    },
+    "telesign_intelligence_enabled": {
+      "type": "boolean",
+      "description": "Flag to control use of Telesign Intelligence service"
     }
   }
 }

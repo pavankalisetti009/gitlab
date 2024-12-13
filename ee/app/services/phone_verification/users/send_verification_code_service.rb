@@ -179,7 +179,7 @@ module PhoneVerification
       end
 
       def query_intelligence_api?
-        return false unless Feature.enabled?(:telesign_intelligence, type: :ops)
+        return false unless ::Gitlab::CurrentSettings.telesign_intelligence_enabled
         return true if record.phone_number_changed?
 
         record.risk_score == 0
