@@ -31,11 +31,13 @@ export default {
   },
   computed: {
     allSelected() {
-      return this.allLicenses.length === this.alreadySelectedLicenses.length;
+      const deduplicatedSelection = [...new Set(this.getMappedItemsFromSelectedValues('text'))];
+      return this.allLicenses.length === deduplicatedSelection.length;
     },
     unselectedLicenses() {
-      const alreadySelectedValues = this.alreadySelectedLicenses.map(({ value }) => value);
-      return this.allLicenses.filter(({ value }) => !alreadySelectedValues.includes(value));
+      return this.allLicenses.filter(
+        ({ value }) => !this.getMappedItemsFromSelectedValues('value').includes(value),
+      );
     },
     licenses() {
       const groups = [];
@@ -64,6 +66,9 @@ export default {
     },
   },
   methods: {
+    getMappedItemsFromSelectedValues(key) {
+      return this.alreadySelectedLicenses.map((item) => item[key]).filter(Boolean);
+    },
     selectLicense(id) {
       const license = this.allLicenses.find((item) => item.value === id);
       this.$emit('select', license);

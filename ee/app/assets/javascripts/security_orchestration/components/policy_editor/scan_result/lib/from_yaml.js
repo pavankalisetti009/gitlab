@@ -75,6 +75,10 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
         'enabled',
       ];
 
+      if (gon.features?.excludeLicensePackages) {
+        rulesKeys.push('licenses');
+      }
+
       const { approval_settings: settings = {}, fallback_behavior: fallback } = policy;
 
       // Temporary workaround to allow the rule builder to load with wrongly persisted settings
