@@ -7,30 +7,14 @@ module Mutations
         graphql_name 'AiSelfHostedModelUpdate'
         description "Updates a self-hosted model."
 
+        field_self_hosted_model
+
         argument :id,
           ::Types::GlobalIDType[::Ai::SelfHostedModel],
           required: true,
           description: 'Global ID of the self-hosted model to update.'
 
-        argument :name, GraphQL::Types::String,
-          required: true,
-          description: 'Deployment name of the self-hosted model.'
-
-        argument :model, ::Types::Ai::SelfHostedModels::AcceptedModelsEnum,
-          required: true,
-          description: 'AI model deployed.'
-
-        argument :endpoint, GraphQL::Types::String,
-          required: true,
-          description: 'Endpoint of the self-hosted model.'
-
-        argument :api_token, GraphQL::Types::String,
-          required: false,
-          description: 'API token to access the self-hosted model, if any.'
-
-        argument :identifier, GraphQL::Types::String,
-          required: false,
-          description: 'Identifier for 3rd party model provider.'
+        arguments_for_model_attributes
 
         def resolve(**args)
           check_feature_access!
