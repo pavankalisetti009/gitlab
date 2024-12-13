@@ -267,4 +267,74 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
     end
   end
+
+  describe '#context_switcher_links' do
+    let_it_be(:user) { build_stubbed(:user) }
+    let_it_be(:panel) { {} }
+    let_it_be(:panel_type) { 'default' }
+    let_it_be(:current_user_mode) { Gitlab::Auth::CurrentUserMode.new(user) }
+
+    let_it_be(:public_link) do
+      { title: s_('Navigation|Explore'), link: '/explore', icon: 'compass' }
+    end
+
+    let_it_be(:public_links_for_user) do
+      [
+        { title: s_('Navigation|Your work'), link: '/', icon: 'work' },
+        public_link,
+        { title: s_('Navigation|Profile'), link: '/-/user_settings/profile', icon: 'profile' },
+        { title: s_('Navigation|Preferences'), link: '/-/profile/preferences', icon: 'preferences' }
+      ]
+    end
+
+    let_it_be(:admin_area_link) do
+      { title: s_('Navigation|Admin area'), link: '/admin', icon: 'admin' }
+    end
+
+    subject(:super_sidebar_context) do
+      helper.super_sidebar_context(user, group: nil, project: nil, panel: panel, panel_type: panel_type)
+    end
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+      allow(panel).to receive(:super_sidebar_menu_items).and_return(nil)
+      allow(panel).to receive(:super_sidebar_context_header).and_return(nil)
+      allow(helper).to receive(:current_user_mode).and_return(current_user_mode)
+    end
+
+    context 'when user is not an admin' do
+      it 'returns only the public links for a user' do
+        expect(super_sidebar_context[:context_switcher_links]).to eq(public_links_for_user)
+      end
+
+      context 'when user is allowed to access_admin_area' do
+        before do
+          allow(user).to receive(:can?).and_call_original
+
+          allow(user).to receive(:can?).with(:access_admin_area).and_return(true)
+          allow(user).to receive(:can_admin_all_resources?).and_return(false)
+        end
+
+        context 'when custom_ability_read_admin_dashboard FF is enabled' do
+          it 'returns public links and enter admin mode link' do
+            expect(super_sidebar_context[:context_switcher_links]).to eq([
+              *public_links_for_user, admin_area_link
+            ])
+          end
+        end
+
+        context 'when custom_ability_read_admin_dashboard FF is disabled' do
+          before do
+            stub_feature_flags(custom_ability_read_admin_dashboard: false)
+          end
+
+          it 'returns only public links' do
+            expect(super_sidebar_context[:context_switcher_links]).to eq([
+              *public_links_for_user
+            ])
+          end
+        end
+      end
+    end
+  end
 end
