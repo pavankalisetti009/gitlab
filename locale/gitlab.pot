@@ -18315,9 +18315,6 @@ msgstr ""
 msgid "Deleted group can not be restored!"
 msgstr ""
 
-msgid "Deleted projects cannot be restored!"
-msgstr ""
-
 msgid "Deleted the source branch."
 msgstr ""
 
@@ -18330,10 +18327,10 @@ msgstr ""
 msgid "Deleting a project places it into a read-only state until %{date}, at which point the project will be permanently deleted. Are you ABSOLUTELY sure?"
 msgstr ""
 
-msgid "Deleting protected branches is blocked by security policies"
+msgid "Deleting project '%{project_name}'. All data will be removed on %{date}."
 msgstr ""
 
-msgid "Deleting the project will delete its repository and all related resources, including issues and merge requests."
+msgid "Deleting protected branches is blocked by security policies"
 msgstr ""
 
 msgid "Deleting this group also deletes all child projects, including archived projects, and their resources."

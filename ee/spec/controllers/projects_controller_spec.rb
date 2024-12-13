@@ -886,7 +886,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'DELETE #destroy', feature_category: :groups_and_projects do
+  describe 'DELETE #destroy', feature_category: :groups_and_projects, time_travel_to: '2025-02-04' do
     let(:project) { create(:project, group: group) }
 
     before do
@@ -913,6 +913,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         expect(project.reload.hidden?).to be_falsey
         expect(response).to have_gitlab_http_status(:found)
         expect(response).to redirect_to(project_path(project))
+        expect(flash[:toast]).to be_nil
       end
     end
 
@@ -925,6 +926,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         expect(project.reload.hidden?).to be_truthy
         expect(response).to have_gitlab_http_status(:found)
         expect(response).to redirect_to(dashboard_projects_path)
+        expect(flash[:toast]).to eq("Deleting project '#{project.full_name}'. All data will be removed on 2025-02-11.")
       end
     end
 

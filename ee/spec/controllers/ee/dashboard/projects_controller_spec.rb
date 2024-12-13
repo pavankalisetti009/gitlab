@@ -47,10 +47,10 @@ RSpec.describe Dashboard::ProjectsController, feature_category: :groups_and_proj
           expect(assigns(:projects).count).to eq(2)
         end
 
-        it 'returns projects marked for deletion' do
+        it 'returns projects marked for deletion without hidden projects' do
           subject
 
-          expect(assigns(:projects)).to contain_exactly(hidden_project, projects.first)
+          expect(assigns(:projects)).to match_array(projects)
         end
       end
 

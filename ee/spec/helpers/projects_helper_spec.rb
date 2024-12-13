@@ -551,8 +551,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
   end
 
-  describe '#marked_for_removal_message' do
-    subject { helper.marked_for_removal_message(project) }
+  describe '#delete_delayed_message' do
+    subject { helper.delete_delayed_message(project) }
 
     before do
       allow(project).to receive(:feature_available?).with(:adjourned_deletion_for_projects_and_groups).and_return(feature_available)
@@ -1046,6 +1046,28 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       subject { helper.compliance_framework_data_attributes(project) }
 
       it { is_expected.to eq(expected) }
+    end
+  end
+
+  describe '#project_delete_delayed_button_data', time_travel_to: '2025-02-02' do
+    before do
+      stub_application_setting(deletion_adjourned_period: 7)
+    end
+
+    subject { helper.project_delete_delayed_button_data(project) }
+
+    it 'returns expected hash' do
+      expect(subject).to match({
+        restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
+        delayed_deletion_date: '2025-02-09',
+        form_path: project_path(project),
+        confirm_phrase: project.path_with_namespace,
+        is_fork: 'false',
+        issues_count: '0',
+        merge_requests_count: '0',
+        forks_count: '0',
+        stars_count: '0'
+      })
     end
   end
 end
