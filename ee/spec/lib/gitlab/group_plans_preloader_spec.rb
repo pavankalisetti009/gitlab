@@ -82,39 +82,5 @@ RSpec.describe Gitlab::GroupPlansPreloader, :saas, :request_store do
         end
       end
     end
-
-    context 'when use_actual_plan_in_license_check is disabled' do
-      let(:pristine_groups) { Group.order(id: :asc) }
-
-      before do
-        stub_feature_flags(use_actual_plan_in_license_check: false)
-      end
-
-      it 'only executes three SQL queries to preload the data' do
-        amount = ActiveRecord::QueryRecorder
-          .new { preloaded_groups }
-          .count
-
-        # One query to get the groups and their ancestors, one query to get their
-        # plans, and one query to _just_ get the groups.
-        expect(amount).to eq(3)
-      end
-
-      it 'associates the correct plans with the correct groups' do
-        expect(preloaded_groups[0].plans).to match_array([plan1])
-        expect(preloaded_groups[1].plans).to match_array([plan2])
-        expect(preloaded_groups[2].plans).to match_array([plan1])
-      end
-
-      it 'does not execute any queries for preloaded plans' do
-        preloaded_groups
-
-        amount = ActiveRecord::QueryRecorder
-          .new { preloaded_groups.each(&:plans) }
-          .count
-
-        expect(amount).to be_zero
-      end
-    end
   end
 end
