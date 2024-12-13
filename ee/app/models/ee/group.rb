@@ -1155,7 +1155,7 @@ module EE
         # When this subgroup is removed, there is no point in this subgroup's webhook itself being notified
         # that `self` was removed. Rather, we should only care about notifying its ancestors
         # and hence we need to trigger the hooks starting only from its `parent` group.
-        parent.execute_hooks(data, :subgroup_hooks)
+        parent&.execute_hooks(data, :subgroup_hooks) # remove safe navigation with https://gitlab.com/gitlab-org/gitlab/-/issues/508611
       end
     end
 

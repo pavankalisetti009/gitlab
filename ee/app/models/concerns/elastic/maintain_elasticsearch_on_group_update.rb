@@ -25,7 +25,8 @@ module Elastic
 
     def maintain_group_associations_on_destroy
       delete_group_wiki_in_elastic if use_elasticsearch?
-      delete_group_associations
+      # remove if condition with https://gitlab.com/gitlab-org/gitlab/-/issues/508611
+      delete_group_associations if root_ancestor
     end
 
     def sync_group_wiki_in_elastic
