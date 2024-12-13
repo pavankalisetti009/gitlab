@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::RepositoryLimit::LimitAlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
   let(:group) { build_stubbed(:group, gitlab_subscription: build_stubbed(:gitlab_subscription)) }
   let(:project_over_limit) { build_stubbed(:project, namespace: group) }
   let(:project_under_limit) { build_stubbed(:project, namespace: group) }

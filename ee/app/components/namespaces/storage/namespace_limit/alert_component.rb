@@ -3,7 +3,7 @@
 module Namespaces
   module Storage
     module NamespaceLimit
-      class LimitAlertComponent < BaseAlertComponent
+      class AlertComponent < BaseAlertComponent
         private
 
         def render?

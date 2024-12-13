@@ -8,7 +8,7 @@ RSpec.shared_examples 'namespace storage limit alert' do
   before do
     enforce_namespace_storage_limit(namespace)
 
-    allow_next_instance_of(Namespaces::Storage::NamespaceLimit::LimitAlertComponent) do |alert_component|
+    allow_next_instance_of(Namespaces::Storage::NamespaceLimit::AlertComponent) do |alert_component|
       allow(alert_component).to receive(:alert_title).and_return("Alert Title")
       allow(alert_component).to receive(:alert_message).and_return(["Alert Message"])
     end
