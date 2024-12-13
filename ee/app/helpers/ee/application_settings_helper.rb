@@ -320,9 +320,10 @@ module EE
         arkose_labs_namespace
         arkose_labs_private_api_key
         arkose_labs_public_api_key
+        ci_requires_identity_verification_on_free_plan
+        phone_verification_enabled
         telesign_api_key
         telesign_customer_xid
-        ci_requires_identity_verification_on_free_plan
       ]
     end
 

@@ -30,11 +30,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         stub_saas_features(identity_verification: true)
       end
 
-      it 'contains telesign values' do
-        expect(visible_attributes).to include(*%i[telesign_customer_xid telesign_api_key])
-      end
-
-      it 'contains arkose values' do
+      it 'contains identity verification related attributes' do
         expect(visible_attributes).to include(*%i[
           arkose_labs_client_secret
           arkose_labs_client_xid
@@ -42,22 +38,25 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
           arkose_labs_private_api_key
           arkose_labs_public_api_key
           ci_requires_identity_verification_on_free_plan
+          phone_verification_enabled
+          telesign_customer_xid
+          telesign_api_key
         ])
       end
     end
 
     context 'when identity verification is not enabled' do
-      it 'does not contain telesign values' do
-        expect(visible_attributes).not_to include(*%i[telesign_customer_xid telesign_api_key])
-      end
-
-      it 'does not contain arkose values' do
+      it 'does not contain identity verification related attributes' do
         expect(visible_attributes).not_to include(*%i[
           arkose_labs_client_secret
           arkose_labs_client_xid
           arkose_labs_namespace
           arkose_labs_private_api_key
           arkose_labs_public_api_key
+          ci_requires_identity_verification_on_free_plan
+          phone_verification_enabled
+          telesign_customer_xid
+          telesign_api_key
         ])
       end
     end
