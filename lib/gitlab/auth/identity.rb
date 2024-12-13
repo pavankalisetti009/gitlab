@@ -85,8 +85,12 @@ module Gitlab
         return self unless composite_identity_enabled?
         return self unless scope_user
 
+        ##
+        # TODO: consider extracting linking to ::Gitlab::Auth::Identities::Link#create!
+        #
         validate_link!(scope_user)
         store_identity_link!(scope_user)
+        append_log!(scope_user)
 
         self
       end
@@ -141,6 +145,10 @@ module Gitlab
         composite_identities.add(@user)
 
         raise TooManyIdentitiesLinkedError if composite_identities.size > 1
+      end
+
+      def append_log!(scope_user)
+        ::Gitlab::ApplicationContext.push(scoped_user: scope_user)
       end
 
       def composite_identities

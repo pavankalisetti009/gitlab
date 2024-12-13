@@ -1692,6 +1692,8 @@ Input type: `AdminSidekiqQueuesDeleteJobsInput`
 | <a id="mutationadminsidekiqqueuesdeletejobsremoteip"></a>`remoteIp` | [`String`](#string) | Delete jobs matching remote_ip in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsrootcallerid"></a>`rootCallerId` | [`String`](#string) | Delete jobs matching root_caller_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsrootnamespace"></a>`rootNamespace` | [`String`](#string) | Delete jobs matching root_namespace in the context metadata. |
+| <a id="mutationadminsidekiqqueuesdeletejobsscopeduser"></a>`scopedUser` | [`String`](#string) | Delete jobs matching scoped_user in the context metadata. |
+| <a id="mutationadminsidekiqqueuesdeletejobsscopeduserid"></a>`scopedUserId` | [`String`](#string) | Delete jobs matching scoped_user_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobssidekiqdestinationshardredis"></a>`sidekiqDestinationShardRedis` | [`String`](#string) | Delete jobs matching sidekiq_destination_shard_redis in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobssubscriptionplan"></a>`subscriptionPlan` | [`String`](#string) | Delete jobs matching subscription_plan in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsuser"></a>`user` | [`String`](#string) | Delete jobs matching user in the context metadata. |
