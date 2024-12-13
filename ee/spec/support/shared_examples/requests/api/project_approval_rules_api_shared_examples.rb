@@ -337,6 +337,26 @@ RSpec.shared_examples 'an API endpoint for updating project approval rule' do
       end
     end
 
+    context 'when applies_to_all_protected_branches was set for approval rules' do
+      before do
+        approval_rule.update!(applies_to_all_protected_branches: true)
+      end
+
+      context 'when the value was not provided in the request' do
+        before do
+          stub_licensed_features(merge_request_approvers: true, multiple_approval_rules: true)
+          put api(url, current_user, admin_mode: current_user.admin?), params: params
+        end
+
+        it 'does not modify it' do
+          expect(response).to have_gitlab_http_status(:ok)
+
+          expect(json_response['protected_branches']).to contain_exactly(*project.protected_branches)
+          expect(json_response['applies_to_all_protected_branches']).to eq(true)
+        end
+      end
+    end
+
     context 'when protected_branch_ids param is present' do
       let(:protected_branches) { Array.new(2).map { create(:protected_branch, project: project) } }
 
