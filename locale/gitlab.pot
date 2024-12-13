@@ -30575,6 +30575,9 @@ msgstr ""
 msgid "Items are already linked"
 msgstr ""
 
+msgid "Items below are excluded from the active count"
+msgstr ""
+
 msgid "Iteration"
 msgstr ""
 
@@ -47087,6 +47090,9 @@ msgstr ""
 msgid "Review changes"
 msgstr ""
 
+msgid "Review requested"
+msgstr ""
+
 msgid "Review requested from %{reviewerName}"
 msgstr ""
 
@@ -62143,10 +62149,16 @@ msgstr ""
 msgid "Waiting for approvals"
 msgstr ""
 
+msgid "Waiting for author"
+msgstr ""
+
 msgid "Waiting for merge (open and assigned)"
 msgstr ""
 
 msgid "Waiting for others"
+msgstr ""
+
+msgid "Waiting for reviewer"
 msgstr ""
 
 msgid "Want to see the data? Please ask an administrator for access."
