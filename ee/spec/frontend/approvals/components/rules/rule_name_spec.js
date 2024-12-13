@@ -1,8 +1,9 @@
-import { GlLink, GlPopover, GlIcon } from '@gitlab/ui';
+import { GlLink, GlPopover } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import RuleName from 'ee/approvals/components/rules/rule_name.vue';
 
 Vue.use(Vuex);
@@ -32,7 +33,7 @@ describe('RuleName component', () => {
 
     it(`should ${hasTooltip ? '' : 'not'} render the tooltip`, () => {
       expect(wrapper.findComponent(GlPopover).exists()).toBe(hasTooltip);
-      expect(wrapper.findComponent(GlIcon).exists()).toBe(hasTooltip);
+      expect(wrapper.findComponent(HelpIcon).exists()).toBe(hasTooltip);
     });
 
     it(`should ${hasLink ? '' : 'not'} render the tooltip more info link`, () => {

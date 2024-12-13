@@ -1,5 +1,6 @@
 <script>
 import { GlLink, GlPopover, GlIcon } from '@gitlab/ui';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'ApprovalCheckPopover',
@@ -7,6 +8,7 @@ export default {
     GlLink,
     GlPopover,
     GlIcon,
+    HelpIcon,
   },
   props: {
     documentationLink: {
@@ -32,28 +34,17 @@ export default {
       type: String,
       required: true,
     },
-    iconName: {
-      type: String,
-      required: false,
-      default: 'question-o',
-    },
   },
 };
 </script>
 
 <template>
   <span class="js-help gl-ml-2 gl-inline-flex">
-    <gl-icon
-      :id="popoverId"
-      :name="iconName"
-      class="author-link gl-cursor-help"
-      :aria-label="__('help')"
-      :size="14"
-    />
+    <help-icon :id="popoverId" class="author-link" :aria-label="__('help')" />
     <gl-popover :target="popoverId" placement="top" :title="title">
       <div class="gl-mb-3">{{ text }}</div>
       <gl-link v-if="documentationLink" target="_blank" :href="documentationLink">
-        <span class="vertical-align-middle">{{ documentationText }}</span>
+        <span class="gl-align-middle">{{ documentationText }}</span>
         <gl-icon name="external-link" class="gl-align-middle" />
       </gl-link>
     </gl-popover>
