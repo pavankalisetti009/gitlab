@@ -23,6 +23,14 @@ module Projects
           render status: :ok
         end
         format.json do
+          track_internal_event(
+            "called_dependency_api",
+            user: current_user,
+            project: project,
+            additional_properties: {
+              label: 'json'
+            }
+          )
           render json: serializer.represent(dependencies)
         end
       end

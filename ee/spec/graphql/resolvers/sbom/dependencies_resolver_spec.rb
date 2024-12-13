@@ -34,6 +34,14 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
       end
 
       it { is_expected.to match_array([occurrence_1]) }
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'called_dependency_api' }
+        let(:category) { described_class.name }
+        let(:project) { project_1 }
+        let(:additional_properties) { { label: 'graphql' } }
+        subject(:service_action) { sync(resolve_dependencies(args: args)) }
+      end
     end
   end
 
@@ -48,6 +56,13 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
       end
 
       it { is_expected.to match_array([occurrence_2, occurrence_3]) }
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'called_dependency_api' }
+        let(:category) { described_class.name }
+        let(:additional_properties) { { label: 'graphql' } }
+        subject(:service_action) { sync(resolve_dependencies(args: args)) }
+      end
     end
   end
 

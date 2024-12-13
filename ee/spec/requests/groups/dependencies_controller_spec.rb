@@ -54,6 +54,14 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
             subject(:service_action) { show_dependency_list }
           end
 
+          it_behaves_like 'internal event tracking' do
+            let(:event) { 'called_dependency_api' }
+            let(:namespace) { group }
+            let(:category) { described_class.name }
+            let(:additional_properties) { { label: 'json' } }
+            subject(:service_action) { get group_dependencies_path(group_id: group.full_path, format: :json) }
+          end
+
           context 'when the group hierarchy depth is too high' do
             before do
               stub_const('::Groups::DependenciesController::GROUP_COUNT_LIMIT', 0)

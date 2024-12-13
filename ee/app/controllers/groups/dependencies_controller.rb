@@ -32,6 +32,14 @@ module Groups
           render status: :ok
         end
         format.json do
+          track_internal_event(
+            "called_dependency_api",
+            user: current_user,
+            namespace: group,
+            additional_properties: {
+              label: 'json'
+            }
+          )
           render json: dependencies_serializer.represent(dependencies)
         end
       end
