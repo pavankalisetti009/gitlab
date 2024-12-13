@@ -6,9 +6,33 @@ module Admin
       feature_category :ai_abstraction_layer
 
       before_action :check_can_admin_amazon_q
+      before_action :expire_current_settings
 
       def index
         setup_view_model
+      end
+
+      def create
+        Gitlab::AppLogger.debug(message: "Receive create for Amazon Q Settings", params: permitted_params)
+
+        service = if ::Ai::Setting.instance.amazon_q_ready
+                    ::Ai::AmazonQ::UpdateService
+                  else
+                    ::Ai::AmazonQ::CreateService
+                  end
+
+        response = service.new(current_user, permitted_params).execute
+
+        message = if response.success?
+                    { notice: s_('AmazonQ|Amazon Q Settings have been saved.') }
+                  else
+                    { alert: response.message.presence || s_("AmazonQ|Something went wrong saving Amazon Q settings.") }
+                  end
+
+        redirect_to(
+          admin_ai_amazon_q_settings_path,
+          **message
+        )
       end
 
       private
@@ -44,6 +68,14 @@ module Admin
 
       def check_can_admin_amazon_q
         render_404 unless ::Ai::AmazonQ.feature_available?
+      end
+
+      def expire_current_settings
+        Gitlab::CurrentSettings.expire_current_application_settings
+      end
+
+      def permitted_params
+        params.permit(:role_arn, :availability)
       end
     end
   end
