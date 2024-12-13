@@ -5941,6 +5941,9 @@ msgstr ""
 msgid "AmazonQ|An unexpected error occurred while submitting the form. Please see the browser console log for more details."
 msgstr ""
 
+msgid "AmazonQ|Apply changes to this merge request based on the comments (Beta)"
+msgstr ""
+
 msgid "AmazonQ|Audience"
 msgstr ""
 
@@ -5962,7 +5965,16 @@ msgstr ""
 msgid "AmazonQ|Copy to clipboard"
 msgstr ""
 
+msgid "AmazonQ|Create a merge request to incorporate Amazon Q suggestions (Beta)"
+msgstr ""
+
 msgid "AmazonQ|Create an identity provider for this GitLab instance within AWS using the following values. %{helpStart}Learn more%{helpEnd}."
+msgstr ""
+
+msgid "AmazonQ|Create fixes for review findings (Beta)"
+msgstr ""
+
+msgid "AmazonQ|Create unit tests for selected lines of code in Java or Python files (Beta)"
 msgstr ""
 
 msgid "AmazonQ|Enter the IAM role's ARN."
@@ -6007,6 +6019,9 @@ msgstr ""
 msgid "AmazonQ|Provider type"
 msgstr ""
 
+msgid "AmazonQ|Review merge request for code quality and security issues (Beta)"
+msgstr ""
+
 msgid "AmazonQ|Save changes"
 msgstr ""
 
@@ -6022,6 +6037,9 @@ msgstr ""
 msgid "AmazonQ|Status"
 msgstr ""
 
+msgid "AmazonQ|Upgrade Java Maven application to Java 17 (Beta)"
+msgstr ""
+
 msgid "AmazonQ|Use Amazon Q to automate workflows, create a merge request from an issue, upgrade Java, and improve your code with AI-powered reviews."
 msgstr ""
 
@@ -6035,6 +6053,21 @@ msgid "AmazonQ|View configuration setup"
 msgstr ""
 
 msgid "AmazonQ|Within your AWS account, create an IAM role for Amazon Q and the relevant identity provider. %{helpStart}Learn how to create an IAM role%{helpEnd}."
+msgstr ""
+
+msgid "AmazonQ|dev"
+msgstr ""
+
+msgid "AmazonQ|fix"
+msgstr ""
+
+msgid "AmazonQ|review"
+msgstr ""
+
+msgid "AmazonQ|test"
+msgstr ""
+
+msgid "AmazonQ|transform"
 msgstr ""
 
 msgid "AmbiguousRef|There is a branch and a tag with the same name of %{ref}."
