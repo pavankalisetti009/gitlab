@@ -46,10 +46,12 @@ GLQL can only query issues under a project or group.
 
 ## Syntax
 
-The syntax of GLQL is composed of two parts:
+> - [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/508956) in GitLab 17.7: Configuring the presentation layer using YAML front matter is deprecated.
 
-- The query: Expressions joined together with a logical operator, such as `AND`.
-- The presentation layer: YAML front matter.
+The syntax of GLQL is a superset of YAML that consists of:
+
+- The `query` parameter: Expressions joined together with a logical operator, such as `AND`.
+- Parameters related to the presentation layer, like `display`, `limit`, `fields`.
 
 A GLQL block is defined in Markdown as a code block, similar to other code blocks like Mermaid.
 
@@ -60,12 +62,10 @@ For example:
 
 ````markdown
 ```glql
----
 display: table
 fields: title, state, health, epic, milestone, weight, updated
 limit: 5
----
-project = "gitlab-org/gitlab" AND assignee = currentUser() AND opened = true
+query: project = "gitlab-org/gitlab" AND assignee = currentUser() AND opened = true
 ```
 ````
 
@@ -131,16 +131,16 @@ For example:
 
 ### Presentation syntax
 
-GLQL presentation is configured in a YAML front matter block.
-A YAML front matter block begins and ends with `---` and contains YAML.
+Aside from the `query` parameter, you can configure presentation details for your GLQL query using some
+more parameters.
 
-Three options are supported:
+Three parameters are supported:
 
-| Option    | Default | Description |
-| --------- | ------- | ----------- |
-| `display` | `table` | How to display the data. Supported options: `table`, `list` or `orderedList`. |
-| `limit`   | `100`   | How many items to display. The maximum value is `100`. |
-| `fields`  | `title` | A comma-separated list of fields. |
+| Parameter    | Default | Description |
+| ------------ | ------- | ----------- |
+| `display`    | `table` | How to display the data. Supported options: `table`, `list`, or `orderedList`. |
+| `limit`      | `100`   | How many items to display. The maximum value is `100`. |
+| `fields`     | `title` | A comma-separated list of fields. |
 
 Supported fields to display:
 
@@ -209,12 +209,10 @@ In the initial version, only the `labels` function is supported.
 
   ````markdown
   ```glql
-  ---
   display: list
   fields: title, health, due, labels("workflow::*"), labels
   limit: 5
-  ---
-  project = "gitlab-org/gitlab" AND assignee = currentUser() AND opened = true
+  query: project = "gitlab-org/gitlab" AND assignee = currentUser() AND opened = true
   ```
   ````
 
