@@ -35087,6 +35087,9 @@ msgstr ""
 msgid "MlExperimentTracking|Create a new experiment"
 msgstr ""
 
+msgid "MlExperimentTracking|Create an experiment using MLflow"
+msgstr ""
+
 msgid "MlExperimentTracking|Create new candidates"
 msgstr ""
 
@@ -35094,6 +35097,12 @@ msgid "MlExperimentTracking|Created"
 msgstr ""
 
 msgid "MlExperimentTracking|Created at"
+msgstr ""
+
+msgid "MlExperimentTracking|Creating an experiment"
+msgstr ""
+
+msgid "MlExperimentTracking|Creating experiments using the MLflow client:"
 msgstr ""
 
 msgid "MlExperimentTracking|Delete candidate"
@@ -35129,7 +35138,7 @@ msgstr ""
 msgid "MlExperimentTracking|Experiment removed"
 msgstr ""
 
-msgid "MlExperimentTracking|Experiments keep track of comparable model candidates, and determine which parameters provides the best performance. Create experiments using the MLflow client"
+msgid "MlExperimentTracking|Experiments keep track of comparable model candidates, and determine which parameters provides the best performance."
 msgstr ""
 
 msgid "MlExperimentTracking|Filter candidates"
@@ -35169,6 +35178,12 @@ msgid "MlExperimentTracking|No logged experiment metadata"
 msgstr ""
 
 msgid "MlExperimentTracking|No name"
+msgstr ""
+
+msgid "MlExperimentTracking|To learn more about MLflow client compatibility, see %{linkStart}the documentation%{linkEnd}."
+msgstr ""
+
+msgid "MlExperimentTracking|Using the MLflow client"
 msgstr ""
 
 msgid "MlExperimentTracking|Version"
