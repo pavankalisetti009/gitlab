@@ -10,6 +10,7 @@ import {
 } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import {
   TABLE_SORT_BY_STORAGE_KEY,
   TABLE_SORT_DESC_STORAGE_KEY,
@@ -59,6 +60,7 @@ export default {
     GlIcon,
     GlBadge,
     GlLink,
+    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -154,12 +156,10 @@ export default {
       <template v-for="header in tableHeaderFields" #[headerSlotName(header.key)]>
         <div :key="header.key" class="gl-flex gl-items-center">
           <span>{{ header.label }}</span>
-          <gl-icon
+          <help-icon
             v-if="header.tooltip"
             v-gl-tooltip.hover="header.tooltip"
-            name="question-o"
-            class="gl-ml-3 gl-text-blue-600"
-            :size="16"
+            class="gl-ml-3"
             data-testid="question-icon"
           />
         </div>

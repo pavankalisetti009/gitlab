@@ -2,7 +2,6 @@
 import {
   GlButton,
   GlEmptyState,
-  GlIcon,
   GlLoadingIcon,
   GlSprintf,
   GlLink,
@@ -12,6 +11,7 @@ import {
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
 import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
@@ -24,13 +24,13 @@ export default {
   components: {
     DependenciesActions,
     GlButton,
-    GlIcon,
     GlEmptyState,
     GlLoadingIcon,
     GlSprintf,
     GlLink,
     PaginatedDependenciesTable,
     SbomReportsErrorsAlert,
+    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -167,7 +167,7 @@ export default {
             :href="documentationPath"
             :aria-label="__('Dependencies help page link')"
           >
-            <gl-icon name="question-o" />
+            <help-icon />
           </gl-link>
         </h2>
         <p class="gl-mb-0">

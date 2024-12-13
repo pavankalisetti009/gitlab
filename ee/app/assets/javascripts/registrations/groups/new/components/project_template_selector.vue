@@ -14,6 +14,7 @@ import GITLAB_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg
 import LARAVEL_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/logos/laravel.svg?url';
 import { s__ } from '~/locale';
 import DEFAULT_PROJECT_TEMPLATES from 'ee/projects/default_project_templates';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { DEFAULT_SELECTED_LABEL } from '../constants';
 
 export default {
@@ -23,6 +24,7 @@ export default {
     GlButton,
     GlIcon,
     GlCollapsibleListbox,
+    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -115,12 +117,7 @@ export default {
     <template #label-description>
       {{ $options.i18n.templateNameLabelDescription }}
 
-      <gl-icon
-        v-gl-tooltip
-        class="gl-text-blue-500"
-        name="question-o"
-        :title="$options.i18n.templateNameTooltip"
-      />
+      <help-icon v-gl-tooltip :title="$options.i18n.templateNameTooltip" />
     </template>
 
     <gl-collapsible-listbox

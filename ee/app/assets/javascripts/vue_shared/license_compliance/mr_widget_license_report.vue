@@ -1,7 +1,7 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { GlLink, GlIcon, GlButton } from '@gitlab/ui';
+import { GlLink, GlButton } from '@gitlab/ui';
 import api from '~/api';
 import { s__ } from '~/locale';
 import { InternalEvents } from '~/tracking';
@@ -12,6 +12,7 @@ import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_erro
 import ReportItem from '~/ci/reports/components/report_item.vue';
 import ReportSection from '~/ci/reports/components/report_section.vue';
 import SmartVirtualList from '~/vue_shared/components/smart_virtual_list.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { setupStore } from './store';
 
 export default {
@@ -24,7 +25,7 @@ export default {
     ReportItem,
     ReportSection,
     SmartVirtualList,
-    GlIcon,
+    HelpIcon,
     SbomReportsErrorsAlert,
   },
   mixins: [reportsMixin, InternalEvents.mixin()],
@@ -202,7 +203,7 @@ export default {
             data-testid="security-approval-help-link"
             target="_blank"
           >
-            <gl-icon :size="12" name="question-o" />
+            <help-icon size="small" />
           </gl-link>
         </div>
       </template>

@@ -4,7 +4,6 @@ import {
   GlButton,
   GlFormGroup,
   GlFormInput,
-  GlIcon,
   GlTooltipDirective as GlTooltip,
   GlToggle,
   GlSprintf,
@@ -17,6 +16,7 @@ import AccessDropdown from '~/projects/settings/components/access_dropdown.vue';
 import GroupsAccessDropdown from '~/groups/settings/components/access_dropdown.vue';
 import ShowMore from '~/vue_shared/components/show_more.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import {
   ACCESS_LEVELS,
   DEPLOYER_RULE_KEY,
@@ -36,7 +36,6 @@ export default {
     GlButton,
     GlFormGroup,
     GlFormInput,
-    GlIcon,
     GlToggle,
     GlTableLite,
     AccessDropdown,
@@ -48,6 +47,7 @@ export default {
     ShowMore,
     GlSprintf,
     HelpPageLink,
+    HelpIcon,
   },
   directives: {
     GlTooltip,
@@ -325,11 +325,10 @@ export default {
 
               <template #head(inheritance)="{ label }">
                 <span>{{ label }}</span>
-                <gl-icon
+                <help-icon
                   v-gl-tooltip
                   :title="$options.i18n.inheritanceTooltip"
                   :aria-label="$options.i18n.inheritanceTooltip"
-                  name="question-o"
                   class="gl-ml-2"
                 />
               </template>

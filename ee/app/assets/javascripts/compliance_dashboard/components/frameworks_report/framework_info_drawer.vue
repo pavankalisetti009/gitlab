@@ -1,19 +1,11 @@
 <script>
-import {
-  GlBadge,
-  GlDrawer,
-  GlButton,
-  GlLabel,
-  GlLink,
-  GlSprintf,
-  GlPopover,
-  GlIcon,
-} from '@gitlab/ui';
+import { GlBadge, GlDrawer, GlButton, GlLabel, GlLink, GlSprintf, GlPopover } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { isTopLevelGroup } from '../../utils';
 import { POLICY_SCOPES_DOCS_URL } from '../../constants';
 
@@ -27,7 +19,7 @@ export default {
     GlLink,
     GlSprintf,
     GlPopover,
-    GlIcon,
+    HelpIcon,
   },
   inject: ['groupSecurityPoliciesPath'],
   props: {
@@ -188,11 +180,7 @@ export default {
             <h3 class="gl-heading-3" data-testid="sidebar-id-title">
               {{ $options.i18n.frameworkIdTitle }}
             </h3>
-            <gl-icon
-              id="framework-id-info"
-              name="question-o"
-              class="gl-mb-5 gl-ml-3 gl-text-blue-500"
-            />
+            <help-icon id="framework-id-info" class="gl-mb-5 gl-ml-3" />
             <gl-popover
               target="framework-id-info"
               placement="top"
