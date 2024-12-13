@@ -10,6 +10,7 @@ module Resolvers
         return [] unless duo_chat_enabled?
 
         ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES.values
+          .select { |category| category_enabled?(category) }
           .map { |category| "include_#{category}_context" }
           .select { |service_name| current_user.allowed_to_use?(:chat, service_name: service_name.to_sym) }
       end
@@ -22,6 +23,10 @@ module Resolvers
         Feature.enabled?(:ai_duo_chat_switch, type: :ops) &&
           Ability.allowed?(current_user, :access_duo_chat)
         # rubocop:enable Gitlab/FeatureFlagWithoutActor
+      end
+
+      def category_enabled?(category)
+        Feature.enabled?(:"duo_include_context_#{category}", current_user)
       end
     end
   end
