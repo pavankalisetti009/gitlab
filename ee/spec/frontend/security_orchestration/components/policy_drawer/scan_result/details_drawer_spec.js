@@ -7,6 +7,7 @@ import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import Approvals from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_approvals.vue';
 import Settings from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_settings.vue';
 import EdgeCaseSettings from 'ee/security_orchestration/components/policy_drawer/scan_result/edge_case_settings.vue';
+import DenyAllowViewList from 'ee/security_orchestration/components/policy_drawer/scan_result/deny_allow_view_list.vue';
 import {
   disabledSendBotMessageActionScanResultManifest,
   enabledSendBotMessageActionScanResultManifest,
@@ -17,6 +18,7 @@ import {
   mockNoFallbackScanResultManifest,
   zeroActionsScanResultManifest,
   mockProjectPolicyTuningScanResultManifest,
+  allowDenyScanResultLicenseNonEmptyManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 
 describe('DetailsDrawer component', () => {
@@ -31,14 +33,15 @@ describe('DetailsDrawer component', () => {
   const findBotMessage = () => wrapper.findByTestId('policy-bot-message');
   const findApprovalSubheader = () => wrapper.findByTestId('approvals-subheader');
   const findEdgeCaseSettings = () => wrapper.findComponent(EdgeCaseSettings);
+  const findDenyAllowViewList = () => wrapper.findComponent(DenyAllowViewList);
 
-  const factory = ({ props } = {}) => {
+  const factory = ({ props, provide = {} } = {}) => {
     wrapper = shallowMountExtended(DetailsDrawer, {
       propsData: {
         policy: mockProjectScanResultPolicy,
         ...props,
       },
-      provide: { namespaceType: NAMESPACE_TYPES.PROJECT },
+      provide: { namespaceType: NAMESPACE_TYPES.PROJECT, ...provide },
       stubs: {
         PolicyDrawerLayout,
       },
@@ -63,6 +66,7 @@ describe('DetailsDrawer component', () => {
 
       expect(findPolicyDrawerLayout().exists()).toBe(true);
       expect(findPolicyDrawerLayout().props('description')).toBe('');
+      expect(findDenyAllowViewList().exists()).toBe(false);
     });
   });
 
@@ -204,6 +208,45 @@ describe('DetailsDrawer component', () => {
         },
       });
       expect(findEdgeCaseSettings().exists()).toBe(true);
+    });
+  });
+
+  describe('deny allow license exceptions table', () => {
+    it('renders allow deny list when license packages exist', () => {
+      window.gon = { features: { excludeLicensePackages: true } };
+      factory({
+        props: {
+          policy: {
+            ...mockProjectScanResultPolicy,
+            yaml: allowDenyScanResultLicenseNonEmptyManifest,
+          },
+        },
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      expect(findDenyAllowViewList().exists()).toBe(true);
+      expect(findDenyAllowViewList().props('items')).toEqual([
+        { license: { text: 'MIT', value: 'mit' }, exceptions: [] },
+        {
+          license: { text: 'NPM', value: 'npm' },
+          exceptions: [
+            {
+              file: 'pkg:npm40angular/animation',
+              fullPath: '12.3.1',
+              value: 'pkg:npm40angular/animation@12.3.1',
+            },
+            {
+              file: 'pkg:npm/foobar',
+              fullPath: '12.3.1',
+              value: 'pkg:npm/foobar@12.3.1',
+            },
+          ],
+        },
+      ]);
     });
   });
 });

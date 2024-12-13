@@ -228,6 +228,39 @@ const singleValuedLicenseScanRule = {
   },
 };
 
+const singleValuedLicenseScanRuleWithAllowDenyList = (type = 'allowed') => ({
+  rule: {
+    ...licenseScanBuildRuleWithoutBranchType,
+    branches: ['main'],
+    license_types: ['MIT License'],
+    license_states: ['detected'],
+    licenses: {
+      [type]: [
+        { license: { text: 'MIT', value: 'mit' } },
+        {
+          license: { text: 'NPM', value: 'npm' },
+          exceptions: ['pkg:npm40angular/animation@12.3.1', 'pkg:npm/foobar@12.3.1'],
+        },
+      ],
+    },
+  },
+  humanized: {
+    branchExceptions: [],
+    licenses: ['MIT License'],
+    denyAllowList: {
+      [type]: [
+        { license: { text: 'MIT', value: 'mit' } },
+        {
+          license: { text: 'NPM', value: 'npm' },
+          exceptions: ['pkg:npm40angular/animation@12.3.1', 'pkg:npm/foobar@12.3.1'],
+        },
+      ],
+    },
+    summary:
+      'When license scanner finds any license matching %{licenses} that is pre-existing and is in an open merge request targeting the main branch.',
+  },
+});
+
 const multipleValuedLicenseScanRule = {
   rule: {
     ...licenseScanBuildRuleWithoutBranchType,
@@ -345,6 +378,17 @@ describe('humanizeRules', () => {
         singleValuedLicenseScanRule.humanized,
       ]);
     });
+
+    it.each(['allowed', 'denied'])(
+      'returns a single rule as a human-readable string with allow deny list',
+      (type) => {
+        window.gon = { features: { excludeLicensePackages: true } };
+
+        expect(
+          humanizeRules([singleValuedLicenseScanRuleWithAllowDenyList(type).rule]),
+        ).toStrictEqual([singleValuedLicenseScanRuleWithAllowDenyList(type).humanized]);
+      },
+    );
 
     it('returns multiple rules with different number of branches/scanners as human-readable strings', () => {
       expect(

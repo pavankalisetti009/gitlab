@@ -282,6 +282,8 @@ const humanizeRule = (rule) => {
   const branchExceptionsString = buildBranchExceptionsString(rule.branch_exceptions);
 
   if (rule.type === LICENSE_FINDING) {
+    const { excludeLicensePackages = false } = window.gon?.features || {};
+
     const summaryText = rule[MATCH_ON_INCLUSION_LICENSE]
       ? s__(
           'SecurityOrchestration|When license scanner finds any license matching %{licenses}%{detection} in an open merge request %{targeting}%{branches}%{branchExceptionsString}',
@@ -299,6 +301,7 @@ const humanizeRule = (rule) => {
       }),
       branchExceptions,
       licenses: rule.license_types,
+      ...(excludeLicensePackages ? { denyAllowList: rule.licenses || [] } : {}),
     };
   }
 
