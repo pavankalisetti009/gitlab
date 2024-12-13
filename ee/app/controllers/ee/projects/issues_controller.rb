@@ -41,7 +41,7 @@ module EE
 
         before_action :redirect_if_test_case, only: [:show]
 
-        before_action only: :index do
+        before_action only: [:index, :show] do
           push_force_frontend_feature_flag(:okrs_mvc, project&.okrs_mvc_feature_flag_enabled?)
           push_licensed_feature(:okrs, project)
         end

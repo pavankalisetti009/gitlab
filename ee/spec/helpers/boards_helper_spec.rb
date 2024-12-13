@@ -116,7 +116,8 @@ RSpec.describe BoardsHelper do
           [:iterations, :iteration_feature_available],
           [:issuable_health_status, :health_status_feature_available],
           [:subepics, :sub_epics_feature_available],
-          [:linked_items_epics, :has_linked_items_epics_feature]].each do |feature_name, feature_key|
+          [:linked_items_epics, :has_linked_items_epics_feature],
+          [:okrs, :has_okrs_feature]].each do |feature_name, feature_key|
           include_examples "serializes the availability of a licensed feature", feature_name, feature_key
         end
       end

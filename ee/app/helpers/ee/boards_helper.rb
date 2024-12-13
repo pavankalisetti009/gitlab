@@ -47,7 +47,8 @@ module EE
         iteration_feature_available: current_board_namespace.feature_available?(:iterations).to_s,
         health_status_feature_available: current_board_namespace.feature_available?(:issuable_health_status).to_s,
         sub_epics_feature_available: current_board_namespace.feature_available?(:subepics).to_s,
-        has_linked_items_epics_feature: current_board_namespace.licensed_feature_available?(:linked_items_epics).to_s
+        has_linked_items_epics_feature: current_board_namespace.licensed_feature_available?(:linked_items_epics).to_s,
+        has_okrs_feature: current_board_parent.licensed_feature_available?(:okrs).to_s
       }
     end
 
