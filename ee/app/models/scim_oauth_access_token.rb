@@ -12,14 +12,14 @@ class ScimOauthAccessToken < ApplicationRecord
   before_save :ensure_token
 
   def self.token_matches_for_group?(token, group)
-    # Necessary to call `TokenAuthenticatableStrategies::Encrypted.find_token_authenticatable`
+    # Necessary to call `Authn::TokenField::Encrypted.find_token_authenticatable`
     token = find_by_token(token)
 
     token && group && token.group_id == group.id
   end
 
   def self.token_matches_for_instance?(token)
-    # Necessary to call `TokenAuthenticatableStrategies::Encrypted.find_token_authenticatable`
+    # Necessary to call `Authn::TokenField::Encrypted.find_token_authenticatable`
     token = find_by_token(token)
     # This method is for authenticating with instance-level SCIM tokens. As a
     # result, group SCIM tokens should return falsey value
