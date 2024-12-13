@@ -37,6 +37,7 @@ import {
   USER_TYPE,
 } from 'ee/security_orchestration/constants';
 import {
+  mockAllApprovalTypesManifest,
   mockDefaultBranchesScanResultManifest,
   mockDefaultBranchesScanResultObject,
   mockDefaultBranchesScanResultObjectWithoutBotAction,
@@ -535,6 +536,8 @@ describe('EditorComponent', () => {
           });
         });
 
+        const newApprover = ['owner'];
+
         it('updates policy action when edited', async () => {
           const UPDATED_ACTION = {
             approvals_required: 1,
@@ -547,12 +550,24 @@ describe('EditorComponent', () => {
         });
 
         it('updates the policy approvers', async () => {
-          const newApprover = ['owner'];
-
           await findActionSection().vm.$emit('updateApprovers', { role: newApprover });
 
           expect(findActionSection().props('existingApprovers')).toEqual({
             role: newApprover,
+          });
+        });
+
+        it('updates the policy approvers when yaml is updated', async () => {
+          expect(findActionSection().props('existingApprovers')).toEqual({
+            role: newApprover,
+          });
+
+          await findPolicyEditorLayout().vm.$emit('update-yaml', mockAllApprovalTypesManifest);
+
+          expect(findActionSection().props('existingApprovers')).toEqual({
+            user: ['the.one'],
+            role: ['owner'],
+            group: [29],
           });
         });
 

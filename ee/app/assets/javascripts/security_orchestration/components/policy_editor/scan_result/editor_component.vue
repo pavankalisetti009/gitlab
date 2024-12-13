@@ -432,10 +432,10 @@ export default {
     },
     updateYaml(manifest) {
       const { policy, hasParsingError } = createPolicyObject(manifest);
-
       this.yamlEditorValue = manifest;
       this.hasParsingError = hasParsingError;
       this.policy = policy;
+      this.updatePolicyApproversFromYaml();
     },
     updateYamlEditorValue(policy) {
       this.yamlEditorValue = policyToYaml(
@@ -458,6 +458,33 @@ export default {
     },
     updatePolicyApprovers(values, index) {
       this.existingApprovers[index] = values;
+    },
+    updatePolicyApproversFromYaml() {
+      this.existingApprovers = this.approversActions.map(
+        ({
+          group_approvers_ids: groupApproversIds,
+          user_approvers_ids: userApproversIds,
+          role_approvers: roleApprovers,
+          user_approvers: userApprovers,
+          group_approvers: groupApprovers,
+        }) => {
+          const result = {};
+
+          if (groupApproversIds || groupApprovers) {
+            result.group = groupApproversIds || groupApprovers;
+          }
+
+          if (userApproversIds || userApprovers) {
+            result.user = userApproversIds || userApprovers;
+          }
+
+          if (roleApprovers) {
+            result.role = roleApprovers;
+          }
+
+          return result;
+        },
+      );
     },
     invalidForRuleMode() {
       const { rules } = this.policy;

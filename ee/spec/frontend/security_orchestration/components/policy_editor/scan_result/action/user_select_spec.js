@@ -208,6 +208,14 @@ describe('UserSelect component', () => {
     });
   });
 
+  it('sets correct toggle text when only approver id is provided', async () => {
+    createComponent({ propsData: { existingApprovers: [1, 2] } });
+    await waitForApolloAndVue();
+    await waitForPromises();
+
+    expect(findListbox().props('toggleText')).toBe('Name 1, Name 2');
+  });
+
   describe('preserving selection', () => {
     it('preserves initial selection after search', async () => {
       createComponent({

@@ -196,5 +196,13 @@ describe('GroupSelect component', () => {
       const items = [expect.objectContaining(rootGroup), expect.objectContaining(group)];
       expect(findListbox().props('items')).toEqual(items);
     });
+
+    it('sets correct toggle text when only approver id is provided', async () => {
+      createComponent({ propsData: { existingApprovers: [2] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('toggleText')).toBe('Name 2');
+    });
   });
 });

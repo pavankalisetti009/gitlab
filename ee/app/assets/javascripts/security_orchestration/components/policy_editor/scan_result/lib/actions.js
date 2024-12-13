@@ -60,8 +60,9 @@ export const actionHasType = (action, type) => {
 */
 const usersOutOfSync = (action, users) => {
   const usersIDs = action?.user_approvers_ids?.some(
-    (id) => !users.find((approver) => approver.id === id),
+    (id) => !users.find((approver) => (approver.id ? approver.id === id : approver === id)),
   );
+
   const usersNames =
     action?.user_approvers?.some(
       (userName) => !users.find((approver) => approver.username === userName),
@@ -77,7 +78,7 @@ const usersOutOfSync = (action, users) => {
 */
 const groupsOutOfSync = (action, groups) => {
   const groupsIDs = action?.group_approvers_ids?.some(
-    (id) => !groups.find((approver) => approver.id === id),
+    (id) => !groups.find((approver) => (approver.id ? approver.id === id : approver === id)),
   );
   const groupsPaths =
     action?.group_approvers?.some(
