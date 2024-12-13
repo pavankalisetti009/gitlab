@@ -11,7 +11,6 @@ module QA
       let(:project_name) { 'github-project-with-pipeline' }
       let(:github_client) { Octokit::Client.new(access_token: github_data[:access_token]) }
       let(:admin_api_client) { Runtime::API::Client.as_admin }
-      let(:user_api_client) { Runtime::API::Client.new(:gitlab, user: user) }
       let(:github_data) do
         {
           access_token: Runtime::Env.github_access_token,
@@ -21,8 +20,8 @@ module QA
       end
 
       let(:group) { create(:group, api_client: admin_api_client) }
-
-      let(:user) { create(:user, :hard_delete, api_client: admin_api_client) }
+      let(:user) { create(:user, :hard_delete, :with_personal_access_token) }
+      let(:user_api_client) { user.api_client }
 
       let(:imported_project) do
         EE::Resource::ImportRepoWithCiCd.fabricate_via_browser_ui! do |project|
