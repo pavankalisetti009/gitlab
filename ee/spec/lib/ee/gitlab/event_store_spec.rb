@@ -33,7 +33,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Projects::ProjectTransferedEvent,
         Groups::GroupTransferedEvent,
         Projects::ProjectArchivedEvent,
-        ::PagesDomains::PagesDomainDeletedEvent,
+        ::Pages::Domains::PagesDomainDeletedEvent,
         Epics::EpicCreatedEvent,
         Epics::EpicUpdatedEvent,
         Vulnerabilities::LinkToExternalIssueTrackerCreated,

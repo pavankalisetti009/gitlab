@@ -152,7 +152,7 @@ RSpec.describe Groups::Settings::DomainVerificationController, type: :request,
 
     it 'creates a new domain', :aggregate_failures do
       expect { post group_settings_domain_verification_index_path(group), params: params }
-        .to publish_event(PagesDomains::PagesDomainCreatedEvent)
+        .to publish_event(::Pages::Domains::PagesDomainCreatedEvent)
         .with(
           project_id: project.id,
           namespace_id: project.namespace.id,
@@ -278,7 +278,7 @@ RSpec.describe Groups::Settings::DomainVerificationController, type: :request,
     it 'publishes PagesDomainUpdatedEvent event' do
       expect do
         put group_settings_domain_verification_path(group, domain_secure), params: params_remove_certificate
-      end.to publish_event(PagesDomains::PagesDomainUpdatedEvent)
+      end.to publish_event(::Pages::Domains::PagesDomainUpdatedEvent)
           .with(
             project_id: project.id,
             namespace_id: project.namespace.id,
@@ -329,7 +329,7 @@ RSpec.describe Groups::Settings::DomainVerificationController, type: :request,
 
       it 'does not publish PagesDomainUpdatedEvent event' do
         expect { put group_settings_domain_verification_path(group, domain), params: params_secure_nokey }
-          .not_to publish_event(PagesDomains::PagesDomainUpdatedEvent)
+          .not_to publish_event(::Pages::Domains::PagesDomainUpdatedEvent)
       end
 
       it 'fails to update pages domain adding certificate with missing chain' do
@@ -359,7 +359,7 @@ RSpec.describe Groups::Settings::DomainVerificationController, type: :request,
 
     it 'deletes a pages domain' do
       expect { subject }.to change { PagesDomain.count }.by(-1)
-        .and publish_event(PagesDomains::PagesDomainDeletedEvent)
+        .and publish_event(::Pages::Domains::PagesDomainDeletedEvent)
         .with(
           project_id: project.id,
           namespace_id: project.namespace.id,
@@ -409,8 +409,8 @@ RSpec.describe Groups::Settings::DomainVerificationController, type: :request,
   describe "POST /groups/:group_id/-/settings/domain_verification/:domain/retry_auto_ssl", :saas do
     subject { post retry_auto_ssl_group_settings_domain_verification_path(group, domain_with_letsencrypt) }
 
-    it "call PagesDomains::RetryAcmeOrderService" do
-      expect_next_instance_of(PagesDomains::RetryAcmeOrderService) do |instance|
+    it "call Pages::Domains::RetryAcmeOrderService" do
+      expect_next_instance_of(Pages::Domains::RetryAcmeOrderService) do |instance|
         expect(instance).to receive(:execute).and_call_original
       end
 
