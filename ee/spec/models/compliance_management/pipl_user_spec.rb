@@ -94,6 +94,84 @@ RSpec.describe ComplianceManagement::PiplUser,
         end
       end
     end
+
+    describe '.pipl_email_sent_on_or_before', time_travel_to: '2024-10-07 10:32:45.000000' do
+      subject(:scope) { described_class.pipl_email_sent_on_or_before(date) }
+
+      # time_travel_to doesn't work with before_all and didn't want to use before to
+      # avoid bad performance
+      let!(:pipl_users) do
+        create(:pipl_user, initial_email_sent_at: Time.current)
+        create(:pipl_user, initial_email_sent_at: Time.current - 30.days)
+      end
+
+      let(:date) { Time.current }
+
+      it 'returns all the user_details' do
+        result = scope
+
+        expect(result.count).to eq(2)
+      end
+
+      context 'when date matches only a part of the details' do
+        let(:date) { 30.days.ago }
+
+        it 'returns only the matched results' do
+          result = scope
+          expect(result.count).to eq(1)
+          expect(result.first.initial_email_sent_at).to eq(30.days.ago)
+        end
+      end
+
+      context 'when date does not match any records' do
+        let(:date) { 31.days.ago }
+
+        it 'does not return any results' do
+          result = scope
+
+          expect(result.count).to eq(0)
+        end
+      end
+    end
+
+    describe '.pipl_blockable', time_travel_to: '2024-10-07 10:32:45.000000' do
+      subject(:pipl_blockable) { described_class.pipl_blockable }
+
+      let_it_be(:blocked_user) { create(:user, :blocked) }
+
+      # time_travel_to doesn't work with before_all and didn't want to use before to
+      # avoid bad performance
+      let!(:pipl_users) do
+        create(:pipl_user, initial_email_sent_at: 59.days.ago.beginning_of_day)
+        create(:pipl_user, initial_email_sent_at: 60.days.ago.end_of_day)
+        create(:pipl_user, initial_email_sent_at: 61.days.ago)
+      end
+
+      let(:threshold) { described_class::NOTICE_PERIOD.ago.end_of_day }
+
+      it 'returns the threshold matching user_details' do
+        result = pipl_blockable
+
+        expect(result.count).to eq(2)
+
+        result.each do |pipl_user|
+          expect { pipl_user.user }.to match_query_count(0)
+          expect(pipl_user.user.state).not_to eq(::User.state_machine.states[:blocked].value)
+          expect(pipl_user.initial_email_sent_at <= threshold)
+            .to be(true)
+        end
+      end
+
+      context 'when there is a threshold-matching blocked user' do
+        before do
+          create(:pipl_user, initial_email_sent_at: 62.days.ago, user: blocked_user)
+        end
+
+        it "doesn't fetch the already-blocked user" do
+          expect { pipl_blockable }.to not_change { pipl_blockable.count }
+        end
+      end
+    end
   end
 
   describe '.for_user' do
@@ -179,6 +257,36 @@ RSpec.describe ComplianceManagement::PiplUser,
       end
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#blockable?', :freeze_time do
+    let(:pipl_user) { create(:pipl_user, initial_email_sent_at: Time.zone.today) }
+
+    subject(:blockable?) { pipl_user.blockable? }
+
+    it 'is not blockable' do
+      expect(blockable?).to be(false)
+    end
+
+    context 'when the notice period has passed' do
+      before do
+        pipl_user.update!(initial_email_sent_at: described_class::NOTICE_PERIOD.ago)
+      end
+
+      it 'is blockable' do
+        expect(blockable?).to be(true)
+      end
+    end
+
+    context 'when the initial email has not been sent' do
+      before do
+        pipl_user.update!(initial_email_sent_at: nil)
+      end
+
+      it 'is not blockable' do
+        expect(blockable?).to be(false)
+      end
     end
   end
 

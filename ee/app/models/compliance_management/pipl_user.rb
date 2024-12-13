@@ -24,6 +24,17 @@ module ComplianceManagement
       days_from_initial_pipl_email(*[LEVEL_1_NOTIFICATION_TIME, LEVEL_2_NOTIFICATION_TIME, LEVEL_3_NOTIFICATION_TIME])
     end
 
+    scope :pipl_email_sent_on_or_before, ->(date) do
+      where(initial_email_sent_at: ..date)
+    end
+
+    scope :pipl_blockable, -> do
+      joins(:user)
+        .includes(:user)
+        .pipl_email_sent_on_or_before(NOTICE_PERIOD.ago.end_of_day)
+        .where.not(users: { state: ::User.state_machine.states[:blocked].value })
+    end
+
     validates :last_access_from_pipl_country_at, presence: true
 
     def self.for_user(user)
@@ -58,6 +69,10 @@ module ComplianceManagement
 
     def remaining_pipl_access_days
       (pipl_access_end_date - Date.current).to_i
+    end
+
+    def blockable?
+      initial_email_sent_at.present? && (remaining_pipl_access_days == 0)
     end
   end
 end
