@@ -1591,6 +1591,45 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
         end
       end
 
+      context 'with /relate' do
+        let(:relate_command) { "/relate #{ref1} #{ref2} #{ref3} #{ref4}" }
+
+        context 'with sufficient permissions' do
+          before do
+            issue.project.add_developer(current_user)
+          end
+
+          it '/relate is available' do
+            _, explanations = service.explain(relate_command, issue)
+
+            expect(explanations).to contain_exactly(
+              "Added #{[ref1, ref2, ref3, ref4].to_sentence} as a linked item related to this issue."
+            )
+          end
+
+          it '/relate execution method' do
+            _, _, message = service.execute(relate_command, issue)
+
+            expect(message).to eq(
+              "Added #{[ref1, ref2, ref3, ref4].to_sentence} as a linked item related to this issue."
+            )
+          end
+
+          context 'when target is not an issue' do
+            let(:target) { create(:epic, group: group) }
+
+            it_behaves_like 'quick action is unavailable', :relate
+          end
+        end
+
+        context 'with insufficient permissions' do
+          let_it_be(:target) { create(:issue, project: restricted_project) }
+          let(:current_user) { guest }
+
+          it_behaves_like 'quick action is unavailable', :relate
+        end
+      end
+
       context 'with /blocked_by' do
         let(:blocked_by_command) { "/blocked_by #{ref1} #{ref2} #{ref3} #{ref4}" }
 
