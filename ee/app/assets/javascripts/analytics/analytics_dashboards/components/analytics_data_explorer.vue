@@ -296,9 +296,9 @@ export default {
 <template>
   <div>
     <header class="gl-my-6">
-      <h2 class="gl-mt-0" data-testid="page-title">
+      <h1 class="gl-heading-1 gl-m-0" data-testid="page-title">
         {{ s__('Analytics|Create your visualization') }}
-      </h2>
+      </h1>
       <p data-testid="page-description" class="gl-mb-0">
         {{
           s__(
@@ -368,7 +368,7 @@ export default {
           :available-dimensions="filterOptions.availableDimensions"
           :available-time-dimensions="filterOptions.availableTimeDimensions"
           data-testid="visualization-filtered-search"
-          class="gl-w-full gl-py-3"
+          class="gl-my-3 gl-w-full"
           @input="onFilterChange"
           @submit="onFilterChange"
         />

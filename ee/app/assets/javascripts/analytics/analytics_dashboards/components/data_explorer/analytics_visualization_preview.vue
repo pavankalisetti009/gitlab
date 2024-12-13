@@ -66,10 +66,10 @@ export default {
   <div>
     <div v-if="!isQueryPresent">
       <div class="col-12 gl-mt-4">
-        <div class="text-content text-center gl-text-gray-400">
-          <h3 data-testid="measurement-hl" class="gl-text-gray-400">
+        <div class="text-content">
+          <p data-testid="measurement-hl" class="gl-mb-4 gl-mt-0 gl-text-subtle">
             {{ s__('Analytics|Start by choosing a measure') }}
-          </h3>
+          </p>
         </div>
       </div>
     </div>
@@ -117,18 +117,18 @@ export default {
           />
           <div
             v-else
-            class="col-12 gl-overflow-y-auto gl-bg-white"
+            class="col-12 gl-overflow-y-auto gl-bg-default"
             :style="{ height: $options.PANEL_VISUALIZATION_HEIGHT }"
           >
-            <div class="text-content text-center gl-text-gray-400">
-              <h3 class="gl-text-gray-400">
+            <div class="text-content">
+              <p class="gl-text-subtle">
                 {{ s__('Analytics|Select a visualization type') }}
-              </h3>
+              </p>
             </div>
           </div>
         </div>
 
-        <div v-if="displayType === $options.PANEL_DISPLAY_TYPES.CODE" class="gl-bg-white gl-p-4">
+        <div v-if="displayType === $options.PANEL_DISPLAY_TYPES.CODE" class="gl-bg-default gl-p-4">
           <pre
             class="code highlight gl-flex gl-border-none gl-bg-transparent"
             data-testid="preview-code"
