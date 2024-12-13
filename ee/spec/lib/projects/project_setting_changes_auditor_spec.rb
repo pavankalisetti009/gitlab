@@ -59,7 +59,7 @@ RSpec.describe Projects::ProjectSettingChangesAuditor, feature_category: :groups
             end
 
             if new_value != prev_value
-              it 'creates an audit event' do
+              it 'creates an audit event', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/504781' do
                 project.project_setting.update!(squash_option: new_value)
 
                 expect { auditor.execute }.to change(AuditEvent, :count).by(1)
