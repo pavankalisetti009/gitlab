@@ -260,7 +260,6 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
 
         expect(helper.pipeline_usage_app_data(user_group)).to eql({
           namespace_actual_plan_name: user_group.actual_plan_name,
-          namespace_path: user_group.full_path,
           namespace_id: user_group.id,
           user_namespace: user_group.user_namespace?.to_s,
           page_size: Kaminari.config.default_per_page,
@@ -285,7 +284,6 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
       it 'returns a hash without SaaS data' do
         expect(helper.pipeline_usage_app_data(user_group)).to eql({
           namespace_actual_plan_name: user_group.actual_plan_name,
-          namespace_path: user_group.full_path,
           namespace_id: user_group.id,
           user_namespace: user_group.user_namespace?.to_s,
           page_size: Kaminari.config.default_per_page,
