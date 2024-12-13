@@ -8,7 +8,6 @@ import PipelineUsageApp from './components/app.vue';
 export const parseProvideData = (el) => {
   const {
     pageSize,
-    namespacePath,
     namespaceId,
     namespaceActualPlanName,
     userNamespace,
@@ -27,8 +26,7 @@ export const parseProvideData = (el) => {
 
   return {
     pageSize: Number(pageSize),
-    namespacePath,
-    namespaceId,
+    namespaceId: parseInt(namespaceId, 10),
     namespaceActualPlanName,
     userNamespace: parseBoolean(userNamespace),
     ciMinutesAnyProjectEnabled: parseBoolean(ciMinutesAnyProjectEnabled),

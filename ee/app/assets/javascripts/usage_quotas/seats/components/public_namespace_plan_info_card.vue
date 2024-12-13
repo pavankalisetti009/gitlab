@@ -25,7 +25,7 @@ export default {
       query: getGitlabSubscriptionQuery,
       variables() {
         return {
-          namespaceId: this.parsedNamespaceId,
+          namespaceId: this.namespaceId,
         };
       },
       update: (data) => ({
@@ -37,9 +37,6 @@ export default {
   computed: {
     isLoading() {
       return this.$apollo.loading;
-    },
-    parsedNamespaceId() {
-      return parseInt(this.namespaceId, 10);
     },
     planName() {
       return this.plan.name || capitalizeFirstCharacter(this.plan.code);

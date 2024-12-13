@@ -43,7 +43,7 @@ export const parseProvideData = (el) => {
 
   return {
     fullPath,
-    groupId,
+    groupId: parseInt(groupId, 10),
     duoProTrialHref,
     duoAddOnIsTrial: parseBoolean(duoAddOnIsTrial),
     duoAddOnStartDate,

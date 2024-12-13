@@ -40,7 +40,7 @@ const fakeStore = ({ initialState, initialGetters }) =>
     },
     state: {
       hasError: false,
-      namespaceId: '1',
+      namespaceId: 1,
       members: [...mockDataSeats.data],
       total: 300,
       page: 1,
@@ -70,7 +70,6 @@ describe('Subscription Seats', () => {
 
   const defaultInitialState = {
     hasNoSubscription: false,
-    seatsInSubscription: 3,
     total: 2,
     maxSeatsUsed: 3,
     seatsOwed: 1,
@@ -140,7 +139,6 @@ describe('Subscription Seats', () => {
     it('renders <subscription-seats-statistics-card> with the necessary props', () => {
       expect(findSubscriptionSeatsStatisticsCard().props()).toMatchObject({
         billableMembersCount: 2,
-        seatsInSubscription: 3,
       });
     });
 

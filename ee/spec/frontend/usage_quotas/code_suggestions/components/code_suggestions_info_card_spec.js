@@ -38,7 +38,7 @@ const defaultProvide = {
 describe('CodeSuggestionsInfoCard', () => {
   let wrapper;
 
-  const defaultProps = { groupId: '4321' };
+  const defaultProps = { groupId: 4321 };
   const defaultApolloData = {
     subscription: {
       canAddSeats: false,

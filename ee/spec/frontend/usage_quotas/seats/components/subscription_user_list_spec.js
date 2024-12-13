@@ -47,7 +47,7 @@ const fakeStore = ({ initialState, initialGetters }) =>
     },
     state: {
       hasError: false,
-      namespaceId: '1',
+      namespaceId: 1,
       total: 300,
       page: 1,
       perPage: 5,

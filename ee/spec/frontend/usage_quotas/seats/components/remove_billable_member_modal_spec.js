@@ -12,7 +12,6 @@ describe('RemoveBillableMemberModal', () => {
 
   const defaultState = {
     namespaceName: 'foo',
-    namespaceId: '1',
     billableMemberToRemove: {
       id: 2,
       username: 'username',

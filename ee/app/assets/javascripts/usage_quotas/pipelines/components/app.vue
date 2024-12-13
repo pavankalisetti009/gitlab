@@ -51,7 +51,6 @@ export default {
   },
   inject: [
     'pageSize',
-    'namespacePath',
     'namespaceId',
     'namespaceActualPlanName',
     'userNamespace',
@@ -131,7 +130,7 @@ export default {
       client: 'customersDotClient',
       variables() {
         return {
-          namespaceId: parseInt(this.namespaceId, 10),
+          namespaceId: this.namespaceId,
         };
       },
       skip() {
