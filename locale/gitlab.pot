@@ -60803,7 +60803,7 @@ msgstr ""
 msgid "UserMapping|User ID"
 msgstr ""
 
-msgid "UserMapping|You can assign only active users with regular or auditor access. To assign users with administrator access, ask your GitLab administrator to enable the \"Allow contribution mapping to admins\" setting."
+msgid "UserMapping|You can assign only active users with regular or auditor access. To assign users with administrator access, ask your GitLab administrator to enable the \"Allow contribution mapping to administrators\" setting."
 msgstr ""
 
 msgid "UserMapping|You can assign users with regular, auditor, or administrator access only."
