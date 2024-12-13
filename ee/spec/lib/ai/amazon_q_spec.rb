@@ -46,4 +46,109 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
       end
     end
   end
+
+  describe '#should_block_service_account?' do
+    where(:availability, :expectation) do
+      "default_on"  | false
+      "default_off" | false
+      "never_on"    | true
+    end
+
+    with_them do
+      it { expect(described_class.should_block_service_account?(availability: availability)).to be(expectation) }
+    end
+  end
+
+  describe '#ensure_service_account_blocked!' do
+    let_it_be(:current_user) { create(:user, :admin) }
+    let_it_be_with_reload(:service_account_normal) { create(:user, :service_account) }
+    let_it_be_with_reload(:service_account_blocked) { create(:user, :service_account, :blocked) }
+    let_it_be(:service_account_not_found) { Struct.new(:id).new(999999) }
+
+    context 'with service_account set in application settings' do
+      where(:service_account, :expected_service_class, :expected_status, :expected_message) do
+        ref(:service_account_normal)     | ::Users::BlockService | true | nil
+        ref(:service_account_blocked)    | nil | true | "Service account already blocked. Nothing to do."
+      end
+
+      with_them do
+        before do
+          Ai::Setting.instance.update!(amazon_q_service_account_user_id: service_account&.id)
+        end
+
+        it 'conditionally block the service account', :aggregate_failures do
+          if expected_service_class
+            expect_next_instance_of(expected_service_class, current_user) do |instance|
+              expect(instance).to receive(:execute).with(service_account).and_call_original
+            end
+          end
+
+          response = described_class.ensure_service_account_blocked!(current_user: current_user)
+
+          expect(response.success?).to be(expected_status)
+          expect(response.message).to be(expected_message)
+        end
+      end
+    end
+
+    context 'with service_account set as argument' do
+      it 'conditionally blocks the given service account', :aggregate_failures do
+        expect(service_account_normal.blocked?).to be(false)
+
+        response = described_class.ensure_service_account_blocked!(
+          current_user: current_user,
+          service_account: service_account_normal
+        )
+
+        expect(response.success?).to be(true)
+        expect(service_account_normal.blocked?).to be(true)
+      end
+    end
+  end
+
+  describe '#ensure_service_account_unblocked!' do
+    let_it_be(:current_user) { create(:user, :admin) }
+    let_it_be_with_reload(:service_account_normal) { create(:user, :service_account) }
+    let_it_be_with_reload(:service_account_blocked) { create(:user, :service_account, :blocked) }
+
+    context 'with service_account set in application settings' do
+      where(:service_account, :expected_service_class, :expected_status, :expected_message) do
+        ref(:service_account_normal)     | nil | true | "Service account already unblocked. Nothing to do."
+        ref(:service_account_blocked)    | ::Users::UnblockService | true | nil
+      end
+
+      with_them do
+        before do
+          Ai::Setting.instance.update!(amazon_q_service_account_user_id: service_account&.id)
+        end
+
+        it 'conditionally block the service account', :aggregate_failures do
+          if expected_service_class
+            expect_next_instance_of(expected_service_class, current_user) do |instance|
+              expect(instance).to receive(:execute).with(service_account).and_call_original
+            end
+          end
+
+          response = described_class.ensure_service_account_unblocked!(current_user: current_user)
+
+          expect(response.success?).to be(expected_status)
+          expect(response.message).to be(expected_message)
+        end
+      end
+    end
+
+    context 'with service_account set as argument' do
+      it 'conditionally blocks the given service account', :aggregate_failures do
+        expect(service_account_blocked.blocked?).to be(true)
+
+        response = described_class.ensure_service_account_unblocked!(
+          current_user: current_user,
+          service_account: service_account_blocked
+        )
+
+        expect(response.success?).to be(true)
+        expect(service_account_blocked.blocked?).to be(false)
+      end
+    end
+  end
 end

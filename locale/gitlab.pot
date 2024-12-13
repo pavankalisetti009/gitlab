@@ -5920,6 +5920,9 @@ msgstr ""
 msgid "AmazonQ|Amazon Q Configuration"
 msgstr ""
 
+msgid "AmazonQ|Amazon Q Settings have been saved."
+msgstr ""
+
 msgid "AmazonQ|Amazon Q will be turned off by default, but still be available to any groups or projects that have previously enabled it."
 msgstr ""
 
@@ -6002,6 +6005,9 @@ msgid "AmazonQ|Setup"
 msgstr ""
 
 msgid "AmazonQ|Something went wrong retrieving the identity provider payload."
+msgstr ""
+
+msgid "AmazonQ|Something went wrong saving Amazon Q settings."
 msgstr ""
 
 msgid "AmazonQ|Status"

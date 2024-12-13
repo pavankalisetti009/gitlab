@@ -101,4 +101,34 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
       end
     end
   end
+
+  describe 'POST #create' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:params) { { role_arn: 'a', availability: 'always_on' } }
+    let(:perform_request) { post admin_ai_amazon_q_settings_path, params: params }
+
+    it_behaves_like 'returns 404 when feature is unavailable'
+
+    # rubocop: disable Layout/LineLength -- Wrapping won't work!
+    where(:amazon_q_ready, :service, :service_response, :message) do
+      true  | ::Ai::AmazonQ::UpdateService | ServiceResponse.success | { notice: s_('AmazonQ|Amazon Q Settings have been saved.') }
+      true  | ::Ai::AmazonQ::UpdateService | ServiceResponse.error(message: nil) | { alert: s_('AmazonQ|Something went wrong saving Amazon Q settings.') }
+      false | ::Ai::AmazonQ::CreateService | ServiceResponse.success | { notice: s_('AmazonQ|Amazon Q Settings have been saved.') }
+      false | ::Ai::AmazonQ::CreateService | ServiceResponse.error(message: 'Doh!') | { alert: 'Doh!' }
+    end
+    # rubocop: enable Layout/LineLength
+
+    with_them do
+      it 'triggers the expected service' do
+        expect_next_instance_of(service, admin, ActionController::Parameters.new(params).permit!) do |service|
+          expect(service).to receive(:execute).and_return(service_response)
+        end
+
+        perform_request
+
+        expect(response).to redirect_to(admin_ai_amazon_q_settings_path)
+      end
+    end
+  end
 end

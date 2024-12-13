@@ -50,7 +50,8 @@ module Users
           user_type: :service_account,
           external: true,
           skip_confirmation: true, # Bot users should always have their emails confirmed.
-          organization_id: params[:organization_id]
+          organization_id: params[:organization_id],
+          avatar: params[:avatar].presence
         }
       end
 
