@@ -97,22 +97,26 @@ describe('PolicyOverrideWarningIcon', () => {
       setupStore();
     });
 
-    it('fetches scanResultPolicies from API when fullPath is injected', () => {
+    it('fetches scanResultPolicies from API', () => {
       jest.spyOn(actions, 'fetchScanResultPolicies').mockImplementation();
       setupStore();
       createComponent();
 
       expect(actions.fetchScanResultPolicies).toHaveBeenCalledWith(expect.any(Object), {
         fullPath,
+        isGroup: false,
       });
     });
 
-    it('does not fetch scanResultPolicies from API when fullPath is not injected', () => {
+    it('fetches group scanResultPolicies from API when isGroup is injected and is true', () => {
       jest.spyOn(actions, 'fetchScanResultPolicies').mockImplementation();
       setupStore();
-      createComponent({ provideData: { fullPath: '' } });
+      createComponent({ provideData: { isGroup: true } });
 
-      expect(actions.fetchScanResultPolicies).not.toHaveBeenCalled();
+      expect(actions.fetchScanResultPolicies).toHaveBeenCalledWith(expect.any(Object), {
+        fullPath,
+        isGroup: true,
+      });
     });
   });
 
