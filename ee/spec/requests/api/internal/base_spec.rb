@@ -927,6 +927,8 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
         end
 
         it "logs the failure" do
+          allow(Gitlab::AppLogger).to receive(:info)
+
           expect(::Gitlab::AppLogger).to receive(:info).with(
             hash_including(
               message: 'Failed OTP login',

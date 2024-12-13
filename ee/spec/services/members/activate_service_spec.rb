@@ -28,6 +28,8 @@ RSpec.describe Members::ActivateService, feature_category: :groups_and_projects 
     end
 
     it 'logs the approval in application logs' do
+      allow(Gitlab::AppLogger).to receive(:info)
+
       expected_params = {
         message: "Group member access approved",
         group: root_group.id,
