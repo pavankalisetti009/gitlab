@@ -46570,10 +46570,13 @@ msgstr ""
 msgid "Reports|Test summary failed to load results"
 msgstr ""
 
-msgid "Reports|Test summary results are loading"
+msgid "Reports|Test summary results are being parsed"
 msgstr ""
 
 msgid "Reports|Tool"
+msgstr ""
+
+msgid "Reports|View partial report"
 msgstr ""
 
 msgid "Reports|metrics report"
