@@ -13,7 +13,6 @@ export const initAiSettings = (id, component) => {
     duoAvailability,
     areDuoSettingsLocked,
     experimentFeaturesEnabled,
-    areExperimentSettingsAllowed,
     redirectPath,
     updateId,
     duoProVisible,
@@ -24,6 +23,7 @@ export const initAiSettings = (id, component) => {
     aiTermsAndConditionsPath,
     onGeneralSettingsPage,
     configurationSettingsPath,
+    areExperimentSettingsAllowed,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -40,7 +40,6 @@ export const initAiSettings = (id, component) => {
     provide: {
       cascadingSettingsData: cascadingSettingsDataParsed,
       areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
-      areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
       duoAvailability,
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
       disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod),
@@ -50,6 +49,7 @@ export const initAiSettings = (id, component) => {
       earlyAccessPath,
       onGeneralSettingsPage: parseBoolean(onGeneralSettingsPage),
       configurationSettingsPath,
+      areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
     },
     render: (createElement) =>
       createElement(component, {

@@ -60,13 +60,17 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
     describe '#ai_settings_helper_data' do
       using RSpec::Parameterized::TableSyntax
+      let(:service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
+      let(:enterprise_service) { double('EnterpriseService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
 
       subject { helper.ai_settings_helper_data }
 
-      where(:terms_accepted, :duo_pro_visible, :purchased, :expected_duo_pro_visible_value) do
-        true | true | true | 'true'
-        false | 'false' | false | 'false'
-        true | '' | nil | ''
+      where(:terms_accepted, :purchased, :duo_ent, :duo_ent_purchased,
+        :expected_duo_pro_visible_value, :expected_experiments_visible_value) do
+        true | true | true | true | 'true' | 'true'
+        true | true | true | false | 'true' | 'false'
+        false | false | false | false | 'false' | 'false'
+        true | nil | nil | nil | '' | ''
       end
 
       with_them do
@@ -74,7 +78,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           {
             duo_availability: duo_availability.to_s,
             experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
-            are_experiment_settings_allowed: "true",
+            are_experiment_settings_allowed: expected_experiments_visible_value.to_s,
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             self_hosted_models_enabled: terms_accepted.to_s,
             ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
@@ -90,7 +94,17 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
               .to receive(:find_by_name).with(:code_suggestions).and_return(nil)
           else
             allow(CloudConnector::AvailableServices)
-              .to receive_message_chain(:find_by_name, :purchased?).and_return(purchased)
+              .to receive(:find_by_name).with(:code_suggestions).and_return(service)
+            allow(service).to receive(:purchased?).and_return(purchased)
+          end
+
+          if duo_ent.nil?
+            allow(CloudConnector::AvailableServices)
+              .to receive(:find_by_name).with(:anthropic_proxy).and_return(nil)
+          else
+            allow(CloudConnector::AvailableServices)
+              .to receive(:find_by_name).with(:anthropic_proxy).and_return(enterprise_service)
+            allow(enterprise_service).to receive(:purchased?).and_return(duo_ent_purchased)
           end
         end
 
@@ -160,7 +174,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         admin_gitlab_duo_configuration_index_path: '/admin/gitlab_duo/configuration',
         duo_pro_bulk_user_assignment_available?: true,
         duo_availability: 'default_off',
-        instance_level_ai_beta_features_enabled: true
+        instance_level_ai_beta_features_enabled: true,
+        experiments_settings_allowed?: true
       )
 
       allow(helper).to receive(:add_duo_pro_seats_url).with(subscription_name).and_return('https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats')
@@ -181,7 +196,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         duo_availability: 'default_off',
         direct_code_suggestions_enabled: 'false',
         experiment_features_enabled: 'true',
-        self_hosted_models_enabled: 'true'
+        self_hosted_models_enabled: 'true',
+        are_experiment_settings_allowed: 'true'
       })
     end
   end
