@@ -72,6 +72,11 @@ describeSkipVue3(skipReason, () => {
         },
         ...baseProvide,
       },
+      stubs: {
+        EmptyStateWithoutAnyIssues: {
+          template: '<div></div>',
+        },
+      },
     });
   };
 
