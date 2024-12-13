@@ -48,19 +48,6 @@ RSpec.describe 'Project saved reply', feature_category: :code_review_workflow do
     end
   end
 
-  context 'when project_saved_replies_flag feature flag is disabled' do
-    before do
-      stub_feature_flags(project_saved_replies_flag: false)
-      stub_licensed_features(project_saved_replies: true)
-    end
-
-    it 'returns null' do
-      post_query
-
-      expect(saved_reply_graphl_response).to be_nil
-    end
-  end
-
   context 'when license is valid' do
     before do
       stub_licensed_features(project_saved_replies: true)

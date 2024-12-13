@@ -13,19 +13,6 @@ RSpec.describe 'Create project saved reply', feature_category: :code_review_work
   let(:mutation) { graphql_mutation(:project_saved_reply_create, input) }
   let(:mutation_response) { graphql_mutation_response(:project_saved_reply_create) }
 
-  context 'with project_saved_replies_flag disabled' do
-    before do
-      stub_feature_flags(project_saved_replies_flag: false)
-      stub_licensed_features(project_saved_replies: true)
-    end
-
-    it 'returns null' do
-      post_graphql_mutation(mutation, current_user: current_user)
-
-      expect(mutation_response).to be_nil
-    end
-  end
-
   context 'when license is invalid' do
     before do
       stub_licensed_features(project_saved_replies: false)

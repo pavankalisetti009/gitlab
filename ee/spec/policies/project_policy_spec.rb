@@ -4235,14 +4235,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   context 'saved replies permissions' do
     let(:current_user) { owner }
 
-    context 'when project_saved_replies_flag feature flag is disabled' do
-      before do
-        stub_feature_flags(project_saved_replies_flag: false)
-      end
-
-      it { is_expected.to be_disallowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
-    end
-
     context 'when no license is present' do
       before do
         stub_licensed_features(project_saved_replies: false)
