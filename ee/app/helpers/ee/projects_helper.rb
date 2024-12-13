@@ -122,21 +122,17 @@ module EE
       can?(current_user, :read_security_orchestration_policies, project)
     end
 
-    def permanent_delete_message(project)
-      message = _('This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} and everything this project contains. %{strongOpen}There is no going back.%{strongClose}')
-      ERB::Util.html_escape(message) % remove_message_data(project)
-    end
-
-    def marked_for_removal_message(project)
+    def delete_delayed_message(project)
       date = permanent_deletion_date_formatted(project, Time.now.utc)
 
       message = if project.feature_available?(:adjourned_deletion_for_projects_and_groups)
                   _("This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} on %{date} and everything this project contains.")
                 else
+                  # This is a free project, it will use delayed deletion but can only be restored by an admin.
                   _("This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} on %{date} and everything this project contains. %{strongOpen}There is no going back.%{strongClose}")
                 end
 
-      ERB::Util.html_escape(message) % remove_message_data(project).merge(date: date)
+      ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date)
     end
 
     def permanent_deletion_date_formatted(project, date)
@@ -383,18 +379,15 @@ module EE
       )
     end
 
-    private
-
-    def remove_message_data(project)
-      {
-        project_path_with_namespace: project.path_with_namespace,
-        project: project.path,
-        strongOpen: '<strong>'.html_safe,
-        strongClose: '</strong>'.html_safe,
-        codeOpen: '<code>'.html_safe,
-        codeClose: '</code>'.html_safe
-      }
+    def project_delete_delayed_button_data(project)
+      project_delete_button_shared_data(project).merge({
+        restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
+        delayed_deletion_date: permanent_deletion_date_formatted(project, Time.now.utc).to_s,
+        form_path: project_path(project)
+      })
     end
+
+    private
 
     def security_dashboard_pipeline_data(project)
       pipeline = project.latest_ingested_security_pipeline

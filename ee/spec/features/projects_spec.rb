@@ -3,75 +3,120 @@
 require 'spec_helper'
 
 RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
-  describe 'immediately deleting a project marked for deletion' do
-    let(:project) { create(:project, marked_for_deletion_at: Date.current) }
-    let(:user) { project.first_owner }
-
-    before do
-      stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-
-      sign_in user
-      visit edit_project_path(project)
-    end
-
-    it 'deletes the project immediately', :sidekiq_inline do
-      expect { remove_with_confirm('Delete project', project.path_with_namespace, 'Yes, delete project') }.to change { Project.count }.by(-1)
-
-      expect(page).to have_content "Project '#{project.full_name}' is being deleted."
-      expect(Project.all.count).to be_zero
-    end
-
-    def remove_with_confirm(button_text, confirm_with, confirm_button_text = 'Confirm')
-      click_button button_text
-      fill_in 'confirm_name_input', with: confirm_with
-      click_button confirm_button_text
-    end
+  def confirm_deletion(project)
+    fill_in 'confirm_name_input', with: project.path_with_namespace
+    click_button 'Yes, delete project'
+    wait_for_requests
   end
 
-  describe 'delete project container text' do
+  def deletion_date
+    (Time.now.utc + ::Gitlab::CurrentSettings.deletion_adjourned_period.days).strftime('%F')
+  end
+
+  describe 'delete project' do
     let_it_be(:group_settings) { create(:namespace_settings) }
     let_it_be(:group) { create(:group, :public, namespace_settings: group_settings) }
     let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:project_2) { create(:project, group: group) }
     let_it_be(:user) { create(:user) }
 
-    context 'when `feature_available_on_instance` is enabled' do
-      before do
-        stub_application_setting(deletion_adjourned_period: 7)
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-        group.add_member(user, Gitlab::Access::OWNER)
+    before do
+      stub_application_setting(deletion_adjourned_period: 7)
+      group.add_owner(user)
+    end
 
-        sign_in user
-        visit edit_project_path(project)
-      end
+    shared_examples 'delayed deletion that is restorable' do
+      it 'deletes project delayed and is restorable', :freeze_time do
+        expect(page).to have_content("This action deletes #{project_to_delete.path_with_namespace} on #{deletion_date} and everything this project contains.")
 
-      it 'renders the marked for removal message' do
-        freeze_time do
-          deletion_date = (Time.now.utc + ::Gitlab::CurrentSettings.deletion_adjourned_period.days).strftime('%F')
+        click_button "Delete project"
 
-          expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains.")
+        expect(page).to have_content("This project can be restored until #{deletion_date}.")
 
-          click_button "Delete project"
+        confirm_deletion(project_to_delete)
 
-          expect(page).to have_content("This project can be restored until #{deletion_date}.")
-        end
+        expect(page).to have_content("This project is pending deletion, and will be deleted on #{deletion_date}. Repository and other project resources are read-only.")
+
+        visit removed_dashboard_projects_path
+
+        expect(page).to have_content(project_to_delete.name_with_namespace)
       end
     end
 
-    context 'when `feature_available_on_instance` is disabled' do
+    context 'when adjourned_deletion_for_projects_and_groups is enabled at the instance level' do
       before do
-        stub_application_setting(deletion_adjourned_period: 7)
-        group.add_member(user, Gitlab::Access::OWNER)
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
+      end
 
+      context 'when on GitLab SaaS', :saas do
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+        end
+
+        context 'when adjourned_deletion_for_projects_and_groups is enabled at the namespace level' do
+          let_it_be(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+          let_it_be(:ultimate_project) { create(:project, group: ultimate_group) }
+          let(:project_to_delete) { ultimate_project }
+
+          before do
+            ultimate_group.add_owner(user)
+            sign_in user
+            visit edit_project_path(ultimate_project)
+          end
+
+          it_behaves_like 'delayed deletion that is restorable'
+        end
+
+        context 'when adjourned_deletion_for_projects_and_groups is not enabled at the namespace level (free project)' do
+          before do
+            sign_in user
+            visit edit_project_path(project)
+          end
+
+          it 'deletes project delayed and is not restorable', :freeze_time do
+            expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains. There is no going back.")
+
+            click_button "Delete project"
+
+            expect(page).not_to have_content(/This project can be restored/)
+
+            confirm_deletion(project)
+            click_link 'Pending deletion'
+
+            expect(page).not_to have_content(project.name_with_namespace)
+          end
+        end
+      end
+
+      context 'when on GitLab self-managed' do
+        let(:project_to_delete) { project }
+
+        before do
+          sign_in user
+          visit edit_project_path(project)
+        end
+
+        it_behaves_like 'delayed deletion that is restorable'
+      end
+    end
+
+    context 'when adjourned_deletion_for_projects_and_groups is not enabled at the instance level' do
+      before do
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
         sign_in user
         visit edit_project_path(project)
       end
 
-      it 'renders the permanently delete message' do
+      it 'deletes project immediately', :sidekiq_inline do
         expect(page).to have_content("This action deletes #{project.path_with_namespace} and everything this project contains. There is no going back.")
 
         click_button "Delete project"
 
         expect(page).not_to have_content(/This project can be restored/)
+
+        confirm_deletion(project)
+
+        expect(page).not_to have_content(project.name_with_namespace)
       end
     end
   end

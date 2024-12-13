@@ -51,9 +51,17 @@ module EE
       result = ::Projects::MarkForDeletionService.new(project, current_user, {}).execute
 
       if result[:status] == :success
-        adjourned_deletion = project.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
-        path = adjourned_deletion ? project_path(project) : dashboard_projects_path
-        redirect_to path, status: :found
+        if project.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
+          redirect_to project_path(project), status: :found
+        else
+          # This is a free project, it will use delayed deletion but can only be restored by an admin.
+          flash[:toast] = format(
+            _("Deleting project '%{project_name}'. All data will be removed on %{date}."),
+            project_name: project.full_name,
+            date: helpers.permanent_deletion_date_formatted(project, project.marked_for_deletion_at)
+          )
+          redirect_to dashboard_projects_path, status: :found
+        end
       else
         flash.now[:alert] = result[:message]
 
