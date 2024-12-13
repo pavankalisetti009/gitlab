@@ -178,3 +178,25 @@ export const mockRolledUpHealthStatus = [
     __typename: 'WorkItemWidgetHealthStatusCount',
   },
 ];
+
+export const workItemChangeTypeWidgets = {
+  ITERATION: {
+    type: 'ITERATION',
+    iteration: {
+      id: 'gid://gitlab/Iteration/86312',
+      __typename: 'Iteration',
+    },
+    __typename: 'WorkItemWidgetIteration',
+  },
+  WEIGHT: {
+    type: 'WEIGHT',
+    weight: 1,
+    __typename: 'WorkItemWidgetWeight',
+  },
+  PROGRESS: {
+    type: 'PROGRESS',
+    progress: 33,
+    updatedAt: '2024-12-05T16:24:56Z',
+    __typename: 'WorkItemWidgetProgress',
+  },
+};
