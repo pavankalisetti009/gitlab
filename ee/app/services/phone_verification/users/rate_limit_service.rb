@@ -12,16 +12,11 @@ module PhoneVerification
       end
 
       def self.daily_transaction_hard_limit_exceeded?
-        return false unless Feature.enabled?(:hard_limit_daily_phone_verifications)
-
         ::Gitlab::ApplicationRateLimiter.peek(:hard_phone_verification_transactions_limit, scope: nil)
       end
 
       def self.increase_daily_attempts
         ::Gitlab::ApplicationRateLimiter.throttled?(:soft_phone_verification_transactions_limit, scope: nil)
-
-        return unless Feature.enabled?(:hard_limit_daily_phone_verifications)
-
         ::Gitlab::ApplicationRateLimiter.throttled?(:hard_phone_verification_transactions_limit, scope: nil)
       end
 

@@ -8,7 +8,7 @@ RSpec.describe PhoneVerification::Users::RateLimitService, feature_category: :sy
   let_it_be(:user) { build(:user) }
 
   describe 'daily transactions limit exceeded checks' do
-    shared_examples 'it returns the correct result' do |rate_limit_name, feature_flag_name = nil|
+    shared_examples 'it returns the correct result' do |rate_limit_name|
       before do
         allow(Gitlab::ApplicationRateLimiter)
           .to receive(:peek).with(rate_limit_name, scope: nil).and_return(exceeded)
@@ -25,21 +25,6 @@ RSpec.describe PhoneVerification::Users::RateLimitService, feature_category: :sy
 
         it { is_expected.to eq false }
       end
-
-      if feature_flag_name
-        context "when #{feature_flag_name} is disabled" do
-          let(:exceeded) { true }
-
-          before do
-            stub_feature_flags(feature_flag_name => false)
-          end
-
-          it 'returns false', :aggregate_failures do
-            expect(Gitlab::ApplicationRateLimiter).not_to receive(:peek)
-            expect(result).to eq false
-          end
-        end
-      end
     end
 
     describe '.daily_transaction_soft_limit_exceeded?' do
@@ -53,20 +38,13 @@ RSpec.describe PhoneVerification::Users::RateLimitService, feature_category: :sy
       subject(:result) { described_class.daily_transaction_hard_limit_exceeded? }
 
       it_behaves_like 'it returns the correct result',
-        :hard_phone_verification_transactions_limit,
-        :hard_limit_daily_phone_verifications
+        :hard_phone_verification_transactions_limit
     end
   end
 
   describe '.increase_daily_attempts' do
-    where(:hard_rate_limit_enabled) { [true, false] }
-
     with_them do
       subject(:increase_attempts) { described_class.increase_daily_attempts }
-
-      before do
-        stub_feature_flags(hard_limit_daily_phone_verifications: hard_rate_limit_enabled)
-      end
 
       def expect_throttled_called(key)
         expect(::Gitlab::ApplicationRateLimiter).to receive(:throttled?).with(key, scope: nil)
@@ -79,12 +57,7 @@ RSpec.describe PhoneVerification::Users::RateLimitService, feature_category: :sy
       it 'calls throttled? with the correct keys' do
         expect_throttled_called(:soft_phone_verification_transactions_limit)
 
-        if hard_rate_limit_enabled
-          expect_throttled_called(:hard_phone_verification_transactions_limit)
-        else
-          expect_throttled_not_called(:hard_phone_verification_transactions_limit)
-        end
-
+        expect_throttled_called(:hard_phone_verification_transactions_limit)
         increase_attempts
       end
     end
