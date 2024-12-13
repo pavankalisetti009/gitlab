@@ -34,7 +34,11 @@ RSpec.describe 'getting squash options for a branch protection', feature_categor
     graphql_data_at(:project, :branch_rules, :nodes)
   end
 
-  context 'when user does not have access' do
+  before do
+    stub_licensed_features(branch_rule_squash_options: true)
+  end
+
+  context 'when user is not authorized' do
     let(:current_user) { guest_user }
 
     before do
@@ -46,10 +50,22 @@ RSpec.describe 'getting squash options for a branch protection', feature_categor
     it { expect(branch_rules_data).to be_empty }
   end
 
-  context 'when user has access' do
+  context 'when user is authorized' do
     let(:current_user) { maintainer_user }
 
-    context 'when the branch_rule_squash_settings is enabled' do
+    context 'and the feature is not available' do
+      before do
+        stub_licensed_features(branch_rule_squash_options: false)
+      end
+
+      it 'returns nil for squashOption' do
+        post_graphql(query, current_user: current_user, variables: variables)
+
+        expect(branch_rules_data.dig(0, 'squashOption')).to be_nil
+      end
+    end
+
+    context 'and the branch_rule_squash_settings flag is enabled' do
       before do
         post_graphql(query, current_user: current_user, variables: variables)
       end
@@ -72,7 +88,7 @@ RSpec.describe 'getting squash options for a branch protection', feature_categor
         post_graphql(query, current_user: current_user, variables: variables)
       end
 
-      it 'returns squash option attributes' do
+      it 'returns nil for squashOption' do
         expect(branch_rules_data.dig(0, 'squashOption')).to be_nil
       end
     end
