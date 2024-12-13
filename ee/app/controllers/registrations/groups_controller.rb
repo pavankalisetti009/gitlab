@@ -36,13 +36,8 @@ module Registrations
         @group = result.payload[:group]
         @project = result.payload[:project]
 
-        @group.errors.full_messages.each do |error|
-          track_event("track_#{tracking_label}_error", "group_#{error.parameterize.underscore}")
-        end
-
-        @project.errors.full_messages.each do |error|
-          track_event("track_#{tracking_label}_error", "project_#{error.parameterize.underscore}")
-        end
+        track_event("track_#{tracking_label}_error", 'failed_creating_group') if @group.errors.present?
+        track_event("track_#{tracking_label}_error", 'failed_creating_project') if @project.errors.present?
 
         unless import? # imports do not have project params
           @template_name = project_params[:template_name]

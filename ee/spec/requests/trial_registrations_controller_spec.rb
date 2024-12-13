@@ -199,7 +199,7 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
           expect_snowplow_event(
             category: 'Gitlab::Tracking::Helpers::InvalidUserErrorEvent',
             action: 'track_trial_registration_error',
-            label: 'password_must_not_contain_commonly_used_combinations_of_words_and_letters'
+            label: 'failed_creating_user'
           )
         end
       end

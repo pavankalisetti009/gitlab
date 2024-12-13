@@ -203,9 +203,9 @@ module EE
     end
 
     override :track_error
-    def track_error(new_user)
+    def track_error(_new_user)
       super
-      track_invalid_user_error(new_user, preregistration_tracking_label)
+      track_invalid_user_error(preregistration_tracking_label)
     end
 
     override :sign_up_params

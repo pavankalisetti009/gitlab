@@ -275,7 +275,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
             expect_snowplow_event(
               category: described_class.name,
               action: 'track_free_registration_error',
-              label: 'group_name_can_t_be_blank',
+              label: 'failed_creating_group',
               user: user
             )
           end
@@ -303,7 +303,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
           expect_snowplow_event(
             category: described_class.name,
             action: 'track_free_registration_error',
-            label: 'project_name_can_t_be_blank',
+            label: 'failed_creating_project',
             user: user
           )
         end

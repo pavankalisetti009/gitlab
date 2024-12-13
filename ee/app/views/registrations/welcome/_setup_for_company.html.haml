@@ -11,4 +11,4 @@
         .gl-grow
           = f.gitlab_ui_radio_component :setup_for_company, true, _('My company or team'),
             help_text: onboarding_status_presenter.setup_for_company_help_text, radio_options: { required: true,
-            class: "js-track-error", data: { track_action_for_errors: 'welcome_form' } }
+            class: "js-track-error", data: { track_action_for_errors: onboarding_status_presenter.tracking_label } }
