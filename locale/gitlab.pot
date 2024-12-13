@@ -35246,6 +35246,9 @@ msgstr ""
 msgid "MlExperimentTracking|Experiment"
 msgstr ""
 
+msgid "MlExperimentTracking|Experiment created %{timeAgo} by %{author}"
+msgstr ""
+
 msgid "MlExperimentTracking|Experiment metadata"
 msgstr ""
 
