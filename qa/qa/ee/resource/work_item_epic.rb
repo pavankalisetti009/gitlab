@@ -419,7 +419,7 @@ module QA
             :description,
             :state,
             :is_fixed,
-            :roll_up,
+            # :roll_up, uncomment when qa/specs/features/ee/api/2_plan/epics_to_work_items_sync_spec.rb is removed
             :start_date,
             :due_date,
             :confidential,
@@ -431,6 +431,7 @@ module QA
           )
         end
 
+        # Remove when qa/specs/features/ee/api/2_plan/epics_to_work_items_sync_spec.rb is removed
         def convert_graphql_state_to_legacy_state(state)
           case state
           when 'OPEN'

@@ -138,16 +138,15 @@ module QA
         def comparable
           reload! if api_response.nil?
 
+          api_resource[:is_fixed] = api_resource[:start_date_is_fixed]
+
           api_resource.slice(
             :title,
             :description,
             :state,
+            :is_fixed,
             :start_date,
             :due_date,
-            :start_date_is_fixed,
-            :start_date_fixed,
-            :due_date_is_fixed,
-            :due_date_fixed,
             :confidential,
             :labels,
             :upvotes,
