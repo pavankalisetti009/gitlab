@@ -69,7 +69,8 @@ RSpec.describe Projects::ProjectSettingChangesAuditor, feature_category: :groups
                   })
               end
 
-              it 'streams correct audit event stream' do
+              it 'streams correct audit event stream',
+                quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/504782' do
                 project.project_setting.update!(squash_option: new_value)
 
                 expect(AuditEvents::AuditEventStreamingWorker).to receive(:perform_async).with(
