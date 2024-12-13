@@ -43,7 +43,8 @@ module Admin
         duo_availability: duo_availability,
         direct_code_suggestions_enabled: ::Gitlab::CurrentSettings.disabled_direct_code_suggestions.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
-        self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s
+        self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
+        are_experiment_settings_allowed: experiments_settings_allowed?.to_s
       }
     end
 
@@ -69,7 +70,7 @@ module Admin
       {
         duo_availability: duo_availability.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
-        are_experiment_settings_allowed: "true",
+        are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         self_hosted_models_enabled: self_hosted_models_enabled.to_s,
@@ -97,6 +98,10 @@ module Admin
 
     def tag_pair_for_link(url)
       tag_pair(link_to('', url, target: '_blank', rel: 'noopener noreferrer'), :link_start, :link_end)
+    end
+
+    def experiments_settings_allowed?
+      CloudConnector::AvailableServices.find_by_name(:anthropic_proxy)&.purchased?
     end
   end
 end

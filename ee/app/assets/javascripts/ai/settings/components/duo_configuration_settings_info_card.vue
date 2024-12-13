@@ -29,6 +29,7 @@ export default {
     directCodeSuggestionsEnabled: { default: false },
     experimentFeaturesEnabled: {},
     selfHostedModelsEnabled: { default: false },
+    areExperimentSettingsAllowed: {},
   },
   computed: {
     onSelfManaged() {
@@ -64,7 +65,7 @@ export default {
           <span data-testid="configuration-status">{{ getAvailabilityStatus }}</span>
         </p>
       </section>
-      <section>
+      <section v-if="areExperimentSettingsAllowed">
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.experimentAndBetaFeaturesText"
           :is-enabled="experimentFeaturesEnabled"

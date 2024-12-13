@@ -471,7 +471,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         duo_availability: 'default_on',
         experiment_features_enabled: 'true',
         duo_configuration_path: '/groups/my-group/-/settings/gitlab_duo/configuration',
-        code_suggestions: 'data'
+        code_suggestions: 'data',
+        are_experiment_settings_allowed: 'true'
       })
     end
   end

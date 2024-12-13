@@ -17,6 +17,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
     directCodeSuggestionsEnabled = true,
     experimentFeaturesEnabled = true,
     selfHostedModelsEnabled = true,
+    areExperimentSettingsAllowed = true,
   } = {}) => {
     wrapper = shallowMountExtended(DuoConfigurationSettingsInfoCard, {
       provide: {
@@ -27,6 +28,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
         directCodeSuggestionsEnabled,
         experimentFeaturesEnabled,
         selfHostedModelsEnabled,
+        areExperimentSettingsAllowed,
       },
     });
   };

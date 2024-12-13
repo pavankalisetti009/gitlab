@@ -20,6 +20,7 @@ export function initGitLabDuoHome() {
         duoConfigurationPath: el.dataset.duoConfigurationPath,
         duoAvailability: el.dataset.duoAvailability,
         experimentFeaturesEnabled: parseBoolean(el.dataset.experimentFeaturesEnabled),
+        areExperimentSettingsAllowed: parseBoolean(el.dataset.areExperimentSettingsAllowed),
       };
     },
     render(createElement) {
