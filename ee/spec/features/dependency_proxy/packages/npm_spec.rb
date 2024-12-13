@@ -187,14 +187,6 @@ RSpec.describe 'Dependency Proxy for npm packages', :js, :aggregate_failures, fe
           it_behaves_like 'proxying the remote file if the wrong etag is returned'
         end
       end
-
-      context 'when npm_extract_npm_package_model is disabled' do
-        before do
-          stub_feature_flags(npm_extract_npm_package_model: false)
-        end
-
-        it_behaves_like 'returning the cached file'
-      end
     end
   end
 
