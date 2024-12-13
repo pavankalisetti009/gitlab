@@ -298,6 +298,32 @@ export const mockApprovalSettingsScanResultObject = {
   },
 };
 
+export const allowDenyScanResultLicenseObject = {
+  name: 'This policy has license packages with exceptions',
+  description: 'This policy license packages with exceptions',
+  enabled: true,
+  rules: [
+    {
+      type: 'license_finding',
+      id: 'rule_0',
+      match_on_inclusion_license: true,
+      license_types: [],
+      license_states: [],
+      branch_type: 'protected',
+      licenses: {
+        allowed: [],
+      },
+    },
+  ],
+  actions: [
+    {
+      type: 'require_approval',
+      approvals_required: 1,
+      id: 'action_0',
+    },
+  ],
+};
+
 export const mockDisabledApprovalSettingsScanResultObject = {
   ...mockDefaultBranchesScanResultObject,
   approval_settings: {
@@ -329,6 +355,23 @@ rules:
     vulnerabilities_allowed: 0
     severity_levels: []
     vulnerability_states: []
+actions:
+  - type: require_approval
+    approvals_required: 1
+`;
+
+export const allowDenyScanResultLicenseManifest = `---
+name: This policy has license packages with exceptions
+description: This policy license packages with exceptions
+enabled: true
+rules:
+  - type: license_finding
+    match_on_inclusion_license: true
+    license_types: []
+    license_states: []
+    branch_type: protected
+    licenses:
+      allowed: []
 actions:
   - type: require_approval
     approvals_required: 1

@@ -72,12 +72,16 @@ describe('DenyAllowLicenses', () => {
       ]);
     });
 
-    it('only renders selected section when all licenses selected', () => {
+    it.each`
+      title                   | licenses
+      ${'without duplicates'} | ${[UNKNOWN_LICENSE, LICENSE]}
+      ${'with duplicates'}    | ${[UNKNOWN_LICENSE, LICENSE, { text: 'License', value: 'license_1' }]}
+    `('only renders selected section when all licenses selected $title', ({ licenses }) => {
       createComponent({
         propsData: {
           allLicenses: [UNKNOWN_LICENSE, LICENSE],
           selected: UNKNOWN_LICENSE,
-          alreadySelectedLicenses: [UNKNOWN_LICENSE, LICENSE],
+          alreadySelectedLicenses: licenses,
         },
       });
 

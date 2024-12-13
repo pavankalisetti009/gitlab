@@ -21,6 +21,8 @@ import {
   mockFallbackInvalidScanResultManifest,
   mockProjectPolicyTuningScanResultManifest,
   mockProjectPolicyTuningScanResultObject,
+  allowDenyScanResultLicenseManifest,
+  allowDenyScanResultLicenseObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
   unsupportedManifest,
@@ -48,14 +50,23 @@ describe('fromYaml', () => {
     `('returns the policy object for a manifest $title', ({ manifest, output }) => {
       expect(fromYaml({ manifest, validateRuleMode: true })).toStrictEqual(output);
     });
+
+    it('returns the policy object for a manifest license scaner with exceptions', () => {
+      window.gon = { features: { excludeLicensePackages: true } };
+
+      expect(
+        fromYaml({ manifest: allowDenyScanResultLicenseManifest, validateRuleMode: true }),
+      ).toStrictEqual(allowDenyScanResultLicenseObject);
+    });
   });
 
   describe('error', () => {
     it.each`
-      title                              | manifest
-      ${'unsupported fallback behavior'} | ${mockFallbackInvalidScanResultManifest}
-      ${'an unsupported attribute'}      | ${unsupportedManifest}
-      ${'colliding self excluded keys'}  | ${collidingKeysScanResultManifest}
+      title                                  | manifest
+      ${'unsupported fallback behavior'}     | ${mockFallbackInvalidScanResultManifest}
+      ${'an unsupported attribute'}          | ${unsupportedManifest}
+      ${'colliding self excluded keys'}      | ${collidingKeysScanResultManifest}
+      ${'allow deny license exception keys'} | ${allowDenyScanResultLicenseManifest}
     `('returns the error object for a policy with $title', ({ manifest }) => {
       expect(fromYaml({ manifest, validateRuleMode: true })).toStrictEqual({ error: true });
     });

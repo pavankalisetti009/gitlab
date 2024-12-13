@@ -62,7 +62,10 @@ export default {
   },
   computed: {
     allSelected() {
-      return this.allLicenses.length === this.items.length;
+      const deduplicatedSelection = [
+        ...new Set(this.allLicenses.map(({ text }) => text).filter(Boolean)),
+      ];
+      return deduplicatedSelection.length <= this.items.length;
     },
     allLicenses() {
       return [UNKNOWN_LICENSE, ...this.parsedSoftwareLicenses];

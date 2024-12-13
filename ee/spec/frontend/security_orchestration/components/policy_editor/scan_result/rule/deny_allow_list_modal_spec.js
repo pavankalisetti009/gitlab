@@ -110,25 +110,32 @@ describe('DenyAllowListModal', () => {
       ]);
     });
 
-    it('disables add license button when all licenses already selected', async () => {
-      createComponent({
-        provide: {
-          parsedSoftwareLicenses: LICENSES,
-        },
-        propsData: {
-          licenses: [...LICENSES.map((license) => ({ license }))],
-        },
-      });
+    it.each`
+      title                   | parsedLicenses
+      ${'without duplicates'} | ${LICENSES}
+      ${'with duplicates'}    | ${[...LICENSES, LICENSES[0], LICENSES[1]]}
+    `(
+      'disables add license button when all licenses already selected $title',
+      async ({ parsedLicenses }) => {
+        createComponent({
+          provide: {
+            parsedSoftwareLicenses: parsedLicenses,
+          },
+          propsData: {
+            licenses: [...LICENSES.map((license) => ({ license }))],
+          },
+        });
 
-      await findAddLicenseButton().vm.$emit('click');
+        await findAddLicenseButton().vm.$emit('click');
 
-      expect(findAddLicenseButton().props('disabled')).toBe(true);
+        expect(findAddLicenseButton().props('disabled')).toBe(true);
 
-      expect(findTooltip().value).toMatchObject({
-        disabled: false,
-        title: 'All licenses have been selected',
-      });
-    });
+        expect(findTooltip().value).toMatchObject({
+          disabled: false,
+          title: 'All licenses have been selected',
+        });
+      },
+    );
 
     it('resets licenses when type changes', async () => {
       createComponent({
