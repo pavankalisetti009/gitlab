@@ -17,12 +17,14 @@ describe('dashboard has no vulnerabilities empty state', () => {
       },
     });
 
+  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
+
   beforeEach(() => {
     wrapper = createWrapper();
   });
 
   it('passes expected props to the GlEmptyState', () => {
-    expect(wrapper.findComponent(GlEmptyState).props()).toMatchObject({
+    expect(findEmptyState().props()).toMatchObject({
       title: DashboardHasNoVulnerabilities.i18n.title,
       svgPath: emptyStateSvgPath,
       primaryButtonLink: DOC_PATH_SECURITY_CONFIGURATION,
@@ -31,7 +33,7 @@ describe('dashboard has no vulnerabilities empty state', () => {
   });
 
   it('Renders the description', () => {
-    expect(wrapper.findComponent(GlSprintf).text()).toContain(
+    expect(findEmptyState().text()).toContain(
       'If you were expecting vulnerabilities to be shown here',
     );
   });
