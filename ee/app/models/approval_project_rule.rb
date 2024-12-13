@@ -239,9 +239,7 @@ class ApprovalProjectRule < ApplicationRecord
   end
 
   def ignore_policy_rules_for_unprotected_branches?(branch)
-    from_scan_result_policy? &&
-      Feature.enabled?(:ignore_policies_for_unprotected_branches, project) &&
-      !branch_protected_in_project?(branch)
+    from_scan_result_policy? && !branch_protected_in_project?(branch)
   end
 
   def branch_protected_in_project?(branch)

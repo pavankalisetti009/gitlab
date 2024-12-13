@@ -1,9 +1,0 @@
----
-name: ignore_policies_for_unprotected_branches
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/503227
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173345
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/505568
-milestone: '17.7'
-group: group::security policies
-type: gitlab_com_derisk
-default_enabled: false

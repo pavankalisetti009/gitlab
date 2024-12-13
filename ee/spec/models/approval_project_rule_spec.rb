@@ -382,34 +382,6 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
             expect(subject.applies_to_branch?(protected_branch.name)).to be true
           end
         end
-
-        context 'when ignore_policies_for_unprotected_branches feature flag is disabled' do
-          before do
-            stub_feature_flags(ignore_policies_for_unprotected_branches: false)
-          end
-
-          if with_protected_branches
-            it 'returns false' do
-              expect(subject.applies_to_branch?('unprotected_branch')).to be false
-            end
-          else
-            context 'when applies_to_all_protected_branches is true' do
-              let(:applies_for_all_protected_branches) { true }
-
-              it 'returns false' do
-                expect(subject.applies_to_branch?('unprotected_branch')).to be false
-              end
-            end
-
-            context 'when applies_to_all_protected_branches is false' do
-              let(:applies_for_all_protected_branches) { false }
-
-              it 'incorrectly returns true' do
-                expect(subject.applies_to_branch?('unprotected_branch')).to be true
-              end
-            end
-          end
-        end
       end
     end
 
