@@ -4,7 +4,7 @@ require 'spec_helper'
 RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
   let_it_be(:private_group) { create(:group, :private) }
-  let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user, reload: true) { create(:user) }
   let_it_be(:assignee) { create(:user) }
   let_it_be(:reviewer) { create(:user) }
@@ -782,6 +782,78 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
         it 'does not set the checkin reminder' do
           expect { execute(note) }.not_to change { noteable.progress.reminder_frequency }
+        end
+      end
+    end
+  end
+
+  context '/q' do
+    let_it_be(:user) { create(:user) }
+    let(:amazon_q_enabled) { false }
+    let(:note) { create(:note_on_issue, project: project, noteable: issue, note: note_text) }
+
+    before do
+      project.add_developer(user)
+      allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
+    end
+
+    context 'when Amazon Q is not enabled' do
+      let(:note_text) { '/q dev' }
+
+      it 'does not run command' do
+        result = execute(note, include_message: true)
+
+        expect(result[0]).to be_empty
+        expect(result[1]).to eq('Could not apply q command.')
+      end
+    end
+
+    context 'when Amazon Q is enabled' do
+      let(:amazon_q_enabled) { true }
+      let(:note_text) { '/q dev' }
+
+      it 'runs the command' do
+        result = execute(note, include_message: true)
+
+        expect(result[0]).to be_empty
+        expect(result[1]).to eq('Q got your message!')
+      end
+
+      context 'when using unsupported sub-command for issue' do
+        let_it_be(:note_text) { '/q unknown' }
+
+        it 'returns an error' do
+          content, update_params, message, _ = service.execute(note)
+
+          expect(content).to be_blank
+          expect(update_params).to be_empty
+          expect(message).to eq('Unsupported issue command: unknown')
+        end
+      end
+
+      context 'when using unsupported sub-command for epic' do
+        let_it_be(:note_text) { '/q unknown' }
+        let_it_be(:note) { create(:note_on_epic, project: project, note: note_text) }
+
+        it 'returns an error' do
+          content, update_params, message, _ = service.execute(note)
+
+          expect(content).to be_blank
+          expect(update_params).to be_empty
+          expect(message).to eq('Could not apply q command.')
+        end
+      end
+
+      context 'when using unsupported sub-command transform for merge request' do
+        let_it_be(:note_text) { '/q transform' }
+        let_it_be(:note) { create(:note_on_merge_request, project: project, note: note_text) }
+
+        it 'returns an error' do
+          content, update_params, message, _ = service.execute(note)
+
+          expect(content).to be_blank
+          expect(update_params).to be_empty
+          expect(message).to eq('Unsupported merge request command: transform')
         end
       end
     end

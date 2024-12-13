@@ -1,0 +1,18 @@
+---
+description: When the quickaction /q is executed
+internal_events: true
+action: i_quickactions_q
+identifiers:
+- project
+- namespace
+- user
+product_group: ai_framework
+milestone: '17.8'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175919
+distributions:
+- ee
+tiers:
+- ultimate
+additional_properties:
+  label:
+    description: The subcommand used
