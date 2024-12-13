@@ -32,7 +32,7 @@ module Groups
           @domain.errors.add(:project_id, _('must be specified'))
           render 'new', status: :bad_request
         else
-          @domain = PagesDomains::CreateService.new(@project, current_user, create_params).execute
+          @domain = ::Pages::Domains::CreateService.new(@project, current_user, create_params).execute
 
           if @domain&.persisted?
             redirect_to group_settings_domain_verification_path(@group, @domain),
@@ -47,7 +47,7 @@ module Groups
       def show; end
 
       def update
-        service = ::PagesDomains::UpdateService.new(@domain.project, current_user, update_params)
+        service = ::Pages::Domains::UpdateService.new(@domain.project, current_user, update_params)
 
         if service.execute(@domain)
           redirect_to group_settings_domain_verification_index_path(@group),
@@ -59,7 +59,7 @@ module Groups
       end
 
       def destroy
-        PagesDomains::DeleteService.new(@domain.project, current_user).execute(@domain)
+        ::Pages::Domains::DeleteService.new(@domain.project, current_user).execute(@domain)
 
         respond_to do |format|
           format.html do
@@ -84,14 +84,14 @@ module Groups
       end
 
       def retry_auto_ssl
-        PagesDomains::RetryAcmeOrderService.new(@domain).execute
+        ::Pages::Domains::RetryAcmeOrderService.new(@domain).execute
 
         redirect_to group_settings_domain_verification_path(@group, @domain)
       end
 
       def clean_certificate
         update_params = { user_provided_certificate: nil, user_provided_key: nil }
-        service = ::PagesDomains::UpdateService.new(@domain.project, current_user, update_params)
+        service = ::Pages::Domains::UpdateService.new(@domain.project, current_user, update_params)
 
         flash[:alert] = @domain.errors.full_messages.join(', ') unless service.execute(@domain)
 
