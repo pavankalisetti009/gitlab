@@ -60,7 +60,8 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
         wait_for_requests
       end
 
-      it 'shows merge request is added to merge train' do
+      it 'shows merge request is added to merge train',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/471562' do
         page.within('.mr-state-widget') do
           expect(page).to have_content("Added to the merge train by #{user.name}")
           expect(page).to have_content('Source branch will not be deleted.')
