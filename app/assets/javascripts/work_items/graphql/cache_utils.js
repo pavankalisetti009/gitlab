@@ -609,5 +609,6 @@ export const optimisticUserPermissions = {
   setWorkItemMetadata: false,
   createNote: false,
   adminWorkItemLink: false,
+  markNoteAsInternal: false,
   __typename: 'WorkItemPermissions',
 };
