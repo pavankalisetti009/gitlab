@@ -18,13 +18,6 @@ RSpec.describe Gitlab::Ai::SelfHosted::AiGateway, feature_category: :"self-hoste
       it 'returns true' do
         expect(described_class.required?).to be(true)
       end
-
-      context 'when the feature flag :ai_custom_model is disabled' do
-        it 'returns false' do
-          stub_feature_flags(ai_custom_model: false)
-          expect(described_class.required?).to be(false)
-        end
-      end
     end
   end
 

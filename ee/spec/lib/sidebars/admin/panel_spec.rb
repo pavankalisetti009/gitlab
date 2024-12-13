@@ -63,49 +63,34 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
       end
 
       context 'when instance has a paid license' do
-        context 'when ai_custom_model feature is disabled' do
-          before do
-            stub_feature_flags(ai_custom_model: false)
-          end
-
+        context 'when instance does not have an ultimate license' do
           it_behaves_like 'shows code suggestions menu'
           it_behaves_like 'hides self-hosted models menu'
         end
 
-        context 'when ai_custom_model feature is enabled' do
+        context 'when instance has an ultimate license' do
+          let(:ultimate_license) { build(:license, plan: License::ULTIMATE_PLAN) }
+
           before do
-            stub_feature_flags(ai_custom_model: true)
+            allow(License).to receive(:current).and_return(ultimate_license)
           end
 
-          context 'when instance does not have an ultimate license' do
+          context 'when instance has a Duo Enterprise subscription' do
+            let_it_be(:add_on_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- persisted record required
+            end
+
+            it_behaves_like 'shows code suggestions menu'
+            it_behaves_like 'shows self-hosted models menu'
+          end
+
+          context 'when instance does not have a Duo Enterprise subscription' do
+            let_it_be(:add_on_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- persisted record required
+            end
+
             it_behaves_like 'shows code suggestions menu'
             it_behaves_like 'hides self-hosted models menu'
-          end
-
-          context 'when instance has an ultimate license' do
-            let(:ultimate_license) { build(:license, plan: License::ULTIMATE_PLAN) }
-
-            before do
-              allow(License).to receive(:current).and_return(ultimate_license)
-            end
-
-            context 'when instance has a Duo Enterprise subscription' do
-              let_it_be(:add_on_purchase) do
-                create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- persisted record required
-              end
-
-              it_behaves_like 'shows code suggestions menu'
-              it_behaves_like 'shows self-hosted models menu'
-            end
-
-            context 'when instance does not have a Duo Enterprise subscription' do
-              let_it_be(:add_on_purchase) do
-                create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- persisted record required
-              end
-
-              it_behaves_like 'shows code suggestions menu'
-              it_behaves_like 'hides self-hosted models menu'
-            end
           end
         end
       end

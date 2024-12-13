@@ -72,14 +72,6 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     end
   end
 
-  context 'when the ai_custom_model FF is disabled' do
-    before do
-      stub_feature_flags(ai_custom_model: false)
-    end
-
-    it_behaves_like 'an error response', "The 'ai_custom_model' feature is not enabled."
-  end
-
   context "when the user is authorized" do
     context 'when no query parameters are given' do
       let(:expected_response) do
@@ -90,12 +82,10 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
         end
       end
 
-      context 'when the ai_custom_model feature flag is enabled' do
-        it 'returns the expected response' do
-          post_graphql(query, current_user: current_user)
+      it 'returns the expected response' do
+        post_graphql(query, current_user: current_user)
 
-          expect(ai_feature_settings_data).to match_array(expected_response)
-        end
+        expect(ai_feature_settings_data).to match_array(expected_response)
       end
     end
 

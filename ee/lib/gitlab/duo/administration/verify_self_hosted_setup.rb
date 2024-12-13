@@ -21,7 +21,6 @@ module Gitlab
 
           verify_environmental_variables!
           verify_license_access!
-          enable_feature_flag
           verify_aigateway_access!
         end
 
@@ -52,12 +51,6 @@ module Gitlab
           end
 
           raise "License does not provide access to code suggestions, verify your license"
-        end
-
-        def enable_feature_flag
-          Feature.enable(:ai_custom_model)
-
-          puts("Feature flag enabled ✔")
         end
 
         def verify_aigateway_access!

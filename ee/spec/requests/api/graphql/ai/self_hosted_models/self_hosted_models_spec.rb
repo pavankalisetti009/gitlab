@@ -80,18 +80,6 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
     it_behaves_like 'performs the right authorization'
   end
 
-  context 'when the ai_custom_model FF is disabled' do
-    before do
-      stub_feature_flags(ai_custom_model: false)
-    end
-
-    it 'does not return self-hosted model data' do
-      request
-
-      expect(ai_self_hosted_models_data).to be_nil
-    end
-  end
-
   context 'when a self-hosted model id is provided' do
     let(:self_hosted_model_gid) { self_hosted_models.first.to_global_id }
     let(:query) do

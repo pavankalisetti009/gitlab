@@ -93,14 +93,6 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
     end
   end
 
-  it 'enables the feature flag' do
-    Feature.disable(:ai_custom_model)
-
-    verify_setup
-
-    expect(Feature.enabled?(:ai_custom_model)).to be(true) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-  end
-
   context 'when connection to ai_gateway fails' do
     before do
       allow(Gitlab::HTTP).to receive(:get).with("#{ai_gateway_url}/monitoring/healthz",

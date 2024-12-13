@@ -33,14 +33,6 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :"self-hosted_m
     end
   end
 
-  context 'when the ai_custom_model FF is disabled' do
-    before do
-      stub_feature_flags(ai_custom_model: false)
-    end
-
-    it_behaves_like 'a mutation that returns a top-level access error'
-  end
-
   context 'when user is not allowed to write changes' do
     let(:current_user) { create(:user) }
 

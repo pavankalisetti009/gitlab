@@ -53,8 +53,7 @@ module EE
         end
 
         def self_hosted_models_enabled?
-          ::Feature.enabled?(:ai_custom_model) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-            License.current&.ultimate? &&
+          License.current&.ultimate? &&
             GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
         end
       end
