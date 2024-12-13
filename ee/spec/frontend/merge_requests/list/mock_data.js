@@ -4,13 +4,13 @@ export { getCountsQueryResponse } from 'jest/merge_requests/list/mock_data';
 
 export const getQueryResponse = {
   data: {
-    project: {
-      ...getQueryResponseFOSS.data.project,
+    namespace: {
+      ...getQueryResponseFOSS.data.namespace,
       mergeRequests: {
-        ...getQueryResponseFOSS.data.project.mergeRequests,
+        ...getQueryResponseFOSS.data.namespace.mergeRequests,
         nodes: [
           {
-            ...getQueryResponseFOSS.data.project.mergeRequests.nodes[0],
+            ...getQueryResponseFOSS.data.namespace.mergeRequests.nodes[0],
             approved: false,
             approvalsRequired: 0,
             approvalsLeft: 1,

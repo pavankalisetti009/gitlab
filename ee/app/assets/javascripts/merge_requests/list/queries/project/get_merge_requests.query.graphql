@@ -33,7 +33,7 @@ query getMergeRequestsEE(
   $firstPageSize: Int
   $lastPageSize: Int
 ) {
-  project(fullPath: $fullPath) {
+  namespace: project(fullPath: $fullPath) {
     id
     mergeRequests(
       sort: $sort
