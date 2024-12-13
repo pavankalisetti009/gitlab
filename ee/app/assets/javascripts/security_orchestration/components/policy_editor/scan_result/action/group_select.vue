@@ -1,14 +1,13 @@
 <script>
 import { GlAvatarLabeled, GlCollapsibleListbox } from '@gitlab/ui';
-import { isNumber } from 'lodash';
 import { __ } from '~/locale';
 import searchNamespaceGroups from 'ee/security_orchestration/graphql/queries/get_namespace_groups.query.graphql';
 import searchDescendantGroups from 'ee/security_orchestration/graphql/queries/get_descendant_groups.query.graphql';
-import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { GROUP_TYPE } from 'ee/security_orchestration/constants';
-import { renderMultiSelectText } from '../../utils';
+import { renderMultiSelectText, findItemsIntersection } from '../../utils';
 
 const createGroupObject = (group) => ({
   ...group,
@@ -62,14 +61,11 @@ export default {
 
         const groups = (data?.groups?.nodes || []).map(createGroupObject);
 
-        this.selectedGroups = this.existingApprovers.map((approver) => {
-          if (isNumber(approver)) {
-            const group =
-              groups.find(({ id }) => id === convertToGraphQLId(TYPENAME_GROUP, approver)) || {};
-            return createGroupObject(group);
-          }
-
-          return createGroupObject(approver);
+        this.selectedGroups = findItemsIntersection({
+          collectionOne: this.existingApprovers,
+          collectionTwo: groups,
+          mapperFn: createGroupObject,
+          type: TYPENAME_GROUP,
         });
 
         return groups;

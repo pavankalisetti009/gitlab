@@ -14,6 +14,7 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/compone
 import {
   policyBodyToYaml,
   policyToYaml,
+  mapYamlApproversActionsFormatToEditorFormat,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   ADD_ACTION_LABEL,
@@ -460,31 +461,7 @@ export default {
       this.existingApprovers[index] = values;
     },
     updatePolicyApproversFromYaml() {
-      this.existingApprovers = this.approversActions.map(
-        ({
-          group_approvers_ids: groupApproversIds,
-          user_approvers_ids: userApproversIds,
-          role_approvers: roleApprovers,
-          user_approvers: userApprovers,
-          group_approvers: groupApprovers,
-        }) => {
-          const result = {};
-
-          if (groupApproversIds || groupApprovers) {
-            result.group = groupApproversIds || groupApprovers;
-          }
-
-          if (userApproversIds || userApprovers) {
-            result.user = userApproversIds || userApprovers;
-          }
-
-          if (roleApprovers) {
-            result.role = roleApprovers;
-          }
-
-          return result;
-        },
-      );
+      this.existingApprovers = mapYamlApproversActionsFormatToEditorFormat(this.approversActions);
     },
     invalidForRuleMode() {
       const { rules } = this.policy;

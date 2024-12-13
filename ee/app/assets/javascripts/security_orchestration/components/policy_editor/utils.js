@@ -1,4 +1,4 @@
-import { intersection, uniqBy, uniqueId } from 'lodash';
+import { intersection, isNumber, uniqBy, uniqueId, isEmpty } from 'lodash';
 import { isValidCron } from 'cron-validator';
 import { safeDump } from 'js-yaml';
 import { sprintf, s__ } from '~/locale';
@@ -13,6 +13,7 @@ import {
   ALLOWED,
   DENIED,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import {
   BRANCHES_KEY,
   BRANCH_TYPE_KEY,
@@ -730,4 +731,74 @@ export const parseAllowDenyLicenseList = (rule = {}) => {
     licenses: licenses?.[KEY] || [],
     isDenied,
   };
+};
+
+/**
+ * find intersection in two collections or return original item
+ * @param collectionOne
+ * @param collectionTwo
+ * @param mapperFn
+ * @param type
+ * @returns {(*)[]|*[]}
+ */
+export const findItemsIntersection = ({
+  collectionOne = [],
+  collectionTwo = [],
+  mapperFn,
+  type,
+}) => {
+  if (!mapperFn) {
+    return [];
+  }
+
+  return collectionOne
+    .map((approver) => {
+      if (isNumber(approver)) {
+        const mappedId = type ? convertToGraphQLId(type, approver) : approver;
+
+        const item = collectionTwo.find(({ id }) => id === mappedId) || {};
+        return mapperFn(item);
+      }
+
+      return mapperFn(approver);
+    })
+    .filter((item) => !isEmpty(item));
+};
+
+/**
+ * Map yaml format for actions into
+ * user group role component format
+ * @param actions
+ * @returns {{}[]|*[]}
+ */
+export const mapYamlApproversActionsFormatToEditorFormat = (actions = []) => {
+  if (!actions) return [];
+
+  return actions
+    .map(
+      ({
+        group_approvers_ids: groupApproversIds,
+        user_approvers_ids: userApproversIds,
+        role_approvers: roleApprovers,
+        user_approvers: userApprovers,
+        group_approvers: groupApprovers,
+      }) => {
+        const result = {};
+
+        if (groupApproversIds || groupApprovers) {
+          result.group = groupApproversIds || groupApprovers;
+        }
+
+        if (userApproversIds || userApprovers) {
+          result.user = userApproversIds || userApprovers;
+        }
+
+        if (roleApprovers) {
+          result.role = roleApprovers;
+        }
+
+        return result;
+      },
+    )
+    .filter((item) => !isEmpty(item));
 };
