@@ -4,18 +4,19 @@ require 'spec_helper'
 
 RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
   describe '#execute' do
-    let(:namespace) { create :namespace }
-    let(:project) { create :project, namespace: namespace }
-    let(:issue) { create :issue, project: project }
-    let(:user) { create :user }
-    let(:params) do
-      {}
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:issue) { create(:issue, project: project) }
+    let_it_be(:user) { create(:user) }
+
+    let(:params) { {} }
+
+    before_all do
+      project.add_developer(user)
     end
 
     before do
       stub_licensed_features(blocked_issues: true)
-
-      project.add_developer(user)
     end
 
     subject { described_class.new(issue, user, params).execute }
@@ -90,6 +91,30 @@ RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
         expect(subject[:created_references].count).to eq(3)
         expect(IssueLink.where(target: [issue_a, issue_b, issue_c]).pluck(:link_type))
           .to eq([IssueLink::TYPE_BLOCKS, IssueLink::TYPE_BLOCKS, IssueLink::TYPE_BLOCKS])
+      end
+    end
+
+    context 'when target is a group related work item' do
+      let(:issuable) { create(:work_item, :epic, namespace: namespace) }
+      let(:issuable2) { create(:work_item, :epic, namespace: namespace) }
+
+      let(:params) do
+        { issuable_references: [issuable2.to_reference] }
+      end
+
+      before_all do
+        namespace.add_owner(user)
+      end
+
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      subject(:service) { described_class.new(issuable, user, params) }
+
+      it 'links the group related work items' do
+        expect { service.execute }
+          .to change { IssueLink.count }.by(1)
       end
     end
   end
