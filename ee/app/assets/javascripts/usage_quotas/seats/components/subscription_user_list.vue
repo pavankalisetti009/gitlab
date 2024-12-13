@@ -135,7 +135,7 @@ export default {
   <section>
     <div class="gl-flex gl-bg-gray-10 gl-p-5">
       <search-and-sort-bar
-        :namespace="namespaceId"
+        :namespace="String(namespaceId)"
         :search-input-placeholder="$options.i18n.filterUsersPlaceholder"
         :sort-options="$options.sortOptions"
         initial-sort-by="last_activity_on_desc"
@@ -255,10 +255,7 @@ export default {
       class="gl-mt-5"
     />
 
-    <remove-billable-member-modal
-      v-if="billableMemberToRemove"
-      :modal-id="$options.removeBillableMemberModalId"
-    />
+    <remove-billable-member-modal v-if="billableMemberToRemove" />
 
     <gl-modal
       ref="cannotRemoveModal"

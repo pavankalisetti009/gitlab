@@ -34,7 +34,7 @@ export const parseNamespaceProvideData = (el) => {
     isUsingProjectEnforcement && perProjectStorageLimit === 0;
 
   return {
-    namespaceId,
+    namespaceId: parseInt(namespaceId, 10),
     namespacePath,
     userNamespace: parseBoolean(userNamespace),
     defaultPerPage: Number(defaultPerPage),

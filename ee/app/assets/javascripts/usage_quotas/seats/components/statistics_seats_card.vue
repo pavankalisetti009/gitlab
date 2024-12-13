@@ -63,7 +63,7 @@ export default {
       default: null,
     },
     namespaceId: {
-      type: String,
+      type: Number,
       required: true,
     },
   },
@@ -95,9 +95,6 @@ export default {
       }
       return this.subscriptionPermissions?.canAddSeats ?? true;
     },
-    parsedNamespaceId() {
-      return parseInt(this.namespaceId, 10);
-    },
     permissionReason() {
       return this.subscriptionPermissions?.reason;
     },
@@ -126,7 +123,7 @@ export default {
       client: 'customersDotClient',
       variables() {
         return {
-          namespaceId: this.parsedNamespaceId,
+          namespaceId: this.namespaceId,
         };
       },
       update: (data) => ({
@@ -145,7 +142,7 @@ export default {
       query: getGitlabSubscriptionQuery,
       variables() {
         return {
-          namespaceId: this.parsedNamespaceId,
+          namespaceId: this.namespaceId,
         };
       },
       update: (data) => {

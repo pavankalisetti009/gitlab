@@ -71,7 +71,7 @@ export default {
   },
   props: {
     groupId: {
-      type: String,
+      type: Number,
       required: false,
       default: null,
     },
@@ -88,9 +88,6 @@ export default {
     };
   },
   computed: {
-    parsedGroupId() {
-      return parseInt(this.groupId, 10);
-    },
     shouldShowCTAButton() {
       return !this.isLoading;
     },
@@ -175,7 +172,7 @@ export default {
       query: getGitlabSubscriptionQuery,
       variables() {
         return {
-          namespaceId: this.parsedGroupId,
+          namespaceId: this.groupId,
         };
       },
       skip() {
@@ -191,7 +188,7 @@ export default {
       client: 'customersDotClient',
       variables() {
         return this.groupId
-          ? { namespaceId: this.parsedGroupId }
+          ? { namespaceId: this.groupId }
           : { subscriptionName: this.subscriptionName };
       },
       skip() {

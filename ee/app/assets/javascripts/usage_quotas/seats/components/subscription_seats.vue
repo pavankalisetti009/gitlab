@@ -49,7 +49,6 @@ export default {
     ...mapState([
       'namespaceId',
       'hasError',
-      'seatsInSubscription',
       'maxSeatsUsed',
       'seatsOwed',
       'addSeatsHref',
@@ -121,10 +120,7 @@ export default {
         </div>
       </div>
       <div v-else class="gl-grid gl-gap-5 md:gl-grid-cols-2">
-        <subscription-seats-statistics-card
-          :seats-in-subscription="seatsInSubscription"
-          :billable-members-count="billableMembersCount"
-        />
+        <subscription-seats-statistics-card :billable-members-count="billableMembersCount" />
         <subscription-upgrade-info-card
           v-if="showUpgradeInfoCard"
           :max-namespace-seats="maxFreeNamespaceSeats"

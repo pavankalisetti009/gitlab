@@ -25,7 +25,7 @@ export const parseProvideData = (el) => {
 
   return {
     fullPath,
-    namespaceId,
+    namespaceId: parseInt(namespaceId, 10),
     namespaceName,
     isPublicNamespace: parseBoolean(isPublicNamespace),
     seatUsageExportPath,

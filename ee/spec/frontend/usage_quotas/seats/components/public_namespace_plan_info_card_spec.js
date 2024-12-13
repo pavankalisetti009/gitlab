@@ -16,7 +16,7 @@ describe('PublicNamespacePlanInfoCard', () => {
   let wrapper;
 
   const explorePlansPath = 'https://gitlab.com/explore-plans-path';
-  const namespaceId = '16';
+  const namespaceId = 16;
 
   const findExplorePaidPlansButton = () => wrapper.findByTestId('explore-plans');
   const findDescriptionTitle = () => wrapper.findByTestId('title');

@@ -143,7 +143,7 @@ describe('GitLab Duo Usage', () => {
     beforeEach(() => {
       createComponent({
         addOnPurchasesHandler: noAssignedAddonDataHandler,
-        provideProps: { groupId: '289561' },
+        provideProps: { groupId: 289561 },
       });
     });
     it('calls addOnPurchases query with appropriate props', () => {
@@ -197,7 +197,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedAddonDataHandler,
-            provideProps: { groupId: '289561' },
+            provideProps: { groupId: 289561 },
           });
         });
 
@@ -218,7 +218,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedAddonDataHandler,
-            provideProps: { isStandalonePage: true, groupId: '289561' },
+            provideProps: { isStandalonePage: true, groupId: 289561 },
           });
         });
 
@@ -239,7 +239,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedAddonDataHandler,
-            provideProps: { groupId: '289561' },
+            provideProps: { groupId: 289561 },
           });
         });
 
@@ -254,7 +254,7 @@ describe('GitLab Duo Usage', () => {
         it('renders code suggestions info card for duo pro', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
-            groupId: '289561',
+            groupId: 289561,
             duoTier: 'pro',
           });
         });
@@ -264,7 +264,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedEnterpriseAddonDataHandler,
-            provideProps: { groupId: '289561' },
+            provideProps: { groupId: 289561 },
           });
         });
 
@@ -279,7 +279,7 @@ describe('GitLab Duo Usage', () => {
         it('renders code suggestions info card for duo enterprise', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
-            groupId: '289561',
+            groupId: 289561,
             duoTier: 'enterprise',
           });
         });
@@ -289,7 +289,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedDuoAddonsDataHandler,
-            provideProps: { groupId: '289561' },
+            provideProps: { groupId: 289561 },
           });
         });
 
@@ -311,7 +311,7 @@ describe('GitLab Duo Usage', () => {
         it('renders code suggestions info card for duo enterprise', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
-            groupId: '289561',
+            groupId: 289561,
             duoTier: 'enterprise',
           });
         });

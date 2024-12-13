@@ -21,11 +21,6 @@ export default {
       required: false,
       default: 0,
     },
-    seatsInSubscription: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
   },
   data() {
     return {
@@ -38,7 +33,7 @@ export default {
       client: 'customersDotClient',
       variables() {
         return {
-          namespaceId: parseInt(this.namespaceId, 10),
+          namespaceId: this.namespaceId,
         };
       },
       update: (data) => Boolean(data.subscription?.communityPlan),
@@ -57,6 +52,7 @@ export default {
       'hasNoSubscription',
       'maxFreeNamespaceSeats',
       'namespaceId',
+      'seatsInSubscription',
     ]),
     freeNamespaceSeatsLimitText() {
       return sprintf(s__('Billings|Free groups are limited to %{number} seats.'), {

@@ -55,8 +55,7 @@ const createTemplate = (config = {}) => {
     apolloProvider,
     provide: {
       pageSize: 20,
-      namespacePath: 'test',
-      namespaceId: '35',
+      namespaceId: 35,
       namespaceActualPlanName: 'free',
       userNamespace: false,
       ciMinutesAnyProjectEnabled: true,

@@ -27,7 +27,7 @@ export default ({
   userDetails: {},
   search: null,
   sort: 'last_activity_on_desc',
-  seatsInSubscription: null,
+  seatsInSubscription: 0,
   seatsInUse: null,
   maxSeatsUsed: null,
   seatsOwed: null,

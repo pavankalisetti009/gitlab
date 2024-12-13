@@ -4,7 +4,7 @@ import apolloProvider from '../shared/provider';
 import { PRODUCT_ANALYTICS_TAB_METADATA_EL_SELECTOR } from '../constants';
 import ProductAnalyticsUsageQuotaApp from './components/product_analytics_usage_quota_app.vue';
 
-export const parseProvideData = (el) => {
+const parseProvideData = (el) => {
   const { namespacePath, emptyStateIllustrationPath, productAnalyticsEnabled } = el.dataset;
 
   return {

@@ -24,7 +24,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['namespaceName', 'namespaceId', 'billableMemberToRemove']),
+    ...mapState(['namespaceName', 'billableMemberToRemove']),
     modalTitle() {
       return sprintf(s__('Billing|Remove user %{username} from your subscription'), {
         username: this.usernameWithAtPrepended,

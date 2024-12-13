@@ -1,7 +1,7 @@
 import { storageTypeHelpPaths } from '~/usage_quotas/storage/constants';
 
 export const defaultNamespaceProvideValues = {
-  namespaceId: '0',
+  namespaceId: 0,
   namespacePath: 'GitLab',
   userNamespace: false,
   defaultPerPage: 20,

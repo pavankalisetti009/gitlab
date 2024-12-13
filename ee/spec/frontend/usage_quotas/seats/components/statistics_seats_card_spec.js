@@ -34,7 +34,7 @@ describe('StatisticsSeatsCard', () => {
   const defaultProps = {
     seatsUsed: 20,
     seatsOwed: 5,
-    namespaceId: '4321',
+    namespaceId: 4321,
     purchaseButtonLink,
   };
 

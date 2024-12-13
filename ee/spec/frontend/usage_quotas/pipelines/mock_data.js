@@ -1,8 +1,7 @@
 import { TEST_HOST } from 'helpers/test_constants';
 
 export const defaultProvide = Object.freeze({
-  namespacePath: 'mygroup',
-  namespaceId: '12345',
+  namespaceId: 12345,
   userNamespace: false,
   pageSize: '20',
   ciMinutesAnyProjectEnabled: true,

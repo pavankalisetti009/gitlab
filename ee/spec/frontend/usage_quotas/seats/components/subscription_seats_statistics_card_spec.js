@@ -48,7 +48,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
         hasError: false,
         hasNoSubscription: true,
         maxFreeNamespaceSeats: 5,
-        namespaceId: '13',
+        namespaceId: 13,
+        seatsInSubscription: 13,
         ...initialState,
       },
     });
@@ -64,7 +65,6 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       apolloProvider,
       propsData: {
         billableMembersCount: 3,
-        seatsInSubscription: 13,
         ...props,
       },
       store: fakeStore(initialGetters, initialState),
