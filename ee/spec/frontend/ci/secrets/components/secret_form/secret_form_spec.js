@@ -41,8 +41,8 @@ describe('SecretForm component', () => {
   const findDescriptionFieldGroup = () => wrapper.findByTestId('secret-description-field-group');
   const findExpirationField = () => wrapper.findComponent(GlDatepicker);
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
-  const findKeyFieldGroup = () => wrapper.findByTestId('secret-key-field-group');
-  const findKeyField = () => findKeyFieldGroup().findComponent(GlFormInput);
+  const findNameFieldGroup = () => wrapper.findByTestId('secret-name-field-group');
+  const findNameField = () => findNameFieldGroup().findComponent(GlFormInput);
   const findRotationPeriodField = () => wrapper.findComponent(GlCollapsibleListbox);
   const findValueFieldGroup = () => wrapper.findByTestId('secret-value-field-group');
   const findValueField = () => findValueFieldGroup().findComponent(GlFormTextarea);
@@ -78,7 +78,7 @@ describe('SecretForm component', () => {
   };
 
   const inputRequiredFields = async () => {
-    findKeyField().vm.$emit('input', 'SECRET_KEY');
+    findNameField().vm.$emit('input', 'SECRET_KEY');
     findValueField().vm.$emit('input', 'SECRET_VALUE');
     findBranchField().vm.$emit('select-branch', 'main');
     findEnvironmentsDropdown().vm.$emit('select-environment', '*');
@@ -113,7 +113,7 @@ describe('SecretForm component', () => {
       expect(findDescriptionField().exists()).toBe(true);
       expect(findExpirationField().exists()).toBe(true);
       expect(findEnvironmentsDropdown().exists()).toBe(true);
-      expect(findKeyField().exists()).toBe(true);
+      expect(findNameField().exists()).toBe(true);
       expect(findRotationPeriodField().exists()).toBe(true);
       expect(findValueField().exists()).toBe(true);
     });
@@ -199,19 +199,19 @@ describe('SecretForm component', () => {
       createComponent();
     });
 
-    it('validates key field', async () => {
-      expect(findKeyField().attributes('state')).toBe('true');
+    it('validates name field', async () => {
+      expect(findNameField().attributes('state')).toBe('true');
 
-      findKeyField().vm.$emit('input', '');
+      findNameField().vm.$emit('input', '');
       await nextTick();
 
-      expect(findKeyField().attributes('state')).toBeUndefined();
-      expect(findKeyFieldGroup().attributes('invalid-feedback')).toBe('This field is required');
+      expect(findNameField().attributes('state')).toBeUndefined();
+      expect(findNameFieldGroup().attributes('invalid-feedback')).toBe('This field is required');
 
-      findKeyField().vm.$emit('input', 'SECRET_KEY');
+      findNameField().vm.$emit('input', 'SECRET_KEY');
       await nextTick();
 
-      expect(findKeyField().attributes('state')).toBe('true');
+      expect(findNameField().attributes('state')).toBe('true');
     });
 
     it('validates value field', async () => {
