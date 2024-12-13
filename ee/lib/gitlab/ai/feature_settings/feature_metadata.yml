@@ -34,27 +34,34 @@ duo_chat:
     - mistral
     - mixtral
     - claude_3
+    - gpt
 duo_chat_explain_code:
   title: Explain Code
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
+    - mixtral
     - claude_3
+    - gpt
 duo_chat_write_tests:
   title: Write Test
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
+    - mixtral
     - claude_3
+    - gpt
 duo_chat_refactor_code:
   title: Refactor Code
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
+    - mixtral
     - claude_3
+    - gpt
 duo_chat_fix_code:
   title: Fix Code
   release_state: BETA
