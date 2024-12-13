@@ -1,23 +1,19 @@
 <script>
-import { GlIcon, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'PolicyPopover',
   components: {
-    GlIcon,
     GlLink,
     GlPopover,
     GlSprintf,
+    HelpIcon,
   },
   props: {
     content: {
       type: String,
       required: true,
-    },
-    iconName: {
-      type: String,
-      required: false,
-      default: 'question-o',
     },
     href: {
       type: String,
@@ -66,7 +62,7 @@ export default {
     </gl-popover>
 
     <slot name="trigger">
-      <gl-icon :id="target" :name="iconName" variant="info" />
+      <help-icon :id="target" />
     </slot>
   </div>
 </template>

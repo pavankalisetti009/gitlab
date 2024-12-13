@@ -1,5 +1,6 @@
-import { GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
+import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import TemplateSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/template_selector.vue';
 import {
@@ -20,7 +21,7 @@ describe('TemplateSelector', () => {
   };
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findIcon = () => wrapper.findComponent(GlIcon);
+  const findIcon = () => wrapper.findComponent(HelpIcon);
 
   it('renders default value', () => {
     createComponent();

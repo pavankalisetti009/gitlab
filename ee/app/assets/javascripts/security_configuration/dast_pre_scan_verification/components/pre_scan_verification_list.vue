@@ -1,5 +1,6 @@
 <script>
-import { GlButton, GlIcon, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
+import { GlButton, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import {
   PRE_SCAN_VERIFICATION_STATUS,
   PRE_SCAN_VERIFICATION_STEPS,
@@ -18,7 +19,7 @@ export default {
   },
   components: {
     GlButton,
-    GlIcon,
+    HelpIcon,
     PreScanVerificationStep,
   },
   props: {
@@ -62,11 +63,10 @@ export default {
       <h4 class="gl-my-0 gl-text-lg">
         {{ $options.i18n.preScanVerificationListHeader }}
       </h4>
-      <gl-icon
+      <help-icon
         v-gl-tooltip
-        class="gl-ml-3 gl-text-blue-500"
+        class="gl-ml-3"
         :title="$options.i18n.preScanVerificationListTooltip"
-        name="question-o"
       />
     </div>
     <pre-scan-verification-step
