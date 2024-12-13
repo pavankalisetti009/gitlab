@@ -8,7 +8,7 @@ module EE
       private
 
       override :check_access!
-      def check_access!(build, job_variables_attributes)
+      def check_access!
         super
 
         begin
