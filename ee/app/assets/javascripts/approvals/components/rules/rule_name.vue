@@ -1,12 +1,13 @@
 <script>
-import { GlLink, GlPopover, GlIcon } from '@gitlab/ui';
+import { GlLink, GlPopover } from '@gitlab/ui';
 import { COVERAGE_CHECK_NAME, APPROVAL_RULE_CONFIGS } from 'ee/approvals/constants';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   components: {
     GlLink,
     GlPopover,
-    GlIcon,
+    HelpIcon,
   },
   inject: {
     coverageCheckHelpPagePath: {
@@ -47,13 +48,7 @@ export default {
   <div class="gl-flex gl-items-center">
     <span class="-gl-mt-1">{{ name }}</span>
     <span v-if="description" class="gl-ml-3">
-      <gl-icon
-        ref="helpIcon"
-        name="question-o"
-        :aria-label="__('Help')"
-        :size="14"
-        class="author-link gl-cursor-help"
-      />
+      <help-icon ref="helpIcon" :aria-label="__('Help')" class="author-link" />
       <gl-popover :target="popoverTarget" placement="top">
         <template #title>{{ __('Who can approve?') }}</template>
         <p>{{ description }}</p>

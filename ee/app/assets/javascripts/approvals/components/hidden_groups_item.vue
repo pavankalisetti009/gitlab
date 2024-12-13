@@ -1,9 +1,11 @@
 <script>
 import { GlTooltipDirective, GlIcon } from '@gitlab/ui';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   components: {
     GlIcon,
+    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -17,14 +19,11 @@ export default {
       <gl-icon name="folder" :size="16" variant="subtle" data-testid="folder-icon" />
     </div>
     <span>{{ __('Private group(s)') }}</span>
-    <gl-icon
+    <help-icon
       v-gl-tooltip
       :title="__('One or more groups that you don\'t have access to.')"
       class="gl-ml-2"
-      name="question-o"
-      :size="16"
       data-testid="help-icon"
-      variant="subtle"
     />
   </div>
 </template>

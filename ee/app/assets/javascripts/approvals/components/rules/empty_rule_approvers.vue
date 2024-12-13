@@ -1,11 +1,12 @@
 <script>
-import { GlPopover, GlLink, GlIcon } from '@gitlab/ui';
+import { GlPopover, GlLink } from '@gitlab/ui';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   components: {
-    GlIcon,
     GlPopover,
     GlLink,
+    HelpIcon,
   },
   props: {
     eligibleApproversDocsPath: {
@@ -31,14 +32,7 @@ export default {
   <div class="gl-flex gl-items-center">
     <span>{{ __('Any eligible user') }}</span>
     <span :id="popoverContainerId" class="gl-ml-2 gl-inline-flex">
-      <gl-icon
-        :id="popoverId"
-        tabindex="0"
-        name="question-o"
-        :aria-label="__('help')"
-        :size="14"
-        class="author-link gl-cursor-help"
-      />
+      <help-icon :id="popoverId" tabindex="0" :aria-label="__('help')" class="author-link" />
       <gl-popover :target="popoverId" :container="popoverContainerId" placement="top">
         <template #title>{{ __('Who can approve?') }}</template>
         <ul class="gl-pl-5">
