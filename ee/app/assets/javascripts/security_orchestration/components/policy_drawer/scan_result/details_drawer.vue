@@ -2,6 +2,11 @@
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import {
+  ALLOWED,
+  DENIED,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 import {
   BOT_MESSAGE_TYPE,
   fromYaml,
@@ -11,6 +16,7 @@ import { SUMMARY_TITLE } from '../constants';
 import InfoRow from '../info_row.vue';
 import DrawerLayout from '../drawer_layout.vue';
 import ToggleList from '../toggle_list.vue';
+import DenyAllowViewList from './deny_allow_view_list.vue';
 import Approvals from './policy_approvals.vue';
 import EdgeCaseSettings from './edge_case_settings.vue';
 import Settings from './policy_settings.vue';
@@ -25,6 +31,7 @@ export default {
     scanResult: s__('SecurityOrchestration|Merge request approval'),
   },
   components: {
+    DenyAllowViewList,
     GlSprintf,
     ToggleList,
     DrawerLayout,
@@ -33,6 +40,7 @@ export default {
     EdgeCaseSettings,
     Settings,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     policy: {
       type: Object,
@@ -50,6 +58,9 @@ export default {
     },
   },
   computed: {
+    showLicenseExcludePackages() {
+      return this.glFeatures.excludeLicensePackages;
+    },
     actions() {
       return this.parsedYaml?.actions;
     },
@@ -111,6 +122,12 @@ export default {
     mapApproversToArray(index) {
       return mapApproversToArray(this.actionApprovers[index]);
     },
+    getDenyAllowList(licenses) {
+      return licenses[ALLOWED] || licenses[DENIED] || [];
+    },
+    showDenyAllowList(licenses = {}) {
+      return this.showLicenseExcludePackages && this.getDenyAllowList(licenses).length > 0;
+    },
   },
 };
 </script>
@@ -150,7 +167,8 @@ export default {
 
         <div
           v-for="(
-            { summary, branchExceptions, licenses, criteriaMessage, criteriaList }, idx
+            { summary, branchExceptions, licenses, criteriaMessage, criteriaList, denyAllowList },
+            idx
           ) in humanizedRules"
           :key="idx"
           class="gl-pt-5"
@@ -160,6 +178,11 @@ export default {
               <toggle-list data-testid="licences-list" class="gl-mb-2" :items="licenses" />
             </template>
           </gl-sprintf>
+          <deny-allow-view-list
+            v-if="showDenyAllowList(denyAllowList)"
+            class="gl-my-4"
+            :items="getDenyAllowList(denyAllowList)"
+          />
           <toggle-list
             v-if="showBranchExceptions(branchExceptions)"
             class="gl-mb-2"
