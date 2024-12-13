@@ -14,19 +14,6 @@ RSpec.describe 'Destroy group saved reply', feature_category: :code_review_workf
   let(:mutation) { graphql_mutation(:group_saved_reply_destroy, input) }
   let(:mutation_response) { graphql_mutation_response(:group_saved_reply_destroy) }
 
-  context 'with group_saved_replies_flag disabled' do
-    before do
-      stub_feature_flags(group_saved_replies_flag: false)
-      stub_licensed_features(group_saved_replies: true)
-    end
-
-    it 'returns null' do
-      post_graphql_mutation(mutation, current_user: current_user)
-
-      expect(mutation_response).to be_nil
-    end
-  end
-
   context 'when license is invalid' do
     before do
       stub_licensed_features(group_saved_replies: false)

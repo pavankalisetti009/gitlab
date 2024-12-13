@@ -18,17 +18,6 @@ RSpec.describe Groups::CommentTemplatesController, feature_category: :code_revie
         it { expect(response).to have_gitlab_http_status(:not_found) }
       end
 
-      context 'when group_saved_replies_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(group_saved_replies_flag: false)
-          stub_licensed_features(group_saved_replies: true)
-
-          get group_comment_templates_path(group)
-        end
-
-        it { expect(response).to have_gitlab_http_status(:not_found) }
-      end
-
       context 'when license is valid' do
         before do
           stub_licensed_features(group_saved_replies: true)
@@ -61,17 +50,6 @@ RSpec.describe Groups::CommentTemplatesController, feature_category: :code_revie
         it { expect(response).to have_gitlab_http_status(:not_found) }
       end
 
-      context 'when group_saved_replies_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(group_saved_replies_flag: false)
-          stub_licensed_features(group_saved_replies: true)
-
-          get group_comment_templates_path(group)
-        end
-
-        it { expect(response).to have_gitlab_http_status(:not_found) }
-      end
-
       context 'when license is valid' do
         before do
           stub_licensed_features(group_saved_replies: true)
@@ -97,17 +75,6 @@ RSpec.describe Groups::CommentTemplatesController, feature_category: :code_revie
       context 'when license is invalid' do
         before do
           stub_licensed_features(group_saved_replies: false)
-
-          get group_comment_templates_path(group)
-        end
-
-        it { expect(response).to have_gitlab_http_status(:not_found) }
-      end
-
-      context 'when group_saved_replies_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(group_saved_replies_flag: false)
-          stub_licensed_features(group_saved_replies: true)
 
           get group_comment_templates_path(group)
         end

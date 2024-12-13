@@ -276,17 +276,13 @@ module EE
           ::Types::Groups::SavedReplyType.connection_type,
           null: true,
           resolver: ::Resolvers::Groups::SavedRepliesResolver,
-          description: 'Saved replies available to the group. Available only when feature flag ' \
-                       '`group_saved_replies_flag` is enabled. This field can only be resolved ' \
-                       'for one group in any single request.',
-          experiment: { milestone: '16.10' }
+          description: 'Saved replies available to the group. This field can only be resolved ' \
+                       'for one group in any single request.'
 
         field :saved_reply,
           resolver: ::Resolvers::Groups::SavedReplyResolver,
-          description: 'Saved reply in the group. Available only when feature flag ' \
-                       '`group_saved_replies_flag` is enabled. This field can only ' \
-                       'be resolved for one group in any single request.',
-          experiment: { milestone: '16.10' }
+          description: 'Saved reply in the group. This field can only ' \
+                       'be resolved for one group in any single request.'
 
         field :value_stream_analytics,
           ::Types::Analytics::ValueStreamAnalyticsType,

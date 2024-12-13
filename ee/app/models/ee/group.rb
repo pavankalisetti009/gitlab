@@ -298,7 +298,7 @@ module EE
 
     override :supports_saved_replies?
     def supports_saved_replies?
-      ::Feature.enabled?(:group_saved_replies_flag, self, type: :beta) && licensed_feature_available?(:group_saved_replies)
+      licensed_feature_available?(:group_saved_replies)
     end
 
     def licensed_ai_features_available?
