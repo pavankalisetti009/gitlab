@@ -5,10 +5,34 @@ module Mutations
     module SelfHostedModels
       # rubocop: disable GraphQL/GraphqlName -- It's an abstraction not meant to be used in the schema
       class Base < BaseMutation
-        field :self_hosted_model,
-          Types::Ai::SelfHostedModels::SelfHostedModelType,
-          null: true,
-          description: 'Self-hosted model after mutation.'
+        def self.field_self_hosted_model
+          field :self_hosted_model,
+            Types::Ai::SelfHostedModels::SelfHostedModelType,
+            null: true,
+            description: 'Self-hosted model after mutation.'
+        end
+
+        def self.arguments_for_model_attributes
+          argument :name, GraphQL::Types::String,
+            required: true,
+            description: 'Deployment name of the self-hosted model.'
+
+          argument :model, ::Types::Ai::SelfHostedModels::AcceptedModelsEnum,
+            required: true,
+            description: 'AI model deployed.'
+
+          argument :endpoint, GraphQL::Types::String,
+            required: true,
+            description: 'Endpoint of the self-hosted model.'
+
+          argument :api_token, GraphQL::Types::String,
+            required: false,
+            description: 'API token to access the self-hosted model, if any.'
+
+          argument :identifier, GraphQL::Types::String,
+            required: false,
+            description: 'Identifier for 3rd party model provider.'
+        end
 
         private
 
