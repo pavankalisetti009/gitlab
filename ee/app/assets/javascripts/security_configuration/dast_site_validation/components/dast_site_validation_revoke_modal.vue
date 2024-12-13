@@ -1,8 +1,9 @@
 <script>
-import { GlModal, GlSprintf, GlAlert, GlLink, GlIcon } from '@gitlab/ui';
+import { GlModal, GlSprintf, GlAlert, GlLink } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { DAST_SITE_VALIDATION_REVOKE_MODAL_ID } from '../constants';
 import dastSiteValidationRevokeMutation from '../graphql/dast_site_validation_revoke.mutation.graphql';
 
@@ -14,7 +15,7 @@ export default {
     GlSprintf,
     GlAlert,
     GlLink,
-    GlIcon,
+    HelpIcon,
   },
   props: {
     fullPath: {
@@ -117,8 +118,8 @@ export default {
   >
     <template #modal-title>
       {{ modalProps.title }}
-      <gl-link :href="docsPath" target="_blank" class="gl-ml-2 gl-text-gray-300">
-        <gl-icon name="question-o" />
+      <gl-link :href="docsPath" target="_blank" class="gl-ml-2">
+        <help-icon />
       </gl-link>
     </template>
     <gl-alert v-if="hasErrors" variant="danger" class="gl-mb-4" :dismissible="false">

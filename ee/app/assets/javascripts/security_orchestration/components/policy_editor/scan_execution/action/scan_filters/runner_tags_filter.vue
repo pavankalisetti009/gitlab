@@ -1,7 +1,8 @@
 <script>
-import { GlIcon, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
+import { GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import RunnerTagsList from './runner_tags_list.vue';
 
 export default {
@@ -13,7 +14,7 @@ export default {
   },
   components: {
     SectionLayout,
-    GlIcon,
+    HelpIcon,
     RunnerTagsList,
   },
   directives: {
@@ -56,12 +57,7 @@ export default {
           @error="$emit('error')"
           @input="handleSelection"
         />
-        <gl-icon
-          v-gl-tooltip
-          name="question-o"
-          :title="$options.i18n.selectedTagsInformation"
-          class="gl-ml-2 gl-text-blue-600"
-        />
+        <help-icon v-gl-tooltip :title="$options.i18n.selectedTagsInformation" class="gl-ml-2" />
       </div>
     </template>
   </section-layout>

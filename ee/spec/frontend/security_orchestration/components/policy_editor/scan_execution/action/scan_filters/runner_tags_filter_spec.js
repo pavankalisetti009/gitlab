@@ -1,5 +1,5 @@
-import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import RunnerTagsFilter from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/runner_tags_filter.vue';
 import RunnerTagsList from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/runner_tags_list.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -20,7 +20,7 @@ describe('RunnerTagsFilter', () => {
   };
 
   const findRunnerTagsList = () => wrapper.findComponent(RunnerTagsList);
-  const findHelpIcon = () => wrapper.findComponent(GlIcon);
+  const findHelpIcon = () => wrapper.findComponent(HelpIcon);
 
   describe('default', () => {
     beforeEach(() => {

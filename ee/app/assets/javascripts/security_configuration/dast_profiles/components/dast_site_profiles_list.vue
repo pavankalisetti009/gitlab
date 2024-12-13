@@ -11,6 +11,7 @@ import {
   DAST_SITE_VALIDATION_ALLOWED_TIMELINE_IN_MINUTES,
 } from 'ee/security_configuration/dast_site_validation/constants';
 import dastSiteValidationsQuery from 'ee/security_configuration/dast_site_validation/graphql/dast_site_validations.query.graphql';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { fetchPolicies } from '~/lib/graphql';
 import { s__ } from '~/locale';
 import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
@@ -28,6 +29,7 @@ export default {
     DastSiteValidationModal,
     DastSiteValidationRevokeModal,
     ProfilesList,
+    HelpIcon,
   },
   apollo: {
     validations: {
@@ -168,8 +170,8 @@ export default {
   <profiles-list :full-path="fullPath" :profiles="profiles" v-bind="$attrs" v-on="$listeners">
     <template #head(validationStatus)="{ label }">
       {{ label }}
-      <gl-link :href="$options.DOCS_LINK" target="_blank" class="gl-ml-2 gl-text-gray-300">
-        <gl-icon name="question-o" />
+      <gl-link :href="$options.DOCS_LINK" target="_blank" class="gl-ml-2">
+        <help-icon />
       </gl-link>
     </template>
     <template #cell(validationStatus)="{ value, item }">

@@ -1,5 +1,6 @@
-import { GlPopover, GlLink, GlSprintf, GlIcon } from '@gitlab/ui';
+import { GlPopover, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
 
 describe('PolicyPopover', () => {
@@ -16,13 +17,14 @@ describe('PolicyPopover', () => {
       },
       stubs: {
         GlSprintf,
+        HelpIcon,
       },
     });
   };
 
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findLink = () => wrapper.findComponent(GlLink);
-  const findIcon = () => wrapper.findComponent(GlIcon);
+  const findIcon = () => wrapper.findComponent(HelpIcon);
 
   it('should render popover with default trigger', () => {
     createComponent();
@@ -31,17 +33,7 @@ describe('PolicyPopover', () => {
     expect(findGlPopover().props('target')).toBe('test-target');
     expect(findGlPopover().props('showCloseButton')).toBe(true);
     expect(findLink().attributes('href')).toBe('href');
-    expect(findIcon().props('name')).toBe('question-o');
-  });
-
-  it('renders different icons', () => {
-    createComponent({
-      propsData: {
-        iconName: 'smile',
-      },
-    });
-
-    expect(findIcon().props('name')).toBe('smile');
+    expect(findIcon().attributes('name')).toBe('question-o');
   });
 
   it('can hide popover', () => {

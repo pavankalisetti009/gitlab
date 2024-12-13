@@ -1,7 +1,8 @@
 <script>
-import { GlCollapsibleListbox, GlIcon, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { DEFAULT_TEMPLATE, LATEST_TEMPLATE } from './constants';
 
 export default {
@@ -16,7 +17,7 @@ export default {
   },
   components: {
     GlCollapsibleListbox,
-    GlIcon,
+    HelpIcon,
     SectionLayout,
   },
   directives: {
@@ -74,12 +75,7 @@ export default {
           :selected="selected"
           @select="toggleValue"
         />
-        <gl-icon
-          v-gl-tooltip
-          name="question-o"
-          :title="tooltipMessage"
-          class="gl-ml-3 gl-text-blue-600"
-        />
+        <help-icon v-gl-tooltip :title="tooltipMessage" class="gl-ml-3" />
       </div>
     </template>
   </section-layout>

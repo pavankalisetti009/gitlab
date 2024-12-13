@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlTooltipDirective, GlIcon } from '@gitlab/ui';
+import { GlLink, GlTooltipDirective } from '@gitlab/ui';
 import { keyBy } from 'lodash';
 import {
   SEVERITY_LEVEL_CRITICAL,
@@ -17,6 +17,7 @@ import {
 } from 'ee/security_dashboard/constants';
 import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
 import { s__, n__, sprintf } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import SecurityDashboardCard from './security_dashboard_card.vue';
 
 const SEVERITY_LEVELS_ORDERED_BY_SEVERITY = [
@@ -45,7 +46,7 @@ export default {
     },
   },
   accordionItemsContentMaxHeight: '445px',
-  components: { SecurityDashboardCard, Accordion, AccordionItem, GlLink, GlIcon },
+  components: { SecurityDashboardCard, Accordion, AccordionItem, GlLink, HelpIcon },
   directives: {
     'gl-tooltip': GlTooltipDirective,
   },
@@ -173,7 +174,7 @@ export default {
         :href="helpPagePath"
         :aria-label="__('Project security status help page')"
         target="_blank"
-        ><gl-icon name="question-o"
+        ><help-icon
       /></gl-link>
     </template>
     <template v-if="!isLoadingGrades" #help-text>
