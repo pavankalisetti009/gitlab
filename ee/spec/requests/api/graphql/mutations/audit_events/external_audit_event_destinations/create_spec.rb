@@ -8,6 +8,8 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
   let_it_be(:group) { create(:group) }
   let_it_be(:owner) { create(:user) }
   let_it_be(:destination_url) { 'https://gitlab.com/example/testendpoint' }
+  let_it_be(:destination_name) { 'My Destination' }
+  let_it_be(:verification_token) { 'secret-verification-token' }
 
   let(:current_user) { owner }
   let(:mutation) { graphql_mutation(:external_audit_event_destination_create, input) }
@@ -16,7 +18,8 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
   let(:input) do
     {
       groupPath: group.full_path,
-      destinationUrl: destination_url
+      destinationUrl: destination_url,
+      name: destination_name
     }
   end
 
@@ -26,6 +29,8 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
       destinationUrl: 'ftp://gitlab.com/example/testendpoint'
     }
   end
+
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
 
   shared_examples 'creates an audit event' do
     it 'audits the creation' do
@@ -101,6 +106,22 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
       end
 
       it_behaves_like 'creates an audit event'
+
+      it_behaves_like 'creates a streaming destination',
+        AuditEvents::ExternalAuditEventDestination do
+        let(:attributes) do
+          {
+            legacy: {
+              destination_url: destination_url,
+              name: destination_name,
+              namespace_id: group.id
+            },
+            streaming: {
+              "url" => destination_url
+            }
+          }
+        end
+      end
 
       context 'when overriding verification token' do
         let_it_be(:verification_token) { 'a' * 24 }

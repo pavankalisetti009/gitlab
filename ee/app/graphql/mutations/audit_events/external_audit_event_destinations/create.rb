@@ -6,6 +6,8 @@ module Mutations
       class Create < Base
         graphql_name 'ExternalAuditEventDestinationCreate'
 
+        include ::AuditEvents::LegacyDestinationSyncHelper
+
         authorize :admin_external_audit_events
 
         argument :destination_url, GraphQL::Types::String,
@@ -35,7 +37,10 @@ module Mutations
             verification_token: verification_token,
             name: name)
 
-          audit(destination, action: :create) if destination.save
+          if destination.save
+            audit(destination, action: :create)
+            create_stream_destination(legacy_destination_model: destination, category: :http, is_instance: false)
+          end
 
           { external_audit_event_destination: (destination if destination.persisted?), errors: Array(destination.errors) }
         end

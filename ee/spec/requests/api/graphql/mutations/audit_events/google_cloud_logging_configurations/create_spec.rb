@@ -95,6 +95,27 @@ RSpec.describe 'Create Google Cloud logging configuration', feature_category: :a
 
       it_behaves_like 'creates an audit event', 'audit_events'
 
+      it_behaves_like 'creates a streaming destination',
+        AuditEvents::GoogleCloudLoggingConfiguration do
+          let(:attributes) do
+            {
+              legacy: {
+                name: destination_name,
+                google_project_id_name: google_project_id_name,
+                log_id_name: log_id_name,
+                client_email: client_email,
+                private_key: private_key,
+                namespace_id: group.id
+              },
+              streaming: {
+                "googleProjectIdName" => google_project_id_name,
+                "logIdName" => log_id_name,
+                "clientEmail" => client_email
+              }
+            }
+          end
+        end
+
       context 'when overriding log id name' do
         let_it_be(:log_id_name) { 'test-log-id' }
 

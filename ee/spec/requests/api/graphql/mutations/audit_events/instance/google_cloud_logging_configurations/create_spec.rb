@@ -121,6 +121,26 @@ RSpec.describe 'Create Instance level Google Cloud logging configuration', featu
         end
 
         it_behaves_like 'creates an audit event'
+
+        it_behaves_like 'creates a streaming destination',
+          AuditEvents::Instance::GoogleCloudLoggingConfiguration do
+            let(:attributes) do
+              {
+                legacy: {
+                  name: destination_name,
+                  google_project_id_name: google_project_id_name,
+                  log_id_name: log_id_name,
+                  client_email: client_email,
+                  private_key: private_key
+                },
+                streaming: {
+                  "googleProjectIdName" => google_project_id_name,
+                  "logIdName" => log_id_name,
+                  "clientEmail" => client_email
+                }
+              }
+            end
+          end
       end
 
       context 'when there is error while saving' do

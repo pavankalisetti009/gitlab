@@ -8,13 +8,15 @@ RSpec.describe 'Create an instance external audit event destination', feature_ca
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:destination_url) { 'https://gitlab.com/example/testendpoint' }
+  let_it_be(:destination_name) { 'My Destination' }
 
   let(:mutation) { graphql_mutation(:instance_external_audit_event_destination_create, input) }
   let(:mutation_response) { graphql_mutation_response(:instance_external_audit_event_destination_create) }
 
   let(:input) do
     {
-      destinationUrl: destination_url
+      destinationUrl: destination_url,
+      name: destination_name
     }
   end
 
@@ -23,6 +25,8 @@ RSpec.describe 'Create an instance external audit event destination', feature_ca
       destinationUrl: 'ftp://gitlab.com/example/testendpoint'
     }
   end
+
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: user) }
 
   shared_examples 'creates an audit event' do
     it 'audits the creation' do
@@ -56,13 +60,14 @@ RSpec.describe 'Create an instance external audit event destination', feature_ca
   context 'when feature is licensed' do
     before do
       stub_licensed_features(external_audit_events: true)
+      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
     end
 
     context 'when user is instance admin' do
-      subject { post_graphql_mutation(mutation, current_user: admin) }
+      subject(:mutate) { post_graphql_mutation(mutation, current_user: admin) }
 
       it 'creates the destination' do
-        expect { subject }
+        expect { mutate }
           .to change { AuditEvents::InstanceExternalAuditEventDestination.count }.by(1)
 
         destination = AuditEvents::InstanceExternalAuditEventDestination.last
@@ -87,7 +92,7 @@ RSpec.describe 'Create an instance external audit event destination', feature_ca
         end
 
         it 'creates the destination' do
-          expect { subject }
+          expect { mutate }
             .to change { AuditEvents::InstanceExternalAuditEventDestination.count }.by(1)
 
           destination = AuditEvents::InstanceExternalAuditEventDestination.last
@@ -97,6 +102,21 @@ RSpec.describe 'Create an instance external audit event destination', feature_ca
       end
 
       it_behaves_like 'creates an audit event'
+
+      it_behaves_like 'creates a streaming destination',
+        AuditEvents::InstanceExternalAuditEventDestination do
+          let(:attributes) do
+            {
+              legacy: {
+                destination_url: destination_url,
+                name: destination_name
+              },
+              streaming: {
+                "url" => destination_url
+              }
+            }
+          end
+        end
 
       context 'when destination is invalid' do
         let(:mutation) { graphql_mutation(:instance_external_audit_event_destination_create, invalid_input) }
