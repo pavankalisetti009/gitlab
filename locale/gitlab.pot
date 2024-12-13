@@ -22017,7 +22017,13 @@ msgstr ""
 msgid "Environment|Reconciling"
 msgstr ""
 
+msgid "Environment|Search pod name"
+msgstr ""
+
 msgid "Environment|Services"
+msgstr ""
+
+msgid "Environment|Showing search results with the status %{status}."
 msgstr ""
 
 msgid "Environment|Stalled"
