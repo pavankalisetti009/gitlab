@@ -416,7 +416,7 @@ export default {
   }),
   i18n: {
     aiImpactDescriptionLink: s__(
-      'Analytics|Learn more about %{docsLinkStart}AI Impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo Pro seats usage%{subscriptionLinkEnd}.',
+      'Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo Pro seat usage%{subscriptionLinkEnd}.',
     ),
   },
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
