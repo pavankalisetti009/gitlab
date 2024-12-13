@@ -8,6 +8,7 @@ module Mutations
           graphql_name 'GroupAuditEventStreamingDestinationsUpdate'
 
           include ::AuditEvents::Changes
+          include ::AuditEvents::StreamDestinationSyncHelper
 
           UPDATE_EVENT_NAME = 'updated_group_audit_event_streaming_destination'
           AUDIT_EVENT_COLUMNS = [:config, :name, :category, :secret_token].freeze
@@ -48,6 +49,9 @@ module Mutations
 
             if destination.update(destination_attributes)
               audit_update(destination)
+
+              update_legacy_destination(destination)
+
               {
                 external_audit_event_destination: destination,
                 errors: []

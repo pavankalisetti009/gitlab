@@ -9,5 +9,6 @@ FactoryBot.define do
     client_email { FFaker::Internet.safe_email }
     log_id_name { 'audit_events' }
     private_key { OpenSSL::PKey::RSA.new(4096).to_pem }
+    stream_destination_id { nil }
   end
 end
