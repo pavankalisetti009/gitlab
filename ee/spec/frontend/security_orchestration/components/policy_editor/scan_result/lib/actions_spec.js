@@ -243,12 +243,16 @@ describe('buildAction', () => {
 });
 
 describe('createActionFromApprovers', () => {
-  it('creates an action with all approvers', () => {
+  it.each`
+    userApprovers                   | groupApprovers
+    ${[{ type: USER_TYPE, id: 1 }]} | ${[{ type: GROUP_TYPE, id: 2 }]}
+    ${[1]}                          | ${[2]}
+  `('creates an action with all approvers', ({ userApprovers, groupApprovers }) => {
     const action = buildAction(REQUIRE_APPROVAL_TYPE);
     const approvers = {
-      [USER_TYPE]: [{ type: USER_TYPE, id: 1 }],
+      [USER_TYPE]: userApprovers,
       [ROLE_TYPE]: ['owner'],
-      [GROUP_TYPE]: [{ type: GROUP_TYPE, id: 2 }],
+      [GROUP_TYPE]: groupApprovers,
     };
     expect(createActionFromApprovers(action, approvers)).toEqual({
       ...action,

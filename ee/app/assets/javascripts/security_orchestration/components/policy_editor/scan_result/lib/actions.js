@@ -1,4 +1,4 @@
-import { uniqueId } from 'lodash';
+import { uniqueId, isNumber } from 'lodash';
 import { n__, s__ } from '~/locale';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 
@@ -17,7 +17,9 @@ export const APPROVER_TYPE_LIST_ITEMS = [
 ];
 
 const mapIds = (approvers, namespaceType) =>
-  approvers.filter(({ type }) => type === namespaceType).map(({ id }) => id);
+  approvers
+    .filter((approver) => isNumber(approver) || approver.type === namespaceType)
+    .map((item) => (isNumber(item) ? item : item.id));
 
 const userIds = (approvers) => {
   return mapIds(approvers, USER_TYPE);
