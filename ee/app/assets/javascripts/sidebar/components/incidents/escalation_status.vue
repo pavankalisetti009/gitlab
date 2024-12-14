@@ -10,6 +10,10 @@ export default {
     EscalationStatus,
   },
   mixins: [glFeatureFlagMixin()],
+  props: {
+    // eslint-disable-next-line @gitlab/vue-require-required-key
+    value: EscalationStatus.props.value,
+  },
   computed: {
     headerText() {
       return this.escalationPoliciesEnabled ? this.$options.i18n : '';
@@ -39,6 +43,7 @@ export default {
     ref="escalationStatus"
     :header-text="headerText"
     :status-subtexts="statusSubtexts"
+    :value="value"
     v-bind="$attrs"
     v-on="$listeners"
   />
