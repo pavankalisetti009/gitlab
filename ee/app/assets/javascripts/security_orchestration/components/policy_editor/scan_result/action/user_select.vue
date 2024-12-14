@@ -1,16 +1,16 @@
 <script>
-import { uniqBy, isNumber } from 'lodash';
+import { uniqBy } from 'lodash';
 import { GlAvatarLabeled, GlCollapsibleListbox } from '@gitlab/ui';
 import { __ } from '~/locale';
 import searchProjectMembers from '~/graphql_shared/queries/project_user_members_search.query.graphql';
 import searchGroupMembers from '~/graphql_shared/queries/group_users_search.query.graphql';
-import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_USER } from '~/graphql_shared/constants';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { USER_TYPE } from 'ee/security_orchestration/constants';
 import { isProject } from 'ee/security_orchestration/components/utils';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
-import { renderMultiSelectText } from '../../utils';
+import { renderMultiSelectText, findItemsIntersection } from '../../utils';
 
 const createUserObject = (user) => ({
   ...user,
@@ -57,15 +57,11 @@ export default {
         const accumulatedUsers = [...this.users, ...users];
         const uniqueUsers = uniqBy(accumulatedUsers, 'id');
 
-        this.selectedUsers = this.existingApprovers.map((approver) => {
-          if (isNumber(approver)) {
-            const user =
-              uniqueUsers.find(({ id }) => id === convertToGraphQLId(TYPENAME_USER, approver)) ||
-              {};
-            return createUserObject(user);
-          }
-
-          return createUserObject(approver);
+        this.selectedUsers = findItemsIntersection({
+          collectionOne: this.existingApprovers,
+          collectionTwo: uniqueUsers,
+          mapperFn: createUserObject,
+          type: TYPENAME_USER,
         });
 
         return uniqueUsers;

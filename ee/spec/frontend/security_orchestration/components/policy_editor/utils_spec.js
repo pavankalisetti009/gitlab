@@ -27,6 +27,8 @@ import {
   getMergeRequestConfig,
   policyToYaml,
   parseAllowDenyLicenseList,
+  findItemsIntersection,
+  mapYamlApproversActionsFormatToEditorFormat,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -612,6 +614,41 @@ describe('mapBranchesToExceptions', () => {
       ${{ licenses: { invalid: [{ license: { text: 'text', value: 'value' } }] } }}   | ${{ isDenied: false, licenses: [] }}
     `('parse licenses from rule', ({ rule, output }) => {
       expect(parseAllowDenyLicenseList(rule)).toEqual(output);
+    });
+  });
+
+  describe('findItemsIntersection', () => {
+    it.each`
+      collectionOne             | collectionTwo                      | mapperFn          | type         | output
+      ${undefined}              | ${undefined}                       | ${undefined}      | ${undefined} | ${[]}
+      ${[]}                     | ${[]}                              | ${() => {}}       | ${undefined} | ${[]}
+      ${[1, 2]}                 | ${[{ id: 2 }]}                     | ${(item) => item} | ${undefined} | ${[{ id: 2 }]}
+      ${[1, 2]}                 | ${[{ id: 'gid://gitlab/User/2' }]} | ${(item) => item} | ${'User'}    | ${[{ id: 'gid://gitlab/User/2' }]}
+      ${[1, 2]}                 | ${[{ id: 'gid://gitlab/User/3' }]} | ${(item) => item} | ${'User'}    | ${[]}
+      ${[{ id: 1 }, { id: 2 }]} | ${[{ id: 2 }]}                     | ${(item) => item} | ${'User'}    | ${[{ id: 1 }, { id: 2 }]}
+    `(
+      'find common items in collections and map to result object',
+      ({ collectionOne, collectionTwo, mapperFn, type, output }) => {
+        expect(findItemsIntersection({ collectionOne, collectionTwo, mapperFn, type })).toEqual(
+          output,
+        );
+      },
+    );
+  });
+
+  describe('mapYamlApproversActionsFormatToEditorFormat', () => {
+    it.each`
+      actions                                                                    | output
+      ${undefined}                                                               | ${[]}
+      ${[{ group_approvers_ids: [1, 2] }]}                                       | ${[{ group: [1, 2] }]}
+      ${[{ group_approvers: [1, 2] }]}                                           | ${[{ group: [1, 2] }]}
+      ${[{ user_approvers_ids: [1, 2] }]}                                        | ${[{ user: [1, 2] }]}
+      ${[{ user_approvers: [1, 2] }]}                                            | ${[{ user: [1, 2] }]}
+      ${[{ role_approvers: [1, 2] }]}                                            | ${[{ role: [1, 2] }]}
+      ${[{ user_approvers_ids: [1, 2], user_approvers: [1, 2] }]}                | ${[{ user: [1, 2] }]}
+      ${[{ user_approvers: [1, 2], role_approvers: [1], group_approvers: [1] }]} | ${[{ user: [1, 2], group: [1], role: [1] }]}
+    `('maps yaml format actions to component format', ({ actions, output }) => {
+      expect(mapYamlApproversActionsFormatToEditorFormat(actions)).toEqual(output);
     });
   });
 });
