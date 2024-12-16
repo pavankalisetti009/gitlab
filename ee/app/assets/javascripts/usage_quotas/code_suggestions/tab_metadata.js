@@ -24,6 +24,7 @@ export const parseProvideData = (el) => {
     handRaiseLeadProductInteraction,
     handRaiseLeadButtonAttributes,
     handRaiseLeadCtaTracking,
+    duoPagePath,
   } = el.dataset;
 
   let handRaiseLeadButtonAttributesParsed;
@@ -63,6 +64,7 @@ export const parseProvideData = (el) => {
       buttonAttributes: handRaiseLeadButtonAttributesParsed,
       ctaTracking: handRaiseLeadCtaTrackingParsed,
     },
+    duoPagePath,
   };
 };
 

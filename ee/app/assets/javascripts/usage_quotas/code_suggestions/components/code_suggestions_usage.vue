@@ -54,7 +54,12 @@ export default {
     GlSprintf,
     PageHeading,
   },
-  inject: { isSaaS: {}, isStandalonePage: { default: false }, groupId: { default: null } },
+  inject: {
+    isSaaS: {},
+    isStandalonePage: { default: false },
+    groupId: { default: null },
+    duoPagePath: { default: null },
+  },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
   i18n: {
     currentSubscriptionsEntryName,
@@ -68,6 +73,11 @@ export default {
     subscriptionActivationFutureDatedNotificationMessage: s__(
       'CodeSuggestions|You have successfully added a license that activates on %{date}.',
     ),
+    movedUsageAlertTitle: s__('AiPowered|Seat assignment for GitLab Duo has moved'),
+    movedUsageAlertDescription: s__(
+      'AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings.',
+    ),
+    movedUsageAlertButtonText: s__('AiPowered|View GitLab Duo settings'),
   },
   props: {
     title: {
@@ -279,28 +289,43 @@ export default {
 
       <section v-if="hasCodeSuggestions">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
-          <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
-            <code-suggestions-statistics-card
-              :total-value="totalValue"
-              :usage-value="usageValue"
+          <template v-if="isSaaS && !isStandalonePage && duoPagePath">
+            <gl-alert
+              variant="info"
+              :title="$options.i18n.movedUsageAlertTitle"
+              :dismissible="false"
+              :primary-button-text="$options.i18n.movedUsageAlertButtonText"
+              :primary-button-link="duoPagePath"
+              class="gl-mb-5"
+              data-testid="duo-moved-usage-alert"
+            >
+              {{ $options.i18n.movedUsageAlertDescription }}
+            </gl-alert>
+          </template>
+          <template v-else>
+            <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
+              <code-suggestions-statistics-card
+                :total-value="totalValue"
+                :usage-value="usageValue"
+                :duo-tier="duoTier"
+              />
+              <code-suggestions-info-card
+                :group-id="groupId"
+                :duo-tier="duoTier"
+                @error="handleAddOnPurchaseFetchError"
+              />
+            </section>
+            <saas-add-on-eligible-user-list
+              v-if="isSaaS"
+              :add-on-purchase-id="addOnPurchase.id"
               :duo-tier="duoTier"
             />
-            <code-suggestions-info-card
-              :group-id="groupId"
+            <self-managed-add-on-eligible-user-list
+              v-else
+              :add-on-purchase-id="addOnPurchase.id"
               :duo-tier="duoTier"
-              @error="handleAddOnPurchaseFetchError"
             />
-          </section>
-          <saas-add-on-eligible-user-list
-            v-if="isSaaS"
-            :add-on-purchase-id="addOnPurchase.id"
-            :duo-tier="duoTier"
-          />
-          <self-managed-add-on-eligible-user-list
-            v-else
-            :add-on-purchase-id="addOnPurchase.id"
-            :duo-tier="duoTier"
-          />
+          </template>
         </slot>
       </section>
       <error-alert

@@ -89,6 +89,8 @@ describe('GitLab Duo Usage', () => {
   const findSubscriptionFetchErrorAlert = () =>
     wrapper.findByTestId('subscription-fetch-error-alert');
 
+  const findDuoMovedUsageAlert = () => wrapper.findByTestId('duo-moved-usage-alert');
+
   const createComponent = ({
     addOnPurchasesHandler,
     currentLicenseHandler,
@@ -98,6 +100,7 @@ describe('GitLab Duo Usage', () => {
     wrapper = shallowMountExtended(CodeSuggestionsUsage, {
       provide: {
         isSaaS: true,
+        duoPagePath: '/gitlab_duo',
         ...provideProps,
       },
       apolloProvider: createMockApolloProvider({
@@ -212,6 +215,13 @@ describe('GitLab Duo Usage', () => {
         it('does not render code suggestions intro', () => {
           expect(findCodeSuggestionsIntro().exists()).toBe(false);
         });
+
+        it('displays the moved usage alert', () => {
+          expect(findDuoMovedUsageAlert().exists()).toBe(true);
+          expect(findDuoMovedUsageAlert().text()).toContain(
+            'GitLab Duo seat assignment is now located in GitLab Duo settings.',
+          );
+        });
       });
 
       describe('when on the standalone page', () => {
@@ -233,13 +243,17 @@ describe('GitLab Duo Usage', () => {
             }),
           );
         });
+
+        it('does not display the moved usage alert', () => {
+          expect(findDuoMovedUsageAlert().exists()).toBe(false);
+        });
       });
 
       describe('with Duo Pro add-on enabled', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedAddonDataHandler,
-            provideProps: { groupId: 289561 },
+            provideProps: { isStandalonePage: true, groupId: 289561 },
           });
         });
 
@@ -264,7 +278,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedEnterpriseAddonDataHandler,
-            provideProps: { groupId: 289561 },
+            provideProps: { isStandalonePage: true, groupId: 289561 },
           });
         });
 
@@ -289,7 +303,7 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedDuoAddonsDataHandler,
-            provideProps: { groupId: 289561 },
+            provideProps: { isStandalonePage: true, groupId: 289561 },
           });
         });
 
@@ -381,7 +395,7 @@ describe('GitLab Duo Usage', () => {
     it('renders addon user list for SaaS instance for SaaS', async () => {
       createComponent({
         addOnPurchasesHandler: noAssignedAddonDataHandler,
-        provideProps: { isSaaS: true },
+        provideProps: { isSaaS: true, isStandalonePage: true },
       });
       await waitForPromises();
 
