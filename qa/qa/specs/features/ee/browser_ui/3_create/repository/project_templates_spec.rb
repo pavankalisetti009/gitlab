@@ -44,7 +44,7 @@ module QA
           Flow::Login.sign_in_as_admin
         end
 
-        it 'successfully imports the project using template', :blocking,
+        it 'successfully imports the project using template',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347932' do
           built_in = 'Ruby on Rails'
 
@@ -105,7 +105,7 @@ module QA
         # Failure issue: https://gitlab.com/gitlab-org/gitlab/-/issues/414247
         # Bug: https://gitlab.com/gitlab-org/gitlab/-/issues/421143
         # TODO: enable in airgapped job when bug is resolved
-        it 'successfully imports the project using template', :blocking, :external_api_calls,
+        it 'successfully imports the project using template', :external_api_calls,
           quarantine: {
             issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460321',
             type: :flaky
@@ -164,7 +164,7 @@ module QA
           Page::Project::New.perform(&:go_to_create_from_template_group_tab)
         end
 
-        it 'successfully imports the project using template', :blocking,
+        it 'successfully imports the project using template',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347933', quarantine: {
             type: :bug,
             issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/436948",

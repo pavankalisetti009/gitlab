@@ -21,7 +21,7 @@ module QA
 
       it(
         'adds linked resources, label, and severity through quick actions',
-        :aggregate_failures, :blocking,
+        :aggregate_failures,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/428793'
       ) do # See https://gitlab.com/gitlab-org/gitlab/-/issues/423943
         Page::Project::Monitor::Incidents::Show.perform do |show|

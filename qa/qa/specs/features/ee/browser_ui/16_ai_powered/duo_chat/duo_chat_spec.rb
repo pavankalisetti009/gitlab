@@ -38,12 +38,12 @@ module QA
       end
 
       context 'when initiating Duo Chat' do
-        context 'on GitLab.com', :blocking, :external_ai_provider,
+        context 'on GitLab.com', :external_ai_provider,
           only: { pipeline: %i[staging staging-canary canary production] } do
           it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
 
-        context 'on Self-managed', :blocking, :orchestrated, :ai_gateway do
+        context 'on Self-managed', :orchestrated, :ai_gateway do
           let(:api_client) { Runtime::User::Store.admin_api_client }
           let(:user) { Runtime::User::Store.admin_user }
 

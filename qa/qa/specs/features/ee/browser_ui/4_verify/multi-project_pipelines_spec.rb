@@ -31,7 +31,7 @@ module QA
       end
 
       it(
-        'creates a multi-project pipeline with artifact download', :blocking,
+        'creates a multi-project pipeline with artifact download',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/358064'
       ) do
         Page::Project::Pipeline::Show.perform do |show|

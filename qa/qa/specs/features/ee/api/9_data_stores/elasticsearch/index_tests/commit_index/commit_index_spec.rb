@@ -21,7 +21,7 @@ module QA
       end
 
       it(
-        'finds commit that matches commit message', :blocking,
+        'finds commit that matches commit message',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/367409'
       ) do
         QA::Support::Retrier.retry_on_exception(

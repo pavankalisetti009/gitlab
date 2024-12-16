@@ -18,7 +18,7 @@ module QA
     end
 
     describe 'Instance', :requires_admin do
-      context 'for failed sign in', :blocking,
+      context 'for failed sign in',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347913' do
         before do
           Runtime::Browser.visit(:gitlab, Page::Main::Login)
@@ -37,7 +37,7 @@ module QA
         it_behaves_like 'audit event', ["Failed to login with STANDARD authentication"]
       end
 
-      context 'for successful sign in', :blocking,
+      context 'for successful sign in',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347914' do
         before do
           sign_in
@@ -46,7 +46,7 @@ module QA
         it_behaves_like 'audit event', ["Signed in with STANDARD authentication"]
       end
 
-      context 'for add SSH key', :blocking,
+      context 'for add SSH key',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347915' do
         key = nil
 
@@ -66,7 +66,7 @@ module QA
         it_behaves_like 'audit event', ["Added SSH key"]
       end
 
-      context 'for add and delete email', :blocking,
+      context 'for add and delete email',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347918' do
         before do
           sign_in
@@ -88,7 +88,7 @@ module QA
         it_behaves_like 'audit event', ["Added email", "Removed email"]
       end
 
-      context 'for change password', :skip_signup_disabled, :blocking,
+      context 'for change password', :skip_signup_disabled,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347917' do
         before do
           user = create(:user, username: "user_#{SecureRandom.hex(4)}", password: "pw_#{SecureRandom.hex(4)}")
@@ -110,7 +110,7 @@ module QA
         it_behaves_like 'audit event', ["Changed password"]
       end
 
-      context 'for start and stop user impersonation', :blocking,
+      context 'for start and stop user impersonation',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347916' do
         let!(:user_for_impersonation) { create(:user) }
 

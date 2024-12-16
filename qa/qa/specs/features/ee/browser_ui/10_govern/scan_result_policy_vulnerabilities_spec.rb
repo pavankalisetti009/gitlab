@@ -69,7 +69,7 @@ module QA
         runner.remove_via_api!
       end
 
-      it 'requires approval when a pipeline report has findings matching the scan result policy', :blocking,
+      it 'requires approval when a pipeline report has findings matching the scan result policy',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/365005' do
         # Make sure Scan result policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
@@ -90,7 +90,7 @@ module QA
         end
       end
 
-      it 'does not block merge when scan result policy does not apply for pipeline security findings', :blocking,
+      it 'does not block merge when scan result policy does not apply for pipeline security findings',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/423412' do
         # Make sure Scan result policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)

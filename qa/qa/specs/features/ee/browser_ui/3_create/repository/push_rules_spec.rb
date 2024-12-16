@@ -33,7 +33,7 @@ module QA
       end
 
       context 'when using non signed commits' do
-        it 'allows an unrestricted push', :blocking,
+        it 'allows an unrestricted push',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347790' do
           expect_no_error_on_push(file: standard_file)
         end
@@ -67,7 +67,7 @@ module QA
           )
         end
 
-        it 'restricts users by email format', :blocking,
+        it 'restricts users by email format',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347783' do
           authors_email_limitation = "#{SecureRandom.hex(8)}@test.com"
 
@@ -87,7 +87,7 @@ module QA
           )
         end
 
-        it 'restricts branches by branch name', :blocking,
+        it 'restricts branches by branch name',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347781' do
           expect_error_on_push(
             file: standard_file,
@@ -97,7 +97,7 @@ module QA
           )
         end
 
-        it 'restricts commit by message format', :blocking,
+        it 'restricts commit by message format',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347780' do
           expect_no_error_on_push(file: standard_file, commit_message: needed_phrase_limitation)
           expect_error_on_push(
@@ -110,7 +110,7 @@ module QA
             error: Regexp.escape("Commit message contains the forbidden pattern '#{deny_message_phrase_limitation}'"))
         end
 
-        it 'restricts committing files with secrets', :blocking,
+        it 'restricts committing files with secrets',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347779' do
           expect_error_on_push(
             file: {
@@ -120,14 +120,14 @@ module QA
             error: Regexp.escape('File name id_rsa was prohibited by the pattern "id_rsa$"'))
         end
 
-        it 'restricts removal of tag', :blocking,
+        it 'restricts removal of tag',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347782' do
           tag = create(:tag, project: project, ref: project.default_branch, name: "test_tag")
 
           expect_error_on_push(file: standard_file, tag: tag.name, error: 'You cannot delete a tag')
         end
 
-        it 'restricts non-member users', :blocking,
+        it 'restricts non-member users',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347812' do
           non_member_user = build(:user,
             username: creator.username,
@@ -148,7 +148,7 @@ module QA
             error: Regexp.escape("Author '#{non_member_user.email}' is not a member of team"))
         end
 
-        it 'restricts unverified emails', :blocking,
+        it 'restricts unverified emails',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347791' do
           Page::Project::Settings::Repository.perform do |repository|
             repository.expand_push_rules do |push_rules|
@@ -179,7 +179,7 @@ module QA
           end
         end
 
-        it 'restricts to signed commits', :blocking,
+        it 'restricts to signed commits',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347785' do
           expect_no_error_on_push(file: standard_file, gpg: gpg)
           expect_error_on_push(file: standard_file, error: 'Commit must be signed with a GPG key')

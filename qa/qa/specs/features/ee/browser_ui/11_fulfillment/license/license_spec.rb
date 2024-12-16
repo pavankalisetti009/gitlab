@@ -3,7 +3,7 @@
 module QA
   include Support::Helpers::Plan
 
-  RSpec.describe 'Fulfillment', :blocking, :requires_admin, :skip_live_env,
+  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env,
     except: { job: 'review-qa-*' }, product_group: :provision do
     include Support::Data::License
 

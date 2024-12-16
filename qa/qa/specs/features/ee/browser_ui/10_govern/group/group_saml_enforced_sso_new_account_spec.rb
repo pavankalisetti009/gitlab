@@ -69,7 +69,7 @@ module QA
         Flow::Saml.remove_saml_idp_service(saml_idp_service)
       end
 
-      context 'with Snowplow tracking enabled', :blocking,
+      context 'with Snowplow tracking enabled',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347675' do
         before do
           Flow::Settings.enable_snowplow
@@ -82,7 +82,7 @@ module QA
         it_behaves_like 'group membership actions'
       end
 
-      context 'with Snowplow tracking disabled', :blocking,
+      context 'with Snowplow tracking disabled',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/351257' do
         before do
           Flow::Settings.disable_snowplow

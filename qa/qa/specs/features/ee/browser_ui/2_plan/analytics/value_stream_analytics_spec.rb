@@ -6,7 +6,7 @@ module QA
       let(:admin_api_client) { Runtime::API::Client.as_admin }
       let(:default_stage_names) { %w[Issue Plan Code Test Review Staging] }
 
-      context "without pre-existing dashboard", :blocking do
+      context "without pre-existing dashboard" do
         shared_examples "value stream analytics" do
           it "shows vsa dashboard" do
             EE::Page::Group::ValueStreamAnalytics.perform do |vsa_page|

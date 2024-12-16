@@ -18,7 +18,7 @@ module QA
         project.visit!
       end
 
-      it 'merge request assigns code owners as approvers', :blocking,
+      it 'merge request assigns code owners as approvers',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347776' do
         # Commit CODEOWNERS to default branch
         create(:commit, project: project, commit_message: 'Add CODEOWNERS and test files', actions: [

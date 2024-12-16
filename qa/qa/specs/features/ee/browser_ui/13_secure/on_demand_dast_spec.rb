@@ -65,7 +65,7 @@ module QA
       end
 
       context 'when a scan is ran' do
-        it 'populates On Demand scan history and vulnerability report', :blocking,
+        it 'populates On Demand scan history and vulnerability report',
           quarantine: {
             issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498151',
             type: :investigating,

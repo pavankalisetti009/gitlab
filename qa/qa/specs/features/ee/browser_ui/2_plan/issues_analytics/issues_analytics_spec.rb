@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :blocking, product_group: :optimize do
+  RSpec.describe 'Plan', product_group: :optimize do
     shared_examples 'issues analytics page' do
       let(:gitlab_address) { QA::Runtime::Scenario.gitlab_address }
 

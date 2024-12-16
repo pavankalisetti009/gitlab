@@ -16,7 +16,7 @@ module QA
         group.sandbox.add_member(user_with_minimal_access, Resource::Members::AccessLevel::MINIMAL_ACCESS)
       end
 
-      it 'is not allowed to push code via the CLI', :blocking,
+      it 'is not allowed to push code via the CLI',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347873' do
         expect do
           Resource::Repository::Push.fabricate! do |push|
@@ -30,7 +30,7 @@ module QA
         end.to raise_error(QA::Support::Run::CommandError, /You are not allowed to push code to this project/)
       end
 
-      it 'is not allowed to create a file via the API', :blocking,
+      it 'is not allowed to create a file via the API',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347874' do
         expect do
           create(:file,

@@ -26,7 +26,7 @@ module QA
         end
       end
 
-      it 'locks a directory and tries to push as a second user', :blocking,
+      it 'locks a directory and tries to push as a second user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347768' do
         push as_user: user_one, max_attempts: 3, branch: project.default_branch, file: 'directory/file'
 
@@ -38,7 +38,7 @@ module QA
         expect_no_error_on_push for_file: 'directory/file', as_user: user_one
       end
 
-      it 'locks a file and tries to push as a second user', :blocking,
+      it 'locks a file and tries to push as a second user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347769' do
         Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_file
@@ -48,7 +48,7 @@ module QA
         expect_no_error_on_push as_user: user_one
       end
 
-      it 'checks file locked by other user to be disabled', :blocking,
+      it 'checks file locked by other user to be disabled',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347767' do
         go_to_file
         click_lock
@@ -60,7 +60,7 @@ module QA
         end
       end
 
-      it 'merge request is blocked when a path is locked by another user', :blocking,
+      it 'merge request is blocked when a path is locked by another user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347770' do
         push as_user: user_one, max_attempts: 3, branch: 'test'
 
@@ -83,7 +83,7 @@ module QA
         end
       end
 
-      it 'locks a file and unlocks in list', :blocking,
+      it 'locks a file and unlocks in list',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347766' do
         Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_file

@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'Default merge request templates', :blocking, product_group: :code_review do
+    describe 'Default merge request templates', product_group: :code_review do
       let(:default_template_project) { create(:project, name: 'default-mr-template-project') }
       let(:template_content) { 'This is a default merge request template' }
 

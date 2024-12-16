@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Govern' do
-    describe 'Group access', :requires_admin, :skip_live_env, :blocking, product_group: :authentication do
+    describe 'Group access', :requires_admin, :skip_live_env, product_group: :authentication do
       let!(:current_ip_address) do
         Flow::Login.while_signed_in(as: user) { Runtime::User::Store.admin_user.get_user_ip_address(user.id) }
       end

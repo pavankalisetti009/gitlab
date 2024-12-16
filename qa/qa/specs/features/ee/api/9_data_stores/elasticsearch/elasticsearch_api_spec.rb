@@ -26,7 +26,7 @@ module QA
       end
 
       it(
-        'searches public project and finds a blob as an non-member user', :blocking,
+        'searches public project and finds a blob as an non-member user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348063'
       ) do
         successful_search(non_member_api_client)
@@ -38,14 +38,14 @@ module QA
         end
 
         it(
-          'finds a blob as an authorized user', :blocking,
+          'finds a blob as an authorized user',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348064'
         ) do
           successful_search(api_client)
         end
 
         it(
-          'does not find a blob as an non-member user', :blocking,
+          'does not find a blob as an non-member user',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348065'
         ) do
           QA::Support::Retrier.retry_on_exception(

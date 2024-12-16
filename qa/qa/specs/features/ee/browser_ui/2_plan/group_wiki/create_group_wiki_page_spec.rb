@@ -13,7 +13,7 @@ module QA
       context 'when wiki is empty' do
         let(:group) { create(:group) }
 
-        it 'creates a new page', :blocking,
+        it 'creates a new page',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347689' do
           group.visit!
 
@@ -36,7 +36,7 @@ module QA
       context 'when wiki has a home page' do
         let(:wiki) { create(:group_wiki_page) }
 
-        it 'adds a second page', :blocking,
+        it 'adds a second page',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347693' do
           wiki.visit!
 

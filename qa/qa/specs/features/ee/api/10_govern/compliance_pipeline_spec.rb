@@ -44,7 +44,7 @@ module QA
           compliance_framework.remove_via_api!(delete_default: true)
         end
 
-        it('runs that pipeline in a different project that has the compliance framework assigned', :blocking,
+        it('runs that pipeline in a different project that has the compliance framework assigned',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/413715'
         ) do
           compliant_project = create(:project, name: 'compliant-project', group: group)

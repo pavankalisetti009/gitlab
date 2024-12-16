@@ -61,7 +61,7 @@ module QA
         runner&.remove_via_api! if runner
       end
 
-      it 'dependency list has empty state', :blocking,
+      it 'dependency list has empty state',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348004' do
         Page::Project::Menu.perform(&:go_to_dependency_list)
 
@@ -76,7 +76,7 @@ module QA
         end
       end
 
-      it 'displays security reports in the pipeline', :blocking,
+      it 'displays security reports in the pipeline',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348036' do
         push_security_reports
         project.visit!
@@ -108,7 +108,7 @@ module QA
         end
       end
 
-      it 'displays security reports in the project security dashboard', :blocking,
+      it 'displays security reports in the project security dashboard',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037' do
         push_security_reports
         project.visit!
@@ -143,7 +143,7 @@ module QA
         end
       end
 
-      it 'displays security reports in the group security dashboard', :blocking,
+      it 'displays security reports in the group security dashboard',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348038' do
         push_security_reports
         project.visit!
@@ -235,7 +235,7 @@ module QA
 
       context 'for dependency scanning' do
         it(
-          'displays the Dependency List', :blocking,
+          'displays the Dependency List',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348035'
         ) do
           commit_scan_files(fixture_json: cyclonedx_json, ci_yaml_content: dependency_scan_yaml)
