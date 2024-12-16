@@ -73,6 +73,7 @@ module Gitlab
           },
           summarize_new_merge_request: {
             service_class: ::Gitlab::Llm::VertexAi::Completions::SummarizeNewMergeRequest,
+            aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest,
             prompt_class: ::Gitlab::Llm::Templates::SummarizeNewMergeRequest,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::SummarizeNewMergeRequestService,
