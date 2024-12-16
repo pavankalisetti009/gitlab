@@ -53,20 +53,11 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
       let(:namespace) { build(:project_namespace) }
       let(:user) { build(:user) }
 
-      where(:feature_enabled, :connected, :duo_availability, :result) do
-        true     | true  | :default_on | true
-        true     | false | :default_on | false
-        false    | true  | :default_on | false
-        true     | false | :default_on | false
-        false    | true  | :default_on | false
-        true     | true  | :never_on   | false
-        true     | false | :never_on   | false
-        false    | true  | :never_on   | false
-        false    | false | :never_on   | false
-        true     | true  | :default_off | true
-        true     | false | :default_off | false
-        false    | true  | :default_off | false
-        false    | false | :default_off | false
+      where(:feature_enabled, :connected, :result) do
+        true     | true  | true
+        true     | false | false
+        false    | true  | false
+        true     | false | false
       end
 
       with_them do
@@ -74,9 +65,6 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
           allow(described_class).to receive_messages(
             feature_available?: feature_enabled,
             connected?: connected
-          )
-          allow(::Gitlab::CurrentSettings).to receive_messages(
-            duo_availability: duo_availability
           )
         end
 
