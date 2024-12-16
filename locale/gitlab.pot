@@ -15340,6 +15340,9 @@ msgstr ""
 msgid "ContainerRegistry|Protected container repositories"
 msgstr ""
 
+msgid "ContainerRegistry|Protected container tags"
+msgstr ""
+
 msgid "ContainerRegistry|Published %{timeInfo}"
 msgstr ""
 
@@ -15514,6 +15517,9 @@ msgid "ContainerRegistry|We are having trouble connecting to the Container Regis
 msgstr ""
 
 msgid "ContainerRegistry|When a container repository is protected, only certain user roles can push the protected container image, which helps to avoid tampering with the container image."
+msgstr ""
+
+msgid "ContainerRegistry|When a container tag is protected, only certain user roles can update and delete the protected tag, which helps to prevent tampering with the tag. A maximum of 5 protection rules can be added per project."
 msgstr ""
 
 msgid "ContainerRegistry|While the rename is in progress, new uploads to the container registry are blocked. Ongoing uploads may fail and need to be retried."
