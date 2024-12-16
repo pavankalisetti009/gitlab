@@ -9,6 +9,12 @@ module EE
       super.merge(mirror_only_branches_match_regex_enabled: @project.licensed_feature_available?(:repository_mirrors))
     end
 
+    def mirror_update_state(project)
+      return :read_only if project.repository_read_only?
+
+      project.import_state.last_update_status
+    end
+
     def render_mirror_failed_message(raw_message:)
       mirror_last_update_at = @project.import_state.last_update_at
       message = "Pull mirroring failed #{time_ago_with_tooltip(mirror_last_update_at)}.".html_safe
