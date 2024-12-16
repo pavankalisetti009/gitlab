@@ -1,10 +1,11 @@
 <script>
-import { GlButton, GlTooltipDirective, GlModal, GlModalDirective } from '@gitlab/ui';
+import { GlButton, GlTooltip, GlModal, GlModalDirective } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
 import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
+import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
 
 export default {
   name: 'LockDirectoryButton',
@@ -24,9 +25,9 @@ export default {
   components: {
     GlButton,
     GlModal,
+    GlTooltip,
   },
   directives: {
-    GlTooltip: GlTooltipDirective,
     GlModalDirective,
   },
   mixins: [glFeatureFlagMixin()],
@@ -76,6 +77,7 @@ export default {
   },
   data() {
     return {
+      isUpdating: false,
       canAdminLocks: false,
       canPushCode: false,
       allPathLocks: [],
@@ -107,7 +109,8 @@ export default {
         this.pathLock.isUpstreamLock ||
         this.pathLock.isDownstreamLock ||
         !this.canAdminLocks ||
-        !this.canPushCode
+        !this.canPushCode ||
+        this.isUpdating
       );
     },
     getExactLockTooltip() {
@@ -116,7 +119,7 @@ export default {
           locker: this.locker,
         });
       }
-      return this.pathLock.user.id === this.user.id
+      return this.pathLock.user?.id === this.user.id
         ? ''
         : sprintf(__('Locked by %{locker}'), { locker: this.locker });
     },
@@ -146,19 +149,18 @@ export default {
       );
     },
     tooltipText() {
-      if (this.pathLock.isExactLock) {
-        return this.getExactLockTooltip;
-      }
-      if (this.pathLock.isUpstreamLock) {
-        return this.getUpstreamLockTooltip;
+      if (!this.canPushCode) {
+        return __('You do not have permission to lock this');
       }
       if (this.pathLock.isDownstreamLock) {
         return this.getDownstreamLockTooltip;
       }
-      if (!this.canPushCode) {
-        return __('You do not have permission to lock this');
+      if (this.pathLock.isUpstreamLock) {
+        return this.getUpstreamLockTooltip;
       }
-
+      if (this.pathLock.isExactLock) {
+        return this.getExactLockTooltip;
+      }
       return '';
     },
     modalId() {
@@ -168,6 +170,15 @@ export default {
       return this.isLocked
         ? __('Are you sure you want to unlock this directory?')
         : __('Are you sure you want to lock this directory?');
+    },
+  },
+  watch: {
+    async path() {
+      try {
+        await this.$apollo.queries.projectInfo.refetch();
+      } catch {
+        this.onFetchError();
+      }
     },
   },
   methods: {
@@ -184,32 +195,40 @@ export default {
       return lock.path.startsWith(this.path) && this.path !== lock.path;
     },
     mapPathLocks(lock) {
-      if (this.isExactLock(lock)) {
-        return { ...lock, isExactLock: true };
-      }
-      if (this.isUpstreamLock(lock)) {
-        return { ...lock, isUpstreamLock: true };
-      }
-      if (this.isDownstreamLock(lock)) {
-        return { ...lock, isDownstreamLock: true };
-      }
-      return lock;
+      return {
+        ...lock,
+        isExactLock: this.isExactLock(lock),
+        isUpstreamLock: this.isUpstreamLock(lock),
+        isDownstreamLock: this.isDownstreamLock(lock),
+      };
     },
     toggleLock() {
-      // will be handled in a following MR
-      return true;
+      const locked = !this.isLocked;
+      this.isUpdating = true;
+      this.$apollo
+        .mutate({
+          mutation: lockPathMutation,
+          variables: {
+            filePath: this.path,
+            projectPath: this.projectPath,
+            lock: locked,
+          },
+        })
+        .then(() => {
+          window.location.reload();
+        })
+        .catch((error) => {
+          createAlert({ message: this.$options.i18n.mutationError, error, captureError: true });
+        });
     },
   },
 };
 </script>
 <template>
-  <span
-    v-if="showLockButton"
-    class="btn-group"
-    :class="{ 'has-tooltip': tooltipText }"
-    gl-tooltip
-    :title="tooltipText"
-  >
+  <span v-if="showLockButton" ref="buttonWrapper" class="btn-group">
+    <gl-tooltip v-if="tooltipText" :target="() => $refs.buttonWrapper">
+      {{ tooltipText }}
+    </gl-tooltip>
     <gl-button
       v-gl-modal-directive="modalId"
       :loading="isLoading"

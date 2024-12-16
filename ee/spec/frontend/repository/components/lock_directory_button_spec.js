@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlButton, GlSprintf, GlModal } from '@gitlab/ui';
+import { GlButton, GlSprintf, GlModal, GlTooltip } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -7,6 +7,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import projectInfoQuery from 'ee_component/repository/queries/project_info.query.graphql';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
+import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
+import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import LockDirectoryButton from 'ee_component/repository/components/lock_directory_button.vue';
 import {
   projectMock,
@@ -15,6 +17,7 @@ import {
   downstreamDirectoryLock,
   userPermissionsMock,
   userMock,
+  lockPathMutationMock,
 } from 'ee_jest/repository/mock_data';
 
 Vue.use(VueApollo);
@@ -33,15 +36,20 @@ describe('LockDirectoryButton', () => {
     .mockResolvedValue({ data: { project: projectMock } });
   const projectInfoQueryErrorResolver = jest.fn().mockRejectedValue(new Error('Request failed'));
 
+  const lockPathMutationMockResolver = jest.fn().mockResolvedValue(lockPathMutationMock);
+  const lockPathMutationErrorResolver = jest.fn().mockRejectedValue(new Error('Request failed'));
+
   const createComponent = ({
     fileLocks = true,
     props = {},
     projectInfoResolver = projectInfoQueryMockResolver,
     currentUserResolver = currentUserMockResolver,
+    lockPathMutationResolver = lockPathMutationMockResolver,
   } = {}) => {
     fakeApollo = createMockApollo([
       [projectInfoQuery, projectInfoResolver],
       [currentUserQuery, currentUserResolver],
+      [lockPathMutation, lockPathMutationResolver],
     ]);
 
     wrapper = shallowMount(LockDirectoryButton, {
@@ -60,12 +68,14 @@ describe('LockDirectoryButton', () => {
         GlSprintf,
         GlButton,
         GlModal,
+        GlTooltip,
       },
     });
   };
 
   const findLockDirectoryButton = () => wrapper.findComponent(GlButton);
   const findModal = () => wrapper.findComponent(GlModal);
+  const findTooltip = () => wrapper.findComponent(GlTooltip);
 
   beforeEach(async () => {
     createComponent();
@@ -126,7 +136,7 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Lock');
       expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(wrapper.attributes('title')).toBe('You do not have permission to lock this');
+      expect(findTooltip().text()).toBe('You do not have permission to lock this');
     });
 
     it('renders enabled without a tooltip when user can push code', async () => {
@@ -143,16 +153,16 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Lock');
       expect(findLockDirectoryButton().props('disabled')).toBe(false);
-      expect(wrapper.attributes('title')).toBe('');
+      expect(findTooltip().exists()).toBe(false);
     });
   });
 
   describe('lock types', () => {
     it.each`
-      mock                       | type                  | isExactLock  | isUpstreamLock | isDownstreamLock
-      ${exactDirectoryLock}      | ${'isExactLock'}      | ${true}      | ${undefined}   | ${undefined}
-      ${upstreamDirectoryLock}   | ${'isUpstreamLock'}   | ${undefined} | ${true}        | ${undefined}
-      ${downstreamDirectoryLock} | ${'isDownstreamLock'} | ${undefined} | ${undefined}   | ${true}
+      mock                       | type                  | isExactLock | isUpstreamLock | isDownstreamLock
+      ${exactDirectoryLock}      | ${'isExactLock'}      | ${true}     | ${false}       | ${false}
+      ${upstreamDirectoryLock}   | ${'isUpstreamLock'}   | ${false}    | ${true}        | ${false}
+      ${downstreamDirectoryLock} | ${'isDownstreamLock'} | ${false}    | ${false}       | ${true}
     `(
       'correctly assigns the lock type as $type depending on PathLock data',
       async ({ mock, type, isExactLock, isUpstreamLock, isDownstreamLock }) => {
@@ -197,7 +207,7 @@ describe('LockDirectoryButton', () => {
       await waitForPromises();
       expect(findLockDirectoryButton().text()).toBe('Unlock');
       expect(findLockDirectoryButton().props('disabled')).toBe(false);
-      expect(wrapper.attributes('title')).toContain('Locked by User2');
+      expect(findTooltip().text()).toContain('Locked by User2');
     });
 
     it('renders an enabled "Unlock" button when lock author is allowed to unlock', async () => {
@@ -228,7 +238,7 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Unlock');
       expect(findLockDirectoryButton().props('disabled')).toBe(false);
-      expect(wrapper.attributes('title')).toEqual('');
+      expect(findTooltip().exists()).toBe(false);
     });
 
     it('renders a disabled "Unlock" button with a tooltip when user is not allowed to unlock', async () => {
@@ -253,7 +263,7 @@ describe('LockDirectoryButton', () => {
       await waitForPromises();
       expect(findLockDirectoryButton().text()).toBe('Unlock');
       expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(wrapper.attributes('title')).toContain(
+      expect(findTooltip().text()).toContain(
         'Locked by User2. You do not have permission to unlock this',
       );
     });
@@ -278,9 +288,7 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Unlock');
       expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(wrapper.attributes('title')).toContain(
-        'Unlock that directory in order to unlock this',
-      );
+      expect(findTooltip().text()).toContain('Unlock that directory in order to unlock this');
     });
 
     it('renders a disabled "Unlock" button with a tooltip when user is not allowed to unlock', async () => {
@@ -305,7 +313,7 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Unlock');
       expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(wrapper.attributes('title')).toContain('You do not have permission to unlock it');
+      expect(findTooltip().text()).toContain('You do not have permission to unlock it');
     });
   });
 
@@ -328,7 +336,7 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Lock');
       expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(wrapper.attributes('title')).toContain(
+      expect(findTooltip().text()).toContain(
         'This directory cannot be locked while User2 has a lock on "test/component/icon". Unlock this in order to proceed',
       );
     });
@@ -355,7 +363,7 @@ describe('LockDirectoryButton', () => {
 
       expect(findLockDirectoryButton().text()).toBe('Lock');
       expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(wrapper.attributes('title')).toContain(
+      expect(findTooltip().text()).toContain(
         'This directory cannot be locked while User2 has a lock on "test/component/icon". You do not have permission to unlock it',
       );
     });
@@ -398,6 +406,50 @@ describe('LockDirectoryButton', () => {
       findLockDirectoryButton().trigger('click');
       await waitForPromises();
       expect(findModal().text()).toContain('Are you sure you want to unlock this directory?');
+    });
+  });
+
+  describe('when the user confirms the action in the modal', () => {
+    useMockLocationHelper();
+
+    it('calls the mutation and reloads the page, when mutation is successful', async () => {
+      findLockDirectoryButton().trigger('click');
+      await waitForPromises();
+      findModal().vm.$emit('primary');
+      await waitForPromises();
+      expect(lockPathMutationMockResolver).toHaveBeenCalledWith({
+        filePath: 'test/component',
+        projectPath: 'group/project',
+        lock: true,
+      });
+      expect(window.location.reload).toHaveBeenCalled();
+    });
+
+    it('calls the mutation and and creates an alert with the correct message, when mutation fails', async () => {
+      createComponent({
+        lockPathMutationResolver: lockPathMutationErrorResolver,
+      });
+      await waitForPromises();
+      findLockDirectoryButton().trigger('click');
+      await waitForPromises();
+      findModal().vm.$emit('primary');
+      await waitForPromises();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'An error occurred while editing lock information, please try again.',
+        captureError: true,
+        error: expect.any(Error),
+      });
+      expect(window.location.reload).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when user cancels the action in the modal', () => {
+    it('does not call the mutation', async () => {
+      findLockDirectoryButton().trigger('click');
+      await waitForPromises();
+      findModal().vm.$emit('cancel');
+      await waitForPromises();
+      expect(lockPathMutationMockResolver).not.toHaveBeenCalled();
     });
   });
 

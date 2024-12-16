@@ -150,3 +150,26 @@ export const userMock = {
     },
   },
 };
+
+export const lockPathMutationMock = {
+  data: {
+    projectSetLocked: {
+      project: {
+        id: 'gid://gitlab/Project/28',
+        pathLocks: {
+          nodes: [
+            {
+              id: 'gid://gitlab/PathLock/26',
+              path: 'test/component',
+              __typename: 'PathLock',
+            },
+          ],
+          __typename: 'PathLockConnection',
+        },
+        __typename: 'Project',
+      },
+      errors: [],
+      __typename: 'ProjectSetLockedPayload',
+    },
+  },
+};
