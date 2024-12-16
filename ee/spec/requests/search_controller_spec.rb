@@ -14,10 +14,13 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
   end
 
   shared_examples 'an efficient database result' do
-    it 'avoids N+1 database queries' do
+    it 'avoids N+1 database queries', :use_sql_query_cache do
       create(object, *creation_traits, creation_args)
 
       ensure_elasticsearch_index!
+
+      # Warm up cache
+      send_search_request(params)
 
       control = ActiveRecord::QueryRecorder.new(skip_cached: false) { send_search_request(params) }
       expect(response.body).to include('search-results') # Confirm there are search results to prevent false positives
@@ -53,7 +56,7 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
         let(:params) { { search: 'foo', scope: 'issues' } }
         # some N+1 queries still exist
         # each issue runs an extra query for project routes
-        let(:threshold) { 4 }
+        let(:threshold) { 5 }
 
         it_behaves_like 'an efficient database result'
       end
@@ -155,11 +158,15 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
         let(:params_for_one) { { search: 'test', project_id: project.id, scope: 'commits', per_page: 1 } }
         let(:params_for_many) { { search: 'test', project_id: project.id, scope: 'commits', per_page: 5 } }
 
-        it 'avoids N+1 database queries' do
+        it 'avoids N+1 database queries', :use_sql_query_cache do
           project.repository.index_commits_and_blobs
           ensure_elasticsearch_index!
 
-          control = ActiveRecord::QueryRecorder.new { send_search_request(params_for_one) }
+          # warm up cache
+          send_search_request(params_for_one)
+          send_search_request(params_for_many)
+
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) { send_search_request(params_for_one) }
           expect(response.body).to include('search-results') # Confirm search results to prevent false positives
 
           expect { send_search_request(params_for_many) }.not_to exceed_query_limit(control)

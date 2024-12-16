@@ -14,6 +14,7 @@ module EE
       PERSONAL_ACCESS_TOKEN_EXPIRY = 'personal_access_token_expiry'
       PROFILE_PERSONAL_ACCESS_TOKEN_EXPIRY = 'profile_personal_access_token_expiry'
       JOINING_A_PROJECT_ALERT = 'joining_a_project_alert'
+      PIPL_COMPLIANCE_ALERT = 'pipl_compliance_alert'
 
       override :render_dashboard_ultimate_trial
       def render_dashboard_ultimate_trial(user)
@@ -32,6 +33,13 @@ module EE
           !user_dismissed?(TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK, 3.months.ago)
 
         render 'shared/two_factor_auth_recovery_settings_check'
+      end
+
+      def show_pipl_compliance_alert?
+        ::Gitlab::Saas.feature_available?(:pipl_compliance) &&
+          !user_dismissed?(PIPL_COMPLIANCE_ALERT) &&
+          ::ComplianceManagement::Pipl.user_subject_to_pipl?(current_user) &&
+          ::Feature.enabled?(:enforce_pipl_compliance, current_user)
       end
 
       def show_new_user_signups_cap_reached?
