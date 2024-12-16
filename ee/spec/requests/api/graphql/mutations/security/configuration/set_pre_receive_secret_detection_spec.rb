@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Setting Project and Group Pre Receive Secret Detection', feature_category: :secret_detection do
+RSpec.describe 'Setting Project Pre Receive Secret Detection', feature_category: :secret_detection do
   using RSpec::Parameterized::TableSyntax
   include GraphqlHelpers
 
@@ -103,11 +103,7 @@ RSpec.describe 'Setting Project and Group Pre Receive Secret Detection', feature
         )
       end
 
-      it 'raises ResourceNotAvailable' do
-        post_graphql_mutation(mutation, current_user: current_user)
-
-        expect_graphql_errors_to_include('Setting only available for project namespaces.')
-      end
+      it_behaves_like 'a mutation that returns a top-level access error'
     end
   end
 end
