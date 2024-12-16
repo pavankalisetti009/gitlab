@@ -145,14 +145,18 @@ async function changedFiles() {
   return files.flat();
 }
 
-function intersection(a, b) {
+function filterSet(set, predicate) {
   const result = new Set();
 
-  for (const element of a) {
-    if (b.has(element)) result.add(element);
+  for (const element of set) {
+    if (predicate(element)) result.add(element);
   }
 
   return result;
+}
+
+function intersection(a, b) {
+  return filterSet(a, (element) => b.has(element));
 }
 
 async function getRemovedQuarantinedSpecs() {
