@@ -149,6 +149,62 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
   end
 
+  describe '#show_pipl_compliance_alert?' do
+    let_it_be(:pipl_user) { create(:pipl_user, :notified) }
+    let_it_be(:user) { pipl_user.user }
+
+    subject(:show_pipl_compliance_alert?) { helper.show_pipl_compliance_alert? }
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+      allow(ComplianceManagement::Pipl).to receive(:user_subject_to_pipl?).and_return(true)
+    end
+
+    it 'does not allow the alert to be displayed' do
+      expect(show_pipl_compliance_alert?).to be(false)
+    end
+
+    context 'when on saas feature is available' do
+      before do
+        stub_saas_features(pipl_compliance: true)
+      end
+
+      it 'allows the alert to be displayed' do
+        expect(show_pipl_compliance_alert?).to be(true)
+      end
+
+      context 'when the callout is dismissed' do
+        before do
+          allow(helper).to receive(:user_dismissed?).and_return(true)
+        end
+
+        it 'does not show the alert' do
+          expect(show_pipl_compliance_alert?).to be(false)
+        end
+      end
+
+      context 'when enforce_pipl_compliance is disabled' do
+        before do
+          stub_feature_flags(enforce_pipl_compliance: false)
+        end
+
+        it 'does not show the alert' do
+          expect(show_pipl_compliance_alert?).to be(false)
+        end
+      end
+
+      context 'when the user is not subject to pipl' do
+        before do
+          allow(ComplianceManagement::Pipl).to receive(:user_subject_to_pipl?).and_return(false)
+        end
+
+        it 'does not show the alert' do
+          expect(show_pipl_compliance_alert?).to be(false)
+        end
+      end
+    end
+  end
+
   describe '#dismiss_two_factor_auth_recovery_settings_check' do
     let_it_be(:user) { create(:user) }
 
