@@ -220,13 +220,12 @@ describe('AnalyticsDashboard', () => {
     });
   };
 
-  const setupDashboard = (dashboardResponse, slug = '', createWrapperOptions = {}) => {
+  const setupDashboard = (dashboardResponse, slug = '') => {
     mockDashboardResponse(dashboardResponse);
     mockAvailableVisualizationsResponse(TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE);
 
     createWrapper({
       routeSlug: slug || dashboardResponse.data.project.customizableDashboards.nodes[0]?.slug,
-      ...createWrapperOptions,
     });
 
     return waitForPromises();
@@ -555,29 +554,18 @@ describe('AnalyticsDashboard', () => {
 
   describe('editingEnabled', () => {
     describe.each`
-      userDefined | slug                             | vsdEditorEnabled | editingEnabled
-      ${true}     | ${'some_dashboard'}              | ${true}          | ${true}
-      ${true}     | ${'some_dashboard'}              | ${false}         | ${true}
-      ${false}    | ${'some_dashboard'}              | ${true}          | ${false}
-      ${false}    | ${'some_dashboard'}              | ${false}         | ${false}
-      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${true}          | ${true}
-      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}         | ${false}
-      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${true}          | ${false}
-      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}         | ${false}
+      userDefined | slug                             | editingEnabled
+      ${true}     | ${'some_dashboard'}              | ${true}
+      ${false}    | ${'some_dashboard'}              | ${false}
+      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}
+      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}
     `(
-      'when userDefined is $userDefined, slug is $slug, and vsdEditorEnabled is $vsdEditorEnabled',
-      ({ userDefined, slug, vsdEditorEnabled, editingEnabled }) => {
+      'when userDefined is $userDefined, slug is $slug',
+      ({ userDefined, slug, editingEnabled }) => {
         beforeEach(async () => {
           setupDashboard(
             createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ userDefined, slug })),
             slug,
-            {
-              provide: {
-                glFeatures: {
-                  enableVsdVisualEditor: vsdEditorEnabled,
-                },
-              },
-            },
           );
 
           await waitForPromises();
