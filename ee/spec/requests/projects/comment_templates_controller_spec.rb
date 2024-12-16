@@ -18,17 +18,6 @@ RSpec.describe Projects::CommentTemplatesController, feature_category: :code_rev
         it { expect(response).to have_gitlab_http_status(:not_found) }
       end
 
-      context 'when project_saved_replies_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(project_saved_replies_flag: false)
-          stub_licensed_features(project_saved_replies: true)
-
-          get project_comment_templates_path(project)
-        end
-
-        it { expect(response).to have_gitlab_http_status(:not_found) }
-      end
-
       context 'when license is valid' do
         before do
           stub_licensed_features(project_saved_replies: true)
@@ -61,17 +50,6 @@ RSpec.describe Projects::CommentTemplatesController, feature_category: :code_rev
         it { expect(response).to have_gitlab_http_status(:not_found) }
       end
 
-      context 'when project_saved_replies_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(project_saved_replies_flag: false)
-          stub_licensed_features(project_saved_replies: true)
-
-          get project_comment_templates_path(project)
-        end
-
-        it { expect(response).to have_gitlab_http_status(:not_found) }
-      end
-
       context 'when license is valid' do
         before do
           stub_licensed_features(project_saved_replies: true)
@@ -97,17 +75,6 @@ RSpec.describe Projects::CommentTemplatesController, feature_category: :code_rev
       context 'when license is invalid' do
         before do
           stub_licensed_features(project_saved_replies: false)
-
-          get project_comment_templates_path(project)
-        end
-
-        it { expect(response).to have_gitlab_http_status(:not_found) }
-      end
-
-      context 'when project_saved_replies_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(project_saved_replies_flag: false)
-          stub_licensed_features(project_saved_replies: true)
 
           get project_comment_templates_path(project)
         end

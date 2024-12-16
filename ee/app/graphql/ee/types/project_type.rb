@@ -496,15 +496,11 @@ module EE
         field :saved_replies,
           ::Types::Projects::SavedReplyType.connection_type,
           null: true,
-          description: 'Saved replies available to the project. Available only when feature flag ' \
-                       '`project_saved_replies_flag` is enabled.',
-          experiment: { milestone: '16.11' }
+          description: 'Saved replies available to the project.'
 
         field :saved_reply,
           resolver: ::Resolvers::Projects::SavedReplyResolver,
-          description: 'Saved reply in the project. Available only when feature flag ' \
-                       '`group_saved_replies_flag` is enabled.',
-          experiment: { milestone: '16.11' }
+          description: 'Saved reply in the project.'
 
         field :merge_trains,
           ::Types::MergeTrains::TrainType.connection_type,

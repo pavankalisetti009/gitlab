@@ -4878,15 +4878,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   describe '#supports_saved_replies?' do
     subject(:supported) { project.supports_saved_replies? }
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(project_saved_replies_flag: false)
-        stub_licensed_features(project_saved_replies: true)
-      end
-
-      it { is_expected.to eq(false) }
-    end
-
     context 'when license is invalid' do
       before do
         stub_licensed_features(project_saved_replies: false)
