@@ -32,7 +32,7 @@ module QA
         Flow::Saml.remove_saml_idp_service(saml_idp_service)
       end
 
-      it 'user clones and pushes to project within a group using Git HTTP', :blocking,
+      it 'user clones and pushes to project within a group using Git HTTP',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347899' do
         expect do
           Resource::Repository::ProjectPush.fabricate! do |project_push|

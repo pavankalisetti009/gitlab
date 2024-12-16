@@ -36,7 +36,7 @@ module QA
         end
 
         it(
-          'adds a streaming destination', :blocking,
+          'adds a streaming destination',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/422980'
         ) do
           Flow::Login.sign_in
@@ -112,7 +112,7 @@ module QA
           end
         end
 
-        context 'when a group is created', :blocking do
+        context 'when a group is created' do
           let(:entity_path) do
             create(:group,
               sandbox: root_group,
@@ -122,7 +122,7 @@ module QA
           include_examples 'streamed events', 'group_created', 'Group', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/422984'
         end
 
-        context 'when a project is shared with a group', :blocking do
+        context 'when a project is shared with a group' do
           let(:project) { create(:project) }
           let(:target_details) { project.full_path }
           let(:entity_path) { root_group.full_path }
@@ -134,7 +134,7 @@ module QA
           include_examples 'streamed events', 'project_group_link_created', 'Group', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/422981'
         end
 
-        context 'when a user is added to a group', :blocking do
+        context 'when a user is added to a group' do
           let(:user) { create(:user) }
           let(:target_details) { user.name }
           let(:entity_path) { root_group.full_path }

@@ -29,7 +29,7 @@ module QA
         end
       end
 
-      context 'with group cn method', :blocking do
+      context 'with group cn method' do
         let(:ldap_users) do
           [
             {
@@ -85,7 +85,7 @@ module QA
           https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/385266]
       end
 
-      context 'with user filter method', :blocking do
+      context 'with user filter method' do
         let(:ldap_users) do
           [
             {

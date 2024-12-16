@@ -52,7 +52,7 @@ module QA
         Runtime::ApplicationSettings.set_application_settings(password_authentication_enabled_for_web: true)
       end
 
-      it 'can be approved when requiring a password', :blocking,
+      it 'can be approved when requiring a password',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/440729' do
         merge_request.visit!
         expect(page).to have_text("Approve with SAML", wait: 10)

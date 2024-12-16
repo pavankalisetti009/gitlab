@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :blocking, product_group: :project_management do
+  RSpec.describe 'Plan', product_group: :project_management do
     describe 'Read-only board configuration' do
       let(:qa_user) { Runtime::User::Store.additional_test_user }
 

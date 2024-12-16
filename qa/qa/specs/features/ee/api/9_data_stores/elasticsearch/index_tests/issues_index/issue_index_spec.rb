@@ -20,7 +20,7 @@ module QA
       end
 
       it(
-        'finds issue that matches description', :blocking,
+        'finds issue that matches description',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347635'
       ) do
         QA::Support::Retrier.retry_on_exception(

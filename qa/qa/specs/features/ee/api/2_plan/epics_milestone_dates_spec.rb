@@ -16,7 +16,7 @@ module QA
       let(:project) { create(:project, name: "epic-milestone-project-#{SecureRandom.hex(8)}", group: group) }
       let(:wait_args) { { max_duration: 10, sleep_interval: 1 } }
 
-      it 'updates epic dates when updating milestones', :blocking,
+      it 'updates epic dates when updating milestones',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347958' do
         epic, milestone = create_epic_issue_milestone
         new_milestone_start_date = (Date.today + 20).iso8601
@@ -81,7 +81,7 @@ module QA
         expect_epic_to_have_updated_dates(epic, nil, nil)
       end
 
-      it 'updates epic dates when deleting milestones', :blocking,
+      it 'updates epic dates when deleting milestones',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347956' do
         epic, milestone = create_epic_issue_milestone
 

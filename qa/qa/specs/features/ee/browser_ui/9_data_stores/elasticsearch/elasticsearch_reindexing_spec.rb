@@ -31,7 +31,7 @@ module QA
       end
 
       it(
-        'tests reindexing after push', :blocking,
+        'tests reindexing after push',
         retry: 3,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348040'
       ) do
@@ -54,7 +54,7 @@ module QA
       end
 
       it(
-        'tests reindexing after webIDE', :blocking,
+        'tests reindexing after webIDE',
         retry: 3,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347629'
       ) do

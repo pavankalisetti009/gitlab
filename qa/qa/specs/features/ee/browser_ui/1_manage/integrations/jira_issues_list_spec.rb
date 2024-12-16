@@ -35,7 +35,7 @@ module QA
       end
 
       it(
-        'searching issues returns results', :blocking,
+        'searching issues returns results',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348238'
       ) do
         EE::Page::Project::Issue::Jira::Index.perform do |jira_index_page|
@@ -50,7 +50,7 @@ module QA
         end
       end
 
-      it 'shows open issues', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348237' do
+      it 'shows open issues', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348237' do
         issues = EE::Page::Project::Issue::Jira::Index.perform(&:visible_issues).map(&:text)
 
         aggregate_failures do
@@ -60,7 +60,7 @@ module QA
       end
 
       it(
-        'views an issue', :blocking,
+        'views an issue',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348236'
       ) do
         EE::Page::Project::Issue::Jira::Index.perform do |jira_index_page|

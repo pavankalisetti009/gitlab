@@ -87,22 +87,22 @@ module QA
 
         context 'with a valid license' do
           context 'with a Duo Enterprise add-on' do
-            context 'when seat is assigned', :blocking, :ai_gateway do
+            context 'when seat is assigned', :ai_gateway do
               it_behaves_like 'a code completion suggestion',
                 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/439625'
             end
 
-            context 'when seat is not assigned', :blocking, :ai_gateway_no_seat_assigned do
+            context 'when seat is not assigned', :ai_gateway_no_seat_assigned do
               it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451486'
             end
           end
 
-          context 'with no Duo Enterprise add-on', :blocking, :ai_gateway_no_add_on do
+          context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on do
             it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452450'
           end
         end
 
-        context 'with no license', :blocking, :ai_gateway_no_license do
+        context 'with no license', :ai_gateway_no_license do
           it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/448662'
         end
       end

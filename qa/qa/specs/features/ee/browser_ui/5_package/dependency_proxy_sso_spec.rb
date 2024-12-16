@@ -48,7 +48,7 @@ module QA
         runner.remove_via_api!
       end
 
-      it "pulls an image using the dependency proxy on a group enforced SSO", :blocking,
+      it "pulls an image using the dependency proxy on a group enforced SSO",
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347612' do
         create(:commit, project: project, commit_message: 'Add .gitlab-ci.yml', actions: [
           {

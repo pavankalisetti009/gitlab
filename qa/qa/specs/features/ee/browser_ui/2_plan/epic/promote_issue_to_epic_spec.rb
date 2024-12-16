@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :blocking, product_group: :product_planning do
+  RSpec.describe 'Plan', product_group: :product_planning do
     describe 'promote issue to epic' do
       include_context 'work item epics migration'
 

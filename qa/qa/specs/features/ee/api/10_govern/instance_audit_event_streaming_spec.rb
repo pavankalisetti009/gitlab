@@ -33,7 +33,7 @@ module QA
         end
       end
 
-      context 'when a group is created', :blocking do
+      context 'when a group is created' do
         let(:entity_path) { create(:group).full_path }
 
         include_examples 'streamed events', 'group_created', 'Group', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415874'
@@ -59,7 +59,7 @@ module QA
         include_examples 'streamed events', 'user_created', 'User', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415876'
       end
 
-      context 'when a repository is cloned via SSH', :blocking do
+      context 'when a repository is cloned via SSH' do
         # Create the project and key first so their audit events are streamed before we check for the clone event
         let!(:key) { Resource::SSHKey.fabricate_via_api! }
         let!(:project) { create(:project, :with_readme) }

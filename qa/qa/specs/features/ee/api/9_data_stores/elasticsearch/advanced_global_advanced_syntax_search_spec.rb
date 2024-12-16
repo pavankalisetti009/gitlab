@@ -28,14 +28,14 @@ module QA
 
       context 'when searching for projects using advanced syntax' do
         it(
-          'searches in the project name', :blocking,
+          'searches in the project name',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348066'
         ) do
           expect_search_to_find_project("es-adv-*#{project_name_suffix}")
         end
 
         it(
-          'searches in the project description', :blocking,
+          'searches in the project description',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348067'
         ) do
           expect_search_to_find_project("unique +#{project_name_suffix}")

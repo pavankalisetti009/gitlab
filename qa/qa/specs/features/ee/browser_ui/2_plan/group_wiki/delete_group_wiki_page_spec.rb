@@ -9,7 +9,7 @@ module QA
         Flow::Login.sign_in
       end
 
-      it 'can delete a group wiki page', :blocking,
+      it 'can delete a group wiki page',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/374707' do
         initial_wiki.visit!
 

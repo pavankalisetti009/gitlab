@@ -12,7 +12,7 @@ module QA
         Flow::Login.sign_in
       end
 
-      it 'by creating a formatted page with an image uploaded', :blocking,
+      it 'by creating a formatted page with an image uploaded',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/375655' do
         initial_wiki.visit!
 

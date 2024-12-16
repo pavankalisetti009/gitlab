@@ -5,7 +5,7 @@ module QA
     describe 'Pull mirror a repository over HTTP', product_group: :source_code do
       let(:user) { Runtime::User::Store.test_user }
 
-      it 'configures and syncs a (pull) mirrored repository with password auth', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347764' do
+      it 'configures and syncs a (pull) mirrored repository with password auth', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347764' do
         Flow::Login.sign_in
 
         source = Resource::Repository::ProjectPush.fabricate! do |project_push|

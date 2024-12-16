@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :blocking, :requires_admin, product_group: :project_management do
+  RSpec.describe 'Plan', :requires_admin, product_group: :project_management do
     describe 'Multiple assignees per issue' do
       let(:project) { create(:project, name: 'project-to-test-issue-with-multiple-assignees') }
 

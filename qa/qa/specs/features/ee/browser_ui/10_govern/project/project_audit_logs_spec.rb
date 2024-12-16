@@ -16,7 +16,7 @@ module QA
       end
     end
 
-    describe 'Project', :blocking do
+    describe 'Project' do
       let(:project) { create(:project, :with_readme, name: 'awesome-project') }
       let(:user) { Runtime::User::Store.additional_test_user }
 

@@ -23,7 +23,7 @@ module QA
         Flow::Login.sign_in
       end
 
-      it 'allows multiple approval rules with users and groups', :blocking,
+      it 'allows multiple approval rules with users and groups',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347771' do
         # Create a merge request with 2 rules
         merge_request = Resource::MergeRequest.fabricate_via_browser_ui! do |resource|

@@ -25,7 +25,7 @@ module QA
       end
 
       it(
-        'assigns a group iteration to an existing issue', :blocking,
+        'assigns a group iteration to an existing issue',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347942',
         except: { subdomain: 'pre' }
       ) do

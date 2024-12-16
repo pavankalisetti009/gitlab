@@ -40,7 +40,7 @@ module QA
         set_up_jira_integration
       end
 
-      it 'can successfully create a JIRA issue from vulnerability details page', :blocking,
+      it 'can successfully create a JIRA issue from vulnerability details page',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/381386' do
         Page::Project::Menu.perform(&:go_to_vulnerability_report)
 

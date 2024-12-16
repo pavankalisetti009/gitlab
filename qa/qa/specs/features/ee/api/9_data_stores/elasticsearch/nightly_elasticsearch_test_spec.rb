@@ -27,7 +27,7 @@ module QA
       end
 
       it(
-        'searches public project and finds a blob as an non-member user', :blocking,
+        'searches public project and finds a blob as an non-member user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348089'
       ) do
         start_time = Time.now

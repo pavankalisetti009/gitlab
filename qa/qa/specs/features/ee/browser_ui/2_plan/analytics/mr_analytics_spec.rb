@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Plan' do
-    describe 'Merge Request Analytics', :blocking, :requires_admin, product_group: :optimize do
+    describe 'Merge Request Analytics', :requires_admin, product_group: :optimize do
       let(:label) { "mr-label" }
       let(:project) { create(:project, name: 'mr_analytics') }
 
