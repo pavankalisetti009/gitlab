@@ -7,8 +7,8 @@ RSpec.describe LabelNote do
 
   let_it_be(:group)  { create(:group) }
   let_it_be(:user)   { create(:user) }
-  let_it_be(:label) { create(:group_label, group: group) }
-  let_it_be(:label2) { create(:group_label, group: group) }
+  let_it_be(:label) { create(:group_label, group: group, title: 'label-1') }
+  let_it_be(:label2) { create(:group_label, group: group, title: 'label-2') }
   let(:resource_parent) { group }
   let_it_be(:resource) { create(:epic, group: group) }
 
