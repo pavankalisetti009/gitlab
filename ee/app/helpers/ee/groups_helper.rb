@@ -125,7 +125,8 @@ module EE
         duo_pro_bulk_user_assignment_available: 'true',
         hand_raise_lead: code_suggestions_usage_app_hand_raise_lead_data,
         is_free_namespace: group.has_free_or_no_subscription?.to_s,
-        buy_subscription_path: group_billings_path(group)
+        buy_subscription_path: group_billings_path(group),
+        duo_page_path: group_settings_gitlab_duo_path(group)
       }.merge(duo_pro_trial_link(group), active_duo_add_on_data(group), active_subscription_data(group))
     end
 

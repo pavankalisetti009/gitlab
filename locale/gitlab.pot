@@ -5230,6 +5230,9 @@ msgstr ""
 msgid "AiPowered|Features are not available. However, any group, subgroup, or project can turn them on."
 msgstr ""
 
+msgid "AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings."
+msgstr ""
+
 msgid "AiPowered|GitLab Duo settings have moved"
 msgstr ""
 
@@ -5258,6 +5261,9 @@ msgid "AiPowered|Participate in the Early Access Program and help make GitLab be
 msgstr ""
 
 msgid "AiPowered|Purchase seats"
+msgstr ""
+
+msgid "AiPowered|Seat assignment for GitLab Duo has moved"
 msgstr ""
 
 msgid "AiPowered|Self-hosted AI models"
