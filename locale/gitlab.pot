@@ -10453,6 +10453,9 @@ msgstr ""
 msgid "BulkImport|Import failed: Destination cannot be a subgroup of the source group. Change the destination and try again."
 msgstr ""
 
+msgid "BulkImport|Import failed: Must have exactly one of organization, group or project."
+msgstr ""
+
 msgid "BulkImport|Import from %{hostname} completed"
 msgstr ""
 
