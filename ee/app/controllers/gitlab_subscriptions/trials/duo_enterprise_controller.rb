@@ -4,7 +4,6 @@ module GitlabSubscriptions
   module Trials
     class DuoEnterpriseController < ApplicationController
       include GitlabSubscriptions::Trials::DuoCommon
-      include Gitlab::RackLoadBalancingHelpers
 
       feature_category :subscription_management
       urgency :low
@@ -29,13 +28,7 @@ module GitlabSubscriptions
 
         if @result.success?
           # lead and trial created
-          # We need to stick to an up to date replica or primary db here in order
-          # to properly observe the add_on_purchase that CustomersDot created.
-          # See https://gitlab.com/gitlab-org/gitlab/-/issues/499720
-          load_balancer_stick_request(::Namespace, :namespace, @result.payload[:namespace].id)
-          flash[:success] = success_flash_message(
-            GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(@result.payload[:namespace])
-          )
+          flash[:success] = success_flash_message(@result.payload[:add_on_purchase])
 
           redirect_to group_settings_gitlab_duo_path(@result.payload[:namespace])
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::NO_SINGLE_NAMESPACE

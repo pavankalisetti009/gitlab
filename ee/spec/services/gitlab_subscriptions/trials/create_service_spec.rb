@@ -18,6 +18,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
     let(:lead_service_class) { GitlabSubscriptions::CreateLeadService }
     let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyTrialService }
+    let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
     let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
     let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
@@ -51,7 +52,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
         expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group })
+        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
       end
     end
 
@@ -114,7 +115,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
         expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group })
+        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
       end
     end
 
@@ -130,13 +131,15 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
         context 'when trial creation is successful' do
           it 'return success with the namespace' do
             expect_next_instance_of(apply_trial_service_class) do |instance|
-              expect(instance).to receive(:execute).and_return(ServiceResponse.success)
+              expect(instance).to receive(:execute).and_return(
+                ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
+              )
             end
 
             expect { execute }.to change { Group.count }.by(1)
 
             expect(execute).to be_success
-            expect(execute.payload).to eq({ namespace: Group.last })
+            expect(execute.payload).to eq({ namespace: Group.last, add_on_purchase: add_on_purchase })
           end
         end
 

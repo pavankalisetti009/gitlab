@@ -41,7 +41,7 @@ module TrialHelpers
     }
 
     trial_success = if success
-                      ServiceResponse.success
+                      ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
                     else
                       ServiceResponse.error(message: '_trial_fail_')
                     end

@@ -25,4 +25,16 @@ RSpec.describe GitlabSubscriptions::Trials::BaseApplyTrialService, feature_categ
 
     expect { execute }.to raise_error(NoMethodError, 'Subclasses must implement execute_trial_request method')
   end
+
+  it 'raises NoMethodError when add_on_purchase_finder is not implemented' do
+    allow_next_instance_of(described_class) do |instance|
+      allow(instance).to receive_messages(
+        valid_to_generate_trial?: true,
+        execute_trial_request: { success: true },
+        namespace: build(:namespace)
+      )
+    end
+
+    expect { execute }.to raise_error(NoMethodError, 'Subclasses must implement add_on_purchase_finder method')
+  end
 end

@@ -185,16 +185,17 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
 
       context 'when successful' do
         context 'when add_on_purchase exists' do
+          let(:add_on_purchase) do
+            build(:gitlab_subscription_add_on_purchase, expires_on: 61.days.from_now)
+          end
+
           before do
-            expect_create_success(group_for_trial)
+            expect_create_success
           end
 
           it { is_expected.to redirect_to(group_settings_gitlab_duo_path(group_for_trial)) }
 
           it 'shows valid flash message', :freeze_time do
-            allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
-            expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, group_for_trial.id)
-
             post_create
 
             message = format(
@@ -207,7 +208,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
           end
         end
 
-        def expect_create_success(namespace)
+        def expect_create_success
           service_params = {
             step: step,
             lead_params: lead_params,
@@ -216,12 +217,9 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
           }
 
           expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoProService, service_params) do |instance|
-            expect(instance).to receive(:execute) do
-              create(
-                :gitlab_subscription_add_on_purchase,
-                :trial, add_on: add_on, expires_on: 61.days.from_now, namespace: namespace
-              )
-            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
+            expect(instance).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { namespace: group_for_trial, add_on_purchase: add_on_purchase })
+            )
           end
         end
       end
