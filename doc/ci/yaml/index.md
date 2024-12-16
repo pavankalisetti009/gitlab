@@ -5236,7 +5236,7 @@ be assigned every tag listed in the job.
 
 **Supported values**:
 
-- An array of tag names.
+- An array of tag names, which are case sensitive.
 - CI/CD variables [are supported](../variables/where_variables_can_be_used.md#gitlab-ciyml-file).
 
 **Example of `tags`**:
