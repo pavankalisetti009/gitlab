@@ -11,6 +11,57 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
     it { expect(token).to be_nil }
   end
 
+  shared_examples_for "a properly handled expires_at" do
+    context 'when expiration policy is licensed' do
+      before do
+        stub_licensed_features(personal_access_token_expiration_policy: true)
+      end
+
+      context 'when instance level expiration date is set' do
+        before do
+          stub_ee_application_setting(
+            max_personal_access_token_lifetime_from_now: instance_level_pat_expiration_date
+          )
+        end
+
+        it { expect(token.expires_at).to eq instance_level_pat_expiration_date }
+      end
+
+      context 'when group level expiration is set' do
+        let(:group) do
+          build(:group_with_managed_accounts, max_personal_access_token_lifetime: group_level_pat_expiration_policy)
+        end
+
+        context 'when user is group managed' do
+          let(:target_user) { create(:user, managing_group: group) }
+
+          it { expect(token.expires_at).to eq group_level_max_expiration_date }
+        end
+
+        context 'when user is not group managed' do
+          it 'sets expires_at to default value' do
+            expect(token.expires_at)
+            .to eq max_personal_access_token_lifetime
+          end
+        end
+      end
+
+      context 'when neither instance level nor group level expiration is set' do
+        it "sets expires_at to default value" do
+          expect(token.expires_at)
+          .to eq max_personal_access_token_lifetime
+        end
+      end
+    end
+
+    context 'when expiration policy is not licensed' do
+      it "sets expires_at to default value" do
+        expect(token.expires_at)
+        .to eq max_personal_access_token_lifetime
+      end
+    end
+  end
+
   describe '#execute' do
     subject(:create_token) { service.execute }
 
@@ -29,7 +80,11 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
     let(:token) { create_token.payload[:personal_access_token] }
 
     let(:max_personal_access_token_lifetime) do
-      PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+      if ::Feature.enabled?(:buffered_token_expiration_limit) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Group setting but checked at user
+        PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS_BUFFERED.days.from_now.to_date
+      else
+        PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+      end
     end
 
     context 'when expires_at is nil', :enable_admin_mode do
@@ -39,53 +94,16 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
       let(:group_level_pat_expiration_policy) { 20 }
       let(:group_level_max_expiration_date) { Date.current + group_level_pat_expiration_policy }
 
-      context 'when expiration policy is licensed' do
+      context "when buffered_token_expiration_limit is disabled" do
         before do
-          stub_licensed_features(personal_access_token_expiration_policy: true)
+          stub_feature_flags(buffered_token_expiration_limit: false)
         end
 
-        context 'when instance level expiration date is set' do
-          before do
-            stub_ee_application_setting(
-              max_personal_access_token_lifetime_from_now: instance_level_pat_expiration_date
-            )
-          end
-
-          it { expect(token.expires_at).to eq instance_level_pat_expiration_date }
-        end
-
-        context 'when group level expiration is set' do
-          let(:group) do
-            build(:group_with_managed_accounts, max_personal_access_token_lifetime: group_level_pat_expiration_policy)
-          end
-
-          context 'when user is group managed' do
-            let(:target_user) { create(:user, managing_group: group) }
-
-            it { expect(token.expires_at).to eq group_level_max_expiration_date }
-          end
-
-          context 'when user is not group managed' do
-            it 'sets expires_at to default value' do
-              expect(token.expires_at)
-              .to eq max_personal_access_token_lifetime
-            end
-          end
-        end
-
-        context 'when neither instance level nor group level expiration is set' do
-          it "sets expires_at to default value" do
-            expect(token.expires_at)
-            .to eq max_personal_access_token_lifetime
-          end
-        end
+        it_behaves_like "a properly handled expires_at"
       end
 
-      context 'when expiration policy is not licensed' do
-        it "sets expires_at to default value" do
-          expect(token.expires_at)
-          .to eq max_personal_access_token_lifetime
-        end
+      context "when buffered_token_expiration_limit is enabled" do
+        it_behaves_like "a properly handled expires_at"
       end
     end
 
@@ -121,15 +139,21 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
                   travel_back
                 end
 
-                where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
-                  true | true | Date.new(2025, 8, 24) # 1 year from now
-                  true | false | nil
-                  false | true | Date.new(2025, 8, 24) # 1 year from now
-                  false | false | nil
+                where(:require_token_expiry, :buffered_token_expiration_limit,
+                  :require_token_expiry_for_service_accounts, :expires_at) do
+                  true | false | true | Date.new(2025, 8, 24) # 1 year from now
+                  true | false | false | nil
+                  false | false | true | Date.new(2025, 8, 24) # 1 year from now
+                  false | false | false | nil
+                  true | true | true | Date.new(2025, 9, 28) # 1 year from now
+                  true | true | false | nil
+                  false | true | true | Date.new(2025, 9, 28) # 1 year from now
+                  false | true | false | nil
                 end
                 with_them do
                   before do
                     stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+                    stub_feature_flags(buffered_token_expiration_limit: buffered_token_expiration_limit)
                     stub_ee_application_setting(
                       service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
                   end
@@ -173,15 +197,25 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
                 let(:params) { valid_params.merge(group: group, expires_at: nil) }
 
                 context 'when saas', :saas, :enable_admin_mode do
-                  where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
-                    true | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
-                    true | false | nil
-                    false | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
-                    false | false | nil
+                  where(:require_token_expiry, :buffered_token_expiration_limit,
+                    :require_token_expiry_for_service_accounts, :expires_at) do
+                    true | false | true |
+                      PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                    true | false | false | nil
+                    false | false | true |
+                      PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                    false | false | false | nil
+                    true | true | true |
+                      PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS_BUFFERED.days.from_now.to_date
+                    true | true | false | nil
+                    false | true | true |
+                      PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS_BUFFERED.days.from_now.to_date
+                    false | true | false | nil
                   end
                   with_them do
                     before do
                       stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+                      stub_feature_flags(buffered_token_expiration_limit: buffered_token_expiration_limit)
                       group.namespace_settings.update!(
                         service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
                     end
