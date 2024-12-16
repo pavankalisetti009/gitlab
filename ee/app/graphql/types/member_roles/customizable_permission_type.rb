@@ -52,7 +52,7 @@ module Types
       end
 
       def name
-        _(object.to_s.humanize)
+        permission[:title] || object.to_s.humanize
       end
 
       def requirements
