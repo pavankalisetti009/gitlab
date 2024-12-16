@@ -1,15 +1,8 @@
 <script>
-import {
-  GlForm,
-  GlFormInput,
-  GlFormGroup,
-  GlIcon,
-  GlPopover,
-  GlButton,
-  GlLoadingIcon,
-} from '@gitlab/ui';
+import { GlForm, GlFormInput, GlFormGroup, GlPopover, GlButton, GlLoadingIcon } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { __ } from '~/locale';
 import Tracking from '~/tracking';
 import {
@@ -28,10 +21,10 @@ export default {
     GlForm,
     GlFormInput,
     GlFormGroup,
-    GlIcon,
     GlPopover,
     GlButton,
     GlLoadingIcon,
+    HelpIcon,
   },
   mixins: [Tracking.mixin(), glFeatureFlagMixin()],
   i18n: {
@@ -167,7 +160,7 @@ export default {
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.progressTitle }}
         <template v-if="showProgressPopover">
-          <gl-icon id="okr-progress-popover-title" name="question-o" variant="info" />
+          <help-icon id="okr-progress-popover-title" />
           <gl-popover
             triggers="hover"
             target="okr-progress-popover-title"
@@ -191,7 +184,7 @@ export default {
         <label for="progress-widget-input" class="gl-mb-0"
           >{{ $options.i18n.progressTitle }}
           <template v-if="showProgressPopover">
-            <gl-icon id="okr-progress-popover-label" name="question-o" variant="info" />
+            <help-icon id="okr-progress-popover-label" />
             <gl-popover
               triggers="hover"
               target="okr-progress-popover-label"

@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import { GlLink, GlTooltipDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions, mapGetters } from 'vuex';
 import { TYPE_EPIC, TYPE_ISSUE } from '~/issues/constants';
@@ -7,6 +7,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__, sprintf } from '~/locale';
 import AddItemForm from '~/related_issues/components/add_issuable_form.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import {
   ITEM_TABS,
   OVERFLOW_AFTER,
@@ -44,7 +45,6 @@ export default {
   },
   components: {
     GlLink,
-    GlIcon,
     RelatedItemsTreeHeaderActions,
     RelatedItemsTreeCount,
     RelatedItemsTreeBody,
@@ -56,6 +56,7 @@ export default {
     CreateIssueForm,
     SlotSwitch,
     CrudComponent,
+    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -309,11 +310,9 @@ export default {
           <template v-for="slot in formSlots" #[slot.name]>
             <h6 :key="slot.name">
               {{ slot.value }}
-              <gl-icon
+              <help-icon
                 v-gl-tooltip.hover
-                name="question-o"
                 :title="$options.i18nConfidentialParent[parentItem.type]"
-                variant="subtle"
               />
             </h6>
           </template>
