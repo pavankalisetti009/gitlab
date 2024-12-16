@@ -64,8 +64,8 @@ RSpec.describe AuditEvents::InstanceExternalAuditEventDestination, feature_categ
     end
 
     it 'validates uniqueness of destination_url' do
-      create(:instance_external_audit_event_destination, destination_url: 'https://www.test.com')
-      destination = build(:instance_external_audit_event_destination, destination_url: 'https://www.test.com')
+      create(:instance_external_audit_event_destination, destination_url: 'https://www.example.com')
+      destination = build(:instance_external_audit_event_destination, destination_url: 'https://www.example.com')
 
       expect(destination).not_to be_valid
       expect(destination.errors.full_messages).to include('Destination url has already been taken')

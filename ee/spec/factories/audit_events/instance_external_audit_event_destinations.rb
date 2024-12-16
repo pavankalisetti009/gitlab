@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :instance_external_audit_event_destination, class: 'AuditEvents::InstanceExternalAuditEventDestination' do
-    destination_url { FFaker::Internet.uri('https') }
+    sequence(:destination_url) { |n| "http://example.com/#{n}" }
     stream_destination_id { nil }
   end
 end
