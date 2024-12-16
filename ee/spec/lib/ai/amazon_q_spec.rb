@@ -32,7 +32,6 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
       true  | true  | true
       true  | false | false
       false | true  | false
-      false | true  | false
       false | false | false
     end
 

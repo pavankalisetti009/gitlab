@@ -205,60 +205,35 @@ RSpec.describe IssuablePolicy, :models, feature_category: :team_planning do
       let(:user) { developer }
       let(:amazon_q_enabled) { true }
 
-      before do
-        allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
+      where(:user_role, :issuable_type, :duo_features_enabled, :amazon_q_enabled, :expected_result) do
+        :developer  | :guest_issue         | true  | true  | :be_allowed
+        :developer  | :non_persisted_issue | true  | true  | :be_allowed
+        :developer  | :merge_request       | true  | true  | :be_allowed
+        :non_member | :merge_request       | true  | true  | :be_disallowed
+        :developer  | :epic                | true  | true  | :be_disallowed
+        :reporter   | :guest_issue         | true  | true  | :be_disallowed
+        :developer  | :guest_issue         | false | true  | :be_disallowed
+        :developer  | :guest_issue         | true  | false | :be_disallowed
       end
 
-      it 'allows on an issue authored by a guest' do
-        expect(permissions(user, guest_issue)).to be_allowed(:trigger_amazon_q)
-      end
+      with_them do
+        it 'returns the correct permission' do
+          user = send(user_role)
+          issuable = case issuable_type
+                     when :guest_issue then guest_issue
+                     when :non_persisted_issue then build(:issue, project: project)
+                     when :merge_request then merge_request
+                     when :epic then build(:epic, group: project.group)
+                     end
 
-      it 'allows on non-persisted issues' do
-        issue = build(:issue, project: project)
+          if duo_features_enabled == false
+            project.update!(duo_features_enabled: false)
+            project.namespace.namespace_settings.update!(duo_features_enabled: true)
+          end
 
-        expect(permissions(user, issue)).to be_allowed(:trigger_amazon_q)
-      end
+          allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
 
-      it 'allows on merge request' do
-        expect(permissions(user, merge_request)).to be_allowed(:trigger_amazon_q)
-      end
-
-      it 'disallows non-member' do
-        expect(permissions(non_member, merge_request)).to be_disallowed(:trigger_amazon_q)
-      end
-
-      it 'disallows work items without a project' do
-        # note: We might want to do this in the future, but for now we're using the project_namespace for this check
-        epic = build(:epic, group: project.group)
-
-        expect(permissions(user, epic)).to be_disallowed(:trigger_amazon_q)
-      end
-
-      context 'when user is not developer+' do
-        let(:user) { reporter }
-
-        it 'disallows reporter' do
-          expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
-        end
-      end
-
-      context 'when project does not have Duo features enabled' do
-        before do
-          project.update!(duo_features_enabled: false)
-          project.namespace.namespace_settings.duo_features_enabled = true
-          project.namespace.namespace_settings.save!
-        end
-
-        it 'does not allow user' do
-          expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
-        end
-      end
-
-      context 'when Amazon Q is disabled' do
-        let(:amazon_q_enabled) { false }
-
-        it 'disallows user' do
-          expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
+          expect(permissions(user, issuable)).to send(expected_result, :trigger_amazon_q)
         end
       end
     end
