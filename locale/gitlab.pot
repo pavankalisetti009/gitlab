@@ -39554,6 +39554,9 @@ msgstr ""
 msgid "PackageRegistry|Name pattern"
 msgstr ""
 
+msgid "PackageRegistry|No packages are protected yet."
+msgstr ""
+
 msgid "PackageRegistry|Npm"
 msgstr ""
 

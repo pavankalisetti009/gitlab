@@ -1,4 +1,4 @@
-import { GlAlert, GlSkeletonLoader } from '@gitlab/ui';
+import { GlAlert, GlCard, GlSkeletonLoader } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -20,11 +20,17 @@ describe('Dependency proxy packages project settings', () => {
   let wrapper;
   let fakeApollo;
 
-  const defaultProvidedValues = {
+  let defaultProvidedValues = {
     projectPath: 'path',
+    glFeatures: {
+      reorganizeProjectLevelRegistrySettings: false,
+    },
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findCard = () => wrapper.findComponent(GlCard);
+  const findHeader = () => wrapper.find('h2');
+  const findDescription = () => wrapper.findByTestId('description');
   const findFormComponent = () => wrapper.findComponent(DependencyProxyPackagesSettingsForm);
   const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findSettingsSection = () => wrapper.findComponent(SettingsSection);
@@ -91,6 +97,62 @@ describe('Dependency proxy packages project settings', () => {
       expect(findAlert().html()).toContain(
         'Something went wrong while fetching the dependency proxy settings.',
       );
+    });
+  });
+
+  describe('when "reorganizeProjectLevelRegistrySettings" feature flag is enabled', () => {
+    beforeEach(() => {
+      defaultProvidedValues = {
+        ...defaultProvidedValues,
+        glFeatures: {
+          reorganizeProjectLevelRegistrySettings: true,
+        },
+      };
+    });
+
+    it('renders settings block component', () => {
+      mountComponentWithApollo();
+
+      expect(findCard().exists()).toBe(true);
+    });
+
+    it('has the correct header text and description', () => {
+      mountComponentWithApollo();
+
+      expect(findHeader().text()).toBe('Dependency Proxy');
+      expect(findDescription().text()).toBe(
+        'Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
+      );
+      expect(findLoader().exists()).toBe(true);
+    });
+
+    it('renders the setting form', async () => {
+      mountComponentWithApollo({
+        resolver: jest.fn().mockResolvedValue(dependencyProxyPackagesSettingsPayload()),
+      });
+      await waitForPromises();
+
+      expect(findLoader().exists()).toBe(false);
+      expect(findFormComponent().props('data')).toEqual(dependencyProxyPackagesSettingsData);
+    });
+
+    describe('fetchSettingsError', () => {
+      beforeEach(async () => {
+        mountComponentWithApollo({
+          resolver: jest.fn().mockRejectedValue(new Error('GraphQL error')),
+        });
+        await waitForPromises();
+      });
+
+      it('the form is hidden', () => {
+        expect(findFormComponent().exists()).toBe(false);
+      });
+
+      it('shows an alert', () => {
+        expect(findAlert().html()).toContain(
+          'Something went wrong while fetching the dependency proxy settings.',
+        );
+      });
     });
   });
 });
