@@ -20848,11 +20848,14 @@ CREATE TABLE topics (
     title text,
     slug text,
     organization_id bigint DEFAULT 1 NOT NULL,
+    cached_markdown_version integer DEFAULT 0 NOT NULL,
+    description_html text,
     CONSTRAINT check_0eda72aeb0 CHECK ((char_length(slug) <= 255)),
     CONSTRAINT check_223b50f9be CHECK ((char_length(title) <= 255)),
     CONSTRAINT check_26753fb43a CHECK ((char_length(avatar) <= 255)),
     CONSTRAINT check_5d1a07c8c8 CHECK ((char_length(description) <= 1024)),
-    CONSTRAINT check_7a90d4c757 CHECK ((char_length(name) <= 255))
+    CONSTRAINT check_7a90d4c757 CHECK ((char_length(name) <= 255)),
+    CONSTRAINT check_7c7a7b2c84 CHECK ((char_length(description_html) <= 50000))
 );
 
 CREATE SEQUENCE topics_id_seq
