@@ -59,5 +59,72 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
         end
       end
     end
+
+    context 'for processing Duo Code Review chat' do
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+      let_it_be(:note) { create(:diff_note_on_merge_request, noteable: merge_request, project: project) }
+
+      subject(:execute) { described_class.new(note).execute }
+
+      shared_examples_for 'not enqueueing MergeRequests::DuoCodeReviewChatWorker' do
+        it 'does not enqueue MergeRequests::DuoCodeReviewChatWorker' do
+          expect(::MergeRequests::DuoCodeReviewChatWorker).not_to receive(:perform_async)
+
+          execute
+        end
+      end
+
+      before do
+        allow(merge_request).to receive(:ai_review_merge_request_allowed?).and_return(true)
+        allow(note).to receive(:duo_bot_mentioned?).and_return(true)
+      end
+
+      it 'enqueues MergeRequests::DuoCodeReviewChatWorker' do
+        expect(::MergeRequests::DuoCodeReviewChatWorker).to receive(:perform_async).with(note.id)
+
+        execute
+      end
+
+      context 'when duo_code_review_chat is disabled' do
+        before do
+          stub_feature_flags(duo_code_review_chat: false)
+        end
+
+        it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
+      end
+
+      context 'when note is not a diff note' do
+        before do
+          allow(note).to receive(:diff_note?).and_return(false)
+        end
+
+        it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
+      end
+
+      context 'when note is authored by GitLab Duo' do
+        before do
+          allow(note).to receive(:authored_by_duo_bot?).and_return(true)
+        end
+
+        it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
+      end
+
+      context 'when MergeRequest#ai_review_merge_request_allowed? returns false' do
+        before do
+          allow(merge_request).to receive(:ai_review_merge_request_allowed?).and_return(false)
+        end
+
+        it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
+      end
+
+      context 'when Note#duo_bot_mentioned? returns false' do
+        before do
+          allow(note).to receive(:duo_bot_mentioned?).and_return(false)
+        end
+
+        it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
+      end
+    end
   end
 end

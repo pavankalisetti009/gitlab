@@ -13,6 +13,7 @@ module EE
         ::Analytics::RefreshCommentsData.for_note(note)&.execute
 
         log_audit_event if note.author.project_bot?
+        process_duo_code_review_chat
       end
 
       private
@@ -33,6 +34,22 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def process_duo_code_review_chat
+        author = note.author
+        return unless ::Feature.enabled?(:duo_code_review_chat, author)
+
+        # Duo Code Review also creates summary notes which we don't want it to respond to when mentioned.
+        return unless note.for_merge_request? && note.diff_note?
+
+        # We don't want the bot to talk to itself
+        return if note.authored_by_duo_bot?
+
+        return unless note.noteable.ai_review_merge_request_allowed?(author)
+        return unless note.duo_bot_mentioned?
+
+        ::MergeRequests::DuoCodeReviewChatWorker.perform_async(note.id)
       end
     end
   end

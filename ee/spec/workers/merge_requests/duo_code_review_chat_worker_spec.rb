@@ -1,0 +1,161 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_review_workflow do
+  subject(:worker) { described_class.new }
+
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+  let_it_be(:first_discussion_note) do
+    create(
+      :diff_note_on_merge_request,
+      noteable: merge_request,
+      project: project,
+      author: ::Users::Internal.duo_code_review_bot,
+      note: 'This is a review comment from Gitlab Duo'
+    )
+  end
+
+  let_it_be(:excluded_note) do
+    create(
+      :diff_note_on_merge_request,
+      noteable: merge_request,
+      project: project,
+      discussion_id: first_discussion_note.discussion_id,
+      note: 'I am not mentioning GitLab Duo so I should be excluded'
+    )
+  end
+
+  let_it_be(:note) do
+    create(
+      :diff_note_on_merge_request,
+      noteable: merge_request,
+      project: project,
+      discussion_id: first_discussion_note.discussion_id,
+      note: "@#{::Users::Internal.duo_code_review_bot.username} Hello!"
+    )
+  end
+
+  describe '#perform' do
+    let(:chat_message) { instance_double(Gitlab::Llm::ChatMessage) }
+
+    let(:response_modifier) do
+      instance_double(
+        Gitlab::Llm::Chain::ResponseModifier,
+        response_body: 'chat response'
+      )
+    end
+
+    before do
+      allow_next_instance_of(
+        Gitlab::Llm::Completions::Chat,
+        an_object_having_attributes(content: note.note),
+        nil,
+        additional_context: {
+          id: note.latest_diff_file_path,
+          category: 'merge_request',
+          content: note.raw_truncated_diff_lines
+        }
+      ) do |chat|
+        allow(chat)
+          .to receive(:execute)
+          .and_return(response_modifier)
+      end
+    end
+
+    it 'creates note based on chat response' do
+      expect(Gitlab::Llm::ChatMessage)
+        .to receive(:new)
+        .with(chat_message_params(::Gitlab::Llm::AiMessage::ROLE_USER, note, '/reset'))
+        .and_call_original
+
+      expect(Gitlab::Llm::ChatMessage)
+        .to receive(:new)
+        .with(
+          chat_message_params(
+            ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
+            first_discussion_note,
+            first_discussion_note.note
+          )
+        )
+        .and_call_original
+
+      expect(Gitlab::Llm::ChatMessage)
+        .not_to receive(:new)
+        .with(
+          chat_message_params(
+            ::Gitlab::Llm::AiMessage::ROLE_USER,
+            excluded_note,
+            excluded_note.note
+          )
+        )
+
+      expect(Gitlab::Llm::ChatMessage)
+        .to receive(:new)
+        .with(
+          chat_message_params(
+            ::Gitlab::Llm::AiMessage::ROLE_USER,
+            note,
+            note.note
+          )
+        )
+        .and_call_original
+
+      worker.perform(note)
+
+      expect(Note.last.note).to eq(response_modifier.response_body)
+    end
+
+    context 'when note cannot be found' do
+      it 'does not create note' do
+        expect(Notes::CreateService).not_to receive(:new)
+
+        worker.perform(note.id + 1)
+      end
+    end
+
+    context 'when note does not mention GitLab Duo' do
+      let_it_be(:note) do
+        create(
+          :diff_note_on_merge_request,
+          noteable: merge_request,
+          project: project,
+          discussion_id: first_discussion_note.discussion_id
+        )
+      end
+
+      it 'does not create note' do
+        expect(Notes::CreateService).not_to receive(:new)
+
+        worker.perform(note.id)
+      end
+    end
+
+    context 'when chat response is blank' do
+      let(:response_modifier) do
+        instance_double(
+          Gitlab::Llm::Chain::ResponseModifier,
+          response_body: ''
+        )
+      end
+
+      it 'does not create note' do
+        expect(Notes::CreateService).not_to receive(:new)
+
+        worker.perform(note.id)
+      end
+    end
+  end
+
+  def chat_message_params(role, resource, content)
+    {
+      ai_action: 'chat',
+      user: note.author,
+      content: content,
+      role: role,
+      context: an_object_having_attributes(resource: resource)
+    }
+  end
+end
