@@ -94,6 +94,15 @@ export default {
   },
   methods: {
     mapBranchValidationRequests(branches = []) {
+      if (!this.hasValidation) {
+        return branches.map(({ name, fullPath }) => ({
+          name,
+          branch: fullPath,
+          exists: true,
+          projectExists: true,
+        }));
+      }
+
       return branches.map(({ name, fullPath }) => this.doesBranchExist(fullPath, name));
     },
     async doesBranchExist(fullPath, branch) {

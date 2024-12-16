@@ -199,9 +199,25 @@ describe('BranchSelectorModal', () => {
       expect(findTextArea().props('value')).toBe(expectedResult);
     });
 
+    it('does not validate branches when validation is disabled', async () => {
+      createComponent({
+        propsData: {
+          branches: VALID_BRANCHES,
+        },
+      });
+
+      expect(findTextArea().props('value')).toBe(VALID_BRANCHES_STRING);
+
+      findAddButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(requestHandler).toHaveBeenCalledTimes(0);
+    });
+
     it('emits same branches when there are now changes', async () => {
       createComponent({
         propsData: {
+          hasValidation: true,
           branches: VALID_BRANCHES,
         },
       });
@@ -249,6 +265,9 @@ describe('BranchSelectorModal', () => {
   describe('branches async validation', () => {
     it('renders validation error if branch does not exist', async () => {
       createComponent({
+        propsData: {
+          hasValidation: true,
+        },
         handler: mockDefaultRequestHandler([]),
       });
 
@@ -269,6 +288,9 @@ describe('BranchSelectorModal', () => {
 
     it('renders validation error if project does not exist', async () => {
       createComponent({
+        propsData: {
+          hasValidation: true,
+        },
         handler: jest.fn().mockResolvedValue({
           data: {
             project: null,

@@ -1,7 +1,6 @@
 <script>
 import { GlSprintf, GlCollapsibleListbox } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { isGroup } from 'ee/security_orchestration/components/utils';
 import { EXCEPTION_TYPE_ITEMS, NO_EXCEPTION_KEY, EXCEPTION_KEY } from './constants';
 import BranchSelector from './branch_selector.vue';
 
@@ -37,9 +36,6 @@ export default {
         ? this.$options.i18n.exceptionText
         : this.$options.i18n.noExceptionText;
     },
-    isGroup() {
-      return isGroup(this.namespaceType);
-    },
   },
   methods: {
     setExceptionType(type) {
@@ -69,7 +65,6 @@ export default {
 
       <template #branchSelector>
         <branch-selector
-          :is-group="isGroup"
           :selected-exceptions="selectedExceptions"
           @select-branches="selectExceptions"
         />

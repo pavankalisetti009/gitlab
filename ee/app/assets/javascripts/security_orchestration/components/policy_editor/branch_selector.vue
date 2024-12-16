@@ -35,11 +35,6 @@ export default {
     GlSprintf,
   },
   props: {
-    isGroup: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     selectedExceptions: {
       type: Array,
       required: false,
@@ -175,7 +170,6 @@ export default {
     <branch-selector-modal
       ref="modal"
       :branches="branches"
-      :has-validation="isGroup"
       :for-protected-branches="isMergeRequestApprovalPolicy"
       @add-branches="selectBranches"
     />
