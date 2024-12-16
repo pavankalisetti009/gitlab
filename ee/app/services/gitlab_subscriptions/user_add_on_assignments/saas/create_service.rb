@@ -3,33 +3,16 @@
 module GitlabSubscriptions
   module UserAddOnAssignments
     module Saas
-      class CreateService < ::GitlabSubscriptions::UserAddOnAssignments::BaseCreateService
-        include Gitlab::Utils::StrongMemoize
-
+      class CreateService < ::GitlabSubscriptions::UserAddOnAssignments::Saas::CreateWithoutNotificationService
         def execute
           super.tap do |response|
-            create_iterable_trigger if should_trigger_duo_pro_iterable? response
+            create_iterable_trigger if should_trigger_duo_iterable? response
           end
         end
 
         private
 
-        attr_reader :add_on_purchase, :user
-
-        def eligible_for_gitlab_duo_pro_seat?
-          namespace.eligible_for_gitlab_duo_pro_seat?(user)
-        end
-        strong_memoize_attr :eligible_for_gitlab_duo_pro_seat?
-
-        def namespace
-          @namespace ||= add_on_purchase.namespace
-        end
-
-        def base_log_params
-          super.merge(namespace: add_on_purchase.namespace.full_path)
-        end
-
-        def should_trigger_duo_pro_iterable?(response)
+        def should_trigger_duo_iterable?(response)
           response.success? && duo_pro_or_enterprise? && !user_already_assigned?
         end
 

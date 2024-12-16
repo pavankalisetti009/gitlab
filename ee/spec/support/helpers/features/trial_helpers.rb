@@ -164,12 +164,13 @@ module Features
     end
 
     def update_with_applied_trials
-      update_with_duo_enterprise_trial
       group = Group.last
       plan = create(:ultimate_trial_plan)
       group.gitlab_subscription.update!(
         hosted_plan: plan, trial: true, trial_starts_on: Time.current, trial_ends_on: Time.current + 60.days
       )
+
+      update_with_duo_enterprise_trial
     end
 
     def stub_duo_landing_page_data
@@ -210,8 +211,13 @@ module Features
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyTrialService, service_params) do |instance|
         expect(instance).to receive(:execute) do
-          update_with_applied_trials if result.success?
-        end.and_return(result)
+          if result.success?
+            add_on_purchase = update_with_applied_trials
+            result = ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
+          end
+
+          result
+        end
       end
     end
 
@@ -271,18 +277,25 @@ module Features
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoProService, service_params) do |instance|
         expect(instance).to receive(:execute) do
-          update_with_duo_pro_trial if result.success?
-        end.and_return(result)
+          if result.success?
+            add_on_purchase = update_with_duo_pro_trial
+            result = ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
+          end
+
+          result
+        end
       end
     end
 
     def update_with_duo_pro_trial
       group = Group.last
       add_on = GitlabSubscriptions::AddOn.find_by_name('code_suggestions')
-      create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: group)
+      add_on_purchase = create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: group)
 
       # stub needed for landing on the duo page
       stub_subscription_permissions_data(group.id)
+
+      add_on_purchase
     end
 
     def stub_apply_duo_enterprise_trial(result: ServiceResponse.success, extra_params: {})
@@ -299,18 +312,25 @@ module Features
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, service_params) do |instance|
         expect(instance).to receive(:execute) do
-          update_with_duo_enterprise_trial if result.success?
-        end.and_return(result)
+          if result.success?
+            add_on_purchase = update_with_duo_enterprise_trial
+            result = ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
+          end
+
+          result
+        end
       end
     end
 
     def update_with_duo_enterprise_trial
       group = Group.last
       add_on = GitlabSubscriptions::AddOn.find_by_name('duo_enterprise')
-      create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: group)
+      add_on_purchase = create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: group)
 
       # stub needed for landing on the duo page
       stub_subscription_permissions_data(group.id)
+
+      add_on_purchase
     end
 
     def trial_failure

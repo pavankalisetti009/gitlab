@@ -209,6 +209,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
         let_it_be(:ultimate_trial_plan) { create(:ultimate_trial_plan) }
 
+        let(:add_on_purchase) do
+          build(:gitlab_subscription_add_on_purchase, expires_on: 60.days.from_now)
+        end
+
         context 'for basic success cases' do
           before do
             expect_create_success(group_for_trial)
@@ -217,9 +221,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
           it { is_expected.to redirect_to(group_settings_gitlab_duo_path(group_for_trial)) }
 
           it 'shows valid flash message', :freeze_time do
-            allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
-            expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, group_for_trial.id)
-
             post_create
 
             message = format(
@@ -243,9 +244,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
             end
 
             it 'shows valid flash message', :freeze_time do
-              allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
-              expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, group_for_trial.id)
-
               post_create
 
               message = format(
@@ -253,7 +251,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
                   'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
                     'expire on %{exp_date}.'
                 ),
-                exp_date: I18n.l(61.days.from_now.to_date, format: :long)
+                exp_date: I18n.l(60.days.from_now.to_date, format: :long)
               )
               expect(flash[:success]).to have_content(message)
             end
@@ -293,12 +291,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
 
           expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
             expect(instance).to receive(:execute) do
-              create(
-                :gitlab_subscription_add_on_purchase,
-                :trial, add_on: add_on, expires_on: 61.days.from_now, namespace: namespace
-              )
               namespace.gitlab_subscription.update!(hosted_plan: ultimate_trial_paid_customer_plan)
-            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
+            end.and_return(
+              ServiceResponse.success(payload: { namespace: namespace, add_on_purchase: add_on_purchase })
+            )
           end
         end
 
@@ -313,25 +309,13 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
           expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
             expect(instance).to receive(:execute) do
               update_with_applied_trials(namespace)
-            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
+            end.and_return(
+              ServiceResponse.success(payload: { namespace: namespace, add_on_purchase: add_on_purchase })
+            )
           end
         end
 
         def update_with_applied_trials(namespace)
-          ::GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService.new(
-            namespace,
-            {
-              duo_enterprise: [
-                {
-                  started_on: Time.current,
-                  expires_on: 60.days.from_now,
-                  purchase_xid: 'S-A00000001',
-                  quantity: 1,
-                  trial: true
-                }
-              ]
-            }
-          ).execute
           namespace.gitlab_subscription.update!(
             hosted_plan: ultimate_trial_plan,
             trial: true,

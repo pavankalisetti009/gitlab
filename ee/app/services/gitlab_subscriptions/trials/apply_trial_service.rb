@@ -19,6 +19,10 @@ module GitlabSubscriptions
         namespace.free_plan? ? :ultimate_with_gitlab_duo_enterprise : :ultimate_on_premium_with_gitlab_duo_enterprise
       end
 
+      def add_on_purchase_finder
+        GitlabSubscriptions::Trials::DuoEnterprise
+      end
+
       def after_success_hook
         ::Onboarding::ProgressService.new(namespace).execute(action: :trial_started)
       end

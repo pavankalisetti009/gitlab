@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category: :acquisition do
-  let_it_be(:namespace) { create(:namespace) }
+RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_category: :acquisition do
+  let_it_be(:namespace) { create(:group_with_plan) }
+  let_it_be(:user) { create(:user, owner_of: namespace) }
 
-  let(:user) { namespace.owner }
   let(:trial_user_information) { { namespace_id: namespace.id } }
   let(:apply_trial_params) do
     {
@@ -14,23 +14,14 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
     }
   end
 
-  let(:generate_trial_params) do
-    {
-      uid: user.id,
-      trial_user: trial_user_information
-    }
-  end
-
   describe '.execute' do
     before do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial).and_return(response)
+      allow_trial_creation(namespace, trial_user_information)
     end
 
     subject(:execute) { described_class.execute(**apply_trial_params) }
 
     context 'when trial is applied successfully' do
-      let(:response) { { success: true } }
-
       it 'returns success: true' do
         expect(execute).to be_success
       end
@@ -42,9 +33,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
   describe '#execute' do
     subject(:execute) { described_class.new(**apply_trial_params).execute }
 
-    let(:response) { { success: true } }
-
-    context 'when trial is applied successfully', :saas do
+    context 'when trial is applied successfully' do
       let(:trial_user_information) do
         {
           namespace_id: namespace.id,
@@ -53,49 +42,66 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
       end
 
       context 'when namespace has a free plan' do
-        it 'with expected parameters' do
-          expect(Gitlab::SubscriptionPortal::Client)
-            .to receive(:generate_trial).with(
-              {
-                uid: user.id,
-                trial_user: trial_user_information.merge(trial_type: :ultimate_with_gitlab_duo_enterprise)
-              }
-            ).and_return(response)
+        before do
+          allow_trial_creation(
+            namespace,
+            trial_user_information.merge(trial_type: :ultimate_with_gitlab_duo_enterprise)
+          )
+        end
 
+        it 'with expected parameters' do
           expect(execute).to be_success
         end
       end
 
       context 'when namespace has a premium plan' do
-        let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
+        let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
+
+        before do
+          allow_trial_creation(
+            namespace,
+            trial_user_information.merge(trial_type: :ultimate_on_premium_with_gitlab_duo_enterprise)
+          )
+        end
 
         it 'with expected parameters' do
-          expect(Gitlab::SubscriptionPortal::Client)
-            .to receive(:generate_trial).with(
-              {
-                uid: user.id,
-                trial_user: trial_user_information.merge(trial_type: :ultimate_on_premium_with_gitlab_duo_enterprise)
-              }
-            ).and_return(response)
-
           expect(execute).to be_success
         end
       end
     end
 
     context 'when valid to generate a trial' do
-      before do
-        allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial).and_return(response)
-      end
-
       context 'when trial is applied successfully' do
+        before do
+          allow_trial_creation(namespace, trial_user_information)
+        end
+
         it 'returns success: true' do
+          allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
+          expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, namespace.id)
+
           expect(execute).to be_success
         end
 
         it_behaves_like 'records an onboarding progress action', :trial_started
 
-        context 'when namespace has already had a trial', :saas do
+        it 'auto-assigns a duo seat when trial starts and does not send an email notification' do
+          expect(Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
+
+          expect { execute }.to change { user.assigned_add_ons.count }.by(1)
+        end
+
+        context 'when auto_assign_duo_seat is disabled' do
+          before do
+            stub_feature_flags(auto_assign_duo_seat: false)
+          end
+
+          it 'does not auto-assigns a duo seat' do
+            expect { execute }.not_to change { user.assigned_add_ons.count }
+          end
+        end
+
+        context 'when namespace has already had a trial' do
           let_it_be(:namespace) do
             create(
               :group_with_plan,
@@ -106,14 +112,16 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
             )
           end
 
-          let_it_be(:user) { create(:user, owner_of: namespace) }
-
           it { is_expected.to be_success }
         end
       end
 
       context 'with error while applying the trial' do
-        let(:response) { { success: false, data: { errors: ['some error'] } } }
+        before do
+          allow(Gitlab::SubscriptionPortal::Client)
+            .to receive(:generate_trial)
+            .and_return(success: false, data: { errors: ['some error'] })
+        end
 
         it 'returns success: false with errors and reason' do
           expect(execute).to be_error.and have_attributes(
@@ -142,7 +150,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
         end
       end
 
-      context 'when namespace is already on a trial', :saas do
+      context 'when namespace is already on a trial' do
         let_it_be(:namespace) do
           create(
             :group_with_plan,
@@ -152,8 +160,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
             trial_ends_on: 1.year.ago
           )
         end
-
-        let_it_be(:user) { create(:user, owner_of: namespace) }
 
         it 'returns success: false with errors' do
           expect(execute).to be_error.and have_attributes(message: /Not valid to generate a trial/)
@@ -183,7 +189,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
       it { is_expected.to be false }
     end
 
-    context 'when namespace is already on a trial', :saas do
+    context 'when namespace is already on a trial' do
       let_it_be(:namespace) do
         create(
           :group_with_plan,
@@ -193,8 +199,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
           trial_ends_on: 1.year.ago
         )
       end
-
-      let_it_be(:user) { create(:user, owner_of: namespace) }
 
       it { is_expected.to be true }
     end
@@ -215,22 +219,35 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
       it { is_expected.to be false }
     end
 
-    context 'with valid plans', :saas do
+    context 'with valid plans' do
       where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
 
       with_them do
         let(:namespace) { create(:group_with_plan, plan: "#{plan}_plan") }
-        let(:user) { create(:user, owner_of: namespace) }
 
         it { is_expected.to be true }
       end
     end
 
-    context 'with an invalid plan', :saas do
+    context 'with an invalid plan' do
       let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:user) { create(:user, owner_of: namespace) }
 
       it { is_expected.to be false }
     end
+  end
+
+  def allow_trial_creation(namespace, trial_user)
+    allow(Gitlab::SubscriptionPortal::Client)
+      .to receive(:generate_trial) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          :duo_enterprise,
+          :trial,
+          expires_on: 60.days.from_now,
+          namespace: namespace
+        )
+      end
+      .with(uid: user.id, trial_user: trial_user)
+      .and_return(success: true)
   end
 end

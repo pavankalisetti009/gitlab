@@ -12,7 +12,7 @@ RSpec.shared_examples 'when on the lead step' do |plan_name|
         expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group })
+        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
         expect_snowplow_event(category: described_class.name, action: 'create_trial', namespace: group, user: user)
       end
 
@@ -95,7 +95,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
         expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group })
+        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
       end
     end
 

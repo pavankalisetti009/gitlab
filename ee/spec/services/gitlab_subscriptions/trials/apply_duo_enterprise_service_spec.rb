@@ -16,7 +16,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, fe
 
   describe '.execute' do
     before do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_addon_trial).and_return(response)
+      allow_trial_creation
     end
 
     subject(:execute) { described_class.execute(apply_trial_params) }
@@ -32,26 +32,33 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, fe
     subject(:execute) { described_class.new(**apply_trial_params).execute }
 
     context 'when valid to generate a trial' do
-      before do
-        allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_addon_trial).and_return(response)
-      end
-
       context 'when trial is applied successfully' do
+        before do
+          allow_trial_creation
+        end
+
         let(:response) { { success: true } }
 
-        it { is_expected.to be_success }
+        it 'is successful' do
+          allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
+          expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, namespace.id)
 
-        context 'with expected parameters' do
-          specify do
-            expected_params = {
-              uid: user.id,
-              trial_user: trial_user_information.merge(add_on_name: 'duo_enterprise')
-            }
+          is_expected.to be_success
+        end
 
-            expect(Gitlab::SubscriptionPortal::Client)
-              .to receive(:generate_addon_trial).with(expected_params).and_return(response)
+        it 'auto-assigns a duo seat when trial starts and does not send an email notification' do
+          expect(Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
 
-            is_expected.to be_success
+          expect { execute }.to change { user.assigned_add_ons.count }.by(1)
+        end
+
+        context 'when auto_assign_duo_seat is disabled' do
+          before do
+            stub_feature_flags(auto_assign_duo_seat: false)
+          end
+
+          it 'does not auto-assigns a duo seat' do
+            expect { execute }.not_to change { user.assigned_add_ons.count }
           end
         end
 
@@ -63,7 +70,11 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, fe
       end
 
       context 'with error while applying the trial' do
-        let(:response) { { success: false, data: { errors: ['some error'] } } }
+        before do
+          allow(Gitlab::SubscriptionPortal::Client)
+            .to receive(:generate_addon_trial)
+            .and_return(success: false, data: { errors: ['some error'] })
+        end
 
         it 'returns an error response with errors and reason' do
           expect(execute).to be_error.and have_attributes(
@@ -148,5 +159,20 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, fe
 
       it { is_expected.to be false }
     end
+  end
+
+  def allow_trial_creation
+    allow(Gitlab::SubscriptionPortal::Client)
+      .to receive(:generate_addon_trial) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          :duo_enterprise,
+          :trial,
+          expires_on: 60.days.from_now,
+          namespace: namespace
+        )
+      end
+      .with(uid: user.id, trial_user: trial_user_information.merge(add_on_name: 'duo_enterprise'))
+      .and_return(success: true)
   end
 end

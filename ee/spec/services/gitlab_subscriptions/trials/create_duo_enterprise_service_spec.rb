@@ -17,6 +17,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoEnterpriseService, feature_
 
     let(:lead_service_class) { GitlabSubscriptions::Trials::CreateAddOnLeadService }
     let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyDuoEnterpriseService }
+    let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
     before_all do
       create(:gitlab_subscription_add_on, :duo_enterprise)

@@ -35,7 +35,7 @@ module GitlabSubscriptions
       end
 
       override :after_trial_success_hook
-      def after_trial_success_hook
+      def after_trial_success_hook(_result)
         track_event('trial_registration_success')
 
         super

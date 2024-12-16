@@ -4,7 +4,6 @@
 module GitlabSubscriptions
   class TrialsController < ApplicationController
     include GitlabSubscriptions::Trials::DuoCommon
-    include Gitlab::RackLoadBalancingHelpers
     extend ::Gitlab::Utils::Override
 
     prepend_before_action :authenticate_user! # must run before other before_actions that expect current_user to be set
@@ -33,13 +32,7 @@ module GitlabSubscriptions
         # We go off the add on here instead of the subscription for the expiration date since
         # in the premium with ultimate trial case the trial_ends_on does not exist on the
         # gitlab_subscription record.
-        # We need to stick to an up to date replica or primary db here in order
-        # to properly observe the add_on_purchase that CustomersDot created.
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/499720
-        load_balancer_stick_request(::Namespace, :namespace, @result.payload[:namespace].id)
-        flash[:success] = success_flash_message(
-          GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(@result.payload[:namespace])
-        )
+        flash[:success] = success_flash_message(@result.payload[:add_on_purchase])
 
         redirect_to trial_success_path(@result.payload[:namespace])
       elsif @result.reason == GitlabSubscriptions::Trials::CreateService::NO_SINGLE_NAMESPACE

@@ -98,16 +98,19 @@ module GitlabSubscriptions
         ).execute
 
         if result.success?
-          after_trial_success_hook
+          after_trial_success_hook(result)
         else
           after_trial_error_hook(result)
         end
       end
 
-      def after_trial_success_hook
+      def after_trial_success_hook(result)
         Gitlab::Tracking.event(self.class.name, 'create_trial', namespace: namespace, user: user)
 
-        ServiceResponse.success(message: 'Trial applied', payload: { namespace: namespace })
+        ServiceResponse.success(
+          message: 'Trial applied',
+          payload: { namespace: namespace, add_on_purchase: result.payload[:add_on_purchase] }
+        )
       end
 
       def after_trial_error_hook(result)

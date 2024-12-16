@@ -17,6 +17,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
 
     let(:lead_service_class) { GitlabSubscriptions::Trials::CreateAddOnLeadService }
     let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyDuoProService }
+    let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
     before_all do
       create(:gitlab_subscription_add_on, :gitlab_duo_pro)
@@ -53,6 +54,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
 
       let(:lead_service_class) { GitlabSubscriptions::Trials::CreateAddOnLeadService }
       let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyDuoProService }
+      let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
       before_all do
         create(:gitlab_subscription_add_on, :gitlab_duo_pro)
