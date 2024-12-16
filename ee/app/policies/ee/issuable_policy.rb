@@ -10,11 +10,7 @@ module EE
       end
 
       condition(:amazon_q_integration_enabled) do
-        project = @subject.is_a?(MergeRequest) ? @subject.target_project : @subject.project
-
-        next false unless project
-
-        ::Ai::AmazonQ.enabled?(user: @user, namespace: project.project_namespace)
+        ::Ai::AmazonQ.enabled?
       end
 
       with_scope :subject
@@ -59,7 +55,7 @@ module EE
         enable :read_issuable_resource_link
       end
 
-      rule { amazon_q_integration_enabled & can?(:developer_access) }.policy do
+      rule { amazon_q_integration_enabled & can?(:developer_access) & can?(:access_duo_features) }.policy do
         enable :trigger_amazon_q
       end
     end

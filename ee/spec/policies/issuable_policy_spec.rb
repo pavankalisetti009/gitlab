@@ -199,17 +199,14 @@ RSpec.describe IssuablePolicy, :models, feature_category: :team_planning do
     end
 
     describe 'trigger_amazon_q' do
-      let_it_be(:project) { create(:project, :private) }
+      let_it_be(:group) { create(:group, :private) }
+      let_it_be(:project) { create(:project, :private, group: group) }
       let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
       let(:user) { developer }
       let(:amazon_q_enabled) { true }
 
       before do
-        allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
-        allow(::Ai::AmazonQ).to receive(:enabled?).with(
-          user: user,
-          namespace: project.project_namespace
-        ).and_return(amazon_q_enabled)
+        allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
       end
 
       it 'allows on an issue authored by a guest' do
@@ -241,6 +238,18 @@ RSpec.describe IssuablePolicy, :models, feature_category: :team_planning do
         let(:user) { reporter }
 
         it 'disallows reporter' do
+          expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
+        end
+      end
+
+      context 'when project does not have Duo features enabled' do
+        before do
+          project.update!(duo_features_enabled: false)
+          project.namespace.namespace_settings.duo_features_enabled = true
+          project.namespace.namespace_settings.save!
+        end
+
+        it 'does not allow user' do
           expect(permissions(user, guest_issue)).to be_disallowed(:trigger_amazon_q)
         end
       end

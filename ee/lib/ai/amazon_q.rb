@@ -13,11 +13,11 @@ module Ai
         ai_settings.amazon_q_ready
       end
 
-      def enabled?(user:, namespace:)
+      def enabled?
         return false unless feature_available? && connected?
         return false if ::Gitlab::CurrentSettings.duo_availability == :never_on
 
-        user.can?(:access_duo_features, namespace)
+        true
       end
 
       def should_block_service_account?(availability:)

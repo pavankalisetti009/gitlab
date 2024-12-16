@@ -32,6 +32,7 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
       true  | true  | true
       true  | false | false
       false | true  | false
+      false | true  | false
       false | false | false
     end
 
@@ -52,28 +53,34 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
       let(:namespace) { build(:project_namespace) }
       let(:user) { build(:user) }
 
-      where(:duo_availability, :user_can_access_duo_features, :result) do
-        :default_on  | true | true
-        :default_on  | false | false
-        :never_on    | true  | false
-        :never_on    | false | false
-        :default_off | true  | true
-        :default_off | false | false
+      where(:feature_enabled, :connected, :duo_availability, :result) do
+        true     | true  | :default_on | true
+        true     | false | :default_on | false
+        false    | true  | :default_on | false
+        true     | false | :default_on | false
+        false    | true  | :default_on | false
+        true     | true  | :never_on   | false
+        true     | false | :never_on   | false
+        false    | true  | :never_on   | false
+        false    | false | :never_on   | false
+        true     | true  | :default_off | true
+        true     | false | :default_off | false
+        false    | true  | :default_off | false
+        false    | false | :default_off | false
       end
 
       with_them do
         before do
           allow(described_class).to receive_messages(
-            feature_available?: true,
-            connected?: true
+            feature_available?: feature_enabled,
+            connected?: connected
           )
           allow(::Gitlab::CurrentSettings).to receive_messages(
             duo_availability: duo_availability
           )
-          allow(user).to receive(:can?).with(:access_duo_features, namespace).and_return(user_can_access_duo_features)
         end
 
-        it { expect(described_class.enabled?(user: user, namespace: namespace)).to eq(result) }
+        it { expect(described_class.enabled?).to eq(result) }
       end
     end
   end
