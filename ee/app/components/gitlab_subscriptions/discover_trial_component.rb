@@ -167,7 +167,7 @@ module GitlabSubscriptions
               "evaluate the effectiveness of AI in software development."
           ),
           footer: render_footer_link(
-            link_text: s_('DuoEnterpriseDiscover|AI Impact analytics dashboard measures the ROI of AI'),
+            link_text: s_('DuoEnterpriseDiscover|AI Impact Dashboard measures the ROI of AI'),
             link_path: 'https://about.gitlab.com/blog/2024/05/15/developing-gitlab-duo-ai-impact-analytics-dashboard-measures-the-roi-of-ai/',
             track_label: 'ai_impact_analytics_dashboard_feature',
             track_action: documentation_link_track_action

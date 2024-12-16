@@ -1024,16 +1024,16 @@ describe('AnalyticsDashboard', () => {
       const links = linkWrapper.findAllComponents(GlLink);
 
       expect(linkWrapper.text()).toBe(
-        'Learn more about AI Impact analytics and GitLab Duo Pro seats usage.',
+        'Learn more about AI impact analytics and GitLab Duo Pro seat usage.',
       );
 
       const expectedLinks = [
         {
-          text: 'AI Impact analytics',
+          text: 'AI impact analytics',
           href: '/help/user/analytics/ai_impact_analytics',
         },
         {
-          text: 'GitLab Duo Pro seats usage',
+          text: 'GitLab Duo Pro seat usage',
           href: '/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats',
         },
       ];
