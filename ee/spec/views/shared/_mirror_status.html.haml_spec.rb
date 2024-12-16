@@ -33,6 +33,20 @@ RSpec.describe 'shared/_mirror_status.html.haml' do
     end
   end
 
+  context 'when project is read-only' do
+    let(:import_state) { create(:import_state, :finished) }
+
+    before do
+      project.update!(repository_read_only: true)
+    end
+
+    it 'renders read-only message' do
+      render 'shared/mirror_status'
+
+      expect(rendered).to have_content("Pull mirroring is disabled because the repository is set to read-only.")
+    end
+  end
+
   context 'when mirror failed' do
     let(:import_state) { create(:import_state, :failed) }
 

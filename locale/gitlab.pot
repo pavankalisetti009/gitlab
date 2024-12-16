@@ -45104,6 +45104,9 @@ msgstr ""
 msgid "Pull"
 msgstr ""
 
+msgid "Pull mirroring is disabled because the repository is set to read-only."
+msgstr ""
+
 msgid "Pull mirroring updated %{time}."
 msgstr ""
 
