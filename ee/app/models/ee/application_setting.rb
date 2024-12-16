@@ -53,7 +53,8 @@ module EE
         unverified_account_group_creation_limit: [:integer, { default: 2 }],
         phone_verification_enabled: [:boolean, { default: true }],
         ci_requires_identity_verification_on_free_plan: [:boolean, { default: true }],
-        telesign_intelligence_enabled: [:boolean, { default: true }]
+        telesign_intelligence_enabled: [:boolean, { default: true }],
+        credit_card_verification_enabled: [:boolean, { default: true }]
 
       validates :identity_verification_settings, json_schema: { filename: "identity_verification_settings" }
 

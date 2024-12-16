@@ -43,10 +43,10 @@ module IdentityVerifiable
     # This prevents the scenario where a user has to verify their identity
     # multiple times. For example:
     #
-    # 1. identity_verification_credit_card FF is disabled
+    # 1. credit_card_verification_enabled application setting is false
     # 2. A user registers, is assigned High risk band, verifies their email as
     # prompted, and starts using GitLab
-    # 3. identity_verification_credit_card FF is enabled
+    # 3. credit_card_verification_enabled application setting is true
     # 4. User signs out and signs in again
     # 5. User is redirected to Identity Verification which requires them to
     # verify their credit card
@@ -173,7 +173,7 @@ module IdentityVerifiable
       ::Gitlab::CurrentSettings.phone_verification_enabled &&
         !PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
     when 'credit_card'
-      Feature.enabled?(:identity_verification_credit_card, self)
+      ::Gitlab::CurrentSettings.credit_card_verification_enabled
     when 'email'
       !opt_in_flow?
     end

@@ -27,6 +27,10 @@
     "telesign_intelligence_enabled": {
       "type": "boolean",
       "description": "Flag to control use of Telesign Intelligence service"
+    },
+    "credit_card_verification_enabled": {
+      "type": "boolean",
+      "description": "Whether credit card verification is an available identity verification method"
     }
   }
 }
