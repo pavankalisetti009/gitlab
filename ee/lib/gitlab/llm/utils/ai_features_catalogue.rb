@@ -42,6 +42,15 @@ module Gitlab
             self_managed: false,
             internal: false
           },
+          measure_comment_temperature: {
+            service_class: ::Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature,
+            prompt_class: nil,
+            feature_category: :ai_abstraction_layer,
+            execute_method: ::Llm::Notes::MeasureCommentTemperatureService,
+            maturity: :experimental,
+            self_managed: false,
+            internal: false
+          },
           generate_description: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::GenerateDescription,
             prompt_class: ::Gitlab::Llm::Templates::GenerateDescription,

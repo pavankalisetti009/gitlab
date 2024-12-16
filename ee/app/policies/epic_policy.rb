@@ -53,6 +53,10 @@ class EpicPolicy < BasePolicy
     can?(:resolve_note, @subject.work_item)
   end
 
+  condition(:user_allowed_to_measure_comment_temperature) do
+    can?(:measure_comment_temperature, @subject.work_item)
+  end
+
   rule { can_resolve_discussion }.policy do
     enable :resolve_note
   end
@@ -153,5 +157,9 @@ class EpicPolicy < BasePolicy
     prevent :create_note
     prevent :admin_note
     prevent :award_emoji
+  end
+
+  rule { user_allowed_to_measure_comment_temperature }.policy do
+    enable :measure_comment_temperature
   end
 end

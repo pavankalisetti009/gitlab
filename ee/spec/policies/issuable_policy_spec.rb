@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe IssuablePolicy, :models do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:non_member) { create(:user) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:planner) { create(:user) }
@@ -56,6 +58,32 @@ RSpec.describe IssuablePolicy, :models do
       end
     end
 
+    shared_examples 'measure comment temperature' do
+      describe 'measure_comment_temperature' do
+        let(:user) { developer }
+        let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+        subject { permissions(user, issue) }
+
+        where(:feature_flag_enabled, :user_allowed, :expected_result) do
+          true  | true  | be_allowed(:measure_comment_temperature)
+          true  | false | be_disallowed(:measure_comment_temperature)
+          false | true  | be_disallowed(:measure_comment_temperature)
+          false | false | be_disallowed(:measure_comment_temperature)
+        end
+
+        with_them do
+          before do
+            stub_feature_flags(comment_temperature: feature_flag_enabled)
+            allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+            allow(authorizer).to receive(:allowed?).and_return(user_allowed)
+          end
+
+          it { is_expected.to expected_result }
+        end
+      end
+    end
+
     context 'in a public project' do
       let_it_be(:project) { create(:project, :public) }
       let_it_be(:issue) { create(:issue, project: project) }
@@ -89,6 +117,7 @@ RSpec.describe IssuablePolicy, :models do
           end
 
           it_behaves_like 'issuable resource links access'
+          it_behaves_like 'measure comment temperature'
 
           it 'allows developers' do
             expect(permissions(developer, incident_issue)).to be_allowed(:admin_issuable_resource_link)
@@ -107,6 +136,7 @@ RSpec.describe IssuablePolicy, :models do
           end
 
           it_behaves_like 'issuable resource links access'
+          it_behaves_like 'measure comment temperature'
 
           it 'disallows developers' do
             expect(permissions(developer, incident_issue)).to be_disallowed(:admin_issuable_resource_link)
@@ -153,6 +183,7 @@ RSpec.describe IssuablePolicy, :models do
           end
 
           it_behaves_like 'issuable resource links access'
+          it_behaves_like 'measure comment temperature'
 
           it 'allows developers' do
             expect(permissions(developer, incident_issue)).to be_allowed(:admin_issuable_resource_link)
