@@ -4,6 +4,7 @@ import { GlButton, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createCveIdRequestIssueBody } from '~/helpers/cve_id_request_helper';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { CVE_ID_REQUEST_SIDEBAR_I18N } from '../../constants';
 
 export default {
@@ -14,6 +15,7 @@ export default {
   components: {
     GlButton,
     GlIcon,
+    HelpIcon,
   },
 
   directives: {
@@ -94,7 +96,7 @@ export default {
         data-testid="help-button"
         @click="toggleHelpState(true)"
       >
-        <gl-icon name="question-o" />
+        <help-icon />
       </div>
       <div
         v-else

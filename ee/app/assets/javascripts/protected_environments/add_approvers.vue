@@ -4,7 +4,6 @@ import {
   GlCollapse,
   GlAvatar,
   GlButton,
-  GlIcon,
   GlLink,
   GlFormInput,
   GlSprintf,
@@ -19,6 +18,7 @@ import { getUser } from '~/rest_api';
 import { s__ } from '~/locale';
 import AccessDropdown from '~/projects/settings/components/access_dropdown.vue';
 import GroupsAccessDropdown from '~/groups/settings/components/access_dropdown.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import {
   ACCESS_LEVELS,
   INHERITED_GROUPS,
@@ -69,7 +69,6 @@ export default {
     GlCollapse,
     GlAvatar,
     GlButton,
-    GlIcon,
     GlLink,
     GlFormInput,
     GlSprintf,
@@ -77,6 +76,7 @@ export default {
     AccessDropdown,
     GroupsAccessDropdown,
     GlTableLite,
+    HelpIcon,
   },
   directives: { GlTooltip },
   inject: {
@@ -347,11 +347,10 @@ export default {
 
         <template #head(inheritance)="data">
           <span>{{ data.label }}</span>
-          <gl-icon
+          <help-icon
             v-gl-tooltip
             :title="$options.i18n.inheritanceTooltip"
             :aria-label="$options.i18n.inheritanceTooltip"
-            name="question-o"
           />
         </template>
         <template #cell(inheritance)="{ item: approver, index }">

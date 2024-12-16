@@ -3,7 +3,6 @@ import {
   GlAlert,
   GlButton,
   GlForm,
-  GlIcon,
   GlFormGroup,
   GlFormInput,
   GlFormTextarea,
@@ -22,6 +21,7 @@ import { s__, __ } from '~/locale';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import { REF_TYPE_BRANCHES } from '~/ref/constants';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import validation from '~/vue_shared/directives/validation';
 import {
   DAST_PROFILES_DRAWER,
@@ -114,7 +114,6 @@ export default {
     GlAlert,
     GlButton,
     GlForm,
-    GlIcon,
     GlFormGroup,
     GlFormInput,
     GlFormTextarea,
@@ -126,6 +125,7 @@ export default {
     PreScanVerificationConfigurator,
     RunnerTags,
     GlPopover,
+    HelpIcon,
   },
   directives: {
     SafeHtml,
@@ -391,11 +391,7 @@ export default {
 
           <gl-form-group class="gl-mb-6" :label="$options.i18n.scanTypeHeader">
             <span>{{ $options.i18n.scanTypeText }}</span>
-            <gl-icon
-              id="scan-type-info"
-              name="question-o"
-              class="gl-link gl-ml-2 gl-cursor-pointer"
-            />
+            <help-icon id="scan-type-info" class="gl-ml-2" />
             <gl-popover target="scan-type-info" placement="top" triggers="focus hover">
               <span>{{ $options.i18n.scanTypeTooltip }}</span>
             </gl-popover>

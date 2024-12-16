@@ -1,9 +1,10 @@
 <script>
-import { GlSkeletonLoader, GlCard, GlLink, GlIcon, GlPopover } from '@gitlab/ui';
+import { GlSkeletonLoader, GlCard, GlLink, GlPopover } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/dist/charts';
 import { createAlert } from '~/alert';
 import { percent, percentHundred } from '~/lib/utils/unit_format';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import TestRunsEmptyState from './components/test_runs_empty_state.vue';
 import FeedbackBanner from './components/feedback_banner.vue';
 import getProjectQuality from './graphql/queries/get_project_quality.query.graphql';
@@ -15,11 +16,11 @@ export default {
     GlSkeletonLoader,
     GlCard,
     GlLink,
-    GlIcon,
     GlPopover,
     GlSingleStat,
     FeedbackBanner,
     TestRunsEmptyState,
+    HelpIcon,
   },
   inject: {
     projectPath: {
@@ -114,11 +115,7 @@ export default {
       <template #header>
         <div class="gl-flex gl-items-center gl-justify-between">
           <h5 class="gl-m-2 gl-text-lg">{{ $options.i18n.testRuns.title }}</h5>
-          <gl-icon
-            id="test-runs-question-icon"
-            name="question-o"
-            class="gl-mx-2 gl-cursor-pointer gl-text-blue-600"
-          />
+          <help-icon id="test-runs-question-icon" class="gl-mx-2" />
           <gl-popover
             target="test-runs-question-icon"
             :title="$options.i18n.testRuns.title"
@@ -183,11 +180,7 @@ export default {
       <template #header>
         <div class="gl-flex gl-items-center gl-justify-between">
           <h5 class="gl-m-2 gl-text-lg">{{ $options.i18n.codeQuality.title }}</h5>
-          <gl-icon
-            id="code-quality-icon"
-            name="question-o"
-            class="gl-mx-2 gl-cursor-pointer gl-text-blue-600"
-          />
+          <help-icon id="code-quality-icon" class="gl-mx-2" />
           <gl-popover
             target="code-quality-icon"
             :title="$options.i18n.codeQuality.title"
@@ -245,11 +238,7 @@ export default {
       <template #header>
         <div class="gl-flex gl-items-center gl-justify-between">
           <h5 class="gl-m-2 gl-text-lg">{{ $options.i18n.coverage.title }}</h5>
-          <gl-icon
-            id="coverage-question-icon"
-            name="question-o"
-            class="gl-mx-2 gl-cursor-pointer gl-text-blue-600"
-          />
+          <help-icon id="coverage-question-icon" class="gl-mx-2" />
           <gl-popover
             target="coverage-question-icon"
             :title="$options.i18n.coverage.title"

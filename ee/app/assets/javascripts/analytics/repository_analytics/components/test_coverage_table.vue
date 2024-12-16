@@ -6,7 +6,6 @@ import {
   GlLink,
   GlSkeletonLoader,
   GlTableLite,
-  GlIcon,
   GlPopover,
   GlSprintf,
 } from '@gitlab/ui';
@@ -15,6 +14,7 @@ import { SUPPORTED_FORMATS, getFormatter } from '~/lib/utils/unit_format';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { tablei18n as i18n } from '../constants';
 import getProjectsTestCoverage from '../graphql/queries/get_projects_test_coverage.query.graphql';
 import SelectProjectsDropdown from './select_projects_dropdown.vue';
@@ -31,9 +31,9 @@ export default {
     SelectProjectsDropdown,
     TimeAgoTooltip,
     DownloadTestCoverage,
-    GlIcon,
     GlPopover,
     GlSprintf,
+    HelpIcon,
   },
   inject: {
     groupFullPath: {
@@ -201,11 +201,7 @@ export default {
       <div class="gl-flex gl-flex-wrap gl-items-center gl-justify-end">
         <div class="gl-grow">
           <h5 class="gl-inline-block">{{ $options.i18n.header }}</h5>
-          <gl-icon
-            id="latest-coverage-help-icon"
-            name="question-o"
-            class="gl-cursor-help gl-text-blue-600"
-          />
+          <help-icon id="latest-coverage-help-icon" />
           <gl-popover target="latest-coverage-help-icon" :title="$options.i18n.header">
             <gl-sprintf :message="$options.i18n.popover">
               <template #groupName>{{ groupName }}</template>

@@ -21,6 +21,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { logError } from '~/lib/logger';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import RefSelector from '~/ref/components/ref_selector.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import GetProjectDetailsQuery from '../../common/components/get_project_details_query.vue';
 import WorkspaceVariables from '../components/workspace_variables.vue';
 import SearchProjectsListbox from '../components/search_projects_listbox.vue';
@@ -99,6 +100,7 @@ export default {
     SearchProjectsListbox,
     GetProjectDetailsQuery,
     WorkspaceVariables,
+    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -360,12 +362,7 @@ export default {
               <label class="gl-mb-0 gl-flex" for="workspace-devfile-path">
                 {{ $options.i18n.form.devfileLocation.label }}
               </label>
-              <gl-icon
-                id="devfile-location-popover"
-                class="gl-text-blue-600"
-                name="question-o"
-                :size="14"
-              />
+              <help-icon id="devfile-location-popover" />
               <gl-popover
                 triggers="hover focus"
                 :title="$options.i18n.form.devfileLocation.title"

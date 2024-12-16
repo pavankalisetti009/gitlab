@@ -3,6 +3,7 @@ import jiraLogo from '@gitlab/svgs/dist/illustrations/logos/jira.svg?raw';
 import { GlAlert, GlCard, GlIcon, GlLink, GlLoadingIcon, GlSprintf } from '@gitlab/ui';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import CreateJiraIssue from 'ee/vue_shared/security_reports/components/create_jira_issue.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 
@@ -26,6 +27,7 @@ export default {
     GlLink,
     GlLoadingIcon,
     GlSprintf,
+    HelpIcon,
   },
   directives: {
     SafeHtml,
@@ -136,9 +138,9 @@ export default {
           :aria-label="$options.i18n.helpPageLinkLabel"
           :href="relatedJiraIssuesHelpPath"
           target="_blank"
-          class="gl-ml-2 gl-flex gl-items-center gl-text-subtle"
+          class="gl-ml-2 gl-flex gl-items-center"
         >
-          <gl-icon name="question-o" :size="12" />
+          <help-icon size="small" />
         </gl-link>
         <span
           class="gl-ml-4 gl-inline-flex gl-items-center"
