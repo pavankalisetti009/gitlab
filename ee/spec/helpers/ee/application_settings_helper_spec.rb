@@ -38,6 +38,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
           arkose_labs_private_api_key
           arkose_labs_public_api_key
           ci_requires_identity_verification_on_free_plan
+          credit_card_verification_enabled
           phone_verification_enabled
           telesign_customer_xid
           telesign_api_key
@@ -54,6 +55,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
           arkose_labs_private_api_key
           arkose_labs_public_api_key
           ci_requires_identity_verification_on_free_plan
+          credit_card_verification_enabled
           phone_verification_enabled
           telesign_customer_xid
           telesign_api_key

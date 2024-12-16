@@ -55,7 +55,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     context 'when verification methods are unavailable' do
       before do
         stub_application_setting(phone_verification_enabled: false)
-        stub_feature_flags(identity_verification_credit_card: false)
+        stub_application_setting(credit_card_verification_enabled: false)
       end
 
       context 'when the user is not active' do
@@ -345,7 +345,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         user.add_phone_number_verification_exemption if phone_exempt
         user.add_identity_verification_exemption('test') if identity_verification_exempt
 
-        stub_feature_flags(identity_verification_credit_card: credit_card)
+        stub_application_setting(credit_card_verification_enabled: credit_card)
         stub_application_setting(phone_verification_enabled: phone_number)
       end
 
@@ -376,32 +376,6 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         end
 
         it { is_expected.to eq(result) }
-      end
-    end
-
-    context 'when flag is enabled for a specific user' do
-      let_it_be(:another_user) { create(:user) }
-
-      where(:risk_band, :credit_card, :result) do
-        'High'   | true   | %w[email phone credit_card]
-        'High'   | false  | %w[email phone]
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(identity_verification_credit_card: false)
-
-          add_user_risk_band(risk_band)
-          create(:user_custom_attribute, key: UserCustomAttribute::ARKOSE_RISK_BAND, value: risk_band,
-            user: another_user)
-
-          stub_feature_flags(identity_verification_credit_card: user) if credit_card
-        end
-
-        it 'only affects that user' do
-          expect(user.required_identity_verification_methods).to eq(result)
-          expect(another_user.required_identity_verification_methods).to eq(%w[email phone])
-        end
       end
     end
 
@@ -719,7 +693,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     with_them do
       before do
-        stub_feature_flags(identity_verification_credit_card: credit_card)
+        stub_application_setting(credit_card_verification_enabled: credit_card)
         stub_application_setting(phone_verification_enabled: phone_number)
 
         allow(user).to receive(:required_identity_verification_methods).and_return(required_verification_methods)
