@@ -167,12 +167,15 @@ RSpec.describe Groups::Epics::EpicLinksController, feature_category: :portfolio_
 
         context 'with hierarchy depth validations' do
           before do
-            stub_const("EE::Epic::MAX_HIERARCHY_DEPTH", 3)
+            epic_type = WorkItems::Type.default_by_type(:epic)
+
+            WorkItems::HierarchyRestriction.find_by_parent_type_id_and_child_type_id(epic_type,
+              epic_type).update!(maximum_depth: 3)
           end
 
-          let_it_be(:level_1) { create(:epic, group: group) }
-          let_it_be(:level_2) { create(:epic, parent: level_1, group: group) }
-          let_it_be(:level_3) { create(:epic, parent: level_2, group: group) }
+          let_it_be(:level_1) { create(:epic, :with_work_item_parent, group: group) }
+          let_it_be(:level_2) { create(:epic, :with_work_item_parent, parent: level_1, group: group) }
+          let_it_be(:level_3) { create(:epic, :with_work_item_parent, parent: level_2, group: group) }
 
           context 'when it does not exceed the max hierarchy depth' do
             let_it_be(:parent_epic) { level_2 }
@@ -187,7 +190,7 @@ RSpec.describe Groups::Epics::EpicLinksController, feature_category: :portfolio_
 
             it 'does not set the parent and returns an error' do
               expect { subject }.not_to change { epic1.reload.parent }
-              expect(json_response["message"]).to include("One or more epics would exceed the maximum depth (3)")
+              expect(json_response["message"]).to include("cannot be added: reached maximum depth")
             end
           end
         end

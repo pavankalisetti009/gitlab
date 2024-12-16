@@ -234,7 +234,7 @@ module API
           params: create_params
         ).execute
 
-        if epic.valid?
+        if epic.errors.empty? && epic.valid?
           present epic, epic_options
         else
           render_validation_error!(epic)

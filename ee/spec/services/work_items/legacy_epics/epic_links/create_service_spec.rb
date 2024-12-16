@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_management do
+RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_category: :team_planning do
   include NestedEpicsHelper
 
   describe '#execute' do
@@ -15,8 +15,11 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
     let(:epic_to_add) { create(:epic, group: group) }
     let(:expected_error) { 'No matching epic found. Make sure that you are adding a valid epic URL.' }
     let(:expected_code) { 404 }
-
     let(:valid_reference) { epic_to_add.to_reference(full: true) }
+    let(:references) { [valid_reference] }
+    let(:params) { { issuable_references: references } }
+
+    subject(:add_epic) { described_class.new(epic, user, params).execute }
 
     shared_examples 'system notes created' do
       it 'creates system notes' do
@@ -25,10 +28,13 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
     end
 
     shared_examples 'returns success' do
-      it 'creates a new relationship and updates epic' do
+      it 'creates a new relationship, updates epic and returns success status', :aggregate_failures do
         expect { subject }.to change { epic.children.count }.by(1)
 
         expect(epic.reload.children).to include(epic_to_add)
+        expect(subject.keys).to match_array([:status, :created_references])
+        expect(subject[:status]).to eq(:success)
+        expect(subject[:created_references]).to match_array([epic_to_add])
       end
 
       it 'moves the new child epic to the top and moves the existing ones down' do
@@ -38,36 +44,20 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
 
         expect(epic_to_add.reload.relative_position).to be < existing_child_epic.reload.relative_position
       end
-
-      it 'returns success status and created links', :aggregate_failures do
-        expect(subject.keys).to match_array([:status, :created_references])
-        expect(subject[:status]).to eq(:success)
-        expect(subject[:created_references]).to match_array([epic_to_add])
-      end
     end
 
     shared_examples 'returns an error' do
-      it 'returns an error' do
+      it 'returns an error and no relationship is created' do
+        expect { subject }.not_to change { epic.children.count }
+
         expect(subject).to eq(message: expected_error, status: :error, http_status: expected_code)
       end
-
-      it 'no relationship is created' do
-        expect { subject }.not_to change { epic.children.count }
-      end
-    end
-
-    def add_epic(references)
-      params = { issuable_references: references }
-
-      described_class.new(epic, user, params).execute
     end
 
     context 'when subepics feature is disabled' do
       before do
         stub_licensed_features(epics: true, subepics: false)
       end
-
-      subject { add_epic([valid_reference]) }
 
       include_examples 'returns an error'
     end
@@ -79,49 +69,27 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
 
       context 'when an error occurs' do
         context 'when a single epic is given' do
-          subject { add_epic([valid_reference]) }
-
-          context 'when user does not have create_epic_tree_relation access for the parent' do
-            before do
-              group.add_guest(user)
-              allow(Ability).to receive(:allowed?).and_call_original
-              allow(Ability).to receive(:allowed?)
-                                  .with(user, :create_epic_tree_relation, epic).and_return(false)
-            end
-
+          context 'when user does not have access for the parent' do
             include_examples 'returns an error'
           end
 
           context 'when a user has permissions to add an epic' do
-            before do
+            before_all do
               group.add_guest(user)
             end
 
             context 'when an epic from another group is given' do
               before do
                 epic_to_add.update!(group: other_group)
+                epic_to_add.work_item.update!(namespace: other_group)
               end
 
-              context 'when user has no permission to admin_epic_tree_relation' do
+              context 'when user has no permission' do
                 let(:params) { { target_issuable: epic_to_add } }
 
-                subject { described_class.new(epic, user, params).execute }
-
                 before do
-                  other_group.add_guest(user)
                   epic_to_add.update!(confidential: true)
-                end
-
-                include_examples 'returns an error'
-              end
-
-              context 'when subepics feature is not available for child group' do
-                before do
-                  other_group.add_guest(user)
-                  stub_licensed_features(epics: true)
-
-                  allow(group).to receive(:licensed_feature_available?).and_return(true)
-                  allow(other_group).to receive(:licensed_feature_available?).with(:subepics).and_return(false)
+                  epic_to_add.work_item.update!(confidential: true)
                 end
 
                 include_examples 'returns an error'
@@ -130,34 +98,42 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
 
             context 'when hierarchy is cyclic' do
               context 'when given child epic is the same as given parent' do
-                let(:expected_error) { "This epic cannot be added. An epic cannot be added to itself." }
-                let(:expected_code) { 409 }
-
-                subject { add_epic([epic.to_reference(full: true)]) }
+                let(:references) { [epic.to_reference(full: true)] }
+                let(:expected_code) { 422 }
+                let(:expected_error) do
+                  "#{epic.work_item.to_reference} cannot be added: is not allowed to point to itself"
+                end
 
                 include_examples 'returns an error'
               end
 
               context 'when given child epic is parent of the given parent' do
-                let(:expected_error) { "This epic cannot be added. It is already an ancestor of the parent epic." }
-                let(:expected_code) { 409 }
+                let(:expected_code) { 422 }
+                let(:expected_error) do
+                  "#{epic_to_add.work_item.to_reference} cannot be added: it's already present in this item's hierarchy"
+                end
 
                 before do
                   epic.update!(parent: epic_to_add)
+                  create(:parent_link, work_item: epic.work_item, work_item_parent: epic_to_add.work_item)
                 end
 
                 include_examples 'returns an error'
               end
 
               context 'when new child epic is an ancestor of the given parent' do
-                let(:expected_error) { "This epic cannot be added. It is already an ancestor of the parent epic." }
-                let(:expected_code) { 409 }
+                let(:expected_code) { 422 }
+                let(:expected_error) do
+                  "#{epic_to_add.work_item.to_reference} cannot be added: reached maximum depth and it's already " \
+                    "present in this item's hierarchy"
+                end
 
                 before do
                   # epic_to_add -> epic1 -> epic2 -> epic
-                  epic1 = create(:epic, group: group, parent: epic_to_add)
-                  epic2 = create(:epic, group: group, parent: epic1)
+                  epic1 = create(:epic, :with_work_item_parent, group: group, parent: epic_to_add)
+                  epic2 = create(:epic, :with_work_item_parent, group: group, parent: epic1)
                   epic.update!(parent: epic2)
+                  create(:parent_link, work_item: epic.work_item, work_item_parent: epic2.work_item)
                 end
 
                 include_examples 'returns an error'
@@ -165,12 +141,13 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             end
 
             context 'when adding an epic that is already a child of the parent epic' do
+              let(:expected_error) { "Epic(s) already assigned" }
+              let(:expected_code) { 409 }
+
               before do
                 epic_to_add.update!(parent: epic)
+                create(:parent_link, work_item_parent: epic.work_item, work_item: epic_to_add.work_item)
               end
-
-              let(:expected_error) { "This epic cannot be added. It is already assigned to the parent epic." }
-              let(:expected_code) { 409 }
 
               include_examples 'returns an error'
             end
@@ -180,47 +157,8 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
                 add_parents_to(epic: epic, count: 6)
               end
 
-              let(:expected_code) { 409 }
-              let(:expected_error) do
-                "This epic cannot be added. One or more epics would exceed the "\
-                "maximum depth (#{Epic::MAX_HIERARCHY_DEPTH}) from its most "\
-                "distant ancestor."
-              end
-
-              include_examples 'returns an error'
-            end
-
-            context 'when total depth after adding would exceed depth limit' do
-              let(:expected_code) { 409 }
-              let(:expected_error) do
-                "This epic cannot be added. One or more epics would exceed the "\
-                "maximum depth (#{Epic::MAX_HIERARCHY_DEPTH}) from its most "\
-                "distant ancestor."
-              end
-
-              before do
-                add_parents_to(epic: epic, count: 1) # epic is on level 2
-
-                # epic_to_add has 5 children (level 6 including epic_to_add)
-                # that would mean level 8 after relating epic_to_add on epic
-                add_children_to(epic: epic_to_add, count: 5)
-              end
-
-              include_examples 'returns an error'
-            end
-
-            context 'when total children count after adding would exceed limit' do
-              let(:expected_error) do
-                "You cannot add any more epics. This epic already has maximum "\
-                "number of child issues & epics."
-              end
-
-              let(:expected_code) { 409 }
-
-              before do
-                create(:epic, group: group, parent: epic)
-                stub_const("EE::Epic::MAX_CHILDREN_COUNT", 1)
-              end
+              let(:expected_code) { 422 }
+              let(:expected_error) { "#{epic_to_add.work_item.to_reference} cannot be added: reached maximum depth" }
 
               include_examples 'returns an error'
             end
@@ -230,25 +168,10 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
         context 'when multiple epics are given' do
           let_it_be(:another_epic) { create(:epic, group: ancestor) }
 
-          subject do
-            add_epic(
-              [epic_to_add.to_reference(full: true), another_epic.to_reference(full: true)]
-            )
-          end
-
-          context 'when user does not have create_epic_tree_relation access for the parent' do
-            before do
-              group.add_guest(user)
-              allow(Ability).to receive(:allowed?).and_call_original
-              allow(Ability).to receive(:allowed?)
-                                  .with(user, :create_epic_tree_relation, epic).and_return(false)
-            end
-
-            include_examples 'returns an error'
-          end
+          let(:references) { [epic_to_add.to_reference(full: true), another_epic.to_reference(full: true)] }
 
           context 'when a user has permissions to add an epic' do
-            before do
+            before_all do
               group.add_developer(user)
             end
 
@@ -259,12 +182,19 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
               before do
                 epic_to_add.update!(parent: epic)
                 another_epic.update!(parent: epic)
+                create(:parent_link, work_item: epic_to_add.work_item, work_item_parent: epic.work_item)
+                create(:parent_link, work_item: another_epic.work_item, work_item_parent: epic.work_item)
               end
 
               include_examples 'returns an error'
             end
 
             context 'when total depth after adding would exceed limit' do
+              let(:expected_code) { 422 }
+              let(:expected_error) do
+                "#{epic_to_add.work_item.to_reference} cannot be added: reached maximum depth"
+              end
+
               before do
                 add_parents_to(epic: epic, count: 1) # epic is on level 2
 
@@ -279,35 +209,35 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             context 'when an epic from a another group is given' do
               before do
                 epic_to_add.update!(group: other_group)
+                epic_to_add.work_item.update!(namespace: other_group)
+                other_group.update!(visibility: Gitlab::VisibilityLevel::PRIVATE)
               end
 
               context 'when user has insufficient permissions' do
-                include_examples 'returns an error'
-              end
-
-              context 'when subepics feature is not available for child group' do
-                before do
-                  other_group.add_guest(user)
-                  stub_licensed_features(epics: true)
-
-                  allow(group).to receive(:licensed_feature_available?).and_return(true)
-                  allow(other_group).to receive(:licensed_feature_available?).with(:subepics).and_return(false)
-                end
-
                 include_examples 'returns an error'
               end
             end
 
             context 'when hierarchy is cyclic' do
               context 'when given child epic is the same as given parent' do
-                subject { add_epic([epic.to_reference(full: true), another_epic.to_reference(full: true)]) }
+                let(:references) { [epic.to_reference(full: true), another_epic.to_reference(full: true)] }
+                let(:expected_code) { 422 }
+                let(:expected_error) do
+                  "#{epic.work_item.to_reference} cannot be added: is not allowed to point to itself"
+                end
 
                 include_examples 'returns an error'
               end
 
               context 'when given child epic is parent of the given parent' do
+                let(:expected_code) { 422 }
+                let(:expected_error) do
+                  "#{epic_to_add.work_item.to_reference} cannot be added: it's already present in this item's hierarchy"
+                end
+
                 before do
                   epic.update!(parent: epic_to_add)
+                  create(:parent_link, work_item: epic.work_item, work_item_parent: epic_to_add.work_item)
                 end
 
                 include_examples 'returns an error'
@@ -315,38 +245,40 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             end
 
             context 'when the reference list is empty' do
-              subject { add_epic([]) }
+              let(:references) { [] }
 
               include_examples 'returns an error'
             end
 
             context 'when there are invalid references' do
-              let_it_be(:epic) { create(:epic, confidential: true, group: group) }
+              let_it_be_with_refind(:epic) { create(:epic, confidential: true, group: group) }
               let_it_be(:invalid_epic1) { create(:epic, group: group) }
               let_it_be(:valid_epic) { create(:epic, :confidential, group: group) }
               let_it_be(:invalid_epic2) { create(:epic, group: group) }
 
-              subject do
-                add_epic([invalid_epic1.to_reference(full: true),
-                          valid_epic.to_reference(full: true),
-                          invalid_epic2.to_reference(full: true)])
+              let(:references) do
+                [
+                  invalid_epic1.to_reference(full: true), valid_epic.to_reference(full: true),
+                  invalid_epic2.to_reference(full: true)
+                ]
               end
 
-              it 'adds only valid references' do
-                subject
+              it 'does not add any reference' do
+                expect { add_epic }.to not_change { WorkItems::ParentLink.count }
 
-                expect(epic.reload.children).to match_array([valid_epic])
+                expect(epic.reload.children).to be_empty
               end
 
               it 'returns error status' do
-                expect(subject).to eq(
-                  status: :error,
-                  http_status: 422,
-                  message: "#{invalid_epic1.to_reference} cannot be added: A non-confidential "\
-                           "epic cannot be assigned to a confidential parent epic. "\
-                           "#{invalid_epic2.to_reference} cannot be added: A non-confidential "\
-                           "epic cannot be assigned to a confidential parent epic"
-                )
+                expect(add_epic[:status]).to eq(:error)
+                expect(add_epic[:http_status]).to eq(422)
+                expect(add_epic[:message]).to include(
+                  "#{invalid_epic1.work_item.to_reference} cannot be added: cannot assign a " \
+                    "non-confidential epic to a confidential parent. Make the epic confidential and try again.")
+                  .and include(
+                    "#{invalid_epic2.work_item.to_reference} cannot be added: cannot assign a non-confidential " \
+                      "epic to a confidential parent. Make the epic confidential and try again."
+                  )
               end
             end
           end
@@ -356,13 +288,11 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
       context 'when everything is ok' do
         let_it_be_with_reload(:another_epic) { create(:epic, group: group) }
 
-        before do
+        before_all do
           group.add_guest(user)
         end
 
         context 'when a correct reference is given' do
-          subject { add_epic([valid_reference]) }
-
           include_examples 'returns success'
           include_examples 'system notes created'
 
@@ -375,7 +305,8 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             end
 
             let_it_be_with_reload(:epic_to_add) do
-              create(:epic, group: group, start_date: 1.day.ago, due_date: 1.day.from_now, parent: other_parent)
+              create(:epic, :with_work_item_parent, group: group, start_date: 1.day.ago, due_date: 1.day.from_now,
+                parent: other_parent)
             end
 
             before do
@@ -388,19 +319,17 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
 
               epic_to_add.work_item.create_dates_source(start_date: epic_to_add.start_date,
                 due_date: epic_to_add.due_date)
-              create(:parent_link, work_item_parent: other_parent.work_item, work_item: epic_to_add.work_item)
             end
 
-            it 'corectly updates the parent dates' do
-              expect { subject }
-                .to change { epic.reload.children.count }.by(1)
-                .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
-                .and change { epic.due_date }.from(nil).to(epic_to_add.due_date)
-                .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                .and change { epic.due_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                .and change { other_parent.reload.children.count }.by(-1)
-                .and change { other_parent.start_date }.from(epic_to_add.start_date).to(nil)
-                .and change { other_parent.due_date }.from(epic_to_add.due_date).to(nil)
+            it 'correctly updates the parent dates', :sidekiq_inline do
+              expect { add_epic }.to change { epic.reload.children.count }.by(1)
+                                .and change { epic.reload.start_date }.from(nil).to(epic_to_add.start_date)
+                                .and change { epic.due_date }.from(nil).to(epic_to_add.due_date)
+                                .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                                .and change { epic.due_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                                .and change { other_parent.reload.children.count }.by(-1)
+                                .and change { other_parent.start_date }.from(epic_to_add.start_date).to(nil)
+                                .and change { other_parent.due_date }.from(epic_to_add.due_date).to(nil)
 
               epic_dates_source = epic.work_item.dates_source
               other_parent_dates_source = other_parent.work_item.dates_source
@@ -409,8 +338,8 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
               expect(epic_dates_source.due_date).to eq(epic_to_add.due_date)
               expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
               expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
-              expect(other_parent_dates_source.start_date).to eq(nil)
-              expect(other_parent_dates_source.due_date).to eq(nil)
+              expect(other_parent_dates_source.start_date).to be_nil
+              expect(other_parent_dates_source.due_date).to be_nil
             end
           end
         end
@@ -422,61 +351,59 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             epic_to_add.update!(group: subgroup)
           end
 
-          subject { add_epic([valid_reference]) }
-
           include_examples 'returns success'
           include_examples 'system notes created'
         end
 
         context 'when an epic from another group is given' do
-          before do
-            epic_to_add.update!(group: other_group)
+          before_all do
             other_group.add_reporter(user)
           end
 
-          subject { add_epic([valid_reference]) }
+          before do
+            epic_to_add.update!(group: other_group)
+          end
 
           include_examples 'returns success'
           include_examples 'system notes created'
         end
 
         context 'when an epic from ancestor group is given' do
-          before do
+          before_all do
             ancestor.add_guest(user)
-            epic_to_add.update!(group: ancestor)
           end
 
-          subject { add_epic([valid_reference]) }
+          before do
+            epic_to_add.update!(group: ancestor)
+          end
 
           include_examples 'returns success'
           include_examples 'system notes created'
         end
 
         context 'when multiple valid epics are given' do
-          subject do
-            add_epic(
-              [epic_to_add.to_reference(full: true), another_epic.to_reference(full: true)]
-            )
+          let(:references) do
+            [epic_to_add.to_reference(full: true), another_epic.to_reference(full: true)]
           end
 
           it 'creates new relationships' do
-            expect { subject }.to change { epic.children.count }.by(2)
+            expect { add_epic }.to change { epic.children.count }.by(2)
 
             expect(epic.reload.children).to match_array([epic_to_add, another_epic])
           end
 
           it 'creates system notes' do
-            expect { subject }.to change { Note.system.count }.from(0).to(4)
+            expect { add_epic }.to change { Note.system.count }.from(0).to(4)
           end
 
           it 'returns success status and created links', :aggregate_failures do
-            expect(subject.keys).to match_array([:status, :created_references])
-            expect(subject[:status]).to eq(:success)
-            expect(subject[:created_references]).to match_array([epic_to_add, another_epic])
+            expect(add_epic.keys).to match_array([:status, :created_references])
+            expect(add_epic[:status]).to eq(:success)
+            expect(add_epic[:created_references]).to match_array([epic_to_add, another_epic])
           end
 
           it 'avoids un-necessary database queries' do
-            control = ActiveRecord::QueryRecorder.new { add_epic([valid_reference]) }
+            control = ActiveRecord::QueryRecorder.new { add_epic }
 
             new_epics = Array.new(2) { create(:epic, group: group) }
 
@@ -487,7 +414,11 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             # 4. we temporarily increased this from 6 due to
             #    https://gitlab.com/gitlab-org/gitlab/issues/11539
             expect do
-              ActiveRecord::QueryRecorder.new { add_epic(new_epics.map { |epic| epic.to_reference(full: true) }) }
+              ActiveRecord::QueryRecorder.new do
+                described_class.new(epic, user,
+                  { issuable_references: new_epics.map { |epic| epic.to_reference(full: true) } }
+                ).execute
+              end
             end.not_to exceed_query_limit(control).with_threshold(8)
           end
 
@@ -512,9 +443,8 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
                 due_date: another_epic.due_date)
             end
 
-            it 'corectly updates the parent dates' do
-              expect { subject }
-                .to change { epic.reload.children.count }.by(2)
+            it 'correctly updates the parent dates', :sidekiq_inline, :aggregate_failures do
+              expect { add_epic }.to change { epic.reload.children.count }.by(2)
                 .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
                 .and change { epic.due_date }.from(nil).to(another_epic.due_date)
                 .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
@@ -533,35 +463,32 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
         context 'when at least one epic is still not assigned to the parent epic' do
           before do
             epic_to_add.update!(parent: epic)
+            create(:parent_link, work_item_parent: epic.work_item, work_item: epic_to_add.work_item)
           end
 
-          subject do
-            add_epic(
-              [epic_to_add.to_reference(full: true), another_epic.to_reference(full: true)]
-            )
+          let(:references) do
+            [epic_to_add.to_reference(full: true), another_epic.to_reference(full: true)]
           end
 
           it 'creates new relationships' do
-            expect { subject }.to change { epic.children.count }.from(1).to(2)
+            expect { add_epic }.to change { epic.children.count }.from(1).to(2)
 
             expect(epic.reload.children).to match_array([epic_to_add, another_epic])
           end
 
           it 'creates system notes' do
-            expect { subject }.to change { Note.system.count }.from(0).to(2)
+            expect { add_epic }.to change { Note.system.count }.from(0).to(2)
           end
 
           it 'returns success status and created links', :aggregate_failures do
-            expect(subject.keys).to match_array([:status, :created_references])
-            expect(subject[:status]).to eq(:success)
-            expect(subject[:created_references]).to match_array([another_epic])
+            expect(add_epic.keys).to match_array([:status, :created_references])
+            expect(add_epic[:status]).to eq(:success)
+            expect(add_epic[:created_references]).to match_array([another_epic])
           end
         end
 
         context 'when adding an Epic that has existing children' do
           context 'when Epic to add has more than 5 children' do
-            subject { add_epic([valid_reference]) }
-
             before do
               create_list(:epic, 8, group: group, parent: epic_to_add)
             end
@@ -574,12 +501,11 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
         context 'when an epic is already assigned to another epic' do
           before do
             epic_to_add.update!(parent: another_epic)
+            create(:parent_link, work_item_parent: another_epic.work_item, work_item: epic_to_add.work_item)
           end
 
-          subject { add_epic([valid_reference]) }
-
           it 'creates system notes' do
-            expect { subject }.to change { Note.system.count }.from(0).to(3)
+            expect { add_epic }.to change { Note.system.count }.from(0).to(2)
           end
 
           include_examples 'returns success'
@@ -593,66 +519,15 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
         let_it_be(:child_epic) { create(:epic, group: group, issue_id: child_work_item.id, title: 'The child epic') }
 
         let(:synced_epic_param) { false }
+        let(:epic) { parent_epic }
         let(:params) { { issuable_references: [child_epic.to_reference], synced_epic: synced_epic_param } }
-
-        subject(:create_link) { described_class.new(parent_epic, user, params).execute }
 
         before_all do
           group.add_reporter(user)
         end
 
-        shared_examples 'rollback changes when creation fails' do
-          context 'when work item link creation fails' do
-            before do
-              allow_next_instance_of(WorkItems::ParentLinks::CreateService) do |service|
-                allow(service).to receive(:execute).and_return({ status: :error, message: 'error message' })
-              end
-            end
-
-            it 'does not create relationships for the epic or the work item' do
-              expect { create_link }.to not_change { parent_epic.children.count }
-                .and(not_change { WorkItems::ParentLink.count })
-            end
-
-            it 'logs error' do
-              allow(Gitlab::EpicWorkItemSync::Logger).to receive(:error).and_call_original
-              expect(Gitlab::EpicWorkItemSync::Logger).to receive(:error).with({
-                child_id: child_epic.id,
-                error_message: 'error message',
-                group_id: group.id,
-                message: 'Not able to set epic parent',
-                parent_id: parent_epic.id
-              })
-
-              create_link
-            end
-          end
-
-          context 'when epic link creation fails' do
-            it 'does not create relationships for the epic or the work item' do
-              allow_next_found_instance_of(::Epic) do |epic_instance|
-                allow(epic_instance).to receive(:save).and_return(false)
-              end
-
-              expect { create_link }.to not_change { parent_epic.children.count }
-                .and(not_change { WorkItems::ParentLink.count })
-            end
-          end
-
-          context 'when updating relative_position fails' do
-            it 'does not create relationships for the epic or the work item' do
-              allow_next_instance_of(::WorkItems::ParentLink) do |parent_link_instance|
-                allow(parent_link_instance).to receive(:update).and_return(false)
-              end
-
-              expect { create_link }.to not_change { parent_epic.children.count }
-                .and(not_change { WorkItems::ParentLink.count })
-            end
-          end
-        end
-
         it 'creates a new relationship for the epic and the synced work item' do
-          expect { create_link }.to change { parent_epic.children.count }.by(1)
+          expect { add_epic }.to change { parent_epic.children.count }.by(1)
             .and(change { WorkItems::ParentLink.count }.by(1))
 
           expect(parent_epic.reload.children).to include(child_epic)
@@ -660,28 +535,12 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
           expect(child_epic.reload.relative_position).to eq(child_work_item.parent_link.reload.relative_position)
         end
 
-        it 'keeps epics timestamp in sync' do
-          expect { create_link }.to change { parent_epic.children.count }.by(1)
-            .and(change { WorkItems::ParentLink.count }.by(1))
+        it 'creates system note for epics' do
+          expect { add_epic }.to change { Note.system.count }.by(2)
 
-          expect(parent_epic.reload.updated_at).to eq(parent_epic.work_item.updated_at)
-          expect(child_epic.reload.updated_at).to eq(child_epic.work_item.updated_at)
+          expect(parent_epic.notes.last.note).to eq("added #{child_epic.work_item.to_reference} as child epic")
+          expect(child_epic.notes.last.note).to eq("added #{parent_epic.work_item.to_reference} as parent epic")
         end
-
-        it 'does not create resource event for the work item' do
-          expect(WorkItems::ResourceLinkEvent).not_to receive(:create)
-
-          expect { create_link }.to change { parent_epic.children.count }.by(1)
-            .and(change { WorkItems::ParentLink.count }.by(1))
-        end
-
-        it 'creates system notes only for the epics' do
-          expect { create_link }.to change { Note.system.count }.by(2)
-          expect(parent_epic.notes.last.note).to eq("added epic #{child_epic.to_reference} as child epic")
-          expect(child_epic.notes.last.note).to eq("added epic #{parent_epic.to_reference} as parent epic")
-        end
-
-        it_behaves_like 'rollback changes when creation fails'
 
         context 'with multiple children' do
           let_it_be(:child_work_item2) { create(:work_item, :epic, namespace: group) }
@@ -690,7 +549,7 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
           let(:params) { { issuable_references: [child_epic.to_reference, child_epic2.to_reference] } }
 
           it 'creates a new relationship for the epics and their synced work items' do
-            expect { create_link }.to change { parent_epic.children.count }.by(2)
+            expect { add_epic }.to change { parent_epic.children.count }.by(2)
               .and(change { WorkItems::ParentLink.count }.by(2))
 
             expect(parent_epic.reload.children).to include(child_epic, child_epic2)
@@ -699,50 +558,16 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             expect(child_epic2.reload.relative_position).to eq(child_work_item2.reload.parent_link.relative_position)
           end
 
-          it 'keeps epics timestamp in sync' do
-            expect { create_link }.to change { parent_epic.children.count }.by(2)
-              .and(change { WorkItems::ParentLink.count }.by(2))
-
-            expect(parent_epic.reload.updated_at).to eq(parent_epic.work_item.updated_at)
-            expect(child_epic.reload.updated_at).to eq(child_epic.work_item.updated_at)
-            expect(child_epic2.reload.updated_at).to eq(child_epic2.work_item.updated_at)
-          end
-
           it 'creates system notes only for the epics' do
-            child_note_text = "added epic #{parent_epic.to_reference} as parent epic"
-            expect { create_link }.to change { Note.system.count }.by(4)
+            child_note_text = "added #{parent_epic.work_item.to_reference} as parent epic"
+            expect { add_epic }.to change { Note.system.count }.by(4)
 
             expect(child_epic.notes.last.note).to eq(child_note_text)
             expect(child_epic2.notes.last.note).to eq(child_note_text)
             expect(parent_epic.notes.last(2).pluck(:note)).to contain_exactly(
-              "added epic #{child_epic.to_reference} as child epic",
-              "added epic #{child_epic2.to_reference} as child epic"
+              "added #{child_epic.work_item.to_reference} as child epic",
+              "added #{child_epic2.work_item.to_reference} as child epic"
             )
-          end
-
-          it_behaves_like 'rollback changes when creation fails'
-        end
-
-        context 'when synced_epic parameter is true' do
-          let(:synced_epic_param) { true }
-
-          it 'does not try to create a synced work item parent link' do
-            expect(::WorkItems::ParentLinks::CreateService).not_to receive(:new)
-
-            create_link
-          end
-
-          it 'does not create system notes' do
-            expect(SystemNoteService).not_to receive(:change_epics_relation)
-            expect(SystemNoteService).not_to receive(:move_child_epic_to_new_parent)
-
-            create_link
-          end
-
-          it 'does not call Epics::UpdateDatesService' do
-            expect(Epics::UpdateDatesService).not_to receive(:new)
-
-            create_link
           end
         end
       end

@@ -89,7 +89,7 @@ RSpec.describe Epics::CreateService, feature_category: :portfolio_management do
         expect { subject }.to change { Epic.count }.by(1).and(change { WorkItem.count }.by(1))
       end
 
-      it_behaves_like 'syncs all data from an epic to a work item' do
+      it_behaves_like 'syncs all data from an epic to a work item', notes_on_work_item: true do
         let(:epic) { Epic.last }
       end
 
@@ -134,8 +134,8 @@ RSpec.describe Epics::CreateService, feature_category: :portfolio_management do
       it 'does not duplicate system notes' do
         expect { subject }.to change { Epic.count }.by(1).and(change { WorkItem.count }.by(1))
 
-        expect(Epic.last.notes.size).to eq(1)
-        expect(WorkItem.last.notes.size).to eq(0)
+        expect(Epic.last.notes.size).to eq(0)
+        expect(WorkItem.last.notes.size).to eq(1)
       end
 
       it 'does not call run_after_commit for the work item' do
@@ -208,10 +208,12 @@ RSpec.describe Epics::CreateService, feature_category: :portfolio_management do
         it 'creates system notes' do
           subject
 
+          expect(subject.parent).to eq(parent_epic)
+
           epic = Epic.last
           expect(epic.parent).to eq(parent_epic)
-          expect(epic.notes.last.note).to eq("added epic #{parent_epic.to_reference} as parent epic")
-          expect(parent_epic.notes.last.note).to eq("added epic #{epic.to_reference} as child epic")
+          expect(epic.notes.last.note).to eq("added #{parent_epic.work_item.to_reference} as parent epic")
+          expect(parent_epic.notes.last.note).to eq("added #{epic.work_item.to_reference} as child epic")
         end
       end
 
@@ -231,11 +233,14 @@ RSpec.describe Epics::CreateService, feature_category: :portfolio_management do
 
         shared_examples 'creates epic without parent' do
           it 'does not set parent' do
-            subject
+            expect { subject }.to change { Epic.count }.by(1)
 
-            epic = Epic.last
-            expect(epic.parent).to be_nil
-            expect(epic.notes).to be_empty
+            expect(subject.errors[:base]).to include(
+              'No matching epic found. Make sure that you are adding a valid epic URL.'
+            )
+
+            expect(subject.reload.parent).to be_nil
+            expect(subject.notes).to be_empty
           end
         end
 

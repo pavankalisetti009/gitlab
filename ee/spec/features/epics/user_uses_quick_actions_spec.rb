@@ -23,7 +23,7 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
     it 'applies quick action' do
       # TODO: remove threshold after epic-work item sync
       # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
       epic_2 = create(:epic, group: group)
       visit group_epic_path(group, epic_2)
       wait_for_requests
@@ -32,12 +32,16 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
 
       wait_for_requests
       expect(epic_2.reload.parent).to eq(epic_1)
-      expect(page).to have_content("added epic #{epic_1.to_reference} as parent epic")
+      expect(page).to have_content("added #{epic_1.work_item.to_reference} as parent epic")
     end
   end
 
   context 'on epic form' do
     it 'applies quick action' do
+      # TODO: remove threshold after epic-work item sync
+      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
+
       epic_title = 'New epic with parent'
       visit new_group_epic_path(group)
 
@@ -47,7 +51,7 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
       wait_for_requests
 
       expect(group.epics.find_by_title(epic_title).parent).to eq(epic_1)
-      expect(page).to have_content("added epic #{epic_1.to_reference} as parent epic")
+      expect(page).to have_content("added #{epic_1.work_item.to_reference} as parent epic")
     end
   end
 end

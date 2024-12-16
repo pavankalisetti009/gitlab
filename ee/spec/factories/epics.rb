@@ -38,6 +38,12 @@ FactoryBot.define do
       end
     end
 
+    trait :with_work_item_parent do
+      work_item_parent_link do
+        association(:parent_link, work_item: work_item, work_item_parent: parent.work_item) if parent
+      end
+    end
+
     trait :with_synced_work_item do
       work_item do
         association(:work_item,

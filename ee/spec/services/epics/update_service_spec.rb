@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
-  let(:group) { create(:group, :internal) }
-  let(:user) { create(:user) }
-  let(:epic) { create(:epic, group: group) }
+  let_it_be_with_refind(:group) { create(:group, :internal) }
+  let_it_be(:user) { create(:user) }
+  let_it_be_with_refind(:epic) { create(:epic, group: group) }
 
   describe '#execute' do
     before do
@@ -371,11 +371,10 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
       end
 
       context 'mentioning a group in epic description' do
-        let(:mentioned1) { create(:user) }
-        let(:mentioned2) { create(:user) }
+        let_it_be(:mentioned1) { create(:user, developer_of: group) }
+        let_it_be(:mentioned2) { create(:user) }
 
         before do
-          group.add_developer(mentioned1)
           epic.update!(description: "FYI: #{group.to_reference}")
         end
 
@@ -399,7 +398,7 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
           it 'creates todos for only newly mentioned users that are group members' do
             expect do
               update_epic(description: "FYI: #{mentioned1.to_reference} #{mentioned2.to_reference}")
-            end.to not_change { Todo.count }
+            end.to change { Todo.count }
           end
         end
       end
@@ -632,8 +631,6 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
       context 'for /child_epic' do
         it 'sets a child epic' do
           child_epic = create(:epic, group: group)
-          expect(::Gitlab::UsageDataCounters::EpicActivityUniqueCounter).to receive(:track_epic_parent_updated_action)
-            .with(author: user, namespace: group)
 
           update_epic(description: "/child_epic #{child_epic.to_reference}")
 
@@ -644,7 +641,6 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
           it 'does not set child epic' do
             other_group = create(:group, :private)
             child_epic = create(:epic, group: other_group)
-            expect(::Gitlab::UsageDataCounters::EpicActivityUniqueCounter).not_to receive(:track_epic_parent_updated_action)
 
             update_epic(description: "/child_epic #{child_epic.to_reference(group)}")
             expect(epic.reload.children).to be_empty
@@ -670,13 +666,6 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
           it 'does not change parent' do
             expect { subject }.not_to change { epic.parent }
           end
-
-          it 'does not create notes or track change' do
-            expect(::Gitlab::UsageDataCounters::EpicActivityUniqueCounter)
-              .not_to receive(:track_epic_parent_updated_action)
-
-            expect { subject }.not_to change { Note.count }
-          end
         end
 
         context 'when subepics are disabled' do
@@ -687,11 +676,12 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
           it_behaves_like 'updates epic without changing parent'
         end
 
-        context 'when user lacks create_epic_tree_relation permissions' do
+        context 'when user lacks permissions' do
+          let_it_be_with_reload(:user) { create(:user) }
+
           before do
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?)
-              .with(user, :create_epic_tree_relation, new_parent).and_return(false)
+            new_parent.update!(confidential: true)
+            group.add_guest(user)
           end
 
           it_behaves_like 'updates epic without changing parent'
@@ -707,21 +697,11 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
       end
 
       context 'when user can update parent' do
-        shared_examples 'records parent changed after saving' do
-          it 'tracks parent change' do
-            expect(::Gitlab::UsageDataCounters::EpicActivityUniqueCounter)
-              .to receive(:track_epic_parent_updated_action)
-                    .with(author: user, namespace: group)
-
-            subject
-          end
-        end
-
-        shared_examples 'calls correct EpicLinks service' do |service_type|
+        shared_examples 'calls correct EpicLinks service' do |service_class|
           it 'calls correct service' do
-            service_class = "Epics::EpicLinks::#{service_type.capitalize}Service".constantize
-            params = service_type == 'create' ? [new_parent, user, { target_issuable: epic }] : [epic, user]
+            params = service_class == '::WorkItems::LegacyEpics::EpicLinks::CreateService' ? [new_parent, user, { target_issuable: epic }] : [epic, user]
 
+            service_class = service_class.constantize
             allow_next_instance_of(service_class) do |service|
               allow(service).to receive(:execute).and_return({ status: :success })
             end
@@ -735,16 +715,15 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
           expect { subject }.to change { epic.parent }.from(nil).to(new_parent)
                                                       .and change { Note.count }.by(2)
 
-          child_ref = epic.to_reference(group)
-          new_ref = new_parent.to_reference(group)
+          child_ref = epic.work_item.to_reference(group)
+          new_ref = new_parent.work_item.to_reference(group)
 
           epic.reload
-          expect(epic.notes.first.note).to eq("added epic #{new_ref} as parent epic")
-          expect(new_parent.notes.first.note).to eq("added epic #{child_ref} as child epic")
+          expect(epic.notes.first.note).to eq("added #{new_ref} as parent epic")
+          expect(new_parent.notes.first.note).to eq("added #{child_ref} as child epic")
         end
 
-        it_behaves_like 'calls correct EpicLinks service', 'create'
-        it_behaves_like 'records parent changed after saving'
+        it_behaves_like 'calls correct EpicLinks service', '::WorkItems::LegacyEpics::EpicLinks::CreateService'
 
         context 'when parent is already present' do
           let(:existing_parent) { create(:epic, group: group) }
@@ -755,19 +734,17 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
 
           it 'changes parent and creates system notes' do
             expect { subject }.to change { epic.parent }.from(existing_parent).to(new_parent)
-                                                        .and change { Note.count }.by(3)
+                                                        .and change { Note.count }.by(2)
 
-            child_ref = epic.to_reference(group)
-            new_ref = new_parent.to_reference(group)
+            child_ref = epic.work_item.to_reference(group)
+            new_ref = new_parent.work_item.to_reference(group)
 
             epic.reload
-            expect(epic.notes.first.note).to eq("added epic #{new_ref} as parent epic")
-            expect(new_parent.notes.first.note).to eq("added epic #{child_ref} as child epic")
-            expect(existing_parent.notes.first.note).to eq("moved child epic #{child_ref} to epic #{new_ref}")
+            expect(epic.notes.first.note).to eq("added #{new_ref} as parent epic")
+            expect(new_parent.notes.first.note).to eq("added #{child_ref} as child epic")
           end
 
-          it_behaves_like 'calls correct EpicLinks service', 'create'
-          it_behaves_like 'records parent changed after saving'
+          it_behaves_like 'calls correct EpicLinks service', '::WorkItems::LegacyEpics::EpicLinks::CreateService'
 
           context 'when removing parent' do
             subject { update_epic(parent: nil) }
@@ -784,8 +761,7 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
               expect(existing_parent.notes.first.note).to eq("removed child epic #{child_ref}")
             end
 
-            it_behaves_like 'calls correct EpicLinks service', 'destroy'
-            it_behaves_like 'records parent changed after saving'
+            it_behaves_like 'calls correct EpicLinks service', 'Epics::EpicLinks::DestroyService'
 
             context 'when user cannot access parent' do
               before do
@@ -796,13 +772,6 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
 
               it 'does not change parent' do
                 expect { subject }.not_to change { epic.parent }
-              end
-
-              it 'does not create notes or track change' do
-                expect(::Gitlab::UsageDataCounters::EpicActivityUniqueCounter)
-                  .not_to receive(:track_epic_parent_updated_action)
-
-                expect { subject }.not_to change { Note.count }
               end
             end
           end
@@ -842,7 +811,7 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
 
             subject { update_epic(opts) }
 
-            it_behaves_like 'syncs all data from an epic to a work item'
+            it_behaves_like 'syncs all data from an epic to a work item', notes_on_work_item: true
 
             context 'when updating rolledup dates' do
               let(:opts) { { start_date_is_fixed: false, due_date_is_fixed: false } }
