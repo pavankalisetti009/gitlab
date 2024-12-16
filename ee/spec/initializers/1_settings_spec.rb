@@ -101,7 +101,16 @@ RSpec.describe '1_settings', feature_category: :shared do
         let(:base_url) { 'https://www.cloud.example.com' }
 
         it 'defaults to cloud connector config' do
-          expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:443')
+          expect(Settings.duo_workflow.service_url).to eq('duo-workflow.runway.gitlab.net:443')
+          expect(Settings.duo_workflow.secure).to eq(true)
+        end
+      end
+
+      context 'with staging cloud connector' do
+        let(:base_url) { 'https://www.cloud.staging.example.com' }
+
+        it 'defaults to cloud connector config' do
+          expect(Settings.duo_workflow.service_url).to eq('duo-workflow.staging.runway.gitlab.net:443')
           expect(Settings.duo_workflow.secure).to eq(true)
         end
       end
@@ -110,7 +119,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         let(:base_url) { 'http://www.cloud.example.com' }
 
         it 'infers secure and port from scheme' do
-          expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:80')
+          expect(Settings.duo_workflow.service_url).to eq('duo-workflow.runway.gitlab.net:80')
           expect(Settings.duo_workflow.secure).to eq(false)
         end
       end
