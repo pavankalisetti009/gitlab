@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::GroupSaml::AuthHash do
+RSpec.describe Gitlab::Auth::GroupSaml::AuthHash, feature_category: :system_access do
   let(:omniauth_auth_hash) do
     OmniAuth::AuthHash.new(extra: { raw_info: OneLogin::RubySaml::Attributes.new(raw_info_attr) })
   end

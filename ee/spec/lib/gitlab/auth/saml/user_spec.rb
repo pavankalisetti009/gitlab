@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::Saml::User do
+RSpec.describe Gitlab::Auth::Saml::User, feature_category: :system_access do
   include LdapHelpers
   include LoginHelpers
 
