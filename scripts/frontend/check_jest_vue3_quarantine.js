@@ -5,6 +5,7 @@ const { readFile, open, stat, mkdir } = require('node:fs/promises');
 const { join, relative, dirname } = require('node:path');
 const defaultChalk = require('chalk');
 const program = require('commander');
+const IS_EE = require('../../config/helpers/is_ee_env');
 const { getLocalQuarantinedFiles } = require('./jest_vue3_quarantine_utils');
 
 const ROOT = join(__dirname, '..', '..');
@@ -163,8 +164,18 @@ async function getRemovedQuarantinedSpecs() {
   const removedQuarantinedSpecs = [];
 
   const filesToCheckIfTheyExist = IS_CI
-    ? // In CI, only check quarantined files the author has touched
-      intersection(filesThatChanged, quarantinedFiles)
+    ? // In CI, only check quarantined files the author has touched.
+      // If we're in a FOSS pipeline, ignore EE specs which do not exist.
+      filterSet(intersection(filesThatChanged, quarantinedFiles), (path) => {
+        if (IS_EE) return true;
+
+        if (path.startsWith('ee/')) {
+          console.warn(`Ignoring non-existent EE spec ${path} as we are in FOSS mode.`);
+          return false;
+        }
+
+        return true;
+      })
     : // Locally, check all quarantined files
       quarantinedFiles;
 
