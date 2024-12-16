@@ -3,28 +3,17 @@
 module Security
   module Configuration
     class SetSecretPushProtectionService
-      def self.execute(current_user:, namespace:, enable:)
-        # Some projects do not have the necessary security_setting,
-        # so we create it when it is missing
-        if namespace.is_a?(Project) && namespace.security_setting.nil?
-          namespace.security_setting = ProjectSecuritySetting.new
-          namespace.security_setting.save!
-        end
+      def self.execute(current_user:, project:, enable:)
+        raise ArgumentError, 'Invalid argument. Either true or false should be passed.' unless [true,
+          false].include?(enable)
 
-        response = ServiceResponse.success(
+        ServiceResponse.success(
           payload: {
-            enabled: namespace.security_setting.set_pre_receive_secret_detection!(
-              enabled: enable
-            ),
+            enabled: SetProjectSecretPushProtectionService.new(current_user: current_user, namespace: project,
+              enable: enable).execute,
             errors: []
           })
 
-        if response.success?
-          Projects::ProjectSecuritySettingChangesAuditor.new(
-            current_user: current_user, model: namespace.security_setting).execute
-        end
-
-        response
       rescue StandardError => e
         ServiceResponse.error(
           message: e.message,
