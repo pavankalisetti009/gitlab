@@ -22,11 +22,7 @@ module EE
     end
 
     def max_personal_access_token_lifetime_in_days
-      if ::Feature.enabled?(:buffered_token_expiration_limit) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Group setting but checked at user
-        400
-      else
-        365
-      end
+      ::PersonalAccessToken.max_expiration_lifetime_in_days
     end
 
     private
