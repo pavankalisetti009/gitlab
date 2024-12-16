@@ -186,6 +186,32 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
     end
   end
 
+  shared_examples 'measure comment temperature' do
+    describe 'measure_comment_temperature' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+      where(:feature_flag_enabled, :user_allowed, :expected_result) do
+        true  | true  | be_allowed(:measure_comment_temperature)
+        true  | false | be_disallowed(:measure_comment_temperature)
+        false | true  | be_disallowed(:measure_comment_temperature)
+        false | false | be_disallowed(:measure_comment_temperature)
+      end
+
+      with_them do
+        before do
+          stub_feature_flags(comment_temperature: feature_flag_enabled)
+
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+          allow(authorizer).to receive(:allowed?).and_return(user_allowed)
+        end
+
+        it { is_expected.to expected_result }
+      end
+    end
+  end
+
   context 'when epics feature is disabled' do
     let(:group) { create(:group, :public) }
 
@@ -215,6 +241,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       end
 
       it_behaves_like 'group member permissions'
+      it_behaves_like 'measure comment temperature'
     end
 
     context 'when an epic is in an internal group' do
@@ -247,6 +274,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       end
 
       it_behaves_like 'group member permissions'
+      it_behaves_like 'measure comment temperature'
     end
 
     context 'when an epic is in a public group' do
@@ -290,6 +318,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       end
 
       it_behaves_like 'group member permissions'
+      it_behaves_like 'measure comment temperature'
     end
 
     context 'when external authorization is enabled' do

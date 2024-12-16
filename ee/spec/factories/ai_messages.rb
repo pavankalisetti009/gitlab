@@ -73,6 +73,10 @@ FactoryBot.define do
       ai_action { :generate_description }
     end
 
+    trait :measure_comment_temperature do
+      ai_action { :measure_comment_temperature }
+    end
+
     trait :tanuki_bot do
       ai_action { :tanuki_bot }
     end

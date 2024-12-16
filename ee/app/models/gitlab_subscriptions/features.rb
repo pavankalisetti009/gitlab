@@ -281,6 +281,7 @@ module GitlabSubscriptions
       security_exclusions
       security_scans_api
       observability_alerts
+      measure_comment_temperature
     ].freeze
 
     STARTER_FEATURES_WITH_USAGE_PING = %i[

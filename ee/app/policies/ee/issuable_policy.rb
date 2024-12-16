@@ -14,6 +14,19 @@ module EE
         @subject.issuable_resource_links_available?
       end
 
+      condition(:user_allowed_to_measure_comment_temperature) do
+        ::Feature.enabled?(:comment_temperature, @user) &&
+          ::Gitlab::Llm::FeatureAuthorizer.new(
+            container: subject_container,
+            feature_name: :measure_comment_temperature,
+            user: @user
+          ).allowed?
+      end
+
+      rule { user_allowed_to_measure_comment_temperature }.policy do
+        enable :measure_comment_temperature
+      end
+
       rule { can?(:read_issue) }.policy do
         enable :read_issuable_metric_image
       end
