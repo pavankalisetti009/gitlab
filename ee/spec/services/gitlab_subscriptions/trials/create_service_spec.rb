@@ -130,6 +130,8 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
       context 'when group is successfully created' do
         context 'when trial creation is successful' do
           it 'return success with the namespace' do
+            allow(::Namespace.sticking).to receive(:stick).with(anything, anything).and_call_original
+
             expect_next_instance_of(apply_trial_service_class) do |instance|
               expect(instance).to receive(:execute).and_return(
                 ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
@@ -138,6 +140,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
             expect { execute }.to change { Group.count }.by(1)
 
+            expect(::Namespace.sticking).to have_received(:stick).with(:namespace, Group.last.id)
             expect(execute).to be_success
             expect(execute.payload).to eq({ namespace: Group.last, add_on_purchase: add_on_purchase })
           end
