@@ -13,6 +13,10 @@ export default {
   extends: BoardsSelectorFoss,
   mixins: [Tracking.mixin()],
   inject: ['isEpicBoard'],
+  // Work around a possible @vue/test-utils@2 bug, where `Wrapper#props()`
+  // doesn't correctly traverse into the extended component's `props`.
+  // See https://gitlab.com/gitlab-org/gitlab/-/issues/509355.
+  props: BoardsSelectorFoss.props,
   computed: {
     showCreate() {
       return this.isEpicBoard || this.multipleIssueBoardsAvailable;
