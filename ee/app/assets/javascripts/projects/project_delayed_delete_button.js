@@ -17,6 +17,7 @@ export default (selector = '#js-project-delayed-delete-button') => {
     mergeRequestsCount,
     forksCount,
     starsCount,
+    buttonText,
   } = el.dataset;
 
   // eslint-disable-next-line no-new
@@ -34,6 +35,7 @@ export default (selector = '#js-project-delayed-delete-button') => {
           mergeRequestsCount: parseInt(mergeRequestsCount, 10),
           forksCount: parseInt(forksCount, 10),
           starsCount: parseInt(starsCount, 10),
+          buttonText,
         },
       });
     },

@@ -36,18 +36,6 @@ module EE
         { date: date, deletion_adjourned_period: deletion_adjourned_period }
     end
 
-    def immediately_remove_group_message(group)
-      message = _('This action will %{strongOpen}permanently remove%{strongClose} %{codeOpen}%{group}%{codeClose} %{strongOpen}immediately%{strongClose}.')
-
-      ERB::Util.html_escape(message) % {
-        group: group.path,
-        strongOpen: '<strong>'.html_safe,
-        strongClose: '</strong>'.html_safe,
-        codeOpen: '<code>'.html_safe,
-        codeClose: '</code>'.html_safe
-      }
-    end
-
     def permanent_deletion_date_formatted(group, date)
       group.permanent_deletion_date(date).strftime('%F')
     end

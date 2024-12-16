@@ -123,17 +123,29 @@ module EE
       can?(current_user, :read_security_orchestration_policies, project)
     end
 
+    override :delete_immediately_message
+    def delete_immediately_message(project)
+      return super unless project.adjourned_deletion?
+
+      date = permanent_deletion_date_formatted(project, Time.now.utc)
+
+      message = _('This project is scheduled for deletion on %{strongOpen}%{date}%{strongClose}. ' \
+        'This action will permanently delete this project, ' \
+        'including all its resources, %{strongOpen}immediately%{strongClose}. This action cannot be undone.')
+
+      ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date)
+    end
+
     def delete_delayed_message(project)
       date = permanent_deletion_date_formatted(project, Time.now.utc)
 
-      message = if project.feature_available?(:adjourned_deletion_for_projects_and_groups)
-                  _("This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} on %{date} and everything this project contains.")
-                else
-                  # This is a free project, it will use delayed deletion but can only be restored by an admin.
-                  _("This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} on %{date} and everything this project contains. %{strongOpen}There is no going back.%{strongClose}")
-                end
-
-      ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date)
+      if project.feature_available?(:adjourned_deletion_for_projects_and_groups)
+        message = _("This action will place this project, including all its resources, in a pending deletion state for %{deletion_adjourned_period} days, and delete it permanently on %{strongOpen}%{date}%{strongClose}.")
+        ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date, deletion_adjourned_period: deletion_adjourned_period)
+      else
+        # This is a free project, it will use delayed deletion but can only be restored by an admin.
+        _('This action will permanently delete this project, including all its resources.')
+      end
     end
 
     def permanent_deletion_date_formatted(project, date)
@@ -382,8 +394,8 @@ module EE
       )
     end
 
-    def project_delete_delayed_button_data(project)
-      project_delete_button_shared_data(project).merge({
+    def project_delete_delayed_button_data(project, button_text = nil)
+      project_delete_button_shared_data(project, button_text).merge({
         restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
         delayed_deletion_date: permanent_deletion_date_formatted(project, Time.now.utc).to_s,
         form_path: project_path(project)
