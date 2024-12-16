@@ -195,6 +195,9 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
       context 'when user is a guest' do
         before do
           group.add_guest(user)
+          # TODO: remove threshold after epic-work item sync
+          # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
         end
 
         it 'returns 201 status' do
@@ -211,7 +214,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           group.add_reporter(user)
           # TODO: remove threshold after epic-work item sync
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(103)
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
         end
 
         it 'returns 201 status' do
@@ -221,8 +224,8 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           expect(response).to have_gitlab_http_status(:created)
           expect(response).to match_response_schema('public_api/v4/linked_epic', dir: 'ee')
           expect(epic.reload.children).to include(child_epic)
-          expect(epic.notes.last&.note).to eq("added epic #{child_epic.to_reference} as child epic")
-          expect(child_epic.notes.last&.note).to eq("added epic #{epic.to_reference} as parent epic")
+          expect(epic.notes.last&.note).to eq("added #{child_epic.work_item.to_reference} as child epic")
+          expect(child_epic.notes.last&.note).to eq("added #{epic.work_item.to_reference} as parent epic")
         end
 
         context 'when the parent epic is confidential' do
@@ -238,6 +241,10 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
             post api(url, user), params: { title: 'child epic', confidential: false }
 
             expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['base'].first).to include(
+              "cannot assign a non-confidential epic to a confidential parent. " \
+                "Make the epic confidential and try again."
+            )
           end
         end
 
@@ -245,21 +252,6 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           post api(url, user), params: { title: 'child epic', confidential: true }
 
           expect(Epic.last).to be_confidential
-        end
-
-        context 'and epic has errors' do
-          it 'returns 400 error' do
-            child_epic = Epic.new(title: 'with errors')
-            errors = ActiveModel::Errors.new(child_epic).tap { |e| e.add(:parent_id, "error message") }
-            allow(child_epic).to receive(:errors).and_return(errors)
-            allow_next_instance_of(Epics::CreateService) do |service|
-              allow(service).to receive(:execute).and_return(child_epic)
-            end
-
-            subject
-
-            expect(response).to have_gitlab_http_status(:bad_request)
-          end
         end
       end
     end

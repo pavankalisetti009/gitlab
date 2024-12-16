@@ -33,7 +33,7 @@ RSpec.shared_examples 'basic epic and work item attributes in sync' do
   end
 end
 
-RSpec.shared_examples 'syncs all data from an epic to a work item' do
+RSpec.shared_examples 'syncs all data from an epic to a work item' do |notes_on_work_item: false|
   it_behaves_like 'basic epic and work item attributes in sync'
 
   it 'sets the same epic data to the work item association', :aggregate_failures do
@@ -79,8 +79,7 @@ RSpec.shared_examples 'syncs all data from an epic to a work item' do
       expect(related_epic_updated_at).to match(related_work_item_updated_at)
     end
 
-    # Data we do not want to sync yet
-    expect(work_item.notes).to be_empty
+    expect(work_item.notes).to be_empty unless notes_on_work_item
     expect(work_item.labels).to be_empty
   end
 end

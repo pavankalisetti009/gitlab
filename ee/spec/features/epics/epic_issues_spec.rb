@@ -248,7 +248,7 @@ RSpec.describe 'Epic Issues', :js, feature_category: :portfolio_management do
             add_epics(references)
 
             expect(page).to have_selector('.gl-field-error')
-            expect(find('.gl-field-error')).to have_text("This epic cannot be added. One or more epics would exceed the maximum depth (#{Epic::MAX_HIERARCHY_DEPTH}) from its most distant ancestor.")
+            expect(find('.gl-field-error')).to have_text("cannot be added: reached maximum depth")
           end
         end
       end

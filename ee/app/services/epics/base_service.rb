@@ -80,21 +80,28 @@ module Epics
     def assign_parent_epic_for(epic)
       return unless parent_epic
 
-      result = Epics::EpicLinks::CreateService.new(parent_epic, current_user, { target_issuable: epic }).execute
+      result = ::WorkItems::LegacyEpics::EpicLinks::CreateService.new(parent_epic, current_user,
+        { target_issuable: epic }).execute
 
-      unless result[:status] == :error
-        track_epic_parent_updated
-      end
-
-      result
+      handle_epic_parent_updated(epic, result)
     end
 
     def assign_child_epic_for(epic)
       return unless child_epic
 
-      result = Epics::EpicLinks::CreateService.new(epic, current_user, { target_issuable: child_epic }).execute
+      result = ::WorkItems::LegacyEpics::EpicLinks::CreateService.new(epic, current_user,
+        { target_issuable: child_epic }).execute
 
-      unless result[:status] == :error
+      handle_epic_parent_updated(epic, result)
+    end
+
+    def handle_epic_parent_updated(epic, result)
+      if result[:status] == :error
+        epic.errors.add(:base, result[:message])
+      else
+        # It's not setting the parent on the record, since we use the WorkItem service underneath.
+        # With Rails 7.1.x we could use `reset_parent` to be more specific.
+        epic.reset
         track_epic_parent_updated
       end
 

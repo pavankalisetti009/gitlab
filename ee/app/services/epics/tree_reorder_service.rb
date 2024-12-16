@@ -49,7 +49,7 @@ module Epics
     def create_issuable_links(parent)
       service, issuable = case moving_object
                           when Epic
-                            [Epics::EpicLinks::CreateService, moving_object]
+                            [::WorkItems::LegacyEpics::EpicLinks::CreateService, moving_object]
                           when EpicIssue
                             [EpicIssues::CreateService, moving_object.issue]
                           end

@@ -662,7 +662,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       before do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(116)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
         stub_licensed_features(epics: true, subepics: true)
         group.add_developer(user)
       end
@@ -705,8 +705,8 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
           new_epic = Epic.last
 
-          expect(parent_epic.notes.last&.note).to eq("added epic #{new_epic.to_reference} as child epic")
-          expect(new_epic.notes.last&.note).to eq("added epic #{parent_epic.to_reference} as parent epic")
+          expect(parent_epic.notes.last&.note).to eq("added #{new_epic.work_item.to_reference} as child epic")
+          expect(new_epic.notes.last&.note).to eq("added #{parent_epic.work_item.to_reference} as parent epic")
         end
 
         it 'creates a new epic' do
@@ -727,14 +727,14 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           expect(epic.text_color).to be_color(::EE::Epic::DEFAULT_COLOR.contrast)
         end
 
-        it 'calls EpicLinks service' do
-          allow_next_instance_of(::Epics::EpicLinks::CreateService) do |service|
+        it 'calls LegacyEpics::EpicLinks service' do
+          allow_next_instance_of(::WorkItems::LegacyEpics::EpicLinks::CreateService) do |service|
             allow(service).to receive(:execute).and_return({ status: :success })
           end
 
           post api(url, user), params: params
 
-          expect(::Epics::EpicLinks::CreateService)
+          expect(::WorkItems::LegacyEpics::EpicLinks::CreateService)
             .to have_received(:new).with(parent_epic, user, { target_issuable: Epic.last })
         end
 
@@ -808,9 +808,10 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           end
 
           it 'returns 400' do
+            expect { response }.to not_change { Epic.count }
             expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response['message']['confidential'])
-              .to include('A non-confidential epic cannot be assigned to a confidential parent epic')
+            expect(json_response['message']['base'].first)
+              .to include('cannot assign a non-confidential epic to a confidential parent.')
           end
 
           context 'when user has no access to parent epic' do
@@ -818,11 +819,11 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
             let(:params) { { title: 'new epic', parent_id: external_epic.id } }
 
-            it 'creates epic without parent' do
-              expect(response).to have_gitlab_http_status(:success)
-              new_epic = Epic.last
-
-              expect(new_epic.parent).to be_nil
+            it 'does not create an epic' do
+              expect { response }.to not_change { Epic.count }
+              expect(response).to have_gitlab_http_status(:bad_request)
+              expect(json_response['message']['base'].first)
+                .to include('No matching epic found. Make sure that you are adding a valid epic URL.')
             end
           end
         end
@@ -830,7 +831,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
       context 'with rate limiter', :freeze_time, :clean_gitlab_redis_rate_limiting do
         before do
-          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(150)
           stub_application_setting(issues_create_limit: 1)
         end
 
@@ -882,7 +883,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       it 'creates a new epic with labels param as array' do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(150)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(160)
         params[:labels] = ['label1', 'label2', 'foo, bar', '&,?']
 
         post api(url, user), params: params
@@ -933,7 +934,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         stub_licensed_features(epics: true, subepics: true)
         # TODO: reduce threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(162)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(170)
       end
 
       it_behaves_like 'PUT request permissions for admin mode' do

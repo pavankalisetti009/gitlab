@@ -80,7 +80,7 @@ module API
 
         create_params = { target_issuable: target_child_epic }
 
-        result = ::Epics::EpicLinks::CreateService.new(epic, current_user, create_params).execute
+        result = ::WorkItems::LegacyEpics::EpicLinks::CreateService.new(epic, current_user, create_params).execute
 
         if result[:status] == :success
           present child_epic, with: EE::API::Entities::Epic
@@ -113,7 +113,7 @@ module API
 
         child_epic = ::Epics::CreateService.new(group: user_group, current_user: current_user, params: create_params).execute
 
-        if child_epic.valid?
+        if child_epic.errors.empty? && child_epic.valid?
           present child_epic, with: EE::API::Entities::LinkedEpic, user: current_user
         else
           render_validation_error!(child_epic)

@@ -5,10 +5,11 @@ module NestedEpicsHelper
     latest = nil
 
     count.times do
-      latest = create(:epic, group: epic.group, parent: latest)
+      latest = create(:epic, :with_work_item_parent, group: epic.group, parent: latest)
     end
 
     epic.update!(parent: latest)
+    create(:parent_link, work_item: epic.work_item, work_item_parent: latest.work_item)
 
     latest
   end
@@ -17,7 +18,7 @@ module NestedEpicsHelper
     latest = epic
 
     count.times do
-      latest = create(:epic, group: epic.group, parent: latest)
+      latest = create(:epic, :with_work_item_parent, group: epic.group, parent: latest)
     end
 
     latest

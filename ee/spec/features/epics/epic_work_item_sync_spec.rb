@@ -58,7 +58,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
       it 'creates an epic and a synced work item' do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(103)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
         create_epic
 
         wait_for_requests
@@ -78,7 +78,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
       it 'updates the synced work item when the epic is updated' do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(103)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
         create_epic
         wait_for_requests
         epic = Epic.last

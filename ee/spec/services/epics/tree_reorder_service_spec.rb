@@ -598,7 +598,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 end
 
                 it 'creates system notes' do
-                  expect { reorder }.to change { Note.system.count }.by(3)
+                  expect { reorder }.to change { Note.system.count }.by(2)
                 end
               end
 

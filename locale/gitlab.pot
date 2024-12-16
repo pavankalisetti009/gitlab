@@ -56828,9 +56828,6 @@ msgstr ""
 msgid "This epic cannot be added. One or more epics would exceed the maximum depth (%{max_depth}) from its most distant ancestor."
 msgstr ""
 
-msgid "This epic cannot be added. You don't have access to perform this action."
-msgstr ""
-
 msgid "This epic does not exist or you don't have sufficient permission."
 msgstr ""
 
