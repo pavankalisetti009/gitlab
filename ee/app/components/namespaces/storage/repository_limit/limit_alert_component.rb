@@ -3,7 +3,9 @@
 module Namespaces
   module Storage
     module RepositoryLimit
-      class LimitAlertComponent < NamespaceLimit::LimitAlertComponent
+      class LimitAlertComponent < BaseAlertComponent
+        private
+
         def render?
           return false if context.is_a?(Group) && !current_page?(group_usage_quotas_path(context))
           return false if context.is_a?(Project) && context.repository_size_excess == 0
@@ -97,6 +99,14 @@ module Namespaces
             )
           else
             s_("NamespaceStorageSize|To reduce storage usage, reduce git repository and git LFS storage.")
+          end
+        end
+
+        def usage_thresholds
+          if namespace_has_additional_storage_purchased?
+            DEFAULT_USAGE_THRESHOLDS
+          else
+            DEFAULT_USAGE_THRESHOLDS.except(:warning, :alert)
           end
         end
 

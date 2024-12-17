@@ -72,13 +72,6 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::LimitAlertComponent, :saas,
         render_inline(component)
         expect(page).to have_content(alert_message_above_limit_no_purchased_storage)
       end
-
-      it 'renders the correct callout data' do
-        render_inline(component)
-        expect(page).to have_css("[data-feature-id='project_repository_limit_alert_error_threshold']")
-        expect(page).to have_css("[data-dismiss-endpoint='#{group_callouts_path}']")
-        expect(page).to have_css("[data-group-id='#{group.root_ancestor.id}']")
-      end
     end
 
     context 'when namespace has additional storage' do
@@ -98,6 +91,13 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::LimitAlertComponent, :saas,
         it 'renders the alert message' do
           render_inline(component)
           expect(page).to have_content(alert_message_below_limit)
+        end
+
+        it 'renders the correct callout data' do
+          render_inline(component)
+          expect(page).to have_css("[data-feature-id='project_repository_limit_alert_warning_threshold']")
+          expect(page).to have_css("[data-dismiss-endpoint='#{group_callouts_path}']")
+          expect(page).to have_css("[data-group-id='#{group.root_ancestor.id}']")
         end
       end
 
