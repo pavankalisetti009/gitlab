@@ -38,9 +38,11 @@ module GitlabSubscriptions
           Rails.cache.delete(user.duo_pro_cache_key_formatted)
 
           log_event('User AddOn assignment created')
-
-          ServiceResponse.success
         end
+
+        after_success_hook
+
+        ServiceResponse.success
       rescue NoSeatsAvailableError => error
         Gitlab::ErrorTracking.log_exception(
           error, base_log_params.merge({ message: 'User AddOn assignment creation failed' })
@@ -52,6 +54,10 @@ module GitlabSubscriptions
       private
 
       attr_reader :add_on_purchase, :user
+
+      def after_success_hook
+        # overridden in inheriting classes.
+      end
 
       def validate
         return ERROR_NO_SEATS_AVAILABLE unless seats_available?

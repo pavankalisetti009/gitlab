@@ -8,8 +8,6 @@ module GitlabSubscriptions
 
         private
 
-        attr_reader :add_on_purchase, :user
-
         def eligible_for_gitlab_duo_pro_seat?
           namespace.eligible_for_gitlab_duo_pro_seat?(user)
         end
