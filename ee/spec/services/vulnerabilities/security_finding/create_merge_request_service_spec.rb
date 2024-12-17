@@ -150,7 +150,7 @@ RSpec.describe Vulnerabilities::SecurityFinding::CreateMergeRequestService, '#ex
         project.vulnerabilities.count
       }.by(0)
        .and(change(Vulnerabilities::MergeRequestLink, :count).by(0))
-       .and(change(Vulnerabilities::MergeRequestLink, :count).by(0))
+       .and(change(MergeRequest, :count).by(0))
     end
   end
 
