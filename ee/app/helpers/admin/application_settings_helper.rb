@@ -80,7 +80,7 @@ module Admin
 
     private
 
-    # rubocop:disable Gitlab/DocUrl
+    # rubocop:disable Gitlab/DocumentationLinks/HardcodedUrl
     # We want to link SaaS docs for flexibility for every URL related to Code Suggestions on Self Managed.
     # We expect to update docs often during the Beta and we want to point user to the most up to date information.
     def ai_powered_docs_url
@@ -94,7 +94,7 @@ module Admin
     def direct_connections_docs_url
       'https://docs.gitlab.com/ee/user/project/repository/code_suggestions/index.html#disable-direct-connections-to-the-ai-gateway'
     end
-    # rubocop:enable Gitlab/DocUrl
+    # rubocop:enable Gitlab/DocumentationLinks/HardcodedUrl
 
     def tag_pair_for_link(url)
       tag_pair(link_to('', url, target: '_blank', rel: 'noopener noreferrer'), :link_start, :link_end)
