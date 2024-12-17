@@ -16,6 +16,7 @@ import approvedByQuery from 'ee/vue_merge_request_widget/components/approvals/qu
 import { createCanApproveResponse } from 'jest/approvals/mock_data';
 import { HTTP_STATUS_UNAUTHORIZED } from '~/lib/utils/http_status';
 import mergeRequestApprovalStateUpdated from 'ee/vue_merge_request_widget/components/approvals/queries/approval_rules.subscription.graphql';
+import userPermissionsQuery from '~/merge_requests/components/reviewers/queries/user_permissions.query.graphql';
 
 Vue.use(VueApollo);
 
@@ -58,7 +59,20 @@ describe('MRWidget approvals', () => {
   const createComponent = (props = {}, response = approvedByCurrentUser) => {
     const mockedSubscription = createMockApolloSubscription();
     const subscriptionHandlers = [[mergeRequestApprovalStateUpdated, () => mockedSubscription]];
-    const requestHandlers = [[approvedByQuery, jest.fn().mockResolvedValue(response)]];
+    const requestHandlers = [
+      [approvedByQuery, jest.fn().mockResolvedValue(response)],
+      [
+        userPermissionsQuery,
+        jest.fn().mockResolvedValue({
+          data: {
+            project: {
+              id: 1,
+              mergeRequest: { id: 1, userPermissions: { adminMergeRequest: true } },
+            },
+          },
+        }),
+      ],
+    ];
     const apolloProvider = createMockApollo(requestHandlers);
 
     subscriptionHandlers.forEach(([query, stream]) => {
