@@ -51,7 +51,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
     shared_examples 'it only includes builds of provided report type' do |report_type|
       let(:report_to_filter) { report_type }
-      let(:result) { builds.flat_map { |b| b.job_artifacts.security_reports.flat_map(&:file_type) } }
+      let(:result) { builds.flat_map { |b| b.job_artifacts.security_reports(project: project).flat_map(&:file_type) } }
 
       it "filters by the given report type: #{report_type}" do
         expect(result).to contain_exactly(report_type)

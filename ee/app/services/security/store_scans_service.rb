@@ -2,6 +2,8 @@
 
 module Security
   class StoreScansService
+    include ::Gitlab::Utils::StrongMemoize
+
     def self.execute(pipeline)
       new(pipeline).execute
     end
@@ -16,7 +18,9 @@ module Security
       # StoreGroupedScansService returns true only when it creates a `security_scans` record.
       # To avoid resource wastage we are skipping the reports ingestion when there are no new scans, but
       # we sync the rules as it might cause inconsistent state if we skip.
-      results = grouped_report_artifacts.map { |artifacts| StoreGroupedScansService.execute(artifacts, pipeline) }
+      results = reassigned_grouped_report_artifacts.map do |artifacts|
+        StoreGroupedScansService.execute(artifacts, pipeline)
+      end
 
       sync_findings_to_approval_rules unless pipeline.default_branch?
       return unless results.any?(true)
@@ -37,10 +41,28 @@ module Security
 
     def grouped_report_artifacts
       pipeline.job_artifacts
-              .security_reports
-              .group_by(&:file_type)
-              .select { |file_type, _| parse_report_file?(file_type) }
-              .values
+        .security_reports(file_types: security_report_file_types, project: project)
+        .group_by(&:file_type)
+    end
+    strong_memoize_attr :grouped_report_artifacts
+
+    def reassigned_grouped_report_artifacts
+      grouped_report_artifacts['cyclonedx']&.each do |artifact|
+        (grouped_report_artifacts[artifact.security_report.type.to_s] ||= []) << artifact
+      end
+      grouped_report_artifacts.delete('cyclonedx')
+
+      grouped_report_artifacts.select { |file_type, _| parse_report_file?(file_type) }.values
+    end
+    strong_memoize_attr :reassigned_grouped_report_artifacts
+
+    def security_report_file_types
+      if Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports,
+        project)
+        EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
+      else
+        EE::Enums::Ci::JobArtifact.security_report_file_types
+      end
     end
 
     def parse_report_file?(file_type)

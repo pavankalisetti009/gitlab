@@ -27,8 +27,10 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
 
     let_it_be(:sast_build) { create(:ee_ci_build, pipeline: pipeline) }
     let_it_be(:dast_build) { create(:ee_ci_build, pipeline: pipeline) }
+    let_it_be(:cyclonedx_build) { create(:ee_ci_build, pipeline: pipeline) }
     let_it_be(:sast_artifact) { create(:ee_ci_job_artifact, :sast, job: sast_build) }
     let_it_be(:dast_artifact) { create(:ee_ci_job_artifact, :dast, job: dast_build) }
+    let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: cyclonedx_build) }
 
     subject(:store_group_of_artifacts) { service_object.execute }
 
@@ -37,7 +39,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
       allow(ScanSecurityReportSecretsWorker).to receive(:perform_async)
       allow(Security::StoreGroupedScansService).to receive(:execute)
 
-      stub_licensed_features(sast: true, dast: false)
+      stub_licensed_features(sast: true, dast: false, dependency_scanning: true)
     end
 
     context 'when the pipeline already has a purged security scan' do
@@ -72,6 +74,25 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
 
             expect(Security::StoreGroupedScansService).to have_received(:execute).with([sast_artifact], pipeline)
             expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([dast_artifact], pipeline)
+          end
+
+          it 'executes cyclonedx artifacts' do
+            store_group_of_artifacts
+
+            expect(Security::StoreGroupedScansService).to have_received(:execute).with([cyclonedx_artifact], pipeline)
+          end
+
+          context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
+            before do
+              stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
+            end
+
+            it 'does not execute cyclonedx artifacts' do
+              store_group_of_artifacts
+
+              expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([cyclonedx_artifact],
+                pipeline)
+            end
           end
         end
 

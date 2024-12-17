@@ -52,7 +52,7 @@ module Security
     end
 
     def security_scan
-      @security_scan ||= Security::Scan.safe_find_or_create_by!(build: job, scan_type: artifact.file_type) do |scan|
+      @security_scan ||= Security::Scan.safe_find_or_create_by!(build: job, scan_type: security_report.type) do |scan|
         scan.created_at = pipeline.created_at # to make sure retried jobs does not extend the retention period of security findings related to the pipeline.
         scan.processing_errors = security_report.errors.map(&:stringify_keys) if security_report.errored?
         scan.processing_warnings = security_report.warnings.map(&:stringify_keys) if security_report.warnings?

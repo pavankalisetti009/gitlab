@@ -51,7 +51,8 @@ module Sbom
                 source: sbom_report.source,
                 pipeline: pipeline,
                 project: project,
-                purl_type: affected_occurrence.purl.type)
+                purl_type: affected_occurrence.purl.type,
+                scanner: scanner)
             end
 
             create_vulnerabilities(finding_maps)
@@ -119,5 +120,10 @@ module Sbom
       pipeline.project
     end
     strong_memoize_attr :project
+
+    def scanner
+      ::Gitlab::VulnerabilityScanning::SecurityScanner.fabricate
+    end
+    strong_memoize_attr :scanner
   end
 end

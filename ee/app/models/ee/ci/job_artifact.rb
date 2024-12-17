@@ -27,10 +27,19 @@ module EE
 
       EE_REPORT_FILE_TYPES = EE::Enums::Ci::JobArtifact.ee_report_file_types
 
-      scope :security_reports, ->(file_types: EE::Enums::Ci::JobArtifact.security_report_file_types) do
+      scope :security_reports, ->(project:, file_types: EE::Enums::Ci::JobArtifact.security_report_file_types) do
         requested_file_types = *file_types
 
-        with_file_types(requested_file_types & EE::Enums::Ci::JobArtifact.security_report_file_types)
+        security_report_file_types = if ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, project)
+                                       EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
+                                     else
+                                       EE::Enums::Ci::JobArtifact.security_report_file_types
+                                     end
+
+        # CycloneDX reports are also valid file types because their components can be scanned for vulnerabilities.
+        # This feaure is behind the :dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag
+        # which is why it's not included in the default `file_types` value.
+        with_file_types(requested_file_types & security_report_file_types)
       end
 
       scope :with_files_stored_locally, -> { where(file_store: ::ObjectStorage::Store::LOCAL) }
@@ -123,21 +132,49 @@ module EE
     # specific method here for now.
     def security_report(validate: false)
       strong_memoize(:security_report) do
-        next unless file_type.in?(EE::Enums::Ci::JobArtifact.security_report_file_types)
+        next unless file_type.in?(EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types)
 
         signatures_enabled = project.licensed_feature_available?(:vulnerability_finding_signatures)
 
-        report = ::Gitlab::Ci::Reports::Security::Report.new(file_type, job.pipeline, nil).tap do |report|
-          each_blob do |blob|
-            ::Gitlab::Ci::Parsers.fabricate!(file_type, blob, report, signatures_enabled: signatures_enabled, validate: validate).parse!
-          end
-        rescue StandardError
-          report.add_error('ParsingError')
-        end
+        report = build_security_report(signatures_enabled: signatures_enabled, validate: validate)
+
+        next unless report.present?
 
         # This will remove the duplicated findings within the artifact itself
         ::Security::MergeReportsService.new(report).execute
       end
+    end
+
+    def build_security_report(signatures_enabled:, validate:)
+      if file_type == 'cyclonedx'
+        sbom_report = parse_sbom_report
+        return ::Gitlab::VulnerabilityScanning::SecurityReportBuilder.new(
+          sbom_report: sbom_report, project: project, pipeline: job.pipeline).execute
+      end
+
+      parse_security_report(signatures_enabled: signatures_enabled, validate: validate)
+    end
+
+    def parse_sbom_report
+      ::Gitlab::Ci::Reports::Sbom::Report.new.tap do |report|
+        each_blob do |blob|
+          ::Gitlab::Ci::Parsers.fabricate!(file_type, project: project).parse!(blob, report)
+        end
+      end
+    end
+
+    def parse_security_report(signatures_enabled:, validate:)
+      base_security_report.tap do |report|
+        each_blob do |blob|
+          ::Gitlab::Ci::Parsers.fabricate!(file_type, blob, report, signatures_enabled: signatures_enabled, validate: validate).parse!
+        rescue StandardError
+          report.add_error('ParsingError')
+        end
+      end
+    end
+
+    def base_security_report
+      ::Gitlab::Ci::Reports::Security::Report.new(file_type, job.pipeline, nil)
     end
 
     # This method is necessary to remove the reference to the
