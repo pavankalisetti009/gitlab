@@ -17,6 +17,7 @@ class SamlGroupLink < ApplicationRecord
   scope :by_id_and_group_id, ->(id, group_id) { where(id: id, group_id: group_id) }
   scope :by_saml_group_name, ->(name) { where(saml_group_name: name) }
   scope :by_group_id, ->(group_id) { where(group_id: group_id) }
+  scope :by_assign_duo_seats, ->(value) { where(assign_duo_seats: value) }
   scope :preload_group, -> { preload(group: :route) }
 
   def access_level_allowed

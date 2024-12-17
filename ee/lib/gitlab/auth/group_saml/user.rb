@@ -24,7 +24,10 @@ module Gitlab
 
           save("GroupSaml Provider ##{@saml_provider.id}")
 
-          update_group_membership if valid_sign_in?
+          if valid_sign_in?
+            update_group_membership
+            update_duo_pro_add_on_assignment
+          end
 
           gl_user
         end
@@ -94,6 +97,10 @@ module Gitlab
 
         def update_group_membership
           MembershipUpdater.new(gl_user, saml_provider, auth_hash).execute
+        end
+
+        def update_duo_pro_add_on_assignment
+          DuoAddOnAssignmentUpdater.new(gl_user, saml_provider.group, auth_hash).execute
         end
 
         def set_attributes_for_enterprise_user!(user)
