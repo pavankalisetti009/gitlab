@@ -47,6 +47,31 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '#enabled?' do
+    context 'with args' do
+      let(:namespace) { build(:project_namespace) }
+      let(:user) { build(:user) }
+
+      where(:feature_enabled, :connected, :result) do
+        true     | true  | true
+        true     | false | false
+        false    | true  | false
+        true     | false | false
+      end
+
+      with_them do
+        before do
+          allow(described_class).to receive_messages(
+            feature_available?: feature_enabled,
+            connected?: connected
+          )
+        end
+
+        it { expect(described_class.enabled?).to eq(result) }
+      end
+    end
+  end
+
   describe '#should_block_service_account?' do
     where(:availability, :expectation) do
       "default_on"  | false

@@ -8,6 +8,7 @@ RSpec.describe Projects::AutocompleteService, feature_category: :groups_and_proj
 
   let(:user) { create(:user) }
   let!(:epic) { create(:epic, group: group, author: user) }
+  let_it_be(:issue) { create(:issue, project: project) }
 
   subject { described_class.new(project, user) }
 
@@ -62,6 +63,38 @@ RSpec.describe Projects::AutocompleteService, feature_category: :groups_and_proj
       end
 
       it { is_expected.to contain_exactly(open_iteration) }
+    end
+  end
+
+  describe '#commands' do
+    context 'with Amazon Q enabled' do
+      let(:amazon_q_enabled) { true }
+
+      subject(:commands) { described_class.new(project, user).commands(issue) }
+
+      before do
+        allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
+      end
+
+      context 'with an issue' do
+        it 'contains /q issue subcommands' do
+          expect(commands).to include(a_hash_including(
+            name: :q,
+            params: ['<dev | transform>']
+          ))
+        end
+      end
+
+      context 'with a merge request' do
+        let(:issue) { create(:merge_request, source_project: project, target_project: project) }
+
+        it 'contains /q merge request subcommands' do
+          expect(commands).to include(a_hash_including(
+            name: :q,
+            params: ['<dev | fix | review | test>']
+          ))
+        end
+      end
     end
   end
 end

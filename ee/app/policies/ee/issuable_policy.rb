@@ -9,6 +9,10 @@ module EE
         @user && @subject.author_id == @user.id
       end
 
+      condition(:amazon_q_integration_enabled) do
+        ::Ai::AmazonQ.enabled?
+      end
+
       with_scope :subject
       condition(:issuable_resource_links_available) do
         @subject.issuable_resource_links_available?
@@ -49,6 +53,10 @@ module EE
       rule { can?(:read_issue) & can?(:reporter_access) & issuable_resource_links_available }.policy do
         enable :admin_issuable_resource_link
         enable :read_issuable_resource_link
+      end
+
+      rule { amazon_q_integration_enabled & can?(:developer_access) & can?(:access_duo_features) }.policy do
+        enable :trigger_amazon_q
       end
     end
   end

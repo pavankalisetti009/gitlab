@@ -45561,6 +45561,9 @@ msgstr ""
 msgid "PushoverService|Total commits count: %{total_commits_count}"
 msgstr ""
 
+msgid "Q got your message!"
+msgstr ""
+
 msgid "QualitySummary|Project quality"
 msgstr ""
 
@@ -60278,6 +60281,9 @@ msgid "Use %{code_start}::%{code_end} to create a %{link_start}scoped label set%
 msgstr ""
 
 msgid "Use .gitlab-ci.yml"
+msgstr ""
+
+msgid "Use Amazon Q to streamline development workflow and project upgrades (Beta)"
 msgstr ""
 
 msgid "Use CRON syntax. %{linkStart}Learn more.%{linkEnd}"

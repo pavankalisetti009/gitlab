@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IssuablePolicy, :models do
+RSpec.describe IssuablePolicy, :models, feature_category: :team_planning do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:non_member) { create(:user) }
@@ -194,6 +194,46 @@ RSpec.describe IssuablePolicy, :models do
             expect(permissions(reporter, incident_issue)).to be_allowed(:admin_issuable_resource_link)
             expect(permissions(reporter, incident_issue)).to be_allowed(:read_issuable_resource_link)
           end
+        end
+      end
+    end
+
+    describe 'trigger_amazon_q' do
+      let_it_be(:group) { create(:group, :private) }
+      let_it_be(:project) { create(:project, :private, group: group) }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+      let(:user) { developer }
+      let(:amazon_q_enabled) { true }
+
+      where(:user_role, :issuable_type, :duo_features_enabled, :amazon_q_enabled, :expected_result) do
+        :developer  | :guest_issue         | true  | true  | :be_allowed
+        :developer  | :non_persisted_issue | true  | true  | :be_allowed
+        :developer  | :merge_request       | true  | true  | :be_allowed
+        :non_member | :merge_request       | true  | true  | :be_disallowed
+        :developer  | :epic                | true  | true  | :be_disallowed
+        :reporter   | :guest_issue         | true  | true  | :be_disallowed
+        :developer  | :guest_issue         | false | true  | :be_disallowed
+        :developer  | :guest_issue         | true  | false | :be_disallowed
+      end
+
+      with_them do
+        it 'returns the correct permission' do
+          user = send(user_role)
+          issuable = case issuable_type
+                     when :guest_issue then guest_issue
+                     when :non_persisted_issue then build(:issue, project: project)
+                     when :merge_request then merge_request
+                     when :epic then build(:epic, group: project.group)
+                     end
+
+          if duo_features_enabled == false
+            project.update!(duo_features_enabled: false)
+            project.namespace.namespace_settings.update!(duo_features_enabled: true)
+          end
+
+          allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
+
+          expect(permissions(user, issuable)).to send(expected_result, :trigger_amazon_q)
         end
       end
     end

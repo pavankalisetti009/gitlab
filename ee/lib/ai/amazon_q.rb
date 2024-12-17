@@ -13,6 +13,10 @@ module Ai
         ai_settings.amazon_q_ready
       end
 
+      def enabled?
+        feature_available? && connected?
+      end
+
       def should_block_service_account?(availability:)
         availability == "never_on"
       end
