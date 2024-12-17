@@ -522,4 +522,31 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
     end
   end
+
+  describe '#blob_data_oversize_message' do
+    before do
+      stub_ee_application_setting(elasticsearch_indexed_file_size_limit_kb: 256)
+    end
+
+    context 'with elasticsearch enabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: true)
+      end
+
+      it 'returns the correct message with maximum file size' do
+        expect(helper.blob_data_oversize_message).to eq('The file could not be ' \
+          'displayed because it is empty or larger than the maximum file size indexed (256 KiB).')
+      end
+    end
+
+    context 'with elasticsearch disabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: false)
+      end
+
+      it 'returns the correct message with maximum file size' do
+        expect(helper.blob_data_oversize_message).to eq('The file could not be displayed because it is empty.')
+      end
+    end
+  end
 end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module EE
   module SearchHelper
     extend ::Gitlab::Utils::Override
@@ -123,6 +124,17 @@ module EE
       return false if scope != 'blobs' || search_type != 'zoekt'
 
       @group.present? || (@project.present? && @project.default_branch == repository_ref(@project)) || super
+    end
+
+    override :blob_data_oversize_message
+    def blob_data_oversize_message
+      return super unless ::Gitlab::CurrentSettings.elasticsearch_search?
+
+      max_file_size_indexed = ::Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes
+      format(
+        _('The file could not be displayed because it is empty or larger than the ' \
+          'maximum file size indexed (%{size}).'), size: number_to_human_size(max_file_size_indexed)
+      )
     end
 
     private
