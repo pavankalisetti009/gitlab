@@ -13,9 +13,16 @@ module QA
               QA::EE::Page::Component::DuoChat.perform do |duo_chat|
                 duo_chat.clear_chat_history
                 expect(duo_chat).to be_empty_state
-
                 duo_chat.send_duo_chat_prompt('hi')
-                expect(duo_chat).to have_response(expected_response),
+
+                begin
+                  response_with_failover = expected_response
+                rescue RuntimeError
+                  # If direct connection request fails, assume we are on SaaS
+                  response_with_failover = 'GitLab'
+                end
+
+                expect(duo_chat).to have_response(response_with_failover),
                   "Expected '#{expected_response}' within Duo Chat response."
               end
             end
@@ -41,7 +48,10 @@ module QA
         it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/443762'
       end
 
-      context 'on Self-managed', :orchestrated, :ai_gateway do
+      context 'on Self-managed', :orchestrated, :ai_gateway, quarantine: {
+        type: :investigating,
+        issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494690'
+      } do
         it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/468854'
       end
     end

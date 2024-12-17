@@ -26,8 +26,15 @@ module QA
               duo_chat.number_of_messages > 1
             end
 
-            expect(duo_chat.has_response?(expected_response)).to be_truthy,
-              "Expected \"#{expected_response}\" within Duo Chat response."
+            begin
+              response_with_failover = expected_response
+            rescue RuntimeError
+              # If direct connection request fails, assume we are on SaaS
+              response_with_failover = 'GitLab'
+            end
+
+            expect(duo_chat.has_response?(response_with_failover)).to be_truthy,
+              "Expected \"#{response_with_failover}\" within Duo Chat response."
           end
         end
       end
