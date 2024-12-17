@@ -56481,9 +56481,6 @@ msgstr ""
 msgid "There was a problem fetching latest labels."
 msgstr ""
 
-msgid "There was a problem fetching linked pipelines."
-msgstr ""
-
 msgid "There was a problem fetching milestones."
 msgstr ""
 
@@ -56517,9 +56514,6 @@ msgstr ""
 msgid "There was a problem fetching the keep latest artifacts setting."
 msgstr ""
 
-msgid "There was a problem fetching the latest pipeline status."
-msgstr ""
-
 msgid "There was a problem fetching the merge pipeline."
 msgstr ""
 
@@ -56532,16 +56526,10 @@ msgstr ""
 msgid "There was a problem fetching the pipeline stage jobs."
 msgstr ""
 
-msgid "There was a problem fetching the pipeline stages."
-msgstr ""
-
 msgid "There was a problem fetching the projects"
 msgstr ""
 
 msgid "There was a problem fetching users."
-msgstr ""
-
-msgid "There was a problem handling the pipeline data."
 msgstr ""
 
 msgid "There was a problem loading this project's readme content."
