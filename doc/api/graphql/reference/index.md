@@ -18595,6 +18595,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonusertodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="addonusertodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="addonusertodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="addonusertodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="addonusertodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="addonusertodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="addonusertodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -18931,6 +18932,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="alertmanagementalerttodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="alertmanagementalerttodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="alertmanagementalerttodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="alertmanagementalerttodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="alertmanagementalerttodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="alertmanagementalerttodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="alertmanagementalerttodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -19588,6 +19590,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompletedusertodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="autocompletedusertodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="autocompletedusertodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="autocompletedusertodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="autocompletedusertodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="autocompletedusertodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="autocompletedusertodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -22205,6 +22208,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentusertodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="currentusertodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="currentusertodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="currentusertodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="currentusertodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="currentusertodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="currentusertodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -28142,6 +28146,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneetodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="mergerequestassigneetodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="mergerequestassigneetodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="mergerequestassigneetodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="mergerequestassigneetodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="mergerequestassigneetodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="mergerequestassigneetodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -28551,6 +28556,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthortodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="mergerequestauthortodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="mergerequestauthortodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="mergerequestauthortodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="mergerequestauthortodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="mergerequestauthortodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="mergerequestauthortodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -29006,6 +29012,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipanttodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="mergerequestparticipanttodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="mergerequestparticipanttodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="mergerequestparticipanttodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="mergerequestparticipanttodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="mergerequestparticipanttodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="mergerequestparticipanttodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -29434,6 +29441,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewertodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="mergerequestreviewertodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="mergerequestreviewertodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="mergerequestreviewertodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="mergerequestreviewertodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="mergerequestreviewertodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="mergerequestreviewertodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -36240,6 +36248,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercoretodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="usercoretodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="usercoretodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="usercoretodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="usercoretodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="usercoretodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="usercoretodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
@@ -43866,6 +43875,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usertodosaction"></a>`action` | [`[TodoActionEnum!]`](#todoactionenum) | Action to be filtered. |
 | <a id="usertodosauthorid"></a>`authorId` | [`[ID!]`](#id) | ID of an author. |
 | <a id="usertodosgroupid"></a>`groupId` | [`[ID!]`](#id) | ID of a group. |
+| <a id="usertodosissnoozed"></a>`isSnoozed` | [`Boolean`](#boolean) | Whether the to-do item is snoozed. |
 | <a id="usertodosprojectid"></a>`projectId` | [`[ID!]`](#id) | ID of a project. |
 | <a id="usertodossort"></a>`sort` | [`TodoSort`](#todosort) | Sort todos by given criteria. |
 | <a id="usertodosstate"></a>`state` | [`[TodoStateEnum!]`](#todostateenum) | State of the todo. |
