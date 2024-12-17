@@ -55937,6 +55937,9 @@ msgstr ""
 msgid "The file could not be displayed because it is empty or larger than the maximum file size indexed (%{size})."
 msgstr ""
 
+msgid "The file could not be displayed because it is empty."
+msgstr ""
+
 msgid "The file has been successfully created."
 msgstr ""
 
