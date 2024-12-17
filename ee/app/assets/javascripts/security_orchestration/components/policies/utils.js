@@ -28,9 +28,14 @@ const validateFilter = (allowedValues, value, lowerCase = false) => {
  * @returns {boolean}
  */
 export const validateTypeFilter = (value) => {
-  const options = gon.features?.vulnerabilityManagementPolicyType
-    ? { ...POLICY_TYPE_FILTER_OPTIONS, ...VULNERABILITY_MANAGEMENT_FILTER_OPTION }
-    : POLICY_TYPE_FILTER_OPTIONS;
+  const { vulnerabilityManagementPolicyType, vulnerabilityManagementPolicyTypeGroup } =
+    window.gon.features || {};
+
+  let options = POLICY_TYPE_FILTER_OPTIONS;
+  if (vulnerabilityManagementPolicyType || vulnerabilityManagementPolicyTypeGroup) {
+    options = { ...options, ...VULNERABILITY_MANAGEMENT_FILTER_OPTION };
+  }
+
   return validateFilter(options, value, true);
 };
 
