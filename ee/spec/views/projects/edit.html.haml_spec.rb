@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'projects/edit' do
-  let(:project) { create(:project) }
+  let_it_be(:organization) { create(:organization) }
+  let(:project) { create(:project, organization: organization) }
   let(:user) { create(:admin) }
 
   before do
@@ -94,7 +95,9 @@ RSpec.describe 'projects/edit' do
       end
 
       context 'when project is pending deletion' do
-        let_it_be(:project) { build_stubbed(:project, marked_for_deletion_at: Date.current) }
+        let_it_be(:project) do
+          build_stubbed(:project, marked_for_deletion_at: Date.current, organization: organization)
+        end
 
         it_behaves_like 'renders restore project settings'
       end
@@ -110,7 +113,9 @@ RSpec.describe 'projects/edit' do
       end
 
       context 'when project is pending deletion' do
-        let_it_be(:project) { build_stubbed(:project, marked_for_deletion_at: Date.current) }
+        let_it_be(:project) do
+          build_stubbed(:project, marked_for_deletion_at: Date.current, organization: organization)
+        end
 
         it_behaves_like 'does not render restore project settings'
       end
