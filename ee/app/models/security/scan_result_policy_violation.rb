@@ -12,6 +12,7 @@ module Security
 
     belongs_to :merge_request, inverse_of: :scan_result_policy_violations
     belongs_to :approval_policy_rule, class_name: 'Security::ApprovalPolicyRule', inverse_of: :violations
+    has_one :security_policy, class_name: 'Security::Policy', through: :approval_policy_rule
 
     validates :scan_result_policy_id, uniqueness: { scope: %i[merge_request_id] }
     validates :violation_data, json_schema: { filename: 'scan_result_policy_violation_data' }, allow_blank: true

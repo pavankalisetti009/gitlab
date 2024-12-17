@@ -61,6 +61,8 @@ module Security
     scope :order_by_index, -> { order(policy_index: :asc) }
     scope :enabled, -> { where(enabled: true) }
 
+    delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
+
     def self.checksum(policy_hash)
       Digest::SHA256.hexdigest(policy_hash.to_json)
     end
@@ -213,6 +215,17 @@ module Security
 
     def delete_scan_execution_policy_rules
       scan_execution_policy_rules.delete_all(:delete_all)
+    end
+
+    def edit_path
+      return if name.blank?
+
+      id = CGI.escape(name)
+      if namespace?
+        Gitlab::Routing.url_helpers.edit_group_security_policy_url(namespace, id: id, type: type)
+      else
+        Gitlab::Routing.url_helpers.edit_project_security_policy_url(project, id: id, type: type)
+      end
     end
 
     private

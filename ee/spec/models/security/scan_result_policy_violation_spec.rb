@@ -8,6 +8,7 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
     it { is_expected.to belong_to(:scan_result_policy_read) }
     it { is_expected.to belong_to(:approval_policy_rule) }
     it { is_expected.to belong_to(:merge_request) }
+    it { is_expected.to have_one(:security_policy).through(:approval_policy_rule) }
   end
 
   describe 'validations' do

@@ -74,6 +74,10 @@ FactoryBot.define do
       content { { actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }] } }
     end
 
+    trait :with_approval_settings do
+      content { { approval_settings: { prevent_approval_by_author: true } } }
+    end
+
     trait :scan_execution_policy do
       type { Security::Policy.types[:scan_execution_policy] }
       content { { actions: [{ scan: 'secret_detection' }] } }

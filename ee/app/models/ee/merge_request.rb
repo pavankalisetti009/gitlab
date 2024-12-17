@@ -79,6 +79,10 @@ module EE
         through: :scan_result_policy_violations, source: :scan_result_policy_read,
         class_name: 'Security::ScanResultPolicyRead'
 
+      has_many :security_policies_through_violations,
+        through: :scan_result_policy_violations, source: :security_policy,
+        class_name: 'Security::Policy'
+
       has_many :scan_result_policy_reads_through_approval_rules,
         through: :approval_rules, source: :scan_result_policy_read,
         class_name: 'Security::ScanResultPolicyRead'
@@ -157,12 +161,34 @@ module EE
 
         scan_result_policy_reads_through_violations
           .reduce({}) do |acc, read|
-          acc.merge!(read.project_approval_settings.select do |_, value|
-                       value
-                     end.symbolize_keys)
-        end
+            acc.merge!(read.project_approval_settings.select { |_, value| value }.symbolize_keys)
+          end
       end
       strong_memoize_attr :policy_approval_settings
+
+      def policies_overriding_approval_settings
+        return {} if scan_result_policy_violations.empty?
+
+        if security_policies_through_violations.any?
+          security_policies_through_violations
+            .select { |policy| policy.content['approval_settings'].compact_blank.present? }
+            .index_with { |policy| policy.content['approval_settings'].compact_blank.symbolize_keys }
+        else
+          # TODO: Temporary code path without policy details
+          # Remove when backfill from https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173714 is finished
+          scan_result_policy_reads_through_violations
+            .select { |read| read.project_approval_settings.compact_blank.present? }
+            .to_h do |read|
+              policy = Security::Policy.new(
+                security_orchestration_policy_configuration_id: read.security_orchestration_policy_configuration_id,
+                policy_index: read.orchestration_policy_idx)
+              settings = read.project_approval_settings.compact_blank.symbolize_keys
+
+              [policy, settings]
+            end
+        end
+      end
+      strong_memoize_attr :policies_overriding_approval_settings
 
       # It allows us to finalize the approval rules of merged merge requests
       attr_accessor :finalizing_rules
