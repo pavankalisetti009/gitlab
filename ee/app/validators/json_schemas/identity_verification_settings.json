@@ -31,6 +31,10 @@
     "credit_card_verification_enabled": {
       "type": "boolean",
       "description": "Whether credit card verification is an available identity verification method"
+    },
+    "arkose_labs_enabled": {
+      "type": "boolean",
+      "description": "Whether Arkose checks are required for identity verification"
     }
   }
 }

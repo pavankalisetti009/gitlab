@@ -29,7 +29,7 @@ module AntiAbuse
         end
 
         def arkose_enabled?(user:, user_agent:)
-          return false unless ::Feature.enabled?(:arkose_labs, user, type: :ops)
+          return false unless ::Gitlab::CurrentSettings.arkose_labs_enabled
 
           arkose_public_api_key.present? &&
             arkose_private_api_key.present? &&

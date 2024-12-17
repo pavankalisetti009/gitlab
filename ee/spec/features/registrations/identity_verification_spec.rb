@@ -291,9 +291,9 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
   end
 
   shared_examples 'allows the user to complete registration when Arkose is unavailable' do |flow: :standard|
-    context 'when Arkose is disabled via feature flag' do
+    context 'when Arkose is disabled via application setting' do
       before do
-        stub_feature_flags(arkose_labs: false)
+        stub_application_setting(arkose_labs_enabled: false)
         sign_up(flow: flow, arkose: { disable: true })
       end
 
