@@ -110,12 +110,16 @@ RSpec.describe AntiAbuse::IdentityVerification::Settings, feature_category: :ins
       end
 
       context 'when arkose labs is enabled' do
+        before do
+          stub_application_setting(arkose_labs_enabled: true)
+        end
+
         it { is_expected.to eq result }
       end
 
       context 'when arkose labs is disabled' do
         before do
-          stub_feature_flags(arkose_labs: false)
+          stub_application_setting(arkose_labs_enabled: false)
         end
 
         it { is_expected.to be false }

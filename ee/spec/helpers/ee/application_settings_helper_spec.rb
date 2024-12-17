@@ -34,6 +34,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(visible_attributes).to include(*%i[
           arkose_labs_client_secret
           arkose_labs_client_xid
+          arkose_labs_enabled
           arkose_labs_namespace
           arkose_labs_private_api_key
           arkose_labs_public_api_key
@@ -51,6 +52,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(visible_attributes).not_to include(*%i[
           arkose_labs_client_secret
           arkose_labs_client_xid
+          arkose_labs_enabled
           arkose_labs_namespace
           arkose_labs_private_api_key
           arkose_labs_public_api_key
