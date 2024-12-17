@@ -829,7 +829,9 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
   describe 'manage self-hosted AI models' do
     let(:current_user) { admin }
-    let(:license_double) { instance_double('License', paid?: true) }
+    let(:license_double) { instance_double('License', ultimate?: true) }
+
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
 
     before do
       allow(License).to receive(:current).and_return(license_double)
@@ -837,17 +839,25 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
     context 'when admin' do
       context 'when conditions are respected', :enable_admin_mode do
-        it { is_expected.to be_allowed(:manage_ai_settings) }
+        it { is_expected.to be_allowed(:manage_self_hosted_models_settings) }
       end
 
       context 'when admin mode is disabled' do
-        it { is_expected.to be_disallowed(:manage_ai_settings) }
+        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
       end
 
-      context 'when license is not paid', :enable_admin_mode do
-        let(:license_double) { instance_double('License', paid?: false) }
+      context 'when license is not an Ultimate license', :enable_admin_mode do
+        let(:license_double) { instance_double('License', ultimate?: false) }
 
-        it { is_expected.to be_disallowed(:manage_ai_settings) }
+        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+      end
+
+      context 'when there is no active Duo Enterprise subscription', :enable_admin_mode do
+        before do
+          add_on_purchase.update!(expires_on: 1.day.ago)
+        end
+
+        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
       end
 
       context 'when instance is in SASS mode', :enable_admin_mode do
@@ -856,20 +866,20 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
           stub_feature_flags(allow_self_hosted_features_for_com: true)
         end
 
-        it { is_expected.to be_allowed(:manage_ai_settings) }
+        it { is_expected.to be_allowed(:manage_self_hosted_models_settings) }
 
         context 'when allow_self_hosted_features_for_com is disabled' do
           before do
             stub_feature_flags(allow_self_hosted_features_for_com: false)
           end
 
-          it { is_expected.to be_disallowed(:manage_ai_settings) }
+          it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
         end
       end
     end
 
     context 'when regular user' do
-      it { is_expected.to be_disallowed(:manage_ai_settings) }
+      it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
     end
   end
 

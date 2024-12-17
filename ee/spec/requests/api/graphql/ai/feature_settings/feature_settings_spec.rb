@@ -6,6 +6,11 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+  end
+
   let(:query) do
     %(
       query aiFeatureSettings {
@@ -62,14 +67,6 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
 
   before do
     allow(::Ai::FeatureSetting).to receive(:allowed_features).and_return(test_ai_feature_enum)
-  end
-
-  shared_examples 'an error response' do |expected_error_message|
-    it 'returns an error', :aggregate_failures do
-      post_graphql(query, current_user: current_user)
-      expect(graphql_data['aiFeatureSettings']).to be_nil
-      expect_graphql_errors_to_include(expected_error_message)
-    end
   end
 
   context "when the user is authorized" do

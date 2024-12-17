@@ -6,6 +6,10 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+  end
 
   let! :model_params do
     [
@@ -38,18 +42,18 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
 
   let(:query) do
     %(
-    query SelfHostedModel {
-      aiSelfHostedModels {
-        nodes {
-          id
-          name
-          model
-          modelDisplayName
-          endpoint
-          hasApiToken
+      query SelfHostedModel {
+        aiSelfHostedModels {
+          nodes {
+            id
+            name
+            model
+            modelDisplayName
+            endpoint
+            hasApiToken
+          }
         }
       }
-    }
     )
   end
 
@@ -84,18 +88,18 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
     let(:self_hosted_model_gid) { self_hosted_models.first.to_global_id }
     let(:query) do
       %(
-      query SelfHostedModel {
-        aiSelfHostedModels(id: "#{self_hosted_model_gid}") {
-          nodes {
-            id
-            name
-            model
-            modelDisplayName
-            endpoint
-            apiToken
+        query SelfHostedModel {
+          aiSelfHostedModels(id: "#{self_hosted_model_gid}") {
+            nodes {
+              id
+              name
+              model
+              modelDisplayName
+              endpoint
+              apiToken
+            }
           }
         }
-      }
       )
     end
 

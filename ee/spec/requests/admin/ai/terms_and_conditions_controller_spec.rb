@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feature_category: :"self-hosted_models" do
   let(:admin) { create(:admin) }
   let(:duo_features_enabled) { true }
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+  end
 
   before do
     sign_in(admin)
@@ -15,7 +19,7 @@ RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feat
     context 'when the user is not authorized' do
       it 'performs the right authorization correctly' do
         allow(Ability).to receive(:allowed?).and_call_original
-        expect(Ability).to receive(:allowed?).with(admin, :manage_ai_settings).and_return(false)
+        expect(Ability).to receive(:allowed?).with(admin, :manage_self_hosted_models_settings).and_return(false)
 
         perform_request
 

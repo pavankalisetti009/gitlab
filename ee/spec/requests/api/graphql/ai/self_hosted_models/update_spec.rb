@@ -6,6 +6,11 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+  end
+
   let_it_be(:self_hosted_model) do
     create(
       :ai_self_hosted_model,
