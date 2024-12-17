@@ -20,6 +20,7 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
   it { expect(described_class).to have_graphql_field(:blocking_merge_requests) }
   it { expect(described_class).to have_graphql_field(:merge_request_diffs) }
   it { expect(described_class).to have_graphql_field(:policy_violations) }
+  it { expect(described_class).to have_graphql_field(:policies_overriding_approval_settings) }
 
   shared_context 'with a merge train' do
     let_it_be(:project) { create(:project, :public) }

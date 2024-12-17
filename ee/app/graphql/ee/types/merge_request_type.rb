@@ -50,6 +50,12 @@ module EE
           null: false,
           description: 'Information relating to rules that must be satisfied to merge the merge request.'
 
+        field :policies_overriding_approval_settings,
+          type: [::Types::SecurityOrchestration::PolicyApprovalSettingsOverrideType],
+          null: true,
+          description: 'Approval settings that are overridden by the policies for the merge request.',
+          resolver: ::Resolvers::SecurityOrchestration::PolicyApprovalSettingsOverrideResolver
+
         field :suggested_reviewers, ::Types::AppliedMl::SuggestedReviewersType,
           null: true,
           description: 'Suggested reviewers for merge request.'

@@ -31,6 +31,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it { is_expected.to have_many(:status_check_responses).class_name('MergeRequests::StatusCheckResponse').inverse_of(:merge_request) }
     it { is_expected.to have_many(:scan_result_policy_reads_through_violations).through(:scan_result_policy_violations).class_name('Security::ScanResultPolicyRead') }
     it { is_expected.to have_many(:scan_result_policy_reads_through_approval_rules).through(:approval_rules).class_name('Security::ScanResultPolicyRead') }
+    it { is_expected.to have_many(:security_policies_through_violations).through(:scan_result_policy_violations).class_name('Security::Policy') }
 
     describe 'policy violations' do
       let(:policy_1) { create(:scan_result_policy_read, project: project) }
@@ -477,6 +478,151 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             it { is_expected.to eq(overrides) }
           end
         end
+      end
+    end
+  end
+
+  describe '#policies_overriding_approval_settings' do
+    let(:project_approval_settings) do
+      { prevent_approval_by_author: true,
+        prevent_approval_by_commit_author: false,
+        remove_approvals_with_new_commit: true,
+        require_password_to_approve: false }
+    end
+
+    let(:overrides) { project_approval_settings.compact_blank }
+
+    subject(:overriding_policies) { merge_request.policies_overriding_approval_settings }
+
+    context 'with security policies populated' do
+      let(:policy) do
+        create(:security_policy, content: { approval_settings: project_approval_settings })
+      end
+
+      let(:policy_rule) do
+        create(:approval_policy_rule, :any_merge_request, security_policy: policy)
+      end
+
+      context 'when violated' do
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            approval_policy_rule: policy_rule)
+        end
+
+        it 'returns policies as keys' do
+          expect(overriding_policies.keys).to contain_exactly(policy)
+        end
+
+        it 'has overrides as values' do
+          expect(overriding_policies.values).to contain_exactly(overrides)
+        end
+
+        context 'when there are multiple policies' do
+          let(:other_approval_settings) { { require_password_to_approve: true } }
+          let(:other_policy) do
+            create(:security_policy, content: { approval_settings: other_approval_settings })
+          end
+
+          let(:other_policy_rule) do
+            create(:approval_policy_rule, :any_merge_request, security_policy: other_policy)
+          end
+
+          before do
+            create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+              approval_policy_rule: other_policy_rule)
+          end
+
+          it 'returns results by policy' do
+            expect(overriding_policies.keys).to contain_exactly(policy, other_policy)
+          end
+
+          it 'returns project overrides by policy' do
+            expect(overriding_policies.values).to contain_exactly(overrides, other_approval_settings)
+          end
+
+          context 'when other policies do not override approval settings' do
+            let(:other_approval_settings) { { require_password_to_approve: false } }
+
+            it 'only returns policies that override settings' do
+              expect(overriding_policies.keys).to contain_exactly(policy)
+            end
+          end
+        end
+      end
+
+      context 'when not violated' do
+        it { is_expected.to be_empty }
+      end
+    end
+
+    context 'when approval_policy_rule is not populated' do
+      let!(:scan_result_policy_read) do
+        create(:scan_result_policy_read,
+          project: merge_request.target_project,
+          project_approval_settings: project_approval_settings)
+      end
+
+      context 'when violated' do
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read)
+        end
+
+        it 'constructs policy object as key' do
+          first_policy = overriding_policies.each_key.first
+          expect(first_policy).to be_a(Security::Policy)
+          expect(first_policy)
+            .to have_attributes(
+              name: nil,
+              security_orchestration_policy_configuration_id: scan_result_policy_read.security_orchestration_policy_configuration_id,
+              policy_index: scan_result_policy_read.orchestration_policy_idx
+            )
+        end
+
+        it 'has overrides as values' do
+          expect(overriding_policies.values).to contain_exactly(overrides)
+        end
+
+        context 'when there are multiple policies' do
+          let(:other_approval_settings) { { require_password_to_approve: true } }
+          let!(:other_scan_result_policy_read) do
+            create(:scan_result_policy_read,
+              project: merge_request.target_project,
+              orchestration_policy_idx: 1,
+              project_approval_settings: other_approval_settings)
+          end
+
+          before do
+            create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+              scan_result_policy_read: other_scan_result_policy_read)
+          end
+
+          it 'returns results by policy' do
+            expect(overriding_policies.keys.size).to eq(2)
+            expect(overriding_policies.keys.last).to have_attributes(
+              name: nil,
+              security_orchestration_policy_configuration_id: other_scan_result_policy_read.security_orchestration_policy_configuration_id,
+              policy_index: other_scan_result_policy_read.orchestration_policy_idx
+            )
+          end
+
+          it 'returns project overrides by policy' do
+            expect(overriding_policies.values).to contain_exactly(overrides, other_approval_settings)
+          end
+
+          context 'when other policies do not override approval settings' do
+            let(:other_approval_settings) { { require_password_to_approve: false } }
+
+            it 'only returns policies that override settings', :aggregate_failures do
+              expect(overriding_policies.keys).to be_one
+              expect(overriding_policies.values).to contain_exactly(overrides)
+            end
+          end
+        end
+      end
+
+      context 'when not violated' do
+        it { is_expected.to be_empty }
       end
     end
   end

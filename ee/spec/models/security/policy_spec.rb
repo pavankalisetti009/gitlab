@@ -80,7 +80,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
 
-    describe 'describe' do
+    describe 'description' do
       context 'when description is greater than the limit' do
         before do
           policy.description = 'a' * (Gitlab::Database::MAX_TEXT_SIZE_LIMIT + 1)
@@ -601,6 +601,80 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       expect(project.approval_merge_request_rules).to include(other_merge_request_rule)
       expect(project.software_license_policies).to include(other_license_policy)
       expect(project.scan_result_policy_violations).to include(other_violation)
+    end
+  end
+
+  describe '#edit_path' do
+    subject(:edit_path) { policy.edit_path }
+
+    let_it_be(:project_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:namespace_configuration) { create(:security_orchestration_policy_configuration, :namespace) }
+
+    context 'when name is nil' do
+      let(:policy) { build(:security_policy, name: nil) }
+
+      it { is_expected.to be_nil }
+    end
+
+    shared_examples_for 'a valid url for policy type' do |type|
+      context 'when it belongs to project configuration' do
+        let(:configuration) { project_configuration }
+
+        it 'returns a valid url' do
+          expect(edit_path).to eq(
+            Gitlab::Routing.url_helpers.edit_project_security_policy_url(
+              project_configuration.project, id: CGI.escape('Policy'), type: type
+            )
+          )
+        end
+      end
+
+      context 'when it belongs to namespace configuration' do
+        let(:configuration) { namespace_configuration }
+
+        it 'returns a valid url' do
+          expect(edit_path).to eq(
+            Gitlab::Routing.url_helpers.edit_group_security_policy_url(
+              namespace_configuration.namespace, id: CGI.escape('Policy'), type: type
+            )
+          )
+        end
+      end
+    end
+
+    context 'when type is approval_policy' do
+      let(:policy) do
+        build(:security_policy, name: 'Policy', security_orchestration_policy_configuration: configuration)
+      end
+
+      it_behaves_like 'a valid url for policy type', 'approval_policy'
+    end
+
+    context 'when type is scan_execution_policy' do
+      let(:policy) do
+        build(:security_policy, :scan_execution_policy, name: 'Policy',
+          security_orchestration_policy_configuration: configuration)
+      end
+
+      it_behaves_like 'a valid url for policy type', 'scan_execution_policy'
+    end
+
+    context 'when type is pipeline_execution_policy' do
+      let(:policy) do
+        build(:security_policy, :pipeline_execution_policy, name: 'Policy',
+          security_orchestration_policy_configuration: configuration)
+      end
+
+      it_behaves_like 'a valid url for policy type', 'pipeline_execution_policy'
+    end
+
+    context 'when type is vulnerability_management_policy' do
+      let(:policy) do
+        build(:security_policy, :vulnerability_management_policy, name: 'Policy',
+          security_orchestration_policy_configuration: configuration)
+      end
+
+      it_behaves_like 'a valid url for policy type', 'vulnerability_management_policy'
     end
   end
 end

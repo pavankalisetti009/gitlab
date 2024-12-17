@@ -27588,6 +27588,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestmilestone"></a>`milestone` | [`Milestone`](#milestone) | Milestone of the merge request. |
 | <a id="mergerequestname"></a>`name` | [`String`](#string) | Name or title of this object. |
 | <a id="mergerequestparticipants"></a>`participants` | [`MergeRequestParticipantConnection`](#mergerequestparticipantconnection) | Participants in the merge request. This includes the author, assignees, reviewers, and users mentioned in notes. (see [Connections](#connections)) |
+| <a id="mergerequestpoliciesoverridingapprovalsettings"></a>`policiesOverridingApprovalSettings` | [`[PolicyApprovalSettingsOverride!]`](#policyapprovalsettingsoverride) | Approval settings that are overridden by the policies for the merge request. |
 | <a id="mergerequestpolicyviolations"></a>`policyViolations` | [`PolicyViolationDetails`](#policyviolationdetails) | Policy violations reported on the merge request. |
 | <a id="mergerequestpreparedat"></a>`preparedAt` | [`Time`](#time) | Timestamp of when the merge request was prepared. |
 | <a id="mergerequestproject"></a>`project` | [`Project!`](#project) | Alias for target_project. |
@@ -31289,6 +31290,18 @@ Represents policy violation for `any_merge_request` report_type.
 | <a id="policyapprovalgroupfullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the namespace. |
 | <a id="policyapprovalgroupid"></a>`id` | [`ID!`](#id) | ID of the namespace. |
 | <a id="policyapprovalgroupweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the group. |
+
+### `PolicyApprovalSettingsOverride`
+
+Represents the approval settings of merge request overridden by a policy.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="policyapprovalsettingsoverrideeditpath"></a>`editPath` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Path to edit the policy. |
+| <a id="policyapprovalsettingsoverridename"></a>`name` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Policy name. |
+| <a id="policyapprovalsettingsoverridesettings"></a>`settings` | [`JSON!`](#json) | Overridden project approval settings. |
 
 ### `PolicyApproversType`
 
