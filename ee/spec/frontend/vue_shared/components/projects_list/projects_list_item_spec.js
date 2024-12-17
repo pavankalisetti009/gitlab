@@ -12,7 +12,8 @@ import DeleteModal from '~/projects/components/shared/delete_modal.vue';
 describe('ProjectsListItemEE', () => {
   let wrapper;
 
-  const [project] = convertObjectPropsToCamelCase(projects, { deep: true });
+  const [mockProject] = convertObjectPropsToCamelCase(projects, { deep: true });
+  const project = { ...mockProject, avatarLabel: mockProject.nameWithNamespace, isForked: false };
 
   const defaultProps = { project };
 
