@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Gitlab/DocUrl -- Development purpose
+# rubocop:disable Gitlab/DocumentationLinks/HardcodedUrl -- Development purpose
 module Gitlab
   module ProductAnalytics
     module Developments
@@ -119,4 +119,4 @@ module Gitlab
     end
   end
 end
-# rubocop:enable Gitlab/DocUrl
+# rubocop:enable Gitlab/DocumentationLinks/HardcodedUrl
