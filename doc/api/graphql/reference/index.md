@@ -1274,6 +1274,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="querytopicsorganizationid"></a>`organizationId` **{warning-solid}** | [`OrganizationsOrganizationID`](#organizationsorganizationid) | **Introduced** in GitLab 17.7. **Status**: Experiment. Global ID of the organization. |
 | <a id="querytopicssearch"></a>`search` | [`String`](#string) | Search query for topic name. |
 
 ### `Query.usageTrendsMeasurements`
