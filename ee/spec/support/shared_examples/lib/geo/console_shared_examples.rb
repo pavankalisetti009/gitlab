@@ -114,7 +114,7 @@ RSpec.shared_examples_for "a Geo console multiple choice menu" do
 
       context "when the current machine name does not match a Geo node" do
         it "raises an error" do
-          allow(Gitlab::Geo).to receive(:enabled?).and_return(true)
+          stub_geo_nodes_exist_but_none_match_current_node
 
           expect { menu.open }.to raise_error("Geo enabled but I don't know what site I am a part of")
         end

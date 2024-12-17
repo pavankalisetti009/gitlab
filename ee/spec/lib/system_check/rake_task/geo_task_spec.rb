@@ -58,6 +58,7 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
     context 'Geo is enabled but node is not identified' do
       it 'secondary checks is called' do
         create(:geo_node)
+        stub_geo_nodes_exist_but_none_match_current_node
 
         expect(described_class.checks).to eq(secondary_checks)
       end
