@@ -73,6 +73,34 @@ describe('EE work items graphql resolvers', () => {
       mockApolloClient = mockApollo.clients.defaultClient;
     });
 
+    describe('title input', () => {
+      it('updates title when added', async () => {
+        await mutate({ title: 'Issue 1' });
+
+        const queryResult = await query();
+        expect(queryResult.title).toBe('Issue 1');
+      });
+
+      it('updates title if it becomes empty', async () => {
+        await mutate({ title: '' });
+
+        const queryResult = await query();
+        expect(queryResult.title).toBe('');
+      });
+
+      it('does not update title if undefined (another input was updated)', async () => {
+        await mutate({ title: 'Issue 2' });
+
+        const queryResult1 = await query();
+        expect(queryResult1.title).toBe('Issue 2');
+
+        await mutate({ title: undefined });
+
+        const queryResult2 = await query();
+        expect(queryResult2.title).toBe('Issue 2');
+      });
+    });
+
     describe('with healthStatus input', () => {
       it('updates health status', async () => {
         await mutate({ healthStatus: 'onTrack' });
