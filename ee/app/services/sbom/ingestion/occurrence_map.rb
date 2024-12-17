@@ -5,14 +5,13 @@ module Sbom
     class OccurrenceMap
       include Gitlab::Utils::StrongMemoize
 
-      attr_reader :report_component, :report_source, :vulnerabilities
+      attr_reader :report_component, :report_source
       attr_accessor :component_id, :component_version_id, :source_id, :occurrence_id, :source_package_id, :uuid,
         :vulnerability_ids
 
       def initialize(report_component, report_source)
         @report_component = report_component
         @report_source = report_source
-        @vulnerabilities = vulnerabilities
         @vulnerability_ids = []
       end
 
