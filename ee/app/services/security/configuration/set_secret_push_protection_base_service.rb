@@ -2,10 +2,10 @@
 
 module Security
   module Configuration
-    class SetNamespaceSecretPushProtectionService
+    class SetSecretPushProtectionBaseService
       PROJECTS_BATCH_SIZE = 100
-      def initialize(namespace:, enable:, current_user:, excluded_projects_ids: [])
-        @namespace = namespace
+      def initialize(subject:, enable:, current_user:, excluded_projects_ids: [])
+        @subject = subject
         @enable = enable
         @current_user = current_user
         @excluded_projects_ids = excluded_projects_ids
@@ -28,7 +28,7 @@ module Security
       protected
 
       def valid_request?
-        @namespace.present? && @current_user.present? && [true, false].include?(@enable)
+        @subject.present? && @current_user.present? && [true, false].include?(@enable)
       end
 
       def update_security_setting(projects)
@@ -60,8 +60,8 @@ module Security
         {
           name: name,
           author: @current_user,
-          scope: @namespace,
-          target: @namespace,
+          scope: @subject,
+          target: @subject,
           message: message
         }
       end

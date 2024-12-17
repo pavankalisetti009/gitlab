@@ -10,43 +10,43 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
     let_it_be_with_reload(:project_2) { create(:project) }
     let_it_be_with_reload(:excluded_project) { create(:project) }
 
-    def execute_service(namespace:, enable: true, excluded_projects_ids: [excluded_project.id])
+    def execute_service(subject:, enable: true, excluded_projects_ids: [excluded_project.id])
       described_class
-        .new(namespace: namespace, enable: enable, current_user: user, excluded_projects_ids: excluded_projects_ids)
+        .new(subject: subject, enable: enable, current_user: user, excluded_projects_ids: excluded_projects_ids)
         .execute
     end
 
     it 'changes the attribute' do
       security_setting = project_2.security_setting
-      expect { execute_service(namespace: project_2) }.to change {
+      expect { execute_service(subject: project_2) }.to change {
         security_setting.reload.pre_receive_secret_detection_enabled
       }.from(false).to(true)
 
-      expect { execute_service(namespace: project_2) }.not_to change {
+      expect { execute_service(subject: project_2) }.not_to change {
         security_setting.reload.pre_receive_secret_detection_enabled
       }
 
-      expect { execute_service(namespace: project_2, enable: false) }.to change {
+      expect { execute_service(subject: project_2, enable: false) }.to change {
         security_setting.reload.pre_receive_secret_detection_enabled
       }.from(true).to(false)
 
-      expect { execute_service(namespace: project_2, enable: false) }.not_to change {
+      expect { execute_service(subject: project_2, enable: false) }.not_to change {
         security_setting.reload.pre_receive_secret_detection_enabled
       }
     end
 
     it 'changes updated_at timestamp' do
-      expect { execute_service(namespace: project_1) }
+      expect { execute_service(subject: project_1) }
         .to change { project_1.reload.security_setting.updated_at }
     end
 
     describe 'auditing' do
       context 'when no excluded_projects ids are provided' do
         it 'audits using the correct properties' do
-          expect { execute_service(namespace: project_2) }.to change { AuditEvent.count }.by(1)
+          expect { execute_service(subject: project_2) }.to change { AuditEvent.count }.by(1)
           expect(AuditEvent.last.details[:custom_message]).to eq("Secret push protection has been enabled")
 
-          expect { execute_service(namespace: project_2, enable: false) }.to change {
+          expect { execute_service(subject: project_2, enable: false) }.to change {
             AuditEvent.count
           }.by(1)
           expect(AuditEvent.last.details[:custom_message]).to eq("Secret push protection has been disabled")
@@ -56,15 +56,15 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
         end
 
         it 'doesnt create audit if no change was made' do
-          expect { execute_service(namespace: project_2) }.to change { AuditEvent.count }.by(1)
+          expect { execute_service(subject: project_2) }.to change { AuditEvent.count }.by(1)
           # executing again with the same value should not create audit as there is no change
-          expect { execute_service(namespace: project_2) }.not_to change { AuditEvent.count }
+          expect { execute_service(subject: project_2) }.not_to change { AuditEvent.count }
         end
       end
 
       context 'when excluded_projects ids includes the project id' do
         it 'doesnt create audit' do
-          expect { execute_service(namespace: excluded_project) }.not_to change { AuditEvent.count }
+          expect { execute_service(subject: excluded_project) }.not_to change { AuditEvent.count }
         end
       end
     end
@@ -77,7 +77,7 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
       end
 
       it 'creates security_setting and sets the value appropriately' do
-        expect { execute_service(namespace: project_without_security_setting) }
+        expect { execute_service(subject: project_without_security_setting) }
           .to change { project_without_security_setting.reload.security_setting }
                 .from(nil).to(be_a(ProjectSecuritySetting))
 
@@ -91,7 +91,7 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
 
     context 'when arguments are invalid' do
       it 'does not change the attribute' do
-        expect { execute_service(namespace: project_2, enable: nil) }
+        expect { execute_service(subject: project_2, enable: nil) }
           .not_to change { project_2.reload.security_setting.pre_receive_secret_detection_enabled }
       end
     end

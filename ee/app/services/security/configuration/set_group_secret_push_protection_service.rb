@@ -2,15 +2,15 @@
 
 module Security
   module Configuration
-    class SetGroupSecretPushProtectionService < SetNamespaceSecretPushProtectionService
+    class SetGroupSecretPushProtectionService < SetSecretPushProtectionBaseService
       private
 
       def projects_scope
-        Project.for_group_and_its_subgroups(@namespace)
+        Project.for_group_and_its_subgroups(@subject)
       end
 
       def audit
-        return unless @namespace.is_a?(Group)
+        return unless @subject.is_a?(Group)
 
         message = build_group_message(fetch_filtered_out_projects)
 
@@ -29,7 +29,7 @@ module Security
       end
 
       def build_group_message(filtered_out_projects_full_path)
-        message = "Secret push protection has been enabled for group #{@namespace.name} and all of its inherited \
+        message = "Secret push protection has been enabled for group #{@subject.name} and all of its inherited \
 groups/projects"
 
         unless filtered_out_projects_full_path.empty?

@@ -9,7 +9,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
   let_it_be(:user_id) { user.id }
 
   let(:excluded_projects_ids) { [1, 2, 3] }
-  let(:set_namespace_spp_service) { instance_double(Security::Configuration::SetGroupSecretPushProtectionService) }
+  let(:set_group_spp_service) { instance_double(Security::Configuration::SetGroupSecretPushProtectionService) }
 
   describe '#perform' do
     subject(:run_worker) do
@@ -17,9 +17,9 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
     end
 
     before do
-      allow(set_namespace_spp_service).to receive(:execute)
+      allow(set_group_spp_service).to receive(:execute)
       allow(Security::Configuration::SetGroupSecretPushProtectionService)
-        .to receive(:new).and_return(set_namespace_spp_service)
+        .to receive(:new).and_return(set_group_spp_service)
     end
 
     context 'when group exists' do
@@ -27,9 +27,9 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
         run_worker
 
         expect(Security::Configuration::SetGroupSecretPushProtectionService).to have_received(:new).with(
-          { enable: true, namespace: group, current_user: user, excluded_projects_ids: excluded_projects_ids }
+          { enable: true, subject: group, current_user: user, excluded_projects_ids: excluded_projects_ids }
         )
-        expect(set_namespace_spp_service).to have_received(:execute)
+        expect(set_group_spp_service).to have_received(:execute)
       end
     end
 
@@ -39,7 +39,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
       it 'does not call SetGroupSecretPushProtectionService' do
         run_worker
         expect(Security::Configuration::SetGroupSecretPushProtectionService).not_to have_received(:new)
-        expect(set_namespace_spp_service).not_to have_received(:execute)
+        expect(set_group_spp_service).not_to have_received(:execute)
       end
     end
 
@@ -49,7 +49,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feat
       it 'does not call SetGroupSecretPushProtectionService' do
         run_worker
         expect(Security::Configuration::SetGroupSecretPushProtectionService).not_to have_received(:new)
-        expect(set_namespace_spp_service).not_to have_received(:execute)
+        expect(set_group_spp_service).not_to have_received(:execute)
       end
     end
 
