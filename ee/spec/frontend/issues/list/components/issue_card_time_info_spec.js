@@ -32,10 +32,11 @@ describe('EE IssueCardTimeInfo component', () => {
     issue,
     hasIssuableHealthStatusFeature = false,
     hasIssueWeightsFeature = false,
+    isWorkItemList = false,
   } = {}) =>
     shallowMount(IssueCardTimeInfo, {
       provide: { hasIssuableHealthStatusFeature, hasIssueWeightsFeature },
-      propsData: { issue },
+      propsData: { issue, isWorkItemList },
     });
 
   describe.each`
@@ -52,6 +53,30 @@ describe('EE IssueCardTimeInfo component', () => {
     });
 
     describe('health status', () => {
+      describe('when isWorkItemList=true', () => {
+        it('does not renders', () => {
+          wrapper = mountComponent({
+            issue: obj,
+            hasIssuableHealthStatusFeature: true,
+            isWorkItemList: true,
+          });
+
+          expect(findIssueHealthStatus().exists()).toBe(false);
+        });
+      });
+
+      describe('when isWorkItemList=false', () => {
+        it('renders', () => {
+          wrapper = mountComponent({
+            issue: obj,
+            hasIssuableHealthStatusFeature: true,
+            isWorkItemList: false,
+          });
+
+          expect(findIssueHealthStatus().props('healthStatus')).toBe('onTrack');
+        });
+      });
+
       describe('when hasIssuableHealthStatusFeature=true', () => {
         it('renders', () => {
           wrapper = mountComponent({ hasIssuableHealthStatusFeature: true, issue: obj });

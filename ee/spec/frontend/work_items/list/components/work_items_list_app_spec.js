@@ -52,6 +52,7 @@ describeSkipVue3(skipReason, () => {
     isSignedIn: true,
     hasOkrsFeature: true,
     hasQualityManagementFeature: true,
+    hasIssuableHealthStatusFeature: true,
   };
 
   const mountComponent = ({
@@ -109,6 +110,7 @@ describeSkipVue3(skipReason, () => {
       stubs: {
         IssuableItem: true,
         IssueCardTimeInfo: true,
+        IssueHealthStatus: true,
       },
     });
 
