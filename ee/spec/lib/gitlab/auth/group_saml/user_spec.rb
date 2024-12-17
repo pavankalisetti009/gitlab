@@ -59,6 +59,13 @@ RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_categ
         expect(find_and_update.provisioned_by_group).to be_nil
       end
 
+      it 'calls Duo assignment updater' do
+        expect(::Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater)
+          .to receive(:new).with(identity.user, saml_provider.group, anything).and_call_original
+
+        find_and_update
+      end
+
       context 'when user attributes are present' do
         before do
           identity.user.update!(can_create_group: false, projects_limit: 10)
