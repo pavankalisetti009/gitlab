@@ -137,7 +137,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
 
     def expect_completed_section(text)
       expect(page).to have_no_link(text)
-      expect(page).to have_css('.gl-text-green-500', text: text)
+      expect(page).to have_css('.gl-text-success', text: text)
     end
 
     def expect_correct_candidate_link(link, path)

@@ -109,8 +109,8 @@ export default {
           <span v-if="isFailedStatus" class="gl-font-bold gl-text-red-500">
             <gl-icon name="status_failed" /> {{ __('Fail') }}
           </span>
-          <span v-else class="gl-font-bold gl-text-green-500">
-            <gl-icon name="status_success" /> {{ __('Success') }}
+          <span v-else class="gl-font-bold gl-text-success">
+            <gl-icon name="status_success" variant="success" /> {{ __('Success') }}
           </span>
 
           <gl-link class="gl-mx-3" :href="project.webUrl"> {{ project.name }} </gl-link>

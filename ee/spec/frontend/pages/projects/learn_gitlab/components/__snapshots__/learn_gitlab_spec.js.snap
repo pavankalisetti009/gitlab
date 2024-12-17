@@ -94,11 +94,11 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               class="gl-flex gl-items-center"
             >
               <span
-                class="gl-text-green-500"
+                class="gl-text-success"
               >
                 <svg
                   aria-hidden="true"
-                  class="gl-fill-current gl-icon s16"
+                  class="gl-fill-icon-success gl-icon s16"
                   data-testid="completed-icon"
                   role="img"
                 >
@@ -117,11 +117,11 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               class="gl-flex gl-items-center"
             >
               <span
-                class="gl-text-green-500"
+                class="gl-text-success"
               >
                 <svg
                   aria-hidden="true"
-                  class="gl-fill-current gl-icon s16"
+                  class="gl-fill-icon-success gl-icon s16"
                   data-testid="completed-icon"
                   role="img"
                 >
@@ -182,11 +182,11 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               class="gl-flex gl-items-center"
             >
               <span
-                class="gl-text-green-500"
+                class="gl-text-success"
               >
                 <svg
                   aria-hidden="true"
-                  class="gl-fill-current gl-icon s16"
+                  class="gl-fill-icon-success gl-icon s16"
                   data-testid="completed-icon"
                   role="img"
                 >

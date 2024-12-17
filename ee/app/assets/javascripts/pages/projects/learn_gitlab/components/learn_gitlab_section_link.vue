@@ -61,8 +61,13 @@ export default {
 <template>
   <div class="gl-mb-2">
     <div class="gl-flex gl-items-center">
-      <span v-if="value.completed" class="gl-text-green-500">
-        <gl-icon name="check-circle-filled" :size="16" data-testid="completed-icon" />
+      <span v-if="value.completed" class="gl-text-success">
+        <gl-icon
+          name="check-circle-filled"
+          :size="16"
+          data-testid="completed-icon"
+          variant="success"
+        />
         {{ actionLabelValue('title') }}
         <included-in-trial-indicator v-if="actionLabelValue('trialRequired')" />
       </span>
