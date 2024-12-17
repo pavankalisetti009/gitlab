@@ -19,7 +19,11 @@ module MergeRequests
 
       prompt_message = prepare_prompt_message(note)
       response = execute_chat_request(prompt_message, note)
-      create_note_from(note, response)
+      create_note_on(note, response.response_body)
+    rescue StandardError => error
+      Gitlab::ErrorTracking.track_exception(error)
+
+      create_note_on(note, error_note)
     end
 
     private
@@ -76,8 +80,8 @@ module MergeRequests
         .execute
     end
 
-    def create_note_from(note, response)
-      return if response.response_body.blank?
+    def create_note_on(note, content)
+      return if content.blank?
 
       merge_request = note.noteable
 
@@ -85,10 +89,14 @@ module MergeRequests
         merge_request.project,
         ::Users::Internal.duo_code_review_bot,
         noteable: merge_request,
-        note: response.response_body,
+        note: content,
         in_reply_to_discussion_id: note.discussion_id,
         type: 'DiffNote'
       ).execute
+    end
+
+    def error_note
+      s_("DuoCodeReview|I encountered some problems while responding to your query. Please try again later.")
     end
   end
 end

@@ -223,7 +223,7 @@ module Gitlab
           end
 
           def error_note
-            s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
+            s_("DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.")
           end
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object

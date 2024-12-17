@@ -18,7 +18,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
   end
 
   let(:review_error_note) do
-    s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
+    s_("DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.")
   end
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }

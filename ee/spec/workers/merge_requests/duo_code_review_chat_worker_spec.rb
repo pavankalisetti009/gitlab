@@ -108,6 +108,22 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
       expect(Note.last.note).to eq(response_modifier.response_body)
     end
 
+    context 'when an error gets raised' do
+      let(:error_note) do
+        s_("DuoCodeReview|I encountered some problems while responding to your query. Please try again later.")
+      end
+
+      before do
+        allow(::Gitlab::Llm::ChatMessage).to receive(:new).and_raise('error')
+      end
+
+      it 'creates note with an error message' do
+        worker.perform(note)
+
+        expect(Note.last.note).to eq(error_note)
+      end
+    end
+
     context 'when note cannot be found' do
       it 'does not create note' do
         expect(Notes::CreateService).not_to receive(:new)
