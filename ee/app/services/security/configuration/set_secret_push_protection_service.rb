@@ -9,7 +9,7 @@ module Security
 
         ServiceResponse.success(
           payload: {
-            enabled: SetProjectSecretPushProtectionService.new(current_user: current_user, namespace: project,
+            enabled: SetProjectSecretPushProtectionService.new(current_user: current_user, subject: project,
               enable: enable).execute,
             errors: []
           })

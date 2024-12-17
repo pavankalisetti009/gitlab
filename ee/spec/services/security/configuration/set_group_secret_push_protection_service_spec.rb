@@ -17,9 +17,9 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
 
     let(:projects_to_change) { [top_level_group_project, mid_level_group_project, bottom_level_group_project] }
 
-    def execute_service(namespace:, enable: true, excluded_projects_ids: [excluded_project.id])
+    def execute_service(subject:, enable: true, excluded_projects_ids: [excluded_project.id])
       described_class
-        .new(namespace: namespace, enable: enable, current_user: user, excluded_projects_ids: excluded_projects_ids)
+        .new(subject: subject, enable: enable, current_user: user, excluded_projects_ids: excluded_projects_ids)
         .execute
     end
 
@@ -30,29 +30,29 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
         security_setting = project.security_setting
 
         boolean_values.each do |enable_value|
-          expect { execute_service(namespace: top_level_group, enable: enable_value) }.to change {
+          expect { execute_service(subject: top_level_group, enable: enable_value) }.to change {
             security_setting.reload.pre_receive_secret_detection_enabled
           }.from(!enable_value).to(enable_value)
 
-          expect { execute_service(namespace: top_level_group, enable: enable_value) }
+          expect { execute_service(subject: top_level_group, enable: enable_value) }
             .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
         end
       end
     end
 
     it 'changes updated_at timestamp' do
-      expect { execute_service(namespace: top_level_group) }.to change {
+      expect { execute_service(subject: top_level_group) }.to change {
         mid_level_group_project.reload.security_setting.updated_at
       }
     end
 
     it 'doesnt change the attribute for projects in excluded list' do
       security_setting = excluded_project.security_setting
-      expect { execute_service(namespace: top_level_group) }.not_to change {
+      expect { execute_service(subject: top_level_group) }.not_to change {
         security_setting.reload.pre_receive_secret_detection_enabled
       }
 
-      expect { execute_service(namespace: mid_level_group, enable: false) }.not_to change {
+      expect { execute_service(subject: mid_level_group, enable: false) }.not_to change {
         security_setting.reload.pre_receive_secret_detection_enabled
       }
     end
@@ -72,7 +72,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
       end
 
       expect do
-        described_class.execute(namespace: top_level_group, enable: true,
+        described_class.execute(subject: top_level_group, enable: true,
           excluded_projects_ids: [excluded_project.id])
       end.to raise_error(StandardError)
 
@@ -85,7 +85,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
     describe 'auditing' do
       context 'when no excluded projects ids are provided' do
         it 'audits using the correct properties' do
-          expect { execute_service(namespace: top_level_group, excluded_projects_ids: []) }
+          expect { execute_service(subject: top_level_group, excluded_projects_ids: []) }
             .to change { AuditEvent.count }.by(1)
           expect(AuditEvent.last.details[:custom_message]).to eq(
             "Secret push protection has been enabled for group #{top_level_group.name} and all of its inherited \
@@ -99,7 +99,7 @@ groups/projects")
       context 'when excluded projects ids are provided' do
         context 'when excluded ids matches projects in that group' do
           it 'audits using the correct properties' do
-            expect { execute_service(namespace: top_level_group) }.to change { AuditEvent.count }.by(1)
+            expect { execute_service(subject: top_level_group) }.to change { AuditEvent.count }.by(1)
             expect(AuditEvent.last.details[:custom_message]).to eq(
               "Secret push protection has been enabled for group #{top_level_group.name} and all of its inherited \
 groups/projects except for #{excluded_project.full_path}")
@@ -112,7 +112,7 @@ groups/projects except for #{excluded_project.full_path}")
         context 'when excluded ids does not match projects in that group' do
           it 'audits using the correct properties' do
             expect do
-              execute_service(namespace: top_level_group, excluded_projects_ids: [Time.now.to_i])
+              execute_service(subject: top_level_group, excluded_projects_ids: [Time.now.to_i])
             end.to change { AuditEvent.count }.by(1)
             expect(AuditEvent.last.details[:custom_message]).to eq(
               "Secret push protection has been enabled for group #{top_level_group.name} and all of its inherited \
@@ -131,7 +131,7 @@ groups/projects")
       end
 
       it 'creates security_setting and sets the value appropriately' do
-        expect { execute_service(namespace: bottom_level_group) }.to change {
+        expect { execute_service(subject: bottom_level_group) }.to change {
           bottom_level_group_project.reload.security_setting
         }.from(nil).to(be_a(ProjectSecuritySetting))
 
@@ -146,7 +146,7 @@ groups/projects")
 
     context 'when arguments are invalid' do
       it 'does not change the attribute' do
-        expect { execute_service(namespace: top_level_group, enable: nil) }
+        expect { execute_service(subject: top_level_group, enable: nil) }
           .not_to change { top_level_group_project.reload.security_setting.pre_receive_secret_detection_enabled }
       end
     end

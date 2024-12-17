@@ -2,12 +2,12 @@
 
 module Security
   module Configuration
-    class SetProjectSecretPushProtectionService < SetNamespaceSecretPushProtectionService
+    class SetProjectSecretPushProtectionService < SetSecretPushProtectionBaseService
       private
 
       def projects_scope
         # convert project object into a relation for unified logic in parent class
-        Project.id_in(@namespace.id)
+        Project.id_in(@subject.id)
       end
 
       def audit

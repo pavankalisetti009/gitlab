@@ -17,7 +17,7 @@ module Security
 
         return unless group && current_user
 
-        SetGroupSecretPushProtectionService.new(namespace: group, enable: enable, current_user: current_user,
+        SetGroupSecretPushProtectionService.new(subject: group, enable: enable, current_user: current_user,
           excluded_projects_ids: excluded_projects_ids).execute
       end
     end

@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::Configuration::SetNamespaceSecretPushProtectionService, feature_category: :secret_detection do
+RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feature_category: :secret_detection do
   let_it_be(:user) { create(:user) }
   let_it_be(:project_1) { create(:project) }
-  let(:service) { described_class.new(namespace: project_1, enable: true, current_user: user) }
+  let(:service) { described_class.new(subject: project_1, enable: true, current_user: user) }
 
   describe '#execute' do
     context 'when the call is valid' do
