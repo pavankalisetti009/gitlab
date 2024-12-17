@@ -49,6 +49,10 @@ RSpec.describe EE::Emails::Profile do
       is_expected.to have_body_text('https://gitlab.cn/saasmigration/')
     end
 
+    it 'includes the contact email' do
+      is_expected.to have_body_text('saasmigration@gitlab.cn')
+    end
+
     it 'includes the correctly formatted date' do
       is_expected.to have_body_text(pipl_user.pipl_access_end_date.strftime('%d-%m-%Y').to_s)
     end
