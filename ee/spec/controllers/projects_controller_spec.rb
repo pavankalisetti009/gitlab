@@ -70,6 +70,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         allow_next_instance_of(ProjectPresenter) do |presenter|
           allow(presenter).to receive(:repository_size_excess).and_return(1)
+          allow(presenter.namespace).to receive(:additional_purchased_storage_size).and_return(1)
         end
 
         public_project.namespace.add_owner(user)
