@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import PasswordRequirementList from 'ee/password/components/password_requirement_list.vue';
+import PasswordRequirementList from 'jh_else_ee/password/components/password_requirement_list.vue';
 
 const initPasswordValidator = ({ allowNoPassword = false } = {}) => {
   const passwordInputSelector = '.js-password-complexity-validation';
