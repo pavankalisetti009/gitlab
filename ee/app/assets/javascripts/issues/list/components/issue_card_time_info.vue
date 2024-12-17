@@ -18,6 +18,11 @@ export default {
       type: Object,
       required: true,
     },
+    isWorkItemList: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     healthStatus() {
@@ -26,7 +31,7 @@ export default {
       );
     },
     showHealthStatus() {
-      return this.hasIssuableHealthStatusFeature && this.healthStatus;
+      return this.hasIssuableHealthStatusFeature && this.healthStatus && !this.isWorkItemList;
     },
     weight() {
       return this.issue.weight || this.issue.widgets?.find(isWeightWidget)?.weight;
