@@ -14,7 +14,7 @@ module Resolvers
           description: 'Global ID of the self-hosted model.'
 
         def resolve(self_hosted_model_id: nil)
-          raise_resource_not_available_error! unless Ability.allowed?(current_user, :manage_ai_settings)
+          return unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
 
           feature_settings = get_feature_settings(self_hosted_model_id)
 

@@ -6,6 +6,10 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :"self-hosted_m
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+  end
 
   let(:input) do
     {
@@ -23,11 +27,9 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :"self-hosted_m
   subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
 
   shared_examples 'it calls the manage_ai_settings policy' do
-    it 'calls the manage_ai_settings policy' do
+    it 'calls the manage_self_hosted_models_settings policy' do
       allow(::Ability).to receive(:allowed?).and_call_original
-
-      expect(::Ability).to receive(:allowed?)
-                             .with(current_user, :manage_ai_settings)
+      expect(::Ability).to receive(:allowed?).with(current_user, :manage_self_hosted_models_settings)
 
       request
     end

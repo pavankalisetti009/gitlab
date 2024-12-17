@@ -102,11 +102,12 @@ module EE
         ::License.feature_available?(:default_roles_assignees)
       end
 
-      condition(:user_allowed_to_manage_ai_settings) do
+      condition(:user_allowed_to_manage_self_hosted_models_settings) do
         next false if ::Feature.disabled?(:allow_self_hosted_features_for_com) &&
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
-        ::License.current&.paid? # Replace with license :ai_self_hosted_model for GA
+        ::License.current&.ultimate? && # Replace with license :ai_self_hosted_model for GA
+          ::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
       end
 
       condition(:x_ray_available) do
@@ -147,8 +148,8 @@ module EE
         enable :read_cloud_connector_status
       end
 
-      rule { admin & user_allowed_to_manage_ai_settings }.policy do
-        enable :manage_ai_settings
+      rule { admin & user_allowed_to_manage_self_hosted_models_settings }.policy do
+        enable :manage_self_hosted_models_settings
       end
 
       rule { admin & custom_roles_allowed }.policy do

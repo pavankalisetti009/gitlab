@@ -6,6 +6,10 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+  end
 
   let(:input) do
     {
@@ -22,12 +26,10 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
 
   subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
 
-  shared_examples 'it calls the manage_ai_settings policy' do
-    it 'calls the manage_ai_settings policy' do
+  shared_examples 'it calls the manage_self_hosted_models_settings policy' do
+    it 'calls the manage_self_hosted_models_settings policy' do
       allow(::Ability).to receive(:allowed?).and_call_original
-
-      expect(::Ability).to receive(:allowed?)
-                             .with(current_user, :manage_ai_settings)
+      expect(::Ability).to receive(:allowed?).with(current_user, :manage_self_hosted_models_settings)
 
       request
     end
@@ -36,14 +38,14 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
   context 'when user is not allowed to write changes' do
     let(:current_user) { create(:user) }
 
-    it_behaves_like 'it calls the manage_ai_settings policy'
+    it_behaves_like 'it calls the manage_self_hosted_models_settings policy'
     it_behaves_like 'a mutation that returns a top-level access error'
   end
 
   context 'when user is allowed to write changes' do
     let(:probe_graphql_result) { mutation_response['result'] }
 
-    it_behaves_like 'it calls the manage_ai_settings policy'
+    it_behaves_like 'it calls the manage_self_hosted_models_settings policy'
 
     context 'when there are errors with creating the self-hosted model' do
       let(:error_message) { 'API error' }

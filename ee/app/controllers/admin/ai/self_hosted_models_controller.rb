@@ -22,7 +22,7 @@ module Admin
       end
 
       def ensure_feature_enabled!
-        render_404 unless Ability.allowed?(current_user, :manage_ai_settings)
+        render_404 unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
       end
     end
   end

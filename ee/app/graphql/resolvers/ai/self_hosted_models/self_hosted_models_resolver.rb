@@ -7,7 +7,7 @@ module Resolvers
         type ::Types::Ai::SelfHostedModels::SelfHostedModelType.connection_type, null: false
 
         def resolve(**args)
-          return unless Ability.allowed?(current_user, :manage_ai_settings)
+          return unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
 
           if args[:id]
             get_self_hosted_model(args[:id])
