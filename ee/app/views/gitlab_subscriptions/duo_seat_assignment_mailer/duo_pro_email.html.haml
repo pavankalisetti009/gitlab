@@ -1,4 +1,4 @@
-- code_suggestions_help_page_link = link_to('', help_page_url('user/gitlab_duo/index.md', anchor: 'code-suggestions'), target: '_blank', rel: 'noopener noreferrer')
+- code_suggestions_help_page_link = link_to('', help_page_url('user/project/repository/code_suggestions/index.md'), target: '_blank', rel: 'noopener noreferrer')
 - duo_chat_help_page_link = link_to('', help_page_url('user/gitlab_duo_chat/index.md'), target: '_blank', rel: 'noopener noreferrer')
 :css
   a {color: #A989F5 }
@@ -60,31 +60,31 @@
                   %table{ role: "presentation", style: "color: #ffffff; width: 540px" }
                     %tr
                       %td{ style: "vertical-align: top; padding: 0px 15px 20px 40px" }
-                        %a{ href: help_page_url('user/gitlab_duo/index.md', anchor: 'code-suggestions') }
+                        %a{ href: help_page_url('user/project/repository/code_suggestions/index.md') }
                           %img{ alt: "Code Suggestions", src: image_url('mailers/duo/code_suggestions_feature_icon'), width: "60" }
                       %td{ align: "left", style: "vertical-align: middle" }
                         %h3{ style: "line-height: 20px; margin: 0;" }
-                          %a{ href: help_page_url('user/gitlab_duo/index.md', anchor: 'code-suggestions') }
+                          %a{ href: help_page_url('user/project/repository/code_suggestions/index.md') }
                             = s_('CodeSuggestions|Code Suggestions')
                         %p{ style: "margin: 13px 0px" }
                           = s_('CodeSuggestions|Automatically generate new lines of code, including full functions, from single and multi-line comments as well as comment blocks')
                     %tr
                       %td{ style: "vertical-align: top; padding: 20px 15px 0px 40px" }
-                        %a{ href: help_page_url('user/gitlab_duo/index.md', anchor: 'code-explanation') }
+                        %a{ href: help_page_url('user/gitlab_duo_chat/examples.md', anchor: 'explain-selected-code') }
                           %img{ alt: "Code Explanations", src: image_url('mailers/duo/code_explanations_feature_icon'), width: "60" }
                       %td{ align: "left", style: "vertical-align: middle; padding: 20px 15px 0px 0px" }
                         %h3{ style: "line-height: 20px; margin: 0;" }
-                          %a{ href: help_page_url('user/gitlab_duo/index.md', anchor: 'code-explanation') }
+                          %a{ href: help_page_url('user/gitlab_duo_chat/examples.md', anchor: 'explain-selected-code') }
                             = s_('CodeSuggestions|Code Explanations')
                         %p{ style: "margin: 13px 0px" }
                           = s_('CodeSuggestions|Helps you get up to speed quickly by explaining source code')
                     %tr
                       %td{ style: "vertical-align: top; padding: 20px 15px 20px 40px" }
-                        %a{ href: help_page_url('user/gitlab_duo/index.md', anchor: 'test-generation') }
+                        %a{ href: help_page_url('user/gitlab_duo_chat/examples.md', anchor: 'write-tests-in-the-ide') }
                           %img{ alt: "Test Generation", src: image_url('mailers/duo/test_generation_feature_icon'), width: "60" }
                       %td{ align: "left", style: "vertical-align: middle; padding: 20px 15px 20px 0px" }
                         %h3{ style: "line-height: 20px; margin: 0;" }
-                          %a{ href: help_page_url('user/gitlab_duo/index.md', anchor: 'test-generation') }
+                          %a{ href: help_page_url('user/gitlab_duo_chat/examples.md', anchor: 'write-tests-in-the-ide') }
                             = s_('CodeSuggestions|Test Generation')
                         %p{ style: "margin: 13px 0px" }
                           = s_('CodeSuggestions|Automate your repetitive tasks and catch bugs early')
