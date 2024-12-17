@@ -79,6 +79,13 @@ FactoryBot::SyntaxRunner.class_eval do
 end
 
 Gitlab::Seeder.quiet do
+  flag = ENV['SEED_GITLAB_DUO']
+
+  unless flag
+    puts "Skipped. Use the SEED_GITLAB_DUO=1 environment variable to enable."
+    next
+  end
+
   Gitlab::Seeder::GitLabDuo.new.clean!
   Gitlab::Seeder::GitLabDuo.new.seed!
 end
