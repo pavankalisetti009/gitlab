@@ -43,6 +43,12 @@ export const projectVulnerabilityManagementPolicies = (nodes) =>
     namespaceType: 'Project',
     policyType: 'vulnerabilityManagementPolicies',
   });
+export const groupVulnerabilityManagementPolicies = (nodes) =>
+  mockPolicyResponse({
+    nodes,
+    namespaceType: 'Group',
+    policyType: 'vulnerabilityManagementPolicies',
+  });
 
 export const mockLinkSecurityPolicyProjectResponses = {
   success: jest.fn().mockResolvedValue({

@@ -18,6 +18,7 @@ import groupScanResultPoliciesQuery from '../../graphql/queries/group_scan_resul
 import projectPipelineExecutionPoliciesQuery from '../../graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from '../../graphql/queries/group_pipeline_execution_policies.query.graphql';
 import projectVulnerabilityManagementPoliciesQuery from '../../graphql/queries/project_vulnerability_management_policies.query.graphql';
+import groupVulnerabilityManagementPoliciesQuery from '../../graphql/queries/group_vulnerability_management_policies.query.graphql';
 import ListHeader from './list_header.vue';
 import ListComponent from './list_component.vue';
 import {
@@ -41,6 +42,7 @@ const NAMESPACE_QUERY_DICT = {
   },
   vulnerabilityManagement: {
     [NAMESPACE_TYPES.PROJECT]: projectVulnerabilityManagementPoliciesQuery,
+    [NAMESPACE_TYPES.GROUP]: groupVulnerabilityManagementPoliciesQuery,
   },
 };
 
@@ -215,7 +217,10 @@ export default {
       );
     },
     vulnerabilityManagementPolicyEnabled() {
-      return this.glFeatures.vulnerabilityManagementPolicyType;
+      return (
+        this.glFeatures.vulnerabilityManagementPolicyType ||
+        this.glFeatures.vulnerabilityManagementPolicyTypeGroup
+      );
     },
   },
   methods: {

@@ -63,8 +63,10 @@ describe('utils', () => {
     });
 
     it('returns false for vulnerability management filter option when feature flag is disabled', () => {
+      // Both project-level and group-level feature flags need to be disabled
       window.gon.features = {
         vulnerabilityManagementPolicyType: false,
+        vulnerabilityManagementPolicyTypeGroup: false,
       };
       expect(
         validateTypeFilter(

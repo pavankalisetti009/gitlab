@@ -144,7 +144,8 @@ export default {
   },
   computed: {
     policyTypeFilterOptions() {
-      return this.glFeatures.vulnerabilityManagementPolicyType
+      return this.glFeatures.vulnerabilityManagementPolicyType ||
+        this.glFeatures.vulnerabilityManagementPolicyTypeGroup
         ? {
             ...POLICY_TYPE_FILTER_OPTIONS,
             ...VULNERABILITY_MANAGEMENT_FILTER_OPTION,

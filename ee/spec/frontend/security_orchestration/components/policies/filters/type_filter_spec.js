@@ -9,15 +9,19 @@ import TypeFilter from 'ee/security_orchestration/components/policies/filters/ty
 describe('TypeFilter component', () => {
   let wrapper;
 
-  const createWrapper = ({ value = '', vulnerabilityManagementPolicyType = true } = {}) => {
+  const createWrapper = ({
+    value = '',
+    glFeatures = {
+      vulnerabilityManagementPolicyTypeGroup: true,
+      vulnerabilityManagementPolicyType: true,
+    },
+  } = {}) => {
     wrapper = shallowMount(TypeFilter, {
       propsData: {
         value,
       },
       provide: {
-        glFeatures: {
-          vulnerabilityManagementPolicyType,
-        },
+        glFeatures,
       },
       stubs: {
         GlCollapsibleListbox,
@@ -37,7 +41,13 @@ describe('TypeFilter component', () => {
     });
 
     it('does not pass vulnerability management option when feature flag is disabled', () => {
-      createWrapper({ vulnerabilityManagementPolicyType: false });
+      // Both project-level and group-level feature flags need to be disabled
+      createWrapper({
+        glFeatures: {
+          vulnerabilityManagementPolicyType: false,
+          vulnerabilityManagementPolicyTypeGroup: false,
+        },
+      });
 
       expect(findToggle().props('items')).toMatchObject(Object.values(POLICY_TYPE_FILTER_OPTIONS));
     });
