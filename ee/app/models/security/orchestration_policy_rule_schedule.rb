@@ -81,7 +81,11 @@ module Security
     end
 
     def time_window
-      policy&.dig(:rules, rule_index, :time_window, :value).to_i
+      value = policy&.dig(:rules, rule_index, :time_window, :value)
+
+      return unless value
+
+      value.to_i
     end
   end
 end

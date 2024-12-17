@@ -403,7 +403,7 @@ RSpec.describe Security::OrchestrationPolicyRuleSchedule, feature_category: :sec
         [{ type: 'schedule', branches: %w[production], cadence: '*/20 * * * *' }]
       end
 
-      it { is_expected.to be_zero }
+      it { is_expected.to be_nil }
     end
 
     context 'when time_window is defined in the rule' do
