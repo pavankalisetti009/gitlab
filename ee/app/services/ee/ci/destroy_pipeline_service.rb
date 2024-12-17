@@ -8,7 +8,7 @@ module EE
       override :execute
       def execute(pipeline)
         response = super(pipeline)
-        log_audit_event(pipeline) if response.success?
+        log_audit_event(pipeline) if record_destroyed?(pipeline)
         response
       end
 
@@ -25,6 +25,10 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def record_destroyed?(pipeline)
+        bulk_reload([pipeline]).none?
       end
     end
   end

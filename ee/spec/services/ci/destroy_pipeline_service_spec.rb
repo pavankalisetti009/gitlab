@@ -20,7 +20,7 @@ RSpec.describe ::Ci::DestroyPipelineService, feature_category: :continuous_integ
         let(:operation) { service.execute(pipeline) }
 
         let(:fail_condition!) do
-          allow(pipeline).to receive(:destroy!).and_raise(ActiveRecord::RecordNotFound)
+          allow(service).to receive(:destroy_all_records).and_return(nil)
         end
 
         let(:attributes) do
