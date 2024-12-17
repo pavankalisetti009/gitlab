@@ -58368,6 +58368,9 @@ msgstr ""
 msgid "Todos|requested an OKR update for %{what}"
 msgstr ""
 
+msgid "Todos|requested an OKR update for %{which}"
+msgstr ""
+
 msgid "Todos|reviewed your merge request"
 msgstr ""
 
