@@ -3,6 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteDatabaseConnectionType from 'ee/geo_sites/components/details/secondary_site/geo_site_database_connection_type.vue';
 import { DB_CONNECTION_TYPE_UI } from 'ee/geo_sites/constants';
 import { MOCK_SECONDARY_SITE } from 'ee_jest/geo_sites/mock_data';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 describe('GeoSiteDatabaseConnectionType', () => {
   let wrapper;
@@ -22,7 +23,7 @@ describe('GeoSiteDatabaseConnectionType', () => {
 
   const findDatabaseConnectionTypeText = () =>
     wrapper.findByTestId('database-connection-type-text');
-  const findQuestionIcon = () => wrapper.findComponent({ ref: 'databaseConnectionType' });
+  const findHelpIcon = () => wrapper.findComponent(HelpIcon);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
 
   describe('template', () => {
@@ -36,12 +37,12 @@ describe('GeoSiteDatabaseConnectionType', () => {
       });
 
       it('renders the question icon correctly', () => {
-        expect(findQuestionIcon().exists()).toBe(true);
-        expect(findQuestionIcon().attributes('name')).toBe('question-o');
+        expect(findHelpIcon().exists()).toBe(true);
       });
 
       it('renders the GlPopover always', () => {
         expect(findGlPopover().exists()).toBe(true);
+        expect(findGlPopover().props().target()).toBe(findHelpIcon().element);
       });
     });
 
