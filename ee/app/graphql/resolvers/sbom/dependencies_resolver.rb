@@ -4,6 +4,7 @@ module Resolvers
   module Sbom
     class DependenciesResolver < BaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
+      include Gitlab::InternalEventsTracking
       include LooksAhead
 
       SORT_TO_PARAMS_MAP = {
@@ -52,6 +53,8 @@ module Resolvers
 
         list = dependencies(args)
 
+        track_event
+
         offset_pagination(list)
       end
 
@@ -79,6 +82,28 @@ module Resolvers
       def mapped_params(params)
         sort_params = SORT_TO_PARAMS_MAP.fetch(params[:sort], {})
         params.merge(sort_params)
+      end
+
+      def track_event
+        if project_or_namespace.is_a?(::Project)
+          track_internal_event(
+            "called_dependency_api",
+            user: current_user,
+            project: project_or_namespace,
+            additional_properties: {
+              label: 'graphql'
+            }
+          )
+        elsif project_or_namespace.is_a?(::Group)
+          track_internal_event(
+            "called_dependency_api",
+            user: current_user,
+            namespace: project_or_namespace,
+            additional_properties: {
+              label: 'graphql'
+            }
+          )
+        end
       end
     end
   end

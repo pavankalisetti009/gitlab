@@ -166,6 +166,13 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
           let(:category) { described_class.name }
           subject(:service_action) { show_dependency_list }
         end
+
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'called_dependency_api' }
+          let(:category) { described_class.name }
+          let(:additional_properties) { { label: 'json' } }
+          subject(:service_action) { get project_dependencies_path(project, format: :json) }
+        end
       end
 
       context 'when licensed feature is unavailable' do
