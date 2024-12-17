@@ -63274,6 +63274,9 @@ msgstr ""
 msgid "WorkItem|Add"
 msgstr ""
 
+msgid "WorkItem|Add %{linkStart}description templates%{linkEnd} to help your contributors communicate effectively!"
+msgstr ""
+
 msgid "WorkItem|Add %{workItemType}"
 msgstr ""
 
@@ -63299,6 +63302,12 @@ msgid "WorkItem|Ancestor"
 msgstr ""
 
 msgid "WorkItem|Ancestor not available"
+msgstr ""
+
+msgid "WorkItem|Apply template"
+msgstr ""
+
+msgid "WorkItem|Applying a template will replace the existing description. Any changes you have made will be lost."
 msgstr ""
 
 msgid "WorkItem|Apricot"
@@ -63350,6 +63359,9 @@ msgid "WorkItem|Child removal reverted"
 msgstr ""
 
 msgid "WorkItem|Child removed"
+msgstr ""
+
+msgid "WorkItem|Choose a template"
 msgstr ""
 
 msgid "WorkItem|Clear"
@@ -63679,6 +63691,9 @@ msgstr ""
 msgid "WorkItem|Select parent"
 msgstr ""
 
+msgid "WorkItem|Select template"
+msgstr ""
+
 msgid "WorkItem|Select type"
 msgstr ""
 
@@ -63854,6 +63869,9 @@ msgid "WorkItem|Type"
 msgstr ""
 
 msgid "WorkItem|Type changed."
+msgstr ""
+
+msgid "WorkItem|Unable to find selected template."
 msgstr ""
 
 msgid "WorkItem|Undo"
