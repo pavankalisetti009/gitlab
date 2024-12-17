@@ -13,7 +13,7 @@ DETAILS:
 GitLab Duo is powered by large language models (LLMs), with data sent through an AI gateway.
 To use GitLab Duo on a self-managed instance, you can:
 
-1. Use the LLMs and the cloud-based AI gateway that's hosted by GitLab. This is the default option.
+1. Use the LLMs and the cloud-based AI gateway that's hosted by GitLab. This option is the default.
 1. [Use LLMs from the supported list and self-host the AI gateway and LLMs](../../administration/self_hosted_models/index.md).
    This option provides full control over your data and security.
 
@@ -52,7 +52,8 @@ and [must be turned on](turn_on_off.md#turn-on-beta-and-experimental-features).
 - Check for restrictions on WebSocket (`wss://`) traffic to `wss://gitlab.example.com/-/cable` and other `.com` domains.
   Network policy restrictions on `wss://` traffic can cause issues with some GitLab Duo Chat
   services. Consider policy updates to allow these services.
-- If you use reverse proxies, such as Apache, you might see GitLab Duo Chat connection issues in your logs, like **WebSocket connection to .... failures**.
+- If you use reverse proxies, such as Apache, you might see GitLab Duo Chat connection issues in your
+  logs, like **WebSocket connection to .... failures**.
 
 To resolve this problem, try editing your Apache proxy settings:
 
@@ -89,7 +90,7 @@ To run a health check:
 1. On the upper-right corner, select **Run health check**.
 1. Optional. In GitLab 17.5 and later, after the health check is complete, you can select **Download report** to save a detailed report of the health check results.
 
-Here is the list of tests performed: 
+These tests are performed:
 
 | Test | Description |
 |-----------------|-------------|
