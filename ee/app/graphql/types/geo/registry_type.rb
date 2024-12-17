@@ -23,10 +23,8 @@ module Types
         field :verification_checksum, GraphQL::Types::String, null: true, description: "The local checksum of the #{graphql_name}"
         field :verification_failure, GraphQL::Types::String, null: true, description: "Error message during verification of the #{graphql_name}"
 
-        # NOTE: remove respond_to? when GroupWikiRepositoryRegistry includes the verification state machine
-        # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/323897
         def verification_state_name_value
-          object.verification_state_name.to_s.gsub('verification_', '') if object.respond_to?(:verification_state_name)
+          object.verification_state_name.to_s.gsub('verification_', '')
         end
       end
     end

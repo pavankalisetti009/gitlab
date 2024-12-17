@@ -132,13 +132,7 @@ RSpec.shared_examples 'gets registries for' do |args|
     data['verificationFailure'] = registry.verification_failure
     data['verificationRetryCount'] = registry.verification_retry_count
     data['verificationStartedAt'] = registry.verification_started_at
-
-    # NOTE: remove respond_to? when GroupWikiRepositoryRegistry includes the verification state machine
-    # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/323897
-    data['verificationState'] = if registry.respond_to?(:verification_state_name)
-                                  registry.verification_state_name.to_s.gsub('verification_', '').upcase
-                                end
-
+    data['verificationState'] = registry.verification_state_name.to_s.gsub('verification_', '').upcase
     data['verifiedAt'] = registry.verified_at if verification_enabled
     data['verificationRetryAt'] = registry.verification_retry_at if verification_enabled
     data
