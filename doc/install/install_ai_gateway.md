@@ -191,7 +191,7 @@ In case of persistent issues, the error message may suggest bypassing authentica
 
 You can also run a [health check](../user/gitlab_duo/setup.md#run-a-health-check-for-gitlab-duo) by going to **Admin > GitLab Duo**.
 
-Here are the list of test performed for offline environments:
+These tests are performed for offline environments:
 
 | Test | Description |
 |-----------------|-------------|

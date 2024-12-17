@@ -50,32 +50,32 @@ you can also do the following:
       gitlab-rails runner [full_path/to/health_check.rb] --debug --username [username] --output-file [report.txt]
       ```
 
-       ```shell
-       Usage: gitlab-rails runner full_path/to/health_check.rb
-              --debug                Enable debug mode
-              --output-file FILE     Write a report to FILE
-              --username USERNAME    Provide a username to test seat assignments
-              --skip [CHECK]         Skip specific check (options: access_data, token, license, host, features, end_to_end)
-       ```
+      ```shell
+      Usage: gitlab-rails runner full_path/to/health_check.rb
+             --debug                Enable debug mode
+             --output-file FILE     Write a report to FILE
+             --username USERNAME    Provide a username to test seat assignments
+             --skip [CHECK]         Skip specific check (options: access_data, token, license, host, features, end_to_end)
+      ```
 
    ::EndTabs
 
 1. Verify that the GitLab instance can reach the [required GitLab.com endpoints](setup.md).
    You can use command-line tools such as `curl` to verify the connectivity.
 
-    ```shell
-    curl --verbose "https://cloud.gitlab.com"
+   ```shell
+   curl --verbose "https://cloud.gitlab.com"
 
-    curl --verbose "https://customers.gitlab.com"
-    ```
+   curl --verbose "https://customers.gitlab.com"
+   ```
 
-    If an HTTP/S proxy is configured for the GitLab instance, include the `proxy` parameter in the `curl` command.
+   If an HTTP/S proxy is configured for the GitLab instance, include the `proxy` parameter in the `curl` command.
 
-    ```shell
-    # https proxy for curl
-    curl --verbose --proxy "http://USERNAME:PASSWORD@example.com:8080" "https://cloud.gitlab.com"
-    curl --verbose --proxy "http://USERNAME:PASSWORD@example.com:8080" "https://customers.gitlab.com"
-    ```
+   ```shell
+   # https proxy for curl
+   curl --verbose --proxy "http://USERNAME:PASSWORD@example.com:8080" "https://cloud.gitlab.com"
+   curl --verbose --proxy "http://USERNAME:PASSWORD@example.com:8080" "https://customers.gitlab.com"
+   ```
 
 1. Optional. If you are using a [proxy server](setup.md#allow-outbound-connections-from-the-gitlab-instance) between the GitLab
    application and the public internet,
