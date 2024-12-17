@@ -70,18 +70,34 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
       let_it_be(:parent_pipeline) { create(:ee_ci_pipeline, :success, project: project) }
       let_it_be(:child_pipeline_1) { create(:ee_ci_pipeline, :success, child_of: parent_pipeline, project: project) }
       let_it_be(:child_pipeline_2) { create(:ee_ci_pipeline, :success, child_of: parent_pipeline, project: project) }
-      let_it_be(:parent_scan) { create(:security_scan, pipeline: parent_pipeline) }
-      let_it_be(:scan_1) { create(:security_scan, pipeline: child_pipeline_1) }
-      let_it_be(:scan_2) { create(:security_scan, pipeline: child_pipeline_2) }
+      let_it_be(:parent_scan) { create(:security_scan, pipeline: parent_pipeline, scan_type: :sast) }
+      let_it_be(:scan_1) { create(:security_scan, pipeline: child_pipeline_1, project: project, scan_type: :sast) }
+      let_it_be(:scan_2) { create(:security_scan, pipeline: child_pipeline_2, project: project, scan_type: :sast) }
+      let_it_be(:artifact_sast_1) { create(:ee_ci_job_artifact, :sast, job: scan_1.build, project: project) }
+      let_it_be(:artifact_sast_2) { create(:ee_ci_job_artifact, :sast, job: scan_2.build, project: project) }
 
       subject(:service_object) { described_class.new(parent_pipeline) }
 
       it 'ingests the scan from both child pipelines' do
         service_object.execute
 
-        expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(parent_scan)
+        expect(Security::Ingestion::IngestReportService).not_to have_received(:execute).with(parent_scan)
         expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_1)
         expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_2)
+      end
+
+      context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports disabled' do
+        before do
+          stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
+        end
+
+        it 'ingests the scan not only from both child pipelines, but also from the parent pipeline' do
+          service_object.execute
+
+          expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(parent_scan)
+          expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_1)
+          expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_2)
+        end
       end
     end
 

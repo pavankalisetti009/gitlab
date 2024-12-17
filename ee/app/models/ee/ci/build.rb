@@ -20,7 +20,8 @@ module EE
         cluster_image_scanning: :cluster_image_scanning,
         dast: :dast,
         coverage_fuzzing: :coverage_fuzzing,
-        api_fuzzing: :api_fuzzing
+        api_fuzzing: :api_fuzzing,
+        cyclonedx: :cyclonedx
       }.with_indifferent_access.freeze
 
       EE_RUNNER_FEATURES = {
@@ -111,7 +112,7 @@ module EE
       end
 
       def has_security_reports?
-        job_artifacts.security_reports.any?
+        job_artifacts.security_reports(project: project).any?
       end
 
       def collect_security_reports!(security_reports, report_types: ::EE::Enums::Ci::JobArtifact.security_report_file_types)

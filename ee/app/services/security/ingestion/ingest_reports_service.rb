@@ -35,6 +35,9 @@ module Security
 
       def store_reports
         latest_security_scans.flat_map do |scan|
+          # Can be removed after https://gitlab.com/gitlab-com/content-sites/handbook/-/merge_requests/10365
+          next unless valid_scanner?(scan)
+
           ingest(scan).then { |ingested_ids| collect_ingested_ids_for(scan, ingested_ids) }
         end
       end
@@ -116,6 +119,12 @@ module Security
 
       def reloaded_project
         @reloaded_project ||= project.reset
+      end
+
+      def valid_scanner?(scan)
+        return true unless ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, project)
+
+        scan.scanner.present?
       end
     end
   end

@@ -9,6 +9,8 @@ module EE
         SECURITY_REPORT_FILE_TYPES = %w[sast secret_detection dependency_scanning container_scanning
           cluster_image_scanning dast coverage_fuzzing api_fuzzing].freeze
 
+        SECURITY_REPORT_AND_CYCLONEDX_REPORT_FILE_TYPES = (SECURITY_REPORT_FILE_TYPES | %w[cyclonedx]).freeze
+
         EE_REPORT_FILE_TYPES = {
           license_scanning: %w[license_scanning].freeze,
           dependency_list: %w[dependency_scanning].freeze,
@@ -26,6 +28,10 @@ module EE
 
         def self.security_report_file_types
           SECURITY_REPORT_FILE_TYPES
+        end
+
+        def self.security_report_and_cyclonedx_report_file_types
+          SECURITY_REPORT_AND_CYCLONEDX_REPORT_FILE_TYPES
         end
 
         def self.ee_report_file_types

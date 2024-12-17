@@ -303,7 +303,7 @@ module EE
     end
 
     def has_security_reports?
-      !!diff_head_pipeline&.complete_or_manual_and_has_reports?(::Ci::JobArtifact.security_reports)
+      !!diff_head_pipeline&.complete_or_manual_and_has_reports?(::Ci::JobArtifact.security_reports(project: project))
     end
 
     def has_dependency_scanning_reports?

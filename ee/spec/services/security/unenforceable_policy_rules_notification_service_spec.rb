@@ -57,17 +57,35 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         let!(:approval_scan_finding_rule) { create_approval_rule(:scan_finding) }
         let!(:approval_license_scanning_rule) { create_approval_rule(:license_scanning) }
 
-        it 'enqueues Security::GeneratePolicyViolationCommentWorker for unenforceable report types' do
-          unenforceable_reports.each do |report_type|
-            expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
-              merge_request.id,
-              { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
-                'violated_policy' => true,
-                'requires_approval' => true }
-            )
+        shared_examples 'for Security::GeneratePolicyViolationCommentWorker' do |report_types|
+          it 'enqueues Security::GeneratePolicyViolationCommentWorker for unenforceable report types' do
+            report_types.each do |report_type|
+              expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
+                merge_request.id,
+                { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
+                  'violated_policy' => true,
+                  'requires_approval' => true }
+              )
+            end
+
+            execute
+          end
+        end
+
+        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports enabled' do
+          before do
+            unenforceable_reports.push(:license_scanning) unless unenforceable_reports.include?(:license_scanning)
           end
 
-          execute
+          it_behaves_like 'for Security::GeneratePolicyViolationCommentWorker', unenforceable_reports
+        end
+
+        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports disabled' do
+          before do
+            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
+          end
+
+          it_behaves_like 'for Security::GeneratePolicyViolationCommentWorker', unenforceable_reports
         end
 
         it 'resets approvals', :aggregate_failures do
@@ -327,11 +345,6 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       end
     end
 
-    it 'unblocks the rules with matching scanners' do
-      expect { execute }.to change { matching_scanner_rule.reload.approvals_required }
-      .and not_change { non_matching_scanner_rule.reload.approvals_required }
-    end
-
     context 'when toggle "unblock_rules_using_execution_policies" is disabled' do
       let(:unblock_enabled) { false }
 
@@ -343,7 +356,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
 
   context 'with unenforceable scan_finding report' do
     before do
-      create(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: pipeline.project)
+      create(:ee_ci_build, :requirements_report, pipeline: pipeline, project: pipeline.project)
     end
 
     it_behaves_like 'unenforceable report', :scan_finding
@@ -365,6 +378,11 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         create(:report_approver_rule, :license_scanning, name: "Rule non matching", merge_request: merge_request,
           approval_project_rule: approval_project_rule, approvals_required: 1,
           scan_result_policy_read: scan_result_policy_read)
+      end
+
+      it 'unblocks the rules with matching scanners' do
+        expect { execute }.to change { matching_scanner_rule.reload.approvals_required }
+          .and change { non_matching_scanner_rule.reload.approvals_required }
       end
 
       context 'when rule is not excludable' do
@@ -411,6 +429,11 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
 
       before do
         scan_result_policy_read.update!(license_states: license_states)
+      end
+
+      it 'unblocks the rules with matching scanners' do
+        expect { execute }.to change { matching_scanner_rule.reload.approvals_required }
+          .and not_change { non_matching_scanner_rule.reload.approvals_required }
       end
 
       context 'when rule is not excludable' do

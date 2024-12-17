@@ -220,6 +220,14 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
             expect { store_scan }.to change { Vulnerabilities::Scanner.count }.by(1)
           end
         end
+
+        context 'when the report originates from a dependency scanning cyclonedx report' do
+          let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :cyclonedx) }
+
+          it 'stores a dependency_scanning scan' do
+            expect { store_scan }.to change { artifact.job.security_scans.dependency_scanning.count }.by(1)
+          end
+        end
       end
 
       context 'when the report has no warnings' do
