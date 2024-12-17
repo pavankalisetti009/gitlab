@@ -1,4 +1,6 @@
-.duo-chat-container {
+.duo-chat-container .duo-chat-drawer {
+  z-index: $zindex-duo-chat;
+
   @include media-breakpoint-up(md) {
     width: $gl-drawer-width;
   }
