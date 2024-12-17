@@ -78,7 +78,7 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
       expect(pipeline).to be_persisted
       expect(test).to be_a Ci::Build
       expect(bridge).to be_a Ci::Bridge
-      expect(bridge.stage).to eq 'deploy'
+      expect(bridge.ci_stage.name).to eq 'deploy'
       expect(pipeline.statuses).to match_array [test, bridge]
       expect(bridge.options).to eq(trigger: { project: 'my/project' })
       expect(bridge.yaml_variables)

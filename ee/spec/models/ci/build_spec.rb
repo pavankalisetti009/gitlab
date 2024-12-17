@@ -19,7 +19,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     )
   end
 
-  let(:stage) { build(:ci_stage) }
+  let(:stage) { create(:ci_stage) }
   let(:job) { create(:ci_build, pipeline: pipeline) }
   let(:artifact) { create(:ee_ci_job_artifact, :sast, job: job, project: job.project) }
   let_it_be(:valid_secrets) do
@@ -328,24 +328,32 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         stub_pages_setting(enabled: true)
       end
 
-      where(:options, :ci_pages_hostname_value, :ci_pages_url_value) do
-        { pages: {} }                     | 'group1.example.com' | 'http://group1.example.com/project-1'
-        { pages: { path_prefix: 'foo' } } | 'group1.example.com' | 'http://group1.example.com/project-1/foo'
-        { pages: { path_prefix: nil } }   | 'group1.example.com' | 'http://group1.example.com/project-1'
-        { pages: { path_prefix: '$CI_COMMIT_BRANCH' } } | 'group1.example.com' | 'http://group1.example.com/project-1/master'
-      end
+      it "includes CI_PAGES_* variables" do
+        build1 = create(:ci_build, pipeline: pipeline, options: { pages: {} })
+        build2 = create(:ci_build, pipeline: pipeline, options: { pages: { path_prefix: 'foo' } })
+        build3 = create(:ci_build, pipeline: pipeline, options: { pages: { path_prefix: nil } })
+        build4 = create(:ci_build, pipeline: pipeline, options: { pages: { path_prefix: '$CI_COMMIT_BRANCH' } })
 
-      with_them do
-        let(:job) do
-          create(:ci_build, pipeline: pipeline, options: options)
-        end
+        project_namespace, _, project_path = project.full_path.downcase.partition('/')
+        ci_pages_hostname = "#{project_namespace}.example.com"
+        ci_pages_url = "http://#{ci_pages_hostname}/#{project_path}"
 
-        it "includes CI_PAGES_* variables" do
-          expect(subject.to_runner_variables).to include(
-            { key: 'CI_PAGES_HOSTNAME', value: ci_pages_hostname_value, public: true, masked: false },
-            { key: 'CI_PAGES_URL', value: ci_pages_url_value, public: true, masked: false }
-          )
-        end
+        expect(build1.variables.to_runner_variables).to include(
+          { key: 'CI_PAGES_HOSTNAME', value: ci_pages_hostname, public: true, masked: false },
+          { key: 'CI_PAGES_URL', value: ci_pages_url, public: true, masked: false }
+        )
+        expect(build2.variables.to_runner_variables).to include(
+          { key: 'CI_PAGES_HOSTNAME', value: ci_pages_hostname, public: true, masked: false },
+          { key: 'CI_PAGES_URL', value: "#{ci_pages_url}/foo", public: true, masked: false }
+        )
+        expect(build3.variables.to_runner_variables).to include(
+          { key: 'CI_PAGES_HOSTNAME', value: ci_pages_hostname, public: true, masked: false },
+          { key: 'CI_PAGES_URL', value: ci_pages_url, public: true, masked: false }
+        )
+        expect(build4.variables.to_runner_variables).to include(
+          { key: 'CI_PAGES_HOSTNAME', value: ci_pages_hostname, public: true, masked: false },
+          { key: 'CI_PAGES_URL', value: "#{ci_pages_url}/master", public: true, masked: false }
+        )
       end
 
       context 'when it is not a pages job' do
