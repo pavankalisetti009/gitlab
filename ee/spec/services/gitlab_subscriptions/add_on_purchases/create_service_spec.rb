@@ -78,7 +78,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
     end
 
     context 'when on .com', :saas do
-      let_it_be(:namespace) { create(:group, :with_organization) }
+      let_it_be(:namespace) { create(:group) }
 
       before do
         stub_ee_application_setting(should_check_namespace_plan: true)
@@ -132,7 +132,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
     end
 
     context 'when not on .com' do
-      let_it_be(:default_organization) { create(:organization, :default) }
+      let_it_be(:organization) { create(:organization) }
 
       let(:namespace) { nil }
 
@@ -164,8 +164,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
 
       include_examples 'no record exists'
 
-      it 'creates record with default organization id' do
-        expect { result }.to change { GitlabSubscriptions::AddOnPurchase.where(organization_id: 1).count }.by(1)
+      it 'creates record with first organization id' do
+        expect { result }.to change {
+          GitlabSubscriptions::AddOnPurchase.where(organization_id: organization.id).count
+        }.by(1)
       end
     end
   end

@@ -218,7 +218,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
 
       let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
       let_it_be(:add_on_purchase) { nil }
-      let_it_be(:default_organization) { create(:organization, :default) }
+      let_it_be(:organization) { create(:organization) }
       let_it_be(:namespace) { nil }
       let_it_be(:quantity) { 1 }
       let_it_be(:starts_at) { Date.current }
