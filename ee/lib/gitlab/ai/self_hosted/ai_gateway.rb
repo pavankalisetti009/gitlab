@@ -11,8 +11,7 @@ module Gitlab
         # Air-gapped instances cannot connect to GitLab's default CloudConnector
         # and are hence required to self-host their own AI Gateway (and the models)
         def required?
-          ::Feature.enabled?(:ai_custom_model) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-            ::License.current&.offline_cloud_license?
+          ::License.current&.offline_cloud_license?
         end
 
         def probes(user)

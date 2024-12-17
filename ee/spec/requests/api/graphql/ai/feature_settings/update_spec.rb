@@ -22,14 +22,6 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
 
   describe '#resolve' do
-    context 'when the ai_custom_model FF is disabled' do
-      before do
-        stub_feature_flags(ai_custom_model: false)
-      end
-
-      it_behaves_like 'a mutation that returns a top-level access error'
-    end
-
     context 'when the user does not have write access' do
       let(:current_user) { create(:user) }
 

@@ -7,7 +7,6 @@ module Resolvers
         type ::Types::Ai::SelfHostedModels::SelfHostedModelType.connection_type, null: false
 
         def resolve(**args)
-          return unless Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
           return unless Ability.allowed?(current_user, :manage_ai_settings)
 
           if args[:id]

@@ -25,7 +25,6 @@ module Admin
       private
 
       def ensure_feature_enabled!
-        render_404 unless Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
         render_404 unless Ability.allowed?(current_user, :manage_ai_settings)
       end
 

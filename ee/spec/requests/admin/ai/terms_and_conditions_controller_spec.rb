@@ -12,18 +12,6 @@ RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feat
   end
 
   shared_examples 'returns 404' do
-    context 'when ai_custom_model feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_custom_model: false)
-      end
-
-      it 'returns 404' do
-        perform_request
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
     context 'when the user is not authorized' do
       it 'performs the right authorization correctly' do
         allow(Ability).to receive(:allowed?).and_call_original

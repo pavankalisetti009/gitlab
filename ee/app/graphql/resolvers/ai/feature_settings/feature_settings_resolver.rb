@@ -14,11 +14,6 @@ module Resolvers
           description: 'Global ID of the self-hosted model.'
 
         def resolve(self_hosted_model_id: nil)
-          # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-          unless Feature.enabled?(:ai_custom_model)
-            raise_resource_not_available_error!("The 'ai_custom_model' feature is not enabled.")
-          end
-          # rubocop:enable Gitlab/FeatureFlagWithoutActor
           raise_resource_not_available_error! unless Ability.allowed?(current_user, :manage_ai_settings)
 
           feature_settings = get_feature_settings(self_hosted_model_id)
