@@ -5,7 +5,7 @@ module QA
     # rubocop:disable RSpec/InstanceVariable -- needed to shut down sample app container in after hook.
     describe(
       'Product Analytics',
-      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"]&.include? "product-analytics" } },
+      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"].include? "product-analytics" } },
       product_group: :product_analytics
     ) do
       let!(:group) { create(:group, name: "product-analytics-g-#{SecureRandom.hex(8)}") }
