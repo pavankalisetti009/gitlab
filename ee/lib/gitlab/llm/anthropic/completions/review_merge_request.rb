@@ -89,56 +89,24 @@ module Gitlab
           def build_draft_notes(response_modifier, diff_file, diff_refs)
             return if note_not_required?(response_modifier)
 
-            response = Nokogiri::XML.parse(response_modifier.response_body)
+            parsed_body = ResponseBodyParser.new(response_modifier.response_body)
 
-            expected_attrs = %w[priority old_line new_line]
-            response.css('review comment').each do |comment|
-              next unless (expected_attrs - comment.keys).blank?
-
-              old_line = comment['old_line'].blank? ? nil : comment['old_line'].to_i
-              new_line = comment['new_line'].blank? ? nil : comment['new_line'].to_i
-
+            parsed_body.comments.each do |comment|
               # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
-              line = diff_file.diff_lines.find { |line| line.old_line == old_line && line.new_line == new_line }
+              line = diff_file.diff_lines.find do |line|
+                line.old_line == comment.old_line && line.new_line == comment.new_line
+              end
+
               next unless line.present?
 
-              note_content = parsed_note_content(comment)
-              draft_note_params = build_draft_note_params(note_content, diff_file, line, diff_refs)
+              draft_note_params = build_draft_note_params(comment.content, diff_file, line, diff_refs)
               next unless draft_note_params.present?
 
               @draft_notes_by_priority << [
-                comment['priority'].to_i,
+                comment.priority,
                 draft_note_params
               ]
             end
-          end
-
-          def parsed_note_content(comment)
-            # NOTE: We should avoid parsing the content if it is not in an expected suggestion format.
-            return comment.inner_html.delete_prefix("\n") unless comment.element_children.map(&:name) == %w[from to]
-
-            line_offset_below = 0
-
-            comment.children.map do |element|
-              inner_html = element.inner_html
-
-              case element.name
-              when 'from'
-                # NOTE: We're just interested in counting the existing lines as LLM doesn't
-                # seem to be able to reliably set this by itself.
-                # We need to remove the starting line breaks to count content lines correctly
-                # as the element.inner_html includes the initial line break as in `<from>\n`.
-                line_offset_below = inner_html.delete_prefix("\n").lines.count - 1
-                ''
-              when 'to'
-                # NOTE: Sometimes LLM returns inline tags like `<to>  some text</to>` for single line suggestions
-                #   so we need to handle that here to make sure the suggestion format is correct.
-                content = inner_html.start_with?("\n") ? inner_html : "\n#{inner_html}\n"
-                "```suggestion:-0+#{line_offset_below}#{content}```\n"
-              when 'text'
-                element.inner_text.delete_prefix("\n")
-              end
-            end.join
           end
 
           def build_draft_note_params(comment, diff_file, line, diff_refs)
