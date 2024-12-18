@@ -23,7 +23,7 @@ module QA
                 end
 
                 expect(duo_chat).to have_response(response_with_failover),
-                  "Expected '#{expected_response}' within Duo Chat response."
+                  "Expected '#{response_with_failover}' within Duo Chat response."
               end
             end
           end
