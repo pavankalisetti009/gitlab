@@ -27,6 +27,13 @@ module EE
     end
     alias_method :stub_secondary_node, :stub_secondary_site
 
+    def stub_geo_nodes_exist_but_none_match_current_node
+      allow(::Gitlab::Geo).to receive(:enabled?).and_return(true)
+      allow(::Gitlab::Geo).to receive(:primary?).and_return(false)
+      allow(::Gitlab::Geo).to receive(:secondary?).and_return(false)
+      allow(::Gitlab::Geo).to receive(:current_node).and_return(nil)
+    end
+
     def stub_proxied_request
       allow(::Gitlab::Geo).to receive(:proxied_request?).and_return(true)
     end
