@@ -44,17 +44,12 @@ module EE
             ::Sidebars::Admin::Menus::CodeSuggestionsMenu.new(context)
           )
 
-          return unless self_hosted_models_enabled?
+          return unless Ability.allowed?(context.current_user, :manage_self_hosted_models_settings)
 
           insert_menu_after(
             ::Sidebars::Admin::Menus::CodeSuggestionsMenu,
             ::Sidebars::Admin::Menus::SelfHostedModelsMenu.new(context)
           )
-        end
-
-        def self_hosted_models_enabled?
-          License.current&.ultimate? &&
-            GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
         end
       end
     end
