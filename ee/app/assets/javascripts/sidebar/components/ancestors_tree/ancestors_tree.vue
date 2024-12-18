@@ -60,8 +60,8 @@ export default {
     getIcon(ancestor) {
       return ancestor.state === STATUS_OPEN ? 'issue-open-m' : 'issue-close';
     },
-    getTimelineClass(ancestor) {
-      return ancestor.state === STATUS_OPEN ? 'opened' : 'closed';
+    getTimelineIconVariant(ancestor) {
+      return ancestor.state === STATUS_OPEN ? 'success' : 'info';
     },
     getLastItemClass(index, length) {
       return index === length - 1 ? '!gl-h-auto' : '';
@@ -102,11 +102,12 @@ export default {
           </div>
         </li>
         <li :key="ancestor.id" class="vertical-timeline-row gl-flex">
-          <div
-            class="vertical-timeline-icon gl-bg-default"
-            :class="[getTimelineClass(ancestor), getLastItemClass(index, ancestors.length)]"
-          >
-            <gl-icon :name="getIcon(ancestor)" />
+          <div class="vertical-timeline-icon" :class="getLastItemClass(index, ancestors.length)">
+            <gl-icon
+              :name="getIcon(ancestor)"
+              :variant="getTimelineIconVariant(ancestor)"
+              class="gl-bg-overlap"
+            />
           </div>
           <div class="vertical-timeline-content">
             <gl-link :href="ancestor.url" class="gl-text-default">{{ ancestor.title }}</gl-link>

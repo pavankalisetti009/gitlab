@@ -1,7 +1,8 @@
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { escape } from 'lodash';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { STATUS_OPEN, STATUS_CLOSED } from '~/issues/constants';
 import AncestorsTree from 'ee/sidebar/components/ancestors_tree/ancestors_tree.vue';
 
 describe('AncestorsTreeContainer', () => {
@@ -11,14 +12,14 @@ describe('AncestorsTreeContainer', () => {
       id: 1,
       url: 'http://example.com/groups/gitlab-org/-/epics/90',
       title: 'A',
-      state: 'open',
+      state: STATUS_OPEN,
       hasParent: false,
     },
     {
       id: 2,
       url: 'http://example.com/groups/gitlab-org/-/epics/91',
       title: 'B',
-      state: 'open',
+      state: STATUS_OPEN,
       hasParent: true,
     },
   ];
@@ -97,14 +98,14 @@ describe('AncestorsTreeContainer', () => {
         id: 1,
         url: 'http://example.com/groups/gitlab-org/-/epics/90',
         title: 'A',
-        state: 'open',
+        state: STATUS_OPEN,
         hasParent: true,
       },
       {
         id: 2,
         url: 'http://example.com/groups/gitlab-org/-/epics/91',
         title: 'B',
-        state: 'open',
+        state: STATUS_OPEN,
         hasParent: true,
       },
     ];
@@ -114,5 +115,38 @@ describe('AncestorsTreeContainer', () => {
     expect(wrapper.findAll('.vertical-timeline-row')).toHaveLength(ancestors2.length + 1);
     expect(findParentWarning().exists()).toBe(true);
     expect(findParentWarning().text()).toBe("You don't have permission to view this epic");
+  });
+
+  it('renders GlIcon with correct variants based on ancestor state', () => {
+    const ancestors2 = [
+      {
+        id: 1,
+        url: 'http://example.com/groups/gitlab-org/-/epics/90',
+        title: 'A',
+        state: STATUS_OPEN,
+        hasParent: true,
+      },
+      {
+        id: 2,
+        url: 'http://example.com/groups/gitlab-org/-/epics/91',
+        title: 'B',
+        state: STATUS_CLOSED,
+        hasParent: true,
+      },
+    ];
+    createComponent({ ancestors: ancestors2 });
+
+    const openIcons = wrapper
+      .findAllComponents(GlIcon)
+      .filter((icon) => icon.props('name') === 'issue-open-m');
+    const closeIcons = wrapper
+      .findAllComponents(GlIcon)
+      .filter((icon) => icon.props('name') === 'issue-close');
+
+    expect(openIcons).toHaveLength(1);
+    expect(openIcons.at(0).props('variant')).toBe('success');
+
+    expect(closeIcons).toHaveLength(1);
+    expect(closeIcons.at(0).props('variant')).toBe('info');
   });
 });
