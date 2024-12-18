@@ -33,10 +33,16 @@ module EE
       scope :grouped_by_work_item, -> { group(:id) }
 
       scope :preload_indexing_data, -> do
-        includes(:namespace,
+        preloaded_data = includes(:namespace,
           :sync_object,
-          ::Gitlab::Issues::TypeAssociationGetter.call, :notes,
+          ::Gitlab::Issues::TypeAssociationGetter.call,
           project: :project_feature)
+
+        if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
+          preloaded_data = preloaded_data.includes(:notes)
+        end
+
+        preloaded_data
       end
     end
 
