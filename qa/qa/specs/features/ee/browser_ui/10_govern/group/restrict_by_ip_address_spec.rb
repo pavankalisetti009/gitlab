@@ -97,7 +97,7 @@ module QA
 
         # Note: If you run this test against GDK make sure you've enabled sshd
         # See: https://gitlab.com/gitlab-org/gitlab-qa/blob/master/docs/run_qa_against_gdk.md
-        context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' }, quarantine: {
+        context 'with SSH', :requires_sshd, quarantine: {
           type: :investigating,
           issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/499657",
           only: { job: /gdk-qa-.*/ }
