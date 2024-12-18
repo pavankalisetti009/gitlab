@@ -11,10 +11,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
     instance_double("Project", path: project_path, http_url_to_repo: http_url_to_repo) # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   end
 
-  let(:input_processed_devfile_name) { 'example.main-container-updated-devfile.yaml' }
-  let(:input_processed_devfile) { YAML.safe_load(read_devfile(input_processed_devfile_name)).to_h }
-  let(:expected_processed_devfile_name) { 'example.project-cloner-inserted-devfile.yaml' }
-  let(:expected_processed_devfile) { YAML.safe_load(read_devfile(expected_processed_devfile_name)).to_h }
+  let(:input_processed_devfile) do
+    yaml_safe_load_symbolized(read_devfile_yaml("example.main-container-updated-devfile.yaml"))
+  end
+
+  let(:expected_processed_devfile_name) { "example.project-cloner-inserted-devfile.yaml" }
+  let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
   let(:component_name) { "gl-project-cloner" }
   let(:context) do
     {

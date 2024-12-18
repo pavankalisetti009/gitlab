@@ -5,9 +5,9 @@ require "fast_spec_helper"
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let(:devfile_yaml) { example_devfile }
-  let(:devfile) { YAML.safe_load(devfile_yaml) }
-  let(:expected_processed_devfile) { YAML.safe_load(example_flattened_devfile) }
+  let(:devfile_yaml) { example_devfile_yaml }
+  let(:devfile) { yaml_safe_load_symbolized(devfile_yaml) }
+  let(:expected_processed_devfile) { example_flattened_devfile }
   let(:context) { { devfile: devfile } }
 
   subject(:result) do
@@ -25,13 +25,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
     )
   end
 
-  context "when devfile has no components" do
-    let(:devfile_yaml) { read_devfile('example.no-components-devfile.yaml') }
+  context "when devfile has no elements" do
+    let(:devfile_yaml) { read_devfile_yaml('example.no-elements-devfile.yaml') }
     let(:expected_processed_devfile) do
-      YAML.safe_load(read_devfile('example.no-components-flattened-devfile.yaml'))
+      yaml_safe_load_symbolized(read_devfile_yaml("example.no-elements-flattened-devfile.yaml"))
     end
 
-    it "adds an empty components entry" do
+    it "adds empty elements" do
       expect(result).to eq(
         Gitlab::Fp::Result.ok(
           {
@@ -44,7 +44,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
   end
 
   context "when flatten raises a Devfile::CliError" do
-    let(:devfile_yaml) { read_devfile('example.invalid-extra-field-devfile.yaml') }
+    let(:devfile_yaml) { read_devfile_yaml("example.invalid-extra-field-devfile.yaml") }
 
     it "returns the error message from the CLI" do
       expected_error_message =

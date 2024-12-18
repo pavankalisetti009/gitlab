@@ -16,8 +16,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:devfile_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml' }
-  let(:devfile_yaml) { read_devfile(devfile_fixture_name) }
-  let(:expected_processed_devfile) { YAML.safe_load(example_processed_devfile).to_h }
+  let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
+  let(:expected_processed_devfile) { example_processed_devfile }
   let(:workspace_root) { '/projects' }
   let(:dns_zone) { 'dns.zone.me' }
   let(:variables) do
@@ -127,7 +127,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         # noinspection RubyResolve
         expect(workspace.devfile).to eq(devfile_yaml)
 
-        actual_processed_devfile = YAML.safe_load(workspace.processed_devfile).to_h
+        actual_processed_devfile = yaml_safe_load_symbolized(workspace.processed_devfile)
         expect(actual_processed_devfile).to eq(expected_processed_devfile)
 
         variables.each do |variable|
@@ -216,10 +216,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
     it 'uses image override' do
       workspace = response.fetch(:payload).fetch(:workspace)
-      processed_devfile = YAML.safe_load(workspace.processed_devfile).to_h
-      image_from_processed_devfile = processed_devfile["components"]
-                                       &.find { |component| component['name'] == 'gl-tools-injector' }
-                                       &.dig('container', 'image')
+      processed_devfile = yaml_safe_load_symbolized(workspace.processed_devfile)
+      image_from_processed_devfile =
+        processed_devfile.fetch(:components)
+          .find { |component| component.fetch(:name) == "gl-tools-injector" }
+          .dig(:container, :image)
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
     end
   end

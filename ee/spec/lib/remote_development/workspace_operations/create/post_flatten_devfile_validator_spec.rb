@@ -8,7 +8,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
   include_context 'with remote development shared fixtures'
 
   let(:flattened_devfile_name) { 'example.flattened-with-entries-devfile.yaml' }
-  let(:processed_devfile) { YAML.safe_load(read_devfile(flattened_devfile_name)) }
+  let(:processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(flattened_devfile_name)) }
   let(:context) { { processed_devfile: processed_devfile } }
 
   subject(:result) do

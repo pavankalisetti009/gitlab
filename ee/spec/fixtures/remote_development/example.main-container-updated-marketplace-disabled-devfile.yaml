@@ -61,10 +61,11 @@ components:
       memoryRequest: 256Mi
       cpuLimit: 500m
       cpuRequest: 100m
-events:
-  preStart:
-    - gl-tools-injector-command
 commands:
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector
+events:
+  preStart:
+    - gl-tools-injector-command
+variables: {}

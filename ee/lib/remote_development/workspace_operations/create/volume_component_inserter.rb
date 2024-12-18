@@ -17,18 +17,20 @@ module RemoteDevelopment
           }
 
           volume_component = {
-            'name' => volume_name,
-            'volume' => {
-              'size' => '50Gi'
+            name: volume_name,
+            volume: {
+              size: '50Gi'
             }
           }
 
-          processed_devfile['components'] << volume_component
-          processed_devfile['components'].each do |component|
-            next if component['container'].nil?
+          components = processed_devfile.fetch(:components)
 
-            component['container']['volumeMounts'] = [] if component['container']['volumeMounts'].nil?
-            component['container']['volumeMounts'] += [{ 'name' => volume_name, 'path' => volume_path }]
+          components << volume_component
+          components.each do |component|
+            next unless component[:container]
+
+            volume_mount = { name: volume_name, path: volume_path }
+            (component.fetch(:container)[:volumeMounts] ||= []) << volume_mount
           end
 
           context

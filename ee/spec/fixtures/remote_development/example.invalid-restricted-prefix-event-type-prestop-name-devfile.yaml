@@ -16,3 +16,4 @@ events:
   preStop:
     - example
     - gl-example
+variables: {}

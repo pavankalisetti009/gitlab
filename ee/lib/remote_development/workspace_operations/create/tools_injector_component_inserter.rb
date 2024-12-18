@@ -34,39 +34,34 @@ module RemoteDevelopment
         # @param [String] image
         # @return [void]
         def self.insert_tools_injector_component(processed_devfile:, tools_dir:, image:)
-          component_name = 'gl-tools-injector'
+          component_name = "gl-tools-injector"
 
-          tools_injector_component = {
-            'name' => component_name,
-            'container' => {
-              'image' => image,
-              'env' => [
+          processed_devfile[:components] << {
+            name: component_name,
+            container: {
+              image: image,
+              env: [
                 {
-                  'name' => 'GL_TOOLS_DIR',
-                  'value' => tools_dir
+                  name: "GL_TOOLS_DIR",
+                  value: tools_dir
                 }
               ],
-              'memoryLimit' => '512Mi',
-              'memoryRequest' => '256Mi',
-              'cpuLimit' => '500m',
-              'cpuRequest' => '100m'
+              memoryLimit: "512Mi",
+              memoryRequest: "256Mi",
+              cpuLimit: "500m",
+              cpuRequest: "100m"
             }
           }
-          processed_devfile['components'] << tools_injector_component
-
-          processed_devfile['commands'] = [] if processed_devfile['commands'].nil?
 
           command_name = "#{component_name}-command"
-          processed_devfile['commands'] += [{
-            'id' => command_name,
-            'apply' => {
-              'component' => component_name
+          processed_devfile[:commands] << {
+            id: command_name,
+            apply: {
+              component: component_name
             }
-          }]
+          }
 
-          processed_devfile['events'] = {} if processed_devfile['events'].nil?
-          processed_devfile['events']['preStart'] = [] if processed_devfile['events']['preStart'].nil?
-          processed_devfile['events']['preStart'] += [command_name]
+          (processed_devfile.fetch(:events)[:preStart] ||= []) << command_name
 
           nil
         end

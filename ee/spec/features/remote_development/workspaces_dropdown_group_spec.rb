@@ -12,7 +12,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   let_it_be(:devfile_path) { '.devfile.yaml' }
 
   let_it_be(:project) do
-    files = { devfile_path => example_devfile }
+    files = { devfile_path => example_devfile_yaml }
     create(:project, :public, :in_group, :custom_repo, path: 'test-project', files: files, namespace: group)
   end
 
@@ -96,7 +96,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
 
         click_button('Actions')
 
-        # Asserts that all workspaces actions are visible
+        # Asserts that all workspace actions are visible
         expect(page).to have_button('Stop')
         expect(page).to have_button('Terminate')
 

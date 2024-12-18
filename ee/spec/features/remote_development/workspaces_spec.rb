@@ -16,7 +16,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
   let_it_be(:devfile_path) { '.devfile.yaml' }
 
   let_it_be(:project) do
-    files = { devfile_path => example_devfile }
+    files = { devfile_path => example_devfile_yaml }
     create(:project, :public, :in_group, :custom_repo, path: 'test-project', files: files, namespace: group)
   end
 
@@ -123,7 +123,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       wait_for_requests
       # noinspection RubyMismatchedArgumentType -- Rubymine is finding the wrong `select`
       select agent.name, from: 'Cluster agent'
-      # this field should be auto-fill when selecting agent
+      # this field should be autofilled when selecting agent
       click_button 'Add variable'
       fill_in 'Variable Key', with: variable_key
       fill_in 'Variable Value', with: variable_value

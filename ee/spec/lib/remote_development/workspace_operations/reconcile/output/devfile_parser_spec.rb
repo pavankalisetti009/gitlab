@@ -24,7 +24,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       deployment_resource_version: "1",
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
-      processed_devfile: example_processed_devfile,
+      processed_devfile: example_processed_devfile_yaml,
       user: user,
       agent: agent,
       workspaces_agent_config: workspaces_agent_config,
@@ -34,7 +34,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   end
   # rubocop:enable RSpec/VerifiedDoubleReference
 
-  let(:processed_devfile) { example_processed_devfile }
+  let(:processed_devfile_yaml) { example_processed_devfile_yaml }
   let(:domain_template) { "" }
   let(:egress_ip_rules) do
     [{
@@ -100,7 +100,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   subject(:k8s_resources_for_workspace_core) do
     described_class.get_all(
-      processed_devfile: processed_devfile,
+      processed_devfile: processed_devfile_yaml,
       k8s_resources_params: k8s_resources_params,
       logger: logger
     )
@@ -115,7 +115,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
         'workspaces.gitlab.com/host-template' => domain_template,
         'workspaces.gitlab.com/id' => workspace.id,
         'workspaces.gitlab.com/max-resources-per-workspace-sha256' =>
-                                  Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
+          Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
       })
     end
 
@@ -124,7 +124,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
       it 'returns workspace_resources with allow_privilege_escalation set to true' do
         expect(k8s_resources_for_workspace_core).to eq(expected_workspace_resources)
-        deployment = k8s_resources_for_workspace_core.find { |resource| resource.fetch('kind') == 'Deployment' }
+        deployment = k8s_resources_for_workspace_core.find do |resource|
+          resource.fetch('kind') == 'Deployment'
+        end.to_h
 
         container_privilege_escalation = deployment.dig('spec', 'template', 'spec', 'containers').map do |container|
           container.dig('securityContext', 'allowPrivilegeEscalation')
@@ -146,7 +148,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
       it 'returns workspace_resources with hostUsers set to true' do
         expect(k8s_resources_for_workspace_core).to eq(expected_workspace_resources)
-        deployment = k8s_resources_for_workspace_core.find { |resource| resource.fetch('kind') == 'Deployment' }
+        deployment = k8s_resources_for_workspace_core.find do |resource|
+          resource.fetch('kind') == 'Deployment'
+        end.to_h
         expect(deployment.dig('spec', 'template', 'spec', 'hostUsers')).to be(true)
       end
     end
@@ -157,7 +161,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       allow(Devfile::Parser).to receive(:get_all).and_raise(Devfile::CliError.new("some error"))
     end
 
-    let(:processed_devfile) { "" }
+    let(:processed_devfile_yaml) { "" }
 
     it "logs the error" do
       expect(logger).to receive(:warn).with(

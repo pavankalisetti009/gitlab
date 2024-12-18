@@ -125,3 +125,4 @@ commands:
   - id: gl-project-cloner-command
     apply:
       component: gl-project-cloner
+variables: {}

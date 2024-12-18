@@ -92,7 +92,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when new workspace has been created or existing workspace has been scaled up' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -104,7 +104,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: NewReplicaSetAvailable
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -116,7 +116,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when existing workspace has been scaled down' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 0
@@ -127,7 +127,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: NewReplicaSetAvailable
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -139,7 +139,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when status does not contain required information' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 test: 0
@@ -150,7 +150,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: NewReplicaSetAvailable
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -164,7 +164,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when new workspace has been created' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -173,7 +173,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: NewReplicaSetCreated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -185,7 +185,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when existing workspace has been updated' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -194,7 +194,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: FoundNewReplicaSet
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -206,7 +206,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when existing workspace has been scaled up' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -215,7 +215,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: ReplicaSetUpdated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -227,7 +227,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when existing workspace has been scaled down' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPING }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 0
@@ -236,7 +236,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: ReplicaSetUpdated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -248,7 +248,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when spec replicas is more than 1' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 2
@@ -257,7 +257,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: ReplicaSetUpdated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -269,7 +269,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when status does not contain required information' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -278,7 +278,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: test
                   type: test
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys.to_h
+          ).to_h
         end
 
         it 'returns the expected actual state' do
@@ -292,7 +292,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when new workspace has been created or existing workspace has been scaled up' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::FAILED }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -304,7 +304,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                   type: Progressing
                 unavailableReplicas: 1
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -316,7 +316,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       context 'when existing scaled down workspace which was failing has been scaled up' do
         let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::FAILED }
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 1
@@ -328,7 +328,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                   type: Progressing
                 unavailableReplicas: 1
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -344,7 +344,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context 'when spec is missing' do
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               test:
                 replicas: 0
@@ -353,7 +353,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: ReplicaSetUpdated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -364,7 +364,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context 'when spec replicas is missing' do
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 test: 0
@@ -373,7 +373,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: ReplicaSetUpdated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -384,12 +384,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context 'when status is missing' do
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 0
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -400,7 +400,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context 'when status conditions is missing' do
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 0
@@ -409,7 +409,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: ReplicaSetUpdated
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -420,7 +420,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context 'when status conditions reason is missing' do
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 0
@@ -428,7 +428,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 conditions:
                 - type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do
@@ -439,7 +439,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context 'when status progressing and available conditions are unrecognized' do
         let(:latest_k8s_deployment_info) do
-          YAML.safe_load(
+          yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
               spec:
                 replicas: 0
@@ -450,7 +450,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
                 - reason: unrecognized
                   type: Progressing
             WORKSPACE_STATUS_YAML
-          ).deep_symbolize_keys
+          )
         end
 
         it 'returns the expected actual state' do

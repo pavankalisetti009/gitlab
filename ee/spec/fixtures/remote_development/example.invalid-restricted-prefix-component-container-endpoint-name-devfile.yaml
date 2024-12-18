@@ -11,3 +11,6 @@ components:
           targetPort: 3101
           protocol: https
           exposure: none
+commands: []
+events: {}
+variables: {}

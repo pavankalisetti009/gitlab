@@ -14,3 +14,5 @@ commands:
   - id: example-invalid-second-component-command
     apply:
       component: gl-example-invalid-component
+events: {}
+variables: {}

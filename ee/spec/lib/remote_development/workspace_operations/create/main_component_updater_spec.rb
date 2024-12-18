@@ -5,10 +5,12 @@ require "fast_spec_helper"
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpdater, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let(:input_processed_devfile_name) { 'example.tools-injector-inserted-devfile.yaml' }
-  let(:input_processed_devfile) { YAML.safe_load(read_devfile(input_processed_devfile_name)).to_h }
+  let(:input_processed_devfile) do
+    yaml_safe_load_symbolized(read_devfile_yaml("example.tools-injector-inserted-devfile.yaml"))
+  end
+
   let(:expected_processed_devfile_name) { 'example.main-container-updated-devfile.yaml' }
-  let(:expected_processed_devfile) { YAML.safe_load(read_devfile(expected_processed_devfile_name)).to_h }
+  let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
 
   let(:vscode_extensions_gallery_metadata_enabled) { false }
 

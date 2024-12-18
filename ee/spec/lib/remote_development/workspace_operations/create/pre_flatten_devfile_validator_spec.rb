@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require 'fast_spec_helper'
+require "fast_spec_helper"
 
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PreFlattenDevfileValidator, feature_category: :workspaces do
   include ResultMatchers
 
   include_context 'with remote development shared fixtures'
 
-  let(:devfile_name) { 'example.devfile.yaml' }
-  let(:devfile) { YAML.safe_load(read_devfile(devfile_name)).to_h }
+  let(:devfile_name) { "example.devfile.yaml" }
+  let(:devfile) { yaml_safe_load_symbolized(read_devfile_yaml(devfile_name)) }
   let(:context) { { devfile: devfile } }
 
   subject(:result) do

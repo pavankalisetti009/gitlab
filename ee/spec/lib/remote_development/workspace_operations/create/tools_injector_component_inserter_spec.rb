@@ -5,10 +5,9 @@ require "fast_spec_helper"
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let(:input_processed_devfile_name) { 'example.flattened-devfile.yaml' }
-  let(:input_processed_devfile) { YAML.safe_load(read_devfile(input_processed_devfile_name)).to_h }
-  let(:expected_processed_devfile_name) { 'example.tools-injector-inserted-devfile.yaml' }
-  let(:expected_processed_devfile) { YAML.safe_load(read_devfile(expected_processed_devfile_name)).to_h }
+  let(:input_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml("example.flattened-devfile.yaml")) }
+  let(:expected_processed_devfile_name) { "example.tools-injector-inserted-devfile.yaml" }
+  let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
   let(:tools_injector_image_from_settings) do
     "registry.gitlab.com/gitlab-org/remote-development/gitlab-workspaces-tools:2.0.0"
   end
@@ -46,7 +45,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
     let(:tools_injector_image_from_settings) { 'my/awesome/image:42' }
 
     it 'uses image override' do
-      image_from_processed_devfile = returned_value[:processed_devfile]["components"][2]["container"]["image"]
+      image_from_processed_devfile = returned_value.dig(:processed_devfile, :components, 2, :container, :image)
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
     end
   end

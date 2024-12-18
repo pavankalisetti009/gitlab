@@ -13,3 +13,6 @@ components:
           - 'MY_ENV=/home/path'
         buildContext: .
         rootRequired: false
+commands: []
+events: {}
+variables: {}

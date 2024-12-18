@@ -13,10 +13,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let(:random_string) { 'abcdef' }
   let(:devfile_path) { '.devfile.yaml' }
-  let(:devfile_yaml) { example_devfile }
-  let(:processed_devfile) { YAML.safe_load(example_flattened_devfile) }
+  let(:devfile_yaml) { example_devfile_yaml }
+  let(:processed_devfile) { example_flattened_devfile }
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-  let(:processed_devfile_yaml) { YAML.safe_load(example_processed_devfile) }
 
   let(:workspace_root) { '/projects' }
   let(:params) do

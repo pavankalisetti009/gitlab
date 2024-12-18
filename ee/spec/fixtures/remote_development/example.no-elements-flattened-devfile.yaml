@@ -2,3 +2,6 @@
 schemaVersion: 2.2.0
 metadata: {}
 components: []
+commands: []
+events: {}
+variables: {}

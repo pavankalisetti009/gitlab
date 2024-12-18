@@ -1231,21 +1231,37 @@ RSpec.shared_context 'with remote development shared fixtures' do
     "${PORT}-#{workspace_name}.#{dns_zone}"
   end
 
+  def yaml_safe_load_symbolized(yaml)
+    YAML.safe_load(yaml).to_h.deep_symbolize_keys
+  end
+
+  def example_devfile_yaml
+    read_devfile_yaml('example.devfile.yaml')
+  end
+
   def example_devfile
-    read_devfile('example.devfile.yaml')
+    yaml_safe_load_symbolized(example_devfile_yaml)
+  end
+
+  def example_flattened_devfile_yaml
+    read_devfile_yaml("example.flattened-devfile.yaml")
   end
 
   def example_flattened_devfile
-    read_devfile('example.flattened-devfile.yaml')
+    yaml_safe_load_symbolized(example_flattened_devfile_yaml)
+  end
+
+  def example_processed_devfile_yaml(project_name: "test-project", namespace_path: "test-group")
+    read_devfile_yaml("example.processed-devfile.yaml", project_name: project_name, namespace_path: namespace_path)
   end
 
   def example_processed_devfile(project_name: "test-project", namespace_path: "test-group")
-    read_devfile('example.processed-devfile.yaml', project_name: project_name, namespace_path: namespace_path)
+    yaml_safe_load_symbolized(
+      example_processed_devfile_yaml(project_name: project_name, namespace_path: namespace_path)
+    )
   end
 
-  # TODO: Rename this method and all methods which use it to end in `_yaml`, to clearly distinguish between
-  #       a String YAML representation of a devfile, and a devfile which has been converted to a Hash.
-  def read_devfile(filename, project_name: "test-project", namespace_path: "test-group")
+  def read_devfile_yaml(filename, project_name: "test-project", namespace_path: "test-group")
     devfile_contents = File.read(Rails.root.join('ee/spec/fixtures/remote_development', filename).to_s)
     devfile_contents.gsub!('http://localhost/', root_url)
     devfile_contents.gsub!('test-project', project_name)

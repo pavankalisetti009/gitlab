@@ -8,7 +8,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   let(:logger) { instance_double(Logger) }
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
-  let(:processed_devfile) { example_processed_devfile }
+  let(:processed_devfile_yaml) { example_processed_devfile_yaml }
   let(:force_include_all_resources) { false }
   let(:image_pull_secrets) { [{ name: "secret-name", namespace: "secret-namespace" }] }
   let(:current_desired_config_generator_version) do
@@ -35,7 +35,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
       deployment_resource_version: "1",
       desired_state: desired_state,
       actual_state: actual_state,
-      processed_devfile: processed_devfile,
+      processed_devfile: processed_devfile_yaml,
       desired_config_generator_version: desired_config_generator_version,
       force_include_all_resources: force_include_all_resources,
       workspaces_agent_config: agent_config

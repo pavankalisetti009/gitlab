@@ -34,3 +34,4 @@ commands:
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector
+variables: {}
