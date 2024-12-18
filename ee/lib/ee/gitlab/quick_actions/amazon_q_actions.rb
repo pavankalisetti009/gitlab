@@ -26,18 +26,12 @@ module EE
           end
           command :q do |input = "dev"|
             sub_command, *comment_words = input.strip.split(' ', 2)
-            case quick_action_target
-            when ::Issue
-              unless ::Ai::AmazonQ::Commands::ISSUE_SUBCOMMANDS.include?(sub_command)
-                @execution_message[:q] = "Could not apply Amazon Q command for issue"
-                next
-              end
-            when ::MergeRequest
-              unless ::Ai::AmazonQ::Commands::MERGE_REQUEST_SUBCOMMANDS.include?(sub_command)
-                @execution_message[:q] = "Could not apply Amazon Q command for merge request"
-                next
-              end
-            end
+
+            ::Ai::AmazonQValidateCommandSourceService.new(
+              command: sub_command,
+              source: quick_action_target
+            ).validate
+
             comment = comment_words.join(' ')
             action_data = {
               command: sub_command,
@@ -47,6 +41,8 @@ module EE
             }
             action_data[:input] = comment unless comment.empty?
             @updates[:amazon_q] = action_data
+          rescue Ai::AmazonQValidateCommandSourceService::StandardError => error
+            @execution_message[:q] = error.message
           end
         end
       end

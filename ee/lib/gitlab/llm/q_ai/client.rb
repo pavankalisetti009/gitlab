@@ -18,8 +18,20 @@ module Gitlab
           }
 
           Gitlab::HTTP.post(
-            "#{url}/v1/amazon_q/oauth/application",
+            url(path: "/v1/amazon_q/oauth/application"),
             body: payload.to_json,
+            headers: request_headers
+          )
+        end
+
+        def create_event(payload:, auth_grant:, role_arn:)
+          Gitlab::HTTP.post(
+            url(path: "/v1/amazon_q/events"),
+            body: {
+              payload: payload,
+              code: auth_grant,
+              role_arn: role_arn
+            }.to_json,
             headers: request_headers
           )
         end
@@ -28,8 +40,9 @@ module Gitlab
 
         attr_reader :user
 
-        def url
-          Gitlab::AiGateway.url
+        def url(path:)
+          # use append_path to handle potential trailing slash in AI Gateway URL
+          Gitlab::Utils.append_path(Gitlab::AiGateway.url, path)
         end
 
         def service_name
