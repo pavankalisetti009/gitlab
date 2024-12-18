@@ -272,11 +272,7 @@ module EE
     def feature_available_in_plan?(feature)
       available_features = strong_memoize(:features_available_in_plan) do
         Hash.new do |h, f|
-          h[f] = if ::Feature.enabled?(:use_actual_plan_in_license_check, ::Feature.current_request)
-                   GitlabSubscriptions::Features.saas_plans_with_feature(f).include?(actual_plan.name)
-                 else
-                   (plans.map(&:name) & GitlabSubscriptions::Features.saas_plans_with_feature(f)).any?
-                 end
+          h[f] = GitlabSubscriptions::Features.saas_plans_with_feature(f).include?(actual_plan.name)
         end
       end
 
@@ -398,20 +394,6 @@ module EE
       Rails.cache.fetch([self, :has_project_with_shared_runners_enabled], expires_in: 5.minutes) do
         any_project_with_shared_runners_enabled_with_cte?
       end
-    end
-
-    # These helper methods are required to not break the Namespace API.
-    def memoized_plans=(plans)
-      @plans = plans # rubocop: disable Gitlab/ModuleWithInstanceVariables
-    end
-
-    def plans
-      @plans ||=
-        if parent_id
-          ::Plan.hosted_plans_for_namespaces(self_and_ancestors.select(:id))
-        else
-          ::Plan.hosted_plans_for_namespaces(self)
-        end
     end
 
     # When a purchasing a GL.com plan for a User namespace

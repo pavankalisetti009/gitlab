@@ -69,17 +69,6 @@ module EE
           find_by(name: FREE) || safe_find_or_create_by(name: FREE)
         end
       end
-
-      def hosted_plans_for_namespaces(namespaces)
-        namespaces = Array(namespaces)
-
-        ::Plan
-          .with_subscriptions
-          .by_name(PAID_HOSTED_PLANS)
-          .by_namespace(namespaces)
-          .distinct
-          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422013')
-      end
     end
 
     override :paid?

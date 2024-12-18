@@ -27,29 +27,14 @@ module Gitlab
 
       all_plan_ids = Set.new
 
-      use_actual_plan = ::Feature.enabled?(:use_actual_plan_in_license_check, ::Feature.current_request)
-
-      # A Hash that for every group ID maps _all_ the plan IDs this group has
-      # access to.
-      initial_plans_map = if use_actual_plan
-                            {}
-                          else
-                            Hash.new { |h, k| h[k] = [] }
-                          end
-
       plans_map = groups_and_ancestors
-        .each_with_object(initial_plans_map) do |group, hash|
+        .each_with_object({}) do |group, hash|
           current = group
 
           while current
 
             if (plan_id = current.hosted_plan_id)
-              if use_actual_plan
-                hash[group.id] = plan_id
-              else
-                hash[group.id] << plan_id
-              end
-
+              hash[group.id] = plan_id
               all_plan_ids << plan_id
             end
 
@@ -64,11 +49,7 @@ module Gitlab
 
       # Assign all the plans to the groups that have access to them.
       groups.each do |group|
-        if use_actual_plan
-          group.actual_plan = plans[plans_map[group.id]]
-        else
-          group.memoized_plans = plans_map[group.id].map { |id| plans[id] }
-        end
+        group.actual_plan = plans[plans_map[group.id]]
       end
     end
 
