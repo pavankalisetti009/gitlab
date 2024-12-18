@@ -4,8 +4,6 @@ action: updated_color
 product_group: product_planning
 milestone: '16.10'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145410
-distributions:
-  - ee
 tiers:
   - premium
   - ultimate

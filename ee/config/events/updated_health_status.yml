@@ -4,7 +4,5 @@ action: updated_health_status
 product_group: project_management
 milestone: '15.8'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/106683
-distributions:
-  - ee
 tiers:
   - ultimate

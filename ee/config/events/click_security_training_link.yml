@@ -4,8 +4,6 @@ action: click_security_training_link
 product_group: security_insights
 milestone: '14.9'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/82658
-distributions:
-  - ee
 tiers:
   - ultimate
 additional_properties:

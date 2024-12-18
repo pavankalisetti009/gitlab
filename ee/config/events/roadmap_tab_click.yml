@@ -4,8 +4,6 @@ action: roadmap_tab_click
 product_group: product_planning
 milestone: '15.11'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/117501
-distributions:
-  - ee
 tiers:
   - ultimate
 additional_properties:

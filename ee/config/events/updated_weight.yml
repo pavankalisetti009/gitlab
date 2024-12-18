@@ -4,7 +4,5 @@ action: updated_weight
 product_group: project_management
 milestone: '16.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/136789
-distributions:
-  - ee
 tiers:
   - ultimate
