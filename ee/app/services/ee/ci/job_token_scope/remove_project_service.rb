@@ -23,7 +23,7 @@ module EE
           event_name = 'secure_ci_job_token_project_removed'
 
           if ::Feature.enabled?(:add_policies_to_ci_job_token, scope) && policies.present?
-            audit_message += ", with job token permissions: #{policies.join(', ')}"
+            audit_message += ", with job token policies: #{policies.join(', ')}"
           end
 
           audit_context = {

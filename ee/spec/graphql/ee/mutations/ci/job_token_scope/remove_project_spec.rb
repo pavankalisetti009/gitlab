@@ -59,7 +59,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
 
       let(:expected_audit_message) do
         "Project #{target_project_path} was removed from inbound list of allowed projects for #{project_path}, " \
-          "with job token permissions: read_containers, read_packages"
+          "with job token policies: read_containers, read_packages"
       end
 
       let(:event_name) { 'secure_ci_job_token_project_removed' }
