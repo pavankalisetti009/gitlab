@@ -135,67 +135,6 @@ fragment WorkItemWidgets on WorkItemWidget {
     textColor
   }
 
-  ... on WorkItemWidgetDevelopment {
-    type
-    willAutoCloseByMergeRequest
-    relatedBranches {
-      nodes {
-        name
-        comparePath
-      }
-    }
-    featureFlags {
-      nodes {
-        id
-        active
-        name
-        path
-        reference
-      }
-    }
-    closingMergeRequests {
-      nodes {
-        fromMrDescription
-        mergeRequest {
-          iid
-          id
-          title
-          webUrl
-          state
-          sourceBranch
-          reference
-          headPipeline {
-            detailedStatus {
-              id
-              icon
-              text
-              detailsPath
-            }
-          }
-          milestone {
-            ...MilestoneFragment
-          }
-          project {
-            id
-            name
-            namespace {
-              path
-            }
-          }
-          assignees {
-            nodes {
-              webUrl
-              id
-              name
-              webPath
-              avatarUrl
-            }
-          }
-        }
-      }
-    }
-  }
-
   ... on WorkItemWidgetLinkedItems {
     linkedItems {
       nodes {
