@@ -35,6 +35,18 @@ module Admin
         )
       end
 
+      def disconnect
+        return head :unprocessable_entity unless ::Ai::AmazonQ.connected?
+
+        response = ::Ai::AmazonQ::DestroyService.new(current_user).execute
+
+        if response.success?
+          head :ok
+        else
+          render json: { message: response.message }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def setup_view_model

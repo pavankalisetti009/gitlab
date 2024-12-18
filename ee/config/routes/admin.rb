@@ -59,7 +59,11 @@ namespace :admin do
       end
     end
 
-    resources :amazon_q_settings, only: [:index, :create]
+    resources :amazon_q_settings, only: [:index, :create] do
+      collection do
+        post :disconnect
+      end
+    end
   end
 
   # using `only: []` to keep duplicate routes from being created

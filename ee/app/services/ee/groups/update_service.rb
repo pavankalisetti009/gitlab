@@ -38,6 +38,7 @@ module EE
 
         update_cascading_settings
         activate_pending_members
+        update_amazon_q_service_account!
       end
 
       override :before_assignment_hook
@@ -167,6 +168,13 @@ module EE
         if settings.previous_changes[:seat_control] == %w[user_cap off]
           ::Members::ActivateService.for_group(group).execute(current_user: current_user)
         end
+      end
+
+      def update_amazon_q_service_account!
+        return unless ::Ai::AmazonQ.connected?
+        return unless params[:duo_availability] == 'never_on'
+
+        ::Ai::AmazonQ::ServiceAccountMemberRemoveService.new(current_user, group).execute
       end
     end
   end

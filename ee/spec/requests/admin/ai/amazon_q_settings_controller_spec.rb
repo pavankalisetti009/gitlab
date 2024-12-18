@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature_category: :ai_abstraction_layer do
   let(:admin) { create(:admin) }
   let(:amazon_q_ready) { false }
+  let(:connected) { true }
 
   let(:actual_view_model) do
     Gitlab::Json.parse(
@@ -15,6 +16,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   before do
     stub_licensed_features(amazon_q: true)
     stub_feature_flags(amazon_q_integration: true)
+    allow(::Ai::AmazonQ).to receive(:connected?).and_return(connected)
 
     stub_ee_application_setting(duo_availability: 'default_on')
 
@@ -128,6 +130,51 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
         perform_request
 
         expect(response).to redirect_to(admin_ai_amazon_q_settings_path)
+      end
+    end
+  end
+
+  describe 'POST #disconnect' do
+    let(:perform_request) { post disconnect_admin_ai_amazon_q_settings_path }
+
+    it_behaves_like 'returns 404 when feature is unavailable'
+
+    context 'when not connected' do
+      let(:connected) { false }
+
+      it 'returns unprocessable entity response' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:unprocessable_entity)
+      end
+    end
+
+    context 'when connected' do
+      let(:service_response) { ServiceResponse.success }
+
+      it 'calls ::Ai::AmazonQ::DestroyService.execute and returns OK response' do
+        expect_next_instance_of(::Ai::AmazonQ::DestroyService, admin) do |destroy_service|
+          expect(destroy_service).to receive(:execute).and_return(service_response)
+        end
+
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      context 'when ::Ai::AmazonQ::DestroyService.execute returns error response' do
+        let(:service_response) { ServiceResponse.error(message: 'Oops') }
+
+        it 'returns unprocessable entity response with corresponding message' do
+          expect_next_instance_of(::Ai::AmazonQ::DestroyService, admin) do |destroy_service|
+            expect(destroy_service).to receive(:execute).and_return(service_response)
+          end
+
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response).to eq({ 'message' => 'Oops' })
+        end
       end
     end
   end
