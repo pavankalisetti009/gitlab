@@ -4,6 +4,7 @@ module Search
   module Zoekt
     class Node < ApplicationRecord
       self.table_name = 'zoekt_nodes'
+      include EachBatch
 
       DEFAULT_CONCURRENCY_LIMIT = 20
       MAX_CONCURRENCY_LIMIT = 200
@@ -15,6 +16,10 @@ module Search
       TASK_PULL_FREQUENCY_DEFAULT = '10s'
       TASK_PULL_FREQUENCY_INCREASED = '500ms'
       DEBOUNCE_DELAY = 5.seconds
+
+      UNCLAIMED_STORAGE_BYTES_FORMULA = <<~SQL
+        (zoekt_nodes.total_bytes - zoekt_nodes.used_bytes + zoekt_nodes.indexed_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0))
+      SQL
 
       has_many :indices,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Index'
@@ -44,14 +49,17 @@ module Search
                   .merge(Repository.searchable)
                   .where(zoekt_repositories: { project: project })
       end
-      scope :with_unclaimed_storage_bytes, -> do
+      scope :with_positive_unclaimed_storage_bytes, -> do
         sql = <<~SQL
-          zoekt_nodes.*, (zoekt_nodes.total_bytes - zoekt_nodes.used_bytes + zoekt_nodes.indexed_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0)) AS unclaimed_storage_bytes
+          zoekt_nodes.*, #{UNCLAIMED_STORAGE_BYTES_FORMULA} AS unclaimed_storage_bytes
         SQL
-        left_joins(:indices).group(:id).select(sql)
+        left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} >= 0").select(sql)
       end
       scope :order_by_unclaimed_space, -> do
-        with_unclaimed_storage_bytes.order('unclaimed_storage_bytes')
+        with_positive_unclaimed_storage_bytes.order('unclaimed_storage_bytes')
+      end
+      scope :negative_unclaimed_storage_bytes, -> do
+        left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} < 0")
       end
 
       def self.find_or_initialize_by_task_request(params)

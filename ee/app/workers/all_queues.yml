@@ -2397,6 +2397,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: search_zoekt_node_with_negative_unclaimed_storage_event
+  :worker_name: Search::Zoekt::NodeWithNegativeUnclaimedStorageEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: search_zoekt_orphaned_index_event
   :worker_name: Search::Zoekt::OrphanedIndexEventWorker
   :feature_category: :global_search

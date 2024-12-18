@@ -18,6 +18,7 @@ module Search
         lost_nodes_check
         mark_indices_as_ready
         node_assignment
+        node_with_negative_unclaimed_storage_bytes_check
         remove_expired_subscriptions
         repo_should_be_marked_as_orphaned_check
         repo_to_delete_check
@@ -272,6 +273,16 @@ module Search
         end
       end
       # rubocop: enable Metrics/AbcSize
+
+      def node_with_negative_unclaimed_storage_bytes_check
+        execute_every 1.hour, cache_key: :node_with_negative_unclaimed_storage_bytes_check do
+          Search::Zoekt::Node.negative_unclaimed_storage_bytes.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent.new(data: { node_ids: batch.pluck_primary_key })
+            )
+          end
+        end
+      end
 
       # indices that don't have zoekt_repositories are already in `ready` state
       def mark_indices_as_ready
