@@ -12,3 +12,5 @@ commands:
       component: gl-example
       commandLine: mvn clean
       workingDir: /projects/spring-petclinic
+events: {}
+variables: {}

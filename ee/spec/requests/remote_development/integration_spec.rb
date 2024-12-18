@@ -64,7 +64,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:devfile_path) { ".devfile.yaml" }
   let(:devfile_fixture_name) { "example.devfile.yaml" }
   let(:devfile_yaml) do
-    read_devfile(
+    read_devfile_yaml(
       devfile_fixture_name,
       namespace_path: "#{common_parent_namespace_name}/#{workspace_project_namespace_name}",
       project_name: workspace_project_name
@@ -72,13 +72,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   let(:expected_processed_devfile_yaml) do
-    example_processed_devfile(
+    example_processed_devfile_yaml(
       namespace_path: "#{common_parent_namespace_name}/#{workspace_project_namespace_name}",
       project_name: workspace_project_name
     )
   end
 
-  let(:expected_processed_devfile) { YAML.safe_load(expected_processed_devfile_yaml).to_h }
+  let(:expected_processed_devfile) { yaml_safe_load_symbolized(expected_processed_devfile_yaml) }
   let(:workspace_root) { "/projects" }
   let(:user_provided_variables) do
     [
@@ -233,8 +233,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     }).to_s)
     # noinspection RubyResolve
     expect(workspace.devfile).to eq(devfile_yaml)
-    actual_processed_devfile = YAML.safe_load(workspace.processed_devfile).to_h
-    expect(actual_processed_devfile.fetch("components")).to eq(expected_processed_devfile.fetch("components"))
+    actual_processed_devfile = yaml_safe_load_symbolized(workspace.processed_devfile)
+    expect(actual_processed_devfile.fetch(:components)).to eq(expected_processed_devfile.fetch(:components))
     expect(actual_processed_devfile).to eq(expected_processed_devfile)
 
     all_expected_vars = (expected_static_variables + user_provided_variables).sort_by { |v| v[:key] }

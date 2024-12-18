@@ -12,3 +12,6 @@ components:
     image: quay.io/devfile/golang:latest
     memoryLimit: 1024Mi
     mountSources: true
+commands: []
+events: {}
+variables: {}

@@ -25,7 +25,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         user: user,
         desired_state: desired_state,
         actual_state: actual_state,
-        processed_devfile: read_devfile('example.processed-devfile-v2.yaml')
+        processed_devfile: read_devfile_yaml('example.processed-devfile-v2.yaml')
       )
     end
 

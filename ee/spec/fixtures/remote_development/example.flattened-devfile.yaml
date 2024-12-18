@@ -17,3 +17,6 @@ components:
       env:
         - name: MYSQL_ROOT_PASSWORD
           value: "my-secret-pw"
+commands: []
+events: {}
+variables: {}

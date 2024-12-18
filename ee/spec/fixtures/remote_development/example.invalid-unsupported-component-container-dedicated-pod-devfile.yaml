@@ -7,3 +7,6 @@ components:
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
       dedicatedPod: true
+commands: []
+events: {}
+variables: {}

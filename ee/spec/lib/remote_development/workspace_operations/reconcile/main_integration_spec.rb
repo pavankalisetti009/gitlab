@@ -37,7 +37,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       config_to_apply =
         YAML.load_stream(response.dig(:payload, :workspace_rails_infos, 0, :config_to_apply))
 
-      service = config_to_apply.find { |config| config["kind"] == "Service" }
+      service = config_to_apply.find { |config| config["kind"] == "Service" }.to_h
       host_template_annotation = service.dig("metadata", "annotations", "workspaces.gitlab.com/host-template")
 
       expect(host_template_annotation).to include(dns_zone)
@@ -276,7 +276,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             agent: agent, user: user, force_include_all_resources: false)
         end
 
-        let(:invalid_devfile_yaml) { read_devfile('example.invalid-extra-field-devfile.yaml') }
+        let(:invalid_devfile_yaml) { read_devfile_yaml('example.invalid-extra-field-devfile.yaml') }
 
         let(:workspace2_agent_info) do
           create_workspace_agent_info_hash(

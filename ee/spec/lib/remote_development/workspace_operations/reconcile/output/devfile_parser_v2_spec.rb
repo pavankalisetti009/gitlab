@@ -9,7 +9,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   let(:logger) { instance_double(Logger) }
   let(:user) { instance_double("User", name: "name", email: "name@example.com") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
-  let(:processed_devfile) { read_devfile('example.processed-devfile-v2.yaml') }
+  let(:processed_devfile_yaml) { read_devfile_yaml("example.processed-devfile-v2.yaml") }
   let(:workspace) do
     instance_double(
       "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
@@ -19,7 +19,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       deployment_resource_version: "1",
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
-      processed_devfile: processed_devfile,
+      processed_devfile: processed_devfile_yaml,
       user: user,
       agent: agent
     )
@@ -57,7 +57,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   it 'returns workspace_resources' do
     workspace_resources = devfile_parser.get_all(
-      processed_devfile: processed_devfile,
+      processed_devfile: processed_devfile_yaml,
       name: workspace.name,
       namespace: workspace.namespace,
       replicas: 1,

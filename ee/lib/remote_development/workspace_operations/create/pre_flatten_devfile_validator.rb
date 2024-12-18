@@ -23,7 +23,7 @@ module RemoteDevelopment
           context => { devfile: Hash => devfile }
 
           minimum_schema_version = Gem::Version.new(REQUIRED_DEVFILE_SCHEMA_VERSION)
-          devfile_schema_version_string = devfile.fetch('schemaVersion')
+          devfile_schema_version_string = devfile.fetch(:schemaVersion)
           begin
             devfile_schema_version = Gem::Version.new(devfile_schema_version_string)
           rescue ArgumentError
@@ -50,7 +50,7 @@ module RemoteDevelopment
         def self.validate_parent(context)
           context => { devfile: Hash => devfile }
 
-          return err(_("Inheriting from 'parent' is not yet supported")) if devfile['parent']
+          return err(format(_("Inheriting from 'parent' is not yet supported"))) if devfile[:parent]
 
           Gitlab::Fp::Result.ok(context)
         end

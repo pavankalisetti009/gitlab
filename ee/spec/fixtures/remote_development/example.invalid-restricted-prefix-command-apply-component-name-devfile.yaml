@@ -10,3 +10,5 @@ commands:
   - id: example
     apply:
       component: gl-example
+events: {}
+variables: {}

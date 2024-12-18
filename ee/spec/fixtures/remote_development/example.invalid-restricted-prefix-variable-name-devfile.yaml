@@ -6,5 +6,7 @@ components:
       gl/inject-editor: true
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+commands: []
+events: {}
 variables:
   gl-example: "abc"

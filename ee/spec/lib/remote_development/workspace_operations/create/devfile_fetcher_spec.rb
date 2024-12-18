@@ -18,7 +18,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   let(:devfile_ref) { 'main' }
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml' }
-  let(:devfile_yaml) { read_devfile(devfile_fixture_name) }
+  let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
   let(:workspace_root) { '/projects' }
   let(:params) do
     {
@@ -39,7 +39,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   end
 
   context 'when params are valid' do
-    let(:devfile) { YAML.safe_load(devfile_yaml) }
+    let(:devfile) { yaml_safe_load_symbolized(devfile_yaml) }
 
     it 'returns an ok Result containing the original params and the devfile_yaml_string' do
       expect(result).to eq(

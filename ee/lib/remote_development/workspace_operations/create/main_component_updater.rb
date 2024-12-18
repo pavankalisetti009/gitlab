@@ -23,7 +23,7 @@ module RemoteDevelopment
 
           # NOTE: We will always have exactly one main_component found, because we have already
           #       validated this in post_flatten_devfile_validator.rb
-          main_component = processed_devfile['components'].find { |c| c.dig('attributes', 'gl/inject-editor') }
+          main_component = processed_devfile.fetch(:components).find { |c| c.dig(:attributes, :'gl/inject-editor') }
 
           update_main_container(
             main_component: main_component,
@@ -56,46 +56,48 @@ module RemoteDevelopment
             fi
             ${GL_TOOLS_DIR}/init_tools.sh
           SH
-          main_component['container']['command'] = %w[/bin/sh -c]
-          main_component['container']['args'] = [container_args]
-          main_component['container']['env'] = [] if main_component['container']['env'].nil?
-          main_component['container']['env'] += [
-            {
-              'name' => 'GL_TOOLS_DIR',
-              'value' => tools_dir
-            },
-            {
-              'name' => 'GL_EDITOR_LOG_LEVEL',
-              'value' => 'info'
-            },
-            {
-              'name' => 'GL_EDITOR_PORT',
-              'value' => editor_port.to_s
-            },
-            {
-              'name' => 'GL_SSH_PORT',
-              'value' => ssh_port.to_s
-            },
-            {
-              'name' => 'GL_EDITOR_ENABLE_MARKETPLACE',
-              'value' => enable_marketplace.to_s
-            }
-          ]
 
-          main_component['container']['endpoints'] = [] if main_component['container']['endpoints'].nil?
-          main_component['container']['endpoints'].append(
+          container = main_component.fetch(:container)
+
+          container[:command] = %w[/bin/sh -c]
+          container[:args] = [container_args]
+
+          (container[:env] ||= []).append(
             {
-              'name' => 'editor-server',
-              'targetPort' => editor_port,
-              'exposure' => 'public',
-              'secure' => true,
-              'protocol' => 'https'
+              name: "GL_TOOLS_DIR",
+              value: tools_dir
             },
             {
-              'name' => 'ssh-server',
-              'targetPort' => ssh_port,
-              'exposure' => 'internal',
-              'secure' => true
+              name: "GL_EDITOR_LOG_LEVEL",
+              value: "info"
+            },
+            {
+              name: "GL_EDITOR_PORT",
+              value: editor_port.to_s
+            },
+            {
+              name: "GL_SSH_PORT",
+              value: ssh_port.to_s
+            },
+            {
+              name: "GL_EDITOR_ENABLE_MARKETPLACE",
+              value: enable_marketplace.to_s
+            }
+          )
+
+          (container[:endpoints] ||= []).append(
+            {
+              name: "editor-server",
+              targetPort: editor_port,
+              exposure: "public",
+              secure: true,
+              protocol: "https"
+            },
+            {
+              name: "ssh-server",
+              targetPort: ssh_port,
+              exposure: "internal",
+              secure: true
             }
           )
         end

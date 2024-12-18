@@ -45,8 +45,10 @@ module RemoteDevelopment
           end
 
           begin
-            # convert YAML to JSON to remove YAML vulnerabilities
-            devfile = YAML.safe_load(YAML.safe_load(devfile_yaml).to_json)
+            # load YAML, convert YAML to JSON and load it again to remove YAML vulnerabilities
+            devfile_stringified = YAML.safe_load(YAML.safe_load(devfile_yaml).to_json)
+            # symbolize keys for domain logic processing of devfile (to_h is to avoid nil dereference error in RubyMine)
+            devfile = devfile_stringified.to_h.deep_symbolize_keys
           rescue RuntimeError, JSON::GeneratorError => e
             return Gitlab::Fp::Result.err(WorkspaceCreateDevfileYamlParseFailed.new(
               details: "Devfile YAML could not be parsed: #{e.message}"
@@ -55,7 +57,7 @@ module RemoteDevelopment
 
           Gitlab::Fp::Result.ok(context.merge({
             # NOTE: The devfile_yaml should only be used for storing it in the database and not in any other
-            #       subsequent step in the chain.
+            #       later step in the chain.
             devfile_yaml: devfile_yaml,
             devfile: devfile
           }))

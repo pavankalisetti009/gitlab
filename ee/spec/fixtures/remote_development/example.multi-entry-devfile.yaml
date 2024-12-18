@@ -32,3 +32,5 @@ commands:
   - id: example-valid-second-command
     apply:
       component: example-valid-second-component
+events: {}
+variables: {}

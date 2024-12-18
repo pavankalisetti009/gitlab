@@ -10,4 +10,6 @@ components:
           runAsGroup: 1001
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
-
+commands: []
+events: {}
+variables: {}

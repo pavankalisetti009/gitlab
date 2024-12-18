@@ -70,43 +70,39 @@ module RemoteDevelopment
           #       implement better error handling to allow cloner to be able to deal with different categories of errors
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/408451
           cloner_component = {
-            'name' => 'gl-project-cloner',
-            'container' => {
-              'image' => image,
-              'args' => [container_args],
+            name: "gl-project-cloner",
+            container: {
+              image: image,
+              args: [container_args],
               # command has been overridden here as the default command in the alpine/git
               # container invokes git directly
-              'command' => %w[/bin/sh -c],
-              'env' => [
+              command: %w[/bin/sh -c],
+              env: [
                 {
-                  'name' => 'GL_PROJECT_CLONING_SUCCESSFUL_FILE',
-                  'value' => project_cloning_successful_file
+                  name: "GL_PROJECT_CLONING_SUCCESSFUL_FILE",
+                  value: project_cloning_successful_file
                 }
               ],
-              'memoryLimit' => '512Mi',
-              'memoryRequest' => '256Mi',
-              'cpuLimit' => '500m',
-              'cpuRequest' => '100m'
+              memoryLimit: "512Mi",
+              memoryRequest: "256Mi",
+              cpuLimit: "500m",
+              cpuRequest: "100m"
             }
           }
 
-          processed_devfile['components'] ||= []
-          processed_devfile['components'] << cloner_component
+          processed_devfile.fetch(:components) << cloner_component
 
           # create a command that will invoke the cloner
           cloner_command = {
-            'id' => 'gl-project-cloner-command',
-            'apply' => {
-              'component' => cloner_component['name']
+            id: "gl-project-cloner-command",
+            apply: {
+              component: cloner_component[:name]
             }
           }
-          processed_devfile['commands'] ||= []
-          processed_devfile['commands'] << cloner_command
+          processed_devfile.fetch(:commands) << cloner_command
 
           # configure the workspace to run the cloner command upon workspace start
-          processed_devfile['events'] ||= {}
-          processed_devfile['events']['preStart'] ||= []
-          processed_devfile['events']['preStart'] << cloner_command['id']
+          processed_devfile.fetch(:events)[:preStart] << cloner_command[:id]
 
           context
         end

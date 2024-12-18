@@ -12,17 +12,17 @@ module RemoteDevelopment
         # Devfile standard only allows name/id to be of the format /'^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'/
         # Hence, we do no need to restrict the prefix `gl_`.
         # However, we do that for the 'variables' in the processed_devfile since they do not have any such restriction
-        RESTRICTED_PREFIX = 'gl-'
+        RESTRICTED_PREFIX = "gl-"
 
         # Currently, we only support 'container' and 'volume' type components.
         # For container components, ensure no endpoint name starts with restricted_prefix
-        UNSUPPORTED_COMPONENT_TYPES = %w[kubernetes openshift image].freeze
+        UNSUPPORTED_COMPONENT_TYPES = %i[kubernetes openshift image].freeze
 
         # Currently, we only support 'exec' and 'apply' for validation
-        SUPPORTED_COMMAND_TYPES = %w[exec apply].freeze
+        SUPPORTED_COMMAND_TYPES = %i[exec apply].freeze
 
         # Currently, we only support `preStart` events
-        SUPPORTED_EVENTS = %w[preStart].freeze
+        SUPPORTED_EVENTS = %i[preStart].freeze
 
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
@@ -43,8 +43,8 @@ module RemoteDevelopment
         def self.validate_projects(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          return err(_("'starterProjects' is not yet supported")) if processed_devfile['starterProjects']
-          return err(_("'projects' is not yet supported")) if processed_devfile['projects']
+          return err(_("'starterProjects' is not yet supported")) if processed_devfile[:starterProjects]
+          return err(_("'projects' is not yet supported")) if processed_devfile[:projects]
 
           Gitlab::Fp::Result.ok(context)
         end
@@ -54,8 +54,8 @@ module RemoteDevelopment
         def self.validate_root_attributes(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          return err(_("Attribute 'pod-overrides' is not yet supported")) if processed_devfile.dig('attributes',
-            'pod-overrides')
+          return err(_("Attribute 'pod-overrides' is not yet supported")) if processed_devfile.dig(:attributes,
+            :"pod-overrides")
 
           Gitlab::Fp::Result.ok(context)
         end
@@ -65,12 +65,12 @@ module RemoteDevelopment
         def self.validate_components(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          components = processed_devfile['components']
+          components = processed_devfile[:components]
 
-          return err(_('No components present in devfile')) if components.blank?
+          return err(_("No components present in devfile")) if components.blank?
 
           injected_main_components = components.select do |component|
-            component.dig('attributes', 'gl/inject-editor')
+            component.dig(:attributes, :"gl/inject-editor")
           end
 
           return err(_("No component has 'gl/inject-editor' attribute")) if injected_main_components.empty?
@@ -79,16 +79,16 @@ module RemoteDevelopment
             return err(
               format(
                 _("Multiple components '%{name}' have 'gl/inject-editor' attribute"),
-                name: injected_main_components.pluck('name') # rubocop:disable CodeReuse/ActiveRecord -- this pluck isn't from ActiveRecord, it's from ActiveSupport
+                name: injected_main_components.pluck(:name) # rubocop:disable CodeReuse/ActiveRecord -- this pluck isn't from ActiveRecord, it's from ActiveSupport
               )
             )
           end
 
-          components_all_have_names = components.all? { |component| component['name'].present? }
+          components_all_have_names = components.all? { |component| component[:name].present? }
           return err(_("Components must have a 'name'")) unless components_all_have_names
 
           components.each do |component|
-            component_name = component.fetch('name')
+            component_name = component.fetch(:name)
             # Ensure no component name starts with restricted_prefix
             if component_name.downcase.start_with?(RESTRICTED_PREFIX)
               return err(format(
@@ -105,10 +105,10 @@ module RemoteDevelopment
             end
 
             return err(_("Attribute 'container-overrides' is not yet supported")) if component.dig(
-              'attributes', 'container-overrides')
+              :attributes, :"container-overrides")
 
-            return err(_("Attribute 'pod-overrides' is not yet supported")) if component.dig('attributes',
-              'pod-overrides')
+            return err(_("Attribute 'pod-overrides' is not yet supported")) if component.dig(:attributes,
+              :"pod-overrides")
           end
 
           Gitlab::Fp::Result.ok(context)
@@ -119,17 +119,17 @@ module RemoteDevelopment
         def self.validate_containers(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          components = processed_devfile['components']
+          components = processed_devfile.fetch(:components)
 
           components.each do |component|
-            container = component['container']
+            container = component[:container]
             next unless container
 
-            if container['dedicatedPod']
+            if container[:dedicatedPod]
               return err(
                 format(
                   _("Property 'dedicatedPod' of component '%{name}' is not yet supported"),
-                  name: component.fetch('name')
+                  name: component.fetch(:name)
                 )
               )
             end
@@ -143,23 +143,24 @@ module RemoteDevelopment
         def self.validate_endpoints(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          components = processed_devfile['components']
+          components = processed_devfile.fetch(:components)
 
           err_result = nil
 
           components.each do |component|
-            container = component['container']
-            next unless component.dig('container', 'endpoints')
+            next unless component.dig(:container, :endpoints)
 
-            container.fetch('endpoints').each do |endpoint|
-              endpoint_name = endpoint['name']
+            container = component.fetch(:container)
+
+            container.fetch(:endpoints).each do |endpoint|
+              endpoint_name = endpoint.fetch(:name)
               next unless endpoint_name.downcase.start_with?(RESTRICTED_PREFIX)
 
               err_result = err(
                 format(
                   _("Endpoint name '%{endpoint}' of component '%{component}' must not start with '%{prefix}'"),
                   endpoint: endpoint_name,
-                  component: component.fetch('name'),
+                  component: component.fetch(:name),
                   prefix: RESTRICTED_PREFIX
                 )
               )
@@ -176,12 +177,9 @@ module RemoteDevelopment
         def self.validate_commands(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          commands = processed_devfile['commands']
-          return Gitlab::Fp::Result.ok(context) if commands.nil?
-
           # Ensure no command name starts with restricted_prefix
-          commands.each do |command|
-            command_id = command.fetch('id')
+          processed_devfile.fetch(:commands).each do |command|
+            command_id = command.fetch(:id)
             if command_id.downcase.start_with?(RESTRICTED_PREFIX)
               return err(
                 format(
@@ -195,9 +193,9 @@ module RemoteDevelopment
             # Ensure no command is referring to a component with restricted_prefix
             SUPPORTED_COMMAND_TYPES.each do |supported_command_type|
               command_type = command[supported_command_type]
-              next if command_type.nil?
+              next unless command_type
 
-              component_name = command_type['component']
+              component_name = command_type.fetch(:component)
               next unless component_name.downcase.start_with?(RESTRICTED_PREFIX)
 
               return err(
@@ -219,10 +217,7 @@ module RemoteDevelopment
         def self.validate_events(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          events = processed_devfile['events']
-          return Gitlab::Fp::Result.ok(context) if events.nil?
-
-          events.each do |event_type, event_type_events|
+          processed_devfile.fetch(:events).each do |event_type, event_type_events|
             # Ensure no event type other than "preStart" are allowed
 
             unless SUPPORTED_EVENTS.include?(event_type)
@@ -252,13 +247,10 @@ module RemoteDevelopment
         def self.validate_variables(context)
           context => { processed_devfile: Hash => processed_devfile }
 
-          variables = processed_devfile['variables']
-          return Gitlab::Fp::Result.ok(context) if variables.nil?
-
           restricted_prefix_underscore = RESTRICTED_PREFIX.tr("-", "_")
 
-          # Ensure no variables name starts with restricted_prefix
-          variables.each_key do |variable|
+          # Ensure no variable name starts with restricted_prefix
+          processed_devfile.fetch(:variables).each_key do |variable|
             [RESTRICTED_PREFIX, restricted_prefix_underscore].each do |prefix|
               next unless variable.downcase.start_with?(prefix)
 
