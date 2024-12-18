@@ -4,9 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::Tasks::IngestSourcePackages, feature_category: :dependency_management do
   describe '#execute' do
-    let!(:organization) { create(:organization, :default) }
-
-    let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
+    let_it_be(:pipeline) { create(:ci_pipeline) }
     let_it_be(:occurrence_maps) { build_list(:sbom_occurrence_map, 2, :with_source_package) }
 
     subject(:ingest_source_package) { described_class.new(pipeline, occurrence_maps) }

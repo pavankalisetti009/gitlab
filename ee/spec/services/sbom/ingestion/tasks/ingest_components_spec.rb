@@ -6,7 +6,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestComponents, feature_category: :depe
   describe '#execute' do
     let!(:organization) { create(:organization, :default) }
 
-    let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
+    let_it_be(:pipeline) { create(:ci_pipeline) }
 
     let(:occurrence_maps) { create_list(:sbom_occurrence_map, 4) }
     let(:occurrence_map) { create(:sbom_occurrence_map) }

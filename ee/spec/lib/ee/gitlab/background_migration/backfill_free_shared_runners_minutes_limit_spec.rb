@@ -6,10 +6,9 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillFreeSharedRunnersMinutesLimi
   let!(:namespaces) { table(:namespaces) }
   let(:organizations) { table(:organizations) }
 
-  let(:organization) { organizations.create!(name: 'Foobar', path: 'path1') }
-
   let(:start_id) { namespaces.minimum(:id) }
   let(:end_id) { namespaces.maximum(:id) }
+  let(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
   let!(:namespace_free_without_limit) do
     namespaces.create!(
       name: 'free_namespace_no_limit',
