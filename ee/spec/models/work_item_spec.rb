@@ -654,7 +654,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   describe '#preload_indexing_data' do
     let_it_be(:work_item) { create(:work_item) }
 
-    it 'preloads for indexing  and avoid N+1 queries' do
+    it 'preloads for indexing and avoid N+1 queries' do
       work_item = described_class.preload_indexing_data.first
       recorder = ActiveRecord::QueryRecorder.new do
         work_item.namespace
@@ -663,6 +663,17 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         work_item.notes
       end
       expect(recorder.count).to be_zero
+    end
+
+    context 'when search_work_items_index_notes feature flag is false' do
+      before do
+        stub_feature_flags(search_work_items_index_notes: false)
+      end
+
+      it 'does not preload notes' do
+        work_item = described_class.preload_indexing_data.first
+        expect(work_item.notes).not_to be_loaded
+      end
     end
   end
 
