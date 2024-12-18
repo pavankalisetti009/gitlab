@@ -171,7 +171,7 @@ module EE
 
         if security_policies_through_violations.any?
           security_policies_through_violations
-            .select { |policy| policy.content['approval_settings'].compact_blank.present? }
+            .select { |policy| policy.content['approval_settings']&.compact_blank.present? }
             .index_with { |policy| policy.content['approval_settings'].compact_blank.symbolize_keys }
         else
           # TODO: Temporary code path without policy details

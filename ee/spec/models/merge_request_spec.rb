@@ -517,6 +517,20 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           expect(overriding_policies.values).to contain_exactly(overrides)
         end
 
+        context 'when policy does not set approval_settings' do
+          let(:policy) { create(:security_policy) }
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'when policy does not set overriding approval_settings' do
+          let(:policy) do
+            create(:security_policy, content: { approval_settings: { require_password_to_approve: false } })
+          end
+
+          it { is_expected.to be_empty }
+        end
+
         context 'when there are multiple policies' do
           let(:other_approval_settings) { { require_password_to_approve: true } }
           let(:other_policy) do
