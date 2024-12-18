@@ -11,10 +11,11 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     let(:params) { { role_arn: 'a', availability: 'default_off' } }
     let(:status) { 200 }
     let(:body) { 'success' }
+    let(:service_account_response) { ServiceResponse.success(payload: { user: service_account }) }
 
     before do
       allow_next_instance_of(::Users::ServiceAccounts::CreateService) do |instance|
-        allow(instance).to receive(:execute).and_return({ status: :success, payload: service_account })
+        allow(instance).to receive(:execute).and_return(service_account_response)
       end
 
       stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application")
@@ -178,6 +179,17 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
         }
 
         expect(result.success?).to be_truthy
+      end
+    end
+
+    context 'when service account create service fails' do
+      let(:service_account_response) { ServiceResponse.error(message: 'Whoops!') }
+
+      it 'returns the error from the service' do
+        expect(instance.execute).to have_attributes(
+          success?: false,
+          message: 'Amazon q service account Whoops!'
+        )
       end
     end
   end

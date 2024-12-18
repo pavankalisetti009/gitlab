@@ -28,6 +28,8 @@ module Ai
 
       def create_amazon_q_onboarding
         service_account = existing_q_service_account || create_service_account
+        return unless service_account
+
         ensure_service_account_block_status(service_account: service_account)
 
         return unless find_or_create_oauth_app
@@ -41,12 +43,17 @@ module Ai
         service_account_result = ServiceResponse.from_legacy_hash(
           ::Users::ServiceAccounts::CreateService.new(
             @user,
-            { name: 'Amazon Q Service', avatar: Users::Internal.bot_avatar(image: 'q_avatar.png') }
+            { name: 'Amazon Q Service', avatar: Users::Internal.bot_avatar(image: 'q_avatar.png'),
+              organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID }
           ).execute
         )
-        return unless service_account_result.success?
 
-        service_account = service_account_result.payload
+        if service_account_result.error?
+          ai_settings.errors.add(:amazon_q_service_account, service_account_result.message)
+          return
+        end
+
+        service_account = service_account_result.payload[:user]
         return unless ai_settings.update(amazon_q_service_account_user_id: service_account.id)
 
         service_account
