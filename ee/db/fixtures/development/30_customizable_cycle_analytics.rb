@@ -20,15 +20,16 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
   include ActiveSupport::Testing::TimeHelpers
   include CycleAnalyticsHelpers
 
-  attr_reader :project, :group, :user
+  attr_reader :project, :group, :user, :organization
 
   DAYS_BACK = 20
   ISSUE_COUNT = 25
   MERGE_REQUEST_COUNT = 10
   GROUP_LABEL_COUNT = 10
 
-  def initialize(project)
+  def initialize(organization:, project: nil)
     @user = User.admins.first
+    @organization = organization
     @project = project || create_vsm_project!
     @group = @project.group.root_ancestor
   end
@@ -226,7 +227,8 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
   def create_vsm_project!
     group = Group.new(
       name: "Value Stream Management Group #{suffix}",
-      path: "vsmg-#{suffix}"
+      path: "vsmg-#{suffix}",
+      organization: organization
     )
     group.description = FFaker::Lorem.sentence
     group.save!
@@ -237,7 +239,7 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
     # before transaction is commited.
     group.update!(traversal_ids: [group.id])
 
-    Gitlab::Seeder::Projects.create_real_project!(project_path: "vsmp-#{suffix}", group_path: group.path)
+    Gitlab::Seeder::Projects.create_real_project!(project_path: "vsmp-#{suffix}", group_path: group.path, organization: organization)
 
     group.projects.last
   end
@@ -290,7 +292,10 @@ Gitlab::Seeder.quiet do
   project = Project.find(project_id) if project_id
 
   if ENV[flag]
-    seeder = Gitlab::Seeder::CustomizableCycleAnalytics.new(project)
+    seeder = Gitlab::Seeder::CustomizableCycleAnalytics.new(
+      project: project,
+      organization: Organizations::Organization.default_organization
+    )
     seeder.seed!
   else
     puts "Skipped. Use the `#{flag}` environment variable to enable."
