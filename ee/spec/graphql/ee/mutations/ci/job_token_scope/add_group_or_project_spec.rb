@@ -33,8 +33,8 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
       {
         project_path: project.full_path,
         target_path: target.full_path,
-        job_token_policies: policies,
-        direction: :inbound
+        default_permissions: false,
+        job_token_policies: policies
       }
     end
 
@@ -51,7 +51,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
 
       let(:expected_audit_message) do
         "Group #{target_group_path} was added to list of allowed groups for #{project_path}, " \
-          "with job token permissions: read_containers, read_packages"
+          "with default permissions: false, job token policies: read_containers, read_packages"
       end
 
       let(:event_name) { 'secure_ci_job_token_group_added' }
@@ -104,7 +104,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
 
       let(:expected_audit_message) do
         "Project #{target_project_path} was added to inbound list of allowed projects for #{project_path}, " \
-          "with job token permissions: read_containers, read_packages"
+          "with default permissions: false, job token policies: read_containers, read_packages"
       end
 
       let(:event_name) { 'secure_ci_job_token_project_added' }

@@ -7,17 +7,17 @@ module EE
         extend ::Gitlab::Utils::Override
 
         override :execute
-        def execute(target, policies)
+        def execute(target, default_permissions, policies)
           super.tap do |response|
-            audit(project, target, current_user, policies) if response.success?
+            audit(project, target, current_user, default_permissions, policies) if response.success?
           end
         end
 
         private
 
-        def audit(scope, target, author, policies)
+        def audit(scope, target, author, default_permissions, policies)
           audit_message =
-            "CI job token policies updated to: #{policies.join(', ')}"
+            "CI job token updated to default permissions: #{default_permissions}, policies: #{policies.join(', ')}"
 
           event_name = 'secure_ci_job_token_policies_updated'
 

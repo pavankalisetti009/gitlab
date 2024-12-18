@@ -29,7 +29,7 @@ RSpec.describe Ci::JobTokenScope::RemoveProjectService, feature_category: :conti
 
       let(:expected_audit_message) do
         "Project #{target_project.full_path} was removed from inbound list of allowed projects " \
-          "for #{project.full_path}, with job token permissions: read_containers, read_packages"
+          "for #{project.full_path}, with job token policies: read_containers, read_packages"
       end
 
       let(:audit_event) do

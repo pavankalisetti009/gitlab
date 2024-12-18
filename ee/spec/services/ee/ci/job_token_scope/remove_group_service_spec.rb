@@ -23,7 +23,7 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
   describe '#execute' do
     let(:expected_audit_message) do
       "Group #{target_group.full_path} was removed from list of allowed groups for #{project.full_path}, " \
-        "with job token permissions: read_containers, read_packages"
+        "with job token policies: read_containers, read_packages"
     end
 
     let(:audit_event) do

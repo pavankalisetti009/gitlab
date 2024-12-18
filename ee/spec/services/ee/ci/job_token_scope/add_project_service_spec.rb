@@ -13,14 +13,15 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
   let_it_be(:direction) { :inbound }
 
   subject(:service_result) do
-    described_class.new(project, current_user).execute(target_project, policies: policies, direction: direction)
+    described_class.new(project, current_user).execute(target_project, default_permissions: false, policies: policies,
+      direction: direction)
   end
 
   describe '#execute' do
     context 'when the direction is inbound' do
       let(:expected_audit_message) do
         "Project #{target_project.full_path} was added to inbound list of allowed projects for #{project.full_path}, " \
-          "with job token permissions: read_containers, read_packages"
+          "with default permissions: false, job token policies: read_containers, read_packages"
       end
 
       let(:audit_event) do

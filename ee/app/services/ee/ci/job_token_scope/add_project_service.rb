@@ -7,21 +7,25 @@ module EE
         extend ::Gitlab::Utils::Override
 
         override :execute
-        def execute(target_project, policies: [], direction: :inbound)
+        def execute(target_project, default_permissions: true, policies: [], direction: :inbound)
           super.tap do |response|
-            audit(project, target_project, current_user, policies) if direction == :inbound && response.success?
+            if direction == :inbound && response.success?
+              audit(project, target_project, current_user, default_permissions,
+                policies)
+            end
           end
         end
 
         private
 
-        def audit(scope, target, author, policies)
+        def audit(scope, target, author, default_permissions, policies)
           audit_message =
             "Project #{target.full_path} was added to inbound list of allowed projects for #{scope.full_path}"
           event_name = 'secure_ci_job_token_project_added'
 
           if ::Feature.enabled?(:add_policies_to_ci_job_token, scope) && policies.present?
-            audit_message += ", with job token permissions: #{policies.join(', ')}"
+            audit_message += ", with default permissions: #{default_permissions}, " \
+              "job token policies: #{policies.join(', ')}"
           end
 
           audit_context = {

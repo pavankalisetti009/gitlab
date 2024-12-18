@@ -8,10 +8,11 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
 
   let_it_be(:current_user) { create(:user, maintainer_of: project, developer_of: target_project) }
 
+  let(:default_permissions) { false }
   let(:policies) { %w[read_containers read_packages] }
 
   subject(:service_result) do
-    described_class.new(project, current_user).execute(target_project, policies)
+    described_class.new(project, current_user).execute(target_project, default_permissions, policies)
   end
 
   describe '#execute' do
@@ -20,6 +21,7 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
         create(:ci_job_token_project_scope_link,
           source_project: project,
           target_project: target_project,
+          default_permissions: true,
           job_token_policies: %w[read_containers read_packages],
           direction: :inbound
         )
@@ -31,7 +33,7 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
           author: current_user,
           scope: project,
           target: target_project,
-          message: 'CI job token policies updated to: read_containers, read_packages'
+          message: 'CI job token updated to default permissions: false, policies: read_containers, read_packages'
         }
       end
 
@@ -42,6 +44,7 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
 
         expect(link.source_project).to eq(project)
         expect(link.target_project).to eq(target_project)
+        expect(link.default_permissions).to be(default_permissions)
         expect(link.job_token_policies).to eq(policies)
       end
 

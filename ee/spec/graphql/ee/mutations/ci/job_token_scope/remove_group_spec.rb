@@ -51,7 +51,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveGroup, feature_category: :con
       context 'when user removes target group to the job token scope' do
         let(:expected_audit_message) do
           "Group #{target_group_path} was removed from list of allowed groups for #{project_path}, " \
-            "with job token permissions: read_containers, read_packages"
+            "with job token policies: read_containers, read_packages"
         end
 
         let(:event_name) { 'secure_ci_job_token_group_removed' }
