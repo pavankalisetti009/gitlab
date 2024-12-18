@@ -13,11 +13,6 @@ module EE
         super
       end
 
-      override :enqueue_after_sign_in_workers
-      def enqueue_after_sign_in_workers(user)
-        ::GitlabSubscriptions::AddOnPurchases::LdapAddOnSeatSyncWorker.perform_async({ 'user_id' => user.id })
-      end
-
       override :fail_login
       def fail_login(user)
         # This is the same implementation as EE::OmniauthCallbacksController#fail_login but we need to add it here since
@@ -28,6 +23,11 @@ module EE
       end
 
       private
+
+      override :enqueue_after_sign_in_workers
+      def enqueue_after_sign_in_workers(user)
+        ::GitlabSubscriptions::AddOnPurchases::LdapAddOnSeatSyncWorker.perform_async({ 'user_id' => user.id })
+      end
 
       def show_ldap_sync_flash
         flash[:notice] = _('LDAP sync in progress. This could take a few minutes. '\
