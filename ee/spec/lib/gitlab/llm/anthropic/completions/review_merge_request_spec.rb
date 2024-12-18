@@ -252,152 +252,6 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         end
       end
 
-      context 'when the <from> and <to> content is at the same line as the tags' do
-        let(:first_review_answer) do
-          <<~RESPONSE
-            <review>
-            <comment priority="3" old_line="" new_line="2">
-            First comment with suggestions
-            <from>  first offending line</from>
-            <to>  first improved line</to>
-            Some more comments
-            </comment>
-            </review>
-          RESPONSE
-        end
-
-        let(:second_review_response) { {} }
-
-        it 'returns the correctly formatted suggestion block' do
-          completion.execute
-
-          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
-          expect(diff_note.note).to eq <<~NOTE_CONTENT
-            First comment with suggestions
-            ```suggestion:-0+0
-              first improved line
-            ```
-            Some more comments
-          NOTE_CONTENT
-        end
-      end
-
-      context 'when the content includes other elements' do
-        let(:first_review_answer) do
-          <<~RESPONSE
-            <review>
-            <comment priority="3" old_line="" new_line="2">
-            First comment with suggestions
-            <from>
-                <div>first offending line</div>
-                  <p>second offending line</p>
-            </from>
-            <to>
-                <div>first improved line</div>
-                  <p>second improved line</p>
-            </to>
-            Some more comments
-            </comment>
-            </review>
-          RESPONSE
-        end
-
-        let(:second_review_response) { {} }
-
-        it 'returns the correctly formatted suggestion block' do
-          completion.execute
-
-          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
-          expect(diff_note.note).to eq <<~NOTE_CONTENT
-            First comment with suggestions
-            ```suggestion:-0+1
-                <div>first improved line</div>
-                  <p>second improved line</p>
-            ```
-            Some more comments
-          NOTE_CONTENT
-        end
-
-        context 'when the content contains additional <from> and <to>' do
-          # This format of response is intentional.
-          # It is to represent actual code changes in an MR wherein the diff
-          # actually includes `<from>` and `<to>` elements.
-          let(:first_review_answer) do
-            <<~RESPONSE
-              <review>
-              <comment priority="3" old_line="" new_line="2">
-              First comment with suggestions
-              <from>
-                  something fishy
-                  </from>
-                  <to>
-                     something fishy
-                  </to>
-                  <from>
-              </from>
-              <to>
-                  something better
-              </to>
-              </comment>
-              </review>
-            RESPONSE
-          end
-
-          it 'returns the content as is' do
-            completion.execute
-
-            diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
-            expect(diff_note.note).to eq <<~NOTE_CONTENT
-              First comment with suggestions
-              <from>
-                  something fishy
-                  </from>
-                  <to>
-                     something fishy
-                  </to>
-                  <from>
-              </from>
-              <to>
-                  something better
-              </to>
-            NOTE_CONTENT
-          end
-        end
-      end
-
-      context 'when LLM returns incorrectly formatted XML' do
-        let(:first_review_answer) do
-          <<~RESPONSE
-            <review>
-            <comment priority="3" old_line="" new_line="2">
-            First comment with suggestions
-            <to>
-                first improved line
-                  second improved line
-            </to>
-            Some more comments
-            </comment>
-            </review>
-          RESPONSE
-        end
-
-        let(:second_review_response) { {} }
-
-        it 'returns the content as is' do
-          completion.execute
-
-          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
-          expect(diff_note.note).to eq <<~NOTE_CONTENT
-            First comment with suggestions
-            <to>
-                first improved line
-                  second improved line
-            </to>
-            Some more comments
-          NOTE_CONTENT
-        end
-      end
-
       context 'when the chat client response includes invalid comments' do
         let(:first_review_response) { { content: [{ text: first_review_answer }] } }
         let(:first_review_answer) do
@@ -413,8 +267,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:second_review_answer) do
           <<~RESPONSE
             <review>
-            <comment priority="" old_line="" new_line="1">Third comment with suggestions</comment>
-            <comment priority="3" old_line="" new_line="">Fourth comment with suggestions</comment>
+            <comment priority="" old_line="" new_line="1">Third comment with no priority</comment>
+            <comment priority="3" old_line="" new_line="">Fourth comment with missing lines</comment>
+            <comment priority="3" old_line="" new_line="10">Fifth comment with invalid line</comment>
             </review>
           RESPONSE
         end
@@ -422,12 +277,10 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         it 'creates a valid comment only' do
           completion.execute
 
-          diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
-          expect(diff_notes.count).to eq 1
+          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
 
-          first_note = diff_notes.first
-          expect(first_note.note).to eq 'Second comment with suggestions'
-          expect(first_note.position.new_line).to eq(2)
+          expect(diff_note.note).to eq 'Second comment with suggestions'
+          expect(diff_note.position.new_line).to eq(2)
         end
       end
 
@@ -452,15 +305,18 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           RESPONSE
         end
 
-        it 'creates a valid comment only' do
+        it 'creates valid <review> section only' do
           completion.execute
 
           diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
-          expect(diff_notes.count).to eq 1
+          expect(diff_notes.count).to eq 2
 
-          first_note = diff_notes.first
+          first_note = diff_notes[0]
           expect(first_note.note).to eq 'Second comment with suggestions'
           expect(first_note.position.new_line).to eq(1)
+          second_note = diff_notes[1]
+          expect(second_note.note).to eq 'First comment with suggestions'
+          expect(second_note.position.new_line).to eq(2)
         end
       end
 
