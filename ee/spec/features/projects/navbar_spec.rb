@@ -16,7 +16,6 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     sign_in(user)
 
     stub_config(registry: { enabled: false })
-    stub_feature_flags(ml_experiment_tracking: false)
     stub_feature_flags(agent_registry: false)
     stub_feature_flags(remove_monitor_metrics: false)
     insert_package_nav
@@ -234,18 +233,6 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
       it_behaves_like 'verified navigation bar'
     end
-  end
-
-  context 'when model experiments is available' do
-    before do
-      stub_feature_flags(ml_experiment_tracking: true)
-
-      insert_model_experiments_nav(_('Merge request analytics'))
-
-      visit project_path(project)
-    end
-
-    it_behaves_like 'verified navigation bar'
   end
 
   context 'when AI agents is available' do
