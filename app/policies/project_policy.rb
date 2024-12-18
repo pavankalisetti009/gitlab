@@ -399,6 +399,7 @@ class ProjectPolicy < BasePolicy
     enable :update_issue
     enable :reopen_issue
     enable :admin_issue
+    enable :admin_work_item
     enable :destroy_issue
     enable :read_confidential_issues
     enable :create_design
@@ -440,6 +441,7 @@ class ProjectPolicy < BasePolicy
     enable :update_issue
     enable :reopen_issue
     enable :admin_issue
+    enable :admin_work_item
     enable :admin_label
     enable :admin_milestone
     enable :admin_issue_board_list

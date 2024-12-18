@@ -428,6 +428,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       let_it_be(:root_group) { create(:group, :private) }
       let_it_be(:group) { create(:group, :private, parent: root_group) }
       let_it_be(:project) { create(:project, :private, :repository, group: group) }
+      let_it_be_with_reload(:work_item_issue) { create(:work_item, project: project) }
 
       context 'when iterations are enabled' do
         before do
@@ -451,11 +452,27 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
               expect(message).to eq(_("Could not apply iteration command. Failed to find the referenced iteration."))
             end
 
-            it 'assigns an iteration to an issue' do
-              _, updates, message = service.execute(content, issue)
+            shared_examples 'assigns iteration' do |factory|
+              let(:issuable) do
+                factory == :issue ? issue : build(factory, project: project)
+              end
 
-              expect(updates).to eq(iteration: iteration)
-              expect(message).to eq("Set the iteration to #{iteration.to_reference}.")
+              it 'assigns an iteration' do
+                _, updates, message = service.execute(content, issuable)
+
+                expect(updates).to eq(iteration: iteration)
+                expect(message).to eq("Set the iteration to #{iteration.to_reference}.")
+              end
+            end
+
+            it_behaves_like 'assigns iteration', :issue
+
+            context 'when issuable is a work item' do
+              it_behaves_like 'assigns iteration', :work_item
+            end
+
+            context 'when issuable is an incident' do
+              it_behaves_like 'assigns iteration', :incident
             end
 
             context 'when iteration is started' do
@@ -463,23 +480,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
                 iteration.start!
               end
 
-              it 'assigns an iteration to an issue' do
-                _, updates, message = service.execute(content, issue)
-
-                expect(updates).to eq(iteration: iteration)
-                expect(message).to eq("Set the iteration to #{iteration.to_reference}.")
-              end
-            end
-
-            context 'when issuable is an incident' do
-              let(:incident) { create(:incident, project: project) }
-
-              it 'assigns an iteration' do
-                _, updates, message = service.execute(content, incident)
-
-                expect(updates).to eq(iteration: iteration)
-                expect(message).to eq("Set the iteration to #{iteration.to_reference}.")
-              end
+              it_behaves_like 'assigns iteration', :issue
             end
           end
 
@@ -487,13 +488,16 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
             before do
               allow(current_user).to receive(:can?).with(:use_quick_actions).and_return(true)
               allow(current_user).to receive(:can?).with(:admin_issue, project).and_return(false)
+              allow(current_user).to receive(:can?).with(:admin_work_item, project).and_return(false)
             end
 
             it 'returns an error message' do
-              _, updates, message = service.execute(content, issue)
+              [issue, work_item_issue].each do |issuable|
+                _, updates, message = service.execute(content, issuable)
 
-              expect(updates).to be_empty
-              expect(message).to eq('Could not apply iteration command.')
+                expect(updates).to be_empty
+                expect(message).to eq('Could not apply iteration command.')
+              end
             end
           end
         end
@@ -653,35 +657,43 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           issue.update!(iteration: iteration)
         end
 
-        it 'removes an assigned iteration from an issue' do
-          _, updates, message = service.execute(content, issue)
-
-          expect(updates).to eq(iteration: nil)
-          expect(message).to eq("Removed #{iteration.to_reference} iteration.")
-        end
-
-        context 'when issuable is an incident' do
-          let(:incident) { create(:incident, project: project, iteration: iteration) }
+        shared_examples 'removes iteration' do |factory|
+          let(:issuable) { create(factory, project: project, iteration: iteration) }
 
           it 'removes an assigned iteration' do
-            _, updates, message = service.execute(content, incident)
+            _, updates, message = service.execute(content, issuable)
 
             expect(updates).to eq(iteration: nil)
             expect(message).to eq("Removed #{iteration.to_reference} iteration.")
           end
         end
 
+        it_behaves_like 'removes iteration', :issue
+
+        context 'when issuable is a work item' do
+          it_behaves_like 'removes iteration', :work_item
+        end
+
+        context 'when issuable is an incident' do
+          it_behaves_like 'removes iteration', :incident
+        end
+
         context 'when the user does not have enough permissions' do
           before do
             allow(current_user).to receive(:can?).with(:use_quick_actions).and_return(true)
             allow(current_user).to receive(:can?).with(:admin_issue, project).and_return(false)
+            allow(current_user).to receive(:can?).with(:admin_work_item, project).and_return(false)
           end
 
-          it 'returns an error message' do
-            _, updates, message = service.execute(content, issue)
+          let_it_be(:work_item_issue) { create(:work_item, :issue, project: project, iteration: iteration) }
 
-            expect(updates).to be_empty
-            expect(message).to eq('Could not apply remove_iteration command.')
+          it 'returns an error message' do
+            [issue, work_item_issue].each do |issuable|
+              _, updates, message = service.execute(content, issuable)
+
+              expect(updates).to be_empty
+              expect(message).to eq('Could not apply remove_iteration command.')
+            end
           end
         end
       end
