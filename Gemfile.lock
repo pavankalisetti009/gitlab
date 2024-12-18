@@ -725,7 +725,7 @@ GEM
     git (1.18.0)
       addressable (~> 2.8)
       rchardet (~> 1.8)
-    gitaly (17.5.0.pre.rc42)
+    gitaly (17.7.0)
       grpc (~> 1.0)
     gitlab (4.19.0)
       httparty (~> 0.20)
@@ -2071,8 +2071,7 @@ DEPENDENCIES
   gdk-toogle (~> 0.9, >= 0.9.5)
   gettext (~> 3.4, >= 3.4.9)
   gettext_i18n_rails (~> 1.13.0)
-  git (~> 1.8)
-  gitaly (~> 17.5.0.pre.rc1)
+  gitaly (~> 17.7.0)
   gitlab-active-context!
   gitlab-backup-cli!
   gitlab-chronic (~> 0.10.5)
