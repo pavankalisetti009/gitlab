@@ -6,8 +6,17 @@ module EE
     extend ::Gitlab::Utils::Override
 
     prepended do
+      DORMANT_REVIEW_PERIOD = 18.hours.ago
+
       cascading_attr :duo_features_enabled
 
+      scope :requiring_dormant_member_review, ->(limit) do
+        # look for settings that have not been reviewed in more than
+        # 18 hours (catering for 6-hourly review schedule)
+        where(remove_dormant_members: true)
+          .where('last_dormant_member_review_at < ? OR last_dormant_member_review_at IS NULL', DORMANT_REVIEW_PERIOD)
+          .limit(limit)
+      end
       scope :duo_features_set, ->(setting) { where(duo_features_enabled: setting) }
 
       belongs_to :default_compliance_framework, optional: true, class_name: "ComplianceManagement::Framework"
