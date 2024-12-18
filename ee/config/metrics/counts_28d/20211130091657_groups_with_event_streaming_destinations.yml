@@ -3,7 +3,7 @@ key_path: usage_activity_by_stage_monthly.manage.groups_with_event_streaming_des
 description: "Distinct count of groups with any event streaming destinations"
 product_group: compliance
 value_type: number
-status: broken
+status: removed
 repair_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/369871
 milestone: "14.6"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/344670
@@ -13,3 +13,5 @@ data_category: optional
 instrumentation_class: CountGroupsWithEventStreamingDestinationsMetric
 tiers:
 - ultimate
+milestone_removed: "17.8"
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/173590
