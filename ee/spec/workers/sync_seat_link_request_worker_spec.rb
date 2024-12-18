@@ -12,7 +12,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
     let(:seat_link_url) { [subscription_portal_url, '/api/v1/seat_links'].join }
     let(:body) { { success: true } }
 
-    let_it_be(:default_organization) { create(:organization, :default) }
+    let_it_be(:organization) { create(:organization) }
 
     before do
       stub_request(:post, seat_link_url).to_return_json(
@@ -159,7 +159,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
         expect(upcoming_reconciliation.next_reconciliation_date).to eq(today)
         expect(upcoming_reconciliation.display_alert_from).to eq(today - 7.days)
-        expect(upcoming_reconciliation.organization_id).to eq(1)
+        expect(upcoming_reconciliation.organization_id).to eq(organization.id)
       end
 
       context 'when an upcoming_reconciliation already exists' do
