@@ -31532,6 +31532,51 @@ msgstr ""
 msgid "JobAssistant|week(s)"
 msgstr ""
 
+msgid "JobToken|Apply permissions that grant access to individual resources."
+msgstr ""
+
+msgid "JobToken|Containers"
+msgstr ""
+
+msgid "JobToken|Default permissions"
+msgstr ""
+
+msgid "JobToken|Deployments"
+msgstr ""
+
+msgid "JobToken|Environments"
+msgstr ""
+
+msgid "JobToken|Fine-grained permissions"
+msgstr ""
+
+msgid "JobToken|Jobs"
+msgstr ""
+
+msgid "JobToken|Packages"
+msgstr ""
+
+msgid "JobToken|Read"
+msgstr ""
+
+msgid "JobToken|Read and write"
+msgstr ""
+
+msgid "JobToken|Releases"
+msgstr ""
+
+msgid "JobToken|Resource"
+msgstr ""
+
+msgid "JobToken|Secure files"
+msgstr ""
+
+msgid "JobToken|Terraform state"
+msgstr ""
+
+msgid "JobToken|Use the standard permissions model based on user membership and roles."
+msgstr ""
+
 msgid "Jobs"
 msgstr ""
 
