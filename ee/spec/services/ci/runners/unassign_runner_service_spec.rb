@@ -25,7 +25,7 @@ RSpec.describe ::Ci::Runners::UnassignRunnerService, '#execute', feature_categor
   context 'with admin user', :enable_admin_mode do
     let_it_be(:user) { create(:admin) }
 
-    it 'calls audit on RunnerCustomAuditEventService and returns success response', :aggregate_failures do
+    it 'calls audit on Auditor and returns success response', :aggregate_failures do
       expect(runner_project).to receive(:destroy).once.and_call_original
       expect(::Gitlab::Audit::Auditor).to receive(:audit)
         .with({

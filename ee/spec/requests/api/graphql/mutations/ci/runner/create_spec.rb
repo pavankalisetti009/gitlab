@@ -30,6 +30,10 @@ RSpec.describe Mutations::Ci::Runner::Create, feature_category: :runner do
       end
 
       it 'sets cost factors to specified values', :aggregate_failures do
+        expect_next_instance_of(::Ci::Runners::CreateRunnerService) do |service|
+          expect(service).to receive(:execute).and_call_original
+        end
+
         mutation_result
 
         expect_graphql_errors_to_be_empty
