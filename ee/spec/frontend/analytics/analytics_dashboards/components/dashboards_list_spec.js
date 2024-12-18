@@ -245,23 +245,36 @@ describe('DashboardsList', () => {
       });
     });
 
-    describe('when custom dashboards project is configured', () => {
-      beforeEach(() => {
-        createWrapper({
-          isProject: false,
-          isGroup: true,
-          customDashboardsProject: TEST_CUSTOM_DASHBOARDS_PROJECT,
+    describe.each`
+      customDashboardsProject | groupAnalyticsDashboardEditor | showNewButton
+      ${true}                 | ${false}                      | ${false}
+      ${false}                | ${true}                       | ${false}
+      ${true}                 | ${true}                       | ${true}
+    `(
+      'with customDashboardsProject=$customDashboardsProject, groupAnalyticsDashboardEditor=$groupAnalyticsDashboardEditor',
+      ({ customDashboardsProject, groupAnalyticsDashboardEditor, showNewButton }) => {
+        beforeEach(() => {
+          createWrapper({
+            isProject: false,
+            isGroup: true,
+            customDashboardsProject: customDashboardsProject
+              ? TEST_CUSTOM_DASHBOARDS_PROJECT
+              : null,
+            glFeatures: {
+              groupAnalyticsDashboardEditor,
+            },
+          });
         });
-      });
 
-      it('does not render the data explorer button', () => {
-        expect(findDataExplorerButton().exists()).toBe(false);
-      });
+        it('does not render the data explorer button', () => {
+          expect(findDataExplorerButton().exists()).toBe(false);
+        });
 
-      it('does not render the new dashboard button', () => {
-        expect(findNewDashboardButton().exists()).toBe(false);
-      });
-    });
+        it(`${showNewButton ? 'renders' : 'does not render'} the new dashboard button`, () => {
+          expect(findNewDashboardButton().exists()).toBe(showNewButton);
+        });
+      },
+    );
   });
 
   describe('configure custom dashboards project', () => {
