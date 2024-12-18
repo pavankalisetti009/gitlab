@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::Tasks::IngestComponents, feature_category: :dependency_management do
   describe '#execute' do
-    let!(:organization) { create(:organization, :default) }
+    let!(:organization) { create(:organization) }
 
     let_it_be(:pipeline) { create(:ci_pipeline) }
 
