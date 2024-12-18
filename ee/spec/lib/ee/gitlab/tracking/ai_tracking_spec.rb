@@ -13,7 +13,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
     before do
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
-      stub_feature_flags(code_suggestions_usage_events_in_pg: true)
     end
 
     context 'for unknown event' do

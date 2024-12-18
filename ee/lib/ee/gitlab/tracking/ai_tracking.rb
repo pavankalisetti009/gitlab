@@ -48,7 +48,6 @@ module EE
         end
 
         def store_to_postgres(event)
-          return unless ::Feature.enabled?(:code_suggestions_usage_events_in_pg) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- it's a derisk flag
           return unless event.respond_to?(:store_to_pg)
 
           event.store_to_pg
