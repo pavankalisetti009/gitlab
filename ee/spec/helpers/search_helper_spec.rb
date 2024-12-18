@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe SearchHelper, feature_category: :global_search do
   include Devise::Test::ControllerHelpers
+
   describe '#search_filter_input_options' do
     let(:options) { helper.search_filter_input_options(:issues) }
 
@@ -13,13 +14,13 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
 
       it 'allows multiple assignees in project context' do
-        @project = create :project
+        @project = build_stubbed(:project)
 
         expect(options[:data][:'multiple-assignees']).to eq('true')
       end
 
       it 'allows multiple assignees in group context' do
-        @group = create :group
+        @group = build_stubbed(:group)
 
         expect(options[:data][:'multiple-assignees']).to eq('true')
       end
@@ -35,15 +36,15 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
 
       it 'does not allow multiple assignees in project context' do
-        @project = create :project
+        @project = build_stubbed(:project)
 
-        expect(options[:data][:'multiple-assignees']).to be(nil)
+        expect(options[:data][:'multiple-assignees']).to be_nil
       end
 
       it 'does not allow multiple assignees in group context' do
-        @group = create :group
+        @group = build_stubbed(:group)
 
-        expect(options[:data][:'multiple-assignees']).to be(nil)
+        expect(options[:data][:'multiple-assignees']).to be_nil
       end
 
       it 'allows multiple assignees in dashboard context' do
@@ -70,11 +71,11 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       it 'does not include epics endpoint for projects under a namespace' do
         @project = create(:project, namespace: create(:namespace))
 
-        expect(options[:data]['epics-endpoint']).to be(nil)
+        expect(options[:data]['epics-endpoint']).to be_nil
       end
 
       it 'does not include epics endpoint in dashboard context' do
-        expect(options[:data]['epics-endpoint']).to be(nil)
+        expect(options[:data]['epics-endpoint']).to be_nil
       end
     end
 
@@ -90,7 +91,8 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         it 'includes iteration endpoint in project context' do
           @project = project_under_group
 
-          expect(options[:data]['iterations-endpoint']).to eq(expose_path(api_v4_projects_iterations_path(id: @project.id)))
+          expect(options[:data]['iterations-endpoint'])
+            .to eq(expose_path(api_v4_projects_iterations_path(id: @project.id)))
         end
 
         it 'includes iteration endpoint in group context' do
@@ -102,11 +104,11 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         it 'does not include iterations endpoint for projects under a namespace' do
           @project = create(:project, namespace: create(:namespace))
 
-          expect(options[:data]['iterations-endpoint']).to be(nil)
+          expect(options[:data]['iterations-endpoint']).to be_nil
         end
 
         it 'does not include iterations endpoint in dashboard context' do
-          expect(options[:data]['iterations-endpoint']).to be(nil)
+          expect(options[:data]['iterations-endpoint']).to be_nil
         end
       end
 
@@ -118,13 +120,13 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         it 'does not include iterations endpoint in project context' do
           @project = project_under_group
 
-          expect(options[:data]['iterations-endpoint']).to be(nil)
+          expect(options[:data]['iterations-endpoint']).to be_nil
         end
 
         it 'does not include iterations endpoint in group context' do
           @group = group
 
-          expect(options[:data]['iterations-endpoint']).to be(nil)
+          expect(options[:data]['iterations-endpoint']).to be_nil
         end
       end
     end
@@ -133,7 +135,6 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   describe 'search_autocomplete_opts' do
     context "with a user" do
       let(:search_term) { 'the search term' }
-
       let_it_be(:user) { create(:user) }
 
       before do
@@ -228,14 +229,14 @@ RSpec.describe SearchHelper, feature_category: :global_search do
     let(:elasticsearch_enabled) { true }
     let(:show_snippets) { true }
     let(:collection) { Kaminari.paginate_array([:foo]).page(1).per(10) }
-    let(:user) { create(:user) }
+    let(:user) { build_stubbed(:user) }
     let(:message) { "Showing %{count} %{scope} for %{term_element}" }
-    let(:new_message) { message + " in your personal and project snippets" }
+    let(:new_message) { "#{message} in your personal and project snippets" }
     let(:count) { 1 }
     let(:scope) { 'test' }
     let(:term_element) { 'foo' }
 
-    subject { search_entries_info_template(collection) }
+    subject(:search) { search_entries_info_template(collection) }
 
     before do
       @current_user = user
@@ -247,14 +248,14 @@ RSpec.describe SearchHelper, feature_category: :global_search do
     end
 
     shared_examples 'returns old message' do
-      it do
-        expect(subject).to eq message
+      it 'returns the message' do
+        expect(search).to eq message
       end
     end
 
     context 'when all requirements are met' do
       it 'returns a custom message' do
-        expect(subject).to eq "Showing 1 test for foo in your personal and project snippets"
+        expect(search).to eq "Showing 1 test for foo in your personal and project snippets"
       end
     end
 
@@ -285,10 +286,9 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
   describe '#highlight_and_truncate_issuable' do
     let(:description) { 'hello world' }
-    let(:issue) { create(:issue, description: description) }
-    let_it_be(:user) { create(:user) }
-
+    let(:issue) { build_stubbed(:issue, description: description) }
     let(:search_highlight) { {} }
+    let_it_be(:user) { build_stubbed(:user) }
 
     before do
       allow(self).to receive(:current_user).and_return(user)
@@ -356,7 +356,7 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   end
 
   describe '#search_sort_options_json' do
-    let(:user) { create(:user) }
+    let(:user) { build_stubbed(:user) }
 
     mock_relevant_sort = {
       title: _('Most relevant'),
@@ -406,18 +406,16 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   describe '.search_navigation_json' do
     context 'when all options enabled' do
       before do
-        allow(self).to receive(:current_user).and_return(build(:user))
-        allow(self).to receive(:can?).and_return(true)
-        allow(self).to receive(:project_search_tabs?).and_return(true)
-        allow(self).to receive(:feature_flag_tab_enabled?).and_return(true)
-        allow(search_service).to receive(:show_elasticsearch_tabs?).and_return(true)
-        allow(search_service).to receive(:show_epics?).and_return(true)
-        allow(search_service).to receive(:show_snippets?).and_return(true)
+        allow(self).to receive_messages(current_user: build(:user), can?: true, project_search_tabs?: true,
+          feature_flag_tab_enabled?: true)
+        allow(search_service).to receive_messages(show_elasticsearch_tabs?: true, show_epics?: true,
+          show_snippets?: true)
         @project = nil
       end
 
       it 'returns items in order' do
-        expect(Gitlab::Json.parse(search_navigation_json).keys).to eq(%w[projects blobs epics issues merge_requests wiki_blobs commits notes milestones users snippet_titles])
+        expect(Gitlab::Json.parse(search_navigation_json).keys).to eq(%w[projects blobs epics issues merge_requests
+          wiki_blobs commits notes milestones users snippet_titles])
       end
     end
   end
@@ -464,9 +462,10 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   end
 
   describe '#wiki_blob_link' do
-    let_it_be(:group) { create(:group, :wiki_repo) }
+    let_it_be(:group) { build_stubbed(:group, :wiki_repo) }
     let(:wiki_blob) do
-      Gitlab::Search::FoundBlob.new({ path: 'test', basename: 'test', ref: 'master', data: 'foo', startline: 2, group: group, group_id: group.id, group_level_blob: true })
+      Gitlab::Search::FoundBlob.new(path: 'test', basename: 'test', ref: 'master', data: 'foo', startline: 2,
+        group: group, group_id: group.id, group_level_blob: true)
     end
 
     it { expect(wiki_blob_link(wiki_blob)).to eq("/groups/#{group.path}/-/wikis/#{wiki_blob.path}") }
@@ -478,13 +477,13 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
       context 'when the group is present' do
         it 'when the group is present returns true' do
-          @group = create(:group)
+          @group = build_stubbed(:group)
           expect(should_show_zoekt_results?).to be true
         end
       end
 
       context 'when the project is present' do
-        let_it_be(:project) { create(:project) }
+        let_it_be(:project) { build_stubbed(:project) }
 
         before do
           @project = project
