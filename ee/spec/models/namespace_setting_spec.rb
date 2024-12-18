@@ -16,6 +16,20 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
+  describe 'scopes' do
+    describe '.requiring_dormant_member_review', :freeze_time do
+      it 'returns settings with feature enabled requiring review' do
+        setting_never_reviewed = create(:namespace_settings, remove_dormant_members: true, last_dormant_member_review_at: nil)
+        setting_reviewed_19_hours_ago = create(:namespace_settings, remove_dormant_members: true, last_dormant_member_review_at: 19.hours.ago)
+        create(:namespace_settings, last_dormant_member_review_at: 18.hours.ago) # exactly 18 hours ago
+        create(:namespace_settings, remove_dormant_members: false) # feature is disabled
+
+        expect(described_class.requiring_dormant_member_review(3))
+          .to contain_exactly(setting_never_reviewed, setting_reviewed_19_hours_ago)
+      end
+    end
+  end
+
   describe 'validations' do
     subject(:settings) { group.namespace_settings }
 
