@@ -19,6 +19,13 @@ RSpec.describe Ldap::OmniauthCallbacksController, feature_category: :system_acce
     expect(flash[:notice]).to eq nil
   end
 
+  it 'enqueues after sign in workers' do
+    expect(GitlabSubscriptions::AddOnPurchases::LdapAddOnSeatSyncWorker).to receive(:perform_async)
+      .with({ 'user_id' => user.id })
+
+    post provider
+  end
+
   context 'for sign up', :with_current_organization, :aggregate_failures do
     let(:user) { build_stubbed(:user) }
 
@@ -89,6 +96,12 @@ RSpec.describe Ldap::OmniauthCallbacksController, feature_category: :system_acce
       stub_licensed_features(extended_audit_events: true)
 
       expect { post provider }.to change { AuditEvent.count }.by(1)
+    end
+
+    it 'does not enqueue after sign in workers' do
+      expect(GitlabSubscriptions::AddOnPurchases::LdapAddOnSeatSyncWorker).not_to receive(:perform_async)
+
+      post provider
     end
   end
 end
