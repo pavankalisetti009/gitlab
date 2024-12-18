@@ -38508,6 +38508,16 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetcurrentusertodoscurrentusertodosstate"></a>`state` | [`TodoStateEnum`](#todostateenum) | State of the to-do items. |
 
+### `WorkItemWidgetCustomFields`
+
+Represents a custom fields widget.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetcustomfieldstype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
 ### `WorkItemWidgetCustomStatus`
 
 Represents Custom Status widget.
@@ -42648,6 +42658,7 @@ Type of a work item widget.
 | <a id="workitemwidgettypecolor"></a>`COLOR` | Color widget. |
 | <a id="workitemwidgettypecrm_contacts"></a>`CRM_CONTACTS` | Crm Contacts widget. |
 | <a id="workitemwidgettypecurrent_user_todos"></a>`CURRENT_USER_TODOS` | Current User Todos widget. |
+| <a id="workitemwidgettypecustom_fields"></a>`CUSTOM_FIELDS` | Custom Fields widget. |
 | <a id="workitemwidgettypecustom_status"></a>`CUSTOM_STATUS` | Custom Status widget. |
 | <a id="workitemwidgettypedescription"></a>`DESCRIPTION` | Description widget. |
 | <a id="workitemwidgettypedesigns"></a>`DESIGNS` | Designs widget. |
@@ -45014,6 +45025,7 @@ Implementations:
 - [`WorkItemWidgetColor`](#workitemwidgetcolor)
 - [`WorkItemWidgetCrmContacts`](#workitemwidgetcrmcontacts)
 - [`WorkItemWidgetCurrentUserTodos`](#workitemwidgetcurrentusertodos)
+- [`WorkItemWidgetCustomFields`](#workitemwidgetcustomfields)
 - [`WorkItemWidgetCustomStatus`](#workitemwidgetcustomstatus)
 - [`WorkItemWidgetDescription`](#workitemwidgetdescription)
 - [`WorkItemWidgetDesigns`](#workitemwidgetdesigns)

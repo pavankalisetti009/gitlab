@@ -17,7 +17,8 @@ module EE
         ],
         issuable_health_status: ::WorkItems::Widgets::HealthStatus,
         okrs: ::WorkItems::Widgets::Progress,
-        epic_colors: ::WorkItems::Widgets::Color
+        epic_colors: ::WorkItems::Widgets::Color,
+        custom_fields: ::WorkItems::Widgets::CustomFields
       }.freeze
 
       LICENSED_TYPES = { epic: :epics, objective: :okrs, key_result: :okrs, requirement: :requirements }.freeze
@@ -41,13 +42,17 @@ module EE
       override :widgets
       def widgets(resource_parent)
         strong_memoize_with(:widgets, resource_parent) do
-          unlicensed_classes = unlicensed_widget_classes(resource_parent)
+          unavailable_widgets = unlicensed_widget_classes(resource_parent)
 
           if epic? && !resource_parent.try(:work_items_beta_feature_flag_enabled?)
-            unlicensed_classes << ::WorkItems::Widgets::Assignees
+            unavailable_widgets << ::WorkItems::Widgets::Assignees
           end
 
-          super.reject { |widget_def| unlicensed_classes.include?(widget_def.widget_class) }
+          if ::Feature.disabled?(:custom_fields_feature, resource_parent.root_ancestor)
+            unavailable_widgets << ::WorkItems::Widgets::CustomFields
+          end
+
+          super.reject { |widget_def| unavailable_widgets.include?(widget_def.widget_class) }
         end
       end
 
