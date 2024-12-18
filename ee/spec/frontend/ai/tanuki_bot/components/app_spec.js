@@ -622,6 +622,15 @@ describeSkipVue3(skipReason, () => {
       createComponent();
     });
 
+    it('initializes `left` as undefined in dimensions before mounted lifecycle alters it', () => {
+      const setDimensionsSpy = jest
+        .spyOn(TanukiBotChatApp.methods, 'setDimensions')
+        .mockImplementation(() => {});
+      createComponent();
+      expect(wrapper.vm.dimensions.left).toBe(null);
+      setDimensionsSpy.mockRestore();
+    });
+
     it('initializes dimensions correctly on mount', () => {
       createComponent();
       expect(wrapper.vm.width).toBe(400);
