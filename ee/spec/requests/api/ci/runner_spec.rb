@@ -289,5 +289,23 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         expect(response).to have_gitlab_http_status(:created)
       end
     end
+
+    describe 'DELETE /api/v4/runners' do
+      let!(:runner) { create(:ci_runner, :project, projects: [project]) }
+      let(:params) { { token: runner.token } }
+
+      subject(:delete_runner) { delete api('/runners'), params: params }
+
+      it 'deletes runner and logs audit event', :aggregate_failures do
+        expect_next_instance_of(::AuditEvents::RunnerAuditEventService) do |service|
+          expect(service).to receive(:track_event).and_call_original
+        end
+
+        expect { delete_runner }
+          .to change { Ci::Runner.belonging_to_project(project).count }.by(-1)
+          .and change { AuditEvent.count }.by(1)
+        expect(response).to have_gitlab_http_status(:no_content)
+      end
+    end
   end
 end
