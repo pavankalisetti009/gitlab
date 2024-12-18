@@ -1,7 +1,8 @@
 <script>
-import { GlIcon, GlPopover } from '@gitlab/ui';
+import { GlPopover } from '@gitlab/ui';
 import { DB_CONNECTION_TYPE_UI } from 'ee/geo_sites/constants';
 import { s__ } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 
 export default {
   name: 'GeoSiteDatabaseConnectionType',
@@ -11,8 +12,8 @@ export default {
     ),
   },
   components: {
-    GlIcon,
     GlPopover,
+    HelpIcon,
   },
   props: {
     site: {
@@ -35,11 +36,7 @@ export default {
     <span class="gl-font-bold" data-testid="database-connection-type-text">{{
       databaseConnectionTypeUi.text
     }}</span>
-    <gl-icon
-      ref="databaseConnectionType"
-      name="question-o"
-      class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
-    />
+    <help-icon ref="databaseConnectionType" class="gl-ml-2" />
     <gl-popover
       :target="() => $refs.databaseConnectionType && $refs.databaseConnectionType.$el"
       placement="top"

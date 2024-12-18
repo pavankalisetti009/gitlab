@@ -1,9 +1,10 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapGetters, mapState } from 'vuex';
-import { GlLink, GlIcon, GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
+import { GlLink, GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
 import { __, s__, sprintf } from '~/locale';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import { seatsInUseLink } from 'ee/usage_quotas/seats/constants';
@@ -11,7 +12,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 export default {
   name: 'SubscriptionSeatsStatisticsCard',
-  components: { GlLink, GlIcon, GlSkeletonLoader, UsageStatistics },
+  components: { GlLink, GlSkeletonLoader, UsageStatistics, HelpIcon },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
@@ -141,7 +142,7 @@ export default {
               :title="tooltipText"
               :aria-label="tooltipText"
             >
-              <gl-icon name="question-o" />
+              <help-icon />
             </gl-link>
           </p>
           <p v-if="shouldDisplayUnlimitedSeatText" class="border-top pt-3 gl-mt-5">
