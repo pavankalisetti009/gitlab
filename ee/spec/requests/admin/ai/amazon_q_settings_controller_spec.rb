@@ -3,6 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature_category: :ai_abstraction_layer do
+  # Ultimate license is needed for service account creation available set check
+  let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+  # Default organization needed for creating new users
+  let_it_be(:default_organization) { create(:organization, :default) }
+
   let(:admin) { create(:admin) }
   let(:amazon_q_ready) { false }
 
@@ -13,7 +18,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   end
 
   before do
-    stub_licensed_features(amazon_q: true)
+    stub_licensed_features(amazon_q: true, service_accounts: true)
     stub_feature_flags(amazon_q_integration: true)
 
     stub_ee_application_setting(duo_availability: 'default_on')
@@ -21,7 +26,9 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
     # NOTE: Updating this singleton in the top-level before each for increasing predictability with tests
     Ai::Setting.instance.update!(
       amazon_q_ready: amazon_q_ready,
-      amazon_q_role_arn: 'test-arn'
+      amazon_q_role_arn: 'test-arn',
+      amazon_q_service_account_user_id: nil,
+      amazon_q_oauth_application_id: nil
     )
 
     sign_in(admin)
@@ -105,7 +112,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   describe 'POST #create' do
     using RSpec::Parameterized::TableSyntax
 
-    let(:params) { { role_arn: 'a', availability: 'always_on' } }
+    let(:params) { { role_arn: 'a', availability: 'default_off' } }
     let(:perform_request) { post admin_ai_amazon_q_settings_path, params: params }
 
     it_behaves_like 'returns 404 when feature is unavailable'
@@ -127,6 +134,19 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
         perform_request
 
+        expect(response).to redirect_to(admin_ai_amazon_q_settings_path)
+      end
+    end
+
+    context 'when not ready' do
+      it 'creates new amazon q integration' do
+        stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application").and_return(status: 200,
+          body: 'success')
+        expect(::Ai::AmazonQ::CreateService).to receive(:new).and_call_original
+
+        perform_request
+
+        expect(flash[:alert]).to be_nil
         expect(response).to redirect_to(admin_ai_amazon_q_settings_path)
       end
     end

@@ -13,8 +13,6 @@ module Admin
       end
 
       def create
-        Gitlab::AppLogger.debug(message: "Receive create for Amazon Q Settings", params: permitted_params)
-
         service = if ::Ai::Setting.instance.amazon_q_ready
                     ::Ai::AmazonQ::UpdateService
                   else
