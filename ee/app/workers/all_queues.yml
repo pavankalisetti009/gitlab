@@ -1074,15 +1074,6 @@
   :weight: 1
   :idempotent: true
   :tags: []
-- :name: ai_store_repository_xray
-  :worker_name: Ai::StoreRepositoryXrayWorker
-  :feature_category: :code_suggestions
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
 - :name: analytics_code_review_metrics
   :worker_name: Analytics::CodeReviewMetricsWorker
   :feature_category: :value_stream_management
