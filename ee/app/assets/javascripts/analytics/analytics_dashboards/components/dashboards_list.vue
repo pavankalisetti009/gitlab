@@ -71,7 +71,10 @@ export default {
       return this.isProject && this.customDashboardsProject && this.productAnalyticsIsOnboarded;
     },
     showNewDashboardButton() {
-      return this.isProject && this.customDashboardsProject;
+      return (
+        this.customDashboardsProject &&
+        (this.isProject || this.glFeatures.groupAnalyticsDashboardEditor)
+      );
     },
     showUserActions() {
       return Boolean(this.showNewDashboardButton);
