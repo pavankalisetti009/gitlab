@@ -142,7 +142,7 @@ export default {
       const entityType = this.isProjectType ? 'projects' : 'groups';
       Api.createProtectedEnvironment(this.entityId, entityType, protectedEnvironment)
         .then(() => {
-          this.$emit('success');
+          this.$emit('success', protectedEnvironment);
           this.deployers = [];
           this.approvers = [];
           this.environment = '';

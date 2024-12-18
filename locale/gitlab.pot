@@ -45270,6 +45270,12 @@ msgstr ""
 msgid "ProtectedEnvironment|Approvers"
 msgstr ""
 
+msgid "ProtectedEnvironment|Environment %{environmentName} is protected."
+msgstr ""
+
+msgid "ProtectedEnvironment|Environment %{environmentName} is unprotected."
+msgstr ""
+
 msgid "ProtectedEnvironment|Environment '%{environment_name}' is already protected"
 msgstr ""
 

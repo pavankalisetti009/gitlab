@@ -9,6 +9,10 @@ import CreateProtectedEnvironment from 'ee/protected_environments/create_protect
 import Pagination from '~/vue_shared/components/pagination_links.vue';
 import { DEVELOPER_ACCESS_LEVEL } from './constants';
 
+const $toast = {
+  show: jest.fn(),
+};
+
 const DEFAULT_ENVIRONMENTS = [
   {
     name: 'staging',
@@ -94,6 +98,9 @@ describe('ee/protected_environments/protected_environments.vue', () => {
       },
       // Stub access dropdown since it triggers some requests that are out-of-scope here
       stubs: ['AccessDropdown', 'CreateProtectedEnvironment'],
+      mocks: {
+        $toast,
+      },
     });
   };
 
@@ -181,6 +188,13 @@ describe('ee/protected_environments/protected_environments.vue', () => {
 
       expect(wrapper.emitted('unprotect')).toEqual([[environment]]);
     });
+
+    it('shows a toast message after unprotecting the environment', async () => {
+      await button.trigger('click');
+      await modal.vm.$emit('primary');
+
+      expect($toast.show).toHaveBeenCalledWith('Environment staging is unprotected.');
+    });
   });
 
   describe('pagination', () => {
@@ -233,6 +247,8 @@ describe('ee/protected_environments/protected_environments.vue', () => {
     });
 
     describe('when add button is clicked', () => {
+      const environmentName = DEFAULT_ENVIRONMENTS[0].name;
+
       beforeEach(async () => {
         await findAddButton().trigger('click');
       });
@@ -250,10 +266,16 @@ describe('ee/protected_environments/protected_environments.vue', () => {
       it('when form success, hides the form and refetches', async () => {
         expect(fetchProtectedEnvironmentsMock).not.toHaveBeenCalled();
 
-        await findAddForm().vm.$emit('success');
+        await findAddForm().vm.$emit('success', { name: environmentName });
 
         expect(findAddForm().exists()).toBe(false);
         expect(fetchProtectedEnvironmentsMock).toHaveBeenCalled();
+      });
+
+      it('shows a toast message after protecting the environment', async () => {
+        await findAddForm().vm.$emit('success', { name: environmentName });
+
+        expect($toast.show).toHaveBeenCalledWith('Environment staging is protected.');
       });
     });
   });
