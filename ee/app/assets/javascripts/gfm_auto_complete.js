@@ -1,7 +1,9 @@
 import $ from 'jquery';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import '~/lib/utils/jquery_at_who';
-import GfmAutoComplete, { showAndHideHelper, escape } from '~/gfm_auto_complete';
+import GfmAutoComplete, { showAndHideHelper, escape, setupSubcommands } from '~/gfm_auto_complete';
+import { s__ } from '~/locale';
+import { MERGE_REQUEST_NOTEABLE_TYPE } from '~/notes/constants';
 
 /**
  * This is added to keep the export parity with the CE counterpart.
@@ -22,6 +24,54 @@ export {
 const EPICS_ALIAS = 'epics';
 const ITERATIONS_ALIAS = 'iterations';
 const VULNERABILITIES_ALIAS = 'vulnerabilities';
+
+export const Q_ISSUE_SUB_COMMANDS = {
+  dev: {
+    header: s__('AmazonQ|dev'),
+    description: s__('AmazonQ|Create a merge request to incorporate Amazon Q suggestions (Beta)'),
+  },
+  transform: {
+    header: s__('AmazonQ|transform'),
+    description: s__('AmazonQ|Upgrade Java Maven application to Java 17 (Beta)'),
+  },
+};
+
+export const Q_MERGE_REQUEST_SUB_COMMANDS = {
+  dev: {
+    header: s__('AmazonQ|dev'),
+    description: s__('AmazonQ|Apply changes to this merge request based on the comments (Beta)'),
+  },
+  fix: {
+    header: s__('AmazonQ|fix'),
+    description: s__('AmazonQ|Create fixes for review findings (Beta)'),
+  },
+  review: {
+    header: s__('AmazonQ|review'),
+    description: s__('AmazonQ|Review merge request for code quality and security issues (Beta)'),
+  },
+};
+
+export const Q_MERGE_REQUEST_CAN_SUGGEST_SUB_COMMANDS = {
+  test: {
+    header: s__('AmazonQ|test'),
+    description: s__(
+      'AmazonQ|Create unit tests for selected lines of code in Java or Python files (Beta)',
+    ),
+  },
+};
+
+const getQSubCommands = ($input) => {
+  if ($input.data('noteableType') === MERGE_REQUEST_NOTEABLE_TYPE) {
+    const canSuggest = $input.data('canSuggest');
+
+    return {
+      ...Q_MERGE_REQUEST_SUB_COMMANDS,
+      ...(canSuggest ? Q_MERGE_REQUEST_CAN_SUGGEST_SUB_COMMANDS : {}),
+    };
+  }
+
+  return Q_ISSUE_SUB_COMMANDS;
+};
 
 GfmAutoComplete.Iterations = {
   templateFunction({ id, title }) {
@@ -44,6 +94,14 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
     }
 
     super.setupAtWho($input);
+  }
+
+  loadSubcommands($input, data) {
+    if (data.some((c) => c.name === 'q')) {
+      setupSubcommands($input, 'q', getQSubCommands($input));
+    }
+
+    super.loadSubcommands($input, data);
   }
 
   // eslint-disable-next-line class-methods-use-this
