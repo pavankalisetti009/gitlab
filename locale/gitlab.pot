@@ -35541,6 +35541,9 @@ msgstr ""
 msgid "MlModelRegistry|New version"
 msgstr ""
 
+msgid "MlModelRegistry|No candidates associated with this model"
+msgstr ""
+
 msgid "MlModelRegistry|No description available. To add a description, click \"Edit model version\" above."
 msgstr ""
 
@@ -35602,6 +35605,9 @@ msgid "MlModelRegistry|Total versions"
 msgstr ""
 
 msgid "MlModelRegistry|Triggered by"
+msgstr ""
+
+msgid "MlModelRegistry|Use candidates to track performance, parameters, and metadata"
 msgstr ""
 
 msgid "MlModelRegistry|Use versions to track performance, parameters, and metadata"
