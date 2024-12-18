@@ -10,9 +10,11 @@ module ExternalStatusChecks
       if with_audit_logged(external_status_check, 'delete_status_check') { external_status_check.destroy }
         ServiceResponse.success
       else
-        ServiceResponse.error(message: ERROR_MESSAGE,
-                              payload: { errors: external_status_check.errors.full_messages },
-                              http_status: :unprocessable_entity)
+        ServiceResponse.error(
+          message: ERROR_MESSAGE,
+          payload: { errors: external_status_check.errors.full_messages },
+          http_status: :unprocessable_entity
+        )
       end
     end
 

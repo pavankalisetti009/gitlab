@@ -22,23 +22,12 @@ module EE
       def notify_success(user_exists)
         notify_new_user(@user, nil) unless user_exists # rubocop:disable Gitlab/ModuleWithInstanceVariables
 
-        audit_changes(:email, as: 'email address',
-                              event_type: 'user_email_address_updated')
-
-        audit_changes(:encrypted_password, as: 'password',
-                                           skip_changes: true, event_type: 'user_password_updated')
-
-        audit_changes(:username, as: 'username',
-                                 event_type: 'user_username_updated')
-
-        audit_changes(:name, as: 'name',
-                                 event_type: 'user_name_updated')
-
-        audit_changes(:admin, as: 'admin status',
-                              event_type: 'user_admin_status_updated')
-
-        audit_changes(:auditor, as: 'auditor status',
-                              event_type: 'user_auditor_status_updated')
+        audit_changes(:email, as: 'email address', event_type: 'user_email_address_updated')
+        audit_changes(:encrypted_password, as: 'password', skip_changes: true, event_type: 'user_password_updated')
+        audit_changes(:username, as: 'username', event_type: 'user_username_updated')
+        audit_changes(:name, as: 'name', event_type: 'user_name_updated')
+        audit_changes(:admin, as: 'admin status', event_type: 'user_admin_status_updated')
+        audit_changes(:auditor, as: 'auditor status', event_type: 'user_auditor_status_updated')
 
         log_audit_events
       end

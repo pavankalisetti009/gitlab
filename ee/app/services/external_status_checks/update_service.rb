@@ -14,9 +14,11 @@ module ExternalStatusChecks
 
         ServiceResponse.success(payload: { external_status_check: external_status_check })
       else
-        ServiceResponse.error(message: ERROR_MESSAGE,
-                              payload: { errors: external_status_check.errors.full_messages },
-                              http_status: :unprocessable_entity)
+        ServiceResponse.error(
+          message: ERROR_MESSAGE,
+          payload: { errors: external_status_check.errors.full_messages },
+          http_status: :unprocessable_entity
+        )
       end
     end
 
