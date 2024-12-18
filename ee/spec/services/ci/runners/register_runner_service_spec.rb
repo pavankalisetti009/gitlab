@@ -3,14 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, feature_category: :fleet_visibility do
+  let_it_be(:group) { create(:group, :allow_runner_registration_token) }
+  let_it_be(:project) { create(:project, :allow_runner_registration_token, namespace: group) }
+
   let(:registration_token) { 'abcdefg123456' }
   let(:token) {}
   let(:audit_service) { instance_double(::AuditEvents::RunnerAuditEventService) }
   let(:runner) { execute.payload[:runner] }
-  let(:common_kwargs) do
+  let(:expected_audit_kwargs) do
     {
       name: 'ci_runner_registered',
-      message: s_('Runners|Registered %{runner_type} CI runner'),
+      message: 'Registered %{runner_type} CI runner',
       token_field: :runner_registration_token
     }
   end
@@ -34,7 +37,7 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
   shared_examples 'a service logging a runner registration audit event' do
     it 'returns newly-created runner' do
       expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-        .with(last_ci_runner, token, token_scope, **common_kwargs)
+        .with(last_ci_runner, token, token_scope, **expected_audit_kwargs)
         .and_return(audit_service)
       expect(audit_service).to receive(:track_event).once
 
@@ -52,8 +55,6 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
   end
 
   context 'when project token is used' do
-    let_it_be(:project) { create(:project, :allow_runner_registration_token) }
-
     let(:token) { project.runners_token }
     let(:token_scope) { project }
 
@@ -61,8 +62,6 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
   end
 
   context 'when group token is used' do
-    let_it_be_with_reload(:group) { create(:group, :allow_runner_registration_token) }
-
     let(:token) { group.runners_token }
     let(:token_scope) { group }
 
