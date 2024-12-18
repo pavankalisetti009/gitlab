@@ -40,7 +40,7 @@ module EE
       if @project
         path
       else
-        (project.full_name + ': ' + content_tag(:i, path)).html_safe
+        "#{project.full_name}: #{content_tag(:i, path)}".html_safe
       end
     end
 
@@ -65,9 +65,11 @@ module EE
       return super unless gitlab_com_snippet_db_search?
 
       if collection.total_pages > 1
-        safe_format(s_("SearchResults|Showing %{from} - %{to} of %{count} %{scope} for %{term_element} in your personal and project snippets"), from: from, to: to, count: count, scope: scope, term_element: term_element)
+        safe_format(s_("SearchResults|Showing %{from} - %{to} of %{count} %{scope} for %{term_element} in your " \
+          "personal and project snippets"), from: from, to: to, count: count, scope: scope, term_element: term_element)
       else
-        safe_format(s_("SearchResults|Showing %{count} %{scope} for %{term_element} in your personal and project snippets"), count: count, scope: scope, term_element: term_element)
+        safe_format(s_("SearchResults|Showing %{count} %{scope} for %{term_element} in your personal and project " \
+          "snippets"), count: count, scope: scope, term_element: term_element)
       end
     end
 
