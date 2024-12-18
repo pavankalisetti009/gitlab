@@ -14,18 +14,13 @@ module QA
         merge_request.visit!
 
         Page::MergeRequest::Show.perform do |show|
-          show.click_discussions_tab
-
-          # You can't start a review immediately, so we have to add a
-          # comment (or start a thread) first
-          show.start_discussion("I'm starting a new discussion")
-          show.type_reply_to_discussion(1, "Could you please check this?")
-          show.start_review
+          show.start_review_with_comment('new comment to start review')
+          show.add_comment_to_review('comment added to review')
           show.submit_pending_reviews
 
-          expect(show).to have_comment("I'm starting a new discussion")
-          expect(show).to have_comment("Could you please check this?")
-          expect(show).to have_content("1 unresolved thread")
+          expect(show).to have_comment('new comment to start review')
+          expect(show).to have_comment('comment added to review')
+          expect(show).to have_content("2 unresolved threads")
         end
       end
 
