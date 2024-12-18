@@ -1,14 +1,14 @@
 import { nextTick } from 'vue';
 import { GlFormCheckbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import RuleDrawer from '~/projects/settings/branch_rules/components/view/rule_drawer.vue';
+import AccessLevelsDrawer from '~/projects/settings/branch_rules/components/view/access_levels_drawer.vue';
 import ItemsSelector from 'ee_component/projects/settings/branch_rules/components/view/items_selector.vue';
 import {
   allowedToMergeDrawerProps,
   allowedToPushDrawerProps,
 } from 'ee_else_ce_jest/projects/settings/branch_rules/components/view/mock_data';
 
-describe('Edit Rule Drawer', () => {
+describe('Edit Access Levels Drawer', () => {
   let wrapper;
 
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
@@ -26,7 +26,7 @@ describe('Edit Rule Drawer', () => {
     props = allowedToMergeDrawerProps,
     showEnterpriseAccessLevels = true,
   ) => {
-    wrapper = shallowMountExtended(RuleDrawer, {
+    wrapper = shallowMountExtended(AccessLevelsDrawer, {
       components: { ItemsSelector },
       propsData: {
         ...props,
