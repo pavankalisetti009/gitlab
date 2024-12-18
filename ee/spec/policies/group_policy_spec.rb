@@ -4067,14 +4067,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   context 'saved replies permissions' do
     let(:current_user) { owner }
 
-    context 'when group_saved_replies_flag feature flag is disabled' do
-      before do
-        stub_feature_flags(group_saved_replies_flag: false)
-      end
-
-      it { is_expected.to be_disallowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
-    end
-
     context 'when no license is present' do
       before do
         stub_licensed_features(group_saved_replies: false)

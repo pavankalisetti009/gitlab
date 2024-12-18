@@ -12,17 +12,6 @@ RSpec.describe ::SavedReplies::CreateService, feature_category: :team_planning d
 
       subject(:service) { described_class.new(object: group, name: name, content: content).execute }
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(group_saved_replies_flag: false)
-        end
-
-        it 'returns an error' do
-          expect(service[:status]).to eq(:error)
-          expect(service[:message]).to eq(_('You have insufficient permissions to create a saved reply'))
-        end
-      end
-
       context 'when not licensed' do
         before do
           stub_licensed_features(group_saved_replies: false)
