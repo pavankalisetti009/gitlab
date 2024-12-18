@@ -108,6 +108,93 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         end
       end
     end
+
+    describe '.negative_unclaimed_storage_bytes' do
+      let_it_be(:negative_node) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:_negative_index) do
+        create(:zoekt_index, reserved_storage_bytes: negative_node.total_bytes * 2, node: negative_node)
+      end
+
+      let_it_be(:positive_node) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:_positive_index) { create(:zoekt_index, node: positive_node) }
+
+      it 'includes only nodes with negative unclaimed storage' do
+        expect(described_class.negative_unclaimed_storage_bytes).to contain_exactly(node, negative_node)
+      end
+
+      it 'does not include nodes with positive unclaimed storage' do
+        expect(described_class.negative_unclaimed_storage_bytes).not_to include(positive_node)
+      end
+    end
+
+    describe '.with_positive_unclaimed_storage_bytes' do
+      let_it_be(:node_with_positive_storage) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:node_with_zero_storage) { create(:zoekt_node, total_bytes: 1000, used_bytes: 1000) }
+      let_it_be(:node_with_negative_storage) { create(:zoekt_node, :enough_free_space) }
+
+      before do
+        # Scenario with positive unclaimed storage
+        create(:zoekt_index,
+          node: node_with_positive_storage,
+          reserved_storage_bytes: node_with_positive_storage.total_bytes / 2
+        )
+
+        # Scenario with negative unclaimed storage
+        create(:zoekt_index,
+          node: node_with_negative_storage,
+          reserved_storage_bytes: node_with_negative_storage.total_bytes * 2
+        )
+      end
+
+      it 'returns only nodes with non-negative unclaimed storage bytes' do
+        positive_nodes = described_class.with_positive_unclaimed_storage_bytes
+
+        expect(positive_nodes).to include(node_with_positive_storage)
+        expect(positive_nodes).to include(node_with_zero_storage)
+        expect(positive_nodes).not_to include(node_with_negative_storage)
+      end
+
+      it 'adds unclaimed_storage_bytes attribute to returned nodes' do
+        result = described_class.with_positive_unclaimed_storage_bytes.find(node_with_positive_storage.id)
+
+        expect(result).to respond_to(:unclaimed_storage_bytes)
+        expect(result.unclaimed_storage_bytes).to be >= 0
+      end
+
+      it 'calculates unclaimed_storage_bytes correctly' do
+        result = described_class.with_positive_unclaimed_storage_bytes.find(node_with_positive_storage.id)
+
+        # Manual calculation to verify the scope's calculation
+        expected_unclaimed_bytes = node_with_positive_storage.total_bytes -
+          node_with_positive_storage.used_bytes +
+          node_with_positive_storage.indexed_bytes -
+          node_with_positive_storage.indices.sum(:reserved_storage_bytes)
+
+        expect(result.unclaimed_storage_bytes).to eq(expected_unclaimed_bytes)
+      end
+
+      it 'groups results by node id to handle multiple indices' do
+        # Create multiple indices for the same node
+        create(:zoekt_index,
+          node: node_with_positive_storage,
+          reserved_storage_bytes: node_with_positive_storage.total_bytes / 4
+        )
+
+        results = described_class.with_positive_unclaimed_storage_bytes
+
+        expect(results).to include(node_with_positive_storage)
+      end
+
+      context 'when no indices exist' do
+        let_it_be(:node_without_indices) { create(:zoekt_node, :enough_free_space) }
+
+        it 'includes nodes without indices if they have positive unclaimed storage' do
+          results = described_class.with_positive_unclaimed_storage_bytes
+
+          expect(results).to include(node_without_indices)
+        end
+      end
+    end
   end
 
   describe 'validations' do

@@ -209,6 +209,9 @@ module EE
 
           store.subscribe ::Search::Zoekt::AdjustIndicesReservedStorageBytesEventWorker,
             to: ::Search::Zoekt::AdjustIndicesReservedStorageBytesEvent
+
+          store.subscribe ::Search::Zoekt::NodeWithNegativeUnclaimedStorageEventWorker,
+            to: ::Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent
         end
 
         def subscribe_to_members_added_event(store)

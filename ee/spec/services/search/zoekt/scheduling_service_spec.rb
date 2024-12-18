@@ -825,4 +825,22 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect { execute_task }.to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent).with(expected)
     end
   end
+
+  describe '#node_with_negative_unclaimed_storage_bytes_check' do
+    let(:task) { :node_with_negative_unclaimed_storage_bytes_check }
+    let_it_be(:negative_node) { create(:zoekt_node, :enough_free_space) }
+    let_it_be(:_negative_index) do
+      create(:zoekt_index, reserved_storage_bytes: negative_node.total_bytes * 2, node: negative_node)
+    end
+
+    let_it_be(:positive_node) { create(:zoekt_node, :enough_free_space) }
+    let_it_be(:_positive_index) { create(:zoekt_index, node: positive_node) }
+
+    it 'publishes a NodeWithNegativeUnclaimedStorageEvent for required nodes' do
+      expected = {
+        node_ids: [negative_node].map(&:id)
+      }
+      expect { execute_task }.to publish_event(Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent).with(expected)
+    end
+  end
 end
