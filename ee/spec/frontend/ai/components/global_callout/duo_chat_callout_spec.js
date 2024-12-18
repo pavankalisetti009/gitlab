@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlPopover, GlLink } from '@gitlab/ui';
+import { GlPopover, GlButton } from '@gitlab/ui';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
@@ -14,7 +14,7 @@ describe('DuoChatCallout', () => {
 
   const findCalloutDismisser = () => wrapper.findComponent(UserCalloutDismisser);
   const findPopoverWithinDismisser = () => findCalloutDismisser().findComponent(GlPopover);
-  const findLinkWithinDismisser = () => findCalloutDismisser().findComponent(GlLink);
+  const findLinkWithinDismisser = () => findCalloutDismisser().findComponent(GlButton);
   const findTargetElements = () =>
     document.querySelectorAll(`.${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}`);
   const findFirstTargetElement = () => findTargetElements()[0];

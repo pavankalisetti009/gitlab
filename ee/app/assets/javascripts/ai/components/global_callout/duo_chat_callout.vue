@@ -1,5 +1,5 @@
 <script>
-import { GlPopover, GlLink } from '@gitlab/ui';
+import { GlPopover, GlButton } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import DUO_CHAT_ILLUSTRATION from './popover-gradient.svg?url';
@@ -20,7 +20,7 @@ export default {
   name: 'DuoChatCallout',
   components: {
     GlPopover,
-    GlLink,
+    GlButton,
     UserCalloutDismisser,
   },
 
@@ -94,17 +94,15 @@ export default {
         <ul class="gl-w-3/4 gl-pl-5 gl-pt-3">
           <li v-for="item in $options.i18n.POPOVER_LIST_ITEMS" :key="item">{{ item }}</li>
         </ul>
-        <gl-link
+        <gl-button
           ref="popoverLink"
-          class="gl-button btn btn-confirm block gl-mb-2 gl-mt-4"
           variant="confirm"
           category="primary"
-          target="_blank"
-          block
+          class="gl-w-full"
           @click="dismissAndNotify(dismiss)"
         >
           {{ $options.i18n.POPOVER_BUTTON }}
-        </gl-link>
+        </gl-button>
       </gl-popover>
     </template>
   </user-callout-dismisser>
