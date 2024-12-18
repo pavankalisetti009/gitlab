@@ -209,7 +209,7 @@ class ProjectPolicy < BasePolicy
 
   with_scope :subject
   condition(:model_experiments_enabled) do
-    Feature.enabled?(:ml_experiment_tracking, @subject) && @subject.feature_available?(:model_experiments, @user)
+    @subject.feature_available?(:model_experiments, @user)
   end
 
   with_scope :subject
