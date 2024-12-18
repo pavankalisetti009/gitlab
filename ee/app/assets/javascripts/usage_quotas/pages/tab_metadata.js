@@ -13,7 +13,7 @@ export const parseProvideData = (el) => {
   };
 };
 
-export const getPagesTabMetadata = () => {
+export const getPagesTabMetadata = ({ viewType } = {}) => {
   const el = document.querySelector(PAGES_TAB_METADATA_EL_SELECTOR);
 
   if (!el) return false;
@@ -25,7 +25,10 @@ export const getPagesTabMetadata = () => {
     component: {
       name: 'PagesDeploymentsTab',
       apolloProvider,
-      provide: parseProvideData(el),
+      provide: {
+        viewType,
+        ...parseProvideData(el),
+      },
       render(createElement) {
         return createElement(PagesDeploymentsApp);
       },

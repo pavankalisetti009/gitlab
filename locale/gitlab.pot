@@ -36858,6 +36858,9 @@ msgstr ""
 msgid "No other labels with such name or description"
 msgstr ""
 
+msgid "No parallel deployments"
+msgstr ""
+
 msgid "No parent group"
 msgstr ""
 
@@ -40001,6 +40004,9 @@ msgid "Pages|State"
 msgstr ""
 
 msgid "Pages|Stopped"
+msgstr ""
+
+msgid "Pages|There are no active parallel Pages deployments in this project."
 msgstr ""
 
 msgid "Pages|There was an error trying to delete the deployment"

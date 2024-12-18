@@ -2,6 +2,7 @@
 import { GlCard, GlTableLite, GlIcon, GlBadge, GlSprintf, GlLink, GlAvatar } from '@gitlab/ui';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
+import { PROJECT_VIEW_TYPE } from '~/usage_quotas/constants';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__, sprintf } from '~/locale';
@@ -21,6 +22,7 @@ export default {
     GlLink,
     GlAvatar,
   },
+  inject: ['viewType'],
   props: {
     project: {
       type: Object,
@@ -28,6 +30,7 @@ export default {
     },
   },
   static: {
+    PROJECT_VIEW_TYPE,
     SHORT_DATE_FORMAT_WITH_TIME,
   },
   i18n: {
@@ -85,6 +88,9 @@ export default {
     },
   ],
   computed: {
+    isSingleProjectView() {
+      return this.viewType === this.$options.static.PROJECT_VIEW_TYPE;
+    },
     pagesUrl() {
       return joinPaths(gon.relative_url_root || '', '/', this.project.fullPath, 'pages');
     },
@@ -115,7 +121,7 @@ export default {
 
 <template>
   <gl-card body-class="gl-p-0">
-    <template #header>
+    <template v-if="!isSingleProjectView" #header>
       <div class="gl-flex gl-items-center gl-justify-between" data-testid="project-name">
         <gl-link :href="pagesUrl" class="gl-flex gl-items-center gl-no-underline">
           <gl-avatar
