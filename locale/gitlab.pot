@@ -38998,6 +38998,9 @@ msgstr ""
 msgid "Organization|Organization successfully created."
 msgstr ""
 
+msgid "Organization|Organization user details"
+msgstr ""
+
 msgid "Organization|Organization visibility level"
 msgstr ""
 
