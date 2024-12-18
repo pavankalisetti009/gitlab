@@ -112,7 +112,7 @@ export default {
         <div class="gl-flex-column gl-w-full">
           <div
             data-testid="widget-title"
-            class="gl-text-md gl-text-neutral-700 gl-mb-4 gl-font-bold"
+            class="gl-text-md gl-mb-4 gl-font-bold gl-text-neutral-700"
           >
             {{ widgetTitle }}
           </div>
@@ -122,7 +122,7 @@ export default {
             aria-hidden="true"
           />
           <div class="gl-flex gl-w-full gl-justify-between">
-            <span class="gl-text-neutral-700 gl-text-sm">
+            <span class="gl-text-sm gl-text-neutral-700">
               {{ widgetRemainingDays }}
             </span>
             <gl-link
