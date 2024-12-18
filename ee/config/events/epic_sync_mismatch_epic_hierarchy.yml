@@ -7,8 +7,6 @@ milestone: '17.6'
 identifiers:
   - namespace
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/172416/
-distributions:
-  - ee
 tiers:
   - premium
   - ultimate

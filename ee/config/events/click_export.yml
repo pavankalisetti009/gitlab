@@ -4,8 +4,6 @@ action: click_export
 product_group: compliance
 milestone: '16.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138383
-distributions:
-  - ee
 tiers:
   - ultimate
 additional_properties:
