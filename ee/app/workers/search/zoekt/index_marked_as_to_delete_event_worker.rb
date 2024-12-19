@@ -7,14 +7,14 @@ module Search
       include Search::Worker
       prepend ::Geo::SkipSecondary
 
-      BATCH_SIZE = 10_000
+      BATCH_SIZE = 5_000
 
       idempotent!
 
       def handle_event(event)
-        Index.where(id: event.data[:index_ids]).find_each do |idx| # rubocop:disable CodeReuse/ActiveRecord -- Not relevant
+        Index.id_in(event.data[:index_ids]).find_each do |idx|
           if idx.zoekt_repositories.exists?
-            idx.zoekt_repositories.each_batch(of: BATCH_SIZE) do |batch|
+            idx.zoekt_repositories.not_pending_deletion.each_batch(of: BATCH_SIZE) do |batch|
               batch.update_all(state: :pending_deletion)
             end
           else
