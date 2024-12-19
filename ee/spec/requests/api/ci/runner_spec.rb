@@ -3,16 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe API::Ci::Runner, feature_category: :runner do
-  include Ci::JobTokenScopeHelpers
-
-  let_it_be_with_reload(:project) { create(:project, :repository, :in_group) }
+  let_it_be_with_reload(:project) { create(:project, :repository, :in_group, :allow_runner_registration_token) }
 
   let_it_be(:user) { create(:user, developer_of: project) }
   let_it_be(:ref) { 'master' }
-  let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: ref) }
   let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
   describe '/api/v4/jobs', feature_category: :continuous_integration do
+    include Ci::JobTokenScopeHelpers
+
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: ref) }
+
     describe 'POST /api/v4/jobs/request' do
       context 'secrets management' do
         let(:valid_secrets) do
@@ -267,6 +268,25 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         job.reload
 
         get api("/jobs/#{job.id}/artifacts"), params: params, headers: request_headers
+      end
+    end
+  end
+
+  describe '/api/v4/runners', feature_category: :runner do
+    describe 'POST /api/v4/runners' do
+      let(:params) { { token: project.runners_token } }
+
+      subject(:register_runner) { post api('/runners'), params: params }
+
+      it 'registers a runner on project and logs audit event', :aggregate_failures do
+        expect_next_instance_of(::AuditEvents::RunnerAuditEventService) do |service|
+          expect(service).to receive(:track_event).and_call_original
+        end
+
+        expect { register_runner }
+          .to change { Ci::Runner.belonging_to_project(project).count }.by(1)
+          .and change { AuditEvent.count }.by(1)
+        expect(response).to have_gitlab_http_status(:created)
       end
     end
   end
