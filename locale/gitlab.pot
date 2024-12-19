@@ -56871,6 +56871,9 @@ msgstr ""
 msgid "There was an error retrieving the Jira users."
 msgstr ""
 
+msgid "There was an error retrying the job."
+msgstr ""
+
 msgid "There was an error running the job. Please try again."
 msgstr ""
 
