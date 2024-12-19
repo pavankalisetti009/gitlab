@@ -10863,6 +10863,9 @@ msgstr ""
 msgid "CICDAnalytics|What is instance runner duration?"
 msgstr ""
 
+msgid "CICD|%{policy} to %{resource}"
+msgstr ""
+
 msgid "CICD|Access unrestricted, so users with sufficient permissions in this project can authenticate with a job token generated in any other project."
 msgstr ""
 
@@ -10923,6 +10926,9 @@ msgstr ""
 msgid "CICD|Continuous deployment to production using timed incremental rollout"
 msgstr ""
 
+msgid "CICD|Default (user membership and role)"
+msgstr ""
+
 msgid "CICD|Default to Auto DevOps pipeline"
 msgstr ""
 
@@ -10953,6 +10959,9 @@ msgstr ""
 msgid "CICD|Group or project"
 msgstr ""
 
+msgid "CICD|Job token permissions"
+msgstr ""
+
 msgid "CICD|Jobs"
 msgstr ""
 
@@ -10966,6 +10975,9 @@ msgid "CICD|Maintainer"
 msgstr ""
 
 msgid "CICD|No authentication events in the last 30 days."
+msgstr ""
+
+msgid "CICD|No resources selected (minimal access only)"
 msgstr ""
 
 msgid "CICD|Only this project and any groups and projects in the allowlist"
