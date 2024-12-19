@@ -15,7 +15,7 @@ module Search
 
         return unless index_ids.present?
 
-        Search::Zoekt::Index.critical_watermark_exceeded.id_in(index_ids).each_batch do |batch|
+        Search::Zoekt::Index.id_in(index_ids).each_batch do |batch|
           ::Search::Zoekt::Replica.id_in(batch.select(:zoekt_replica_id)).delete_all
         end
       end
