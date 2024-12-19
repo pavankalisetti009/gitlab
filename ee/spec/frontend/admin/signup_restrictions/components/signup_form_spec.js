@@ -1,17 +1,25 @@
+import { nextTick } from 'vue';
+import { GlButton, GlModal } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { mockData } from 'jest/admin/signup_restrictions/mock_data';
+import { formData, mockData } from 'jest/admin/signup_restrictions/mock_data';
 import SignupForm from '~/pages/admin/application_settings/general/components/signup_form.vue';
+import SeatControlsSection from 'ee_component/pages/admin/application_settings/general/components/seat_controls_section.vue';
+import { stubComponent } from 'helpers/stub_component';
 
 describe('Signup Form', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
+  let formSubmitSpy;
+
+  const findForm = () => wrapper.findByTestId('form');
+  const findModal = () => wrapper.findComponent(GlModal);
+  const findSeatControlsSection = () => wrapper.findComponent(SeatControlsSection);
+  const findFormSubmitButton = () => findForm().findComponent(GlButton);
 
   const mountComponent = ({ injectedProps = {} } = {}) => {
     wrapper = mountExtended(SignupForm, {
       provide: {
-        glFeatures: {
-          passwordComplexity: true,
-        },
+        glFeatures: { passwordComplexity: true },
         ...mockData,
         ...injectedProps,
       },
@@ -20,6 +28,10 @@ describe('Signup Form', () => {
       },
     });
   };
+
+  afterEach(() => {
+    formSubmitSpy = null;
+  });
 
   describe('form data', () => {
     beforeEach(() => {
@@ -59,5 +71,79 @@ describe('Signup Form', () => {
         }
       },
     );
+  });
+
+  describe('form submit button confirmation modal for side-effect of adding possibly unwanted new users', () => {
+    describe('modal actions', () => {
+      beforeEach(() => {
+        const INITIAL_USER_CAP = 5;
+        const INITIAL_SEAT_CONTROL = 1;
+
+        mountComponent({
+          injectedProps: {
+            newUserSignupsCap: INITIAL_USER_CAP,
+            seatControl: INITIAL_SEAT_CONTROL,
+            pendingUserCount: 5,
+          },
+          stubs: { GlButton, GlModal: stubComponent(GlModal) },
+        });
+
+        findSeatControlsSection().vm.$emit('input', {
+          ...formData,
+          seatControl: '0',
+          userCap: ``,
+        });
+
+        findFormSubmitButton().trigger('click');
+
+        return nextTick();
+      });
+
+      describe('clicking approve users button', () => {
+        beforeEach(() => {
+          formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation();
+
+          findModal().vm.$emit('primary');
+
+          return nextTick();
+        });
+
+        it('submits the form', () => {
+          expect(formSubmitSpy).toHaveBeenCalled();
+        });
+
+        it('submits the form with the correct value', () => {
+          expect(findSeatControlsSection().props('value')).toMatchObject({
+            ...formData,
+            seatControl: '0',
+            userCap: '',
+            shouldProceedWithAutoApproval: true,
+          });
+        });
+      });
+
+      describe('clicking proceed without approve button', () => {
+        beforeEach(() => {
+          formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation();
+
+          findModal().vm.$emit('secondary');
+
+          return nextTick();
+        });
+
+        it('submits the form', () => {
+          expect(formSubmitSpy).toHaveBeenCalled();
+        });
+
+        it('submits the form with the correct value', () => {
+          expect(findSeatControlsSection().props('value')).toMatchObject({
+            ...formData,
+            seatControl: '0',
+            userCap: '',
+            shouldProceedWithAutoApproval: false,
+          });
+        });
+      });
+    });
   });
 });

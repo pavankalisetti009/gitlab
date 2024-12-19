@@ -1,3 +1,4 @@
+import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SeatControlsMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
 import SeatControlsSection from 'ee/pages/admin/application_settings/general/components/seat_controls_section.vue';
@@ -11,13 +12,17 @@ describe('SeatControlsSection', () => {
 
   const mountComponent = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(SeatControlsSection, {
+      propsData: { value: { form: { newUserSignupsCap: '', seatControl: 0 } } },
       provide: {
+        licensedUserCount: 0,
+        promotionManagementAvailable: false,
         ...provide,
       },
+      stubs: { GlSprintf },
     });
   };
 
-  describe('With member promotion management available', () => {
+  describe('with member promotion management available', () => {
     beforeEach(() => {
       mountComponent({ provide: { promotionManagementAvailable: true } });
     });
@@ -36,11 +41,31 @@ describe('SeatControlsSection', () => {
     });
   });
 
-  describe('With member promotion management unavailable', () => {
+  describe('with member promotion management unavailable', () => {
     it('will not display SeatControlsMemberPromotionManagement', () => {
       mountComponent({ provide: { promotionManagementAvailable: false } });
 
       expect(findSeatControlsMemberPromotionManagement().exists()).toBe(false);
+    });
+  });
+
+  describe('user cap help text', () => {
+    it('displays the default message', () => {
+      mountComponent();
+
+      expect(wrapper.text()).toContain(
+        'Users added beyond this limit require administrator approval. Leave blank for unlimited.',
+      );
+    });
+
+    describe('with a license', () => {
+      it('displays a message related to true up', () => {
+        mountComponent({ provide: { licensedUserCount: 10 } });
+
+        expect(wrapper.text()).toContain(
+          'A user cap that exceeds the current licensed user count (10) might result in seat overages.',
+        );
+      });
     });
   });
 });

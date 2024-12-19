@@ -222,6 +222,8 @@ module EE
         form_data[:role_promotion_requests_path] = admin_role_promotion_requests_path
       end
 
+      form_data[:seat_control] = @application_setting[:seat_control].to_s
+
       form_data
     end
 

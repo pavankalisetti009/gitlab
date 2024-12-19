@@ -340,6 +340,7 @@ RSpec.describe 'Admin updates EE-only settings' do
       expect(current_settings.new_user_signups_cap).to be_nil
 
       page.within('#js-signup-settings') do
+        find_by_testid('seat-controls-user-cap').click
         fill_in 'application_setting[new_user_signups_cap]', with: 5
 
         click_button 'Save changes'
@@ -350,7 +351,9 @@ RSpec.describe 'Admin updates EE-only settings' do
 
     context 'with a user cap assigned' do
       before do
-        current_settings.update_attribute(:new_user_signups_cap, 5)
+        current_settings.update!(new_user_signups_cap: 5)
+
+        page.refresh
       end
 
       it 'changes the user cap to unlimited' do
@@ -412,7 +415,9 @@ RSpec.describe 'Admin updates EE-only settings' do
           current_settings.update_attribute(:require_admin_approval_after_user_signup, require_admin_approval_value)
 
           unless [:changed_from_unlimited_to_limited, :unchanged_unlimited].include?(user_cap_action)
-            current_settings.update_attribute(:new_user_signups_cap, user_cap_default)
+            current_settings.update!(new_user_signups_cap: user_cap_default)
+
+            page.refresh
           end
 
           if add_pending_user
@@ -436,6 +441,7 @@ RSpec.describe 'Admin updates EE-only settings' do
             when :changed_from_limited_to_unlimited
               fill_in 'application_setting[new_user_signups_cap]', with: nil
             when :changed_from_unlimited_to_limited
+              find_by_testid('seat-controls-user-cap').click
               fill_in 'application_setting[new_user_signups_cap]', with: user_cap_default
             end
 
