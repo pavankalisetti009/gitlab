@@ -318,6 +318,7 @@ module EE
         arkose_labs_client_secret
         arkose_labs_client_xid
         arkose_labs_enabled
+        arkose_labs_data_exchange_enabled
         arkose_labs_namespace
         arkose_labs_private_api_key
         arkose_labs_public_api_key

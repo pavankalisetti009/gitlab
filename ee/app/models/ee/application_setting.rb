@@ -55,7 +55,8 @@ module EE
         ci_requires_identity_verification_on_free_plan: [:boolean, { default: true }],
         telesign_intelligence_enabled: [:boolean, { default: true }],
         credit_card_verification_enabled: [:boolean, { default: true }],
-        arkose_labs_enabled: [:boolean, { default: true }]
+        arkose_labs_enabled: [:boolean, { default: true }],
+        arkose_labs_data_exchange_enabled: [:boolean, { default: true }]
 
       validates :identity_verification_settings, json_schema: { filename: "identity_verification_settings" }
 

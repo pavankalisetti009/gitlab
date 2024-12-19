@@ -35,6 +35,10 @@
     "arkose_labs_enabled": {
       "type": "boolean",
       "description": "Whether Arkose checks are required for identity verification"
+    },
+    "arkose_labs_data_exchange_enabled": {
+      "type": "boolean",
+      "description": "Whether the Arkose Data Exchange feature is enabled"
     }
   }
 }
