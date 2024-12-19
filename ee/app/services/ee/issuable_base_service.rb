@@ -7,6 +7,8 @@ module EE
 
     private
 
+    attr_reader :amazon_q_params
+
     override :associations_before_update
     def associations_before_update(issuable)
       associations = super
@@ -30,6 +32,8 @@ module EE
       end
 
       [:iteration, :sprint_id].each { |iteration_param| params.delete(iteration_param) } unless can_admin_issuable
+
+      @amazon_q_params = params.delete(:amazon_q) # rubocop:disable Gitlab/ModuleWithInstanceVariables -- This is an instance method
 
       super
     end
