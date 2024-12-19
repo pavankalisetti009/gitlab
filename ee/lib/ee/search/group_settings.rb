@@ -43,6 +43,12 @@ module EE
           )
         end
 
+        if ::Ai::AmazonQ.connected?
+          settings.push(
+            { text: _('Amazon Q'), href: edit_group_path(group, anchor: 'js-amazon-q-settings') }
+          )
+        end
+
         settings
       end
 

@@ -59,6 +59,19 @@ module EE
         }
       end
 
+      def group_amazon_q_settings_view_model_data
+        {
+          group_id: @group.id.to_s,
+          init_availability: @group.namespace_settings.duo_availability.to_s,
+          are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?,
+          cascading_settings_data: cascading_namespace_settings_tooltip_raw_data(:duo_features_enabled, @group, method(:edit_group_path))
+        }
+      end
+
+      def group_amazon_q_settings_view_model_json
+        ::Gitlab::Json.generate(group_amazon_q_settings_view_model_data.deep_transform_keys { |k| k.to_s.camelize(:lower) })
+      end
+
       def seat_controls_disabled_help_text(group)
         if ::Feature.enabled?(:block_seat_overages, group, type: :beta)
           _("Restricted access and user cap cannot be turned on. The group or one of its subgroups or projects is shared externally.")

@@ -11,7 +11,7 @@ RSpec.describe EE::Groups::SettingsHelper do
       auto_ban_user_on_excessive_projects_download: true)
   end
 
-  let(:group) { build(:group, namespace_settings: namespace_settings) }
+  let(:group) { build(:group, namespace_settings: namespace_settings, id: 7) }
   let(:current_user) { build(:user) }
 
   before do
@@ -79,6 +79,36 @@ RSpec.describe EE::Groups::SettingsHelper do
           early_access_path: group_early_access_opt_in_path(group),
           update_id: group.id
         }
+      )
+    end
+  end
+
+  describe 'group_amazon_q_settings_view_model_data' do
+    subject(:group_amazon_q_settings_view_model_data) { helper.group_amazon_q_settings_view_model_data }
+
+    it 'returns the expected data' do
+      is_expected.to eq(
+        {
+          group_id: group.id.to_s,
+          init_availability: group.namespace_settings.duo_availability.to_s,
+          cascading_settings_data: { locked_by_application_setting: false, locked_by_ancestor: false },
+          are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?
+        }
+      )
+    end
+  end
+
+  describe 'group_amazon_q_settings_view_model_json' do
+    subject(:group_amazon_q_settings_view_model_json) { helper.group_amazon_q_settings_view_model_json }
+
+    it 'returns the expected data' do
+      is_expected.to eq(
+        {
+          groupId: "7",
+          initAvailability: "default_on",
+          areDuoSettingsLocked: false,
+          cascadingSettingsData: { lockedByApplicationSetting: false, lockedByAncestor: false }
+        }.to_json
       )
     end
   end

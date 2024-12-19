@@ -639,6 +639,37 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
+  context 'when updating duo_availability' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:duo_availability, :amazon_q_connected, :expected_result) do
+      'never_on'    | true  | true
+      'never_on'    | false | false
+      'default_off' | true  | false
+      'default_off' | false | false
+    end
+
+    with_them do
+      let(:params) { { duo_availability: duo_availability } }
+
+      before do
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
+      end
+
+      it 'calls the service when conditions are met' do
+        if expected_result
+          expect_next_instance_of(::Ai::AmazonQ::ServiceAccountMemberRemoveService, user, group) do |service|
+            expect(service).to receive(:execute)
+          end
+        else
+          expect(::Ai::AmazonQ::ServiceAccountMemberRemoveService).not_to receive(:new)
+        end
+
+        update_group(group, user, params)
+      end
+    end
+  end
+
   def update_group(group, user, opts)
     Groups::UpdateService.new(group, user, opts).execute
   end

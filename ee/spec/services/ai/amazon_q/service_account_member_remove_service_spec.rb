@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Ai::AmazonQ::ServiceAccountMemberRemoveService, feature_category: :duo_workflow do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:service_account) { create(:user) }
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be_with_reload(:group) { create(:group) }
+  let_it_be_with_reload(:project) { create(:project, namespace: group) }
 
   let(:service) { described_class.new(current_user, project) }
 
@@ -27,6 +27,7 @@ RSpec.describe Ai::AmazonQ::ServiceAccountMemberRemoveService, feature_category:
     end
 
     it 'calls destroy service' do
+      # Note: call expected_member first so that it can handle whatever mocks it needs
       member = expected_member
 
       expect_next_instance_of(Members::DestroyService, current_user) do |destroy_service|
