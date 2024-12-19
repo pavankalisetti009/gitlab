@@ -168,8 +168,8 @@ export default {
         variables: {
           fullPath: this.requestPath,
           interval: BUCKETING_INTERVAL_ALL,
-          startDate,
-          endDate,
+          startDate: toYmd(startDate),
+          endDate: toYmd(endDate),
         },
       });
 
@@ -189,8 +189,8 @@ export default {
         variables: {
           fullPath: this.requestPath,
           labelNames: this.filterLabels,
-          startDate,
-          endDate,
+          startDate: toYmd(startDate),
+          endDate: toYmd(endDate),
         },
       });
 
