@@ -140,7 +140,7 @@ export default {
           target="_blank"
           class="gl-ml-2 gl-flex gl-items-center"
         >
-          <help-icon size="small" />
+          <help-icon />
         </gl-link>
         <span
           class="gl-ml-4 gl-inline-flex gl-items-center"
