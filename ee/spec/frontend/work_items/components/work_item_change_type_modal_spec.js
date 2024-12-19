@@ -1,0 +1,128 @@
+import { GlModal, GlFormSelect } from '@gitlab/ui';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+
+import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/namespace_work_item_types.query.graphql.json';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import { stubComponent } from 'helpers/stub_component';
+
+import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_type_modal.vue';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import getWorkItemDesignListQuery from '~/work_items/components/design_management/graphql/design_collection.query.graphql';
+
+import {
+  WORK_ITEM_TYPE_VALUE_TASK,
+  WORK_ITEM_WIDGETS_NAME_MAP,
+  WORK_ITEM_TYPE_VALUE_ISSUE,
+  WORK_ITEM_TYPE_ENUM_KEY_RESULT,
+  WORK_ITEM_TYPE_VALUE_KEY_RESULT,
+  WORK_ITEM_TYPE_ENUM_ISSUE,
+} from '~/work_items/constants';
+
+import { workItemChangeTypeWidgets } from '../mock_data';
+
+describe('WorkItemChangeTypeModal component', () => {
+  Vue.use(VueApollo);
+
+  let wrapper;
+  // Progress is missing as there is no WorkItemWidgetDefinitionProgress
+  // So, the work_items.rb is not generating progress data in fixture
+  // This is till we figure out why progress is not being added in the fixture data
+  namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes
+    .find((item) => item.name === WORK_ITEM_TYPE_VALUE_KEY_RESULT)
+    .widgetDefinitions.push({
+      type: 'PROGRESS',
+    });
+  const typesQuerySuccessHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse);
+  const noDesignQueryHandler = jest.fn().mockResolvedValue({
+    data: {
+      workItem: {
+        id: 'gid://gitlab/WorkItem/1',
+        workItemType: {
+          id: 'gid://gitlab/WorkItems::Type/1',
+          name: 'Issue',
+          __typename: 'WorkItemType',
+        },
+        widgets: [
+          {
+            __typename: 'WorkItemWidgetDesigns',
+            type: 'DESIGNS',
+            designCollection: {
+              copyState: 'READY',
+              designs: { nodes: [] },
+              versions: { nodes: [] },
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  const createComponent = ({ widgets = [], workItemType = WORK_ITEM_TYPE_VALUE_TASK } = {}) => {
+    wrapper = mountExtended(WorkItemChangeTypeModal, {
+      apolloProvider: createMockApollo([
+        [namespaceWorkItemTypesQuery, typesQuerySuccessHandler],
+        [getWorkItemDesignListQuery, noDesignQueryHandler],
+      ]),
+      propsData: {
+        workItemId: 'gid://gitlab/WorkItem/1',
+        fullPath: 'gitlab-org/gitlab-test',
+        hasParent: false,
+        hasChildren: false,
+        widgets,
+        workItemType,
+      },
+      provide: {
+        hasOkrsFeature: true,
+        glFeatures: {
+          okrsMvc: true,
+        },
+      },
+      stubs: {
+        GlModal: stubComponent(GlModal, {
+          template:
+            '<div><slot name="modal-title"></slot><slot></slot><slot name="modal-footer"></slot></div>',
+        }),
+      },
+    });
+  };
+
+  const findChangeTypeModal = () => wrapper.findComponent(GlModal);
+  const findGlFormSelect = () => wrapper.findComponent(GlFormSelect);
+  const findWarningAlert = () => wrapper.findByTestId('change-type-warning-message');
+
+  beforeEach(async () => {
+    createComponent();
+    await waitForPromises();
+  });
+
+  describe('when widget data has difference', () => {
+    // These are possible use cases of conflicts among project level work items
+    // Other widgets are shared between all the work item types
+    it.each`
+      widgetType                              | widgetData                             | workItemType                       | typeTobeConverted                 | expectedString
+      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_VALUE_ISSUE}      | ${WORK_ITEM_TYPE_ENUM_KEY_RESULT} | ${'Iteration'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_VALUE_ISSUE}      | ${WORK_ITEM_TYPE_ENUM_KEY_RESULT} | ${'Weight'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.PROGRESS}  | ${workItemChangeTypeWidgets.PROGRESS}  | ${WORK_ITEM_TYPE_VALUE_KEY_RESULT} | ${WORK_ITEM_TYPE_ENUM_ISSUE}      | ${'Progress'}
+    `(
+      'shows warning message in case of $widgetType widget',
+      async ({ workItemType, widgetData, typeTobeConverted, expectedString }) => {
+        createComponent({
+          workItemType,
+          widgets: [widgetData],
+        });
+
+        await waitForPromises();
+
+        findGlFormSelect().vm.$emit('change', typeTobeConverted);
+
+        await nextTick();
+
+        expect(findWarningAlert().text()).toContain(expectedString);
+        expect(findChangeTypeModal().props('actionPrimary').attributes.disabled).toBe(false);
+      },
+    );
+  });
+});
