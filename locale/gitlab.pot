@@ -28112,9 +28112,6 @@ msgstr ""
 msgid "How the job limiter handles jobs exceeding the thresholds specified below. The 'track' mode only logs the jobs. The 'compress' mode compresses the jobs and raises an exception if the compressed size exceeds the limit."
 msgstr ""
 
-msgid "How to track time"
-msgstr ""
-
 msgid "HttpDestinationValidator validates only http external audit event destinations."
 msgstr ""
 
