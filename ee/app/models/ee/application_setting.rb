@@ -38,11 +38,36 @@ module EE
         allow_all_integrations: [:boolean, { default: true }],
         allowed_integrations: [:string, { array: true, default: [] }]
 
+      jsonb_accessor :elasticsearch,
+        elasticsearch_aws: [:boolean, { default: false }],
+        elasticsearch_search: [:boolean, { default: false }],
+        elasticsearch_indexing: [:boolean, { default: false }],
+        elasticsearch_username: [:string],
+        elasticsearch_aws_region: [:string, { default: 'us-east-1' }],
+        elasticsearch_aws_access_key: [:string],
+        elasticsearch_limit_indexing: [:boolean, { default: false }],
+        elasticsearch_pause_indexing: [:boolean, { default: false }],
+        elasticsearch_requeue_workers: [:boolean, { default: false }],
+        elasticsearch_max_bulk_size_mb: [:integer, { default: 10 }],
+        elasticsearch_retry_on_failure: [:integer, { default: 0 }],
+        elasticsearch_max_bulk_concurrency: [:integer, { default: 10 }],
+        elasticsearch_client_request_timeout: [:integer, { default: 0 }],
+        elasticsearch_worker_number_of_shards: [:integer, { default: 2 }],
+        elasticsearch_analyzers_smartcn_search: [:boolean, { default: false }],
+        elasticsearch_analyzers_kuromoji_search: [:boolean, { default: false }],
+        elasticsearch_analyzers_smartcn_enabled: [:boolean, { default: false }],
+        elasticsearch_analyzers_kuromoji_enabled: [:boolean, { default: false }],
+        elasticsearch_indexed_field_length_limit: [:integer, { default: 0 }],
+        elasticsearch_indexed_file_size_limit_kb: [:integer, { default: 1024 }],
+        elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }]
+
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
 
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
 
       validates :integrations, json_schema: { filename: "application_setting_integrations" }
+
+      validates :elasticsearch, json_schema: { filename: "application_setting_elasticsearch" }
 
       jsonb_accessor :cluster_agents,
         receptive_cluster_agents_enabled: [:boolean, { default: false }]
