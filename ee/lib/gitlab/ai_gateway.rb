@@ -47,18 +47,14 @@ module Gitlab
     end
 
     def self.headers(user:, service:, agent: nil, lsp_version: nil)
-      allowed_by_namespace_ids = user&.allowed_by_namespace_ids(service.name) || []
-
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{service.access_token(user)}",
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => allowed_by_namespace_ids.join(','),
         'Content-Type' => 'application/json',
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency
-        'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s,
-        'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(',')
-      }.merge(::CloudConnector.ai_headers(user, namespace_ids: allowed_by_namespace_ids))
+        'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s
+      }.merge(public_headers(user: user, service_name: service.name))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
 
@@ -72,10 +68,13 @@ module Gitlab
         end
     end
 
-    def self.public_headers(user:, service:)
-      namespace_ids = user.allowed_by_namespace_ids(service)
+    def self.public_headers(user:, service_name:)
+      auth_response = user&.allowed_to_use(service_name)
+      enablement_type = auth_response&.enablement_type || ''
+      namespace_ids = auth_response&.namespace_ids || []
 
       {
+        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(',')
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
     end

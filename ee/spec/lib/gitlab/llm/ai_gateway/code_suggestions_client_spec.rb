@@ -7,13 +7,19 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   let_it_be(:instance_token) { create(:service_access_token, :active) }
   let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :code_suggestions) }
   let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:enablement_type) { 'add_on' }
+  let(:auth_response) do
+    instance_double(Ai::UserAuthorizable::Response,
+      namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
+  end
+
   let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
   let(:code) { 200 }
 
   before do
     allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(service).to receive(:access_token).and_return(instance_token&.token)
-    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
   shared_examples "error response" do |message|
@@ -124,6 +130,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{instance_token.token}",
         "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
+        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
         'Content-Type' => 'application/json',
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
       }

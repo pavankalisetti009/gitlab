@@ -13,7 +13,7 @@ module Ai
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
 
-    Response = Struct.new(:allowed?, :namespace_ids, keyword_init: true)
+    Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, keyword_init: true)
 
     included do
       def duo_pro_add_on_available_namespace_ids
@@ -85,8 +85,6 @@ module Ai
         allowed_to_use(...).namespace_ids
       end
 
-      private
-
       def allowed_to_use(ai_feature, service_name: nil, licensed_feature: :ai_features)
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return Response.new(allowed?: false, namespace_ids: []) unless feature_data
@@ -96,18 +94,27 @@ module Ai
 
         # If the user has any relevant add-on purchase, they always have access to this service
         purchases = service.add_on_purchases.assigned_to_user(self)
-        return Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids) if purchases.any?
+
+        if purchases.any?
+          return Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids, enablement_type: 'add_on')
+        end
 
         # If the user doesn't have add-on purchases and the service isn't free, they don't have access
         return Response.new(allowed?: false, namespace_ids: []) unless service.free_access?
 
         if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
           seats = namespaces_allowed_in_com(feature_data[:maturity])
-          Response.new(allowed?: seats.any?, namespace_ids: seats)
+          if seats.any?
+            Response.new(allowed?: true, namespace_ids: seats, enablement_type: 'tier')
+          else
+            Response.new(allowed?: false, namespace_ids: [])
+          end
         else
           Response.new(allowed?: licensed_to_use_in_sm?(licensed_feature), namespace_ids: [])
         end
       end
+
+      private
 
       def namespaces_allowed_in_com(maturity)
         namespaces = member_namespaces.with_ai_supported_plan

@@ -7,8 +7,13 @@ RSpec.shared_examples 'anthropic client' do
 
   let(:api_key) { 'api-key' }
   let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:enablement_type) { 'add_on' }
   let(:options) { {} }
   let(:expected_request_body) { default_body_params }
+  let(:auth_response) do
+    instance_double(Ai::UserAuthorizable::Response,
+      namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
+  end
 
   let(:expected_request_headers) do
     {
@@ -17,6 +22,7 @@ RSpec.shared_examples 'anthropic client' do
       'anthropic-version' => '2023-06-01',
       'Authorization' => "Bearer #{api_key}",
       "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
+      'X-Gitlab-Feature-Enablement-Type' => enablement_type,
       'X-Gitlab-Authentication-Type' => 'oidc',
       'X-Gitlab-Unit-Primitive' => unit_primitive
     }
@@ -57,7 +63,7 @@ RSpec.shared_examples 'anthropic client' do
       access_token: api_key)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
       .and_return(available_service_data)
-    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use).and_return(auth_response)
 
     stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/complete")
       .with(

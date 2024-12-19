@@ -11,6 +11,11 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
   let(:unit_primitive) { 'explain_vulnerability' }
   let(:current_token) { SecureRandom.uuid }
   let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:enablement_type) { 'add_on' }
+  let(:auth_response) do
+    instance_double(Ai::UserAuthorizable::Response,
+      namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
+  end
 
   subject(:configuration) do
     described_class.new(model_config: model_config, user: user, unit_primitive: unit_primitive)
@@ -21,7 +26,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
     available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: current_token,
       name: :vertex_ai_proxy)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(available_service_data)
-    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
   describe '#access_token' do
@@ -37,6 +42,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
           'Accept' => 'application/json',
           'Authorization' => "Bearer #{current_token}",
           "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => enabled_by_namespace_ids.join(','),
+          'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'Host' => host,
           'Content-Type' => 'application/json',
           'X-Gitlab-Authentication-Type' => 'oidc',

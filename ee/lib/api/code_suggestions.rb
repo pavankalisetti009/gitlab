@@ -32,7 +32,7 @@ module API
 
       def connector_public_headers(service_name)
         Gitlab::AiGateway.public_headers(user: current_user,
-          service: service_name)
+          service_name: service_name)
           .merge(saas_headers)
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end

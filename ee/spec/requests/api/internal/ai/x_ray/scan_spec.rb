@@ -33,12 +33,14 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
     let(:api_url) { "/internal/jobs/#{job.id}/x_ray/scan" }
     let(:enabled_by_namespace_ids) { [] }
+    let(:enablement_type) { '' }
 
     let(:base_workhorse_headers) do
       {
         "X-Gitlab-Authentication-Type" => ["oidc"],
         "Authorization" => ["Bearer #{ai_gateway_token}"],
         "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
+        'X-Gitlab-Feature-Enablement-Type' => [enablement_type],
         "Content-Type" => ["application/json"],
         "X-Gitlab-Host-Name" => [hostname],
         "X-Gitlab-Instance-Id" => [instance_uuid],
@@ -173,6 +175,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     context 'when on Gitlab.com instance', :saas do
       let(:gitlab_realm) { "saas" }
       let(:enabled_by_namespace_ids) { [namespace.id] }
+      let(:enablement_type) { 'add_on' }
       let(:namespace_workhorse_headers) do
         {
           "X-Gitlab-Saas-Namespace-Ids" => [namespace.id.to_s]
