@@ -141,8 +141,8 @@ export default {
     chartOptions() {
       return {
         xAxis: {
-          name: __('Time'),
-          key: 'time',
+          name: __('Date'),
+          key: 'date',
           type: 'category',
         },
         yAxis: {
