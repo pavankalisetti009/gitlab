@@ -12,7 +12,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::OfflineCloudLicenseProvision
   describe '#perform' do
     subject(:perform) { described_class.new.perform }
 
-    let_it_be(:default_organization) { create(:organization, :default) }
+    let_it_be(:organization) { create(:organization) }
     let_it_be(:restrictions) do
       {
         subscription_id: "0000001",
