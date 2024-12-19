@@ -1394,7 +1394,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       shared_examples 'command applied successfully' do
         it 'executes command successfully' do
           expect { unlink_issues }.to change { IssueLink.count }.by(-1)
-          expect(unlink_issues[2]).to eq("Removed link with #{other_issue.to_reference(issue)}.")
+          expect(unlink_issues[2]).to eq("Removed linked item #{other_issue.to_reference(issue)}.")
           expect(issue.notes.last.note).to eq("removed the relation with #{other_issue.to_reference}")
           expect(other_issue.notes.last.note).to eq("removed the relation with #{issue.to_reference}")
         end
@@ -1541,7 +1541,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
     end
 
-    describe 'blocking issues commands' do
+    describe 'linked items commands' do
       let_it_be(:guest) { create(:user) }
       let_it_be(:restricted_project) { create(:project) }
       let_it_be(:ref1) { create(:issue, project: project).to_reference }
@@ -1639,6 +1639,36 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           let(:current_user) { guest }
 
           it_behaves_like 'quick action is unavailable', :relate
+        end
+      end
+
+      context 'with /unlink' do
+        let(:unlink_command) { "/unlink #{ref1}" }
+
+        context 'with sufficient permissions' do
+          before do
+            issue.project.add_guest(current_user)
+          end
+
+          it '/unlink is available' do
+            _, explanations = service.explain(unlink_command, issue)
+
+            expect(explanations)
+              .to contain_exactly("Removes linked item #{project.issues.second.to_reference(issue)}.")
+          end
+
+          context 'when target is not an issue' do
+            let(:target) { create(:epic, group: group) }
+
+            it_behaves_like 'quick action is unavailable', :unlink
+          end
+        end
+
+        context 'with insufficient permissions' do
+          let_it_be(:target) { create(:issue, project: restricted_project) }
+          let(:current_user) { guest }
+
+          it_behaves_like 'quick action is unavailable', :blocks
         end
       end
 
