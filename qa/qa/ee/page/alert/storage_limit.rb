@@ -5,7 +5,7 @@ module QA
     module Page
       module Alert
         class StorageLimit < QA::Page::Base
-          view 'ee/app/components/namespaces/storage/namespace_limit/limit_alert_component.html.haml' do
+          view 'ee/app/components/namespaces/storage/namespace_limit/alert_component.html.haml' do
             element 'storage-limit-alert-content'
           end
 
