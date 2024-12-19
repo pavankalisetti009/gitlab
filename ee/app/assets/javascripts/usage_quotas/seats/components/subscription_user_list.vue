@@ -133,7 +133,7 @@ export default {
 
 <template>
   <section>
-    <div class="gl-flex gl-bg-gray-10 gl-p-5">
+    <div class="gl-flex gl-bg-subtle gl-p-5">
       <search-and-sort-bar
         :namespace="String(namespaceId)"
         :search-input-placeholder="$options.i18n.filterUsersPlaceholder"

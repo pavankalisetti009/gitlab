@@ -97,13 +97,13 @@ export default {
 
 <template>
   <section>
-    <div class="gl-bg-gray-10 gl-p-5">
+    <div class="gl-bg-subtle gl-p-5">
       <div
         v-if="isLoaderShown"
         class="gl-grid gl-gap-5 md:gl-grid-cols-2"
         data-testid="skeleton-loader-cards"
       >
-        <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
+        <div class="gl-border gl-rounded-base gl-bg-default gl-p-5">
           <gl-skeleton-loader :height="64">
             <rect width="140" height="30" x="5" y="0" rx="4" />
             <rect width="240" height="10" x="5" y="40" rx="4" />
@@ -111,7 +111,7 @@ export default {
           </gl-skeleton-loader>
         </div>
 
-        <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
+        <div class="gl-border gl-rounded-base gl-bg-default gl-p-5">
           <gl-skeleton-loader :height="64">
             <rect width="140" height="30" x="5" y="0" rx="4" />
             <rect width="240" height="10" x="5" y="40" rx="4" />

@@ -93,7 +93,7 @@ export default {
 
 <template>
   <div
-    class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-bg-white gl-p-6"
+    class="gl-border gl-rounded-base gl-border-section gl-bg-section gl-p-5"
     data-testid="container"
     :class="cssClass"
   >
@@ -105,9 +105,9 @@ export default {
     </div>
     <template v-else>
       <div class="gl-flex gl-justify-between">
-        <p
+        <h3
           v-if="!isNil(usageValue) && usageValue !== ''"
-          class="gl-mb-3 gl-text-size-h-display gl-font-bold"
+          class="gl-heading-2 gl-mb-3"
           :data-testid="summaryDataTestid"
         >
           {{ formatValue(usageValue) }}
@@ -121,7 +121,7 @@ export default {
               totalUnit
             }}</span>
           </span>
-        </p>
+        </h3>
 
         <div>
           <gl-button
