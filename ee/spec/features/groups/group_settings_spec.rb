@@ -8,6 +8,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
   let_it_be(:user) { create(:user) }
   let_it_be(:developer) { create(:user) }
   let_it_be(:group, refind: true) { create(:group, name: 'Foo bar', path: 'foo', owners: user, developers: developer) }
+  let_it_be(:subproject, refind: true) { create(:project, group: group) }
 
   before do
     sign_in(user)
@@ -895,6 +896,62 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         expect(page).to have_checked_field('group_share_with_group_lock')
+      end
+    end
+  end
+
+  describe 'Amazon Q settings' do
+    let(:amazon_q_user) { create(:user, :service_account) }
+    let(:amazon_q_connected) { true }
+
+    before do
+      stub_feature_flags(amazon_q_integration: true)
+      stub_licensed_features(amazon_q: true)
+      ::Ai::Setting.instance.update!(
+        amazon_q_service_account_user: amazon_q_user,
+        amazon_q_ready: amazon_q_connected
+      )
+
+      group.add_developer(amazon_q_user)
+      subproject.add_developer(amazon_q_user)
+
+      visit edit_group_path(group, anchor: 'js-amazon-q-settings')
+    end
+
+    after do
+      expect_page_to_have_no_console_errors
+    end
+
+    describe 'when connected' do
+      let(:amazon_q_connected) { true }
+
+      it 'should render Amazon Q section' do
+        expect(page).to have_content(_('Amazon Q'))
+      end
+
+      it 'when updates to never_on removes Amazon Q service account from members' do
+        expect(group.member?(amazon_q_user)).to be_truthy
+        expect(subproject.member?(amazon_q_user)).to be_truthy
+
+        # TODO: We need to use section#id here because there's a bug in `settings_block.vue` that uses the
+        # same id twice. https://gitlab.com/gitlab-org/gitlab/-/issues/510171
+        within('section#js-amazon-q-settings') do
+          find('input[type="radio"][value="never_on"]').click
+
+          click_button(_('Save changes'))
+        end
+
+        expect(page).to have_content(_('Group was successfully updated.'))
+        expect(group.member?(amazon_q_user)).to be_falsey
+        expect(subproject.member?(amazon_q_user)).to be_falsey
+      end
+    end
+
+    describe 'when not connected' do
+      let(:amazon_q_connected) { false }
+
+      it 'does not render Amazon Q section' do
+        expect(page).not_to have_content(_('Amazon Q'))
       end
     end
   end

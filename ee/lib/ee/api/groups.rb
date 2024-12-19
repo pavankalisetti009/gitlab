@@ -81,6 +81,16 @@ module EE
             authorize! :create_group_via_api
           end
 
+          override :check_query_limit
+          def check_query_limit
+            # Short circuit if tracking is disabled
+            return unless ::Gitlab::QueryLimiting.enabled?
+            return unless params[:duo_availability].present? && ::Ai::AmazonQ.connected?
+
+            # AmazonQ can trigger service account removal from group and nested namespaces which causes too many queries
+            ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/510174', new_threshold: 200)
+          end
+
           def check_audit_events_available!(group)
             forbidden! unless group.licensed_feature_available?(:audit_events)
           end
