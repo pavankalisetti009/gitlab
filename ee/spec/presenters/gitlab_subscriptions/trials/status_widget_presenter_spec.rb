@@ -26,6 +26,15 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
       it { is_expected.to be(true) }
     end
 
+    context 'when trial is active and group is paid' do
+      before do
+        build(:gitlab_subscription, :ultimate_trial_paid_customer, namespace: group,
+          trial_starts_on: Time.current, trial_ends_on: trial_duration.days.from_now)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
     context 'when trial has just ended and group is unpaid' do
       before do
         build(:gitlab_subscription, :free, :expired_trial, namespace: group,

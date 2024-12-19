@@ -34,6 +34,7 @@ module EE
       PLANS_ELIGIBLE_FOR_TRIAL = (EE_DEFAULT_PLANS | [PREMIUM]).freeze
       TOP_PLANS = [GOLD, ULTIMATE, OPEN_SOURCE].freeze
       CURRENT_ACTIVE_PLANS = [FREE, PREMIUM, ULTIMATE].freeze
+      ULTIMATE_TRIAL_PLANS = [ULTIMATE_TRIAL, ULTIMATE_TRIAL_PAID_CUSTOMER].freeze
 
       has_many :hosted_subscriptions, class_name: 'GitlabSubscription', foreign_key: 'hosted_plan_id'
       has_many :gitlab_subscription_histories, inverse_of: :hosted_plan,

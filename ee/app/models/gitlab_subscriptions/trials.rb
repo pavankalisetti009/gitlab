@@ -27,6 +27,10 @@ module GitlabSubscriptions
       namespace.actual_plan_name.in?(::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
     end
 
+    def self.namespace_plan_eligible_for_active?(namespace)
+      namespace.actual_plan_name.in?(::Plan::ULTIMATE_TRIAL_PLANS)
+    end
+
     def self.namespace_add_on_eligible?(namespace)
       Namespaces::TrialEligibleFinder.new(namespace: namespace).execute.any?
     end

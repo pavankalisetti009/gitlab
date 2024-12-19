@@ -111,6 +111,30 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
+  describe '.namespace_plan_eligible_for_active?', :saas do
+    subject { described_class.namespace_plan_eligible_for_active?(namespace) }
+
+    context 'with a plan that is on a trial' do
+      where(plan: ::Plan::ULTIMATE_TRIAL_PLANS)
+
+      with_them do
+        let(:namespace) { create(:group_with_plan, plan: "#{plan}_plan") }
+
+        it { is_expected.to be(true) }
+      end
+    end
+
+    context 'with a plan that is not on a trial' do
+      where(plan: ::Plan::PAID_HOSTED_PLANS.without(::Plan::ULTIMATE_TRIAL_PLANS))
+
+      with_them do
+        let(:namespace) { create(:group_with_plan, plan: "#{plan}_plan") }
+
+        it { is_expected.to be(false) }
+      end
+    end
+  end
+
   describe '.namespace_add_on_eligible?' do
     subject(:execute) { described_class.namespace_add_on_eligible?(namespace) }
 

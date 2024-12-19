@@ -63,9 +63,8 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         let(:root_group) { namespace }
 
         before do
-          build(:gitlab_subscription, :active_trial, namespace: root_group)
+          build(:gitlab_subscription, :active_trial, :ultimate_trial, namespace: root_group)
           stub_saas_features(subscriptions_trials: true)
-          allow(root_group).to receive(:actual_plan_name).and_return('_actual_plan_name_')
         end
 
         describe 'does not return trial status widget data' do

@@ -28,7 +28,7 @@ module GitlabSubscriptions
 
       def presenter
         @presenter ||=
-          if widget_presenter.eligible_for_widget? && !namespace.premium_trial_plan?
+          if widget_presenter.eligible_for_widget?
             widget_presenter
           elsif namespace.ultimate_plan? && duo_enterprise_presenter.eligible_for_widget?
             duo_enterprise_presenter
