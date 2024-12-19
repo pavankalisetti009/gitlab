@@ -56,6 +56,16 @@ RSpec.describe ComplianceManagement::Pipl::SendRecurringComplianceEmailService,
       end
     end
 
+    context 'when the instance is not a saas one' do
+      before do
+        stub_saas_features(pipl_compliance: false)
+      end
+
+      it 'returns a service response error' do
+        expect(send_email.message).to eq('Pipl Compliance is not available on this instance')
+      end
+    end
+
     context 'when the users belongs to a paid group' do
       before do
         create(:group_with_plan, plan: :ultimate_plan, guests: pipl_user.user)

@@ -9,6 +9,7 @@ module ComplianceManagement
     LEVEL_3_NOTIFICATION_TIME = 59.days
 
     NOTICE_PERIOD = 60.days
+    DELETION_PERIOD = 120.days
 
     belongs_to :user, optional: false
 
@@ -33,6 +34,15 @@ module ComplianceManagement
         .includes(:user)
         .pipl_email_sent_on_or_before(NOTICE_PERIOD.ago.end_of_day)
         .where.not(users: { state: ::User.state_machine.states[:blocked].value })
+    end
+
+    scope :pipl_deletable, -> do
+      joins(:user)
+        .includes(:user)
+        .left_outer_joins(user: :ghost_user_migration)
+        .where(ghost_user_migrations: { id: nil })
+        .pipl_email_sent_on_or_before(DELETION_PERIOD.ago.end_of_day)
+        .merge(User.blocked)
     end
 
     validates :last_access_from_pipl_country_at, presence: true
@@ -71,8 +81,14 @@ module ComplianceManagement
       (pipl_access_end_date - Date.current).to_i
     end
 
-    def blockable?
-      initial_email_sent_at.present? && (remaining_pipl_access_days == 0)
+    def block_threshold_met?
+      initial_email_sent_at.present? &&
+        initial_email_sent_at.to_date <= (Date.current - NOTICE_PERIOD)
+    end
+
+    def deletion_threshold_met?
+      initial_email_sent_at.present? &&
+        initial_email_sent_at.to_date <= (Date.current - DELETION_PERIOD)
     end
   end
 end

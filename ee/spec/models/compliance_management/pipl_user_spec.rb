@@ -163,13 +163,62 @@ RSpec.describe ComplianceManagement::PiplUser,
       end
 
       context 'when there is a threshold-matching blocked user' do
-        before do
-          create(:pipl_user, initial_email_sent_at: 62.days.ago, user: blocked_user)
-        end
+        let(:other_user) { create(:pipl_user, initial_email_sent_at: threshold, user: blocked_user) }
 
         it "doesn't fetch the already-blocked user" do
-          expect { pipl_blockable }.to not_change { pipl_blockable.count }
+          result = pipl_blockable
+
+          expect(result.map(&:id)).to not_include(other_user.id)
         end
+      end
+    end
+  end
+
+  describe '.pipl_deletable', time_travel_to: '2024-10-07 10:32:45.000000' do
+    subject(:pipl_deletable) { described_class.pipl_deletable }
+
+    let_it_be(:blocked_user) { create(:user, :blocked) }
+
+    # time_travel_to doesn't work with before_all and didn't want to use before to
+    # avoid bad performance
+    let!(:pipl_users) do
+      create(:pipl_user, initial_email_sent_at: 59.days.ago.beginning_of_day)
+      create(:pipl_user, initial_email_sent_at: 60.days.ago.end_of_day)
+      create(:pipl_user, :deletable)
+    end
+
+    let(:threshold) { described_class::DELETION_PERIOD.ago.end_of_day }
+
+    it 'returns the threshold matching pipl_users' do
+      result = pipl_deletable
+
+      expect(result.count).to eq(1)
+
+      result.each do |pipl_user|
+        expect { pipl_user.user }.to match_query_count(0)
+        expect(pipl_user.user.state).to eq(::User.state_machine.states[:blocked].value)
+        expect(pipl_user.initial_email_sent_at <= threshold)
+          .to be(true)
+      end
+    end
+
+    context 'when there is a threshold-matching non-blocked user' do
+      let!(:other_user) { create(:pipl_user, initial_email_sent_at: threshold) }
+
+      it "doesn't fetch the non-blocked user" do
+        result = pipl_deletable
+
+        expect(result.map(&:id)).to not_include(other_user.id)
+      end
+    end
+
+    context 'when there is a user who has passed the threshold' do
+      before do
+        create(:pipl_user, initial_email_sent_at: threshold - 2.days, user: blocked_user)
+      end
+
+      it "fetches the already-deleted user" do
+        expect { pipl_deletable }.to not_change { pipl_deletable.count }
       end
     end
   end
@@ -260,13 +309,13 @@ RSpec.describe ComplianceManagement::PiplUser,
     end
   end
 
-  describe '#blockable?', :freeze_time do
+  describe '#block_threshold_met?', :freeze_time do
     let(:pipl_user) { create(:pipl_user, initial_email_sent_at: Time.zone.today) }
 
-    subject(:blockable?) { pipl_user.blockable? }
+    subject(:block_threshold_met?) { pipl_user.block_threshold_met? }
 
-    it 'is not blockable' do
-      expect(blockable?).to be(false)
+    it 'is not met' do
+      expect(block_threshold_met?).to be(false)
     end
 
     context 'when the notice period has passed' do
@@ -274,8 +323,18 @@ RSpec.describe ComplianceManagement::PiplUser,
         pipl_user.update!(initial_email_sent_at: described_class::NOTICE_PERIOD.ago)
       end
 
-      it 'is blockable' do
-        expect(blockable?).to be(true)
+      it 'is met' do
+        expect(block_threshold_met?).to be(true)
+      end
+    end
+
+    context 'when more days than the notice period have passed' do
+      before do
+        pipl_user.update!(initial_email_sent_at: described_class::NOTICE_PERIOD.ago - 2.days)
+      end
+
+      it 'is met' do
+        expect(block_threshold_met?).to be(true)
       end
     end
 
@@ -284,8 +343,48 @@ RSpec.describe ComplianceManagement::PiplUser,
         pipl_user.update!(initial_email_sent_at: nil)
       end
 
-      it 'is not blockable' do
-        expect(blockable?).to be(false)
+      it 'is not met' do
+        expect(block_threshold_met?).to be(false)
+      end
+    end
+  end
+
+  describe '#deletion_threshold_met?', :freeze_time do
+    let(:pipl_user) { create(:pipl_user, initial_email_sent_at: Time.zone.today) }
+
+    subject(:deletion_threshold_met?) { pipl_user.deletion_threshold_met? }
+
+    it 'is not met' do
+      expect(deletion_threshold_met?).to be(false)
+    end
+
+    context 'when more days than the deletion period have passed' do
+      before do
+        pipl_user.update!(initial_email_sent_at: described_class::DELETION_PERIOD.ago - 2.days)
+      end
+
+      it 'is met' do
+        expect(deletion_threshold_met?).to be(true)
+      end
+    end
+
+    context 'when the deletion period has passed' do
+      before do
+        pipl_user.update!(initial_email_sent_at: described_class::DELETION_PERIOD.ago)
+      end
+
+      it 'is met' do
+        expect(deletion_threshold_met?).to be(true)
+      end
+    end
+
+    context 'when the initial email has not been sent' do
+      before do
+        pipl_user.update!(initial_email_sent_at: nil)
+      end
+
+      it 'is not met' do
+        expect(deletion_threshold_met?).to be(false)
       end
     end
   end

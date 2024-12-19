@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUsersService,
+RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUserService,
   :saas,
   feature_category: :compliance_management do
-  subject(:execute) { described_class.new(pipl_user: pipl_user, blocking_user: blocking_user).execute }
+  subject(:execute) { described_class.new(pipl_user: pipl_user, current_user: blocking_user).execute }
 
   let(:pipl_user) { create(:pipl_user) }
   let(:blocking_user) { Users::Internal.admin_bot }
@@ -30,27 +30,23 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUsersService,
   describe '#execute' do
     context 'when admin_mode is disabled', :do_not_mock_admin_mode_setting do
       context 'when validations fail' do
+        context 'when the feature is not available on the instance' do
+          before do
+            stub_saas_features(pipl_compliance: false)
+          end
+
+          it_behaves_like 'does not block the user'
+          it_behaves_like 'has a validation error', "Pipl Compliance is not available on this instance"
+        end
+
         context 'when the enforce_pipl_compliance is disabled' do
           before do
             stub_feature_flags(enforce_pipl_compliance: false)
           end
 
           it_behaves_like 'does not block the user'
-          it_behaves_like 'has a validation error', "Feature 'enforce_pipl_compliance' is disabled"
-        end
-
-        context 'when the blocking_user user is not provided' do
-          let(:blocking_user) { nil }
-
-          it_behaves_like 'does not block the user'
-          it_behaves_like 'has a validation error', "Blocking user record does not exist"
-        end
-
-        context 'when the user is not provided' do
-          let(:pipl_user) { nil }
-
-          it_behaves_like 'does not block the user'
-          it_behaves_like 'has a validation error', "Pipl user record does not exist"
+          it_behaves_like 'has a validation error', "You don't have the required permissions to " \
+            "perform this action or this feature is disabled"
         end
 
         context 'when the user belongs to a paid group' do
@@ -68,7 +64,8 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUsersService,
           end
 
           it_behaves_like 'does not block the user'
-          it_behaves_like 'has a validation error', "Blocking user is not an admin"
+          it_behaves_like 'has a validation error', "You don't have the required permissions to " \
+            "perform this action or this feature is disabled"
         end
 
         context 'when the pipl threshold has not passed' do
@@ -107,7 +104,8 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUsersService,
 
     context 'when admin mode is enabled' do
       it_behaves_like 'does not block the user'
-      it_behaves_like 'has a validation error', "Blocking user is not an admin"
+      it_behaves_like 'has a validation error', "You don't have the required permissions to " \
+        "perform this action or this feature is disabled"
 
       context 'when the user is in the admin_mode' do
         let(:pipl_user) { create(:pipl_user, initial_email_sent_at: 60.days.ago) }
