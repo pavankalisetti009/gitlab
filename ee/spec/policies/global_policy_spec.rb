@@ -717,19 +717,16 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     end
 
     context 'when duo chat is self hosted' do
-      where(:duo_chat_on_saas, :self_hosted, :allowed_to_use, :free, :beta_ended,
-        :duo_chat_enabled_for_user) do
-        true  | true  | true  | true  |  true  | be_allowed(policy)
-        false | true  | true  | true  |  true  | be_allowed(policy)
-        true  | false | true  | true  |  true  | be_allowed(policy)
-        true  | true  | false | true  |  true  | be_disallowed(policy)
-        true  | true  | true  | false |  true  | be_allowed(policy)
+      where(:duo_chat_on_saas, :self_hosted, :allowed_to_use, :free, :duo_chat_enabled_for_user) do
+        true  | true  | true  | true  | be_allowed(policy)
+        false | true  | true  | true  | be_allowed(policy)
+        true  | false | true  | true  | be_allowed(policy)
+        true  | true  | false | true  | be_disallowed(policy)
+        true  | true  | true  | false | be_allowed(policy)
       end
 
       with_them do
         before do
-          stub_feature_flags(self_hosted_models_beta_ended: beta_ended)
-
           allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_on_saas)
           allow(::Ai::FeatureSetting).to receive_message_chain(:find_by_feature,
             :self_hosted?).and_return(self_hosted)
