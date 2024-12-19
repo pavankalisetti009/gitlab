@@ -23,10 +23,10 @@ There are multiple platforms available to host your self-hosted Large Language M
 
 1. [vLLM](https://docs.vllm.ai/en/latest/index.html).
    A high-performance inference server optimized for serving LLMs with memory efficiency. It supports model parallelism and integrates easily with existing workflows.
-   - [vLLM Installation Guide](https://docs.vllm.ai/en/latest/getting_started/installation.html)
+   - [vLLM Installation Guide](https://docs.vllm.ai/en/latest/getting_started/installation.html). We recommend installing version [v0.6.4.post1](https://github.com/vllm-project/vllm/releases/tag/v0.6.4.post1) or later.
    - [vLLM Supported Models](https://docs.vllm.ai/en/latest/models/supported_models.html)
 
-   For information on available options when using vLLM to run a model, see the [vLLM documentation on engine arguments](https://docs.vllm.ai/en/stable/models/engine_args.html).
+   For information on available options when using vLLM to run a model, see the [vLLM documentation on engine arguments](https://docs.vllm.ai/en/stable/usage/engine_args.html).
 
    For example, to set up and run the Mistral model, run the following command:
 
