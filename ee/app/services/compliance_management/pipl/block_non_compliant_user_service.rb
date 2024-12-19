@@ -2,21 +2,23 @@
 
 module ComplianceManagement
   module Pipl
-    class BlockNonCompliantUsersService
+    class BlockNonCompliantUserService
       include ComplianceManagement::Pipl::UserConcern
 
-      def initialize(pipl_user:, blocking_user:)
+      def initialize(pipl_user:, current_user:)
         @pipl_user = pipl_user
-        @blocking_user = blocking_user
+        @current_user = current_user
       end
 
       def execute
-        result = validate!
+        authorization_result = authorize!
+        return authorization_result if authorization_result
 
-        return result if result&.error?
+        validation_result = validate!
+        return validation_result if validation_result
 
         set_admin_note(user)
-        result = ::Users::BlockService.new(blocking_user).execute(user)
+        result = ::Users::BlockService.new(current_user).execute(user)
 
         if result[:status] == :success
           ServiceResponse.success
@@ -27,26 +29,30 @@ module ComplianceManagement
 
       private
 
-      attr_reader :pipl_user, :blocking_user
+      attr_reader :pipl_user, :current_user
 
       delegate :user, to: :pipl_user, private: true
 
-      def validate!
-        return error_response("Pipl user record does not exist") unless pipl_user.present?
-        return error_response("Blocking user record does not exist") unless blocking_user.present?
-        return error_response("Feature 'enforce_pipl_compliance' is disabled") unless enforce_pipl_compliance?
-        return error_response("User belongs to a paid group") if belongs_to_paid_group?(user)
-        return error_response("Blocking user is not an admin") unless blocking_user.can_admin_all_resources?
+      def authorize!
+        unless ::Gitlab::Saas.feature_available?(:pipl_compliance)
+          return error_response("Pipl Compliance is not available on this instance")
+        end
 
-        error_response("Pipl block threshold has not been exceeded for user: #{user.id}") unless pipl_user.blockable?
+        return if Ability.allowed?(current_user, :block_pipl_user, pipl_user)
+
+        error_response("You don't have the required permissions to perform this action or this feature is disabled")
+      end
+
+      def validate!
+        return error_response("User belongs to a paid group") if belongs_to_paid_group?(user)
+
+        return if pipl_user.block_threshold_met?
+
+        error_response("Pipl block threshold has not been exceeded for user: #{user.id}")
       end
 
       def error_response(message)
         ServiceResponse.error(message: message)
-      end
-
-      def enforce_pipl_compliance?
-        Feature.enabled?(:enforce_pipl_compliance, user)
       end
 
       def set_admin_note(user)

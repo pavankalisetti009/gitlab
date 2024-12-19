@@ -8,5 +8,10 @@ FactoryBot.define do
     trait :notified do
       initial_email_sent_at { Time.current }
     end
+
+    trait :deletable do
+      association :user, factory: [:user, :blocked]
+      initial_email_sent_at { rand(120..140).days.ago } # 140 is not a hard limit, it's just for spec purposes.
+    end
   end
 end

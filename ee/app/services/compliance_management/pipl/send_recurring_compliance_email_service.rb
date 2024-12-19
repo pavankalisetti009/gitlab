@@ -13,6 +13,10 @@ module ComplianceManagement
       end
 
       def execute
+        unless ::Gitlab::Saas.feature_available?(:pipl_compliance)
+          return error_response("Pipl Compliance is not available on this instance")
+        end
+
         return error_response("User does not exist") unless user
         return error_response("Pipl user record does not exist") unless pipl_user.present?
         return error_response("Feature 'enforce_pipl_compliance' is disabled") unless enforce_pipl_compliance?

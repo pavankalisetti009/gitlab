@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ComplianceManagement::Pipl::SendRecurringNotificationsWorker,
+RSpec.describe ComplianceManagement::Pipl::SendRecurringNotificationsWorker, :saas,
   feature_category: :compliance_management do
   subject(:perform) { described_class.new.perform }
 

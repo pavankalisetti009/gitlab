@@ -2,7 +2,7 @@
 
 module ComplianceManagement
   module Pipl
-    class BlockPiplUsersWorker
+    class DeletePiplUsersWorker
       include ApplicationWorker
       include ::Gitlab::Utils::StrongMemoize
 
@@ -15,11 +15,11 @@ module ComplianceManagement
 
       def perform
         Gitlab::Auth::CurrentUserMode.optionally_run_in_admin_mode(admin_bot) do
-          PiplUser.pipl_blockable.each_batch do |batch|
+          PiplUser.pipl_deletable.each_batch do |batch|
             batch.each do |pipl_user|
               with_context(user: pipl_user.user) do
                 # Ensure that admin mode doesn't break the authorization cycle
-                block_user(pipl_user)
+                delete_user(pipl_user)
               end
             end
           end
@@ -28,8 +28,8 @@ module ComplianceManagement
 
       private
 
-      def block_user(pipl_user)
-        result = BlockNonCompliantUserService.new(pipl_user: pipl_user, current_user: admin_bot).execute
+      def delete_user(pipl_user)
+        result = DeleteNonCompliantUserService.new(pipl_user: pipl_user, current_user: admin_bot).execute
 
         return unless result.error?
 
