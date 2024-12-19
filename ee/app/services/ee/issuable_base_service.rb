@@ -53,5 +53,18 @@ module EE
     def allowed_update_params(params)
       super(params).except(:epic, :last_test_report_state)
     end
+
+    override :execute_triggers
+    def execute_triggers
+      execute_amazon_q_trigger if amazon_q_params.is_a?(Hash)
+    end
+
+    def execute_amazon_q_trigger
+      ::Ai::AmazonQ::AmazonQTriggerService.new(
+        user: current_user,
+        command: amazon_q_params[:command],
+        source: amazon_q_params[:source]
+      ).execute
+    end
   end
 end

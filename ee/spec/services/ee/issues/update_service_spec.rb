@@ -908,5 +908,41 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
         end
       end
     end
+
+    context 'with Amazon Q disabled' do
+      before do
+        project.add_developer(user)
+      end
+
+      context '/q dev' do
+        it 'does not trigger the Amazon Q service' do
+          expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+
+          update_issue(description: "/q dev")
+        end
+      end
+    end
+
+    context 'with Amazon Q enabled' do
+      before do
+        allow(::Ai::AmazonQ).to receive(:enabled?).and_return(true)
+        project.add_developer(user)
+      end
+
+      context '/q dev' do
+        let(:trigger_service) { instance_double(::Ai::AmazonQ::AmazonQTriggerService) }
+
+        it 'triggers the Amazon Q service' do
+          expect(trigger_service).to receive(:execute)
+          expect(::Ai::AmazonQ::AmazonQTriggerService).to receive(:new).with(
+            user: user,
+            command: 'dev',
+            source: an_instance_of(Issue)
+          ).and_return(trigger_service)
+
+          update_issue(description: "/q")
+        end
+      end
+    end
   end
 end

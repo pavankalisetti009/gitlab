@@ -538,4 +538,43 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       let(:issuable) { service_result[:issue] }
     end
   end
+
+  context 'with Amazon Q disabled' do
+    let(:params) { { title: 'Write hello world', description: '/q dev' } }
+
+    before do
+      project.add_developer(user)
+    end
+
+    context '/q dev' do
+      it 'does not trigger the Amazon Q service' do
+        expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+        expect(created_issue).to be_persisted
+      end
+    end
+  end
+
+  context 'with Amazon Q enabled' do
+    let(:params) { { title: 'Write hello world', description: '/q dev' } }
+
+    before do
+      allow(::Ai::AmazonQ).to receive(:enabled?).and_return(true)
+      project.add_developer(user)
+    end
+
+    context '/q dev' do
+      let(:trigger_service) { instance_double(::Ai::AmazonQ::AmazonQTriggerService) }
+
+      it 'triggers the Amazon Q service' do
+        expect(trigger_service).to receive(:execute)
+        expect(::Ai::AmazonQ::AmazonQTriggerService).to receive(:new).with(
+          user: user,
+          command: 'dev',
+          source: an_instance_of(Issue)
+        ).and_return(trigger_service)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+  end
 end
