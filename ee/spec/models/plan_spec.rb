@@ -38,6 +38,12 @@ RSpec.describe Plan, feature_category: :subscription_management do
     it { is_expected.to match_array(%w[default free premium]) }
   end
 
+  describe '::ULTIMATE_TRIAL_PLANS' do
+    subject { described_class::ULTIMATE_TRIAL_PLANS }
+
+    it { is_expected.to match_array(%w[ultimate_trial ultimate_trial_paid_customer]) }
+  end
+
   describe '.with_subscriptions' do
     it 'includes plans that have attached subscriptions', :saas do
       group = create(:group_with_plan, plan: :free_plan)
