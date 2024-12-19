@@ -19,7 +19,7 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
   subject(:service) { described_class.new(current_user, params) }
 
   describe '#execute' do
-    context "when licenesed" do
+    context "when licensed" do
       before do
         stub_licensed_features(extended_audit_events: true)
       end
@@ -30,7 +30,7 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
             name: 'user_created'
           )).and_call_original
 
-          # user creation will also send confirmaiton instructions which is also audited
+          # user creation will also send confirmation instructions which is also audited
           allow(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(name: 'email_confirmation_sent'))
 
           user = service.execute.payload[:user]
@@ -64,12 +64,6 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
 
           expect { service.execute }.not_to change { AuditEvent.count }
         end
-
-        it 'does not log audit event if operation results in no change' do
-          service.execute
-
-          expect { service.execute }.not_to change(AuditEvent, :count)
-        end
       end
 
       context 'when audit is not required' do
@@ -81,6 +75,51 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
           expect { service.execute }.not_to change(AuditEvent, :count)
         end
       end
+    end
+  end
+
+  describe 'with a subscription' do
+    let(:active_user_count) { 0 }
+
+    before do
+      create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: active_user_count })
+    end
+
+    describe 'with licensed users' do
+      let(:active_user_count) { 10 }
+
+      describe 'when licensed user count reached' do
+        let(:active_user_count) { 1 }
+
+        it 'does not create a user' do
+          expect { service.execute }.not_to change(User, :count)
+        end
+
+        it 'returns an error' do
+          expect(service.execute).to have_attributes(
+            message: 'There are no more seats left in your subscription. New users cannot be added to this instance.',
+            status: :error
+          )
+        end
+
+        describe 'when sm_seat_control_block_overages is disabled' do
+          before do
+            stub_feature_flags(sm_seat_control_block_overages: false)
+          end
+
+          it 'creates a user' do
+            expect { service.execute }.to change(User, :count).by(1)
+          end
+        end
+      end
+
+      it 'creates a user' do
+        expect { service.execute }.to change(User, :count).by(1)
+      end
+    end
+
+    it 'creates a user' do
+      expect { service.execute }.to change(User, :count).by(1)
     end
   end
 

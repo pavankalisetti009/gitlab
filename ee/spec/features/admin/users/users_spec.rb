@@ -101,6 +101,10 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
   end
 
   describe 'GET /admin/users/new', :js do
+    before do
+      stub_feature_flags(sm_seat_control_block_overages: false)
+    end
+
     def fill_in_new_user_form
       fill_in 'user_name', with: 'Big Bang'
       fill_in 'user_username', with: 'bang'
@@ -167,6 +171,39 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
           expect(email.text_part.body).to have_content('Your GitLab instance has reached the maximum allowed user cap')
 
           expect(ActionMailer::Base.deliveries.count).to eq(1)
+        end
+      end
+    end
+
+    context 'when generating overages' do
+      before do
+        create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: 1 })
+      end
+
+      it 'creates a new user' do
+        visit new_admin_user_path
+
+        fill_in_new_user_form
+
+        click_button 'Create user'
+
+        expect(page).to have_content('User was successfully created.')
+      end
+
+      context 'when block seat overages feature flag is active' do
+        before do
+          stub_feature_flags(sm_seat_control_block_overages: true)
+        end
+
+        it 'shows an error' do
+          visit new_admin_user_path
+
+          fill_in_new_user_form
+
+          click_button 'Create user'
+
+          expect(page).to have_content('There are no more seats left in your subscription. ' \
+            'New users cannot be added to this instance.')
         end
       end
     end

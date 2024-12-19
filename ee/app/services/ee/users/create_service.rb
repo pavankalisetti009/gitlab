@@ -5,6 +5,14 @@ module EE
     module CreateService
       extend ::Gitlab::Utils::Override
 
+      override :execute
+      def execute
+        message = _('There are no more seats left in your subscription. New users cannot be added to this instance.')
+        user.errors.add(:base, message) unless seats_available?
+
+        super
+      end
+
       override :after_create_hook
       def after_create_hook(user, reset_token)
         super
@@ -31,6 +39,23 @@ module EE
 
       def audit_required?
         current_user.present?
+      end
+
+      def perform_seat_check?
+        return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) # only available for SM instances
+
+        ::Feature.enabled?(:sm_seat_control_block_overages, :instance, type: :wip)
+      end
+
+      def seats_available?
+        return true unless perform_seat_check?
+        return true unless user.using_license_seat?
+
+        licensed_seats = License.current.restricted_user_count
+
+        return true unless licensed_seats.present? && licensed_seats.nonzero?
+
+        ::User.billable.limit(licensed_seats).count < licensed_seats
       end
     end
   end
