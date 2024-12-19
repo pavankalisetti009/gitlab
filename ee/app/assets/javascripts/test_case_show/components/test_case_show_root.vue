@@ -224,7 +224,7 @@ export default {
         <gl-button
           v-if="canEditTestCase"
           data-testid="edit-test-case"
-          class="gl-hidden md:gl-inline-block"
+          class="gl-hidden md:gl-inline-flex"
           :loading="testCaseStateChangeInProgress"
           :title="editCaseActionAriaLabel"
           :aria-label="editCaseActionAriaLabel"
@@ -234,7 +234,7 @@ export default {
         <gl-button
           v-if="canEditTestCase"
           data-testid="archive-test-case"
-          class="gl-hidden md:gl-inline-block"
+          class="gl-hidden md:gl-inline-flex"
           :loading="testCaseStateChangeInProgress"
           @click="handleTestCaseStateChange"
           >{{ testCaseActionTitle }}</gl-button
@@ -243,7 +243,7 @@ export default {
           data-testid="new-test-case"
           category="secondary"
           variant="confirm"
-          class="md:gl-inline-block"
+          class="md:gl-inline-flex"
           :class="{ 'gl-hidden': canEditTestCase, 'gl-grow': !canEditTestCase }"
           :href="testCaseNewPath"
           >{{ __('New test case') }}</gl-button
