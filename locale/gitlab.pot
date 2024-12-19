@@ -19432,6 +19432,9 @@ msgstr ""
 msgid "Deployment|Open URL"
 msgstr ""
 
+msgid "Deployment|Pipeline"
+msgstr ""
+
 msgid "Deployment|Ready to be deployed."
 msgstr ""
 
