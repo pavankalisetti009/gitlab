@@ -15,6 +15,14 @@ module EE
           self.table_name = 'subscription_seat_assignments'
         end
 
+        class MigrationNamespace < ::ApplicationRecord
+          self.table_name = 'namespaces'
+        end
+
+        class MigrationUser < ::ApplicationRecord
+          self.table_name = 'users'
+        end
+
         override :perform
         def perform
           each_sub_batch do |sub_batch|
@@ -46,6 +54,21 @@ module EE
 
         private
 
+        def valid_members_subquery(sub_batch)
+          namespace_subquery = MigrationNamespace.select(1)
+            .where("namespaces.id = (SELECT traversal_ids[1] FROM namespaces WHERE id = members.member_namespace_id)")
+            .arel
+          root_namespace_exists = Arel::Nodes::Exists.new(namespace_subquery)
+
+          user_subquery = MigrationUser.select(1).where("users.id = members.user_id").arel
+          user_exists = Arel::Nodes::Exists.new(user_subquery)
+
+          sub_batch
+            .where.not(user_id: nil)
+            .where(root_namespace_exists)
+            .where(user_exists)
+        end
+
         def fetch_candidate_records(connection, sub_batch)
           sql = <<~SQL
             SELECT DISTINCT
@@ -53,7 +76,7 @@ module EE
               (SELECT traversal_ids[1] FROM namespaces WHERE id = members.member_namespace_id)
             as root_namespace_id
             FROM members
-            WHERE id IN (#{sub_batch.where.not(user_id: nil).select(:id).to_sql})
+            WHERE id IN (#{valid_members_subquery(sub_batch).select(:id).to_sql})
           SQL
 
           connection.exec_query(sql)
