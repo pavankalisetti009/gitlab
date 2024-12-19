@@ -1,6 +1,6 @@
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { MERGE_REQUESTS_STATE_MERGED } from 'ee/analytics/dashboards/graphql/constants';
-import * as utils from '~/analytics/shared/utils';
+import { toYmd } from '~/analytics/shared/utils';
 import {
   mockLastVulnerabilityCountData,
   mockMergeRequestsResponseData,
@@ -15,36 +15,36 @@ export const doraMetricsParamsHelper = ({
 }) => ({
   interval,
   fullPath,
-  startDate: start.toISOString(),
-  endDate: end.toISOString(),
+  startDate: toYmd(start),
+  endDate: toYmd(end),
 });
 
 export const flowMetricsParamsHelper = ({ start, end, fullPath = '', labelNames = [] }) => ({
   fullPath,
-  startDate: start.toISOString(),
-  endDate: end.toISOString(),
+  startDate: toYmd(start),
+  endDate: toYmd(end),
   labelNames,
 });
 
 // For the vulnerabilities request we just query for the last date in the time period
 export const vulnerabilityParamsHelper = ({ fullPath, end }) => ({
   fullPath,
-  startDate: utils.toYmd(end),
-  endDate: utils.toYmd(end),
+  startDate: toYmd(end),
+  endDate: toYmd(end),
 });
 
 export const mergeRequestsParamsHelper = ({ start, end, fullPath = '', labelNames = [] }) => ({
   fullPath,
-  startDate: utils.toYmd(start),
-  endDate: utils.toYmd(end),
+  startDate: toYmd(start),
+  endDate: toYmd(end),
   state: MERGE_REQUESTS_STATE_MERGED,
   labelNames,
 });
 
 export const contributorCountParamsHelper = ({ fullPath = '', start, end }) => ({
   fullPath,
-  startDate: utils.toYmd(start),
-  endDate: utils.toYmd(end),
+  startDate: toYmd(start),
+  endDate: toYmd(end),
 });
 
 export const mockGraphqlVulnerabilityResponse = (
