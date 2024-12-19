@@ -167,7 +167,6 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
           'redis_hll_counters.count_distinct_project_id_from_vulnerability_auto_resolution_monthly'
         end
 
-        let(:distinct_count_total) { 'redis_hll_counters.count_distinct_project_id_from_vulnerability_auto_resolution' }
         let(:total_count_weekly) do
           'sums.count_total_autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set_weekly'
         end
@@ -195,7 +194,6 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
               additional_properties: additional_properties
             ).and increment_usage_metrics(distinct_count_weekly).by(1)
               .and increment_usage_metrics(distinct_count_monthly).by(1)
-              .and increment_usage_metrics(distinct_count_total).by(1)
               .and increment_usage_metrics(total_count_weekly).by(2)
               .and increment_usage_metrics(total_count_monthly).by(2)
               .and increment_usage_metrics(total_count).by(2)
