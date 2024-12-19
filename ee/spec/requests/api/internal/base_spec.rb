@@ -249,9 +249,8 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
     context 'with a service account', :request_store do
       let_it_be(:project) { create(:project, :repository) }
       let_it_be(:other_user) { create(:user) }
+      let_it_be(:service_account_user) { create(:user, :service_account, composite_identity_enforced: true) }
 
-      let(:service_account_user) { create(:user, :service_account, composite_identity_enforced: true) }
-      let(:actor) { service_account_user }
       let(:gitaly_context) do
         {
           'scoped-user-id' => user.id.to_s
