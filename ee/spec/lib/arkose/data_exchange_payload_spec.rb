@@ -86,9 +86,9 @@ RSpec.describe Arkose::DataExchangePayload, feature_category: :instance_resilien
       it { is_expected.to be_nil }
     end
 
-    context 'when arkose_labs_data_exchange feature flag is disabled' do
+    context 'when arkose_labs_data_exchange_enabled application setting is disabled' do
       before do
-        stub_feature_flags(arkose_labs_data_exchange: false)
+        stub_application_setting(arkose_labs_data_exchange_enabled: false)
       end
 
       it { is_expected.to be_nil }

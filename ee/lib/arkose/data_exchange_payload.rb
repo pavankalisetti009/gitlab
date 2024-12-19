@@ -23,7 +23,7 @@ module Arkose
 
     def build
       return unless use_case.in?([USE_CASE_SIGN_UP, USE_CASE_IDENTITY_VERIFICATION])
-      return unless ::Feature.enabled?(:arkose_labs_data_exchange, :instance, type: :ops)
+      return unless ::Gitlab::CurrentSettings.arkose_labs_data_exchange_enabled
       return unless shared_key
 
       encrypted_data
