@@ -22,7 +22,7 @@ export const initTanukiBotChatDrawer = () => {
   if (toggleEls.length) {
     toggleEls.forEach((toggleEl) => {
       toggleEl.addEventListener('click', () => {
-        duoChatGlobalState.isShown = true;
+        duoChatGlobalState.isShown = !duoChatGlobalState.isShown;
       });
     });
   }
