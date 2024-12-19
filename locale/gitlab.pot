@@ -43872,9 +43872,6 @@ msgstr ""
 msgid "ProjectService|Mock CI URL"
 msgstr ""
 
-msgid "ProjectService|Must have permission to trigger a manual build in TeamCity."
-msgstr ""
-
 msgid "ProjectService|Perform common operations on GitLab project: %{project_name}"
 msgstr ""
 
@@ -43888,9 +43885,6 @@ msgid "ProjectService|Run CI/CD pipelines with JetBrains TeamCity."
 msgstr ""
 
 msgid "ProjectService|TeamCity server URL"
-msgstr ""
-
-msgid "ProjectService|The build configuration ID of the TeamCity project."
 msgstr ""
 
 msgid "ProjectService|To configure this integration, you should:"
@@ -55466,6 +55460,18 @@ msgid "Team"
 msgstr ""
 
 msgid "Team domain"
+msgstr ""
+
+msgid "TeamCityIntegration|A user with permissions to trigger a manual build."
+msgstr ""
+
+msgid "TeamCityIntegration|TeamCity root URL (for example, `https://teamcity.example.com`)."
+msgstr ""
+
+msgid "TeamCityIntegration|The build configuration ID of the TeamCity project."
+msgstr ""
+
+msgid "TeamCityIntegration|The password of the user."
 msgstr ""
 
 msgid "TeamcityIntegration|Trigger TeamCity CI after a merge request has been created or updated"
