@@ -251,5 +251,38 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, featur
         expect(subscription_seat_assignments.count).to eq(4)
       end
     end
+
+    context 'when user_id does not have existing records' do
+      it 'handles the missing user record correctly' do
+        other_user_id = other_user.id
+        other_user.destroy!
+
+        expect(members.where(user_id: other_user_id).count).to eq(2)
+
+        migration.perform
+
+        expect(subscription_seat_assignments.count).to eq(2)
+        expect(subscription_seat_assignments.where(user_id: other_user_id).count).to eq(0)
+      end
+    end
+
+    context 'when root_namespace_id does not have existing records' do
+      it 'handles the missing namespace record correctly' do
+        other_root_group_id = other_root_group.id
+
+        ApplicationRecord.connection.execute('ALTER TABLE namespaces DISABLE TRIGGER ALL')
+        other_root_group.delete
+        ApplicationRecord.connection.execute('ALTER TABLE namespaces ENABLE TRIGGER ALL')
+
+        expect(members.where(member_namespace_id: other_root_group_id).count).to eq(2)
+
+        migration.perform
+
+        expect(subscription_seat_assignments.count).to eq(2)
+        expect(subscription_seat_assignments.where(namespace_id: other_root_group_id).count).to eq(0)
+      ensure
+        ApplicationRecord.connection.execute('ALTER TABLE namespaces ENABLE TRIGGER ALL')
+      end
+    end
   end
 end
