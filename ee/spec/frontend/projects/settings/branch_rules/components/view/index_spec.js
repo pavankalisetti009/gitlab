@@ -14,6 +14,7 @@ import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createStoreOptions } from 'ee/approvals/stores';
 import projectSettingsModule from 'ee/approvals/stores/modules/project_settings';
 import ProtectionToggle from '~/projects/settings/branch_rules/components/view/protection_toggle.vue';
+import Protection from '~/projects/settings/branch_rules/components/view/protection.vue';
 import deleteBranchRuleMutation from '~/projects/settings/branch_rules/mutations/branch_rule_delete.mutation.graphql';
 import editBranchRuleMutation from 'ee_else_ce/projects/settings/branch_rules/mutations/edit_branch_rule.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -57,7 +58,7 @@ describe('View branch rules in enterprise edition', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = async (
-    glFeatures = { editBranchRules: true },
+    glFeatures = { editBranchRules: true, branchRuleSquashSettings: true },
     { showApprovers, showStatusChecks, showCodeOwners } = {},
     mockResponse,
     mutationMockResponse,
@@ -92,6 +93,7 @@ describe('View branch rules in enterprise edition', () => {
         CrudComponent,
         ProtectionToggle,
         StatusChecks,
+        Protection,
       },
     });
 
@@ -111,6 +113,15 @@ describe('View branch rules in enterprise edition', () => {
   const findStatusChecksTitle = () => wrapper.findByTestId('crud-title');
   const findCodeOwnersToggle = () => wrapper.findByTestId('code-owners-content');
   const findStatusChecksDrawer = () => wrapper.findByTestId('status-checks-drawer');
+  const findSquashSettingContent = () => wrapper.findByTestId('squash-setting-content');
+
+  describe('Squash settings', () => {
+    it('renders squash option and help text when available', () => {
+      const content = findSquashSettingContent();
+      expect(content.text()).toContain('Encourage');
+      expect(content.text()).toContain('Checkbox is visible and selected by default.');
+    });
+  });
 
   it('renders a branch protection component for push rules', () => {
     expect(findAllowedToPush().props()).toMatchObject({
