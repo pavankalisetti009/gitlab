@@ -21,6 +21,7 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
   it { expect(described_class).to have_graphql_field(:merge_request_diffs) }
   it { expect(described_class).to have_graphql_field(:policy_violations) }
   it { expect(described_class).to have_graphql_field(:policies_overriding_approval_settings) }
+  it { expect(described_class).to have_graphql_field(:change_requesters) }
 
   shared_context 'with a merge train' do
     let_it_be(:project) { create(:project, :public) }
@@ -443,5 +444,75 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
     end
 
     it_behaves_like 'field with approval rules related check'
+  end
+
+  describe '#change_requesters' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, :public) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+    let_it_be(:requested_change) do
+      create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project,
+        user: user)
+    end
+
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            mergeRequests {
+              nodes {
+                changeRequesters {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      )
+    end
+
+    subject(:requested_changes) do
+      result = GitlabSchema.execute(query, context: { current_user: user })
+
+      graphql_dig_at(result.to_h, :data, :project, :merge_requests, :nodes, 0, :change_requesters, :nodes)
+    end
+
+    context 'when project has incorrect license' do
+      before do
+        stub_licensed_features(requested_changes_block_merge_request: false)
+      end
+
+      it 'returns nil' do
+        expect(requested_changes).to be_nil
+      end
+    end
+
+    context 'when project has correct license' do
+      before do
+        stub_licensed_features(requested_changes_block_merge_request: true)
+      end
+
+      it 'returns requested change user' do
+        expect(requested_changes).to contain_exactly({ "id" => user.to_gid.to_s })
+      end
+
+      it 'avoids N+1 queries' do
+        # Warm up table schema and other data
+        GitlabSchema.execute(query, context: { current_user: user })
+
+        control = ActiveRecord::QueryRecorder.new { GitlabSchema.execute(query, context: { current_user: user }) }
+
+        mr = create(:merge_request, :unique_branches, target_project: project, source_project: project)
+        create(:merge_request_requested_changes, merge_request: mr, project: mr.project,
+          user: create(:user))
+
+        # Warm up table schema and other data
+        GitlabSchema.execute(query, context: { current_user: user })
+
+        expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control)
+      end
+    end
   end
 end

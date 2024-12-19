@@ -74,6 +74,10 @@ module EE
       has_many :requested_changes,
         class_name: 'MergeRequests::RequestedChange',
         inverse_of: :merge_request
+      has_many :change_requesters,
+        class_name: 'User',
+        through: :requested_changes,
+        source: :user
 
       has_many :scan_result_policy_reads_through_violations,
         through: :scan_result_policy_violations, source: :scan_result_policy_read,

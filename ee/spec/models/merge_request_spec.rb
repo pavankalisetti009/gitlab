@@ -32,6 +32,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it { is_expected.to have_many(:scan_result_policy_reads_through_violations).through(:scan_result_policy_violations).class_name('Security::ScanResultPolicyRead') }
     it { is_expected.to have_many(:scan_result_policy_reads_through_approval_rules).through(:approval_rules).class_name('Security::ScanResultPolicyRead') }
     it { is_expected.to have_many(:security_policies_through_violations).through(:scan_result_policy_violations).class_name('Security::Policy') }
+    it { is_expected.to have_many(:change_requesters).through(:requested_changes) }
 
     describe 'policy violations' do
       let(:policy_1) { create(:scan_result_policy_read, project: project) }

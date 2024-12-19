@@ -83,6 +83,17 @@ module EE
           null: true,
           description: 'Policy violations reported on the merge request. ',
           resolver: ::Resolvers::SecurityOrchestration::PolicyViolationsResolver
+
+        field :change_requesters,
+          type: ::Types::UserType.connection_type,
+          null: true,
+          description: 'Users that have requested changes to the merge request.'
+      end
+
+      def change_requesters
+        return unless object.reviewer_requests_changes_feature
+
+        object.change_requesters
       end
 
       def merge_train_car
