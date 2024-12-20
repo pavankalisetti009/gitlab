@@ -1089,6 +1089,12 @@ module EE
       super || gitlab_custom_project_template_import?
     end
 
+    def notify_project_import_complete?
+      return false if gitlab_custom_project_template_import?
+
+      super
+    end
+
     def gitlab_custom_project_template_import?
       import_type == 'gitlab_custom_project_template' &&
         ::Gitlab::CurrentSettings.custom_project_templates_enabled?
