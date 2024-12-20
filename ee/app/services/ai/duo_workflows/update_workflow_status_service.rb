@@ -24,7 +24,8 @@ module Ai
       private
 
       def handle_status_event
-        unless %(finish drop start pause resume stop).include?(@status_event)
+        workflow_events = ::Ai::DuoWorkflows::Workflow.state_machines[:status].events.map { |event| event.name.to_s }
+        unless workflow_events.include?(@status_event)
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
 

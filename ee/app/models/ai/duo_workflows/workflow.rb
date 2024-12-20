@@ -78,6 +78,10 @@ module Ai
           transition paused: :running
         end
 
+        event :retry do
+          transition [:running, :stopped, :failed] => :running
+        end
+
         event :finish do
           transition running: :finished
         end
