@@ -32,10 +32,12 @@ describe('Password requirement list component', () => {
     mockAxios.restore();
   });
 
+  const FIRST_NAME_INPUT_ID = 'new_user_first_name';
   const PASSWORD_INPUT_CLASS = 'js-password-complexity-validation';
   const findStatusIcon = (ruleType) => wrapper.findByTestId(`password-${ruleType}-status-icon`);
   const findRuleTextsByClass = (colorClassName) =>
     wrapper.findAllByTestId('password-rule-text').filter((c) => c.classes(colorClassName));
+  const findFirstNameInputElement = () => document.querySelector(`#${FIRST_NAME_INPUT_ID}`);
   const findPasswordInputElement = () => document.querySelector(`.${PASSWORD_INPUT_CLASS}`);
   const findForm = () => findPasswordInputElement().form;
   const findSubmitButton = () => findForm().querySelector('[type="submit"]');
@@ -48,6 +50,7 @@ describe('Password requirement list component', () => {
         propsData: {
           passwordInputElement,
           ruleTypes,
+          allowNoPassword: false,
           ...props,
         },
       }),
@@ -57,7 +60,7 @@ describe('Password requirement list component', () => {
   beforeEach(() => {
     setHTMLFixture(`
       <form>
-        <input id="new_user_first_name" name="new_user[first_name]" type="text">
+        <input id="${FIRST_NAME_INPUT_ID}" name="new_user[first_name]" type="text">
         <input autocomplete="new-password" class="form-control gl-form-input ${PASSWORD_INPUT_CLASS}" type="password" name="new_user[password]" id="new_user_password">
         <input type="submit" name="commit" value="Submit">
       </form>
@@ -68,15 +71,24 @@ describe('Password requirement list component', () => {
     resetHTMLFixture();
   });
 
+  it('does not throw errors on name change', () => {
+    createComponent();
+
+    const firstNameInputElement = findFirstNameInputElement();
+
+    expect(() => {
+      firstNameInputElement.value = 'Name';
+      firstNameInputElement.dispatchEvent(new Event('input'));
+    }).not.toThrow();
+  });
+
   describe('when empty password is not allowed', () => {
     beforeEach(() => {
-      createComponent({
-        props: {
-          allowNoPassword: false,
-        },
-      });
+      createComponent();
+
       findPasswordInputElement().value = '';
     });
+
     it('should show when password is empty', () => {
       const passwordRules = wrapper.findAllByTestId('password-requirement-list');
       expect(passwordRules.isVisible()).toBe(true);
@@ -120,11 +132,8 @@ describe('Password requirement list component', () => {
     'password $password',
     ({ password, matchNumber, matchLowerCase, matchUpperCase, matchSymbol }) => {
       beforeEach(() => {
-        createComponent({
-          props: {
-            allowNoPassword: false,
-          },
-        });
+        createComponent();
+
         const passwordInputElement = findPasswordInputElement();
         passwordInputElement.value = password;
         passwordInputElement.dispatchEvent(new Event('input'));
@@ -183,13 +192,24 @@ describe('Password requirement list component', () => {
     const password = '11111111';
 
     beforeEach(() => {
-      createComponent({ props: { allowNoPassword: false, ruleTypes: [COMMON, USER_INFO] } });
+      createComponent({ props: { ruleTypes: [COMMON, USER_INFO] } });
     });
 
     it('shows the list as secondary text', () => {
       expect(
         wrapper.findByTestId('password-requirement-list').classes().includes('gl-text-subtle'),
       ).toBe(true);
+    });
+
+    it('does not throw errors on name change', () => {
+      createComponent();
+
+      const firstNameInputElement = findFirstNameInputElement();
+
+      expect(() => {
+        firstNameInputElement.value = 'Name';
+        firstNameInputElement.dispatchEvent(new Event('input'));
+      }).not.toThrow();
     });
 
     describe('when there are errors', () => {
