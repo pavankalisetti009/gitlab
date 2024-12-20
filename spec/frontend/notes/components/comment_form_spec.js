@@ -472,6 +472,7 @@ describe('issue_comment_form component', () => {
                   },
                 },
                 endpoint: notesDataMock.draftsPath,
+                flashContainer: expect.anything(),
                 isDraft: true,
               });
             });
@@ -491,6 +492,7 @@ describe('issue_comment_form component', () => {
                   },
                 },
                 endpoint: notesDataMock.draftsPath,
+                flashContainer: expect.anything(),
                 isDraft: true,
               });
             });
@@ -513,6 +515,7 @@ describe('issue_comment_form component', () => {
                   },
                 },
                 endpoint: noteableDataMock.create_note_path,
+                flashContainer: expect.anything(),
                 isDraft: false,
               });
             });
@@ -535,6 +538,7 @@ describe('issue_comment_form component', () => {
                   },
                 },
                 endpoint: noteableDataMock.create_note_path,
+                flashContainer: expect.anything(),
                 isDraft: false,
               });
             });
@@ -800,6 +804,7 @@ describe('issue_comment_form component', () => {
               },
             },
             endpoint: noteableDataMock.create_note_path,
+            flashContainer: expect.anything(),
             isDraft: false,
           });
         });
