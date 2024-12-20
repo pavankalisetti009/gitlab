@@ -23061,7 +23061,7 @@ msgstr ""
 msgid "ExperimentTracking|Metric value"
 msgstr ""
 
-msgid "ExperimentTracking|No candidates"
+msgid "ExperimentTracking|No candidates with logged metrics"
 msgstr ""
 
 msgid "ExperimentTracking|Performance"
@@ -35321,6 +35321,9 @@ msgstr ""
 msgid "MlExperimentTracking|Candidate removed"
 msgstr ""
 
+msgid "MlExperimentTracking|Candidates"
+msgstr ""
+
 msgid "MlExperimentTracking|Create a new experiment"
 msgstr ""
 
@@ -35387,6 +35390,9 @@ msgstr ""
 msgid "MlExperimentTracking|Get started with model experiments!"
 msgstr ""
 
+msgid "MlExperimentTracking|Key"
+msgstr ""
+
 msgid "MlExperimentTracking|Logged candidates for experiment"
 msgstr ""
 
@@ -35420,10 +35426,19 @@ msgstr ""
 msgid "MlExperimentTracking|No name"
 msgstr ""
 
+msgid "MlExperimentTracking|Overview"
+msgstr ""
+
+msgid "MlExperimentTracking|Performance"
+msgstr ""
+
 msgid "MlExperimentTracking|To learn more about MLflow client compatibility, see %{linkStart}the documentation%{linkEnd}."
 msgstr ""
 
 msgid "MlExperimentTracking|Using the MLflow client"
+msgstr ""
+
+msgid "MlExperimentTracking|Value"
 msgstr ""
 
 msgid "MlExperimentTracking|Version"
