@@ -45,6 +45,12 @@ module Namespaces
         ::Gitlab::CurrentSettings.automatic_purchased_storage_allocation?
       end
 
+      def subject_to_high_limit?
+        return false unless Feature.enabled?(:plan_limits_repository_size, root_namespace)
+
+        root_namespace.actual_plan.paid_excluding_trials?
+      end
+
       def error_message
         message_params = { namespace_name: root_namespace.name }
 
