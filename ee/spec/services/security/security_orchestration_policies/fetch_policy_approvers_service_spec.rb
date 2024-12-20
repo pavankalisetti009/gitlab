@@ -121,7 +121,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
           expect(response[:users]).to be_empty
           expect(response[:groups]).to be_empty
           expect(response[:all_groups]).to be_empty
-          expect(response[:approvers]).to match_array([{ all_groups: [], groups: [], roles: [], users: [] }])
+          expect(response[:approvers]).to match_array([{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }])
         end
       end
     end
@@ -214,7 +214,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
           expect(response[:status]).to eq(:success)
           expect(response[:roles]).to be_empty
           expect(response[:users]).to be_empty
-          expect(response[:approvers]).to match_array([{ all_groups: [], groups: [], roles: [], users: [] }])
+          expect(response[:approvers]).to match_array([{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }])
         end
       end
 
@@ -241,6 +241,37 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
             expect(response[:roles]).to match_array(%w[maintainer developer])
             expect(response[:users]).to be_empty
             expect(response[:approvers].first).to include(roles: %w[maintainer developer])
+          end
+        end
+
+        context 'with custom_roles' do
+          let(:roles) { ['maintainer', member_role.id] }
+
+          shared_examples 'with custom_roles and roles' do
+            it 'returns custom roles and roles', :aggregate_failures do
+              response = service.execute
+
+              expect(response[:roles]).to contain_exactly('maintainer')
+              expect(response[:custom_roles]).to contain_exactly(member_role)
+              expect(response[:approvers].first[:roles]).to contain_exactly('maintainer')
+              expect(response[:approvers].first[:custom_roles]).to contain_exactly(member_role)
+            end
+          end
+
+          context 'when on gitlab.com', :saas do
+            let(:member_role) { create(:member_role, namespace: container.root_ancestor) }
+
+            it_behaves_like 'with custom_roles and roles'
+          end
+
+          context 'when on self-managed' do
+            before do
+              stub_saas_features(gitlab_com_subscriptions: false)
+            end
+
+            let(:member_role) { create(:member_role, :instance) }
+
+            it_behaves_like 'with custom_roles and roles'
           end
         end
       end

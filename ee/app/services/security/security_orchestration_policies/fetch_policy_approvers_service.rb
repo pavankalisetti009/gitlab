@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class FetchPolicyApproversService
       include BaseServiceUtility
+      include ::GitlabSubscriptions::SubscriptionHelper
 
       def initialize(policy:, container:, current_user:)
         @policy = policy
@@ -24,7 +25,8 @@ approvers: [] })
             users: user_approvers(action),
             groups: group_approvers(action)[:visible],
             all_groups: group_approvers(action)[:all],
-            roles: role_approvers(action)
+            roles: role_approvers(action),
+            custom_roles: custom_roles(action)
           }
         end
 
@@ -35,6 +37,7 @@ approvers: [] })
           groups: first_approver[:groups],
           all_groups: first_approver[:all_groups],
           roles: first_approver[:roles],
+          custom_roles: first_approver[:custom_roles],
           approvers: approvers
         })
       end
@@ -83,6 +86,18 @@ approvers: [] })
         all = service.execute(include_inaccessible: true)
 
         { visible: visible, all: all }
+      end
+
+      def custom_roles(action)
+        custom_role_ids = action[:role_approvers]&.grep(Integer)
+
+        return [] unless custom_role_ids.present?
+
+        if gitlab_com_subscription?
+          container.root_ancestor.member_roles.id_in(custom_role_ids)
+        else
+          MemberRole.for_instance.id_in(custom_role_ids)
+        end
       end
 
       def role_approvers(action)

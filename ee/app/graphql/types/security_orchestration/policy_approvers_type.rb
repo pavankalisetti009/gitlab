@@ -9,6 +9,9 @@ module Types
 
       field :all_groups, [::Types::SecurityOrchestration::ApprovalGroupType], null: true,
         description: 'All potential approvers of the group type, including groups inaccessible to the user.'
+      field :custom_roles, [::Types::MemberRoles::MemberRoleType],
+        null: true,
+        description: 'Approvers of the custom role type. Users belonging to these role(s) alone will be approvers.'
       field :roles, [::Types::MemberAccessLevelNameEnum],
         null: true,
         description: 'Approvers of the role type. Users belonging to these role(s) alone will be approvers.'

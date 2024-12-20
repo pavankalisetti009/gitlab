@@ -86,6 +86,7 @@ module ConstructSecurityPolicies
         action_approvers: approvers[:approvers],
         all_group_approvers: approvers[:all_groups],
         role_approvers: approvers[:roles],
+        custom_roles: approvers[:custom_roles],
         deprecated_properties: deprecated_properties(policy),
         source: {
           project: policy[:project],
