@@ -830,6 +830,49 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
     end
   end
 
+  describe 'when updating duo_features_enabled' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:add_instance) { Ai::AmazonQ::ServiceAccountMemberAddService.new(project) }
+    let(:remove_instance) { Ai::AmazonQ::ServiceAccountMemberRemoveService.new(user, project) }
+
+    before do
+      allow(Ai::AmazonQ::ServiceAccountMemberAddService).to receive(:new).with(project).and_return(add_instance)
+      allow(Ai::AmazonQ::ServiceAccountMemberRemoveService).to receive(:new).with(user, project).and_return(remove_instance)
+      allow(add_instance).to receive(:execute).and_call_original
+      allow(remove_instance).to receive(:execute).and_call_original
+    end
+
+    where(:attrs, :amazon_q_connected, :expected_service) do
+      { duo_features_enabled: 'true' }  | true | Ai::AmazonQ::ServiceAccountMemberAddService
+      { duo_features_enabled: 'false' } | true | Ai::AmazonQ::ServiceAccountMemberRemoveService
+      { duo_features_enabled: 'true' }  | false | nil
+      { duo_features_enabled: 'false' } | false | nil
+      {} | true | nil
+      {} | false | nil
+    end
+
+    with_them do
+      def expect_on_service(service, instance)
+        if service == expected_service
+          expect(service).to have_received(:new)
+          expect(instance).to have_received(:execute)
+        else
+          expect(service).not_to have_received(:new)
+        end
+      end
+
+      it 'triggers the expected service' do
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
+
+        update_project(project, user, { project_setting_attributes: attrs })
+
+        expect_on_service(Ai::AmazonQ::ServiceAccountMemberAddService, add_instance)
+        expect_on_service(Ai::AmazonQ::ServiceAccountMemberRemoveService, remove_instance)
+      end
+    end
+  end
+
   def update_project(project, user, opts)
     Projects::UpdateService.new(project, user, opts).execute
   end

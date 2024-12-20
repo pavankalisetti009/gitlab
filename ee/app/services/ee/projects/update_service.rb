@@ -54,6 +54,7 @@ module EE
           sync_wiki_on_enable if !wiki_was_enabled && project.wiki_enabled?
           project.import_state.force_import_job! if params[:mirror].present? && project.mirror?
           project.remove_import_data if project.previous_changes.include?('mirror') && !project.mirror?
+          update_amazon_q_service_account!
 
           if suggested_reviewers_already_enabled
             trigger_project_deregistration
@@ -215,6 +216,20 @@ module EE
         return unless project.merge_pipelines_were_disabled?
 
         MergeTrains::Train.all_for_project(project).each(&:refresh_async)
+      end
+
+      def update_amazon_q_service_account!
+        duo_features_enabled = params.dig(:project_setting_attributes, :duo_features_enabled)
+
+        return unless duo_features_enabled.present? && ::Ai::AmazonQ.connected?
+
+        service = if duo_features_enabled == 'true'
+                    ::Ai::AmazonQ::ServiceAccountMemberAddService.new(project)
+                  else
+                    ::Ai::AmazonQ::ServiceAccountMemberRemoveService.new(current_user, project)
+                  end
+
+        service.execute
       end
     end
   end

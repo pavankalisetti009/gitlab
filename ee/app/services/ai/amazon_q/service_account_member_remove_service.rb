@@ -9,7 +9,7 @@ module Ai
       end
 
       def execute
-        member = find_or_initialize_member_by_user(q_user_id)
+        member = find_or_initialize_member_by_user
 
         return ServiceResponse.success(message: "Membership not found. Nothing to do.") unless member
 
@@ -27,18 +27,17 @@ module Ai
 
       attr_reader :user, :membership_container
 
-      def find_or_initialize_member_by_user(user_id)
-        user = User.find(q_user_id)
-        existing_member = membership_container.member(user)
+      def find_or_initialize_member_by_user
+        existing_member = membership_container.member(service_account_user)
 
         return existing_member unless membership_container.is_a?(Group) && !existing_member
 
         # build a membership so we can run destroy service on subresources
-        membership_container.members.build(user_id: user_id)
+        membership_container.members.build(user: service_account_user)
       end
 
-      def q_user_id
-        Ai::Setting.instance.amazon_q_service_account_user_id
+      def service_account_user
+        Ai::Setting.instance.amazon_q_service_account_user
       end
     end
   end

@@ -183,7 +183,7 @@ module Ai
       end
 
       def amazon_q_service_account
-        User.find_by_id(ai_settings.amazon_q_service_account_user_id)
+        Ai::Setting.instance.amazon_q_service_account_user
       end
       strong_memoize_attr :amazon_q_service_account
 

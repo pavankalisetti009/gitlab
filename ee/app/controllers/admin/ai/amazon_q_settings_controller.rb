@@ -81,6 +81,7 @@ module Admin
       end
 
       def expire_current_settings
+        # clear cached settings  so that duo_availability shows up correctly
         Gitlab::CurrentSettings.expire_current_application_settings
       end
 

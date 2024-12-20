@@ -8,21 +8,22 @@ module Ai
       end
 
       def execute
-        q_user_id = Ai::Setting.instance.amazon_q_service_account_user_id
-
-        existing_member = project.member(q_user_id)
+        existing_member = project.member(service_account_user)
         return ServiceResponse.success(message: "Membership already exists. Nothing to do.") if existing_member
 
-        existing_user = User.find_by_id(q_user_id)
-        return ServiceResponse.error(message: "Service account user not found") unless existing_user
+        return ServiceResponse.error(message: "Service account user not found") unless service_account_user
 
-        result = project.add_developer(existing_user)
+        result = project.add_developer(service_account_user)
         ServiceResponse.success(payload: result)
       end
 
       private
 
       attr_reader :project
+
+      def service_account_user
+        Ai::Setting.instance.amazon_q_service_account_user
+      end
     end
   end
 end
