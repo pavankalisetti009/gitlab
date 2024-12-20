@@ -6262,6 +6262,9 @@ msgstr ""
 msgid "An error occurred while disabling Service Desk."
 msgstr ""
 
+msgid "An error occurred while discarding your review. Please try again."
+msgstr ""
+
 msgid "An error occurred while dismissing the alert. Refresh the page and try again."
 msgstr ""
 
@@ -7763,6 +7766,9 @@ msgid "Are you sure you want to discard this comment?"
 msgstr ""
 
 msgid "Are you sure you want to discard your changes?"
+msgstr ""
+
+msgid "Are you sure you want to discard your pending review comments? This action cannot be undone."
 msgstr ""
 
 msgid "Are you sure you want to import %d repository?"
@@ -20290,6 +20296,12 @@ msgstr ""
 msgid "Discard draft"
 msgstr ""
 
+msgid "Discard pending review?"
+msgstr ""
+
+msgid "Discard review"
+msgstr ""
+
 msgid "Discord webhook (for example, `https://discord.com/api/webhooks/…`)."
 msgstr ""
 
@@ -31992,6 +32004,9 @@ msgid "Keep artifacts from most recent successful jobs"
 msgstr ""
 
 msgid "Keep divergent refs"
+msgstr ""
+
+msgid "Keep review"
 msgstr ""
 
 msgid "Keep sidebar visible"
@@ -47445,6 +47460,9 @@ msgid "Review App|View latest app"
 msgstr ""
 
 msgid "Review changes"
+msgstr ""
+
+msgid "Review discarded"
 msgstr ""
 
 msgid "Review requested"
