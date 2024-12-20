@@ -12,8 +12,6 @@ const PROVIDERS = {
   SELF_HOSTED: 'self_hosted',
 };
 
-const FEATURE_DISABLED = 'DISABLED';
-
 export default {
   name: 'ModelSelectDropdown',
   components: {
@@ -35,7 +33,7 @@ export default {
   data() {
     const { provider, selfHostedModel, validModels } = this.aiFeatureSetting;
 
-    const selectedOption = provider === PROVIDERS.DISABLED ? FEATURE_DISABLED : selfHostedModel?.id;
+    const selectedOption = provider === PROVIDERS.SELF_HOSTED ? selfHostedModel?.id : provider;
 
     return {
       provider,
@@ -54,11 +52,16 @@ export default {
 
       // Add an option to disable the feature
       const disableOption = {
-        value: FEATURE_DISABLED,
+        value: PROVIDERS.DISABLED,
         text: s__('AdminAIPoweredFeatures|Disabled'),
       };
 
-      return [...modelOptions, disableOption];
+      const vendoredOption = {
+        value: PROVIDERS.VENDORED,
+        text: s__('AdminAIPoweredFeatures|GitLab AI Vendor'),
+      };
+
+      return [...modelOptions, vendoredOption, disableOption];
     },
     selectedModel() {
       return this.compatibleModels.find((m) => m.id === this.selfHostedModelId);
@@ -66,6 +69,9 @@ export default {
     dropdownToggleText() {
       if (this.provider === PROVIDERS.DISABLED) {
         return s__('AdminAIPoweredFeatures|Disabled');
+      }
+      if (this.provider === PROVIDERS.VENDORED) {
+        return s__('AdminAIPoweredFeatures|GitLab AI Vendor');
       }
       if (this.selectedModel) {
         return `${this.selectedModel.name} (${this.selectedModel.modelDisplayName})`;
@@ -79,11 +85,17 @@ export default {
       this.isSaving = true;
 
       try {
-        const selectedOption = {
-          option,
-          provider: option === FEATURE_DISABLED ? PROVIDERS.DISABLED : PROVIDERS.SELF_HOSTED,
-          selfHostedModelId: option === FEATURE_DISABLED ? null : option,
-        };
+        const selectedOption = [PROVIDERS.DISABLED, PROVIDERS.VENDORED].includes(option)
+          ? {
+              option,
+              provider: option,
+              selfHostedModelId: null,
+            }
+          : {
+              option,
+              provider: PROVIDERS.SELF_HOSTED,
+              selfHostedModelId: option,
+            };
 
         const { data } = await this.$apollo.mutate({
           mutation: updateAiFeatureSetting,

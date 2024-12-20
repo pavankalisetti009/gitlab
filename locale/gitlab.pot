@@ -3649,6 +3649,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Disabled"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|GitLab AI Vendor"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Main feature"
 msgstr ""
 
