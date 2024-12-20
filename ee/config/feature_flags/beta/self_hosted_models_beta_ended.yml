@@ -1,9 +1,0 @@
----
-name: self_hosted_models_beta_ended
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/485491
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165701
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/485491
-milestone: '17.4'
-group: group::custom models
-type: beta
-default_enabled: true

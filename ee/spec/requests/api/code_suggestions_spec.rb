@@ -839,34 +839,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             stub_licensed_features(ai_features: true)
           end
 
-          context 'when requested before cut off date without seats' do
-            let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_completions) }
-
-            before do
-              allow(service).to receive_messages(free_access?: true)
-              allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(false)
-            end
-
-            it 'is unauthorized' do
-              post_api
-
-              expect(response).to have_gitlab_http_status(:unauthorized)
-              expect(response.headers['X-GitLab-Error-Origin']).to eq('monolith')
-            end
-
-            context 'when self_hosted_models_beta_ended is disabled' do
-              before do
-                stub_feature_flags(self_hosted_models_beta_ended: false)
-              end
-
-              it 'is authorized' do
-                post_api
-
-                expect(response).to have_gitlab_http_status(:ok)
-              end
-            end
-          end
-
           context 'when the feature is set to `disabled` state' do
             let_it_be(:feature_setting) do
               create(:ai_feature_setting, feature: :code_completions, provider: :disabled)

@@ -226,11 +226,7 @@ module EE
     end
 
     def self_hosted_models_available_for?(user)
-      service = CloudConnector::AvailableServices.find_by_name(:self_hosted_models)
-      return false unless service
-      return service.allowed_for?(user) if ::Feature.enabled?(:self_hosted_models_beta_ended, user)
-
-      service.free_access? || service.allowed_for?(user)
+      CloudConnector::AvailableServices.find_by_name(:self_hosted_models).allowed_for?(user)
     end
   end
 end

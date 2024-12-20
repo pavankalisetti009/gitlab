@@ -98,10 +98,6 @@ module Ai
         purchases = service.add_on_purchases.assigned_to_user(self)
         return Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids) if purchases.any?
 
-        # If the user doesn't have add-on purchases and the service isn't free, they don't have access
-        return Response.new(allowed?: false, namespace_ids: []) if !service.free_access? ||
-          (service.name == :self_hosted_models && Feature.enabled?(:self_hosted_models_beta_ended, self))
-
         if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
           seats = namespaces_allowed_in_com(feature_data[:maturity])
           Response.new(allowed?: seats.any?, namespace_ids: seats)
