@@ -254,9 +254,9 @@ export default {
             )
           }}
         </p>
-        <div class="flex-column flex-md-row gl-flex">
+        <div class="gl-flex gl-flex-col md:gl-flex-row">
           <project-selector
-            class="mr-md-2 gl-grow"
+            class="gl-grow md:gl-mr-3"
             :project-search-results="projectSearchResults"
             :selected-projects="selectedProjects"
             :show-no-results-message="messages.noResults"
@@ -267,7 +267,7 @@ export default {
             @projectClicked="toggleSelectedProject"
             @bottomReached="fetchSearchResults"
           />
-          <div class="mb-3">
+          <div class="gl-mb-5">
             <gl-button
               :disabled="!canAddProjects"
               variant="confirm"
@@ -280,7 +280,7 @@ export default {
         </div>
       </div>
     </div>
-    <div class="row justify-content-center mt-md-3">
+    <div class="row gl-justify-center md:gl-mt-6">
       <project-list class="col col-lg-7" @projectRemoved="removeProject" />
     </div>
   </section>
