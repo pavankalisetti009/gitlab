@@ -347,9 +347,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
             expect(response.body).to include(_('your trial could not be created'))
             expect(response.body).to include(s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial'))
             text = s_(
-              'Trial|Your combined Ultimate and GitLab Duo Enterprise trial ' \
-                'lasts for 60 days. We just need some additional information ' \
-                'to activate it.'
+              'Trial|Please provide the following information to start your trial.'
             )
             expect(response.body).to include(text)
           end
