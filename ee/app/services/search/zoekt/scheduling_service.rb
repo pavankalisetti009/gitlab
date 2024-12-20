@@ -65,7 +65,7 @@ module Search
 
       private
 
-      def execute_every(period, cache_key:)
+      def execute_every(period)
         # We don't want any delay interval in development environments,
         # so lets disable the cache unless we are in production.
         return yield if Rails.env.development?
@@ -91,7 +91,7 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_reallocation_task, Feature.current_request)
 
-        execute_every 5.minutes, cache_key: :eviction do
+        execute_every 5.minutes do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
           over_watermark_nodes = nodes.select(&:watermark_exceeded_high?)
 
@@ -159,7 +159,7 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_dot_com_rollout, Feature.current_request)
 
-        execute_every 2.hours, cache_key: :dot_com_rollout do
+        execute_every 2.hours do
           indexed_namespaces_ids = Search::Zoekt::EnabledNamespace.find_each.map(&:root_namespace_id).to_set
 
           sizes = {}
@@ -201,7 +201,7 @@ module Search
       def remove_expired_subscriptions
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
 
-        execute_every 10.minutes, cache_key: :remove_expired_subscriptions do
+        execute_every 10.minutes do
           Search::Zoekt::EnabledNamespace.destroy_namespaces_with_expired_subscriptions!
         end
       end
@@ -210,7 +210,7 @@ module Search
       def node_assignment
         return false if Feature.disabled?(:zoekt_node_assignment, Feature.current_request)
 
-        execute_every 1.hour, cache_key: :node_assignment do
+        execute_every 1.hour do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
 
           break false if nodes.empty?
@@ -275,7 +275,7 @@ module Search
       # rubocop: enable Metrics/AbcSize
 
       def node_with_negative_unclaimed_storage_bytes_check
-        execute_every 1.hour, cache_key: :node_with_negative_unclaimed_storage_bytes_check do
+        execute_every 1.hour do
           Search::Zoekt::Node.negative_unclaimed_storage_bytes.each_batch do |batch|
             Gitlab::EventStore.publish(
               Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent.new(data: { node_ids: batch.pluck_primary_key })
@@ -286,7 +286,7 @@ module Search
 
       # indices that don't have zoekt_repositories are already in `ready` state
       def mark_indices_as_ready
-        execute_every 10.minutes, cache_key: :mark_indices_as_ready do
+        execute_every 10.minutes do
           initializing_indices = Search::Zoekt::Index.initializing
           if initializing_indices.empty?
             logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready', count: 0))
@@ -306,7 +306,7 @@ module Search
       end
 
       def initial_indexing
-        execute_every 10.minutes, cache_key: :initial_indexing do
+        execute_every 10.minutes do
           Index.pending.find_each do |index|
             Gitlab::EventStore.publish(InitialIndexingEvent.new(data: { index_id: index.id }))
           end
@@ -318,7 +318,7 @@ module Search
         return if Gitlab::Saas.feature_available?(:exact_code_search)
         return unless Gitlab::CurrentSettings.zoekt_auto_index_root_namespace?
 
-        execute_every 10.minutes, cache_key: :auto_index_self_managed do
+        execute_every 10.minutes do
           Namespace.group_namespaces.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
             data = batch.pluck_primary_key.map { |id| { root_namespace_id: id } }
             Search::Zoekt::EnabledNamespace.insert_all(data)
@@ -329,13 +329,13 @@ module Search
       def update_replica_states
         return false if Feature.disabled?(:zoekt_replica_state_updates, Feature.current_request)
 
-        execute_every 2.minutes, cache_key: :update_replica_states do
+        execute_every 2.minutes do
           ReplicaStateService.execute
         end
       end
 
       def update_index_used_bytes
-        execute_every 5.minutes, cache_key: :update_index_used_bytes do
+        execute_every 5.minutes do
           Search::Zoekt::Index.update_used_storage_bytes!
         end
       end
@@ -360,7 +360,7 @@ module Search
       end
 
       def index_should_be_marked_as_orphaned_check
-        execute_every 10.minutes, cache_key: :index_should_be_marked_as_orphaned_check do
+        execute_every 10.minutes do
           Search::Zoekt::Index.should_be_marked_as_orphaned.each_batch do |batch|
             Gitlab::EventStore.publish(
               Search::Zoekt::OrphanedIndexEvent.new(
@@ -372,7 +372,7 @@ module Search
       end
 
       def index_to_delete_check
-        execute_every 10.minutes, cache_key: :index_to_delete_check do
+        execute_every 10.minutes do
           Search::Zoekt::Index.should_be_deleted.each_batch do |batch|
             Gitlab::EventStore.publish(
               Search::Zoekt::IndexMarkedAsToDeleteEvent.new(
@@ -384,7 +384,7 @@ module Search
       end
 
       def repo_should_be_marked_as_orphaned_check
-        execute_every 10.minutes, cache_key: :repo_should_be_marked_as_orphaned_check do
+        execute_every 10.minutes do
           Search::Zoekt::Repository.should_be_marked_as_orphaned.each_batch do |batch|
             Gitlab::EventStore.publish(
               Search::Zoekt::OrphanedRepoEvent.new(
@@ -396,7 +396,7 @@ module Search
       end
 
       def repo_to_delete_check
-        execute_every 10.minutes, cache_key: :repo_to_delete_check do
+        execute_every 10.minutes do
           Search::Zoekt::Repository.should_be_deleted.each_batch do |batch|
             Gitlab::EventStore.publish(
               Search::Zoekt::RepoMarkedAsToDeleteEvent.new(
@@ -408,7 +408,7 @@ module Search
       end
 
       def repo_to_index_check
-        execute_every 10.minutes, cache_key: :repo_to_index_check do
+        execute_every 10.minutes do
           Search::Zoekt::Repository.pending_or_initializing.each_batch do |batch|
             Gitlab::EventStore.publish(
               Search::Zoekt::RepoToIndexEvent.new(data: { zoekt_repo_ids: batch.pluck_primary_key })
@@ -426,7 +426,7 @@ module Search
       end
 
       def index_mismatched_watermark_check
-        execute_every 10.minutes, cache_key: :index_mismatched_watermark_check do
+        execute_every 10.minutes do
           Search::Zoekt::Index.each_batch do |batch|
             ids = batch.with_mismatched_watermark_levels.or(batch.negative_reserved_storage_bytes).pluck_primary_key
             next if ids.empty?
@@ -447,7 +447,7 @@ module Search
         return false if Rails.env.development?
         return false unless Node.marking_lost_enabled?
 
-        execute_every 10.minutes, cache_key: :lost_nodes_check do
+        execute_every 10.minutes do
           Node.lost.select(:id).find_each do |node|
             Gitlab::EventStore.publish(Search::Zoekt::LostNodeEvent.new(data: { zoekt_node_id: node.id }))
           end
@@ -455,7 +455,7 @@ module Search
       end
 
       def adjust_indices_reserved_storage_bytes
-        execute_every 10.minutes, cache_key: :adjust_indices_reserved_storage_bytes do
+        execute_every 10.minutes do
           Index.should_be_reserved_storage_bytes_adjusted.each_batch do |batch|
             Gitlab::EventStore.publish(
               AdjustIndicesReservedStorageBytesEvent.new(data: { index_ids: batch.pluck_primary_key })
