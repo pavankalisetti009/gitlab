@@ -2855,6 +2855,9 @@ msgstr ""
 msgid "AccessTokens|Add a %{type}"
 msgstr ""
 
+msgid "AccessTokens|An error occurred while fetching the tokens."
+msgstr ""
+
 msgid "AccessTokens|Are you sure you want to revoke the %{accessTokenType} \"%{tokenName}\"? This action cannot be undone. Any tools that rely on this access token will stop working."
 msgstr ""
 
@@ -57579,9 +57582,6 @@ msgid "This repository was last checked %{last_check_timestamp}. The check passe
 msgstr ""
 
 msgid "This resource has no comments to summarize"
-msgstr ""
-
-msgid "This resource has no inactive %{accessTokenTypePlural}."
 msgstr ""
 
 msgid "This setting can be overridden in each project."
