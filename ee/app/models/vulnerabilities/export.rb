@@ -124,7 +124,7 @@ module Vulnerabilities
     end
 
     def set_organization(namespace)
-      namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
+      namespace.organization_id
     end
 
     def only_one_exportable
