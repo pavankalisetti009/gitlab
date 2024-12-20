@@ -8,6 +8,15 @@ module SecretsManagement
     KV_VALUE_FIELD = 'value'
 
     ApiError = Class.new(StandardError)
+    Configuration = Struct.new(:host, :base_path)
+
+    def self.configuration
+      @configuration ||= Configuration.new
+    end
+
+    def self.configure
+      yield(configuration)
+    end
 
     def self.expected_server_version
       path = Rails.root.join(SERVER_VERSION_FILE)
@@ -27,6 +36,32 @@ module SecretsManagement
       handle_request do
         system_api.mounts_disable_secrets_engine(mount_path)
       end
+    end
+
+    def list_secrets(mount_path, secret_path)
+      result = connection.get("#{mount_path}/metadata/#{secret_path}", list: true)
+      return [] if result.status == 404
+
+      # This N+1 query is temporary until https://github.com/openbao/openbao/pull/766 is merged.
+      result.body["data"]["keys"].filter_map do |key|
+        metadata = read_secret_metadata(mount_path, "#{secret_path}/#{key}")
+        next unless metadata
+
+        secret_data = { "key" => key, "metadata" => metadata }
+
+        if block_given?
+          yield(secret_data)
+        else
+          secret_data
+        end
+      end
+    end
+
+    def read_secret_metadata(mount_path, secret_path)
+      result = connection.get("#{mount_path}/metadata/#{secret_path}")
+      return if result.status == 404
+
+      result.body["data"]
     end
 
     def create_kv_secret(mount_path, secret_path, value, custom_metadata = {})
@@ -126,6 +161,17 @@ module SecretsManagement
         body = system_api.policies_read_acl_policy(name, debug_return_type: "String")
         Gitlab::Json.parse(body)["data"]
       end
+    end
+
+    def connection
+      Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
+        f.response :json
+      end
+    end
+    strong_memoize_attr(:connection)
+
+    def configuration
+      self.class.configuration
     end
   end
 end

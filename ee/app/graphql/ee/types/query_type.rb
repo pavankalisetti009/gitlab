@@ -223,6 +223,12 @@ module EE
           description: 'Find a project secrets manager.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretsManagerResolver
 
+        field :project_secrets, ::Types::SecretsManagement::ProjectSecretType.connection_type,
+          null: true,
+          experiment: { milestone: '17.8' },
+          description: 'List project secrets.',
+          resolver: ::Resolvers::SecretsManagement::ProjectSecretsResolver
+
         field :ai_feature_settings,
           ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
           null: true,

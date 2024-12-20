@@ -49,6 +49,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_self_hosted_models,
       :cloud_connector_status,
       :project_secrets_manager,
+      :project_secrets,
       :ai_feature_settings,
       :ai_slash_commands,
       :compliance_requirement_controls

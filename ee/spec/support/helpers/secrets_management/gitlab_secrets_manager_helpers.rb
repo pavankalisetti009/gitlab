@@ -41,5 +41,16 @@ module SecretsManagement
     def secrets_manager_client
       TestClient.new
     end
+
+    def create_project_secret(project:, name:, branch:, environment:, value:, description: nil)
+      project_secret = ProjectSecret.new(name: name, description: description, project: project,
+        branch: branch, environment: environment)
+
+      unless project_secret.save(value)
+        raise "project secret creation failed with errors: #{project_secret.errors.full_messages.to_sentence}"
+      end
+
+      project_secret
+    end
   end
 end

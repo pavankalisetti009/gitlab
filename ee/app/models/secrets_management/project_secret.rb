@@ -19,6 +19,22 @@ module SecretsManagement
     validates :environment, presence: true
     validate :ensure_active_secrets_manager
 
+    def self.for_project(project)
+      secrets_manager = project.secrets_manager
+      client = SecretsManagerClient.new
+      client.list_secrets(secrets_manager.ci_secrets_mount_path, secrets_manager.ci_data_path) do |data|
+        custom_metadata = data.dig("metadata", "custom_metadata")
+
+        new(
+          name: data["key"],
+          project: project,
+          description: custom_metadata["description"],
+          environment: custom_metadata["environment"],
+          branch: custom_metadata["branch"]
+        )
+      end
+    end
+
     def save(value)
       return false unless valid?
 
@@ -53,6 +69,10 @@ module SecretsManagement
 
       errors.add(:base, 'Project secret already exists.')
       false
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && attributes == other.attributes
     end
 
     private
