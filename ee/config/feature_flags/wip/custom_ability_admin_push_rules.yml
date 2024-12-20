@@ -1,9 +1,0 @@
----
-name: custom_ability_admin_push_rules
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/421786
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147872
-rollout_issue_url:
-milestone: '16.11'
-group: group::authorization
-type: wip
-default_enabled: false

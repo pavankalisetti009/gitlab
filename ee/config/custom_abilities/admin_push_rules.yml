@@ -9,5 +9,4 @@ milestone: '16.11'
 group_ability: true
 project_ability: true
 requirements: []
-feature_flag: custom_ability_admin_push_rules
 available_from_access_level:
