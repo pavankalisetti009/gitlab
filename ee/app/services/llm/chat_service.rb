@@ -13,14 +13,6 @@ module Llm
     end
 
     def perform
-      if Feature.enabled?(:require_resource_id, user) && invalid_slash_command_request?
-        log_info(message: 'aborting: missing resource',
-          event_name: 'missing_resource',
-          ai_component: 'duo_chat')
-
-        return error(MISSING_RESOURCE_ID_MESSAGE)
-      end
-
       track_internal_event(
         'request_duo_chat_response',
         user: user,
@@ -45,10 +37,6 @@ module Llm
 
     def ai_integration_enabled?
       ::Feature.enabled?(:ai_duo_chat_switch, type: :ops)
-    end
-
-    def invalid_slash_command_request?
-      true if prompt_message.slash_command_prompt? && !prompt_message.resource.present?
     end
 
     def user_can_send_to_ai?

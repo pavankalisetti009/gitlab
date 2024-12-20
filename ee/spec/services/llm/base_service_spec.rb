@@ -125,10 +125,6 @@ RSpec.describe Llm::BaseService, feature_category: :ai_abstraction_layer do
       end
 
       context 'when ai features are enabled' do
-        before do
-          stub_feature_flags(require_resource_id: false)
-        end
-
         include_context 'with ai features enabled for group'
 
         it_behaves_like 'raises a NotImplementedError'
