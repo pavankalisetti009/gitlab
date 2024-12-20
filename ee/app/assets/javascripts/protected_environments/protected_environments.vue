@@ -100,6 +100,11 @@ export default {
     },
     unprotect() {
       this.$emit('unprotect', this.environmentToUnprotect);
+      this.$toast.show(
+        sprintf(s__('ProtectedEnvironment|Environment %{environmentName} is unprotected.'), {
+          environmentName: this.environmentToUnprotect.name,
+        }),
+      );
     },
     clearEnvironment() {
       this.environmentToUnprotect = null;
@@ -112,9 +117,14 @@ export default {
       this.isAddFormVisible = false;
       this.$refs.crud.hideForm();
     },
-    completeAddForm() {
+    completeAddForm(environmentToProtect) {
       this.hideAddForm();
       this.fetchProtectedEnvironments();
+      this.$toast.show(
+        sprintf(s__('ProtectedEnvironment|Environment %{environmentName} is protected.'), {
+          environmentName: environmentToProtect.name,
+        }),
+      );
     },
   },
   modalOptions: {
