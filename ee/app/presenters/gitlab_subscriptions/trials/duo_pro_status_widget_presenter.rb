@@ -23,7 +23,8 @@ module GitlabSubscriptions
             percentage_complete: trial_status.percentage_complete,
             group_id: namespace.id,
             trial_discover_page_path: group_add_ons_discover_duo_pro_path(namespace),
-            purchase_now_url: subscription_portal_url,
+            purchase_now_url: ::Gitlab::Routing.url_helpers
+              .subscription_portal_add_saas_duo_pro_seats_url(namespace.id),
             feature_id: EXPIRED_TRIAL_WIDGET,
             dismiss_endpoint: group_callouts_path
           }

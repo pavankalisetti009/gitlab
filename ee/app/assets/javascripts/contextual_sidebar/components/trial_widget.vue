@@ -1,6 +1,7 @@
 <script>
 import { GlProgressBar, GlButton, GlLink } from '@gitlab/ui';
 import { snakeCase } from 'lodash';
+import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -10,10 +11,16 @@ import { TRIAL_WIDGET } from './constants';
 export default {
   name: 'TrialWidget',
   trialWidget: TRIAL_WIDGET,
+  handRaiseLeadAttributes: {
+    variant: 'link',
+    category: 'tertiary',
+    size: 'small',
+  },
   components: {
     GlProgressBar,
     GlButton,
     GlLink,
+    HandRaiseLeadButton,
   },
   mixins: [InternalEvents.mixin()],
   inject: {
@@ -58,6 +65,17 @@ export default {
       return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
         ? this.$options.trialWidget.clickUpgradeLinkEventAction
         : this.$options.trialWidget.clickLearnMoreLinkEventAction;
+    },
+    ctaUseHandRaiseLead() {
+      const { trialUpgradeThresholdDays } = this.$options.trialWidget;
+      return this.daysRemaining < trialUpgradeThresholdDays && this.trialType !== 'duo_pro';
+    },
+    ctaHandRaiseLeadTracking() {
+      return {
+        category: 'trial_widget',
+        action: 'click_button',
+        label: `${this.trialType}_contact_sales`,
+      };
     },
     isTrialActive() {
       return this.daysRemaining > 0;
@@ -126,6 +144,7 @@ export default {
               {{ widgetRemainingDays }}
             </span>
             <gl-link
+              v-if="!ctaUseHandRaiseLead"
               :href="ctaLink"
               class="gl-text-sm gl-font-bold gl-no-underline hover:gl-no-underline"
               size="small"
@@ -135,6 +154,16 @@ export default {
             >
               {{ ctaText }}
             </gl-link>
+            <hand-raise-lead-button
+              v-if="ctaUseHandRaiseLead"
+              :button-attributes="$options.handRaiseLeadAttributes"
+              :button-text="ctaText"
+              :cta-tracking="ctaHandRaiseLeadTracking"
+              glm-content="trial-widget-upgrade-button"
+              data-testid="cta-hand-raise-lead-btn"
+              class="gl-font-bold"
+              @click.stop="onCtaClick"
+            />
           </div>
         </div>
       </div>
