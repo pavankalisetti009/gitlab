@@ -62,6 +62,16 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
         end
       end
 
+      context 'with composite_identity_enforced as allowed params' do
+        let(:params) { super().merge(composite_identity_enforced: true) }
+
+        it 'sets composite_identity_enforced to true' do
+          user = service.execute
+
+          expect(user.composite_identity_enforced).to eq(true)
+        end
+      end
+
       context 'with provisioned by group param' do
         let(:group) { create(:group) }
         let(:params) { super().merge(provisioned_by_group_id: group.id) }

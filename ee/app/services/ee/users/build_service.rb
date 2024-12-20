@@ -61,7 +61,7 @@ module EE
 
       override :admin_create_params
       def admin_create_params
-        super + [:auditor, :provisioned_by_group_id]
+        super + [:auditor, :provisioned_by_group_id, :composite_identity_enforced]
       end
 
       override :identity_attributes
