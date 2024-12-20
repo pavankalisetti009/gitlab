@@ -32,22 +32,22 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
   describe '.execute' do
     let(:mock_service_object) { instance_double(described_class, execute: true) }
 
-    subject(:execute) { described_class.execute(artifacts, pipeline) }
+    subject(:execute) { described_class.execute(artifacts, pipeline, report_type) }
 
     before do
-      allow(described_class).to receive(:new).with(artifacts, pipeline).and_return(mock_service_object)
+      allow(described_class).to receive(:new).with(artifacts, pipeline, report_type).and_return(mock_service_object)
     end
 
     it 'delegates the call to an instance of `Security::StoreGroupedScansService`' do
       execute
 
-      expect(described_class).to have_received(:new).with(artifacts, pipeline)
+      expect(described_class).to have_received(:new).with(artifacts, pipeline, report_type)
       expect(mock_service_object).to have_received(:execute)
     end
   end
 
   describe '#execute' do
-    let(:service_object) { described_class.new(artifacts, pipeline) }
+    let(:service_object) { described_class.new(artifacts, pipeline, report_type) }
     let(:empty_set) { Set.new }
 
     subject(:store_scan_group) { service_object.execute }

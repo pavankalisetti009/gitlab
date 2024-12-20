@@ -8,14 +8,15 @@ module Security
     LEASE_TRY_AFTER = 3.seconds
     LEASE_NAMESPACE = "store_grouped_scans"
 
-    def self.execute(artifacts, pipeline)
-      new(artifacts, pipeline).execute
+    def self.execute(artifacts, pipeline, file_type)
+      new(artifacts, pipeline, file_type).execute
     end
 
-    def initialize(artifacts, pipeline)
+    def initialize(artifacts, pipeline, file_type)
       @artifacts = artifacts
       @pipeline = pipeline
       @known_keys = Set.new
+      @file_type = file_type&.to_s
     end
 
     def execute
@@ -29,20 +30,16 @@ module Security
     ensure
       ::Ci::CompareSecurityReportsService.set_security_report_type_to_ready(
         pipeline_id: pipeline.id,
-        report_type: report_type
+        report_type: file_type
       )
     end
 
     private
 
-    attr_reader :artifacts, :pipeline, :known_keys
+    attr_reader :artifacts, :pipeline, :known_keys, :file_type
 
     def lease_key
-      "#{LEASE_NAMESPACE}:#{pipeline.id}:#{report_type}"
-    end
-
-    def report_type
-      artifacts.first&.file_type
+      "#{LEASE_NAMESPACE}:#{pipeline.id}:#{file_type}"
     end
 
     def sorted_artifacts

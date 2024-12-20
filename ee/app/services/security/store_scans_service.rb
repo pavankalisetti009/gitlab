@@ -18,8 +18,8 @@ module Security
       # StoreGroupedScansService returns true only when it creates a `security_scans` record.
       # To avoid resource wastage we are skipping the reports ingestion when there are no new scans, but
       # we sync the rules as it might cause inconsistent state if we skip.
-      results = reassigned_grouped_report_artifacts.map do |artifacts|
-        StoreGroupedScansService.execute(artifacts, pipeline)
+      results = reassigned_grouped_report_artifacts.map do |file_type, artifacts|
+        StoreGroupedScansService.execute(artifacts, pipeline, file_type)
       end
 
       sync_findings_to_approval_rules unless pipeline.default_branch?
@@ -52,7 +52,7 @@ module Security
       end
       grouped_report_artifacts.delete('cyclonedx')
 
-      grouped_report_artifacts.select { |file_type, _| parse_report_file?(file_type) }.values
+      grouped_report_artifacts.select { |file_type, _| parse_report_file?(file_type) }
     end
     strong_memoize_attr :reassigned_grouped_report_artifacts
 

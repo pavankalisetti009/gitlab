@@ -50,7 +50,8 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFinding',
     Gitlab::ExclusiveLease.skipping_transaction_check do
       Security::StoreGroupedScansService.new(
         [artifact],
-        pipeline
+        pipeline,
+        'sast'
       ).execute
     end
   end
