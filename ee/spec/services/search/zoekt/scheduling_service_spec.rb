@@ -592,38 +592,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
-  describe '#report_metrics' do
-    let(:logger) { instance_double(::Search::Zoekt::Logger) }
-    let(:task) { :report_metrics }
-
-    before do
-      allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
-      allow(logger).to receive(:info) # avoid a flaky test if there are multiple zoekt nodes
-    end
-
-    it 'logs zoekt metadata and tasks info for nodes' do
-      create(:zoekt_index, zoekt_enabled_namespace: create(:zoekt_enabled_namespace), node: node)
-      create_list(:zoekt_task, 4, :pending, node: node)
-      create(:zoekt_task, :done, node: node)
-      create(:zoekt_task, :orphaned, node: node)
-      create_list(:zoekt_task, 2, :failed, node: node)
-
-      expect(logger).to receive(:info).with(a_hash_including(
-        'class' => described_class.name,
-        'meta' => a_hash_including(node.metadata_json.stringify_keys),
-        'enabled_namespaces_count' => 1,
-        'indices_count' => node.indices.count,
-        'task_count_pending' => 4,
-        'task_count_failed' => 2,
-        'task_count_done' => 1,
-        'task_count_orphaned' => 1,
-        'task' => :report_metrics
-      ))
-
-      execute_task
-    end
-  end
-
   describe '#index_should_be_marked_as_orphaned_check' do
     let(:task) { :index_should_be_marked_as_orphaned_check }
 

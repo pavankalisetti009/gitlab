@@ -23,7 +23,6 @@ module Search
         repo_should_be_marked_as_orphaned_check
         repo_to_delete_check
         repo_to_index_check
-        report_metrics
         update_index_used_bytes
         update_replica_states
       ].freeze
@@ -337,25 +336,6 @@ module Search
       def update_index_used_bytes
         execute_every 5.minutes, cache_key: :update_index_used_bytes do
           Search::Zoekt::Index.update_used_storage_bytes!
-        end
-      end
-
-      def report_metrics
-        ::Search::Zoekt::Node.online.find_each do |node|
-          log_data = build_structured_payload(
-            meta: node.metadata_json,
-            enabled_namespaces_count: node.enabled_namespaces.count,
-            indices_count: node.indices.count,
-            task_count_pending: node.tasks.pending.count,
-            task_count_failed: node.tasks.failed.count,
-            task_count_processing_queue: node.tasks.processing_queue.count,
-            task_count_orphaned: node.tasks.orphaned.count,
-            task_count_done: node.tasks.done.count,
-            message: 'Reporting metrics',
-            task: :report_metrics
-          )
-
-          logger.info(log_data)
         end
       end
 
