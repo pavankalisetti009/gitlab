@@ -8,6 +8,7 @@ module Search
       include CronjobQueue
       prepend ::Geo::SkipSecondary
 
+      deduplicate :until_executed
       data_consistency :always
       idempotent!
       urgency :low
