@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 module AutoMerge
-  class AddToMergeTrainWhenPipelineSucceedsService < AutoMerge::BaseService
+  class AddToMergeTrainWhenPipelineSucceedsService < MergeTrains::BaseService
     def execute(merge_request)
       super do
-        SystemNoteService.add_to_merge_train_when_pipeline_succeeds(merge_request, project, current_user, merge_request.diff_head_pipeline.sha)
+        SystemNoteService.add_to_merge_train_when_pipeline_succeeds(merge_request, project, current_user,
+          merge_request.diff_head_pipeline.sha)
       end
     end
 
@@ -13,7 +14,14 @@ module AutoMerge
 
       merge_train_service = AutoMerge::MergeTrainService.new(project, merge_request.merge_user)
 
-      return abort(merge_request, 'this merge request cannot be added to the merge train') unless merge_train_service.available_for?(merge_request)
+      unless merge_train_service.available_for?(merge_request)
+        if Feature.enabled?(:auto_merge_train_elaborate_abort_msg, project)
+          return abort(merge_request,
+            process_abort_message(merge_train_service.availability_details(merge_request)))
+        end
+
+        return abort(merge_request, 'this merge request cannot be added to the merge train')
+      end
 
       merge_train_service.execute(merge_request)
     end
@@ -34,7 +42,8 @@ module AutoMerge
       # Before the pipeline succeeds and was added to the merge train
       else
         super do
-          SystemNoteService.abort_add_to_merge_train_when_pipeline_succeeds(merge_request, project, current_user, reason)
+          SystemNoteService.abort_add_to_merge_train_when_pipeline_succeeds(merge_request, project, current_user,
+            reason)
         end
       end
     end

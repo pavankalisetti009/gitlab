@@ -16,19 +16,21 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       source_project: project, target_project: project)
   end
 
-  before do
+  before_all do
     project.add_maintainer(user)
+  end
 
-    allow(AutoMergeProcessWorker).to receive(:perform_async) {}
+  before do
+    allow(AutoMergeProcessWorker).to receive(:perform_async).and_return(nil)
 
     stub_licensed_features(merge_trains: true, merge_pipelines: true)
   end
 
   describe '#execute' do
-    subject { service.execute(merge_request) }
+    subject(:service_execute) { service.execute(merge_request) }
 
     it 'enables auto merge on the merge request' do
-      subject
+      service_execute
 
       merge_request.reload
       expect(merge_request.auto_merge_enabled).to be_truthy
@@ -37,7 +39,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     end
 
     it 'creates merge train' do
-      subject
+      service_execute
 
       merge_request.reload
       expect(merge_request.merge_train_car).to be_present
@@ -48,7 +50,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       expect(SystemNoteService)
         .to receive(:merge_train).with(merge_request, project, user, MergeTrains::Car)
 
-      subject
+      service_execute
     end
 
     it 'returns result code' do
@@ -85,7 +87,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       end
 
       it 'rollback the transaction' do
-        expect { subject }.not_to change { Note.count }
+        expect { service_execute }.not_to change { Note.count }
 
         merge_request.reload
         expect(merge_request).not_to be_auto_merge_enabled
@@ -98,13 +100,13 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
           merge_request_id: merge_request.id
         )
 
-        subject
+        service_execute
       end
     end
   end
 
   describe '#process' do
-    subject { service.process(merge_request) }
+    subject(:service_process) { service.process(merge_request) }
 
     let(:merge_request) do
       create(:merge_request, :on_train,
@@ -118,7 +120,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         .with(merge_request.target_project_id, merge_request.target_branch)
         .once
 
-      subject
+      service_process
     end
 
     context 'when merge request is not on a merge train' do
@@ -127,13 +129,13 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       it 'does not call RefreshWorker' do
         expect(MergeTrains::RefreshWorker).not_to receive(:perform_async)
 
-        subject
+        service_process
       end
     end
   end
 
   describe '#cancel' do
-    subject { service.cancel(merge_request, **params) }
+    subject(:service_cancel) { service.cancel(merge_request, **params) }
 
     let(:params) { {} }
 
@@ -151,7 +153,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     end
 
     it 'cancels auto merge on the merge request' do
-      subject
+      service_cancel
 
       merge_request.reload
       expect(merge_request).not_to be_auto_merge_enabled
@@ -168,11 +170,11 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       expect(SystemNoteService)
         .to receive(:cancel_merge_train).with(merge_request, project, user)
 
-      subject
+      service_cancel
     end
 
     it 'does not generate any todos' do
-      expect { subject }.not_to change { user.reload.todos.count }
+      expect { service_cancel }.not_to change { user.reload.todos.count }
     end
 
     context 'when pipeline exists' do
@@ -184,14 +186,14 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       let(:job) { create(:ci_build, :running, pipeline: pipeline) }
 
       it 'sets the job to a canceled status' do
-        expect { subject }.to change { job.reload.status }.from('running').to('canceled')
+        expect { service_cancel }.to change { job.reload.status }.from('running').to('canceled')
       end
 
       context 'when canceling is supported' do
         include_context 'when canceling support'
 
         it 'sets the job to a canceling status' do
-          expect { subject }.to change { job.reload.status }.from('running').to('canceling')
+          expect { service_cancel }.to change { job.reload.status }.from('running').to('canceling')
         end
       end
     end
@@ -202,7 +204,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       end
 
       it 'deletes train ref' do
-        expect { subject }
+        expect { service_cancel }
           .to change { merge_request.project.repository.ref_exists?(merge_request.train_ref_path) }
           .from(true).to(false)
       end
@@ -210,7 +212,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
 
     context 'when train ref does not exist' do
       it 'does not raise an error' do
-        expect { subject }.not_to raise_error
+        expect { service_cancel }.not_to raise_error
       end
     end
 
@@ -225,9 +227,10 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       let(:status) { MergeTrains::Car.state_machines[:status].states[:fresh].value }
 
       it 'processes the train by default' do
-        expect(MergeTrains::RefreshWorker).to receive(:perform_async).with(merge_request_2.target_project_id, merge_request_2.target_branch)
+        expect(MergeTrains::RefreshWorker).to receive(:perform_async).with(merge_request_2.target_project_id,
+          merge_request_2.target_branch)
 
-        subject
+        service_cancel
 
         expect(merge_request_2.reset.merge_train_car).to be_stale
       end
@@ -238,7 +241,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         it 'does not do anything' do
           expect(MergeTrains::RefreshWorker).not_to receive(:perform_async)
 
-          expect { subject }.not_to raise_error
+          expect { service_cancel }.not_to raise_error
 
           expect(merge_request_2.reset.merge_train_car).to be_stale
         end
@@ -251,12 +254,12 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       end
 
       it 'returns error' do
-        expect(subject[:status]).to eq(:error)
-        expect(subject[:message]).to eq("Can't cancel the automatic merge")
+        expect(service_cancel[:status]).to eq(:error)
+        expect(service_cancel[:message]).to eq("Can't cancel the automatic merge")
       end
 
       it 'rollback the transaction' do
-        expect { subject }.not_to change { Note.count }
+        expect { service_cancel }.not_to change { Note.count }
 
         merge_request.reload
         expect(merge_request).to be_auto_merge_enabled
@@ -269,13 +272,13 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
           merge_request_id: merge_request.id
         )
 
-        subject
+        service_cancel
       end
     end
   end
 
   describe '#abort' do
-    subject { service.abort(merge_request, 'an error', **args) }
+    subject(:service_abort) { service.abort(merge_request, 'an error', **args) }
 
     let!(:merge_request) do
       create(:merge_request, :on_train,
@@ -293,7 +296,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     let(:args) { {} }
 
     it 'aborts auto merge on the merge request' do
-      subject
+      service_abort
 
       merge_request.reload
       expect(merge_request).not_to be_auto_merge_enabled
@@ -310,19 +313,19 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       expect(SystemNoteService)
         .to receive(:abort_merge_train).with(merge_request, project, user, 'an error')
 
-      subject
+      service_abort
     end
 
     it 'updates the merge request train position indicator' do
       expect(GraphqlTriggers)
         .to receive(:merge_request_merge_status_updated).with(merge_request)
 
-      subject
+      service_abort
     end
 
     it 'generates new todos', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/324122' do
       todos = merge_request.author.reload.todos
-      expect { subject }.to change { todos.count }
+      expect { service_abort }.to change { todos.count }
 
       expect(todos.last.merge_train_removed?).to be_truthy
       expect(todos.last.state).to eq("pending")
@@ -337,9 +340,10 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       end
 
       it 'processes the train' do
-        expect(MergeTrains::RefreshWorker).to receive(:perform_async).with(merge_request_2.target_project_id, merge_request_2.target_branch)
+        expect(MergeTrains::RefreshWorker).to receive(:perform_async).with(merge_request_2.target_project_id,
+          merge_request_2.target_branch)
 
-        subject
+        service_abort
 
         expect(merge_request_2.reset.merge_train_car).to be_stale
       end
@@ -350,7 +354,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         it 'does not process the next merge request on the train' do
           expect(MergeTrains::RefreshWorker).not_to receive(:perform_async)
 
-          subject
+          service_abort
         end
       end
     end
@@ -361,12 +365,12 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       end
 
       it 'returns error' do
-        expect(subject[:status]).to eq(:error)
-        expect(subject[:message]).to eq("Can't abort the automatic merge")
+        expect(service_abort[:status]).to eq(:error)
+        expect(service_abort[:message]).to eq("Can't abort the automatic merge")
       end
 
       it 'rollback the transaction' do
-        expect { subject }.not_to change { Note.count }
+        expect { service_abort }.not_to change { Note.count }
 
         merge_request.reload
         expect(merge_request).to be_auto_merge_enabled
@@ -379,7 +383,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
           merge_request_id: merge_request.id
         )
 
-        subject
+        service_abort
       end
     end
   end
@@ -387,19 +391,17 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
   describe '#available_for?' do
     subject { service.available_for?(merge_request) }
 
-    let(:pipeline) { double }
+    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false) }
 
     before do
-      allow(merge_request).to receive(:mergeable_state?) { true }
-      allow(merge_request).to receive(:for_fork?) { false }
+      allow(merge_request).to receive_messages(mergeable_state?: true, for_fork?: false)
       allow(merge_request).to receive(:diff_head_pipeline) { pipeline }
-      allow(pipeline).to receive(:complete?) { true }
     end
 
     it { is_expected.to be_truthy }
 
     it 'memoizes the result' do
-      expect(merge_request).to receive(:can_be_merged_by?).once.and_call_original
+      expect(service).to receive(:available_for?).once.and_call_original
 
       2.times { is_expected.to be_truthy }
     end
@@ -409,7 +411,7 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         allow(project).to receive(:merge_trains_enabled?).and_return false
       end
 
-      it { is_expected.to be_falsy }
+      it { is_expected.to be false }
     end
 
     context 'when there is an open MR dependency' do
@@ -418,73 +420,312 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         create(:merge_request_block, blocked_merge_request: merge_request)
       end
 
-      it { is_expected.to be_falsy }
+      it { is_expected.to be false }
     end
 
     context 'when merge request is not mergeable' do
-      before do
-        allow(merge_request).to receive(:mergeability_checks_pass?).and_return false
+      let(:failed_result) do
+        Gitlab::MergeRequests::Mergeability::CheckResult.failed(payload: { identifier: 'failed_check' })
       end
 
-      it { is_expected.to be_falsy }
+      before do
+        allow_next_instance_of(MergeRequests::Mergeability::CheckOpenStatusService) do |service|
+          allow(service).to receive_messages(skip?: false, execute: failed_result)
+        end
+      end
+
+      it { is_expected.to be false }
     end
 
     context 'when the user does not have permission to merge' do
       before do
-        allow(merge_request).to receive(:can_be_merged_by?) { false }
+        allow(merge_request).to receive(:can_be_merged_by?).and_return(false)
       end
 
-      it { is_expected.to be_falsy }
+      it { is_expected.to be false }
     end
 
     context 'when the head pipeline of the merge request has not finished and is not blocked' do
       before do
-        allow(pipeline).to receive(:complete?) { false }
-        allow(pipeline).to receive(:blocked?) { false }
-        allow(pipeline).to receive(:canceling?) { false }
+        allow(pipeline).to receive_messages(complete?: false, active?: true, blocked?: false, canceling?: false)
       end
 
-      it { is_expected.to be_falsy }
+      it { is_expected.to be false }
     end
 
     context 'when the head pipeline of the pipeline is blocked' do
       before do
-        allow(pipeline).to receive(:complete?) { false }
-        allow(pipeline).to receive(:blocked?) { true }
-        allow(pipeline).to receive(:canceling?) { false }
+        allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: true,
+          canceling?: false)
       end
 
-      it { is_expected.to be_truthy }
+      it { is_expected.to be true }
 
       context 'when "Pipelines must succeed" is enabled' do
         before do
-          allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?) { true }
+          allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?).and_return(true)
         end
 
-        it { is_expected.to be_falsy }
+        it { is_expected.to be false }
       end
     end
 
     context 'when the head pipeline of the pipeline is canceling' do
       before do
-        allow(pipeline).to receive(:complete?) { false }
-        allow(pipeline).to receive(:blocked?) { false }
-        allow(pipeline).to receive(:canceling?) { true }
+        allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: false,
+          canceling?: true)
       end
 
-      it { is_expected.to be_truthy }
+      it { is_expected.to be true }
 
       context 'when "Pipelines must succeed" is enabled' do
         before do
-          allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?) { true }
+          allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?).and_return(true)
         end
 
-        it { is_expected.to be_falsy }
+        it { is_expected.to be false }
+      end
+
+      context "when auto_merge_train_elaborate_abort_msg is false" do
+        before do
+          stub_feature_flags(auto_merge_train_elaborate_abort_msg: false)
+        end
+
+        it 'memoizes the result' do
+          expect(merge_request).to receive(:can_be_merged_by?).once.and_call_original
+
+          2.times { is_expected.to be_truthy }
+        end
+
+        context 'when merge trains are disabled' do
+          before do
+            allow(project).to receive(:merge_trains_enabled?).and_return false
+          end
+
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when there is an open MR dependency' do
+          before do
+            stub_licensed_features(blocking_merge_requests: true)
+            create(:merge_request_block, blocked_merge_request: merge_request)
+          end
+
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when merge request is not mergeable' do
+          before do
+            allow(merge_request).to receive(:mergeability_checks_pass?).and_return false
+          end
+
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when the user does not have permission to merge' do
+          before do
+            allow(merge_request).to receive(:can_be_merged_by?).and_return(false)
+          end
+
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when the head pipeline of the merge request has not finished and is not blocked' do
+          before do
+            allow(pipeline).to receive_messages(complete?: false, blocked?: false, canceling?: false)
+          end
+
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when the head pipeline of the pipeline is blocked' do
+          before do
+            allow(pipeline).to receive_messages(complete?: false, blocked?: true, canceling?: false)
+          end
+
+          it { is_expected.to be_truthy }
+
+          context 'when "Pipelines must succeed" is enabled' do
+            before do
+              allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?).and_return(true)
+            end
+
+            it { is_expected.to be_falsy }
+          end
+        end
+
+        context 'when the head pipeline of the pipeline is canceling' do
+          before do
+            allow(pipeline).to receive_messages(complete?: false, blocked?: false, canceling?: true)
+          end
+
+          it { is_expected.to be_truthy }
+
+          context 'when "Pipelines must succeed" is enabled' do
+            before do
+              allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?).and_return(true)
+            end
+
+            it { is_expected.to be_falsy }
+          end
+        end
       end
     end
   end
 
-  def create_pipeline_for(merge_request)
-    MergeRequests::CreatePipelineService.new(project: project, current_user: user).execute(merge_request)
+  describe '#availability_details' do
+    subject(:availability_check) { service.availability_details(merge_request) }
+
+    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false) }
+
+    before do
+      allow(merge_request).to receive_messages(mergeable_state?: true, for_fork?: false)
+      allow(merge_request).to receive(:diff_head_pipeline) { pipeline }
+    end
+
+    it 'is available and has no unavailable reason' do
+      aggregate_failures do
+        expect(availability_check.available?).to be true
+        expect(availability_check.unavailable_reason).to be_nil
+      end
+    end
+
+    it 'memoizes the result' do
+      expect(service).to receive(:availability_details).once.and_call_original
+
+      2.times { is_expected.to be_truthy }
+    end
+
+    context 'when merge trains are disabled' do
+      before do
+        allow(project).to receive(:merge_trains_enabled?).and_return false
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :merge_trains_disabled
+        end
+      end
+    end
+
+    context 'when there is an open MR dependency' do
+      before do
+        stub_licensed_features(blocking_merge_requests: true)
+        create(:merge_request_block, blocked_merge_request: merge_request)
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
+        end
+      end
+    end
+
+    context 'when mergeability checks fail' do
+      let(:identifier) { 'failed_check' }
+      let(:failed_result) do
+        Gitlab::MergeRequests::Mergeability::CheckResult.failed(payload: { identifier: identifier })
+      end
+
+      before do
+        allow_next_instance_of(MergeRequests::Mergeability::CheckOpenStatusService) do |service|
+          allow(service).to receive_messages(skip?: false, execute: failed_result)
+        end
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
+          expect(availability_check.unsuccessful_check).to eq identifier.to_sym
+        end
+      end
+    end
+
+    context 'when the user does not have permission to merge' do
+      before do
+        allow(merge_request).to receive(:can_be_merged_by?).and_return(false)
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :forbidden
+        end
+      end
+    end
+
+    context 'when the head pipeline of the merge request has not finished and is not blocked' do
+      before do
+        allow(pipeline).to receive_messages(complete?: false, active?: true, blocked?: false, canceling?: false)
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+        end
+      end
+    end
+
+    context 'when the head pipeline of the pipeline is blocked' do
+      before do
+        allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: true,
+          canceling?: false)
+      end
+
+      it 'is available and has no unavailable reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be true
+          expect(availability_check.unavailable_reason).to be_nil
+        end
+      end
+
+      context 'when "Pipelines must succeed" is enabled' do
+        before do
+          allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?).and_return(true)
+        end
+
+        it 'is unavailable and returns the correct reason' do
+          aggregate_failures do
+            expect(availability_check.available?).to be false
+            expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+          end
+        end
+      end
+    end
+
+    context 'when the head pipeline of the pipeline is canceling' do
+      before do
+        allow(pipeline).to receive_messages(active?: false, created?: false, complete?: false, blocked?: false,
+          canceling?: true)
+      end
+
+      it 'is available and has no unavailable reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be true
+          expect(availability_check.unavailable_reason).to be_nil
+        end
+      end
+
+      context 'when "Pipelines must succeed" is enabled' do
+        before do
+          allow(merge_request).to receive(:only_allow_merge_if_pipeline_succeeds?).and_return(true)
+        end
+
+        it 'is unavailable and returns the correct reason' do
+          aggregate_failures do
+            expect(availability_check.available?).to be false
+            expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+          end
+        end
+      end
+    end
   end
+end
+
+def create_pipeline_for(merge_request)
+  MergeRequests::CreatePipelineService.new(project: project, current_user: user).execute(merge_request)
 end

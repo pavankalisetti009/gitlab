@@ -28,7 +28,7 @@ RSpec.describe AutoMerge::MergeWhenChecksPassService, feature_category: :code_re
         approval_rule.users << approver
       end
 
-      it { is_expected.to eq true }
+      it { is_expected.to be true }
     end
 
     context 'when blocked status' do
@@ -38,7 +38,7 @@ RSpec.describe AutoMerge::MergeWhenChecksPassService, feature_category: :code_re
         allow(mr_merge_if_green_enabled).to receive(:merge_blocked_by_other_mrs?).and_return(true)
       end
 
-      it { is_expected.to eq true }
+      it { is_expected.to be true }
     end
 
     context 'when merge trains are enabled' do
@@ -46,7 +46,7 @@ RSpec.describe AutoMerge::MergeWhenChecksPassService, feature_category: :code_re
         allow(mr_merge_if_green_enabled.project).to receive(:merge_trains_enabled?).and_return(true)
       end
 
-      it { is_expected.to eq false }
+      it { is_expected.to be false }
     end
   end
 end
