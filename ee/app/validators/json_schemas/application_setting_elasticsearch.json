@@ -16,8 +16,10 @@
       "default": false
     },
     "elasticsearch_username": {
-      "type": "string",
-      "default": "http://localhost:9200",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 255
     },
     "elasticsearch_aws_region": {
@@ -25,7 +27,10 @@
       "default": "us-east-1"
     },
     "elasticsearch_aws_access_key": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "elasticsearch_limit_indexing": {
       "type": "boolean",
