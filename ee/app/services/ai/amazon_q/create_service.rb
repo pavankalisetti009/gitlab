@@ -75,8 +75,7 @@ module Ai
       end
 
       def existing_q_service_account
-        user_id = ai_settings.amazon_q_service_account_user_id
-        user_id && User.find_by_id(user_id)
+        Ai::Setting.instance.amazon_q_service_account_user
       end
 
       def find_or_create_oauth_app

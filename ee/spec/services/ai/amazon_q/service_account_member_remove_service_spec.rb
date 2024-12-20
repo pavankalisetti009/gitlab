@@ -70,12 +70,12 @@ RSpec.describe Ai::AmazonQ::ServiceAccountMemberRemoveService, feature_category:
 
       it_behaves_like 'when the service account is a member of the project' do
         let(:expected_member) do
-          member = group.members.build(user_id: service_account.id)
+          member = group.members.build(user: service_account)
 
           # stub `.build` so that we always return the same value which can strengthen our assertion
           # inside the `expected_member` so that the other tests run without this stub, to provide
           # some "integration" coverage
-          allow(group.members).to receive(:build).with(user_id: service_account.id).and_return(member)
+          allow(group.members).to receive(:build).with(user: service_account).and_return(member)
 
           member
         end
@@ -89,7 +89,7 @@ RSpec.describe Ai::AmazonQ::ServiceAccountMemberRemoveService, feature_category:
         it 'calls destroy service' do
           expect_next_instance_of(Members::DestroyService, current_user) do |destroy_service|
             expect(destroy_service).to receive(:execute).with(
-              group.members.find_by(user_id: service_account.id),
+              group.members.find_by(user: service_account),
               skip_authorization: true,
               skip_subresources: false,
               unassign_issuables: false

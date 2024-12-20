@@ -649,6 +649,19 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
     it { is_expected.to include(expected_data) }
 
+    context "if AmazonQ is connected" do
+      where(connected: [true, false])
+      with_them do
+        before do
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(connected)
+        end
+
+        it 'sets amazonQAvailable to the correct value' do
+          expect(subject[:amazonQAvailable]).to eq(connected)
+        end
+      end
+    end
+
     context "if in Gitlab.com" do
       where(is_gitlab_com: [true, false])
       with_them do

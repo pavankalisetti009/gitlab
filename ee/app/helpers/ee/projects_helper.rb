@@ -32,6 +32,7 @@ module EE
         canManageSecretManager: ::Feature.enabled?(:secrets_manager, project, type: :wip),
         requirementsAvailable: project.feature_available?(:requirements),
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
+        amazonQAvailable: Ai::AmazonQ.connected?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         requestCveAvailable: ::Gitlab.com?,
         cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request.md'),
