@@ -2,13 +2,11 @@
 import {
   GlButtonGroup,
   GlDisclosureDropdown,
-  GlIcon,
   GlLink,
   GlLoadingIcon,
   GlSprintf,
   GlTable,
   GlTooltip,
-  GlTooltipDirective,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -39,6 +37,7 @@ import SourceFilter from './filters/source_filter.vue';
 import TypeFilter from './filters/type_filter.vue';
 import EmptyState from './empty_state.vue';
 import ListComponentScope from './list_component_scope.vue';
+import StatusIcon from './status_icon.vue';
 
 const getPoliciesWithType = (policies, policyType) =>
   policies.map((policy) => ({
@@ -70,7 +69,6 @@ export default {
     BreakingChangesIcon,
     GlButtonGroup,
     GlDisclosureDropdown,
-    GlIcon,
     GlLink,
     GlLoadingIcon,
     GlSprintf,
@@ -83,9 +81,7 @@ export default {
     DrawerWrapper,
     OverloadWarningModal,
     TimeAgoTooltip,
-  },
-  directives: {
-    GlTooltipDirective,
+    StatusIcon,
   },
   mixins: [glFeatureFlagMixin()],
   inject: [
@@ -200,6 +196,7 @@ export default {
       return [
         {
           key: 'status',
+          label: __('Status'),
           tdAttr: { 'data-testid': 'policy-status-cell' },
         },
         {
@@ -370,9 +367,6 @@ export default {
       });
       this.$emit('update-policy-source', source);
     },
-    tooltipContent(enabled) {
-      return enabled ? this.$options.i18n.statusEnabled : this.$options.i18n.statusDisabled;
-    },
     exceedsActionLimit(policyType, yaml) {
       return (
         this.hasExceedLimitActions &&
@@ -445,18 +439,9 @@ export default {
       selected-variant="primary"
       @row-selected="presentPolicyDrawer"
     >
-      <template #head(status)>
-        <span class="gl-block md:!gl-hidden">{{ s__('SecurityOrchestration|Status') }}</span>
-      </template>
-
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType, yaml } }">
         <div class="gl-flex gl-justify-end gl-gap-4 md:gl-justify-start">
-          <gl-icon
-            v-gl-tooltip-directive.left="tooltipContent(enabled)"
-            :aria-label="tooltipContent(enabled)"
-            name="check-circle-filled"
-            :variant="enabled ? 'success' : 'disabled'"
-          />
+          <status-icon :enabled="enabled" />
 
           <breaking-changes-icon
             v-if="showBreakingChangesIcon(policyType, deprecatedProperties, yaml)"

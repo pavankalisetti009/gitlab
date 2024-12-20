@@ -256,14 +256,15 @@ describe('List component', () => {
           expect(icons.at(0).props('name')).toBe('check-circle-filled');
         };
 
-        const expectRenderedBreakingChangesIcon = (
+        const expectRenderedBreakingChangesIcon = ({
           expectedContent,
           expectedLink,
           expectedVariant,
-        ) => {
+          expectedIconName,
+        } = {}) => {
           const firstCell = findStatusCells().at(0);
           const icon = firstCell.findAll('svg');
-          expect(icon.at(0).props('name')).toBe('check-circle-filled');
+          expect(icon.at(0).props('name')).toBe(expectedIconName);
           expect(icon.at(0).props('variant')).toBe(expectedVariant);
           expect(icon.at(1).props('name')).toBe('error');
 
@@ -302,11 +303,14 @@ describe('List component', () => {
               },
             },
           });
-          expectRenderedBreakingChangesIcon(
-            'You must edit the policy and replace the deprecated syntax (test, test1). For details on its replacement, see the policy documentation.',
-            '/help/user/application_security/policies/merge_request_approval_policies#merge-request-approval-policies-schema',
-            'disabled',
-          );
+          expectRenderedBreakingChangesIcon({
+            expectedContent:
+              'You must edit the policy and replace the deprecated syntax (test, test1). For details on its replacement, see the policy documentation.',
+            expectedLink:
+              '/help/user/application_security/policies/merge_request_approval_policies#merge-request-approval-policies-schema',
+            expectedVariant: 'disabled',
+            expectedIconName: 'check-circle-dashed',
+          });
         });
 
         it('renders breaking changes icon when there are deprecated scan execution properties', () => {
@@ -322,11 +326,13 @@ describe('List component', () => {
               },
             },
           });
-          expectRenderedBreakingChangesIcon(
-            'Policy contains deprecated syntax (test).',
-            '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
-            'success',
-          );
+          expectRenderedBreakingChangesIcon({
+            expectedContent: 'Policy contains deprecated syntax (test).',
+            expectedLink:
+              '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
+            expectedVariant: 'success',
+            expectedIconName: 'check-circle-filled',
+          });
         });
       });
     });
