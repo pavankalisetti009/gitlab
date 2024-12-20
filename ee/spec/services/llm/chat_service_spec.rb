@@ -108,51 +108,6 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
           expect(subject.execute).to be_error
         end
       end
-
-      context 'when require_resource_id FF is enabled' do
-        context 'when resource is missing' do
-          let(:resource) { nil }
-          let(:content) { "/explain def" }
-
-          before do
-            stub_feature_flags(require_resource_id: true)
-          end
-
-          it_behaves_like 'returns a missing resource error'
-        end
-
-        context 'when non slash command request starts with a slash' do
-          let(:resource) { nil }
-          let(:content) { "/where can credentials be set" }
-
-          before do
-            stub_feature_flags(require_resource_id: true)
-          end
-
-          it_behaves_like 'schedules completion worker'
-        end
-
-        context 'when non slash command request is received' do
-          let(:resource) { nil }
-
-          before do
-            stub_feature_flags(require_resource_id: true)
-          end
-
-          it_behaves_like 'schedules completion worker'
-        end
-
-        context 'when resource is missing and require_resource_id FF is disabled, slash command request' do
-          let(:resource) { nil }
-          let(:content) { "/explain def" }
-
-          before do
-            stub_feature_flags(require_resource_id: false)
-          end
-
-          it_behaves_like 'schedules completion worker'
-        end
-      end
     end
 
     context 'when ai features are disabled for instance' do
