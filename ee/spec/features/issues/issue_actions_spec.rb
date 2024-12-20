@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
+  # Ensure support bot user is created so creation doesn't count towards query limit
+  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+  let_it_be(:support_bot) { Users::Internal.support_bot }
+
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }
   let(:issue) { create(:issue, project: project) }
