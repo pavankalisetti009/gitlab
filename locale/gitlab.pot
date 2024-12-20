@@ -64974,6 +64974,9 @@ msgstr ""
 msgid "You don't have permission to approve this deployment. Contact the project or group owner for help."
 msgstr ""
 
+msgid "You don't have permission to commit to %{branchName}. %{linkStart}Learn more.%{linkEnd}"
+msgstr ""
+
 msgid "You don't have permission to manage email participants."
 msgstr ""
 
