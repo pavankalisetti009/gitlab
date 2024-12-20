@@ -5,6 +5,7 @@ import approvalRulesResponse from 'test_fixtures/graphql/merge_requests/approval
 import approvalsRequiredResponse from 'test_fixtures/graphql/merge_requests/approvals/approvals.query.graphql_approvals_required.json';
 import { toNounSeriesText } from '~/lib/utils/grammar';
 import ApprovalsSummary from '~/vue_merge_request_widget/components/approvals/approvals_summary.vue';
+import PolicyApprovalSettingsIcon from 'ee/vue_merge_request_widget/components/approvals/policy_approval_settings_icon.vue';
 
 const TEST_APPROVALS_LEFT = 3;
 
@@ -12,6 +13,8 @@ Vue.use(VueApollo);
 
 describe('MRWidget approvals summary', () => {
   let wrapper;
+
+  const findPolicyApprovalSettingsIcon = () => wrapper.findComponent(PolicyApprovalSettingsIcon);
 
   const createComponent = (response = approvalRulesResponse, propsData = {}) => {
     wrapper = mount(ApprovalsSummary, {
@@ -73,6 +76,25 @@ describe('MRWidget approvals summary', () => {
       createComponent(response, { disableCommittersApproval: true });
 
       expect(wrapper.find('[data-testid="commit-cant-approve"]').exists()).toBe(true);
+    });
+  });
+
+  describe('when policies override approval settings', () => {
+    it('renders warning icon', () => {
+      const response = JSON.parse(JSON.stringify(approvalsRequiredResponse));
+      const policies = [
+        {
+          name: 'Policy 1',
+          editPath: 'edit-policy-1',
+          settings: { prevent_approval_by_author: true },
+        },
+      ];
+      response.data.project.mergeRequest.policiesOverridingApprovalSettings = policies;
+
+      createComponent(response);
+
+      expect(findPolicyApprovalSettingsIcon().exists()).toBe(true);
+      expect(findPolicyApprovalSettingsIcon().props('policies')).toEqual(policies);
     });
   });
 });
