@@ -34,7 +34,7 @@ export default {
           popoverText: s__(
             'ProductAnalytics|Contact the GitLab administrator or project maintainer to onboard this project with product analytics. %{linkStart}Learn more%{linkEnd}.',
           ),
-          popoverLink: helpPagePath('operations/product_analytics', {
+          popoverLink: helpPagePath('development/internal_analytics/product_analytics', {
             anchor: 'onboard-a-gitlab-project',
           }),
         };

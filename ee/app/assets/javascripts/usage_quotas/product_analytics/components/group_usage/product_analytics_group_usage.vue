@@ -91,10 +91,10 @@ export default {
       });
     },
   },
-  USAGE_QUOTA_LEARN_MORE_URL: helpPagePath('/operations/product_analytics/index', {
+  USAGE_QUOTA_LEARN_MORE_URL: helpPagePath('/development/internal_analytics/product_analytics', {
     anchor: 'view-product-analytics-usage-quota',
   }),
-  DATA_RETENTION_LEARN_MORE_URL: helpPagePath('/operations/product_analytics/index', {
+  DATA_RETENTION_LEARN_MORE_URL: helpPagePath('/development/internal_analytics/product_analytics', {
     anchor: 'product-analytics-provider',
   }),
 };

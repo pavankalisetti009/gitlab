@@ -287,9 +287,7 @@ export default {
   i18n: {
     saveError: s__('Analytics|Error while saving visualization.'),
   },
-  helpPageUrl: helpPagePath('user/analytics/analytics_dashboards', {
-    anchor: 'data-explorer',
-  }),
+  helpPageUrl: helpPagePath('user/analytics/analytics_dashboards'),
 };
 </script>
 
