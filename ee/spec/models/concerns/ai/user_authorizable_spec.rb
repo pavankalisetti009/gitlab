@@ -180,9 +180,10 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         shared_examples 'when checking licensed features' do
           let(:licensed_feature) { :ai_features }
 
-          where(:licensed_feature_available, :allowed_to_use) do
-            true  | true
-            false | false
+          where(:licensed_feature_available, :free_access, :allowed_to_use) do
+            true  | true  | true
+            true  | false | false
+            false | true  | false
           end
 
           with_them do
