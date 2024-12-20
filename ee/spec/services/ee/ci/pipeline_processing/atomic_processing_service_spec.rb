@@ -425,9 +425,10 @@ RSpec.describe Ci::PipelineProcessing::AtomicProcessingService, feature_category
           end
         end
 
-        context 'when the ensure_pipeline_policy_pre_stage_complete feature is disabled' do
+        context 'when both feature flags are disabled' do
           before do
             stub_feature_flags(ensure_pipeline_policy_pre_stage_complete: false)
+            stub_feature_flags(ensure_pipeline_policy_pre_stage_complete_group: false)
           end
 
           it 'creates a pipeline with policy_job and bridge_dag_job pending', :aggregate_failures do
