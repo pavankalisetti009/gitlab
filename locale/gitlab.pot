@@ -12690,6 +12690,12 @@ msgstr ""
 msgid "Cluster level"
 msgstr ""
 
+msgid "ClusterAgents|%{agentName} successfully created"
+msgstr ""
+
+msgid "ClusterAgents|%{agentName} successfully created."
+msgstr ""
+
 msgid "ClusterAgents|%{linkStart}View the documentation%{linkEnd} for advanced installation. Ensure you have your access token available."
 msgstr ""
 
@@ -12718,9 +12724,6 @@ msgid "ClusterAgents|%{tokenName} revoked"
 msgstr ""
 
 msgid "ClusterAgents|Access tokens"
-msgstr ""
-
-msgid "ClusterAgents|Add an agent configuration file to %{linkStart}this repository%{linkEnd} and select it, or create a new one to register with GitLab:"
 msgstr ""
 
 msgid "ClusterAgents|Advanced installation methods"
@@ -12780,9 +12783,6 @@ msgstr ""
 msgid "ClusterAgents|Are you sure you want to revoke this token? You cannot undo this action."
 msgstr ""
 
-msgid "ClusterAgents|Bootstrap the agent with Flux"
-msgstr ""
-
 msgid "ClusterAgents|CI/CD workflow with restricted access"
 msgstr ""
 
@@ -12831,10 +12831,13 @@ msgstr ""
 msgid "ClusterAgents|Create a cluster"
 msgstr ""
 
+msgid "ClusterAgents|Create a new agent to register with GitLab."
+msgstr ""
+
 msgid "ClusterAgents|Create agent access token"
 msgstr ""
 
-msgid "ClusterAgents|Create agent: %{searchTerm}"
+msgid "ClusterAgents|Create and register"
 msgstr ""
 
 msgid "ClusterAgents|Create token"
@@ -12897,9 +12900,6 @@ msgstr ""
 msgid "ClusterAgents|Give feedback"
 msgstr ""
 
-msgid "ClusterAgents|How do I register an agent?"
-msgstr ""
-
 msgid "ClusterAgents|How do I update an agent?"
 msgstr ""
 
@@ -12936,6 +12936,9 @@ msgstr ""
 msgid "ClusterAgents|Name"
 msgstr ""
 
+msgid "ClusterAgents|Name of new agent"
+msgstr ""
+
 msgid "ClusterAgents|Never"
 msgstr ""
 
@@ -12959,6 +12962,15 @@ msgstr ""
 msgid "ClusterAgents|Not connected"
 msgstr ""
 
+msgid "ClusterAgents|Option 1: Bootstrap the agent with Flux"
+msgstr ""
+
+msgid "ClusterAgents|Option 2: Create and register an agent with the UI"
+msgstr ""
+
+msgid "ClusterAgents|Optionally, for additional configuration settings, a %{linkStart}configuration file%{linkEnd} can be created in the repository. You can do so within the default branch by creating the file at: %{codeStart}.gitlab/agents/%{agentName}/config.yaml%{codeEnd}"
+msgstr ""
+
 msgid "ClusterAgents|Premium"
 msgstr ""
 
@@ -12966,15 +12978,6 @@ msgid "ClusterAgents|Receptive"
 msgstr ""
 
 msgid "ClusterAgents|Recommended"
-msgstr ""
-
-msgid "ClusterAgents|Register"
-msgstr ""
-
-msgid "ClusterAgents|Register agent with the UI"
-msgstr ""
-
-msgid "ClusterAgents|Registering agent"
 msgstr ""
 
 msgid "ClusterAgents|Requires a Maintainer or greater role to delete agents"
@@ -12998,9 +13001,6 @@ msgstr ""
 msgid "ClusterAgents|See agent activity updates, like tokens created or revoked and clusters connected or not connected."
 msgstr ""
 
-msgid "ClusterAgents|Select an agent or enter a name to create new"
-msgstr ""
-
 msgid "ClusterAgents|Shared"
 msgstr ""
 
@@ -13020,6 +13020,9 @@ msgid "ClusterAgents|The agent version do not match each other across your clust
 msgstr ""
 
 msgid "ClusterAgents|This agent has no tokens"
+msgstr ""
+
+msgid "ClusterAgents|This field is required."
 msgstr ""
 
 msgid "ClusterAgents|To delete the agent, type %{name} to confirm:"
