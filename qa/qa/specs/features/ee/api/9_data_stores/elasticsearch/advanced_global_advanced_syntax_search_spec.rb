@@ -6,6 +6,7 @@ module QA
       'Elasticsearch advanced global search with advanced syntax',
       :orchestrated,
       :elasticsearch,
+      :requires_admin,
       except: :production
     ) do
       include Support::API

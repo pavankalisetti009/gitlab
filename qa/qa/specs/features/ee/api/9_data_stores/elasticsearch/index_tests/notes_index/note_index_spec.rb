@@ -6,6 +6,7 @@ module QA
       'When using elasticsearch API to search for a public note',
       :orchestrated,
       :elasticsearch,
+      :requires_admin,
       except: :production
     ) do
       include Support::API

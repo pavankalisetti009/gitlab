@@ -6,6 +6,7 @@ module QA
       'When using Advanced Search API to search for a public commit',
       :orchestrated,
       :elasticsearch,
+      :requires_admin,
       except: :production
     ) do
       include Support::API

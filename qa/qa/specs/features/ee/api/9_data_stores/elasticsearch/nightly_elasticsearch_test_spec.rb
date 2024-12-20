@@ -6,6 +6,7 @@ module QA
       'When using elasticsearch API to search for a known blob',
       :orchestrated,
       :elasticsearch,
+      :requires_admin,
       only: { pipeline: :nightly }
     ) do
       include Support::API
