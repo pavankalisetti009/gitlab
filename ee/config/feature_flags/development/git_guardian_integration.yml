@@ -1,9 +1,0 @@
----
-name: git_guardian_integration
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/435706
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/141611
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/438695
-milestone: '16.9'
-group: group::source code
-type: development
-default_enabled: true
