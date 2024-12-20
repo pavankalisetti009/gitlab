@@ -431,4 +431,40 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
     it_behaves_like 'vulnerability filterable', :params
   end
+
+  describe 'event tracking' do
+    subject(:service_action) { resolve(described_class, obj: vulnerable, ctx: { current_user: user }) }
+
+    let_it_be(:group) { create(:group) }
+    let_it_be_with_reload(:proj) { create(:project, namespace: group) }
+    let_it_be(:user) { create(:user, security_dashboard_projects: [proj]) }
+
+    let(:event) { 'called_vulnerability_api' }
+    let(:category) { described_class.name }
+    let(:additional_properties) { { label: 'graphql' } }
+
+    describe 'at the Project level' do
+      it_behaves_like 'internal event tracking' do
+        let(:project) { proj }
+        let(:namespace) { group }
+        let(:vulnerable) { proj }
+      end
+    end
+
+    describe 'at the Group level' do
+      it_behaves_like 'internal event tracking' do
+        let(:project) { nil }
+        let(:namespace) { group }
+        let(:vulnerable) { group }
+      end
+    end
+
+    describe 'at the Instance level' do
+      it_behaves_like 'internal event tracking' do
+        let(:project) { nil }
+        let(:namespace) { nil }
+        let(:vulnerable) { InstanceSecurityDashboard.new(user, project_ids: [proj.id]) }
+      end
+    end
+  end
 end

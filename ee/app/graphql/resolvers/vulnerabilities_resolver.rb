@@ -4,6 +4,7 @@ module Resolvers
   class VulnerabilitiesResolver < VulnerabilitiesBaseResolver
     include Gitlab::Utils::StrongMemoize
     include LooksAhead
+    include Gitlab::InternalEventsTracking
 
     type Types::VulnerabilityType, null: true
 
@@ -97,6 +98,7 @@ module Resolvers
       return Vulnerability.none unless vulnerable
 
       validate_filters(args)
+      track_event
 
       args[:scanner_id] = resolve_gids(args[:scanner_id], ::Vulnerabilities::Scanner) if args[:scanner_id]
 
@@ -162,6 +164,18 @@ module Resolvers
 
     def current_arguments
       context[:current_arguments]
+    end
+
+    def track_event
+      track_internal_event(
+        "called_vulnerability_api",
+        user: current_user,
+        project: vulnerable.is_a?(::Project) ? vulnerable : nil,
+        namespace: vulnerable.is_a?(::Group) ? vulnerable : nil,
+        additional_properties: {
+          label: 'graphql'
+        }
+      )
     end
   end
 end
