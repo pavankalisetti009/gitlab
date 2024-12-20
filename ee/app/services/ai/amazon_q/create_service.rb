@@ -30,6 +30,9 @@ module Ai
         service_account = existing_q_service_account || create_service_account
         return unless service_account
 
+        # required for composite identity usage in lib/gitlab/auth/identity.rb
+        Feature.enable(:composite_identity, service_account)
+
         ensure_service_account_block_status(service_account: service_account)
 
         return unless find_or_create_oauth_app
@@ -43,8 +46,12 @@ module Ai
         service_account_result = ServiceResponse.from_legacy_hash(
           ::Users::ServiceAccounts::CreateService.new(
             @user,
-            { name: 'Amazon Q Service', avatar: Users::Internal.bot_avatar(image: 'q_avatar.png'),
-              organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID }
+            {
+              name: 'Amazon Q Service',
+              avatar: Users::Internal.bot_avatar(image: 'q_avatar.png'),
+              composite_identity_enforced: true,
+              organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID
+            }
           ).execute
         )
 

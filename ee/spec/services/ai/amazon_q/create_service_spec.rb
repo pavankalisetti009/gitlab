@@ -3,21 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
-  describe '#execute' do
+  describe '#execute', :enable_admin_mode do
+    let_it_be(:organization) { create(:organization, :default) }
     let_it_be(:user) { create(:admin) }
-    let_it_be(:service_account) { create(:service_account) }
     let_it_be(:doorkeeper_application) { create(:doorkeeper_application) }
 
     let(:params) { { role_arn: 'a', availability: 'default_off' } }
     let(:status) { 200 }
     let(:body) { 'success' }
-    let(:service_account_response) { ServiceResponse.success(payload: { user: service_account }) }
 
     before do
-      allow_next_instance_of(::Users::ServiceAccounts::CreateService) do |instance|
-        allow(instance).to receive(:execute).and_return(service_account_response)
-      end
-
+      allow(License).to receive(:current).and_return(create(:license, plan: License::ULTIMATE_PLAN))
+      stub_licensed_features(service_accounts: true)
       stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application")
         .and_return(status: status, body: body)
     end
@@ -66,7 +63,11 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
       let(:params) { { role_arn: 'a', availability: 'never_on' } }
 
       it 'blocks service account' do
-        expect { instance.execute }.to change { service_account.blocked? }.from(false).to(true)
+        instance.execute
+
+        service_account = Ai::Setting.instance.amazon_q_service_account_user
+
+        expect(service_account.blocked?).to be true
       end
     end
 
@@ -79,13 +80,17 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     end
 
     it 'creates an audit event' do
-      expect { instance.execute }.to change { AuditEvent.count }.by(1)
+      instance.execute
+
+      service_account = Ai::Setting.instance.amazon_q_service_account_user
+      oauth_application = Ai::Setting.instance.amazon_q_oauth_application
+
       expect(AuditEvent.last.details).to include(
         event_name: 'q_onbarding_updated',
         custom_message: "Changed availability to default_off, " \
           "amazon_q_role_arn to a, " \
           "amazon_q_service_account_user_id to #{service_account.id}, " \
-          "amazon_q_oauth_application_id to #{Doorkeeper::Application.last.id}, " \
+          "amazon_q_oauth_application_id to #{oauth_application.id}, " \
           "amazon_q_ready to true"
       )
     end
@@ -98,16 +103,21 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     end
 
     context 'when q service account does not already exist' do
-      it 'creates q service account and stores the user id in application settings' do
-        expect { instance.execute }
-          .to change { Ai::Setting.instance.amazon_q_service_account_user_id }.from(nil).to(service_account.id)
-        expect(::Users::ServiceAccounts::CreateService).to have_received(:new)
+      it 'creates q service account with composite identity stores the user id in application settings' do
+        expect(Ai::Setting.instance.amazon_q_service_account_user).to be_falsey
+
+        instance.execute
+        expect(Ai::Setting.instance.amazon_q_service_account_user).to be_truthy
+        expect(Ai::Setting.instance.amazon_q_service_account_user.composite_identity_enforced?).to be true
       end
     end
 
     context 'when q service account already exists' do
+      let_it_be(:service_account) { create(:service_account) }
+
       before do
         Ai::Setting.instance.update!(amazon_q_service_account_user_id: service_account.id)
+        allow(::Users::ServiceAccounts::CreateService).to receive(:new)
       end
 
       it 'does not attempt to create q service account' do
@@ -183,12 +193,14 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     end
 
     context 'when service account create service fails' do
-      let(:service_account_response) { ServiceResponse.error(message: 'Whoops!') }
+      before do
+        stub_licensed_features(service_accounts: false)
+      end
 
       it 'returns the error from the service' do
         expect(instance.execute).to have_attributes(
           success?: false,
-          message: 'Amazon q service account Whoops!'
+          message: 'Amazon q service account User does not have permission to create a service account.'
         )
       end
     end

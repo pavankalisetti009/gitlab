@@ -6,6 +6,7 @@ RSpec.shared_examples 'service account creation success' do
 
     expect(result.status).to eq(:success)
     expect(result.payload[:user].confirmed?).to eq(true)
+    expect(result.payload[:user].composite_identity_enforced?).to eq(false)
     expect(result.payload[:user].user_type).to eq('service_account')
     expect(result.payload[:user].external).to eq(true)
     expect(result.payload[:user].namespace.organization).to eq(organization)
@@ -27,7 +28,8 @@ RSpec.shared_examples 'service account creation with customized params' do
     {
       name: 'John Doe',
       username: 'test',
-      organization_id: organization.id
+      organization_id: organization.id,
+      composite_identity_enforced: true
     }
   end
 
@@ -39,6 +41,7 @@ RSpec.shared_examples 'service account creation with customized params' do
     expect(user.confirmed?).to eq(true)
     expect(user.user_type).to eq('service_account')
     expect(user.external).to eq(true)
+    expect(user.composite_identity_enforced?).to eq(true)
   end
 
   it 'sets user attributes according to supplied params' do

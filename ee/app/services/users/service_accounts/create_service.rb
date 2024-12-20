@@ -51,7 +51,8 @@ module Users
           external: true,
           skip_confirmation: true, # Bot users should always have their emails confirmed.
           organization_id: params[:organization_id],
-          avatar: params[:avatar].presence
+          avatar: params[:avatar].presence,
+          composite_identity_enforced: !!params[:composite_identity_enforced]
         }
       end
 
