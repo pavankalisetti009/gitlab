@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
+  # Ensure support bot user is created so creation doesn't count towards query limit
+  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+  let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:epic1) { create(:epic, group: group, title: 'Epic Foo') }

@@ -1,3 +1,5 @@
+import { issuableInitialDataById, isLegacyIssueType } from '~/issues/show/utils/issuable_data';
+
 const initLegacyIssuePage = async () => {
   const imports = [import('ee/issues'), import('~/issues'), import('~/user_callout')];
 
@@ -23,7 +25,13 @@ const initWorkItemPage = async () => {
   initWorkItemsRoot({ workItemType: 'issue' });
 };
 
-if (gon.features.workItemsViewPreference && gon.current_user_use_work_items_view) {
+const issuableData = issuableInitialDataById('js-issuable-app');
+
+if (
+  !isLegacyIssueType(issuableData) &&
+  gon.features.workItemsViewPreference &&
+  gon.current_user_use_work_items_view
+) {
   initWorkItemPage();
 } else {
   initLegacyIssuePage();

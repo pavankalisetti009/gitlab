@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe 'Promotions', :js do
+  # Ensure support bot user is created so creation doesn't count towards query limit
+  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+  let_it_be(:support_bot) { Users::Internal.support_bot }
+
   let(:admin) { create(:admin) }
   let(:user) { create(:user) }
   let(:otherdeveloper) { create(:user, name: 'TheOtherDeveloper') }
@@ -245,7 +249,8 @@ RSpec.describe 'Promotions', :js do
           click_link 'Learn more'
         end
 
-        expect(page).to have_link 'Try it for free', href: new_trial_registration_path(glm_source: Gitlab.config.gitlab.host, glm_content: 'issue_weights'), class: 'promotion-trial-cta'
+        expect(page).to have_link 'Try it for free',
+          href: new_trial_registration_path(glm_source: Gitlab.config.gitlab.host, glm_content: 'issue_weights'), class: 'promotion-trial-cta'
         expect(find('.js-close-callout.js-close-session.tr-issue-weights-not-now-cta')).to have_content 'Not now, thanks!'
       end
     end
