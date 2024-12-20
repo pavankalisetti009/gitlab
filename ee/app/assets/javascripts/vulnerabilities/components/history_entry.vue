@@ -28,15 +28,15 @@ export default {
 </script>
 
 <template>
-  <div v-if="systemNote" class="card border-bottom system-note p-0">
+  <div v-if="systemNote" class="card system-note gl-border-b gl-p-0">
     <event-item
       :id="systemNote.id"
       :author="systemNote.author"
       :created-at="systemNote.createdAt"
       :icon-name="systemNote.systemNoteIconName"
       is-system-note
-      icon-class="timeline-icon m-0"
-      class="m-3"
+      icon-class="timeline-icon"
+      class="gl-m-5"
     >
       <template #header-message>{{ systemNote.body }}</template>
     </event-item>

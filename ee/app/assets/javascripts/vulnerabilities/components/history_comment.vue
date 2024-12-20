@@ -197,7 +197,7 @@ export default {
     :show-right-slot="isConfirmingDeletion"
     :action-buttons="actionButtons"
     icon-name="comment"
-    icon-class="timeline-icon m-0"
+    icon-class="timeline-icon"
     class="gl-border-t gl-border-subtle gl-p-5"
   >
     <div v-safe-html="noteHtml" class="md">
@@ -214,7 +214,7 @@ export default {
         {{ __('Delete') }}
       </gl-button>
       <gl-button
-        class="ml-2"
+        class="gl-ml-3"
         :disabled="isDeletingComment"
         data-testid="cancel-delete-button"
         @click="cancelDeleteConfirmation"
