@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Namespaces::Storage::RootExcessSize, feature_category: :consumables_cost_management do
+  using RSpec::Parameterized::TableSyntax
+
   let(:namespace) { create(:group, additional_purchased_storage_size: additional_purchased_storage_size) }
   let(:total_repository_size_excess) { 50.megabytes }
   let(:additional_purchased_storage_size) { 100 }
@@ -23,20 +25,20 @@ RSpec.describe Namespaces::Storage::RootExcessSize, feature_category: :consumabl
     context 'when limit enforcement is off' do
       let(:enforce_limit) { false }
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be false }
     end
 
     context 'when limit enforcement is on' do
       let(:enforce_limit) { true }
 
       context 'when below limit' do
-        it { is_expected.to eq(false) }
+        it { is_expected.to be false }
       end
 
       context 'when above limit' do
         let(:total_repository_size_excess) { 101.megabytes }
 
-        it { is_expected.to eq(true) }
+        it { is_expected.to be true }
       end
     end
   end
@@ -95,19 +97,56 @@ RSpec.describe Namespaces::Storage::RootExcessSize, feature_category: :consumabl
     it 'returns true if automatic_purchased_storage_allocation is enabled' do
       stub_application_setting(automatic_purchased_storage_allocation: true)
 
-      expect(model.enforce_limit?).to eq(true)
+      expect(model.enforce_limit?).to be true
     end
 
     it 'returns false if automatic_purchased_storage_allocation is disabled' do
       stub_application_setting(automatic_purchased_storage_allocation: false)
 
-      expect(model.enforce_limit?).to eq(false)
+      expect(model.enforce_limit?).to be false
     end
   end
 
   describe '#enforcement_type' do
     it 'returns :project_repository_limit' do
       expect(model.enforcement_type).to eq(:project_repository_limit)
+    end
+  end
+
+  describe '#subject_to_high_limit?' do
+    context 'when the feature flag is turned off' do
+      let(:plan) { build_stubbed(:plan, name: Plan::ULTIMATE) }
+
+      before do
+        stub_feature_flags(plan_limits_repository_size: false)
+        allow(namespace).to receive(:actual_plan).and_return(plan)
+      end
+
+      it { expect(model.subject_to_high_limit?).to be false }
+    end
+
+    where :plan_name, :is_subject_to_high_limit do
+      Plan::DEFAULT                      | false
+      Plan::FREE                         | false
+      Plan::BRONZE                       | true
+      Plan::SILVER                       | true
+      Plan::PREMIUM                      | true
+      Plan::GOLD                         | true
+      Plan::ULTIMATE                     | true
+      Plan::ULTIMATE_TRIAL               | false
+      Plan::ULTIMATE_TRIAL_PAID_CUSTOMER | true
+      Plan::PREMIUM_TRIAL                | false
+      Plan::OPEN_SOURCE                  | true
+    end
+
+    with_them do
+      let(:plan) { build_stubbed(:plan, name: plan_name) }
+
+      before do
+        allow(namespace).to receive(:actual_plan).and_return(plan)
+      end
+
+      it { expect(model.subject_to_high_limit?).to be is_subject_to_high_limit }
     end
   end
 end
