@@ -155,6 +155,24 @@ module EE
         epic_self_reference?(mentioned_in) || super
       end
 
+      # Called when an Amazon Q command is successfully sent to the AI gateway
+      #
+      # noteable_ref - Referenced noteable object
+      # event - The type of command executed by the user
+      #
+      # Example Note text:
+      #
+      #   "sent dev request to Amazon Q"
+      #
+      # Returns the created Note object
+      def amazon_q_called(event)
+        body = "sent #{event} request to Amazon Q"
+
+        track_issue_event(:track_issue_related_action)
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: 'notify_service'))
+      end
+
       private
 
       def block_message(issuable_type, noteable_reference, type)

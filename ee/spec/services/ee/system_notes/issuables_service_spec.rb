@@ -300,4 +300,16 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       end
     end
   end
+
+  describe '#amazon_q_called' do
+    subject(:system_note) { service.amazon_q_called('test') }
+
+    it_behaves_like 'a system note' do
+      let(:action) { 'notify_service' }
+    end
+
+    it 'creates system note mentioning q action' do
+      expect(system_note.note).to eq "sent test request to Amazon Q"
+    end
+  end
 end
