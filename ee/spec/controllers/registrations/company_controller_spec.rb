@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Registrations::CompanyController, feature_category: :onboarding do
-  let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
+  let_it_be(:user, reload: true) do
+    create(:user, onboarding_in_progress: true, onboarding_status_registration_type: 'trial')
+  end
 
   let(:logged_in) { true }
   let(:onboarding_enabled?) { true }
@@ -54,22 +56,23 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
           category: described_class.name,
           action: 'render',
           user: user,
-          label: 'free_registration'
+          label: 'trial_registration'
         )
       end
 
-      context 'when in trial flow' do
-        it 'tracks render event' do
-          user.update!(onboarding_status_registration_type: 'trial')
+      context 'when user has no registration_type' do
+        before do
+          user.update!(onboarding_status: {})
+        end
+
+        it 'skips the company step and redirects user to group creation' do
+          path = new_users_sign_up_group_path
 
           get_new
 
-          expect_snowplow_event(
-            category: described_class.name,
-            action: 'render',
-            user: user,
-            label: 'trial_registration'
-          )
+          expect(response).to have_gitlab_http_status(:redirect)
+          expect(response).to redirect_to(path)
+          expect(user.reset.onboarding_status_step_url).to eq(path)
         end
       end
     end
@@ -193,23 +196,8 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
             category: described_class.name,
             action: 'successfully_submitted_form',
             user: user,
-            label: 'free_registration'
+            label: 'trial_registration'
           )
-        end
-
-        context 'when in trial flow' do
-          it 'tracks successful submission event' do
-            user.update!(onboarding_status_registration_type: 'trial')
-
-            post_create
-
-            expect_snowplow_event(
-              category: described_class.name,
-              action: 'successfully_submitted_form',
-              user: user,
-              label: 'trial_registration'
-            )
-          end
         end
       end
 
@@ -252,7 +240,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
 
           expect_snowplow_event(
             category: described_class.name,
-            action: 'track_free_registration_error',
+            action: 'track_trial_registration_error',
             user: user,
             label: 'failed'
           )
@@ -265,36 +253,8 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
             category: described_class.name,
             action: 'successfully_submitted_form',
             user: user,
-            label: 'free_registration'
+            label: 'trial_registration'
           )
-        end
-
-        context 'when in trial flow' do
-          before do
-            user.update!(onboarding_status_registration_type: 'trial')
-          end
-
-          it 'tracks error event' do
-            post_create
-
-            expect_snowplow_event(
-              category: described_class.name,
-              action: 'track_trial_registration_error',
-              user: user,
-              label: 'failed'
-            )
-          end
-
-          it 'does not track successful submission event' do
-            post_create
-
-            expect_no_snowplow_event(
-              category: described_class.name,
-              action: 'successfully_submitted_form',
-              user: user,
-              label: 'trial_registration'
-            )
-          end
         end
       end
     end

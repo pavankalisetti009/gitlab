@@ -17,6 +17,9 @@ module Registrations
     helper_method :onboarding_status_presenter
 
     def new
+      # TODO: temporary work around until we backfill and solve this once in https://gitlab.com/gitlab-org/gitlab/-/issues/510316
+      skip_company_step if invalid_registration_type?
+
       track_event('render', onboarding_status_presenter.tracking_label)
     end
 
@@ -40,6 +43,14 @@ module Registrations
     end
 
     private
+
+    def skip_company_step
+      redirect_to Onboarding::StatusStepUpdateService.new(current_user, new_users_sign_up_group_path).execute[:step_url]
+    end
+
+    def invalid_registration_type?
+      current_user.onboarding_status_registration_type.blank?
+    end
 
     def permitted_params
       params.permit(
