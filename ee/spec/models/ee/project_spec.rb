@@ -2959,6 +2959,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#notify_project_import_complete?' do
+    let(:project) { build(:project, import_type: 'gitlab_custom_project_template') }
+
+    it 'returns false for gitlab_custom_project_template import type' do
+      expect(project.notify_project_import_complete?).to eq(false)
+    end
+  end
+
   describe '#feature_flags_client_token' do
     let(:project) { create(:project) }
 
