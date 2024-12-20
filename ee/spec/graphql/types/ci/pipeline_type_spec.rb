@@ -64,7 +64,8 @@ RSpec.describe GitlabSchema.types['Pipeline'], feature_category: :vulnerability_
         Gitlab::ExclusiveLease.skipping_transaction_check do
           Security::StoreGroupedScansService.new(
             [artifact],
-            pipeline
+            pipeline,
+            'sast'
           ).execute
         end
       end

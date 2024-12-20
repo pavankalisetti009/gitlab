@@ -72,14 +72,17 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           it 'executes only for artifacts where the feature is available' do
             store_group_of_artifacts
 
-            expect(Security::StoreGroupedScansService).to have_received(:execute).with([sast_artifact], pipeline)
-            expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([dast_artifact], pipeline)
+            expect(Security::StoreGroupedScansService).to have_received(:execute).with([sast_artifact], pipeline,
+              'sast')
+            expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([dast_artifact], pipeline,
+              'dast')
           end
 
           it 'executes cyclonedx artifacts' do
             store_group_of_artifacts
 
-            expect(Security::StoreGroupedScansService).to have_received(:execute).with([cyclonedx_artifact], pipeline)
+            expect(Security::StoreGroupedScansService).to have_received(:execute).with([cyclonedx_artifact], pipeline,
+              'dependency_scanning')
           end
 
           context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
@@ -91,7 +94,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
               store_group_of_artifacts
 
               expect(Security::StoreGroupedScansService).not_to have_received(:execute).with([cyclonedx_artifact],
-                pipeline)
+                pipeline, 'dependency_scanning')
             end
           end
         end

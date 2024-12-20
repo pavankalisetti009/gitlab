@@ -138,7 +138,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
           it 'does not duplicate vulnerabilities' do
             # seeding a scan that should be ingested as a vulnerability
-            Security::StoreGroupedScansService.execute([artifact_bandit1], pipeline)
+            Security::StoreGroupedScansService.execute([artifact_bandit1], pipeline, 'sast')
             expect(Security::Finding.count).to eq 1
             expect(Security::Scan.count).to eq 1
 
@@ -150,7 +150,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
             # seeding a scan that is indicating the same vulnerability
             # we just ingested
-            Security::StoreGroupedScansService.execute([artifact_bandit2, artifact_semgrep], pipeline2)
+            Security::StoreGroupedScansService.execute([artifact_bandit2, artifact_semgrep], pipeline2, 'sast')
             expect(Security::Finding.count).to eq 3
             expect(Security::Scan.count).to eq 3
 
@@ -189,7 +189,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
           it 'does not duplicate vulnerabilities' do
             # seeding a scan that should be ingested as a vulnerability
-            Security::StoreGroupedScansService.execute([artifact_gosec1], pipeline)
+            Security::StoreGroupedScansService.execute([artifact_gosec1], pipeline, 'sast')
             expect(Security::Finding.count).to eq 1
             expect(Security::Scan.count).to eq 1
 
@@ -201,7 +201,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
             # seeding a scan that is indicating the same vulnerability
             # we just ingested
-            Security::StoreGroupedScansService.execute([artifact_gosec2, artifact_semgrep], pipeline2)
+            Security::StoreGroupedScansService.execute([artifact_gosec2, artifact_semgrep], pipeline2, 'sast')
             expect(Security::Finding.count).to eq 3
             expect(Security::Scan.count).to eq 3
 
@@ -247,7 +247,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
       it 'resolves vulnerabilities' do
         expect do
-          Security::StoreGroupedScansService.execute([artifact_semgrep1], pipeline)
+          Security::StoreGroupedScansService.execute([artifact_semgrep1], pipeline, 'sast')
         end.to change { Security::Finding.count }.by(2)
            .and change { Security::Scan.count }.by(1)
 
@@ -259,7 +259,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
            .and change { project.vulnerabilities.with_states(%w[detected]).count }.by(2)
 
         expect do
-          Security::StoreGroupedScansService.execute([artifact_semgrep2], pipeline2)
+          Security::StoreGroupedScansService.execute([artifact_semgrep2], pipeline2, 'sast')
         end.to change { Security::Finding.count }.by(1)
            .and change { Security::Scan.count }.by(1)
 
@@ -298,11 +298,11 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
       it "does not mark any of the detected vulnerabilities as resolved",
         :aggregate_failures do
-        Security::StoreGroupedScansService.execute([artifact_sast2], pipeline)
+        Security::StoreGroupedScansService.execute([artifact_sast2], pipeline, 'sast')
         expect(Security::Finding.count).to eq 1
         expect(Security::Scan.count).to eq 1
 
-        Security::StoreGroupedScansService.execute([artifact_sast1], pipeline)
+        Security::StoreGroupedScansService.execute([artifact_sast1], pipeline, 'sast')
         expect(Security::Finding.count).to eq 2
         expect(Security::Scan.count).to eq 2
 
