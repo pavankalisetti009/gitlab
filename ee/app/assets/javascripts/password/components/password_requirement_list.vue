@@ -66,10 +66,13 @@ export default {
     isEmptyPasswordLegal() {
       return this.password.trim() === '' && this.allowNoPassword;
     },
+    displayPasswordRequirements() {
+      // this will be true with display_password_requirements ff removal
+      return this.ruleTypes.includes(COMMON) || this.ruleTypes.includes(USER_INFO);
+    },
     boxClasses() {
       return {
-        // make class permanent with display_password_requirements ff removal
-        'gl-text-subtle': this.ruleTypes.includes(COMMON),
+        'gl-text-subtle': this.displayPasswordRequirements,
       };
     },
   },
@@ -91,25 +94,25 @@ export default {
       this.password = this.passwordInputElement.value;
     });
 
-    if (this.firstName) {
+    if (this.firstName && this.displayPasswordRequirements) {
       this.firstName.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
     }
 
-    if (this.lastName) {
+    if (this.lastName && this.displayPasswordRequirements) {
       this.lastName.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
     }
 
-    if (this.username) {
+    if (this.username && this.displayPasswordRequirements) {
       this.username.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
     }
 
-    if (this.email) {
+    if (this.email && this.displayPasswordRequirements) {
       this.email.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
