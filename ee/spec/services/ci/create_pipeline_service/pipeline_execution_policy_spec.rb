@@ -390,6 +390,48 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         expect { execute }.to change { Ci::Build.count }.from(0).to(2)
       end
     end
+
+    context 'and policy workflow rules prevent the pipeline from being created' do
+      let(:namespace_policy_content) do
+        {
+          workflow: {
+            rules: [{ when: 'never' }]
+          },
+          policy_job: { stage: 'build', script: 'namespace script' }
+        }
+      end
+
+      let(:project_policy_content) do
+        {
+          workflow: {
+            rules: [{ when: 'never' }]
+          },
+          policy_job: { stage: 'build', script: 'project script' }
+        }
+      end
+
+      it 'responds with error and does not create the pipeline', :aggregate_failures do
+        expect(execute).to be_error
+        expect(execute.payload).not_to be_persisted
+        expect(execute.payload.errors.full_messages).to contain_exactly 'Missing CI config file'
+      end
+
+      context 'when feature flag "policies_always_override_project_ci" is disabled' do
+        before do
+          stub_feature_flags(policies_always_override_project_ci: false)
+        end
+
+        it 'creates the pipeline with project jobs and without policy jobs' do
+          expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+
+          stages = execute.payload.stages
+          build_stage = stages.find_by(name: 'build')
+          expect(build_stage.builds.map(&:name)).to contain_exactly('build')
+          test_stage = stages.find_by(name: 'test')
+          expect(test_stage.builds.map(&:name)).to contain_exactly('rspec')
+        end
+      end
+    end
   end
 
   describe 'reserved stages' do

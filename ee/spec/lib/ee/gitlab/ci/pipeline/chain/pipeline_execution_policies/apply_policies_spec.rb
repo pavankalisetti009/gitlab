@@ -17,6 +17,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
     ]
   end
 
+  let(:policy_configs) { execution_policy_pipelines.map(&:policy_config) }
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project,
@@ -40,7 +41,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
   before do
     stub_ci_pipeline_yaml_file(YAML.dump(config)) if config
     allow(command.pipeline_policy_context.pipeline_execution_context)
-      .to receive(:policy_pipelines).and_return(execution_policy_pipelines)
+      .to receive_messages(policies: policy_configs, policy_pipelines: execution_policy_pipelines)
   end
 
   describe '#perform!' do
@@ -405,7 +406,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
     end
 
     context 'when execution_policy_pipelines is not defined' do
-      let(:execution_policy_pipelines) { nil }
+      let(:execution_policy_pipelines) { [] }
 
       it 'does not change pipeline stages' do
         expect { run_chain }.not_to change { pipeline.stages }
