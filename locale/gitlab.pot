@@ -5941,10 +5941,16 @@ msgstr ""
 msgid "AmazonQ|Amazon Q will be turned off for all groups, subgroups, and projects, even if they have previously enabled it."
 msgstr ""
 
+msgid "AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details."
+msgstr ""
+
 msgid "AmazonQ|An unexpected error occurred while submitting the form. Please see the browser console log for more details."
 msgstr ""
 
 msgid "AmazonQ|Apply changes to this merge request based on the comments (Beta)"
+msgstr ""
+
+msgid "AmazonQ|Are you sure? Removing the ARN will disconnect Amazon Q from GitLab and all related features will stop working."
 msgstr ""
 
 msgid "AmazonQ|Audience"
@@ -5954,6 +5960,9 @@ msgid "AmazonQ|Availability"
 msgstr ""
 
 msgid "AmazonQ|Beta"
+msgstr ""
+
+msgid "AmazonQ|Cancel"
 msgstr ""
 
 msgid "AmazonQ|Cloud connector token could not be decoded"
@@ -5980,6 +5989,12 @@ msgstr ""
 msgid "AmazonQ|Create unit tests for selected lines of code in Java or Python files (Beta)"
 msgstr ""
 
+msgid "AmazonQ|Delete the IAM identity provider created for AI gateway."
+msgstr ""
+
+msgid "AmazonQ|Delete the IAM role."
+msgstr ""
+
 msgid "AmazonQ|Enter the IAM role's ARN."
 msgstr ""
 
@@ -5996,6 +6011,9 @@ msgid "AmazonQ|Get started"
 msgstr ""
 
 msgid "AmazonQ|GitLab Duo with Amazon Q"
+msgstr ""
+
+msgid "AmazonQ|GitLab Duo with Amazon Q has been successfully disconnected"
 msgstr ""
 
 msgid "AmazonQ|GitLab Duo with Amazon Q is ready to go! 🎉"
@@ -6022,6 +6040,9 @@ msgstr ""
 msgid "AmazonQ|IAM role's ARN"
 msgstr ""
 
+msgid "AmazonQ|If this is what you want, remove the IAM role's ARN. To completely remove GitLab Duo with Amazon Q, update the following in AWS:"
+msgstr ""
+
 msgid "AmazonQ|Instance ID"
 msgstr ""
 
@@ -6035,6 +6056,12 @@ msgid "AmazonQ|Provider URL"
 msgstr ""
 
 msgid "AmazonQ|Provider type"
+msgstr ""
+
+msgid "AmazonQ|Remove"
+msgstr ""
+
+msgid "AmazonQ|Remove IAM role's ARN"
 msgstr ""
 
 msgid "AmazonQ|Review merge request for code quality and security issues (Beta)"
@@ -6056,6 +6083,9 @@ msgid "AmazonQ|Sorry, I'm not able to complete the request at this moment. Pleas
 msgstr ""
 
 msgid "AmazonQ|Status"
+msgstr ""
+
+msgid "AmazonQ|To completely remove GitLab Duo with Amazon Q, update the following in AWS:"
 msgstr ""
 
 msgid "AmazonQ|Upgrade Java Maven application to Java 17 (Beta)"

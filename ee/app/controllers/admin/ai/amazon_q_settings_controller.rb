@@ -50,6 +50,7 @@ module Admin
       def setup_view_model
         @view_model = {
           submitUrl: admin_ai_amazon_q_settings_path,
+          disconnectUrl: disconnect_admin_ai_amazon_q_settings_path,
           identityProviderPayload: identity_provider,
           amazonQSettings: {
             ready: ::Ai::Setting.instance.amazon_q_ready,
@@ -60,9 +61,8 @@ module Admin
       end
 
       def identity_provider
-        return if ::Ai::Setting.instance.amazon_q_ready
-
         result = ::Ai::AmazonQ::IdentityProviderPayloadFactory.new.execute
+
         case result
         in { ok: payload }
           payload

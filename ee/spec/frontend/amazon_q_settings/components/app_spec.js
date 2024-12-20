@@ -11,14 +11,20 @@ import {
   GlSprintf,
 } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
+import DisconnectSuccessAlert from 'ee/amazon_q_settings/components/disconnect_success_alert.vue';
+import DisconnectWarningModal from 'ee/amazon_q_settings/components/disconnect_warning_modal.vue';
 import App from 'ee/amazon_q_settings/components/app.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { createAndSubmitForm } from '~/lib/utils/create_and_submit_form';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 
 jest.mock('~/lib/utils/create_and_submit_form');
+jest.mock('~/lib/logger');
 
 const TEST_SUBMIT_URL = '/foo/submit/url';
+const TEST_DISCONNECT_URL = '/foo/disconnect/url';
 const TEST_AMAZON_Q_SETTINGS = {
   ready: true,
   availability: 'default_on',
@@ -27,11 +33,13 @@ const TEST_AMAZON_Q_SETTINGS = {
 
 describe('ee/amazon_q_settings/components/app.vue', () => {
   let wrapper;
+  let mock;
 
   const createWrapper = (props = {}) => {
     wrapper = shallowMount(App, {
       propsData: {
         submitUrl: TEST_SUBMIT_URL,
+        disconnectUrl: TEST_DISCONNECT_URL,
         identityProviderPayload: {
           instance_uid: 'instance-uid',
           aws_provider_url: 'https://provider.url',
@@ -46,6 +54,14 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
     });
   };
 
+  beforeEach(() => {
+    mock = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
+
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormGroup = (label) =>
     findForm()
@@ -54,6 +70,8 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
 
   const findStatusFormGroup = () => findFormGroup('Status');
   const findSetupFormGroup = () => findFormGroup('Setup');
+  const findDisconnectSuccess = () => wrapper.findComponent(DisconnectSuccessAlert);
+  const findDisconnectWarning = () => wrapper.findComponent(DisconnectWarningModal);
   const listItems = () => findSetupFormGroup().findAll('ol li').wrappers;
   const listItem = (at) => listItems()[at];
 
@@ -61,6 +79,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
   const findArnFormGroup = () => findFormGroup("IAM role's ARN");
   const findArnField = () => findArnFormGroup().findComponent(GlFormInput);
   const setArn = (val) => findArnField().vm.$emit('input', val);
+  const findDisconnectButton = () => findArnFormGroup().findComponent(GlButton);
 
   // availability helpers -----
   const findAvailabilityRadioGroup = () =>
@@ -97,6 +116,18 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
 
     it('does not render status', () => {
       expect(findStatusFormGroup()).toBeUndefined();
+    });
+
+    it('does not render disconnect button', () => {
+      expect(findDisconnectButton().exists()).toBe(false);
+    });
+
+    it('does not render disconnect sucess', () => {
+      expect(findDisconnectSuccess().exists()).toBe(false);
+    });
+
+    it('does not show disconnect warning', () => {
+      expect(findDisconnectWarning().attributes('visible')).toBeUndefined();
     });
 
     describe('setup', () => {
@@ -161,8 +192,9 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
     it('renders arn field', () => {
       expect(findArnFormGroup().exists()).toBe(true);
 
-      const input = findArnFormGroup().findComponent(GlFormInput);
+      const input = findArnField();
 
+      expect(input.attributes('disabled')).toBeUndefined();
       expect(input.attributes()).toMatchObject({
         value: '',
         type: 'text',
@@ -195,10 +227,6 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
 
     it('does not render availability warning', () => {
       expect(findAvailabilityWarning().exists()).toBe(false);
-    });
-
-    it('renders enabled arn', () => {
-      expect(findArnFormGroup().attributes('disabled')).toBeUndefined();
     });
 
     it('renders save button', () => {
@@ -271,11 +299,30 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
     });
 
     it('renders disabled arn', () => {
-      expect(findArnFormGroup().attributes('disabled')).toBeDefined();
+      const input = findArnField();
+
+      expect(input.attributes('disabled')).toBeDefined();
+    });
+
+    it('renders disconnect button', () => {
+      expect(findDisconnectButton().text()).toBe('Remove');
+      expect(findDisconnectButton().props()).toMatchObject({
+        variant: 'danger',
+        category: 'secondary',
+        loading: false,
+      });
     });
 
     it('does not render save acknowledgement', () => {
       expect(findSaveWarning().exists()).toBe(false);
+    });
+
+    it('when disconnect button is pressed, shows warning', async () => {
+      expect(findDisconnectWarning().attributes('visible')).toBeUndefined();
+
+      await findDisconnectButton().vm.$emit('click');
+
+      expect(findDisconnectWarning().attributes('visible')).toBeDefined();
     });
 
     describe('when submitting', () => {
@@ -295,6 +342,51 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
             availability: 'default_off',
           },
         });
+      });
+    });
+
+    describe('when disconnect confirmed', () => {
+      beforeEach(async () => {
+        mock.onPost(TEST_DISCONNECT_URL).replyOnce(200);
+
+        await findDisconnectWarning().vm.$emit('submit');
+      });
+
+      it('shows loading on disconnect button', () => {
+        expect(findDisconnectButton().props('loading')).toBe(true);
+      });
+
+      it('after loading, shows success state', async () => {
+        expect(findDisconnectSuccess().exists()).toBe(false);
+        expect(findArnField().attributes('value')).toBe('aws:role:arn');
+        expect(findStatusFormGroup().exists()).toBe(true);
+
+        await axios.waitForAll();
+
+        expect(findDisconnectSuccess().exists()).toBe(true);
+        expect(findArnField().attributes('value')).toBe('');
+        expect(findStatusFormGroup()).toBeUndefined();
+      });
+    });
+
+    describe('when disconnect fails', () => {
+      beforeEach(async () => {
+        mock.onPost(TEST_DISCONNECT_URL).replyOnce(400);
+
+        await findDisconnectWarning().vm.$emit('submit');
+        await axios.waitForAll();
+      });
+
+      it('success is not visible', () => {
+        expect(findDisconnectSuccess().exists()).toBe(false);
+      });
+
+      it('ready status is still rendered', () => {
+        expect(findStatusFormGroup().exists()).toBe(true);
+      });
+
+      it('disconnect button is not loading', () => {
+        expect(findDisconnectButton().props('loading')).toBe(false);
       });
     });
   });
