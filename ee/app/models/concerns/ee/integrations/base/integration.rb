@@ -48,8 +48,6 @@ module EE
               names.delete('google_cloud_platform_workload_identity_federation')
             end
 
-            names.delete('git_guardian') unless ::Feature.enabled?(:git_guardian_integration) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Legacy use
-
             names
           end
 

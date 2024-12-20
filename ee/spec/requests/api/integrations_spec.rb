@@ -113,28 +113,6 @@ RSpec.describe API::Integrations, feature_category: :integrations do
         end
       end
     end
-
-    describe 'GitGuardian Integration' do
-      let(:integration_name) { 'git-guardian' }
-
-      context 'when git_guardian_integration feature flag is disabled' do
-        before do
-          stub_feature_flags(git_guardian_integration: false)
-        end
-
-        it 'returns 400  for put request' do
-          put api("/projects/#{project.id}/#{endpoint}/#{integration_name}", user), params: { token: 'api-token' }
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(response.body).to eq("{\"message\":\"GitGuardian feature is disabled\"}")
-        end
-
-        it 'returns 400  for delete request' do
-          delete api("/projects/#{project.id}/#{endpoint}/#{integration_name}", user)
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(response.body).to eq("{\"message\":\"GitGuardian feature is disabled\"}")
-        end
-      end
-    end
   end
 
   describe 'POST /slack/trigger' do

@@ -41,8 +41,6 @@ module Integrations
     end
 
     def execute(blobs)
-      return unless Feature.enabled?(:git_guardian_integration)
-
       ::Gitlab::GitGuardian::Client.new(token).execute(blobs) if activated?
     end
 

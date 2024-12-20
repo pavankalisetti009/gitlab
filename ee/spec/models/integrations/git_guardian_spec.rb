@@ -34,20 +34,6 @@ RSpec.describe Integrations::GitGuardian, feature_category: :integrations do
 
         integration.execute(blobs)
       end
-
-      context 'when git_guardian_integration feature flag disabled' do
-        before do
-          stub_feature_flags(git_guardian_integration: false)
-        end
-
-        # Not refactoring this repeated code because this FF is meant to be short lived
-        it 'returns nil on execution' do
-          response = integration.execute(blobs)
-          expect(integration.token).to be_present
-          expect(::Gitlab::GitGuardian::Client).not_to receive(:new)
-          expect(response).to be_nil
-        end
-      end
     end
   end
 end
