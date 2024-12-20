@@ -11,6 +11,7 @@ import {
   GlSprintf,
   GlModalDirective,
 } from '@gitlab/ui';
+import axios from '~/lib/utils/axios_utils';
 import { createAndSubmitForm } from '~/lib/utils/create_and_submit_form';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -18,6 +19,8 @@ import { logError } from '~/lib/logger';
 import { createAlert } from '~/alert';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import DisconnectSuccessAlert from './disconnect_success_alert.vue';
+import DisconnectWarningModal from './disconnect_warning_modal.vue';
 
 const AVAILABILITY_OPTIONS = [
   {
@@ -46,6 +49,8 @@ const AVAILABILITY_OPTIONS = [
 export default {
   components: {
     ClipboardButton,
+    DisconnectSuccessAlert,
+    DisconnectWarningModal,
     GlAlert,
     GlButton,
     GlForm,
@@ -62,6 +67,10 @@ export default {
   },
   props: {
     submitUrl: {
+      type: String,
+      required: true,
+    },
+    disconnectUrl: {
       type: String,
       required: true,
     },
@@ -82,6 +91,9 @@ export default {
       roleArn: this.amazonQSettings?.roleArn || '',
       ready: this.amazonQSettings?.ready || false,
       isSubmitting: false,
+      isDisconnecting: false,
+      isDisconnectWarningVisible: false,
+      isDisconnectSuccessVisible: false,
     };
   },
   computed: {
@@ -126,7 +138,7 @@ export default {
     },
   },
   methods: {
-    onSubmit() {
+    submit() {
       try {
         this.isSubmitting = true;
 
@@ -146,6 +158,32 @@ export default {
         });
       } finally {
         this.isSubmitting = false;
+      }
+    },
+    showDisconnectWarning() {
+      this.isDisconnectWarningVisible = true;
+    },
+    async disconnect() {
+      try {
+        this.isDisconnecting = true;
+
+        await axios.post(this.disconnectUrl);
+
+        this.isDisconnectSuccessVisible = true;
+        this.roleArn = '';
+        this.ready = false;
+      } catch (e) {
+        // eslint-disable-next-line @gitlab/require-i18n-strings
+        logError('Unexpected error while disconnecting Amazon Q.', e);
+
+        createAlert({
+          message: s__(
+            'AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details.',
+          ),
+          error: e,
+        });
+      } finally {
+        this.isDisconnecting = false;
       }
     },
   },
@@ -176,7 +214,7 @@ export default {
 </script>
 
 <template>
-  <gl-form @submit.prevent="onSubmit">
+  <gl-form @submit.prevent="submit">
     <gl-form-group v-if="ready" :label="s__('AmazonQ|Status')">
       {{ $options.I18N_READY }}
     </gl-form-group>
@@ -226,14 +264,27 @@ export default {
         </li>
       </ol>
     </gl-form-group>
-    <gl-form-group :label="$options.I18N_IAM_ROLE_ARN_LABEL" :disabled="roleArnDisabled">
-      <gl-form-input
-        v-model="roleArn"
-        type="text"
-        width="lg"
-        name="aws_role"
-        :placeholder="$options.INPUT_PLACEHOLDER_ARN"
-      />
+    <gl-form-group :label="$options.I18N_IAM_ROLE_ARN_LABEL">
+      <div class="gl-flex">
+        <gl-form-input
+          v-model="roleArn"
+          type="text"
+          width="lg"
+          name="aws_role"
+          :disabled="roleArnDisabled"
+          :placeholder="$options.INPUT_PLACEHOLDER_ARN"
+        />
+        <gl-button
+          v-if="ready"
+          class="gl-ml-3"
+          variant="danger"
+          category="secondary"
+          :loading="isDisconnecting"
+          @click="showDisconnectWarning"
+        >
+          {{ s__('AmazonQ|Remove') }}
+        </gl-button>
+      </div>
     </gl-form-group>
     <gl-form-group class="!gl-mb-3" :label="s__('AmazonQ|Availability')">
       <gl-form-radio-group v-model="availability" name="availability">
@@ -264,5 +315,10 @@ export default {
         </template>
       </gl-sprintf>
     </p>
+    <disconnect-warning-modal v-model="isDisconnectWarningVisible" @submit="disconnect" />
+    <disconnect-success-alert
+      v-if="isDisconnectSuccessVisible"
+      @dismiss="isDisconnectSuccessVisible = false"
+    />
   </gl-form>
 </template>
