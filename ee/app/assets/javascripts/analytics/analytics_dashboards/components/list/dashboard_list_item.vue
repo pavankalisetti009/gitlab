@@ -119,7 +119,7 @@ export default {
           </gl-badge>
         </div>
         <gl-truncate-text
-          class="gl-leading-normal gl-text-subtle"
+          class="gl-text-subtle"
           :toggle-button-props="$options.truncateTextToggleButtonProps"
         >
           {{ dashboard.description }}
