@@ -2,6 +2,8 @@
 require 'spec_helper'
 
 RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:group) { create(:group) }
   let_it_be(:private_group) { create(:group, :private) }
   let_it_be(:project) { create(:project, :repository, group: group) }
@@ -9,6 +11,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
   let_it_be(:assignee) { create(:user) }
   let_it_be(:reviewer) { create(:user) }
   let_it_be(:issue, reload: true) { create(:issue, project: project) }
+  let_it_be(:merge_request, reload: true) { create(:merge_request, source_project: project, target_project: project) }
   let_it_be(:epic, reload: true) { create(:epic, group: group) }
   let_it_be(:private_epic) { create(:epic, group: private_group) }
 
@@ -104,7 +107,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       end
 
       context 'on a merge request' do
-        let(:note_mr) { create(:note_on_merge_request, project: project, note: note_text) }
+        let(:note_mr) { create(:note_on_merge_request, project: project, noteable: merge_request, note: note_text) }
 
         it 'leaves the note empty' do
           expect(execute(note_mr)).to be_empty
@@ -205,7 +208,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       end
 
       context 'on a merge request' do
-        let(:note_mr) { create(:note_on_merge_request, project: project, note: note_text) }
+        let(:note_mr) { create(:note_on_merge_request, project: project, noteable: merge_request, note: note_text) }
 
         it 'leaves the note empty' do
           expect(execute(note_mr)).to be_empty
@@ -424,14 +427,18 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     end
 
     context 'with a merge request' do
-      let(:note) { create(:note_on_merge_request, note: note_text, project: project) }
+      let(:note) { create(:note_on_merge_request, note: note_text, noteable: merge_request, project: project) }
 
       it_behaves_like 'assigns one or more reviewers to the merge request', multiline: false do
         let(:target) { note.noteable }
       end
 
       it_behaves_like 'assigns one or more reviewers to the merge request', multiline: true do
-        let(:note) { create(:note_on_merge_request, note: multiline_assign_reviewer_text, project: project) }
+        let(:note) do
+          create(:note_on_merge_request, note: multiline_assign_reviewer_text, noteable: merge_request,
+            project: project)
+        end
+
         let(:target) { note.noteable }
       end
     end
@@ -474,14 +481,17 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     end
 
     context 'MergeRequest' do
-      let(:note) { create(:note_on_merge_request, note: note_text, project: project) }
+      let(:note) { create(:note_on_merge_request, note: note_text, noteable: merge_request, project: project) }
 
       it_behaves_like 'assigning an already assigned user', false do
         let(:target) { note.noteable }
       end
 
       it_behaves_like 'assigning an already assigned user', true do
-        let(:note) { create(:note_on_merge_request, note: multiline_assign_note_text, project: project) }
+        let(:note) do
+          create(:note_on_merge_request, note: multiline_assign_note_text, noteable: merge_request, project: project)
+        end
+
         let(:target) { note.noteable }
       end
     end
@@ -509,14 +519,17 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     end
 
     context 'MergeRequest' do
-      let(:note) { create(:note_on_merge_request, note: note_text, project: project) }
+      let(:note) { create(:note_on_merge_request, note: note_text, noteable: merge_request, project: project) }
 
       it_behaves_like 'unassigning a not assigned user', false do
         let(:target) { note.noteable }
       end
 
       it_behaves_like 'unassigning a not assigned user', true do
-        let(:note) { create(:note_on_merge_request, note: multiline_unassign_note_text, project: project) }
+        let(:note) do
+          create(:note_on_merge_request, note: multiline_unassign_note_text, noteable: merge_request, project: project)
+        end
+
         let(:target) { note.noteable }
       end
     end
@@ -538,14 +551,18 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     end
 
     context 'with a merge request' do
-      let(:note) { create(:note_on_merge_request, note: note_text, project: project) }
+      let(:note) { create(:note_on_merge_request, note: note_text, noteable: merge_request, project: project) }
 
       it_behaves_like 'unassigning one or more reviewers', multiline: false do
         let(:target) { note.noteable }
       end
 
       it_behaves_like 'unassigning one or more reviewers', multiline: true do
-        let(:note) { create(:note_on_merge_request, note: multiline_unassign_reviewer_note_text, project: project) }
+        let(:note) do
+          create(:note_on_merge_request, note: multiline_unassign_reviewer_note_text, noteable: merge_request,
+            project: project)
+        end
+
         let(:target) { note.noteable }
       end
     end
@@ -791,6 +808,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     let_it_be(:user) { create(:user) }
     let(:amazon_q_enabled) { false }
     let(:note) { create(:note_on_issue, project: project, noteable: issue, note: note_text) }
+    let(:trigger_service) { instance_double(::Ai::AmazonQ::AmazonQTriggerService) }
 
     before do
       project.add_developer(user)
@@ -801,6 +819,8 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       let(:note_text) { '/q dev' }
 
       it 'does not run command' do
+        expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+
         result = execute(note, include_message: true)
 
         expect(result[0]).to be_empty
@@ -810,19 +830,66 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
     context 'when Amazon Q is enabled' do
       let(:amazon_q_enabled) { true }
-      let(:note_text) { '/q dev' }
+      let(:note_text) { "/q #{command}" }
+      let(:discussion_id) { note.discussion_id }
+      let(:note_with_quick_action) { note }
 
-      it 'runs the command' do
-        result = execute(note, include_message: true)
+      shared_examples 'successful Q command' do
+        it 'runs the command' do
+          expect(trigger_service).to receive(:execute)
+          expect(::Ai::AmazonQ::AmazonQTriggerService).to receive(:new).with(
+            user: user,
+            command: command,
+            input: '',
+            note: note_with_quick_action,
+            source: source,
+            discussion_id: discussion_id
+          ).and_return(trigger_service)
 
-        expect(result[0]).to be_empty
-        expect(result[1]).to eq('Q got your message!')
+          result = execute(note_with_quick_action, include_message: true)
+
+          expect(result[0]).to be_empty
+          expect(result[1]).to eq('Q got your message!')
+        end
+      end
+
+      context 'with issue' do
+        let(:source) { issue }
+
+        where(command: ::Ai::AmazonQ::Commands::ISSUE_SUBCOMMANDS)
+
+        with_them do
+          it_behaves_like 'successful Q command'
+        end
+      end
+
+      context 'with merge_request' do
+        let(:note) { create(:note_on_merge_request, project: project, noteable: merge_request, note: note_text) }
+        let(:source) { merge_request }
+
+        where(command: ::Ai::AmazonQ::Commands::MERGE_REQUEST_SUBCOMMANDS)
+
+        with_them do
+          it_behaves_like 'successful Q command'
+        end
+
+        context 'with a note on an existing discussion' do
+          let(:note_with_quick_action) do
+            build(:note, noteable: merge_request, project: project, discussion_id: note.discussion_id, note: "/q dev")
+          end
+
+          let(:command) { 'dev' }
+
+          it_behaves_like 'successful Q command'
+        end
       end
 
       context 'when using unsupported sub-command for issue' do
         let_it_be(:note_text) { '/q unknown' }
 
         it 'returns an error' do
+          expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+
           content, update_params, message, _ = service.execute(note)
 
           expect(content).to be_blank
@@ -836,6 +903,8 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         let_it_be(:note) { create(:note_on_epic, project: project, note: note_text) }
 
         it 'returns an error' do
+          expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+
           content, update_params, message, _ = service.execute(note)
 
           expect(content).to be_blank
@@ -846,9 +915,11 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       context 'when using unsupported sub-command transform for merge request' do
         let_it_be(:note_text) { '/q transform' }
-        let_it_be(:note) { create(:note_on_merge_request, project: project, note: note_text) }
+        let_it_be(:note) { create(:note_on_merge_request, project: project, noteable: merge_request, note: note_text) }
 
         it 'returns an error' do
+          expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+
           content, update_params, message, _ = service.execute(note)
 
           expect(content).to be_blank

@@ -4,6 +4,7 @@ module EE
   module Notes
     module QuickActionsService
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
 
       prepended do
@@ -24,6 +25,28 @@ module EE
         return super unless note.for_epic?
 
         Epics::UpdateService.new(group: note.resource_parent, current_user: current_user, params: update_params)
+      end
+
+      override :execute_triggers
+      def execute_triggers(note, params)
+        super
+
+        execute_amazon_q_trigger(note, params)
+      end
+
+      def execute_amazon_q_trigger(note, params)
+        return unless params[:amazon_q]
+
+        q_params = params.delete(:amazon_q)
+
+        ::Ai::AmazonQ::AmazonQTriggerService.new(
+          user: current_user,
+          command: q_params[:command],
+          input: q_params[:input],
+          source: q_params[:source],
+          note: note,
+          discussion_id: q_params[:discussion_id]
+        ).execute
       end
     end
   end
