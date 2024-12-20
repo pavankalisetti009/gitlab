@@ -15,6 +15,7 @@ module Geo
     included do
       def save_verification_details
         return unless Gitlab::Geo.primary?
+        return unless self.class.replicator_class.verification_enabled?
         return unless self.class.separate_verification_state_table?
 
         return unless in_verifiables?

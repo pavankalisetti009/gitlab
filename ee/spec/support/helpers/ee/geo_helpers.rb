@@ -145,6 +145,11 @@ module EE
       allow(replicator).to receive(:replication_enabled?).and_return(enabled)
     end
 
+    def stub_dummy_verification_feature_flag(replicator_class: 'Geo::DummyReplicator', enabled: true)
+      replicator = Object.const_get(replicator_class, false)
+      allow(replicator).to receive(:verification_enabled?).and_return(enabled)
+    end
+
     # Example:
     #
     # before(:all) do
