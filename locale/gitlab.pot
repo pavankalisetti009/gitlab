@@ -50598,6 +50598,15 @@ msgstr ""
 msgid "SecurityOrchestration|Custom scan experiment has ended in 17.3"
 msgstr ""
 
+msgid "SecurityOrchestration|Default approval settings on this merge request have been overridden by policies based on their rules."
+msgstr ""
+
+msgid "SecurityOrchestration|Default approval settings on this merge request have been overridden by policy %{policyName} based on its rules."
+msgstr ""
+
+msgid "SecurityOrchestration|Default approval settings on this merge request have been overridden by the following policies based on their rules:"
+msgstr ""
+
 msgid "SecurityOrchestration|Default mode"
 msgstr ""
 

@@ -218,3 +218,7 @@ export const organizeGroups = ({ ids = [], availableGroups = [] }) =>
     },
     { existingGroups: [], groupsToRetrieve: [] },
   );
+
+export const isMergeRequestSettingOverridden = (setting, value) => {
+  return MERGE_REQUEST_CONFIGURATION_KEYS.includes(setting) && Boolean(value);
+};

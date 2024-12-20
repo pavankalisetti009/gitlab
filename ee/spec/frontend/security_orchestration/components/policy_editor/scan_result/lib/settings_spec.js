@@ -9,6 +9,12 @@ import {
   createGroupObject,
   groupProtectedBranchesConfiguration,
   organizeGroups,
+  isMergeRequestSettingOverridden,
+  PREVENT_APPROVAL_BY_COMMIT_AUTHOR,
+  REMOVE_APPROVALS_WITH_NEW_COMMIT,
+  REQUIRE_PASSWORD_TO_APPROVE,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
+  PREVENT_PUSHING_AND_FORCE_PUSHING,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import { createMockGroup } from 'ee_jest/security_orchestration/mocks/mock_data';
 
@@ -184,4 +190,35 @@ describe('organizeGroups', () => {
       groupsToRetrieve: [],
     });
   });
+});
+
+describe('isMergeRequestSettingOverridden', () => {
+  it.each`
+    setting                              | value    | expected
+    ${undefined}                         | ${true}  | ${false}
+    ${null}                              | ${true}  | ${false}
+    ${''}                                | ${true}  | ${false}
+    ${undefined}                         | ${false} | ${false}
+    ${null}                              | ${false} | ${false}
+    ${''}                                | ${false} | ${false}
+    ${BLOCK_BRANCH_MODIFICATION}         | ${true}  | ${false}
+    ${BLOCK_GROUP_BRANCH_MODIFICATION}   | ${true}  | ${false}
+    ${PREVENT_PUSHING_AND_FORCE_PUSHING} | ${true}  | ${false}
+    ${BLOCK_BRANCH_MODIFICATION}         | ${false} | ${false}
+    ${BLOCK_GROUP_BRANCH_MODIFICATION}   | ${false} | ${false}
+    ${PREVENT_PUSHING_AND_FORCE_PUSHING} | ${false} | ${false}
+    ${PREVENT_APPROVAL_BY_AUTHOR}        | ${true}  | ${true}
+    ${PREVENT_APPROVAL_BY_COMMIT_AUTHOR} | ${true}  | ${true}
+    ${REMOVE_APPROVALS_WITH_NEW_COMMIT}  | ${true}  | ${true}
+    ${REQUIRE_PASSWORD_TO_APPROVE}       | ${true}  | ${true}
+    ${PREVENT_APPROVAL_BY_AUTHOR}        | ${false} | ${false}
+    ${PREVENT_APPROVAL_BY_COMMIT_AUTHOR} | ${false} | ${false}
+    ${REMOVE_APPROVALS_WITH_NEW_COMMIT}  | ${false} | ${false}
+    ${REQUIRE_PASSWORD_TO_APPROVE}       | ${false} | ${false}
+  `(
+    'returns true when the setting is a merge request setting and is overridden',
+    ({ setting, value, expected }) => {
+      expect(isMergeRequestSettingOverridden(setting, value)).toEqual(expected);
+    },
+  );
 });

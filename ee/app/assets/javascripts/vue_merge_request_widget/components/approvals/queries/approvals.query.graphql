@@ -12,6 +12,11 @@ query approvedByEE($projectPath: ID!, $iid: String!) {
       approved
       approvalsLeft
       approvalsRequired
+      policiesOverridingApprovalSettings {
+        name
+        editPath
+        settings
+      }
       approvalState {
         invalidApproversRules {
           id
