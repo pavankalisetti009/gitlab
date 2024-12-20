@@ -4,6 +4,13 @@ module EE
   module TreeHelper
     extend ::Gitlab::Utils::Override
 
+    override :vue_tree_header_app_data
+    def vue_tree_header_app_data(project, repository, ref, pipeline)
+      super.merge({
+        kerberos_url: alternative_kerberos_url? ? project.kerberos_url_to_repo : ''
+      })
+    end
+
     override :vue_file_list_data
     def vue_file_list_data(project, ref)
       super.merge({
