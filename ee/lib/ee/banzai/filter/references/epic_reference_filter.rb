@@ -46,6 +46,8 @@ module EE
 
           # rubocop: disable CodeReuse/ActiveRecord
           def parent_records(parent, ids)
+            return ::Epic.none unless parent.is_a?(Group)
+
             parent.epics.where(iid: ids.to_a)
           end
           # rubocop: enable CodeReuse/ActiveRecord
