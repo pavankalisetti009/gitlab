@@ -6,9 +6,40 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
   include Devise::Test::ControllerHelpers
 
   let_it_be(:project) { build_stubbed(:project, :repository) }
+  let(:repository) { project.repository }
   let(:sha) { 'c1c67abbaf91f624347bb3ae96eabe3a1b742478' }
 
   let_it_be(:user) { build_stubbed(:user) }
+
+  describe '#vue_tree_header_app_data' do
+    let(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
+
+    before do
+      helper.instance_variable_set(:@project, project)
+      helper.instance_variable_set(:@ref, sha)
+    end
+
+    subject { helper.vue_tree_header_app_data(project, repository, sha, pipeline) }
+
+    context 'when alternative_kerberos_url? is true' do
+      let(:gitlab_kerberos_url) { Gitlab.config.build_gitlab_kerberos_url }
+      let(:repo_kerberos_url) { "#{gitlab_kerberos_url}/#{project.full_path}.git" }
+
+      before do
+        allow(helper).to receive(:alternative_kerberos_url?).and_return(true)
+      end
+
+      it { is_expected.to include(kerberos_url: repo_kerberos_url) }
+    end
+
+    context 'when alternative_kerberos_url? is false' do
+      before do
+        allow(helper).to receive(:alternative_kerberos_url?).and_return(false)
+      end
+
+      it { is_expected.to include(kerberos_url: '') }
+    end
+  end
 
   describe '#vue_file_list_data' do
     before do
