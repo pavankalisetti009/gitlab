@@ -14,7 +14,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
   let(:all_group_approvers) { [] }
   let(:role_approvers) { [] }
   let(:user_approvers) { [] }
-  let(:action_approvers) { [{ all_groups: [], groups: [], roles: [], users: [] }] }
+  let(:action_approvers) { [{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }] }
 
   let(:expected_resolved) do
     [
@@ -39,6 +39,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
         all_group_approvers: all_group_approvers,
         deprecated_properties: deprecated_properties,
         role_approvers: role_approvers,
+        custom_roles: [],
         source: {
           inherited: false,
           namespace: nil,
@@ -83,10 +84,12 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
         { all_groups: all_group_approvers,
           groups: all_group_approvers,
           roles: role_approvers,
+          custom_roles: [],
           users: [] },
         { all_groups: [],
           groups: [],
           roles: [],
+          custom_roles: [],
           users: user_approvers }
       ]
     end

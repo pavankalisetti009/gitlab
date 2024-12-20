@@ -16,6 +16,9 @@ module Types
       field :all_group_approvers, [::Types::SecurityOrchestration::ApprovalGroupType],
         null: true,
         description: 'All potential approvers of the group type, including groups inaccessible to the user.'
+      field :custom_roles, [::Types::MemberRoles::MemberRoleType],
+        null: true,
+        description: 'Approvers of the custom role type. Users belonging to these role(s) alone will be approvers.'
       field :deprecated_properties, [::GraphQL::Types::String], null: true,
         description: 'All deprecated properties in the policy.',
         experiment: { milestone: '16.10' }

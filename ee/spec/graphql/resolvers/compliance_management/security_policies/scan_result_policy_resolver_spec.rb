@@ -58,11 +58,12 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
             },
             yaml: YAML.dump(policy.deep_stringify_keys),
             updated_at: policy_configuration.policy_last_updated_at,
-            action_approvers: [{ all_groups: [], groups: [], roles: [], users: [] }],
+            action_approvers: [{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }],
             user_approvers: [],
             all_group_approvers: [],
             deprecated_properties: deprecated_properties,
             role_approvers: [],
+            custom_roles: [],
             source: {
               inherited: false,
               namespace: nil,
