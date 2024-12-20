@@ -47,7 +47,7 @@ module EE
 
         if template_project_id.present?
           project.errors.add(:template_project_id,
-                             _("%{template_project_id} is unknown or invalid" % { template_project_id: template_project_id }))
+            _("%{template_project_id} is unknown or invalid" % { template_project_id: template_project_id }))
         else
           project.errors.add(:template_name, _("'%{template_name}' is unknown or invalid" % { template_name: template_name }))
         end
