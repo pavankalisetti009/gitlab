@@ -81,6 +81,14 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(workflow.reload.human_status_name).to eq("stopped")
       end
 
+      it "can retry a running workflow", :aggregate_failures do
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "retry").execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:message]).to eq("Workflow status updated")
+        expect(workflow.reload.human_status_name).to eq("running")
+      end
+
       context "when initial status is paused" do
         let(:workflow_initial_status_enum) { 2 } # status paused
 
@@ -136,6 +144,16 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(workflow.reload.human_status_name).to eq("failed")
       end
 
+      it "retries failed workflow", :aggregate_failures do
+        workflow.drop
+
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "retry").execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:message]).to eq("Workflow status updated")
+        expect(workflow.reload.human_status_name).to eq("running")
+      end
+
       it "does not drop finished workflow", :aggregate_failures do
         workflow.finish
 
@@ -165,6 +183,17 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
 
         expect(result[:status]).to eq(:error)
         expect(result[:message]).to eq("Can not resume workflow that has status finished")
+        expect(result[:reason]).to eq(:bad_request)
+        expect(workflow.reload.human_status_name).to eq("finished")
+      end
+
+      it "does not retry finished workflow", :aggregate_failures do
+        workflow.finish
+
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "retry").execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to eq("Can not retry workflow that has status finished")
         expect(result[:reason]).to eq(:bad_request)
         expect(workflow.reload.human_status_name).to eq("finished")
       end
