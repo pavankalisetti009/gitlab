@@ -4279,10 +4279,10 @@ msgstr ""
 msgid "AdminSettings|Maximum number of pipeline subscriptions to and from a project"
 msgstr ""
 
-msgid "AdminSettings|Maximum number of runners registered per group"
+msgid "AdminSettings|Maximum number of runners created or active in a group during the past seven days"
 msgstr ""
 
-msgid "AdminSettings|Maximum number of runners registered per project"
+msgid "AdminSettings|Maximum number of runners created or active in a project during the past seven days"
 msgstr ""
 
 msgid "AdminSettings|Maximum number of variables in a dotenv artifact"
