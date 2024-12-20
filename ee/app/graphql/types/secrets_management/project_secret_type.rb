@@ -20,7 +20,7 @@ module Types
 
       field :description,
         type: GraphQL::Types::String,
-        null: false,
+        null: true,
         description: 'Description of the project secret.'
 
       field :environment,
