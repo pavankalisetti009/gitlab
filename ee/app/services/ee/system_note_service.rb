@@ -189,6 +189,10 @@ module EE
       merge_requests_service(noteable, noteable.project, user).override_requested_changes(event)
     end
 
+    def amazon_q_called(noteable, user, event)
+      issuables_service(noteable, noteable.project, user).amazon_q_called(event)
+    end
+
     private
 
     def issuables_service(noteable, project, author)

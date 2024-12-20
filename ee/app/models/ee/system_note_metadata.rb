@@ -10,6 +10,7 @@ module EE
       epic_issue_moved issue_changed_epic epic_date_changed relate_epic unrelate_epic
       vulnerability_confirmed vulnerability_dismissed vulnerability_resolved vulnerability_detected
       iteration paging_started progress checkin_reminder approvals_reset
+      notify_service
     ].freeze
 
     EE_TYPES_WITH_CROSS_REFERENCES = %w[

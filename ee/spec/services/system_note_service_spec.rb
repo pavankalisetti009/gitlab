@@ -320,4 +320,14 @@ RSpec.describe SystemNoteService, feature_category: :team_planning do
       described_class.change_color_note(noteable, author, '#0052cc')
     end
   end
+
+  describe '.amazon_q_called' do
+    it 'calls AmazonQ' do
+      expect_next_instance_of(::SystemNotes::IssuablesService) do |service|
+        expect(service).to receive(:amazon_q_called).with('test')
+      end
+
+      described_class.amazon_q_called(noteable, author, 'test')
+    end
+  end
 end

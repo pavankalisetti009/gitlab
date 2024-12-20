@@ -40,7 +40,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
     before do
       allow(Gitlab::Llm::QAi::Client).to receive(:new).with(user).and_return(client)
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service_data)
-      allow(SystemNoteService).to receive(:amazon_q_called)
+      allow(SystemNoteService).to receive(:amazon_q_called).and_call_original
     end
 
     context 'with dev command' do
@@ -54,7 +54,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
         end
 
         it 'executes successfully' do
-          expect { execution }.not_to change { Note.count }
+          expect { execution }.to change { Note.system.count }.by(1).and not_change { Note.user.count }
           expect(execution.parsed_response).to be_nil
           expect(SystemNoteService).to have_received(:amazon_q_called).with(source, user, command)
         end
@@ -74,7 +74,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
           end
 
           it 'updates a new note with an error' do
-            expect { execution }.to change { Note.count }.by(1)
+            expect { execution }.to change { Note.system.count }.by(1).and change { Note.user.count }.by(1)
             expect(Note.last.note).to include(
               "Sorry, I'm not able to complete the request at this moment. Please try again later")
             expect(Note.last.note).to include("Request ID:")
@@ -109,7 +109,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
         end
 
         it 'executes successfully' do
-          expect { execution }.not_to change { Note.count }
+          expect { execution }.to change { Note.system.count }.by(1).and not_change { Note.user.count }
           expect(execution.parsed_response).to be_nil
           expect(SystemNoteService).to have_received(:amazon_q_called).with(source, user, command)
         end
@@ -168,7 +168,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       end
 
       it 'executes successfully with the right payload' do
-        expect { execution }.to change { Note.count }.by(1)
+        expect { execution }.to change { Note.system.count }.by(1).and change { Note.user.count }.by(1)
         expect(execution.parsed_response).to be_nil
       end
     end

@@ -25,7 +25,8 @@ module EE
       'published' => 'bullhorn',
       'paging_started' => 'mobile',
       'progress' => 'progress',
-      'checkin_reminder' => 'clock'
+      'checkin_reminder' => 'clock',
+      'notify_service' => 'comment'
     }.freeze
 
     override :system_note_icon_name
