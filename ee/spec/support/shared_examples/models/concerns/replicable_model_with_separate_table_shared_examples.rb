@@ -66,6 +66,35 @@ RSpec.shared_examples 'a replicable model with a separate table for verification
       let(:verification_state_table_class) { verifiable_model_class.verification_state_table_class }
       let(:replicator_class) { verifiable_model_class.replicator_class }
 
+      shared_examples 'does not create verification details' do
+        it 'does not create verification details' do
+          expect { verifiable_model_record.save! }.not_to change { verification_state_table_class.count }
+        end
+      end
+
+      shared_examples 'creates verification details' do
+        it 'creates verification details' do
+          expect { verifiable_model_record.save! }.to change { verification_state_table_class.count }.by(1)
+        end
+      end
+
+      context 'when site is not primary' do
+        before do
+          stub_secondary_site
+        end
+
+        it_behaves_like 'does not create verification details'
+      end
+
+      context 'when verification is not enabled' do
+        before do
+          stub_primary_site
+          stub_dummy_verification_feature_flag(replicator_class: replicator_class.name, enabled: false)
+        end
+
+        it_behaves_like 'does not create verification details'
+      end
+
       context 'when model record is not part of verifiables scope' do
         before do
           next unless unverifiable_model_record.nil?
@@ -78,10 +107,13 @@ RSpec.shared_examples 'a replicable model with a separate table for verification
         end
       end
 
-      context 'when model_record is part of verifiables scope' do
-        it 'creates verification details' do
-          expect { verifiable_model_record.save! }.to change { verification_state_table_class.count }.by(1)
+      context 'when all conditions are met for saving verification' do
+        before do
+          stub_primary_site
+          stub_dummy_verification_feature_flag(replicator_class: replicator_class.name)
         end
+
+        it_behaves_like 'creates verification details'
       end
     end
 
