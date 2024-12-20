@@ -60,7 +60,6 @@ module EE
         audit_context = {
           name: 'user_destroyed',
           author: current_user || ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)'),
-          scope: user,
           target: user,
           target_details: user.full_path,
           message: "User #{user.username} scheduled for deletion"
@@ -68,7 +67,14 @@ module EE
 
         audit_context[:message] += ". Reason: #{options[:reason_for_deletion]}" if options[:reason_for_deletion]
 
-        audit_context[:scope] = options[:project_bot_resource] if user.project_bot? && options[:project_bot_resource]
+        audit_context[:scope] =
+          if user.project_bot? && options[:project_bot_resource]
+            options[:project_bot_resource]
+          elsif user.provisioned_by_group
+            user.provisioned_by_group
+          else
+            user
+          end
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end

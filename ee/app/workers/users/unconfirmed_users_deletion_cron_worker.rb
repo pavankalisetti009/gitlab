@@ -50,7 +50,9 @@ module Users
 
         DeleteUserWorker.bulk_perform_async_with_contexts(
           relation,
-          arguments_proc: ->(user) { [admin_bot_id, user.id, { skip_authorization: true }] },
+          arguments_proc: ->(user) {
+            [admin_bot_id, user.id, { skip_authorization: true, reason_for_deletion: reason_for_deletion }]
+          },
           context_proc: ->(user) { { user: user } }
         )
       end
@@ -65,5 +67,11 @@ module Users
       Users::Internal.admin_bot&.id
     end
     strong_memoize_attr :admin_bot_id
+
+    def reason_for_deletion
+      "GitLab automatically deletes unconfirmed users after " \
+        "#{::Gitlab::CurrentSettings.unconfirmed_users_delete_after_days} days since their creation"
+    end
+    strong_memoize_attr :reason_for_deletion
   end
 end
