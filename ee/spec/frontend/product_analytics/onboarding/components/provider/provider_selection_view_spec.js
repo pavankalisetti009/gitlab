@@ -96,7 +96,7 @@ describe('ProviderSelectionView', () => {
 
       it('renders the help link', () => {
         expect(findHelpLink().attributes('href')).toBe(
-          '/help/operations/product_analytics/index#onboard-a-gitlab-project',
+          '/help/development/internal_analytics/product_analytics#onboard-a-gitlab-project',
         );
       });
     });

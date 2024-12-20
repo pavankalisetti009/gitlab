@@ -124,7 +124,8 @@ describe('OnboardingListItem', () => {
           badgeText: 'Additional permissions required',
           badgePopoverText:
             'Contact the GitLab administrator or project maintainer to onboard this project with product analytics. %{linkStart}Learn more%{linkEnd}.',
-          badgePopoverLink: '/help/operations/product_analytics#onboard-a-gitlab-project',
+          badgePopoverLink:
+            '/help/development/internal_analytics/product_analytics#onboard-a-gitlab-project',
         }),
       );
     });

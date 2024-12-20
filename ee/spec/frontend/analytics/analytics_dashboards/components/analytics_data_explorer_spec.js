@@ -149,9 +149,7 @@ describe('AnalyticsDataExplorer', () => {
 
       expect(findPageDescriptionLink().text()).toBe('Learn more');
       expect(findPageDescriptionLink().attributes('href')).toBe(
-        helpPagePath('user/analytics/analytics_dashboards', {
-          anchor: 'data-explorer',
-        }),
+        helpPagePath('user/analytics/analytics_dashboards'),
       );
     });
 
