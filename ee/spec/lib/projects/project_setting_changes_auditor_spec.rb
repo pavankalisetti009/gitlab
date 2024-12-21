@@ -59,7 +59,7 @@ RSpec.describe Projects::ProjectSettingChangesAuditor, feature_category: :groups
             end
 
             if new_value != prev_value
-              it 'creates an audit event', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/504781' do
+              it 'creates an audit event' do
                 project.project_setting.update!(squash_option: new_value)
 
                 expect { auditor.execute }.to change(AuditEvent, :count).by(1)
@@ -69,8 +69,7 @@ RSpec.describe Projects::ProjectSettingChangesAuditor, feature_category: :groups
                   })
               end
 
-              it 'streams correct audit event stream',
-                quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/504782' do
+              it 'streams correct audit event stream' do
                 project.project_setting.update!(squash_option: new_value)
 
                 expect(AuditEvents::AuditEventStreamingWorker).to receive(:perform_async).with(
@@ -78,6 +77,7 @@ RSpec.describe Projects::ProjectSettingChangesAuditor, feature_category: :groups
 
                 auditor.execute
               end
+
             else
               it 'does not create audit event' do
                 project.project_setting.update!(squash_option: new_value)

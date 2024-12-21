@@ -38,16 +38,16 @@ RSpec.describe AuditEvents::ExternalAuditEventDestination, feature_category: :au
       let_it_be(:group_2) { create(:group) }
 
       it 'does not create destination with same url for a group' do
-        create(:external_audit_event_destination, destination_url: 'http://www.test.com', group: group)
-        destination = build(:external_audit_event_destination, destination_url: 'http://www.test.com', group: group)
+        create(:external_audit_event_destination, destination_url: 'http://example.com', group: group)
+        destination = build(:external_audit_event_destination, destination_url: 'http://example.com', group: group)
 
         expect(destination).not_to be_valid
         expect(destination.errors.full_messages).to include('Destination url has already been taken')
       end
 
       it 'creates destination with same url for different groups' do
-        create(:external_audit_event_destination, destination_url: 'http://www.test.com', group: group)
-        destination = build(:external_audit_event_destination, destination_url: 'http://www.test.com', group: group_2)
+        create(:external_audit_event_destination, destination_url: 'http://example.com', group: group)
+        destination = build(:external_audit_event_destination, destination_url: 'http://example.com', group: group_2)
 
         expect(destination).to be_valid
       end
@@ -81,8 +81,8 @@ RSpec.describe AuditEvents::ExternalAuditEventDestination, feature_category: :au
     end
 
     it 'must have a unique destination_url', :aggregate_failures do
-      create(:external_audit_event_destination, destination_url: 'https://example.com/1', group: group)
-      dup = build(:external_audit_event_destination, destination_url: 'https://example.com/1', group: group)
+      create(:external_audit_event_destination, destination_url: 'http://example.com/1', group: group)
+      dup = build(:external_audit_event_destination, destination_url: 'http://example.com/1', group: group)
 
       expect(dup).to be_invalid
       expect(dup.errors.full_messages).to include('Destination url has already been taken')
