@@ -555,7 +555,7 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
   end
 
   context 'with Amazon Q enabled' do
-    let(:params) { { title: 'Write hello world', description: '/q dev' } }
+    let(:params) { ActionController::Parameters.new(title: 'Write hello world', description: '/q dev').permit(:title, :description) }
 
     before do
       allow(::Ai::AmazonQ).to receive(:enabled?).and_return(true)

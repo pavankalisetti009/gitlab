@@ -56,7 +56,7 @@ module EE
 
     override :execute_triggers
     def execute_triggers
-      execute_amazon_q_trigger if amazon_q_params.is_a?(Hash)
+      execute_amazon_q_trigger if amazon_q_params
     end
 
     def execute_amazon_q_trigger
