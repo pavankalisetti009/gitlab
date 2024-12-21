@@ -22,7 +22,7 @@ module EE
       end
 
       def show_group_ai_settings?
-        @group.licensed_ai_features_available?
+        @group.licensed_ai_features_available? && show_gitlab_duo_settings_app?(@group)
       end
 
       def show_early_access_program_banner?
