@@ -193,7 +193,7 @@ module Ai
             "#{command} failed due to Amazon Q service account ID is not configured"
         elsif !amazon_q_service_account.composite_identity_enforced?
           raise CompositeIdentityEnforcedError,
-            "Cannot find the service account with composite identity enabled."
+            "Cannot find the service account with composite identity enabled"
         end
 
         true
