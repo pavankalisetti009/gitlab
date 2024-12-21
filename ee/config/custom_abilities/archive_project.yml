@@ -8,7 +8,4 @@ feature_category: groups_and_projects
 milestone: '16.6'
 group_ability: false
 project_ability: true
-feature_flag: archive_project
-feature_flag_enabled_milestone: '16.7'
-feature_flag_enabled_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/139260
 available_from_access_level: 50
