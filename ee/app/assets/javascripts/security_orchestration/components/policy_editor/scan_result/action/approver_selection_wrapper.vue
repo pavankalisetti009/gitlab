@@ -15,8 +15,6 @@ import {
   ADD_APPROVER_LABEL,
   APPROVER_TYPE_LIST_ITEMS,
   DEFAULT_APPROVER_DROPDOWN_TEXT,
-  getDefaultHumanizedTemplate,
-  MULTIPLE_APPROVER_TYPES_HUMANIZED_TEMPLATE,
 } from '../lib/actions';
 import GroupSelect from './group_select.vue';
 import RoleSelect from './role_select.vue';
@@ -48,14 +46,10 @@ export default {
       type: Array,
       required: true,
     },
-    approvalsRequired: {
-      type: Number,
-      required: true,
-    },
-    errors: {
-      type: Array,
+    isApproverFieldValid: {
+      type: Boolean,
       required: false,
-      default: () => [],
+      default: true,
     },
     existingApprovers: {
       type: Object,
@@ -69,6 +63,11 @@ export default {
       type: String,
       required: false,
       default: '',
+    },
+    showAdditionalApproverText: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     showRemoveButton: {
       type: Boolean,
@@ -94,17 +93,6 @@ export default {
     hasAvailableTypes() {
       return Boolean(this.availableTypes.length);
     },
-    humanizedTemplate() {
-      return getDefaultHumanizedTemplate(this.approvalsRequired);
-    },
-    isApproversErrored() {
-      return this.errors.some((error) => error.field === 'approvers_ids');
-    },
-    actionText() {
-      return this.approverIndex === 0
-        ? this.humanizedTemplate
-        : MULTIPLE_APPROVER_TYPES_HUMANIZED_TEMPLATE;
-    },
     selected() {
       return APPROVER_TYPE_LIST_ITEMS.find((v) => v.value === this.approverType)?.text;
     },
@@ -126,9 +114,6 @@ export default {
   methods: {
     addApproverType() {
       this.$emit('addApproverType');
-    },
-    approvalsRequiredChanged(value) {
-      this.$emit('updateApprovalsRequired', parseInt(value, 10));
     },
     handleApproversUpdate({ updatedApprovers, type }) {
       const updatedExistingApprovers = { ...this.existingApprovers };
@@ -158,6 +143,7 @@ export default {
     ADD_APPROVER_LABEL,
     disabledLabel: __('disabled'),
     disabledTitle: s__('SecurityOrchestration|You can select this option only once.'),
+    multipleApproverTypesHumanizedTemplate: __('or'),
   },
 };
 </script>
@@ -171,33 +157,8 @@ export default {
   >
     <template #content>
       <gl-form class="gl-w-full gl-items-center md:gl-flex" @submit.prevent>
-        <div class="gl-mb-3 gl-flex gl-w-30 gl-items-center md:!gl-mb-0 md:gl-justify-end">
-          <gl-sprintf :message="actionText">
-            <template #require="{ content }">
-              <strong>{{ content }}</strong>
-            </template>
-
-            <template #approvalsRequired>
-              <gl-form-input
-                :state="!isApproversErrored"
-                :value="approvalsRequired"
-                data-testid="approvals-required-input"
-                type="number"
-                class="gl-mx-3 !gl-w-11"
-                :min="1"
-                :max="100"
-                @update="approvalsRequiredChanged"
-              />
-            </template>
-
-            <template #approval="{ content }">
-              <strong class="gl-mr-3">{{ content }}</strong>
-            </template>
-          </gl-sprintf>
-        </div>
-
         <gl-collapsible-listbox
-          class="gl-mx-0 gl-mb-3 gl-block md:gl-mb-0 md:gl-ml-3 md:gl-mr-3 md:gl-inline-flex"
+          class="gl-mx-0 gl-mb-3 gl-block md:gl-mb-0 md:gl-mr-3"
           data-testid="available-types"
           :items="listBoxItems"
           :selected="selected"
@@ -236,7 +197,7 @@ export default {
           <component
             :is="approverComponent"
             :existing-approvers="existingApprovers[approverType]"
-            :state="!isApproversErrored"
+            :state="isApproverFieldValid"
             class="security-policies-approver-max-width"
             @error="$emit('error')"
             @updateSelectedApprovers="
@@ -247,6 +208,9 @@ export default {
             "
           />
         </template>
+        <p v-if="showAdditionalApproverText" class="gl-mb-0 gl-ml-0 gl-mt-2 md:gl-ml-3 md:gl-mt-0">
+          {{ $options.i18n.multipleApproverTypesHumanizedTemplate }}
+        </p>
       </gl-form>
       <gl-button
         v-if="showAddButton"
