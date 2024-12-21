@@ -24,6 +24,9 @@ describe('ComplianceReportsApp component', () => {
     violationsCsvExportPath: '/compliance_violation_reports.csv',
     adherencesCsvExportPath: '/compliance_standards_adherences.csv',
     frameworksCsvExportPath: '/compliance_frameworks_report.csv',
+    glAbilities: {
+      adminComplianceFramework: true,
+    },
   };
 
   const groupPath = 'top-level-group-path';
@@ -121,6 +124,19 @@ describe('ComplianceReportsApp component', () => {
       expect(findNewFrameworkTooltip().text()).toMatchInterpolatedText(
         'You can only create the compliance framework in top-level group Top Level Group',
       );
+    });
+
+    describe('when ability `adminComplianceFramework` is false', () => {
+      it('does not render the button', () => {
+        wrapper = createComponent(
+          mount,
+          {},
+          { glAbilities: { adminComplianceFramework: false } },
+          {},
+        );
+
+        expect(findNewFrameworkButton().exists()).toBe(false);
+      });
     });
   });
 

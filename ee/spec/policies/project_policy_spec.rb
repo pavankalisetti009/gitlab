@@ -3001,10 +3001,48 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    context 'for a member role with `custom_compliance_frameworks` true' do
-      let(:licensed_features) { { compliance_framework: true } }
+    context 'for a custom role with the `admin_compliance_framework` ability' do
+      let(:licensed_features) do
+        {
+          compliance_framework: true,
+          project_level_compliance_dashboard: true,
+          project_level_compliance_adherence_report: true,
+          project_level_compliance_violations_report: true
+        }
+      end
+
       let(:member_role_abilities) { { admin_compliance_framework: true } }
-      let(:allowed_abilities) { [:admin_compliance_framework] }
+
+      let(:allowed_abilities) do
+        [
+          :admin_compliance_framework,
+          :read_compliance_dashboard,
+          :read_compliance_adherence_report,
+          :read_compliance_violations_report
+        ]
+      end
+
+      it_behaves_like 'custom roles abilities'
+    end
+
+    context 'for a custom role with the `read_compliance_dashboard` ability' do
+      let(:licensed_features) do
+        {
+          project_level_compliance_dashboard: true,
+          project_level_compliance_adherence_report: true,
+          project_level_compliance_violations_report: true
+        }
+      end
+
+      let(:member_role_abilities) { { read_compliance_dashboard: true } }
+
+      let(:allowed_abilities) do
+        [
+          :read_compliance_dashboard,
+          :read_compliance_adherence_report,
+          :read_compliance_violations_report
+        ]
+      end
 
       it_behaves_like 'custom roles abilities'
     end

@@ -3890,12 +3890,68 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'for a member role with admin_compliance_framework true' do
       let(:member_role_abilities) { { admin_compliance_framework: true } }
+
       let(:allowed_abilities) do
-        [:admin_compliance_framework, :admin_compliance_pipeline_configuration, :read_compliance_dashboard]
+        [
+          :admin_compliance_framework,
+          :admin_compliance_pipeline_configuration,
+          :read_compliance_dashboard,
+          :read_compliance_adherence_report,
+          :read_compliance_violations_report
+        ]
       end
 
       context 'when compliance framework feature is available' do
-        let(:licensed_features) { { custom_compliance_frameworks: true } }
+        let(:licensed_features) do
+          {
+            custom_compliance_frameworks: true,
+            evaluate_group_level_compliance_pipeline: true,
+            group_level_compliance_dashboard: true,
+            group_level_compliance_adherence_report: true,
+            group_level_compliance_violations_report: true
+          }
+        end
+
+        it_behaves_like 'custom roles abilities'
+      end
+
+      context 'when compliance framework features are unavailable' do
+        before do
+          create_member_role(group_member_guest)
+
+          stub_licensed_features(
+            custom_roles: true,
+            custom_compliance_frameworks: false,
+            evaluate_group_level_compliance_pipeline: false,
+            group_level_compliance_dashboard: false,
+            group_level_compliance_adherence_report: false,
+            group_level_compliance_violations_report: false
+          )
+        end
+
+        it { is_expected.to be_disallowed(*allowed_abilities) }
+      end
+    end
+
+    context 'for a member role with read_compliance_dashboard true' do
+      let(:member_role_abilities) { { read_compliance_dashboard: true } }
+
+      let(:allowed_abilities) do
+        [
+          :read_compliance_dashboard,
+          :read_compliance_adherence_report,
+          :read_compliance_violations_report
+        ]
+      end
+
+      context 'when compliance framework feature is available' do
+        let(:licensed_features) do
+          {
+            group_level_compliance_dashboard: true,
+            group_level_compliance_adherence_report: true,
+            group_level_compliance_violations_report: true
+          }
+        end
 
         it_behaves_like 'custom roles abilities'
       end
@@ -3903,7 +3959,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       context 'when compliance framework feature is unavailable' do
         before do
           create_member_role(group_member_guest)
-          stub_licensed_features(custom_roles: true, custom_compliance_frameworks: false)
+
+          stub_licensed_features(
+            custom_roles: true,
+            group_level_compliance_dashboard: false,
+            group_level_compliance_adherence_report: false,
+            group_level_compliance_violations_report: false
+          )
         end
 
         it { is_expected.to be_disallowed(*allowed_abilities) }

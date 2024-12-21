@@ -616,15 +616,21 @@ module EE
 
       rule { custom_role_enables_admin_compliance_framework & compliance_framework_available }.policy do
         enable :admin_compliance_framework
+      end
+
+      rule { custom_role_enables_admin_compliance_framework & group_level_compliance_pipeline_available }.policy do
         enable :admin_compliance_pipeline_configuration
+      end
+
+      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & group_level_compliance_dashboard_enabled }.policy do
         enable :read_compliance_dashboard
       end
 
-      rule { custom_role_enables_admin_compliance_framework & group_level_compliance_adherence_report_enabled }.policy do
+      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & group_level_compliance_adherence_report_enabled }.policy do
         enable :read_compliance_adherence_report
       end
 
-      rule { custom_role_enables_admin_compliance_framework & group_level_compliance_violations_report_enabled }.policy do
+      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & group_level_compliance_violations_report_enabled }.policy do
         enable :read_compliance_violations_report
       end
 

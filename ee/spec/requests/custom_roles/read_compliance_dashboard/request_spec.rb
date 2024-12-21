@@ -2,12 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe 'User with admin_compliance_framework custom role', feature_category: :compliance_management do
+RSpec.describe 'User with read_compliance_dashboard custom role', feature_category: :compliance_management do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group, reload: true) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:role) { create(:member_role, :guest, :admin_compliance_framework, namespace: group) }
+
+  let_it_be(:role) { create(:member_role, :guest, :read_compliance_dashboard, namespace: group) }
   let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: current_user, group: group) }
+
   let_it_be(:framework) { create(:compliance_framework, namespace: group) }
 
   before do
@@ -16,7 +18,7 @@ RSpec.describe 'User with admin_compliance_framework custom role', feature_categ
     sign_in(current_user)
   end
 
-  describe GroupsController do
+  describe Groups::Security::ComplianceDashboardsController do
     let(:compliance_features) do
       {
         custom_compliance_frameworks: true,
@@ -27,23 +29,17 @@ RSpec.describe 'User with admin_compliance_framework custom role', feature_categ
       }
     end
 
-    it 'user can see edit a group page via a custom role' do
-      get edit_group_path(group)
+    describe "#show" do
+      it 'user can see compliance dashboard' do
+        get group_security_compliance_dashboard_path(group)
 
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to render_template(:edit)
-    end
-
-    it 'cannot update the group', :aggregate_failures do
-      expect do
-        put group_path(group), params: { group: { name: 'new-name' } }
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end.to not_change { group.reload.name }
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:show)
+      end
     end
   end
 
-  describe ProjectsController do
+  describe Projects::Security::ComplianceDashboardsController do
     let(:compliance_features) do
       {
         compliance_framework: true,
@@ -53,11 +49,13 @@ RSpec.describe 'User with admin_compliance_framework custom role', feature_categ
       }
     end
 
-    it 'user can see edit a project page via a custom role' do
-      get edit_project_path(project)
+    describe "#show" do
+      it 'user can see compliance dashboard' do
+        get project_security_compliance_dashboard_path(project)
 
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to render_template(:edit)
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:show)
+      end
     end
   end
 end

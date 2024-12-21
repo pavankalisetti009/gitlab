@@ -16,11 +16,11 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
   let(:menu) { described_class.new(context) }
 
   describe '#link' do
-    subject { menu.link }
+    subject(:link) { menu.link }
 
     context 'when menu has menu items' do
       it 'returns first visible menu item link' do
-        expect(subject).to eq menu.renderable_items.first.link
+        expect(link).to eq menu.renderable_items.first.link
       end
     end
 
@@ -28,13 +28,13 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
       let(:user) { nil }
 
       it 'returns show group security page' do
-        expect(subject).to eq "/groups/#{group.full_path}/-/security/discover"
+        expect(link).to eq "/groups/#{group.full_path}/-/security/discover"
       end
     end
   end
 
   describe '#title' do
-    subject { menu.title }
+    subject(:title) { menu.title }
 
     specify do
       is_expected.to eq 'Security and compliance'
@@ -50,7 +50,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
   end
 
   describe '#render?' do
-    subject { menu.render? }
+    subject(:render) { menu.render? }
 
     it 'returns true if there are menu items' do
       is_expected.to be true
@@ -72,7 +72,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
   end
 
   describe 'Menu Items' do
-    subject { described_class.new(context).renderable_items.index { |e| e.item_id == item_id } }
+    subject(:items) { described_class.new(context).renderable_items.index { |e| e.item_id == item_id } }
 
     shared_examples 'menu access rights' do
       it { is_expected.not_to be_nil }
@@ -116,7 +116,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
       end
     end
 
-    describe 'Compliance' do
+    describe 'Compliance center' do
       let(:item_id) { :compliance }
 
       context 'when group_level_compliance_dashboard feature is enabled' do
@@ -125,6 +125,48 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         end
 
         it_behaves_like 'menu access rights'
+
+        context 'when user is assigned a custom role with `read_compliance_dashboard` ability' do
+          let_it_be(:user) { create(:user) }
+
+          let_it_be(:member_role) { create(:member_role, :guest, :read_compliance_dashboard, namespace: group) }
+          let_it_be(:member) { create(:group_member, :guest, user: user, source: group, member_role: member_role) }
+
+          before do
+            stub_licensed_features(group_level_compliance_dashboard: true, custom_roles: true)
+          end
+
+          it_behaves_like 'menu access rights'
+
+          context 'when custom roles feature is disabled' do
+            before do
+              stub_licensed_features(group_level_compliance_dashboard: true, custom_roles: false)
+            end
+
+            it { is_expected.to be_nil }
+          end
+        end
+
+        context 'when user is assigned a custom role with `admin_compliance_framework` ability' do
+          let_it_be(:user) { create(:user) }
+
+          let_it_be(:member_role) { create(:member_role, :guest, :admin_compliance_framework, namespace: group) }
+          let_it_be(:member) { create(:group_member, :guest, user: user, source: group, member_role: member_role) }
+
+          before do
+            stub_licensed_features(group_level_compliance_dashboard: true, custom_roles: true)
+          end
+
+          it_behaves_like 'menu access rights'
+
+          context 'when custom roles feature is disabled' do
+            before do
+              stub_licensed_features(group_level_compliance_dashboard: true, custom_roles: false)
+            end
+
+            it { is_expected.to be_nil }
+          end
+        end
       end
 
       context 'when group_level_compliance_dashboard feature is not enabled' do
