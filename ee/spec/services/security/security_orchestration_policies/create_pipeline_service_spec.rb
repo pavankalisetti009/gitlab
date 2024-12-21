@@ -387,6 +387,27 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
 
             it_behaves_like 'creates a build with appropriate variables'
           end
+
+          context 'without a most most_recent_commit_sha' do
+            let(:expected_variables) { [{ key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true', public: true, masked: false }] }
+            let(:pipeline_scan_pipeline) { project.all_pipelines.find_by!(source: "security_orchestration_policy") }
+
+            before do
+              allow(project.repository).to receive(:commit).with(branch).and_return(nil)
+            end
+
+            it "errors" do
+              expect(status).to be(:error)
+            end
+
+            it "sets the error message" do
+              expect(message).to eq("Commit not found")
+            end
+
+            it "creates the scan pipeline" do
+              expect(project.all_pipelines).to contain_exactly(pipeline_scan_pipeline)
+            end
+          end
         end
       end
 

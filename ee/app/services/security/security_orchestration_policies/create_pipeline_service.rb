@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class CreatePipelineService < ::BaseProjectService
+      include ::Gitlab::Utils::StrongMemoize
+
       def execute
         return error(s_('SecurityPolicies|Invalid or empty policy')) if ci_configs.values.all?(&:blank?)
 
@@ -67,7 +69,9 @@ module Security
       def scan_variables(actions)
         return {} unless actions.detect { |a| a[:scan] == 'secret_detection' }
 
-        return { secret_detection: { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true' } } unless last_scan_commit_sha.present?
+        unless last_scan_commit_sha.present? && most_recent_commit_sha.present?
+          return { secret_detection: { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true' } }
+        end
 
         { secret_detection: { 'SECRET_DETECTION_LOG_OPTIONS' => commit_range } }
       end
@@ -88,8 +92,9 @@ module Security
       end
 
       def most_recent_commit_sha
-        @most_recent_commit_sha ||= project.repository.commit(params[:branch]).sha
+        project.repository.commit(params[:branch])&.sha
       end
+      strong_memoize_attr :most_recent_commit_sha
 
       def execute_pipeline_scans(ci_config)
         return if ci_config.blank?
