@@ -1,5 +1,5 @@
 <script>
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlFormInput, GlSprintf } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -9,6 +9,7 @@ import {
   removeAvailableApproverType,
   createActionFromApprovers,
   actionHasType,
+  getDefaultHumanizedTemplate,
 } from '../lib/actions';
 import SectionLayout from '../../section_layout.vue';
 import ApproverSelectionWrapper from './approver_selection_wrapper.vue';
@@ -17,6 +18,8 @@ export default {
   name: 'ApproverAction',
   components: {
     GlAlert,
+    GlFormInput,
+    GlSprintf,
     ApproverSelectionWrapper,
     SectionLayout,
   },
@@ -67,8 +70,17 @@ export default {
         return error;
       });
     },
+    approvalsRequired() {
+      return this.initAction.approvals_required;
+    },
     hasMultipleApproversActionsEnabled() {
       return this.glFeatures.multipleApprovalActions;
+    },
+    humanizedTemplate() {
+      return getDefaultHumanizedTemplate(this.approvalsRequired);
+    },
+    isApproverFieldValid() {
+      return this.errors.every((error) => error.field !== 'approvers_ids');
     },
     selectedErrors() {
       return this.hasMultipleApproversActionsEnabled ? this.actionErrors : this.errors;
@@ -170,22 +182,46 @@ export default {
       :show-remove-button="false"
     >
       <template #content>
+        <div class="gl-mb-3 gl-ml-5 gl-flex gl-items-center">
+          <gl-sprintf :message="humanizedTemplate">
+            <template #require="{ content }">
+              <strong>{{ content }}</strong>
+            </template>
+
+            <template #approvalsRequired>
+              <gl-form-input
+                :state="isApproverFieldValid"
+                :value="approvalsRequired"
+                data-testid="approvals-required-input"
+                type="number"
+                class="gl-mx-3 !gl-w-11"
+                :min="1"
+                :max="100"
+                @update="handleUpdateApprovalsRequired"
+              />
+            </template>
+
+            <template #approval="{ content }">
+              <strong class="gl-mr-3">{{ content }}</strong>
+            </template>
+          </gl-sprintf>
+        </div>
+
         <approver-selection-wrapper
           v-for="({ id, type }, i) in approverTypeTracker"
           :key="id"
           :approver-index="i"
           :available-types="availableApproverTypes"
           :approver-type="type"
-          :errors="errors"
+          :is-approver-field-valid="isApproverFieldValid"
           :num-of-approver-types="approverTypeTracker.length"
-          :approvals-required="initAction.approvals_required"
           :existing-approvers="existingApprovers"
-          :show-remove-button="i > 0"
+          :show-additional-approver-text="i < approverTypeTracker.length - 1"
+          :show-remove-button="approverTypeTracker.length > 1"
           @addApproverType="handleAddApproverType"
           @error="$emit('error')"
           @updateApprovers="handleUpdateApprovers"
           @updateApproverType="handleUpdateApproverType(i, $event)"
-          @updateApprovalsRequired="handleUpdateApprovalsRequired"
           @removeApproverType="handleRemoveApproverType(i, $event)"
         />
       </template>

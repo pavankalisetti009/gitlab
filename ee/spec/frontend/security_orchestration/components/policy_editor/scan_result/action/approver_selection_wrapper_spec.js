@@ -1,5 +1,6 @@
 import { nextTick } from 'vue';
-import { GlForm, GlFormInput, GlCollapsibleListbox, GlSprintf, GlBadge } from '@gitlab/ui';
+import { GlForm, GlCollapsibleListbox, GlSprintf, GlBadge } from '@gitlab/ui';
+import { trimText } from 'helpers/text_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
@@ -9,14 +10,7 @@ import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_
 import {
   APPROVER_TYPE_LIST_ITEMS,
   DEFAULT_APPROVER_DROPDOWN_TEXT,
-  getDefaultHumanizedTemplate,
-  MULTIPLE_APPROVER_TYPES_HUMANIZED_TEMPLATE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
-
-const DEFAULT_ACTION = {
-  approvals_required: 1,
-  type: 'require_approval',
-};
 
 describe('ApproverSelectionWrapper', () => {
   let wrapper;
@@ -45,7 +39,6 @@ describe('ApproverSelectionWrapper', () => {
     });
   };
 
-  const findApprovalsRequiredInput = () => wrapper.findComponent(GlFormInput);
   const findApproverTypeDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findGroupSelect = () => wrapper.findComponent(GroupSelect);
   const findUserSelect = () => wrapper.findComponent(UserSelect);
@@ -53,7 +46,6 @@ describe('ApproverSelectionWrapper', () => {
   const findApproverTypeDropdownContent = () => wrapper.findByTestId('list-item-content');
   const findApproverTypeDropdownText = () => wrapper.findByTestId('list-item-text');
   const findSectionLayout = () => wrapper.findComponent(SectionLayout);
-  const findMessage = () => wrapper.findComponent(GlSprintf);
 
   describe('single type', () => {
     beforeEach(factory);
@@ -64,12 +56,6 @@ describe('ApproverSelectionWrapper', () => {
         selected: [],
         toggleText: DEFAULT_APPROVER_DROPDOWN_TEXT,
       });
-    });
-
-    it('renders the number of approvers input with a valid state', () => {
-      const approvalsRequiredInput = findApprovalsRequiredInput();
-      expect(approvalsRequiredInput.exists()).toBe(true);
-      expect(approvalsRequiredInput.attributes('state')).toBe('true');
     });
 
     it('renders the add button', () => {
@@ -94,15 +80,6 @@ describe('ApproverSelectionWrapper', () => {
       expect(findGroupSelect().exists()).toBe(false);
     });
 
-    it('triggers an update when changing number of approvals required', async () => {
-      const approvalRequestPlusOne = DEFAULT_ACTION.approvals_required + 1;
-      const formInput = findApprovalsRequiredInput();
-
-      await formInput.vm.$emit('update', approvalRequestPlusOne);
-
-      expect(wrapper.emitted('updateApprovalsRequired')).toEqual([[approvalRequestPlusOne]]);
-    });
-
     it('triggers an update when changing the approver type', async () => {
       await findApproverTypeDropdown().vm.$emit('select', GROUP_TYPE);
 
@@ -113,15 +90,8 @@ describe('ApproverSelectionWrapper', () => {
   });
 
   describe('errors', () => {
-    it('renders the number of approvers input with an invalid state', () => {
-      factory({ propsData: { errors: [{ field: 'approvers_ids' }] } });
-      const approvalsRequiredInput = findApprovalsRequiredInput();
-      expect(approvalsRequiredInput.exists()).toBe(true);
-      expect(approvalsRequiredInput.attributes('state')).toBe(undefined);
-    });
-
     it('renders the approver dropdown with an invalid state', () => {
-      factory({ propsData: { approverType: USER_TYPE, errors: [{ field: 'approvers_ids' }] } });
+      factory({ propsData: { approverType: USER_TYPE, isApproverFieldValid: false } });
       expect(findUserSelect().props('state')).toBe(false);
     });
   });
@@ -200,19 +170,12 @@ describe('ApproverSelectionWrapper', () => {
   });
 
   describe('message', () => {
-    it('renders the correct message for the first type added', async () => {
-      factory({ stubs: { GlSprintf: true, SectionLayout: true } });
-      await nextTick();
-      expect(findMessage().attributes('message')).toBe(getDefaultHumanizedTemplate(1));
-    });
-
-    it('renders the correct text for the non-first type', async () => {
-      factory({
-        propsData: { approverIndex: 1, numOfApproverTypes: 2 },
-        stubs: { GlSprintf: true, SectionLayout: true },
+    it('renders the correct text for when there are multiple approvers', async () => {
+      await factory({
+        propsData: { approverIndex: 1, numOfApproverTypes: 2, showAdditionalApproverText: true },
+        stubs: { SectionLayout: true },
       });
-      await nextTick();
-      expect(findMessage().attributes('message')).toBe(MULTIPLE_APPROVER_TYPES_HUMANIZED_TEMPLATE);
+      expect(trimText(findSectionLayout().text())).toBe('or Add new approver');
     });
   });
 

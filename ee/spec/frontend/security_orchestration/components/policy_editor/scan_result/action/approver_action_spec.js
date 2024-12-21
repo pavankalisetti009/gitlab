@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlFormInput, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
 import ApproverAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_action.vue';
@@ -69,9 +69,13 @@ describe('ApproverAction', () => {
         namespaceId: '1',
         ...provide,
       },
+      stubs: {
+        GlSprintf,
+      },
     });
   };
 
+  const findApprovalsRequiredInput = () => wrapper.findComponent(GlFormInput);
   const findActionApprover = () => wrapper.findComponent(ApproverSelectionWrapper);
   const findAllApproverSelectionWrapper = () => wrapper.findAllComponents(ApproverSelectionWrapper);
   const findAllAlerts = () => wrapper.findAllComponents(GlAlert);
@@ -88,12 +92,12 @@ describe('ApproverAction', () => {
     it('renders', () => {
       expect(findActionApprover().props()).toEqual({
         approverIndex: 0,
-        availableTypes: APPROVER_TYPE_LIST_ITEMS,
-        approvalsRequired: 1,
-        errors: [],
-        existingApprovers: {},
-        numOfApproverTypes: 1,
         approverType: '',
+        availableTypes: APPROVER_TYPE_LIST_ITEMS,
+        existingApprovers: {},
+        isApproverFieldValid: true,
+        numOfApproverTypes: 1,
+        showAdditionalApproverText: false,
         showRemoveButton: false,
       });
     });
@@ -126,15 +130,26 @@ describe('ApproverAction', () => {
       ]);
     });
 
-    it('emits "changed" with the appropriate values on "updateApprovalsRequired"', async () => {
-      expect(findActionApprover().props('approvalsRequired')).toBe(1);
-      await emit('updateApprovalsRequired', 2);
-      expect(wrapper.emitted('changed')[1]).toEqual([
-        {
-          approvals_required: 2,
-          type: 'require_approval',
-        },
-      ]);
+    it('renders the number of approvers input with a valid state', () => {
+      const approvalsRequiredInput = findApprovalsRequiredInput();
+      expect(approvalsRequiredInput.exists()).toBe(true);
+      expect(approvalsRequiredInput.attributes('state')).toBe('true');
+    });
+
+    it('triggers an update when changing number of approvals required', async () => {
+      const approvalRequestPlusOne = DEFAULT_ACTION.approvals_required + 1;
+      const formInput = findApprovalsRequiredInput();
+
+      await formInput.vm.$emit('update', approvalRequestPlusOne);
+
+      expect(wrapper.emitted('changed')[1][0]).toEqual({
+        approvals_required: approvalRequestPlusOne,
+        type: 'require_approval',
+      });
+    });
+
+    it('renders the correct message for the first type added', () => {
+      expect(findSectionLayout().text()).toBe('Require  approval from:');
     });
   });
 
@@ -149,6 +164,13 @@ describe('ApproverAction', () => {
         dismissible: false,
       });
       expect(allAlerts.at(0).text()).toBe(error.message);
+    });
+
+    it('renders the number of approvers input with an invalid state', () => {
+      createWrapper({ errors: [{ field: 'approvers_ids' }] });
+      const approvalsRequiredInput = findApprovalsRequiredInput();
+      expect(approvalsRequiredInput.exists()).toBe(true);
+      expect(approvalsRequiredInput.attributes('state')).toBe(undefined);
     });
 
     it('renders the alert only for related to action error', () => {

@@ -107,8 +107,6 @@ export const getDefaultHumanizedTemplate = (numOfApproversRequired) => {
   );
 };
 
-export const MULTIPLE_APPROVER_TYPES_HUMANIZED_TEMPLATE = s__('SecurityOrchestration|or from:');
-
 export const DEFAULT_APPROVER_DROPDOWN_TEXT = s__('SecurityOrchestration|Choose approver type');
 
 export const REQUIRE_APPROVAL_TYPE = 'require_approval';
