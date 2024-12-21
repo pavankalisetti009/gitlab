@@ -10,8 +10,10 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
   let(:show_discover_project_security) { true }
   let(:context) { Sidebars::Projects::Context.new(current_user: user, container: project, show_promotions: show_promotions, show_discover_project_security: show_discover_project_security) }
 
+  subject(:items) { described_class.new(context).renderable_items.find { |i| i.item_id == item_id } }
+
   describe '#link' do
-    subject { described_class.new(context) }
+    subject(:menu) { described_class.new(context) }
 
     let(:show_promotions) { false }
     let(:show_discover_project_security) { false }
@@ -30,7 +32,7 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
       it 'returns the expected link' do
         stub_licensed_features(security_dashboard: security_dashboard_feature, audit_events: audit_events_feature, dependency_scanning: dependency_scanning_feature)
 
-        expect(subject.link).to include(expected_link)
+        expect(menu.link).to include(expected_link)
       end
     end
 
@@ -38,8 +40,8 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
       let(:user) { nil }
 
       it 'returns nil', :aggregate_failures do
-        expect(subject.renderable_items).to be_empty
-        expect(subject.link).to be_nil
+        expect(menu.renderable_items).to be_empty
+        expect(menu.link).to be_nil
       end
     end
   end
@@ -72,8 +74,6 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
         it { expect(renderable_items).to match_array([:dashboard, :vulnerability_report]) }
       end
     end
-
-    subject { described_class.new(context).renderable_items.find { |i| i.item_id == item_id } }
 
     describe 'Configuration' do
       let(:item_id) { :configuration }
@@ -255,7 +255,7 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
       end
     end
 
-    describe 'Compliance' do
+    describe 'Compliance center' do
       let(:item_id) { :compliance }
 
       context 'when project_level_compliance_dashboard feature is enabled' do
@@ -269,13 +269,53 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
 
         context 'when project is in group' do
           let_it_be(:user) { create(:user) }
-          let_it_be(:project) { create(:project, :public, :in_group) }
+          let_it_be(:project) { create(:project, :private, :in_group) }
 
-          before_all do
-            project.add_owner(user)
+          context 'when user is an owner' do
+            before_all do
+              project.add_owner(user)
+            end
+
+            it { is_expected.not_to be_nil }
           end
 
-          it { is_expected.not_to be_nil }
+          context 'when user is assigned a custom role with `read_compliance_dashboard` ability' do
+            let_it_be(:member_role) { create(:member_role, :guest, :read_compliance_dashboard, namespace: project.group) }
+            let_it_be(:member) { create(:project_member, :guest, user: user, source: project, member_role: member_role) }
+
+            before do
+              stub_licensed_features(project_level_compliance_dashboard: true, custom_roles: true)
+            end
+
+            it { is_expected.not_to be_nil }
+
+            context 'when custom roles feature is disabled' do
+              before do
+                stub_licensed_features(project_level_compliance_dashboard: true, custom_roles: false)
+              end
+
+              it { is_expected.to be_nil }
+            end
+          end
+
+          context 'when user is assigned a custom role with `admin_compliance_framework` ability' do
+            let_it_be(:member_role) { create(:member_role, :guest, :admin_compliance_framework, namespace: project.group) }
+            let_it_be(:member) { create(:project_member, :guest, user: user, source: project, member_role: member_role) }
+
+            before do
+              stub_licensed_features(project_level_compliance_dashboard: true, custom_roles: true)
+            end
+
+            it { is_expected.not_to be_nil }
+
+            context 'when custom roles feature is disabled' do
+              before do
+                stub_licensed_features(project_level_compliance_dashboard: true, custom_roles: false)
+              end
+
+              it { is_expected.to be_nil }
+            end
+          end
         end
       end
 

@@ -11,6 +11,7 @@ import {
 
 import { helpPagePath } from '~/helpers/help_page_helper';
 import Tracking from '~/tracking';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { isTopLevelGroup } from '../utils';
 
 import {
@@ -59,7 +60,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [Tracking.mixin()],
+  mixins: [Tracking.mixin(), glAbilitiesMixin()],
   inject: [
     'mergeCommitsCsvExportPath',
     'projectFrameworksCsvExportPath',
@@ -110,6 +111,9 @@ export default {
     tabIndex() {
       return this.tabs.findIndex((tab) => tab.target === this.$route.name);
     },
+    canAdminComplianceFramework() {
+      return this.glAbilities.adminComplianceFramework;
+    },
   },
   methods: {
     goTo(name) {
@@ -159,6 +163,7 @@ export default {
         </gl-tooltip>
         <span ref="newFrameworkButton">
           <gl-button
+            v-if="canAdminComplianceFramework"
             class="gl-mb-3"
             variant="confirm"
             category="secondary"

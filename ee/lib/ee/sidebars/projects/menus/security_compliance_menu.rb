@@ -27,10 +27,7 @@ module EE
           private
 
           def can_access_some_page?
-            return false unless context.project.feature_available?(:security_and_compliance, context.current_user)
-
-            can?(context.current_user, :access_security_and_compliance, context.project) ||
-              can?(context.current_user, :read_security_resource, context.project)
+            context.project.feature_available?(:security_and_compliance, context.current_user)
           end
 
           def can_access_security_dashboard?
