@@ -24,6 +24,10 @@ query projectScanResultPolicies(
             webUrl
             fullPath
           }
+          customRoles {
+            id
+            name
+          }
           roles
           users {
             id

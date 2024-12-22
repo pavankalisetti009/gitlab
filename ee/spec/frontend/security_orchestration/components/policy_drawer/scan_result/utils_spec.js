@@ -429,16 +429,23 @@ describe('humanizeRules', () => {
   });
 
   describe('mapApproversToArray', () => {
+    const user = { id: 1, name: 'user-1' };
+    const group = { id: 1, name: 'group-1' };
+    const customRole = { id: 'gid://gitlab/MemberRole/1', name: 'Custom (Gitlab Org - 24)' };
+
     it.each`
-      approvers                                                        | expectedResult
-      ${undefined}                                                     | ${[]}
-      ${{}}                                                            | ${[]}
-      ${{ allGroups: [{ id: 1, name: 'group-1' }] }}                   | ${[{ id: 1, name: 'group-1' }]}
-      ${{ roles: ['invalid-role'] }}                                   | ${[]}
-      ${{ roles: ['MAINTAINER'], users: [{ id: 1, name: 'user-1' }] }} | ${['Maintainer', { id: 1, name: 'user-1' }]}
-      ${{ roles: undefined, users: undefined, allGroups: undefined }}  | ${[]}
-    `('returns flat array of approvers', ({ approvers, expectedResult }) => {
-      expect(mapApproversToArray(approvers)).toEqual(expectedResult);
-    });
+      approvers                                                       | expectedResult
+      ${undefined}                                                    | ${[]}
+      ${{}}                                                           | ${[]}
+      ${{ allGroups: [group], customRoles: [customRole] }}            | ${[group, customRole]}
+      ${{ roles: ['invalid-role'] }}                                  | ${[]}
+      ${{ roles: ['MAINTAINER'], users: [user] }}                     | ${['Maintainer', user]}
+      ${{ roles: undefined, users: undefined, allGroups: undefined }} | ${[]}
+    `(
+      'returns flat array of approvers when the approvers are $approvers',
+      ({ approvers, expectedResult }) => {
+        expect(mapApproversToArray(approvers)).toEqual(expectedResult);
+      },
+    );
   });
 });

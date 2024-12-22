@@ -21,6 +21,10 @@ query groupScanResultPolicies(
             webUrl
             fullPath
           }
+          customRoles {
+            id
+            name
+          }
           roles
           users {
             id
