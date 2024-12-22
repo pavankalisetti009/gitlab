@@ -1,5 +1,14 @@
 <script>
-import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
+import {
+  GlSprintf,
+  GlAlert,
+  GlButton,
+  GlLink,
+  GlForm,
+  GlLoadingIcon,
+  GlTooltip,
+  GlModal,
+} from '@gitlab/ui';
 import produce from 'immer';
 import InternalEvents from '~/tracking/internal_events';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -35,9 +44,12 @@ export default {
     RequirementsSection,
     DeleteModal,
     GlAlert,
+    GlLink,
+    GlSprintf,
     GlButton,
     GlForm,
     GlLoadingIcon,
+    GlModal,
     GlTooltip,
   },
   mixins: [InternalEvents.mixin()],
@@ -46,6 +58,8 @@ export default {
     'groupPath',
     'featureSecurityPoliciesEnabled',
     'adherenceV2Enabled',
+    'pipelineExecutionPolicyPath',
+    'migratePipelineToPolicyPath',
   ],
   data() {
     return {
@@ -57,6 +71,7 @@ export default {
       isSaving: false,
       isDeleting: false,
       hasMigratedPipeline: false,
+      showMigrationPopup: false,
     };
   },
   apollo: {
@@ -165,6 +180,19 @@ export default {
     shouldRenderPolicySection() {
       return !this.isNewFramework && this.featureSecurityPoliciesEnabled;
     },
+    showModal: {
+      get() {
+        const pipeline = this.hasPipeline;
+        return pipeline != null && pipeline.length > 0 && this.showMigrationPopup;
+      },
+      set() {
+        this.showMigrationPopup = false;
+        this.$emit('close-modal');
+      },
+    },
+    hasPipeline() {
+      return this.formData.pipelineConfigurationFullPath;
+    },
   },
   methods: {
     setError(error, userFriendlyText, loadingProp = 'isSaving') {
@@ -228,24 +256,34 @@ export default {
           if (this.adherenceV2Enabled) {
             await this.createRequirements(frameworkId);
           }
+          this.handleMutationSuccess();
         } else {
           await this.updateFramework(params);
+          this.interjectModal();
         }
-        this.handleMutationSuccess();
       } catch (error) {
         this.setError(error, SAVE_ERROR);
       } finally {
         this.isSaving = false;
       }
     },
+    naviagteNewFramework() {
+      this.$router.push({
+        name: ROUTE_NEW_FRAMEWORK_SUCCESS,
+      });
+    },
+    interjectModal() {
+      if (!this.hasPipeline) {
+        this.handleMutationSuccess();
+      }
+
+      this.showMigrationPopup = true;
+    },
     handleMutationSuccess() {
       if (this.isNewFramework) {
-        this.$router.push({
-          name: ROUTE_NEW_FRAMEWORK_SUCCESS,
-        });
-      } else {
-        this.navigateBack();
+        this.naviagteNewFramework();
       }
+      this.showMigrationPopup = false;
     },
     async createRequirements(frameworkId) {
       const newRequirements = this.requirements.filter((requirement) => !requirement.id);
@@ -503,6 +541,7 @@ export default {
       this.$refs.deleteModal.show();
     },
   },
+  modalId: 'warn-when-using-pipeline-modal',
   i18n,
   requirementEvents,
 };
@@ -513,6 +552,30 @@ export default {
     <gl-alert v-if="errorMessage" class="gl-mb-7" variant="danger" :dismissible="false">
       {{ errorMessage }}
     </gl-alert>
+
+    <gl-modal
+      ref="modal"
+      v-model="showModal"
+      data-testid="pipeline-migration-popup"
+      :modal-id="$options.modalId"
+      :title="$options.i18n.deprecationWarning.title"
+      hide-footer
+    >
+      <p class="gl-mb-0">
+        <gl-sprintf :message="$options.i18n.deprecationWarning.message">
+          <template #link="{ content }">
+            <gl-link :href="pipelineExecutionPolicyPath" target="_blank">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </p>
+      <p>
+        <gl-sprintf :message="$options.i18n.deprecationWarning.details">
+          <template #link="{ content }">
+            <gl-link :href="migratePipelineToPolicyPath" target="_blank">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </p>
+    </gl-modal>
     <gl-loading-icon v-if="isLoading" size="lg" />
 
     <template v-else>

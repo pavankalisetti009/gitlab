@@ -1,5 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { createWrapper } from '@vue/test-utils';
 import { GlAlert, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import getComplianceFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/get_compliance_framework.query.graphql';
@@ -16,7 +17,11 @@ import createRequirementMutation from 'ee/compliance_dashboard/graphql/mutations
 import updateRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_requirement.mutation.graphql';
 import deleteRequirementMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_requirement.mutation.graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import {
+  mountExtended,
+  shallowMountExtended,
+  extendedWrapper,
+} from 'helpers/vue_test_utils_helper';
 import { requirementEvents } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
@@ -74,6 +79,7 @@ describe('Edit Framework Form', () => {
 
   const showDeleteModal = jest.fn();
   const routerBack = jest.fn();
+  const interjectModal = jest.fn();
   const routerPush = jest.fn();
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -83,6 +89,8 @@ describe('Edit Framework Form', () => {
   const findDeleteButtonTooltip = () => wrapper.findComponent(GlTooltip);
   const findPipelineInput = () => wrapper.findComponentByTestId('pipeline-configuration-input');
   const findRequirementsSection = () => wrapper.findComponent(RequirementsSection);
+  const findPipelineMigrationPopup = () =>
+    extendedWrapper(createWrapper(document.body)).find('[data-testid="pipeline-migration-popup"]');
 
   const invalidFeedback = (input) =>
     input.closest('[role=group]').querySelector('.invalid-feedback')?.textContent ?? '';
@@ -172,6 +180,87 @@ describe('Edit Framework Form', () => {
   });
 
   describe('Security policies migration', () => {
+    describe('popup when saving framework', () => {
+      beforeEach(() => {
+        wrapper = createComponent();
+      });
+
+      it('does not show popup without pipeline', async () => {
+        await waitForPromises();
+        const form = wrapper.find('form');
+        await form.trigger('submit');
+        await waitForPromises();
+
+        expect(findPipelineMigrationPopup().exists()).toBe(false);
+      });
+
+      describe('with new framework', () => {
+        it('does not show popup after pipeline', async () => {
+          jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(true);
+
+          const pipelineInput = findPipelineInput();
+          await pipelineInput.setValue('.compliance.yml@flightjs/flight');
+          await waitForPromises();
+
+          const form = wrapper.find('form');
+
+          await form.trigger('submit');
+          await waitForPromises();
+
+          expect(findPipelineMigrationPopup().exists()).toBe(false);
+        });
+      });
+      describe('on update', () => {
+        beforeEach(async () => {
+          jest.runAllTimers();
+          const mockResponse = (mutationType, namespace) =>
+            jest
+              .fn()
+              .mockResolvedValue(
+                createComplianceFrameworkMutationResponse(mutationType, namespace),
+              );
+          wrapper = await createComponent(mountExtended, {
+            requestHandlers: [
+              [getComplianceFrameworkQuery],
+              [
+                updateComplianceFrameworkMutation,
+                mockResponse('updateComplianceFramework', 'complianceFramework'),
+              ],
+            ],
+            routeParams: { id: 1 },
+          });
+        });
+        it('shows popup after, with pipeline', async () => {
+          jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(true);
+
+          const pipelineInput = findPipelineInput();
+          await pipelineInput.setValue('.compliance.yml@flightjs/flight');
+          await waitForPromises();
+          const form = wrapper.find('form');
+          await form.trigger('submit');
+          await waitForPromises();
+
+          const { display, visibility, opacity } = window.getComputedStyle(
+            findPipelineMigrationPopup().element,
+          );
+          expect(display).not.toEqual('none');
+          expect(visibility).not.toEqual('hidden');
+          expect(opacity).not.toEqual('0');
+
+          expect(findPipelineMigrationPopup().exists()).toBe(true);
+        });
+        it('no popup after without pipeline', async () => {
+          jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(true);
+
+          const form = wrapper.find('form');
+
+          await form.trigger('submit');
+          await waitForPromises();
+          expect(findPipelineMigrationPopup().exists()).toBe(false);
+        });
+      });
+    });
+
     it('passes hasMigratedPipeline prop to BasicInformationSection if relevant policy exists', async () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: [[getComplianceFrameworkQuery, createComplianceFrameworksReportResponse]],
@@ -241,7 +330,7 @@ describe('Edit Framework Form', () => {
   it.each`
     routeParams    | mutation                             | successHandler
     ${{}}          | ${createComplianceFrameworkMutation} | ${routerPush}
-    ${{ id: '1' }} | ${updateComplianceFrameworkMutation} | ${routerBack}
+    ${{ id: '1' }} | ${updateComplianceFrameworkMutation} | ${interjectModal}
   `('invokes correct mutation', async ({ routeParams, mutation, successHandler }) => {
     const mockResponse = (mutationType, namespace) =>
       jest
@@ -268,7 +357,11 @@ describe('Edit Framework Form', () => {
     await form.trigger('submit');
     await waitForPromises();
     expect(stubHandlers.find((handler) => handler[0] === mutation)[1]).toHaveBeenCalled();
-    expect(successHandler).toHaveBeenCalled();
+
+    // we only redirect for new frameworks now
+    if (successHandler === routerPush) {
+      expect(successHandler).toHaveBeenCalled();
+    }
   });
 
   it('tracks event of compliance framework creation', async () => {
