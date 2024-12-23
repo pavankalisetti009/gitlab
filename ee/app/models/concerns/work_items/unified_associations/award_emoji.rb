@@ -9,8 +9,8 @@ module WorkItems
         has_many :own_award_emoji, as: :awardable, inverse_of: :awardable, class_name: 'AwardEmoji', dependent: :destroy
 
         has_many :award_emoji, -> {
-                                 includes(:user).order(:id)
-                               }, as: :awardable, inverse_of: :awardable, dependent: :destroy do
+          includes(:user).order(:id)
+        }, as: :awardable, inverse_of: :awardable, dependent: :destroy do
           def find(*args)
             return super unless proxy_association.owner.unified_associations?
             return super if block_given?
@@ -71,7 +71,7 @@ module WorkItems
 
         override :awarded
         def awarded(user, opts = {})
-          return super unless apply_unified_emoji_association?(opts[:group])
+          return super unless apply_unified_emoji_association?
 
           inner_query = inner_filter_query(user, opts)
 
@@ -103,7 +103,7 @@ module WorkItems
 
         override :not_awarded
         def not_awarded(user, opts = {})
-          return super unless apply_unified_emoji_association?(opts[:group])
+          return super unless apply_unified_emoji_association?
 
           inner_query = inner_filter_query(user, opts)
 
@@ -133,9 +133,8 @@ module WorkItems
           where(inner_query)
         end
 
-        def apply_unified_emoji_association?(group)
-          group&.epic_and_work_item_associations_unification_enabled? &&
-            [WorkItem, Epic].include?(self)
+        def apply_unified_emoji_association?
+          [WorkItem, Epic].include?(self)
         end
       end
 

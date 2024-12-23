@@ -649,10 +649,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
 
         described_class.track!(*epics)
 
-        # Group#epic_and_work_item_associations_unification_enabled? checks if the current group or the root group
-        # has the feature enabled. So we need one more query when querying for the root group.
-        # We can remove this threshold once the feature flag is removed.
-        expect { described_class.new.execute }.not_to exceed_all_query_limit(control).with_threshold(1)
+        expect { described_class.new.execute }.not_to exceed_all_query_limit(control)
       end
     end
 

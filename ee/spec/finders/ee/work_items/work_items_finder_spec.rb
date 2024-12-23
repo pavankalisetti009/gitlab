@@ -66,7 +66,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
         epic_work_item2.labels << label5
       end
 
-      context 'when epic_and_work_item_associations_unification FF is enabled' do
+      context 'when when labels are set to epic and epic work item' do
         context 'when searching by NONE' do
           let(:filtering_params) { { label_name: ['None'] } }
 
@@ -126,76 +126,6 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
 
             it 'returns correct epics' do
               is_expected.to contain_exactly(*(group.work_items.to_a - [epic_work_item1, epic_work_item2]))
-            end
-          end
-        end
-      end
-
-      context 'when epic_and_work_item_associations_unification FF is disabled' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        context 'when searching by NONE' do
-          let(:filtering_params) { { label_name: ['None'] } }
-
-          it 'returns correct epics' do
-            is_expected.to contain_exactly(work_item1, epic_work_item3)
-          end
-        end
-
-        context 'with `and` search' do
-          context 'when searching by label assigned only to epic' do
-            let(:filtering_params) { { label_name: [label2.title] } }
-
-            it 'returns correct epics' do
-              is_expected.to be_empty
-            end
-          end
-
-          context 'when searching by a combination of labels assigned to epic and epic work item' do
-            let(:filtering_params) { { label_name: [label3.title, label1.title] } }
-
-            it 'returns correct epics' do
-              is_expected.to be_empty
-            end
-          end
-        end
-
-        context 'with `or` search' do
-          context 'when searching by label assigned only to epic' do
-            let(:filtering_params) { { or: { label_name: [label1.title, label4.title] } } }
-
-            it 'returns correct epics' do
-              # because we search by labels that are assigned just to epic work item, we get no result
-              is_expected.to be_empty
-            end
-          end
-
-          context 'when searching by a combination of labels assigned to epic and epic work item' do
-            let(:filtering_params) { { or: { label_name: [label1.title, label5.title] } } }
-
-            it 'returns correct epics' do
-              # because the label4 is assigned to the epic we get that epic as a result
-              is_expected.to contain_exactly(epic_work_item2)
-            end
-          end
-        end
-
-        context 'with `not` search' do
-          context 'when searching by label assigned only to epic' do
-            let(:filtering_params) { { not: { label_name: [label1.title, label4.title] } } }
-
-            it 'returns correct epics' do
-              is_expected.to contain_exactly(*group.work_items)
-            end
-          end
-
-          context 'when searching by a combination of labels assigned to epic and epic work item' do
-            let(:filtering_params) { { not: { label_name: [label1.title, label5.title] } } }
-
-            it 'returns correct epics' do
-              is_expected.to contain_exactly(*(group.work_items - [epic_work_item2]))
             end
           end
         end

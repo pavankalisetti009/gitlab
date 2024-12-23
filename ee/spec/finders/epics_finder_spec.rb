@@ -726,7 +726,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
 
             subject(:filtered_epics) { epics(params.merge(filtering_params)) }
 
-            context 'when epic_and_work_item_associations_unification FF is enabled' do
+            context 'when when labels are set to epic and epic work item' do
               context 'when searching by NONE' do
                 let(:filtering_params) { { label_name: ['None'] } }
 
@@ -789,78 +789,6 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
 
                   it 'returns correct epics' do
                     expect(filtered_epics).to contain_exactly(*(group.epics.to_a - [labeled_epic1, labeled_epic2]))
-                  end
-                end
-              end
-            end
-
-            context 'when epic_and_work_item_associations_unification FF is disabled' do
-              before do
-                stub_feature_flags(epic_and_work_item_associations_unification: false)
-              end
-
-              context 'when searching by NONE' do
-                let(:filtering_params) { { label_name: ['None'] } }
-
-                it 'returns correct epics' do
-                  # epics epic1, epic2, epic3, epic5 have no labels neither on epic or epic work item side, e.g.
-                  # labeled_epic3 does not have a label on epic side, but has one on epic work item side
-                  expect(filtered_epics).to contain_exactly(epic1, epic2, epic3, epic5, labeled_epic3)
-                end
-              end
-
-              context 'with `and` search' do
-                context 'when searching by label assigned only to epic work item' do
-                  let(:filtering_params) { { label_name: [label3.title] } }
-
-                  it 'returns correct epics' do
-                    expect(filtered_epics).to be_empty
-                  end
-                end
-
-                context 'when searching by a combination of labels assigned to epic and epic work item' do
-                  let(:filtering_params) { { label_name: [label3.title, label2.title] } }
-
-                  it 'returns correct epics' do
-                    expect(filtered_epics).to be_empty
-                  end
-                end
-              end
-
-              context 'with `or` search' do
-                context 'when searching by label assigned to epic work item' do
-                  let(:filtering_params) { { or: { label_name: [label3.title, label5.title] } } }
-
-                  it 'returns correct epics' do
-                    # because we search by labels that are assigned just to epic work item, we get no result
-                    expect(filtered_epics).to be_empty
-                  end
-                end
-
-                context 'when searching by a combination of labels assigned to epic and epic work item' do
-                  let(:filtering_params) { { or: { label_name: [label3.title, label4.title] } } }
-
-                  it 'returns correct epics' do
-                    # because the label4 is assigned to the epic we get that epic as a result
-                    expect(filtered_epics).to contain_exactly(labeled_epic2)
-                  end
-                end
-              end
-
-              context 'with `not` search' do
-                context 'when searching by label assigned to epic work item' do
-                  let(:filtering_params) { { not: { label_name: [label3.title, label5.title] } } }
-
-                  it 'returns correct epics' do
-                    expect(filtered_epics).to contain_exactly(*group.epics.to_a)
-                  end
-                end
-
-                context 'when searching by a combination of labels assigned to epic and epic work item' do
-                  let(:filtering_params) { { not: { label_name: [label3.title, label4.title] } } }
-
-                  it 'returns correct epics' do
-                    expect(filtered_epics).to contain_exactly(*(group.epics.to_a - [labeled_epic2]))
                   end
                 end
               end

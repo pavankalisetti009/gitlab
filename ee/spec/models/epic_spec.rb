@@ -53,19 +53,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
           expect(work_item.award_emoji.find(emoji_1.id)).to eq(emoji_1)
           expect(work_item.award_emoji.find(emoji_2.id)).to eq(emoji_2)
         end
-
-        context 'when epic_and_work_item_associations_unification is disabled' do
-          before do
-            stub_feature_flags(epic_and_work_item_associations_unification: false)
-          end
-
-          it 'only returns own award emoji' do
-            expect(epic.award_emoji.find(emoji_2.id)).to eq(emoji_2)
-            expect(work_item.award_emoji.find(emoji_1.id)).to eq(emoji_1)
-            expect { epic.award_emoji.find(emoji_1.id) }.to raise_error(ActiveRecord::RecordNotFound)
-            expect { work_item.award_emoji.find(emoji_2.id) }.to raise_error(ActiveRecord::RecordNotFound)
-          end
-        end
       end
 
       context 'when epic is deleted' do
@@ -81,17 +68,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
             expect { epic.destroy! }.to change { ::AwardEmoji.count }.by(-3)
             expect(emoji_4.reload).to be_persisted
           end
-        end
-      end
-
-      context 'when epic_and_work_item_associations_unification is disabled' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'reads emojis only from epic' do
-          expect(epic.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_DOWN])
-          expect(work_item.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_UP])
         end
       end
 
@@ -1693,22 +1669,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       let_it_be(:epic_label_link) { create(:label_link, label: label1, target: epic) }
       let_it_be(:epic_work_item_label_link) { create(:label_link, label: label2, target: work_item) }
 
-      context 'when label_links are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only epic label_links' do
-          expect(epic.reload.label_links).to match_array([epic_label_link])
-          expect(work_item.reload.label_links).to match_array([epic_work_item_label_link])
-        end
-      end
-
       context 'when labels are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item label_links' do
           expect(epic.reload.label_links).to match_array([epic_label_link, epic_work_item_label_link])
           expect(work_item.reload.label_links).to match_array([epic_label_link, epic_work_item_label_link])
@@ -1731,22 +1692,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         work_item.labels << label2
       end
 
-      context 'when labels are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only epic labels' do
-          expect(epic.reload.labels).to match_array([label1])
-          expect(work_item.reload.labels).to match_array([label2])
-        end
-      end
-
       context 'when labels are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item labels' do
           expect(epic.reload.labels).to match_array([label1, label2])
           expect(work_item.reload.labels).to match_array([label1, label2])
@@ -1766,24 +1712,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       let_it_be(:note2) { create(:note, noteable: epic, note: 'second note on epic') }
       let_it_be(:note3) { create(:note, noteable: work_item, note: 'first note on epic work item') }
 
-      context 'when notes are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only epic notes' do
-          expect(epic.reload.notes).to match_array([note1, note2])
-          expect(work_item.reload.notes).to match_array([note3])
-          expect(epic.reload.own_notes).to match_array([note1, note2])
-          expect(work_item.reload.own_notes).to match_array([note3])
-        end
-      end
-
       context 'when notes are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item notes' do
           expect(epic.reload.notes).to match_array([note1, note2, note3])
           expect(work_item.reload.notes).to match_array([note1, note2, note3])
@@ -1807,24 +1736,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       let(:label_resource_event1) { create(:resource_label_event, epic: epic, label: label1) }
       let(:label_resource_event2) { create(:resource_label_event, issue: work_item, label: label2) }
 
-      context 'when label resource events are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only epic label events' do
-          expect(epic.reload.resource_label_events).to match_array([label_resource_event1])
-          expect(work_item.reload.resource_label_events).to match_array([label_resource_event2])
-          expect(epic.reload.own_resource_label_events).to match_array([label_resource_event1])
-          expect(work_item.reload.own_resource_label_events).to match_array([label_resource_event2])
-        end
-      end
-
       context 'when label resource events are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item label events' do
           expect(epic.reload.resource_label_events).to match_array([label_resource_event1, label_resource_event2])
           expect(work_item.reload.resource_label_events).to match_array([label_resource_event1, label_resource_event2])
@@ -1846,24 +1758,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       let(:state_resource_event1) { create(:resource_state_event, epic: epic, state: :closed) }
       let(:state_resource_event2) { create(:resource_state_event, issue: work_item, state: :opened) }
 
-      context 'when state resource events are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only epic state events' do
-          expect(epic.reload.resource_state_events).to match_array([state_resource_event1])
-          expect(work_item.reload.resource_state_events).to match_array([state_resource_event2])
-          expect(epic.reload.own_resource_state_events).to match_array([state_resource_event1])
-          expect(work_item.reload.own_resource_state_events).to match_array([state_resource_event2])
-        end
-      end
-
       context 'when state resource events are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item state events' do
           expect(epic.reload.resource_state_events).to match_array([state_resource_event1, state_resource_event2])
           expect(work_item.reload.resource_state_events).to match_array([state_resource_event1, state_resource_event2])
@@ -1885,24 +1780,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       let(:version1) { create(:description_version, epic: epic) }
       let(:version2) { create(:description_version, issue: work_item) }
 
-      context 'when description versions are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only epic notes' do
-          expect(epic.reload.description_versions).to match_array([version1])
-          expect(work_item.reload.description_versions).to match_array([version2])
-          expect(epic.reload.own_description_versions).to match_array([version1])
-          expect(work_item.reload.own_description_versions).to match_array([version2])
-        end
-      end
-
       context 'when notes are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item notes' do
           expect(epic.reload.description_versions).to match_array([version1, version2])
           expect(work_item.reload.description_versions).to match_array([version1, version2])
@@ -1931,24 +1809,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         create(:event, :reopened, group: group, project: nil, target_id: work_item.id, target_type: 'Issue')
       end
 
-      context 'when events are fetched just from the epic itself' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it 'returns only own events' do
-          expect(epic.reload.events).to match_array([epic_event])
-          expect(work_item.reload.events).to match_array([epic_work_item_event1, epic_work_item_event2])
-          expect(epic.reload.own_events).to match_array([epic_event])
-          expect(work_item.reload.own_events).to match_array([epic_work_item_event1, epic_work_item_event2])
-        end
-      end
-
       context 'when events are fetched from the epic and epic work item' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: true)
-        end
-
         it 'returns epic and epic work item events' do
           expect(epic.reload.events).to match_array([epic_event, epic_work_item_event1, epic_work_item_event2])
           expect(work_item.reload.events).to match_array([epic_event, epic_work_item_event1, epic_work_item_event2])
@@ -1965,22 +1826,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     let_it_be(:work_item) { epic.work_item }
     let_it_be(:work_item_subscription) { create(:subscription, user: user, subscribable: work_item, subscribed: true) }
 
-    context 'when subscriptions are read from the epic itself' do
-      before do
-        stub_feature_flags(epic_and_work_item_associations_unification: false)
-      end
-
-      it 'returns epic subscriptions only' do
-        expect(work_item.reload.subscriptions).to contain_exactly(work_item_subscription)
-        expect(epic.reload.subscriptions).to be_empty
-      end
-    end
-
     context 'when subscriptions are read from the epic and the epic work item' do
-      before do
-        stub_feature_flags(epic_and_work_item_associations_unification: true)
-      end
-
       it 'returns subscriptions from both' do
         expect(epic.reload.subscriptions).to contain_exactly(work_item_subscription)
         expect(work_item.reload.subscriptions).to contain_exactly(work_item_subscription)

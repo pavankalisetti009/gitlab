@@ -282,20 +282,6 @@ module EE
       end
     end
 
-    def epic_and_work_item_associations_unification_enabled?
-      # This is the same code as in `feature_flag_enabled_for_self_or_ancestor?`.
-      # However, we can't resolve dynamic feature flags in our tests we'd get an error that the feature flag is unused.
-      # Since the feature flag gets used only in this method and is dynamic, the test would fail.
-      # That's why we for now hardcode the feature flag name and repeat the code to check if the current group or the
-      # root group has it enabled.
-      actors = [root_ancestor]
-      actors << self if root_ancestor != self
-
-      actors.any? do |actor|
-        ::Feature.enabled?(:epic_and_work_item_associations_unification, actor, type: :beta)
-      end
-    end
-
     override :supports_saved_replies?
     def supports_saved_replies?
       licensed_feature_available?(:group_saved_replies)

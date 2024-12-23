@@ -31,8 +31,7 @@ module EE
       end
 
       def unified_notes_count_for?(object)
-        object.issuing_parent.is_a?(::Group) && object.try(:sync_object).present? &&
-          object.issuing_parent.epic_and_work_item_associations_unification_enabled?
+        object.issuing_parent.is_a?(::Group) && object.try(:sync_object).present?
       end
     end
   end
