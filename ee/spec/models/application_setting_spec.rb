@@ -163,24 +163,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       let(:seat_control_user_cap) { 1 }
       let(:seat_control_off) { 0 }
 
-      it 'is valid when new_user_signups_cap is set to nil' do
-        setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 20)
-
-        setting.new_user_signups_cap = nil
-
-        expect(setting).to be_valid
-        expect(setting.seat_control).to eq(seat_control_off)
-      end
-
-      it 'is valid when new_user_signups_cap is set to a number' do
-        setting.update!(seat_control: seat_control_off, new_user_signups_cap: nil)
-
-        setting.new_user_signups_cap = 20
-
-        expect(setting).to be_valid
-        expect(setting.seat_control).to eq(seat_control_user_cap)
-      end
-
       context 'when seat_control is user cap' do
         before do
           setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1)
@@ -196,6 +178,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           setting.new_user_signups_cap = 0
           expect(setting).to be_invalid
           expect(setting.errors[:new_user_signups_cap]).to include('must be greater than 0')
+        end
+
+        it 'must not be empty' do
+          setting.new_user_signups_cap = ""
+          expect(setting).to be_invalid
+          expect(setting.errors[:new_user_signups_cap]).to include('is not a number')
         end
       end
 
@@ -213,58 +201,44 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           setting.new_user_signups_cap = ""
           expect(setting).to be_valid
         end
-      end
 
-      context 'sync seat_control', feature_category: :seat_cost_management do
-        let(:user_cap) { nil }
-
-        before do
-          setting.update!(new_user_signups_cap: user_cap)
-        end
-
-        context 'when setting a user cap' do
-          it 'sets seat control to user cap' do
-            expect(setting.seat_control).to eq(seat_control_off)
-
-            setting.update!(new_user_signups_cap: 10)
-
-            expect(setting.seat_control).to eq(seat_control_user_cap)
-          end
-        end
-
-        context 'when removing a user cap' do
-          let(:user_cap) { 10 }
-
-          it 'sets seat_control to off' do
-            expect(setting.seat_control).to eq(seat_control_user_cap)
-
-            setting.update!(new_user_signups_cap: nil)
-
-            expect(setting.seat_control).to eq(seat_control_off)
-          end
-        end
-
-        context 'when the user cap is set and seat control is set to off' do
-          let(:user_cap) { 10 }
-
-          before do
-            setting.update_columns(user_seat_management: { seat_control: seat_control_off })
-          end
-
-          it 'updates the seat control to user cap when another setting is changed' do
-            expect(setting.reload.new_user_signups_cap).to eq(user_cap)
-            expect(setting.reload.seat_control).to eq(seat_control_off)
-
-            setting.update!(enable_member_promotion_management: true)
-
-            expect(setting.seat_control).to eq(seat_control_user_cap)
-          end
+        it 'must not be a number' do
+          setting.new_user_signups_cap = 1
+          expect(setting).to be_invalid
+          expect(setting.errors[:new_user_signups_cap]).to include('must be blank')
         end
       end
     end
 
     describe 'user_seat_management', feature_category: :seat_cost_management do
       it { expect(described_class).to validate_jsonb_schema(['application_setting_user_seat_management']) }
+
+      context 'seat_control' do
+        let(:seat_control_user_cap) { 1 }
+        let(:seat_control_off) { 0 }
+
+        it 'allows update to user cap' do
+          expect { setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1) }.to change { setting.seat_control }.from(seat_control_off).to(seat_control_user_cap)
+        end
+
+        it 'allows update to off' do
+          setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1)
+
+          expect { setting.update!(seat_control: seat_control_off, new_user_signups_cap: nil) }.to change { setting.seat_control }.from(seat_control_user_cap).to(seat_control_off)
+        end
+
+        it 'does not allow update to value > 2' do
+          expect { setting.update!(seat_control: 3) }.to raise_error(
+            ActiveRecord::RecordInvalid, "Validation failed: User seat management must be a valid json schema"
+          )
+        end
+
+        it 'does not allow update to value < 0' do
+          expect { setting.update!(seat_control: -1) }.to raise_error(
+            ActiveRecord::RecordInvalid, "Validation failed: User seat management must be a valid json schema"
+          )
+        end
+      end
     end
 
     describe 'git_two_factor', feature_category: :system_access do

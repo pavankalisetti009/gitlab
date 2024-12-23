@@ -281,8 +281,6 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-      before_validation :set_seat_control
-
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :resume_elasticsearch_indexing
     end
@@ -617,10 +615,6 @@ module EE
     end
 
     private
-
-    def set_seat_control
-      self.seat_control = new_user_signups_cap.present? ? SEAT_CONTROL_USER_CAP : SEAT_CONTROL_OFF
-    end
 
     def elasticsearch_limited_project_exists?(project)
       project_namespaces = ::Namespace.where(id: project.namespace_id)
