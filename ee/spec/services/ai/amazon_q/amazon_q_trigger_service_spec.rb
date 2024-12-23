@@ -297,7 +297,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       it 'raises CompositeIdentityEnforcedError' do
         expect { service.send(:validate_service_account!) }.to raise_error(
           Ai::AmazonQ::AmazonQTriggerService::CompositeIdentityEnforcedError,
-          "Cannot find the service account with composite identity enabled."
+          "Cannot find the service account with composite identity enabled"
         )
       end
     end
