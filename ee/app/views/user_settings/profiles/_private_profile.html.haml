@@ -10,6 +10,6 @@
   = form.gitlab_ui_checkbox_component :private_profile, checkbox_options: { disabled: true } do |c|
     - c.with_label do
       = s_("Profiles|Don't display activity-related personal information on your profile.")
-      = render Pajamas::ButtonComponent.new(variant: :link, icon: 'lock', button_options: { id: popover_target_id, class: '!gl-text-gray-400 gl-mb-2' })
+      = render Pajamas::ButtonComponent.new(variant: :link, icon: 'lock', button_options: { id: popover_target_id, class: '!gl-text-disabled gl-mb-2' })
       .js-vue-popover{ 'v-cloak': true, data: { app_data: popover_options } }
 

@@ -79,7 +79,7 @@ export default {
             :target="`sync-progress-${siteId}-${item.component}`"
             :values="item.syncValues"
           />
-          <span v-else class="gl-text-sm gl-text-gray-400">{{ $options.i18n.nA }}</span>
+          <span v-else class="gl-text-sm gl-text-subtle">{{ $options.i18n.nA }}</span>
         </div>
         <div data-testid="verification-status">
           <geo-site-progress-bar
@@ -95,7 +95,7 @@ export default {
             :success-label="$options.i18n.verified"
             :unavailable-label="$options.i18n.nothingToVerify"
           />
-          <span v-else class="gl-text-sm gl-text-gray-400">{{ $options.i18n.nA }}</span>
+          <span v-else class="gl-text-sm gl-text-subtle">{{ $options.i18n.nA }}</span>
         </div>
       </slot>
     </div>

@@ -162,7 +162,7 @@ export default {
       <span class="gl-font-bold">{{ $options.i18n.customPermissionsLabel }}</span>
       <span
         v-if="hasAvailablePermissions"
-        class="gl-ml-3 gl-text-gray-400"
+        class="gl-ml-3 gl-text-subtle"
         data-testid="permissions-selected-message"
       >
         <gl-sprintf :message="$options.i18n.permissionsSelected">

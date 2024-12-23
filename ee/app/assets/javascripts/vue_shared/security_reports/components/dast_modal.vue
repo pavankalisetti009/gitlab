@@ -39,7 +39,7 @@ export default {
 <template>
   <gl-modal :title="title" title-tag="h5" v-bind="$options.modal">
     <!-- heading -->
-    <div class="row gl-text-gray-400">
+    <div class="row gl-text-subtle">
       <div class="col-1">{{ __('Method') }}</div>
       <div class="col-11">{{ __('URL') }}</div>
     </div>

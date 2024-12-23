@@ -75,7 +75,7 @@ export default {
       class="gl-mb-2 md:gl-mr-5"
       :height="$options.progressBarHeight"
     />
-    <div class="gl-mb-1 gl-text-gray-400" data-testid="card-description">{{ description }}</div>
+    <div class="gl-mb-1 gl-text-subtle" data-testid="card-description">{{ description }}</div>
     <template v-if="displayMeta">
       <div
         v-for="feature in featureMeta"

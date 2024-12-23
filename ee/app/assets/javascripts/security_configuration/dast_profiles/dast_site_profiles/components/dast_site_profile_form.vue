@@ -408,7 +408,8 @@ export default {
             <gl-icon
               id="request-headers-info"
               name="information-o"
-              class="gl-ml-2 gl-align-text-bottom gl-text-gray-400"
+              class="gl-ml-2 gl-align-text-bottom"
+              variant="subtle"
             />
             <gl-popover
               data-testid="request-headers-tooltip"

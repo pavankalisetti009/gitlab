@@ -381,7 +381,7 @@ export default {
 
       <template v-else-if="showScopeSelector">
         <div
-          :class="{ 'gl-text-gray-400': disableScopeSelector }"
+          :class="{ 'gl-text-disabled': disableScopeSelector }"
           class="gl-flex gl-flex-wrap gl-items-center gl-gap-3"
         >
           <gl-sprintf :message="policyScopeCopy">
