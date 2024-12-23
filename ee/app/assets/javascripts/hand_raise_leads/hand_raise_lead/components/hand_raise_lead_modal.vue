@@ -299,7 +299,7 @@ export default {
       <gl-form-textarea v-model="comment" no-resize />
     </gl-form-group>
 
-    <p class="gl-text-gray-400">
+    <p class="gl-text-subtle">
       {{ $options.i18n.modalFooterText }}
     </p>
   </gl-modal>

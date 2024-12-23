@@ -78,7 +78,7 @@ export default {
 <template>
   <gl-loading-icon v-if="loading" size="lg" class="gl-mt-5" />
   <div v-else data-testid="overview-container">
-    <p class="gl-my-3 gl-text-gray-400" data-testid="overview-container-header">{{ headerText }}</p>
+    <p class="gl-my-3 gl-text-subtle" data-testid="overview-container-header">{{ headerText }}</p>
     <div class="gl-mt-5 gl-flex gl-flex-col gl-justify-between md:gl-flex-row">
       <devops-adoption-overview-card
         v-for="item in overviewData"

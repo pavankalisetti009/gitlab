@@ -66,7 +66,7 @@ export default {
   <gl-loading-icon v-if="isLoading" size="lg" class="gl-my-5" />
   <div v-else-if="hasEnabledNamespaceData" class="gl-mt-3">
     <div class="gl-mb-3" data-testid="tableHeader">
-      <p class="gl-text-gray-400">
+      <p class="gl-text-subtle">
         <gl-sprintf :message="$options.i18n.tableHeaderText">
           <template #timestamp>{{ timestamp }}</template>
         </gl-sprintf>

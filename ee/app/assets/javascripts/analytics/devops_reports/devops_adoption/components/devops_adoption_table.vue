@@ -39,7 +39,7 @@ const formatter = (value, key, item) => {
   return 0;
 };
 
-const thClass = ['!gl-bg-white', 'gl-text-gray-400'];
+const thClass = ['!gl-bg-white', 'gl-text-subtle'];
 
 const fieldOptions = {
   thClass,
