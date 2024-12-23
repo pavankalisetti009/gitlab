@@ -254,7 +254,7 @@ RSpec.describe ApplicationSettings::UpdateService do
       end
     end
 
-    context 'user cap setting' do
+    context 'user cap setting', feature_category: :seat_cost_management do
       shared_examples 'worker is not called' do
         it 'does not call ApproveBlockedPendingApprovalUsersWorker' do
           expect(ApproveBlockedPendingApprovalUsersWorker).not_to receive(:perform_async)
@@ -273,13 +273,13 @@ RSpec.describe ApplicationSettings::UpdateService do
 
       context 'when new user cap is set to nil' do
         context 'when changing new user cap to any number' do
-          let(:opts) { { new_user_signups_cap: 10 } }
+          let(:opts) { { new_user_signups_cap: 10, seat_control: 1 } }
 
           include_examples 'worker is not called'
         end
 
         context 'when leaving new user cap set to nil' do
-          let(:opts) { { new_user_signups_cap: nil } }
+          let(:opts) { { new_user_signups_cap: nil, seat_control: 0 } }
 
           include_examples 'worker is not called'
         end
@@ -287,7 +287,7 @@ RSpec.describe ApplicationSettings::UpdateService do
 
       context 'when new user cap is set to a number' do
         let(:setting) do
-          create(:application_setting, new_user_signups_cap: 10)
+          create(:application_setting, new_user_signups_cap: 10, seat_control: 1)
         end
 
         context 'when decreasing new user cap' do
@@ -309,12 +309,12 @@ RSpec.describe ApplicationSettings::UpdateService do
         end
 
         context 'when changing user cap to nil' do
-          let(:opts) { { new_user_signups_cap: nil } }
+          let(:opts) { { new_user_signups_cap: nil, seat_control: 0 } }
 
           include_examples 'worker is not called'
 
           context 'when auto approval is enabled' do
-            let(:opts) { { new_user_signups_cap: nil, auto_approve_pending_users: 'true' } }
+            let(:opts) { { new_user_signups_cap: nil, seat_control: 0, auto_approve_pending_users: 'true' } }
 
             include_examples 'worker is called'
           end
