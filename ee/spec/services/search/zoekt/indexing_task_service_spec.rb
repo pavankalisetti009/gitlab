@@ -46,6 +46,7 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
       context 'on low watermark' do
         before do
+          stub_feature_flags(zoekt_random_force_reindexing: false)
           allow(zoekt_index).to receive(:low_watermark_exceeded?).and_return(true)
         end
 
