@@ -61,16 +61,4 @@ RSpec.shared_examples 'filter by unified emoji association' do
 
     it { is_expected.to contain_exactly(object2) }
   end
-
-  context 'when epic_and_work_item_unification is disabled' do
-    let(:filtering_params) { { my_reaction_emoji: 'eyes' } }
-
-    before do
-      stub_feature_flags(epic_and_work_item_associations_unification: false)
-    end
-
-    it 'ignores award emoji present on sync_object' do
-      is_expected.to contain_exactly(object3)
-    end
-  end
 end

@@ -37,7 +37,7 @@ module WorkItems
       strong_memoize_attr :container
 
       def unified_associations?
-        try(:sync_object) && container&.epic_and_work_item_associations_unification_enabled?
+        try(:sync_object)
       end
 
       def batched_object

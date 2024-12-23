@@ -67,17 +67,6 @@ RSpec.describe Resolvers::UserDiscussionsCountResolver, feature_category: :team_
             # 3 discussions from legacy epic and 2 discussions from epic work item
             expect(subject).to eq(3 + 2)
           end
-
-          context 'when epic_and_work_item_associations_unification FF is disabled' do
-            before do
-              stub_feature_flags(epic_and_work_item_associations_unification: false)
-            end
-
-            it 'returns the number of notes for the issue' do
-              # 3 user notes from epic, 5 user notes from epic work item
-              expect(subject).to eq(3)
-            end
-          end
         end
       end
     end

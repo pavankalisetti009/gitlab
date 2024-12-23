@@ -4090,50 +4090,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#epic_and_work_item_associations_unification_enabled?' do
-    let_it_be(:root_group) { create(:group) }
-    let_it_be(:sub_group) { create(:group, parent: root_group) }
-    let_it_be(:other_group) { create(:group) }
-
-    context 'for the sub group' do
-      subject { sub_group.epic_and_work_item_associations_unification_enabled? }
-
-      context 'when epic_and_work_item_associations_unification enabled' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: root_group)
-        end
-
-        it { is_expected.to eq(true) }
-
-        context 'for the other group not in the hierarchy' do
-          subject { other_group.epic_and_work_item_associations_unification_enabled? }
-
-          it { is_expected.to eq(false) }
-        end
-      end
-
-      context 'when epic_and_work_item_associations_unification disabled' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: false)
-        end
-
-        it { is_expected.to eq(false) }
-      end
-    end
-
-    context 'for the root group' do
-      subject { root_group.epic_and_work_item_associations_unification_enabled? }
-
-      context 'when epic_and_work_item_associations_unification enabled' do
-        before do
-          stub_feature_flags(epic_and_work_item_associations_unification: root_group)
-        end
-
-        it { is_expected.to eq(true) }
-      end
-    end
-  end
-
   describe '#namespace_work_items_enabled?' do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:sub_group) { create(:group, parent: root_group) }

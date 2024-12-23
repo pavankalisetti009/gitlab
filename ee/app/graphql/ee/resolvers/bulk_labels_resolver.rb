@@ -10,12 +10,7 @@ module EE
 
       override :bulk_load_labels
       def bulk_load_labels
-        issuing_parent = object.issuing_parent
-        if issuing_parent.is_a?(::Group) && issuing_parent.epic_and_work_item_associations_unification_enabled?
-          bulk_load_unified_labels
-        else
-          super
-        end
+        object.issuing_parent.is_a?(::Group) ? bulk_load_unified_labels : super
       end
 
       def bulk_load_unified_labels

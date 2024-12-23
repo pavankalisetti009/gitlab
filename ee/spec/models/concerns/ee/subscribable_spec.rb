@@ -36,23 +36,6 @@ RSpec.describe EE::Subscribable, feature_category: :team_planning do
             .to change { subscription.reload.subscribed }.to(false)
             .and not_change { Subscription.count }
         end
-
-        context 'when epic_and_work_item_associations_unification feature flag is disabled' do
-          before do
-            stub_feature_flags(epic_and_work_item_associations_unification: false)
-          end
-
-          it 'updates subscribable subscription' do
-            expect { unsubscribe }
-              .to change { Subscription.count }.by(1)
-              .and not_change { subscription.reload.subscribed }
-
-            new_subscription = Subscription.last
-            expect(new_subscription.user).to eq(user1)
-            expect(new_subscription.subscribable).to eq(expected_subscribable)
-            expect(new_subscription.subscribed).to eq(false)
-          end
-        end
       end
 
       context 'with existing subscription on subscribable and synced object' do
@@ -108,17 +91,6 @@ RSpec.describe EE::Subscribable, feature_category: :team_planning do
         it 'returns true for subscribable and the synced object' do
           expect(subscribable.subscribed?(user1)).to eq(true)
           expect(synced_object.subscribed?(user1)).to eq(true)
-        end
-
-        context 'when epic_and_work_item_associations_unification feature flag is disabled' do
-          before do
-            stub_feature_flags(epic_and_work_item_associations_unification: false)
-          end
-
-          it 'returns true only for the subscribable' do
-            expect(subscribable.subscribed?(user1)).to eq(true)
-            expect(synced_object.subscribed?(user1)).to eq(false)
-          end
         end
       end
 
@@ -185,16 +157,6 @@ RSpec.describe EE::Subscribable, feature_category: :team_planning do
 
         it 'gets subscribers from the subscribable and the synced object' do
           is_expected.to contain_exactly(user1, user2)
-        end
-
-        context 'when epic_and_work_item_associations_unification feature flag is disabled' do
-          before do
-            stub_feature_flags(epic_and_work_item_associations_unification: false)
-          end
-
-          it 'gets subscribers from the subscribable only' do
-            is_expected.to contain_exactly(user2)
-          end
         end
       end
     end
