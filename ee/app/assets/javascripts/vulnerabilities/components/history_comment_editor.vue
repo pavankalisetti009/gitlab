@@ -40,7 +40,7 @@ export default {
       no-resize
       autofocus
     />
-    <div class="mt-3">
+    <div class="gl-mt-5 gl-flex gl-gap-3">
       <gl-button
         ref="saveButton"
         variant="confirm"
@@ -50,7 +50,7 @@ export default {
       >
         {{ __('Save comment') }}
       </gl-button>
-      <gl-button ref="cancelButton" class="ml-1" :disabled="isSaving" @click="$emit('onCancel')">
+      <gl-button ref="cancelButton" :disabled="isSaving" @click="$emit('onCancel')">
         {{ __('Cancel') }}
       </gl-button>
     </div>
