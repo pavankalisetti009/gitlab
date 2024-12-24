@@ -5,7 +5,11 @@ require "spec_helper"
 RSpec.describe EE::Sidebars::Explore::Menus::DependenciesMenu, feature_category: :dependency_management do
   subject(:menu) { described_class.new(context) }
 
-  let(:context) { Sidebars::Context.new(current_user: current_user, container: nil) }
+  let(:organization) { build(:organization) }
+  let(:context) do
+    Sidebars::Context.new(current_user: current_user, container: nil, current_organization: organization)
+  end
+
   let(:current_user) { nil }
 
   describe "#link" do
@@ -38,14 +42,15 @@ RSpec.describe EE::Sidebars::Explore::Menus::DependenciesMenu, feature_category:
         context "when the user is an admin", :enable_admin_mode do
           let(:current_user) { create(:user, :admin) }
 
-          context "when the user belongs to the default organization" do
-            let!(:organization) { create(:organization, :default) }
-
+          context "when the user belongs to the organization" do
             it { is_expected.to be_render }
           end
 
-          context "when the user does not belong to the default organization" do
-            it { is_expected.not_to be_render }
+          context "when the user does not belong to the organization" do
+            let(:other_organization) { build(:organization) }
+            let(:current_user) { create(:user, :admin, organizations: [other_organization]) }
+
+            it { is_expected.to be_render }
           end
 
           context "when the feature flag is disabled" do
