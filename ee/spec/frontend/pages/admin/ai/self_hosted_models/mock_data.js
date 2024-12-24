@@ -43,12 +43,12 @@ export const mockSelfHostedModelsList = [
   },
 ];
 
-export const mockAiSelfHostedModelsQueryResponse = {
-  data: {
-    aiSelfHostedModels: {
-      nodes: mockSelfHostedModelsList,
-    },
-  },
+export const mockModelConnectionTestInput = {
+  name: 'mock-self-hosted-model-1',
+  model: 'MISTRAL',
+  endpoint: 'https://mock-endpoint.com',
+  identifier: '',
+  apiToken: 'mock-api-token-123',
 };
 
 export const SELF_HOSTED_MODEL_OPTIONS = [

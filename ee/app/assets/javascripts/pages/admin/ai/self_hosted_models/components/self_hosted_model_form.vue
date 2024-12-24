@@ -6,6 +6,7 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
+import TestConnectionButton from './test_connection_button.vue';
 
 export default {
   name: 'SelfHostedModelForm',
@@ -15,6 +16,7 @@ export default {
     GlCollapsibleListbox,
     GlFormFields,
     InputCopyToggleVisibility,
+    TestConnectionButton,
   },
   inject: ['basePath', 'modelOptions'],
   props: {
@@ -288,12 +290,17 @@ export default {
       <gl-button
         type="submit"
         variant="confirm"
-        class="js-no-auto-disable gl-mr-3"
+        class="js-no-auto-disable gl-mr-2"
         :loading="isSaving"
         @click="onClick"
       >
         {{ submitButtonText }}
       </gl-button>
+      <test-connection-button
+        class="gl-mr-2"
+        :disabled="!hasValidInput"
+        :connection-test-input="baseFormValues"
+      />
       <gl-button :href="basePath">
         {{ __('Cancel') }}
       </gl-button>

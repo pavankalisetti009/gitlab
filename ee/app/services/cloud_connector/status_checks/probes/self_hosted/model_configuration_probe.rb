@@ -31,8 +31,7 @@ module CloudConnector
           attr_reader :user
 
           def success_message
-            model_name = self_hosted_model.name
-            format(_('Test request to %{model_name} Self-hosted Model was successful'), model_name: model_name)
+            format(s_('AdminSelfHostedModels|Successfully connected to the self-hosted model'))
           end
 
           def check_user_exists
@@ -40,7 +39,7 @@ module CloudConnector
           end
 
           def check_self_hosted_model_exists
-            errors.add(:base, _('Self-hosted model was not provided')) unless self_hosted_model
+            errors.add(:base, s_('AdminSelfHostedModels|Self-hosted model was not provided')) unless self_hosted_model
           end
 
           def validate_code_completion_availability
@@ -51,7 +50,7 @@ module CloudConnector
           end
 
           def failure_text(error)
-            format(_('Self-hosted model test request failed: %{error}'), error: error)
+            format(_('ERROR: %{error}'), error: error)
           end
 
           def details

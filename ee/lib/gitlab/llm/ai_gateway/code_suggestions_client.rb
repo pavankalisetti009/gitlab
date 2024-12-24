@@ -41,10 +41,13 @@ module Gitlab
             # The body contains the error code
 
             model_response_code = ::Gitlab::Json.parse(response.body)["detail"]
-            return "#{self_hosted_model.name} returned code #{model_response_code}"
+            return "The self-hosted model server returned code #{model_response_code}"
           end
 
-          return "AI Gateway returned code #{response.code}: #{response.body}" unless response.code == 200
+          unless response.code == 200
+            response_message = ::Gitlab::Json.parse(response.body).dig("detail", 0, "msg") || 'Unknown error'
+            return "AI Gateway returned code #{response.code}: #{response_message}"
+          end
 
           nil
         rescue StandardError => err

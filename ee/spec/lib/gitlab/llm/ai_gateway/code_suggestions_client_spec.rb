@@ -46,13 +46,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       it_behaves_like 'error response', "Access token is missing"
     end
 
-    context 'when response code is not 200' do
-      let(:code) { 401 }
-      let(:body) { 'an error' }
-
-      it_behaves_like 'error response', 'AI Gateway returned code 401: "an error"'
-    end
-
     context 'when request raises an error' do
       before do
         stub_request(:post, /#{Gitlab::AiGateway.url}/).to_raise(StandardError.new('an error'))
@@ -74,10 +67,18 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     include_examples 'with tests requests' do
       include_examples 'with completions'
     end
+
+    context 'when response code is not 200' do
+      let(:code) { 401 }
+      let(:body) { 'an error' }
+
+      it_behaves_like 'error response', 'AI Gateway returned code 401: "an error"'
+    end
   end
 
   describe '#test_model_connection', :with_cloud_connector do
     let(:self_hosted_model) { build(:ai_self_hosted_model) }
+    let(:endpoint) { "#{Gitlab::AiGateway.url}/v1/prompts/model_configuration%2Fcheck" }
 
     subject(:result) { described_class.new(user).test_model_connection(self_hosted_model) }
 
@@ -89,18 +90,29 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
 
     context 'when the AI Gateway responded with a 421 Misdirected Request' do
       # This means that the model server returned an error
-      let(:endpoint) { "#{Gitlab::AiGateway.url}/v1/prompts/model_configuration%2Fcheck" }
-
       before do
         stub_request(:post, endpoint)
           .to_return(
             status: 421,
-            body: "{\"detail\":\"401: Unauthorized\"}",
+            body: { detail: "401: Unauthorized" }.to_json,
             headers: { 'Content-Type' => 'application/json' }
           )
       end
 
-      it_behaves_like 'error response', "mistral-7b-ollama-api returned code 401: Unauthorized"
+      it_behaves_like 'error response', "The self-hosted model server returned code 401: Unauthorized"
+    end
+
+    context 'when response code is not 200' do
+      before do
+        stub_request(:post, endpoint)
+          .to_return(
+            status: 401,
+            body: { detail: [{ msg: "model configuration error" }] }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
+
+      it_behaves_like 'error response', 'AI Gateway returned code 401: model configuration error'
     end
 
     include_examples 'with tests requests'
