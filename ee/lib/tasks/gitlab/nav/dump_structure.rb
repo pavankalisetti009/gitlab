@@ -59,6 +59,7 @@ module Tasks
           ))
           panels << Sidebars::Explore::Panel.new(Sidebars::Context.new(
             container: nil,
+            current_organization: Organizations::Organization.first,
             **@context_defaults
           ))
 

@@ -35,7 +35,7 @@ module EE
           private
 
           def current_organization
-            current_user&.organizations&.default_organization
+            context.current_organization
           end
         end
       end
