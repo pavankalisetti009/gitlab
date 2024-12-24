@@ -9,12 +9,9 @@ import {
   extractTimeSeriesTooltip,
   formatAsPercentage,
   forecastDataToSeries,
-  calculateForecast,
 } from 'ee/dora/components/util';
-import * as utils from 'ee/analytics/shared/utils';
-import * as graphQLApi from 'ee/dora/graphql/api';
 import { forecastDataToChartDate } from './helpers';
-import { mockLastWeekData, mockLastWeekHoltWintersForecastData } from './mock_data';
+import { mockLastWeekData, mockLastWeekRawForecastData } from './mock_data';
 
 const NO_DATA_MESSAGE = 'No data available';
 
@@ -191,12 +188,12 @@ describe('ee/dora/components/util.js', () => {
 
     const forecastResponse = forecastDataToChartDate(
       deploymentFrequencyLastWeekData,
-      mockLastWeekHoltWintersForecastData,
+      mockLastWeekRawForecastData,
     );
 
     beforeEach(() => {
       res = forecastDataToSeries({
-        forecastData: mockLastWeekHoltWintersForecastData,
+        forecastData: mockLastWeekRawForecastData,
         forecastHorizon: 3,
         forecastSeriesLabel: 'Forecast',
         dataSeries: mockLastWeekData,
@@ -210,38 +207,6 @@ describe('ee/dora/components/util.js', () => {
 
     it('includes the last data point from the data series', () => {
       expect(res[0]).toEqual(['Jul 03, 2015', 1]);
-    });
-  });
-
-  describe('calculateForecast', () => {
-    let buildForecastSpy;
-    let linearRegressionSpy;
-
-    const contextId = 'gid://gitlab/project/1';
-    const forecastHorizon = 3;
-    const rawApiData = [];
-    const defaultParams = { contextId, forecastHorizon, rawApiData };
-
-    describe('with `useHoltWintersForecast=true`', () => {
-      beforeEach(() => {
-        buildForecastSpy = jest.spyOn(graphQLApi, 'buildForecast').mockReturnValue();
-        calculateForecast({ ...defaultParams, useHoltWintersForecast: true });
-      });
-
-      it('will call the `buildForecast` api request', () => {
-        expect(buildForecastSpy).toHaveBeenCalledWith(contextId, forecastHorizon);
-      });
-    });
-
-    describe('with `useHoltWintersForecast=false`', () => {
-      beforeEach(() => {
-        linearRegressionSpy = jest.spyOn(utils, 'linearRegression');
-        calculateForecast({ ...defaultParams, useHoltWintersForecast: false });
-      });
-
-      it('will generate a linear regression request', () => {
-        expect(linearRegressionSpy).toHaveBeenCalledWith(rawApiData, forecastHorizon);
-      });
     });
   });
 });
