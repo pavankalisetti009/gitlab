@@ -60,6 +60,13 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
         end
       end
 
+      context 'with a quick action in the issue description' do
+        let(:source) { create(:issue, project: project, title: 'test issue', description: '/q dev') }
+        let(:note) { nil }
+
+        it_behaves_like 'successful dev execution'
+      end
+
       context 'with issue' do
         let(:source) { issue }
 
@@ -197,10 +204,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
         end
 
         it 'logs the error and handles the note error' do
-          expect(Gitlab::AppLogger).to receive(:error).with(
-            message: "[amazon_q] Command #{command} encountered #{error.class.name}",
-            error: error_message
-          )
+          expect(Gitlab::ErrorTracking).to receive(:log_exception).and_call_original
           expect(service).to receive(:handle_note_error).with(error_message)
 
           expect { execution }.not_to raise_error
