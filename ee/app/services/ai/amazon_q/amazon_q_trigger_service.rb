@@ -39,7 +39,7 @@ module Ai
         handle_response(response)
         response
       rescue StandardError => e
-        Gitlab::AppLogger.error(message: "[amazon_q] Command #{command} encountered #{e.class.name}", error: e.message)
+        Gitlab::ErrorTracking.log_exception(e)
         handle_note_error(e.message)
       end
 
@@ -116,7 +116,7 @@ module Ai
       end
 
       def line_position_for_comment
-        return unless note.position
+        return unless note&.position
 
         if note.position.line_range.present?
           {
