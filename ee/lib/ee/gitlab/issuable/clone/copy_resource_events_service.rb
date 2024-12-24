@@ -19,6 +19,9 @@ module EE
 
           override :blocked_state_event_attributes
           def blocked_state_event_attributes
+            # this is needed when copying resource events for an issue that is promoted to epic
+            # in that case we need to nullify previous `issue_id` value and set new `epic_id` value on copied
+            # resource event
             super.push('issue_id')
           end
 
@@ -38,15 +41,6 @@ module EE
                 'issue_id' => new_entity.id,
                 'action' => ResourceIterationEvent.actions[event.action]
               )
-            end
-          end
-
-          override :group
-          def group
-            if new_entity.respond_to?(:group) && new_entity.group
-              new_entity.group
-            else
-              super
             end
           end
         end
