@@ -9,8 +9,6 @@ import {
 import { median } from '~/lib/utils/number_utils';
 import { dateFormats } from '~/analytics/shared/constants';
 import { formatAsPercentageWithoutSymbol } from '~/analytics/shared/utils';
-import { linearRegression } from 'ee/analytics/shared/utils';
-import { buildForecast } from '../graphql/api';
 
 /**
  * Converts the raw data fetched from the
@@ -185,34 +183,4 @@ export const forecastDataToSeries = ({
 
   // Add the last point from the data series so the chart visually joins together
   return [...dataSeries.slice(-1), ...data];
-};
-
-/**
- * @typedef {Object} ForecastDataItem
- * @property {Date} date - YYYY-MM-DD date for the datapoint
- * @property {Number} value - Forecasted value
- */
-
-/**
- * Returns a data forecast for the given time horizon
- * - with `useHoltWintersForecast=true` flag set, an API request will be made to build the forecast
- *   using the Holt winters smoothing model
- * - with `useHoltWintersForecast=false` will calculate a linear regression
- *
- * @param {Object} options An object containing the context needed for the forecast request
- * @param {Boolean} options.useHoltWintersForecast - Toggle between Holt winters and Linear regression
- * @param {String} options.forecastHorizon - Number of days to be returned in the forecast
- * @param {String} options.contextId - Context used to generate the holt winters forecast
- * @param {Array} options.rawApiData - Historical data used for generating the linear regression
- * @returns {ForecastDataItem[]}
- */
-export const calculateForecast = ({
-  useHoltWintersForecast = false,
-  forecastHorizon,
-  contextId,
-  rawApiData,
-}) => {
-  return useHoltWintersForecast
-    ? buildForecast(contextId, forecastHorizon)
-    : linearRegression(rawApiData, forecastHorizon);
 };

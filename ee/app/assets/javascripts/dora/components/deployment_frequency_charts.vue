@@ -4,6 +4,7 @@ import { GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
 import * as DoraApi from 'ee/api/dora_api';
+import { linearRegression } from 'ee/analytics/shared/utils';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { ALL_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
@@ -15,7 +16,6 @@ import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_a
 import { DEFAULT_SELECTED_CHART } from '~/vue_shared/components/ci_cd_analytics/constants';
 import glFeaturesFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { PROMO_URL } from '~/constants';
-import { ERROR_FORECAST_FAILED, ERROR_FORECAST_UNAVAILABLE } from '../graphql/constants';
 import DoraChartHeader from './dora_chart_header.vue';
 import {
   allChartDefinitions,
@@ -30,12 +30,7 @@ import {
   LAST_180_DAYS,
   CHART_TITLE,
 } from './static_data/deployment_frequency';
-import {
-  apiDataToChartSeries,
-  seriesToAverageSeries,
-  calculateForecast,
-  forecastDataToSeries,
-} from './util';
+import { apiDataToChartSeries, seriesToAverageSeries, forecastDataToSeries } from './util';
 
 const VISIBLE_METRICS = ['deploys', 'deployment-frequency', 'deployment_frequency'];
 const filterFn = (data) =>
@@ -70,10 +65,6 @@ export default {
       type: String,
       default: '',
     },
-    contextId: {
-      type: String,
-      default: '',
-    },
     shouldRenderDoraCharts: {
       type: Boolean,
       default: false,
@@ -94,12 +85,6 @@ export default {
   i18n: {
     showForecast: s__('DORA4Metrics|Show forecast'),
     forecast: s__('DORA4Metrics|Forecast'),
-    forecastUnavailable: s__(
-      'DORA4Metrics|The forecast might be inaccurate. To improve it, select a wider time frame or try again when more data is available',
-    ),
-    forecastFailed: s__(
-      'DORA4Metrics|Failed to generate forecast. Try again later. If the problem persists, consider %{linkStart}creating an issue%{linkEnd}.',
-    ),
     badgeTitle: __('Experiment'),
     confirmationTitle: s__('DORA4Metrics|Accept testing terms of use?'),
     confirmationBtnText: s__('DORA4Metrics|Accept testing terms'),
@@ -142,9 +127,6 @@ export default {
         [LAST_180_DAYS]: [],
       },
       selectedChartIndex: DEFAULT_SELECTED_CHART,
-      forecastRequestErrorMessage: '',
-      forecastError: null,
-      isLoading: false,
       tooltipTitle: '',
       tooltipContent: [],
     };
@@ -174,20 +156,11 @@ export default {
     selectedDataSeries() {
       return this.chartData[this.selectedChartId][0];
     },
-    shouldFetchForecast() {
+    shouldBuildForecast() {
       return this.showForecast && this.forecastConfirmed && !this.selectedForecast?.data.length;
     },
     forecastHorizon() {
       return this.$options.forecastDays[this.selectedChartId];
-    },
-    useHoltWintersForecast() {
-      return Boolean(this.glFeatures.useHoltWintersForecastForDeploymentFrequency);
-    },
-    isForecastUnavailableError() {
-      return Boolean(this.forecastError === ERROR_FORECAST_UNAVAILABLE);
-    },
-    alertVariant() {
-      return this.isForecastUnavailableError ? 'tip' : 'warning';
     },
   },
   async mounted() {
@@ -255,9 +228,9 @@ export default {
     }
   },
   methods: {
-    async onSelectChart(selectedChartIndex) {
+    onSelectChart(selectedChartIndex) {
       this.selectedChartIndex = selectedChartIndex;
-      await this.fetchForecast();
+      this.calculateForecast();
     },
     getMetricsRequestParams(selectedChartIndex) {
       const {
@@ -270,56 +243,31 @@ export default {
         created_before,
       };
     },
-    async fetchForecast() {
-      if (this.shouldFetchForecast) {
-        this.isLoading = true;
-        this.forecastError = null;
-        const { endDate } = this.selectedChartDefinition;
-        const { selectedChartId: id, forecastHorizon, useHoltWintersForecast, contextId } = this;
+    calculateForecast() {
+      if (!this.shouldBuildForecast) return;
 
-        try {
-          this.forecastRequestErrorMessage = '';
+      const { endDate } = this.selectedChartDefinition;
+      const { selectedChartId: id, forecastHorizon } = this;
+      const forecastData = linearRegression(this.rawApiData[id], forecastHorizon);
 
-          const forecastData = await calculateForecast({
-            contextId,
-            forecastHorizon,
-            useHoltWintersForecast,
-            rawApiData: this.rawApiData[id],
-          });
-
-          this.forecastChartData[id].data = forecastDataToSeries({
-            forecastData,
-            forecastHorizon,
-            endDate,
-            dataSeries: this.selectedDataSeries.data,
-            forecastSeriesLabel: this.$options.i18n.forecast,
-          });
-        } catch (error) {
-          if (error?.message === ERROR_FORECAST_UNAVAILABLE) {
-            this.forecastError = ERROR_FORECAST_UNAVAILABLE;
-            this.forecastRequestErrorMessage = this.$options.i18n.forecastUnavailable;
-          } else {
-            this.forecastError = ERROR_FORECAST_FAILED;
-            this.forecastRequestErrorMessage = this.$options.i18n.forecastFailed;
-          }
-        } finally {
-          this.isLoading = false;
-        }
-      }
+      this.forecastChartData[id].data = forecastDataToSeries({
+        forecastData,
+        forecastHorizon,
+        endDate,
+        dataSeries: this.selectedDataSeries.data,
+        forecastSeriesLabel: this.$options.i18n.forecast,
+      });
     },
     async onToggleForecast(toggleValue) {
       if (toggleValue) {
         await this.confirmForecastTerms();
         if (this.forecastConfirmed) {
           this.showForecast = toggleValue;
-          await this.fetchForecast();
+          this.calculateForecast();
         }
       } else {
         this.showForecast = toggleValue;
       }
-    },
-    onDismissAlert() {
-      this.forecastRequestErrorMessage = '';
     },
     async confirmForecastTerms() {
       if (this.forecastConfirmed) return;
@@ -363,7 +311,6 @@ export default {
       :chart-documentation-href="$options.chartDocumentationHref"
     />
     <ci-cd-analytics-charts
-      :loading="isLoading"
       :charts="charts"
       :chart-options="$options.areaChartOptions"
       :format-tooltip-text="formatTooltipText"
@@ -415,35 +362,13 @@ export default {
         </gl-alert>
       </template>
       <template #metrics="{ selectedChart }">
-        <div>
-          <gl-alert
-            v-if="forecastRequestErrorMessage.length"
-            data-testid="forecast-error"
-            :variant="alertVariant"
-            @dismiss="onDismissAlert"
-          >
-            <gl-sprintf v-if="!isForecastUnavailableError" :message="forecastRequestErrorMessage">
-              <template #link="{ content }">
-                <gl-link
-                  class="gl-inline-block"
-                  :href="$options.FORECAST_FEEDBACK_ISSUE_URL"
-                  target="_blank"
-                  >{{ content }}</gl-link
-                >
-              </template>
-            </gl-sprintf>
-            <template v-else>
-              {{ forecastRequestErrorMessage }}
-            </template>
-          </gl-alert>
-          <value-stream-metrics
-            :request-path="metricsRequestPath"
-            :request-params="getMetricsRequestParams(selectedChart)"
-            :filter-fn="$options.filterFn"
-            :query-type="$options.ALL_METRICS_QUERY_TYPE"
-            :is-licensed="shouldRenderDoraCharts"
-          />
-        </div>
+        <value-stream-metrics
+          :request-path="metricsRequestPath"
+          :request-params="getMetricsRequestParams(selectedChart)"
+          :filter-fn="$options.filterFn"
+          :query-type="$options.ALL_METRICS_QUERY_TYPE"
+          :is-licensed="shouldRenderDoraCharts"
+        />
       </template>
     </ci-cd-analytics-charts>
   </div>

@@ -6,7 +6,6 @@ import last180DaysData from 'test_fixtures/api/dora/metrics/daily_deployment_fre
 import lastWeekData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_week.json';
 import lastMonthData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_month.json';
 import last90DaysData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_90_days.json';
-import * as utils from 'ee_component/dora/components/util';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useFixturesFakeDate } from 'helpers/fake_date';
@@ -18,7 +17,6 @@ import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_m
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
-import { forecastDataToChartDate } from './helpers';
 import {
   mockLastWeekData,
   mockLastMonthData,
@@ -28,10 +26,6 @@ import {
   mockLastMonthForecastData,
   mockLast90DaysForecastData,
   mockLast180DaysForecastData,
-  mockLastWeekHoltWintersForecastData,
-  mockLastMonthHoltWintersForecastData,
-  mockLast90DaysHoltWintersForecastData,
-  mockLast180DaysHoltWintersForecastData,
 } from './mock_data';
 
 jest.mock('~/alert');
@@ -428,112 +422,6 @@ describe('deployment_frequency_charts.vue', () => {
         expect(findForecastFeedbackAlert().exists()).toBe(true);
         expect(findForecastFeedbackAlert().text()).toBe(feedbackText);
         expect(findForecastFeedbackLink().attributes('href')).toBe(feedbackLink);
-      });
-    });
-  });
-
-  describe('with useHoltWintersForecastForDeploymentFrequency=true and doraChartsForecast=true', () => {
-    let calculateForecastSpy;
-
-    const forecastError = () => wrapper.findByTestId('forecast-error');
-
-    const mountOpts = {
-      provide: {
-        projectPath: 'test/project',
-        contextId,
-        glFeatures: {
-          doraChartsForecast: true,
-          useHoltWintersForecastForDeploymentFrequency: true,
-        },
-      },
-      stubs: {
-        ValueStreamMetrics: true,
-      },
-    };
-
-    describe('with a successful forecast', () => {
-      beforeEach(async () => {
-        mock = new MockAdapter(axios);
-
-        setupDefaultMockTimePeriods();
-
-        await createComponent(mountOpts, mount);
-        await axios.waitForAll();
-      });
-
-      it.each`
-        timePeriod         | chartDataIndex | rawApiData         | forecastHorizon | forecastResult
-        ${'Last week'}     | ${0}           | ${lastWeekData}    | ${3}            | ${mockLastWeekHoltWintersForecastData}
-        ${'Last month'}    | ${1}           | ${lastMonthData}   | ${14}           | ${mockLastMonthHoltWintersForecastData}
-        ${'Last 90 days'}  | ${2}           | ${last90DaysData}  | ${45}           | ${mockLast90DaysHoltWintersForecastData}
-        ${'Last 180 days'} | ${3}           | ${last180DaysData} | ${90}           | ${mockLast180DaysHoltWintersForecastData}
-      `(
-        'Fetches the holt winters forecasted data for $timePeriod',
-        async ({ chartDataIndex, rawApiData, forecastResult, forecastHorizon }) => {
-          const result = forecastDataToChartDate(rawApiData, forecastResult);
-
-          calculateForecastSpy = jest
-            .spyOn(utils, 'calculateForecast')
-            .mockReturnValue(forecastResult);
-
-          await selectChartByIndex(chartDataIndex);
-          await toggleDataForecast();
-
-          const currentTimePeriodChartData = getChartData()[chartDataIndex];
-          const forecastSeries = currentTimePeriodChartData.data[2];
-
-          expect(calculateForecastSpy).toHaveBeenCalledWith({
-            contextId,
-            forecastHorizon,
-            rawApiData,
-            useHoltWintersForecast: true,
-          });
-
-          expect(currentTimePeriodChartData.data).toHaveLength(3);
-          expect(forecastSeries.data).toEqual(result);
-          // The last date in the time series is added to the data to join the points in the chart
-          expect(forecastSeries.data.length).toBe(forecastHorizon + 1);
-          expect(forecastSeries.lineStyle).toEqual(forecastLineStyle);
-          expect(forecastSeries.areaStyle).toEqual(forecastAreaStyle);
-        },
-      );
-    });
-
-    describe('when the forecast fails', () => {
-      beforeEach(async () => {
-        mock = new MockAdapter(axios);
-
-        setupDefaultMockTimePeriods();
-
-        await createComponent(mountOpts, mount);
-      });
-
-      it('renders an error message', async () => {
-        expect(forecastError().exists()).toBe(false);
-
-        jest.spyOn(utils, 'calculateForecast').mockRejectedValue();
-        await selectChartByIndex(0);
-        await toggleDataForecast();
-
-        expect(forecastError().attributes('class')).toContain('gl-alert-warning');
-        expect(forecastError().text()).toBe(
-          'Failed to generate forecast. Try again later. If the problem persists, consider creating an issue.',
-        );
-      });
-
-      it('with a `ERROR_FORECAST_UNAVAILABLE` error, renders a forecast unavailable tip', async () => {
-        expect(forecastError().exists()).toBe(false);
-
-        jest
-          .spyOn(utils, 'calculateForecast')
-          .mockRejectedValue({ message: 'ERROR_FORECAST_UNAVAILABLE' });
-        await selectChartByIndex(0);
-        await toggleDataForecast();
-
-        expect(forecastError().attributes('class')).toContain('gl-alert-tip');
-        expect(forecastError().text()).toBe(
-          'The forecast might be inaccurate. To improve it, select a wider time frame or try again when more data is available',
-        );
       });
     });
   });
