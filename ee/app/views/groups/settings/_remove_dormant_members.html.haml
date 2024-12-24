@@ -2,11 +2,15 @@
 - return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 - return unless @group.root?
 
+- help_link_url = help_page_path('user/group/moderate_users.md', anchor: 'automatically-remove-dormant-members')
+- help_link = link_to('', help_link_url, target: '_blank', rel: 'noopener noreferrer')
+- help_text = safe_format(_('%{strong_start}Read %{help_link_start}these instructions%{help_link_end} to understand the implications of enabling this setting.%{strong_end} Removed members no longer have access to this top-level group, its subgroups, and their projects.'), tag_pair(help_link, :help_link_start, :help_link_end), tag_pair(tag.strong, :strong_start, :strong_end))
+
 .form-group
   = f.label :remove_dormant_members, _('Dormant members'), class: 'label-bold'
   = f.gitlab_ui_checkbox_component :remove_dormant_members,
     _('Remove dormant members after a period of inactivity'),
-    help_text: _('Removed members no longer have access to this top-level group, its sub-groups, and their projects.'),
+    help_text: help_text,
     checkbox_options: { checked: group.namespace_settings&.remove_dormant_members }
   .form-group
     = f.label :remove_dormant_members_period, _('Days of inactivity before removal'), class: 'label-light'
