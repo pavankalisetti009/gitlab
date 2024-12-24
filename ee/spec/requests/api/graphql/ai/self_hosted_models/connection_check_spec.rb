@@ -79,7 +79,7 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
 
         expect(response).to have_gitlab_http_status(:success)
         expect(probe_graphql_result['success']).to be true
-        expect(probe_graphql_result['message']).to match('was successful')
+        expect(probe_graphql_result['message']).to match('Successfully connected')
       end
     end
   end

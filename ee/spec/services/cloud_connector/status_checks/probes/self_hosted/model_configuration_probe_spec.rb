@@ -42,7 +42,7 @@ RSpec.describe ::CloudConnector::StatusChecks::Probes::SelfHosted::ModelConfigur
         result = probe.execute
 
         expect(result.success).to be true
-        expect(result.message).to match('Self-hosted Model was successful')
+        expect(result.message).to match('Successfully connected to the self-hosted model')
       end
     end
 
@@ -59,7 +59,7 @@ RSpec.describe ::CloudConnector::StatusChecks::Probes::SelfHosted::ModelConfigur
         result = probe.execute
 
         expect(result.success).to be false
-        expect(result.message).to match("Self-hosted model test request failed: #{error_message}")
+        expect(result.message).to match("ERROR: API error")
       end
     end
   end
