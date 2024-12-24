@@ -88,11 +88,7 @@ module EE
         end
 
         def subscribe_to_member_destroyed_events(store)
-          store.subscribe ::GitlabSubscriptions::Members::DestroyedWorker, to: ::Members::DestroyedEvent,
-            if: ->(event) {
-              actor = event.data[:source_type].constantize.actor_from_id(event.data[:source_id])
-              ::Feature.enabled?(:track_member_activity, actor)
-            }
+          store.subscribe ::GitlabSubscriptions::Members::DestroyedWorker, to: ::Members::DestroyedEvent
         end
 
         def register_security_policy_subscribers(store)
@@ -217,11 +213,7 @@ module EE
         def subscribe_to_members_added_event(store)
           store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::Members::MembersAddedEvent
 
-          store.subscribe ::GitlabSubscriptions::Members::AddedWorker, to: ::Members::MembersAddedEvent,
-            if: ->(event) {
-              actor = event.data[:source_type].constantize.actor_from_id(event.data[:source_id])
-              ::Feature.enabled?(:track_member_activity, actor)
-            }
+          store.subscribe ::GitlabSubscriptions::Members::AddedWorker, to: ::Members::MembersAddedEvent
         end
 
         def subscribe_to_users_activity_events(store)
@@ -229,11 +221,10 @@ module EE
             to: ::Users::ActivityEvent,
             if: ->(event) {
               namespace_id = event.data[:namespace_id]
-              actor = ::Namespace.actor_from_id(namespace_id)
-              ::Feature.enabled?(:track_member_activity, actor) &&
-                !GitlabSubscriptions::Members::ActivityService.lease_taken?(
-                  namespace_id, event.data[:user_id]
-                )
+
+              !GitlabSubscriptions::Members::ActivityService.lease_taken?(
+                namespace_id, event.data[:user_id]
+              )
             }
         end
 
