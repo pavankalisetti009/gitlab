@@ -15,12 +15,14 @@ class GenerateCiJobTokenSigningKey < Gitlab::Database::Migration[2.2]
   end
 
   def up
+    ApplicationSetting.reset_column_information
     ApplicationSetting.find_each do |application_setting|
       application_setting.update(ci_job_token_signing_key: OpenSSL::PKey::RSA.new(2048).to_pem)
     end
   end
 
   def down
+    ApplicationSetting.reset_column_information
     ApplicationSetting.find_each do |application_setting|
       application_setting.update_columns(
         encrypted_ci_job_token_signing_key: nil,
