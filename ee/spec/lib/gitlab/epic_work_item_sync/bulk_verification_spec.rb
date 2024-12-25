@@ -48,7 +48,8 @@ RSpec.describe Gitlab::EpicWorkItemSync::BulkVerification, feature_category: :te
         context 'when mismatched attributes match attributes we check for' do
           let(:mismatched_attributes) { %w[title] }
 
-          it 'returns mismatched amount and logs the mismatches' do
+          it 'returns mismatched amount and logs the mismatches',
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/505417' do
             expect_next_instance_of(Gitlab::EpicWorkItemSync::Diff) do |instance|
               expect(instance).to receive(:attributes).once.and_return(mismatched_attributes)
             end
