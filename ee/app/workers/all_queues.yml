@@ -615,6 +615,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: cronjob:search_zoekt_metrics_update_cron
+  :worker_name: Search::Zoekt::MetricsUpdateCronWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:search_zoekt_scheduling
   :worker_name: Search::Zoekt::SchedulingWorker
   :feature_category: :global_search
