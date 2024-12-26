@@ -103,14 +103,18 @@ module VulnerabilitiesHelper
   end
 
   def vulnerability_finding_data(vulnerability)
-    data = Vulnerabilities::FindingSerializer.new(current_user: current_user).represent(vulnerability.finding, only: FINDING_FIELDS)
+    finding = vulnerability.finding
+
+    data = Vulnerabilities::FindingSerializer.new(current_user: current_user).represent(finding, only: FINDING_FIELDS)
     data[:location].merge!('blob_path' => vulnerability.blob_path).compact!
     data[:description_html] = markdown(vulnerability.present.description)
     data[:solution_html] = markdown(vulnerability.present.solution)
-    data[:ai_explanation_available] = vulnerability.finding.ai_explanation_available?
-    data[:ai_resolution_available] = vulnerability.finding.ai_resolution_available?
-    data[:ai_resolution_enabled] = vulnerability.finding.ai_resolution_enabled?
+    data[:ai_explanation_available] = finding.ai_explanation_available?
+    data[:ai_resolution_available] = finding.ai_resolution_available?
+    data[:ai_resolution_enabled] = finding.ai_resolution_enabled?
     data[:belongs_to_public_project] = vulnerability.project.public?
+    data[:epss_score] = finding.cve_enrichment&.epss_score
+    data[:is_known_exploit] = finding.cve_enrichment&.is_known_exploit
     data
   end
 

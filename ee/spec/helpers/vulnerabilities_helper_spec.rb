@@ -410,7 +410,9 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         ai_explanation_available: finding.ai_explanation_available?,
         ai_resolution_available: finding.ai_resolution_available?,
         ai_resolution_enabled: finding.ai_resolution_enabled?,
-        belongs_to_public_project: vulnerability.project.public?
+        belongs_to_public_project: vulnerability.project.public?,
+        epss_score: finding.cve_enrichment&.epss_score,
+        is_known_exploit: finding.cve_enrichment&.is_known_exploit
       )
 
       expect(subject[:location]['blob_path']).to match(kind_of(String))
