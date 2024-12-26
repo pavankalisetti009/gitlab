@@ -58,7 +58,8 @@ describe('ee/vulnerabilities/components/generic_report/types/report_type_list_gr
     });
 
     it('applies the correct classes to the list items', () => {
-      const lastItem = findListItems().at(-1);
+      const lastIndex = items.length - 1;
+      const lastItem = findListItems().at(lastIndex);
       expect(lastItem.classes().includes('!gl-list-none')).toBe(hasNestedList);
     });
   });
