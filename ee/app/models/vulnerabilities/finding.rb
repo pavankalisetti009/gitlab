@@ -340,6 +340,13 @@ module Vulnerabilities
       super.as_json(only: [:summary], methods: [:diff])
     end
 
+    def cve_enrichment
+      return unless cve_value
+
+      PackageMetadata::CveEnrichment.find_by(cve: cve_value)
+    end
+    strong_memoize_attr :cve_enrichment
+
     def build_evidence_request(data)
       return if data.nil?
 
