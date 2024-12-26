@@ -28,6 +28,9 @@ module ComplianceManagement
         through: :security_policy_requirements,
         inverse_of: :compliance_requirements
 
+      has_many :compliance_requirements_controls,
+        class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl', dependent: :destroy
+
       private
 
       def requirements_count_per_framework
