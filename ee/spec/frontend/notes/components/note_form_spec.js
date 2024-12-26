@@ -59,6 +59,22 @@ describe('issue_comment_form component', () => {
     });
   };
 
+  describe('markdown editor', () => {
+    it('shows markdown editor', () => {
+      createComponentWrapper();
+      expect(findMarkdownEditor().exists()).toBe(true);
+    });
+
+    it('passes down restoreFromAutosave prop to the editor', () => {
+      createComponentWrapper({
+        propsData: {
+          restoreFromAutosave: true,
+        },
+      });
+      expect(findMarkdownEditor().props('restoreFromAutosave')).toBe(true);
+    });
+  });
+
   describe.each(['Issue', 'MergeRequest'])('for `%s` noteable type', (noteableType) => {
     describe('comment temperature', () => {
       describe('without the ability to measure it', () => {
