@@ -1,6 +1,5 @@
 <script>
 import { GlCard, GlIcon, GlModal, GlLink, GlSprintf } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import runnersJobsQueueDurationQuery from 'ee/ci/runner/graphql/list/runners_jobs_queue_duration.query.graphql';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, n__, sprintf, formatNumber } from '~/locale';
@@ -14,7 +13,6 @@ export default {
     GlModal,
     GlSprintf,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     modalId: {
       type: String,

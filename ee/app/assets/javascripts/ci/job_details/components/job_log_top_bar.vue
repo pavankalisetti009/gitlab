@@ -1,14 +1,12 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import CeJobLogTopBar from '~/ci/job_details/components/job_log_top_bar.vue';
 
 export default {
   components: {
     CeJobLogTopBar,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     size: {
       type: Number,

@@ -7,7 +7,6 @@ import {
   TOKEN_TYPE_ITERATION,
   TOKEN_TYPE_WEIGHT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   TOKEN_TITLE_EPIC,
   TOKEN_TITLE_HEALTH,
@@ -28,7 +27,6 @@ export default {
   i18n: {
     ...IssueBoardFilteredSearchFoss.i18n,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: [
     'epicFeatureAvailable',
     'iterationFeatureAvailable',

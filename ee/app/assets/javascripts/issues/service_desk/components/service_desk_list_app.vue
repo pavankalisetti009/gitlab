@@ -1,6 +1,5 @@
 <script>
 import searchIterationsQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   OPERATORS_IS_NOT,
   TOKEN_TYPE_EPIC,
@@ -31,7 +30,6 @@ export default {
   components: {
     ServiceDeskListApp,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: [
     'fullPath',
     'groupPath',
