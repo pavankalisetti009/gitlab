@@ -365,5 +365,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
     it { is_expected.to belong_to(:framework).optional(false) }
     it { is_expected.to have_many(:security_policy_requirements) }
     it { is_expected.to have_many(:compliance_framework_security_policies).through(:security_policy_requirements) }
+    it { is_expected.to have_many(:compliance_requirements_controls) }
   end
 end
