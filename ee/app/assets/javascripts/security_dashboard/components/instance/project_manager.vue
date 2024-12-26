@@ -242,7 +242,7 @@ export default {
 
 <template>
   <section class="container">
-    <div class="row justify-content-center mt-md-4">
+    <div class="row gl-mt-6 gl-justify-center">
       <div class="col col-lg-7">
         <h3 class="gl-mt-0 gl-text-lg gl-font-bold">
           {{ s__('SecurityReports|Monitored projects') }}
