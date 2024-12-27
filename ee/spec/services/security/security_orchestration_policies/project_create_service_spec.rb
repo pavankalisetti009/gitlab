@@ -36,7 +36,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProjectCreateService, fe
         project.add_developer(developer)
       end
 
-      it 'creates policy project with maintainers and developers from target project as developers', :aggregate_failures do
+      it 'creates policy project with maintainers and developers from target project as developers allowing merge request author approval', :aggregate_failures do
         response = service.execute
 
         policy_project = response[:policy_project]
@@ -44,6 +44,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProjectCreateService, fe
         expect(policy_project.namespace).to eq(project.namespace)
         expect(policy_project.team.developers).to contain_exactly(maintainer, developer)
         expect(policy_project.container_registry_access_level).to eq(ProjectFeature::DISABLED)
+        expect(policy_project.merge_requests_author_approval).to be_truthy
         expect(policy_project.repository.readme.data).to eq(expected_readme_data)
       end
 
