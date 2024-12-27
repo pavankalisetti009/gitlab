@@ -7,6 +7,7 @@ const TEST_DATA = {
 };
 
 describe('ee/vulnerabilities/components/generic_report/types/report_type_code.vue', () => {
+  /** @type {import('@vue/test-utils').Wrapper} */
   let wrapper;
 
   const createWrapper = () => {
