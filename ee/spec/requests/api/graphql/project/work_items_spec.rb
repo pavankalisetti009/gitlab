@@ -295,6 +295,51 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         end
       end
     end
+
+    context 'with iteration widget' do
+      let_it_be(:iteration_cadence) { create(:iterations_cadence, group: project.group) }
+      let_it_be(:iteration) { create(:iteration, iterations_cadence: iteration_cadence) }
+      let_it_be(:work_item1) { create(:work_item, :issue, project: project, iteration: iteration) }
+
+      let(:fields) do
+        <<~QUERY
+        edges {
+          node {
+            widgets {
+              ... on WorkItemWidgetIteration {
+                iteration {
+                  id
+                  iterationCadence {
+                    title
+                  }
+                }
+              }
+            }
+          }
+        }
+        QUERY
+      end
+
+      before do
+        stub_licensed_features(iterations: true)
+      end
+
+      it 'avoids N+1 queries', :use_sql_query_cache do
+        post_graphql(query, current_user: current_user) # warmup
+
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          post_graphql(query, current_user: current_user)
+        end
+
+        create_list(:iterations_cadence, 3, group: project.group) do |cadence|
+          iteration = create(:iteration, iterations_cadence: cadence)
+          create(:work_item, :issue, project: project, iteration: iteration)
+        end
+
+        expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
+        expect(response).to have_gitlab_http_status(:success)
+      end
+    end
   end
 
   def create_feature_flag_for(work_item)
