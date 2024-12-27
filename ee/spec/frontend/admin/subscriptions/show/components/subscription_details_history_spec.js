@@ -47,7 +47,7 @@ describe('Subscription Details History', () => {
 
     it('has the correct license type', () => {
       expect(findCurrentRow().text()).toContain(onlineCloudLicenseText);
-      expect(findTableRows().at(-1).text()).toContain('Legacy license');
+      expect(findTableRows().at(3).text()).toContain('Legacy license');
     });
 
     it('has a badge for the license type', () => {

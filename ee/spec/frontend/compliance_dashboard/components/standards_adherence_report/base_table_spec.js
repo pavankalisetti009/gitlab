@@ -173,7 +173,7 @@ describe('AdherencesBaseTable component', () => {
     });
 
     it('renders the table row properly for failed checks', () => {
-      const infoCell = findNthTableRow(2).findAll('td').at(-1);
+      const infoCell = findNthTableRow(2).findAll('td').at(5);
       expect(infoCell.text()).toMatchInterpolatedText('View details (fix available)');
     });
 
