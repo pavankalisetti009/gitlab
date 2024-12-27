@@ -474,6 +474,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
           it 'exposes the setting section' do
             expect(page).to have_content('Dormant members')
+            expect(page).to have_content('Read these instructions to understand the implications of enabling this setting. Removed members no longer have access to this top-level group, its subgroups, and their projects.')
             expect(page).to have_field('Remove dormant members after a period of inactivity')
             expect(page).to have_field('Days of inactivity before removal', disabled: true)
           end
