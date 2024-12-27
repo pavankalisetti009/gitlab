@@ -52,7 +52,7 @@ describe('Dependency Project Count component', () => {
       apolloProvider: createMockApollo(handlers),
       propsData: { ...basicProps, ...propsData },
       provide: { endpoint, belowGroupLimit },
-      stubs: { GlLink, GlTruncate, ...stubs },
+      stubs: { GlLink, ...stubs },
     });
   };
 
@@ -160,8 +160,8 @@ describe('Dependency Project Count component', () => {
           expect(findProjectAvatar().props('src')).toBe(avatarUrl);
         });
 
-        it('displays project name', () => {
-          expect(findProjectLink().text()).toContain(projectName);
+        it('displays truncated project name', () => {
+          expect(wrapper.findComponent(GlTruncate).props('text')).toBe(projectName);
         });
 
         it('displays link to project dependencies', () => {
