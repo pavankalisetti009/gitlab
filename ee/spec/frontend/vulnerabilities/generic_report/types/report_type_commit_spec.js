@@ -10,6 +10,7 @@ const TEST_COMMIT_PATH_PARAMETERS = '?baz=quz';
 const TEST_COMMIT_PATH_TEMPLATE = `${TEST_COMMIT_PATH_BASE}/$COMMIT_SHA/${TEST_COMMIT_PATH_PARAMETERS}`;
 
 describe('ee/vulnerabilities/components/generic_report/types/report_type_commit.vue', () => {
+  /** @type {import('@vue/test-utils').Wrapper} */
   let wrapper;
 
   const createWrapper = () => {

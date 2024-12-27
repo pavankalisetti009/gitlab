@@ -1,24 +1,16 @@
 import { shallowMount } from '@vue/test-utils';
-import NamedList from 'ee/vulnerabilities/components/generic_report/types/report_type_named_list_graphql.vue';
-import ReportItem from 'ee/vulnerabilities/components/generic_report/report_item_graphql.vue';
+import NamedList from 'ee/vulnerabilities/components/generic_report/types/report_type_named_list.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 
 const TEST_DATA = {
   items: [
-    {
-      name: 'url1',
-      fieldName: 'comment_1',
-      value: { type: 'VulnerabilityDetailUrl', href: 'http://foo.bar' },
-    },
-    {
-      name: 'url2',
-      fieldName: 'comment_2',
-      value: { type: 'VulnerabilityDetailUrl', href: 'http://bar.baz' },
-    },
+    { label: 'comment_1', name: 'url1', type: 'url', href: 'http://foo.bar' },
+    { label: 'comment_2', name: 'url2', type: 'url', href: 'http://bar.baz' },
   ],
 };
 
-describe('ee/vulnerabilities/components/generic_report/types/report_type_named_list_graphql.vue', () => {
+describe('ee/vulnerabilities/components/generic_report/types/report_type_named_list.vue', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const createWrapper = () =>
@@ -29,14 +21,14 @@ describe('ee/vulnerabilities/components/generic_report/types/report_type_named_l
         },
         // manual stubbing is needed because the component is dynamically imported
         stubs: {
-          ReportItem,
+          ReportItem: true,
         },
       }),
     );
 
   const findList = () => wrapper.findByRole('list');
   const findAllListItems = () => wrapper.findAllByTestId('listItem');
-  const findItemValueWithFieldName = (fieldName) => wrapper.findByTestId(`listValue${fieldName}`);
+  const findItemValueWithLabel = (label) => wrapper.findByTestId(`listValue${label}`);
 
   beforeEach(() => {
     wrapper = createWrapper();
@@ -55,10 +47,8 @@ describe('ee/vulnerabilities/components/generic_report/types/report_type_named_l
       expect(wrapper.findByText(item.name).exists()).toBe(true);
     });
 
-    it('renders a report-item with the correct data', () => {
-      expect(findItemValueWithFieldName(item.fieldName).props()).toMatchObject({
-        item: item.value,
-      });
+    it('renders a report-item', () => {
+      expect(findItemValueWithLabel(item.label).exists()).toBe(true);
     });
   });
 });

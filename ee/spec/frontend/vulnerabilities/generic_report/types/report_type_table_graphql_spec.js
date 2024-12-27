@@ -9,6 +9,7 @@ const TEST_DATA = {
 };
 
 describe('ee/vulnerabilities/components/generic_report/types/report_type_table_graphql.vue', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const createWrapper = () => {
