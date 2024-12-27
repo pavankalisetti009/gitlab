@@ -1,7 +1,24 @@
 <script>
-import { GlModal, GlCollapsibleListbox, GlFormGroup, GlFormInput } from '@gitlab/ui';
+import {
+  GlModal,
+  GlCollapsibleListbox,
+  GlFormGroup,
+  GlFormInput,
+  GlFormTextarea,
+  GlFormRadio,
+  GlFormRadioGroup,
+} from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import DAST_VARIABLES from '../dast_variables';
+import { booleanOptions } from '../constants';
+
+const getEmptyVariable = () => ({
+  id: null,
+  value: '',
+  type: null,
+  description: '',
+  example: '',
+});
 
 export default {
   name: 'DastVariablesModal',
@@ -10,6 +27,9 @@ export default {
     GlCollapsibleListbox,
     GlFormGroup,
     GlFormInput,
+    GlFormRadio,
+    GlFormTextarea,
+    GlFormRadioGroup,
   },
   props: {
     preSelectedVariables: {
@@ -20,7 +40,7 @@ export default {
     variable: {
       type: Object,
       required: false,
-      default: () => ({}),
+      default: () => getEmptyVariable(),
     },
   },
   i18n: {
@@ -33,17 +53,17 @@ export default {
   },
   data() {
     return {
-      selectedVariableId: this.variable?.id || null,
-      selectedVariableValue: this.variable?.value || '',
+      selectedVariable: {
+        ...this.variable,
+      },
       searchTerm: '',
     };
   },
   computed: {
     dropdownText() {
-      if (this.selectedVariableId) {
-        return this.selectedVariableId;
+      if (this.selectedVariable.id) {
+        return this.selectedVariable.id;
       }
-
       return this.$options.i18n.dropdownPlaceholder;
     },
     modalActionPrimary() {
@@ -70,26 +90,49 @@ export default {
         secondaryText: description,
       }));
     },
+    componentByType() {
+      if (this.selectedVariable.type) {
+        if (this.checkSelectorType('selector')) {
+          return GlFormTextarea;
+        }
+
+        return GlFormInput;
+      }
+      return null;
+    },
   },
   methods: {
     show() {
       this.$refs.modal.show();
     },
     addVariable() {
+      const { id, value, type } = this.selectedVariable;
       this.$emit('addVariable', {
-        variable: this.selectedVariableId,
-        value: this.selectedVariableValue,
+        variable: id,
+        value,
+        type,
       });
     },
     onSearch(searchTerm) {
       this.searchTerm = searchTerm.trim().toLowerCase();
     },
     resetModal() {
-      this.selectedVariableId = null;
-      this.selectedVariableValue = '';
+      this.selectedVariable = getEmptyVariable();
       this.searchTerm = '';
     },
+    onSelect(id) {
+      const { type, description, example } = DAST_VARIABLES[id] || {};
+      this.selectedVariable.id = id;
+      this.selectedVariable.value = '';
+      this.selectedVariable.type = type || null;
+      this.selectedVariable.description = description || '';
+      this.selectedVariable.example = example || '';
+    },
+    checkSelectorType(type) {
+      return this.selectedVariable.type === type;
+    },
   },
+  booleanOptions,
 };
 </script>
 
@@ -107,7 +150,6 @@ export default {
     <gl-form-group :label="$options.i18n.variableLabel" label-for="dast_variable_selector">
       <gl-collapsible-listbox
         id="dast_variable_selector"
-        v-model="selectedVariableId"
         block
         searchable
         is-check-centered
@@ -117,12 +159,39 @@ export default {
         :no-results-text="$options.i18n.emptySearchResult"
         fluid-width
         @search="onSearch"
+        @select="onSelect($event)"
       >
         <!-- <template #list-item="{ item: { text, secondaryText, icon } }"> </template> -->
       </gl-collapsible-listbox>
     </gl-form-group>
-    <gl-form-group :label="$options.i18n.valueLabel" label-for="dast_value_input">
-      <gl-form-input id="dast_value_input" v-model="selectedVariableValue" />
+    <gl-form-group
+      v-if="selectedVariable.type"
+      :label="$options.i18n.valueLabel"
+      :label-description="selectedVariable.description"
+      label-for="dast_value_input"
+    >
+      <gl-form-radio-group
+        v-if="checkSelectorType('boolean')"
+        id="dast_value_input"
+        v-model="selectedVariable.value"
+      >
+        <gl-form-radio
+          v-for="option in $options.booleanOptions"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.text }}
+        </gl-form-radio>
+      </gl-form-radio-group>
+
+      <component
+        :is="componentByType"
+        v-else
+        id="dast_value_input"
+        v-model="selectedVariable.value"
+        :placeholder="`Ex: ${selectedVariable.example}`"
+        no-resize
+      />
     </gl-form-group>
   </gl-modal>
 </template>
