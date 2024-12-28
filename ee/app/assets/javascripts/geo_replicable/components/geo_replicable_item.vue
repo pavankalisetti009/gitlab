@@ -4,7 +4,6 @@ import { GlButton } from '@gitlab/ui';
 import { mapActions, mapState } from 'vuex';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { __, s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { ACTION_TYPES } from '../constants';
 import GeoReplicableStatus from './geo_replicable_status.vue';
 import GeoReplicableTimeAgo from './geo_replicable_time_ago.vue';
@@ -23,7 +22,6 @@ export default {
     GeoReplicableTimeAgo,
     GeoReplicableStatus,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     name: {
       type: String,

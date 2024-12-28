@@ -8,7 +8,6 @@ import {
   DAST_SITE_VALIDATION_POLLING_INTERVAL,
   DAST_SITE_VALIDATION_ALLOWED_TIMELINE_IN_MINUTES,
 } from 'ee/security_configuration/dast_site_validation/constants';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   EXCLUDED_URLS_SEPARATOR,
   TARGET_TYPES,
@@ -68,7 +67,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['projectPath'],
   props: {
     profile: {

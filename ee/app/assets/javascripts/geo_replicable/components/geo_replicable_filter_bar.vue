@@ -10,7 +10,6 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState, mapGetters } from 'vuex';
 import { s__, sprintf } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import {
   DEFAULT_SEARCH_DELAY,
@@ -41,7 +40,6 @@ export default {
   directives: {
     GlModalDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   data() {
     return {
       modalAction: null,

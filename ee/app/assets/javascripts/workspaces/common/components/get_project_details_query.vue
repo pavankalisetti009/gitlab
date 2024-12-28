@@ -1,11 +1,9 @@
 <script>
 import { logError } from '~/lib/logger';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getProjectDetailsQuery from '../graphql/queries/get_project_details.query.graphql';
 import getRemoteDevelopmentClusterAgents from '../graphql/queries/get_remote_development_cluster_agents.query.graphql';
 
 export default {
-  mixins: [glFeatureFlagMixin()],
   props: {
     projectFullPath: {
       type: String,
