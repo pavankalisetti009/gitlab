@@ -70,12 +70,14 @@ module Vulnerabilities
           vulnerability.vulnerability_read&.update!(dismissal_reason: params[:dismissal_reason])
         end
 
-        create_system_note(vulnerability)
+        create_system_note(vulnerability, @current_user)
       end
     end
 
-    def create_system_note(vulnerability)
-      SystemNoteService.change_vulnerability_state(vulnerability, @current_user)
+    def create_system_note(vulnerability, user)
+      vulnerability.run_after_commit_or_now do
+        SystemNoteService.change_vulnerability_state(vulnerability, user)
+      end
     end
 
     def update_existing_state_transition(vulnerability)
