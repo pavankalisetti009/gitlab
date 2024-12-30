@@ -316,13 +316,55 @@ export const createFramework = ({
     },
   },
   scanExecutionPolicies: {
-    nodes: [],
+    nodes: [
+      {
+        __typename: 'ScanExecutionPolicy',
+        name: 'scan exec 1',
+        source: {
+          namespace: {
+            id: `gid://gitlab/Group/${id}`,
+            name: 'bar',
+            fullPath: 'bar',
+          },
+        },
+      },
+    ],
     pageInfo: {
       startCursor: null,
     },
   },
   pipelineExecutionPolicies: {
-    nodes: [],
+    nodes: [
+      {
+        __typename: 'PipelineExecutionPolicy',
+        name: 'pipeline exec 1',
+        source: {
+          namespace: {
+            id: `gid://gitlab/Group/${id}`,
+            name: 'bar',
+            fullPath: 'bar',
+          },
+        },
+      },
+    ],
+    pageInfo: {
+      startCursor: null,
+    },
+  },
+  vulnerabilityManagementPolicies: {
+    nodes: [
+      {
+        __typename: 'VulnerabilityManagementPolicy',
+        name: 'vuln management 1',
+        source: {
+          namespace: {
+            id: `gid://gitlab/Group/${id}`,
+            name: 'bar',
+            fullPath: 'bar',
+          },
+        },
+      },
+    ],
     pageInfo: {
       startCursor: null,
     },

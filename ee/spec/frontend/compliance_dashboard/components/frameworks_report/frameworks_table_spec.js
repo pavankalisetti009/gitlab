@@ -69,7 +69,11 @@ describe('FrameworksTable component', () => {
     await nextTick();
   };
 
-  const createComponent = (props = {}, queryParams = {}) => {
+  const createComponent = (
+    props = {},
+    queryParams = {},
+    vulnerabilityManagementPolicyTypeGroup = true,
+  ) => {
     const currentQueryParams = { ...queryParams };
     $router = {
       push: jest.fn().mockImplementation(({ query }) => {
@@ -93,6 +97,9 @@ describe('FrameworksTable component', () => {
       },
       provide: {
         groupSecurityPoliciesPath: '/example-group-security-policies-path',
+        glFeatures: {
+          vulnerabilityManagementPolicyTypeGroup,
+        },
       },
       mocks: {
         $route: { query: currentQueryParams },
@@ -217,10 +224,28 @@ describe('FrameworksTable component', () => {
           ...frameworks[idx].scanExecutionPolicies.nodes,
           ...frameworks[idx].scanResultPolicies.nodes,
           ...frameworks[idx].pipelineExecutionPolicies.nodes,
+          ...frameworks[idx].vulnerabilityManagementPolicies.nodes,
         ]
           .map((x) => x.name)
           .join(','),
       );
+    });
+
+    describe('when `vulnerabilityManagementPolicyTypeGroup` feature flag is disabled', () => {
+      beforeEach(() => {
+        wrapper = createComponent(
+          {
+            frameworks,
+            isLoading: false,
+          },
+          {},
+          false,
+        );
+      });
+
+      it('does not show vulnerability management policies', () => {
+        expect(findTable().text()).not.toContain('vuln management');
+      });
     });
   });
 
@@ -395,7 +420,12 @@ describe('FrameworksTable component', () => {
 
       it('enables delete action when framework is not default and has no linked policies', async () => {
         const frameworkWithoutPolicies = createFramework({
-          options: { scanResultPolicies: { nodes: [] } },
+          options: {
+            scanResultPolicies: { nodes: [] },
+            scanExecutionPolicies: { nodes: [] },
+            pipelineExecutionPolicies: { nodes: [] },
+            vulnerabilityManagementPolicies: { nodes: [] },
+          },
         });
         wrapper = createComponent({
           frameworks: [frameworkWithoutPolicies],
