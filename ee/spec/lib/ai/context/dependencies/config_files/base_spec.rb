@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :code_suggestions do
+  using RSpec::Parameterized::TableSyntax
+
   let(:config_file_class) { ConfigFileClass }
 
   before do
@@ -47,8 +49,6 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
         'parent_node' => { 'child_node' => [
           { name: ' lib1 ' },
           { name: 'lib2', version: '2.1.0 ' },
-          { name: '' },
-          { name: nil },
           { name: 'lib3', version: '' },
           { name: 'lib4', version: nil },
           { name: 'lib5', version: 123 },
@@ -115,39 +115,52 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     end
   end
 
-  context 'when a dependency name is an array' do
-    it_behaves_like 'parsing an invalid dependency config file' do
-      let(:invalid_config_file_content) do
-        Gitlab::Json.dump({
-          'parent_node' => { 'child_node' => [
-            { name: ['lib1'], version: '1.0' },
-            { name: 'lib2', version: '' }
-          ] }
-        })
-      end
+  context 'when a dependency name is an unexpected type or blank' do
+    where(:lib_name, :expected_error_message) do
+      ['lib1']   | 'unexpected dependency name type `Array`'
+      { k: 'v' } | 'unexpected dependency name type `Hash`'
+      true       | 'unexpected dependency name type `TrueClass`'
+      nil        | 'unexpected dependency name type `NilClass`'
+      ''         | 'dependency name is blank'
+      ' '        | 'dependency name is blank'
+    end
 
-      let(:expected_error_message) { 'unexpected dependency name type `Array`' }
+    with_them do
+      it_behaves_like 'parsing an invalid dependency config file' do
+        let(:invalid_config_file_content) do
+          Gitlab::Json.dump({
+            'parent_node' => { 'child_node' => [
+              { name: 'other-lib', version: '' },
+              { name: lib_name, version: '1.0' }
+            ] }
+          })
+        end
+      end
     end
   end
 
-  context 'when a dependency version is an array' do
-    it_behaves_like 'parsing an invalid dependency config file' do
-      let(:invalid_config_file_content) do
-        Gitlab::Json.dump({
-          'parent_node' => { 'child_node' => [
-            { name: 'lib1', version: ['1.0'] },
-            { name: 'lib2', version: '' }
-          ] }
-        })
-      end
+  context 'when a dependency version is an unexpected type' do
+    where(:lib_version, :expected_error_message) do
+      ['lib1']   | 'unexpected dependency version type `Array`'
+      { k: 'v' } | 'unexpected dependency version type `Hash`'
+      true       | 'unexpected dependency version type `TrueClass`'
+    end
 
-      let(:expected_error_message) { 'unexpected dependency version type `Array`' }
+    with_them do
+      it_behaves_like 'parsing an invalid dependency config file' do
+        let(:invalid_config_file_content) do
+          Gitlab::Json.dump({
+            'parent_node' => { 'child_node' => [
+              { name: 'other-lib', version: '' },
+              { name: 'my-lib', version: lib_version }
+            ] }
+          })
+        end
+      end
     end
   end
 
   describe '.matches?' do
-    using RSpec::Parameterized::TableSyntax
-
     where(:path, :matches) do
       'test.json'             | true
       'dir/test.json'         | true
