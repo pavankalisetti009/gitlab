@@ -3,9 +3,6 @@
 module Projects
   class XrayReport < ApplicationRecord
     include Gitlab::Utils::StrongMemoize
-    include IgnorableColumns
-
-    ignore_column :file_checksum, remove_with: '17.8', remove_after: '2024-12-22'
 
     belongs_to :project
 
