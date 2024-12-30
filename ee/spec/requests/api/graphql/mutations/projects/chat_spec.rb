@@ -21,11 +21,14 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
 
   include_context 'with ai features enabled for group'
 
-  it 'logs expanded GraphQL mutation request' do
+  it 'logs GraphQL mutation query and variables' do
     expect_next_instance_of(Mutations::Ai::Action) do |mutation|
       expect(mutation).to receive(:log_conditional_info).with(
         instance_of(User),
-        hash_including(graphql_query: instance_of(String))
+        hash_including(
+          graphql_query_string: instance_of(String),
+          graphql_variables: instance_of(Hash)
+        )
       )
     end
 
@@ -37,15 +40,13 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
       stub_feature_flags(expanded_ai_logging: false)
     end
 
-    it 'does not log expanded GraphQL mutation request' do
+    it 'does not log GraphQL mutation query and variables' do
       expect_next_instance_of(Mutations::Ai::Action) do |mutation|
         expect(mutation).to receive(:log_conditional_info).with(
           instance_of(User),
-          hash_including(graphql_query: nil)
+          hash_excluding(:graphql_query_string, :graphql_variables)
         )
       end
-
-      expect(Mutations::Ai::Action::UnsafeSanitizedPrinter).not_to receive(:new)
 
       post_graphql_mutation(mutation, current_user: current_user)
     end
