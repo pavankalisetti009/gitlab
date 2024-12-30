@@ -55,7 +55,6 @@ ee/spec/frontend/members/components/modals/ldap_override_confirmation_modal_spec
 ee/spec/frontend/members/components/table/drawer/role_details_drawer_spec.js
 ee/spec/frontend/members/components/table/drawer/role_updater_spec.js
 ee/spec/frontend/members/components/table/max_role_spec.js
-ee/spec/frontend/members/components/table/member_action_buttons_spec.js
 ee/spec/frontend/members/components/table/members_table_spec.js
 ee/spec/frontend/metrics/details/filter_bar/groupby_filter_spec.js
 ee/spec/frontend/metrics/details/metrics_details_spec.js
@@ -127,18 +126,11 @@ spec/frontend/branches/components/delete_branch_modal_spec.js
 spec/frontend/cascading_settings/components/cascading_lock_icon_spec.js
 spec/frontend/cascading_settings/components/lock_tooltip_spec.js
 spec/frontend/ci/artifacts/components/artifacts_bulk_delete_spec.js
-spec/frontend/ci/catalog/index_spec.js
-spec/frontend/ci/job_details/components/log/line_header_spec.js
-spec/frontend/ci/job_details/components/log/line_spec.js
-spec/frontend/ci/job_details/components/log/log_spec.js
-spec/frontend/ci/job_details/components/sidebar/job_sidebar_retry_button_spec.js
-spec/frontend/ci/pipeline_details/header/components/header_badges_spec.js
 spec/frontend/ci/pipeline_editor/components/header/validation_segment_spec.js
 spec/frontend/ci/pipeline_editor/components/job_assistant_drawer/accordion_items/rules_item_spec.js
 spec/frontend/ci/pipeline_editor/components/lint/ci_lint_warnings_spec.js
 spec/frontend/ci/pipeline_editor/components/pipeline_editor_tabs_spec.js
 spec/frontend/ci/pipeline_editor/pipeline_editor_app_spec.js
-spec/frontend/ci/pipelines_page/components/pipeline_multi_actions_spec.js
 spec/frontend/ci/pipelines_page/components/pipelines_artifacts_spec.js
 spec/frontend/ci/runner/components/runner_form_fields_spec.js
 spec/frontend/ci_settings_pipeline_triggers/components/edit_trigger_modal_spec.js
