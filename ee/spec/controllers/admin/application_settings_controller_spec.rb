@@ -181,6 +181,19 @@ RSpec.describe Admin::ApplicationSettingsController do
             end
           end
         end
+
+        context 'with new_user_signup_cap' do
+          let(:settings) do
+            { new_user_signups_cap: 100, seat_control: 1 }
+          end
+
+          it 'updates the setting to user_cap' do
+            attribute_names = settings.keys.map(&:to_s)
+
+            expect { put :update, params: { application_setting: settings } }
+              .to change { ApplicationSetting.current.reload.attributes.slice(*attribute_names) }
+          end
+        end
       end
     end
 
