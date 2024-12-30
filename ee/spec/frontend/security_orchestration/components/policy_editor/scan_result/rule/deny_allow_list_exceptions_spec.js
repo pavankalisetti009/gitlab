@@ -10,29 +10,9 @@ describe('DenyAllowExceptions', () => {
   const EXCEPTIONS_WITHOUT_FULL_PATH_STRING = 'test@project, test1';
   const EXCEPTIONS_WITH_DUPLICATES_STRING = 'test@project, test@project, test2@project';
 
-  const VALID_EXCEPTIONS = [
-    {
-      fullPath: 'project',
-      file: 'test',
-      value: 'test@project',
-    },
-    {
-      fullPath: 'project',
-      file: 'test1',
-      value: 'test1@project',
-    },
-  ];
+  const VALID_EXCEPTIONS = ['test@project', 'test1@project'];
 
-  const INVALID_EXCEPTIONS = [
-    {
-      invalid_path: 'project',
-      invalid_file: 'test',
-    },
-    {
-      invalid_path: 'project',
-      invalid_file: 'test',
-    },
-  ];
+  const INVALID_EXCEPTIONS = ['project', 'project1'];
 
   const createComponent = ({ propsData } = {}) => {
     wrapper = shallowMountExtended(DenyAllowExceptions, {
@@ -119,9 +99,9 @@ describe('DenyAllowExceptions', () => {
         },
       });
 
-      expect(findDuplicateErrorMessage().exists()).toBe(true);
+      expect(findDuplicateErrorMessage().exists()).toBe(false);
       expect(findValidationErrorMessage().text()).toBe(
-        'Add project full path after @ to following exceptions:',
+        'Add project full path after @ to following exceptions: project project1',
       );
     });
 

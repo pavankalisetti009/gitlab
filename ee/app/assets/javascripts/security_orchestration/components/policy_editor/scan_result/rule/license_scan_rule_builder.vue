@@ -7,7 +7,10 @@ import {
   getDefaultRule,
   LICENSE_STATES,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
-import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
+import {
+  mapComponentLicenseFormatToYaml,
+  parseAllowDenyLicenseList,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
@@ -125,7 +128,9 @@ export default {
     },
     selectLicenses(licenses) {
       this.licenses = licenses;
-      this.triggerChanged({ licenses: { [this.excludeListType]: licenses } });
+      this.triggerChanged({
+        licenses: { [this.excludeListType]: mapComponentLicenseFormatToYaml(licenses) },
+      });
     },
     isFilterSelected(filter) {
       return Boolean(this.selectedFilters[filter]);

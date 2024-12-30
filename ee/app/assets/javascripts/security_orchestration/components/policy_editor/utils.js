@@ -727,11 +727,27 @@ export const parseAllowDenyLicenseList = (rule = {}) => {
   const isDenied = DENIED in licenses;
   const KEY = isDenied ? DENIED : ALLOWED;
 
+  const resultingLicenses = (licenses?.[KEY] || []).map((license) => ({
+    license: { value: license.name, text: license.name },
+    exceptions: license?.packages?.excluding?.purls || [],
+  }));
+
   return {
-    licenses: licenses?.[KEY] || [],
+    licenses: resultingLicenses,
     isDenied,
   };
 };
+
+/**
+ * map licenses format from component to yaml
+ * @param licenses
+ * @returns {{name: *, packages: {excluding: {purls: []}}}[]}
+ */
+export const mapComponentLicenseFormatToYaml = (licenses = []) =>
+  (licenses || []).map(({ license = {}, exceptions = [] }) => ({
+    name: license.value,
+    packages: { excluding: { purls: exceptions } },
+  }));
 
 /**
  * find intersection in two collections or return original item
@@ -801,4 +817,35 @@ export const mapYamlApproversActionsFormatToEditorFormat = (actions = []) => {
       },
     )
     .filter((item) => !isEmpty(item));
+};
+
+/**
+ * split string by comma and white space
+ * @param source
+ * @returns {*|*[]}
+ */
+export const splitItemsByCommaOrSpace = (source) => source?.split(/[\n ,]+/).filter(Boolean) || [];
+
+/**
+ * parse string based on @ and find parsed items with failed validation
+ * @param items array of strings in name@path format
+ * @returns {{parsedExceptions: {file: string, fullPath: string, value: *}[], parsedWithErrorsExceptions: *[]}}
+ */
+export const parseExceptionsStringToItems = (items = []) => {
+  const parsedExceptions = (items || []).map((item) => {
+    const [file = '', fullPath = ''] = item.split('@');
+
+    return {
+      file,
+      fullPath,
+      value: item,
+    };
+  });
+
+  const parsedWithErrorsExceptions = findItemsWithErrors(parsedExceptions, 'value', 'file');
+
+  return {
+    parsedExceptions,
+    parsedWithErrorsExceptions,
+  };
 };
