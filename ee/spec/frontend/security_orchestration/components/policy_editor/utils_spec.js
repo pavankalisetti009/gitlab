@@ -29,6 +29,9 @@ import {
   parseAllowDenyLicenseList,
   findItemsIntersection,
   mapYamlApproversActionsFormatToEditorFormat,
+  mapComponentLicenseFormatToYaml,
+  parseExceptionsStringToItems,
+  splitItemsByCommaOrSpace,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -605,15 +608,28 @@ describe('mapBranchesToExceptions', () => {
 
   describe('parseAllowDenyLicenseList', () => {
     it.each`
-      rule                                                                            | output
-      ${undefined}                                                                    | ${{ isDenied: false, licenses: [] }}
-      ${null}                                                                         | ${{ isDenied: false, licenses: [] }}
-      ${{}}                                                                           | ${{ isDenied: false, licenses: [] }}
-      ${{ licenses: { [ALLOWED]: [{ license: { text: 'text', value: 'value' } }] } }} | ${{ isDenied: false, licenses: [{ license: { text: 'text', value: 'value' } }] }}
-      ${{ licenses: { [DENIED]: [{ license: { text: 'text', value: 'value' } }] } }}  | ${{ isDenied: true, licenses: [{ license: { text: 'text', value: 'value' } }] }}
-      ${{ licenses: { invalid: [{ license: { text: 'text', value: 'value' } }] } }}   | ${{ isDenied: false, licenses: [] }}
+      rule                                                                                                  | output
+      ${undefined}                                                                                          | ${{ isDenied: false, licenses: [] }}
+      ${null}                                                                                               | ${{ isDenied: false, licenses: [] }}
+      ${{}}                                                                                                 | ${{ isDenied: false, licenses: [] }}
+      ${{ licenses: { [ALLOWED]: [{ name: 'value' }] } }}                                                   | ${{ isDenied: false, licenses: [{ license: { text: 'value', value: 'value' }, exceptions: [] }] }}
+      ${{ licenses: { [DENIED]: [{ name: 'value', packages: { excluding: { purls: ['test@test'] } } }] } }} | ${{ isDenied: true, licenses: [{ license: { text: 'value', value: 'value' }, exceptions: ['test@test'] }] }}
+      ${{ licenses: { [DENIED]: [{ name: 'value', packages: { excluding: ['test@test'] } }] } }}            | ${{ isDenied: true, licenses: [{ license: { text: 'value', value: 'value' }, exceptions: [] }] }}
+      ${{ licenses: { invalid: [{ name: 'value' }] } }}                                                     | ${{ isDenied: false, licenses: [] }}
     `('parse licenses from rule', ({ rule, output }) => {
       expect(parseAllowDenyLicenseList(rule)).toEqual(output);
+    });
+  });
+
+  describe('mapComponentLicenseFormatToYaml', () => {
+    it.each`
+      licenses                                                                       | output
+      ${undefined}                                                                   | ${[]}
+      ${null}                                                                        | ${[]}
+      ${[{ license: { text: 'value', value: 'value' } }]}                            | ${[{ name: 'value', packages: { excluding: { purls: [] } } }]}
+      ${[{ license: { text: 'value', value: 'value' }, exceptions: ['test@test'] }]} | ${[{ name: 'value', packages: { excluding: { purls: ['test@test'] } } }]}
+    `('parse licenses to yaml format', ({ licenses, output }) => {
+      expect(mapComponentLicenseFormatToYaml(licenses)).toEqual(output);
     });
   });
 
@@ -649,6 +665,32 @@ describe('mapBranchesToExceptions', () => {
       ${[{ user_approvers: [1, 2], role_approvers: [1], group_approvers: [1] }]} | ${[{ user: [1, 2], group: [1], role: [1] }]}
     `('maps yaml format actions to component format', ({ actions, output }) => {
       expect(mapYamlApproversActionsFormatToEditorFormat(actions)).toEqual(output);
+    });
+  });
+
+  describe('splitItemsByCommaOrSpace', () => {
+    it.each`
+      source              | output
+      ${'item1, item2'}   | ${['item1', 'item2']}
+      ${'item1 item2'}    | ${['item1', 'item2']}
+      ${'item1;item2'}    | ${['item1;item2']}
+      ${'item1-item2'}    | ${['item1-item2']}
+      ${'item1 \n item2'} | ${['item1', 'item2']}
+    `('split sting by space new line or comma', ({ source, output }) => {
+      expect(splitItemsByCommaOrSpace(source)).toEqual(output);
+    });
+  });
+
+  describe('parseExceptionsStringToItems', () => {
+    it.each`
+      items                          | output
+      ${undefined}                   | ${{ parsedExceptions: [], parsedWithErrorsExceptions: [] }}
+      ${null}                        | ${{ parsedExceptions: [], parsedWithErrorsExceptions: [] }}
+      ${[]}                          | ${{ parsedExceptions: [], parsedWithErrorsExceptions: [] }}
+      ${['item@test', 'item1@test']} | ${{ parsedExceptions: [{ file: 'item', fullPath: 'test', value: 'item@test' }, { file: 'item1', fullPath: 'test', value: 'item1@test' }], parsedWithErrorsExceptions: [] }}
+      ${['item@test', 'item1']}      | ${{ parsedExceptions: [{ file: 'item', fullPath: 'test', value: 'item@test' }, { file: 'item1', fullPath: '', value: 'item1' }], parsedWithErrorsExceptions: ['item1'] }}
+    `('parses array of strings into objects', ({ items, output }) => {
+      expect(parseExceptionsStringToItems(items)).toEqual(output);
     });
   });
 });

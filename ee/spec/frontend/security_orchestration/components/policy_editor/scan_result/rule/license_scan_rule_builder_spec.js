@@ -23,6 +23,7 @@ import {
   FILTERS_STATUS_INDEX,
   LICENCE_FILTERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import { mapComponentLicenseFormatToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
 
 const actionId = 'action_0';
 jest.mock('lodash/uniqueId', () => jest.fn().mockReturnValue(actionId));
@@ -196,9 +197,11 @@ describe('LicenseScanRuleBuilder', () => {
 
   describe('allow deny list filter', () => {
     const LICENSES = [1, 2].map((id) => ({
-      exceptions: [],
       license: { text: `License_${id}`, value: `license_${id}` },
+      exceptions: [],
     }));
+
+    const MAPPED_LICENSES = mapComponentLicenseFormatToYaml(LICENSES);
 
     it('does not render deny allow list', () => {
       factory();
@@ -303,7 +306,7 @@ describe('LicenseScanRuleBuilder', () => {
       expect(wrapper.emitted('changed')[1]).toEqual([
         {
           ...licenseScanBuildRule(),
-          licenses: { [ALLOWED]: LICENSES },
+          licenses: { [ALLOWED]: MAPPED_LICENSES },
         },
       ]);
     });
@@ -313,7 +316,7 @@ describe('LicenseScanRuleBuilder', () => {
         props: {
           initRule: {
             ...licenseScanBuildRule(),
-            licenses: { [DENIED]: LICENSES },
+            licenses: { [DENIED]: MAPPED_LICENSES },
           },
         },
         provide: {
@@ -323,7 +326,10 @@ describe('LicenseScanRuleBuilder', () => {
         },
       });
 
-      expect(findDenyAllowList().props('licenses')).toEqual(LICENSES);
+      expect(findDenyAllowList().props('licenses')).toEqual([
+        { license: { value: 'license_1', text: 'license_1' }, exceptions: [] },
+        { license: { value: 'license_2', text: 'license_2' }, exceptions: [] },
+      ]);
     });
   });
 });

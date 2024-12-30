@@ -8,8 +8,9 @@ import {
   NO_EXCEPTION_KEY,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
+  splitItemsByCommaOrSpace,
+  parseExceptionsStringToItems,
   mapObjectsToString,
-  findItemsWithErrors,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 
@@ -56,9 +57,13 @@ export default {
     },
   },
   data() {
+    const { parsedExceptions = [], parsedWithErrorsExceptions = [] } = parseExceptionsStringToItems(
+      this.exceptions,
+    );
+
     return {
-      parsedExceptions: this.exceptions,
-      parsedWithErrorsExceptions: findItemsWithErrors(this.exceptions, 'value', 'file'),
+      parsedExceptions,
+      parsedWithErrorsExceptions,
     };
   },
   computed: {
@@ -72,11 +77,12 @@ export default {
       return mapObjectsToString(this.parsedExceptions, 'file');
     },
     hasDuplicates() {
-      const items = new Set(this.splitItems(this.convertedToStringPackages));
+      const items = new Set(splitItemsByCommaOrSpace(this.convertedToStringPackages));
+
       return items.size < this.parsedExceptions.length;
     },
     hasValidationError() {
-      return this.parsedWithErrorsExceptions.length;
+      return this.parsedWithErrorsExceptions.length > 0;
     },
     errorMessage() {
       return sprintf(this.$options.i18n.errorMessage, {
@@ -85,29 +91,24 @@ export default {
     },
   },
   created() {
-    this.debouncedSetExceptions = debounce(this.parsePackages, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+    this.debouncedSetExceptions = debounce(this.setExceptions, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
   },
   destroyed() {
     this.debouncedSetExceptions.cancel();
   },
   methods: {
     parsePackages(packages) {
-      this.parsedExceptions = this.splitItems(packages).map((item) => {
-        const [file = '', fullPath = ''] = item.split('@');
+      const { parsedExceptions = [], parsedWithErrorsExceptions = [] } =
+        parseExceptionsStringToItems(packages);
 
-        return {
-          file,
-          fullPath,
-          value: item,
-        };
-      });
-
-      this.parsedWithErrorsExceptions = findItemsWithErrors(this.parsedExceptions, 'value', 'file');
-
-      this.$emit('input', this.parsedExceptions);
+      this.parsedExceptions = parsedExceptions;
+      this.parsedWithErrorsExceptions = parsedWithErrorsExceptions;
     },
-    splitItems(items) {
-      return items?.split(/[ ,]+/).filter(Boolean) || [];
+    setExceptions(packages) {
+      const split = splitItemsByCommaOrSpace(packages);
+      this.parsePackages(split);
+
+      this.$emit('input', split);
     },
     selectExceptionType(type) {
       this.$emit('select-exception-type', type);
@@ -135,7 +136,7 @@ export default {
       />
 
       <p
-        v-if="hasDuplicates"
+        v-if="hasDuplicates && !hasValidationError"
         data-testid="error-duplicates-message"
         class="gl-my-2 gl-text-red-500"
       >

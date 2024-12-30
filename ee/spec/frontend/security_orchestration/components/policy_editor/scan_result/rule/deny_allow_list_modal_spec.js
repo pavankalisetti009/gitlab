@@ -157,18 +157,7 @@ describe('DenyAllowListModal', () => {
   });
 
   describe('selecting exceptions', () => {
-    const VALID_EXCEPTIONS = [
-      {
-        fullPath: 'project',
-        file: 'test',
-        value: 'test@project',
-      },
-      {
-        fullPath: 'project',
-        file: 'test1',
-        value: 'test1@project',
-      },
-    ];
+    const VALID_EXCEPTIONS = ['test@project', 'test1@project'];
 
     it('selects exceptions for selected license', () => {
       createComponent({
