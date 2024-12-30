@@ -42,6 +42,7 @@ describe('TodosApp', () => {
   };
 
   const findTodoItems = () => wrapper.findAllComponents(TodoItem);
+  const findFirstTodoItem = () => wrapper.findComponent(TodoItem);
   const findGlTabs = () => wrapper.findComponent(GlTabs);
   const findFilterBar = () => wrapper.findComponent(TodosFilterBar);
   const findMarkAllDoneButton = () => wrapper.findComponent(TodosMarkAllDoneButton);
@@ -188,7 +189,7 @@ describe('TodosApp', () => {
     expect(todosCountsQuerySuccessHandler).toHaveBeenCalledTimes(1);
 
     // Simulate interacting with a todo item then mousing out of the list zone
-    wrapper.vm.handleItemChanged(1, true);
+    findFirstTodoItem().vm.$emit('change');
     const list = findTodoItemListContainer();
     list.trigger('mouseleave');
 
