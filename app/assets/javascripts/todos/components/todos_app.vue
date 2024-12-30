@@ -55,7 +55,7 @@ export default {
   },
   data() {
     return {
-      updatePid: null,
+      updateTimeoutId: null,
       needsRefresh: false,
       cursor: {
         first: DEFAULT_PAGE_SIZE,
@@ -228,18 +228,18 @@ export default {
       this.showSpinnerWhileLoading = true;
     },
     startedInteracting() {
-      clearTimeout(this.updatePid);
+      clearTimeout(this.updateTimeoutId);
     },
     stoppedInteracting() {
       if (!this.needsRefresh) {
         return;
       }
 
-      if (this.updatePid) {
-        clearTimeout(this.updatePid);
+      if (this.updateTimeoutId) {
+        clearTimeout(this.updateTimeoutId);
       }
 
-      this.updatePid = setTimeout(() => {
+      this.updateTimeoutId = setTimeout(() => {
         /*
          We double-check needsRefresh or
          whether a query is already running
@@ -247,7 +247,7 @@ export default {
         if (this.needsRefresh && !this.$apollo.queries.todos.loading) {
           this.updateAllQueries(false);
         }
-        this.updatePid = null;
+        this.updateTimeoutId = null;
       }, TODO_WAIT_BEFORE_RELOAD);
     },
   },
