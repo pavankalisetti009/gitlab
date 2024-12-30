@@ -27,16 +27,6 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
     let(:event) { members_destroyed_event }
   end
 
-  context 'when feature flag :track_member_activity is disabled' do
-    before do
-      stub_feature_flags(track_member_activity: false)
-    end
-
-    it_behaves_like 'ignores the published event' do
-      let(:event) { members_destroyed_event }
-    end
-  end
-
   it 'has the `until_executed` deduplicate strategy' do
     expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
   end

@@ -19,16 +19,6 @@ RSpec.describe GitlabSubscriptions::Members::RecordLastActivityWorker, :clean_gi
     let(:event) { last_activity_event }
   end
 
-  context 'when feature flag :track_member_activity is disabled' do
-    before do
-      stub_feature_flags(track_member_activity: false)
-    end
-
-    it_behaves_like 'ignores the published event' do
-      let(:event) { last_activity_event }
-    end
-  end
-
   context 'when the lease_key is taken' do
     before do
       allow(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return(true)
