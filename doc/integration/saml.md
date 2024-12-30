@@ -708,6 +708,28 @@ Google Workspace Administrator also provides the IdP metadata, Entity ID, and SH
 fingerprint. However, GitLab does not need this information to connect to the
 Google Workspace SAML application.
 
+### Set up Microsoft Entra ID
+
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com/).
+1. [Create a non-gallery application](https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/overview-application-gallery#create-your-own-application).
+1. [Configure SSO for that application](https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/add-application-portal-setup-sso).
+
+   The following settings in your `gitlab.rb` file correspond to the Microsoft Entra ID fields:
+
+   | `gitlab.rb` setting                 | Microsoft Entra ID field                       |
+   | ------------------------------------| ---------------------------------------------- |
+   | `issuer`                           | **Identifier (Entity ID)**                     |
+   | `assertion_consumer_service_url`   | **Reply URL (Assertion Consumer Service URL)** |
+   | `idp_sso_target_url`               | **Login URL**                                  |
+   | `idp_cert_fingerprint`             | **Thumbprint**                                 |
+
+1. Set the following attributes:
+   - **Unique User Identifier (Name ID)** to `user.objectID`.
+      - **Name identifier format** to `persistent`. For more information, see how to [manage user SAML identity](../user/group/saml_sso/index.md#manage-user-saml-identity).
+   - **Additional claims** to [supported attributes](#configure-assertions).
+
+For more information, see an [example configuration page](../user/group/saml_sso/example_saml_config.md#azure-active-directory).
+
 ### Set up other IdPs
 
 Some IdPs have documentation on how to use them as the IdP in SAML configurations.
