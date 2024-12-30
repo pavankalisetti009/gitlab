@@ -50,6 +50,20 @@ fragment ComplianceFrameworkConnectionDetails on ComplianceFrameworkConnection {
         }
       }
     }
+    vulnerabilityManagementPolicies(first: 100) {
+      nodes {
+        name
+        source {
+          ... on GroupSecurityPolicySource {
+            namespace {
+              id
+              name
+              fullPath
+            }
+          }
+        }
+      }
+    }
   }
   pageInfo {
     ...PageInfo

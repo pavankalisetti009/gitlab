@@ -13,6 +13,7 @@ import {
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import FrameworkBadge from '../shared/framework_badge.vue';
 import { ROUTE_EDIT_FRAMEWORK, CREATE_FRAMEWORKS_DOCS_URL } from '../../constants';
 import { isTopLevelGroup, convertFrameworkIdToGraphQl } from '../../utils';
@@ -38,6 +39,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     groupPath: {
       type: String,
@@ -145,11 +147,19 @@ export default {
       this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: getIdFromGraphQLId(id) } });
     },
     getPoliciesList(item) {
-      const { scanExecutionPolicies, scanResultPolicies, pipelineExecutionPolicies } = item;
+      const {
+        scanExecutionPolicies,
+        scanResultPolicies,
+        pipelineExecutionPolicies,
+        vulnerabilityManagementPolicies,
+      } = item;
       return [
         ...scanExecutionPolicies.nodes,
         ...scanResultPolicies.nodes,
         ...pipelineExecutionPolicies.nodes,
+        ...(this.glFeatures.vulnerabilityManagementPolicyTypeGroup
+          ? vulnerabilityManagementPolicies.nodes
+          : []),
       ]
         .map((x) => x.name)
         .join(',');

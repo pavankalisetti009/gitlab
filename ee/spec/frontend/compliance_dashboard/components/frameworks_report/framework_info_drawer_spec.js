@@ -19,7 +19,9 @@ describe('FrameworkInfoDrawer component', () => {
   const associatedProjectsCount = defaultFramework.projects.nodes.length;
   const policiesCount =
     defaultFramework.scanExecutionPolicies.nodes.length +
-    defaultFramework.scanResultPolicies.nodes.length;
+    defaultFramework.scanResultPolicies.nodes.length +
+    defaultFramework.pipelineExecutionPolicies.nodes.length +
+    defaultFramework.vulnerabilityManagementPolicies.nodes.length;
 
   const findDefaultBadge = () => wrapper.findComponent(GlLabel);
   const findTitle = () => wrapper.findByTestId('framework-name');
@@ -43,7 +45,7 @@ describe('FrameworkInfoDrawer component', () => {
   const findPoliciesCount = () => wrapper.findByTestId('sidebar-policies').findComponent(GlBadge);
   const findPopover = () => wrapper.findByTestId('edit-framework-popover');
 
-  const createComponent = ({ props = {}, provide = {} } = {}) => {
+  const createComponent = ({ props = {}, vulnerabilityManagementPolicyTypeGroup = true } = {}) => {
     wrapper = shallowMountExtended(FrameworkInfoDrawer, {
       propsData: {
         showDrawer: true,
@@ -55,7 +57,12 @@ describe('FrameworkInfoDrawer component', () => {
           template: '<a>{{ $attrs.href }}</a>',
         },
       },
-      provide,
+      provide: {
+        groupSecurityPoliciesPath: '/group-policies',
+        glFeatures: {
+          vulnerabilityManagementPolicyTypeGroup,
+        },
+      },
       mocks: {
         $toast,
       },
@@ -72,9 +79,6 @@ describe('FrameworkInfoDrawer component', () => {
             path: GROUP_PATH,
           },
           framework: defaultFramework,
-        },
-        provide: {
-          groupSecurityPoliciesPath: '/group-policies',
         },
       });
     });
@@ -152,10 +156,41 @@ describe('FrameworkInfoDrawer component', () => {
 
       it('renders the Policies list', () => {
         expect(findPoliciesLinks().wrappers).toHaveLength(policiesCount);
-        expect(findPoliciesLinks().at(0).attributes('href')).toBe(
+        expect(findPoliciesLinks().at(0).attributes('href')).toBe(`/bar/security/policies`);
+        expect(findPoliciesLinks().at(1).attributes('href')).toBe(
           `/group-policies/${defaultFramework.scanResultPolicies.nodes[0].name}/edit?type=approval_policy`,
         );
-        expect(findPoliciesLinks().at(1).attributes('href')).toBe(`/bar/security/policies`);
+      });
+
+      describe('when `vulnerabilityManagementPolicyTypeGroup` feature flag is disabled', () => {
+        beforeEach(() => {
+          createComponent({
+            props: {
+              groupPath: GROUP_PATH,
+              projectPath: PROJECT_PATH,
+              rootAncestor: {
+                path: GROUP_PATH,
+              },
+              framework: defaultFramework,
+            },
+            vulnerabilityManagementPolicyTypeGroup: false,
+          });
+        });
+
+        const policiesCountWithoutVulnManagement = policiesCount - 1;
+
+        it('renders the Policies count without vulnerability management policies', () => {
+          expect(findPoliciesCount().text()).toBe(`${policiesCountWithoutVulnManagement}`);
+        });
+
+        it('renders the Policies list without vulnerability management policies', () => {
+          expect(findPoliciesLinks().wrappers).toHaveLength(policiesCountWithoutVulnManagement);
+          expect(
+            findPoliciesLinks()
+              .wrappers.map((link) => link.text())
+              .join(' '),
+          ).not.toContain('vuln management');
+        });
       });
 
       it('does not render edit button popover', () => {
@@ -173,9 +208,6 @@ describe('FrameworkInfoDrawer component', () => {
           rootAncestor: {
             path: GROUP_PATH,
           },
-        },
-        provide: {
-          groupSecurityPoliciesPath: '/group-policies',
         },
       });
     });
@@ -199,9 +231,6 @@ describe('FrameworkInfoDrawer component', () => {
           },
           framework: defaultFramework,
         },
-        provide: {
-          groupSecurityPoliciesPath: '/group-policies',
-        },
       });
     });
 
@@ -224,9 +253,6 @@ describe('FrameworkInfoDrawer component', () => {
           path: GROUP_PATH,
         },
         framework: { ...defaultFramework, projects: null },
-      },
-      provide: {
-        groupSecurityPoliciesPath: '/group-policies',
       },
     });
 

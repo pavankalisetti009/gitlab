@@ -5,6 +5,7 @@ import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { isTopLevelGroup } from '../../utils';
 import { POLICY_SCOPES_DOCS_URL } from '../../constants';
@@ -21,6 +22,7 @@ export default {
     GlPopover,
     HelpIcon,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['groupSecurityPoliciesPath'],
   props: {
     groupPath: {
@@ -71,6 +73,9 @@ export default {
         ...this.framework.scanExecutionPolicies.nodes,
         ...this.framework.scanResultPolicies.nodes,
         ...this.framework.pipelineExecutionPolicies.nodes,
+        ...(this.glFeatures.vulnerabilityManagementPolicyTypeGroup
+          ? this.framework.vulnerabilityManagementPolicies.nodes
+          : []),
       ];
     },
     policiesTitle() {
