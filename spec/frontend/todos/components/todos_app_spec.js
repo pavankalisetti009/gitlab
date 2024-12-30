@@ -180,7 +180,6 @@ describe('TodosApp', () => {
   });
 
   it('refetches todos one second after the cursor leaves the list of todos', async () => {
-    jest.useFakeTimers();
     createComponent();
 
     // Wait and account for initial query
@@ -208,7 +207,6 @@ describe('TodosApp', () => {
   });
 
   it('does not refresh todos after the cursor leaves the list of todos if nothing changed', async () => {
-    jest.useFakeTimers();
     createComponent();
 
     // Wait and account for initial query
