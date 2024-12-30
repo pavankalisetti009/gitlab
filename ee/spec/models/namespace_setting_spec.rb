@@ -28,6 +28,16 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
           .to contain_exactly(setting_never_reviewed, setting_reviewed_19_hours_ago)
       end
     end
+
+    describe '.order_by_last_dormant_member_review_asc' do
+      let_it_be(:setting_never_reviewed) { create(:namespace_settings, last_dormant_member_review_at: nil) }
+      let_it_be(:setting_reviewed) { create(:namespace_settings, last_dormant_member_review_at: 2.days.ago) }
+
+      it 'orders results by last_dormant_member_review_at ASC, nulls first' do
+        expect(described_class.order_by_last_dormant_member_review_asc)
+          .to eq([setting_never_reviewed, setting_reviewed])
+      end
+    end
   end
 
   describe 'validations' do

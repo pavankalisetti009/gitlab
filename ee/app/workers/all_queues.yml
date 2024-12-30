@@ -534,6 +534,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:namespaces_schedule_dormant_member_removal
+  :worker_name: Namespaces::ScheduleDormantMemberRemovalWorker
+  :feature_category: :seat_cost_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:observability_alert_query
   :worker_name: Observability::AlertQueryWorker
   :feature_category: :observability
@@ -2004,6 +2013,15 @@
 - :name: namespaces_free_user_cap_group_over_limit_notification
   :worker_name: Namespaces::FreeUserCap::GroupOverLimitNotificationWorker
   :feature_category: :user_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: namespaces_remove_dormant_members
+  :worker_name: Namespaces::RemoveDormantMembersWorker
+  :feature_category: :seat_cost_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

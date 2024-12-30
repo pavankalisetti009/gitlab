@@ -28,6 +28,7 @@ RSpec.describe '1_settings', feature_category: :shared do
           disable_legacy_open_source_license_for_inactive_projects
           notify_seats_exceeded_batch_worker
           gitlab_subscriptions_schedule_refresh_seats_worker
+          namespaces_schedule_dormant_member_removal_worker
         ]
       end
 

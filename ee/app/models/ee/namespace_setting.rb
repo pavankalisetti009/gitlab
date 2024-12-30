@@ -18,6 +18,9 @@ module EE
           .limit(limit)
       end
       scope :duo_features_set, ->(setting) { where(duo_features_enabled: setting) }
+      scope :order_by_last_dormant_member_review_asc, -> do
+        order("last_dormant_member_review_at ASC NULLS FIRST")
+      end
 
       belongs_to :default_compliance_framework, optional: true, class_name: "ComplianceManagement::Framework"
 
