@@ -267,7 +267,7 @@
     "babel-jest": "^29.7.0",
     "chalk": "^2.4.1",
     "chokidar": "^3.5.3",
-    "commander": "^2.20.3",
+    "commander": "^13.1.0",
     "crypto": "^1.0.1",
     "custom-jquery-matchers": "^2.1.0",
     "eslint": "9.19.0",
