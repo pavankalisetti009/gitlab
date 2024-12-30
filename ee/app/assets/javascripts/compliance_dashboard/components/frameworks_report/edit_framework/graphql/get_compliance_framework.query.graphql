@@ -75,6 +75,11 @@ query getComplianceFrameworkWithPolicies(
             startCursor
           }
         }
+        vulnerabilityManagementPolicies {
+          pageInfo {
+            startCursor
+          }
+        }
       }
       pageInfo {
         ...PageInfo

@@ -1,6 +1,7 @@
 <script>
 import { GlBadge, GlButton, GlLoadingIcon, GlTable, GlIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 import { getPolicyType } from 'ee/security_orchestration/utils';
 import { i18n } from '../constants';
@@ -28,6 +29,7 @@ export default {
     GlTable,
     GlLink,
   },
+  mixins: [glFeatureFlagsMixin()],
   provide() {
     return {
       namespacePath: this.fullPath,
@@ -52,9 +54,11 @@ export default {
         namespaceApprovalPolicies: [],
         namespaceScanExecutionPolicies: [],
         namespacePipelineExecutionPolicies: [],
+        namespaceVulnerabilityManagementPolicies: [],
         complianceApprovalPolicies: [],
         complianceScanExecutionPolicies: [],
         compliancePipelineExecutionPolicies: [],
+        complianceVulnerabilityManagementPolicies: [],
       },
       policiesLoaded: false,
       namespacePoliciesLoaded: false,
@@ -62,9 +66,11 @@ export default {
         namespaceApprovalPoliciesAfter: null,
         namespaceScanExecutionPoliciesAfter: null,
         namespacePipelineExecutionPoliciesAfter: null,
+        namespaceVulnerabilityManagementPoliciesAfter: null,
         complianceApprovalPoliciesAfter: null,
         complianceScanExecutionPoliciesAfter: null,
         compliancePipelineExecutionPoliciesAfter: null,
+        complianceVulnerabilityManagementPoliciesAfter: null,
       },
     };
   },
@@ -80,6 +86,8 @@ export default {
           scanExecutionPoliciesAfter: this.policiesLoadCursor.namespaceScanExecutionPoliciesAfter,
           pipelineExecutionPoliciesAfter:
             this.policiesLoadCursor.namespacePipelineExecutionPoliciesAfter,
+          vulnerabilityManagementPoliciesAfter:
+            this.policiesLoadCursor.namespaceVulnerabilityManagementPoliciesAfter,
         };
       },
       update(data) {
@@ -89,6 +97,7 @@ export default {
             approvalField: 'approvalPolicies',
             scanExecutionField: 'scanExecutionPolicies',
             pipelineExecutionField: 'pipelineExecutionPolicies',
+            vulnerabilityManagementField: 'vulnerabilityManagementPolicies',
             target: 'namespace',
           },
           'namespacePoliciesLoaded',
@@ -112,6 +121,8 @@ export default {
           scanExecutionPoliciesAfter: this.policiesLoadCursor.complianceScanExecutionPoliciesAfter,
           pipelineExecutionPoliciesAfter:
             this.policiesLoadCursor.compliancePipelineExecutionPoliciesAfter,
+          vulnerabilityManagementPoliciesAfter:
+            this.policiesLoadCursor.complianceVulnerabilityManagementPoliciesAfter,
         };
       },
       update(data) {
@@ -121,6 +132,7 @@ export default {
             approvalField: 'scanResultPolicies',
             scanExecutionField: 'scanExecutionPolicies',
             pipelineExecutionField: 'pipelineExecutionPolicies',
+            vulnerabilityManagementField: 'vulnerabilityManagementPolicies',
             target: 'compliance',
           },
           'policiesLoaded',
@@ -146,17 +158,25 @@ export default {
       const pipelineExecutionPoliciesSet = new Set(
         this.rawPolicies.compliancePipelineExecutionPolicies.map((p) => p.name),
       );
+      const vulnerabilityManagementPoliciesSet = new Set(
+        this.rawPolicies.complianceVulnerabilityManagementPolicies.map((p) => p.name),
+      );
+
+      const mapPolicies = (key, uniqueSet) =>
+        this.rawPolicies[key]
+          .filter((p) => uniqueSet.has(p.name))
+          .map((p) => ({ ...p, isLinked: true }));
 
       return [
-        ...this.rawPolicies.namespaceApprovalPolicies
-          .filter((p) => approvalPoliciesSet.has(p.name))
-          .map((p) => ({ ...p, isLinked: true })),
-        ...this.rawPolicies.namespaceScanExecutionPolicies
-          .filter((p) => scanExecutionPoliciesSet.has(p.name))
-          .map((p) => ({ ...p, isLinked: true })),
-        ...this.rawPolicies.namespacePipelineExecutionPolicies
-          .filter((p) => pipelineExecutionPoliciesSet.has(p.name))
-          .map((p) => ({ ...p, isLinked: true })),
+        ...mapPolicies('namespaceApprovalPolicies', approvalPoliciesSet),
+        ...mapPolicies('namespaceScanExecutionPolicies', scanExecutionPoliciesSet),
+        ...mapPolicies('namespacePipelineExecutionPolicies', pipelineExecutionPoliciesSet),
+        ...(this.glFeatures.vulnerabilityManagementPolicyTypeGroup
+          ? mapPolicies(
+              'namespaceVulnerabilityManagementPolicies',
+              vulnerabilityManagementPoliciesSet,
+            )
+          : []),
       ].sort((a, b) => (a.name > b.name ? 1 : -1));
     },
 
@@ -175,7 +195,13 @@ export default {
   methods: {
     updatePolicies(
       namespaceData,
-      { approvalField, scanExecutionField, pipelineExecutionField, target },
+      {
+        approvalField,
+        scanExecutionField,
+        pipelineExecutionField,
+        vulnerabilityManagementField,
+        target,
+      },
       loadedIndicator,
     ) {
       const {
@@ -196,20 +222,32 @@ export default {
         endCursor: pipelineExecutionPoliciesAfter,
       } = extractPolicies(namespaceData[pipelineExecutionField]);
 
+      const {
+        policies: pendingVulnerabilityManagementPolicies,
+        hasNextPage: hasNextVulnerabilityManagementPolicies,
+        endCursor: vulnerabilityManagementPoliciesAfter,
+      } = extractPolicies(namespaceData[vulnerabilityManagementField]);
+
       this.rawPolicies[`${target}ApprovalPolicies`].push(...pendingApprovalPolicies);
       this.rawPolicies[`${target}ScanExecutionPolicies`].push(...pendingScanExecutionPolicies);
       this.rawPolicies[`${target}PipelineExecutionPolicies`].push(
         ...pendingPipelineExecutionPolicies,
+      );
+      this.rawPolicies[`${target}VulnerabilityManagementPolicies`].push(
+        ...pendingVulnerabilityManagementPolicies,
       );
 
       this.policiesLoadCursor[`${target}ApprovalPoliciesAfter`] = approvalPoliciesAfter;
       this.policiesLoadCursor[`${target}ScanExecutionPoliciesAfter`] = scanExecutionPoliciesAfter;
       this.policiesLoadCursor[`${target}PipelineExecutionPoliciesAfter`] =
         pipelineExecutionPoliciesAfter;
+      this.policiesLoadCursor[`${target}VulnerabilityManagementPoliciesAfter`] =
+        vulnerabilityManagementPoliciesAfter;
       this[loadedIndicator] =
         !hasNextApprovalPolicies &&
         !hasNextScanExecutionPolicies &&
-        !hasNextPipelineExecutionPolicies;
+        !hasNextPipelineExecutionPolicies &&
+        !hasNextVulnerabilityManagementPolicies;
     },
 
     handleError(error) {

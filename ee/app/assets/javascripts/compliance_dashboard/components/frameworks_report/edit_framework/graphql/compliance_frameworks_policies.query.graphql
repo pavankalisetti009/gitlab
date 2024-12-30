@@ -6,6 +6,7 @@ query complianceFrameworkPolicies(
   $approvalPoliciesAfter: String
   $scanExecutionPoliciesAfter: String
   $pipelineExecutionPoliciesAfter: String
+  $vulnerabilityManagementPoliciesAfter: String
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -30,6 +31,14 @@ query complianceFrameworkPolicies(
           }
         }
         pipelineExecutionPolicies(after: $pipelineExecutionPoliciesAfter) {
+          nodes {
+            name
+          }
+          pageInfo {
+            ...PageInfo
+          }
+        }
+        vulnerabilityManagementPolicies(after: $vulnerabilityManagementPoliciesAfter) {
           nodes {
             name
           }
