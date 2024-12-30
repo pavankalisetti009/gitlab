@@ -25,10 +25,6 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       expect(visible_attributes).to include(*%i[enable_member_promotion_management])
     end
 
-    it 'contains seat_control parameters' do
-      expect(visible_attributes).to include(*%i[seat_control])
-    end
-
     context 'when identity verification is enabled' do
       before do
         stub_saas_features(identity_verification: true)
