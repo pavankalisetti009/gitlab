@@ -227,7 +227,7 @@ export default {
 
       this.showSpinnerWhileLoading = true;
     },
-    markInteracting() {
+    startedInteracting() {
       clearTimeout(this.updatePid);
     },
     stoppedInteracting() {
@@ -319,7 +319,7 @@ export default {
           v-else
           data-testid="todo-item-list-container"
           class="gl-m-0 gl-border-collapse gl-list-none gl-p-0"
-          @mouseenter="markInteracting"
+          @mouseenter="startedInteracting"
           @mouseleave="stoppedInteracting"
         >
           <transition-group name="todos">
