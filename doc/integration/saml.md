@@ -3244,6 +3244,12 @@ such as the following:
 
 For example configurations, see the [notes on specific providers](#set-up-identity-providers).
 
+## Configure SAML with Geo
+
+To configure Geo with SAML, see [Configuring instance-wide SAML](../administration/geo/replication/single_sign_on.md#configuring-instance-wide-saml).
+
+For more information, see [Geo with Single Sign On (SSO)](../administration/geo/replication/single_sign_on.md).
+
 ## Glossary
 
 | Term                           | Description |
