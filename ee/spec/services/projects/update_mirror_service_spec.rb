@@ -418,8 +418,11 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
       end
 
       context 'when repository changes' do
+        let(:fetch_result) { double('Gitaly::FetchRemoteResponse', tags_changed: true, repo_changed: true) }
+
         before do
           stub_fetch_mirror(project)
+          allow(project).to receive(:fetch_mirror).and_return(fetch_result)
         end
 
         context 'when LFS is disabled in the project' do
