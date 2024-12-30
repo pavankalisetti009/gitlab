@@ -81,10 +81,16 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_parsing_error_message) { 'content is not valid JSON' }
+    let(:expected_error_message) { 'content is not valid JSON' }
   end
 
-  context 'when the content has an invalid node' do
+  context 'when no dependencies are extracted' do
+    it_behaves_like 'parsing an invalid dependency config file' do
+      let(:invalid_config_file_content) { '{}' }
+    end
+  end
+
+  context 'when the content has an unexpected node' do
     where(:content) do
       [
         [{ 'parent_node' => [] }],
@@ -97,7 +103,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     with_them do
       it_behaves_like 'parsing an invalid dependency config file' do
         let(:invalid_config_file_content) { Gitlab::Json.dump(content) }
-        let(:expected_parsing_error_message) { 'encountered invalid node' }
+        let(:expected_error_message) { 'encountered unexpected node' }
       end
     end
   end
@@ -105,7 +111,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
   context 'when the content is empty' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '' }
-      let(:expected_parsing_error_message) { 'file empty' }
+      let(:expected_error_message) { 'file empty' }
     end
   end
 
@@ -120,7 +126,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
         })
       end
 
-      let(:expected_parsing_error_message) { 'dependency name or version is an invalid type' }
+      let(:expected_error_message) { 'unexpected dependency name type `Array`' }
     end
   end
 
@@ -135,7 +141,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
         })
       end
 
-      let(:expected_parsing_error_message) { 'dependency name or version is an invalid type' }
+      let(:expected_error_message) { 'unexpected dependency version type `Array`' }
     end
   end
 

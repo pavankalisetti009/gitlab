@@ -30,7 +30,10 @@ module Ai
               Lib.new(name: spec.name, version: spec.version.to_s)
             end
           rescue Bundler::LockfileError => e
-            raise ParsingError, e.message.split("\n").first
+            # Bundler uses the server's default lockfile name in the error message, but we shouldn't
+            # use it here since we are actually parsing lockfile content from a different repository.
+            message = e.message.split("\n").first.to_s.gsub(Bundler.default_lockfile.basename.to_s, 'gem lockfile')
+            raise ParsingError, message
           end
         end
       end
