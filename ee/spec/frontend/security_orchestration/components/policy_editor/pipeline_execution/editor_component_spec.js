@@ -304,6 +304,10 @@ describe('EditorComponent', () => {
 
   describe('new yaml format with type as a wrapper', () => {
     beforeEach(() => {
+      window.gon.features = {
+        securityPoliciesNewYamlFormat: true,
+      };
+
       factory({
         provide: {
           glFeatures: {
@@ -311,10 +315,6 @@ describe('EditorComponent', () => {
           },
         },
       });
-
-      window.gon.features = {
-        securityPoliciesNewYamlFormat: true,
-      };
     });
 
     it('renders default yaml in new format', () => {
