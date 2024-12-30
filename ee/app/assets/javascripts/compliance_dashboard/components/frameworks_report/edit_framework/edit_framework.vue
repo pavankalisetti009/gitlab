@@ -13,6 +13,7 @@ import produce from 'immer';
 import InternalEvents from '~/tracking/internal_events';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf, __ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
 import {
   getSubmissionParams,
@@ -52,7 +53,7 @@ export default {
     GlModal,
     GlTooltip,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   inject: [
     'pipelineConfigurationFullPathEnabled',
     'groupPath',
@@ -128,11 +129,19 @@ export default {
       return this.formData.default;
     },
     hasLinkedPolicies() {
-      return Boolean(
-        this.formData.scanResultPolicies?.pageInfo.startCursor ||
-          this.formData.scanExecutionPolicies?.pageInfo.startCursor ||
-          this.formData.pipelineExecutionPolicies?.pageInfo.startCursor,
-      );
+      const {
+        scanResultPolicies,
+        scanExecutionPolicies,
+        pipelineExecutionPolicies,
+        vulnerabilityManagementPolicies,
+      } = this.formData;
+
+      const policies = [scanResultPolicies, scanExecutionPolicies, pipelineExecutionPolicies];
+      if (this.glFeatures.vulnerabilityManagementPolicyTypeGroup) {
+        policies.push(vulnerabilityManagementPolicies);
+      }
+
+      return Boolean(policies.some((policy) => policy?.pageInfo.startCursor));
     },
     queryVariables() {
       return {

@@ -6,6 +6,7 @@ query namespacePolicies(
   $approvalPoliciesAfter: String
   $scanExecutionPoliciesAfter: String
   $pipelineExecutionPoliciesAfter: String
+  $vulnerabilityManagementPoliciesAfter: String
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -53,6 +54,25 @@ query namespacePolicies(
       }
     }
     pipelineExecutionPolicies(after: $pipelineExecutionPoliciesAfter, relationship: DESCENDANT) {
+      nodes {
+        name
+        yaml
+        editPath
+        enabled
+        description
+        source {
+          ...SecurityPolicySource
+        }
+        updatedAt
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+    vulnerabilityManagementPolicies(
+      after: $vulnerabilityManagementPoliciesAfter
+      relationship: DESCENDANT
+    ) {
       nodes {
         name
         yaml
