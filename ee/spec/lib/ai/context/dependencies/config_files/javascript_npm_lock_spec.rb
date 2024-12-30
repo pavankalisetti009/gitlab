@@ -43,12 +43,12 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavascriptNpmLock, featur
     end
 
     let(:expected_formatted_lib_names) do
-      ['@babel/core/node_modules/convert-source-map (2.0.0)', '@babel/test-package (1.2.3)']
+      ['babel/core/node_modules/convert-source-map (2.0.0)', 'babel/test-package (1.2.3)']
     end
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_parsing_error_message) { 'content is not valid JSON' }
+    let(:expected_error_message) { 'content is not valid JSON' }
   end
 
   describe '.matches?' do

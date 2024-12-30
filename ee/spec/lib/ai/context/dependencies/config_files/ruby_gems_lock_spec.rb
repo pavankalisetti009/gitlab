@@ -52,7 +52,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::RubyGemsLock, feature_cat
         CONTENT
       end
 
-      let(:expected_parsing_error_message) { "Your #{Bundler.default_gemfile.basename}.lock contains merge conflicts." }
+      let(:expected_error_message) { 'Your gem lockfile contains merge conflicts.' }
     end
   end
 

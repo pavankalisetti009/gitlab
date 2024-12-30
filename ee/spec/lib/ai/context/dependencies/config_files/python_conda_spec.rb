@@ -24,14 +24,14 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonConda, feature_cate
   context 'when the content is an array' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '[]' }
-      let(:expected_parsing_error_message) { 'encountered invalid node' }
+      let(:expected_error_message) { 'encountered unexpected node' }
     end
   end
 
   context 'when the content is an invalid string' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '*' }
-      let(:expected_parsing_error_message) { 'content is not valid YAML' }
+      let(:expected_error_message) { 'content is not valid YAML' }
     end
   end
 
@@ -44,7 +44,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonConda, feature_cate
         YAML
       end
 
-      let(:expected_parsing_error_message) { 'YAML exception - Tried to load unspecified class: Date' }
+      let(:expected_error_message) { 'YAML exception - Tried to load unspecified class: Date' }
     end
   end
 

@@ -45,7 +45,10 @@ module Ai
               next if name.empty?
               next unless dig_in(dep, 'resolved')&.start_with?(PUBLIC_REGISTRY_PREFIX)
 
-              Lib.new(name: name.delete_prefix(NAME_PREFIX), version: dig_in(dep, 'version'))
+              name = name.delete_prefix(NAME_PREFIX).delete('@')
+              version = dig_in(dep, 'version')
+
+              Lib.new(name: name, version: version)
             end
           rescue JSON::ParserError
             raise ParsingError, 'content is not valid JSON'

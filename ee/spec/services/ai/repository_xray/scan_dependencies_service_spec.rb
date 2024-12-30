@@ -200,7 +200,7 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
         expect(execute.payload).to match({
           success_messages: [],
           error_messages: [
-            'Error(s) while parsing file `go.mod`: format not recognized or dependencies not present (GoModules)'
+            'Error(s) while parsing file `go.mod`: unexpected format or dependencies not present (GoModules)'
           ],
           max_dependency_count: 0
         })

@@ -5,7 +5,7 @@ module Ai
     module Dependencies
       module ConfigFiles
         # This class represents a dependency manager config file. It contains
-        # logic to parse and extract libraries from the file content.
+        # logic to parse, extract, and process libraries from the file content.
         #
         # To support a new config file type/language:
         # 1. Create a new child class that inherits from this Base. The file name should be in
@@ -15,7 +15,7 @@ module Ai
         #    the corresponding documentation (see comments in ConfigFiles::Constants.)
         #
         class Base
-          VALID_LIB_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
+          EXPECTED_LIB_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
 
           ParsingError = Class.new(StandardError)
 
@@ -56,10 +56,10 @@ module Ai
           def parse!
             return error('file empty') if content.blank?
 
-            @libs = sanitize_libs(extract_libs)
+            @libs = process_libs(extract_libs)
 
             # Default error message if there are no other errors
-            error('format not recognized or dependencies not present') if libs.blank? && errors.empty?
+            error('unexpected format or dependencies not present') if libs.blank? && errors.empty?
           rescue ParsingError => e
             error(e)
           end
@@ -93,12 +93,13 @@ module Ai
             raise NotImplementedError
           end
 
-          def sanitize_libs(libs)
+          def process_libs(libs)
             Array.wrap(libs).filter_map do |lib|
               next if lib.name.blank?
+              raise ParsingError, "unexpected dependency name type `#{lib.name.class}`" unless lib.name.is_a?(String)
 
-              unless lib.name.is_a?(String) && lib.version.class.in?(VALID_LIB_VERSION_TYPES)
-                raise ParsingError, 'dependency name or version is an invalid type'
+              unless lib.version.class.in?(EXPECTED_LIB_VERSION_TYPES)
+                raise ParsingError, "unexpected dependency version type `#{lib.version.class}`"
               end
 
               lib.name = lib.name.strip
@@ -107,18 +108,18 @@ module Ai
             end
           end
 
+          def sanitize_content(content)
+            content
+              .encode('UTF-8', invalid: :replace, undef: :replace, replace: '')
+              .delete("\u0000") # NULL byte is not permitted in JSON nor in PostgreSQL text-based columns
+          end
+
           def formatted_libs
             libs.map do |lib|
               lib_name = lib.version.presence ? "#{lib.name} (#{lib.version})" : lib.name
 
               { name: lib_name }
             end
-          end
-
-          def sanitize_content(content)
-            content
-              .encode('UTF-8', invalid: :replace, undef: :replace, replace: '')
-              .delete("\u0000") # NULL byte is not permitted in JSON nor in PostgreSQL text-based columns
           end
 
           def error(message)
@@ -131,7 +132,7 @@ module Ai
           def dig_in(obj, *keys)
             obj.dig(*keys)
           rescue NoMethodError, TypeError
-            raise ParsingError, 'encountered invalid node'
+            raise ParsingError, 'encountered unexpected node'
           end
         end
       end
