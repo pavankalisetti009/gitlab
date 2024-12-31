@@ -21,6 +21,7 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
 
     it { is_expected.not_to allow_value("string").for(:vulnerability_attributes) }
     it { is_expected.to allow_value({}).for(:vulnerability_attributes) }
+    it { is_expected.to allow_value(nil).for(:vulnerability_attributes) }
 
     it do
       is_expected.to allow_value({ false_positive: true, fix_available: false }).for(:vulnerability_attributes)
@@ -68,6 +69,50 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     end
 
     it { is_expected.to validate_numericality_of(:rule_idx).is_greater_than_or_equal_to(0).only_integer }
+
+    describe "#licenses" do
+      it { is_expected.not_to allow_value("string").for(:licenses) }
+      it { is_expected.to allow_value({}).for(:licenses) }
+      it { is_expected.to allow_value(nil).for(:licenses) }
+
+      [:allowed, :denied].each do |license_list_type|
+        it { is_expected.not_to allow_value({ license_list_type => [] }).for(:licenses) }
+        it { is_expected.to allow_value({ license_list_type => [{ name: "MIT License" }] }).for(:licenses) }
+
+        it do
+          is_expected.not_to allow_value(
+            { license_list_type => [
+              {
+                name: "MIT License",
+                packages: {}
+              }
+            ] }
+          ).for(:licenses)
+        end
+
+        it do
+          is_expected.not_to allow_value(
+            { license_list_type => [
+              {
+                name: "MIT License",
+                packages: { excluding: [] }
+              }
+            ] }
+          ).for(:licenses)
+        end
+
+        it do
+          is_expected.to allow_value(
+            { license_list_type => [
+              {
+                name: "MIT License",
+                packages: { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+              }
+            ] }
+          ).for(:licenses)
+        end
+      end
+    end
   end
 
   describe 'enums' do
