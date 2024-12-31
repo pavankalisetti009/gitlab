@@ -21,7 +21,7 @@ module QA
       end
 
       context 'when restricted by another ip address' do
-        let(:ip_address) { get_next_ip_address(current_ip_address) }
+        let(:ip_address) { get_fake_ip_based_on(current_ip_address) }
 
         context 'with UI' do
           it 'denies access', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347923' do
@@ -124,12 +124,14 @@ module QA
         sandbox_group.set_ip_restriction_range(ip_address)
       end
 
-      def get_next_ip_address(address)
-        current_last_part = address.split(".").pop.to_i
+      def get_fake_ip_based_on(address)
+        split_address = address.split(".")
 
-        updated_last_part = current_last_part < 255 ? current_last_part + 1 : 1
+        current_3rd_part = split_address[2].to_i
+        updated_3rd_part = current_3rd_part < 255 ? current_3rd_part + 1 : 1
+        split_address[2] = updated_3rd_part
 
-        address.split(".")[0...-1].push(updated_last_part).join(".")
+        split_address.join(".")
       end
 
       def create_request(api_endpoint)
