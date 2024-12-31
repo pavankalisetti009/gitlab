@@ -66,6 +66,7 @@ module PackageMetadata
               cvss_v3: data_object.cvss_v3,
               identifiers: data_object.identifiers,
               urls: data_object.urls,
+              cve: data_object.cve,
               created_at: now,
               updated_at: now
             )

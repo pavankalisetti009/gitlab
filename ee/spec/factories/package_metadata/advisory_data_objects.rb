@@ -16,6 +16,7 @@ FactoryBot.define do
         association(:pm_identifier, :gemnasium)
       ]
     end
+    cve { identifiers[0]['name'] }
 
     affected_packages { [association(:pm_affected_package_data_object)] }
 
