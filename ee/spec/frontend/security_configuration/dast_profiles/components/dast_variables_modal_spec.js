@@ -138,4 +138,14 @@ describe('DastVariablesModal', () => {
       expect(findAllFormsGroups().length).toBe(1);
     });
   });
+
+  it('while `preSelectedVariables`, the items array should exclude those values', () => {
+    const preSelectedVariables = [
+      { variable: 'DAST_ACTIVE_SCAN_TIMEOUT', value: 'Duration string' },
+    ];
+    createComponent({
+      preSelectedVariables,
+    });
+    expect(findVariableSelector().props('items')).not.toContain(preSelectedVariables);
+  });
 });
