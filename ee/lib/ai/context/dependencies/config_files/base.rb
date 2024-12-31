@@ -94,9 +94,9 @@ module Ai
           end
 
           def process_libs(libs)
-            Array.wrap(libs).filter_map do |lib|
-              next if lib.name.blank?
+            Array.wrap(libs).each do |lib|
               raise ParsingError, "unexpected dependency name type `#{lib.name.class}`" unless lib.name.is_a?(String)
+              raise ParsingError, 'dependency name is blank' if lib.name.blank?
 
               unless lib.version.class.in?(EXPECTED_LIB_VERSION_TYPES)
                 raise ParsingError, "unexpected dependency version type `#{lib.version.class}`"
@@ -104,7 +104,6 @@ module Ai
 
               lib.name = lib.name.strip
               lib.version = lib.version.to_s.strip
-              lib
             end
           end
 
