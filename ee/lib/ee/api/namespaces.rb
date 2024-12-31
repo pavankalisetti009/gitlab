@@ -55,7 +55,7 @@ module EE
             end
           end
 
-          desc 'Update a namespace' do
+          desc '[DEPRECATED] Update a namespace' do
             success ::API::Entities::Namespace
           end
           params do
