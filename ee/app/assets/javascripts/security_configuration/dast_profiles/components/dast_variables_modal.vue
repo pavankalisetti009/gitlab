@@ -50,6 +50,7 @@ export default {
     emptySearchResult: s__('DastProfiles|No variables found'),
     variableLabel: s__('DastProfiles|Variable'),
     valueLabel: s__('DastProfiles|Value'),
+    requiredFieldFeedback: s__('DastProfiles|Field must not be blank'),
   },
   data() {
     return {
@@ -57,6 +58,8 @@ export default {
         ...this.variable,
       },
       searchTerm: '',
+      selectedValueValid: true,
+      selectedVariableValid: true,
     };
   },
   computed: {
@@ -105,7 +108,17 @@ export default {
     show() {
       this.$refs.modal.show();
     },
-    addVariable() {
+    addVariable(modalEvent) {
+      if (!this.selectedVariable.type) {
+        this.selectedVariableValid = false;
+        modalEvent.preventDefault();
+        return;
+      }
+      if (!this.selectedVariable.id || !this.selectedVariable.value) {
+        this.selectedValueValid = false;
+        modalEvent.preventDefault();
+        return;
+      }
       const { id, value, type } = this.selectedVariable;
       this.$emit('addVariable', {
         variable: id,
@@ -127,6 +140,8 @@ export default {
       this.selectedVariable.type = type || null;
       this.selectedVariable.description = description || '';
       this.selectedVariable.example = example || '';
+      this.selectedValueValid = true;
+      this.selectedVariableValid = true;
     },
     checkSelectorType(type) {
       return this.selectedVariable.type === type;
@@ -147,7 +162,12 @@ export default {
     @primary="addVariable"
     @hidden="resetModal"
   >
-    <gl-form-group :label="$options.i18n.variableLabel" label-for="dast_variable_selector">
+    <gl-form-group
+      :label="$options.i18n.variableLabel"
+      label-for="dast_variable_selector"
+      :invalid-feedback="$options.i18n.requiredFieldFeedback"
+      :state="selectedVariableValid"
+    >
       <gl-collapsible-listbox
         id="dast_variable_selector"
         block
@@ -169,6 +189,8 @@ export default {
       :label="$options.i18n.valueLabel"
       :label-description="selectedVariable.description"
       label-for="dast_value_input"
+      :invalid-feedback="$options.i18n.requiredFieldFeedback"
+      :state="selectedValueValid"
     >
       <gl-form-radio-group
         v-if="checkSelectorType('boolean')"
