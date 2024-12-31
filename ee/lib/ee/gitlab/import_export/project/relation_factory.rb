@@ -20,6 +20,7 @@ module EE
             vulnerability_finding: 'Vulnerabilities::Finding',
             scanner: 'Vulnerabilities::Scanner',
             primary_identifier: 'Vulnerabilities::Identifier',
+            identifiers: 'Vulnerabilities::Identifier',
             initial_finding_pipeline: 'Ci::Pipeline',
             latest_finding_pipeline: 'Ci::Pipeline',
             vulnerability_read: 'Vulnerabilities::Read'
@@ -96,7 +97,7 @@ module EE
           def setup_vulnerability_finding
             relation_hash['uuid'] = ::Security::VulnerabilityUUID.generate(
               report_type: relation_hash['report_type'],
-              primary_identifier_fingerprint: "",
+              primary_identifier_fingerprint: relation_hash['primary_identifier_fingerprint'],
               location_fingerprint: relation_hash['location_fingerprint'],
               project_id: relation_hash['project_id']
             )

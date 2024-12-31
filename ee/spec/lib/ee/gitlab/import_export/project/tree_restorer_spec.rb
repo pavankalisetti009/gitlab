@@ -442,6 +442,17 @@ RSpec.describe Gitlab::ImportExport::Project::TreeRestorer, feature_category: :i
       expect(finding.metadata_version).to eq('15.1.4')
       expect(finding.raw_metadata).to include('Regular expression with non-literal value')
     end
+
+    it 'restores vulnerability identifiers' do
+      vulnerability = @project.vulnerabilities.find_by(title: 'Regular expression with non-literal value')
+      identifier = vulnerability.identifiers.first
+
+      expect(vulnerability.identifiers.count).to eq(5)
+      expect(identifier.name).to eq('eslint.detect-non-literal-regexp')
+      expect(identifier.external_type).to eq('semgrep_id')
+      expect(identifier.external_id).to eq('eslint.detect-non-literal-regexp')
+      expect(identifier.fingerprint).to eq('a751f35f1185de7ca5e6c0610c3bca21eb25ac9a')
+    end
   end
   # rubocop:enable RSpec/InstanceVariable
 end
