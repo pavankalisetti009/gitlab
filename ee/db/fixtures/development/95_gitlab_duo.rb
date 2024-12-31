@@ -6,22 +6,55 @@
 class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
   GROUP_PATH = 'gitlab-duo'
   PROJECT_PATH = 'test'
+  PROJECT_CLONE_URL = "https://gitlab.com/gitlab-org/modelops/ai-model-validation-and-research/ai-evaluation/test-repo.git"
   ID_BASE = 1_000_000
 
   def seed!
     user = User.find_by_username('root')
 
     puts "Seeding resources to #{GROUP_PATH} group..."
+
+    # Create group
     group = FactoryBot.create(:group, :public, id: ID_BASE, name: 'GitLab Duo', path: GROUP_PATH)
-    project = FactoryBot.create(:project, :public, :repository, id: ID_BASE, name: 'Test', path: PROJECT_PATH,
-      creator: user, namespace: group)
     group.add_owner(user)
+
+    # Create group-level resources
+    FactoryBot.create(:epic, id: ID_BASE, group: group, author: user)
+
+    # Create project
+    project = FactoryBot.create(:project, :public, id: ID_BASE, name: 'Test', path: PROJECT_PATH,
+      creator: user, namespace: group)
     project.add_owner(user)
 
-    FactoryBot.create(:epic, id: ID_BASE, group: group, author: user)
-    FactoryBot.create(:issue, id: ID_BASE, iid: 1, project: project, assignees: [user])
-    FactoryBot.create(:merge_request_with_diffs, id: ID_BASE, iid: 1, source_project: project, author: user)
+    # Create repository
+    repo = Gitlab::GlRepository::PROJECT.repository_for(project).raw
+    create_git_bundle do |bundle_path|
+      repo.create_from_bundle(bundle_path)
+    end
+
+    # Create project-level resources
+    FactoryBot.create(:issue,
+      id: ID_BASE,
+      iid: 1,
+      project: project,
+      title: 'Add an example of GoLang HTTP server',
+      description: 'We should add an example of HTTP server written in GoLang.',
+      assignees: [user]
+    )
+
+    FactoryBot.create(:merge_request,
+      id: ID_BASE,
+      iid: 1,
+      source_project: project,
+      author: user,
+      assignees: [user],
+      title: 'Add an example of GoLang HTTP server',
+      description: 'This MR adds an example of HTTP server written in GoLang. Closes #1',
+      target_branch: 'main',
+      source_branch: 'feat-http-go')
+
     FactoryBot.create(:ci_empty_pipeline, status: :success, project: project,
+      ref: 'main', sha: repo.commit.sha,
       partition_id: Ci::Pipeline.current_partition_value, user: user).tap do |pipeline|
       pipeline.update_column(:id, ID_BASE)
 
@@ -35,6 +68,18 @@ class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -
           FactoryBot.create(:ci_job_artifact, :trace, job: build)
         end
       end
+    end
+  end
+
+  def create_git_bundle
+    Dir.mktmpdir('git_bundle') do |dir|
+      repo_path = "#{dir}/#{GROUP_PATH}/#{PROJECT_PATH}"
+      repo_bundle_path = "#{repo_path}.bundle"
+
+      system(*%W[#{Gitlab.config.git.bin_path} clone --mirror #{PROJECT_CLONE_URL} #{repo_path}])
+      system(*%W[#{Gitlab.config.git.bin_path} -C #{repo_path} bundle create #{repo_bundle_path} --all])
+
+      yield repo_bundle_path
     end
   end
 
@@ -79,9 +124,7 @@ FactoryBot::SyntaxRunner.class_eval do
 end
 
 Gitlab::Seeder.quiet do
-  flag = ENV['SEED_GITLAB_DUO']
-
-  unless flag
+  unless Gitlab::Utils.to_boolean(ENV['SEED_GITLAB_DUO'])
     puts "Skipped. Use the SEED_GITLAB_DUO=1 environment variable to enable."
     next
   end
