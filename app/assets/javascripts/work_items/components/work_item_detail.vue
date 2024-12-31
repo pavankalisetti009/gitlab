@@ -83,6 +83,7 @@ import WorkItemCreateBranchMergeRequestSplitButton from './work_item_development
 
 const defaultWorkspacePermissions = {
   createDesign: false,
+  moveDesign: false,
 };
 
 export default {
@@ -370,6 +371,9 @@ export default {
     },
     showUploadDesign() {
       return this.hasDesignWidget && this.workspacePermissions.createDesign;
+    },
+    canReorderDesign() {
+      return this.hasDesignWidget && this.workspacePermissions.moveDesign;
     },
     workItemNotificationsSubscribed() {
       return Boolean(this.isWidgetPresent(WIDGET_TYPE_NOTIFICATIONS)?.subscribed);
@@ -978,6 +982,7 @@ export default {
               :upload-error="designUploadError"
               :upload-error-variant="designUploadErrorVariant"
               :is-saving="isSaving"
+              :can-reorder-design="canReorderDesign"
               @upload="onUploadDesign"
               @dismissError="designUploadError = null"
             >
