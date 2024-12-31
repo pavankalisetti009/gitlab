@@ -29388,6 +29388,10 @@ CREATE INDEX index_p_ci_builds_on_execution_config_id ON ONLY p_ci_builds USING 
 
 CREATE INDEX index_0928d9f200 ON ci_builds USING btree (execution_config_id) WHERE (execution_config_id IS NOT NULL);
 
+CREATE INDEX tmp_p_ci_builds_trigger_request_id_idx ON ONLY p_ci_builds USING btree (trigger_request_id) WHERE (trigger_request_id IS NOT NULL);
+
+CREATE INDEX index_437b1804fb ON ci_builds USING btree (trigger_request_id) WHERE (trigger_request_id IS NOT NULL);
+
 CREATE INDEX index_abuse_events_on_abuse_report_id ON abuse_events USING btree (abuse_report_id);
 
 CREATE INDEX index_abuse_events_on_category_and_source ON abuse_events USING btree (category, source);
@@ -35579,6 +35583,8 @@ ALTER INDEX p_ci_job_artifacts_job_id_file_type_partition_id_idx ATTACH PARTITIO
 ALTER INDEX p_ci_pipelines_ci_ref_id_id_idx ATTACH PARTITION idx_ci_pipelines_artifacts_locked;
 
 ALTER INDEX index_p_ci_builds_on_execution_config_id ATTACH PARTITION index_0928d9f200;
+
+ALTER INDEX tmp_p_ci_builds_trigger_request_id_idx ATTACH PARTITION index_437b1804fb;
 
 ALTER INDEX p_ci_builds_metadata_build_id_idx ATTACH PARTITION index_ci_builds_metadata_on_build_id_and_has_exposed_artifacts;
 
