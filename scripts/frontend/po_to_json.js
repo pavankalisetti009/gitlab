@@ -172,16 +172,22 @@ async function convertPoFileForLocale({ locale, localeFile, resultDir }) {
  */
 if (!process.env.JEST_WORKER_ID) {
   // eslint-disable-next-line global-require
-  const argumentsParser = require('commander');
+  const { Command } = require('commander');
 
-  const args = argumentsParser
+  const program = new Command();
+
+  program
     .option('-l, --locale-root <locale_root>', 'Extract messages from subfolders in this directory')
-    .option('-o, --output-dir <output_dir>', 'Write app.js files into subfolders in this directory')
-    .parse(process.argv);
+    .option(
+      '-o, --output-dir <output_dir>',
+      'Write app.js files into subfolders in this directory',
+    );
+  program.parse(process.argv);
+  const args = program.opts();
 
   main(args).catch((e) => {
     console.warn(`Something went wrong: ${e.message}`);
-    console.warn(args.printHelp());
+    console.warn(program.outputHelp());
     process.exitCode = 1;
   });
 }
