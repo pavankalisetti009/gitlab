@@ -45,9 +45,35 @@ describe('DastVariablesModal', () => {
     expect(findAllFormsGroups().length).toBe(1);
   });
 
-  it('emits addVariable event when modal is submitted', async () => {
-    await findModal().vm.$emit('primary');
+  it('emits addVariable event when modal is submitted with valid data', async () => {
+    await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
+    findValueInput().vm.$emit('input', '120');
+    await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
     expect(wrapper.emitted('addVariable')).toHaveLength(1);
+    expect(wrapper.emitted('addVariable')).toEqual([
+      [
+        {
+          variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
+          value: '120',
+          type: 'Duration string',
+        },
+      ],
+    ]);
+  });
+
+  it('does not emit addVariable event when modal is submitted with invalid `variable` data', async () => {
+    const preventDefault = jest.fn();
+    await findModal().vm.$emit('primary', { preventDefault });
+    expect(preventDefault).toHaveBeenCalled();
+    expect(wrapper.emitted('addVariable')).toBeUndefined();
+  });
+
+  it('does not emit addVariable event when modal is submitted with invalid `value` data', async () => {
+    const preventDefault = jest.fn();
+    await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
+    await findModal().vm.$emit('primary', { preventDefault });
+    expect(preventDefault).toHaveBeenCalled();
+    expect(wrapper.emitted('addVariable')).toBeUndefined();
   });
 
   it('emits resetModal event when modal is closed', async () => {
@@ -106,7 +132,7 @@ describe('DastVariablesModal', () => {
       expect(findFormTextArea().exists()).toBe(true);
     });
 
-    it('dont display any form input when type is null', () => {
+    it('does not display any form input when type is null', () => {
       createComponent({ variable: { type: null } });
       expect(findAllFormsGroups().exists()).toBe(true);
       expect(findAllFormsGroups().length).toBe(1);
