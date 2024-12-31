@@ -17546,8 +17546,10 @@ CREATE TABLE pm_advisories (
     cvss_v3 text,
     urls text[] DEFAULT '{}'::text[],
     identifiers jsonb NOT NULL,
+    cve text,
     CONSTRAINT check_152def3868 CHECK ((char_length(cvss_v2) <= 128)),
     CONSTRAINT check_19cbd06439 CHECK ((char_length(advisory_xid) <= 36)),
+    CONSTRAINT check_b1c980b212 CHECK ((char_length(cve) <= 24)),
     CONSTRAINT check_bed97fa77a CHECK ((char_length(cvss_v3) <= 128)),
     CONSTRAINT check_e4bfd3ffbf CHECK ((char_length(title) <= 256)),
     CONSTRAINT check_fee880f7aa CHECK ((char_length(description) <= 8192)),
@@ -32307,6 +32309,8 @@ CREATE UNIQUE INDEX index_plan_limits_on_plan_id ON plan_limits USING btree (pla
 CREATE UNIQUE INDEX index_plans_on_name ON plans USING btree (name);
 
 CREATE UNIQUE INDEX index_pm_advisories_on_advisory_xid_and_source_xid ON pm_advisories USING btree (advisory_xid, source_xid);
+
+CREATE INDEX index_pm_advisories_on_cve ON pm_advisories USING btree (cve);
 
 CREATE INDEX index_pm_affected_packages_on_pm_advisory_id ON pm_affected_packages USING btree (pm_advisory_id);
 

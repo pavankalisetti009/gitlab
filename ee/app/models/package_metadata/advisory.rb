@@ -5,6 +5,7 @@ module PackageMetadata
     include Gitlab::Utils::StrongMemoize
 
     MAX_URL_SIZE = 512
+    CVE_REGEX = /\ACVE-\d{4}-\d{4,15}\z/
 
     has_many :affected_packages, inverse_of: :advisory, foreign_key: :pm_advisory_id
 
@@ -30,6 +31,7 @@ module PackageMetadata
         record.errors.add(url, "size is greater than #{MAX_URL_SIZE}") if url.size > MAX_URL_SIZE
       end
     end
+    validates :cve, format: { with: CVE_REGEX }, allow_nil: true
 
     scope :with_affected_packages, -> { includes(:affected_packages) }
 

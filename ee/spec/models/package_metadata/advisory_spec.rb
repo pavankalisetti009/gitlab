@@ -93,6 +93,18 @@ RSpec.describe PackageMetadata::Advisory, type: :model, feature_category: :softw
         end
       end
     end
+
+    describe 'cve validation' do
+      it { is_expected.to allow_value('CVE-2023-12345').for(:cve) }
+      it { is_expected.to allow_value('CVE-2023-123456789012345').for(:cve) }
+      it { is_expected.not_to allow_value('CVE-2023-123').for(:cve) }
+      it { is_expected.not_to allow_value('CVE-2023-123456789876543212345678987654321').for(:cve) }
+      it { is_expected.not_to allow_value('CVE-23-12345').for(:cve) }
+      it { is_expected.not_to allow_value('cve-2023-12345').for(:cve) }
+      it { is_expected.not_to allow_value('NOT-A-CVE').for(:cve) }
+      it { is_expected.to allow_value(nil).for(:cve) }
+      it { is_expected.not_to allow_value('').for(:cve) }
+    end
   end
 
   describe '#from_container_scanning?' do
