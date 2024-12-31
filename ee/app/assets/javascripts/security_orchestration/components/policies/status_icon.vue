@@ -44,7 +44,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="gl-flex gl-flex-nowrap gl-items-center gl-gap-2">
     <gl-icon
       v-gl-tooltip-directive.left="tooltipContent"
       :aria-label="tooltipContent"
