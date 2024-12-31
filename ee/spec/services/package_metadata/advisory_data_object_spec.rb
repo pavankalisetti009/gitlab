@@ -71,7 +71,8 @@ RSpec.describe PackageMetadata::AdvisoryDataObject, feature_category: :software_
           have_attributes(purl_type: purl_type,
             package_name: 'org.jenkins-ci.plugins/google-kubernetes-engine', affected_range: '(,0.7.0]',
             solution: 'Upgrade to version 0.8 or above.', fixed_versions: ["0.8"])
-        ]))
+        ],
+        cve: "CVE-2019-10445"))
     }
 
     context 'when an attribute is missing' do
@@ -90,6 +91,7 @@ RSpec.describe PackageMetadata::AdvisoryDataObject, feature_category: :software_
           :cvvs_v3      | false
           :urls         | false
           :identifiers  | false
+          :cve          | false
           :id           | true
           :source       | true
         end
@@ -130,6 +132,48 @@ RSpec.describe PackageMetadata::AdvisoryDataObject, feature_category: :software_
             expect { create }.to(raise_error(ArgumentError, /Unsupported advisory source/)) # rubocop:disable Rails/SaveBang -- subject comes from outside of context, no need to override for this case
           end
         end
+      end
+    end
+
+    context 'when there is no CVE identifier' do
+      let(:hash) do
+        {
+          "advisory" =>
+            {
+              "id" => "test-id",
+              "source" => "glad",
+              "published_date" => "2023-01-01",
+              "identifiers" => [
+                { "type" => "cwe", "name" => "CWE-79", "value" => "79" }
+              ]
+            },
+          "packages" => []
+        }
+      end
+
+      it 'sets cve to nil' do
+        expect(described_class.create(hash, purl_type).cve).to be_nil
+      end
+    end
+
+    context 'when the CVE type is in different case' do
+      let(:hash) do
+        {
+          "advisory" =>
+            {
+              "id" => "test-id",
+              "source" => "glad",
+              "published_date" => "2023-01-01",
+              "identifiers" => [
+                { "type" => "CVe", "name" => "CVE-2021-5678", "value" => "CVE-2021-5678" }
+              ]
+            },
+          "packages" => []
+        }
+      end
+
+      it 'extracts the CVE name case-insensitively' do
+        expect(described_class.create(hash, purl_type).cve).to eq('CVE-2021-5678')
       end
     end
   end
