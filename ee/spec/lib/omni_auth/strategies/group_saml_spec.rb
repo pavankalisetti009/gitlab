@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe OmniAuth::Strategies::GroupSaml, type: :strategy do
+RSpec.describe OmniAuth::Strategies::GroupSaml, feature_category: :system_access, type: :strategy do
   include Gitlab::Routing
 
   let(:strategy) { [described_class, {}] }

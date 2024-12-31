@@ -141,7 +141,7 @@ RSpec.shared_examples 'comparable report' do
   end
 end
 
-RSpec.describe Projects::MergeRequestsController do
+RSpec.describe Projects::MergeRequestsController, feature_category: :code_review_workflow do
   include ProjectForksHelper
 
   let_it_be_with_refind(:project) { create(:project, :repository) }
