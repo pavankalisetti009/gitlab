@@ -80,4 +80,16 @@ describe('DastVariablesFormGroup', () => {
       expect(modalStub.show).toHaveBeenCalled();
     });
   });
+
+  describe('while `variableList` is not empty', () => {
+    it('needs to set `preSelectedVariables` input', () => {
+      const preSelectedVariable = [
+        { variable: 'DAST_ACTIVE_SCAN_TIMEOUT', value: 'Duration string' },
+      ];
+      createComponent({
+        value: preSelectedVariable,
+      });
+      expect(findModal().props('preSelectedVariables')).toEqual(preSelectedVariable);
+    });
+  });
 });

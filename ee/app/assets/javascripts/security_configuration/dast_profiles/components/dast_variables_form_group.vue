@@ -156,6 +156,10 @@ export default {
         {{ $options.i18n.addVariableButtonLabel }}
       </gl-button>
     </gl-form-group>
-    <dast-variables-modal ref="addVariableModal" @addVariable="addVariableToList" />
+    <dast-variables-modal
+      ref="addVariableModal"
+      :pre-selected-variables="variableList"
+      @addVariable="addVariableToList"
+    />
   </div>
 </template>

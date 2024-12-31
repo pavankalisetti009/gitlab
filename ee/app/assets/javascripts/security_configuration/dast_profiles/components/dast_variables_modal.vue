@@ -33,9 +33,9 @@ export default {
   },
   props: {
     preSelectedVariables: {
-      type: Object,
+      type: Array,
       required: false,
-      default: () => ({}),
+      default: () => [],
     },
     variable: {
       type: Object,
@@ -83,8 +83,16 @@ export default {
       };
     },
     items() {
+      const preSelectedVariablesNames = this.preSelectedVariables
+        .map((existVariable) => existVariable.variable)
+        .filter(Boolean);
+
+      const searchTermLower = this.searchTerm?.toLowerCase() || '';
+
       const filteredVariables = Object.entries(DAST_VARIABLES).filter(
-        ([id]) => !this.searchTerm || id.toLowerCase().includes(this.searchTerm.toLowerCase()),
+        ([id]) =>
+          (!searchTermLower || id.toLowerCase().includes(searchTermLower)) &&
+          !preSelectedVariablesNames.includes(id),
       );
 
       return filteredVariables.map(([id, { description }]) => ({
@@ -181,7 +189,10 @@ export default {
         @search="onSearch"
         @select="onSelect($event)"
       >
-        <!-- <template #list-item="{ item: { text, secondaryText, icon } }"> </template> -->
+        <template #list-item="{ item: { text, secondaryText } }">
+          <strong>{{ text }}</strong>
+          <div class="gl-text-sm gl-text-subtle">{{ secondaryText }}</div>
+        </template>
       </gl-collapsible-listbox>
     </gl-form-group>
     <gl-form-group
