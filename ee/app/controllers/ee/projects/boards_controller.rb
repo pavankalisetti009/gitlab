@@ -8,6 +8,7 @@ module EE
       prepended do
         before_action do
           push_force_frontend_feature_flag(:work_item_epics, project&.group&.work_item_epics_enabled?)
+          push_frontend_feature_flag(:namespace_level_work_items, project&.group)
         end
       end
     end
