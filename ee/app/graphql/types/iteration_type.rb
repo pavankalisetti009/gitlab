@@ -61,7 +61,7 @@ module Types
     markdown_field :description_html, null: true
 
     def iteration_cadence
-      ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Iterations::Cadence, object.iterations_cadence_id).find
+      ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Iterations::Cadence, object.iterations_cadence_id, [:group]).find
     end
   end
 end
