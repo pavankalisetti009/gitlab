@@ -16,6 +16,8 @@ import { __, s__, sprintf } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
 import ScopeSection from 'ee/security_orchestration/components/policy_editor/scope/scope_section.vue';
+import PanelResizer from '~/vue_shared/components/panel_resizer.vue';
+import EditorLayoutCollapseHeader from 'ee/security_orchestration/components/policy_editor/editor_layout_collapse_header.vue';
 import { NAMESPACE_TYPES } from '../../constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
 import {
@@ -26,13 +28,27 @@ import {
   POLICY_RUN_TIME_MESSAGE,
   POLICY_RUN_TIME_TOOLTIP,
   SCOPE_LABEL,
+  SPLIT_VIEW_MAX_WIDTH,
+  SPLIT_VIEW_MIN_WIDTH,
+  RULE_SECTION_INITIAL_WIDTH,
+  RULE_SECTION_COLLAPSED_WIDTH,
+  SPLIT_VIEW_HALF_WIDTH,
+  RULE_SECTION_MAX_WIDTH,
 } from './constants';
 import { getPolicyLimitDetails } from './utils';
 
 const { scanExecution, legacyApproval, approval, vulnerabilityManagement, pipelineExecution } =
   POLICY_TYPE_COMPONENT_OPTIONS;
 
+const POLICY_EDITOR_SPLIT_VIEW_WIDTH_LOCAL_STORAGE_KEY = 'policies_editor_split_view_width';
+
 export default {
+  SPLIT_VIEW_MAX_WIDTH,
+  SPLIT_VIEW_MIN_WIDTH,
+  RULE_SECTION_INITIAL_WIDTH,
+  RULE_SECTION_COLLAPSED_WIDTH,
+  SPLIT_VIEW_HALF_WIDTH,
+  RULE_SECTION_MAX_WIDTH,
   i18n: {
     DELETE_MODAL_CONFIG,
     POLICY_RUN_TIME_MESSAGE,
@@ -43,12 +59,15 @@ export default {
     name: __('Name'),
     toggleLabel: s__('SecurityOrchestration|Policy status'),
     yamlPreview: s__('SecurityOrchestration|.yaml preview'),
+    rulesHeader: s__('SecurityOrchestration|Rules'),
+    yamlHeader: s__('SecurityOrchestration|Yaml'),
   },
   STATUS_OPTIONS: [
     { value: true, text: __('Enabled') },
     { value: false, text: __('Disabled') },
   ],
   components: {
+    EditorLayoutCollapseHeader,
     DimDisableContainer,
     ScopeSection,
     GlAlert,
@@ -60,6 +79,7 @@ export default {
     GlIcon,
     GlModal,
     GlSegmentedControl,
+    PanelResizer,
     YamlEditor: () => import(/* webpackChunkName: 'policy_yaml_editor' */ '../yaml_editor.vue'),
   },
   directives: { GlModal: GlModalDirective, GlTooltip: GlTooltipDirective },
@@ -139,16 +159,36 @@ export default {
   },
   data() {
     return {
+      ruleWidth: this.getRuleWidth(),
       isInitiallyEnabled: this.policy.enabled,
       selectedEditorMode: this.defaultEditorMode,
       showValidation: false,
+      ruleCollapsed: false,
+      yamlCollapsed: false,
     };
   },
   computed: {
+    hasResetButton() {
+      return this.ruleWidth !== RULE_SECTION_INITIAL_WIDTH;
+    },
+    computedRuleWidth() {
+      return this.hasNewSplitView ? { width: `${this.ruleWidth}px` } : {};
+    },
+    computedYamlWidth() {
+      const width = this.$options.SPLIT_VIEW_MAX_WIDTH - this.ruleWidth;
+      return this.hasNewSplitView ? { width: `${width}px` } : {};
+    },
+    hasNewSplitView() {
+      return this.glFeatures.securityPoliciesSplitView;
+    },
     hasNewYamlFormat() {
       return this.glFeatures.securityPoliciesNewYamlFormat;
     },
     layoutClass() {
+      if (this.hasNewSplitView) {
+        return 'security-policies-split-view';
+      }
+
       return this.hasNewYamlFormat ? 'security-policies-new-yaml-format' : 'security-policies';
     },
     policyType() {
@@ -249,6 +289,41 @@ export default {
     updateYaml(manifest) {
       this.$emit('update-yaml', manifest);
     },
+    cacheTreeListWidth(size) {
+      localStorage.setItem(POLICY_EDITOR_SPLIT_VIEW_WIDTH_LOCAL_STORAGE_KEY, size);
+    },
+    collapseRule(collapsed) {
+      this.ruleCollapsed = collapsed;
+
+      if (this.yamlCollapsed) {
+        this.yamlCollapsed = false;
+      }
+
+      this.ruleWidth = collapsed ? this.$options.RULE_SECTION_COLLAPSED_WIDTH : this.getRuleWidth();
+    },
+    collapseYaml(collapsed) {
+      this.yamlCollapsed = collapsed;
+
+      if (this.ruleCollapsed) {
+        this.ruleCollapsed = false;
+      }
+
+      this.ruleWidth = collapsed
+        ? this.$options.RULE_SECTION_MAX_WIDTH
+        : this.$options.SPLIT_VIEW_HALF_WIDTH;
+    },
+    resetToDefaultSize() {
+      this.ruleWidth = this.$options.RULE_SECTION_INITIAL_WIDTH;
+      this.cacheTreeListWidth(this.$options.RULE_SECTION_INITIAL_WIDTH);
+      this.ruleCollapsed = false;
+      this.yamlCollapsed = false;
+    },
+    getRuleWidth() {
+      return (
+        parseInt(localStorage.getItem(POLICY_EDITOR_SPLIT_VIEW_WIDTH_LOCAL_STORAGE_KEY), 10) ||
+        this.$options.RULE_SECTION_INITIAL_WIDTH
+      );
+    },
   },
 };
 </script>
@@ -256,13 +331,30 @@ export default {
 <template>
   <section :class="layoutClass" class="gl-mt-6 gl-flex gl-flex-col lg:gl-grid">
     <div class="gl-mb-5">
-      <div class="gl-mb-6 gl-border-b-1 gl-border-default gl-pb-6 gl-border-b-solid">
+      <div
+        v-if="!hasNewSplitView"
+        class="gl-mb-6 gl-border-b-1 gl-border-default gl-pb-6 gl-border-b-solid"
+      >
         <gl-segmented-control v-model="selectedEditorMode" :options="editorModes" />
       </div>
       <div class="gl-flex gl-flex-col lg:gl-flex-row">
-        <section class="gl-w-full">
+        <section
+          class="gl-w-full"
+          data-testid="rule-section"
+          :class="{ 'gl-relative lg:gl-pr-6': hasNewSplitView }"
+          :style="computedRuleWidth"
+        >
+          <editor-layout-collapse-header
+            v-if="hasNewSplitView"
+            class="gl-mb-4 gl-hidden lg:gl-flex"
+            :has-reset-button="hasResetButton"
+            :header="$options.i18n.rulesHeader"
+            :collapsed="ruleCollapsed"
+            @reset-size="resetToDefaultSize"
+            @toggle="collapseRule"
+          />
           <slot name="modal"></slot>
-          <div v-if="shouldShowRuleEditor" data-testid="rule-editor">
+          <div v-if="shouldShowRuleEditor && !ruleCollapsed" data-testid="rule-editor">
             <gl-alert v-if="hasParsingError" class="gl-mb-5" variant="warning" :dismissible="false">
               {{ parsingError }}
             </gl-alert>
@@ -345,11 +437,32 @@ export default {
             :read-only="false"
             @input="updateYaml"
           />
+
+          <panel-resizer
+            v-if="!yamlCollapsed && !ruleCollapsed"
+            custom-class="security-policies-drag-handle"
+            class="gl-hidden lg:gl-block"
+            :size.sync="ruleWidth"
+            :start-size="ruleWidth"
+            :min-size="$options.SPLIT_VIEW_MIN_WIDTH"
+            :max-size="$options.RULE_SECTION_INITIAL_WIDTH"
+            side="right"
+            @resize-end="cacheTreeListWidth"
+            @reset-size="resetToDefaultSize"
+          >
+            <template #thumbnail>
+              <gl-button
+                class="security-policies-drag-thumbnail !gl-min-h-7 !gl-min-w-5 !gl-rounded-none !gl-border-0 !gl-bg-gray-50"
+                icon="grip"
+                size="small"
+              />
+            </template>
+          </panel-resizer>
         </section>
       </div>
 
       <p
-        v-if="shouldShowRuntimeMessage"
+        v-if="shouldShowRuntimeMessage && !hasNewSplitView"
         class="gl-mb-0 gl-mt-5"
         data-testid="scan-result-policy-run-time-info"
       >
@@ -357,9 +470,15 @@ export default {
         {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
       </p>
     </div>
-    <aside class="security-policies-sidebar">
+
+    <aside
+      class="security-policies-sidebar gl-pl-0 lg:gl-pl-3"
+      data-testid="yaml-section"
+      :class="{ '!gl-pl-0': ruleCollapsed, 'gl-mb-4 lg:gl-mb-0': hasNewSplitView }"
+      :style="computedYamlWidth"
+    >
       <section
-        v-if="shouldShowRuleEditor"
+        v-if="shouldShowRuleEditor && !hasNewSplitView"
         class="security-policies-preview security-policies-bg-subtle gl-p-5"
         data-testid="rule-editor-preview"
       >
@@ -371,8 +490,39 @@ export default {
           >{{ yamlEditorValue }}</pre
         >
       </section>
+      <section v-if="hasNewSplitView">
+        <editor-layout-collapse-header
+          v-if="hasNewSplitView"
+          class="gl-mb-4"
+          is-right
+          :header="$options.i18n.yamlHeader"
+          :collapsed="yamlCollapsed"
+          @toggle="collapseYaml"
+        />
+
+        <yaml-editor
+          v-if="!yamlCollapsed"
+          data-testid="policy-yaml-editor"
+          :policy-type="policy.type"
+          :value="yamlEditorValue"
+          :read-only="false"
+          @input="updateYaml"
+        />
+      </section>
     </aside>
-    <div class="security-policies-actions gl-flex gl-flex-wrap gl-items-baseline gl-gap-3">
+    <div
+      class="security-policies-actions gl-flex gl-flex-col gl-flex-wrap gl-items-baseline gl-gap-3"
+      :class="{ 'security-policies-actions-sidebar': ruleCollapsed }"
+    >
+      <p
+        v-if="shouldShowRuntimeMessage && hasNewSplitView"
+        class="gl-mb-2"
+        data-testid="scan-result-policy-run-time-info"
+      >
+        <gl-icon v-gl-tooltip="$options.i18n.POLICY_RUN_TIME_TOOLTIP" name="information-o" />
+        {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
+      </p>
+
       <div class="gl-flex gl-grow gl-flex-wrap gl-gap-3">
         <gl-button
           v-gl-tooltip

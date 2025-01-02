@@ -156,7 +156,10 @@ export default {
     @remove="handleRemoveApprover"
   >
     <template #content>
-      <gl-form class="gl-w-full gl-items-center md:gl-flex" @submit.prevent>
+      <gl-form
+        class="gl-w-full gl-flex-wrap gl-items-center md:gl-flex md:gl-gap-y-3"
+        @submit.prevent
+      >
         <gl-collapsible-listbox
           class="gl-mx-0 gl-mb-3 gl-block md:gl-mb-0 md:gl-mr-3"
           data-testid="available-types"

@@ -233,3 +233,11 @@ export const EXCEPTION_TYPE_ITEMS = [
     text: s__('SecurityOrchestration|No exceptions'),
   },
 ];
+
+export const SPLIT_VIEW_MAX_WIDTH = 1248;
+export const SPLIT_VIEW_MIN_WIDTH = 340;
+export const YAML_SECTION_INITIAL_WIDTH = 350;
+export const RULE_SECTION_INITIAL_WIDTH = SPLIT_VIEW_MAX_WIDTH - YAML_SECTION_INITIAL_WIDTH;
+export const RULE_SECTION_COLLAPSED_WIDTH = 76;
+export const SPLIT_VIEW_HALF_WIDTH = SPLIT_VIEW_MAX_WIDTH / 2;
+export const RULE_SECTION_MAX_WIDTH = SPLIT_VIEW_MAX_WIDTH - 64;
