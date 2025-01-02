@@ -2,6 +2,7 @@
 import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
@@ -23,15 +24,20 @@ export default {
       type: Object,
       required: true,
     },
+    license: {
+      type: Object,
+      required: true,
+    },
   },
   i18n: {
     defaultErrorMessage: s__(
-      'AdminSelfHostedModels|An error occurred while updating the sefl-hosted model, please try again.',
+      'AdminSelfHostedModels|An error occurred while updating the self-hosted model, please try again.',
     ),
     successMessage: s__('AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}'),
   },
   data() {
     const { provider, selfHostedModel, validModels } = this.aiFeatureSetting;
+    const { type: licenseType } = this.license;
 
     const selectedOption = provider === PROVIDERS.SELF_HOSTED ? selfHostedModel?.id : provider;
 
@@ -39,6 +45,7 @@ export default {
       provider,
       selfHostedModelId: selfHostedModel?.id,
       compatibleModels: validModels?.nodes,
+      isOnlineCloudLicense: licenseType === subscriptionTypes.ONLINE_CLOUD,
       selectedOption,
       isSaving: false,
     };
@@ -61,7 +68,11 @@ export default {
         text: s__('AdminAIPoweredFeatures|GitLab AI Vendor'),
       };
 
-      return [...modelOptions, vendoredOption, disableOption];
+      if (this.isOnlineCloudLicense) {
+        return [...modelOptions, vendoredOption, disableOption];
+      }
+
+      return [...modelOptions, disableOption];
     },
     selectedModel() {
       return this.compatibleModels.find((m) => m.id === this.selfHostedModelId);
@@ -70,7 +81,7 @@ export default {
       if (this.provider === PROVIDERS.DISABLED) {
         return s__('AdminAIPoweredFeatures|Disabled');
       }
-      if (this.provider === PROVIDERS.VENDORED) {
+      if (this.isOnlineCloudLicense && this.provider === PROVIDERS.VENDORED) {
         return s__('AdminAIPoweredFeatures|GitLab AI Vendor');
       }
       if (this.selectedModel) {

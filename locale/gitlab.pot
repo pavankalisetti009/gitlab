@@ -3660,6 +3660,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again."
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|An error occurred while loading the current license. Please try again."
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Compatible models"
 msgstr ""
 
@@ -3933,7 +3936,7 @@ msgstr ""
 msgid "AdminSelfHostedModels|An error occurred while loading the self-hosted model. Please try again."
 msgstr ""
 
-msgid "AdminSelfHostedModels|An error occurred while updating the sefl-hosted model, please try again."
+msgid "AdminSelfHostedModels|An error occurred while updating the self-hosted model, please try again."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Configure GitLab Duo by adding and managing your own %{self_hosted_models_link_start}self-hosted models%{self_hosted_models_link_end}. To get started, you must first accept the %{gitlab_testing_agreement_link_start}GitLab Testing Agreement%{gitlab_testing_agreement_link_end}."
