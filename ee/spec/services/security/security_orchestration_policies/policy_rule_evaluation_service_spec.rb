@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService, feature_category: :security_policy_management do
   let(:service) { described_class.new(merge_request, approval_rules, report_type) }
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:project) { create(:project, :repository) }
   let_it_be(:merge_request, reload: true) do
     create(:merge_request, source_project: project, target_project: project)
   end
@@ -276,6 +276,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
         end
 
         it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'does not trigger policy bot comment for archived project' do
+          let(:archived_project) { merge_request.project }
+        end
       end
 
       context 'with passing rules' do
@@ -285,6 +288,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
         end
 
         it_behaves_like 'triggers policy bot comment', :scan_finding, false, requires_approval: false
+        it_behaves_like 'does not trigger policy bot comment for archived project' do
+          let(:archived_project) { merge_request.project }
+        end
       end
     end
   end
