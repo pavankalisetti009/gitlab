@@ -307,6 +307,7 @@ class License < ApplicationRecord
   end
 
   alias_method :exclude_guests_from_active_count?, :ultimate?
+  alias_method :seats, :restricted_user_count
 
   def remaining_days
     return 0 if expired?
