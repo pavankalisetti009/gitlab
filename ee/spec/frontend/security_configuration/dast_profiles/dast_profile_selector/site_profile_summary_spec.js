@@ -4,7 +4,10 @@ import { merge } from 'lodash';
 import * as responses from 'ee_jest/security_configuration/dast_profiles/mocks/apollo_mock';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import App from 'ee/security_configuration/dast_profiles/dast_profile_selector/site_profile_summary.vue';
-import { siteProfiles } from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
+import {
+  siteProfiles,
+  mockVariables,
+} from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
 import DastSiteValidationModal from 'ee/security_configuration/dast_site_validation/components/dast_site_validation_modal.vue';
 import DastProfileSummaryCard from 'ee/security_configuration/dast_profiles/dast_profile_selector/dast_profile_summary_card.vue';
 import {
@@ -27,10 +30,16 @@ const scanMethodOption = {
   scanFilePath: 'https://example.com',
 };
 
-describe('DastScannerProfileSummary', () => {
+describe('DastSiteProfileSummary', () => {
   let wrapper;
   let requestHandlers;
   let apolloProvider;
+
+  const findAdditionalVariables = () =>
+    wrapper.findAllByTestId('additional-variable-summary-cell').wrappers.map((variableCell) => ({
+      variable: variableCell.props('label'),
+      value: variableCell.props('value'),
+    }));
 
   const defaultProps = {
     profile: {
@@ -81,7 +90,25 @@ describe('DastScannerProfileSummary', () => {
   it('renders properly', () => {
     createComponent();
 
-    expect(wrapper.element).toMatchSnapshot();
+    expect(wrapper.element).toMatchSnapshot(); // generates the snapshot
+  });
+
+  describe('additional variables', () => {
+    it.each`
+      dastUiAdditionalVariables | expectation          | expectedVariables
+      ${true}                   | ${'renders'}         | ${mockVariables}
+      ${false}                  | ${'does not render'} | ${[]}
+    `(
+      '$expectation when feature flag is $dastUiAdditionalVariables',
+      ({ dastUiAdditionalVariables, expectedVariables }) => {
+        createComponent({
+          provide: { glFeatures: { dastUiAdditionalVariables } },
+          propsData: { profile: { ...profile, optionalVariables: mockVariables } },
+        });
+
+        expect(findAdditionalVariables()).toStrictEqual(expectedVariables);
+      },
+    );
   });
 
   describe('Validation Button', () => {

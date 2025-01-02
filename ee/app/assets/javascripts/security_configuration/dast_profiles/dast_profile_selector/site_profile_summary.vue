@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DastSiteValidationBadge from 'ee/security_configuration/dast_profiles/components/dast_site_validation_badge.vue';
 import DastSiteValidationModal from 'ee/security_configuration/dast_site_validation/components/dast_site_validation_modal.vue';
 import {
@@ -67,6 +68,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['projectPath'],
   props: {
     profile: {
@@ -245,6 +247,15 @@ export default {
         :label="selectedScanMethod.inputLabel"
         :value="profile.scanFilePath"
       />
+      <template v-if="glFeatures.dastUiAdditionalVariables">
+        <summary-cell
+          v-for="{ variable, value } in profile.optionalVariables"
+          :key="variable"
+          :label="variable"
+          :value="value"
+          data-testid="additional-variable-summary-cell"
+        />
+      </template>
     </template>
   </dast-profile-summary-card>
 </template>

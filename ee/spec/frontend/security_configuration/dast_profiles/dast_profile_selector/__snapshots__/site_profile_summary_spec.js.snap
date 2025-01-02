@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DastScannerProfileSummary renders properly 1`] = `
+exports[`DastSiteProfileSummary renders properly 1`] = `
 <gl-card-stub
   bodyclass=""
   footerclass=""
