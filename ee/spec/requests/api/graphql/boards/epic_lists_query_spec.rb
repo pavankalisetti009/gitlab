@@ -102,9 +102,9 @@ RSpec.describe 'get list of epic boards', feature_category: :portfolio_managemen
         post_graphql(pagination_query(params), current_user: current_user)
 
         expect(list_nodes).to match [
-          a_hash_including('epicsCount' => 1, 'metadata' => { 'epicsCount' => 1, 'totalWeight' => 7 }),
-          a_hash_including('epicsCount' => 0, 'metadata' => { 'epicsCount' => 0, 'totalWeight' => 0 }),
-          a_hash_including('epicsCount' => 0, 'metadata' => { 'epicsCount' => 0, 'totalWeight' => 0 })
+          a_hash_including('metadata' => { 'epicsCount' => 1, 'totalWeight' => 7 }),
+          a_hash_including('metadata' => { 'epicsCount' => 0, 'totalWeight' => 0 }),
+          a_hash_including('metadata' => { 'epicsCount' => 0, 'totalWeight' => 0 })
         ]
       end
 
