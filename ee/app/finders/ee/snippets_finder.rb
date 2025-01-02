@@ -23,7 +23,14 @@ module EE
 
     override :filter_snippets
     def filter_snippets
-      by_repository_storage(super)
+      valid_snippets = filter_unauthorized_snippets(super)
+      by_repository_storage(valid_snippets)
+    end
+
+    def filter_unauthorized_snippets(snippets)
+      current_ip = ::Gitlab::IpAddressState.current
+
+      snippets.allowed_for_ip(current_ip)
     end
 
     # This method returns snippets from a more restrictive scope.
