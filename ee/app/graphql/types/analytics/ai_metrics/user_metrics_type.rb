@@ -7,7 +7,7 @@ module Types
       class UserMetricsType < BaseObject
         graphql_name 'AiUserMetrics'
         description "Pre-aggregated per-user metrics for GitLab Code Suggestions and GitLab Duo Chat. " \
-          "Requires ClickHouse. Ultimate with GitLab Duo Pro or Enterprise only."
+          "Require ClickHouse to be enabled and GitLab Ultimate with the Duo Enterprise add-on."
 
         field :code_suggestions_accepted_count, GraphQL::Types::Int,
           description: 'Total count of code suggestions accepted by the user.',
