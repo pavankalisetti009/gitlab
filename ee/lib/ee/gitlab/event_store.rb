@@ -44,10 +44,7 @@ module EE
             if: ->(_) { ::Gitlab::CurrentSettings.elasticsearch_indexing? }
           store.subscribe ::Search::Zoekt::DefaultBranchChangedWorker, to: ::Repositories::DefaultBranchChangedEvent
           store.subscribe ::Search::Zoekt::DeleteProjectEventWorker,
-            to: ::Projects::ProjectDeletedEvent,
-            if: ->(_) {
-                  ::Gitlab::CurrentSettings.zoekt_indexing_enabled? && ::License.feature_available?(:zoekt_code_search)
-                }
+            to: ::Projects::ProjectDeletedEvent, if: ->(_) { ::Search::Zoekt.licensed_and_indexing_enabled? }
           store.subscribe ::Search::Zoekt::TaskFailedEventWorker, to: ::Search::Zoekt::TaskFailedEvent
           store.subscribe ::PackageMetadata::GlobalAdvisoryScanWorker, to: ::PackageMetadata::IngestedAdvisoryEvent
           store.subscribe ::Sbom::ProcessVulnerabilitiesWorker, to: ::Sbom::SbomIngestedEvent

@@ -19,8 +19,7 @@ module Search
       concurrency_limit -> { 100 if Feature.enabled?(:zoekt_delete_project_worker_concurrency) } # rubocop:disable Gitlab/FeatureFlagWithoutActor -- global flags
 
       def perform(root_namespace_id, project_id, node_id = nil)
-        return unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
-        return unless ::License.feature_available?(:zoekt_code_search)
+        return unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
         nodes = Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id, node_ids: [node_id])
 

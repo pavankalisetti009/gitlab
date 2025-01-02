@@ -4,7 +4,7 @@ module Search
   module Zoekt
     class NodeWithNegativeUnclaimedStorageEventWorker
       include Gitlab::EventStore::Subscriber
-      include Search::Worker
+      include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
       deduplicate :until_executed
@@ -43,12 +43,6 @@ module Search
             )
           end
         end
-      end
-
-      private
-
-      def logger
-        @logger ||= ::Search::Zoekt::Logger.build
       end
     end
   end

@@ -4,7 +4,7 @@ module Search
   module Zoekt
     class DeleteProjectEventWorker
       include ApplicationWorker
-      include Search::Worker
+      include Search::Zoekt::EventWorker
       include Gitlab::EventStore::Subscriber
       prepend ::Geo::SkipSecondary
 

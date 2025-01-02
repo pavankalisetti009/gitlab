@@ -4,7 +4,7 @@ module Search
   module Zoekt
     class TaskFailedEventWorker
       include Gitlab::EventStore::Subscriber
-      include Search::Worker
+      include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
       urgency :low
@@ -20,12 +20,6 @@ module Search
         return unless repo.reset.failed?
 
         logger.info(build_structured_payload(message: 'Repository moved to failed', failed_repo_id: repo.id))
-      end
-
-      private
-
-      def logger
-        @logger ||= ::Search::Zoekt::Logger.build
       end
     end
   end

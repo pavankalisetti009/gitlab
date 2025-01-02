@@ -125,6 +125,35 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
+  describe '#licensed_and_indexing_enabled?' do
+    subject { described_class.licensed_and_indexing_enabled? }
+
+    context 'when license feature zoekt_code_search is disabled' do
+      before do
+        stub_licensed_features(zoekt_code_search: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when application setting zoekt_indexing_enabled is disabled' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_enabled: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when license feature zoekt_code_search and zoekt_indexing_enabled are enabled' do
+      before do
+        stub_licensed_features(zoekt_code_search: true)
+        stub_ee_application_setting(zoekt_indexing_enabled: true)
+      end
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '#enabled?' do
     subject { described_class.enabled? }
 
