@@ -42,7 +42,7 @@ describe('JiraIssueCreationVulnerabilities', () => {
   const findEnableJiraVulnerabilities = () => wrapper.findAllComponents(GlFormCheckbox).at(0);
   const findIssueTypeSection = () => wrapper.findByTestId('issue-type-section');
   const findIssueTypeListbox = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findIssueTypeLabel = () => wrapper.findComponent('label');
+  const findIssueTypeLabel = () => wrapper.find('label');
   const findProjectKey = () => wrapper.findByTestId('jira-project-key');
   const findProjectKeyInput = () => findProjectKey().findComponent(GlFormInput);
   const findFetchIssueTypeButton = () =>
