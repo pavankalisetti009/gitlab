@@ -92,25 +92,6 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
     let(:visit_method) { visit_and_expand_section }
   end
 
-  context 'with feature flag disabled' do
-    before do
-      stub_feature_flags(reorganize_project_level_registry_settings: false)
-    end
-
-    it 'passes axe automated accessibility testing' do
-      visit_page
-
-      wait_for_requests
-
-      expect(page).to be_axe_clean.within('[data-testid="packages-and-registries-project-settings"]') # rubocop:todo Capybara/TestidFinders -- Doesn't cover use case, see https://gitlab.com/gitlab-org/gitlab/-/issues/442224
-                                  .skipping :'heading-order'
-    end
-
-    it_behaves_like 'dependency proxy settings' do
-      let(:visit_method) { visit_page }
-    end
-  end
-
   private
 
   def visit_page
