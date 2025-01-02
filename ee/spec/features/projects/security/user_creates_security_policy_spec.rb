@@ -18,6 +18,10 @@ RSpec.describe "User creates security policy", :js, feature_category: :security_
     )
   end
 
+  before do
+    stub_feature_flags(security_policies_split_view: false)
+  end
+
   context 'for a merge request approval policy' do
     it_behaves_like 'merge request approval policy editor' do
       let(:path_to_policy_editor) { new_project_security_policy_path(project) }

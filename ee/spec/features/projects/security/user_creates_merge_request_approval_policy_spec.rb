@@ -26,6 +26,7 @@ RSpec.describe "User creates merge request approval policy", :js, feature_catego
 
   before do
     sign_in(owner)
+    stub_feature_flags(security_policies_split_view: false)
     stub_licensed_features(security_orchestration_policies: true)
     visit(path_to_policy_editor)
     within_testid("approval_policy-card") do

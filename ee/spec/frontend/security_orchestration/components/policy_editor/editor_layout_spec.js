@@ -18,6 +18,8 @@ import {
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
 import ScopeSection from 'ee/security_orchestration/components/policy_editor/scope/scope_section.vue';
+import PanelResizer from '~/vue_shared/components/panel_resizer.vue';
+import EditorLayoutCollapseHeader from 'ee/security_orchestration/components/policy_editor/editor_layout_collapse_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockDastScanExecutionObject } from '../../mocks/mock_scan_execution_policy_data';
 import { mockDefaultBranchesScanResultObject } from '../../mocks/mock_scan_result_policy_data';
@@ -77,6 +79,11 @@ describe('EditorLayout component', () => {
   const findScanResultPolicyRunTimeTooltip = () =>
     findScanResultPolicyRunTimeInfo().findComponent(GlIcon);
   const findScopeSection = () => wrapper.findComponent(ScopeSection);
+  const findPanelResizer = () => wrapper.findComponent(PanelResizer);
+  const findEditorLayoutCollapseHeaders = () =>
+    wrapper.findAllComponents(EditorLayoutCollapseHeader);
+  const findRuleSection = () => wrapper.findByTestId('rule-section');
+  const findYamlSection = () => wrapper.findByTestId('yaml-section');
 
   describe('default behavior', () => {
     beforeEach(() => {
@@ -408,6 +415,42 @@ describe('EditorLayout component', () => {
 
       expect(findRootSection().classes()).not.toContain('security-policies');
       expect(findRootSection().classes()).toContain('security-policies-new-yaml-format');
+    });
+  });
+
+  describe('new split view layout', () => {
+    beforeEach(() => {
+      factory({ provide: { glFeatures: { securityPoliciesSplitView: true } } });
+    });
+
+    it('renders new layout when ff is on', () => {
+      expect(findEditorLayoutCollapseHeaders()).toHaveLength(2);
+      expect(findPanelResizer().exists()).toBe(true);
+      expect(findEditorModeToggle().exists()).toBe(false);
+    });
+
+    it('changes size of panel on drag and shows reset button', async () => {
+      expect(findRuleSection().attributes('style')).toBe('width: 898px;');
+      expect(findYamlSection().attributes('style')).toBe('width: 350px;');
+      expect(findEditorLayoutCollapseHeaders().at(0).props('hasResetButton')).toBe(false);
+
+      await findPanelResizer().vm.$emit('update:size', 1000);
+
+      expect(findRuleSection().attributes('style')).toBe('width: 1000px;');
+      expect(findYamlSection().attributes('style')).toBe('width: 248px;');
+      expect(findEditorLayoutCollapseHeaders().at(0).props('hasResetButton')).toBe(true);
+    });
+
+    it('resets size of panels', async () => {
+      await findPanelResizer().vm.$emit('update:size', 1000);
+
+      expect(findRuleSection().attributes('style')).toBe('width: 1000px;');
+      expect(findYamlSection().attributes('style')).toBe('width: 248px;');
+
+      await findPanelResizer().vm.$emit('reset-size');
+
+      expect(findRuleSection().attributes('style')).toBe('width: 898px;');
+      expect(findYamlSection().attributes('style')).toBe('width: 350px;');
     });
   });
 });

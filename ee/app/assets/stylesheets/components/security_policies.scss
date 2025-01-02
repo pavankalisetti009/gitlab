@@ -43,12 +43,39 @@
   }
 }
 
+.security-policies-split-view {
+  grid-template-areas: 'content sidebar';
+  grid-template-columns: 1fr 1fr;
+}
+
 .security-policies-content,
 .security-policies-actions {
   grid-area: content;
   grid-row: auto;
 }
 
+.security-policies-actions-sidebar {
+  grid-area: sidebar;
+  grid-row: auto;
+}
+
 .security-policies-sidebar {
   grid-area: sidebar;
+}
+
+.security-policies-drag-handle {
+  width: 16px !important;
+}
+
+.security-policies-drag-handle:hover {
+  background-color: var(--gray-50, #ececef);
+}
+
+.security-policies-drag-handle.is-dragging {
+  background-color: var(--gray-50, #ececef);
+}
+
+.security-policies-drag-thumbnail {
+  height: 40px !important;
+  width: 16px !important;
 }
