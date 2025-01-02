@@ -7,6 +7,8 @@ module EE
 
       override :execute
       def execute
+        return if groups.blank?
+
         super
 
         ::Preloaders::GroupRootAncestorPreloader.new(groups, root_ancestor_preloads).execute
