@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class ProcessScanResultPolicyService
       include ::Gitlab::Utils::StrongMemoize
+      include Gitlab::InternalEventsTracking
 
       REPORT_TYPE_MAPPING = {
         Security::ScanResultPolicy::LICENSE_FINDING => :license_scanning,
@@ -21,11 +22,18 @@ module Security
 
       def execute
         create_new_approval_rules
+        track_multiple_approval_actions
       end
 
       private
 
       attr_reader :policy_configuration, :policy, :project, :author, :policy_index, :real_policy_index
+
+      def track_multiple_approval_actions
+        return unless approval_actions.size > 1
+
+        track_internal_event('check_multiple_approval_actions_for_approval_policy', project: project)
+      end
 
       def create_new_approval_rules
         policy[:rules]&.first(Security::ScanResultPolicy::RULES_LIMIT)&.each_with_index do |rule, rule_index|
