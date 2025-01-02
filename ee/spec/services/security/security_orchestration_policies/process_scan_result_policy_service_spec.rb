@@ -120,6 +120,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         expect { subject }.to change { project.scan_result_policy_reads.count }.by(2)
         expect(project.scan_result_policy_reads.map(&:action_idx)).to contain_exactly(0, 1)
       end
+
+      it_behaves_like 'internal event tracking' do
+        let(:category) { described_class.name }
+        let(:event) { 'check_multiple_approval_actions_for_approval_policy' }
+      end
     end
 
     context 'without any rule of the scan_finding type' do
