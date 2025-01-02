@@ -9,7 +9,6 @@ module Search
 
       data_consistency :delayed
       idempotent!
-      pause_control :deprecated
       urgency :low
 
       concurrency_limit -> {
@@ -17,8 +16,7 @@ module Search
       }
 
       def perform(project_id, task_type, options = {})
-        return false unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
-        return false unless ::License.feature_available?(:zoekt_code_search)
+        return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
         options = options.with_indifferent_access
         keyword_args = {

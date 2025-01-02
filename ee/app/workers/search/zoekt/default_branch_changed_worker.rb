@@ -13,8 +13,7 @@ module Search
       idempotent!
 
       def handle_event(event)
-        return unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
-        return unless ::License.feature_available?(:zoekt_code_search)
+        return unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
         klass = event.data[:container_type].safe_constantize
         return unless klass == Project

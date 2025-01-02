@@ -10,43 +10,73 @@ RSpec.describe ::Search::Zoekt::SchedulingWorker, feature_category: :global_sear
   end
 
   describe '#perform' do
-    context 'when no arguments are provided' do
-      subject(:worker) { described_class.new }
+    let(:worker) { described_class.new }
 
-      context 'when feature flag zoekt_scheduling_worker is disabled' do
-        it_behaves_like 'an idempotent worker' do
-          before do
-            stub_feature_flags(zoekt_scheduling_worker: false)
-          end
-
-          it 'does not call the service' do
-            expect(worker.perform).to be false
-            expect(Search::Zoekt::SchedulingWorker).not_to receive(:new)
-          end
-        end
-      end
-
-      it_behaves_like 'an idempotent worker' do
-        it 'calls the worker with each supported tasks' do
-          Search::Zoekt::SchedulingService::TASKS.each do |t|
-            expect(described_class).to receive(:perform_async).with(t)
-          end
-
-          worker.perform
-        end
+    shared_examples 'returns false without executing' do
+      it 'returns false without further execution' do
+        expect(worker.perform).to be false
+        expect(Search::Zoekt::SchedulingService).not_to receive(:execute)
+        expect(worker).not_to receive(:initiate)
       end
     end
 
-    context 'when task is provided' do
-      subject(:worker) { described_class.new }
+    context 'when prerequisites are not met' do
+      context 'when zoekt indexing is disabled' do
+        before do
+          allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(false)
+        end
 
-      let(:task) { :node_assignment }
+        it_behaves_like 'returns false without executing'
+      end
 
-      it_behaves_like 'an idempotent worker' do
-        it 'calls the service with the task' do
-          expect(Search::Zoekt::SchedulingService).to receive(:execute).with(task)
+      context 'when zoekt_scheduling_worker feature flag is disabled' do
+        before do
+          allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
+          stub_feature_flags(zoekt_scheduling_worker: false)
+        end
 
-          worker.perform(task)
+        it_behaves_like 'returns false without executing'
+      end
+
+      context 'when zoekt indexing is paused' do
+        before do
+          allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
+          stub_feature_flags(zoekt_scheduling_worker: true)
+          allow(Gitlab::CurrentSettings).to receive(:zoekt_indexing_paused?).and_return(true)
+        end
+
+        it_behaves_like 'returns false without executing'
+      end
+    end
+
+    context 'when all prerequisites are met' do
+      before do
+        allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
+        stub_feature_flags(zoekt_scheduling_worker: true)
+        allow(Gitlab::CurrentSettings).to receive(:zoekt_indexing_paused?).and_return(false)
+      end
+
+      context 'when no task is provided' do
+        it_behaves_like 'an idempotent worker' do
+          it 'enqueues a job for each supported task' do
+            Search::Zoekt::SchedulingService::TASKS.each do |task|
+              expect(described_class).to receive(:perform_async).with(task.to_s)
+            end
+
+            worker.perform
+          end
+        end
+      end
+
+      context 'when a specific task is provided' do
+        let(:task) { :node_assignment }
+
+        it_behaves_like 'an idempotent worker' do
+          it 'executes the scheduling service with the given task' do
+            expect(Search::Zoekt::SchedulingService).to receive(:execute).with(task)
+
+            worker.perform(task)
+          end
         end
       end
     end

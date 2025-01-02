@@ -4,13 +4,13 @@ module Search
   module Zoekt
     class RepoToIndexEventWorker
       include Gitlab::EventStore::Subscriber
-      include Search::Worker
+      include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
       idempotent!
 
       def handle_event(event)
-        return false unless ::Search::Zoekt.enabled?
+        return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
         Repository.id_in(event.data[:zoekt_repo_ids]).pending_or_initializing.create_bulk_tasks
       end

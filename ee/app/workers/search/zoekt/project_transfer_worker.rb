@@ -14,8 +14,7 @@ module Search
       urgency :throttled
 
       def perform(project_id, old_namespace_id)
-        return unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
-        return unless ::License.feature_available?(:zoekt_code_search)
+        return unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
         project = Project.find_by_id(project_id)
         old_namespace = Namespace.find_by_id(old_namespace_id)

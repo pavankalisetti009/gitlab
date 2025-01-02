@@ -4,7 +4,7 @@ module Search
   module Zoekt
     class OrphanedIndexEventWorker
       include Gitlab::EventStore::Subscriber
-      include Search::Worker
+      include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
       idempotent!

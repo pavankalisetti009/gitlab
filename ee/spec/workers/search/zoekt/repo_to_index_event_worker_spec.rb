@@ -15,7 +15,7 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
   it_behaves_like 'an idempotent worker' do
     context 'when zoekt is disabled' do
       before do
-        allow(Search::Zoekt).to receive(:enabled?).and_return false
+        allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return false
       end
 
       it 'does not calls message chain pending_or_initializing.create_bulk_tasks on Search::Zoekt::Repository' do
@@ -26,7 +26,7 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
 
     context 'when zoekt is enabled' do
       before do
-        allow(Search::Zoekt).to receive(:enabled?).and_return true
+        allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return true
       end
 
       it 'calls message chain pending_or_initializing.create_bulk_tasks on Search::Zoekt::Repository' do

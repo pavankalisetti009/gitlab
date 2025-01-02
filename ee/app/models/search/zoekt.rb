@@ -25,6 +25,10 @@ module Search
         Index.for_root_namespace_id(root_namespace_id).exists?
       end
 
+      def licensed_and_indexing_enabled?
+        ::License.feature_available?(:zoekt_code_search) && ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
+      end
+
       def enabled?
         return false unless ::License.feature_available?(:zoekt_code_search)
         return false unless ::Gitlab::CurrentSettings.zoekt_search_enabled?
