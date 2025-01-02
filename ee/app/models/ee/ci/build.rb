@@ -200,22 +200,18 @@ module EE
       def pages
         return {} unless pages_generator?
 
+        super.merge(expand_pages_base_variables)
+      end
+      strong_memoize_attr :pages
+
+      private
+
+      def expand_pages_base_variables
         pages_config.tap do |pages_options|
           pages_options[:path_prefix] = ExpandVariables.expand(pages_options[:path_prefix].to_s, -> {
             pages_base_variables.sort_and_expand_all
           })
         end
-      end
-
-      private
-
-      # all variables that can be used as a value in pages_options
-      def pages_base_variables
-        ::Gitlab::Ci::Variables::Collection.new
-         .concat(persisted_variables)
-         .concat(scoped_variables)
-         .concat(job_variables)
-         .concat(persisted_environment_variables)
       end
 
       def variables_hash
