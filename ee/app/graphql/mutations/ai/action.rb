@@ -49,22 +49,13 @@ module Mutations
         super
       end
 
-      # rubocop:disable GraphQL/GraphqlName -- This is unrelated to GraphQL schema.
-      class UnsafeSanitizedPrinter < GraphQL::Language::SanitizedPrinter
-        def redact_argument_value?(...)
-          false
-        end
-      end
-      # rubocop:enable GraphQL/GraphqlName
+      def graphql_query_details
+        return {} unless Feature.enabled?(:expanded_ai_logging, current_user)
 
-      def sanitized_query_string
-        return unless Feature.enabled?(:expanded_ai_logging, current_user)
-
-        # rubocop:disable GitlabSecurity/PublicSend -- Workaround for the GraphQL Ruby gem.
-        context.query.send(:with_prepared_ast) do
-          UnsafeSanitizedPrinter.new(context.query, inline_variables: true).sanitized_query_string
-        end
-        # rubocop:enable GitlabSecurity/PublicSend
+        {
+          graphql_query_string: context.query.query_string,
+          graphql_variables: context.query.variables.to_h
+        }
       end
 
       def resolve(**attributes)
@@ -76,7 +67,7 @@ module Mutations
           event_name: 'ai_action_mutation',
           ai_component: 'abstraction_layer',
           user_id: current_user.id,
-          graphql_query: sanitized_query_string
+          **graphql_query_details
         )
 
         resource_id, method, options = extract_method_params!(attributes)
