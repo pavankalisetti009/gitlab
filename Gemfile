@@ -637,7 +637,7 @@ gem 'ssh_data', '~> 1.3' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'spamcheck', '~> 1.3.0' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # Gitaly GRPC protocol definitions
-gem 'gitaly', '~> 17.5.0.pre.rc1', feature_category: :gitaly
+gem 'gitaly', '~> 17.7.0', feature_category: :gitaly
 
 # KAS GRPC protocol definitions
 gem 'gitlab-kas-grpc', '~> 17.7.0', feature_category: :deployment_management

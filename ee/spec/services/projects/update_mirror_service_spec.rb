@@ -419,7 +419,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
 
       context 'when repository changes' do
         before do
-          stub_fetch_mirror(project)
+          stub_fetch_mirror(project, repo_changed: true)
         end
 
         context 'when LFS is disabled in the project' do
@@ -569,11 +569,11 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
     end
   end
 
-  def stub_fetch_mirror(project, repository: project.repository, tags_changed: true)
-    allow(project).to receive(:fetch_mirror) { fetch_mirror(repository, tags_changed: tags_changed) }
+  def stub_fetch_mirror(project, repository: project.repository, tags_changed: true, repo_changed: false)
+    allow(project).to receive(:fetch_mirror) { fetch_mirror(repository, tags_changed: tags_changed, repo_changed: repo_changed) }
   end
 
-  def fetch_mirror(repository, tags_changed: true)
+  def fetch_mirror(repository, tags_changed: true, repo_changed: false)
     masterrev = repository.find_branch("master").dereferenced_target.id
 
     parentrev = repository.commit(masterrev).parent_id
@@ -600,7 +600,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
     # New tag that point to a blob
     repository.write_ref('refs/tags/new-tag-on-blob', 'c74175afd117781cbc983664339a0f599b5bb34e')
 
-    Gitaly::FetchRemoteResponse.new(tags_changed: tags_changed)
+    Gitaly::FetchRemoteResponse.new(tags_changed: tags_changed, repo_changed: repo_changed)
   end
 
   def modify_tag(repository, tag_name)
