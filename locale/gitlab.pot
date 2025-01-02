@@ -64114,6 +64114,9 @@ msgstr ""
 msgid "WorkItem|Show labels"
 msgstr ""
 
+msgid "WorkItem|Similar items"
+msgstr ""
+
 msgid "WorkItem|Single select"
 msgstr ""
 
@@ -64232,6 +64235,9 @@ msgid "WorkItem|The current objective"
 msgstr ""
 
 msgid "WorkItem|The current task"
+msgstr ""
+
+msgid "WorkItem|These existing items have a similar title and may represent potential duplicates."
 msgstr ""
 
 msgid "WorkItem|This %{workItemType} has open child items. If you close this %{workItemType}, they will remain open."
