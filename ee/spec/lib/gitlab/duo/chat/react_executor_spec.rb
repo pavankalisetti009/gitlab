@@ -30,6 +30,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     let(:response_service_double) { instance_double(::Gitlab::Llm::ResponseService) }
     let(:stream_response_service_double) { instance_double(::Gitlab::Llm::ResponseService) }
     let(:extra_resource) { {} }
+    let(:started_at_timestamp) { 2.seconds.ago.to_i }
     let(:current_file) { nil }
     let(:additional_context) do
       [
@@ -44,6 +45,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         resource: resource,
         ai_request: nil,
         extra_resource: extra_resource,
+        started_at: started_at_timestamp,
         current_file: current_file,
         agent_version: nil,
         additional_context: additional_context
@@ -87,6 +89,13 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       allow(Gitlab::AiGateway).to receive(:headers).and_return({})
     end
 
+    def expect_sli_error(failed)
+      expect(Gitlab::Metrics::Sli::ErrorRate[:llm_chat_first_token]).to receive(:increment).with(
+        labels: described_class::SLI_LABEL,
+        error: failed
+      )
+    end
+
     context "when answer is final" do
       let(:another_chunk) { create(:final_answer_chunk, chunk: "wer") }
       let(:first_response_double) { double }
@@ -119,9 +128,73 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
           response: second_response_double,
           options: { chunk_id: 2 }
         )
+        expect_sli_error(false)
 
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to include("Answer")
+      end
+
+      context 'when started_at was too long ago' do
+        let(:started_at_timestamp) { 10.seconds.ago.to_i }
+
+        it "emits TTFT apdex" do
+          expect(Gitlab::Metrics::Sli::Apdex[:llm_chat_first_token]).to receive(:increment).with(
+            labels: { feature_category: :duo_chat, service_class: 'Gitlab::Llm::Completions::Chat' },
+            success: false
+          )
+
+          expect(stream_response_service_double).to receive(:execute).with(
+            response: first_response_double,
+            options: { chunk_id: 1 }
+          )
+          expect(stream_response_service_double).to receive(:execute).with(
+            response: second_response_double,
+            options: { chunk_id: 2 }
+          )
+
+          expect(answer.content).to include("Answer")
+        end
+      end
+
+      context 'when started_at was recent' do
+        let(:started_at_timestamp) { 3.seconds.ago.to_i }
+
+        it "emits TTFT apdex" do
+          expect(Gitlab::Metrics::Sli::Apdex[:llm_chat_first_token]).to receive(:increment).with(
+            labels: { feature_category: :duo_chat, service_class: 'Gitlab::Llm::Completions::Chat' },
+            success: true
+          )
+
+          expect(stream_response_service_double).to receive(:execute).with(
+            response: first_response_double,
+            options: { chunk_id: 1 }
+          )
+          expect(stream_response_service_double).to receive(:execute).with(
+            response: second_response_double,
+            options: { chunk_id: 2 }
+          )
+
+          expect(answer.content).to include("Answer")
+        end
+      end
+
+      context 'when started_at is absent' do
+        let(:started_at_timestamp) { nil }
+
+        it "does not emit TTFT apdex" do
+          expect(Gitlab::Metrics::Sli::Apdex[:llm_chat_first_token]).not_to receive(:increment)
+
+          expect(stream_response_service_double).to receive(:execute).with(
+            response: first_response_double,
+            options: { chunk_id: 1 }
+          )
+          expect(stream_response_service_double).to receive(:execute).with(
+            response: second_response_double,
+            options: { chunk_id: 2 }
+          )
+
+          expect(answer.content).to include("Answer")
+        end
       end
     end
 
@@ -188,6 +261,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "returns an error answer" do
+        expect_sli_error(true)
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to eq("I'm sorry, I can't generate a response. Please try again.")
         expect(answer.error_code).to eq("A9999")
@@ -221,6 +295,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "returns an error" do
+        expect_sli_error(true)
         expect(answer.is_final).to eq(true)
         expect(answer.content).to include("I'm sorry, Duo Chat agent reached the limit before finding an " \
           "answer for your question. Please try a different prompt or clear your conversation history with /clear.")
@@ -245,6 +320,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         expect(agent).to receive(:log_info).with(
           message: "ReAct turn", react_turn: 0, event_name: 'react_turn', ai_component: 'duo_chat')
 
+        expect_sli_error(false)
         expect(answer.content).to include('foo')
       end
     end
@@ -262,6 +338,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "returns an error" do
+        expect_sli_error(true)
         expect(answer.is_final).to eq(true)
         expect(answer.content).to include("I'm sorry, I can't generate a response. Please try again.")
         expect(answer.error_code).to include("A1004")
@@ -276,6 +353,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         end
 
         it "returns an error" do
+          expect_sli_error(true)
           expect(answer.is_final).to eq(true)
           expect(answer.content).to include("I'm sorry, I can't generate a response. Please try again.")
           expect(answer.error_code).to include("A1004")
@@ -330,6 +408,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         end
 
         it "returns an error" do
+          expect_sli_error(true)
           expect(answer.is_final).to eq(true)
           expect(answer.content).to include("I'm sorry, but answering this question requires a different Duo")
           expect(answer.error_code).to include("G3001")
@@ -438,6 +517,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
       shared_examples "time out error" do
         it "returns an error" do
+          expect_sli_error(true)
           expect(answer.is_final?).to eq(true)
           expect(answer.content).to include("I'm sorry, I couldn't respond in time. Please try again.")
           expect(answer.error_code).to include("A1000")

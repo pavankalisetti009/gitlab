@@ -12,6 +12,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
   let(:request) { instance_double(ActionDispatch::Request, headers: headers) }
   let(:expected_options) { { user_agent: "user-agent" } }
   let(:current_user) { user }
+  let(:started_at) { 1731398657013 }
 
   subject(:mutation) do
     described_class.new(object: nil, context: query_context(user: user, request: request), field: nil)
@@ -46,6 +47,10 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
   describe '#resolve' do
     subject do
       mutation.resolve(**input)
+    end
+
+    before do
+      allow(::Gitlab::Metrics::System).to receive(:real_time).and_return(started_at)
     end
 
     shared_examples_for 'an AI action when feature flag disabled' do |feature_flag = :ai_global_switch|
@@ -211,7 +216,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let_it_be(:issue) { create(:issue, project: project) }
       let(:input) { { chat: { resource_id: resource_id } } }
       let(:expected_method) { :chat }
-      let(:expected_options) { { referer_url: "foobar", user_agent: "user-agent" } }
+      let(:expected_options) { { referer_url: "foobar", user_agent: "user-agent", started_at: started_at } }
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
@@ -220,7 +225,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when summarize_comments input is set' do
       let(:input) { { generate_description: { resource_id: resource_id } } }
       let(:expected_method) { :generate_description }
-      let(:expected_options) { { user_agent: "user-agent" } }
+      let(:expected_options) { { user_agent: "user-agent", started_at: started_at } }
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled'
@@ -229,7 +234,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when client_subscription_id input is set' do
       let(:input) { { generate_description: { resource_id: resource_id }, client_subscription_id: 'id' } }
       let(:expected_method) { :generate_description }
-      let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent' } }
+      let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent', started_at: started_at } }
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled'
@@ -238,7 +243,9 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when platform_origin input is set' do
       let(:input) { { generate_description: { resource_id: resource_id }, platform_origin: 'vs_code_extension' } }
       let(:expected_method) { :generate_description }
-      let(:expected_options) { { user_agent: 'user-agent', platform_origin: 'vs_code_extension' } }
+      let(:expected_options) do
+        { user_agent: 'user-agent', platform_origin: 'vs_code_extension', started_at: started_at }
+      end
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled'
@@ -251,7 +258,12 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:input) { { chat: { resource_id: resource_id }, conversation_type: 'duo_chat' } }
       let(:expected_method) { :chat }
       let(:expected_options) do
-        { referer_url: "foobar", user_agent: "user-agent", thread: instance_of(Ai::Conversation::Thread) }
+        {
+          referer_url: "foobar",
+          user_agent: "user-agent",
+          thread: instance_of(Ai::Conversation::Thread),
+          started_at: started_at
+        }
       end
 
       let(:expected_thread_id) { user.ai_conversation_threads.last.to_global_id }
@@ -282,7 +294,10 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
 
       let(:input) { { chat: { resource_id: resource_id }, thread_id: thread.to_global_id } }
       let(:expected_method) { :chat }
-      let(:expected_options) { { referer_url: "foobar", user_agent: "user-agent", thread: thread } }
+      let(:expected_options) do
+        { referer_url: "foobar", user_agent: "user-agent", thread: thread, started_at: started_at }
+      end
+
       let(:expected_thread_id) { thread.to_global_id }
 
       it_behaves_like 'an AI action'
@@ -308,7 +323,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when input is set for feature in self-managed' do
       let(:input) { { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' } }
       let(:expected_method) { :summarize_comments }
-      let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent' } }
+      let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent', started_at: started_at } }
 
       before do
         stub_const(
@@ -331,7 +346,9 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:input) { { chat: { resource_id: resource_id }, project_id: project_id } }
       let(:expected_method) { :chat }
       let(:project_id) { resource.project.to_gid.to_s }
-      let(:expected_options) { { user_agent: "user-agent", project_id: project_id, referer_url: "foobar" } }
+      let(:expected_options) do
+        { user_agent: "user-agent", project_id: project_id, referer_url: "foobar", started_at: started_at }
+      end
 
       before do
         allow(Ability).to receive(:allowed?).and_call_original
@@ -359,7 +376,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
 
       let(:input) { { explain_vulnerability: { resource_id: resource_id, include_source_code: true } } }
       let(:expected_method) { :explain_vulnerability }
-      let(:expected_options) { { include_source_code: true, user_agent: 'user-agent' } }
+      let(:expected_options) { { include_source_code: true, user_agent: 'user-agent', started_at: started_at } }
 
       it_behaves_like 'an AI action'
     end

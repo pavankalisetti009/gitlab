@@ -8,6 +8,7 @@ module Gitlab
         include Gitlab::Utils::StrongMemoize
 
         attr_accessor :current_user, :container, :resource, :ai_request, :tools_used, :extra_resource, :request_id,
+          :started_at,
           :current_file, :agent_version, :additional_context
 
         attr_reader :project
@@ -18,6 +19,7 @@ module Gitlab
         # rubocop:disable Metrics/ParameterLists -- we probably need to rethink this initializer
         def initialize(
           current_user:, container:, resource:, ai_request:, extra_resource: {}, request_id: nil,
+          started_at: nil,
           current_file: {}, agent_version: nil, additional_context: []
         )
           @current_user = current_user
@@ -28,6 +30,7 @@ module Gitlab
           @tools_used = []
           @extra_resource = extra_resource
           @request_id = request_id
+          @started_at = started_at
           @current_file = (current_file || {}).with_indifferent_access
           @agent_version = agent_version
           @additional_context = additional_context

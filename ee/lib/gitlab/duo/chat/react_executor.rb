@@ -19,6 +19,11 @@ module Gitlab
 
         MAX_ITERATIONS = 10
         MAX_RETRY_STEP_FORWARD = 2
+        MAX_TTFT_TIME = 5.seconds
+        SLI_LABEL = {
+          feature_category: ::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[:chat][:feature_category],
+          service_class: ::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[:chat][:service_class].name
+        }.freeze
 
         # @param [String] user_input - a question from a user
         # @param [Array<Tool>] tools - an array of Tools defined in the tools module.
@@ -49,12 +54,14 @@ module Gitlab
 
             log_info(message: "ReAct turn", react_turn: i, event_name: 'react_turn', ai_component: 'duo_chat')
 
+            record_first_token_error(false)
             return answer
           end
 
           raise ExhaustedLoopError
         rescue StandardError => error
           Gitlab::ErrorTracking.track_exception(error)
+          record_first_token_error(true)
           error_answer(error)
         end
         traceable :execute, name: 'Run ReAct'
@@ -234,6 +241,8 @@ module Gitlab
 
             next unless chunk
 
+            record_first_token_apex if chunk[:id] == 1 # first streamed token
+
             stream_response_handler.execute(
               response: Gitlab::Llm::Chain::StreamedResponseModifier
                           .new(chunk[:content], chunk_id: chunk[:id]),
@@ -358,6 +367,26 @@ module Gitlab
 
         def chat_feature_setting
           ::Ai::FeatureSetting.find_by_feature(:duo_chat)
+        end
+
+        def record_first_token_apex
+          return unless context.started_at
+
+          elapsed = ::Gitlab::InstrumentationHelper.round_elapsed_time(
+            context.started_at,
+            Gitlab::Utils::System.real_time
+          )
+          Gitlab::Metrics::Sli::Apdex[:llm_chat_first_token].increment(
+            labels: SLI_LABEL,
+            success: elapsed < MAX_TTFT_TIME
+          )
+        end
+
+        def record_first_token_error(failed)
+          Gitlab::Metrics::Sli::ErrorRate[:llm_chat_first_token].increment(
+            labels: SLI_LABEL,
+            error: failed
+          )
         end
       end
     end
