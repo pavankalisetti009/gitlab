@@ -2074,6 +2074,12 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
   end
 
+  describe 'seats' do
+    it "is an alias for #restricted_user_count" do
+      expect(license.method(:seats)).to eq license.method(:restricted_user_count)
+    end
+  end
+
   describe '#licensee_name' do
     subject { license.licensee_name }
 
