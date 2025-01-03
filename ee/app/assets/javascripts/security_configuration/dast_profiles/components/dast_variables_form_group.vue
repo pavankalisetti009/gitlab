@@ -126,7 +126,11 @@ export default {
         </gl-sprintf>
       </template>
 
-      <crud-component class="gl-mt-3 gl-border-t-0" :header-class="'!gl-py-0 gl-min-h-0'">
+      <crud-component
+        v-if="variableList.length"
+        class="gl-my-3 gl-border-t-0"
+        :header-class="'!gl-py-0 gl-min-h-0'"
+      >
         <gl-table-lite
           :items="variableList"
           :fields="fields"
@@ -158,7 +162,7 @@ export default {
       </crud-component>
       <gl-button
         data-testid="additional-variables-btn"
-        class="gl-mt-5"
+        class="gl-mt-3"
         variant="confirm"
         category="secondary"
         @click="showAddVariableModal"
