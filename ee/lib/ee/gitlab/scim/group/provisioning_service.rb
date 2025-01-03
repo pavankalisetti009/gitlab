@@ -83,7 +83,10 @@ module EE
           end
 
           def create_user_and_member
-            return success_response if user.save && member.errors.empty?
+            if user.save && member.errors.empty?
+              log_audit_event
+              return success_response
+            end
 
             error_response(objects: [user, identity, member])
           end
@@ -106,6 +109,18 @@ module EE
 
           def success_response
             ProvisioningResponse.new(status: :success, identity: identity)
+          end
+
+          def log_audit_event
+            audit_context = {
+              name: "user_provisioned_by_scim",
+              author: ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)'),
+              scope: @group,
+              target: user,
+              target_details: user.username,
+              message: "User was provisioned by SCIM"
+            }
+            ::Gitlab::Audit::Auditor.audit(audit_context)
           end
         end
       end
