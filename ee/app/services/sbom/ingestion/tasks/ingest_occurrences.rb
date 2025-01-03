@@ -10,37 +10,7 @@ module Sbom
         self.unique_by = %i[uuid].freeze
         self.uses = %i[id uuid].freeze
 
-        CONTAINER_IMAGE_PREFIX = "container-image:"
         PIPELINE_ATTRIBUTES_KEYS = %i[pipeline_id commit_sha].freeze
-        VulnerabilityData = Struct.new(
-          'VulnerabilityData',
-          :vulnerabilities_info,
-          :occurrence_map,
-          :key) do
-          include Gitlab::Utils::StrongMemoize
-
-          def count
-            vulnerabilities_info.dig(key, :vulnerability_count) || 0
-          end
-
-          def highest_severity
-            vulnerabilities_info.dig(key, :highest_severity)
-          end
-
-          def vulnerability_ids
-            vulnerabilities_info.dig(key, :vulnerability_ids) || []
-          end
-
-          private
-
-          def key
-            @key ||= [
-              occurrence_map.name,
-              occurrence_map.version,
-              occurrence_map.input_file_path&.delete_prefix(CONTAINER_IMAGE_PREFIX)
-            ]
-          end
-        end
 
         private
 
@@ -57,14 +27,11 @@ module Sbom
         def attributes
           ensure_uuids
           occurrence_maps.uniq!(&:uuid)
+          vulnerability_data = VulnerabilityData.new(occurrence_maps, project)
+
           occurrence_maps.filter_map do |occurrence_map|
             uuid = occurrence_map.uuid
-
-            vulnerability_data = VulnerabilityData.new(
-              vulnerabilities_info,
-              occurrence_map,
-              project
-            )
+            vulnerability_info = vulnerability_data.for(occurrence_map)
 
             new_attributes = {
               project_id: project.id,
@@ -79,15 +46,15 @@ module Sbom
               input_file_path: occurrence_map.input_file_path,
               licenses: licenses.fetch(occurrence_map.report_component, []),
               component_name: occurrence_map.name,
-              highest_severity: vulnerability_data.highest_severity,
-              vulnerability_count: vulnerability_data.count,
+              highest_severity: vulnerability_info.highest_severity,
+              vulnerability_count: vulnerability_info.count,
               traversal_ids: project.namespace.traversal_ids,
               archived: project.archived,
               ancestors: occurrence_map.ancestors,
               reachability: occurrence_map.reachability
             }
 
-            occurrence_map.vulnerability_ids = vulnerability_data.vulnerability_ids
+            occurrence_map.vulnerability_ids = vulnerability_info.vulnerability_ids
 
             if attributes_changed?(new_attributes)
               # Remove updated items from the list so that we don't have to iterate over them
@@ -97,66 +64,6 @@ module Sbom
               new_attributes
             end
           end
-        end
-
-        def vulnerabilities_info
-          @vulnerabilities_info ||= build_vulnerabilities_info
-        end
-
-        def build_vulnerabilities_info
-          # rubocop:disable CodeReuse/ActiveRecord -- highly customized query
-          occurrence_maps_values = occurrence_maps.map do |om|
-            [om.name, om.version, om.input_file_path&.delete_prefix(CONTAINER_IMAGE_PREFIX)]
-          end
-
-          as_values = Arel::Nodes::ValuesList.new(occurrence_maps_values).to_sql
-
-          # We don't use Gitlab::SQL::CTE (or Arel directly) because
-          # this table is coming from a VALUES list
-          cte_sql = "WITH occurrence_maps (name, version, path) AS (#{as_values})"
-
-          select_sql = <<-SQL
-             occurrence_maps.name,
-             occurrence_maps.version,
-             occurrence_maps.path,
-             array_to_json(array_agg(vulnerability_occurrences.vulnerability_id)) as vulnerability_ids,
-             MAX(vulnerability_occurrences.severity) as highest_severity,
-             COUNT(vulnerability_occurrences.id) as vulnerability_count
-          SQL
-
-          join_sql = <<-SQL
-            JOIN occurrence_maps
-            ON occurrence_maps.name = (vulnerability_occurrences.location -> 'dependency' -> 'package' ->> 'name')::text
-            AND occurrence_maps.version = (vulnerability_occurrences.location -> 'dependency' ->> 'version')::text
-            AND occurrence_maps.path = COALESCE(
-              vulnerability_occurrences.location ->> 'file',
-              vulnerability_occurrences.location ->> 'image'
-            )::text
-          SQL
-
-          query = ::Vulnerabilities::Finding
-                    .select(select_sql)
-                    .joins(join_sql)
-                    .by_report_types(%i[container_scanning dependency_scanning])
-                    .by_projects(project)
-                    .group("occurrence_maps.name, occurrence_maps.version, occurrence_maps.path")
-
-          full_query = [cte_sql, query.to_sql].join("\n")
-          results = ::Vulnerabilities::Finding.connection.execute(full_query)
-
-          results.each_with_object({}) do |row, result|
-            key = row.values_at('name', 'version', 'path')
-            value = {
-              highest_severity: row['highest_severity'],
-              vulnerability_count: row['vulnerability_count'],
-              vulnerability_ids: ::Gitlab::Json.parse(row['vulnerability_ids']).filter_map do |id|
-                id_i = id.to_i
-                id_i if id_i > 0
-              end
-            }
-            result[key] = value
-          end
-          # rubocop:enable CodeReuse/ActiveRecord
         end
 
         def uuids
