@@ -1,8 +1,7 @@
-query getProjectMergeRequestsCountEE(
+query getGroupMergeRequestsCount(
   $fullPath: ID!
   $search: String
   $approvedBy: [String!]
-  $approver: [String!]
   $assigneeUsernames: String
   $assigneeWildcardId: AssigneeWildcardId
   $reviewerUsername: String
@@ -22,13 +21,12 @@ query getProjectMergeRequestsCountEE(
   $environmentName: String
   $not: MergeRequestsResolverNegatedParams
 ) {
-  namespace: project(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
     openedMergeRequests: mergeRequests(
       state: opened
       search: $search
       approvedBy: $approvedBy
-      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -54,7 +52,6 @@ query getProjectMergeRequestsCountEE(
       state: merged
       search: $search
       approvedBy: $approvedBy
-      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -80,7 +77,6 @@ query getProjectMergeRequestsCountEE(
       state: closed
       search: $search
       approvedBy: $approvedBy
-      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -106,7 +102,6 @@ query getProjectMergeRequestsCountEE(
       state: all
       search: $search
       approvedBy: $approvedBy
-      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
