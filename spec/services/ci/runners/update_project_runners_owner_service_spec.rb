@@ -7,24 +7,27 @@ RSpec.describe ::Ci::Runners::UpdateProjectRunnersOwnerService, '#execute', feat
   let_it_be(:owner_project) { create(:project, group: owner_group) }
   let_it_be(:new_projects) { create_list(:project, 2) }
 
-  let(:service) { described_class.new(owner_project.id) }
-  let!(:owned_runner1) { create(:ci_runner, :project, projects: [owner_project, new_projects.first]) }
-  let!(:owned_runner2) { create(:ci_runner, :project, projects: [owner_project]) }
-  let!(:owned_runner3) { create(:ci_runner, :project, projects: [owner_project, *new_projects.reverse]) }
-  let!(:owned_runner4) { create(:ci_runner, :project, projects: [owner_project, *new_projects]) }
-  let!(:other_runner) { create(:ci_runner, :project, projects: new_projects) }
-  let!(:orphaned_runner) { create(:ci_runner, :project, :without_projects) }
+  let_it_be(:owned_runner1) { create(:ci_runner, :project, projects: [owner_project, new_projects.first]) }
+  let_it_be(:owned_runner2) { create(:ci_runner, :project, projects: [owner_project]) }
+  let_it_be(:owned_runner3) { create(:ci_runner, :project, projects: [owner_project, *new_projects.reverse]) }
+  let_it_be(:owned_runner4) { create(:ci_runner, :project, projects: [owner_project, *new_projects]) }
+  let_it_be(:other_runner) { create(:ci_runner, :project, projects: new_projects) }
+  let_it_be(:orphaned_runner) { create(:ci_runner, :project, :without_projects) }
 
-  let!(:owned_runner1_manager) { create(:ci_runner_machine, runner: owned_runner1) }
-  let!(:owned_runner2_manager) { create(:ci_runner_machine, runner: owned_runner2) }
-  let!(:owned_runner3_manager) { create(:ci_runner_machine, runner: owned_runner3) }
-  let!(:owned_runner4_manager) { create(:ci_runner_machine, runner: owned_runner4) }
+  let_it_be(:owned_runner1_manager) { create(:ci_runner_machine, runner: owned_runner1) }
+  let_it_be(:owned_runner2_manager) { create(:ci_runner_machine, runner: owned_runner2) }
+  let_it_be(:owned_runner3_manager) { create(:ci_runner_machine, runner: owned_runner3) }
+  let_it_be(:owned_runner4_manager) { create(:ci_runner_machine, runner: owned_runner4) }
+
+  let(:service) { described_class.new(owner_project.id) }
 
   subject(:execute) { service.execute }
 
-  before do
+  before_all do
     owner_project.destroy!
+  end
 
+  before do
     stub_const("#{described_class}::BATCH_SIZE", 2)
   end
 

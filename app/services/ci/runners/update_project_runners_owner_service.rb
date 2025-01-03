@@ -19,33 +19,29 @@ module Ci
           batch.delete_all
         end
 
-        lateral_query_arel = lateral_subquery.arel.as('owner_runner_project')
-
         # rubocop: disable CodeReuse/ActiveRecord -- this query is too specific to generalize on the models
-        query = Ci::Runner.project_type.with_sharding_key(project_id)
-          .joins("CROSS JOIN LATERAL (#{lateral_subquery.to_sql}) #{lateral_query_arel.name}")
-          .where(lateral_query_arel[:project_id].not_eq(project_id))
-          .select(Ci::Runner.arel_table[:id], lateral_query_arel[:project_id])
+        runner_projects =
+          Ci::RunnerProject.where(Ci::RunnerProject.arel_table[:runner_id].eq(Ci::Runner.arel_table[:id]))
+        orphaned_runners = Ci::Runner.project_type.with_sharding_key(project_id)
 
-        query.each_batch(of: BATCH_SIZE) do |batch|
-          runner_id_to_project_id = batch.limit(BATCH_SIZE).pluck(:id, :project_id)
-          runner_id_to_project_id_as_json = runner_id_to_project_id.to_h.transform_keys(&:to_s).to_json
-          id_update_query = runner_id_update_query(runner_id_to_project_id_as_json, 'id')
-          runner_id_update_query = runner_id_update_query(runner_id_to_project_id_as_json, 'runner_id')
-          runner_ids = runner_id_to_project_id.map(&:first)
+        orphaned_runners.select(:id).each_batch(of: BATCH_SIZE) do |batch|
+          runners_missing_owner_project = Ci::Runner.id_in(batch.limit(BATCH_SIZE).pluck_primary_key)
+          runners_with_fallback_owner = runners_missing_owner_project.where_exists(runner_projects.limit(1))
 
           Ci::Runner.transaction do
-            Ci::Runner.project_type.id_in(runner_ids).update_all id_update_query
-            Ci::RunnerManager.project_type.for_runner(runner_ids).update_all runner_id_update_query
+            runners_with_fallback_owner.update_all(runner_id_update_query(Ci::Runner.arel_table[:id]))
+            Ci::RunnerManager.project_type
+              .for_runner(runners_with_fallback_owner.limit(BATCH_SIZE).pluck_primary_key)
+              .update_all(runner_id_update_query(Ci::RunnerManager.arel_table[:runner_id]))
+
+            # Delete any orphaned runners that are still pointing to the project
+            #   (they are the ones which no longer have any matching ci_runner_projects records)
+            # We can afford to sidestep Ci::Runner hooks since we know by definition that
+            # there are no Ci::RunnerProject models pointing to these runners (it's the reason they are being deleted)
+            runners_missing_owner_project.project_type.with_sharding_key(project_id).delete_all
           end
         end
         # rubocop: enable CodeReuse/ActiveRecord
-
-        # Delete any orphaned runners that are still pointing to the project
-        #   (they are the ones which no longer have any matching ci_runner_projects records)
-        # We can afford to sidestep Ci::Runner hooks since we know by definition that
-        # there are no Ci::RunnerProject models pointing to these runners (it's the reason they are being deleted)
-        Ci::Runner.project_type.with_sharding_key(project_id).delete_all
 
         ServiceResponse.success
       end
@@ -54,24 +50,14 @@ module Ci
 
       attr_reader :project_id
 
-      def lateral_subquery
+      def runner_id_update_query(runner_id_column)
         # rubocop: disable CodeReuse/ActiveRecord -- this query is too specific to generalize on the models
-        Ci::RunnerProject
-          .where(Ci::RunnerProject.arel_table[:runner_id].eq(Ci::Runner.arel_table[:id]))
-          .select(:project_id)
-          .order(id: :asc)
-          .limit(1)
-        # rubocop: enable CodeReuse/ActiveRecord
-      end
+        runner_projects = Ci::RunnerProject.where(Ci::RunnerProject.arel_table[:runner_id].eq(runner_id_column))
 
-      def runner_id_update_query(runner_id_to_project_id_as_json, runner_id_column)
         <<~SQL
-          sharding_key_id = (
-            SELECT value::integer
-            FROM jsonb_each_text('#{runner_id_to_project_id_as_json}'::jsonb)
-            WHERE key::integer = #{runner_id_column}
-          )
+          sharding_key_id = (#{runner_projects.order(id: :asc).limit(1).select(:project_id).to_sql})
         SQL
+        # rubocop: enable CodeReuse/ActiveRecord
       end
     end
   end
