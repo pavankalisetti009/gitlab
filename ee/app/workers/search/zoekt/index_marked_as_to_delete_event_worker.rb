@@ -11,6 +11,8 @@ module Search
 
       idempotent!
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_indices, :zoekt_repositories], 10.minutes
+
       def handle_event(event)
         Index.id_in(event.data[:index_ids]).find_each do |idx|
           if idx.zoekt_repositories.exists?

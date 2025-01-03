@@ -10,6 +10,8 @@ module Search
       deduplicate :until_executed
       idempotent!
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_indices, :zoekt_replicas], 10.minutes
+
       def handle_event(event)
         index_ids = event.data[:index_ids]
 

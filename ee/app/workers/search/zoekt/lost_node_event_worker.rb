@@ -10,6 +10,8 @@ module Search
       idempotent!
       deduplicate :until_executed
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_nodes, :zoekt_indices, :zoekt_repositories], 10.minutes
+
       BATCH_SIZE = 10_000
 
       def handle_event(event)

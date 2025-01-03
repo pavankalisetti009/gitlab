@@ -9,6 +9,8 @@ module Search
 
       idempotent!
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_repositories, :zoekt_tasks], 10.minutes
+
       def handle_event(event)
         return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 

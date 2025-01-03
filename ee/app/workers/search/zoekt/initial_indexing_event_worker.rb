@@ -9,6 +9,8 @@ module Search
 
       idempotent!
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_repositories], 10.minutes
+
       # Create the pending zoekt_repositories and move the index to initializing
       def handle_event(event)
         index = find_index(event.data[:index_id])

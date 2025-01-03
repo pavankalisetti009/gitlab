@@ -15,6 +15,8 @@ module Search
         2_000 if Feature.enabled?(:zoekt_increased_concurrency_indexing_task_worker, Feature.current_request)
       }
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_nodes, :zoekt_indices, :zoekt_tasks], 10.minutes
+
       def perform(project_id, task_type, options = {})
         return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
