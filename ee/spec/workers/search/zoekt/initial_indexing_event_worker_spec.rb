@@ -51,6 +51,23 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
         expect(zoekt_repositories_for_index(zoekt_index).pluck(:project_id)).to match_array(expected_project_ids)
         expect(zoekt_repositories_for_index(zoekt_index).all?(&:pending?)).to be true
       end
+
+      context 'when number of projects is larger than the batch size' do
+        let(:first_project_id) { expected_project_ids.min }
+
+        before do
+          stub_const("#{described_class}::BATCH_SIZE", 1)
+          stub_const("#{described_class}::INSERT_LIMIT", 1)
+        end
+
+        it 'creates one zoekt repository and does not change index state when batch size is 1' do
+          expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
+          expect { consume_event(subscriber: described_class, event: event) }
+            .not_to change { zoekt_index.reload.state }.from('pending')
+          expect(zoekt_repositories_for_index(zoekt_index).pluck(:project_id)).to contain_exactly(first_project_id)
+          expect(zoekt_repositories_for_index(zoekt_index).all?(&:pending?)).to be true
+        end
+      end
     end
 
     context 'when metadata has only project_id_from' do
