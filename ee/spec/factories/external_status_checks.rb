@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :external_status_check, class: 'MergeRequests::ExternalStatusCheck' do
     project
-    external_url { FFaker::Internet.http_url }
+    external_url { FFaker::Internet.unique.http_url }
 
     sequence :name do |i|
       "rule #{i}"
