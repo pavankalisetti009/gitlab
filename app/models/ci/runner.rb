@@ -401,7 +401,14 @@ module Ci
       when 'group_type'
         ::Group.find_by_id(sharding_key_id)
       when 'project_type'
-        ::Project.find_by_id(sharding_key_id)
+        # NOTE: when a project is deleted, the respective ci_runner_projects records are not immediately
+        # deleted by the LFK, so we might find join records that point to a non-existing project
+        project = ::Project.find_by_id(sharding_key_id)
+        return project if project
+
+        project_ids = runner_projects.order(:id).pluck(:project_id)
+        projects_added_to_runner_asc = Arel.sql("array_position(ARRAY[#{project_ids.join(',')}]::bigint[], id)")
+        Project.order(projects_added_to_runner_asc).find_by_id(project_ids)
       end
     end
     strong_memoize_attr :owner
