@@ -250,9 +250,7 @@ RSpec.describe API::MergeRequests, feature_category: :source_code_management do
           create_merge_request(assignee_ids: [user.id, user2.id])
 
           expect(response).to have_gitlab_http_status(:created)
-          expect(json_response['assignees'].size).to eq(2)
-          expect(json_response['assignees'].first['name']).to eq(user.name)
-          expect(json_response['assignees'].second['name']).to eq(user2.name)
+          expect(json_response['assignees'].pluck('name')).to match_array([user.name, user2.name])
           expect(json_response.dig('assignee', 'name')).to eq(user.name)
         end
       end
