@@ -1,5 +1,4 @@
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import sidebarEventHub from '~/sidebar/event_hub';
 import userPermissionsQuery from '~/merge_requests/components/reviewers/queries/user_permissions.query.graphql';
 
@@ -14,12 +13,8 @@ export default {
         };
       },
       update: (data) => data.project?.mergeRequest?.userPermissions || {},
-      skip() {
-        return !this.glFeatures.reviewerAssignDrawer;
-      },
     },
   },
-  mixins: [glFeatureFlagsMixin()],
   data() {
     return {
       userPermissions: {},
@@ -28,8 +23,7 @@ export default {
   computed: {
     tertiaryActionsButtons() {
       return [
-        this.glFeatures.reviewerAssignDrawer &&
-          this.userPermissions.adminMergeRequest &&
+        this.userPermissions.adminMergeRequest &&
           this.mr.mergeRequestApproversAvailable && {
             text: s__('MergeChecks|Assign reviewers'),
             onClick() {
