@@ -130,7 +130,7 @@ export default {
       const { id, value, type } = this.selectedVariable;
       this.$emit('addVariable', {
         variable: id,
-        value,
+        value: value.toString(),
         type,
       });
     },

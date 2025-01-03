@@ -5,6 +5,8 @@ import {
   GlLink,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlTableLite,
+  GlFriendlyWrap,
 } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DastVariablesFormGroup from 'ee/security_configuration/dast_profiles/components/dast_variables_form_group.vue';
@@ -28,8 +30,11 @@ describe('DastVariablesFormGroup', () => {
       stubs: {
         GlFormGroup,
         GlSprintf,
+        GlLink,
+        GlTableLite,
         DastVariablesModal: DastVariablesModalStub,
         GlDisclosureDropdownItem,
+        GlFriendlyWrap,
       },
     });
   };
@@ -40,6 +45,7 @@ describe('DastVariablesFormGroup', () => {
   const findHelpText = () => wrapper.findComponent(GlSprintf);
   const findModal = () => wrapper.findComponent(DastVariablesModal);
   const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findTableLite = () => wrapper.findComponent(GlTableLite);
 
   beforeEach(() => {
     createComponent();
@@ -48,6 +54,7 @@ describe('DastVariablesFormGroup', () => {
   it('mounts correctly', () => {
     expect(wrapper.exists()).toBe(true);
     expect(findFormGroup().exists()).toBe(true);
+    expect(findTableLite().exists()).toBe(true);
   });
 
   it('renders the add variable button correctly', () => {
