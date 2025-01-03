@@ -21,8 +21,11 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
       end
 
       context 'with dormant members', :enable_admin_mode do
-        before do
+        let_it_be(:active_assignment) do
           create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: Time.zone.today)
+        end
+
+        let_it_be(:dormant_assignment) do
           create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: 91.days.ago)
         end
 
@@ -33,6 +36,14 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
           it 'updates last_dormant_member_review_at' do
             expect { perform_work }.to change { group.namespace_settings.reload.last_dormant_member_review_at }
+          end
+
+          context 'when the dormant member is an owner of the group' do
+            it 'does not remove the owner' do
+              group.add_owner(dormant_assignment.user)
+
+              expect { perform_work }.not_to change { Members::DeletionSchedule.count }
+            end
           end
         end
 
