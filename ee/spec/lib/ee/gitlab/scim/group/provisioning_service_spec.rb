@@ -51,6 +51,14 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
       it 'does not create the SAML identity' do
         expect { service.execute }.not_to change { Identity.count }
       end
+
+      it 'does not log user_provisioned_by_scim audit event' do
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(hash_including({
+          name: "user_provisioned_by_scim"
+        })).and_call_original
+
+        service.execute
+      end
     end
 
     context 'when valid params' do
@@ -171,6 +179,36 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
             expect { result }.to change { User.count }.by(1)
             expect(user.username).to eq('ricky.the.raccoon1')
           end
+        end
+      end
+
+      context 'for audit' do
+        let(:author) { ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)') }
+
+        before do
+          stub_licensed_features(extended_audit_events: true)
+        end
+
+        it 'logs user_provisioned_by_scim audit event' do
+          expect { service.execute }.to change { AuditEvent.count }.by(1)
+
+          expect(AuditEvent.last).to have_attributes({
+            attributes: hash_including({
+              "entity_id" => group.id,
+              "entity_type" => "Group",
+              "author_id" => author.id,
+              "target_details" => user.username,
+              "target_id" => user.id
+            }),
+            details: hash_including({
+              event_name: "user_provisioned_by_scim",
+              author_class: author.class.to_s,
+              author_name: author.name,
+              custom_message: "User was provisioned by SCIM",
+              target_type: "User",
+              target_details: user.username
+            })
+          })
         end
       end
     end
