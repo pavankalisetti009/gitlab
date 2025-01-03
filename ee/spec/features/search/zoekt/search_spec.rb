@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settings_enabled, feature_category: :global_search do
+RSpec.describe 'Zoekt search', :js, :disable_rate_limiter, :zoekt_settings_enabled, feature_category: :global_search do
   include ListboxHelpers
 
   let_it_be(:user) { create(:user) }
@@ -30,8 +30,11 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     end
   end
 
-  before do
+  it 'finds files with a regex search and allows filtering down again by project' do
+    stub_feature_flags(zoekt_multimatch_frontend: false)
     stub_feature_flags(zoekt_cross_namespace_search: false)
+
+    zoekt_truncate_index!
 
     zoekt_ensure_project_indexed!(project1)
     zoekt_ensure_project_indexed!(project2)
@@ -49,22 +52,21 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     wait_for_requests
 
     choose_group(group)
-  end
-
-  it 'finds files with a regex search and allows filtering down again by project',
-    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/490987' do
-    stub_feature_flags(zoekt_multimatch_frontend: false)
 
     select_search_scope('Code')
     wait_for_all_requests
     submit_search('user.*egex')
 
     expect(page).to have_selector('.file-content .blob-content', count: 2, wait: 60)
+    expect(page).to have_link('Exact code search (powered by Zoekt)',
+      href: help_page_path('user/search/exact_code_search.md'))
     expect(page).to have_button('Copy file path')
 
     choose_project(project1)
 
     expect(page).to have_selector('.file-content .blob-content', count: 1, wait: 60)
+    expect(page).to have_link('Exact code search (powered by Zoekt)',
+      href: help_page_path('user/search/exact_code_search.md'))
 
     allow(Ability).to receive(:allowed?).and_call_original
     expect(Ability).to receive(:allowed?).with(anything, :read_blob, anything).twice.and_return(false)
@@ -73,17 +75,6 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     select_search_scope('Code')
 
     expect(page).not_to have_selector('.file-content .blob-content')
-  end
-
-  it 'displays that exact code search is enabled', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/490988' do
-    stub_feature_flags(zoekt_multimatch_frontend: false)
-
-    choose_project(project1)
-
-    select_search_scope('Code')
-    submit_search('test')
-
-    expect(page).to have_link('Exact code search (powered by Zoekt)',
-      href: help_page_path('user/search/exact_code_search.md'))
+    zoekt_truncate_index!
   end
 end
