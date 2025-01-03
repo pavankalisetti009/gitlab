@@ -1,14 +1,17 @@
 <script>
 import { GlIcon, GlPopover, GlButton, GlModal } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
+import { TYPENAME_USER } from '~/graphql_shared/constants';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import mergeRequestQueryVariablesMixin from '~/vue_merge_request_widget/mixins/merge_request_query_variables';
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import MergeChecksMessage from '~/vue_merge_request_widget/components/checks/message.vue';
 import requestedChangesQuery from './queries/requested_changes.query.graphql';
+import removeChangeRequestMutation from './queries/remove_change_request.mutation.graphql';
 import updateMergeRequestMutation from './queries/update_merge_request.mutation.graphql';
 
 export default {
-  name: 'MergeChecksUnresolvedDiscussions',
+  name: 'MergeChecksRequestedChanges',
   components: {
     GlIcon,
     GlPopover,
@@ -42,12 +45,20 @@ export default {
     return {
       state: {},
       updating: false,
+      removingChangeRequest: false,
       showConfirmModal: false,
+      showRemoveConfirmModal: false,
     };
   },
   computed: {
     canMerge() {
       return this.state.userPermissions?.canMerge;
+    },
+    currentUserRequestedChanges() {
+      const currentUserId =
+        gon.current_user_id && convertToGraphQLId(TYPENAME_USER, gon.current_user_id);
+
+      return this.state.changeRequesters?.nodes.some((u) => u.id === currentUserId);
     },
     overrideRequestedChanges() {
       return this.check.status === 'WARNING';
@@ -65,11 +76,20 @@ export default {
     },
     tertiaryActionsButtons() {
       return [
+        this.currentUserRequestedChanges && {
+          text: __('Remove'),
+          category: 'default',
+          loading: this.$apollo.queries.state.loading || this.removingChangeRequest,
+          disabled: this.updating,
+          onClick: () => {
+            this.showRemoveConfirmModal = true;
+          },
+        },
         {
           text: this.actionButtonText,
           category: 'default',
           loading: this.$apollo.queries.state.loading || this.updating,
-          disabled: !this.canMerge,
+          disabled: !this.canMerge || this.removingChangeRequest,
           onClick: () => {
             this.showConfirmModal = true;
           },
@@ -106,6 +126,18 @@ export default {
       });
 
       this.updating = false;
+    },
+    async removeChangeRequest() {
+      this.removingChangeRequest = true;
+
+      await this.$apollo.mutate({
+        mutation: removeChangeRequestMutation,
+        variables: {
+          ...this.mergeRequestQueryVariables,
+        },
+      });
+
+      this.removingChangeRequest = false;
     },
   },
   modalPrimaryActionBypass: {
@@ -178,6 +210,18 @@ export default {
         <template v-else>
           {{ $options.i18n.overrideWarningText }}
         </template>
+      </gl-modal>
+      {{ showRemoveConfirmModal }}
+      <gl-modal
+        v-model="showRemoveConfirmModal"
+        modal-id="remove-requested-changes-modal"
+        :action-primary="$options.modalPrimaryActionRemove"
+        :action-secondary="$options.modalSecondaryAction"
+        :title="__('Remove change request')"
+        data-testid="remove-requested-changes-modal"
+        @primary="removeChangeRequest"
+      >
+        {{ __('Are you sure you want to remove your change request?') }}
       </gl-modal>
     </template>
   </merge-checks-message>

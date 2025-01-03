@@ -7865,6 +7865,9 @@ msgstr ""
 msgid "Are you sure you want to remove this nickname?"
 msgstr ""
 
+msgid "Are you sure you want to remove your change request?"
+msgstr ""
+
 msgid "Are you sure you want to reset the error tracking access token?"
 msgstr ""
 
@@ -46531,6 +46534,9 @@ msgid "Remove bypass"
 msgstr ""
 
 msgid "Remove card"
+msgstr ""
+
+msgid "Remove change request"
 msgstr ""
 
 msgid "Remove child"

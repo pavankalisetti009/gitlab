@@ -3,6 +3,11 @@ query requestedChanges($projectPath: ID!, $iid: String!) {
     id
     mergeRequest(iid: $iid) {
       id
+      changeRequesters {
+        nodes {
+          id
+        }
+      }
       userPermissions {
         canMerge
       }

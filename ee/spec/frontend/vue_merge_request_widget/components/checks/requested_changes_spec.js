@@ -7,14 +7,17 @@ import waitForPromises from 'helpers/wait_for_promises';
 import RequestedChangesComponent from 'ee/vue_merge_request_widget/components/checks/requested_changes.vue';
 import requestedChangesQuery from 'ee/vue_merge_request_widget/components/checks/queries/requested_changes.query.graphql';
 import updateMergeRequestMutation from 'ee/vue_merge_request_widget/components/checks/queries/update_merge_request.mutation.graphql';
+import removeChangeRequestMutation from 'ee/vue_merge_request_widget/components/checks/queries/remove_change_request.mutation.graphql';
 
 Vue.use(VueApollo);
 
 describe('Requested changes merge checks component', () => {
   let wrapper;
   let updateMergeRequestMutationMock;
+  let removeChangeRequestMutationMock;
 
   const findGlModal = () => wrapper.findComponent(GlModal);
+  const findRemoveChangeRequestModel = () => wrapper.findAllComponents(GlModal).at(1);
   const findActionButtons = () => wrapper.findAllByTestId('extension-actions-button');
 
   function createComponent({ canMerge = true, status = 'FAILED' } = {}) {
@@ -28,8 +31,19 @@ describe('Requested changes merge checks component', () => {
         },
       },
     });
+    removeChangeRequestMutationMock = jest.fn().mockResolvedValue({
+      data: {
+        mergeRequestDestroyRequestedChanges: {
+          mergeRequest: {
+            id: '1',
+          },
+          errors: [],
+        },
+      },
+    });
     const apolloProvider = createMockApollo([
       [updateMergeRequestMutation, updateMergeRequestMutationMock],
+      [removeChangeRequestMutation, removeChangeRequestMutationMock],
       [
         requestedChangesQuery,
         jest.fn().mockResolvedValue({
@@ -38,6 +52,13 @@ describe('Requested changes merge checks component', () => {
               id: '1',
               mergeRequest: {
                 id: '1',
+                changeRequesters: {
+                  nodes: [
+                    {
+                      id: 'gid://gitlab/User/1',
+                    },
+                  ],
+                },
                 userPermissions: {
                   canMerge,
                 },
@@ -175,6 +196,53 @@ describe('Requested changes merge checks component', () => {
         iid: '1',
         overrideRequestedChanges: false,
         projectPath: 'gitlab-org/gitlab',
+      });
+    });
+  });
+
+  describe('removing a change request', () => {
+    describe('when current user has not requested changes', () => {
+      beforeEach(async () => {
+        gon.current_user_id = 2;
+
+        createComponent();
+
+        await waitForPromises();
+      });
+
+      it('does not render remove button', () => {
+        expect(findActionButtons()).toHaveLength(1);
+      });
+    });
+
+    describe('when current user has requested changes', () => {
+      beforeEach(async () => {
+        gon.current_user_id = 1;
+
+        createComponent();
+
+        await waitForPromises();
+      });
+
+      it('renders remove button', () => {
+        expect(findActionButtons()).toHaveLength(2);
+      });
+
+      it('shows confirm modal when clicking remove button', async () => {
+        findActionButtons().at(0).vm.$emit('click');
+
+        await Vue.nextTick();
+
+        expect(findRemoveChangeRequestModel().props('visible')).toBe(true);
+      });
+
+      it('sends GraphQL mutation when confirming in modal', () => {
+        findRemoveChangeRequestModel().vm.$emit('primary');
+
+        expect(removeChangeRequestMutationMock).toHaveBeenCalledWith({
+          iid: '1',
+          projectPath: 'gitlab-org/gitlab',
+        });
       });
     });
   });
