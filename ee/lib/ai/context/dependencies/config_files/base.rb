@@ -64,7 +64,6 @@ module Ai
             error(e)
           end
 
-          # This hash matches the current XrayReport payload schema
           def payload
             return unless valid?
 

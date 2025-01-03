@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Xray::StoreDependenciesService, feature_category: :code_suggestions do
   let_it_be(:project) { create(:project) }
-  let(:language) { 'Ruby' }
+  let(:language) { 'ruby' }
   let(:dependencies) { %w[rails devise attr_encrypted grape kaminari] }
-  let(:dependencies_hash) { dependencies.map { |name| { "name" => name } } }
+  let(:dependencies_hash) { dependencies.map { |name| { 'name' => name } } }
 
   describe '#execute' do
     subject(:execute) { described_class.new(project, language, dependencies).execute }
@@ -31,7 +31,7 @@ RSpec.describe CodeSuggestions::Xray::StoreDependenciesService, feature_category
     end
 
     context 'when there is a report for this programming language already' do
-      let_it_be_with_reload(:report_for_ruby) { create(:xray_report, project: project, lang: 'Ruby') }
+      let_it_be_with_reload(:report_for_ruby) { create(:xray_report, project: project, lang: 'ruby') }
 
       it 'responds with success' do
         is_expected.to be_success

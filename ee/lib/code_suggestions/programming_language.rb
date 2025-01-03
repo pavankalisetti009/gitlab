@@ -136,12 +136,7 @@ module CodeSuggestions
       }
     }.freeze
 
-    # This constant needs to be in sync with
-    # https://gitlab.com/gitlab-org/code-creation/repository-x-ray/
-    # -/blob/6634564818dffdeac938014a190b0c604b1da6e0/cmd/scan/main.go#L46
-    # TODO: This constant is used in Ai::Context::Dependencies::LockFiles. We won't need
-    # to keep this in sync with Repository X-Ray after we migrate its functionality to
-    # the monolith (see https://gitlab.com/gitlab-org/gitlab/-/issues/476177.)
+    # These values are used for the `xray_reports.lang` field
     LANGUAGE_XRAY_NAMING = {
       'C' => 'c',
       'C++' => 'cpp',

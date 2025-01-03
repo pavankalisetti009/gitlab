@@ -18,7 +18,7 @@ module Projects
     # hallucinate additional precaution needs to be taken to make
     # sure that malformed report will not break code generation flow
     def libs
-      payload["libs"] || []
+      payload['libs'] || []
     end
   end
 end
