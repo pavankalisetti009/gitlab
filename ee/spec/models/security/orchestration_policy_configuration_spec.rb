@@ -1697,7 +1697,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                 end
               end
 
-              context "with match_on_inclusion_license" do
+              context "with license_types and match_on_inclusion_license" do
                 let(:license) do
                   { name: "MIT License" }
                 end
@@ -1705,25 +1705,11 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                 before do
                   rule[:licenses] = { license_list_type.to_sym => [license] }
                   rule[:match_on_inclusion_license] = true
-                end
-
-                specify do
-                  expect(errors).to be_empty
-                end
-              end
-
-              context "with license_types" do
-                let(:license) do
-                  { name: "MIT License" }
-                end
-
-                before do
-                  rule[:licenses] = { license_list_type.to_sym => [license] }
                   rule[:license_types] = %w[BSD MIT]
                 end
 
                 specify do
-                  expect(errors).to be_empty
+                  expect(errors).to contain_exactly("property '/#{type}/0/rules/0' is invalid: error_type=oneOf")
                 end
               end
 
