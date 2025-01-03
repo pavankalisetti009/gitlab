@@ -11,6 +11,9 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_repositories], 10.minutes
 
+      BATCH_SIZE = 1_000
+      INSERT_LIMIT = 10_000
+
       # Create the pending zoekt_repositories and move the index to initializing
       def handle_event(event)
         index = find_index(event.data[:index_id])
@@ -19,8 +22,7 @@ module Search
         namespace = find_namespace(index.namespace_id)
         return if namespace.nil?
 
-        create_repositories(namespace: namespace, index: index)
-        index.initializing!
+        index.initializing! if create_repositories(namespace: namespace, index: index)
       end
 
       private
@@ -47,11 +49,26 @@ module Search
       end
 
       def create_repositories_with_scope(namespace:, index:)
-        ::Namespace.by_root_id(namespace.id).project_namespaces.each_batch do |project_namespaces_batch|
+        number_of_inserts = 0
+        fully_inserted = true
+
+        ::Namespace.by_root_id(namespace.id).project_namespaces.each_batch(of: BATCH_SIZE) do |project_namespaces_batch|
           scope = ::Project.by_project_namespace(project_namespaces_batch.select(:id))
           scope = yield(scope) if block_given?
-          insert_repositories!(index: index, project_ids: scope.pluck_primary_key)
+
+          project_ids = scope.without_zoekt_repositories.pluck_primary_key
+          next if project_ids.empty?
+
+          result = insert_repositories(index: index, project_ids: project_ids)
+          number_of_inserts += result.count
+
+          if number_of_inserts >= INSERT_LIMIT
+            fully_inserted = false
+            break
+          end
         end
+
+        fully_inserted
       end
 
       def determine_project_id_range(index)
@@ -60,7 +77,7 @@ module Search
         index.metadata['project_id_from']..index.metadata['project_id_to']
       end
 
-      def insert_repositories!(index:, project_ids:)
+      def insert_repositories(index:, project_ids:)
         data = project_ids.map do |p_id|
           { zoekt_index_id: index.id, project_id: p_id, project_identifier: p_id }
         end

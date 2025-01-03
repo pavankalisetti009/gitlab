@@ -414,6 +414,10 @@ module EE
           :repository_languages, :group, namespace: :owner)
       end
 
+      scope :without_zoekt_repositories, -> do
+        left_joins(:zoekt_repositories).where(zoekt_repositories: { id: nil })
+      end
+
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true
 
       delegate :ci_minutes_usage, to: :shared_runners_limit_namespace

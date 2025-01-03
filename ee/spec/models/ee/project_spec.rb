@@ -785,6 +785,16 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.without_zoekt_repositories' do
+      let_it_be(:not_indexed_project) { create(:project) }
+      let_it_be(:zoekt_repository) { create(:zoekt_repository) }
+      let_it_be(:indexed_project) { zoekt_repository.project }
+
+      it 'only matches indexed projects' do
+        expect(described_class.without_zoekt_repositories).to contain_exactly(not_indexed_project)
+      end
+    end
+
     describe '.without_security_setting' do
       let_it_be(:project_with_security_setting) { create(:project) }
       let_it_be(:project_without_security_setting) { create(:project) }

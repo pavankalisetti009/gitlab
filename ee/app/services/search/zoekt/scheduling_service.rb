@@ -33,6 +33,8 @@ module Search
       DOT_COM_ROLLOUT_LIMIT = 2000
       DOT_COM_ROLLOUT_SEARCH_LIMIT = 500
 
+      INITIAL_INDEXING_LIMIT = 10
+
       attr_reader :task
 
       def self.execute!(task)
@@ -305,10 +307,8 @@ module Search
       end
 
       def initial_indexing
-        execute_every 10.minutes do
-          Index.pending.find_each do |index|
-            Gitlab::EventStore.publish(InitialIndexingEvent.new(data: { index_id: index.id }))
-          end
+        ::Search::Zoekt::Index.pending.ordered.limit(INITIAL_INDEXING_LIMIT).each do |index|
+          Gitlab::EventStore.publish(InitialIndexingEvent.new(data: { index_id: index.id }))
         end
       end
 
