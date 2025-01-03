@@ -186,6 +186,31 @@
         ]
       }
     },
+    "licenses": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the licenses to match including the package exceptions.",
+      "properties": {
+        "denied": {
+          "$ref": "#/$defs/licenses_with_package_exclusions"
+        },
+        "allowed": {
+          "$ref": "#/$defs/licenses_with_package_exclusions"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "denied"
+          ]
+        },
+        {
+          "required": [
+            "allowed"
+          ]
+        }
+      ]
+    },
     "commits": {
       "type": "string",
       "description": "Specifies the commits to match.",
@@ -235,11 +260,11 @@
         }
       },
       "then": {
-        "oneOf": [
+        "anyOf": [
           {
             "required": [
               "type",
-              "match_on_inclusion",
+              "match_on_inclusion_license",
               "license_types",
               "license_states"
             ]
@@ -247,9 +272,8 @@
           {
             "required": [
               "type",
-              "match_on_inclusion_license",
-              "license_types",
-              "license_states"
+              "license_states",
+              "licenses"
             ]
           }
         ]
@@ -271,5 +295,56 @@
       }
     }
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "licenses_with_package_exclusions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "additionalItems": false,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "packages": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "excluding": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "purls": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1000,
+                    "additionalItems": false,
+                    "items": {
+                      "minLength": 1,
+                      "maxLength": 1024,
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "purls"
+                ]
+              }
+            },
+            "required": [
+              "excluding"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    }
+  }
 }

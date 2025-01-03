@@ -1513,7 +1513,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
             end
           end
 
-          context "when vulnerability_age is contains additional key" do
+          context "when vulnerability_age contains additional key" do
             let(:vulnerability_age) { valid_vulnerability_age.merge(additional: true) }
 
             specify do
@@ -1617,6 +1617,268 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
               expect(errors.count).to be(1)
               expect(errors.first).to match(
                 "property '/#{type}/0/rules/0/license_states/0' is not one of")
+            end
+          end
+        end
+
+        describe "licenses" do
+          let(:rule) do
+            {
+              type: "license_finding",
+              branches: %w[master],
+              license_states: %w[newly_detected detected]
+            }
+          end
+
+          shared_examples_for "licenses with package exclusions" do
+            context "without the name key" do
+              let(:license) { {} }
+
+              before do
+                rule[:licenses] = { license_list_type.to_sym => [license] }
+              end
+
+              specify do
+                expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0' is missing required keys: name")
+              end
+            end
+
+            context "with the name key" do
+              let(:license) { { name: "License" } }
+
+              context "when the license name is too long" do
+                let(:license) do
+                  { name: "a" * 256 }
+                end
+
+                before do
+                  rule[:licenses] = { license_list_type.to_sym => [license] }
+                end
+
+                specify do
+                  expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/name' is invalid: error_type=maxLength")
+                end
+              end
+
+              context "when the license name is too short" do
+                let(:license) do
+                  { name: "" }
+                end
+
+                before do
+                  rule[:licenses] = { license_list_type.to_sym => [license] }
+                end
+
+                specify do
+                  expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/name' is invalid: error_type=minLength")
+                end
+              end
+
+              context "when the license list has too many items" do
+                before do
+                  licenses = []
+                  1001.times { |i| licenses << { name: "License #{i}" } }
+                  rule[:licenses] = { license_list_type.to_sym => licenses }
+                end
+
+                specify do
+                  expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}' is invalid: error_type=maxItems")
+                end
+              end
+
+              context "when the license list has duplicated items" do
+                before do
+                  licenses = [{ name: "License" }, { name: "License" }]
+                  rule[:licenses] = { license_list_type.to_sym => licenses }
+                end
+
+                specify do
+                  expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}' is invalid: error_type=uniqueItems")
+                end
+              end
+
+              context "with match_on_inclusion_license" do
+                let(:license) do
+                  { name: "MIT License" }
+                end
+
+                before do
+                  rule[:licenses] = { license_list_type.to_sym => [license] }
+                  rule[:match_on_inclusion_license] = true
+                end
+
+                specify do
+                  expect(errors).to be_empty
+                end
+              end
+
+              context "with license_types" do
+                let(:license) do
+                  { name: "MIT License" }
+                end
+
+                before do
+                  rule[:licenses] = { license_list_type.to_sym => [license] }
+                  rule[:license_types] = %w[BSD MIT]
+                end
+
+                specify do
+                  expect(errors).to be_empty
+                end
+              end
+
+              context "when the packages key does not contains the excluding key" do
+                before do
+                  license[:packages] = {}
+                  rule[:licenses] = { license_list_type.to_sym => [license] }
+                end
+
+                specify do
+                  expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages' is missing required keys: excluding")
+                end
+              end
+
+              context "when the packages key contains the excluding key" do
+                context "when the excluding key does not contains the purls key" do
+                  before do
+                    license[:packages] = { excluding: {} }
+                    rule[:licenses] = { license_list_type.to_sym => [license] }
+                  end
+
+                  specify do
+                    expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding' is missing required keys: purls")
+                  end
+                end
+
+                context "when the excluding key contains the purls key" do
+                  context "when the purls list is empty" do
+                    before do
+                      license[:packages] = { excluding: { purls: [] } }
+                      rule[:licenses] = { license_list_type.to_sym => [license] }
+                    end
+
+                    specify do
+                      expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls' is invalid: error_type=minItems")
+                    end
+                  end
+
+                  context "when the purls list has too many items" do
+                    before do
+                      purls = []
+                      1001.times { |i| purls << "purl #{i}" }
+                      license[:packages] = { excluding: { purls: purls } }
+                      rule[:licenses] = { license_list_type.to_sym => [license] }
+                    end
+
+                    specify do
+                      expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls' is invalid: error_type=maxItems")
+                    end
+                  end
+
+                  context "when the purl is not a string" do
+                    before do
+                      license[:packages] = { excluding: { purls: [1] } }
+                      rule[:licenses] = { license_list_type.to_sym => [license] }
+                    end
+
+                    specify do
+                      expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' is not of type: string")
+                    end
+                  end
+
+                  context "when the purl is a string" do
+                    before do
+                      license[:packages] = { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+                      rule[:licenses] = { license_list_type.to_sym => [license] }
+                    end
+
+                    specify do
+                      expect(errors).to be_empty
+                    end
+
+                    context "when excluding key contains additional keys" do
+                      before do
+                        license[:packages] = { excluding: { purls: ["pkg:gem/bundler@1.0.0"], additional_key: true } }
+                        rule[:licenses] = { license_list_type.to_sym => [license] }
+                      end
+
+                      specify do
+                        expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/additional_key' is invalid: error_type=schema")
+                      end
+                    end
+
+                    context "when the purl is too short" do
+                      before do
+                        license[:packages] = { excluding: { purls: [""] } }
+                        rule[:licenses] = { license_list_type.to_sym => [license] }
+                      end
+
+                      specify do
+                        expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' is invalid: error_type=minLength")
+                      end
+                    end
+
+                    context "when the purl is too long" do
+                      before do
+                        license[:packages] = { excluding: { purls: ["a" * 1025] } }
+                        rule[:licenses] = { license_list_type.to_sym => [license] }
+                      end
+
+                      specify do
+                        expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' is invalid: error_type=maxLength")
+                      end
+                    end
+                  end
+                end
+              end
+
+              context "with additional key" do
+                before do
+                  rule[:licenses] = { license_list_type.to_sym => [license], additional_key: true }
+                end
+
+                specify do
+                  expect(errors.count).to eq(1)
+                  expect(errors.first).to(match "property '/#{type}/0/rules/0/licenses/additional_key' is invalid")
+                end
+              end
+            end
+          end
+
+          context "with allowed licenses" do
+            let(:license_list_type) { "allowed" }
+
+            it_behaves_like "licenses with package exclusions"
+          end
+
+          context "with denied licenses" do
+            let(:license_list_type) { "denied" }
+
+            it_behaves_like "licenses with package exclusions"
+          end
+
+          context "with allowed and denied licenses" do
+            let(:license) do
+              { name: "MIT License" }
+            end
+
+            before do
+              rule[:licenses] = { allowed: [license], denied: [license] }
+            end
+
+            specify do
+              expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses' is invalid: error_type=oneOf")
+            end
+          end
+
+          context "without allowed and denied licenses" do
+            before do
+              rule[:licenses] = {}
+            end
+
+            specify do
+              expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses' is missing required keys: allowed",
+                "property '/#{type}/0/rules/0/licenses' is missing required keys: denied")
             end
           end
         end

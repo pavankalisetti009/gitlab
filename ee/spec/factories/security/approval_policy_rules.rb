@@ -36,6 +36,65 @@ FactoryBot.define do
       end
     end
 
+    trait :license_finding_with_allowed_licenses do
+      type { Security::ApprovalPolicyRule.types[:license_finding] }
+      content do
+        {
+          type: 'license_finding',
+          branches: [],
+          license_states: %w[newly_detected detected],
+          licenses: {
+            allowed: [
+              {
+                name: "MIT License",
+                packages: { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+              }
+            ]
+          }
+        }
+      end
+    end
+
+    trait :license_finding_with_denied_licenses do
+      type { Security::ApprovalPolicyRule.types[:license_finding] }
+      content do
+        {
+          type: 'license_finding',
+          branches: [],
+          license_states: %w[newly_detected detected],
+          licenses: {
+            denied: [
+              {
+                name: "MIT License",
+                packages: { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+              }
+            ]
+          }
+        }
+      end
+    end
+
+    trait :license_finding_with_current_and_new_keys do
+      type { Security::ApprovalPolicyRule.types[:license_finding] }
+      content do
+        {
+          type: 'license_finding',
+          branches: [],
+          match_on_inclusion_license: true,
+          license_types: %w[BSD MIT],
+          license_states: %w[newly_detected detected],
+          licenses: {
+            allowed: [
+              {
+                name: "MIT License",
+                packages: { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+              }
+            ]
+          }
+        }
+      end
+    end
+
     trait :any_merge_request do
       type { Security::ApprovalPolicyRule.types[:any_merge_request] }
       content do
