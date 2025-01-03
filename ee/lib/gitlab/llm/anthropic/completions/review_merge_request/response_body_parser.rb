@@ -66,38 +66,12 @@ module Gitlab
               %r{([^\s]*?)="(.*?)"}
             end
 
-            def code_suggestion_regex
-              # NOTE: We might get multiple code suggestions on the same line as that's still valid so we should take
-              #   that possibility of extra `<from>` into account here.
-              #   Also, sometimes LLM returns tags inline like `<to>  some text</to>` for single line suggestions which
-              #   we need to handle as well just in case.
-              %r{(.*?)^(?:<from>\n(.*?)^</from>\n<to>(.*?)^</to>|<from>(.+?)</from>\n<to>(.+?)</to>)(.*?)(?=<from>|\z)}m
-            end
-
             def parsed_attrs(attrs)
               Hash[attrs.scan(comment_attr_regex)]
             end
 
             def parsed_content(body)
-              body_with_suggestions = body
-                .scan(code_suggestion_regex)
-                .map do |header, multiline_from, multiline_to, inline_from, inline_to, footer|
-                  # NOTE: We're just interested in counting the existing lines as LLM doesn't
-                  #   seem to be able to reliably set this by itself.
-                  #   Also, since we have two optional matching pairs so either `multiline_from` and `multiline_to` or
-                  #   `inline_from` and `inline_to` would exist.
-                  line_offset_below = (multiline_from || inline_from).lines.count - 1
-
-                  # NOTE: Inline code suggestion needs to be wrapped in new lines to format it correctly.
-                  comment = inline_to.nil? ? multiline_to : "\n#{inline_to}\n"
-
-                  "#{header}```suggestion:-0+#{line_offset_below}#{comment}```#{footer}"
-                end
-
-              # NOTE: Return original body if the body doesn't have any expected suggestion format.
-              return body unless body_with_suggestions.present?
-
-              body_with_suggestions.join
+              ::Gitlab::Llm::Utils::CodeSuggestionFormatter.parse(body)
             end
           end
         end
