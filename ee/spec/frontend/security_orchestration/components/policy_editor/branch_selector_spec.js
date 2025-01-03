@@ -109,6 +109,7 @@ describe('BranchSelector', () => {
       expect(findDropdown().props('toggleText')).toBe('test, test1');
       expect(findAddButton().exists()).toBe(true);
       expect(findResetButton().exists()).toBe(true);
+      expect(findBranchSelectorModal().props('hasValidation')).toBe(false);
     });
 
     it('resets all branches', async () => {
