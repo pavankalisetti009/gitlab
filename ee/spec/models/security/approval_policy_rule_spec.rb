@@ -38,6 +38,24 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
 
         it { is_expected.to be_valid }
       end
+
+      context 'when license_finding_with_allowed_licenses' do
+        let(:trait) { :license_finding_with_allowed_licenses }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when license_finding_with_denied_licenses' do
+        let(:trait) { :license_finding_with_denied_licenses }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when license_finding defines the license list using both the current and new set of keys' do
+        let(:trait) { :license_finding_with_current_and_new_keys }
+
+        it { is_expected.to be_valid }
+      end
     end
   end
 
