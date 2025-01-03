@@ -5,7 +5,7 @@ module Ci
     class UpdateProjectRunnersOwnerWorker
       include Gitlab::EventStore::Subscriber
 
-      data_consistency :always
+      data_consistency :sticky
 
       idempotent!
 

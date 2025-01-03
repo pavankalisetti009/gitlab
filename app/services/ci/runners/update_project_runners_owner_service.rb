@@ -11,8 +11,8 @@ module Ci
 
       def execute
         Ci::Runner.project_type.with_sharding_key(@project_id).find_each do |runner|
-          # Recompute runner owner
-          next unless runner.owner
+          # Recompute runner owner, deleting any runners that become orphaned
+          next Ci::Runners::UnregisterRunnerService.new(runner, runner.token).execute if runner.owner.nil?
 
           runner.update_columns(sharding_key_id: runner.owner.id)
           runner.runner_managers.update_all(sharding_key_id: runner.owner.id)

@@ -19,10 +19,14 @@ RSpec.describe ::Ci::Runners::UpdateProjectRunnersOwnerService, '#execute', feat
     owner_project.destroy!
   end
 
-  it 'updates sharding_key_id on affected runners' do
+  it 'updates sharding_key_id on affected runners', :aggregate_failures do
+    expect_next_instance_of(Ci::Runners::UnregisterRunnerService, owned_runner2, owned_runner2.token) do |service|
+      expect(service).to receive(:execute).and_call_original
+    end
+
     expect { execute }
       .to change { owned_runner1.reload.sharding_key_id }.from(owner_project.id).to(new_project.id)
-      .and not_change { owned_runner2.reload.sharding_key_id }.from(owner_project.id) # no other project to change to
+      .and change { Ci::Runner.find_by_id(owned_runner2) }.to(nil) # delete, since no other project to adopt it
       .and not_change { other_runner.reload.sharding_key_id }.from(new_project.id) # runner's project is not affected
       .and not_change { orphaned_runner.reload.sharding_key_id }
 
