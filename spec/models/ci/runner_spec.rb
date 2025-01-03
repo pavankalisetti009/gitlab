@@ -2276,4 +2276,43 @@ RSpec.describe Ci::Runner, type: :model, factory_default: :keep, feature_categor
       it { is_expected.to contain_exactly(instance_runner, group_runner, project_runner) }
     end
   end
+
+  describe '.with_sharding_key' do
+    subject(:scope) { described_class.with_runner_type(runner_type).with_sharding_key(sharding_key_id) }
+
+    let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
+    let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project, other_project]) }
+
+    context 'with group_type' do
+      let(:runner_type) { 'group_type' }
+
+      context 'when sharding_key_id exists' do
+        let(:sharding_key_id) { group.id }
+
+        it { is_expected.to contain_exactly(group_runner) }
+      end
+
+      context 'when sharding_key_id does not exist' do
+        let(:sharding_key_id) { non_existing_record_id }
+
+        it { is_expected.to eq [] }
+      end
+    end
+
+    context 'with project_type' do
+      let(:runner_type) { 'project_type' }
+
+      context 'when sharding_key_id exists' do
+        let(:sharding_key_id) { project.id }
+
+        it { is_expected.to contain_exactly(project_runner) }
+      end
+
+      context 'when sharding_key_id does not exist' do
+        let(:sharding_key_id) { non_existing_record_id }
+
+        it { is_expected.to eq [] }
+      end
+    end
+  end
 end

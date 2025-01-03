@@ -137,6 +137,7 @@ module Ci
     scope :created_by_admins, -> { with_creator_id(User.admins.ids) }
 
     scope :with_creator_id, ->(value) { where(creator_id: value) }
+    scope :with_sharding_key, ->(value) { where(sharding_key_id: value) }
 
     scope :belonging_to_group_or_project_descendants, ->(group_id) {
       group_ids = Ci::NamespaceMirror.by_group_and_descendants(group_id).select(:namespace_id)
