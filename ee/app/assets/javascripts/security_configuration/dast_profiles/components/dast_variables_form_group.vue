@@ -4,12 +4,14 @@ import {
   GlButton,
   GlSprintf,
   GlLink,
-  GlTable,
+  GlTableLite,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlFriendlyWrap,
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import DastVariablesModal from './dast_variables_modal.vue';
 
 export default {
@@ -25,11 +27,13 @@ export default {
     'user/application_security/dast/browser/configuration/variables',
   ),
   components: {
+    CrudComponent,
     GlFormGroup,
     GlButton,
     GlSprintf,
     GlLink,
-    GlTable,
+    GlTableLite,
+    GlFriendlyWrap,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     DastVariablesModal,
@@ -48,9 +52,9 @@ export default {
   data() {
     return {
       fields: [
-        { key: 'variable', label: __('Variable') },
-        { key: 'value', label: __('Value') },
-        { key: 'actions', label: '' },
+        { key: 'variable', label: __('Variable'), tdClass: 'gl-max-w-0' },
+        { key: 'value', label: __('Value'), tdClass: 'gl-max-w-0' },
+        { key: 'actions', label: '', tdClass: 'gl-max-w-0, gl-text-right' },
       ],
       existingVariables: this.value,
       additionalVariables: [],
@@ -102,14 +106,14 @@ export default {
       };
     },
   },
+  wrapSymbols: [',', '_'],
 };
 </script>
 
 <template>
   <div class="row">
     <gl-form-group
-      class="gl-mb-0"
-      :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }"
+      class="col-md-12 gl-mb-0"
       :optional="true"
       :optional-text="$options.i18n.optionalText"
       :label="$options.i18n.label"
@@ -121,28 +125,40 @@ export default {
           </template>
         </gl-sprintf>
       </template>
-      <gl-table
-        :items="variableList"
-        :fields="fields"
-        bordered
-        hover
-        class="dast-variables-table"
-        borderless
-      >
-        <template #cell(actions)="{ item }">
-          <gl-disclosure-dropdown
-            category="tertiary"
-            variant="default"
-            size="small"
-            icon="ellipsis_v"
-            no-caret
-          >
-            <gl-disclosure-dropdown-item :item="editItem(item)" />
-            <gl-disclosure-dropdown-item :item="deleteItem(item)" />
-          </gl-disclosure-dropdown> </template
-      ></gl-table>
+
+      <crud-component class="gl-mt-3 gl-border-t-0" :header-class="'!gl-py-0 gl-min-h-0'">
+        <gl-table-lite
+          :items="variableList"
+          :fields="fields"
+          bordered
+          hover
+          class="dast-variables-table gl-mb-0 gl-border-none"
+          borderless
+        >
+          <template #cell(variable)="{ item }">
+            <gl-friendly-wrap :text="item.variable" :symbols="$options.wrapSymbols" />
+          </template>
+
+          <template #cell(value)="{ item }">
+            <gl-friendly-wrap :text="item.value" :symbols="$options.wrapSymbols" />
+          </template>
+
+          <template #cell(actions)="{ item }">
+            <gl-disclosure-dropdown
+              category="tertiary"
+              variant="default"
+              size="small"
+              icon="ellipsis_v"
+              no-caret
+            >
+              <gl-disclosure-dropdown-item :item="editItem(item)" />
+              <gl-disclosure-dropdown-item :item="deleteItem(item)" />
+            </gl-disclosure-dropdown> </template
+        ></gl-table-lite>
+      </crud-component>
       <gl-button
         data-testid="additional-variables-btn"
+        class="gl-mt-5"
         variant="confirm"
         category="secondary"
         @click="showAddVariableModal"
