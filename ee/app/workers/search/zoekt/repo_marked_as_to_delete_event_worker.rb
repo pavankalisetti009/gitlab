@@ -9,6 +9,8 @@ module Search
 
       idempotent!
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_repositories, :zoekt_tasks], 10.minutes
+
       def handle_event(event)
         Search::Zoekt::Repository.where(id: event.data[:zoekt_repo_ids]).each_batch do |batch| # rubocop:disable CodeReuse/ActiveRecord -- Not relevant
           batch.each do |repo|

@@ -13,6 +13,10 @@ module Search
       idempotent!
       urgency :low
 
+      defer_on_database_health_signal :gitlab_main,
+        [:zoekt_nodes, :zoekt_enabled_namespaces, :zoekt_replicas, :zoekt_indices, :zoekt_repositories, :zoekt_tasks],
+        10.minutes
+
       def perform(task = nil)
         return false unless Search::Zoekt.licensed_and_indexing_enabled?
         return false if Feature.disabled?(:zoekt_scheduling_worker, Feature.current_request)

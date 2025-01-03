@@ -10,6 +10,8 @@ module Search
       urgency :low
       idempotent!
 
+      defer_on_database_health_signal :gitlab_main, [:zoekt_repositories], 10.minutes
+
       def handle_event(event)
         repo = ::Search::Zoekt::Repository.find_by_id(event.data[:zoekt_repository_id])
         return if repo.nil?
