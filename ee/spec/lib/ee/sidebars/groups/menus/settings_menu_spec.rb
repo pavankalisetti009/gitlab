@@ -27,6 +27,42 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
 
       subject { menu.renderable_items.find { |e| e.item_id == item_id } }
 
+      describe 'Service accounts menu', feature_category: :user_management do
+        let(:item_id) { :service_accounts }
+
+        before do
+          stub_licensed_features(service_accounts: true)
+        end
+
+        it { is_expected.to be_present }
+
+        context 'when `service_accounts_crud` feature flag is disabled' do
+          before do
+            stub_feature_flags(service_accounts_crud: false)
+          end
+
+          it { is_expected.not_to be_present }
+        end
+
+        context 'when it is not a root group' do
+          let_it_be_with_refind(:subgroup) do
+            create(:group, :private, parent: group, owners: [owner])
+          end
+
+          let(:container) { subgroup }
+
+          it { is_expected.not_to be_present }
+        end
+
+        context 'when service accounts feature is not included in the license' do
+          before do
+            stub_licensed_features(service_accounts: false)
+          end
+
+          it { is_expected.not_to be_present }
+        end
+      end
+
       describe 'Roles and permissions menu', feature_category: :user_management do
         using RSpec::Parameterized::TableSyntax
 

@@ -20,6 +20,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       end
       resource :merge_requests, only: [:update]
       resources :roles_and_permissions, only: [:index, :new, :edit, :show]
+      resources :service_accounts, path: 'service_accounts(/*vueroute)', only: [:index]
       resource :analytics, only: [:show, :update]
       resource :gitlab_duo, only: [:show], controller: 'gitlab_duo'
       namespace :gitlab_duo do
@@ -248,8 +249,6 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
     resource :roadmap, only: [:show], controller: 'roadmap'
 
     post '/restore' => '/groups#restore', as: :restore
-
-    resources :service_accounts, path: 'service_accounts(/*vueroute)', action: :index
 
     resources :work_items, only: [], param: :iid do
       member do
