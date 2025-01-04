@@ -75,6 +75,20 @@ content:
        file: pipeline_execution_jobs.yml
 `;
 
+export const mockPipelineExecutionWithConfigurationManifest = `type: pipeline_execution_policy
+name: Include external file
+description: This policy enforces pipeline execution with configuration from external file
+pipeline_config_strategy: inject_ci
+enabled: false
+skip_ci:
+   allowed: true
+content:
+   include:
+     - project: gitlab-policies/js6
+       ref: main
+       file: pipeline_execution_jobs.yml
+`;
+
 export const mockPipelineScanExecutionObject = {
   type: 'pipeline_execution_policy',
   name: 'Include external file',
@@ -103,6 +117,11 @@ export const mockProjectPipelineExecutionPolicy = {
       fullPath: 'project/path',
     },
   },
+};
+
+export const mockProjectPipelineExecutionWithConfigurationPolicy = {
+  ...mockProjectPipelineExecutionPolicy,
+  yaml: mockPipelineExecutionWithConfigurationManifest,
 };
 
 export const mockGroupPipelineExecutionPolicy = {
