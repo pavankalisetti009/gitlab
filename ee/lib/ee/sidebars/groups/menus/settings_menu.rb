@@ -15,7 +15,8 @@ module EE
             super
 
             if can?(context.current_user, :admin_group, context.group)
-              insert_item_after(:general, roles_and_permissions_menu_item)
+              insert_item_after(:general, service_accounts_menu_item)
+              insert_item_after(:service_accounts, roles_and_permissions_menu_item)
               insert_item_after(:integrations, webhooks_menu_item)
               insert_item_after(:ci_cd, analytics_menu_item)
               insert_item_after(:usage_quotas, gitlab_duo_settings_menu_item)
@@ -44,6 +45,17 @@ module EE
             add_item(menu_item) if can_any?(context.current_user, Array(abilities), context.group)
           end
 
+          def service_accounts_menu_item
+            return ::Sidebars::NilMenuItem.new(item_id: :service_accounts) unless service_accounts_available?
+
+            ::Sidebars::MenuItem.new(
+              title: _('Service Accounts'),
+              link: group_settings_service_accounts_path(context.group),
+              active_routes: { controller: :service_accounts },
+              item_id: :service_accounts
+            )
+          end
+
           def roles_and_permissions_menu_item
             return ::Sidebars::NilMenuItem.new(item_id: :roles_and_permissions) unless custom_roles_enabled?
 
@@ -53,6 +65,12 @@ module EE
               active_routes: { controller: :roles_and_permissions },
               item_id: :roles_and_permissions
             )
+          end
+
+          def service_accounts_available?
+            ::Feature.enabled?(:service_accounts_crud, context.group.root_ancestor) &&
+              context.group.root? &&
+              can?(context.current_user, :admin_service_accounts, context.group)
           end
 
           def custom_roles_enabled?

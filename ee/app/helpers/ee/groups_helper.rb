@@ -23,11 +23,6 @@ module EE
       })
     end
 
-    override :can_admin_service_accounts?
-    def can_admin_service_accounts?(group)
-      Ability.allowed?(current_user, :admin_service_accounts, group)
-    end
-
     override :remove_group_message
     def remove_group_message(group, permanently_remove)
       return super if permanently_remove

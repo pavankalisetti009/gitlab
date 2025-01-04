@@ -737,18 +737,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#can_admin_service_accounts?', feature_category: :user_management do
-    it 'returns true when current_user can admin members' do
-      stub_licensed_features(service_accounts: true)
-
-      expect(helper.can_admin_service_accounts?(group)).to be(true)
-    end
-
-    it 'returns false when current_user can not admin members' do
-      expect(helper.can_admin_service_accounts?(group)).to be(false)
-    end
-  end
-
   describe '#access_level_roles_user_can_assign' do
     subject { helper.access_level_roles_user_can_assign(group, roles) }
 

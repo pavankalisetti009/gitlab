@@ -102,15 +102,19 @@ RSpec.describe 'Group routing', "routing" do
     end
   end
 
-  describe 'service accounts' do
-    it 'routes to the new service account' do
-      expect(get('/groups/gitlabhq/-/service_accounts/new')).to route_to('groups/service_accounts#index', group_id: 'gitlabhq', vueroute: 'new')
-    end
-  end
-
   describe Groups::Settings::RolesAndPermissionsController, 'routing' do
     it 'routes to the new member role' do
       expect(get('/groups/gitlabhq/-/settings/roles_and_permissions/new')).to route_to('groups/settings/roles_and_permissions#new', group_id: 'gitlabhq')
+    end
+  end
+
+  describe Groups::Settings::ServiceAccountsController, 'routing' do
+    it 'routes to service accounts' do
+      expect(get('/groups/gitlabhq/-/settings/service_accounts')).to route_to('groups/settings/service_accounts#index', group_id: 'gitlabhq')
+    end
+
+    it 'routes to the vue route' do
+      expect(get('/groups/gitlabhq/-/settings/service_accounts/access_tokens')).to route_to('groups/settings/service_accounts#index', group_id: 'gitlabhq', vueroute: 'access_tokens')
     end
   end
 end
