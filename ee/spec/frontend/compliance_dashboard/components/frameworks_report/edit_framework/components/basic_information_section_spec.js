@@ -23,7 +23,7 @@ describe('Basic information section', () => {
     migratePipelineToPolicyPath: '/migratepipelinetopolicypath',
     pipelineConfigurationFullPathEnabled: true,
     pipelineConfigurationEnabled: true,
-    pipelineExecutionPolicyPath: '/policypath?type=1',
+    pipelineExecutionPolicyPath: '/policypath',
   };
 
   const invalidFeedback = (input) =>
