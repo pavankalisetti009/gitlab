@@ -4,7 +4,10 @@ import PolicyDrawerLayout from 'ee/security_orchestration/components/policy_draw
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { trimText } from 'helpers/text_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
-import { mockProjectPipelineExecutionPolicy } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import {
+  mockProjectPipelineExecutionPolicy,
+  mockProjectPipelineExecutionWithConfigurationPolicy,
+} from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 
 describe('PipelineExecutionDrawer', () => {
   let wrapper;
@@ -16,11 +19,12 @@ describe('PipelineExecutionDrawer', () => {
   const findFileSummary = () => wrapper.findByTestId('file');
   const findPolicyDrawerLayout = () => wrapper.findComponent(PolicyDrawerLayout);
   const findLink = (parent) => parent.findComponent(GlLink);
+  const findConfigurationRow = () => wrapper.findByTestId('policy-configuration');
 
-  const createComponent = ({ propsData } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(PipelineExecutionDrawer, {
       propsData,
-      provide: { namespaceType: NAMESPACE_TYPES.PROJECT },
+      provide: { namespaceType: NAMESPACE_TYPES.PROJECT, ...provide },
       stubs: {
         PolicyDrawerLayout,
       },
@@ -53,6 +57,7 @@ describe('PipelineExecutionDrawer', () => {
       createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
 
       expect(findSummary().exists()).toBe(true);
+      expect(findConfigurationRow().exists()).toBe(false);
       expect(findSummaryFields()).toHaveLength(1);
       const text = trimText(findSummaryFields().at(0).text());
       expect(text).toContain('Project : gitlab-policies/js6');
@@ -79,6 +84,26 @@ describe('PipelineExecutionDrawer', () => {
         '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
       );
       expect(link.text()).toBe('pipeline_execution_jobs.yml');
+    });
+  });
+
+  describe('configuration', () => {
+    it('renders default configuration row if there is no configuration in policy', () => {
+      createComponent({
+        propsData: { policy: mockProjectPipelineExecutionPolicy },
+        provide: { glFeatures: { securityPoliciesSkipCi: true } },
+      });
+
+      expect(findConfigurationRow().exists()).toBe(true);
+    });
+
+    it('renders configuration row when there is a configuration', () => {
+      createComponent({
+        propsData: { policy: mockProjectPipelineExecutionWithConfigurationPolicy },
+        provide: { glFeatures: { securityPoliciesSkipCi: true } },
+      });
+
+      expect(findConfigurationRow().exists()).toBe(true);
     });
   });
 });

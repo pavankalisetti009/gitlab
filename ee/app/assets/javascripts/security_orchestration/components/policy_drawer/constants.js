@@ -34,6 +34,7 @@ export const COMPLIANCE_FRAMEWORKS_DESCRIPTION_NO_PROJECTS = s__(
 export const STATUS_TITLE = s__('SecurityOrchestration|Status');
 
 export const SUMMARY_TITLE = s__('SecurityOrchestration|Summary');
+export const CONFIGURATION_TITLE = s__('SecurityOrchestration|Configuration');
 
 export const INHERITED_LABEL = s__(
   'SecurityOrchestration|This policy is inherited from %{namespace}',

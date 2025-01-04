@@ -2,12 +2,17 @@
 import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
-import { SUMMARY_TITLE } from 'ee/security_orchestration/components/policy_drawer/constants';
+import {
+  SUMMARY_TITLE,
+  CONFIGURATION_TITLE,
+} from 'ee/security_orchestration/components/policy_drawer/constants';
 import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
 import DrawerLayout from '../drawer_layout.vue';
 import InfoRow from '../info_row.vue';
+import SkipCiConfiguration from './skip_ci_configuration.vue';
 
 export default {
   i18n: {
@@ -17,13 +22,16 @@ export default {
       'SecurityOrchestration|Enforce the following pipeline execution policy:',
     ),
     summary: SUMMARY_TITLE,
+    configuration: CONFIGURATION_TITLE,
   },
   name: 'PipelineExecutionDrawer',
   components: {
     InfoRow,
     DrawerLayout,
     GlLink,
+    SkipCiConfiguration,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     policy: {
       type: Object,
@@ -31,6 +39,9 @@ export default {
     },
   },
   computed: {
+    hasSkipCiConfiguration() {
+      return this.glFeatures.securityPoliciesSkipCi;
+    },
     humanizedActions() {
       return humanizeActions([this.parsedYaml]);
     },
@@ -39,6 +50,9 @@ export default {
     },
     parsedYaml() {
       return fromYaml({ manifest: this.policy.yaml });
+    },
+    configuration() {
+      return this.parsedYaml.skip_ci;
     },
   },
   methods: {
@@ -95,6 +109,13 @@ export default {
             </li>
           </ul>
         </div>
+      </info-row>
+      <info-row
+        v-if="hasSkipCiConfiguration"
+        data-testid="policy-configuration"
+        :label="$options.i18n.configuration"
+      >
+        <skip-ci-configuration :configuration="configuration" />
       </info-row>
     </template>
   </drawer-layout>
