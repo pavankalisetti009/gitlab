@@ -76,6 +76,9 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
           it_behaves_like 'sets approvals_required to 0'
           it_behaves_like 'triggers policy bot comment', :any_merge_request, false, requires_approval: false
           it_behaves_like 'merge request without scan result violations'
+          it_behaves_like 'does not trigger policy bot comment for archived project' do
+            let(:archived_project) { merge_request.project }
+          end
 
           it 'does not create a log' do
             expect(Gitlab::AppJsonLogger).not_to receive(:info)
@@ -93,6 +96,9 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
           it_behaves_like 'sets approvals_required to 0'
           it_behaves_like 'triggers policy bot comment', :any_merge_request, false, requires_approval: false
           it_behaves_like 'merge request without scan result violations'
+          it_behaves_like 'does not trigger policy bot comment for archived project' do
+            let(:archived_project) { merge_request.project }
+          end
         end
       end
 
@@ -110,6 +116,9 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
 
           it_behaves_like 'does not update approval rules'
           it_behaves_like 'triggers policy bot comment', :any_merge_request, true, requires_approval: false
+          it_behaves_like 'does not trigger policy bot comment for archived project' do
+            let(:archived_project) { merge_request.project }
+          end
         end
 
         context 'when approvals are required but approval_merge_request_rules have been made optional' do
@@ -129,6 +138,9 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
           end
 
           it_behaves_like 'triggers policy bot comment', :any_merge_request, true
+          it_behaves_like 'does not trigger policy bot comment for archived project' do
+            let(:archived_project) { merge_request.project }
+          end
         end
 
         where(:policy_commits, :merge_request_commits, :expected_violation) do
@@ -220,6 +232,10 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
             it_behaves_like 'triggers policy bot comment', :any_merge_request, false, requires_approval: false
             it_behaves_like 'merge request without scan result violations' do
               let(:scan_result_policy_read) { scan_result_policy_read_with_commits }
+            end
+
+            it_behaves_like 'does not trigger policy bot comment for archived project' do
+              let(:archived_project) { merge_request.project }
             end
           end
 

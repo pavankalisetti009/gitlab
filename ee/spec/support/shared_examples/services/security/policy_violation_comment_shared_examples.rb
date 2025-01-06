@@ -53,3 +53,11 @@ RSpec.shared_examples_for "does not trigger policy bot comment" do
     execute
   end
 end
+
+RSpec.shared_examples_for 'does not trigger policy bot comment for archived project' do
+  before do
+    archived_project.update!(archived: true)
+  end
+
+  it_behaves_like 'does not trigger policy bot comment'
+end

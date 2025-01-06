@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::SyncPolicyViolationCommentWorker, feature_category: :security_policy_management do
   describe '#perform' do
-    let_it_be(:project) { create(:project) }
+    let_it_be_with_reload(:project) { create(:project) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project) }
     let(:merge_request_id) { merge_request.id }
     let(:licensed_feature) { true }
@@ -52,6 +52,12 @@ RSpec.describe Security::SyncPolicyViolationCommentWorker, feature_category: :se
           { 'report_type' => 'license_scanning', 'violated_policy' => false, 'requires_approval' => true })
 
       perform
+    end
+
+    it_behaves_like 'does not trigger policy bot comment for archived project' do
+      subject(:execute) { perform }
+
+      let(:archived_project) { project }
     end
 
     context 'when there are violations' do

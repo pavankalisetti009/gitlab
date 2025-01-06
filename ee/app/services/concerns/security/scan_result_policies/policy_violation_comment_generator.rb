@@ -32,6 +32,8 @@ module Security
       def bot_message_disabled?(merge_request)
         project = merge_request.project
 
+        return true if project.archived?
+
         security_policy_ids = merge_request.approval_rules.report_approver
                                            .applicable_to_branch(merge_request.target_branch)
                                            .filter_map(&:scan_result_policy_id)
