@@ -44,7 +44,10 @@ module EE
         strong_memoize_attr :versioned_deployments_limit
 
         def versioned_deployments_count
-          ::PagesDeployment.count_versioned_deployments_for(project, versioned_deployments_limit + 1)
+          ::PagesDeployment.count_versioned_deployments_for(
+            project.root_ancestor.all_projects,
+            versioned_deployments_limit + 1
+          )
         end
         strong_memoize_attr :versioned_deployments_count
 
