@@ -33,14 +33,6 @@ RSpec.describe Search::ClusterHealthCheck::Elastic, feature_category: :global_se
       described_class.healthy?
     end
 
-    it 'does not log the utilization metrics if the feature flag is disabled' do
-      stub_feature_flags(log_advanced_search_cluster_health_elastic: false)
-
-      expect(logger).not_to receive(:info)
-
-      described_class.healthy?
-    end
-
     it 'returns false if an error is raised' do
       allow(instance).to receive(:cluster_status_red?).and_raise(StandardError, 'error')
 
