@@ -49,6 +49,10 @@ FactoryBot.define do
     state { ::Search::Zoekt::Index.state_value(:ready) }
   end
 
+  trait :pending_deletion do
+    state { ::Search::Zoekt::Index.state_value(:pending_deletion) }
+  end
+
   trait :negative_reserved_storage_bytes do
     reserved_storage_bytes { -100 }
   end

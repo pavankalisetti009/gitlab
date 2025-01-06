@@ -613,18 +613,21 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#index_to_delete_check' do
     let(:task) { :index_to_delete_check }
 
-    it 'publishes an IndexMarkedAsToDeleteEvent with indices that should be deleted' do
-      stubbed_orphaned_indices = Search::Zoekt::Index.all
+    context 'when indices exist in should_be_deleted scope' do
+      it 'publishes an IndexMarkedAsToDeleteEvent' do
+        expect(Search::Zoekt::Index).to receive_message_chain(:should_be_deleted, :exists?).and_return(true)
 
-      expect(Search::Zoekt::Index).to receive_message_chain(:should_be_deleted,
-        :each_batch).and_yield(stubbed_orphaned_indices)
-      expect(stubbed_orphaned_indices).to receive(:pluck_primary_key).and_return([4, 5, 6])
+        expect { execute_task }
+          .to publish_event(Search::Zoekt::IndexMarkedAsToDeleteEvent).with({})
+      end
+    end
 
-      expected_data = { index_ids: [4, 5, 6] }
+    context 'when no indices exist in should_be_deleed_scope' do
+      it 'does not publish an event' do
+        expect(Search::Zoekt::Index).to receive_message_chain(:should_be_deleted, :exists?).and_return(false)
 
-      expect { execute_task }
-        .to publish_event(Search::Zoekt::IndexMarkedAsToDeleteEvent)
-        .with(expected_data)
+        expect { execute_task }.not_to publish_event(Search::Zoekt::IndexMarkedAsToDeleteEvent)
+      end
     end
   end
 
