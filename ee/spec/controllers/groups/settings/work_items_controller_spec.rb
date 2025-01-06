@@ -14,6 +14,10 @@ RSpec.describe Groups::Settings::WorkItemsController, type: :controller, feature
     subject(:request) { get :show, params: { group_id: group.to_param } }
 
     context 'when user is not authorized' do
+      before do
+        stub_licensed_features(custom_fields: true)
+      end
+
       it 'returns 404' do
         request
 
@@ -23,7 +27,7 @@ RSpec.describe Groups::Settings::WorkItemsController, type: :controller, feature
 
     context 'when user is authorized' do
       before do
-        group.add_owner(user)
+        group.add_maintainer(user)
       end
 
       context 'when custom_fields_feature is not available' do
