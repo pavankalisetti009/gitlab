@@ -76,3 +76,22 @@ export const removeUnnecessaryDashes = (manifest) => {
  * Create GraphQL Client for security policies
  */
 export const gqClient = defaultClient;
+
+/**
+ * Transforms a key-value mapping into an array of objects suitable for use with
+ * GlCollapsibleListbox component.
+ *
+ * @param {Object} textMap - An object where keys represent values and values represent display text.
+ * @returns {Array<Object>} An array of objects, each containing 'value' and 'text' properties.
+ *
+ * @example
+ * const mapping = { 'key1': 'Text 1', 'key2': 'Text 2' };
+ * const listBoxItems = mapToListboxItems(mapping);
+ * // returns: [{ value: 'key1', text: 'Text 1' }, { value: 'key2', text: 'Text 2' }]
+ */
+
+export const mapToListboxItems = (textMap) =>
+  Object.entries(textMap).map(([value, text]) => ({
+    value,
+    text,
+  }));

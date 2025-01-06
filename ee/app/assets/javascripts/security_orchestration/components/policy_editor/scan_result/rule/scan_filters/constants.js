@@ -1,4 +1,5 @@
 import { s__ } from '~/locale';
+import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const SEVERITY = 'severity';
 export const STATUS = 'status';
@@ -59,9 +60,7 @@ export const ALLOWED_DENIED_OPTIONS = {
   [DENIED]: s__('ScanResultPolicy|Denied'),
 };
 
-export const ALLOWED_DENIED_LISTBOX_ITEMS = Object.entries(ALLOWED_DENIED_OPTIONS).map(
-  ([value, text]) => ({ value, text }),
-);
+export const ALLOWED_DENIED_LISTBOX_ITEMS = mapToListboxItems(ALLOWED_DENIED_OPTIONS);
 
 export const AGE_DAY = 'day';
 export const AGE_WEEK = 'week';

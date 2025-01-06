@@ -17,6 +17,7 @@ import {
   REPORT_TYPE_CONTAINER_SCANNING,
 } from '~/vue_shared/security_reports/constants';
 import { isGroup } from 'ee/security_orchestration/components/utils';
+import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const EDITOR_MODE_RULE = 'rule';
 export const EDITOR_MODE_YAML = 'yaml';
@@ -216,10 +217,7 @@ export const BRANCH_TYPES = {
   [REGULAR_BRANCH]: s__('SecurityOrchestration|Add regular branches'),
 };
 
-export const BRANCH_TYPES_ITEMS = Object.entries(BRANCH_TYPES).map(([value, text]) => ({
-  value,
-  text,
-}));
+export const BRANCH_TYPES_ITEMS = mapToListboxItems(BRANCH_TYPES);
 
 export const EXCEPTION_KEY = 'exception';
 export const NO_EXCEPTION_KEY = 'no_exception';

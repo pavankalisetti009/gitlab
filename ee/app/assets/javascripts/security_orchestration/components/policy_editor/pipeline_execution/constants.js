@@ -1,4 +1,5 @@
 import { s__ } from '~/locale';
+import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY = `type: pipeline_execution_policy
 name: ''
@@ -55,9 +56,7 @@ export const CUSTOM_STRATEGY_OPTIONS = {
 };
 
 export const CUSTOM_STRATEGY_OPTIONS_KEYS = Object.keys(CUSTOM_STRATEGY_OPTIONS);
-export const CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS = Object.entries(CUSTOM_STRATEGY_OPTIONS).map(
-  ([value, text]) => ({ value, text }),
-);
+export const CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS = mapToListboxItems(CUSTOM_STRATEGY_OPTIONS);
 
 export const SUFFIX_ON_CONFLICT = 'on_conflict';
 export const SUFFIX_NEVER = 'never';
