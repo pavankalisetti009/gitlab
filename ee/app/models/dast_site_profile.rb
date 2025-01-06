@@ -200,7 +200,8 @@ class DastSiteProfile < Gitlab::Database::SecApplicationRecord
   end
 
   def api_secret_variable(key, value)
-    secret = value.to_hash_variable
+    # In this method, we duplicate the value with a new key. And, we use `dup` to avoid modifying the original value.
+    secret = value.to_hash_variable.dup
 
     secret[:key] = Dast::SiteProfileSecretVariable::API_SCAN_VARIABLES_MAP[key]
     secret
