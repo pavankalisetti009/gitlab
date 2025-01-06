@@ -41,6 +41,8 @@ Turn an idea in an issue into a merge request that contains the proposed impleme
 Amazon Q uses the issue title and description, along with project context, to create a merge request
 with code to address the issue.
 
+[View a walkthrough](https://gitlab.navattic.com/duo-q).
+
 #### From the issue description
 
 1. Create a new issue, or open an existing issue and in the upper-right corner, select **Edit**.
@@ -55,6 +57,8 @@ with code to address the issue.
 ### Upgrade Java
 
 Amazon Q can analyze Java 8 or 11 code and determine the necessary Java changes to update the code to Java 17.
+
+[View a walkthrough](https://gitlab.navattic.com/duo-q-transform).
 
 Prerequisites:
 
