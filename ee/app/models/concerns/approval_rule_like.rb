@@ -148,7 +148,11 @@ module ApprovalRuleLike
   end
 
   def policy_name
-    name.gsub(/\s\d+\z/, '')
+    unless scan_result_policy_read.present? && scan_result_policy_read.approval_policy_rule
+      return name.gsub(/\s\d+\z/, '')
+    end
+
+    scan_result_policy_read.approval_policy_rule.security_policy.name
   end
 
   private
