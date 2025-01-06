@@ -23,6 +23,16 @@ module Gitlab
           end
           strong_memoize_attr :pipeline_execution_context
 
+          def scan_execution_context(ref)
+            strong_memoize_with(:scan_execution_context, ref) do
+              ::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext.new(
+                project: project,
+                ref: ref,
+                current_user: command&.current_user,
+                source: command&.source)
+            end
+          end
+
           def skip_ci_allowed?
             !has_execution_policy_pipelines?
           end

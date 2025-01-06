@@ -662,6 +662,12 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         scan_execution_policy: [scan_execution_policy])
     end
 
+    before do
+      create(:security_policy, :scan_execution_policy, linked_projects: [project],
+        content: scan_execution_policy.slice(:actions),
+        security_orchestration_policy_configuration: project_configuration)
+    end
+
     it 'persists both pipeline execution policy and scan execution policy jobs', :aggregate_failures do
       expect { execute }.to change { Ci::Build.count }.from(0).to(5)
 
@@ -711,6 +717,12 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         build(:orchestration_policy_yaml,
           pipeline_execution_policy: [project_policy],
           scan_execution_policy: [scan_execution_policy])
+      end
+
+      before do
+        create(:security_policy, :scan_execution_policy, linked_projects: [project],
+          content: scan_execution_policy.slice(:actions),
+          security_orchestration_policy_configuration: project_configuration)
       end
 
       it 'persists both pipeline execution policy and scan execution policy jobs', :aggregate_failures do

@@ -61,12 +61,26 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
 
     let_it_be(:policies_repository) { create(:project, :repository) }
     let_it_be(:security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, project: project, security_policy_management_project: policies_repository) }
-    let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [build(:scan_execution_policy)]) }
+    let_it_be(:policy) { build(:scan_execution_policy) }
+    let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [policy]) }
+    let_it_be(:db_policy) do
+      create(:security_policy, :scan_execution_policy, linked_projects: [project], content: policy.slice(:actions),
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
 
     let(:pipeline) { build(:ci_pipeline, project: project, ref: ref) }
-    let(:pipeline_policy_context) { nil }
+    let(:command) do
+      Gitlab::Ci::Pipeline::Chain::Command.new(
+        project: project,
+        source: source
+      )
+    end
 
-    subject(:config) { described_class.new(ci_yml, pipeline: pipeline, project: project, source: source, pipeline_policy_context: pipeline_policy_context) }
+    let(:pipeline_policy_context) do
+      Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
+    end
+
+    subject(:config) { described_class.new(ci_yml, pipeline: pipeline, project: project, pipeline_policy_context: pipeline_policy_context) }
 
     before do
       allow_next_instance_of(Repository) do |repository|
@@ -187,10 +201,6 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
           end
 
           context 'when in creating_policy_pipeline? is true' do
-            let(:pipeline_policy_context) do
-              Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
-            end
-
             before do
               allow(pipeline_policy_context.pipeline_execution_context)
                 .to receive(:creating_policy_pipeline?).and_return(true)

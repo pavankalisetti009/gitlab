@@ -2921,20 +2921,29 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
-  describe 'active_policies_pipeline_scan_actions_for_project' do
+  describe '#active_policies_for_project' do
     include_context 'for policies with pipeline and scheduled rules'
 
-    subject(:active_scan_actions) { security_orchestration_policy_configuration.active_policies_pipeline_scan_actions_for_project('refs/heads/master', project) }
+    subject(:active_policies) { security_orchestration_policy_configuration.active_policies_for_project('refs/heads/master', project) }
+
+    it 'includes pipeline and scheduled policies' do
+      expect(active_policies).to contain_exactly(dast_policy, sast_policy_with_schedule, container_scanning_policy)
+    end
+  end
+
+  describe 'active_pipeline_policies_for_project' do
+    include_context 'for policies with pipeline and scheduled rules'
+
+    subject(:active_scan_policies) { security_orchestration_policy_configuration.active_pipeline_policies_for_project('refs/heads/master', project) }
 
     it 'invokes active_policies_scan_actions_for_project' do
-      expect(security_orchestration_policy_configuration)
-        .to receive(:active_policies_scan_actions_for_project).and_call_original
+      expect(security_orchestration_policy_configuration).to receive(:active_policies_for_project).and_call_original
 
-      active_scan_actions
+      active_scan_policies
     end
 
-    it 'excludes the scheduled rules' do
-      expect(active_scan_actions).to contain_exactly(*dast_policy[:actions], *container_scanning_policy[:actions])
+    it 'excludes the scheduled policies' do
+      expect(active_scan_policies).to contain_exactly(dast_policy, container_scanning_policy)
     end
   end
 

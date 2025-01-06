@@ -112,7 +112,8 @@ module Security
       def active_scan_execution_policy_scans
         active_scans_for_ref = project.all_security_orchestration_policy_configurations
         .flat_map do |configuration|
-          configuration.active_policies_pipeline_scan_actions_for_project(merge_request.source_branch_ref, project)
+          configuration.active_pipeline_policies_for_project(merge_request.source_branch_ref, project)
+                       .flat_map { |policy| policy[:actions] }
         end
         # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- used on hashes
         active_scans_for_ref.pluck(:scan)
