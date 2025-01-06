@@ -9,6 +9,7 @@ module Search
         include Search::Worker
 
         pause_control :zoekt
+        sidekiq_options retry: 1
 
         private
 
