@@ -353,13 +353,11 @@ module Search
 
       def index_to_delete_check
         execute_every 10.minutes do
-          Search::Zoekt::Index.should_be_deleted.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::IndexMarkedAsToDeleteEvent.new(
-                data: { index_ids: batch.pluck_primary_key }
-              )
-            )
-          end
+          next unless Search::Zoekt::Index.should_be_deleted.exists?
+
+          Gitlab::EventStore.publish(
+            Search::Zoekt::IndexMarkedAsToDeleteEvent.new(data: {})
+          )
         end
       end
 
