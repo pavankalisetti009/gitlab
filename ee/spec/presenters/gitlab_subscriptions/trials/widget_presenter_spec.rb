@@ -92,11 +92,13 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
     end
 
     context 'when not eligible for widget' do
+      let(:add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: current_group)
+      end
+
       before do
-        build(
-          :gitlab_subscription,
-          :active_trial, :free, namespace: group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
-        )
+        allow(GitlabSubscriptions::Trials::DuoEnterprise)
+          .to receive(:any_add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
       end
 
       context 'when namespace is not present' do
@@ -124,22 +126,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
       end
 
       context 'when not eligible for either widget' do
-        let(:current_group) { build(:group) }
-
-        it { is_expected.to match_array([]) }
-      end
-
-      context 'when duo enterprise widget on a free group' do
-        let(:current_group) { build(:group) }
-
-        let(:add_on_purchase) do
-          build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: current_group)
-        end
-
-        before do
-          allow(GitlabSubscriptions::Trials::DuoEnterprise)
-            .to receive(:any_add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
-        end
+        let(:add_on_purchase) { nil }
 
         it { is_expected.to match_array([]) }
       end

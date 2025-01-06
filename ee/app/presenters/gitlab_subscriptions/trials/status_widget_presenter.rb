@@ -12,7 +12,7 @@ module GitlabSubscriptions
       private_constant :TIME_FRAME_AFTER_EXPIRATION
 
       def eligible_for_widget?
-        eligible_trial_active? || eligible_expired_trial?
+        has_trial_dates? && (eligible_trial_active? || eligible_expired_trial?)
       end
 
       def attributes
@@ -39,16 +39,12 @@ module GitlabSubscriptions
       # https://gitlab.com/gitlab-org/gitlab/-/issues/502449
       def eligible_trial_active?
         GitlabSubscriptions::Trials.namespace_plan_eligible_for_active?(namespace) &&
-          namespace.trial_starts_on &&
-          namespace.trial_ends_on &&
-          namespace.trial_ends_on > Date.current
+          trial_ends_on > Date.current
       end
 
       def eligible_expired_trial?
         GitlabSubscriptions::Trials.namespace_plan_eligible?(namespace) &&
-          namespace.trial_starts_on &&
-          namespace.trial_ends_on &&
-          namespace.trial_ends_on > TIME_FRAME_AFTER_EXPIRATION.ago &&
+          trial_ends_on > TIME_FRAME_AFTER_EXPIRATION.ago &&
           !user_dismissed_widget?
       end
 
@@ -58,6 +54,26 @@ module GitlabSubscriptions
         else
           'legacy_ultimate'
         end
+      end
+
+      def trial_starts_on
+        if duo_enterprise_status.show?
+          duo_enterprise_trial_add_on_purchase.started_at
+        else
+          namespace.trial_starts_on
+        end
+      end
+
+      def trial_ends_on
+        if duo_enterprise_status.show?
+          duo_enterprise_trial_add_on_purchase.expires_on
+        else
+          namespace.trial_ends_on
+        end
+      end
+
+      def has_trial_dates?
+        trial_starts_on.present? && trial_ends_on.present?
       end
 
       def duo_enterprise_status
@@ -73,7 +89,7 @@ module GitlabSubscriptions
       strong_memoize_attr :duo_enterprise_trial_add_on_purchase
 
       def trial_status
-        @trial_status ||= GitlabSubscriptions::TrialStatus.new(namespace.trial_starts_on, namespace.trial_ends_on)
+        @trial_status ||= GitlabSubscriptions::TrialStatus.new(trial_starts_on, trial_ends_on)
       end
 
       def user_dismissed_widget?
