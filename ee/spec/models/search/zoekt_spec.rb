@@ -41,7 +41,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
         index.update!(state: :initializing)
       end
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'when container is namespace' do
@@ -52,7 +52,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
           enabled_namespace.replicas.update_all(state: :pending)
         end
 
-        it { is_expected.to eq(false) }
+        it { is_expected.to be(false) }
       end
 
       context 'and there is at-least one replica with the ready state' do
@@ -60,14 +60,14 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
           enabled_namespace.replicas.first.ready!
         end
 
-        it { is_expected.to eq(true) }
+        it { is_expected.to be(true) }
 
         context 'when zoekt_enabled_namespace search is false' do
           before do
             enabled_namespace.update!(search: false)
           end
 
-          it { is_expected.to eq(false) }
+          it { is_expected.to be(false) }
         end
       end
     end
@@ -75,7 +75,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     context 'when Zoekt::EnabledNamespace not found' do
       let(:container) { build(:project) }
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'when passed an unsupported class' do
@@ -91,25 +91,25 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     context 'when passed a project' do
       let(:container) { project }
 
-      it { is_expected.to eq(true) }
+      it { is_expected.to be(true) }
     end
 
     context 'when passed a namespace' do
       let(:container) { group }
 
-      it { is_expected.to eq(true) }
+      it { is_expected.to be(true) }
     end
 
     context 'when passed a root namespace id' do
       let(:container) { group.id }
 
-      it { is_expected.to eq(true) }
+      it { is_expected.to be(true) }
     end
 
     context 'when Zoekt::Index is not found' do
       let(:container) { build(:project) }
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'when passed an unsupported class' do
@@ -121,7 +121,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     context 'when group is unassigned' do
       let(:container) { unassigned_group }
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
   end
 
@@ -162,7 +162,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
         stub_licensed_features(zoekt_code_search: false)
       end
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'when application setting zoekt_search_enabled? is disabled' do
@@ -170,7 +170,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
         stub_ee_application_setting(zoekt_search_enabled: false)
       end
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'when license feature zoekt_code_search and application setting zoekt_search_enabled is enabled' do
@@ -179,7 +179,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
         stub_ee_application_setting(zoekt_search_enabled: true)
       end
 
-      it { is_expected.to eq(true) }
+      it { is_expected.to be(true) }
     end
   end
 
@@ -207,6 +207,21 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
     with_them do
       it { is_expected.to eq(expected_result) }
+    end
+  end
+
+  describe '.index_async' do
+    it 'calls IndexingTaskWorker with task type index_repo' do
+      expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async).with(project.id, :index_repo)
+      described_class.index_async(project.id)
+    end
+  end
+
+  describe '.index_in' do
+    it 'calls IndexingTaskWorker with task type index_repo and a delay' do
+      expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
+        .with(project.id, :index_repo, { delay: 1.minute })
+      described_class.index_in(1.minute, project.id)
     end
   end
 end

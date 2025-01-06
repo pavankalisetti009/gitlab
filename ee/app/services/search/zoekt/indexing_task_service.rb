@@ -13,13 +13,12 @@ module Search
         new(...).execute
       end
 
-      def initialize(project_id, task_type, node_id: nil, root_namespace_id: nil, force: false, delay: nil)
+      def initialize(project_id, task_type, node_id: nil, root_namespace_id: nil, delay: nil)
         @project_id = project_id
         @project = Project.find_by_id(project_id)
         @task_type = task_type.to_sym
         @node_id = node_id
         @root_namespace_id = root_namespace_id || @project&.root_ancestor&.id
-        @force = force
         @delay = delay
       end
 
@@ -74,7 +73,7 @@ module Search
 
       private
 
-      attr_reader :project_id, :project, :node_id, :root_namespace_id, :force, :task_type, :delay
+      attr_reader :project_id, :project, :node_id, :root_namespace_id, :task_type, :delay
 
       def logger
         @logger ||= ::Search::Zoekt::Logger.build

@@ -22,7 +22,7 @@ module Search
 
         options = options.with_indifferent_access
         keyword_args = {
-          node_id: options[:node_id], force: options[:force], delay: options[:delay],
+          node_id: options[:node_id], delay: options[:delay],
           root_namespace_id: options[:root_namespace_id]
         }.compact
         IndexingTaskService.execute(project_id, task_type, **keyword_args)
