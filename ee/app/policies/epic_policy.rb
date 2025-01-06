@@ -29,13 +29,9 @@ class EpicPolicy < BasePolicy
     @subject.group.licensed_feature_available?(:subepics)
   end
 
-  condition(:summarize_notes_enabled, scope: :subject) do
+  condition(:summarize_notes_allowed) do
     next false unless @user
 
-    @user.allowed_to_use?(:summarize_comments)
-  end
-
-  condition(:summarize_notes_allowed) do
     ::Gitlab::Llm::FeatureAuthorizer.new(
       container: subject.group,
       feature_name: :summarize_comments,
@@ -140,7 +136,7 @@ class EpicPolicy < BasePolicy
     enable :mark_note_as_internal
   end
 
-  rule { summarize_notes_enabled & summarize_notes_allowed & can?(:read_epic) }.policy do
+  rule { summarize_notes_allowed & can?(:read_epic) }.policy do
     enable :summarize_comments
   end
 

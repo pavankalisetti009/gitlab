@@ -50,13 +50,10 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
     context 'when user is logged in' do
       before do
-        allow(user).to receive(:allowed_to_use?).and_return(cloud_connector_user_access)
         allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
       end
 
       context "when feature is authorized" do
-        let(:cloud_connector_user_access) { true }
-
         before do
           allow(authorizer).to receive(:allowed?).and_return(true)
         end
@@ -83,11 +80,9 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       end
 
       context "when feature is not authorized" do
-        let(:cloud_connector_user_access) { false }
-
         before do
           project.add_guest(user)
-          allow(authorizer).to receive(:allowed?).and_return(true)
+          allow(authorizer).to receive(:allowed?).and_return(false)
         end
 
         it { is_expected.to be_disallowed(:summarize_comments) }

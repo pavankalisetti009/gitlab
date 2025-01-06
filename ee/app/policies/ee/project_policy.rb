@@ -499,6 +499,8 @@ module EE
       end
 
       condition(:resolve_vulnerability_allowed) do
+        next false unless @user
+
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: subject,
           feature_name: :resolve_vulnerability,
@@ -506,11 +508,7 @@ module EE
         ).allowed?
       end
 
-      condition(:resolve_vulnerability_enabled) do
-        @user&.allowed_to_use?(:resolve_vulnerability)
-      end
-
-      rule { can?(:read_security_resource) & resolve_vulnerability_allowed & resolve_vulnerability_enabled }.policy do
+      rule { can?(:read_security_resource) & resolve_vulnerability_allowed }.policy do
         enable :resolve_vulnerability_with_ai
       end
 

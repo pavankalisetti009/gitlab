@@ -530,13 +530,13 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
     context 'when user is logged in' do
       before do
         stub_licensed_features(epics: true)
-        allow(user).to receive(:allowed_to_use?).and_return(cloud_connector_user_access)
         allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-        allow(authorizer).to receive(:allowed?).and_return(true)
       end
 
       context "when feature is authorized" do
-        let(:cloud_connector_user_access) { true }
+        before do
+          allow(authorizer).to receive(:allowed?).and_return(true)
+        end
 
         context "when user can read epic" do
           before do
@@ -544,14 +544,6 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
           end
 
           it { is_expected.to be_allowed(:summarize_comments) }
-
-          context "when feature is not enabled" do
-            before do
-              allow(authorizer).to receive(:allowed?).and_return(false)
-            end
-
-            it { is_expected.to be_disallowed(:summarize_comments) }
-          end
         end
 
         context "when user cannot read epic" do
@@ -561,12 +553,20 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
 
       context "when feature is not authorized" do
         before do
-          group.add_guest(user)
+          allow(authorizer).to receive(:allowed?).and_return(false)
         end
 
-        let(:cloud_connector_user_access) { false }
+        context "when user can read epic" do
+          before do
+            group.add_guest(user)
+          end
 
-        it { is_expected.to be_disallowed(:summarize_comments) }
+          it { is_expected.to be_disallowed(:summarize_comments) }
+        end
+
+        context "when user cannot read epic" do
+          it { is_expected.to be_disallowed(:summarize_comments) }
+        end
       end
     end
   end
