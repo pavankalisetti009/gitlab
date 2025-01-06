@@ -304,7 +304,10 @@ export default {
             @setFilters="$emit('setFilters', $event)"
           />
         </virtual-list>
-        <div v-if="hasMoreEpicsToLoad" class="swimlanes-button gl-sticky gl-pb-3 gl-pl-3">
+        <div
+          v-if="hasMoreEpicsToLoad || isLoadingMoreEpics"
+          class="swimlanes-button gl-sticky gl-pb-3 gl-pl-3"
+        >
           <gl-button
             category="tertiary"
             variant="confirm"
