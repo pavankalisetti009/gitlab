@@ -8,6 +8,3 @@ feature_category: system_access
 milestone: '16.5'
 group_ability: false
 project_ability: true
-feature_flag: manage_project_access_tokens
-feature_flag_enabled_milestone: '16.8'
-feature_flag_enabled_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/141294
