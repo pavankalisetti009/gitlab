@@ -53,6 +53,36 @@ RSpec.describe Projects::MarkForDeletionService do
       end
     end
 
+    context 'when attempting to mark security policy project for deletion' do
+      subject(:result) { described_class.new(project, user).execute }
+
+      before do
+        create(
+          :security_orchestration_policy_configuration,
+          security_policy_management_project: project)
+      end
+
+      it 'errors' do
+        expect(result).to eq(
+          status: :error,
+          message: 'Project cannot be deleted because it is linked as Security Policy Project')
+      end
+
+      it "doesn't mark the project for deletion" do
+        expect { result }.not_to change { project.marked_for_deletion? }.from(false)
+      end
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(reject_security_policy_project_deletion: false)
+        end
+
+        it 'marks the project for deletion' do
+          expect { result }.to change { project.marked_for_deletion? }.from(false).to(true)
+        end
+      end
+    end
+
     context 'audit events' do
       it 'saves audit event' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
