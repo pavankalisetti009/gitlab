@@ -23,6 +23,7 @@ describe('LicenseFilter', () => {
   const createComponent = ({ props = DEFAULT_PROPS, provide = {} } = {}) => {
     wrapper = shallowMountExtended(LicenseFilter, {
       propsData: {
+        initRule: licenseScanBuildRule(),
         ...props,
       },
       provide: {
@@ -37,6 +38,7 @@ describe('LicenseFilter', () => {
 
   const findMatchTypeListBox = () => wrapper.findByTestId('match-type-select');
   const findLicenseTypeListBox = () => wrapper.findByTestId('license-type-select');
+  const findSectionLayout = () => wrapper.findComponent(SectionLayout);
 
   describe('default rule', () => {
     beforeEach(() => {
@@ -117,6 +119,28 @@ describe('LicenseFilter', () => {
         expect(wrapper.emitted('changed')[1]).toEqual([
           expect.objectContaining({ license_types: [] }),
         ]);
+      });
+    });
+
+    describe('removes filter', () => {
+      it('remove filter types', () => {
+        createComponent();
+
+        findSectionLayout().vm.$emit('remove');
+
+        expect(wrapper.emitted('remove')).toHaveLength(1);
+      });
+    });
+
+    describe('error state', () => {
+      it('renders error state', () => {
+        createComponent({
+          props: {
+            hasError: true,
+          },
+        });
+
+        expect(findSectionLayout().classes()).toContain('gl-border-red-400');
       });
     });
   });

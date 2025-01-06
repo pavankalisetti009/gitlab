@@ -37,6 +37,11 @@ export default {
       required: false,
       default: () => [],
     },
+    hasError: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     buttonText() {
@@ -71,6 +76,7 @@ export default {
   <section-layout
     :rule-label="$options.i18n.label"
     class="gl-w-full gl-bg-white gl-pr-1 md:gl-items-center"
+    :class="{ 'gl-border gl-border-red-400': hasError }"
     label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold"
     @remove="$emit('remove')"
   >

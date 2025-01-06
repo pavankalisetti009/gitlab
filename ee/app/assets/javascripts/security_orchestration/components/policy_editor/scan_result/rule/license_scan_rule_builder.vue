@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlAlert } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
@@ -26,6 +26,7 @@ import {
   DENIED,
   ALLOW_DENY,
   ALLOWED,
+  TYPE,
 } from './scan_filters/constants';
 import ScanTypeSelect from './scan_type_select.vue';
 import BranchSelection from './branch_selection.vue';
@@ -33,7 +34,9 @@ import BranchSelection from './branch_selection.vue';
 export default {
   STATUS,
   ALLOW_DENY,
+  TYPE,
   components: {
+    GlAlert,
     BranchExceptionSelector,
     DenyAllowList,
     SectionLayout,
@@ -61,6 +64,9 @@ export default {
     tooltipFilterDisabledTitle: s__(
       'ScanResultPolicy|License scanning allows only one criteria: Status',
     ),
+    validationErrorMessage: s__(
+      'ScanResultPolicy|You can specify either a license state (allowlist or denylist) or a license type, not both.',
+    ),
   },
   licenseStatuses: LICENSE_STATES,
   data() {
@@ -73,11 +79,17 @@ export default {
     };
   },
   computed: {
+    hasValidationError() {
+      return 'license_types' in this.initRule && 'licenses' in this.initRule;
+    },
     showLicenseExcludePackages() {
       return this.glFeatures.excludeLicensePackages;
     },
     showDenyAllowListFilter() {
       return this.showLicenseExcludePackages && this.isFilterSelected(this.$options.ALLOW_DENY);
+    },
+    showLicensesTypesFilter() {
+      return this.isFilterSelected(this.$options.TYPE);
     },
     filters() {
       return this.showLicenseExcludePackages
@@ -146,11 +158,28 @@ export default {
 
       const rule = { ...this.initRule };
 
-      if (value) {
-        rule.licenses = { [ALLOWED]: [] };
-      } else {
-        delete rule.licenses;
+      if (filter === this.$options.ALLOW_DENY) {
+        if (value) {
+          rule.licenses = { [ALLOWED]: [] };
+        } else {
+          delete rule.licenses;
+        }
       }
+
+      if (filter === this.$options.TYPE) {
+        if (value) {
+          rule.license_types = [];
+        } else {
+          delete rule.license_types;
+        }
+      }
+
+      this.$emit('changed', rule);
+    },
+    removeLicenseType() {
+      this.selectFilter(this.$options.TYPE, false);
+      const rule = { ...this.initRule };
+      delete rule.license_types;
 
       this.$emit('changed', rule);
     },
@@ -207,10 +236,22 @@ export default {
           />
         </status-filter>
 
-        <license-filter class="!gl-bg-white" :init-rule="initRule" @changed="triggerChanged" />
+        <gl-alert v-if="hasValidationError" class="gl-w-full" :dismissible="false" variant="danger">
+          {{ $options.i18n.validationErrorMessage }}
+        </gl-alert>
+
+        <license-filter
+          v-if="showLicensesTypesFilter"
+          class="!gl-bg-white"
+          :has-error="hasValidationError"
+          :init-rule="initRule"
+          @changed="triggerChanged"
+          @remove="removeLicenseType"
+        />
 
         <deny-allow-list
           v-if="showDenyAllowListFilter"
+          :has-error="hasValidationError"
           :selected="excludeListType"
           :licenses="licenses"
           @remove="selectFilter($options.ALLOW_DENY, false)"
