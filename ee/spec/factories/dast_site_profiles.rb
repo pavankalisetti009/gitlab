@@ -16,6 +16,8 @@ FactoryBot.define do
     auth_password_field { 'session[password]' }
     auth_username { generate(:email) }
 
+    optional_variables { [] }
+
     excluded_urls { ["#{dast_site.url}/sign-out", "#{dast_site.url}/hidden"] }
 
     trait :with_dast_site_validation do

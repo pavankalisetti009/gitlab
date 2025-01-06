@@ -11,7 +11,11 @@ module AppSec
 
               case new_value
               when Array
-                next if old_value.sort == new_value.sort
+                if new_value.first.instance_of?(Hash)
+                  next if new_value.flat_map(&:to_a).flatten.sort == old_value.flat_map(&:to_a).flatten.sort
+                elsif old_value.sort == new_value.sort
+                  next
+                end
               when old_value
                 next
               end
@@ -44,7 +48,7 @@ module AppSec
             case property
             when :auth_password, :request_headers
               "Changed DAST site profile #{property} (secret value omitted)"
-            when :excluded_urls
+            when :excluded_urls, :optional_variables
               "Changed DAST site profile #{property} (long value omitted)"
             else
               "Changed DAST site profile #{property} from #{old_value} to #{new_value}"

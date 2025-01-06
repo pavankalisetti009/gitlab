@@ -64,6 +64,10 @@ module Types
       null: true,
       description: 'Site profile validation start time.'
 
+    field :optional_variables, [GraphQL::Types::JSON],
+      null: true,
+      description: 'Optional variables that can be configured for DAST scans.'
+
     def target_url
       object.dast_site.url
     end

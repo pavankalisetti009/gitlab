@@ -68,5 +68,58 @@ RSpec.describe AppSec::Dast::SiteProfiles::Audit::UpdateService, feature_categor
 
       expect { auditor.execute }.not_to change { AuditEvent.count }
     end
+
+    describe 'optional_variables' do
+      let_it_be(:old_params) do
+        { optional_variables: [
+          { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" },
+          { "value" => "2", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" }
+        ] }
+      end
+
+      it 'does not audit when optional_variables content is the same' do
+        auditor = described_class.new(project, user, {
+          dast_site_profile: profile,
+          new_params: { optional_variables: [
+            { "value" => "2", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" },
+            { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
+          ] },
+          old_params: old_params
+        })
+
+        expect { auditor.execute }.not_to change { AuditEvent.count }
+      end
+
+      it 'audits when optional_variables content is different' do
+        auditor = described_class.new(project, user, {
+          dast_site_profile: profile,
+          new_params: { optional_variables: [
+            { "value" => "99", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" },
+            { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
+          ] },
+          old_params: old_params
+        })
+
+        expect { auditor.execute }.to change { AuditEvent.count }
+      end
+
+      it 'omits the values for optional_variables' do
+        auditor = described_class.new(project, user, {
+          dast_site_profile: profile,
+          new_params: { optional_variables: [
+            { "value" => "99", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" },
+            { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
+          ] },
+          old_params: old_params
+        })
+
+        auditor.execute
+
+        audit_event = AuditEvent.find_by(author_id: user.id)
+        expect(audit_event.details[:custom_message]).to eq(
+          'Changed DAST site profile optional_variables (long value omitted)'
+        )
+      end
+    end
   end
 end

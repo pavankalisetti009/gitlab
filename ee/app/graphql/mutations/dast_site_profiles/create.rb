@@ -26,6 +26,11 @@ module Mutations
         default_value: [],
         description: 'URLs to skip during an authenticated scan. Defaults to `[]`.'
 
+      argument :optional_variables, [GraphQL::Types::JSON],
+        required: false,
+        default_value: [],
+        description: 'Optional variables that can be configured for DAST scans.'
+
       authorize :create_on_demand_dast_scan
 
       def resolve(full_path:, profile_name:, target_url: nil, **params)
@@ -50,6 +55,7 @@ module Mutations
 
         dast_site_profile_params[:scan_method] = params[:scan_method]
         dast_site_profile_params[:scan_file_path] = params[:scan_file_path]
+        dast_site_profile_params[:optional_variables] = params[:optional_variables]
 
         result = ::AppSec::Dast::SiteProfiles::CreateService.new(project, current_user).execute(**dast_site_profile_params)
 
