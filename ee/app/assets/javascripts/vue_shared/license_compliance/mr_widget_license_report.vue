@@ -203,7 +203,7 @@ export default {
             data-testid="security-approval-help-link"
             target="_blank"
           >
-            <help-icon size="small" />
+            <help-icon />
           </gl-link>
         </div>
       </template>

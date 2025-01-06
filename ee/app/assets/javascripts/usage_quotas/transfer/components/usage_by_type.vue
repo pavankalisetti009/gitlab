@@ -179,7 +179,7 @@ export default {
             <p class="gl-mb-0 gl-font-bold">
               {{ label }}
               <gl-link :href="helpPath" target="_blank">
-                <help-icon size="small" />
+                <help-icon />
               </gl-link>
             </p>
             <p class="gl-mb-0">
