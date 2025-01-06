@@ -5,29 +5,45 @@ require 'spec_helper'
 RSpec.describe ::Ci::Runners::UpdateProjectRunnersOwnerService, '#execute', feature_category: :runner do
   let_it_be(:owner_group) { create(:group) }
   let_it_be(:owner_project) { create(:project, group: owner_group) }
-  let_it_be(:new_project) { create(:project) }
+  let_it_be(:new_projects) { create_list(:project, 2) }
 
   let(:service) { described_class.new(owner_project.id) }
-  let!(:owned_runner1) { create(:ci_runner, :project, projects: [owner_project, new_project]) }
+  let!(:owned_runner1) { create(:ci_runner, :project, projects: [owner_project, new_projects.first]) }
   let!(:owned_runner2) { create(:ci_runner, :project, projects: [owner_project]) }
-  let!(:other_runner) { create(:ci_runner, :project, projects: [new_project]) }
+  let!(:owned_runner3) { create(:ci_runner, :project, projects: [owner_project, *new_projects.reverse]) }
+  let!(:owned_runner4) { create(:ci_runner, :project, projects: [owner_project, *new_projects]) }
+  let!(:other_runner) { create(:ci_runner, :project, projects: new_projects) }
   let!(:orphaned_runner) { create(:ci_runner, :project, :without_projects) }
+
+  let!(:owned_runner1_manager) { create(:ci_runner_machine, runner: owned_runner1) }
+  let!(:owned_runner2_manager) { create(:ci_runner_machine, runner: owned_runner2) }
+  let!(:owned_runner3_manager) { create(:ci_runner_machine, runner: owned_runner3) }
+  let!(:owned_runner4_manager) { create(:ci_runner_machine, runner: owned_runner4) }
 
   subject(:execute) { service.execute }
 
   before do
     owner_project.destroy!
+
+    stub_const("#{described_class}::BATCH_SIZE", 2)
   end
 
   it 'updates sharding_key_id on affected runners', :aggregate_failures do
-    expect_next_instance_of(Ci::Runners::UnregisterRunnerService, owned_runner2, owned_runner2.token) do |service|
-      expect(service).to receive(:execute).and_call_original
-    end
-
     expect { execute }
-      .to change { owned_runner1.reload.sharding_key_id }.from(owner_project.id).to(new_project.id)
+      # owned_runner1's owner project was deleted
+      .to change { owned_runner1.reload.sharding_key_id }.from(owner_project.id).to(new_projects.first.id)
+      .and change { owned_runner1_manager.reload.sharding_key_id }.from(owner_project.id).to(new_projects.first.id)
+      # owned_runner2's owner project was deleted and there were no other associated projects to fall back to
       .and change { Ci::Runner.find_by_id(owned_runner2) }.to(nil) # delete, since no other project to adopt it
-      .and not_change { other_runner.reload.sharding_key_id }.from(new_project.id) # runner's project is not affected
+      .and change { Ci::RunnerManager.find_by_id(owned_runner2_manager) }.to(nil)
+      # owned_runner3's owner project was deleted
+      .and change { owned_runner3.reload.sharding_key_id }.from(owner_project.id).to(new_projects.last.id)
+      .and change { owned_runner3_manager.reload.sharding_key_id }.from(owner_project.id).to(new_projects.last.id)
+      # owned_runner4's owner project was deleted
+      .and change { owned_runner4.reload.sharding_key_id }.from(owner_project.id).to(new_projects.first.id)
+      .and change { owned_runner4_manager.reload.sharding_key_id }.from(owner_project.id).to(new_projects.first.id)
+      # runners whose owner project was not affected
+      .and not_change { other_runner.reload.sharding_key_id }.from(new_projects.first.id)
       .and not_change { orphaned_runner.reload.sharding_key_id }
 
     expect(execute).to be_success

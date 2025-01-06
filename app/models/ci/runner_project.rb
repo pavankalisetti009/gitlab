@@ -11,6 +11,8 @@ module Ci
     belongs_to :runner, inverse_of: :runner_projects
     belongs_to :project, inverse_of: :runner_projects
 
+    scope :belonging_to_project, ->(project) { where(project_id: project) }
+
     def recent_runners
       ::Ci::Runner.belonging_to_project(project_id).recent
     end
