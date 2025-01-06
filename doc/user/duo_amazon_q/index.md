@@ -21,15 +21,14 @@ This feature is Preview/Beta and is available for testing, but not ready for pro
 At Re:Invent 2024, Amazon announced the GitLab Duo with Amazon Q integration.
 With this integration, you can automate tasks and increase productivity.
 
-On December 3, 2024, the private fork of the GitLab codebase where Amazon
-and GitLab have been collaborating on the integration was unveiled.
 Select GitLab customers have been invited to a test GitLab instance
 so they can start to experiment right away.
 
 ## Set up GitLab Duo with Amazon Q
 
-To access GitLab Duo with Amazon Q, you must request [access to a lab environment](https://about.gitlab.com/partners/technology-partners/aws/#interest).
-Alternately, you can [set up the GitLab Development Kit](https://gitlab.com/gitlab-org/gitlab/-/blob/gitlab-duo-with-amazon-q-preview/README.md?ref_type=heads).
+To access GitLab Duo with Amazon Q, request [access to a lab environment](https://about.gitlab.com/partners/technology-partners/aws/#interest).
+Alternately, if you have GitLab 17.8 or later, you can
+[set it up on your self-managed installation](setup.md).
 
 ## Use GitLab Duo with Amazon Q in an issue
 
