@@ -14,6 +14,8 @@ export const defaultNamespaceProvideValues = {
   totalRepositorySizeExcess: '0',
   isUsingProjectEnforcementWithLimits: false,
   isUsingProjectEnforcementWithNoLimits: false,
+  aboveSizeLimit: false,
+  subjectToHighLimit: false,
   isUsingNamespaceEnforcement: true,
   customSortKey: null,
   helpLinks: storageTypeHelpPaths,

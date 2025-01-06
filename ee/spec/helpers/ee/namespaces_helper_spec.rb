@@ -356,6 +356,8 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
           namespace_storage_limit: storage_size_limit * 1.megabyte,
           is_in_namespace_limits_pre_enforcement: 'false',
           enforcement_type: enforcement_type,
+          above_size_limit: 'false',
+          subject_to_high_limit: 'false',
           total_repository_size_excess: 0
         })
       end
