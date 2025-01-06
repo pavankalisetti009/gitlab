@@ -17,6 +17,7 @@ RSpec.describe Mutations::DastSiteProfiles::Create do
   let_it_be(:target_type) { 'api' }
   let_it_be(:scan_method) { 'openapi' }
   let_it_be(:scan_file_path) { 'https://www.domain.com/test-api-specification.json' }
+  let_it_be(:optional_variables) { [] }
 
   let(:auth) do
     {
@@ -51,7 +52,8 @@ RSpec.describe Mutations::DastSiteProfiles::Create do
         request_headers: request_headers,
         auth: auth,
         scan_method: scan_method,
-        scan_file_path: scan_file_path
+        scan_file_path: scan_file_path,
+        optional_variables: optional_variables
       )
     end
 
@@ -84,7 +86,8 @@ RSpec.describe Mutations::DastSiteProfiles::Create do
             dast_site: have_attributes(url: target_url),
             target_type: target_type,
             scan_method: scan_method,
-            scan_file_path: scan_file_path
+            scan_file_path: scan_file_path,
+            optional_variables: optional_variables
           )
 
           password_variable = dast_site_profile.secret_variables.find_by!(key: Dast::SiteProfileSecretVariable::PASSWORD)
@@ -114,6 +117,7 @@ RSpec.describe Mutations::DastSiteProfiles::Create do
             request_headers: request_headers,
             scan_method: scan_method,
             scan_file_path: scan_file_path,
+            optional_variables: optional_variables,
             auth_enabled: auth[:enabled],
             auth_url: auth[:url],
             auth_username_field: auth[:username_field],

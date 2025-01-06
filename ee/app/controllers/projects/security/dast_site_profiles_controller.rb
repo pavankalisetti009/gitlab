@@ -35,6 +35,7 @@ module Projects
                 auth { enabled url username usernameField password passwordField submitField }
                 referencedInSecurityPolicies
                 scanMethod
+                optionalVariables
               }
             }
           }

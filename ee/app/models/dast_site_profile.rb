@@ -17,6 +17,7 @@ class DastSiteProfile < Gitlab::Database::SecApplicationRecord
   validates :scan_file_path, length: { maximum: 1024 }
   validates :name, length: { maximum: 255 }, uniqueness: { scope: :project_id }, presence: true
   validates :project_id, :dast_site_id, presence: true
+  validates :optional_variables, json_schema: { filename: "dast_optional_variables" }
 
   validate :dast_site_project_id_fk
   validate :excluded_urls_contains_valid_urls

@@ -17,6 +17,7 @@ RSpec.describe Mutations::DastSiteProfiles::Update do
   let(:new_target_type) { 'api' }
   let(:new_scan_method) { 'postman' }
   let(:new_scan_file_path) { 'https://www.domain.com/test-api-recording.har' }
+  let(:new_optional_variables) { [] }
 
   let(:new_auth) do
     {
@@ -49,6 +50,7 @@ RSpec.describe Mutations::DastSiteProfiles::Update do
         request_headers: new_request_headers,
         scan_method: new_scan_method,
         scan_file_path: new_scan_file_path,
+        optional_variables: new_optional_variables,
         auth: new_auth
       )
     end
@@ -72,6 +74,7 @@ RSpec.describe Mutations::DastSiteProfiles::Update do
             request_headers: new_request_headers,
             scan_method: new_scan_method,
             scan_file_path: new_scan_file_path,
+            optional_variables: new_optional_variables,
             auth_enabled: new_auth[:enabled],
             auth_url: new_auth[:url],
             auth_username_field: new_auth[:username_field],
@@ -101,6 +104,7 @@ RSpec.describe Mutations::DastSiteProfiles::Update do
             auth_username: new_auth[:username],
             scan_method: new_scan_method,
             scan_file_path: new_scan_file_path,
+            optional_variables: new_optional_variables,
             dast_site: have_attributes(url: new_target_url)
           )
 
