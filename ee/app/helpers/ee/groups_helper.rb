@@ -175,7 +175,7 @@ module EE
       when :product_analytics
         License.feature_available?(:product_analytics_usage_quotas)
       when :pages
-        License.feature_available?(:pages_multiple_versions)
+        group.root_ancestor == group && License.feature_available?(:pages_multiple_versions)
       else
         false
       end
@@ -196,7 +196,7 @@ module EE
 
       {
         full_path: group.full_path,
-        deployments_count: ::PagesDeployment.count_versioned_deployments_for(group, limit),
+        deployments_count: ::PagesDeployment.count_versioned_deployments_for(group.all_projects, limit),
         deployments_limit: limit
       }
     end
