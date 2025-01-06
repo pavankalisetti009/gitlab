@@ -58,6 +58,7 @@ describe('AiCommentTemperature', () => {
   const findIssues = () => findAlert().findAll('ul li');
   const findCommentAnywayButton = () => wrapper.find('[data-testid="bad-button"]');
   const findCheckAgainButton = () => wrapper.find('[data-testid="good-button"]');
+  const findTheFeedbackLink = () => wrapper.find('[data-testid="feedback-link"]');
 
   describe('initial state', () => {
     it('does not show the alert', () => {
@@ -75,6 +76,14 @@ describe('AiCommentTemperature', () => {
       });
       await nextTick();
       aiActionMutationHandler.mockResolvedValue({ data: { aiAction: { errors: [] } } });
+    });
+
+    it('correctly renders the feedback issue link', () => {
+      expect(findTheFeedbackLink().exists()).toBe(true);
+      expect(findTheFeedbackLink().attributes('href')).toBe(
+        'https://gitlab.com/gitlab-org/gitlab/-/issues/511508',
+      );
+      expect(findTheFeedbackLink().props('target')).toBe('_blank');
     });
 
     describe('the check-again button', () => {
