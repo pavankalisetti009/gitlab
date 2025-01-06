@@ -9,7 +9,6 @@ describe('DisabledSection', () => {
     wrapper = shallowMount(DisabledSection, {
       propsData: {
         disabled: false,
-        error: '',
         ...props,
       },
       slots: {

@@ -17,6 +17,30 @@ export const customYaml = `variable: true
 
 export const customYamlObject = { variable: true };
 
+export const mockPipelineExecutionObject = {
+  content: { include: [{ project: '' }] },
+  description: '',
+  enabled: true,
+  name: '',
+  pipeline_config_strategy: 'inject_ci',
+  type: 'pipeline_execution_policy',
+};
+
+export const mockWithScopePipelineExecutionObject = {
+  ...mockPipelineExecutionObject,
+  policy_scope: { projects: { excluding: [] } },
+};
+
+export const mockWithSuffixPipelineExecutionObject = {
+  ...mockPipelineExecutionObject,
+  suffix: 'on_conflict',
+};
+
+export const mockInvalidPipelineExecutionObject = {
+  ...mockPipelineExecutionObject,
+  pipeline_config_strategy: 'invalid_option',
+};
+
 export const customYamlUrlParams = {
   type: 'pipeline_execution_policy',
   compliance_framework_id: 1,
@@ -51,7 +75,7 @@ content:
 
 export const mockWithoutRefPipelineExecutionObject = fromYaml({
   manifest: mockWithoutRefPipelineExecutionManifest,
-});
+}).policy;
 
 export const invalidStrategyManifest = `name: Ci config file
 description: triggers all protected branches except main

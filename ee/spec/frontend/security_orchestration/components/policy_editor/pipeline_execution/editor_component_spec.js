@@ -20,6 +20,7 @@ import {
   mockPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionObject,
+  mockInvalidPipelineExecutionObject,
   customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { goToYamlMode } from '../policy_editor_helper';
@@ -79,6 +80,7 @@ describe('EditorComponent', () => {
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
+  const findDisabledAction = () => wrapper.findByTestId('disabled-action');
 
   describe('when url params are passed', () => {
     beforeEach(() => {
@@ -136,12 +138,16 @@ describe('EditorComponent', () => {
   });
 
   describe('rule mode', () => {
+    const error =
+      'The current YAML syntax is invalid so you cannot edit the actions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.';
+
     it('renders the editor', () => {
       factory();
       expect(findPolicyEditorLayout().exists()).toBe(true);
       expect(findActionSection().exists()).toBe(true);
       expect(findRuleSection().exists()).toBe(true);
       expect(findEmptyState().exists()).toBe(false);
+      expect(findDisabledAction().props()).toEqual({ disabled: false, error });
     });
 
     it('renders the default policy editor layout', () => {
@@ -149,9 +155,7 @@ describe('EditorComponent', () => {
       const editorLayout = findPolicyEditorLayout();
       expect(editorLayout.exists()).toBe(true);
       expect(editorLayout.props()).toEqual(
-        expect.objectContaining({
-          yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY,
-        }),
+        expect.objectContaining({ yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY }),
       );
     });
 
@@ -163,6 +167,12 @@ describe('EditorComponent', () => {
       await findPolicyEditorLayout().vm.$emit('update-property', 'name', name);
       expect(findPolicyEditorLayout().props('policy').name).toBe(name);
       expect(findPolicyEditorLayout().props('yamlEditorValue')).toContain(`name: ${name}`);
+    });
+
+    it('disables the action if there is an action validation error', () => {
+      factoryWithExistingPolicy({ policy: mockInvalidPipelineExecutionObject });
+      expect(findActionSection().exists()).toBe(true);
+      expect(findDisabledAction().props()).toEqual({ disabled: true, error });
     });
   });
 

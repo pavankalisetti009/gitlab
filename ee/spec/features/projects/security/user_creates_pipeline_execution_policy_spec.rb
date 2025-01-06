@@ -32,7 +32,7 @@ RSpec.describe "User creates pipeline execution policy", :js, feature_category: 
 
   it "creates an merge request for a valid policy" do
     fill_in _('Name'), with: 'Run custom pipeline jobs'
-    within_testid('actions-section') do
+    within_testid('disabled-action') do
       select_from_listbox project.name, from: 'Select projects'
       fill_in 'file-path', with: '.gitlab-ci.yml'
     end

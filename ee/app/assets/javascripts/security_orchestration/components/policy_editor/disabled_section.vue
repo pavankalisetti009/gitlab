@@ -14,7 +14,8 @@ export default {
     },
     error: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
   },
   i18n: {
