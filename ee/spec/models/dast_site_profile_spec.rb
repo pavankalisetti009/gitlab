@@ -575,21 +575,29 @@ RSpec.describe DastSiteProfile, :dynamic_analysis,
 
           context 'when password is configured' do
             let(:api_password) { Dast::SiteProfileSecretVariable::API_PASSWORD }
+            let(:password) { Dast::SiteProfileSecretVariable::PASSWORD }
 
-            it 'returns a collection containing api password' do
+            it 'returns a collection containing the password and api password' do
               variable = create(:dast_site_profile_secret_variable, :password, dast_site_profile: subject)
 
-              expect(subject.secret_ci_variables(user).to_runner_variables).to include(key: api_password, value: variable.value, public: false, masked: true)
+              secret_ci_variables = subject.secret_ci_variables(user).to_runner_variables
+
+              expect(secret_ci_variables).to include(key: api_password, value: variable.value, public: false, masked: true)
+              expect(secret_ci_variables).to include(key: password, value: variable.value, public: false, masked: true)
             end
           end
 
           context 'when request headers are configured' do
             let(:api_request_header) { Dast::SiteProfileSecretVariable::API_REQUEST_HEADERS }
+            let(:request_header) { Dast::SiteProfileSecretVariable::REQUEST_HEADERS }
 
             it 'returns a collection containing the api request headers' do
               variable = create(:dast_site_profile_secret_variable, :request_headers, dast_site_profile: subject)
 
-              expect(subject.secret_ci_variables(user).to_runner_variables).to include(key: api_request_header, value: variable.value, public: false, masked: true)
+              secret_ci_variables = subject.secret_ci_variables(user).to_runner_variables
+
+              expect(secret_ci_variables).to include(key: api_request_header, value: variable.value, public: false, masked: true)
+              expect(secret_ci_variables).to include(key: request_header, value: variable.value, public: false, masked: true)
             end
           end
         end
