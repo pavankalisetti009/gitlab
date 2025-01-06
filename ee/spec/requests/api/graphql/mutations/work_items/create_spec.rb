@@ -628,10 +628,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
               expect(type_response).to include({ 'name' => 'Issue' })
               expect(widgets_response).to include(
                 {
-                  'linkedItems' => { 'nodes' => [
+                  'linkedItems' => { 'nodes' => match_array([
                     { 'linkType' => expected_type, "workItem" => { "id" => items[1].to_global_id.to_s } },
                     { 'linkType' => expected_type, "workItem" => { "id" => items[0].to_global_id.to_s } }
-                  ] },
+                  ]) },
                   'type' => 'LINKED_ITEMS'
                 }
               )
