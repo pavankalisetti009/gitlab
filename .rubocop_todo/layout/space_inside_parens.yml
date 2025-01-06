@@ -34,7 +34,6 @@ Layout/SpaceInsideParens:
     - 'spec/lib/gitlab/grape_logging/loggers/token_logger_spec.rb'
     - 'spec/lib/gitlab/graphql/lazy_spec.rb'
     - 'spec/lib/gitlab/health_checks/simple_check_shared.rb'
-    - 'spec/lib/gitlab/highlight_spec.rb'
     - 'spec/lib/gitlab/import_export/attributes_permitter_spec.rb'
     - 'spec/lib/gitlab/import_export/json/streaming_serializer_spec.rb'
     - 'spec/lib/gitlab/import_export/project/export_task_spec.rb'
