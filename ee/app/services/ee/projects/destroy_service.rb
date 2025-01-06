@@ -82,7 +82,11 @@ module EE
       end
 
       def log_audit_event(project)
-        audit_scope = project.parent.instance_of?(::Namespaces::UserNamespace) ? project.parent.owner : project.parent
+        audit_scope = if project.parent.instance_of?(::Namespaces::UserNamespace)
+                        ::Gitlab::Audit::InstanceScope.new
+                      else
+                        project.parent
+                      end
 
         audit_context = {
           name: 'project_destroyed',
