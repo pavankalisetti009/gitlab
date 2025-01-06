@@ -58645,6 +58645,9 @@ msgstr ""
 msgid "Todos|Failed to snooze todo. Try again later."
 msgstr ""
 
+msgid "Todos|Failed to un-snooze todo. Try again later."
+msgstr ""
+
 msgid "Todos|Filter by author"
 msgstr ""
 
@@ -58750,6 +58753,9 @@ msgid "Todos|Raw text search is not currently supported. Please use the availabl
 msgstr ""
 
 msgid "Todos|Reason"
+msgstr ""
+
+msgid "Todos|Remove snooze"
 msgstr ""
 
 msgid "Todos|Removed from Merge Train"
