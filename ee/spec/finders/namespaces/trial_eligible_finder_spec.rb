@@ -101,14 +101,6 @@ RSpec.describe Namespaces::TrialEligibleFinder, feature_category: :subscription_
 
             it { is_expected.to eq(eligible_namespaces) }
 
-            context 'and feature flag premium_can_trial_again is disabled' do
-              before do
-                stub_feature_flags(premium_can_trial_again: false)
-              end
-
-              it { is_expected.to eq([namespace_with_free_plan, regular_namespace]) }
-            end
-
             context 'when a duo pro add on exists on a namespace' do
               context 'and a namespace has an active trial' do
                 before do
