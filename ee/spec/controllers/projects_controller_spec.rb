@@ -990,6 +990,46 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         end
       end
 
+      context 'when project is linked as security policy project' do
+        subject(:delete_project) { delete :destroy, params: { namespace_id: project.namespace, id: project } }
+
+        before do
+          create(
+            :security_orchestration_policy_configuration,
+            security_policy_management_project: project)
+        end
+
+        let(:error_message) do
+          'Project cannot be deleted because it is linked as Security Policy Project'
+        end
+
+        it 'alerts' do
+          delete_project
+
+          expect(flash[:alert]).to eq(error_message)
+        end
+
+        it "doesn't mark for deletion" do
+          expect { delete_project }.not_to change { project.reload.marked_for_deletion? }.from(false)
+        end
+
+        context 'with feature disabled' do
+          before do
+            stub_feature_flags(reject_security_policy_project_deletion: false)
+          end
+
+          it "doesn't alert" do
+            delete_project
+
+            expect(flash[:alert]).to be_nil
+          end
+
+          it 'marks for deletion' do
+            expect { delete_project }.to change { project.reload.marked_for_deletion? }.from(false).to(true)
+          end
+        end
+      end
+
       context 'when feature is not available for the project' do
         before do
           allow(project).to receive(:licensed_feature_available?).and_call_original

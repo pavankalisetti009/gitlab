@@ -2097,6 +2097,29 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
           it_behaves_like 'deletes project immediately'
         end
+
+        context 'when attempting to delete security policy project' do
+          before do
+            create(
+              :security_orchestration_policy_configuration,
+              security_policy_management_project: project)
+          end
+
+          it 'returns error' do
+            delete api("/projects/#{project.id}", user)
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response["message"]).to eq('Project cannot be deleted because it is linked as Security Policy Project')
+          end
+
+          context 'with feature disabled' do
+            before do
+              stub_feature_flags(reject_security_policy_project_deletion: false)
+            end
+
+            it_behaves_like 'marks project for deletion'
+          end
+        end
       end
 
       context 'delayed project deletion is disabled for group' do

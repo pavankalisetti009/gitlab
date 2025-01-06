@@ -6,6 +6,10 @@ module Projects
       return success if project.marked_for_deletion_at?
       return error('Cannot mark project for deletion: feature not supported') unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
 
+      if reject_security_policy_project_deletion?
+        return error(_('Project cannot be deleted because it is linked as Security Policy Project'))
+      end
+
       result = ::Projects::UpdateService.new(
         project,
         current_user,
@@ -53,6 +57,12 @@ module Projects
       }
       params[:hidden] = true unless project.feature_available?(:adjourned_deletion_for_projects_and_groups)
       params
+    end
+
+    def reject_security_policy_project_deletion?
+      return false unless ::Feature.enabled?(:reject_security_policy_project_deletion, project)
+
+      ::Security::OrchestrationPolicyConfiguration.for_management_project(project).exists?
     end
   end
 end
