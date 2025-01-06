@@ -2,6 +2,7 @@ import { s__ } from '~/locale';
 
 export const SEVERITY = 'severity';
 export const STATUS = 'status';
+export const TYPE = 'type';
 export const ATTRIBUTE = 'attribute';
 export const AGE = 'age';
 export const ALLOW_DENY = 'allow_deny';
@@ -27,7 +28,7 @@ export const FILTERS = [
   {
     text: s__('ScanResultPolicy|New status'),
     value: STATUS,
-    tooltip: s__('ScanResultPolicy|Only 2 status criteria are allowed'),
+    tooltip: s__('ScanResultPolicy|Maximum of two status criteria allowed'),
   },
   {
     text: s__('ScanResultPolicy|New age'),
@@ -37,7 +38,7 @@ export const FILTERS = [
   {
     text: s__('ScanResultPolicy|New attribute'),
     value: ATTRIBUTE,
-    tooltip: s__('ScanResultPolicy|Only 2 attribute criteria are allowed'),
+    tooltip: s__('ScanResultPolicy|Maximum of two attribute criteria allowed'),
   },
 ];
 
@@ -45,12 +46,17 @@ export const LICENCE_FILTERS = [
   {
     text: s__('ScanResultPolicy|License status'),
     value: STATUS,
-    tooltip: s__('ScanResultPolicy|Only 1 licence status criteria is allowed'),
+    tooltip: s__('ScanResultPolicy|Maximum of one license status criteria allowed'),
+  },
+  {
+    text: s__('ScanResultPolicy|License type'),
+    value: TYPE,
+    tooltip: s__('ScanResultPolicy|Maximum of one license type criteria allowed'),
   },
   {
     text: s__('ScanResultPolicy|Allowlist or Denylist'),
     value: ALLOW_DENY,
-    tooltip: s__('ScanResultPolicy|You can have only one of the two: deny list or allow list.'),
+    tooltip: s__('ScanResultPolicy|You can specify either a denylist or an allowlist, not both.'),
   },
 ];
 

@@ -1,5 +1,6 @@
 import { GlCollapsibleListbox, GlButton, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list.vue';
 import DenyAllowListModal from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list_modal.vue';
 import {
@@ -22,6 +23,7 @@ describe('DenyAllowList', () => {
   const findTypeDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findModal = () => wrapper.findComponent(DenyAllowListModal);
   const findButton = () => wrapper.findComponent(GlButton);
+  const findSectionLayout = () => wrapper.findComponent(SectionLayout);
 
   describe('default state', () => {
     beforeEach(() => {
@@ -41,8 +43,18 @@ describe('DenyAllowList', () => {
     });
   });
 
-  describe('single licence', () => {
-    it('renders allowlist with single licence', () => {
+  describe('error state', () => {
+    it('renders error state', () => {
+      createComponent({
+        props: { hasError: true },
+      });
+
+      expect(findSectionLayout().classes()).toContain('gl-border-red-400');
+    });
+  });
+
+  describe('single license', () => {
+    it('renders allowlist with single license', () => {
       createComponent({
         props: {
           selected: ALLOWED,
@@ -56,8 +68,8 @@ describe('DenyAllowList', () => {
     });
   });
 
-  describe('multiple licences', () => {
-    it('renders denylist with multiple licences', () => {
+  describe('multiple licenses', () => {
+    it('renders denylist with multiple licenses', () => {
       createComponent({
         props: {
           licenses: ['package-1', 'package-2'],
@@ -99,7 +111,7 @@ describe('DenyAllowList', () => {
       expect(wrapper.emitted('select-licenses')).toEqual([[LICENSES]]);
     });
 
-    it('renders selected licences', () => {
+    it('renders selected licenses', () => {
       createComponent({
         props: {
           licenses: LICENSES,

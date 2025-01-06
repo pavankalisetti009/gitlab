@@ -1,4 +1,4 @@
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlAlert } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
@@ -70,6 +70,7 @@ describe('LicenseScanRuleBuilder', () => {
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
   const findDenyAllowList = () => wrapper.findComponent(DenyAllowList);
   const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
+  const findAlert = () => wrapper.findComponent(GlAlert);
 
   describe('initial rendering', () => {
     beforeEach(() => {
@@ -330,6 +331,51 @@ describe('LicenseScanRuleBuilder', () => {
         { license: { value: 'license_1', text: 'license_1' }, exceptions: [] },
         { license: { value: 'license_2', text: 'license_2' }, exceptions: [] },
       ]);
+    });
+
+    it('renders error state when types and licenses selected', () => {
+      factory({
+        props: {
+          initRule: {
+            ...licenseScanBuildRule(),
+            licenses: { [DENIED]: MAPPED_LICENSES },
+          },
+        },
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      expect(findAlert().text()).toBe(
+        'You can specify either a license state (allowlist or denylist) or a license type, not both.',
+      );
+      expect(findLicenseFilter().props('hasError')).toBe(true);
+      expect(findDenyAllowList().props('hasError')).toBe(true);
+    });
+
+    it('does not show error when only licenses selected', () => {
+      const rule = { ...licenseScanBuildRule() };
+      delete rule.license_types;
+
+      factory({
+        props: {
+          initRule: {
+            ...rule,
+            licenses: { [DENIED]: MAPPED_LICENSES },
+          },
+        },
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      expect(findAlert().exists()).toBe(false);
+      expect(findLicenseFilter().exists()).toBe(false);
+      expect(findDenyAllowList().props('hasError')).toBe(false);
     });
   });
 });

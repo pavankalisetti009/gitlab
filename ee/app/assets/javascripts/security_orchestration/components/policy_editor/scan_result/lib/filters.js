@@ -10,6 +10,7 @@ import {
   NEWLY_DETECTED,
   PREVIOUSLY_EXISTING,
   STATUS,
+  TYPE,
 } from '../rule/scan_filters/constants';
 import { groupVulnerabilityStatesWithDefaults } from './vulnerability_states';
 
@@ -44,11 +45,13 @@ export const buildFiltersFromRule = (rule) => {
  */
 export const buildFiltersFromLicenseRule = (rule) => {
   let { licenses = {} } = rule || {};
+  const { license_types } = rule || {};
 
   licenses = licenses ?? {};
 
   return {
     [STATUS]: true,
+    [TYPE]: Boolean(license_types),
     [ALLOW_DENY]: ALLOWED in licenses || DENIED in licenses,
   };
 };
