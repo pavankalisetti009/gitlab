@@ -7,8 +7,9 @@ module Gitlab
         module Tasks
           class ModelConfigCheck < ::CodeSuggestions::Tasks::Base
             def initialize(unsafe_passthrough_params:, self_hosted_model:)
-              @model_details = TestedModelDetails.new(current_user: current_user, self_hosted_model: self_hosted_model)
               super(unsafe_passthrough_params: unsafe_passthrough_params)
+
+              @self_hosted_model = self_hosted_model
             end
 
             def endpoint_name
@@ -35,9 +36,16 @@ module Gitlab
 
             private
 
-            def model_metadata_params
-              self_hosted_model = feature_setting.self_hosted_model
+            attr_reader :self_hosted_model
 
+            def model_details
+              @model_details ||= TestedModelDetails.new(
+                current_user: current_user,
+                self_hosted_model: self_hosted_model
+              )
+            end
+
+            def model_metadata_params
               {
                 name: self_hosted_model.model,
                 endpoint: self_hosted_model.endpoint,

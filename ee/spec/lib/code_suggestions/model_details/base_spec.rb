@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CodeSuggestions::ModelDetails, feature_category: :code_suggestions do
+RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_suggestions do
   let_it_be(:feature_setting_name) { 'code_completions' }
   let(:user) { create(:user) }
   let(:completions_model_details) do

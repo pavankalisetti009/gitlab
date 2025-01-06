@@ -13,8 +13,11 @@ module CodeSuggestions
 
       private
 
-      def feature_setting_name
-        :code_generations
+      def model_details
+        @model_details ||= CodeSuggestions::ModelDetails::Base.new(
+          current_user: current_user,
+          feature_setting_name: :code_generations
+        )
       end
 
       def prompt

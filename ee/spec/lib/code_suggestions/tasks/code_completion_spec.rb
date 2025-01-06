@@ -17,153 +17,141 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     { current_file: { file_name: 'test.py', content_above_cursor: 'sor', content_below_cursor: 'som' } }
   end
 
+  let(:model_engine) { nil } # set in the relevant contexts
+
+  let(:params) do
+    {
+      current_file: current_file
+    }
+  end
+
+  let(:unsafe_params) do
+    {
+      'current_file' => current_file,
+      'telemetry' => [{ 'model_engine' => model_engine }]
+    }.with_indifferent_access
+  end
+
+  let(:current_user) { create(:user) }
+
+  let(:task) do
+    described_class.new(
+      params: params,
+      unsafe_passthrough_params: unsafe_params,
+      current_user: current_user
+    )
+  end
+
   before do
     stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
     stub_feature_flags(fireworks_qwen_code_completion: false)
+    stub_feature_flags(incident_fail_over_completion_provider: false)
   end
 
-  context 'when using saas model Vertex' do
-    let(:unsafe_params) do
-      {
-        'current_file' => current_file,
-        'telemetry' => [{ 'model_engine' => model_engine }]
-      }.with_indifferent_access
+  describe 'saas failover model' do
+    before do
+      stub_feature_flags(incident_fail_over_completion_provider: true)
     end
 
-    let(:params) do
+    let(:model_engine) { :anthropic }
+
+    let(:anthropic_request_body) do
       {
-        current_file: current_file,
-        code_completion_model_family: model_family
+        'model_name' => 'claude-3-5-sonnet-20240620',
+        'model_provider' => 'anthropic',
+        'current_file' => {
+          'file_name' => 'test.py',
+          'content_above_cursor' => 'sor',
+          'content_below_cursor' => 'som'
+        },
+        'telemetry' => [{ 'model_engine' => 'anthropic' }],
+        'prompt_version' => 3,
+        'prompt' => [
+          {
+            "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
+              "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
+              "task is to provide valid code without any additional explanations, comments, or feedback." \
+              "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
+              "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
+              "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
+              "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
+              "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
+              "empty result.",
+            "role" => "system"
+          },
+          {
+            "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
+              "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
+            "role" => "user"
+          }
+        ]
       }
     end
 
-    let(:task) do
-      described_class.new(
-        params: params,
-        unsafe_passthrough_params: unsafe_params
-      )
-    end
-
-    context "when using anthropic for code suggestion task" do
-      before do
-        stub_feature_flags(incident_fail_over_completion_provider: true)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:model_family) { :anthropic }
-        let(:model_engine) { :anthropic }
-        let(:expected_body) do
-          {
-            'model_name' => 'claude-3-5-sonnet-20240620',
-            'model_provider' => 'anthropic',
-            'current_file' => {
-              'file_name' => 'test.py',
-              'content_above_cursor' => 'sor',
-              'content_below_cursor' => 'som'
-            },
-            'telemetry' => [{ 'model_engine' => 'anthropic' }],
-            'prompt_version' => 3,
-            'prompt' => [
-              {
-                "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
-                  "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
-                  "task is to provide valid code without any additional explanations, comments, or feedback." \
-                  "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
-                  "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
-                  "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
-                  "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
-                  "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
-                  "empty result.",
-                "role" => "system"
-              },
-              {
-                "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
-                  "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
-                "role" => "user"
-              }
-            ]
-          }
-        end
-
-        let(:expected_feature_name) { :code_suggestions }
-      end
-    end
-
-    context "when using codegecko for code suggestion task" do
-      before do
-        stub_feature_flags(incident_fail_over_completion_provider: false)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:model_family) { :vertex_ai }
-        let(:model_engine) { 'vertex-ai' }
-        let(:expected_body) do
-          {
-            "current_file" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "sor",
-              "content_below_cursor" => "som"
-            },
-            "telemetry" => [{ "model_engine" => "vertex-ai" }],
-            "prompt_version" => 1
-          }
-        end
-
-        let(:expected_feature_name) { :code_suggestions }
-      end
+    it_behaves_like 'code suggestion task' do
+      let(:expected_body) { anthropic_request_body }
+      let(:expected_feature_name) { :code_suggestions }
     end
   end
 
-  context 'when using saas model fireworks' do
-    let(:unsafe_params) do
-      {
-        'current_file' => current_file,
-        'telemetry' => [{ 'model_engine' => 'fireworks-ai' }]
-      }.with_indifferent_access
+  describe 'saas primary models' do
+    before do
+      stub_feature_flags(incident_fail_over_completion_provider: false)
     end
 
-    let(:params) do
+    let(:expected_feature_name) { :code_suggestions }
+
+    let(:request_body_without_model_details) do
       {
-        current_file: current_file,
-        code_completion_model_family: model_family
+        "current_file" => {
+          "file_name" => "test.py",
+          "content_above_cursor" => "sor",
+          "content_below_cursor" => "som"
+        },
+        "prompt_version" => 1
       }
     end
 
-    let(:model_family) { :fireworks_ai }
-    let(:task) do
-      described_class.new(
-        params: params,
-        unsafe_passthrough_params: unsafe_params
-      )
-    end
-
-    context "when using fireworks qwen for code suggestion task" do
+    context 'when Fireworks/Qwen beta FF is enabled' do
       before do
-        stub_feature_flags(incident_fail_over_completion_provider: false)
         stub_feature_flags(fireworks_qwen_code_completion: true)
       end
 
-      it_behaves_like 'code suggestion task' do
-        let(:expected_body) do
-          {
-            "model_name" => "qwen2p5-coder-7b",
-            "model_provider" => "fireworks_ai",
-            "current_file" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "sor",
-              "content_below_cursor" => "som"
-            },
-            "telemetry" => [{ "model_engine" => "fireworks-ai" }],
-            "prompt_version" => 1
-          }
-        end
+      let(:model_engine) { 'fireworks-ai' }
 
-        let(:expected_feature_name) { :code_suggestions }
+      let(:request_body_for_fireworks_qwen_with_model_details) do
+        request_body_without_model_details.merge(
+          "model_name" => "qwen2p5-coder-7b",
+          "model_provider" => "fireworks_ai",
+          "telemetry" => [{ "model_engine" => "fireworks-ai" }]
+        )
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_body) { request_body_for_fireworks_qwen_with_model_details }
+      end
+    end
+
+    context 'when Fireworks/Qwen beta FF is disabled' do
+      before do
+        stub_feature_flags(fireworks_qwen_code_completion: false)
+      end
+
+      let(:model_engine) { 'vertex-ai' }
+
+      let(:request_body_for_vertex_codegecko) do
+        request_body_without_model_details.merge(
+          "telemetry" => [{ "model_engine" => "vertex-ai" }]
+        )
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_body) { request_body_for_vertex_codegecko }
       end
     end
   end
 
-  context 'when using self-hosted model' do
+  describe 'self-hosted model' do
     let(:unsafe_params) do
       {
         'current_file' => current_file,
