@@ -176,7 +176,7 @@ module API
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
           service_unavailable!(token[:message]) if token[:status] == :error
 
-          completion_model_details = ::CodeSuggestions::CompletionsModelDetails.new(
+          completion_model_details = ::CodeSuggestions::ModelDetails::CodeCompletion.new(
             current_user: current_user
           )
 

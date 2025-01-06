@@ -6,6 +6,8 @@ module CodeSuggestions
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
 
+      delegate :saas_primary_model_class, to: :model_details
+
       override :endpoint_name
       def endpoint_name
         'completions'
@@ -13,8 +15,8 @@ module CodeSuggestions
 
       private
 
-      def feature_setting_name
-        :code_completions
+      def model_details
+        @model_details ||= CodeSuggestions::ModelDetails::CodeCompletion.new(current_user: current_user)
       end
 
       def prompt
@@ -24,6 +26,7 @@ module CodeSuggestions
           saas_prompt
         end
       end
+      strong_memoize_attr :prompt
 
       def self_hosted_prompt
         CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage.new(
@@ -34,16 +37,10 @@ module CodeSuggestions
         if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
           # claude hosted on anthropic
           CodeSuggestions::Prompts::CodeCompletion::Anthropic.new(params)
-        elsif Feature.enabled?(:fireworks_qwen_code_completion, current_user, type: :beta)
-          # qwen 2.5 hosted on fireworks
-          CodeSuggestions::Prompts::CodeCompletion::FireworksQwen.new(params)
         else
-          # codegecho hosted on vertex
-          CodeSuggestions::Prompts::CodeCompletion::VertexAi.new(params)
+          saas_primary_model_class.new(params)
         end
       end
-
-      strong_memoize_attr :prompt
     end
   end
 end

@@ -13,7 +13,6 @@ module CodeSuggestions
         @unsafe_passthrough_params = unsafe_passthrough_params
         @client = client || CodeSuggestions::Client.new({})
         @current_user = current_user
-        @model_details ||= ModelDetails.new(current_user: current_user, feature_setting_name: feature_setting_name)
       end
 
       def endpoint
@@ -41,14 +40,13 @@ module CodeSuggestions
 
       private
 
-      attr_reader :params, :unsafe_passthrough_params, :model_details, :client, :current_user
+      attr_reader :params, :unsafe_passthrough_params, :client, :current_user
 
       def endpoint_name
         raise NotImplementedError
       end
 
-      # override this method in Tasks::Completion/Generation classes
-      def feature_setting_name
+      def model_details
         raise NotImplementedError
       end
 
