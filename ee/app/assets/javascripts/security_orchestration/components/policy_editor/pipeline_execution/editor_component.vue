@@ -8,6 +8,7 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import {
+  ACTION_SECTION_DISABLE_ERROR,
   ACTIONS_LABEL,
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
@@ -16,7 +17,7 @@ import {
 } from '../constants';
 import { doesFileExist, getMergeRequestConfig, policyBodyToYaml, policyToYaml } from '../utils';
 import EditorLayout from '../editor_layout.vue';
-import DimDisableContainer from '../dim_disable_container.vue';
+import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import { createPolicyObject, getInitialPolicy } from './utils';
@@ -32,6 +33,7 @@ export default {
   EDITOR_MODE_YAML,
   SECURITY_POLICY_ACTIONS,
   i18n: {
+    ACTION_SECTION_DISABLE_ERROR,
     ACTIONS_LABEL,
     CONDITIONS_LABEL,
     PARSING_ERROR_MESSAGE,
@@ -40,7 +42,7 @@ export default {
   },
   components: {
     ActionSection,
-    DimDisableContainer,
+    DisabledSection,
     GlEmptyState,
     EditorLayout,
     RuleSection,
@@ -91,15 +93,13 @@ export default {
       yamlEditorValue = getInitialPolicy(manifest, queryToObject(window.location.search));
     }
 
-    const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
-    const parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
+    const { policy, parsingError } = createPolicyObject(yamlEditorValue);
 
     return {
       documentationPath: setUrlFragment(
         this.scanPolicyDocumentationPath,
         'pipeline-execution-policy-editor',
       ),
-      hasParsingError,
       disableSubmit: false,
       mode: EDITOR_MODE_RULE,
       parsingError,
@@ -177,11 +177,10 @@ export default {
       this.updateYamlEditorValue(this.policy);
     },
     handleUpdateYaml(manifest) {
-      const { policy, hasParsingError } = createPolicyObject(manifest);
+      const { policy, parsingError } = createPolicyObject(manifest);
 
       this.yamlEditorValue = manifest;
-      this.hasParsingError = hasParsingError;
-      this.parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
+      this.parsingError = parsingError;
       this.policy = policy;
     },
     updateYamlEditorValue(policy) {
@@ -198,11 +197,9 @@ export default {
   <editor-layout
     v-if="!disableScanPolicyUpdate"
     :custom-save-button-text="$options.i18n.createMergeRequest"
-    :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"
-    :parsing-error="parsingError"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"
     @remove-policy="handleModifyPolicy($options.SECURITY_POLICY_ACTIONS.REMOVE)"
@@ -212,29 +209,23 @@ export default {
     @update-yaml="handleUpdateYaml"
   >
     <template #rules>
-      <dim-disable-container :disabled="hasParsingError">
+      <disabled-section data-testid="disabled-rule">
         <template #title>
           <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
         </template>
-
-        <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
-        </template>
-
         <rule-section class="gl-mb-4" />
-      </dim-disable-container>
+      </disabled-section>
     </template>
 
     <template #actions-first>
-      <dim-disable-container data-testid="actions-section" :disabled="hasParsingError">
+      <disabled-section
+        :disabled="parsingError.actions"
+        :error="$options.i18n.ACTION_SECTION_DISABLE_ERROR"
+        data-testid="disabled-action"
+      >
         <template #title>
           <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
         </template>
-
-        <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
-        </template>
-
         <action-section
           class="security-policies-bg-subtle gl-mb-4 gl-rounded-base gl-p-5"
           :action="policy.content"
@@ -243,7 +234,7 @@ export default {
           :suffix="policy.suffix"
           @changed="handleUpdateProperty"
         />
-      </dim-disable-container>
+      </disabled-section>
     </template>
   </editor-layout>
 

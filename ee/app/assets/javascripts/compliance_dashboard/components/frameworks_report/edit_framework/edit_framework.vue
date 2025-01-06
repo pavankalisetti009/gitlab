@@ -95,7 +95,7 @@ export default {
             data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
           if (policyBlob) {
             const id = getIdFromGraphQLId(this.graphqlId);
-            const contents = fromYaml({ manifest: policyBlob });
+            const contents = fromYaml({ manifest: policyBlob }).policy;
             this.hasMigratedPipeline = Boolean(
               contents?.pipeline_execution_policy?.find((policy) => {
                 return (

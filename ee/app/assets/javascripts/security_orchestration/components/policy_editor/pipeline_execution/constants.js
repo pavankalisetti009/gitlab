@@ -70,3 +70,7 @@ export const SUFFIX_LIST_BOX_ITEMS = Object.keys(SUFFIX_ITEMS).map((key) => ({
   value: key,
   text: SUFFIX_ITEMS[key],
 }));
+
+export const ACTION_SECTION_DISABLE_ERROR = s__(
+  'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the actions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
+);

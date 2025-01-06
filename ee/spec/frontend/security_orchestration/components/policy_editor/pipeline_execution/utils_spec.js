@@ -15,6 +15,9 @@ import {
   customYamlObjectFromUrlParams,
   customYamlUrlParams,
   invalidStrategyManifest,
+  mockPipelineExecutionObject,
+  mockWithScopePipelineExecutionObject,
+  mockWithSuffixPipelineExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import {
   policyBodyToYaml,
@@ -25,23 +28,31 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/compone
 describe('fromYaml', () => {
   it.each`
     title                                                                                        | input                                                                                  | output
-    ${'returns the policy object for a supported manifest'}                                      | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }}                                     | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY })}
-    ${'returns the policy object for a supported manifest with scope with validation'}           | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE, validateRuleMode: true }}  | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE })}
-    ${'returns the policy object for a supported manifest with suffix with validation'}          | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX, validateRuleMode: true }} | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX })}
-    ${'returns the policy object for a policy with an unsupported attribute without validation'} | ${{ manifest: customYaml }}                                                            | ${customYamlObject}
-    ${'returns the error object for a policy with an unsupported attribute with validation'}     | ${{ manifest: customYaml, validateRuleMode: true }}                                    | ${{ error: true }}
+    ${'returns the policy object for a supported manifest'}                                      | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }}                                     | ${{ policy: mockPipelineExecutionObject, parsingError: {} }}
+    ${'returns the policy object for a supported manifest with scope with validation'}           | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE, validateRuleMode: true }}  | ${{ policy: mockWithScopePipelineExecutionObject, parsingError: {} }}
+    ${'returns the policy object for a supported manifest with suffix with validation'}          | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX, validateRuleMode: true }} | ${{ policy: mockWithSuffixPipelineExecutionObject, parsingError: {} }}
+    ${'returns the policy object for a policy with an unsupported attribute without validation'} | ${{ manifest: customYaml }}                                                            | ${{ policy: customYamlObject, parsingError: {} }}
+    ${'returns the error object for a policy with an unsupported attribute with validation'}     | ${{ manifest: customYaml, validateRuleMode: true }}                                    | ${{ policy: {}, parsingError: { actions: true } }}
   `('$title', ({ input, output }) => {
     expect(fromYaml(input)).toStrictEqual(output);
   });
 });
 
 describe('createPolicyObject', () => {
+  const errorPolicy = {
+    content: { include: [{ file: '.pipeline-execution.yml', project: 'GitLab.org/GitLab' }] },
+    description: 'triggers all protected branches except main',
+    enabled: true,
+    name: 'Ci config file',
+    pipeline_config_strategy: 'this_is_wrong',
+  };
+
   it.each`
-    title                                                                            | input                                           | output                                                                                           | securityPoliciesNewYamlFormat
-    ${'returns the policy object and no errors for a supported manifest'}            | ${DEFAULT_PIPELINE_EXECUTION_POLICY}            | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), hasParsingError: false }} | ${false}
-    ${'returns the policy object and no errors for a supported manifest new format'} | ${DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), hasParsingError: false }} | ${true}
-    ${'returns the error policy object and the error for an unsupported manifest'}   | ${customYaml}                                   | ${{ policy: { error: true }, hasParsingError: true }}                                            | ${false}
-    ${'returns the error policy object and the error for an invalid strategy name'}  | ${invalidStrategyManifest}                      | ${{ policy: { error: true }, hasParsingError: true }}                                            | ${false}
+    title                                                                            | input                                           | output                                                                                            | securityPoliciesNewYamlFormat
+    ${'returns the policy object and no errors for a supported manifest'}            | ${DEFAULT_PIPELINE_EXECUTION_POLICY}            | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }).policy, parsingError: {} }} | ${false}
+    ${'returns the policy object and no errors for a supported manifest new format'} | ${DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }).policy, parsingError: {} }} | ${true}
+    ${'returns the error policy object and the error for an unsupported manifest'}   | ${customYaml}                                   | ${{ policy: {}, parsingError: { actions: true } }}                                                | ${false}
+    ${'returns the error policy object and the error for an invalid strategy name'}  | ${invalidStrategyManifest}                      | ${{ policy: errorPolicy, parsingError: { actions: true } }}                                       | ${false}
   `('$title', ({ input, output, securityPoliciesNewYamlFormat }) => {
     window.gon.features = { securityPoliciesNewYamlFormat };
     expect(createPolicyObject(input)).toStrictEqual(output);
