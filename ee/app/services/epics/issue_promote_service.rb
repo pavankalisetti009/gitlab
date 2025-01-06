@@ -32,8 +32,16 @@ module Epics
     end
 
     def track_event
-      ::Gitlab::Tracking.event('epics', 'promote', property: 'issue_id', value: original_entity.id,
-                                                   project: issue.project, user: current_user, namespace: parent_group, weight: issue.weight)
+      ::Gitlab::Tracking.event(
+        'epics',
+        'promote',
+        property: 'issue_id',
+        value: original_entity.id,
+        project: issue.project,
+        user: current_user,
+        namespace: parent_group,
+        weight: issue.weight
+      )
 
       ::Gitlab::UsageDataCounters::EpicActivityUniqueCounter.track_issue_promoted_to_epic(
         author: current_user,

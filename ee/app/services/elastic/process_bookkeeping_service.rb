@@ -42,11 +42,13 @@ module Elastic
             min = (max - shard_items.size) + 1
 
             (min..max).zip(shard_items).each_slice(1000) do |group|
-              logger.debug('class' => self.name,
-                           'message' => 'track_items',
-                           'meta.indexing.redis_set' => set_key,
-                           'meta.indexing.count' => group.count,
-                           'meta.indexing.tracked_items_encoded' => group.to_json)
+              logger.debug(
+                'class' => self.name,
+                'message' => 'track_items',
+                'meta.indexing.redis_set' => set_key,
+                'meta.indexing.count' => group.count,
+                'meta.indexing.tracked_items_encoded' => group.to_json
+              )
 
               redis.zadd(set_key, group)
             end
