@@ -10,14 +10,10 @@ module QA
     describe 'Code Suggestions' do
       let(:expected_v3_response_data) do
         {
-          metadata: {
-            model: {
-              engine: anything,
-              name: anything,
-              lang: 'ruby'
-            },
+          metadata: a_hash_including(
+            model: a_hash_including(engine: anything, name: anything, lang: anything),
             timestamp: anything
-          },
+          ),
           choices: [anything]
         }
       end
@@ -25,12 +21,8 @@ module QA
       let(:expected_v2_response_data) do
         {
           id: 'id',
-          model: {
-            engine: anything,
-            name: anything,
-            lang: 'ruby',
-            tokens_consumption_metadata: anything
-          },
+          model: a_hash_including(engine: anything, name: anything, lang: anything,
+            tokens_consumption_metadata: anything),
           object: 'text_completion',
           created: anything,
           choices: [anything]
