@@ -18,13 +18,9 @@ module EE
 
     prepended do
       with_scope :subject
-      condition(:summarize_notes_enabled) do
+      condition(:summarize_notes_allowed) do
         next false unless @user
 
-        @user.allowed_to_use?(:summarize_comments)
-      end
-
-      condition(:summarize_notes_allowed) do
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: subject_container,
           feature_name: :summarize_comments,
@@ -47,7 +43,7 @@ module EE
       end
 
       rule do
-        summarize_notes_enabled & summarize_notes_allowed & can?(:read_issue)
+        summarize_notes_allowed & can?(:read_issue)
       end.enable :summarize_comments
 
       rule { relations_for_non_members_available & ~member_or_support_bot }.policy do
