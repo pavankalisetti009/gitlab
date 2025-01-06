@@ -71,7 +71,8 @@ module Security
           builds_enabled: false,
           wiki_enabled: false,
           snippets_enabled: false,
-          readme_template: readme_template
+          readme_template: readme_template,
+          merge_requests_author_approval: true
         }.merge(security_policy_target_id)
       end
 
