@@ -91,9 +91,17 @@ module EE
         per_project_storage_limit: per_project_storage_limit,
         namespace_storage_limit: namespace_storage_limit,
         enforcement_type: namespace.root_storage_size.enforcement_type,
+        above_size_limit: namespace.root_storage_size.above_size_limit?.to_s,
+        subject_to_high_limit: namespace_subject_to_high_limit?(namespace).to_s,
         is_in_namespace_limits_pre_enforcement: is_in_namespace_limits_pre_enforcement.to_s,
         total_repository_size_excess: namespace.total_repository_size_excess
       })
+    end
+
+    def namespace_subject_to_high_limit?(namespace)
+      return false if ::Namespaces::Storage::Enforcement.enforce_limit?(namespace.root_ancestor)
+
+      namespace.root_storage_size.subject_to_high_limit?
     end
 
     def purchase_storage_url(namespace)

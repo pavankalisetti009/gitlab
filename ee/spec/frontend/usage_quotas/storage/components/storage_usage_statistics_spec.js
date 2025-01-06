@@ -197,6 +197,22 @@ describe('StorageUsageStatistics', () => {
             href: 'administration/settings/account_and_limit_settings',
           });
         });
+
+        describe('when namespace is subject to high limit and not above size limit', () => {
+          it('renders project enforcement copy', () => {
+            createComponent({
+              provide: {
+                isUsingNamespaceEnforcement: false,
+                isUsingProjectEnforcementWithLimits: true,
+                subjectToHighLimit: true,
+                aboveSizeLimit: false,
+              },
+            });
+            expect(wrapper.text()).not.toContain(
+              'Projects under this namespace have 10.0 GiB of storage limit applied to repository and LFS objects.',
+            );
+          });
+        });
       });
 
       describe('enforcementType is namespace', () => {
@@ -364,6 +380,20 @@ describe('StorageUsageStatistics', () => {
       });
 
       expect(findProjectLimitsExcessStorageBreakdownCard().exists()).toBe(false);
+    });
+
+    describe('when namespace is subject to high limit and not above size limit', () => {
+      it('hides ProjectLimitsExcessStorageBreakdownCard when subject', () => {
+        createComponent({
+          provide: {
+            isUsingNamespaceEnforcement: false,
+            isUsingProjectEnforcementWithLimits: true,
+            subjectToHighLimit: true,
+            aboveSizeLimit: false,
+          },
+        });
+        expect(findProjectLimitsExcessStorageBreakdownCard().exists()).toBe(false);
+      });
     });
   });
 });

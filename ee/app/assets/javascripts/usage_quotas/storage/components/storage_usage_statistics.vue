@@ -32,6 +32,8 @@ export default {
     'purchaseStorageUrl',
     'buyAddonTargetAttr',
     'namespacePlanName',
+    'aboveSizeLimit',
+    'subjectToHighLimit',
     'isUsingProjectEnforcementWithLimits',
     'isUsingProjectEnforcementWithNoLimits',
     'isUsingNamespaceEnforcement',
@@ -99,6 +101,9 @@ export default {
         LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions.reason)
       );
     },
+    shouldShowLimitUI() {
+      return !this.subjectToHighLimit || this.aboveSizeLimit;
+    },
   },
   methods: {
     showLimitedAccessModal() {
@@ -145,7 +150,7 @@ export default {
         >
       </template>
 
-      <template v-if="isUsingProjectEnforcementWithLimits">
+      <template v-if="isUsingProjectEnforcementWithLimits && shouldShowLimitUI">
         <gl-sprintf
           :message="
             s__(
@@ -196,7 +201,7 @@ export default {
         />
 
         <project-limits-excess-storage-breakdown-card
-          v-else-if="isUsingProjectEnforcementWithLimits"
+          v-else-if="isUsingProjectEnforcementWithLimits && shouldShowLimitUI"
           :purchased-storage="additionalPurchasedStorageSize"
           :limited-access-mode-enabled="shouldShowLimitedAccessModal"
           :loading="loading"

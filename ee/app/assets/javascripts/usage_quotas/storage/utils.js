@@ -16,6 +16,8 @@ export const parseNamespaceProvideData = (el) => {
     purchaseStorageUrl,
     buyAddonTargetAttr,
     enforcementType,
+    aboveSizeLimit,
+    subjectToHighLimit,
     isInNamespaceLimitsPreEnforcement,
     totalRepositorySizeExcess,
   } = el.dataset;
@@ -48,6 +50,8 @@ export const parseNamespaceProvideData = (el) => {
     isUsingNamespaceEnforcement,
     isUsingProjectEnforcementWithLimits,
     isUsingProjectEnforcementWithNoLimits,
+    aboveSizeLimit: parseBoolean(aboveSizeLimit),
+    subjectToHighLimit: parseBoolean(subjectToHighLimit),
     customSortKey: isUsingProjectEnforcementWithLimits ? 'EXCESS_REPO_STORAGE_SIZE_DESC' : null,
     helpLinks,
   };
