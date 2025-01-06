@@ -1,6 +1,7 @@
 import { uniqueId, isNumber } from 'lodash';
 import { n__, s__ } from '~/locale';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const APPROVER_TYPE_DICT = {
   [GROUP_TYPE]: ['group_approvers', 'group_approvers_ids'],
@@ -134,9 +135,6 @@ export const ACTION_OPTIONS = {
   [BOT_MESSAGE_TYPE]: s__('SecurityOrchestration|Send bot message'),
 };
 
-export const ACTION_LISTBOX_ITEMS = Object.entries(ACTION_OPTIONS).map(([value, text]) => ({
-  value,
-  text,
-}));
+export const ACTION_LISTBOX_ITEMS = mapToListboxItems(ACTION_OPTIONS);
 
 export const DISABLED_BOT_MESSAGE_ACTION = { ...buildAction(BOT_MESSAGE_TYPE), enabled: false };

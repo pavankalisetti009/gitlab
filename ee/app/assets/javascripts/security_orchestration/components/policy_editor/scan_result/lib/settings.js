@@ -3,6 +3,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { isGroup } from 'ee/security_orchestration/components/utils';
+import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const BLOCK_BRANCH_MODIFICATION = 'block_branch_modification';
 export const BLOCK_GROUP_BRANCH_MODIFICATION = 'block_group_branch_modification';
@@ -164,12 +165,6 @@ export const buildSettingsList = (
   }, {});
 };
 
-const mapToListBoxItems = (textMap) =>
-  Object.entries(textMap).map(([value, text]) => ({
-    value,
-    text,
-  }));
-
 export const WITHOUT_EXCEPTIONS = 'without_exceptions';
 export const EXCEPT_GROUPS = 'except_groups';
 
@@ -178,7 +173,7 @@ export const EXCEPTION_GROUPS_TEXTS = {
   [EXCEPT_GROUPS]: s__('SecurityOrchestration|except groups'),
 };
 
-export const EXCEPTION_GROUPS_LISTBOX_ITEMS = mapToListBoxItems(EXCEPTION_GROUPS_TEXTS);
+export const EXCEPTION_GROUPS_LISTBOX_ITEMS = mapToListboxItems(EXCEPTION_GROUPS_TEXTS);
 
 /**
  * Transforms a group into a standardized group object

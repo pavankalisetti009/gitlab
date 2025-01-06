@@ -1,4 +1,5 @@
 import { s__ } from '~/locale';
+import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const PROJECTS_WITH_FRAMEWORK = 'projects_with_framework';
 export const ALL_PROJECTS_IN_GROUP = 'all_projects_in_group';
@@ -12,13 +13,7 @@ export const PROJECT_SCOPE_TYPE_TEXTS = {
   [ALL_PROJECTS_IN_LINKED_GROUPS]: s__('SecurityOrchestration|all projects in the linked groups'),
 };
 
-const mapToListBoxItems = (textMap) =>
-  Object.entries(textMap).map(([value, text]) => ({
-    value,
-    text,
-  }));
-
-export const PROJECT_SCOPE_TYPE_LISTBOX_ITEMS = mapToListBoxItems(PROJECT_SCOPE_TYPE_TEXTS);
+export const PROJECT_SCOPE_TYPE_LISTBOX_ITEMS = mapToListboxItems(PROJECT_SCOPE_TYPE_TEXTS);
 
 export const WITHOUT_EXCEPTIONS = 'without_exceptions';
 export const EXCEPT_PROJECTS = 'except_projects';
@@ -39,5 +34,5 @@ export const GROUP_EXCEPTION_TYPE_TEXTS = {
   [EXCEPT_GROUPS]: s__('SecurityOrchestration|except groups'),
 };
 
-export const EXCEPTION_TYPE_LISTBOX_ITEMS = mapToListBoxItems(EXCEPTION_TYPE_TEXTS);
-export const GROUP_EXCEPTION_TYPE_LISTBOX_ITEMS = mapToListBoxItems(GROUP_EXCEPTION_TYPE_TEXTS);
+export const EXCEPTION_TYPE_LISTBOX_ITEMS = mapToListboxItems(EXCEPTION_TYPE_TEXTS);
+export const GROUP_EXCEPTION_TYPE_LISTBOX_ITEMS = mapToListboxItems(GROUP_EXCEPTION_TYPE_TEXTS);
