@@ -15,19 +15,17 @@ module Gitlab
           DEFAULT_SCAN_POLICY_STAGE = 'scan-policies'
           DEFAULT_STAGES = Gitlab::Ci::Config::Entry::Stages.default
 
-          def initialize(config, context, ref, source)
+          def initialize(config, context, ref, pipeline_policy_context)
             @config = config.deep_dup
             @context = context
             @project = context.project
             @ref = ref
-            @source = source
+            @pipeline_policy_context = pipeline_policy_context
             @start = Time.current
           end
 
           def perform
-            return @config unless project&.feature_available?(:security_orchestration_policies)
-            return @config if valid_security_orchestration_policy_configurations.blank?
-            return @config unless extend_configuration?
+            return @config unless scan_execution_policy_context&.has_scan_execution_policies?
 
             @config[:workflow] = { rules: [{ when: 'always' }] } if @config.empty?
 
@@ -43,7 +41,13 @@ module Gitlab
 
           private
 
-          attr_reader :project, :ref, :context
+          attr_reader :project, :ref, :context, :pipeline_policy_context
+
+          delegate :active_scan_execution_actions, to: :scan_execution_policy_context
+
+          def scan_execution_policy_context
+            pipeline_policy_context&.scan_execution_context(ref)
+          end
 
           def cleanup_stages(stages)
             stages.uniq!
@@ -57,11 +61,6 @@ module Gitlab
             @merged_security_policy_config ||= merge_policies_with_stages(@config)
           end
 
-          def valid_security_orchestration_policy_configurations
-            @valid_security_orchestration_policy_configurations ||=
-              ::Gitlab::Security::Orchestration::ProjectPolicyConfigurations.new(@project).all
-          end
-
           def prepare_on_demand_scans_template
             scan_templates[:on_demand]
           end
@@ -73,7 +72,7 @@ module Gitlab
           def scan_templates
             @scan_templates ||= ::Security::SecurityOrchestrationPolicies::ScanPipelineService
               .new(context)
-              .execute(active_scan_template_actions)
+              .execute(active_scan_execution_actions)
           end
 
           ## Add `dast` to the end of stages if `dast` is not in stages already
@@ -136,18 +135,8 @@ module Gitlab
             end
           end
 
-          def active_scan_template_actions
-            return [] if valid_security_orchestration_policy_configurations.blank?
-
-            valid_security_orchestration_policy_configurations
-              .flat_map do |configuration|
-                configuration.active_policies_pipeline_scan_actions_for_project(ref, project)
-              end.compact.uniq
-          end
-          strong_memoize_attr :active_scan_template_actions
-
           def track_internal_events_for_enforced_scans
-            active_scan_template_actions.each do |action|
+            active_scan_execution_actions.each do |action|
               next unless action[:scan]
 
               track_internal_event(
@@ -164,12 +153,6 @@ module Gitlab
             ::Gitlab::Ci::Pipeline::Metrics
               .pipeline_security_orchestration_policy_processing_duration_histogram
               .observe({}, duration.seconds)
-          end
-
-          def extend_configuration?
-            return false if @source.nil?
-
-            Enums::Ci::Pipeline.ci_sources.key?(@source.to_sym)
           end
         end
       end

@@ -3,11 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, feature_category: :security_policy_management do
-  subject(:perform_service) { described_class.new(config, ci_context, ref, source).perform }
+  subject(:perform_service) { described_class.new(config, ci_context, ref, pipeline_policy_context).perform }
 
   let_it_be(:config) { { image: 'image:1.0.0' } }
 
   let(:ci_context) { Gitlab::Ci::Config::External::Context.new(project: project) }
+  let(:pipeline_policy_context) do
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
+  end
+
+  let(:command) do
+    Gitlab::Ci::Pipeline::Chain::Command.new(
+      project: project,
+      source: source)
+  end
 
   let(:ref) { 'refs/heads/master' }
   let(:source) { 'pipeline' }
@@ -55,6 +64,16 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
 
   let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [policy]) }
   let_it_be(:namespace_policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [namespace_policy]) }
+  let_it_be(:db_project_policy) do
+    create(:security_policy, :scan_execution_policy, linked_projects: [project], content: policy.slice(:actions),
+      security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+  end
+
+  let_it_be(:db_namespace_policy) do
+    create(:security_policy, :scan_execution_policy, linked_projects: [project],
+      content: namespace_policy.slice(:actions),
+      security_orchestration_policy_configuration: namespace_security_orchestration_policy_configuration)
+  end
 
   before do
     allow_next_instance_of(Repository, anything, anything, anything) do |repository|
