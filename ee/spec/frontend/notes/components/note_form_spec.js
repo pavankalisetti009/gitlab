@@ -124,6 +124,28 @@ describe('issue_comment_form component', () => {
             await cancelClick();
             expect(measureCommentTemperatureMock).not.toHaveBeenCalled();
           });
+
+          describe('keyboard shortcuts', () => {
+            it.each`
+              eventProps                           | description
+              ${{ metaKey: true }}                 | ${'Cmd+Enter'}
+              ${{ ctrlKey: true }}                 | ${'Ctrl+Enter'}
+              ${{ metaKey: true, shiftKey: true }} | ${'Shift+Cmd+Enter'}
+              ${{ ctrlKey: true, shiftKey: true }} | ${'Shift+Ctrl+Enter'}
+            `(
+              'when `$description` is pressed it measures the comment temperature and does not send',
+              async ({ eventProps } = {}) => {
+                const textarea = wrapper.find('textarea');
+                textarea.trigger('keydown.enter', eventProps);
+
+                await nextTick();
+
+                expect(measureCommentTemperatureMock).toHaveBeenCalled();
+                expect(wrapper.emitted('submitForm')).toBeUndefined();
+                expect(findMarkdownEditorTextarea().element.value).toBe('very bad note');
+              },
+            );
+          });
         });
 
         describe.each`
@@ -198,6 +220,28 @@ describe('issue_comment_form component', () => {
               expect(wrapper.emitted('handleFormUpdateAddToReview')).toBeUndefined();
             }
             expect(measureCommentTemperatureMock).toHaveBeenCalledTimes(1);
+          });
+
+          describe('keyboard shortcuts', () => {
+            it.each`
+              eventProps                           | description
+              ${{ metaKey: true }}                 | ${'Cmd+Enter'}
+              ${{ ctrlKey: true }}                 | ${'Ctrl+Enter'}
+              ${{ metaKey: true, shiftKey: true }} | ${'Shift+Cmd+Enter'}
+              ${{ ctrlKey: true, shiftKey: true }} | ${'Shift+Ctrl+Enter'}
+            `(
+              'when `$description` is pressed it measures the comment temperature and does not send',
+              async ({ eventProps } = {}) => {
+                const textarea = wrapper.find('textarea');
+                textarea.trigger('keydown.enter', eventProps);
+
+                await nextTick();
+
+                expect(measureCommentTemperatureMock).toHaveBeenCalled();
+                expect(wrapper.emitted('submitForm')).toBeUndefined();
+                expect(findMarkdownEditorTextarea().element.value).toBe('very bad note');
+              },
+            );
           });
         });
       });
