@@ -8,6 +8,7 @@ module EE
 
     def preloads
       super.tap do |h|
+        h[:change_requesters] = [:change_requesters]
         h[:approved] = [*approved_mergeability_check_preloads, *security_policy_violation_check_preloads]
 
         h[:mergeable] += [
