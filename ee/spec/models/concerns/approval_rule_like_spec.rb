@@ -185,9 +185,27 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
     end
 
     describe '#policy_name' do
-      it 'trims trailing digit coming from multiple rules belonging to the same policy' do
-        subject.update!(name: 'Policy 1')
-        expect(subject.policy_name).to eq('Policy')
+      context 'when approval_policy_rule is not present' do
+        it 'trims trailing digit coming from multiple rules belonging to the same policy' do
+          subject.update!(name: 'Policy 1')
+          expect(subject.policy_name).to eq('Policy')
+        end
+      end
+
+      context 'when approval_policy_rule is present' do
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+        let_it_be(:security_policy) { approval_policy_rule.security_policy }
+        let_it_be(:policy_configuration) { security_policy.security_orchestration_policy_configuration }
+
+        it 'gets name from security_policy' do
+          subject.update!(scan_result_policy_read: create(:scan_result_policy_read,
+            orchestration_policy_idx: security_policy.policy_index,
+            rule_idx: approval_policy_rule.rule_index,
+            security_orchestration_policy_configuration: policy_configuration))
+          subject.update!(security_orchestration_policy_configuration: policy_configuration)
+
+          expect(subject.policy_name).to eq(security_policy.name)
+        end
       end
     end
 
