@@ -76,7 +76,7 @@ module Gitlab
     end
 
     def read(length = nil, outbuf = nil)
-      out = []
+      out = nil
 
       length ||= size - tell
 
@@ -87,15 +87,16 @@ module Gitlab
         chunk_bytes = [BUFFER_SIZE - chunk_offset, length].min
         data_slice = data.byteslice(0, chunk_bytes)
 
+        out ||= []
         out << data_slice
         @tell += data_slice.bytesize
         length -= data_slice.bytesize
       end
 
-      out = out.join
+      out = out&.join
 
       # If outbuf is passed, we put the output into the buffer. This supports IO.copy_stream functionality
-      if outbuf
+      if outbuf && out
         outbuf.replace(out)
       end
 
