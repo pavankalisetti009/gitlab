@@ -39,11 +39,11 @@ module Search
         user.enabled_zoekt?
       end
 
-      def index_async(project_id, _options = {})
+      def index_async(project_id)
         IndexingTaskWorker.perform_async(project_id, :index_repo)
       end
 
-      def index_in(delay, project_id, _options = {})
+      def index_in(delay, project_id)
         IndexingTaskWorker.perform_async(project_id, :index_repo, { delay: delay })
       end
 
