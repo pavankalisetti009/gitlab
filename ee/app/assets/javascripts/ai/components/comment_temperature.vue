@@ -28,6 +28,7 @@ export default {
     ),
     commentAnyway: __('Comment anyway'),
     checkAgain: __('Updated. Check again'),
+    leaveFeedback: __('Leave feedback'),
   },
   props: {
     userId: {
@@ -201,6 +202,15 @@ export default {
           >{{ $options.i18n.checkAgain }}</gl-button
         >
       </template>
+      <gl-button
+        class="gl-float-right"
+        category="tertiary"
+        variant="confirm"
+        href="https://gitlab.com/gitlab-org/gitlab/-/issues/511508"
+        target="_blank"
+        data-testid="feedback-link"
+        >{{ $options.i18n.leaveFeedback }}</gl-button
+      >
     </gl-alert>
   </div>
 </template>
