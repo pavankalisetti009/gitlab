@@ -27,7 +27,9 @@ module EE
     private
 
     def base_non_billable
-      bots + non_billable_guests
+      return bots + non_billable_guests if exclude_guests_from_active_count?
+
+      bots
     end
 
     def base_billable_users
