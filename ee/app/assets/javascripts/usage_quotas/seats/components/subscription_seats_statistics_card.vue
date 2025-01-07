@@ -114,7 +114,7 @@ export default {
 
 <template>
   <div
-    class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-bg-white gl-p-6"
+    class="gl-border gl-rounded-base gl-border-section gl-bg-section gl-p-5"
     data-testid="container"
   >
     <div v-if="isDataLoading">

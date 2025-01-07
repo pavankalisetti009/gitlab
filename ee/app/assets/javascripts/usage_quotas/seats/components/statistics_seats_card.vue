@@ -174,24 +174,18 @@ export default {
 </script>
 
 <template>
-  <div
-    class="gl-flex gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-bg-white gl-p-5"
-  >
+  <div class="gl-border gl-flex gl-rounded-base gl-border-section gl-bg-section gl-p-5">
     <gl-skeleton-loader v-if="isLoading" :height="64">
       <rect width="140" height="30" x="5" y="0" rx="4" />
       <rect width="240" height="10" x="5" y="40" rx="4" />
       <rect width="340" height="10" x="5" y="54" rx="4" />
     </gl-skeleton-loader>
     <div v-else class="gl-grow">
-      <p
-        v-if="shouldRenderSeatsUsedBlock"
-        class="gl-mb-3 gl-text-size-h-display gl-font-bold"
-        data-testid="seats-used"
-      >
+      <h2 v-if="shouldRenderSeatsUsedBlock" class="gl-heading-2 gl-mb-3" data-testid="seats-used">
         <span class="gl-relative gl-top-1">
           {{ seatsUsed }}
         </span>
-        <span class="gl-text-lg">
+        <span class="gl-text-lg gl-font-normal">
           {{ $options.i18n.seatsUsedText }}
         </span>
         <gl-link
@@ -201,16 +195,12 @@ export default {
         >
           <help-icon />
         </gl-link>
-      </p>
-      <p
-        v-if="shouldRenderSeatsOwedBlock"
-        class="gl-mb-0 gl-text-size-h-display gl-font-bold"
-        data-testid="seats-owed"
-      >
+      </h2>
+      <h2 v-if="shouldRenderSeatsOwedBlock" class="gl-heading-2 gl-mb-0" data-testid="seats-owed">
         <span class="gl-relative gl-top-1">
           {{ seatsOwed }}
         </span>
-        <span class="gl-text-lg">
+        <span class="gl-text-lg gl-font-normal">
           {{ $options.i18n.seatsOwedText }}
         </span>
         <gl-link
@@ -220,7 +210,7 @@ export default {
         >
           <help-icon />
         </gl-link>
-      </p>
+      </h2>
     </div>
     <gl-button
       v-if="shouldShowAddSeatsButton"
