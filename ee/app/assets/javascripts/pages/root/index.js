@@ -3,4 +3,3 @@
 // of a dashboard controller. The root index redirects for all other default dashboards.
 
 import '~/pages/root/index';
-import '../dashboard/index';
