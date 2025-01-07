@@ -13,6 +13,9 @@ module ComplianceManagement
         class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirement', optional: false
       belongs_to :namespace
 
+      has_many :project_control_compliance_statuses,
+        class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
+
       enum name: {
         scanner_sast_running: 0,
         minimum_approvals_required_2: 1,
