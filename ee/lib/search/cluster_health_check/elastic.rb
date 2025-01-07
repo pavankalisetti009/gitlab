@@ -26,7 +26,7 @@ module Search
 
         return false unless metrics
 
-        log_utilization(metrics) if Feature.enabled?(:log_advanced_search_cluster_health_elastic, type: :ops)
+        log_utilization(metrics)
 
         !metrics[:cluster_status_red]
       end
