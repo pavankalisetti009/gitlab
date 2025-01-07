@@ -29765,6 +29765,7 @@ Candidate for a model version in the model registry.
 | <a id="mlcandidate_links"></a>`_links` | [`MLCandidateLinks!`](#mlcandidatelinks) | Map of links to perform actions on the candidate. |
 | <a id="mlcandidatecijob"></a>`ciJob` | [`CiJob`](#cijob) | CI information about the job that created the candidate. |
 | <a id="mlcandidatecreatedat"></a>`createdAt` | [`Time!`](#time) | Date of creation. |
+| <a id="mlcandidatecreator"></a>`creator` | [`UserCore`](#usercore) | User that created the candidate. |
 | <a id="mlcandidateeid"></a>`eid` | [`String!`](#string) | MLflow uuid for the candidate. |
 | <a id="mlcandidateid"></a>`id` | [`MlCandidateID!`](#mlcandidateid) | ID of the candidate. |
 | <a id="mlcandidateiid"></a>`iid` | [`Int!`](#int) | IID of the candidate scoped to project. |
