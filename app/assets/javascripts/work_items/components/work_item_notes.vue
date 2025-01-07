@@ -186,12 +186,7 @@ export default {
       const modalOpen = urlParams.has('show');
 
       if (this.previewNote && !this.previewNoteLoadedInList && !modalOpen) {
-        const preview = {
-          notes: {
-            nodes: [this.previewNote],
-          },
-        };
-        visibleNotes = [...visibleNotes, preview];
+        visibleNotes = [...visibleNotes, this.previewNote];
       }
 
       if (this.sortOrder === DESC) {
@@ -245,7 +240,7 @@ export default {
         };
       },
       update(data) {
-        return data?.note;
+        return data?.note?.discussion;
       },
       result(result) {
         if (result?.errors?.length > 0) {
