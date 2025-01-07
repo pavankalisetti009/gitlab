@@ -3,6 +3,7 @@ table_name: instance_integrations
 classes:
 - Integrations::Instance::Integration
 - Integrations::Instance::Assembla
+- Integrations::Instance::Bamboo
 feature_categories:
 - integrations
 description: Support 3rd party instance-wide integrations
