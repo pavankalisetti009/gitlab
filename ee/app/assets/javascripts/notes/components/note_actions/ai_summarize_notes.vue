@@ -67,7 +67,7 @@ export default {
   },
   i18n: {
     button: s__('AISummary|View summary'),
-    tooltip: s__('AISummary|Generates a summary of all comments'),
+    tooltip: s__('AISummary|Generates a summary of this issue'),
   },
 };
 </script>
@@ -75,7 +75,7 @@ export default {
 <template>
   <gl-button
     v-gl-tooltip
-    icon="tanuki-ai"
+    icon="duo-chat"
     :disabled="loading"
     :loading="loading"
     :title="$options.i18n.tooltip"
