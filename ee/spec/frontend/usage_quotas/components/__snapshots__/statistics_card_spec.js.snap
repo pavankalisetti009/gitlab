@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`StatisticsCard denominator block renders denominator block with all elements when all props are passed 1`] = `
-<p
-  class="gl-font-bold gl-mb-3 gl-text-size-h-display"
+<h3
+  class="gl-heading-2 gl-mb-3"
   data-testid="denominator"
 >
   1,000
@@ -23,5 +23,5 @@ exports[`StatisticsCard denominator block renders denominator block with all ele
       MiB
     </span>
   </span>
-</p>
+</h3>
 `;

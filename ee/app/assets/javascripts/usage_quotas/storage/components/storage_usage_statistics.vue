@@ -115,7 +115,9 @@ export default {
 <template>
   <div>
     <div class="gl-flex gl-items-center gl-justify-between">
-      <h3 data-testid="overview-subtitle">{{ s__('UsageQuota|Namespace overview') }}</h3>
+      <h2 class="gl-heading-2 gl-my-3" data-testid="overview-subtitle">
+        {{ s__('UsageQuota|Namespace overview') }}
+      </h2>
       <template v-if="isPurchaseButtonShown">
         <gl-button
           v-if="!shouldShowLimitedAccessModal"

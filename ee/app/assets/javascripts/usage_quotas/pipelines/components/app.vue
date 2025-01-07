@@ -240,8 +240,8 @@ export default {
 
 <template>
   <div>
-    <h3 data-testid="overview-subtitle">{{ __('Pipelines') }}</h3>
-    <p class="gl-mb-0" data-testid="pipelines-description">
+    <h2 class="gl-heading-2 gl-my-3" data-testid="overview-subtitle">{{ __('Pipelines') }}</h2>
+    <p class="gl-mb-0 gl-text-subtle" data-testid="pipelines-description">
       {{
         s__(
           'UsageQuota|Compute units usage is calculated based on shared runners duration with cost factors applied.',
@@ -327,7 +327,7 @@ export default {
     </div>
 
     <section class="gl-my-5">
-      <h2 class="gl-text-lg">{{ $options.USAGE_BY_MONTH_HEADER }}</h2>
+      <h3 class="gl-heading-3 gl-mb-3">{{ $options.USAGE_BY_MONTH_HEADER }}</h3>
 
       <gl-loading-icon
         v-if="isLoadingYearUsageData"
@@ -344,7 +344,7 @@ export default {
     </section>
 
     <section class="gl-my-5">
-      <h2 class="gl-text-lg">{{ $options.USAGE_BY_PROJECT_HEADER }}</h2>
+      <h3 class="gl-heading-3">{{ $options.USAGE_BY_PROJECT_HEADER }}</h3>
 
       <div class="gl-my-3 gl-flex">
         <gl-form-group :label="s__('UsageQuota|Filter projects data by month')">

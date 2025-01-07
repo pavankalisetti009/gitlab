@@ -46,7 +46,7 @@ export default {
     <section class="gl-flex gl-justify-between">
       <section>
         <slot name="description"></slot>
-        <p v-if="usageValue" class="gl-mb-3 gl-text-size-h-display gl-font-bold">
+        <h2 v-if="usageValue" class="gl-heading-2 gl-mb-3">
           <span data-testid="usage-value">{{ usageValue }}</span>
           <span v-if="usageUnit" data-testid="usage-unit" class="gl-text-lg">{{ usageUnit }}</span>
           <span v-if="totalValue">
@@ -56,7 +56,7 @@ export default {
               totalUnit
             }}</span>
           </span>
-        </p>
+        </h2>
       </section>
       <div class="gl-align-self-top">
         <slot name="actions"></slot>
