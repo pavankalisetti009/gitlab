@@ -202,6 +202,16 @@ RSpec.describe EE::Users::CalloutsHelper do
           expect(show_pipl_compliance_alert?).to be(false)
         end
       end
+
+      context 'when the email has not been sent yet' do
+        before do
+          pipl_user.reset_notification!
+        end
+
+        it 'does not show the alert' do
+          expect(show_pipl_compliance_alert?).to be(false)
+        end
+      end
     end
   end
 

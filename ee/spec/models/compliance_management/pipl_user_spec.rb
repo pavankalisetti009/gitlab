@@ -423,5 +423,13 @@ RSpec.describe ComplianceManagement::PiplUser,
     it 'calculate the remaining pipl access days', :freeze_time do
       expect(remaining_pipl_access_days).to be(50)
     end
+
+    context 'when email is not sent yet' do
+      let(:pipl_user) { create(:pipl_user, initial_email_sent_at: nil) }
+
+      it 'returns null' do
+        expect(remaining_pipl_access_days).to be_nil
+      end
+    end
   end
 end
