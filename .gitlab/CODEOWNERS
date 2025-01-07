@@ -1289,7 +1289,7 @@ lib/gitlab/checks/**
 /app/models/concerns/mirror_authentication.rb
 /app/models/concerns/select_for_project_authorization.rb
 /app/models/concerns/token_authenticatable.rb
-/app/models/concerns/token_authenticatable_strategies/
+/lib/authn/token_field/
 /app/models/oauth_access_grant.rb
 /app/models/oauth_access_token.rb
 /app/models/personal_access_token.rb
