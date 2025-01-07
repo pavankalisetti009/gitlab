@@ -124,6 +124,25 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
       end
     end
 
+    context 'when removing the user async' do
+      before do
+        stub_feature_flags(billable_member_async_deletion: true)
+
+        visit group_seat_usage_path(group)
+        wait_for_all_requests
+      end
+
+      it 'shows a flash message' do
+        remove_user(maintainer)
+        confirm_remove_user(maintainer)
+
+        wait_for_all_requests
+
+        expect(page.find('.flash-container')).to have_content('User successfully scheduled for removal. ' \
+          'This process might take some time. Refresh the page to see the changes.')
+      end
+    end
+
     context 'when removing a user from a sub-group' do
       it 'updates the seat table of the parent group' do
         within member_table_selector do

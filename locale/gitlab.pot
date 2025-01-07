@@ -9477,6 +9477,9 @@ msgstr ""
 msgid "Billing|Unlimited members during your trial"
 msgstr ""
 
+msgid "Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes."
+msgstr ""
+
 msgid "Billing|User was successfully removed"
 msgstr ""
 
@@ -17897,6 +17900,9 @@ msgid "DastProfiles|Change site profile"
 msgstr ""
 
 msgid "DastProfiles|Choose a scan method"
+msgstr ""
+
+msgid "DastProfiles|Comma-separated list of check identifiers to use for the scan. For identifiers, see %{linkStart}vulnerability checks.%{linkEnd}"
 msgstr ""
 
 msgid "DastProfiles|Could not create the scanner profile. Please try again."

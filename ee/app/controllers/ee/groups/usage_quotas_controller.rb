@@ -19,6 +19,7 @@ module EE
           push_frontend_feature_flag(:product_analytics_usage_quota_annual_data, group)
           push_frontend_feature_flag(:product_analytics_billing, group, type: :development)
           push_frontend_feature_flag(:product_analytics_billing_override, group, type: :wip)
+          push_frontend_feature_flag(:billable_member_async_deletion, group, type: :gitlab_com_derisk)
         end
       end
 
