@@ -39,15 +39,6 @@ These versions of Amazon Linux are supported.
 | Amazon Linux 2    | GitLab CE / GitLab EE 14.9.0   | `amd64`, `arm64` | [Amazon Linux 2 installation documentation](https://about.gitlab.com/install/#amazonlinux-2)       | June 2025            | [Amazon Linux details](https://aws.amazon.com/amazon-linux-2/faqs/) |
 | Amazon Linux 2023 | GitLab CE / GitLab EE 16.3.0   | `amd64`, `arm64` | [Amazon Linux 2023 installation documentation](https://about.gitlab.com/install/#amazonlinux-2023) | 2028                 | [Amazon Linux details](https://docs.aws.amazon.com/linux/al2023/ug/release-cadence.html) |
 
-## CentOS and Scientific Linux
-
-These versions of CentOS and Scientific Linux are supported.
-
-| Operating system | First supported GitLab version | Architecture | Installation documentation                                                          | Operating system EOL | Details |
-|:-----------------|:-------------------------------|:-------------|:------------------------------------------------------------------------------------|:---------------------|:--------|
-| CentOS 7         | GitLab CE / GitLab EE 7.10.0   | `x86_64`     | [CentOS installation documentation](https://about.gitlab.com/install/#centos-7)     | June 2024            | [CentOS Linux details](https://www.centos.org/about/) |
-| Scientific Linux | GitLab CE / GitLab EE 8.14.0   | `x86_64`     | [Use CentOS installation documentation](https://about.gitlab.com/install/#centos-7) | June 2024            | [Scientific Linux details](https://scientificlinux.org/downloads/sl-versions/sl7/) |
-
 ## Debian
 
 These versions of Debian are supported.
@@ -74,7 +65,6 @@ These versions of Oracle Linux are supported.
 
 | Operating system | First supported GitLab version | Architecture | Installation documentation                                                              | Operating system EOL | Details |
 |:-----------------|:-------------------------------|:-------------|:----------------------------------------------------------------------------------------|:---------------------|:--------|
-| Oracle Linux 7   | GitLab CE / GitLab EE 8.14.0   | `x86_64`     | [Use CentOS installation documentation](https://about.gitlab.com/install/#centos-7)     | Dec 2024             | [Oracle Linux details](https://www.oracle.com/a/ocom/docs/elsp-lifetime-069338.pdf) |
 | Oracle Linux 8   | GitLab CE / GitLab EE 12.8.1   | `x86_64`     | [Use AlmaLinux installation documentation](https://about.gitlab.com/install/#almalinux) | July 2029            | [Oracle Linux details](https://www.oracle.com/a/ocom/docs/elsp-lifetime-069338.pdf) |
 | Oracle Linux 9   | GitLab CE / GitLab EE 16.2.0   | `x86_64`     | [Use AlmaLinux installation documentation](https://about.gitlab.com/install/#almalinux) | June 2032            | [Oracle Linux details](https://www.oracle.com/a/ocom/docs/elsp-lifetime-069338.pdf) |
 
@@ -148,7 +138,10 @@ release for them can be found below:
 | OS version       | End of life                                                                         | Last supported GitLab version |
 |:-----------------|:------------------------------------------------------------------------------------|:------------------------------|
 | CentOS 6         | [November 2020](https://www.centos.org/about/)                                      | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=13.6&filter=all&filter=all&dist=el%2F6) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=13.6&filter=all&filter=all&dist=el%2F6) 13.6 |
+| CentOS 7         | [June 2024](https://www.centos.org/about/)                                          | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=17.7&filter=all&filter=all&dist=el%2F7) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=17.7&filter=all&filter=all&dist=el%2F7) 17.7 |
 | CentOS 8         | [December 2021](https://www.centos.org/about/)                                      | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=14.6&filter=all&filter=all&dist=el%2F8) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=14.6&filter=all&filter=all&dist=el%2F8) 14.6 |
+| Oracle Linux 7   | [December 2024](https://endoflife.date/oracle-linux)                                | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=17.7&filter=all&filter=all&dist=ol%2F7) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=17.7&filter=all&filter=all&dist=ol%2F7) 17.7 |
+| Scientific Linux 7 | [June 2024](https://scientificlinux.org/downloads/sl-versions/sl7/)               | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=17.7&filter=all&filter=all&dist=scientific%2F7) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=17.7&filter=all&filter=all&dist=scientific%2F7) 17.7 |
 | Debian 7 Wheezy  | [May 2018](https://www.debian.org/News/2018/20180601)                               | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=gitlab-ce_11.6&dist=debian%2Fwheezy) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=gitlab-ee_11.6&dist=debian%2Fwheezy) 11.6 |
 | Debian 8 Jessie  | [June 2020](https://www.debian.org/News/2020/20200709)                              | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=gitlab-ce_13.2&dist=debian%2Fjessie) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=gitlab-ee_13.2&dist=debian%2Fjessie) 13.3 |
 | Debian 9 Stretch | [June 2022](https://lists.debian.org/debian-lts-announce/2022/07/msg00002.html)     | [GitLab CE](https://packages.gitlab.com/app/gitlab/gitlab-ce/search?q=gitlab-ce_15.2&dist=debian%2Fstretch) / [GitLab EE](https://packages.gitlab.com/app/gitlab/gitlab-ee/search?q=gitlab-ee_15.2&dist=debian%2Fstretch) 15.2 |
