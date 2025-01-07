@@ -13,19 +13,19 @@ import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { METRICS_REQUESTS } from '../constants';
-import DurationChart from './duration_chart.vue';
+import StageChart from './duration_charts/stage_chart.vue';
 import TypeOfWorkChartsLoader from './type_of_work_charts_loader.vue';
 import ValueStreamAggregationStatus from './value_stream_aggregation_status.vue';
 import ValueStreamAggregatingWarning from './value_stream_aggregating_warning.vue';
 import ValueStreamEmptyState from './value_stream_empty_state.vue';
 import ValueStreamSelect from './value_stream_select.vue';
-import DurationOverviewChart from './duration_overview_chart.vue';
+import OverviewChart from './duration_charts/overview_chart.vue';
 
 export default {
   name: 'CycleAnalytics',
   components: {
     PageHeading,
-    DurationChart,
+    StageChart,
     GlEmptyState,
     TypeOfWorkChartsLoader,
     StageTable,
@@ -37,7 +37,7 @@ export default {
     ValueStreamMetrics,
     ValueStreamSelect,
     UrlSync,
-    DurationOverviewChart,
+    OverviewChart,
   },
   props: {
     emptyStateSvgPath: {
@@ -278,8 +278,8 @@ export default {
           :is-licensed="isAllowed"
         />
         <div :class="[isOverviewStageSelected ? 'gl-mt-2' : 'gl-mt-6']">
-          <duration-overview-chart v-if="isOverviewStageSelected" class="gl-mb-6" />
-          <duration-chart v-else class="gl-mb-6" />
+          <overview-chart v-if="isOverviewStageSelected" class="gl-mb-6" />
+          <stage-chart v-else class="gl-mb-6" />
           <type-of-work-charts-loader
             v-if="enableTasksByTypeChart"
             v-show="isOverviewStageSelected"

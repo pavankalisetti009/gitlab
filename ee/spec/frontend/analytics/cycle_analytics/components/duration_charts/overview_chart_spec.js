@@ -4,7 +4,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
 import { GlIcon, GlAlert } from '@gitlab/ui';
-import DurationOverviewChart from 'ee/analytics/cycle_analytics/components/duration_overview_chart.vue';
+import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import {
@@ -12,12 +12,12 @@ import {
   DURATION_OVERVIEW_CHART_NO_DATA_LEGEND_ITEM,
 } from 'ee/analytics/cycle_analytics/constants';
 import {
-  durationOverviewChartPlottableData as mockDurationOverviewChartPlottableData,
+  durationOverviewChartPlottableData as mockOverviewChartPlottableData,
   durationOverviewDataSeries,
   durationOverviewDataNullSeries,
   durationOverviewChartOptionsData,
   durationOverviewLegendSeriesInfo,
-} from '../mock_data';
+} from '../../mock_data';
 
 Vue.use(Vuex);
 
@@ -33,7 +33,7 @@ const fakeStore = ({ initialGetters, initialState, rootGetters, rootState }) =>
       durationChart: {
         namespaced: true,
         getters: {
-          durationOverviewChartPlottableData: () => mockDurationOverviewChartPlottableData,
+          durationOverviewChartPlottableData: () => mockOverviewChartPlottableData,
           ...initialGetters,
         },
         state: {
@@ -44,18 +44,17 @@ const fakeStore = ({ initialGetters, initialState, rootGetters, rootState }) =>
     },
   });
 
-describe('DurationOverviewChart', () => {
+describe('OverviewChart', () => {
   let wrapper;
   let mockEChartInstance;
 
   const findChartDescription = () => wrapper.findComponent(GlIcon);
-  const findDurationOverviewChart = () => wrapper.findComponent(GlAreaChart);
+  const findOverviewChart = () => wrapper.findComponent(GlAreaChart);
   const findLoader = () => wrapper.findComponent(ChartSkeletonLoader);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findNoDataAvailableState = (_wrapper) => _wrapper.findComponent(NoDataAvailableState);
 
-  const emitChartCreated = () =>
-    findDurationOverviewChart().vm.$emit('created', mockEChartInstance);
+  const emitChartCreated = () => findOverviewChart().vm.$emit('created', mockEChartInstance);
 
   const mockChartOptionSeries = [...durationOverviewDataSeries, ...durationOverviewDataNullSeries];
 
@@ -76,7 +75,7 @@ describe('DurationOverviewChart', () => {
       },
     };
 
-    wrapper = shallowMount(DurationOverviewChart, {
+    wrapper = shallowMount(OverviewChart, {
       store: fakeStore({ initialState, initialGetters, rootGetters, rootState }),
       stubs: {
         ChartSkeletonLoader: true,
@@ -92,7 +91,7 @@ describe('DurationOverviewChart', () => {
     });
 
     it('renders the chart', () => {
-      expect(findDurationOverviewChart().exists()).toBe(true);
+      expect(findOverviewChart().exists()).toBe(true);
     });
 
     it('renders the chart description', () => {
@@ -100,7 +99,7 @@ describe('DurationOverviewChart', () => {
     });
 
     it('correctly sets the chart options data property', () => {
-      const chartDataProps = findDurationOverviewChart().props('data');
+      const chartDataProps = findOverviewChart().props('data');
 
       expect(chartDataProps).toStrictEqual([
         ...durationOverviewChartOptionsData,
@@ -109,16 +108,14 @@ describe('DurationOverviewChart', () => {
     });
 
     it('correctly sets the chart legend-series-info property', () => {
-      const chartLegendSeriesInfoProps = findDurationOverviewChart().props('legendSeriesInfo');
+      const chartLegendSeriesInfoProps = findOverviewChart().props('legendSeriesInfo');
 
       expect(chartLegendSeriesInfoProps).toStrictEqual([
         ...durationOverviewLegendSeriesInfo,
         DURATION_OVERVIEW_CHART_NO_DATA_LEGEND_ITEM,
       ]);
 
-      expect(chartLegendSeriesInfoProps).toHaveLength(
-        mockDurationOverviewChartPlottableData.length + 1,
-      );
+      expect(chartLegendSeriesInfoProps).toHaveLength(mockOverviewChartPlottableData.length + 1);
     });
   });
 

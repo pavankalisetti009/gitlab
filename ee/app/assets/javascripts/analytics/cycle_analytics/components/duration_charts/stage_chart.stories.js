@@ -1,17 +1,17 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
-import DurationChart from './duration_chart.vue';
-import { durationChartData, selectedStage } from './stories_constants';
+import StageChart from './stage_chart.vue';
+import { stageChartData, selectedStage } from './stories_constants';
 
 export default {
-  component: DurationChart,
-  title: 'ee/analytics/cycle_analytics/components/duration_chart',
+  component: StageChart,
+  title: 'ee/analytics/cycle_analytics/components/stage_chart',
   decorators: [withVuexStore],
 };
 
 const Template = (args, { argTypes, createVuexStore }) => ({
-  components: { DurationChart },
+  components: { StageChart },
   props: Object.keys(argTypes),
-  template: '<duration-chart v-bind="$props" />',
+  template: '<stage-chart v-bind="$props" />',
   store: createVuexStore({
     state: {
       selectedStage,
@@ -20,7 +20,7 @@ const Template = (args, { argTypes, createVuexStore }) => ({
       durationChart: {
         namespaced: true,
         getters: {
-          durationChartPlottableData: () => durationChartData,
+          durationChartPlottableData: () => stageChartData,
         },
         state: {
           isLoading: false,

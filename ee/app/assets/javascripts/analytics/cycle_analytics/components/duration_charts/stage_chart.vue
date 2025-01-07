@@ -19,13 +19,13 @@ import {
   DURATION_CHART_X_AXIS_TITLE,
   DURATION_CHART_Y_AXIS_TITLE,
   DURATION_CHART_TOOLTIP_NO_DATA,
-} from '../constants';
-import NoDataAvailableState from './no_data_available_state.vue';
+} from '../../constants';
+import NoDataAvailableState from '../no_data_available_state.vue';
 
 const formatTooltipDate = (date) => dateFormat(date, dateFormats.defaultDate);
 
 export default {
-  name: 'DurationChart',
+  name: 'StageChart',
   components: {
     GlAlert,
     GlIcon,

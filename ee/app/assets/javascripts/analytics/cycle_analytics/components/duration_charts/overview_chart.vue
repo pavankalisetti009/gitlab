@@ -15,16 +15,16 @@ import {
   DURATION_TOTAL_TIME_LABEL,
   DURATION_OVERVIEW_CHART_NO_DATA,
   DURATION_OVERVIEW_CHART_NO_DATA_LEGEND_ITEM,
-} from '../constants';
+} from '../../constants';
 import {
   DEFAULT_NULL_SERIES_OPTIONS,
   STACKED_AREA_CHART_SERIES_OPTIONS,
   STACKED_AREA_CHART_NULL_SERIES_OPTIONS,
-} from '../../shared/constants';
-import NoDataAvailableState from './no_data_available_state.vue';
+} from '../../../shared/constants';
+import NoDataAvailableState from '../no_data_available_state.vue';
 
 export default {
-  name: 'DurationOverviewChart',
+  name: 'OverviewChart',
   components: {
     GlAlert,
     GlAreaChart,

@@ -1,24 +1,24 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
-import DurationOverviewChart from './duration_overview_chart.vue';
-import { durationOverviewChartData } from './stories_constants';
+import OverviewChart from './overview_chart.vue';
+import { overviewChartData } from './stories_constants';
 
 export default {
-  component: DurationOverviewChart,
-  title: 'ee/analytics/cycle_analytics/components/duration_overview_chart',
+  component: OverviewChart,
+  title: 'ee/analytics/cycle_analytics/components/overview_chart',
   decorators: [withVuexStore],
 };
 
 const createStoryWithState = ({ durationChart: { getters, state } = {} }) => {
   return (args, { argTypes, createVuexStore }) => ({
-    components: { DurationOverviewChart },
+    components: { OverviewChart },
     props: Object.keys(argTypes),
-    template: '<duration-overview-chart v-bind="$props" />',
+    template: '<overview-chart v-bind="$props" />',
     store: createVuexStore({
       modules: {
         durationChart: {
           namespaced: true,
           getters: {
-            durationOverviewChartPlottableData: () => durationOverviewChartData,
+            durationOverviewChartPlottableData: () => overviewChartData,
             ...getters,
           },
           state: {
