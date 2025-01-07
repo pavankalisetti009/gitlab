@@ -7,6 +7,8 @@ import {
   GlFormTextarea,
   GlFormRadio,
   GlFormRadioGroup,
+  GlSprintf,
+  GlLink,
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import DAST_VARIABLES from '../dast_variables';
@@ -30,6 +32,8 @@ export default {
     GlFormRadio,
     GlFormTextarea,
     GlFormRadioGroup,
+    GlSprintf,
+    GlLink,
   },
   props: {
     preSelectedVariables: {
@@ -98,7 +102,7 @@ export default {
       return filteredVariables.map(([id, { description }]) => ({
         value: id,
         text: id,
-        secondaryText: description,
+        secondaryText: description.message,
       }));
     },
     componentByType() {
@@ -191,18 +195,37 @@ export default {
       >
         <template #list-item="{ item: { text, secondaryText } }">
           <strong>{{ text }}</strong>
-          <div class="gl-text-sm gl-text-subtle">{{ secondaryText }}</div>
+          <div class="gl-text-sm gl-text-subtle">
+            <gl-sprintf :message="secondaryText">
+              <template #link="{ content }">
+                {{ content }}
+              </template>
+            </gl-sprintf>
+          </div>
         </template>
       </gl-collapsible-listbox>
     </gl-form-group>
     <gl-form-group
       v-if="selectedVariable.type"
       :label="$options.i18n.valueLabel"
-      :label-description="selectedVariable.description"
       label-for="dast_value_input"
       :invalid-feedback="$options.i18n.requiredFieldFeedback"
       :state="selectedValueValid"
     >
+      <template v-if="selectedVariable.description" #label-description>
+        <gl-sprintf :message="selectedVariable.description.message">
+          <template #link="{ content }">
+            <gl-link
+              v-if="selectedVariable.description.path"
+              :href="selectedVariable.description.path"
+              target="_blank"
+              >{{ content }}</gl-link
+            >
+            <span v-else>{{ content }}</span>
+          </template>
+        </gl-sprintf>
+      </template>
+
       <gl-form-radio-group
         v-if="checkSelectorType('boolean')"
         id="dast_value_input"

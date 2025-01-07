@@ -1,4 +1,3 @@
-import { shallowMount } from '@vue/test-utils';
 import {
   GlModal,
   GlCollapsibleListbox,
@@ -7,16 +6,23 @@ import {
   GlFormRadioGroup,
   GlFormRadio,
   GlFormTextarea,
+  GlSprintf,
+  GlLink,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import DastVariablesModal from 'ee/security_configuration/dast_profiles/components/dast_variables_modal.vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('DastVariablesModal', () => {
   let wrapper;
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(DastVariablesModal, {
+    wrapper = shallowMountExtended(DastVariablesModal, {
       propsData: props,
+      stubs: {
+        GlFormGroup,
+        GlSprintf,
+      },
     });
   };
 
@@ -27,6 +33,8 @@ describe('DastVariablesModal', () => {
   const findRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
   const findAllFormRadio = () => wrapper.findAllComponents(GlFormRadio);
   const findFormTextArea = () => wrapper.findComponent(GlFormTextarea);
+  const findLink = () => wrapper.findComponent(GlLink);
+  const findLabelDescription = () => wrapper.findByTestId('label-description');
 
   beforeEach(() => {
     createComponent();
@@ -88,6 +96,35 @@ describe('DastVariablesModal', () => {
     expect(items.length).toBeGreaterThan(0);
   });
 
+  it('renders the description with a link', () => {
+    const description = {
+      message: 'More details %{linkStart}here%{linkEnd}',
+      path: 'https://example.com',
+    };
+    createComponent({
+      variable: { id: 'DAST_AUTH_CLEAR_INPUT_FIELDS', type: 'string', description },
+    });
+
+    expect(findAllFormsGroups().at(1).attributes('label')).toBe('Value');
+    expect(findLabelDescription().text()).toBe('More details here');
+    expect(findLink().exists()).toBe(true);
+    expect(findLink().attributes('href')).toBe(description.path);
+    expect(findLink().text()).toBe('here');
+  });
+
+  it('renders the description without a link', () => {
+    const description = {
+      message: 'More details',
+    };
+    createComponent({
+      variable: { id: 'DAST_AUTH_CLEAR_INPUT_FIELDS', type: 'string', description },
+    });
+
+    expect(findAllFormsGroups().at(1).attributes('label')).toBe('Value');
+    expect(findLabelDescription().text()).toBe('More details');
+    expect(findLink().exists()).toBe(false);
+  });
+
   describe('on create mode', () => {
     it('displays radio buttons when a boolean variable is selected', async () => {
       createComponent();
@@ -147,5 +184,24 @@ describe('DastVariablesModal', () => {
       preSelectedVariables,
     });
     expect(findVariableSelector().props('items')).not.toContain(preSelectedVariables);
+  });
+
+  it('displays variable items with secondary text as description.message', () => {
+    const preSelectedVariables = [
+      {
+        variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
+        value: 'Duration string',
+        description: {
+          message: 'More details %{linkStart}here%{linkEnd}',
+          path: 'https://example.com',
+        },
+      },
+    ];
+    createComponent({
+      preSelectedVariables,
+    });
+
+    const items = findVariableSelector().props('items');
+    expect(items[0].secondaryText).not.toBe('More details here');
   });
 });
