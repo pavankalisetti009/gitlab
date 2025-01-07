@@ -26,6 +26,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :license_history_entries,
       :member_role_permissions,
       :ml_model,
+      :ml_experiment,
       :organization,
       :runner_usage_by_project,
       :runner_usage,
