@@ -43,7 +43,7 @@ module EE
 
           logger.instrument(:config_scan_execution_policy_processor, once: true) do
             ::Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor.new(config, context, source_ref_path,
-              source).perform
+              pipeline_policy_context).perform
           end
         end
 

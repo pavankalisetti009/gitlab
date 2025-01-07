@@ -35,6 +35,18 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
     end
   end
 
+  describe '#scan_execution_context' do
+    it 'is memoized by ref' do
+      expect(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext).to receive(:new).with(
+        project: project, ref: 'refs/heads/master', current_user: user, source: 'push').exactly(:once).and_call_original
+      expect(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext).to receive(:new).with(
+        project: project, ref: 'refs/heads/main', current_user: user, source: 'push').exactly(:once).and_call_original
+
+      2.times { context.scan_execution_context('refs/heads/master') }
+      2.times { context.scan_execution_context('refs/heads/main') }
+    end
+  end
+
   describe '#skip_ci_allowed?' do
     subject { context.skip_ci_allowed? }
 

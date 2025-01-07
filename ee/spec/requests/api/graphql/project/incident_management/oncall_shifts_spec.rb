@@ -120,9 +120,18 @@ RSpec.describe 'getting Incident Management on-call shifts', feature_category: :
     end
 
     context 'for past and future shifts' do
-      let_it_be(:last_shift) { create(:incident_management_oncall_shift, participant: participant) }
+      let_it_be(:last_shift) do
+        create(:incident_management_oncall_shift,
+          participant: participant,
+          starts_at: rotation.starts_at - 1.day
+        )
+      end
 
       let(:ends_at) { rotation.starts_at + (2 * rotation.shift_cycle_duration) }
+
+      around do |example|
+        freeze_time { example.run }
+      end
 
       it_behaves_like 'avoids N+1 queries for additional generated shift'
       it_behaves_like 'avoids N+1 queries for additional historical shift'

@@ -15,7 +15,13 @@ module Elastic
       override :preload_indexing_data
       def preload_indexing_data(relation)
         relation.includes(
-          :author, :sync_object, :namespace, :issue_assignees, :labels, project: [:project_feature, :namespace]
+          :correct_work_item_type,
+          :author,
+          :sync_object,
+          :namespace,
+          :issue_assignees,
+          :labels,
+          project: [:project_feature, :namespace]
         )
       end
       # rubocop: enable CodeReuse/ActiveRecord
