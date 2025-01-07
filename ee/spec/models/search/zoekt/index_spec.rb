@@ -43,6 +43,11 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
 
     it { expect(described_class).to validate_jsonb_schema(['zoekt_indices_metadata']) }
+
+    it 'allows a project_id_to value in metadata to be either an integer or nil' do
+      expect(described_class.new(metadata: { 'project_id_from' => 123, 'project_id_to' => 456 })).to be_valid
+      expect(described_class.new(metadata: { 'project_id_from' => 123, 'project_id_to' => nil })).to be_valid
+    end
   end
 
   describe 'callbacks' do

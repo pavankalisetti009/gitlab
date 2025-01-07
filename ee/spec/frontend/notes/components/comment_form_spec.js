@@ -123,6 +123,7 @@ describe('issue_comment_form component', () => {
 
     describe('with ability to measure it', () => {
       let store;
+      let bootstrapFn;
 
       const saveMock = jest.fn().mockReturnValue();
       const measureCommentTemperatureMock = jest.fn();
@@ -132,19 +133,30 @@ describe('issue_comment_form component', () => {
             saveNote: saveMock,
           },
         });
-        mountComponent({
-          mountFunction: mountExtended,
-          initialData: { note },
-          abilities: {
-            measureCommentTemperature: true,
-          },
-          store,
-          stubs: {
-            CommentTemperature,
-          },
-        });
-        wrapper.findComponent(CommentTemperature).vm.measureCommentTemperature =
-          measureCommentTemperatureMock;
+        bootstrapFn = (initNote = note) => {
+          mountComponent({
+            mountFunction: mountExtended,
+            initialData: { note: initNote },
+            abilities: {
+              measureCommentTemperature: true,
+            },
+            store,
+            stubs: {
+              CommentTemperature,
+            },
+          });
+          wrapper.findComponent(CommentTemperature).vm.measureCommentTemperature =
+            measureCommentTemperatureMock;
+        };
+        bootstrapFn();
+      });
+
+      it('does not measure temperature on the slash commands', async () => {
+        bootstrapFn('/close');
+        findCommentButton().trigger('click');
+        await nextTick();
+        expect(measureCommentTemperatureMock).not.toHaveBeenCalled();
+        expect(saveMock).toHaveBeenCalled();
       });
 
       it('renders the comment temperature component', () => {

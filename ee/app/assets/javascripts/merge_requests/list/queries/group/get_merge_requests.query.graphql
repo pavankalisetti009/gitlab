@@ -59,6 +59,7 @@ query getGroupMergeRequestsEE(
       deployedAfter: $deployedAfter
       environmentName: $environmentName
       not: $not
+      includeSubgroups: true
       before: $beforeCursor
       after: $afterCursor
       first: $firstPageSize

@@ -76,18 +76,23 @@ describe('issue_comment_form component', () => {
 
       describe('with ability to measure it', () => {
         const measureCommentTemperatureMock = jest.fn().mockReturnValue();
+        let bootstrapFn;
+
         beforeEach(() => {
-          createComponentWrapper({
-            noteableType,
-            initialData: { updatedNoteBody: badNote },
-            abilities: {
-              measureCommentTemperature: true,
-            },
-            stubs: {
-              CommentTemperature,
-            },
-          });
-          findCommentTemperature().vm.measureCommentTemperature = measureCommentTemperatureMock;
+          bootstrapFn = (updatedNoteBody = badNote) => {
+            createComponentWrapper({
+              noteableType,
+              initialData: { updatedNoteBody },
+              abilities: {
+                measureCommentTemperature: true,
+              },
+              stubs: {
+                CommentTemperature,
+              },
+            });
+            findCommentTemperature().vm.measureCommentTemperature = measureCommentTemperatureMock;
+          };
+          bootstrapFn();
         });
 
         it('renders the comment temperature component', () => {
@@ -103,6 +108,13 @@ describe('issue_comment_form component', () => {
             findCancelButton().vm.$emit('click');
             await nextTick();
           };
+
+          it('does not measure temperature on the slash commands', async () => {
+            bootstrapFn('/close');
+            await proceedClick();
+            expect(measureCommentTemperatureMock).not.toHaveBeenCalled();
+            expect(wrapper.emitted('handleFormUpdate')).toBeDefined();
+          });
 
           it('should measure comment temperature and not send', async () => {
             await proceedClick();
@@ -163,24 +175,41 @@ describe('issue_comment_form component', () => {
           };
 
           beforeEach(() => {
-            const store = createStore();
-            store.registerModule('batchComments', batchComments());
-            createComponentWrapper({
-              noteableType,
-              initialData: { updatedNoteBody: badNote },
-              propsData: {
-                isDraft: true,
-                noteId: '',
-              },
-              abilities: {
-                measureCommentTemperature: true,
-              },
-              stubs: {
-                CommentTemperature,
-              },
-              store,
-            });
-            findCommentTemperature().vm.measureCommentTemperature = measureCommentTemperatureMock;
+            bootstrapFn = (updatedNoteBody = badNote) => {
+              const store = createStore();
+              store.registerModule('batchComments', batchComments());
+              createComponentWrapper({
+                noteableType,
+                initialData: { updatedNoteBody },
+                propsData: {
+                  isDraft: true,
+                  noteId: '',
+                },
+                abilities: {
+                  measureCommentTemperature: true,
+                },
+                stubs: {
+                  CommentTemperature,
+                },
+                store,
+              });
+              findCommentTemperature().vm.measureCommentTemperature = measureCommentTemperatureMock;
+            };
+            bootstrapFn();
+          });
+
+          it('does not measure temperature on the slash commands', async () => {
+            bootstrapFn('/close');
+            await proceedClick();
+            expect(measureCommentTemperatureMock).not.toHaveBeenCalled();
+            if (addToReview) {
+              expect(wrapper.emitted('handleFormUpdate')).toBeUndefined();
+              expect(wrapper.emitted('handleFormUpdateAddToReview')).toHaveLength(1);
+            }
+            if (newComment) {
+              expect(wrapper.emitted('handleFormUpdate')).toHaveLength(1);
+              expect(wrapper.emitted('handleFormUpdateAddToReview')).toBeUndefined();
+            }
           });
 
           it('should measure comment temperature and not send', async () => {

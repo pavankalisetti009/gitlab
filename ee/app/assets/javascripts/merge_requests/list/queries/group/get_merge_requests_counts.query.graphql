@@ -47,6 +47,7 @@ query getGroupMergeRequestsCountEE(
       deployedAfter: $deployedAfter
       environmentName: $environmentName
       not: $not
+      includeSubgroups: true
     ) {
       count
     }
@@ -73,6 +74,7 @@ query getGroupMergeRequestsCountEE(
       deployedAfter: $deployedAfter
       environmentName: $environmentName
       not: $not
+      includeSubgroups: true
     ) {
       count
     }
@@ -99,6 +101,7 @@ query getGroupMergeRequestsCountEE(
       deployedAfter: $deployedAfter
       environmentName: $environmentName
       not: $not
+      includeSubgroups: true
     ) {
       count
     }
@@ -125,6 +128,7 @@ query getGroupMergeRequestsCountEE(
       deployedAfter: $deployedAfter
       environmentName: $environmentName
       not: $not
+      includeSubgroups: true
     ) {
       count
     }

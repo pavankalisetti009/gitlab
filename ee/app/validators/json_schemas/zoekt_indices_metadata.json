@@ -6,7 +6,10 @@
       "type": "integer"
     },
     "project_id_to": {
-      "type": "integer"
+      "type": [
+        "integer",
+        null
+      ]
     }
   },
   "additionalProperties": true
