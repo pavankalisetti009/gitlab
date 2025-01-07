@@ -292,26 +292,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             it_behaves_like 'passes validation'
           end
 
-          context 'with feature flag disabled with user_approvers' do
-            let(:action) do
-              {
-                type: 'require_approval',
-                user_approvers: [user.username]
-              }
-            end
-
-            before do
-              action[:approvals_required] = 2
-              stub_feature_flags(multiple_approval_actions: false)
-            end
-
-            it_behaves_like 'sets validation errors',
-              field: :approvers_ids,
-              message: 'Required approvals exceed eligible approvers.',
-              title: 'Logic error',
-              index: 0
-          end
-
           context 'with multiple actions' do
             subject(:errors) { result[:validation_errors] }
 
@@ -738,17 +718,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
 
           it { expect(result[:status]).to eq(:success) }
         end
-      end
-
-      context 'when exceeding limit when ff is disabled' do
-        before do
-          stub_feature_flags(multiple_approval_actions: false)
-          policy[:actions] = [action, action]
-        end
-
-        it { expect(result[:status]).to eq(:error) }
-
-        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 1 approver actions"
       end
     end
 

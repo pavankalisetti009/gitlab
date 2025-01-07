@@ -117,7 +117,6 @@ class ApprovalWrappedRule
   def policy_has_multiple_actions?
     policy_configuration = approval_rule.security_orchestration_policy_configuration
     return false unless policy_configuration
-    return false unless Feature.enabled?(:multiple_approval_actions, policy_configuration.source)
 
     scan_result_policies.any? { |rule| rule.approval_policy_action_idx > 0 }
   end
