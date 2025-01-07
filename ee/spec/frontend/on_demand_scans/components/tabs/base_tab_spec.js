@@ -14,7 +14,6 @@ import onDemandScansQuery from 'ee/on_demand_scans/graphql/on_demand_scans.query
 import { createRouter } from 'ee/on_demand_scans/router';
 import waitForPromises from 'helpers/wait_for_promises';
 import { scrollToElement } from '~/lib/utils/common_utils';
-import setWindowLocation from 'helpers/set_window_location_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { BASE_TABS_TABLE_FIELDS, PIPELINES_POLL_INTERVAL } from 'ee/on_demand_scans/constants';
 import * as sharedGraphQLUtils from '~/graphql_shared/utils';
@@ -50,9 +49,9 @@ describe('BaseTab', () => {
     return createMockApollo([[onDemandScansQuery, requestHandler]]);
   };
 
-  const navigateToPage = (direction, cursor = '') => {
+  const navigateToPage = async (direction, cursor = '') => {
     findPagination().vm.$emit(direction, cursor);
-    return nextTick();
+    await waitForPromises();
   };
 
   const setActiveState = (isActive) => {
@@ -69,10 +68,18 @@ describe('BaseTab', () => {
     await nextTick();
   };
 
+  const tabId = 123;
+
   const createComponentFactory =
     (mountFn = shallowMountExtended) =>
-    (options = {}, canEditOnDemandScans = true) => {
+    async (
+      options = {},
+      { canEditOnDemandScans = true, initialRoute = { name: 'tab', params: { tabId } } } = {},
+    ) => {
       router = createRouter();
+
+      await router.push(initialRoute);
+
       wrapper = mountFn(
         BaseTab,
         merge(
@@ -120,9 +127,9 @@ describe('BaseTab', () => {
   });
 
   describe('when the app loads', () => {
-    it('formats the items count if it hit its max value', () => {
+    it('formats the items count if it hit its max value', async () => {
       const itemsCount = 10;
-      createComponent({
+      await createComponent({
         propsData: {
           itemsCount,
           maxItemsCount: itemsCount,
@@ -132,9 +139,9 @@ describe('BaseTab', () => {
       expect(findTitle().text()).toMatchInterpolatedText(`All ${itemsCount}+`);
     });
 
-    it('controls the pipelines query with a visibility check', () => {
+    it('controls the pipelines query with a visibility check', async () => {
       jest.spyOn(sharedGraphQLUtils, 'toggleQueryPollingByVisibility');
-      createComponent();
+      await createComponent();
 
       expect(sharedGraphQLUtils.toggleQueryPollingByVisibility).toHaveBeenCalledWith(
         wrapper.vm.$apollo.queries.pipelines,
@@ -142,8 +149,8 @@ describe('BaseTab', () => {
       );
     });
 
-    it('fetches the pipelines', () => {
-      createComponent();
+    it('fetches the pipelines', async () => {
+      await createComponent();
 
       expect(requestHandler).toHaveBeenCalledWith({
         after: null,
@@ -154,9 +161,9 @@ describe('BaseTab', () => {
       });
     });
 
-    it('computes the ETag header', () => {
+    it('computes the ETag header', async () => {
       jest.spyOn(graphQlUtils, 'getQueryHeaders');
-      createComponent();
+      await createComponent();
 
       expect(graphQlUtils.getQueryHeaders).toHaveBeenCalledWith(
         PROJECT_ON_DEMAND_SCAN_COUNTS_ETAG_MOCK,
@@ -164,7 +171,7 @@ describe('BaseTab', () => {
     });
 
     it('polls for pipelines as long as the tab is active', async () => {
-      createComponent();
+      await createComponent();
 
       expect(requestHandler).toHaveBeenCalledTimes(1);
 
@@ -185,7 +192,7 @@ describe('BaseTab', () => {
     });
 
     it('puts the table in the busy state until the request resolves', async () => {
-      createComponent();
+      await createComponent();
 
       expect(findTable().props('busy')).toBe(true);
 
@@ -195,9 +202,11 @@ describe('BaseTab', () => {
     });
 
     it('resets the route if no pipeline matches the cursor', async () => {
-      setWindowLocation('#?after=nothingToSeeHere');
       requestHandler = jest.fn().mockResolvedValue(allPipelinesWithoutPipelinesMock);
-      createComponent();
+      await createComponent(
+        {},
+        { initialRoute: { name: 'tab', params: { tabId }, query: { after: 'nothingToSeeHere' } } },
+      );
 
       expect(router.currentRoute.query.after).toBe('nothingToSeeHere');
 
@@ -209,7 +218,7 @@ describe('BaseTab', () => {
 
   describe('when there are pipelines', () => {
     beforeEach(async () => {
-      createComponent({
+      await createComponent({
         propsData: {
           itemsCount: 30,
         },
@@ -282,7 +291,7 @@ describe('BaseTab', () => {
 
   describe('rendered cells', () => {
     beforeEach(async () => {
-      createFullComponent({
+      await createFullComponent({
         propsData: {
           itemsCount: 30,
         },
@@ -337,7 +346,7 @@ describe('BaseTab', () => {
   });
 
   it.each(['default', 'after-name', 'error'])('renders the %s slot', async (slot) => {
-    createFullComponent({
+    await createFullComponent({
       stubs: {
         GlTable: false,
       },
@@ -351,14 +360,14 @@ describe('BaseTab', () => {
   });
 
   describe("when a scan's DAST profile got deleted", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       const allPipelinesWithPipelinesMockCopy = cloneDeep(allPipelinesWithPipelinesMock);
       const pipelineWithoutDastProfile = { ...firstPipeline, dastProfile: null };
       allPipelinesWithPipelinesMockCopy.data.project.pipelines.nodes[0] =
         pipelineWithoutDastProfile;
 
       requestHandler = jest.fn().mockResolvedValue(allPipelinesWithPipelinesMockCopy);
-      createFullComponent({
+      await createFullComponent({
         stubs: {
           GlTable: false,
         },
@@ -378,7 +387,7 @@ describe('BaseTab', () => {
   describe('when there are no pipelines', () => {
     beforeEach(async () => {
       requestHandler = jest.fn().mockResolvedValue(allPipelinesWithoutPipelinesMock);
-      createComponent();
+      await createComponent();
       await waitForPromises();
     });
 
@@ -399,7 +408,7 @@ describe('BaseTab', () => {
         respondWithError = false;
         return response;
       };
-      createComponent();
+      await createComponent();
       await waitForPromises();
     });
 
@@ -420,8 +429,8 @@ describe('BaseTab', () => {
   describe('actions', () => {
     const errorMessage = 'An error occurred.';
 
-    beforeEach(() => {
-      createFullComponent({
+    beforeEach(async () => {
+      await createFullComponent({
         stubs: {
           GlTable: false,
         },
@@ -481,13 +490,13 @@ describe('BaseTab', () => {
     `(
       'should hide action buttons for auditor user',
       async ({ canEditOnDemandScans, expectedResult }) => {
-        createFullComponent(
+        await createFullComponent(
           {
             stubs: {
               GlTable: false,
             },
           },
-          canEditOnDemandScans,
+          { canEditOnDemandScans },
         );
         await waitForPromises();
 
