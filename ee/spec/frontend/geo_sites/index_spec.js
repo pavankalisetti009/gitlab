@@ -12,10 +12,9 @@ describe('initGeoSites', () => {
   let mock;
 
   const mockAPI = (apiMocks) => {
-    // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
     mock = new MockAdapter(axios);
-    mock.onGet(/api\/(.*)\/geo_nodes/).reply(HTTP_STATUS_OK, apiMocks.res);
-    mock.onGet(/api\/(.*)\/geo_nodes\/status/).reply(HTTP_STATUS_OK, apiMocks.statusRes);
+    mock.onGet(/api\/(.*)\/geo_sites/).reply(HTTP_STATUS_OK, apiMocks.res);
+    mock.onGet(/api\/(.*)\/geo_sites\/status/).reply(HTTP_STATUS_OK, apiMocks.statusRes);
   };
 
   const createAppWrapper = (fixture, apiMocks) => {

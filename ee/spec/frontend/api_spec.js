@@ -136,8 +136,7 @@ describe('Api', () => {
     let mockSite;
 
     beforeEach(() => {
-      // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
-      expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/geo_nodes`;
+      expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/geo_sites`;
     });
 
     describe('createGeoSite', () => {
