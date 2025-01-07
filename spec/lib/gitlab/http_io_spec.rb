@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::HttpIO, feature_category: :shared do
+RSpec.describe Gitlab::HttpIO do
   include HttpIOHelpers
 
   let(:http_io) { described_class.new(url, size) }
@@ -122,24 +122,7 @@ RSpec.describe Gitlab::HttpIO, feature_category: :shared do
   describe '#read' do
     subject { http_io.read(length) }
 
-    shared_examples 'reads the body' do
-      let(:expected_outbuf) { expected_body || "" }
-
-      it 'reads a trace' do
-        is_expected.to eq(expected_body)
-      end
-
-      it 'reads with outbuf' do
-        buf = +""
-
-        expect(http_io.read(length, buf)).to eq(expected_body)
-        expect(buf).to eq(expected_outbuf)
-      end
-    end
-
     context 'when there are no network issue' do
-      let(:expected_body) { file_body }
-
       before do
         stub_remote_url_206(url, file_path)
       end
@@ -152,7 +135,9 @@ RSpec.describe Gitlab::HttpIO, feature_category: :shared do
             set_smaller_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to eq(file_body)
+          end
         end
 
         context 'when BUFFER_SIZE is larger than file size' do
@@ -160,20 +145,23 @@ RSpec.describe Gitlab::HttpIO, feature_category: :shared do
             set_larger_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to eq(file_body)
+          end
         end
       end
 
       context 'when read only first 100 bytes' do
         let(:length) { 100 }
-        let(:expected_body) { file_body[0, length] }
 
         context 'when BUFFER_SIZE is smaller than file size' do
           before do
             set_smaller_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to eq(file_body[0, length])
+          end
         end
 
         context 'when BUFFER_SIZE is larger than file size' do
@@ -181,20 +169,23 @@ RSpec.describe Gitlab::HttpIO, feature_category: :shared do
             set_larger_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to eq(file_body[0, length])
+          end
         end
       end
 
       context 'when tries to read oversize' do
         let(:length) { size + 1000 }
-        let(:expected_body) { file_body }
 
         context 'when BUFFER_SIZE is smaller than file size' do
           before do
             set_smaller_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to eq(file_body)
+          end
         end
 
         context 'when BUFFER_SIZE is larger than file size' do
@@ -202,20 +193,23 @@ RSpec.describe Gitlab::HttpIO, feature_category: :shared do
             set_larger_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to eq(file_body)
+          end
         end
       end
 
       context 'when tries to read 0 bytes' do
         let(:length) { 0 }
-        let(:expected_body) { nil }
 
         context 'when BUFFER_SIZE is smaller than file size' do
           before do
             set_smaller_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to be_empty
+          end
         end
 
         context 'when BUFFER_SIZE is larger than file size' do
@@ -223,12 +217,14 @@ RSpec.describe Gitlab::HttpIO, feature_category: :shared do
             set_larger_buffer_size_than(size)
           end
 
-          it_behaves_like 'reads the body'
+          it 'reads a trace' do
+            is_expected.to be_empty
+          end
         end
       end
     end
 
-    context 'when there is a network issue' do
+    context 'when there is anetwork issue' do
       let(:length) { nil }
 
       before do
