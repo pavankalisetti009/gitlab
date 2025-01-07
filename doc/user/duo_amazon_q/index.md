@@ -12,11 +12,7 @@ DETAILS:
 **Status:** Preview/Beta
 
 > - Introduced as [beta](../../policy/development_stages_support.md#beta) in GitLab 17.7 [with a flag](../../administration/feature_flags.md) named `amazon_q_integration`. Disabled by default.
-
-FLAG:
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-This feature is Preview/Beta and is available for testing, but not ready for production use.
+> - Feature flag `amazon_q_integration` removed in GitLab 17.8.
 
 At Re:Invent 2024, Amazon announced the GitLab Duo with Amazon Q integration.
 With this integration, you can automate tasks and increase productivity.

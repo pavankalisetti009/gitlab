@@ -28,17 +28,14 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
   end
 
   describe '#feature_available?' do
-    where(:feature_flag_enabled, :amazon_q_license_available, :result) do
-      true  | true  | true
-      true  | false | false
-      false | true  | false
-      false | false | false
+    where(:amazon_q_license_available, :result) do
+      true  | true
+      false | false
     end
 
     with_them do
       before do
         stub_licensed_features(amazon_q: amazon_q_license_available)
-        stub_feature_flags(amazon_q_integration: feature_flag_enabled)
       end
 
       it 'returns the expected result' do
