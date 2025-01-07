@@ -7,6 +7,8 @@ module QA
         module Integration
           class AiGatewayNoSeatAssigned < QA::Scenario::Test::Instance::All
             tags :ai_gateway_no_seat_assigned
+
+            pipeline_mappings test_on_omnibus: %w[ai-gateway-no-seat-assigned]
           end
         end
       end
