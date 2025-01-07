@@ -3,14 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
-  describe 'associations' do
+  describe 'associations', :aggregate_failures do
     it 'has expected associations' do
       is_expected.to belong_to(:amazon_q_oauth_application).class_name('Doorkeeper::Application').optional
       is_expected.to belong_to(:amazon_q_service_account_user).class_name('User').optional
     end
   end
 
-  describe 'validations' do
+  describe 'validations', :aggregate_failures do
     subject(:setting) { described_class.instance }
 
     context 'when validating ai_gateway_url length' do
@@ -34,6 +34,39 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         setting.ai_gateway_url = 'not-a-url'
         expect(setting).not_to be_valid
         expect(setting.errors[:ai_gateway_url]).to include("is not allowed: Only allowed schemes are http, https")
+      end
+
+      context 'when test env' do
+        before do
+          allow(Rails.env).to receive(:test?).and_return(true)
+        end
+
+        it 'allows a localhost URL' do
+          setting.ai_gateway_url = 'http://localhost:5053'
+          expect(setting).to be_valid
+        end
+      end
+
+      context 'when dev env' do
+        before do
+          allow(Rails.env).to receive(:development?).and_return(true)
+        end
+
+        it 'allows a localhost URL' do
+          setting.ai_gateway_url = 'http://localhost:5053'
+          expect(setting).to be_valid
+        end
+      end
+
+      context 'when prod env' do
+        before do
+          allow(Rails.env).to receive_messages(development?: false, test?: false)
+        end
+
+        it 'does not allow localhost url' do
+          setting.ai_gateway_url = 'http://localhost:5053'
+          expect(setting).not_to be_valid
+        end
       end
     end
 
@@ -66,6 +99,23 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
 
         expect(described_class.count).to eq(1)
         expect(first_instance).to eq(second_instance)
+      end
+
+      it 'does not override existing record attributes' do
+        original_url = 'http://example.com'
+        new_url = 'http://new.example.com'
+        stub_env('AI_GATEWAY_URL', original_url)
+
+        # on create, uses default value from AI_GATEWAY_URL
+        described_class.instance
+        expect(described_class.first.ai_gateway_url).to eq original_url
+
+        # update to non-default value
+        described_class.first.update!(ai_gateway_url: new_url)
+
+        # on update, attributes are persisted rather than overridden by defaults
+        described_class.instance
+        expect(described_class.first.reload.ai_gateway_url).to eq new_url
       end
 
       it "handles concurrent requests without uniqueness violations" do
