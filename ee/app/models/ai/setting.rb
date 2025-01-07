@@ -14,9 +14,13 @@ module Ai
     belongs_to :amazon_q_service_account_user, class_name: 'User', optional: true
 
     def self.instance
-      first || create!(defaults)
-    rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
-      first
+      # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only
+      # uses a subtransaction if creating a record, which should only happen
+      # once per instance
+      safe_find_or_create_by(singleton: true) do |setting|
+        setting.assign_attributes(defaults)
+      end
+      # rubocop:enable Performance/ActiveRecordSubtransactionMethods
     end
 
     def self.defaults
@@ -38,6 +42,7 @@ module Ai
         Gitlab::HTTP_V2::UrlBlocker.validate!(
           ai_gateway_url,
           schemes: %w[http https],
+          allow_localhost: allow_localhost,
           enforce_sanitization: true,
           deny_all_requests_except_allowed: Gitlab::CurrentSettings.deny_all_requests_except_allowed?,
           outbound_local_requests_allowlist: Gitlab::CurrentSettings.outbound_local_requests_whitelist # rubocop:disable Naming/InclusiveLanguage -- existing setting
@@ -45,6 +50,12 @@ module Ai
       rescue Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError => e
         errors.add(:ai_gateway_url, "is not allowed: #{e.message}")
       end
+    end
+
+    def allow_localhost
+      return true if Gitlab.dev_or_test_env?
+
+      false
     end
   end
 end

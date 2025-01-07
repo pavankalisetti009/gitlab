@@ -20,6 +20,7 @@ import EditorLayout from '../editor_layout.vue';
 import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
+import SkipCiSelector from './skip_ci_selector.vue';
 import { createPolicyObject, getInitialPolicy } from './utils';
 import {
   CONDITIONS_LABEL,
@@ -39,6 +40,7 @@ export default {
     PARSING_ERROR_MESSAGE,
     notOwnerButtonText: __('Learn more'),
     createMergeRequest: s__('SecurityOrchestration|Update via merge request'),
+    configurationTitle: s__('SecurityOrchestration|Additional configuration'),
   },
   components: {
     ActionSection,
@@ -46,6 +48,7 @@ export default {
     GlEmptyState,
     EditorLayout,
     RuleSection,
+    SkipCiSelector,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: [
@@ -108,14 +111,17 @@ export default {
     };
   },
   computed: {
+    hasSkipCiConfiguration() {
+      return this.glFeatures.securityPoliciesSkipCi;
+    },
     originalName() {
       return this.existingPolicy?.name;
     },
     strategy() {
-      return this.policy.pipeline_config_strategy;
+      return this.policy?.pipeline_config_strategy || '';
     },
     content() {
-      return this.policy?.content;
+      return this.policy?.content || {};
     },
   },
   watch: {
@@ -228,12 +234,22 @@ export default {
         </template>
         <action-section
           class="security-policies-bg-subtle gl-mb-4 gl-rounded-base gl-p-5"
-          :action="policy.content"
+          :action="content"
           :does-file-exist="!disableSubmit"
           :strategy="strategy"
           :suffix="policy.suffix"
           @changed="handleUpdateProperty"
         />
+      </disabled-section>
+    </template>
+
+    <template v-if="hasSkipCiConfiguration" #settings>
+      <disabled-section :disabled="false">
+        <template #title>
+          <h4>{{ $options.i18n.configurationTitle }}</h4>
+        </template>
+
+        <skip-ci-selector :skip-ci-configuration="policy.skip_ci" @changed="handleUpdateProperty" />
       </disabled-section>
     </template>
   </editor-layout>
