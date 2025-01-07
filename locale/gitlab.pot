@@ -17890,6 +17890,9 @@ msgstr ""
 msgid "DastProfiles|Choose a scan method"
 msgstr ""
 
+msgid "DastProfiles|Comma-separated list of check identifiers to use for the scan. For identifiers, see %{linkStart}vulnerability checks.%{linkEnd}"
+msgstr ""
+
 msgid "DastProfiles|Could not create the scanner profile. Please try again."
 msgstr ""
 
