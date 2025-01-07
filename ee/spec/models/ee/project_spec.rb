@@ -100,6 +100,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to have_many(:security_exclusions).class_name('Security::ProjectSecurityExclusion') }
 
+    it { is_expected.to have_many(:project_control_compliance_statuses) }
+
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
         {

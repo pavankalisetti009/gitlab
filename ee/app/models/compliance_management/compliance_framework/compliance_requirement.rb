@@ -13,6 +13,7 @@ module ComplianceManagement
       enum requirement_type: { internal: 0 }
 
       belongs_to :framework, class_name: 'ComplianceManagement::Framework', optional: false
+      belongs_to :namespace, optional: false
 
       validates_presence_of :framework, :namespace_id, :name, :description
       validates :name, uniqueness: { scope: :framework_id }
@@ -29,7 +30,9 @@ module ComplianceManagement
         inverse_of: :compliance_requirements
 
       has_many :compliance_requirements_controls,
-        class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl', dependent: :destroy
+        class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl'
+      has_many :project_control_compliance_statuses,
+        class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
 
       private
 

@@ -208,6 +208,9 @@ module EE
 
       has_many :security_exclusions, class_name: 'Security::ProjectSecurityExclusion'
 
+      has_many :project_control_compliance_statuses,
+        class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level
