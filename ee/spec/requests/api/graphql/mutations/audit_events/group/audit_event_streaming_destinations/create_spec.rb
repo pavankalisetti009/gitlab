@@ -50,11 +50,25 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
 
     before do
       stub_licensed_features(external_audit_events: true)
+      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
     end
 
     context 'when current user is a group owner' do
       before_all do
         group.add_owner(owner)
+      end
+
+      let(:attributes) do
+        {
+          legacy: {
+            destination_url: config["url"],
+            namespace_id: group.id,
+            verification_token: 'some_secret_token'
+          },
+          streaming: {
+            "url" => config["url"]
+          }
+        }
       end
 
       it 'resolves group by full path' do
@@ -77,6 +91,10 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
 
       it_behaves_like 'creates an audit event'
 
+      it_behaves_like 'creates a legacy destination',
+        AuditEvents::Group::ExternalStreamingDestination,
+        -> { attributes }
+
       context 'when category is aws' do
         let(:config) do
           {
@@ -95,6 +113,23 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
           }
         end
 
+        let(:attributes) do
+          {
+            legacy: {
+              access_key_xid: config["accessKeyXid"],
+              bucket_name: config["bucketName"],
+              aws_region: config["awsRegion"],
+              namespace_id: group.id,
+              secret_access_key: 'some_secret_token'
+            },
+            streaming: {
+              "accessKeyXid" => config["accessKeyXid"],
+              "bucketName" => config["bucketName"],
+              "awsRegion" => config["awsRegion"]
+            }
+          }
+        end
+
         it 'creates the destination' do
           expect { mutate }
             .to change { AuditEvents::Group::ExternalStreamingDestination.count }.by(1)
@@ -106,6 +141,10 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
           expect(destination.category).to eq('aws')
           expect(destination.secret_token).to eq('some_secret_token')
         end
+
+        it_behaves_like 'creates a legacy destination',
+          AuditEvents::Group::ExternalStreamingDestination,
+          -> { attributes }
       end
 
       context 'when category is gcp' do
@@ -126,6 +165,23 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
           }
         end
 
+        let(:attributes) do
+          {
+            legacy: {
+              google_project_id_name: config["googleProjectIdName"],
+              client_email: config["clientEmail"],
+              log_id_name: config["logIdName"],
+              namespace_id: group.id,
+              private_key: 'some_secret_token'
+            },
+            streaming: {
+              "googleProjectIdName" => config["googleProjectIdName"],
+              "clientEmail" => config["clientEmail"],
+              "logIdName" => config["logIdName"]
+            }
+          }
+        end
+
         it 'creates the destination' do
           expect { mutate }
             .to change { AuditEvents::Group::ExternalStreamingDestination.count }.by(1)
@@ -137,6 +193,10 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
           expect(destination.category).to eq('gcp')
           expect(destination.secret_token).to eq('some_secret_token')
         end
+
+        it_behaves_like 'creates a legacy destination',
+          AuditEvents::Group::ExternalStreamingDestination,
+          -> { attributes }
       end
 
       context 'for category' do
