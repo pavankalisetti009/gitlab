@@ -4,19 +4,18 @@ module Gitlab
   module Backup
     module Cli
       module Errors
-        class GitalyBackupError < StandardError
-          attr_reader :error_message
+        class DatabaseConfigMissingError < StandardError
+          attr_reader :filepath
 
-          def initialize(error_message = '')
-            @error_message = error_message
-
+          def initialize(filepath)
+            @filepath = filepath
             super(build_message)
           end
 
           private
 
           def build_message
-            "Repository Backup/Restore failed. #{error_message}"
+            "Database configuration file doesn't exist: #{filepath}"
           end
         end
       end
