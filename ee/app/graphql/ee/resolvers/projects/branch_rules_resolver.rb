@@ -16,23 +16,21 @@ module EE
             description: 'Return unpersisted custom branch rules.'
         end
 
-        override :resolve_with_lookahead
-        def resolve_with_lookahead(**args)
-          build_missing = args[:build_missing]
-
-          super.tap do |rules|
-            rules.unshift(all_protected_branches_rule) if all_protected_branches_rule.persisted? || build_missing
-            rules.unshift(all_branches_rule) if all_branches_rule.persisted? || build_missing
-          end
-        end
-
         private
 
-        # BranchRules for 'All branches' i.e. no associated ProtectedBranch
-        def all_branches_rule
-          ::Projects::AllBranchesRule.new(project)
+        def custom_branch_rules(args)
+          build_missing = args[:build_missing]
+          if squash_settings_enabled?
+            super.tap do |rules|
+              rules.append(all_protected_branches_rule) if all_protected_branches_rule.persisted? || build_missing
+            end
+          else
+            super.tap do |rules|
+              rules.unshift(all_protected_branches_rule) if all_protected_branches_rule.persisted? || build_missing
+              rules.unshift(all_branches_rule) if all_branches_rule.persisted? || build_missing
+            end
+          end
         end
-        strong_memoize_attr :all_branches_rule
 
         def all_protected_branches_rule
           ::Projects::AllProtectedBranchesRule.new(project)

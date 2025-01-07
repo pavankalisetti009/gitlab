@@ -54,15 +54,21 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
     end
 
     context 'with predefined rule' do
-      it 'does not render predefined rules' do
-        visit project_settings_repository_path(project)
+      context 'when the branch_rule_squash_settings flag is not enabled' do
+        before do
+          stub_feature_flags(branch_rule_squash_settings: false)
+        end
 
-        wait_for_requests
+        it 'does not render predefined rules' do
+          visit project_settings_repository_path(project)
 
-        click_button 'Add branch rule'
+          wait_for_requests
 
-        expect(page).not_to have_content 'All branches'
-        expect(page).not_to have_content 'All protected branches'
+          click_button 'Add branch rule'
+
+          expect(page).not_to have_content 'All branches'
+          expect(page).not_to have_content 'All protected branches'
+        end
       end
     end
   end
@@ -196,40 +202,46 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
       end
     end
 
-    context 'with branch rule details for a predefined rule' do
+    context 'when the branch_rule_squash_settings flag is not enabled' do
       before do
-        visit project_settings_repository_path(project)
-
-        wait_for_requests
-
-        click_button 'Add branch rule'
-        click_button 'All branches'
-
-        wait_for_requests
+        stub_feature_flags(branch_rule_squash_settings: false)
       end
 
-      it 'does not create a rule if a user leaves it empty' do
-        visit project_settings_repository_path(project)
-        expect(page).not_to have_css '[data-testid="branch-content"]', text: 'All branches'
-      end
+      context 'with branch rule details for a predefined rule' do
+        before do
+          visit project_settings_repository_path(project)
 
-      it 'creates a new rule' do
-        click_button 'Add approval rule'
+          wait_for_requests
 
-        fill_in 'rule-name-input', with: 'Test rule'
+          click_button 'Add branch rule'
+          click_button 'All branches'
 
-        page.within(find_by_testid('users-selector')) do
-          find('.form-control').click
-          first('.gl-new-dropdown-item').click
+          wait_for_requests
         end
 
-        click_button 'Save changes'
+        it 'does not create a rule if a user leaves it empty' do
+          visit project_settings_repository_path(project)
+          expect(page).not_to have_css '[data-testid="branch-content"]', text: 'All branches'
+        end
 
-        visit project_settings_repository_path(project)
+        it 'creates a new rule' do
+          click_button 'Add approval rule'
 
-        page.within(find_by_testid('branch-rules-content')) do
-          expect(page).to have_content('All branches')
-          expect(page).to have_content('1 approval rule')
+          fill_in 'rule-name-input', with: 'Test rule'
+
+          page.within(find_by_testid('users-selector')) do
+            find('.form-control').click
+            first('.gl-new-dropdown-item').click
+          end
+
+          click_button 'Save changes'
+
+          visit project_settings_repository_path(project)
+
+          page.within(find_by_testid('branch-rules-content')) do
+            expect(page).to have_content('All branches')
+            expect(page).to have_content('1 approval rule')
+          end
         end
       end
     end

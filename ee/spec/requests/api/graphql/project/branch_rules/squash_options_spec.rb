@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting squash options for a branch protection', feature_category: :source_code_management do
+RSpec.describe 'getting squash options for a branch rule', feature_category: :source_code_management do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
@@ -20,6 +20,7 @@ RSpec.describe 'getting squash options for a branch protection', feature_categor
       project(fullPath: $path) {
         branchRules {
           nodes{
+            name
             squashOption {
               #{fields}
             }
@@ -58,10 +59,23 @@ RSpec.describe 'getting squash options for a branch protection', feature_categor
         stub_licensed_features(branch_rule_squash_options: false)
       end
 
-      it 'returns nil for squashOption' do
+      it 'returns squashOption for all branches only' do
         post_graphql(query, current_user: current_user, variables: variables)
 
-        expect(branch_rules_data.dig(0, 'squashOption')).to be_nil
+        expect(branch_rules_data).to contain_exactly(
+          a_hash_including({
+            "name" => "All branches",
+            "squashOption" => {
+              "option" => "Allow",
+              "helpText" =>
+              "Squashing is always performed. Checkbox is visible and selected, and users cannot change it."
+            }
+          }),
+          a_hash_including({
+            "name" => protected_branch.name,
+            "squashOption" => nil
+          })
+        )
       end
     end
 
@@ -73,8 +87,22 @@ RSpec.describe 'getting squash options for a branch protection', feature_categor
       it_behaves_like 'a working graphql query'
 
       it 'returns squash option attributes' do
-        expect(branch_rules_data.size).to eq(1)
+        expect(branch_rules_data.size).to eq(2)
 
+        expect(branch_rules_data).to contain_exactly(
+          a_hash_including(
+            "name" => "All branches",
+            "squashOption" =>
+             { "option" => "Allow",
+               "helpText" =>
+               "Squashing is always performed. Checkbox is visible and selected, and users cannot change it." }),
+          a_hash_including(
+            "name" => protected_branch.name,
+            "squashOption" =>
+              { "option" => "Allow",
+                "helpText" =>
+                "Squashing is always performed. Checkbox is visible and selected, and users cannot change it." })
+        )
         attributes = branch_rules_data.dig(0, 'squashOption')
         expect(attributes['option']).to eq('Allow')
         expect(attributes['helpText']).to eq('Squashing is always performed. Checkbox is visible and ' \
