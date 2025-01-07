@@ -227,8 +227,8 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
         let(:attributes) do
           {
             author_id: user.id,
-            entity_id: user.id,
-            entity_type: 'User',
+            entity_id: 1,
+            entity_type: "Gitlab::Audit::InstanceScope",
             details: {
               remove: 'project',
               author_name: user.name,
