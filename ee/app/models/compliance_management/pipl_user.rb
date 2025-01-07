@@ -78,6 +78,8 @@ module ComplianceManagement
     end
 
     def remaining_pipl_access_days
+      return if initial_email_sent_at.blank?
+
       (pipl_access_end_date - Date.current).to_i
     end
 

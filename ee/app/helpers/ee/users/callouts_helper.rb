@@ -39,7 +39,8 @@ module EE
         ::Gitlab::Saas.feature_available?(:pipl_compliance) &&
           !user_dismissed?(PIPL_COMPLIANCE_ALERT) &&
           ::ComplianceManagement::Pipl.user_subject_to_pipl?(current_user) &&
-          ::Feature.enabled?(:enforce_pipl_compliance, current_user)
+          ::Feature.enabled?(:enforce_pipl_compliance, current_user) &&
+          current_user.pipl_user.initial_email_sent_at.present?
       end
 
       def show_new_user_signups_cap_reached?
