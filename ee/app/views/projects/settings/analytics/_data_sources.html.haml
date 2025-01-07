@@ -1,4 +1,4 @@
-- return unless @project.product_analytics_enabled? && current_user.can?(:modify_product_analytics_settings, @project)
+- return unless product_analytics_settings_allowed?(@project)
 
 = render ::Layouts::SettingsSectionComponent.new(s_('ProjectSettings|Data sources'), id: 'js-analytics-data-sources', testid: 'data-sources-content') do |c|
   - c.with_description do

@@ -343,7 +343,7 @@ module EE
 
     def product_analytics_settings_allowed?(project)
       return false unless project.product_analytics_enabled?
-      return false unless current_user.can?(:modify_product_analytics_settings, project)
+      return false unless can?(current_user, :modify_product_analytics_settings, project)
 
       true
     end

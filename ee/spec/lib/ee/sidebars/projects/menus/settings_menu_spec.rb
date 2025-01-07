@@ -14,38 +14,29 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
       show_discover_project_security: show_discover_project_security)
   end
 
+  let(:menu) { described_class.new(context) }
+
   describe 'Menu items' do
-    subject { described_class.new(context).renderable_items.find { |e| e.item_id == item_id } }
-
-    shared_examples 'access rights checks' do
-      it { is_expected.not_to be_nil }
-
-      describe 'when the user does not have access' do
-        let(:user) { nil }
-
-        it { is_expected.to be_nil }
-      end
-    end
+    subject { menu.renderable_items.find { |e| e.item_id == item_id } }
 
     describe 'Analytics' do
       let(:item_id) { :analytics }
 
-      context 'for group projects' do
-        let_it_be(:user) { create(:user) }
-        let_it_be(:group) { create(:group) }
-        let_it_be_with_reload(:project) { create(:project, group: group) }
+      let(:feature_enabled) { true }
 
-        before_all do
-          project.add_maintainer(user)
-        end
-
-        it_behaves_like 'access rights checks'
+      before do
+        allow(menu).to receive(:product_analytics_settings_allowed?).and_return(feature_enabled)
+        menu.configure_menu_items
       end
 
-      context 'for personal projects' do
-        it 'is nil for personal namespace projects' do
-          is_expected.to be_nil
-        end
+      it 'includes the analytics menu item' do
+        expect(subject.title).to eql('Analytics')
+      end
+
+      context 'when feature is not enabled' do
+        let(:feature_enabled) { false }
+
+        it { is_expected.to be_nil }
       end
     end
 
@@ -87,7 +78,6 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
     let_it_be_with_reload(:project) { create(:project, :in_group) }
 
     let(:context) { Sidebars::Projects::Context.new(current_user: user, container: project) }
-    let(:menu) { described_class.new(context) }
 
     subject(:menu_items) { menu.renderable_items }
 
