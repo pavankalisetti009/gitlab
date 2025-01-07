@@ -635,9 +635,9 @@ module EE
       end
 
       def permanent_deletion_date
-        return unless project.adjourned_deletion?
-
-        project.permanent_deletion_date(Time.now.utc).strftime('%F')
+        if project.adjourned_deletion? || License.feature_available?(:adjourned_deletion_for_projects_and_groups)
+          project.permanent_deletion_date(Time.now.utc).strftime('%F')
+        end
       end
 
       def duo_workflow_status_check

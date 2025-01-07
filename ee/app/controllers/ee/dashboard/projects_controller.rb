@@ -8,6 +8,9 @@ module EE
 
       prepended do
         before_action :check_adjourned_deletion_listing_availability, only: [:removed]
+        before_action do
+          push_licensed_feature(:adjourned_deletion_for_projects_and_groups)
+        end
 
         urgency :low, [:removed]
       end

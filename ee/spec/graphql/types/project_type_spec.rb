@@ -842,5 +842,15 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
         expect(project_data[:permanent_deletion_date]).to eq(pending_delete_project.permanent_deletion_date(Time.now.utc).strftime('%F'))
       end
     end
+
+    context 'with adjourned deletion enabled globally' do
+      before do
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
+      end
+
+      it 'returns correct date for permanent_deletion_date field' do
+        expect(project_data[:permanent_deletion_date]).to eq(pending_delete_project.permanent_deletion_date(Time.now.utc).strftime('%F'))
+      end
+    end
   end
 end
