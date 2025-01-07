@@ -5,6 +5,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SelfHostedModelForm from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_model_form.vue';
+import TestConnectionButton from 'ee/pages/admin/ai/self_hosted_models/components/test_connection_button.vue';
 import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
 import createSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
 import updateSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
@@ -75,6 +76,7 @@ describe('SelfHostedModelForm', () => {
   const findCollapsibleListBox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findCreateButton = () => wrapper.find('button[type="submit"]');
   const findCancelButton = () => wrapper.findByText('Cancel');
+  const findTestConnectionButton = () => wrapper.findComponent(TestConnectionButton);
 
   it('renders the self-hosted model details form', () => {
     expect(findGlForm().exists()).toBe(true);
@@ -107,6 +109,35 @@ describe('SelfHostedModelForm', () => {
 
     it('renders the optional API token input field', () => {
       expect(findApiKeyInputField().exists()).toBe(true);
+    });
+  });
+
+  describe('test connection button', () => {
+    it('renders the button', () => {
+      expect(findTestConnectionButton().exists()).toBe(true);
+    });
+
+    it('passes the correct props', async () => {
+      await findNameInputField().setValue('test deployment');
+      await findEndpointInputField().setValue('http://test.com');
+      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+      await findIdentifierInputField().setValue('identifier/test');
+      await findApiKeyInputField().vm.$emit('input', 'test-abc-123');
+
+      expect(findTestConnectionButton().props()).toEqual({
+        connectionTestInput: {
+          name: 'test deployment',
+          model: 'MISTRAL',
+          endpoint: 'http://test.com',
+          identifier: 'identifier/test',
+          apiToken: 'test-abc-123',
+        },
+        disabled: false,
+      });
+    });
+
+    it('is disabled when there are missing inputs', () => {
+      expect(findTestConnectionButton().props('disabled')).toBe(true);
     });
   });
 
