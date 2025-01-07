@@ -288,14 +288,6 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
 
     it { is_expected.to eq(false) }
 
-    context 'when multiple_approval_actions is disabled' do
-      before do
-        stub_feature_flags(multiple_approval_actions: false)
-      end
-
-      it { is_expected.to eq(false) }
-    end
-
     context 'with multiple approval_policy_action_idx' do
       before do
         create(:approval_merge_request_rule,

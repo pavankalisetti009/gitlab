@@ -12,6 +12,10 @@ RSpec.describe 'Project > Settings > Analytics -> Custom dashboard projects', :j
   let_it_be(:upper_project) { create(:project, namespace: group) }
 
   before do
+    allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
+    stub_licensed_features(product_analytics: true)
+    stub_feature_flags(product_analytics_features: true)
+    stub_licensed_features(project_level_analytics_dashboard: true, product_analytics: true)
     sign_in(user)
   end
 
@@ -29,9 +33,6 @@ RSpec.describe 'Project > Settings > Analytics -> Custom dashboard projects', :j
 
   context 'with correct license' do
     before do
-      stub_licensed_features(project_level_analytics_dashboard: true, product_analytics: true)
-      stub_feature_flags(product_analytics_features: true)
-
       visit project_settings_analytics_path(project)
     end
 

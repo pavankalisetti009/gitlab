@@ -7,7 +7,6 @@ module Projects
       feature_category :product_analytics
 
       before_action :authorize_analytics_settings!
-      before_action :authorize_modify_product_analytics_settings!
 
       def update
         params_to_update = update_params.to_h
@@ -50,7 +49,7 @@ module Projects
       end
 
       def authorize_analytics_settings!
-        access_denied! if project.personal?
+        access_denied! unless product_analytics_settings_allowed?(project)
       end
     end
   end

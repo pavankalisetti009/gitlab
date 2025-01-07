@@ -41,7 +41,9 @@ module EE
           end
 
           def analytics_menu_item
-            return ::Sidebars::NilMenuItem.new(item_id: :analytics) if context.project.personal?
+            unless product_analytics_settings_allowed?(context.project)
+              return ::Sidebars::NilMenuItem.new(item_id: :analytics)
+            end
 
             ::Sidebars::MenuItem.new(
               title: _('Analytics'),

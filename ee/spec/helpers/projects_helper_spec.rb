@@ -977,7 +977,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       before do
         allow(project).to receive(:product_analytics_enabled?).and_return(feature_enabled)
         allow(helper).to receive(:current_user).and_return(user)
-        allow(user).to receive(:can?).with(:modify_product_analytics_settings, project).and_return(user_permission)
+        allow(helper).to receive(:can?).with(user, :modify_product_analytics_settings, project).and_return(user_permission)
       end
 
       it { is_expected.to eq(outcome) }
