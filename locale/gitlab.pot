@@ -60076,9 +60076,6 @@ msgstr ""
 msgid "Unknown Error"
 msgstr ""
 
-msgid "Unknown data source: %{source}"
-msgstr ""
-
 msgid "Unknown format"
 msgstr ""
 
@@ -64131,6 +64128,9 @@ msgstr ""
 msgid "WorkItem|No milestone"
 msgstr ""
 
+msgid "WorkItem|No template"
+msgstr ""
+
 msgid "WorkItem|None"
 msgstr ""
 
@@ -67281,6 +67281,9 @@ msgid "merge request"
 msgid_plural "merge requests"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "merged"
+msgstr ""
 
 msgid "mergedCommitsAdded| (commits were squashed)"
 msgstr ""
