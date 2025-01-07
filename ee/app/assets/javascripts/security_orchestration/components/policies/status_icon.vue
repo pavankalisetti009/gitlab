@@ -51,7 +51,7 @@ export default {
       :name="name"
       :variant="variant"
     />
-    <span class="gl-m-0 gl-ml-1" :class="cssClass">
+    <span class="gl-white-space-nowrap gl-m-0 gl-ml-1" :class="cssClass">
       {{ statusText }}
     </span>
   </div>

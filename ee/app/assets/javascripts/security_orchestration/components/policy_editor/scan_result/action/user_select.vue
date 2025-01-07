@@ -36,6 +36,16 @@ export default {
       required: false,
       default: true,
     },
+    disabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    resetOnEmpty: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     users: {
@@ -102,6 +112,18 @@ export default {
       });
     },
   },
+  watch: {
+    existingApprovers(usersIds) {
+      if (this.resetOnEmpty) {
+        this.selectedUsers = findItemsIntersection({
+          collectionOne: usersIds,
+          collectionTwo: this.users,
+          mapperFn: createUserObject,
+          type: TYPENAME_USER,
+        });
+      }
+    },
+  },
   methods: {
     handleSelectedUser(usersIds) {
       const updatedSelectedUsers = this.createSelectedUsers(usersIds);
@@ -138,6 +160,7 @@ export default {
 <template>
   <gl-collapsible-listbox
     :items="listBoxItems"
+    :disabled="disabled"
     block
     searchable
     is-check-centered

@@ -6,6 +6,7 @@ import EditorComponent from 'ee/security_orchestration/components/policy_editor/
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/rule_section.vue';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/skip_ci_selector.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
@@ -81,6 +82,7 @@ describe('EditorComponent', () => {
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
   const findDisabledAction = () => wrapper.findByTestId('disabled-action');
+  const findSkipCiSelector = () => wrapper.findComponent(SkipCiSelector);
 
   describe('when url params are passed', () => {
     beforeEach(() => {
@@ -309,6 +311,21 @@ describe('EditorComponent', () => {
     it('selects suffix strategy', () => {
       findActionSection().vm.$emit('changed', 'suffix', SUFFIX_NEVER);
       expect(findPolicyEditorLayout().props('policy').suffix).toEqual(SUFFIX_NEVER);
+    });
+  });
+
+  describe('skip ci configuration', () => {
+    it('renders skip ci configuration', () => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesSkipCi: true,
+          },
+        },
+      });
+
+      expect(findSkipCiSelector().exists()).toBe(true);
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({});
     });
   });
 
