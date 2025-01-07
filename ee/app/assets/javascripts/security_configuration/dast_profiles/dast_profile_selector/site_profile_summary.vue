@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DastSiteValidationBadge from 'ee/security_configuration/dast_profiles/components/dast_site_validation_badge.vue';
 import DastSiteValidationModal from 'ee/security_configuration/dast_site_validation/components/dast_site_validation_modal.vue';
@@ -9,6 +10,7 @@ import {
   DAST_SITE_VALIDATION_POLLING_INTERVAL,
   DAST_SITE_VALIDATION_ALLOWED_TIMELINE_IN_MINUTES,
 } from 'ee/security_configuration/dast_site_validation/constants';
+import DAST_VARIABLES from 'ee/security_configuration/dast_profiles/dast_variables';
 import {
   EXCLUDED_URLS_SEPARATOR,
   TARGET_TYPES,
@@ -35,6 +37,7 @@ export default {
     DastSiteValidationBadge,
     GlButton,
     DastSiteValidationModal,
+    TooltipOnTruncate,
   },
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -176,6 +179,9 @@ export default {
 
       return validationStatus;
     },
+    getVariableName(variable) {
+      return DAST_VARIABLES[variable]?.name || variable;
+    },
     isPendingValidation(status) {
       return [PENDING, INPROGRESS].includes(status);
     },
@@ -251,10 +257,15 @@ export default {
         <summary-cell
           v-for="{ variable, value } in profile.optionalVariables"
           :key="variable"
-          :label="variable"
-          :value="value"
+          :label="getVariableName(variable)"
           data-testid="additional-variable-summary-cell"
-        />
+        >
+          <tooltip-on-truncate :title="value" truncate-target="child">
+            <div class="gl-truncate">
+              {{ value }}
+            </div>
+          </tooltip-on-truncate>
+        </summary-cell>
       </template>
     </template>
   </dast-profile-summary-card>

@@ -17875,6 +17875,12 @@ msgstr ""
 msgid "DastProfiles|Active"
 msgstr ""
 
+msgid "DastProfiles|Active scan timeout"
+msgstr ""
+
+msgid "DastProfiles|Active scan worker count"
+msgstr ""
+
 msgid "DastProfiles|Add DAST variable"
 msgstr ""
 
@@ -17885,6 +17891,9 @@ msgid "DastProfiles|Additional request headers (optional)"
 msgstr ""
 
 msgid "DastProfiles|Additional variables"
+msgstr ""
+
+msgid "DastProfiles|After-login actions"
 msgstr ""
 
 msgid "DastProfiles|Are you sure you want to delete this profile?"
@@ -17899,6 +17908,9 @@ msgstr ""
 msgid "DastProfiles|Authentication URL"
 msgstr ""
 
+msgid "DastProfiles|Before-login actions"
+msgstr ""
+
 msgid "DastProfiles|Change scanner profile"
 msgstr ""
 
@@ -17906,6 +17918,9 @@ msgid "DastProfiles|Change site profile"
 msgstr ""
 
 msgid "DastProfiles|Choose a scan method"
+msgstr ""
+
+msgid "DastProfiles|Clear input fields"
 msgstr ""
 
 msgid "DastProfiles|Comma-separated list of check identifiers to use for the scan. For identifiers, see %{linkStart}vulnerability checks.%{linkEnd}"
@@ -17984,6 +17999,9 @@ msgid "DastProfiles|Excluded URLs"
 msgstr ""
 
 msgid "DastProfiles|Excluded URLs (optional)"
+msgstr ""
+
+msgid "DastProfiles|Excluded checks"
 msgstr ""
 
 msgid "DastProfiles|Excluded paths"

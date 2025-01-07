@@ -40,6 +40,6 @@ export const mockSharedData = {
 };
 
 export const mockVariables = [
-  { variable: 'DAST_CHECKS_TO_EXCLUDE', value: '552.2,78.1' },
-  { variable: 'DAST_CRAWL_GRAPH', value: 'true' },
+  { variable: 'Excluded checks', value: '552.2,78.1' },
+  { variable: 'Clear input fields', value: 'true' },
 ];

@@ -38,7 +38,7 @@ describe('DastSiteProfileSummary', () => {
   const findAdditionalVariables = () =>
     wrapper.findAllByTestId('additional-variable-summary-cell').wrappers.map((variableCell) => ({
       variable: variableCell.props('label'),
-      value: variableCell.props('value'),
+      value: variableCell.text(),
     }));
 
   const defaultProps = {
