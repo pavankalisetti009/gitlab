@@ -246,4 +246,48 @@ describe('UserSelect component', () => {
       ]);
     });
   });
+
+  describe('disabled state', () => {
+    it('renders disabled state', () => {
+      createComponent({
+        propsData: {
+          disabled: true,
+        },
+      });
+
+      expect(findListbox().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('reset selected users', () => {
+    it('reset selected users when there are no selected users', async () => {
+      createComponent({ propsData: { existingApprovers: [1, 2], resetOnEmpty: true } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('selected')).toEqual([
+        'gid://gitlab/User/1',
+        'gid://gitlab/User/2',
+      ]);
+
+      await wrapper.setProps({ existingApprovers: [] });
+
+      expect(findListbox().props('selected')).toEqual([]);
+    });
+
+    it('update selected users when new users selected', async () => {
+      createComponent({ propsData: { existingApprovers: [1], resetOnEmpty: true } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('selected')).toEqual(['gid://gitlab/User/1']);
+
+      await wrapper.setProps({ existingApprovers: [1, 2] });
+
+      expect(findListbox().props('selected')).toEqual([
+        'gid://gitlab/User/1',
+        'gid://gitlab/User/2',
+      ]);
+    });
+  });
 });

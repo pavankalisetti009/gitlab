@@ -87,6 +87,18 @@ content:
       file: .pipeline-execution.yml
 `;
 
+export const skipCiConfigurationManifest = `name: Ci config file
+description: triggers all protected branches except main
+enabled: true
+pipeline_config_strategy: inject_ci
+skip_ci:
+  allowed: true
+content:
+  include:
+    - project: GitLab.org/GitLab
+      file: .pipeline-execution.yml
+`;
+
 export const mockPipelineExecutionManifest = `type: pipeline_execution_policy
 name: Include external file
 description: This policy enforces pipeline execution with configuration from external file
