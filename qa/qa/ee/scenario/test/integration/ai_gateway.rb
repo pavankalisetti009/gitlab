@@ -7,6 +7,8 @@ module QA
         module Integration
           class AiGateway < QA::Scenario::Test::Instance::All
             tags :ai_gateway
+
+            pipeline_mappings test_on_omnibus: %w[ai-gateway]
           end
         end
       end

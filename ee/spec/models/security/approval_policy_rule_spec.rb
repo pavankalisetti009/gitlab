@@ -54,7 +54,7 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       context 'when license_finding defines the license list using both the current and new set of keys' do
         let(:trait) { :license_finding_with_current_and_new_keys }
 
-        it { is_expected.to be_valid }
+        it { is_expected.not_to be_valid }
       end
     end
   end

@@ -7,6 +7,8 @@ module QA
         module Integration
           class Elasticsearch < QA::Scenario::Test::Instance::All
             tags :elasticsearch
+
+            pipeline_mappings test_on_omnibus: %w[elasticsearch]
           end
         end
       end

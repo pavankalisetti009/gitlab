@@ -246,7 +246,7 @@ class Gitlab::Seeder::ProductivityAnalytics
   end
 
   def suffix
-    @suffix ||= Time.now.to_i
+    @suffix ||= "#{Gitlab.config.cell.id}-#{Time.now.to_i}"
   end
 
   def get_date_after(date)

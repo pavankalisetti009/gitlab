@@ -260,7 +260,7 @@
         }
       },
       "then": {
-        "anyOf": [
+        "oneOf": [
           {
             "required": [
               "type",

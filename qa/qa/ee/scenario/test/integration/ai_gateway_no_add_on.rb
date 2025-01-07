@@ -7,6 +7,8 @@ module QA
         module Integration
           class AiGatewayNoAddOn < QA::Scenario::Test::Instance::All
             tags :ai_gateway_no_add_on
+
+            pipeline_mappings test_on_omnibus: %w[ai-gateway-no-add-on]
           end
         end
       end
