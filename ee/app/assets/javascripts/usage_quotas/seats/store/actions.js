@@ -65,12 +65,18 @@ export const removeBillableMember = ({ dispatch, state, commit }) => {
     .catch(() => dispatch('removeBillableMemberError'));
 };
 
+const removeBillableMemberSuccessMessage = window.gon?.features?.billableMemberAsyncDeletion
+  ? s__(
+      'Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
+    )
+  : s__('Billing|User was successfully removed');
+
 export const removeBillableMemberSuccess = ({ dispatch, commit }) => {
   dispatch('fetchBillableMembersList');
   dispatch('fetchGitlabSubscription');
 
   createAlert({
-    message: s__('Billing|User was successfully removed'),
+    message: removeBillableMemberSuccessMessage,
     variant: VARIANT_SUCCESS,
   });
 
