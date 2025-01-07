@@ -17,7 +17,12 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     create(:zoekt_enabled_namespace, namespace: unassigned_group)
   end
 
-  describe '#search?' do
+  describe '.search?' do
+    before do
+      stub_licensed_features(zoekt_code_search: true)
+      stub_ee_application_setting(zoekt_search_enabled: true)
+    end
+
     subject(:search) { described_class.search?(container) }
 
     [true, false].each do |search|
@@ -85,7 +90,12 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
-  describe '#index?' do
+  describe '.index?' do
+    before do
+      stub_licensed_features(zoekt_code_search: true)
+      stub_ee_application_setting(zoekt_indexing_enabled: true)
+    end
+
     subject(:index) { described_class.index?(container) }
 
     context 'when passed a project' do
@@ -125,7 +135,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
-  describe '#licensed_and_indexing_enabled?' do
+  describe '.licensed_and_indexing_enabled?' do
     subject { described_class.licensed_and_indexing_enabled? }
 
     context 'when license feature zoekt_code_search is disabled' do
@@ -154,7 +164,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
-  describe '#enabled?' do
+  describe '.enabled?' do
     subject { described_class.enabled? }
 
     context 'when license feature zoekt_code_search is disabled' do
@@ -183,7 +193,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
-  describe '#enabled_for_user?' do
+  describe '.enabled_for_user?' do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:a_user) { create(:user) }
@@ -210,18 +220,120 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
-  describe '.index_async' do
-    it 'calls IndexingTaskWorker with task type index_repo' do
-      expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async).with(project.id, :index_repo)
-      described_class.index_async(project.id)
+  describe '.index_in' do
+    subject(:index_in) { described_class.index_in(1.second, project.id) }
+
+    context 'when licensed_and_indexing_enabled? returns false' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(false)
+      end
+
+      it 'does not call IndexingTaskWorker' do
+        expect(Search::Zoekt::IndexingTaskWorker).not_to receive(:perform_async)
+
+        expect(index_in).to be false
+      end
+    end
+
+    context 'when licensed_and_indexing_enabled? returns true' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(true)
+      end
+
+      it 'calls IndexingTaskWorker async' do
+        expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
+          .with(project.id, :index_repo, { delay: 1.second })
+
+        index_in
+      end
     end
   end
 
-  describe '.index_in' do
-    it 'calls IndexingTaskWorker with task type index_repo and a delay' do
-      expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
-        .with(project.id, :index_repo, { delay: 1.minute })
-      described_class.index_in(1.minute, project.id)
+  describe '.delete_async' do
+    subject(:delete_async) { described_class.delete_async(project.id, root_namespace_id: group.id) }
+
+    context 'when licensed_and_indexing_enabled? returns false' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(false)
+      end
+
+      it 'does not call IndexingTaskWorker' do
+        expect(Search::Zoekt::IndexingTaskWorker).not_to receive(:perform_async)
+
+        expect(delete_async).to be false
+      end
+    end
+
+    context 'when licensed_and_indexing_enabled? returns true' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(true)
+      end
+
+      context 'when node_id is not provided' do
+        it 'calls IndexingTaskWorker async' do
+          expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
+            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id })
+
+          delete_async
+        end
+      end
+
+      context 'when node_id is provided' do
+        subject(:delete_async) do
+          described_class.delete_async(project.id, root_namespace_id: group.id, node_id: node.id)
+        end
+
+        it 'calls IndexingTaskWorker async' do
+          expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
+            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id })
+
+          delete_async
+        end
+      end
+    end
+  end
+
+  describe '.delete_in' do
+    subject(:delete_in) { described_class.delete_in(1.second, project.id, root_namespace_id: group.id) }
+
+    context 'when licensed_and_indexing_enabled? returns false' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(false)
+      end
+
+      it 'does not call IndexingTaskWorker' do
+        expect(Search::Zoekt::IndexingTaskWorker).not_to receive(:perform_async)
+
+        expect(delete_in).to be false
+      end
+    end
+
+    context 'when licensed_and_indexing_enabled? returns true' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(true)
+      end
+
+      context 'when node_id is not provided' do
+        it 'calls IndexingTaskWorker async' do
+          expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
+            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id, delay: 1.second })
+
+          delete_in
+        end
+      end
+
+      context 'when node_id is provided' do
+        subject(:delete_in) do
+          described_class.delete_in(2.seconds, project.id, root_namespace_id: group.id, node_id: node.id)
+        end
+
+        it 'calls IndexingTaskWorker async' do
+          expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
+            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id, delay: 2.seconds })
+
+          delete_in
+        end
+      end
     end
   end
 end

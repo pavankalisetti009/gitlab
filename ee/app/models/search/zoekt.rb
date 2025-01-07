@@ -8,6 +8,8 @@ module Search
       include Gitlab::Utils::StrongMemoize
 
       def search?(container)
+        return false unless enabled?
+
         root_namespace_id = fetch_root_namespace_id(container)
         return false unless root_namespace_id
 
@@ -19,6 +21,8 @@ module Search
       end
 
       def index?(container)
+        return false unless licensed_and_indexing_enabled?
+
         root_namespace_id = fetch_root_namespace_id(container)
         return false unless root_namespace_id
 
@@ -44,14 +48,20 @@ module Search
       end
 
       def index_async(project_id)
+        return false unless licensed_and_indexing_enabled?
+
         IndexingTaskWorker.perform_async(project_id, :index_repo)
       end
 
       def index_in(delay, project_id)
+        return false unless licensed_and_indexing_enabled?
+
         IndexingTaskWorker.perform_async(project_id, :index_repo, { delay: delay })
       end
 
       def delete_async(project_id, root_namespace_id:, node_id: nil)
+        return false unless licensed_and_indexing_enabled?
+
         Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
           node_ids: [node_id]).map do |node|
           options = { root_namespace_id: root_namespace_id, node_id: node.id }
@@ -60,6 +70,8 @@ module Search
       end
 
       def delete_in(delay, project_id, root_namespace_id:, node_id: nil)
+        return false unless licensed_and_indexing_enabled?
+
         Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
           node_ids: [node_id]).map do |node|
           options = {
