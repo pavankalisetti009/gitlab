@@ -17,6 +17,11 @@ RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: 
   end
 
   describe '#use_zoekt?' do
+    before do
+      stub_licensed_features(zoekt_code_search: true)
+      stub_ee_application_setting(zoekt_indexing_enabled: true)
+    end
+
     it 'is true for indexed projects' do
       expect(repository.use_zoekt?).to eq(true)
     end
