@@ -95,7 +95,7 @@ describe('SkipCiConfiguration', () => {
       propsData: {
         configuration: {
           allowed: false,
-          allowList: {
+          allowlist: {
             users: [{ id: 1 }],
           },
         },
@@ -117,7 +117,7 @@ describe('SkipCiConfiguration', () => {
       propsData: {
         configuration: {
           allowed: true,
-          allowList: {
+          allowlist: {
             users: [{ id: 1 }],
           },
         },

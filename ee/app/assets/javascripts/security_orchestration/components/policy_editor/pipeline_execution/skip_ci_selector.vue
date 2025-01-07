@@ -34,7 +34,7 @@ export default {
       return Boolean(this.skipCiConfiguration?.allowed);
     },
     selectedUsers() {
-      const { allowList: { users = [] } = {} } = this.skipCiConfiguration || {};
+      const { allowlist: { users = [] } = {} } = this.skipCiConfiguration || {};
       return users.map(({ id }) => this.mapUserId(id)) || [];
     },
   },
@@ -42,7 +42,7 @@ export default {
     updateConfiguration(value) {
       this.$emit('changed', 'skip_ci', {
         ...this.skipCiConfiguration,
-        allowList: { users: [] },
+        allowlist: { users: [] },
         allowed: value,
       });
     },
@@ -50,7 +50,7 @@ export default {
       this.$emit('changed', 'skip_ci', {
         ...this.skipCiConfiguration,
         allowed: false,
-        allowList: { users: users?.map(({ id }) => ({ id: this.mapUserId(id) })) },
+        allowlist: { users: users?.map(({ id }) => ({ id: this.mapUserId(id) })) },
       });
     },
     mapUserId(id) {

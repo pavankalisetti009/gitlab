@@ -52,7 +52,7 @@ export default {
       return this.configuration?.allowed;
     },
     userIds() {
-      const { allowList: { users = [] } = {} } = this.configuration || {};
+      const { allowlist: { users = [] } = {} } = this.configuration || {};
       return users.map(({ id }) => convertToGraphQLId(TYPENAME_USER, id));
     },
     label() {
