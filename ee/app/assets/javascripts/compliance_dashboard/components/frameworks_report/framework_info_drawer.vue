@@ -1,5 +1,14 @@
 <script>
-import { GlBadge, GlDrawer, GlButton, GlLabel, GlLink, GlSprintf, GlPopover } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlDrawer,
+  GlButton,
+  GlLabel,
+  GlLink,
+  GlLoadingIcon,
+  GlSprintf,
+  GlPopover,
+} from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -9,6 +18,7 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { isTopLevelGroup } from '../../utils';
 import { POLICY_SCOPES_DOCS_URL } from '../../constants';
+import projectsInNamespaceWithFrameworkQuery from './graphql/projects_in_namespace_with_framework.query.graphql';
 
 export default {
   name: 'FrameworkInfoDrawer',
@@ -18,6 +28,7 @@ export default {
     GlButton,
     GlLabel,
     GlLink,
+    GlLoadingIcon,
     GlSprintf,
     GlPopover,
     HelpIcon,
@@ -46,6 +57,33 @@ export default {
     },
   },
   emits: ['edit', 'close'],
+  data() {
+    return {
+      projects: {
+        nodes: [],
+        pageInfo: {
+          hasNextPage: false,
+        },
+      },
+    };
+  },
+  apollo: {
+    projects: {
+      query: projectsInNamespaceWithFrameworkQuery,
+      skip() {
+        return !this.framework || !this.groupPath;
+      },
+      variables() {
+        return {
+          fullPath: this.groupPath,
+          frameworkId: this.framework.id,
+        };
+      },
+      update(data) {
+        return data.namespace.projects;
+      },
+    },
+  },
   computed: {
     editDisabled() {
       return !isTopLevelGroup(this.groupPath, this.rootAncestor.path);
@@ -66,7 +104,7 @@ export default {
       return this.$options.i18n.associatedProjects;
     },
     associatedProjectsCount() {
-      return this.framework.projects.nodes.length;
+      return this.projects.count;
     },
     policies() {
       return [
@@ -101,6 +139,15 @@ export default {
 
       return `${this.groupSecurityPoliciesPath}/${policy.name}/edit?type=${urlParameter}`;
     },
+
+    loadMoreProjects() {
+      this.$apollo.queries.projects.fetchMore({
+        variables: {
+          after: this.projects.pageInfo.endCursor,
+        },
+      });
+    },
+
     copyIdToClipboard() {
       navigator?.clipboard?.writeText(this.normalisedFrameworkId);
       this.$toast.show(this.$options.i18n.copyIdToastText);
@@ -179,8 +226,8 @@ export default {
     </template>
 
     <template v-if="framework" #default>
-      <div class="gl-flex gl-flex-col gl-gap-5">
-        <div class="data-testid" data-testid="sidebar-id">
+      <div class="gl-flex gl-flex-col">
+        <div data-testid="sidebar-id" class="gl-mb-5">
           <div class="gl-flex gl-items-baseline">
             <h3 class="gl-heading-3" data-testid="sidebar-id-title">
               {{ $options.i18n.frameworkIdTitle }}
@@ -216,7 +263,7 @@ export default {
             >
           </div>
         </div>
-        <div class="gl-border-t">
+        <div class="gl-border-t gl-mb-5">
           <h3 class="gl-heading-3 gl-mt-5" data-testid="sidebar-description-title">
             {{ $options.i18n.frameworkDescription }}
           </h3>
@@ -229,17 +276,33 @@ export default {
             <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
               {{ associatedProjectsTitle }}
             </h3>
-            <gl-badge class="gl-ml-3" variant="muted">{{ associatedProjectsCount }}</gl-badge>
+            <gl-badge class="gl-ml-3" variant="muted">
+              <template v-if="!associatedProjectsCount && $apollo.queries.projects.loading">
+                <gl-loading-icon size="sm" />
+              </template>
+              <template v-else>{{ associatedProjectsCount }}</template>
+            </gl-badge>
           </div>
-          <ul class="gl-pl-5">
+          <ul v-if="projects.nodes.length" class="gl-pl-5">
             <li
-              v-for="associatedProject in framework.projects.nodes"
+              v-for="associatedProject in projects.nodes"
               :key="associatedProject.id"
               class="gl-mt-1"
             >
               <gl-link :href="associatedProject.webUrl">{{ associatedProject.name }}</gl-link>
             </li>
           </ul>
+          <gl-button
+            v-if="projects.pageInfo.hasNextPage"
+            class="gl-mb-5"
+            category="tertiary"
+            variant="confirm"
+            size="small"
+            :loading="$apollo.queries.projects.loading"
+            @click="loadMoreProjects"
+          >
+            {{ __('Load more') }}
+          </gl-button>
         </div>
         <div class="gl-border-t" data-testid="sidebar-policies">
           <div class="gl-flex gl-items-center gl-gap-1">

@@ -258,7 +258,7 @@ export const createProjectUpdateComplianceFrameworksResponse = ({ errors } = {})
   },
 });
 
-const mockPageInfo = () => ({
+export const mockPageInfo = () => ({
   hasNextPage: true,
   hasPreviousPage: true,
   startCursor: 'start-cursor',
@@ -270,6 +270,7 @@ export const createFramework = ({
   id,
   isDefault = false,
   projects = 0,
+  projectsTotalCount = 100,
   groupPath = 'foo',
   options,
 } = {}) => ({
@@ -282,6 +283,8 @@ export const createFramework = ({
     nodes: [],
   },
   projects: {
+    pageInfo: mockPageInfo(),
+    count: projectsTotalCount,
     nodes: Array(projects)
       .fill(null)
       .map((_, pid) => createProject({ id: pid, groupPath })),
@@ -418,6 +421,7 @@ pipeline_execution_policy:
 export const createComplianceFrameworksReportResponse = ({
   count = 1,
   projects = 0,
+  projectsTotalCount = 100,
   groupPath = 'group',
 } = {}) => {
   return {
@@ -442,7 +446,9 @@ export const createComplianceFrameworksReportResponse = ({
           pageInfo: mockPageInfo(),
           nodes: Array(count)
             .fill(null)
-            .map((_, id) => createFramework({ id: id + 1, projects, groupPath })),
+            .map((_, id) =>
+              createFramework({ id: id + 1, projects, projectsTotalCount, groupPath }),
+            ),
           __typename: 'ComplianceFrameworkConnection',
         },
         __typename: 'Namespace',

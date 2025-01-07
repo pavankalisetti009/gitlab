@@ -43,11 +43,12 @@ describe('ComplianceFrameworksReport component', () => {
   const findFrameworksTable = () => wrapper.findComponent({ name: 'FrameworksTable' });
   const findPagination = () => wrapper.findComponent({ name: 'GlKeysetPagination' });
 
-  const defaultPagination = () => ({
+  const defaultPaginationAndLimits = () => ({
     before: null,
     after: null,
     first: 20,
     search: '',
+    projectLimit: 10,
   });
 
   const defaultInjects = {
@@ -168,7 +169,7 @@ describe('ComplianceFrameworksReport component', () => {
 
     it('fetches the list of frameworks and projects', () => {
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
-        ...defaultPagination(),
+        ...defaultPaginationAndLimits(),
         fullPath,
       });
     });
@@ -189,7 +190,7 @@ describe('ComplianceFrameworksReport component', () => {
 
     it('fetches the list of frameworks from current group', () => {
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
-        ...defaultPagination(),
+        ...defaultPaginationAndLimits(),
         fullPath: subgroupPath,
       });
     });
@@ -202,7 +203,7 @@ describe('ComplianceFrameworksReport component', () => {
     await nextTick();
 
     expect(mockGraphQlLoading).toHaveBeenCalledWith({
-      ...defaultPagination(),
+      ...defaultPaginationAndLimits(),
       search: 'test',
       fullPath,
     });
@@ -224,7 +225,7 @@ describe('ComplianceFrameworksReport component', () => {
       await nextTick();
 
       expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith({
-        ...defaultPagination(),
+        ...defaultPaginationAndLimits(),
         after: pagination.props('endCursor'),
         fullPath,
       });
@@ -235,7 +236,7 @@ describe('ComplianceFrameworksReport component', () => {
       pagination.vm.$emit('prev');
       await nextTick();
 
-      const expectedPagination = defaultPagination();
+      const expectedPagination = defaultPaginationAndLimits();
       expectedPagination.last = expectedPagination.first;
       delete expectedPagination.first;
 
@@ -255,7 +256,7 @@ describe('ComplianceFrameworksReport component', () => {
       await nextTick();
 
       expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledWith({
-        ...defaultPagination(),
+        ...defaultPaginationAndLimits(),
         search: 'test',
         fullPath,
       });
