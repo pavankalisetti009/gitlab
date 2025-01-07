@@ -9477,6 +9477,9 @@ msgstr ""
 msgid "Billing|Unlimited members during your trial"
 msgstr ""
 
+msgid "Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes."
+msgstr ""
+
 msgid "Billing|User was successfully removed"
 msgstr ""
 
