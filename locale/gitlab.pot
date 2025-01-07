@@ -35542,6 +35542,9 @@ msgstr ""
 msgid "MlExperimentTracking|Experiments keep track of comparable model candidates, and determine which parameters provides the best performance."
 msgstr ""
 
+msgid "MlExperimentTracking|Failed to load experiment candidates with error: %{message}"
+msgstr ""
+
 msgid "MlExperimentTracking|Filter candidates"
 msgstr ""
 
@@ -35572,6 +35575,9 @@ msgstr ""
 msgid "MlExperimentTracking|No candidates"
 msgstr ""
 
+msgid "MlExperimentTracking|No candidates associated with this experiment"
+msgstr ""
+
 msgid "MlExperimentTracking|No candidates logged for the query. Create new candidates using the MLflow client."
 msgstr ""
 
@@ -35591,6 +35597,9 @@ msgid "MlExperimentTracking|Performance"
 msgstr ""
 
 msgid "MlExperimentTracking|To learn more about MLflow client compatibility, see %{linkStart}the documentation%{linkEnd}."
+msgstr ""
+
+msgid "MlExperimentTracking|Use candidates to track performance, parameters, and metadata"
 msgstr ""
 
 msgid "MlExperimentTracking|Using the MLflow client"
