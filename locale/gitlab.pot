@@ -2287,7 +2287,7 @@ msgstr ""
 msgid "AIPoweredSM|Enable %{link_start}AI-powered features%{link_end} for this instance."
 msgstr ""
 
-msgid "AISummary|Generates a summary of all comments"
+msgid "AISummary|Generates a summary of this issue"
 msgstr ""
 
 msgid "AISummary|View summary"
