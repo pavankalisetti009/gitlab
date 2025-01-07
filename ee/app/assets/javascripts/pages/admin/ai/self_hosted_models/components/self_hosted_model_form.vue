@@ -126,6 +126,12 @@ export default {
         action: this.isEditing ? 'saved' : 'created',
       });
     },
+    formValues() {
+      return {
+        apiToken: this.apiToken,
+        ...this.baseFormValues,
+      };
+    },
   },
   methods: {
     async onSubmit() {
@@ -133,9 +139,8 @@ export default {
 
       const { mutation } = this.mutationData;
 
-      const formValues = {
-        apiToken: this.apiToken,
-        ...this.baseFormValues,
+      const mutationInput = {
+        ...this.formValues,
         ...(this.isEditing
           ? {
               id: convertToGraphQLId('Ai::SelfHostedModel', this.initialFormValues.id),
@@ -149,7 +154,7 @@ export default {
           mutation,
           variables: {
             input: {
-              ...formValues,
+              ...mutationInput,
             },
           },
         });
@@ -299,7 +304,7 @@ export default {
       <test-connection-button
         class="gl-mr-2"
         :disabled="!hasValidInput"
-        :connection-test-input="baseFormValues"
+        :connection-test-input="formValues"
       />
       <gl-button :href="basePath">
         {{ __('Cancel') }}
