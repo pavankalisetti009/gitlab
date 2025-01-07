@@ -46,8 +46,21 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
   context 'when feature is licensed' do
     subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
 
+    let(:attributes) do
+      {
+        legacy: {
+          destination_url: config["url"],
+          verification_token: 'random_secret_token'
+        },
+        streaming: {
+          "url" => config["url"]
+        }
+      }
+    end
+
     before do
       stub_licensed_features(external_audit_events: true)
+      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
     end
 
     context 'when current user is instance admin' do
@@ -64,7 +77,109 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
 
       it_behaves_like 'creates an audit event'
 
+      it_behaves_like 'creates a legacy destination',
+        AuditEvents::Instance::ExternalStreamingDestination,
+        -> { attributes }
+
       context 'for category' do
+        context 'when category is aws' do
+          let(:config) do
+            {
+              "accessKeyXid" => SecureRandom.hex(8),
+              "bucketName" => SecureRandom.hex(8),
+              "awsRegion" => "ap-south-2"
+            }
+          end
+
+          let(:input) do
+            {
+              config: config,
+              category: 'aws',
+              secret_token: 'some_secret_token'
+            }
+          end
+
+          let(:attributes) do
+            {
+              legacy: {
+                access_key_xid: config["accessKeyXid"],
+                bucket_name: config["bucketName"],
+                aws_region: config["awsRegion"],
+                secret_access_key: 'some_secret_token'
+              },
+              streaming: {
+                "accessKeyXid" => config["accessKeyXid"],
+                "bucketName" => config["bucketName"],
+                "awsRegion" => config["awsRegion"]
+              }
+            }
+          end
+
+          it 'creates the destination' do
+            expect { mutate }
+              .to change { AuditEvents::Instance::ExternalStreamingDestination.count }.by(1)
+
+            destination = AuditEvents::Instance::ExternalStreamingDestination.last
+            expect(destination.config).to eq(config)
+            expect(destination.name).not_to be_empty
+            expect(destination.category).to eq('aws')
+            expect(destination.secret_token).to eq('some_secret_token')
+          end
+
+          it_behaves_like 'creates a legacy destination',
+            AuditEvents::Instance::ExternalStreamingDestination,
+            -> { attributes }
+        end
+
+        context 'when category is gcp' do
+          let(:config) do
+            {
+              "googleProjectIdName" => "#{FFaker::Lorem.word.downcase}-#{SecureRandom.hex(4)}",
+              "clientEmail" => FFaker::Internet.safe_email,
+              "logIdName" => "audit_events"
+            }
+          end
+
+          let(:input) do
+            {
+              config: config,
+              category: 'gcp',
+              secret_token: 'some_secret_token'
+            }
+          end
+
+          let(:attributes) do
+            {
+              legacy: {
+                google_project_id_name: config["googleProjectIdName"],
+                client_email: config["clientEmail"],
+                log_id_name: config["logIdName"],
+                private_key: 'some_secret_token'
+              },
+              streaming: {
+                "googleProjectIdName" => config["googleProjectIdName"],
+                "clientEmail" => config["clientEmail"],
+                "logIdName" => config["logIdName"]
+              }
+            }
+          end
+
+          it 'creates the destination' do
+            expect { mutate }
+              .to change { AuditEvents::Instance::ExternalStreamingDestination.count }.by(1)
+
+            destination = AuditEvents::Instance::ExternalStreamingDestination.last
+            expect(destination.config).to eq(config)
+            expect(destination.name).not_to be_empty
+            expect(destination.category).to eq('gcp')
+            expect(destination.secret_token).to eq('some_secret_token')
+          end
+
+          it_behaves_like 'creates a legacy destination',
+            AuditEvents::Instance::ExternalStreamingDestination,
+            -> { attributes }
+        end
+
         context 'when category is invalid' do
           let(:input) do
             {

@@ -6,6 +6,7 @@ module Mutations
       module AuditEventStreamingDestinations
         class Create < Base
           graphql_name 'InstanceAuditEventStreamingDestinationsCreate'
+          include ::AuditEvents::StreamDestinationSyncHelper
 
           argument :config, GraphQL::Types::JSON, # rubocop:disable Graphql/JSONType -- Different type of destinations will have different configs
             required: true,
@@ -41,6 +42,8 @@ module Mutations
             )
 
             audit(destination, action: :created) if destination.save
+
+            create_legacy_destination(destination)
 
             {
               external_audit_event_destination: (destination if destination.persisted?),
