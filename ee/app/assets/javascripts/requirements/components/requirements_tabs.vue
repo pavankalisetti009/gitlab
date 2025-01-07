@@ -79,7 +79,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-items-center gl-justify-between">
+  <div
+    data-testid="requirements-tabs"
+    class="gl-flex gl-flex-col-reverse gl-flex-wrap gl-justify-between sm:gl-flex-row sm:gl-items-center"
+  >
     <gl-tabs content-class="gl-p-0">
       <gl-tab
         :title-link-attributes="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {
@@ -118,7 +121,10 @@ export default {
         </template>
       </gl-tab>
     </gl-tabs>
-    <div v-if="isOpenTab && canCreateRequirement" class="nav-controls">
+    <div
+      v-if="isOpenTab && canCreateRequirement"
+      class="gl-mt-3 gl-self-end sm:gl-mt-0 sm:gl-self-center"
+    >
       <gl-button
         category="primary"
         variant="confirm"
