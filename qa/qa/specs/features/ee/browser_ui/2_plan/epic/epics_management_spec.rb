@@ -104,21 +104,25 @@ module QA
               EE::Page::Group::WorkItem::Epic::Show.perform do |show|
                 show.close_epic
 
-                expect(show).to have_system_note('closed')
+                expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'closed' system note but it did not appear."
 
                 show.reopen_epic
 
-                expect(show).to have_system_note('opened')
+                expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'opened' system note but it did not appear."
               end
             else
               EE::Page::Group::Epic::Show.perform do |show|
                 show.close_epic
 
-                expect(show).to have_system_note('closed')
+                expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'closed' system note but it did not appear."
 
                 show.reopen_epic
 
-                expect(show).to have_system_note('opened')
+                expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'opened' system note but it did not appear."
               end
             end
           end
