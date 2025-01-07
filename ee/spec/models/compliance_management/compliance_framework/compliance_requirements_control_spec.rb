@@ -11,6 +11,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       is_expected.to belong_to(:compliance_requirement)
         .class_name('ComplianceManagement::ComplianceFramework::ComplianceRequirement').required
     end
+
+    it { is_expected.to belong_to(:namespace).optional(false) }
+    it { is_expected.to have_many(:project_control_compliance_statuses) }
   end
 
   describe 'validations' do
