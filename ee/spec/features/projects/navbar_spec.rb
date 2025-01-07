@@ -24,11 +24,23 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     insert_infrastructure_aws_nav
     project.update!(service_desk_enabled: true)
     allow(Gitlab::ServiceDesk).to receive(:supported?).and_return(true)
+
+    allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
+    stub_licensed_features(product_analytics: true)
+    stub_feature_flags(product_analytics_features: true)
+  end
+
+  context 'with default navbar' do
+    before do
+      visit project_path(project)
+    end
+
+    it_behaves_like 'verified navigation bar'
   end
 
   context 'when iterations is available' do
     before do
-      stub_licensed_features(iterations: true)
+      stub_licensed_features(iterations: true, product_analytics: true)
     end
 
     context 'when project is namespaced to a user' do
@@ -199,7 +211,9 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
   context 'when analytics dashboards is available' do
     before do
-      stub_licensed_features({ combined_project_analytics_dashboards: true, iterations: false })
+      stub_licensed_features({ combined_project_analytics_dashboards: true, product_analytics: true,
+iterations: false })
+
       visit project_path(project)
     end
 

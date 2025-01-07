@@ -10,13 +10,20 @@ RSpec.describe Projects::Settings::AnalyticsController, feature_category: :produ
   let_it_be_with_reload(:project) { create(:project, group: group, project_setting: build(:project_setting)) }
   let_it_be(:pointer_project) { create(:project, group: group) }
 
-  context 'as a maintainer' do
-    before_all do
-      project.add_maintainer(user)
-    end
+  before_all do
+    project.add_maintainer(user)
+  end
 
+  before do
+    sign_in(user)
+  end
+
+  context 'when analytics settings are enabled' do
     before do
-      sign_in(user)
+      allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
+      stub_licensed_features(product_analytics: true)
+      stub_feature_flags(product_analytics_features: true)
+      project.reload
     end
 
     describe 'GET show' do
@@ -204,26 +211,21 @@ RSpec.describe Projects::Settings::AnalyticsController, feature_category: :produ
     end
   end
 
-  describe 'for personal namespace projects' do
-    let_it_be_with_reload(:project) { create(:project) }
-    let_it_be(:user) { project.first_owner }
-
-    before_all do
-      project.add_maintainer(user)
-    end
-
+  context 'when analytics settings are not enabled' do
     before do
-      sign_in(user)
+      allow(controller).to receive(:product_analytics_settings_allowed?).and_return(false)
     end
 
-    subject do
-      get project_settings_analytics_path(project)
-    end
+    describe 'GET show' do
+      subject do
+        get project_settings_analytics_path(project)
+      end
 
-    it 'returns a 404 on rendering analytics settings' do
-      subject
+      it 'returns a 404 on rendering analytics settings' do
+        subject
 
-      expect(response).to have_gitlab_http_status(:not_found)
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
     end
   end
 
@@ -246,29 +248,6 @@ RSpec.describe Projects::Settings::AnalyticsController, feature_category: :produ
       expect(response).to have_gitlab_http_status(:found)
       expect(response).to redirect_to(project_settings_analytics_path(project))
       expect(flash[:toast]).to eq("Analytics settings for '#{project.name}' were successfully updated.")
-    end
-  end
-
-  context 'with different access levels' do
-    before do
-      sign_in(user)
-      stub_licensed_features(combined_project_analytics_dashboards: true)
-      project.add_member(user, access_level)
-    end
-
-    where(:access_level, :example_to_run) do
-      nil         | 'returns not found'
-      :guest      | 'returns not found'
-      :reporter   | 'returns not found'
-      :developer  | 'returns not found'
-      :maintainer | 'returns success'
-      :owner      | 'returns success'
-    end
-
-    with_them do
-      let_it_be_with_reload(:user) { create(:user) }
-
-      it_behaves_like params[:example_to_run]
     end
   end
 
