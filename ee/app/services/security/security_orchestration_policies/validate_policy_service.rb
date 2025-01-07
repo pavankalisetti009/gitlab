@@ -12,7 +12,6 @@ module Security
 
       # rubocop:disable Metrics/CyclomaticComplexity -- flat branching
       # rubocop:disable Metrics/PerceivedComplexity -- policy validation
-      # rubocop:disable Metrics/AbcSize -- policy validation
       def execute
         return error_with_title(s_('SecurityOrchestration|Empty policy name')) if blank_name?
 
@@ -31,11 +30,7 @@ module Security
         return error_with_title(s_('SecurityOrchestration|Invalid Compliance Framework ID(s)'), field: :compliance_frameworks) if invalid_compliance_framework_ids?
 
         if required_approvals_exceed_eligible_approvers?
-          if multiple_approval_actions_enabled?
-            return errors_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :actions, indices: multiple_approvals_failed_action_indices)
-          end
-
-          return error_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :approvers_ids)
+          return errors_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :actions, indices: multiple_approvals_failed_action_indices)
         end
 
         return error_with_title(s_('SecurityOrchestration|Cadence is invalid'), field: :cadence) if invalid_cadence?
@@ -44,7 +39,6 @@ module Security
       end
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
-      # rubocop:enable Metrics/AbcSize
 
       private
 
@@ -66,11 +60,6 @@ module Security
 
         error(s_('SecurityOrchestration|Invalid policy'), :bad_request, pass_back: pass_back)
       end
-
-      def multiple_approval_actions_enabled?
-        Feature.enabled?(:multiple_approval_actions, container)
-      end
-      strong_memoize_attr :multiple_approval_actions_enabled?
 
       def policy_disabled?
         !policy&.[](:enabled)
@@ -294,8 +283,6 @@ module Security
       strong_memoize_attr :approval_requiring_action
 
       def approval_requiring_actions
-        return [approval_requiring_action] unless multiple_approval_actions_enabled?
-
         Array.wrap(policy[:actions]).select { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
       end
       strong_memoize_attr :approval_requiring_actions
@@ -306,7 +293,7 @@ module Security
       strong_memoize_attr :scan_execution_policies_action_limit
 
       def approval_action_limit
-        multiple_approval_actions_enabled? ? Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT : 1
+        Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT
       end
       strong_memoize_attr :approval_action_limit
 
