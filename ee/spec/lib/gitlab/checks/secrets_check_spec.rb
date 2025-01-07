@@ -138,4 +138,26 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
       end
     end
   end
+
+  describe '#get_project_security_exclusion_from_sds_exclusion' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:pse) { create(:project_security_exclusion, :with_rule, project: project) }
+
+    let(:sds_exclusion) do
+      Gitlab::SecretDetection::GRPC::Exclusion.new(
+        exclusion_type: Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
+        value: pse.value
+      )
+    end
+
+    it 'returns the same object if it is a ProjectSecurityExclusion' do
+      result = secrets_check.send(:get_project_security_exclusion_from_sds_exclusion, pse)
+      expect(result).to be pse
+    end
+
+    it 'returns the ProjectSecurityExclusion with the same value' do
+      result = secrets_check.send(:get_project_security_exclusion_from_sds_exclusion, sds_exclusion)
+      expect(result).to eq pse
+    end
+  end
 end
