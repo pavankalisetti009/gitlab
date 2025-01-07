@@ -131,11 +131,10 @@ export default {
         modalEvent.preventDefault();
         return;
       }
-      const { id, value, type } = this.selectedVariable;
+      const { id, value } = this.selectedVariable;
       this.$emit('addVariable', {
         variable: id,
         value: value.toString(),
-        type,
       });
     },
     onSearch(searchTerm) {
