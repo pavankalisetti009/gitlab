@@ -31,7 +31,7 @@ describe('SkipCiSelector', () => {
     findAllowSkipCiSelector().vm.$emit('change', true);
 
     expect(wrapper.emitted('changed')).toEqual([
-      ['skip_ci', { allowed: true, allowList: { users: [] } }],
+      ['skip_ci', { allowed: true, allowlist: { users: [] } }],
     ]);
   });
 
@@ -43,7 +43,7 @@ describe('SkipCiSelector', () => {
     findUserSelect().vm.$emit('updateSelectedApprovers', [{ id: 1 }]);
 
     expect(wrapper.emitted('changed')).toEqual([
-      ['skip_ci', { allowed: false, allowList: { users: [{ id: 1 }] } }],
+      ['skip_ci', { allowed: false, allowlist: { users: [{ id: 1 }] } }],
     ]);
   });
 
@@ -53,7 +53,7 @@ describe('SkipCiSelector', () => {
     ${[{ id: 'gid://gitlab/User/1' }, { id: 'gid://gitlab/User/2' }]} | ${[1, 2]}
   `('renders user exceptions dropdown', ({ users, expected }) => {
     createComponent({
-      skipCiConfiguration: { allowed: false, allowList: { users } },
+      skipCiConfiguration: { allowed: false, allowlist: { users } },
     });
 
     expect(findUserSelect().props('existingApprovers')).toEqual(expected);
@@ -70,7 +70,7 @@ describe('SkipCiSelector', () => {
     ]);
 
     expect(wrapper.emitted('changed')).toEqual([
-      ['skip_ci', { allowed: false, allowList: { users: [{ id: 1 }, { id: 2 }] } }],
+      ['skip_ci', { allowed: false, allowlist: { users: [{ id: 1 }, { id: 2 }] } }],
     ]);
   });
 
