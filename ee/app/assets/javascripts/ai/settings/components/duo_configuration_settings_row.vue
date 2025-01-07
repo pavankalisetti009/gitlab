@@ -30,7 +30,7 @@ export default {
         duoConfigurationSettingsRowTypeTitle
       }}</span>
       <span v-if="isEnabled">
-        <gl-icon name="check" :size="16" variant="current" class="gl-text-green-600" />
+        <gl-icon name="check" :size="16" variant="success" />
         <span data-testid="duo-configuration-row-enabled-text">{{
           $options.i18n.enabledText
         }}</span>
