@@ -41823,9 +41823,6 @@ msgstr ""
 msgid "Pipeline|Pipeline"
 msgstr ""
 
-msgid "Pipeline|Pipeline %{idStart}#%{idEnd} %{statusStart}%{statusEnd} for %{commitStart}%{commitEnd}"
-msgstr ""
-
 msgid "Pipeline|Pipeline cannot be run."
 msgstr ""
 
@@ -41929,15 +41926,6 @@ msgid "Pipeline|Variables"
 msgstr ""
 
 msgid "Pipeline|View all"
-msgstr ""
-
-msgid "Pipeline|View commit"
-msgstr ""
-
-msgid "Pipeline|View pipeline"
-msgstr ""
-
-msgid "Pipeline|We are currently unable to fetch pipeline data"
 msgstr ""
 
 msgid "Pipeline|What is a merge request pipeline?"
@@ -59888,9 +59876,6 @@ msgid "Unable to fetch project. Reload the page to try again."
 msgstr ""
 
 msgid "Unable to fetch projects. Reload the page to try again."
-msgstr ""
-
-msgid "Unable to fetch upstream and downstream pipelines."
 msgstr ""
 
 msgid "Unable to find Jira project to import data from."

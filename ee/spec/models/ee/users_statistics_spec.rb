@@ -30,8 +30,8 @@ RSpec.describe UsersStatistics do
   end
 
   describe '#non_billable' do
-    it 'sums bots and guests values' do
-      expect(users_statistics.non_billable).to eq(5)
+    it 'includes bots only' do
+      expect(users_statistics.non_billable).to eq(2)
     end
 
     context 'when there is an ultimate license' do
