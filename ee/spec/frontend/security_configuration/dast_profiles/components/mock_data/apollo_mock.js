@@ -34,6 +34,7 @@ export const siteProfilesResponse = (overrides = {}) => {
                 requestHeaders: null,
                 scanMethod: 'WEBSITE',
                 scanFilePath: null,
+                optionalVariables: [],
                 __typename: 'DastSiteProfile',
               },
             ],
