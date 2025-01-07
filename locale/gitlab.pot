@@ -64131,6 +64131,9 @@ msgstr ""
 msgid "WorkItem|No milestone"
 msgstr ""
 
+msgid "WorkItem|No template"
+msgstr ""
+
 msgid "WorkItem|None"
 msgstr ""
 
