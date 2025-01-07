@@ -9516,10 +9516,19 @@ msgstr ""
 msgid "BlobViewer|If you delete the file, it will be removed from the branch %{branch}."
 msgstr ""
 
+msgid "BlobViewer|The file could not be displayed because it is too large."
+msgstr ""
+
 msgid "BlobViewer|This file will still take up space in your LFS storage. %{linkStart}How do I remove tracked objects from Git LFS?%{linkEnd}"
 msgstr ""
 
 msgid "BlobViewer|View on %{environmentName}"
+msgstr ""
+
+msgid "BlobViewer|You can %{linkStart}download it%{linkEnd}."
+msgstr ""
+
+msgid "BlobViewer|You can either %{rawLinkStart}view the raw file%{rawLinkEnd} or %{downloadLinkStart}download it%{downloadLinkEnd}."
 msgstr ""
 
 msgid "Block"
