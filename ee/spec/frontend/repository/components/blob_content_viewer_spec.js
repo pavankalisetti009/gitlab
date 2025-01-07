@@ -131,36 +131,24 @@ describe('Blob content viewer component', () => {
   });
 
   describe('AI Genie component', () => {
-    const prepGonAndLoad = async (explainCodeAvailable = true, blob) => {
-      createComponent({ explainCodeAvailable, blob });
-      await waitForPromises();
-    };
-
-    beforeEach(() => {
-      window.gon = {};
-    });
-
-    afterEach(() => {
-      window.gon = {};
-    });
-
     it.each`
       prefix        | explainCodeAvailable | shouldRender | blob
       ${'does not'} | ${false}             | ${false}     | ${simpleViewerMock}
       ${'does'}     | ${true}              | ${true}      | ${simpleViewerMock}
       ${'does not'} | ${false}             | ${false}     | ${richViewerMock}
       ${'does not'} | ${true}              | ${false}     | ${richViewerMock}
+      ${'does not'} | ${true}              | ${false}     | ${{ ...simpleViewerMock, simpleViewer: { ...simpleViewerMock.simpleViewer, tooLarge: true } }}
     `(
       '$prefix render the AI Genie component when explainCodeAvailable flag is $explainCodeAvailable and correct blob is rendered',
       async ({ explainCodeAvailable, blob, shouldRender, loggedIn }) => {
         isLoggedIn.mockReturnValue(loggedIn);
-        await prepGonAndLoad(explainCodeAvailable, blob);
+        await createComponent({ explainCodeAvailable, blob });
         expect(findAiGenie().exists()).toBe(shouldRender);
       },
     );
 
     it('sets correct props on the AI Genie component', async () => {
-      await prepGonAndLoad();
+      await createComponent();
       expect(findAiGenie().props('containerSelector')).toBe('.file-content');
       expect(findAiGenie().props('filePath')).toBe(propsMock.projectPath);
     });

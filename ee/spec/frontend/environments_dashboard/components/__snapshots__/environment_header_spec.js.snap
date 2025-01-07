@@ -122,7 +122,6 @@ exports[`Environment Header with environments grouped into a folder matches the 
       </span>
     </gl-link-stub>
     <gl-badge-stub
-      class="dashboard-card-icon"
       iconsize="md"
       tag="span"
       target="_self"
@@ -132,11 +131,10 @@ exports[`Environment Header with environments grouped into a folder matches the 
     </gl-badge-stub>
   </div>
   <gl-icon-stub
-    class="dashboard-card-icon"
     name="information"
     size="16"
     title="You are looking at the last updated environment"
-    variant="current"
+    variant="subtle"
   />
 </div>
 `;
