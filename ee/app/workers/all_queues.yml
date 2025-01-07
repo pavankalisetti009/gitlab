@@ -48,6 +48,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:ai_active_context_bulk_process
+  :worker_name: Ai::ActiveContext::BulkProcessWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:analytics_cycle_analytics_consistency
   :worker_name: Analytics::CycleAnalytics::ConsistencyWorker
   :feature_category: :value_stream_management
