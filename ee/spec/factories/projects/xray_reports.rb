@@ -3,20 +3,14 @@
 FactoryBot.define do
   factory :xray_report, class: 'Projects::XrayReport' do
     project
-    lang { 'Ruby' }
+    lang { 'ruby' }
     payload do
       {
-        "file_path" => "pyproject.toml",
-        "libs" =>
+        'file_paths' => ['Gemfile.lock'],
+        'libs' =>
           [
-            {
-              "name" => "python ~3.9",
-              "description" => "Python is a popular general-purpose programming language used for web development."
-            },
-            {
-              "name" => "uvicorn ^0.20.0",
-              "description" => "Uvicorn is a lightning-fast ASGI server implementation for Python."
-            }
+            { 'name' => 'bcrypt (3.1.20)' },
+            { 'name' => 'logger (1.5.3)' }
           ]
       }.to_json
     end
