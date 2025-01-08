@@ -6993,7 +6993,8 @@ CREATE TABLE alert_management_alert_user_mentions (
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_5094a9a20a CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE alert_management_alert_user_mentions_id_seq
