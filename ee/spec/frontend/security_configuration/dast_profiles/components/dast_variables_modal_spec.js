@@ -63,7 +63,6 @@ describe('DastVariablesModal', () => {
         {
           variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
           value: '120',
-          type: 'Duration string',
         },
       ],
     ]);
