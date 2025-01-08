@@ -3,10 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Backup::Cli::Targets::Repositories do
-  let(:context) { Gitlab::Backup::Cli::Context.build }
+  let(:context) { build_test_context }
   let(:gitaly_backup) { repo_target.gitaly_backup }
 
   subject(:repo_target) { described_class.new(context) }
+
+  before do
+    Gitlab::Backup::Cli::Models::Base.initialize_connection!(context: context)
+  end
 
   describe '#dump' do
     it 'starts and finishes the gitaly_backup' do
@@ -31,40 +35,50 @@ RSpec.describe Gitlab::Backup::Cli::Targets::Repositories do
   end
 
   describe '#enqueue_consecutive' do
-    it 'calls enqueue_consecutive_projects and enqueue_consecutive_snippets' do
-      expect(repo_target).to receive(:enqueue_consecutive_projects)
-      expect(repo_target).to receive(:enqueue_consecutive_snippets)
+    it 'calls each resource respective enqueue methods' do
+      expect(repo_target).to receive(:enqueue_consecutive_projects_source_code)
+      expect(repo_target).to receive(:enqueue_consecutive_projects_wiki)
+      expect(repo_target).to receive(:enqueue_consecutive_groups_wiki)
+      expect(repo_target).to receive(:enqueue_consecutive_project_design_management)
+      expect(repo_target).to receive(:enqueue_consecutive_project_snippets)
+      expect(repo_target).to receive(:enqueue_consecutive_personal_snippets)
 
       repo_target.send(:enqueue_consecutive)
     end
   end
 
-  describe '#enqueue_project' do
-    let(:project) { instance_double('Project', design_management_repository: nil) }
+  describe '#enqueue_project_source_code' do
+    let(:project) { object_double(Gitlab::Backup::Cli::Models::Project.new) }
 
-    it 'enqueues project and wiki' do
+    it 'enqueues project repository' do
       expect(gitaly_backup).to receive(:enqueue).with(project, Gitlab::Backup::Cli::RepoType::PROJECT)
+
+      repo_target.send(:enqueue_project_source_code, project)
+    end
+  end
+
+  describe '#enqueue_wiki' do
+    let(:project) { object_double(Gitlab::Backup::Cli::Models::ProjectWiki.new) }
+
+    it 'enqueues wiki repository' do
       expect(gitaly_backup).to receive(:enqueue).with(project, Gitlab::Backup::Cli::RepoType::WIKI)
 
-      repo_target.send(:enqueue_project, project)
+      repo_target.send(:enqueue_wiki, project)
     end
+  end
 
-    context 'when project has design management repository' do
-      let(:design_repo) { instance_double('DesignRepository') }
-      let(:project) { instance_double('Project', design_management_repository: design_repo) }
+  describe '#enqueue_project_design_management' do
+    let(:design_management) { object_double(Gitlab::Backup::Cli::Models::ProjectDesignManagement.new) }
 
-      it 'enqueues project, wiki, and design' do
-        expect(gitaly_backup).to receive(:enqueue).with(project, Gitlab::Backup::Cli::RepoType::PROJECT)
-        expect(gitaly_backup).to receive(:enqueue).with(project, Gitlab::Backup::Cli::RepoType::WIKI)
-        expect(gitaly_backup).to receive(:enqueue).with(design_repo, Gitlab::Backup::Cli::RepoType::DESIGN)
+    it 'enqueues design management repository' do
+      expect(gitaly_backup).to receive(:enqueue).with(design_management, Gitlab::Backup::Cli::RepoType::DESIGN)
 
-        repo_target.send(:enqueue_project, project)
-      end
+      repo_target.send(:enqueue_project_design_management, design_management)
     end
   end
 
   describe '#enqueue_snippet' do
-    let(:snippet) { instance_double('Snippet') }
+    let(:snippet) { object_double(Gitlab::Backup::Cli::Models::ProjectSnippet.new) }
 
     it 'enqueues the snippet' do
       expect(gitaly_backup).to receive(:enqueue).with(snippet, Gitlab::Backup::Cli::RepoType::SNIPPET)
