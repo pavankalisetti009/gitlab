@@ -21,7 +21,7 @@ export default () => ({
   selectedProjects: [],
   selectedStage: null,
   selectedValueStream: null,
-  namespace: { name: null, fullPath: null },
+  namespace: { name: null, path: null, restApiRequestPath: null, type: null },
 
   selectedStageEvents: [],
 

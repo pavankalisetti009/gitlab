@@ -18,7 +18,7 @@ export const setPaths = ({
 }) => {
   const projectPaths = isProjectNamespace
     ? {
-        projectEndpoint: namespace.fullPath,
+        projectEndpoint: namespace.restApiRequestPath,
       }
     : {};
 
@@ -32,9 +32,9 @@ export const setPaths = ({
 
 export const setFeatures = ({ commit }, features) => commit(types.SET_FEATURES, features);
 
-export const fetchGroupLabels = ({ commit, getters: { namespacePath } }) => {
+export const fetchGroupLabels = ({ commit, getters: { namespaceRestApiRequestPath } }) => {
   commit(types.REQUEST_GROUP_LABELS);
-  return getGroupLabels(namespacePath, { only_group_labels: true })
+  return getGroupLabels(namespaceRestApiRequestPath, { only_group_labels: true })
     .then(({ data = [] }) => commit(types.RECEIVE_GROUP_LABELS_SUCCESS, data))
     .catch(() => commit(types.RECEIVE_GROUP_LABELS_ERROR));
 };
@@ -90,9 +90,9 @@ export const initializeCycleAnalytics = ({ dispatch, commit }, initialData = {})
   } = initialData;
   commit(types.SET_FEATURES, features);
 
-  if (namespace?.fullPath) {
+  if (namespace?.restApiRequestPath) {
     let promises = [
-      dispatch('setPaths', { namespacePath: namespace.fullPath }),
+      dispatch('setPaths', { namespacePath: namespace.restApiRequestPath }),
       dispatch('filters/initialize', {
         selectedAuthor,
         selectedMilestone,

@@ -96,7 +96,7 @@ export default {
 
       this.isLoadingLabels = true;
 
-      return getTypeOfWorkTopLabels(this.namespace.fullPath, this.labelParams)
+      return getTypeOfWorkTopLabels(this.namespace.restApiRequestPath, this.labelParams)
         .then(checkForDataError)
         .then(({ data }) => {
           this.topRankedLabels = data.map(convertObjectPropsToCamelCase);
@@ -126,7 +126,7 @@ export default {
 
       this.isLoadingTasksByType = true;
 
-      getTypeOfWorkTasksByType(this.namespace.fullPath, this.tasksByTypeParams)
+      getTypeOfWorkTasksByType(this.namespace.restApiRequestPath, this.tasksByTypeParams)
         .then(checkForDataError)
         .then(({ data }) => {
           this.tasksByType = transformRawTasksByTypeData(data);

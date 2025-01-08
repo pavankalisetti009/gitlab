@@ -36,7 +36,7 @@ describe('TypeOfWorkChartsLoader', () => {
     new Vuex.Store({
       state: {
         namespace: {
-          fullPath: 'fake/group/path',
+          restApiRequestPath: 'fake/group/path',
         },
         createdAfter: new Date('2019-12-11'),
         createdBefore: new Date('2020-01-10'),

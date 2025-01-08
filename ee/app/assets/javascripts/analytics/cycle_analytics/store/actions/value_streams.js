@@ -13,10 +13,10 @@ export const receiveCreateValueStreamSuccess = ({ commit }, valueStream = {}) =>
 };
 
 export const createValueStream = ({ commit, dispatch, getters }, data) => {
-  const { namespacePath } = getters;
+  const { namespaceRestApiRequestPath } = getters;
   commit(types.REQUEST_CREATE_VALUE_STREAM);
 
-  return apiCreateValueStream(namespacePath, data)
+  return apiCreateValueStream(namespaceRestApiRequestPath, data)
     .then(({ data: newValueStream }) => dispatch('receiveCreateValueStreamSuccess', newValueStream))
     .catch(({ response } = {}) => {
       const { data: { message, payload: { errors } } = null } = response;
@@ -25,7 +25,7 @@ export const createValueStream = ({ commit, dispatch, getters }, data) => {
 };
 
 export const updateValueStream = ({ commit, getters }, { id: valueStreamId, ...data }) => {
-  const { namespacePath } = getters;
+  const { namespaceRestApiRequestPath: namespacePath } = getters;
   commit(types.REQUEST_UPDATE_VALUE_STREAM);
 
   return apiUpdateValueStream({ namespacePath, valueStreamId, data })
@@ -39,10 +39,10 @@ export const updateValueStream = ({ commit, getters }, { id: valueStreamId, ...d
 };
 
 export const deleteValueStream = ({ commit, dispatch, getters }, valueStreamId) => {
-  const { namespacePath } = getters;
+  const { namespaceRestApiRequestPath } = getters;
   commit(types.REQUEST_DELETE_VALUE_STREAM);
 
-  return apiDeleteValueStream(namespacePath, valueStreamId)
+  return apiDeleteValueStream(namespaceRestApiRequestPath, valueStreamId)
     .then(() => commit(types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS))
     .then(() => dispatch('fetchCycleAnalyticsData'))
     .catch(({ response } = {}) => {
@@ -85,11 +85,11 @@ export const receiveValueStreamsSuccess = (
 };
 
 export const fetchValueStreams = ({ commit, dispatch, getters }) => {
-  const { namespacePath } = getters;
+  const { namespaceRestApiRequestPath } = getters;
 
   commit(types.REQUEST_VALUE_STREAMS);
 
-  return getValueStreams(namespacePath)
+  return getValueStreams(namespaceRestApiRequestPath)
     .then(({ data }) => dispatch('receiveValueStreamsSuccess', data))
     .catch((error) => {
       const {

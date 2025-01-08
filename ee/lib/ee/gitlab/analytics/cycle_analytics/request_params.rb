@@ -97,8 +97,8 @@ module EE
 
             {
               name: group.name,
-              full_path: "groups/#{group.full_path}",
               path: group.full_path,
+              rest_api_request_path: "groups/#{group.full_path}",
               type: namespace.type
             }
           end

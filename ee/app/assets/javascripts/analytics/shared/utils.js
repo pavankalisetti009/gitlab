@@ -118,7 +118,7 @@ export const buildCycleAnalyticsInitialData = ({
   aggregationLastRunAt = null,
   aggregationNextRunAt = null,
   namespaceName = null,
-  namespaceFullPath = null,
+  namespaceRestApiRequestPath = null,
   namespaceType = null,
   namespacePath = null,
   canEdit = false,
@@ -166,7 +166,7 @@ export const buildCycleAnalyticsInitialData = ({
   features: extractVSAFeaturesFromGON(),
   namespace: {
     name: namespaceName,
-    fullPath: namespaceFullPath,
+    restApiRequestPath: namespaceRestApiRequestPath,
     type: namespaceType,
     path: namespacePath,
   },

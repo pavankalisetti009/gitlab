@@ -32,13 +32,13 @@ export const fetchStageData = ({ dispatch, getters, commit }, stageId) => {
   const {
     cycleAnalyticsRequestParams = {},
     currentValueStreamId,
-    namespacePath,
+    namespaceRestApiRequestPath,
     paginationParams,
   } = getters;
   dispatch('requestStageData');
 
   return getStageEvents({
-    namespacePath,
+    namespacePath: namespaceRestApiRequestPath,
     valueStreamId: currentValueStreamId,
     stageId,
     params: {
@@ -76,15 +76,19 @@ const fetchStageMedian = ({ namespacePath, valueStreamId, stageId, params }) =>
   });
 
 export const fetchStageMedianValues = ({ dispatch, commit, getters }) => {
-  const { namespacePath, cycleAnalyticsRequestParams, activeStages, currentValueStreamId } =
-    getters;
+  const {
+    namespaceRestApiRequestPath,
+    cycleAnalyticsRequestParams,
+    activeStages,
+    currentValueStreamId,
+  } = getters;
   const stageIds = activeStages.map((s) => s.id);
 
   dispatch('requestStageMedianValues');
   return Promise.all(
     stageIds.map((stageId) =>
       fetchStageMedian({
-        namespacePath,
+        namespacePath: namespaceRestApiRequestPath,
         valueStreamId: currentValueStreamId,
         stageId,
         params: cycleAnalyticsRequestParams,
@@ -109,15 +113,19 @@ const fetchStageCount = ({ namespacePath, valueStreamId, stageId, params }) =>
   });
 
 export const fetchStageCountValues = ({ commit, getters }) => {
-  const { namespacePath, cycleAnalyticsRequestParams, activeStages, currentValueStreamId } =
-    getters;
+  const {
+    namespaceRestApiRequestPath,
+    cycleAnalyticsRequestParams,
+    activeStages,
+    currentValueStreamId,
+  } = getters;
   const stageIds = activeStages.map((s) => s.id);
 
   commit(types.REQUEST_STAGE_COUNTS);
   return Promise.all(
     stageIds.map((stageId) =>
       fetchStageCount({
-        namespacePath,
+        namespacePath: namespaceRestApiRequestPath,
         valueStreamId: currentValueStreamId,
         stageId,
         params: cycleAnalyticsRequestParams,
@@ -141,7 +149,7 @@ export const receiveGroupStagesSuccess = ({ commit }, stages) =>
 export const fetchGroupStagesAndEvents = ({ dispatch, commit, getters }) => {
   const {
     currentValueStreamId: valueStreamId,
-    namespacePath,
+    namespaceRestApiRequestPath,
     cycleAnalyticsRequestParams: { created_after: createdAfter, project_ids },
   } = getters;
 
@@ -149,7 +157,7 @@ export const fetchGroupStagesAndEvents = ({ dispatch, commit, getters }) => {
   commit(types.SET_STAGE_EVENTS, []);
 
   return getStagesAndEvents({
-    namespacePath,
+    namespacePath: namespaceRestApiRequestPath,
     valueStreamId,
     params: {
       start_date: createdAfter,

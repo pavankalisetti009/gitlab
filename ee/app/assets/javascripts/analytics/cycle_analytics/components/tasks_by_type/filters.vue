@@ -42,7 +42,7 @@ export default {
   },
   computed: {
     ...mapState(['defaultGroupLabels']),
-    ...mapGetters(['namespacePath']),
+    ...mapGetters(['namespaceRestApiRequestPath']),
     subjectFilterOptions() {
       return Object.entries(TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS).map(([value, text]) => ({
         text,
@@ -99,7 +99,7 @@ export default {
   methods: {
     async fetchLabels() {
       try {
-        const { data } = await getGroupLabels(this.namespacePath, {
+        const { data } = await getGroupLabels(this.namespaceRestApiRequestPath, {
           search: this.searchTerm,
           only_group_labels: true,
         });

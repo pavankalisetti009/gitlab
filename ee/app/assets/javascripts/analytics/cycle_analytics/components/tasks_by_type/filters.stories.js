@@ -18,7 +18,7 @@ const Template = (args, { argTypes, createVuexStore }) => ({
       defaultGroupLabels,
     },
     getters: {
-      namespacePath: () => 'fake/namespace/path',
+      namespaceRestApiRequestPath: () => 'fake/namespace/path',
     },
   }),
 });

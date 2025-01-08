@@ -86,7 +86,7 @@ export default {
     ]),
     ...mapGetters([
       'hasNoAccessError',
-      'namespacePath',
+      'namespaceRestApiRequestPath',
       'activeStages',
       'selectedProjectIds',
       'cycleAnalyticsRequestParams',
@@ -158,7 +158,9 @@ export default {
       return this.enableVsdLink && Boolean(this.features?.groupLevelAnalyticsDashboard);
     },
     dashboardsPath() {
-      return this.showDashboardsLink ? generateValueStreamsDashboardLink(this.namespacePath) : null;
+      return this.showDashboardsLink
+        ? generateValueStreamsDashboardLink(this.namespace?.path, this.isProjectNamespace)
+        : null;
     },
     isAllowed() {
       return this.canReadCycleAnalytics;
@@ -228,7 +230,7 @@ export default {
       <value-stream-filters
         v-if="!shouldRenderAggregationWarning"
         class="gl-mb-6"
-        :namespace-path="namespacePath"
+        :namespace-path="namespaceRestApiRequestPath"
         :group-path="groupPath"
         :selected-projects="selectedProjects"
         :start-date="createdAfter"
