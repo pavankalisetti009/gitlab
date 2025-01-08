@@ -47,14 +47,14 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
           allow(License).to receive(:current).and_return(license)
         end
 
-        stub_feature_flags(sm_seat_control_block_overages: false)
+        allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
       end
 
       it { is_expected.to be should_render }
 
-      context "when sm_seat_control_block_overages is enabled" do
+      context "when block overages is enabled" do
         before do
-          stub_feature_flags(sm_seat_control_block_overages: true)
+          allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
         end
 
         it { is_expected.to be_nil }
@@ -96,13 +96,15 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
                               .and_return(license_active_user_count_threshold_reached)
           allow(License).to receive(:current).and_return(license)
         end
+
+        allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
       end
 
       it { is_expected.to be should_render }
 
-      context "when sm_seat_control_block_overages is disabled" do
+      context "when block overages is disabled" do
         before do
-          stub_feature_flags(sm_seat_control_block_overages: false)
+          allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
         end
 
         it { is_expected.to be_nil }

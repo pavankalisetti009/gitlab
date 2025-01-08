@@ -2,6 +2,7 @@ import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SeatControlsMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
 import SeatControlsSection from 'ee/pages/admin/application_settings/general/components/seat_controls_section.vue';
+import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 
 describe('SeatControlsSection', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -9,10 +10,12 @@ describe('SeatControlsSection', () => {
 
   const findSeatControlsMemberPromotionManagement = () =>
     wrapper.findComponent(SeatControlsMemberPromotionManagement);
+  const findUserCapInput = () => wrapper.findByTestId('user-cap-input');
+  const findUserCapHiddenInput = () => wrapper.findByTestId('user-cap-input-hidden');
 
-  const mountComponent = ({ provide = {} } = {}) => {
+  const mountComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(SeatControlsSection, {
-      propsData: { value: { form: { newUserSignupsCap: '', seatControl: 0 } } },
+      propsData: { value: { newUserSignupsCap: '', seatControl: 0, ...props } },
       provide: {
         licensedUserCount: 0,
         promotionManagementAvailable: false,
@@ -66,6 +69,24 @@ describe('SeatControlsSection', () => {
           'A user cap that exceeds the current licensed user count (10) may result in a true-up.',
         );
       });
+    });
+  });
+
+  describe.each([
+    [SEAT_CONTROL.OFF, ['true', undefined]],
+    [SEAT_CONTROL.USER_CAP, [undefined, 'disabled']],
+    [SEAT_CONTROL.BLOCK_OVERAGES, ['true', undefined]],
+  ])('with seat control to value (%s)', (seatControl, [isDisabled, idHiddenDisabled]) => {
+    it(`sets the input value to ${isDisabled}`, () => {
+      mountComponent({ props: { seatControl } });
+
+      expect(findUserCapInput().attributes().disabled).toBe(isDisabled);
+    });
+
+    it(`sets the hidden input value to ${idHiddenDisabled}`, () => {
+      mountComponent({ props: { seatControl } });
+
+      expect(findUserCapHiddenInput().attributes().disabled).toBe(idHiddenDisabled);
     });
   });
 });

@@ -44,7 +44,7 @@ module EE
       def perform_seat_check?
         return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) # only available for SM instances
 
-        ::Feature.enabled?(:sm_seat_control_block_overages, :instance, type: :wip)
+        ::Gitlab::CurrentSettings.seat_control_block_overages?
       end
 
       def seats_available?

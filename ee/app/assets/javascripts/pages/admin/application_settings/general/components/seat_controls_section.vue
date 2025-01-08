@@ -1,20 +1,21 @@
 <script>
-import { GlFormGroup, GlFormRadio, GlFormRadioGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlFormGroup,
+  GlFormRadio,
+  GlFormRadioGroup,
+  GlFormInput,
+  GlSprintf,
+} from '@gitlab/ui';
 import { s__ } from '~/locale';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 import SeatControlsMemberPromotionManagement from 'ee_component/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
-
-const OFF = 0;
-const USER_CAP = 1;
-
-const SEAT_CONTROL = Object.freeze({
-  OFF,
-  USER_CAP,
-});
 
 export default {
   name: 'SeatControlsSection',
   components: {
+    GlBadge,
     GlFormGroup,
     GlFormRadio,
     GlFormRadioGroup,
@@ -76,6 +77,17 @@ export default {
         name="application_setting[seat_control]"
         @change="handleSeatControlChange"
       >
+        <gl-form-radio
+          :value="$options.SEAT_CONTROL.BLOCK_OVERAGES"
+          data-testid="seat-controls-restricted-access"
+        >
+          {{ s__('ApplicationSettings|Restricted access') }}
+          <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
+          <template #help>{{
+            s__('ApplicationSettings|Adding billable users above licensed user count is blocked')
+          }}</template>
+        </gl-form-radio>
+
         <gl-form-radio :value="$options.SEAT_CONTROL.USER_CAP" data-testid="seat-controls-user-cap">
           {{ s__('ApplicationSettings|Set user cap') }}
           <template #help>{{
@@ -98,6 +110,7 @@ export default {
             <input
               type="hidden"
               name="application_setting[new_user_signups_cap]"
+              data-testid="user-cap-input-hidden"
               :disabled="!isUserCapDisabled"
               :value="form.userCap"
             />

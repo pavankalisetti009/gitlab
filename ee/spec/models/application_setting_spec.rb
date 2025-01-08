@@ -160,6 +160,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'new_user_signups', feature_category: :onboarding do
+      let(:seat_control_block_overages) { 2 }
       let(:seat_control_user_cap) { 1 }
       let(:seat_control_off) { 0 }
 
@@ -170,18 +171,21 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
         it 'must be an integer' do
           setting.new_user_signups_cap = 1.5
+
           expect(setting).to be_invalid
           expect(setting.errors[:new_user_signups_cap]).to include('must be an integer')
         end
 
         it 'must be greater than 0' do
           setting.new_user_signups_cap = 0
+
           expect(setting).to be_invalid
           expect(setting.errors[:new_user_signups_cap]).to include('must be greater than 0')
         end
 
         it 'must not be empty' do
           setting.new_user_signups_cap = ""
+
           expect(setting).to be_invalid
           expect(setting.errors[:new_user_signups_cap]).to include('is not a number')
         end
@@ -194,16 +198,44 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
         it 'can be nil' do
           setting.new_user_signups_cap = nil
+
           expect(setting).to be_valid
         end
 
         it 'can be an empty string' do
           setting.new_user_signups_cap = ""
+
           expect(setting).to be_valid
         end
 
         it 'must not be a number' do
           setting.new_user_signups_cap = 1
+
+          expect(setting).to be_invalid
+          expect(setting.errors[:new_user_signups_cap]).to include('must be blank')
+        end
+      end
+
+      context 'when seat_control is block overages' do
+        before do
+          setting.update!(seat_control: seat_control_block_overages)
+        end
+
+        it 'can be nil' do
+          setting.new_user_signups_cap = nil
+
+          expect(setting).to be_valid
+        end
+
+        it 'can be an empty string' do
+          setting.new_user_signups_cap = ""
+
+          expect(setting).to be_valid
+        end
+
+        it 'must not be a number' do
+          setting.new_user_signups_cap = 1
+
           expect(setting).to be_invalid
           expect(setting.errors[:new_user_signups_cap]).to include('must be blank')
         end

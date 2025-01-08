@@ -8,9 +8,10 @@
       "type": "integer",
       "enum": [
         0,
-        1
+        1,
+        2
       ],
-      "description": "To hold values corresponding to seat_control off and seat_control user_cap."
+      "description": "To hold values corresponding to seat_control off, seat_control user_cap, and seat_control block overages"
     }
   }
 }

@@ -18,3 +18,13 @@ export const I18N = {
     'ApplicationSettings|When enabled, new passwords must contain at least one symbol.',
   ),
 };
+
+const OFF = 0;
+const USER_CAP = 1;
+const BLOCK_OVERAGES = 2;
+
+export const SEAT_CONTROL = Object.freeze({
+  OFF,
+  USER_CAP,
+  BLOCK_OVERAGES,
+});

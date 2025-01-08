@@ -7154,6 +7154,9 @@ msgstr ""
 msgid "ApplicationSettings|Add a link to Grafana"
 msgstr ""
 
+msgid "ApplicationSettings|Adding billable users above licensed user count is blocked"
+msgstr ""
+
 msgid "ApplicationSettings|After sign-up text"
 msgstr ""
 
