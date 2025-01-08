@@ -462,10 +462,10 @@ module MergeRequestsHelper
       copy_button_data[:target_copy_button] = target_copy_button.html_safe
     end
 
-    _(
+    safe_format(_(
       '%{author} requested to merge %{source_branch} %{copy_button} ' \
         'into %{target_branch} %{target_copy_button} %{created_at}'
-    ).html_safe % copy_button_data
+    ), copy_button_data)
   end
 
   def hidden_merge_request_icon(merge_request)

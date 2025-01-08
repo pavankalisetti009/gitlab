@@ -5,6 +5,8 @@ module Namespaces
     class UsageQuotaTrialAlertComponent < BaseAlertComponent
       private
 
+      include SafeFormatHelper
+
       USAGE_QUOTA_TRIAL_ALERT = 'usage_quota_trial_alert'
 
       def breached_cap_limit?
@@ -43,20 +45,18 @@ module Namespaces
             namespace_name: namespace.name,
             free_user_limit: free_user_limit
           },
-          body: _(
+          body: safe_format(_(
             '%{over_limit_message} To get more seats, %{link_start}upgrade to a paid tier%{link_end}.'
-          ).html_safe % {
+          ),
             over_limit_message: over_limit_message,
             link_start: '<a rel="noopener noreferrer" href="%{url}">'.html_safe % {
               url: group_billings_path(namespace)
-            },
-            link_end: link_end
-          }
+            }, link_end: link_end)
         }
       end
 
       def over_limit_message
-        n_(
+        safe_format(n_(
           "When your trial ends, you'll move to the Free tier, which has a limit of " \
           '%{free_user_limit} seat. %{free_user_limit} seat will remain active, and ' \
           'members not occupying a seat will have the %{link_start}Over limit status%{link_end} ' \
@@ -66,11 +66,7 @@ module Namespaces
           'members not occupying a seat will have the %{link_start}Over limit status%{link_end} ' \
           'and lose access to this group.',
           free_user_limit
-        ).html_safe % {
-          free_user_limit: free_user_limit,
-          link_start: blog_link_start,
-          link_end: link_end
-        }
+        ), free_user_limit: free_user_limit, link_start: blog_link_start, link_end: link_end)
       end
     end
   end
