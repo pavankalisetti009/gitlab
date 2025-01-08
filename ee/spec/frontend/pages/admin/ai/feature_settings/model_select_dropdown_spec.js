@@ -9,6 +9,7 @@ import updateAiFeatureSetting from 'ee/pages/admin/ai/feature_settings/graphql/m
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { createAlert } from '~/alert';
+import { license } from 'ee_jest/admin/subscriptions/show/mock_data';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);
@@ -59,6 +60,7 @@ describe('ModelSelectDropdown', () => {
       apolloProvider: mockApollo,
       propsData: {
         aiFeatureSetting: mockAiFeatureSetting,
+        license: license.ULTIMATE,
         ...props,
       },
       mocks: {
@@ -91,6 +93,25 @@ describe('ModelSelectDropdown', () => {
       'GitLab AI Vendor',
       'Disabled',
     ]);
+  });
+
+  it('does not return Gitlab AI Vendor option for an offline license', () => {
+    createComponent({
+      props: {
+        license: license.ULTIMATE_OFFLINE,
+      },
+    });
+
+    const modelOptions = findSelectDropdown().props('items');
+
+    expect(modelOptions.map((model) => model.text)).toEqual([
+      'Model 1 (Mistral)',
+      'Model 2 (Code Llama)',
+      'Model 3 (CodeGemma)',
+      'Disabled',
+    ]);
+
+    expect(findSelectDropdownButtonText().text()).toBe('Select a self-hosted model');
   });
 
   it('renders a button to add a self-hosted model', () => {
