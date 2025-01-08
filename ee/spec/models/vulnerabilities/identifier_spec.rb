@@ -235,6 +235,92 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
         end
       end
     end
+
+    describe '.search_identifier_name_in_group' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:other_group) { create(:group) }
+
+      let_it_be(:group_project_1) { create(:project, group: group) }
+      let_it_be(:group_project_2) { create(:project, group: group) }
+      let_it_be(:subgroup_project_1) { create(:project, group: subgroup) }
+      let_it_be(:other_group_project) { create(:project, group: other_group) }
+
+      let_it_be(:identifier) do
+        create(:vulnerabilities_identifier, name: 'CVE-2023-1234-o',
+          external_type: 'cve', external_id: 'CVE-2023-1234-o', project: other_group_project)
+        create(:vulnerabilities_identifier, name: 'CVE-2023-1234',
+          external_type: 'cve', external_id: 'CVE-2023-1234', project: group_project_1)
+      end
+
+      let_it_be(:identifier_2) do
+        create(:vulnerabilities_identifier, name: 'CWE-1234',
+          external_type: 'cwe', external_id: '1234', project: group_project_2)
+      end
+
+      let_it_be(:identifier_3) do
+        create(:vulnerabilities_identifier, name: 'CVE-2019-10086-o',
+          external_type: 'cve', external_id: 'CVE-2019-10086-o	', project: other_group_project)
+        create(:vulnerabilities_identifier, name: 'CVE-2019-10086',
+          external_type: 'cve', external_id: 'CVE-2019-10086	', project: subgroup_project_1)
+      end
+
+      context "when searching with a partial match" do
+        it "returns matching identifiers for the group" do
+          result = described_class.search_identifier_name_in_group(group, "-123")
+          expect(result).to contain_exactly("CVE-2023-1234", 'CWE-1234')
+        end
+      end
+
+      context "when searching with a case-insensitive match" do
+        it "returns matching identifiers regardless of case" do
+          result = described_class.search_identifier_name_in_group(group, "cve")
+          expect(result).to contain_exactly("CVE-2023-1234", "CVE-2019-10086")
+        end
+      end
+
+      context "when there are no matches" do
+        it "returns an empty array" do
+          result = described_class.search_identifier_name_in_group(group, "Nonexistent")
+          expect(result).to be_empty
+        end
+      end
+
+      context "when multiple matches exist" do
+        it "returns all matching identifiers sorted by name" do
+          result = described_class.search_identifier_name_in_group(group, "1234")
+          expect(result).to eq(%w[CVE-2023-1234 CWE-1234])
+        end
+
+        it "returns only distinct matching identifier names" do
+          create(:vulnerabilities_identifier, name: 'CWE-1234',
+            external_type: 'custom scanner', external_id: 'custom scanner', project: group_project_1)
+
+          result = described_class.search_identifier_name_in_group(group, "1234")
+          expect(result).to contain_exactly("CVE-2023-1234", 'CWE-1234')
+        end
+      end
+
+      context "when searching in a subgroup" do
+        it "does not return identifiers from parent groups" do
+          result = described_class.search_identifier_name_in_group(subgroup, "cve")
+          expect(result).to contain_exactly("CVE-2019-10086")
+        end
+      end
+
+      context "when result count exceeds the limit" do
+        let(:limit) { 2 }
+
+        before do
+          stub_const("#{described_class.name}::SEARCH_RESULTS_LIMIT", limit)
+        end
+
+        it "limits the results" do
+          result = described_class.search_identifier_name_in_group(group, "1")
+          expect(result.size).to eq(limit)
+        end
+      end
+    end
   end
 
   context 'with loose foreign key on vulnerability_identifiers.project_id' do
