@@ -4,7 +4,7 @@ module Ai
   module AmazonQ
     class << self
       def feature_available?
-        License.feature_available?(:amazon_q)
+        License.feature_available?(:amazon_q) && !duo_features_available?
       end
 
       def connected?
@@ -49,6 +49,10 @@ module Ai
 
       def ai_settings
         Ai::Setting.instance
+      end
+
+      def duo_features_available?
+        ::GitlabSubscriptions::AddOnPurchase.by_namespace(nil).for_duo_pro_or_duo_enterprise.active.exists?
       end
     end
   end

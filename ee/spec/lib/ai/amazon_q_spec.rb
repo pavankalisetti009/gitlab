@@ -28,14 +28,19 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
   end
 
   describe '#feature_available?' do
-    where(:amazon_q_license_available, :result) do
-      true  | true
-      false | false
+    where(:add_on_purchase, :amazon_q_license_available, :result) do
+      nil                | true  | true
+      :product_analytics | true  | true
+      :gitlab_duo_pro    | true  | false
+      :duo_enterprise    | true  | false
+      nil                | false | false
     end
 
     with_them do
       before do
         stub_licensed_features(amazon_q: amazon_q_license_available)
+
+        create(:gitlab_subscription_add_on_purchase, add_on_purchase, namespace: nil) if add_on_purchase.present?
       end
 
       it 'returns the expected result' do
