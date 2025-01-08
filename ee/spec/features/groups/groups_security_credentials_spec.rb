@@ -53,18 +53,6 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
         sign_in(enterprise_user)
       end
 
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(group_credentials_inventory: false)
-
-          visit group_security_credentials_path(group_id: group_id)
-        end
-
-        it 'returns 404' do
-          expect(page.status_code).to eq(404)
-        end
-      end
-
       context 'links', :js do
         before do
           visit group_security_credentials_path(group_id: group_id)
