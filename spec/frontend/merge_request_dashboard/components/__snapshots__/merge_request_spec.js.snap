@@ -167,6 +167,7 @@ exports[`Merge request dashboard merge request component when newListsEnabled is
     >
       <gl-icon-stub
         class="gl-mt-1"
+        data-testid="mr-broken-badge"
         name="warning-solid"
         size="16"
         title="Cannot be merged automatically"
