@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Tools::RefactorCode::Executor, feature_category: :duo_chat do
   let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project) }
 
   let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
   let(:input) { 'input' }
@@ -14,7 +15,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::RefactorCode::Executor, feature_catego
 
   let(:context) do
     Gitlab::Llm::Chain::GitlabContext.new(
-      current_user: user, container: nil, resource: nil, ai_request: ai_request_double,
+      current_user: user, container: nil, resource: project, ai_request: ai_request_double,
       current_file: {
         file_name: 'test.py',
         selected_text: 'selected text',
@@ -65,12 +66,17 @@ RSpec.describe Gitlab::Llm::Chain::Tools::RefactorCode::Executor, feature_catego
     context 'when context is authorized' do
       include_context 'with stubbed LLM authorizer', allowed: true
 
+      before_all do
+        create(:xray_report, project: project, lang: 'python')
+      end
+
       it_behaves_like 'slash command tool' do
         let(:prompt_class) { Gitlab::Llm::Chain::Tools::RefactorCode::Prompts::Anthropic }
         let(:extra_params) do
           {
             file_content_reuse: 'The new code should fit into the existing file, ' \
-                                'consider reuse of existing code in the file when generating new code.'
+                                'consider reuse of existing code in the file when generating new code.',
+            libraries: ['bcrypt (3.1.20)', 'logger (1.5.3)']
           }
         end
       end
