@@ -13,7 +13,7 @@ RSpec.describe "Query.namespace.remote_development_cluster_agents(filter: DIRECT
   let_it_be(:unauthorized_user_namespace_access_level) { :developer }
 
   include_context "with filter argument"
-  include_context "for a Query.namespace.remote_development_cluster_agents query"
+  include_context "for a Query.namespace.workspaces_cluster_agents query"
 
   it_behaves_like "multiple agents query"
 end

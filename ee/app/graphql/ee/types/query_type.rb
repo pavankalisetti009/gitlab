@@ -98,7 +98,7 @@ module EE
         field :workspaces,
           ::Types::RemoteDevelopment::WorkspaceType.connection_type,
           null: true,
-          resolver: ::Resolvers::RemoteDevelopment::WorkspacesForQueryRootResolver,
+          resolver: ::Resolvers::RemoteDevelopment::AdminWorkspacesResolver,
           description: 'Find workspaces across the entire instance. This field is only available to instance admins, ' \
                        'it will return an empty result for all non-admins.'
         field :instance_external_audit_event_destinations,

@@ -26,7 +26,7 @@ module EE
           field :workspaces,
             ::Types::RemoteDevelopment::WorkspaceType.connection_type,
             null: true,
-            resolver: ::Resolvers::RemoteDevelopment::WorkspacesForAgentResolver,
+            resolver: ::Resolvers::RemoteDevelopment::ClusterAgent::WorkspacesResolver,
             description: 'Workspaces associated with the agent.'
 
           field :remote_development_agent_config,
@@ -34,7 +34,7 @@ module EE
             extras: [:lookahead],
             null: true,
             description: 'Remote development agent config for the cluster agent.',
-            resolver: ::Resolvers::RemoteDevelopment::RemoteDevelopmentAgentConfigForAgentResolver,
+            resolver: ::Resolvers::RemoteDevelopment::ClusterAgent::RemoteDevelopmentAgentConfigResolver,
             experiment: { milestone: '17.4' }
 
           field :workspaces_agent_config,
@@ -42,7 +42,7 @@ module EE
             extras: [:lookahead],
             null: true,
             description: 'Workspaces agent config for the cluster agent.',
-            resolver: ::Resolvers::RemoteDevelopment::WorkspacesAgentConfigForAgentResolver,
+            resolver: ::Resolvers::RemoteDevelopment::ClusterAgent::WorkspacesAgentConfigResolver,
             experiment: { milestone: '17.4' }
 
           def url_configurations

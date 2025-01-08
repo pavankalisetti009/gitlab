@@ -16,7 +16,7 @@ RSpec.describe Types::CurrentUserType, feature_category: :user_profile do
 
     it 'returns workspaces' do
       is_expected.to have_graphql_type(Types::RemoteDevelopment::WorkspaceType.connection_type)
-      is_expected.to have_graphql_resolver(Resolvers::RemoteDevelopment::WorkspacesForCurrentUserResolver)
+      is_expected.to have_graphql_resolver(Resolvers::RemoteDevelopment::WorkspacesResolver)
     end
   end
 end

@@ -2,7 +2,7 @@
 
 module Resolvers
   module RemoteDevelopment
-    class WorkspacesForQueryRootResolver < ::Resolvers::BaseResolver
+    class AdminWorkspacesResolver < ::Resolvers::BaseResolver
       include ResolvesIds
 
       # NOTE: We are intentionally not including Gitlab::Graphql::Authorize::AuthorizeResource, because this resolver

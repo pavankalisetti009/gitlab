@@ -9,7 +9,7 @@ module EE
       prepended do
         field :workspaces,
           description: 'Workspaces owned by the current user.',
-          resolver: ::Resolvers::RemoteDevelopment::WorkspacesForCurrentUserResolver
+          resolver: ::Resolvers::RemoteDevelopment::WorkspacesResolver
       end
     end
   end

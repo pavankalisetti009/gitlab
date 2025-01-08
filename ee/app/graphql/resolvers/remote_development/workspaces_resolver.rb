@@ -2,7 +2,7 @@
 
 module Resolvers
   module RemoteDevelopment
-    class WorkspacesForCurrentUserResolver < ::Resolvers::BaseResolver
+    class WorkspacesResolver < ::Resolvers::BaseResolver
       include ResolvesIds
       include Gitlab::Graphql::Authorize::AuthorizeResource
 

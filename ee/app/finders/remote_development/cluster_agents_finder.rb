@@ -11,7 +11,7 @@ module RemoteDevelopment
     def self.fetch_agents(filter, namespace, user)
       case filter
       when :unmapped
-        validate_user_can_read_namespace_agent_mappings!(user: user, namespace: namespace)
+        return Clusters::Agent.none unless user_can_read_namespace_agent_mappings?(user: user, namespace: namespace)
 
         # noinspection RailsParamDefResolve -- A symbol is a valid argument for 'select'
         existing_mapped_agents =
@@ -26,7 +26,7 @@ module RemoteDevelopment
         namespace.cluster_agents.id_not_in(existing_mapped_agents)
 
       when :directly_mapped
-        validate_user_can_read_namespace_agent_mappings!(user: user, namespace: namespace)
+        return Clusters::Agent.none unless user_can_read_namespace_agent_mappings?(user: user, namespace: namespace)
 
         relevant_mappings = RemoteDevelopmentNamespaceClusterAgentMapping.for_namespaces([namespace.id])
         relevant_mappings =
@@ -48,11 +48,8 @@ module RemoteDevelopment
       end
     end
 
-    def self.validate_user_can_read_namespace_agent_mappings!(user:, namespace:)
-      raise Gitlab::Access::AccessDeniedError unless user.can?(
-        :read_remote_development_cluster_agent_mapping,
-        namespace
-      )
+    def self.user_can_read_namespace_agent_mappings?(user:, namespace:)
+      user.can?(:read_remote_development_cluster_agent_mapping, namespace)
     end
   end
 end

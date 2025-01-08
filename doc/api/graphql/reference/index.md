@@ -25877,6 +25877,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 Cluster agents in the namespace with remote development capabilities.
 
+DETAILS:
+**Deprecated** in GitLab 17.8.
+Use `workspacesClusterAgents`.
+
 Returns [`ClusterAgentConnection`](#clusteragentconnection).
 
 This field returns a [connection](#connections). It accepts the
@@ -26353,6 +26357,26 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupworkitemsstatuswidget"></a>`statusWidget` | [`StatusFilterInput`](#statusfilterinput) | Input for status widget filter. Ignored if `work_items_alpha` is disabled. |
 | <a id="groupworkitemssubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
 | <a id="groupworkitemstypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
+
+##### `Group.workspacesClusterAgents`
+
+Cluster agents in the namespace with workspaces capabilities.
+
+DETAILS:
+**Introduced** in GitLab 17.8.
+**Status**: Experiment.
+
+Returns [`ClusterAgentConnection`](#clusteragentconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupworkspacesclusteragentsfilter"></a>`filter` | [`NamespaceClusterAgentFilter!`](#namespaceclusteragentfilter) | Filter the types of cluster agents to return. |
 
 ### `GroupAuditEventNamespaceFilter`
 
@@ -30021,6 +30045,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 Cluster agents in the namespace with remote development capabilities.
 
+DETAILS:
+**Deprecated** in GitLab 17.8.
+Use `workspacesClusterAgents`.
+
 Returns [`ClusterAgentConnection`](#clusteragentconnection).
 
 This field returns a [connection](#connections). It accepts the
@@ -30149,6 +30177,26 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="namespaceworkitemtypesname"></a>`name` | [`IssueType`](#issuetype) | Filter work item types by the given name. |
+
+##### `Namespace.workspacesClusterAgents`
+
+Cluster agents in the namespace with workspaces capabilities.
+
+DETAILS:
+**Introduced** in GitLab 17.8.
+**Status**: Experiment.
+
+Returns [`ClusterAgentConnection`](#clusteragentconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="namespaceworkspacesclusteragentsfilter"></a>`filter` | [`NamespaceClusterAgentFilter!`](#namespaceclusteragentfilter) | Filter the types of cluster agents to return. |
 
 ### `NamespaceBan`
 
