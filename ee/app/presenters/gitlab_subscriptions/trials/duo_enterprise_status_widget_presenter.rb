@@ -10,6 +10,8 @@ module GitlabSubscriptions
       presents ::Namespace, as: :namespace
 
       def eligible_for_widget?
+        return false unless GitlabSubscriptions::DuoEnterprise.namespace_plan_eligible?(namespace)
+
         duo_enterprise_status = GitlabSubscriptions::Trials::AddOnStatus.new(
           add_on_purchase: duo_enterprise_trial_add_on_purchase
         )

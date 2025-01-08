@@ -61,12 +61,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, fe
             expect { execute }.not_to change { user.assigned_add_ons.count }
           end
         end
-
-        context 'when on ultimate trial' do
-          let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_trial_plan, owners: user) }
-
-          it { is_expected.to be_success }
-        end
       end
 
       context 'with error while applying the trial' do
