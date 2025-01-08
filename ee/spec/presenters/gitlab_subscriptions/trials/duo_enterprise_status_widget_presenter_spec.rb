@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseStatusWidgetPresenter, :saas, feature_category: :acquisition do
   let(:user) { build(:user) }
   let(:namespace) { build(:group) }
+  let(:plan) { :ultimate }
   let(:add_on_purchase) do
     build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: namespace)
   end
@@ -12,7 +13,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseStatusWidgetPresenter, 
   let(:presenter) { described_class.new(namespace, user: user) }
 
   before do
-    build(:gitlab_subscription, :ultimate, namespace: namespace)
+    build(:gitlab_subscription, plan, namespace: namespace)
     allow(GitlabSubscriptions::Trials::DuoEnterprise)
       .to receive(:any_add_on_purchase_for_namespace).with(namespace).and_return(add_on_purchase)
   end
@@ -28,6 +29,12 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseStatusWidgetPresenter, 
     end
 
     it { is_expected.to be(true) }
+
+    context 'when the namespace is not on an eligible plan' do
+      let(:plan) { :free }
+
+      it { is_expected.to be(false) }
+    end
 
     context 'when duo enterprise status is not shown' do
       before do

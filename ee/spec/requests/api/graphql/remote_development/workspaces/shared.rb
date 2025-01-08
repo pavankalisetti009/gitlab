@@ -21,7 +21,7 @@ RSpec.shared_context 'for a Query.workspaces query' do
 
   let(:query) { graphql_query_for('workspaces', args, fields) }
 
-  subject { graphql_data.dig('workspaces', 'nodes') }
+  subject(:actual_workspaces) { graphql_dig_at(graphql_data, :workspaces, :nodes) }
 
   before do
     workspace.project.add_developer(workspace_owner)

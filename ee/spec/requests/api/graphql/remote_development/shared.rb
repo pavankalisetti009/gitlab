@@ -16,20 +16,6 @@ RSpec.shared_context 'with no arguments' do
   let_it_be(:args) { {} }
 end
 
-RSpec.shared_context 'with id arg' do
-  include_context 'with unauthorized workspace created'
-
-  let_it_be(:workspace, reload: true) { create(:workspace, name: 'matching-workspace') }
-
-  # create workspace with different ID but still owned by the same user, to ensure isn't returned by the query
-  let_it_be(:non_matching_workspace, reload: true) do
-    create(:workspace, user: workspace.user, name: 'non-matching-workspace')
-  end
-
-  let(:id) { workspace.to_global_id.to_s }
-  let(:args) { { id: id } }
-end
-
 RSpec.shared_context 'with ids argument' do
   include_context 'with unauthorized workspace created'
 
@@ -96,35 +82,6 @@ end
 #------------------------------------------------
 # SHARED EXAMPLES - MAIN ENTRY POINTS FOR TESTING
 #------------------------------------------------
-
-RSpec.shared_examples 'single workspace query' do |authorized_user_is_admin: false|
-  include_context 'in licensed environment'
-
-  context 'when user is authorized' do
-    include_context 'with authorized user as current user'
-
-    it_behaves_like 'query is a working graphql query'
-    it_behaves_like 'query returns single workspace'
-
-    unless authorized_user_is_admin
-      context 'when the user requests a workspace that they are not authorized for' do
-        let(:id) { unauthorized_workspace.to_global_id.to_s }
-
-        it_behaves_like 'query is a working graphql query'
-        it_behaves_like 'query returns blank'
-      end
-    end
-  end
-
-  context 'when user is not authorized' do
-    include_context 'with unauthorized user as current user'
-
-    it_behaves_like 'query is a working graphql query'
-    it_behaves_like 'query returns blank'
-  end
-
-  it_behaves_like 'query in unlicensed environment'
-end
 
 RSpec.shared_examples 'multiple workspaces query' do |authorized_user_is_admin: false, expected_error_regex: nil|
   include_context 'in licensed environment'
@@ -243,6 +200,8 @@ RSpec.shared_examples 'query is a working graphql query' do
 end
 
 RSpec.shared_examples 'query returns single workspace' do
+  include GraphqlHelpers
+
   before do
     post_graphql(query, current_user: current_user)
   end

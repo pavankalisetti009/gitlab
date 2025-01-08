@@ -39,12 +39,6 @@ RSpec.describe GitlabSubscriptions::DuoEnterprise, feature_category: :subscripti
         it { is_expected.to be(true) }
       end
 
-      context 'when namespace is an ultimate trial plan' do
-        let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_trial_plan) }
-
-        it { is_expected.to be(true) }
-      end
-
       context 'when an add-on purchase exists for the namespace' do
         before_all do
           create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
@@ -58,6 +52,22 @@ RSpec.describe GitlabSubscriptions::DuoEnterprise, feature_category: :subscripti
       let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
 
       it { is_expected.to be(false) }
+    end
+  end
+
+  describe '.namespace_plan_eligible?', :saas do
+    subject { described_class.namespace_plan_eligible?(namespace) }
+
+    context 'when namespace has an ultimate plan' do
+      let(:namespace) { create(:group_with_plan, plan: :ultimate_plan) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when namespace has a non-ultimate plan' do
+      let(:namespace) { create(:group) }
+
+      it { is_expected.to be false }
     end
   end
 end

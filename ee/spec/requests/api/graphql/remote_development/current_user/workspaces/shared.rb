@@ -25,5 +25,5 @@ RSpec.shared_context 'for a Query.currentUser.workspaces query' do
     )
   end
 
-  subject { graphql_data.dig('currentUser', 'workspaces', 'nodes') }
+  subject(:actual_workspaces) { graphql_dig_at(graphql_data, :currentUser, :workspaces, :nodes) }
 end

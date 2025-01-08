@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class NamespaceLimit < ApplicationRecord
-  ignore_column :temporary_storage_increase_ends_on, remove_with: '17.6', remove_after: '2024-10-29'
-
   self.primary_key = :namespace_id
 
   belongs_to :namespace, inverse_of: :namespace_limit
