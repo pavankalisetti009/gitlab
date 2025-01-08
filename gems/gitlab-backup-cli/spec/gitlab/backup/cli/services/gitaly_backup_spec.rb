@@ -107,7 +107,8 @@ RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
 
       context 'with a project repository' do
         let(:container) do
-          instance_double('Project', repository_storage: 'storage', disk_path: 'disk/path', full_path: 'group/project')
+          instance_double('Models::ProjectWithRoutes', repository_storage: 'storage',
+            disk_path: 'disk/path', path_with_namespace: 'group/project')
         end
 
         it 'schedules a backup job with the correct parameters' do
@@ -125,12 +126,10 @@ RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
       end
 
       context 'with a wiki repository' do
-        let(:wiki) do
-          instance_double('Wiki', repository_storage: 'wiki_storage', disk_path: 'wiki/disk/path',
-            full_path: 'group/project.wiki')
+        let(:container) do
+          instance_double('Models::ProjectWikiWithRoutes', repository_storage: 'wiki_storage',
+            disk_path: 'wiki/disk/path', path_with_namespace: 'group/project.wiki')
         end
-
-        let(:container) { instance_double('Project', wiki: wiki) }
 
         it 'schedules a backup job with the correct parameters' do
           expected_json = {
@@ -146,9 +145,10 @@ RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
         end
       end
 
-      context 'with a snippet repository' do
+      context 'with a personal snippet repository' do
         let(:container) do
-          instance_double('Snippet', repository_storage: 'storage', disk_path: 'disk/path', full_path: 'snippets/1')
+          instance_double('Models::PersonalSnippet', repository_storage: 'storage',
+            disk_path: 'disk/path', path_with_namespace: 'snippets/1')
         end
 
         it 'schedules a backup job with the correct parameters' do
@@ -165,11 +165,30 @@ RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
         end
       end
 
-      context 'with a design repository' do
-        let(:project) { instance_double('Project', disk_path: 'disk/path', full_path: 'group/project') }
+      context 'with a project snippet repository' do
         let(:container) do
-          instance_double('DesignRepository', project: project,
-            repository: instance_double('Repository', repository_storage: 'storage'))
+          instance_double('Models::ProjectSnippet', repository_storage: 'storage',
+            disk_path: 'disk/path', path_with_namespace: 'myproject/snippets/1')
+        end
+
+        it 'schedules a backup job with the correct parameters' do
+          expected_json = {
+            storage_name: 'storage',
+            relative_path: 'disk/path',
+            gl_project_path: 'myproject/snippets/1',
+            always_create: false
+          }.to_json
+
+          expect(input_stream).to receive(:puts).with(expected_json)
+
+          gitaly_backup.enqueue(container, :snippet)
+        end
+      end
+
+      context 'with a design repository' do
+        let(:container) do
+          instance_double('Models::DesignRepository', repository_storage: 'storage',
+            disk_path: 'disk/path', path_with_namespace: 'group/project')
         end
 
         it 'schedules a backup job with the correct parameters' do

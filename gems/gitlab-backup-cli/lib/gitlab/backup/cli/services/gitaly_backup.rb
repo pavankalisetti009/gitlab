@@ -61,36 +61,15 @@ module Gitlab
             case repo_type
             when RepoType::PROJECT
               [container.repository_storage,
-                container.disk_path || container.full_path,
-                container.full_path,
+                container.disk_path,
+                container.path_with_namespace,
                 true]
-            when RepoType::WIKI
-              wiki_repo_info(container)
-            when RepoType::SNIPPET
+            when RepoType::WIKI, RepoType::DESIGN, RepoType::SNIPPET
               [container.repository_storage,
-                container.disk_path || container.full_path,
-                container.full_path,
-                false]
-            when RepoType::DESIGN
-              [design_repo_storage(container),
-                container.project.disk_path,
-                container.project.full_path,
+                container.disk_path,
+                container.path_with_namespace,
                 false]
             end
-          end
-
-          def design_repo_storage(container)
-            return container.repository.repository_storage if container.repository.respond_to?(:repository_storage)
-
-            container.repository_storage
-          end
-
-          def wiki_repo_info(container)
-            wiki = container.respond_to?(:wiki) ? container.wiki : container
-            [wiki.repository_storage,
-              wiki.disk_path || wiki.full_path,
-              wiki.full_path,
-              false]
           end
 
           def gitaly_backup_args(type, backup_repos_path, backup_id, remove_all_repositories)
