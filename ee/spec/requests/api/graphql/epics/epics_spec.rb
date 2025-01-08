@@ -7,6 +7,7 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, maintainers: user) }
+  let_it_be(:project) { create(:project, group: group) }
 
   let(:node_path) { %w[group epics nodes] }
 
@@ -274,8 +275,8 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
   end
 
   describe 'N+1 query checks' do
-    let_it_be(:epic_a) { create(:epic, group: group) }
-    let_it_be(:epic_b) { create(:epic, group: group) }
+    let_it_be(:epic_a) { create(:epic, :with_synced_work_item, group: group) }
+    let_it_be(:epic_b) { create(:epic, :with_synced_work_item, group: group) }
 
     let(:extra_iid_for_second_query) { epic_b.iid.to_s }
     let(:search_params) { { iids: [epic_a.iid.to_s] } }
@@ -329,6 +330,47 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
 
       include_examples 'N+1 query check'
     end
+
+    context 'when requesting `linked_work_items`' do
+      let_it_be(:blocking_work_items) { create_list(:work_item, 3, :issue, project: project) }
+      let_it_be(:blocked_work_items) { create_list(:work_item, 3, :issue, project: project) }
+
+      before do
+        blocked_work_items.each do |work_item|
+          create(:work_item_link, source: epic_a.work_item, target: work_item, link_type: 'blocks')
+          create(:work_item_link, source: epic_b.work_item, target: work_item, link_type: 'blocks')
+        end
+
+        blocking_work_items.each do |work_item|
+          create(:work_item_link, source: work_item, target: epic_a.work_item, link_type: 'blocks')
+          create(:work_item_link, source: work_item, target: epic_b.work_item, link_type: 'blocks')
+        end
+      end
+
+      shared_examples 'N+1 query check for linked work items' do
+        let(:requested_fields) { "linkedWorkItems(filter: #{link_type}) { nodes { id } }" }
+
+        # Executes 1 extra query "SELECT issues.*, issue_links.id AS issue_link_id..."
+        # related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/512056
+        include_examples 'N+1 query check', threshold: 1
+
+        it 'N+1 query test contains data' do
+          execute_query
+
+          response = graphql_data_at(:group, :epics, :nodes).flat_map { |node| node['linkedWorkItems']['nodes'] }
+
+          expect(response.count).to eq(3)
+        end
+      end
+
+      it_behaves_like 'N+1 query check for linked work items' do
+        let(:link_type) { 'BLOCKS' }
+      end
+
+      it_behaves_like 'N+1 query check for linked work items' do
+        let(:link_type) { 'BLOCKED_BY' }
+      end
+    end
   end
 
   describe 'query for epics including their count' do
@@ -370,6 +412,61 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
       epics = graphql_dig_at(graphql_data, :group, :epics)
       expect(epics['nodes'].size).to eq(page_size)
       expect(epics['count']).to eq(10)
+    end
+  end
+
+  describe 'query for epics including linked work items' do
+    let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
+    let_it_be(:related_work_item) { create(:work_item, :issue, project: project) }
+    let_it_be(:blocked_work_item) { create(:work_item, :issue, project: project) }
+    let_it_be(:blocking_work_item) { create(:work_item, :issue, project: project) }
+
+    let(:node_path) { %w[group epic linkedWorkItems nodes] }
+
+    let(:query) do
+      <<~QUERY
+        query groupEpics($groupPath: ID!, $epicIid: ID, $linkFilter: WorkItemRelatedLinkType) {
+          group(fullPath: $groupPath) {
+            epic(iid: $epicIid) {
+              linkedWorkItems(filter: $linkFilter) { nodes { id } }
+            }
+          }
+        }
+      QUERY
+    end
+
+    before do
+      create(:work_item_link, source: related_work_item, target: epic.work_item)
+      create(:work_item_link, source: blocking_work_item, target: epic.work_item, link_type: 'blocks')
+      create(:work_item_link, source: epic.work_item, target: blocked_work_item, link_type: 'blocks')
+    end
+
+    shared_examples 'returns linked work items' do
+      specify do
+        post_graphql(query, current_user: user, variables: {
+          groupPath: group.full_path,
+          epicIid: epic.iid,
+          linkFilter: link_type
+        })
+
+        work_items = graphql_dig_at(graphql_data, *node_path)
+        expect(work_items).to contain_exactly({ 'id' => result_work_item_id })
+      end
+    end
+
+    it_behaves_like 'returns linked work items' do
+      let(:link_type) { 'RELATED' }
+      let(:result_work_item_id) { related_work_item.to_global_id.to_s }
+    end
+
+    it_behaves_like 'returns linked work items' do
+      let(:link_type) { 'BLOCKS' }
+      let(:result_work_item_id) { blocked_work_item.to_global_id.to_s }
+    end
+
+    it_behaves_like 'returns linked work items' do
+      let(:link_type) { 'BLOCKED_BY' }
+      let(:result_work_item_id) { blocking_work_item.to_global_id.to_s }
     end
   end
 

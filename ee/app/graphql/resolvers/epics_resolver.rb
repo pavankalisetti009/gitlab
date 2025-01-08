@@ -119,7 +119,8 @@ module Resolvers
         start_date_from_milestones: [:start_date_sourcing_milestone],
         start_date_from_inherited_source: [:start_date_sourcing_milestone, :start_date_sourcing_epic],
         due_date_from_milestones: [:due_date_sourcing_milestone],
-        due_date_from_inherited_source: [:due_date_sourcing_milestone, :due_date_sourcing_epic]
+        due_date_from_inherited_source: [:due_date_sourcing_milestone, :due_date_sourcing_epic],
+        linked_work_items: [:work_item]
       }
     end
 
