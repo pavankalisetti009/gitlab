@@ -207,7 +207,7 @@ module Search
                 project_id: project_id,
                 content: [match[:Before], match[:Line], match[:After]].compact.map do |l|
                   Base64.decode64(l)
-                end.join("\n"),
+                end.join,
                 line: match[:LineNumber],
                 path: file[:FileName]
               }
