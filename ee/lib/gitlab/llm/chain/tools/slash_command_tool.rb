@@ -31,7 +31,11 @@ module Gitlab
 
           override :prompt_options
           def prompt_options
-            super.merge(command_options).merge(selected_text_options)
+            super.merge(command_options).merge(selected_text_options).merge(context_options)
+          end
+
+          def context_options
+            {}
           end
 
           # this method is implemented here to force children of this class to re-implement explicitly, using correct
@@ -90,7 +94,7 @@ module Gitlab
           end
 
           def language_info
-            language = ::CodeSuggestions::ProgrammingLanguage.detect_from_filename(filename)
+            language = context.language
             return '' unless language.name.present?
 
             "The code is written in #{language.name} and stored as #{filename}"

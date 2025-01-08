@@ -77,6 +77,11 @@ module Gitlab
 
             private
 
+            override :context_options
+            def context_options
+              { libraries: context.libraries }
+            end
+
             def selected_text_options
               super.tap do |opts|
                 opts[:file_content_reuse] =

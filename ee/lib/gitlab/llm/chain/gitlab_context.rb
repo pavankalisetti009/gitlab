@@ -4,8 +4,13 @@ module Gitlab
   module Llm
     module Chain
       class GitlabContext
+        include Concerns::XrayContext
+        include Gitlab::Utils::StrongMemoize
+
         attr_accessor :current_user, :container, :resource, :ai_request, :tools_used, :extra_resource, :request_id,
           :current_file, :agent_version, :additional_context
+
+        attr_reader :project
 
         delegate :current_page_type, :current_page_short_description,
           to: :authorized_resource, allow_nil: true
@@ -18,6 +23,7 @@ module Gitlab
           @current_user = current_user
           @container = container
           @resource = resource
+          @project = resource.is_a?(Project) ? resource : resource.try(:project)
           @ai_request = ai_request
           @tools_used = []
           @extra_resource = extra_resource
@@ -34,6 +40,11 @@ module Gitlab
           authorized_resource.serialize_for_ai(content_limit: content_limit)
             .to_xml(root: :root, skip_types: true, skip_instruct: true)
         end
+
+        def language
+          ::CodeSuggestions::ProgrammingLanguage.detect_from_filename(current_file[:file_name].to_s)
+        end
+        strong_memoize_attr :language
 
         private
 

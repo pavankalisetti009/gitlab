@@ -12,7 +12,7 @@ FactoryBot.define do
             { 'name' => 'bcrypt (3.1.20)' },
             { 'name' => 'logger (1.5.3)' }
           ]
-      }.to_json
+      }
     end
   end
 end
