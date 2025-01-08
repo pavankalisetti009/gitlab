@@ -12,7 +12,8 @@ module EE
           def configure_menu_items
             return false unless super
 
-            insert_item_after(:general_settings, roles_and_permissions_menu_item)
+            insert_item_after(:general_settings, service_accounts_menu_item)
+            insert_item_after(:service_accounts, roles_and_permissions_menu_item)
             insert_item_after(:roles_and_permissions, advanced_search_menu_item)
             insert_item_after(:admin_reporting, templates_menu_item)
             insert_item_after(:admin_ci_cd, security_and_compliance_menu_item)
@@ -34,8 +35,24 @@ module EE
             )
           end
 
+          def service_accounts_menu_item
+            return ::Sidebars::NilMenuItem.new(item_id: :service_accounts) unless service_accounts_available?
+
+            ::Sidebars::MenuItem.new(
+              title: _('Service Accounts'),
+              link: admin_application_settings_service_accounts_path,
+              active_routes: { controller: :service_accounts },
+              item_id: :service_accounts
+            )
+          end
+
           def roles_and_permissions_available?
             can?(current_user, :view_member_roles) && !gitlab_com_subscription?
+          end
+
+          def service_accounts_available?
+            ::Feature.enabled?(:service_accounts_crud, current_user) && can?(current_user, :admin_service_accounts) &&
+              !gitlab_com_subscription?
           end
 
           def advanced_search_menu_item
