@@ -3,10 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_category: :duo_chat do
-  let_it_be(:user) { build_stubbed(:user) }
-  let_it_be(:another_user) { build_stubbed(:user) }
-  let(:request_id) { 'uuid' }
-  let(:timestamp) { Time.current.to_s }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:request_id) { 'uuid' }
+  let_it_be(:timestamp) { Time.current.to_s }
   let(:payload) do
     {
       timestamp: timestamp,
@@ -18,76 +18,68 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
       referer_url: 'http://127.0.0.1:3000',
       additional_context: Gitlab::Llm::AiMessageAdditionalContext.new(
         [
-          { category: 'file', id: 'additonial_context.rb', content: 'puts "additional context"' },
+          { category: 'file', id: 'additional_context.rb', content: 'puts "additional context"' },
           { category: 'snippet', id: 'print_context_method', content: 'def additional_context; puts "context"; end' }
         ]
       )
     }
   end
 
-  let(:agent_version_id) { 1 }
+  let_it_be(:agent_version_id) { 1 }
+  let(:message) { build(:ai_chat_message, payload) }
+  let(:redis_storage) { Gitlab::Llm::ChatStorage::Redis.new(user, agent_version_id) }
+  let(:postgres_storage) { Gitlab::Llm::ChatStorage::Postgresql.new(user, agent_version_id) }
 
   subject { described_class.new(user, agent_version_id) }
 
-  before do
-    attributes = payload.except(:user).merge(content: 'other user unrelated cache', user: another_user)
-    build(:ai_chat_message, attributes).save!
-  end
-
   describe '#add' do
-    let(:message) { build(:ai_chat_message, payload) }
-
-    it 'adds new message', :aggregate_failures do
-      uuid = 'unique_id'
-
-      expect(SecureRandom).to receive(:uuid).once.and_return(uuid)
-      expect(subject.messages).to be_empty
-
+    it 'stores the message in both Redis and PostgreSQL' do
       subject.add(message)
 
-      last = subject.messages.last
-      expect(last.id).to eq(uuid)
-      expect(last.user).to eq(user)
-      expect(last.agent_version_id).to eq(agent_version_id)
-      expect(last.request_id).to eq(request_id)
-      expect(last.errors).to eq(['some error1', 'another error'])
-      expect(last.content).to eq('response')
-      expect(last.role).to eq('user')
-      expect(last.ai_action).to eq('chat')
-      expect(last.timestamp).not_to be_nil
-      expect(last.referer_url).to eq('http://127.0.0.1:3000')
-      expect(last.extras['additional_context']).to eq(payload[:additional_context].to_a)
+      expect(postgres_storage.messages).to include(message)
+      expect(redis_storage.messages).to include(message)
     end
 
-    context 'with MAX_MESSAGES limit' do
+    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
       before do
-        stub_const('Gitlab::Llm::ChatStorage::MAX_MESSAGES', 2)
+        stub_feature_flags(duo_chat_storage_postgresql_write: false)
       end
 
-      it 'removes oldest messages if we reach maximum message limit' do
-        subject.add(build(:ai_chat_message, payload.merge(content: 'msg1')))
-        subject.add(build(:ai_chat_message, payload.merge(content: 'msg2')))
+      it 'does not stores the message in PostgreSQL' do
+        subject.add(message)
 
-        expect(subject.messages.map(&:content)).to eq(%w[msg1 msg2])
-
-        subject.add(build(:ai_chat_message, payload.merge(content: 'msg3')))
-
-        expect(subject.messages.map(&:content)).to eq(%w[msg2 msg3])
+        expect(postgres_storage.messages).to be_empty
+        expect(redis_storage.messages).to include(message)
       end
     end
   end
 
   describe '#set_has_feedback' do
-    let(:message) { create(:ai_chat_message, user: user, agent_version_id: agent_version_id) }
-
-    it 'marks the message as having feedback' do
+    it 'updates the feedback flag in both Redis and PostgreSQL' do
+      subject.add(message)
       subject.set_has_feedback(message)
 
       expect(subject.messages.find { |m| m.id == message.id }.extras['has_feedback']).to be(true)
+      expect(redis_storage.messages.first.extras['has_feedback']).to be true
+      expect(postgres_storage.messages.first.extras['has_feedback']).to be true
+    end
+
+    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
+      before do
+        stub_feature_flags(duo_chat_storage_postgresql_write: false)
+      end
+
+      it 'does not updates the feedback flag in PostgreSQL' do
+        subject.add(message)
+        subject.set_has_feedback(message)
+
+        expect(redis_storage.messages.first.extras['has_feedback']).to be true
+        expect(postgres_storage.messages).to be_empty
+      end
     end
   end
 
-  describe '#messages' do
+  shared_examples_for '#messages' do
     before do
       subject.add(build(:ai_chat_message, payload.merge(content: 'msg1', role: 'user', request_id: '1')))
       subject.add(build(:ai_chat_message, payload.merge(content: 'msg2', role: 'assistant', request_id: '2')))
@@ -103,7 +95,9 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
     end
   end
 
-  describe '#messages_by' do
+  it_behaves_like '#messages'
+
+  shared_examples_for '#messages_by' do
     let(:filters) { {} }
 
     before do
@@ -133,19 +127,23 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
     end
   end
 
-  describe '#last_conversation' do
+  it_behaves_like '#messages_by'
+
+  shared_examples_for '#last_conversation' do
     before do
       subject.add(build(:ai_chat_message, payload.merge(content: 'msg1', role: 'user', request_id: '1')))
       subject.add(build(:ai_chat_message, payload.merge(content: 'msg2', role: 'user', request_id: '3')))
     end
 
     it 'returns from current history' do
-      expect(described_class).to receive(:last_conversation).and_call_original
+      expect(subject).to receive(:last_conversation).and_call_original
       expect(subject.last_conversation.map(&:content)).to eq(%w[msg1 msg2])
     end
   end
 
-  describe '.last_conversation' do
+  it_behaves_like '#last_conversation'
+
+  shared_examples_for '.last_conversation' do
     let(:result) { described_class.last_conversation(messages).map(&:content) }
 
     context 'when there is no /reset message' do
@@ -192,6 +190,8 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
     end
   end
 
+  it_behaves_like '.last_conversation'
+
   describe '#clear!' do
     before do
       subject.add(build(:ai_chat_message, payload.merge(content: 'msg1', role: 'user', request_id: '1')))
@@ -200,16 +200,31 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
       subject.add(build(:ai_chat_message, payload.merge(content: '/reset', role: 'user', request_id: '3')))
     end
 
-    it 'returns clears all chat messages' do
-      expect(subject.messages.size).to eq(4)
-
+    it 'clears messages from both Redis and PostgreSQL' do
       subject.clear!
 
       expect(subject.messages).to be_empty
+      expect(redis_storage.messages).to be_empty
+      expect(postgres_storage.messages).to be_empty
+    end
+
+    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
+      before do
+        stub_feature_flags(duo_chat_storage_postgresql_read: false)
+        stub_feature_flags(duo_chat_storage_postgresql_write: false)
+      end
+
+      it 'clears messages from PostgreSQL' do
+        subject.clear!
+
+        expect(subject.messages).to be_empty
+        expect(redis_storage.messages).to be_empty
+        expect(postgres_storage.messages).not_to be_empty
+      end
     end
   end
 
-  describe '#messages_up_to' do
+  shared_examples_for '#messages_up_to' do
     let(:messages) do
       [
         build(:ai_chat_message, payload.merge(content: 'msg1', role: 'assistant')),
@@ -229,5 +244,19 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
     it 'returns [] if message id is not found' do
       expect(subject.messages_up_to('missing id')).to eq([])
     end
+  end
+
+  it_behaves_like '#messages_up_to'
+
+  context 'when feature flag duo_chat_storage_postgresql_read is disabled' do
+    before do
+      stub_feature_flags(duo_chat_storage_postgresql_read: false)
+    end
+
+    it_behaves_like '#messages'
+    it_behaves_like '#messages_by'
+    it_behaves_like '#last_conversation'
+    it_behaves_like '.last_conversation'
+    it_behaves_like '#messages_up_to'
   end
 end

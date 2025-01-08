@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Duo::Chat::Completions, feature_category: :duo_chat do
-  let(:current_user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let(:current_user) { create(:user, organizations: [organization]) }
   let(:request_id) { 'uuid' }
   let(:content) { 'Explain this code' }
   let(:options) do

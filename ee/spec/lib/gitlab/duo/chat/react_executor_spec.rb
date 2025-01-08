@@ -20,7 +20,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
     let_it_be(:project) { create(:project) }
     let_it_be(:issue) { create(:issue, project: project) }
-    let_it_be(:user) { create(:user).tap { |u| project.add_developer(u) } }
+    let_it_be(:organization) { create(:organization) }
+    let_it_be(:user) { create(:user, organizations: [organization]).tap { |u| project.add_developer(u) } }
 
     let(:resource) { issue }
     let(:user_input) { 'question?' }
@@ -340,7 +341,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     end
 
     context "when resource is not authorized" do
-      let!(:user) { create(:user) }
+      let!(:user) { create(:user, organizations: [organization]) }
 
       it "sends request without context" do
         params = step_params

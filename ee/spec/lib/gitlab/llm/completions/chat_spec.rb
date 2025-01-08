@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   include FakeBlobHelpers
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository,  group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
