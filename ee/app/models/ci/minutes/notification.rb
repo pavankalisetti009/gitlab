@@ -15,10 +15,11 @@ module Ci
         @stage = calculate_notification_stage if eligible_for_notifications?
       end
 
-      def show?(current_user, cookies = false)
+      def show_callout?(current_user)
         return false unless @stage
         return false unless @context.namespace
-        return false if alert_has_been_dismissed?(cookies)
+        return false unless current_user
+        return false if callout_has_been_dismissed?(current_user)
 
         Ability.allowed?(current_user, :admin_ci_minutes, @context.namespace)
       end
@@ -59,18 +60,42 @@ module Ci
         context.shared_runners_minutes_limit_enabled?
       end
 
-      def dismiss_cookie_id
-        "ci_minutes_notification_#{stage_percentage}_stage_percentage"
+      def callout_data
+        if @context.namespace.user_namespace?
+          return {
+            feature_id: callout_feature_id,
+            dismiss_endpoint: Rails.application.routes.url_helpers.callouts_path
+          }
+        end
+
+        {
+          feature_id: callout_feature_id,
+          dismiss_endpoint: Rails.application.routes.url_helpers.group_callouts_path,
+          group_id: @context.namespace.root_ancestor.id
+        }
       end
 
       private
 
       attr_reader :context, :stage
 
-      def alert_has_been_dismissed?(cookies)
-        return unless cookies
+      def callout_feature_id
+        "ci_minutes_limit_alert_#{stage}_stage"
+      end
 
-        Gitlab::Utils.to_boolean(cookies[dismiss_cookie_id], default: false)
+      def callout_has_been_dismissed?(current_user)
+        if @context.namespace.user_namespace?
+          current_user.dismissed_callout?(
+            feature_name: callout_feature_id,
+            ignore_dismissal_earlier_than: 30.days.ago
+          )
+        else
+          current_user.dismissed_callout_for_group?(
+            feature_name: callout_feature_id,
+            group: @context.namespace,
+            ignore_dismissal_earlier_than: 30.days.ago
+          )
+        end
       end
 
       def calculate_notification_stage
