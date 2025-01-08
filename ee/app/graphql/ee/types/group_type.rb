@@ -75,6 +75,15 @@ module EE
                        'its subgroups.',
           resolver: ::Resolvers::Vulnerabilities::ScannersResolver
 
+        field :vulnerability_identifier_search,
+          [GraphQL::Types::String],
+          experiment: { milestone: '17.8' },
+          resolver: ::Resolvers::Vulnerabilities::IdentifierSearchResolver,
+          null: true,
+          description: 'Search for vulnerabilities by identifier. ' \
+                     'Feature flag `vulnerability_filtering_by_identifier_group` ' \
+                     'has to be enabled for the group.'
+
         field :vulnerability_severities_count, ::Types::VulnerabilitySeveritiesCountType,
           null: true,
           description: 'Counts for each vulnerability severity in the group and its subgroups.',

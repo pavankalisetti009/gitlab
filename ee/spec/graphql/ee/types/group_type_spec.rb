@@ -207,6 +207,54 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     end
   end
 
+  describe 'vulnerability_identifier_search' do
+    subject(:search_results) do
+      GitlabSchema.execute(query, context: { current_user: current_user }).as_json
+    end
+
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: group) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:other_user) { create(:user) }
+    let_it_be(:identifier) do
+      create(:vulnerabilities_identifier, project: project, external_type: 'cwe', name: 'CWE-23')
+    end
+
+    let(:query) do
+      %(
+        query {
+          group(fullPath: "#{group.full_path}") {
+            vulnerabilityIdentifierSearch(name: "cwe") {
+            }
+          }
+        }
+      )
+    end
+
+    before do
+      stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+      group.add_developer(user)
+    end
+
+    context 'when the user has access' do
+      let(:current_user) { user }
+
+      it 'returns the matching search result' do
+        results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
+        expect(results).to contain_exactly(identifier.name)
+      end
+    end
+
+    context 'when user do not have access' do
+      let(:current_user) { other_user }
+
+      it 'returns nil' do
+        results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
+        expect(results).to be_nil
+      end
+    end
+  end
+
   describe '#epics_enabled?' do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:group) { create(:group) }
