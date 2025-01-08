@@ -1,4 +1,5 @@
 import {
+  ACTION_LISTBOX_ITEMS,
   APPROVER_TYPE_DICT,
   approversOutOfSync,
   actionHasType,
@@ -6,6 +7,7 @@ import {
   buildAction,
   createActionFromApprovers,
   REQUIRE_APPROVAL_TYPE,
+  WARN_TYPE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
 
@@ -240,6 +242,13 @@ describe('buildAction', () => {
       type: BOT_MESSAGE_TYPE,
     });
   });
+
+  it('builds a warn action', () => {
+    expect(buildAction(WARN_TYPE)).toEqual([
+      { approvals_required: 0, id: 'action_0', type: 'require_approval' },
+      { enabled: true, id: 'action_0', type: 'send_bot_message' },
+    ]);
+  });
 });
 
 describe('createActionFromApprovers', () => {
@@ -247,18 +256,41 @@ describe('createActionFromApprovers', () => {
     userApprovers                   | groupApprovers
     ${[{ type: USER_TYPE, id: 1 }]} | ${[{ type: GROUP_TYPE, id: 2 }]}
     ${[1]}                          | ${[2]}
-  `('creates an action with all approvers', ({ userApprovers, groupApprovers }) => {
-    const action = buildAction(REQUIRE_APPROVAL_TYPE);
-    const approvers = {
-      [USER_TYPE]: userApprovers,
-      [ROLE_TYPE]: ['owner'],
-      [GROUP_TYPE]: groupApprovers,
-    };
-    expect(createActionFromApprovers(action, approvers)).toEqual({
-      ...action,
-      group_approvers_ids: [2],
-      role_approvers: ['owner'],
-      user_approvers_ids: [1],
-    });
+  `(
+    'creates an action with all approvers $userApprovers and $groupApprovers',
+    ({ userApprovers, groupApprovers }) => {
+      const action = buildAction(REQUIRE_APPROVAL_TYPE);
+      const approvers = {
+        [USER_TYPE]: userApprovers,
+        [ROLE_TYPE]: ['owner'],
+        [GROUP_TYPE]: groupApprovers,
+      };
+      expect(createActionFromApprovers(action, approvers)).toEqual({
+        ...action,
+        group_approvers_ids: [2],
+        role_approvers: ['owner'],
+        user_approvers_ids: [1],
+      });
+    },
+  );
+});
+
+describe('ACTION_LISTBOX_ITEMS', () => {
+  it('contains two actions', () => {
+    expect(ACTION_LISTBOX_ITEMS()).toEqual([
+      { text: 'Require Approvers', value: 'require_approval' },
+      { text: 'Send bot message', value: 'send_bot_message' },
+    ]);
+  });
+
+  it('should not include WARN_TYPE when feature flag is off', () => {
+    const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
+    expect(warnTypeEntry).toBeUndefined();
+  });
+
+  it('should include WARN_TYPE when feature flag is on', () => {
+    window.gon.features = { securityPolicyApprovalWarnMode: true };
+    const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
+    expect(warnTypeEntry).toEqual({ value: WARN_TYPE, text: 'Warn in merge request' });
   });
 });
