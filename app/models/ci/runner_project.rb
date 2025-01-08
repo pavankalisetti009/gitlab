@@ -2,6 +2,7 @@
 
 module Ci
   class RunnerProject < Ci::ApplicationRecord
+    include EachBatch
     include Limitable
 
     self.limit_name = 'ci_registered_project_runners'

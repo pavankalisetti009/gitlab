@@ -15,7 +15,9 @@ module Ci
         # Since the project was deleted in the 'main' database, let's ensure that the respective
         # ci_runner_projects join records are also gone (would be handled by LFK otherwise,
         # but it is a helpful precondition for the service's logic)
-        Ci::RunnerProject.belonging_to_project(project_id).delete_all
+        Ci::RunnerProject.belonging_to_project(project_id).each_batch do |batch|
+          batch.delete_all
+        end
 
         lateral_query_arel = lateral_subquery.arel.as('owner_runner_project')
 
