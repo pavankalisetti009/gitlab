@@ -2940,6 +2940,28 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#private_profile?' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user_public_profile) { create(:user, private_profile: false) }
+    let_it_be(:user_private_profile) { create(:user, private_profile: true) }
+
+    where(:user, :make_profile_private?, :private_profile?) do
+      ref(:user_private_profile) | true | true
+      ref(:user_public_profile)  | true | false
+      ref(:user_private_profile) | false | false
+      ref(:user_public_profile) | false | false
+    end
+
+    with_them do
+      before do
+        stub_application_setting(make_profile_private: make_profile_private?)
+      end
+
+      specify { expect(user.private_profile?).to eq(private_profile?) }
+    end
+  end
+
   describe "#privatized_by_abuse_automation?" do
     let(:user) { build(:user, private_profile: true, name: 'ghost-123-456') }
 
