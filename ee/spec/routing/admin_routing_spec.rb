@@ -79,4 +79,14 @@ RSpec.describe 'EE-specific admin routing' do
       expect(get('/admin/application_settings/roles_and_permissions/new')).to route_to('admin/application_settings/roles_and_permissions#new')
     end
   end
+
+  describe Admin::ApplicationSettings::ServiceAccountsController, 'routing' do
+    it 'routes to service accounts' do
+      expect(get('/admin/application_settings/service_accounts')).to route_to('admin/application_settings/service_accounts#index')
+    end
+
+    it 'routes to the vue route' do
+      expect(get('/admin/application_settings/service_accounts/access_tokens')).to route_to('admin/application_settings/service_accounts#index', vueroute: 'access_tokens')
+    end
+  end
 end

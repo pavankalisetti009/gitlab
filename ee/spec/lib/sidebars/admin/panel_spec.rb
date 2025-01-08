@@ -10,6 +10,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
   before do
     stub_licensed_features(
       custom_roles: true,
+      service_accounts: true,
       admin_audit_log: true,
       custom_file_templates: true,
       elastic_search: true,

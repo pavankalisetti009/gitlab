@@ -76,6 +76,7 @@ namespace :admin do
     resource :scim_oauth, only: [:create], controller: :scim_oauth, module: 'application_settings'
 
     resources :roles_and_permissions, only: [:index, :new, :edit, :show], module: 'application_settings'
+    resources :service_accounts, path: 'service_accounts(/*vueroute)', only: [:index], module: 'application_settings'
   end
 
   namespace :geo do
