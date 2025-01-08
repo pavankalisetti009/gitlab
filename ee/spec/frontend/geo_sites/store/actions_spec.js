@@ -34,10 +34,9 @@ describe('GeoSites Store Actions', () => {
   describe('fetchSites', () => {
     describe('on success', () => {
       beforeEach(() => {
-        // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
-        mock.onGet(/api\/(.*)\/geo_nodes/).replyOnce(HTTP_STATUS_OK, MOCK_SITES_RES);
+        mock.onGet(/api\/(.*)\/geo_sites/).replyOnce(HTTP_STATUS_OK, MOCK_SITES_RES);
         mock
-          .onGet(/api\/(.*)\/geo_nodes\/status/)
+          .onGet(/api\/(.*)\/geo_sites\/status/)
           .replyOnce(HTTP_STATUS_OK, MOCK_SITE_STATUSES_RES);
       });
 
@@ -56,9 +55,8 @@ describe('GeoSites Store Actions', () => {
 
     describe('on error', () => {
       beforeEach(() => {
-        // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
-        mock.onGet(/api\/(.*)\/geo_nodes/).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
-        mock.onGet(/api\/(.*)\/geo_nodes\/status/).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        mock.onGet(/api\/(.*)\/geo_sites/).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        mock.onGet(/api\/(.*)\/geo_sites\/status/).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
       });
 
       it('should dispatch the correct mutations', () => {
@@ -78,8 +76,7 @@ describe('GeoSites Store Actions', () => {
   describe('removeSite', () => {
     describe('on success', () => {
       beforeEach(() => {
-        // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
-        mock.onDelete(/api\/.*\/geo_nodes/).replyOnce(HTTP_STATUS_OK, {});
+        mock.onDelete(/api\/.*\/geo_sites/).replyOnce(HTTP_STATUS_OK, {});
       });
 
       it('should dispatch the correct mutations', () => {
@@ -97,8 +94,7 @@ describe('GeoSites Store Actions', () => {
 
     describe('on error', () => {
       beforeEach(() => {
-        // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
-        mock.onDelete(/api\/(.*)\/geo_nodes/).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        mock.onDelete(/api\/(.*)\/geo_sites/).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
       });
 
       it('should dispatch the correct mutations', () => {
