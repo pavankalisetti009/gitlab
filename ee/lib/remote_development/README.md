@@ -355,6 +355,16 @@ Unlike `Result`, the `Messages` module and `Message` class are intentionally par
 Domain message classes should normally only be defined and used for _expected_ errors. I.e., validation
 errors, yes. Infrastructure errors, or bugs in our own code, no.
 
+There are some cases where we might manually need to recover from errors and possibly continue processing. For example:
+
+1. Where third-party code is involved (i.e. gems or libraries that we don't own, and thus have no control over possible bugs in it)
+2. Where native code is involved (e.g. gems which wrap native libraries)
+
+In these scenarios, we log the unexpected error and implement cleanup logic in cases where applicable. For example,
+returning default or empty data when encountering an error in one of the above situations.
+See the exception handling in `ee/lib/remote_development/workspace_operations/reconcile/output/devfile_parser.rb`
+for an example of this.
+
 The exception to this would be if you are processing multiple items or models (i.e. `Workspaces`) in a single request, and you want to
 ensure that an unexpected error in one of them will not prevent the others from being processed successfully. In this case, you would
 probably want to add logic to the top level of the loop which is procssing the individual items, to catch and report any possible

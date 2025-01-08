@@ -156,23 +156,45 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
     end
   end
 
-  context "when Devfile::CliError is raised" do
-    before do
-      allow(Devfile::Parser).to receive(:get_all).and_raise(Devfile::CliError.new("some error"))
+  context 'when a runtime error is raised' do
+    RSpec.shared_examples 'when a runtime error is raised' do
+      before do
+        allow(Devfile::Parser).to receive(:get_all).and_raise(error_type.new("some error"))
+      end
+
+      it 'logs the error' do
+        expect(logger).to receive(:warn).with(
+          message: "#{error_type}: #{error_message}",
+          error_type: 'reconcile_devfile_parser_error',
+          workspace_name: workspace.name,
+          workspace_namespace: workspace.namespace,
+          devfile_parser_error: "some error"
+        )
+        expect(k8s_resources_for_workspace_core).to eq([])
+      end
     end
 
     let(:processed_devfile_yaml) { "" }
 
-    it "logs the error" do
-      expect(logger).to receive(:warn).with(
-        message: 'Error parsing devfile with Devfile::Parser.get_all',
-        error_type: 'reconcile_devfile_parser_error',
-        workspace_name: workspace.name,
-        workspace_namespace: workspace.namespace,
-        devfile_parser_error: "some error"
-      )
+    context "when Devfile::CliError is raised" do
+      let(:error_type) { Devfile::CliError }
+      let(:error_message) do
+        "A non zero return code was observed when invoking the devfile CLI executable from the devfile gem."
+      end
 
-      expect(k8s_resources_for_workspace_core).to eq([])
+      it_behaves_like 'when a runtime error is raised'
+    end
+
+    context "when StandardError is raised" do
+      let(:error_type) { StandardError }
+      let(:error_message) do
+        <<~MSG.squish
+        An unrecoverable error occurred when invoking the devfile gem, this may hint that a gem with a wrong
+        architecture is being used.
+        MSG
+      end
+
+      it_behaves_like 'when a runtime error is raised'
     end
   end
 end

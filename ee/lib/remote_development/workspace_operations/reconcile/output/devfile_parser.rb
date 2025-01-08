@@ -42,8 +42,25 @@ module RemoteDevelopment
                 'none'
               )
             rescue Devfile::CliError => e
+              error_message = <<~MSG.squish
+                #{e.class}: A non zero return code was observed when invoking the devfile CLI
+                executable from the devfile gem.
+              MSG
               logger.warn(
-                message: 'Error parsing devfile with Devfile::Parser.get_all',
+                message: error_message,
+                error_type: 'reconcile_devfile_parser_error',
+                workspace_name: name,
+                workspace_namespace: namespace,
+                devfile_parser_error: e.message
+              )
+              return []
+            rescue StandardError => e
+              error_message = <<~MSG.squish
+                #{e.class}: An unrecoverable error occurred when invoking the devfile gem,
+                this may hint that a gem with a wrong architecture is being used.
+              MSG
+              logger.warn(
+                message: error_message,
                 error_type: 'reconcile_devfile_parser_error',
                 workspace_name: name,
                 workspace_namespace: namespace,
