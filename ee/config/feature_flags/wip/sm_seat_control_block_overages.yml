@@ -1,9 +1,0 @@
----
-name: sm_seat_control_block_overages
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/466703
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/171244
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/502180
-milestone: '17.6'
-group: group::utilization
-type: wip
-default_enabled: false

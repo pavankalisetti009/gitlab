@@ -102,7 +102,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
 
   describe 'GET /admin/users/new', :js do
     before do
-      stub_feature_flags(sm_seat_control_block_overages: false)
+      allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
     end
 
     def fill_in_new_user_form
@@ -192,7 +192,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
 
       context 'when block seat overages feature flag is active' do
         before do
-          stub_feature_flags(sm_seat_control_block_overages: true)
+          allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
         end
 
         it 'shows an error' do

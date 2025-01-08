@@ -33,7 +33,7 @@ module EE
       end
 
       if can?(current_user, :admin_licensed_seat, source.root_ancestor)
-        if ::Feature.enabled?(:sm_seat_control_block_overages, source.root_ancestor)
+        if ::Gitlab::CurrentSettings.seat_control_block_overages?
           dataset[:has_bso_feature_enabled] = true.to_s
           dataset[:add_seats_href] = help_page_url(
             "subscriptions/self_managed/index.md",

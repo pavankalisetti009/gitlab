@@ -83,6 +83,8 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
 
     before do
       create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: active_user_count })
+
+      allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
     end
 
     describe 'with licensed users' do
@@ -102,9 +104,9 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
           )
         end
 
-        describe 'when sm_seat_control_block_overages is disabled' do
+        describe 'when block overages is disabled' do
           before do
-            stub_feature_flags(sm_seat_control_block_overages: false)
+            allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
           end
 
           it 'creates a user' do

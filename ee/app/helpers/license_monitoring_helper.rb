@@ -5,7 +5,7 @@ module LicenseMonitoringHelper
 
   def show_active_user_count_threshold_banner?
     return if ::Gitlab.com?
-    return if Feature.enabled?(:sm_seat_control_block_overages, :instance, type: :wip)
+    return if ::Gitlab::CurrentSettings.seat_control_block_overages?
     return unless admin_section?
     return if user_dismissed?(Users::CalloutsHelper::ACTIVE_USER_COUNT_THRESHOLD)
     return if current_license.nil?
@@ -15,7 +15,7 @@ module LicenseMonitoringHelper
 
   def show_block_seat_overages_user_count_banner?
     return if ::Gitlab.com?
-    return if Feature.disabled?(:sm_seat_control_block_overages, :instance, type: :wip)
+    return unless ::Gitlab::CurrentSettings.seat_control_block_overages?
     return unless admin_section?
     return if current_license.nil?
 

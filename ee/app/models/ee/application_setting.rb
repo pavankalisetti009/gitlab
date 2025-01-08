@@ -16,6 +16,7 @@ module EE
       ELASTIC_REQUEST_TIMEOUT = 30
       SEAT_CONTROL_OFF = 0
       SEAT_CONTROL_USER_CAP = 1
+      SEAT_CONTROL_BLOCK_OVERAGES = 2
 
       belongs_to :file_template_project, class_name: "Project"
 
@@ -163,7 +164,9 @@ module EE
         allow_blank: true,
         numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: :max_auth_lifetime }
 
-      validates :new_user_signups_cap, absence: true, if: -> { seat_control == SEAT_CONTROL_OFF }
+      validates :new_user_signups_cap, absence: true, if: -> {
+        [SEAT_CONTROL_OFF, SEAT_CONTROL_BLOCK_OVERAGES].include?(seat_control)
+      }
 
       validates :new_user_signups_cap,
         numericality: { only_integer: true, greater_than: 0 }, if: -> { seat_control == SEAT_CONTROL_USER_CAP }
@@ -612,6 +615,10 @@ module EE
 
     def seat_control_user_cap?
       seat_control == SEAT_CONTROL_USER_CAP
+    end
+
+    def seat_control_block_overages?
+      seat_control == SEAT_CONTROL_BLOCK_OVERAGES
     end
 
     private
