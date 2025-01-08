@@ -375,6 +375,45 @@ RSpec.describe DastSiteProfile, :dynamic_analysis,
         end
       end
 
+      context 'with optional_variables' do
+        subject { create(:dast_site_profile, :with_dast_site_validation, project: project, optional_variables: [{ "value" => "true", "variable" => "DAST_AUTH_CLEAR_INPUT_FIELDS" }, { "value" => "2", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }]) }
+
+        it 'appends the optional variables' do
+          expected_variables = [
+            { key: 'DAST_WEBSITE', value: subject.dast_site.url, public: true, masked: false },
+            { key: 'DAST_EXCLUDE_URLS', value: excluded_urls, public: true, masked: false },
+            { key: 'DAST_AUTH_URL', value: subject.auth_url, public: true, masked: false },
+            { key: 'DAST_USERNAME', value: subject.auth_username, public: true, masked: false },
+            { key: 'DAST_USERNAME_FIELD', value: subject.auth_username_field, public: true, masked: false },
+            { key: 'DAST_PASSWORD_FIELD', value: subject.auth_password_field, public: true, masked: false },
+            { key: 'DAST_API_HTTP_USERNAME', value: subject.auth_username, public: true, masked: false },
+            { key: 'DAST_AUTH_CLEAR_INPUT_FIELDS', value: "true", public: true, masked: false },
+            { key: 'DAST_ACTIVE_SCAN_WORKER_COUNT', value: "2", public: true, masked: false }
+          ]
+
+          expect(collection.to_runner_variables).to eq(expected_variables)
+        end
+
+        context 'with optional_variables that are duplicates of other variables' do
+          subject { create(:dast_site_profile, :with_dast_site_validation, project: project, optional_variables: [{ "value" => "https://gitlab.com", "variable" => "DAST_WEBSITE" }, { "value" => "2", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }]) }
+
+          it 'ignores the duplicate optional variables' do
+            expected_variables = [
+              { key: 'DAST_WEBSITE', value: subject.dast_site.url, public: true, masked: false },
+              { key: 'DAST_EXCLUDE_URLS', value: excluded_urls, public: true, masked: false },
+              { key: 'DAST_AUTH_URL', value: subject.auth_url, public: true, masked: false },
+              { key: 'DAST_USERNAME', value: subject.auth_username, public: true, masked: false },
+              { key: 'DAST_USERNAME_FIELD', value: subject.auth_username_field, public: true, masked: false },
+              { key: 'DAST_PASSWORD_FIELD', value: subject.auth_password_field, public: true, masked: false },
+              { key: 'DAST_API_HTTP_USERNAME', value: subject.auth_username, public: true, masked: false },
+              { key: 'DAST_ACTIVE_SCAN_WORKER_COUNT', value: "2", public: true, masked: false }
+            ]
+
+            expect(collection.to_runner_variables).to eq(expected_variables)
+          end
+        end
+      end
+
       context 'when target_type=api' do
         let_it_be(:dast_site) { create(:dast_site, project: project) }
 
