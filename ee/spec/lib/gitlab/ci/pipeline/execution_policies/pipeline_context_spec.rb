@@ -54,10 +54,20 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
 
     context 'when there are pipeline execution policies' do
       before do
-        allow(context.pipeline_execution_context).to receive(:has_execution_policy_pipelines?).and_return(true)
+        allow(context.pipeline_execution_context).to receive(:skip_ci_allowed?).and_return(allowed)
       end
 
-      it { is_expected.to be(false) }
+      context 'when they disallow skip_ci' do
+        let(:allowed) { false }
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when they allow skip_ci' do
+        let(:allowed) { true }
+
+        it { is_expected.to be(true) }
+      end
     end
   end
 end

@@ -34,7 +34,7 @@ module Gitlab
           end
 
           def skip_ci_allowed?
-            !has_execution_policy_pipelines?
+            pipeline_execution_context.skip_ci_allowed?
           end
 
           private

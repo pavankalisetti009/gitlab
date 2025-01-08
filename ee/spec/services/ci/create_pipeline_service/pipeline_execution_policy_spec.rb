@@ -755,6 +755,32 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('build', 'namespace_policy_job')
       expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('rspec', 'project_policy_job')
     end
+
+    context 'when policies allow skip_ci' do
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :skip_ci_allowed,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: namespace_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      let(:project_policy) do
+        build(:pipeline_execution_policy, :skip_ci_allowed,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: project_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      it 'skips the pipeline', :aggregate_failures do
+        expect { execute }.not_to change { Ci::Build.count }
+        expect(execute).to be_success
+        expect(execute.payload).to be_skipped
+      end
+    end
   end
 
   describe 'access to policy configs inside security policy project repository' do
