@@ -6,8 +6,8 @@ module Gitlab
       include Gitlab::InternalEventsTracking
 
       ERROR_MESSAGES = {
-        failed_to_scan_regex_error: "\n    - Failed to scan blob(id: %{payload_id}) due to regex error.",
-        blob_timed_out_error: "\n    - Scanning blob(id: %{payload_id}) timed out.",
+        failed_to_scan_regex_error: "\n    - Failed to scan blob(id: %{blob_id}) due to regex error.",
+        blob_timed_out_error: "\n    - Scanning blob(id: %{blob_id}) timed out.",
         scan_timeout_error: 'Secret detection scan timed out.',
         scan_initialization_error: 'Secret detection scan failed to initialize.',
         invalid_input_error: 'Secret detection scan failed due to invalid input.',
@@ -29,7 +29,7 @@ module Gitlab
                                            "found the following secrets in commit: %{sha}",
         finding_message_occurrence_path: "\n-- %{path}:",
         finding_message_occurrence_line: "%{line_number} | %{description}",
-        finding_message: "\n\nSecret leaked in blob: %{payload_id}" \
+        finding_message: "\n\nSecret leaked in blob: %{blob_id}" \
                          "\n  -- line:%{line_number} | %{description}",
         found_secrets_footer: "\n--------------------------------------------------\n\n"
       }.freeze
@@ -39,11 +39,10 @@ module Gitlab
       DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/index.html'
       DOCUMENTATION_PATH_ANCHOR = 'resolve-a-blocked-push'
       EXCLUSION_TYPE_MAP = {
-        rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
-        path: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
-        raw_value: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RAW_VALUE
+        path: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RULE,
+        raw_value: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RAW_VALUE
       }.freeze
-      UNKNOWN_EXCLUSION_TYPE = ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
+      UNKNOWN_EXCLUSION_TYPE = ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
 
       # HUNK_HEADER_REGEX matches a line starting with @@, followed by - and digits (starting line number
       # and range in the original file, comma and more digits optional), then + and digits (starting line number
@@ -108,18 +107,10 @@ module Gitlab
 
           send_request_to_sds(payloads, exclusions: active_exclusions)
 
-          rules = ::Gitlab::SecretDetection::Core::Ruleset.new(
-            logger: secret_detection_logger
-          ).rules
-
           # Pass payloads to gem for scanning.
-          response = ::Gitlab::SecretDetection::Core::Scanner
-            .new(rules: rules, logger: secret_detection_logger)
-            .secrets_scan(
-              payloads,
-              timeout: logger.time_left,
-              exclusions: active_exclusions
-            )
+          response = ::Gitlab::SecretDetection::Scan
+            .new(logger: secret_detection_logger)
+            .secrets_scan(payloads, timeout: logger.time_left, exclusions: active_exclusions)
 
           # Log audit events for exlusions that were applied.
           log_applied_exclusions_audit_events(response.applied_exclusions)
@@ -128,9 +119,8 @@ module Gitlab
           format_response(response)
 
         # TODO: Perhaps have a separate message for each and better logging?
-        rescue ::Gitlab::SecretDetection::Core::Scanner::RulesetParseError,
-          ::Gitlab::SecretDetection::Core::Scanner::RulesetCompilationError => e
-
+        rescue ::Gitlab::SecretDetection::Scan::RulesetParseError,
+          ::Gitlab::SecretDetection::Scan::RulesetCompilationError => _
           secret_detection_logger.error(message: ERROR_MESSAGES[:scan_initialization_error])
         end
       end
@@ -198,16 +188,8 @@ module Gitlab
         # scanning of either `rule` or `raw_value` type. For `path` exclusions, we create the audit events
         # when applied while formatting the response.
         applied_exclusions.each do |exclusion|
-          project_security_exclusion = get_project_security_exclusion_from_sds_exclusion(exclusion)
-          log_exclusion_audit_event(project_security_exclusion) unless project_security_exclusion.nil?
+          log_exclusion_audit_event(exclusion)
         end
-      end
-
-      def get_project_security_exclusion_from_sds_exclusion(exclusion)
-        return exclusion if exclusion.is_a?(::Security::ProjectSecurityExclusion)
-
-        # TODO When we implement 2-way SDS communication, we should add the type to this lookup
-        project.security_exclusions.where(value: exclusion.value).first # rubocop:disable CodeReuse/ActiveRecord -- Need to be able to link GRPC::Exclusion to ProjectSecurityExclusion
       end
 
       def log_exclusion_audit_event(exclusion)
@@ -261,8 +243,7 @@ module Gitlab
           payloads = get_diffs
 
           payloads = payloads.flat_map do |payload|
-            p_ary = parse_diffs(payload)
-            build_payloads(p_ary)
+            parse_diffs(payload)
           end
 
           payloads.compact.empty? ? nil : payloads
@@ -275,13 +256,11 @@ module Gitlab
           payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
 
           payloads.map do |payload|
-            build_payload(
-              {
-                id: payload.id,
-                data: payload.data,
-                offset: 1
-              }
-            )
+            {
+              id: payload.id,
+              data: payload.data,
+              offset: 1
+            }
           end
         end
       end
@@ -436,8 +415,8 @@ module Gitlab
       def format_response(response)
         # Try to retrieve file path and commit sha for the diffs found.
         if [
-          ::Gitlab::SecretDetection::Core::Status::FOUND,
-          ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS
+          ::Gitlab::SecretDetection::Status::FOUND,
+          ::Gitlab::SecretDetection::Status::FOUND_WITH_ERRORS
         ].include?(response.status)
           results = transform_findings(response)
 
@@ -447,17 +426,17 @@ module Gitlab
         end
 
         case response.status
-        when ::Gitlab::SecretDetection::Core::Status::NOT_FOUND
+        when ::Gitlab::SecretDetection::Status::NOT_FOUND
           # No secrets found, we log and skip the check.
           secret_detection_logger.info(message: LOG_MESSAGES[:secrets_not_found])
-        when ::Gitlab::SecretDetection::Core::Status::FOUND
+        when ::Gitlab::SecretDetection::Status::FOUND
           # One or more secrets found, generate message with findings and fail check.
           message = build_secrets_found_message(results)
 
           secret_detection_logger.info(message: LOG_MESSAGES[:found_secrets])
 
           raise ::Gitlab::GitAccess::ForbiddenError, message
-        when ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS
+        when ::Gitlab::SecretDetection::Status::FOUND_WITH_ERRORS
           # One or more secrets found, but with scan errors, so we
           # generate a message with findings and errors, and fail the check.
           message = build_secrets_found_message(results, with_errors: true)
@@ -465,12 +444,12 @@ module Gitlab
           secret_detection_logger.info(message: LOG_MESSAGES[:found_secrets_with_errors])
 
           raise ::Gitlab::GitAccess::ForbiddenError, message
-        when ::Gitlab::SecretDetection::Core::Status::SCAN_TIMEOUT
+        when ::Gitlab::SecretDetection::Status::SCAN_TIMEOUT
           # Entire scan timed out, we log and skip the check for now.
           secret_detection_logger.error(message: ERROR_MESSAGES[:scan_timeout_error])
-        when ::Gitlab::SecretDetection::Core::Status::INPUT_ERROR
-          # Scan failed due to invalid input. We skip the check because of an input error
-          # which could be due to not having anything to scan.
+        when ::Gitlab::SecretDetection::Status::INPUT_ERROR
+          # Scan failed due to invalid input. We skip the check because an input error
+          # could be due to not having `diffs` being empty (i.e. no new diffs to scan).
           secret_detection_logger.error(message: ERROR_MESSAGES[:invalid_input_error])
         else
           # Invalid status returned by the scanning service/gem, we don't
@@ -517,7 +496,7 @@ module Gitlab
 
       def build_finding_message(finding, type)
         case finding.status
-        when ::Gitlab::SecretDetection::Core::Status::FOUND
+        when ::Gitlab::SecretDetection::Status::FOUND
           track_secret_found(finding.description)
 
           case type
@@ -526,9 +505,9 @@ module Gitlab
           when :blob
             build_blob_finding_message(finding)
           end
-        when ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR
+        when ::Gitlab::SecretDetection::Status::SCAN_ERROR
           format(ERROR_MESSAGES[:failed_to_scan_regex_error], finding.to_h)
-        when ::Gitlab::SecretDetection::Core::Status::PAYLOAD_TIMEOUT
+        when ::Gitlab::SecretDetection::Status::PAYLOAD_TIMEOUT
           format(ERROR_MESSAGES[:blob_timed_out_error], finding.to_h)
         end
       end
@@ -550,7 +529,7 @@ module Gitlab
       # rubocop:disable Metrics/CyclomaticComplexity -- Not easy to move complexity away into other methods, entire method will be refactored shortly.
       def transform_findings(response)
         # Let's group the findings by the blob id.
-        findings_by_blobs = response.results.group_by(&:payload_id)
+        findings_by_blobs = response.results.group_by(&:blob_id)
 
         # We create an empty hash for the structure we'll create later as we pull out tree entries.
         findings_by_commits = {}
@@ -593,7 +572,7 @@ module Gitlab
             # is available, we will likely be able move this check to the gem/secret detection service
             # since paths will be available pre-scanning.
             if matches_excluded_path?(entry.path)
-              response.results.delete_if { |finding| finding.payload_id == entry.id }
+              response.results.delete_if { |finding| finding.blob_id == entry.id }
 
               findings_by_blobs.delete(entry.id)
 
@@ -617,7 +596,7 @@ module Gitlab
         end
 
         # Remove blobs that has already been found in a tree entry.
-        findings_by_blobs.delete_if { |payload_id, _| blobs_found_with_tree_entries.include?(payload_id) }
+        findings_by_blobs.delete_if { |blob_id, _| blobs_found_with_tree_entries.include?(blob_id) }
 
         # Return the findings as a hash sorted by commits and blobs (minus ones already found).
         {
@@ -673,26 +652,14 @@ module Gitlab
         secret_detection_logger.error(message: e.message)
       end
 
-      # Expects an array of either Hashes or ScanRequest::Payloads
-      def build_payloads(data)
-        data.inject([]) do |payloads, datum|
-          payloads << build_payload(datum)
+      def build_sds_request(data, exclusions: {}, tags: [])
+        payloads = data.inject([]) do |payloads, datum|
+          payloads << ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+            id: datum[:id],
+            data: datum[:data]
+          )
         end
-      end
 
-      # Expect `payload` is a hash or GRPC::ScanRequest::Payload object
-      def build_payload(datum)
-        return datum if datum.is_a?(Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
-
-        ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
-          id: datum[:id],
-          data: datum[:data],
-          offset: datum.fetch(:offset, nil)
-        )
-      end
-
-      # Build the list of gRPC Exclusion objects
-      def build_exclusions(exclusions: {})
         exclusion_ary = []
 
         # exclusions are a hash of {string, array} pairs where the keys
@@ -701,21 +668,12 @@ module Gitlab
           exclusions[key].inject(exclusion_ary) do |array, exclusion|
             type = EXCLUSION_TYPE_MAP[exclusion.type.to_sym] || UNKNOWN_EXCLUSION_TYPE
 
-            array << ::Gitlab::SecretDetection::GRPC::Exclusion.new(
+            array << ::Gitlab::SecretDetection::GRPC::ScanRequest::Exclusion.new(
               exclusion_type: type,
               value: exclusion.value
             )
           end
         end
-
-        exclusion_ary
-      end
-
-      # Puts the entire gRPC request object together
-      def build_sds_request(data, exclusions: {}, tags: [])
-        payloads = build_payloads(data)
-
-        exclusion_ary = build_exclusions(exclusions:)
 
         Gitlab::SecretDetection::GRPC::ScanRequest.new(
           payloads: payloads,
