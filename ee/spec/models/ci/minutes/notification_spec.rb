@@ -15,28 +15,80 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
 
   shared_examples 'queries for notifications' do
     context 'without limit' do
-      it { is_expected.to be_falsey }
+      it { is_expected.to be false }
     end
 
     context 'when limit is defined' do
       context 'when limit not yet exceeded' do
         let(:group) { create(:group, :with_not_used_build_minutes_limit) }
 
-        it { is_expected.to be_falsey }
+        it { is_expected.to be false }
       end
 
       context 'when minutes are not yet set' do
         let(:group) { create(:group, :with_ci_minutes, ci_minutes_limit: nil) }
 
-        it { is_expected.to be_falsey }
+        it { is_expected.to be false }
       end
     end
   end
 
   shared_examples 'has notifications' do
-    shared_examples 'aware of dismission cookie' do
-      it 'does not show when cookie is set' do
-        expect(subject.show?(user, { subject.dismiss_cookie_id => 'true' })).to be_falsey
+    shared_examples 'dismissible alert' do |stage|
+      let_it_be(:feature_id) { "ci_minutes_limit_alert_#{stage}_stage" }
+
+      describe '#callout_data' do
+        it 'generates proper callout data' do
+          dismiss_payload = if injected_group.user_namespace?
+                              {
+                                feature_id: feature_id,
+                                dismiss_endpoint: Rails.application.routes.url_helpers.callouts_path
+                              }
+                            else
+                              {
+                                feature_id: feature_id,
+                                dismiss_endpoint: Rails.application.routes.url_helpers.group_callouts_path,
+                                group_id: injected_group.id
+                              }
+                            end
+
+          expect(subject.callout_data).to eq(dismiss_payload)
+        end
+      end
+
+      context 'when the user dismissed the alert under 30 days ago', :freeze_time do
+        before do
+          allow_dismissal true
+        end
+
+        it 'does not render the alert' do
+          expect(subject.show_callout?(user)).to be false
+        end
+      end
+
+      context 'when the user dismissed the alert over 30 days ago', :freeze_time do
+        before do
+          allow_dismissal false
+        end
+
+        it 'renders the alert' do
+          expect(subject.show_callout?(user)).to be true
+        end
+      end
+
+      def allow_dismissal(is_allowed)
+        if injected_group.user_namespace?
+          allow(user).to receive(:dismissed_callout?).with(
+            feature_name: feature_id,
+            ignore_dismissal_earlier_than: 30.days.ago
+          ).and_return(is_allowed)
+        else
+          allow(user).to receive(:dismissed_callout_for_group?).with(
+            feature_name: feature_id,
+            group: injected_group,
+            ignore_dismissal_earlier_than: 30.days.ago
+          ).and_return(is_allowed)
+        end
       end
     end
 
@@ -46,27 +98,29 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
       end
 
       context 'when at the warning level' do
-        let(:group) { create(:group, :with_ci_minutes, ci_minutes_used: 16) }
+        before do
+          set_ci_minutes_used(group, 16)
+        end
 
-        describe '#show?' do
+        describe '#show_callout?' do
           it 'has warning notification' do
-            expect(subject.show?(user)).to be_truthy
+            expect(subject.show_callout?(user)).to be true
             expect(subject.text).to match(%r{.*\shas 4 / 20 \(20%\) shared runner compute minutes remaining})
             expect(subject.style).to eq :warning
           end
 
-          it_behaves_like 'aware of dismission cookie'
+          it_behaves_like 'dismissible alert', :warning
         end
 
         describe '#running_out?' do
           it 'is running out of minutes' do
-            expect(subject.running_out?).to be_truthy
+            expect(subject.running_out?).to be true
           end
         end
 
         describe '#no_remaining_minutes?' do
           it 'has not ran out of minutes' do
-            expect(subject.no_remaining_minutes?).to be_falsey
+            expect(subject.no_remaining_minutes?).to be false
           end
         end
 
@@ -78,27 +132,29 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
       end
 
       context 'when at the danger level' do
-        let(:group) { create(:group, :with_ci_minutes, ci_minutes_used: 19) }
+        before do
+          set_ci_minutes_used(group, 19)
+        end
 
-        describe '#show?' do
+        describe '#show_callout?' do
           it 'has danger notification' do
-            expect(subject.show?(user)).to be_truthy
+            expect(subject.show_callout?(user)).to be true
             expect(subject.text).to match(%r{.*\shas 1 / 20 \(5%\) shared runner compute minutes remaining})
             expect(subject.style).to eq :danger
           end
 
-          it_behaves_like 'aware of dismission cookie'
+          it_behaves_like 'dismissible alert', :danger
         end
 
         describe '#running_out?' do
           it 'is running out of minutes' do
-            expect(subject.running_out?).to be_truthy
+            expect(subject.running_out?).to be true
           end
         end
 
         describe '#no_remaining_minutes?' do
           it 'has not ran out of minutes' do
-            expect(subject.no_remaining_minutes?).to be_falsey
+            expect(subject.no_remaining_minutes?).to be false
           end
         end
 
@@ -110,27 +166,29 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
       end
 
       context 'when right at the limit for notification' do
-        let(:group) { create(:group, :with_ci_minutes, ci_minutes_used: 15) }
+        before do
+          set_ci_minutes_used(group, 15)
+        end
 
-        describe '#show?' do
+        describe '#show_callout?' do
           it 'has warning notification' do
-            expect(subject.show?(user)).to be_truthy
+            expect(subject.show_callout?(user)).to be true
             expect(subject.text).to match(%r{.*\shas 5 / 20 \(25%\) shared runner compute minutes remaining})
             expect(subject.style).to eq :warning
           end
 
-          it_behaves_like 'aware of dismission cookie'
+          it_behaves_like 'dismissible alert', :warning
         end
 
         describe '#running_out?' do
           it 'is running out of minutes' do
-            expect(subject.running_out?).to be_truthy
+            expect(subject.running_out?).to be true
           end
         end
 
         describe '#no_remaining_minutes?' do
           it 'has not ran out of minutes' do
-            expect(subject.no_remaining_minutes?).to be_falsey
+            expect(subject.no_remaining_minutes?).to be false
           end
         end
 
@@ -141,28 +199,30 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         end
       end
 
-      context 'when usage has exceeded the limit' do
-        let(:group) { create(:group, :with_used_build_minutes_limit) }
+      context 'when usage has reached the limit' do
+        before do
+          set_ci_minutes_used(group, 20)
+        end
 
-        describe '#show?' do
+        describe '#show_callout?' do
           it 'has exceeded notification' do
-            expect(subject.show?(user)).to be_truthy
+            expect(subject.show_callout?(user)).to be true
             expect(subject.text).to match(/.*\shas reached its shared runner compute minutes quota/)
             expect(subject.style).to eq :danger
           end
 
-          it_behaves_like 'aware of dismission cookie'
+          it_behaves_like 'dismissible alert', :exceeded
         end
 
         describe '#running_out?' do
           it 'does not have any minutes left' do
-            expect(subject.running_out?).to be_falsey
+            expect(subject.running_out?).to be false
           end
         end
 
         describe '#no_remaining_minutes?' do
           it 'has run out of minutes out of minutes' do
-            expect(subject.no_remaining_minutes?).to be_truthy
+            expect(subject.no_remaining_minutes?).to be true
           end
         end
 
@@ -182,25 +242,25 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
     end
 
     context 'when not permitted to see notifications' do
-      describe '#show?' do
+      describe '#show_callout?' do
         it 'has no notifications set' do
-          expect(subject.show?(user)).to be_falsey
+          expect(subject.show_callout?(user)).to be false
         end
       end
     end
   end
 
-  context 'when at project level' do
+  context 'when in a project' do
     context 'when eligible to see notifications' do
       before do
         group.add_owner(user)
       end
 
-      describe '#show?' do
+      describe '#show_callout?' do
         it_behaves_like 'queries for notifications' do
           subject do
             threshold = described_class.new(injected_project, nil)
-            threshold.show?(user)
+            threshold.show_callout?(user)
           end
         end
       end
@@ -233,18 +293,18 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
     end
   end
 
-  context 'when at namespace level' do
+  context 'when in a group' do
     context 'when eligible to see notifications' do
       before do
         group.add_owner(user)
       end
 
       context 'with a project that has runners enabled inside namespace' do
-        describe '#show?' do
+        describe '#show_callout?' do
           it_behaves_like 'queries for notifications' do
             subject do
               threshold = described_class.new(nil, injected_group)
-              threshold.show?(user)
+              threshold.show_callout?(user)
             end
           end
         end
@@ -282,6 +342,15 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
       it_behaves_like 'not eligible to see notifications' do
         subject { described_class.new(injected_project, nil) }
       end
+    end
+  end
+
+  context 'when in a user namespace' do
+    let(:group) { create(:user_namespace, name: 'user_namespace') }
+    let(:user) { create(:user, namespace: group) }
+
+    it_behaves_like 'has notifications' do
+      subject { described_class.new(nil, injected_group) }
     end
   end
 end

@@ -196,9 +196,12 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
   end
 
   def expect_quota_exceeded_alert(message)
-    expect(page).to have_selector('.shared-runner-quota-message', count: 1)
+    expect(has_testid?('ci-minute-limit-banner', count: 1)).to be true
 
-    page.within('.shared-runner-quota-message') do
+    banner = find_by_testid('ci-minute-limit-banner')
+
+    expect(banner).to match_selector('.js-minute-limit-banner')
+    within(banner) do
       expect(page).to have_content(message)
       expect(page).to have_link 'Buy more compute minutes', href: buy_minutes_subscriptions_link(group)
       expect(page).to have_link 'See usage statistics', href: usage_quotas_path(group, anchor: 'pipelines-quota-tab')
@@ -206,6 +209,6 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
   end
 
   def expect_no_quota_exceeded_alert
-    expect(page).not_to have_selector('.shared-runner-quota-message')
+    expect(has_testid?('ci-minute-limit-banner')).to be false
   end
 end
