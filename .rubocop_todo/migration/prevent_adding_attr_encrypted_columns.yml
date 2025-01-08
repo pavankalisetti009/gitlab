@@ -1,0 +1,20 @@
+---
+Migration/PreventAddingAttrEncryptedColumns:
+  Details: grace period
+  Exclude:
+    - 'db/migrate/20240212223930_add_arkose_client_api_settings.rb'
+    - 'db/migrate/20240305201830_add_custom_headers_to_web_hook.rb'
+    - 'db/migrate/20240419082037_create_ai_self_hosted_models.rb'
+    - 'db/migrate/20240619154655_create_virtual_registries_packages_maven_upstreams.rb'
+    - 'db/migrate/20240717140800_add_encrypted_shared_secret_to_external_status_checks.rb'
+    - 'db/migrate/20240725223931_create_cluster_agent_url_configurations.rb'
+    - 'db/migrate/20240829143538_create_system_access_instance_microsoft_applications.rb'
+    - 'db/migrate/20240829143654_create_system_access_instance_microsoft_graph_access_tokens.rb'
+    - 'db/migrate/20240829163210_create_instance_integrations_table.rb'
+    - 'db/migrate/20241010191331_add_secret_detection_service_auth_token_to_application_settings.rb'
+    - 'db/migrate/20241017160107_add_ci_job_token_signing_key_to_application_settings.rb'
+    - 'db/migrate/20241105134416_add_username_password_to_virtual_registries_packages_maven_upstream.rb'
+    - 'db/migrate/20241106114853_create_system_access_group_microsoft_applications.rb'
+    - 'db/migrate/20241106115015_create_system_access_group_microsoft_graph_access_tokens.rb'
+    - 'db/migrate/20250114105214_create_system_hooks.rb'
+    - 'db/migrate/20250116170220_add_secret_token_to_compliance_requirements_controls.rb'

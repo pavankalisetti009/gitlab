@@ -1266,4 +1266,9 @@ Cop/ActiveRecordDependent:
 
 Cop/AttrEncrypted:
   Enabled: true
-  EnforcedSince: 20240304135733
+
+Migration/PreventAddingAttrEncryptedColumns:
+  Enabled: true
+  Include:
+    - 'db/migrate/*.rb'
+  EnforcedSince: 20250304000000
