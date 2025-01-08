@@ -9,9 +9,9 @@ import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_
 export default {
   SKIP_CI_PATH: helpPagePath('ci/pipelines/index.md', { anchor: 'skip-a-pipeline' }),
   i18n: {
-    skipCiConfigurationLabel: s__('SecurityOrchestration|Allow users to skip pipelines'),
+    skipCiConfigurationLabel: s__('SecurityOrchestration|Prevent users from skipping pipelines'),
     skipCiHeader: s__(
-      'SecurityOrchestration|Configure policies to allow individual users or service accounts to use %{linkStart}skip_ci%{linkEnd} to skip pipelines.',
+      'SecurityOrchestration|Configure policies to control whether individual users or service accounts can use %{linkStart}skip_ci%{linkEnd} to skip pipelines.',
     ),
     skipCiExceptionText: s__('SecurityOrchestration|except for:'),
   },
@@ -43,7 +43,7 @@ export default {
       this.$emit('changed', 'skip_ci', {
         ...this.skipCiConfiguration,
         allowlist: { users: [] },
-        allowed: value,
+        allowed: !value,
       });
     },
     updateUsers(users) {
@@ -73,7 +73,7 @@ export default {
     </p>
     <div class="gl-flex gl-items-center">
       <gl-toggle
-        :value="enabled"
+        :value="!enabled"
         :label="$options.i18n.skipCiConfigurationLabel"
         label-position="left"
         data-testid="allow-selector"
