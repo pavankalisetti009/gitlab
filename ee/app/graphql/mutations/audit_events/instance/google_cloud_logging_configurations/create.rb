@@ -7,6 +7,8 @@ module Mutations
         class Create < Base
           graphql_name 'InstanceGoogleCloudLoggingConfigurationCreate'
 
+          include ::AuditEvents::LegacyDestinationSyncHelper
+
           argument :name, GraphQL::Types::String,
             required: false,
             description: 'Destination name.'
@@ -54,6 +56,8 @@ module Mutations
 
             if config.save
               audit(config, action: :created)
+
+              create_stream_destination(legacy_destination_model: config, category: :gcp, is_instance: true)
 
               { instance_google_cloud_logging_configuration: config, errors: [] }
             else

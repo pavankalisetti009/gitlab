@@ -70,6 +70,7 @@ module AuditEvents
 
     def copy_namespace_filters(source, destination)
       return unless source.respond_to?(:namespace_filter)
+      return unless source.namespace_filter
 
       filter_class = "#{audit_event_namespace(destination)}::NamespaceFilter".constantize
 

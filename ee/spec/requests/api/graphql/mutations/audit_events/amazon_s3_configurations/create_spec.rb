@@ -95,6 +95,27 @@ RSpec.describe 'Create Amazon S3 configuration', feature_category: :audit_events
 
       it_behaves_like 'creates an audit event', 'audit_events'
 
+      it_behaves_like 'creates a streaming destination',
+        AuditEvents::AmazonS3Configuration do
+        let(:attributes) do
+          {
+            legacy: {
+              bucket_name: bucket_name,
+              aws_region: aws_region,
+              access_key_xid: access_key_id,
+              secret_access_key: secret_access_key,
+              namespace_id: group.id,
+              name: destination_name
+            },
+            streaming: {
+              "bucketName" => bucket_name,
+              "awsRegion" => aws_region,
+              "accessKeyXid" => access_key_id
+            }
+          }
+        end
+      end
+
       context 'when there is error while saving' do
         before do
           allow_next_instance_of(AuditEvents::AmazonS3Configuration) do |s3_configuration|

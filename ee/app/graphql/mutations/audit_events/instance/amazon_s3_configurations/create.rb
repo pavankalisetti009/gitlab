@@ -7,6 +7,8 @@ module Mutations
         class Create < Base
           graphql_name 'AuditEventsInstanceAmazonS3ConfigurationCreate'
 
+          include ::AuditEvents::LegacyDestinationSyncHelper
+
           argument :name, GraphQL::Types::String,
             required: false,
             description: 'Destination name.'
@@ -44,6 +46,8 @@ module Mutations
 
             if config.save
               audit(config, action: :created)
+
+              create_stream_destination(legacy_destination_model: config, category: :aws, is_instance: true)
 
               { instance_amazon_s3_configuration: config, errors: [] }
             else

@@ -97,42 +97,53 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
               audit_event_type: 'user_created')
           end
 
-          let!(:namespace_filter) do
-            create(:audit_events_streaming_http_namespace_filter, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
-              external_audit_event_destination: source,
-              namespace: group)
+          context 'when source has a namespace filter' do
+            let!(:namespace_filter) do
+              create(:audit_events_streaming_http_namespace_filter, # rubocop:disable RSpec/FactoryBot/AvoidCreate -- need to persist for tests
+                external_audit_event_destination: source,
+                namespace: group)
+            end
+
+            it 'creates streaming destination with all associated records' do
+              destination = create_stream_destination(legacy_destination_model: source, category: :http,
+                is_instance: false)
+
+              aggregate_failures do
+                expect(destination).to be_a(AuditEvents::Group::ExternalStreamingDestination)
+                expect(destination.name).to eq('test-destination')
+                expect(destination.category).to eq('http')
+                expect(destination.group).to eq(group)
+                expect(destination.config['url']).to eq(source.destination_url)
+                expect(destination.config['headers']).to include(
+                  'X-Gitlab-Event-Streaming-Token' => {
+                    'value' => source.verification_token,
+                    'active' => true
+                  },
+                  'Custom-Header' => {
+                    'value' => 'test-value',
+                    'active' => true
+                  }
+                )
+                expect(destination.secret_token).to eq(source.verification_token)
+                expect(destination.legacy_destination_ref).to eq(source.id)
+                expect(source.stream_destination_id).to eq(destination.id)
+
+                expect(destination.event_type_filters.count).to eq(1)
+                expect(destination.event_type_filters.first.audit_event_type).to eq('user_created')
+                expect(destination.event_type_filters.first.namespace).to eq(group)
+
+                expect(destination.namespace_filters.count).to eq(1)
+                expect(destination.namespace_filters.first.namespace).to eq(group)
+              end
+            end
           end
 
-          it 'creates streaming destination with all associated records' do
-            destination = create_stream_destination(legacy_destination_model: source, category: :http,
-              is_instance: false)
+          context 'when source has no namespace filter' do
+            it 'creates streaming destination without namespace filter' do
+              destination = create_stream_destination(legacy_destination_model: source, category: :http,
+                is_instance: false)
 
-            aggregate_failures do
-              expect(destination).to be_a(AuditEvents::Group::ExternalStreamingDestination)
-              expect(destination.name).to eq('test-destination')
-              expect(destination.category).to eq('http')
-              expect(destination.group).to eq(group)
-              expect(destination.config['url']).to eq(source.destination_url)
-              expect(destination.config['headers']).to include(
-                'X-Gitlab-Event-Streaming-Token' => {
-                  'value' => source.verification_token,
-                  'active' => true
-                },
-                'Custom-Header' => {
-                  'value' => 'test-value',
-                  'active' => true
-                }
-              )
-              expect(destination.secret_token).to eq(source.verification_token)
-              expect(destination.legacy_destination_ref).to eq(source.id)
-              expect(source.stream_destination_id).to eq(destination.id)
-
-              expect(destination.event_type_filters.count).to eq(1)
-              expect(destination.event_type_filters.first.audit_event_type).to eq('user_created')
-              expect(destination.event_type_filters.first.namespace).to eq(group)
-
-              expect(destination.namespace_filters.count).to eq(1)
-              expect(destination.namespace_filters.first.namespace).to eq(group)
+              expect(destination.namespace_filters.count).to eq(0)
             end
           end
         end
