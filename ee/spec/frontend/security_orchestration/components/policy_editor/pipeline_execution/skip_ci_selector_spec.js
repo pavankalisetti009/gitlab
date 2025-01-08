@@ -21,7 +21,7 @@ describe('SkipCiSelector', () => {
     expect(findUserSelect().exists()).toBe(true);
     expect(findAllowSkipCiSelector().exists()).toBe(true);
 
-    expect(findAllowSkipCiSelector().props('value')).toBe(false);
+    expect(findAllowSkipCiSelector().props('value')).toBe(true);
     expect(findUserSelect().props('disabled')).toBe(false);
   });
 
@@ -31,7 +31,7 @@ describe('SkipCiSelector', () => {
     findAllowSkipCiSelector().vm.$emit('change', true);
 
     expect(wrapper.emitted('changed')).toEqual([
-      ['skip_ci', { allowed: true, allowlist: { users: [] } }],
+      ['skip_ci', { allowed: false, allowlist: { users: [] } }],
     ]);
   });
 
