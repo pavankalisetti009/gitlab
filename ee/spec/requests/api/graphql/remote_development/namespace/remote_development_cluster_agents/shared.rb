@@ -1,17 +1,22 @@
 # frozen_string_literal: true
 
-require_relative '../../shared'
+require_relative "../workspaces_cluster_agents/shared"
 
-RSpec.shared_examples 'checks for remote_development licensed feature' do
-  context 'when remote_development feature is unlicensed' do
-    before do
-      stub_licensed_features(remote_development: false)
-    end
+RSpec.shared_context "for a Query.namespace.remote_development_cluster_agents query" do
+  include_context "for a Query.namespace.workspaces_cluster_agents query"
 
-    it 'returns an error' do
-      post_graphql(query, current_user: current_user)
-
-      expect_graphql_errors_to_include "'remote_development' licensed feature is not available"
-    end
+  let(:fields) do
+    query_graphql_field(
+      :remote_development_cluster_agents,
+      attributes,
+      [
+        query_graphql_field(
+          :nodes,
+          all_graphql_fields_for("cluster_agents".classify, max_depth: 1)
+        )
+      ]
+    )
   end
+
+  subject(:actual_agents) { graphql_dig_at(graphql_data, :namespace, :remoteDevelopmentClusterAgents, :nodes) }
 end

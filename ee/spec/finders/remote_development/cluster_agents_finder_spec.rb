@@ -131,8 +131,8 @@ RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :worksp
     context 'when user does not have adequate permissions' do
       let(:user) { developer }
 
-      it 'raises an AccessDeniedError' do
-        expect { response }.to raise_error(Gitlab::Access::AccessDeniedError)
+      it 'returns an empty response' do
+        expect(response).to eq([])
       end
     end
   end
@@ -158,8 +158,8 @@ RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :worksp
     context 'when user does not have adequate permissions' do
       let(:user) { developer }
 
-      it 'raises an AccessDeniedError' do
-        expect { response }.to raise_error(Gitlab::Access::AccessDeniedError)
+      it 'returns an empty response' do
+        expect(response).to eq([])
       end
     end
   end

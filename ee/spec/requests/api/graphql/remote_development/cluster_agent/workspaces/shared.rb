@@ -41,5 +41,5 @@ RSpec.shared_context 'for a Query.project.clusterAgent.workspaces query' do
     workspace.reload # Ensure loaded workspace fixture's agent reflects updated created_by_user
   end
 
-  subject { graphql_data.dig('project', 'clusterAgent', 'workspaces', 'nodes') }
+  subject(:actual_workspaces) { graphql_dig_at(graphql_data, :project, :clusterAgent, :workspaces, :nodes) }
 end

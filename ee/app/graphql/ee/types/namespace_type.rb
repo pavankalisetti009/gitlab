@@ -136,10 +136,11 @@ module EE
 
         field :remote_development_cluster_agents,
           ::Types::Clusters::AgentType.connection_type,
+          deprecated: { reason: 'Use `workspacesClusterAgents`', milestone: '17.8' },
           extras: [:lookahead],
           null: true,
           description: 'Cluster agents in the namespace with remote development capabilities',
-          resolver: ::Resolvers::RemoteDevelopment::AgentsForNamespaceResolver
+          resolver: ::Resolvers::RemoteDevelopment::Namespace::ClusterAgentsResolver
 
         field :subscription_history,
           ::Types::GitlabSubscriptions::SubscriptionHistoryType.connection_type,
@@ -147,6 +148,15 @@ module EE
           description: 'Find subscription history records.',
           experiment: { milestone: '17.3' },
           method: :gitlab_subscription_histories
+
+        field :workspaces_cluster_agents,
+          ::Types::Clusters::AgentType.connection_type,
+          extras: [:lookahead],
+          null: true,
+          description: 'Cluster agents in the namespace with workspaces capabilities',
+          experiment: { milestone: '17.8' },
+          resolver: ::Resolvers::RemoteDevelopment::Namespace::ClusterAgentsResolver
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end
