@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Mutations::Ai::DuoUserFeedback, :clean_gitlab_redis_chat, feature_category: :ai_abstraction_layer do
   include GraphqlHelpers
-  let_it_be(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:agent_version) { create(:ai_agent_version) }
 
   subject(:mutation) { described_class.new(object: nil, context: query_context(user: user), field: nil) }

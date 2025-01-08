@@ -7,7 +7,7 @@ module Ai
 
       self.table_name = :ai_conversation_threads
 
-      has_many :messages, class_name: 'Ai::Conversation::Message'
+      has_many :messages, class_name: 'Ai::Conversation::Message', inverse_of: :thread
       belongs_to :organization, class_name: 'Organizations::Organization'
       belongs_to :user
 
@@ -17,17 +17,13 @@ module Ai
 
       enum conversation_type: { duo_chat: 1 }
 
-      before_validation :populate_organization_id
+      before_create :populate_organization
 
       private
 
-      def populate_organization_id
-        return if organization_id
-
-        organization_id = user&.namespace&.organization_id ||
+      def populate_organization
+        self.organization_id ||= user.organizations.first&.id ||
           Organizations::Organization::DEFAULT_ORGANIZATION_ID
-
-        self.organization_id = organization_id
       end
     end
   end
