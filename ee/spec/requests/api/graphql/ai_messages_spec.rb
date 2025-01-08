@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_category: :shared do
   include GraphqlHelpers
 
-  let_it_be(:user) { create(:user) }
-  let_it_be(:other_user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:other_user) { create(:user, organizations: [organization]) }
 
   let_it_be(:external_issue) { create(:issue) }
   let_it_be(:external_issue_url) do

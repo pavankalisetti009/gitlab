@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe 'DuoUserFeedback', feature_category: :ai_abstraction_layer do
   include GraphqlHelpers
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:agent_version) { create(:ai_agent_version) }
   let(:current_user) { user }
   let(:chat_storage) { Gitlab::Llm::ChatStorage.new(user, agent_version.id) }

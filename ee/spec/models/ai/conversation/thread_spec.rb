@@ -34,20 +34,23 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
 
   describe 'callbacks' do
     describe 'before_validation :populate_organization_id' do
-      let(:thread) { build(:ai_conversation_thread, user: user) }
-      let(:user) { create(:user, :with_namespace) }
+      let_it_be(:organization) { create(:organization) }
+
+      let(:user) { create(:user, organizations: [organization]) }
 
       it 'sets organization_id from user namespace' do
-        thread.valid?
-        expect(thread.organization_id).to eq(user.namespace.organization_id)
+        thread = described_class.create!(user: user, conversation_type: :duo_chat)
+
+        expect(thread.organization_id).to eq(user.organizations.first.id)
       end
 
       context 'when user has no namespace' do
         let_it_be(:organization) { create(:organization, :default) }
-        let(:user) { create(:user, namespace: nil) }
+        let(:user) { create(:user) }
 
         it 'sets defautl organization_id' do
-          thread.valid?
+          thread = described_class.create!(user: user, conversation_type: :duo_chat)
+
           expect(thread.organization_id).to eq(Organizations::Organization::DEFAULT_ORGANIZATION_ID)
         end
       end

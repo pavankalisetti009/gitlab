@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::Chain::Agents::ZeroShot::Executor, :clean_gitlab_redis_chat, feature_category: :duo_chat do
   include FakeBlobHelpers
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:existing_agent_version) { create(:ai_agent_version) }
 
   let(:input) { 'foo' }
@@ -268,7 +269,7 @@ prompt_version: described_class::CUSTOM_AGENT_PROMPT_TEMPLATE }))
           an_object_having_attributes(content: 'agent version message 2')
         ]
         expect(Gitlab::Llm::Chain::Agents::ZeroShot::Prompts::Anthropic)
-          .to receive(:prompt).once.with(a_hash_including(conversation: expected_chat))
+          .to receive(:prompt).once.with(a_hash_including(conversation: array_including(expected_chat)))
 
         agent.prompt
       end

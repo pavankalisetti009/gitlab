@@ -6,7 +6,7 @@ module Ai
       self.table_name = :ai_conversation_messages
 
       belongs_to :organization, class_name: 'Organizations::Organization'
-      belongs_to :thread, class_name: 'Ai::Conversation::Thread'
+      belongs_to :thread, class_name: 'Ai::Conversation::Thread', inverse_of: :messages
 
       validates :content, :role, :thread_id, presence: true
 
@@ -17,17 +17,12 @@ module Ai
 
       enum role: { user: 1, assistant: 2 }
 
-      before_validation :populate_organization_id
+      before_create :populate_organization
 
       private
 
-      def populate_organization_id
-        return if organization_id
-
-        organization_id = thread&.user&.namespace&.organization_id ||
-          Organizations::Organization::DEFAULT_ORGANIZATION_ID
-
-        self.organization_id = organization_id
+      def populate_organization
+        self.organization ||= thread.organization
       end
     end
   end

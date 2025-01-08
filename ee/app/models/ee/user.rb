@@ -130,6 +130,7 @@ module EE
       has_many :user_member_roles, class_name: 'Users::UserMemberRole'
 
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id
+      has_many :ai_conversation_messages, class_name: 'Ai::Conversation::Message', through: :ai_conversation_threads, source: :messages
 
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }

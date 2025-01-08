@@ -6,7 +6,8 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatConversation, feature_category: :d
   describe "#truncated_conversation_list" do
     subject(:conversation) { described_class.new(user).truncated_conversation_list }
 
-    let(:user) { build_stubbed(:user) }
+    let_it_be(:organization) { create(:organization) }
+    let(:user) { create(:user, organizations: [organization]) }
 
     before do
       allow(::Gitlab::Llm::ChatStorage).to receive(:last_conversation).and_return(messages)
