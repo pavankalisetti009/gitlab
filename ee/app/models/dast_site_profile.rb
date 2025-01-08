@@ -70,6 +70,15 @@ class DastSiteProfile < Gitlab::Database::SecApplicationRecord
         variables.append(key: 'DAST_SUBMIT_FIELD', value: auth_submit_field)
         variables.append(key: 'DAST_API_HTTP_USERNAME', value: auth_username)
       end
+
+      variables_keys = variables.map(&:key)
+
+      optional_variables.each do |o_v|
+        # Ignore any optional variables that are already defined in variables
+        unless variables_keys.include?(o_v["variable"])
+          variables.append(key: o_v["variable"], value: o_v["value"])
+        end
+      end
     end
 
     collection.compact
