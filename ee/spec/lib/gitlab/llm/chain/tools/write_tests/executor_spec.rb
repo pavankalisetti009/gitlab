@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Tools::WriteTests::Executor, feature_category: :duo_chat do
   let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project) }
 
   let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
   let(:input) { 'input' }
@@ -14,7 +15,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::WriteTests::Executor, feature_category
 
   let(:context) do
     Gitlab::Llm::Chain::GitlabContext.new(
-      current_user: user, container: nil, resource: nil, ai_request: ai_request_double,
+      current_user: user, container: nil, resource: project, ai_request: ai_request_double,
       current_file: { file_name: 'test.py', selected_text: 'selected text' }
     )
   end
@@ -60,9 +61,13 @@ RSpec.describe Gitlab::Llm::Chain::Tools::WriteTests::Executor, feature_category
     context 'when context is authorized' do
       include_context 'with stubbed LLM authorizer', allowed: true
 
+      before_all do
+        create(:xray_report, project: project, lang: 'python')
+      end
+
       it_behaves_like 'slash command tool' do
         let(:prompt_class) { Gitlab::Llm::Chain::Tools::WriteTests::Prompts::Anthropic }
-        let(:extra_params) { {} }
+        let(:extra_params) { { libraries: ['bcrypt (3.1.20)', 'logger (1.5.3)'] } }
       end
 
       it 'builds the expected prompt' do

@@ -75,6 +75,11 @@ module Gitlab
 
             private
 
+            override :context_options
+            def context_options
+              { libraries: context.libraries }
+            end
+
             def authorize
               Utils::ChatAuthorizer.context(context: context).allowed?
             end

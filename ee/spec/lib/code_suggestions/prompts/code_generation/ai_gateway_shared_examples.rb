@@ -131,18 +131,6 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
           end
         end
       end
-
-      context 'when the number of X-Ray report libraries exceeds MAX_LIBRARIES' do
-        before do
-          stub_const('CodeSuggestions::Prompts::Base::MAX_LIBRARIES', 2)
-        end
-
-        let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)'] }
-
-        it 'returns expected request params' do
-          expect(subject.request_params).to eq(expected_request_params)
-        end
-      end
     end
 
     context 'when all parameters are blank' do

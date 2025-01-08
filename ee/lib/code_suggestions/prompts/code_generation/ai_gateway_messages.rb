@@ -4,7 +4,7 @@ module CodeSuggestions
   module Prompts
     module CodeGeneration
       class AiGatewayMessages < CodeSuggestions::Prompts::Base
-        include Gitlab::Utils::StrongMemoize
+        include Gitlab::Llm::Chain::Concerns::XrayContext
 
         PROMPT_COMPONENT_TYPE = 'code_editor_generation'
         PROMPT_ID = 'code_suggestions/generations'
@@ -96,8 +96,8 @@ module CodeSuggestions
           if libraries.any?
             Gitlab::InternalEvents.track_event(
               'include_repository_xray_data_into_code_generation_prompt',
-              project: params[:project],
-              namespace: params[:project]&.namespace,
+              project: project,
+              namespace: project&.namespace,
               user: params[:current_user]
             )
           end
@@ -105,23 +105,15 @@ module CodeSuggestions
           { libraries: libraries }
         end
 
-        def libraries
-          return [] unless xray_report
-
-          xray_report.libs.map { |l| l['name'] }.first(MAX_LIBRARIES) # rubocop:disable Rails/Pluck -- libs is an array
-        end
-        strong_memoize_attr :libraries
-
-        def xray_report
-          ::Projects::XrayReport.for_project(params[:project]).for_lang(language.x_ray_lang).first
-        end
-        strong_memoize_attr :xray_report
-
         def user_instruction_params
           instruction = params[:instruction]&.instruction.presence ||
             'Generate the best possible code based on instructions.'
 
           { user_instruction: instruction }
+        end
+
+        def project
+          params[:project]
         end
       end
     end
