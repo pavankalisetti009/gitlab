@@ -57593,6 +57593,9 @@ msgstr ""
 msgid "This item is disabled"
 msgstr ""
 
+msgid "This iteration contains confidential items you do not have access to."
+msgstr ""
+
 msgid "This job could not start because it could not retrieve the needed artifacts%{punctuation}%{invalid_dependencies}"
 msgstr ""
 

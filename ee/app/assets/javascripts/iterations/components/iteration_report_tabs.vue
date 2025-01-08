@@ -66,6 +66,11 @@ export default {
       required: false,
       default: '',
     },
+    totalIterationIssueCount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
   },
   data() {
     return {
@@ -86,6 +91,14 @@ export default {
     },
     labelsWithoutIssues() {
       return this.selectedLabels.filter((label) => !label.hasIssues);
+    },
+    hasInaccessibleIssues() {
+      // If issueCount is null or if totalIterationIssueCount is null or 0, we can skip this and return false
+      if (this.issueCount !== null && this.totalIterationIssueCount) {
+        return this.issueCount < this.totalIterationIssueCount;
+      }
+
+      return false;
     },
   },
   methods: {
@@ -197,6 +210,7 @@ export default {
         class="gl-mb-6"
         :full-path="fullPath"
         :has-scoped-labels-feature="hasScopedLabelsFeature"
+        :has-inaccessible-issues="hasInaccessibleIssues"
         :iteration-id="iterationId"
         :label="label"
         :namespace-type="namespaceType"
@@ -208,6 +222,7 @@ export default {
         v-show="!selectedLabels.length"
         :full-path="fullPath"
         :has-scoped-labels-feature="hasScopedLabelsFeature"
+        :has-inaccessible-issues="hasInaccessibleIssues"
         :iteration-id="iterationId"
         :namespace-type="namespaceType"
         @issuesUpdate="handleIssuesUpdate"

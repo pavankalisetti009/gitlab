@@ -28,6 +28,7 @@ describe('Iterations report issues', () => {
   const defaultProps = {
     fullPath,
     iterationId: `gid://gitlab/Iteration/${id}`,
+    hasInaccessibleIssues: false,
   };
 
   const findGlBadge = () => wrapper.findComponent(GlBadge);
@@ -38,6 +39,8 @@ describe('Iterations report issues', () => {
   const findGlTable = () => wrapper.findComponent(GlTable);
   const findHeading = () => wrapper.find('h4');
   const findSection = () => wrapper.find('section');
+  const findInaccessibleIssuesLabel = () =>
+    wrapper.find('[data-testid="has-inaccessible-issues-label"]');
 
   const mountComponent = ({
     props = defaultProps,
@@ -57,6 +60,17 @@ describe('Iterations report issues', () => {
       },
     });
   };
+
+  it('shows warning about inaccessible confidential issues', () => {
+    mountComponent({
+      props: {
+        ...defaultProps,
+        hasInaccessibleIssues: true,
+      },
+    });
+
+    expect(findInaccessibleIssuesLabel().exists()).toBe(true);
+  });
 
   it('shows spinner while loading', () => {
     mountComponent({

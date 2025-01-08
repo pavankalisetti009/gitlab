@@ -79,6 +79,7 @@ export default {
     return {
       error: '',
       iteration: {},
+      total: 0,
     };
   },
   computed: {
@@ -152,6 +153,9 @@ export default {
           this.error = err;
         });
     },
+    updateTotal(value) {
+      this.total = value;
+    },
   },
   safeHtmlConfig: { ADD_TAGS: ['gl-emoji'] },
 };
@@ -220,6 +224,7 @@ export default {
         :iteration-state="iteration.state"
         :full-path="fullPath"
         :namespace-type="namespaceType"
+        @updateTotal="updateTotal"
       />
       <iteration-report-tabs
         :full-path="fullPath"
@@ -228,6 +233,7 @@ export default {
         :labels-fetch-path="labelsFetchPath"
         :namespace-type="namespaceType"
         :svg-path="noIssuesSvgPath"
+        :total-iteration-issue-count="total"
       />
     </template>
   </div>
