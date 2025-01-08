@@ -187,6 +187,10 @@ module Types
     field :blocked_by_epics, ::Types::EpicType.connection_type,
       null: true, complexity: 5, description: 'Epics blocking this epic.'
 
+    field :linked_work_items, ::Types::WorkItemType.connection_type,
+      null: true, complexity: 5, resolver: Resolvers::WorkItems::LinkedItemsResolver,
+      description: 'Work items linked to the epic.', extras: [:lookahead]
+
     field :default_project_for_issue_creation, Types::ProjectType,
       null: true, resolver: ::Resolvers::Epics::DefaultProjectForIssueCreationResolver,
       description: 'Default Project for issue creation. Based on the project the user created the last issue in.'

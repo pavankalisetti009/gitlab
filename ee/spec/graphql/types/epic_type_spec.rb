@@ -19,7 +19,7 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
       user_notes_count user_discussions_count health_status current_user_todos
       award_emoji events ancestors color text_color blocked blocking_count
       blocked_by_count blocked_by_epics default_project_for_issue_creation
-      commenters name
+      commenters name linked_work_items
     ]
   end
 
@@ -44,6 +44,8 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
   it { expect(described_class).to have_graphql_field(:blocked_by_epics, complexity: 5) }
 
   it { expect(described_class).to have_graphql_field(:award_emoji) }
+
+  it { expect(described_class).to have_graphql_field(:linked_work_items, complexity: 5) }
 
   describe 'healthStatus' do
     let_it_be(:object) { create(:epic) }
