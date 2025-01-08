@@ -414,14 +414,12 @@ export default {
   }),
   i18n: {
     aiImpactDescriptionLink: s__(
-      'Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo Pro seat usage%{subscriptionLinkEnd}.',
+      'Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo seats%{subscriptionLinkEnd}.',
     ),
   },
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
   AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
-  DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons', {
-    anchor: 'assign-gitlab-duo-seats',
-  }),
+  DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons'),
   HISTORY_REPLACE_UPDATE_METHOD,
 };
 </script>
