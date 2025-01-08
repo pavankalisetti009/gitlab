@@ -57,4 +57,14 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
       }
     }
   }
+  ... on WorkItemWidgetIteration {
+    iteration {
+      title
+      startDate
+      dueDate
+      iterationCadence {
+        title
+      }
+    }
+  }
 }
