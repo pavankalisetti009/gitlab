@@ -15,6 +15,13 @@ module Security
 
         find_by_project_id(project.id)
       end
+
+      def sum_vulnerability_count_for_group(group)
+        Security::ProjectStatistics
+          .where(project_id: group.all_project_ids)
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/510091')
+          .sum(:vulnerability_count)
+      end
     end
 
     def increase_vulnerability_counter!(increment)
