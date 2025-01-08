@@ -73,7 +73,7 @@ RSpec.describe AppSec::Dast::SiteProfiles::Audit::UpdateService, feature_categor
       let_it_be(:old_params) do
         { optional_variables: [
           { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" },
-          { "value" => "2", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" }
+          { "value" => "true", "variable" => "DAST_AUTH_CLEAR_INPUT_FIELDS" }
         ] }
       end
 
@@ -81,7 +81,7 @@ RSpec.describe AppSec::Dast::SiteProfiles::Audit::UpdateService, feature_categor
         auditor = described_class.new(project, user, {
           dast_site_profile: profile,
           new_params: { optional_variables: [
-            { "value" => "2", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" },
+            { "value" => "true", "variable" => "DAST_AUTH_CLEAR_INPUT_FIELDS" },
             { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
           ] },
           old_params: old_params
@@ -94,8 +94,21 @@ RSpec.describe AppSec::Dast::SiteProfiles::Audit::UpdateService, feature_categor
         auditor = described_class.new(project, user, {
           dast_site_profile: profile,
           new_params: { optional_variables: [
-            { "value" => "99", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" },
+            { "value" => "false", "variable" => "DAST_AUTH_CLEAR_INPUT_FIELDS" },
             { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
+          ] },
+          old_params: old_params
+        })
+
+        expect { auditor.execute }.to change { AuditEvent.count }
+      end
+
+      it 'audits when values of the optional_variables get swapped' do
+        auditor = described_class.new(project, user, {
+          dast_site_profile: profile,
+          new_params: { optional_variables: [
+            { "value" => "1", "variable" => "DAST_AUTH_CLEAR_INPUT_FIELDS" },
+            { "value" => "true", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
           ] },
           old_params: old_params
         })
@@ -107,7 +120,7 @@ RSpec.describe AppSec::Dast::SiteProfiles::Audit::UpdateService, feature_categor
         auditor = described_class.new(project, user, {
           dast_site_profile: profile,
           new_params: { optional_variables: [
-            { "value" => "99", "variable" => "DAST_ACTIVE_SCAN_TIMEOUT" },
+            { "value" => "false", "variable" => "DAST_AUTH_CLEAR_INPUT_FIELDS" },
             { "value" => "1", "variable" => "DAST_ACTIVE_SCAN_WORKER_COUNT" }
           ] },
           old_params: old_params
