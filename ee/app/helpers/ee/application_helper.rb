@@ -28,7 +28,7 @@ module EE
       message = "#{message} #{lag_message}".html_safe if lag_message
 
       tag.span do
-        concat(s_('Geo|You are on a secondary, %{b_open}read-only%{b_close} Geo site.').html_safe % { b_open: '<b>'.html_safe, b_close: '</b>'.html_safe })
+        concat(safe_format(s_('Geo|You are on a secondary, %{b_open}read-only%{b_close} Geo site.'), tag_pair(tag.b, :b_open, :b_close)))
         concat(" #{message}")
       end
     end
