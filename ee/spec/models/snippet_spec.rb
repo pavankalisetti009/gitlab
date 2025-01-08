@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Snippet do
+RSpec.describe Snippet, feature_category: :source_code_management do
   describe '#repository_size_checker' do
     let(:checker) { subject.repository_size_checker }
     let(:current_size) { 60 }
