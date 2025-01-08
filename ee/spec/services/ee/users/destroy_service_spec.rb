@@ -143,6 +143,30 @@ RSpec.describe Users::DestroyService, feature_category: :user_management do
             end
           end
         end
+
+        context 'when user is provisioned by a group' do
+          let(:group) { create(:group) }
+          let(:user) { create(:user, provisioned_by_group: group) }
+
+          it_behaves_like 'auditable', audit_name: 'user_destroyed' do
+            let(:author) { current_user }
+
+            let(:expected_audit_attributes) do
+              {
+                author_id: author.id,
+                entity: group,
+                details: {
+                  author_class: author.class.to_s,
+                  author_name: author.name,
+                  custom_message: "User #{user.username} scheduled for deletion",
+                  target_details: user.full_path,
+                  target_id: user.id,
+                  target_type: user.class.to_s
+                }
+              }
+            end
+          end
+        end
       end
 
       context 'when project is a mirror' do
