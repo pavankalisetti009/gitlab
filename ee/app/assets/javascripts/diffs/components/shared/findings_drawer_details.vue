@@ -38,11 +38,7 @@ export default {
       const codeFlowData = this.drawer.details?.find(
         (detail) => detail.type === VULNERABILITY_DETAIL_CODE_FLOWS,
       );
-      return (
-        this.glFeatures.vulnerabilityCodeFlow &&
-        this.glFeatures.mrVulnerabilityCodeFlow &&
-        codeFlowData?.items?.length > 0
-      );
+      return this.glFeatures.mrVulnerabilityCodeFlow && codeFlowData?.items?.length > 0;
     },
   },
   methods: {

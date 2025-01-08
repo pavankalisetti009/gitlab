@@ -18,7 +18,7 @@ describe('Findings Drawer Details', () => {
 
   const createWrapper = (
     findingDetailsOverrides = {},
-    { vulnerabilityCodeFlow = false, mrVulnerabilityCodeFlow = false } = {},
+    { mrVulnerabilityCodeFlow = false } = {},
   ) => {
     const propsData = {
       drawer: findingDetailsProps.drawer,
@@ -30,7 +30,7 @@ describe('Findings Drawer Details', () => {
     wrapper = mountExtended(FindingsDrawerDetails, {
       propsData,
       provide: {
-        glFeatures: { vulnerabilityCodeFlow, mrVulnerabilityCodeFlow },
+        glFeatures: { mrVulnerabilityCodeFlow },
       },
     });
   };
@@ -62,7 +62,7 @@ describe('Findings Drawer Details', () => {
     });
   });
 
-  describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are enabled', () => {
+  describe('when `mrVulnerabilityCodeFlow` is enabled', () => {
     describe('when `details` object is not empty', () => {
       beforeEach(() => {
         createWrapper(
@@ -74,7 +74,6 @@ describe('Findings Drawer Details', () => {
             },
           },
           {
-            vulnerabilityCodeFlow: true,
             mrVulnerabilityCodeFlow: true,
           },
         );
@@ -94,7 +93,6 @@ describe('Findings Drawer Details', () => {
         createWrapper(
           { insideTab: false },
           {
-            vulnerabilityCodeFlow: true,
             mrVulnerabilityCodeFlow: true,
           },
         );
@@ -110,12 +108,11 @@ describe('Findings Drawer Details', () => {
     });
   });
 
-  describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are disabled', () => {
+  describe('when `mrVulnerabilityCodeFlow` is disabled', () => {
     beforeEach(() => {
       createWrapper(
         {},
         {
-          vulnerabilityCodeFlow: false,
           mrVulnerabilityCodeFlow: false,
         },
       );
