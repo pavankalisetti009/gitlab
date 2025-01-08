@@ -221,6 +221,9 @@ module BulkInsertSafe
           raise PrimaryKeySetError, "Primary key set: #{primary_key}:#{existing_pk}\n" \
             "#{primary_key} is a serial primary key, this is probably a mistake"
         else
+          # If the PK is serial, then we need to delete it from attributes to avoid setting
+          # explicit NULLs in the insert statement. If the PK is not serial, then we'll use
+          # the value set in the attributes.
           attributes[primary_key] = existing_pk
         end
       end

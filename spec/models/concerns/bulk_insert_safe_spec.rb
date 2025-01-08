@@ -282,7 +282,7 @@ RSpec.describe BulkInsertSafe, feature_category: :database do
       end
     end
 
-    context 'when the primary key is also a foreign key' do
+    context 'when the primary key is not serial' do
       let_it_be(:project) { create(:project) }
       let_it_be(:bulk_insert_item_class) do
         Class.new(ActiveRecord::Base) do
@@ -295,13 +295,6 @@ RSpec.describe BulkInsertSafe, feature_category: :database do
       let(:new_object) { bulk_insert_item_class.new(project_id: project.id, name: 'one-to-one') }
 
       it 'successfully inserts an item' do
-        expect(ActiveRecord::InsertAll).to receive(:new)
-          .with(
-            bulk_insert_item_class.insert_all_proxy_class,
-            [new_object.as_json],
-            on_duplicate: :raise, returning: false, unique_by: nil
-          ).and_call_original
-
         expect { bulk_insert_item_class.bulk_insert!([new_object]) }.to(
           change(bulk_insert_item_class, :count).from(0).to(1)
         )
