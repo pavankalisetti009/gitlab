@@ -35455,9 +35455,6 @@ msgstr ""
 msgid "MlExperimentTracking|Candidates"
 msgstr ""
 
-msgid "MlExperimentTracking|Create a new experiment"
-msgstr ""
-
 msgid "MlExperimentTracking|Create an experiment using MLflow"
 msgstr ""
 
@@ -35474,6 +35471,9 @@ msgid "MlExperimentTracking|Creating an experiment"
 msgstr ""
 
 msgid "MlExperimentTracking|Creating experiments using the MLflow client:"
+msgstr ""
+
+msgid "MlExperimentTracking|Creator"
 msgstr ""
 
 msgid "MlExperimentTracking|Delete candidate"
@@ -35500,9 +35500,6 @@ msgstr ""
 msgid "MlExperimentTracking|Download as CSV"
 msgstr ""
 
-msgid "MlExperimentTracking|Experiment"
-msgstr ""
-
 msgid "MlExperimentTracking|Experiment created %{timeAgo} by %{author}"
 msgstr ""
 
@@ -35524,7 +35521,7 @@ msgstr ""
 msgid "MlExperimentTracking|Key"
 msgstr ""
 
-msgid "MlExperimentTracking|Logged candidates for experiment"
+msgid "MlExperimentTracking|Last activity"
 msgstr ""
 
 msgid "MlExperimentTracking|Machine learning experiment tracking"
@@ -35554,6 +35551,9 @@ msgstr ""
 msgid "MlExperimentTracking|No name"
 msgstr ""
 
+msgid "MlExperimentTracking|Number of candidates"
+msgstr ""
+
 msgid "MlExperimentTracking|Overview"
 msgstr ""
 
@@ -35574,6 +35574,11 @@ msgstr ""
 
 msgid "MlExperimentTracking|by %{author}"
 msgstr ""
+
+msgid "MlModelRegistry|%d experiment"
+msgid_plural "MlModelRegistry|%d experiments"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "MlModelRegistry|%d model"
 msgid_plural "MlModelRegistry|%d models"
