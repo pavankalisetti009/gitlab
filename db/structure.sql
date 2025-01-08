@@ -6489,7 +6489,8 @@ CREATE TABLE alert_management_alert_assignees (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
     alert_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_f3efe02c81 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE alert_management_alert_assignees_id_seq
