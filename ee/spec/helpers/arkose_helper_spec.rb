@@ -36,8 +36,8 @@ RSpec.describe ArkoseHelper, type: :helper, feature_category: :instance_resilien
 
       context 'and phone verifications hard limit has been exceeded' do
         before do
-          allow(PhoneVerification::Users::RateLimitService)
-            .to receive(:daily_transaction_hard_limit_exceeded?).and_return(true)
+          allow(::Gitlab::ApplicationRateLimiter).to receive(:peek)
+            .with(:hard_phone_verification_transactions_limit, scope: nil).and_return(true)
         end
 
         it_behaves_like 'builds the payload with the correct options' do

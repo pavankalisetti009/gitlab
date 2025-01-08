@@ -144,14 +144,11 @@ module PhoneVerification
       end
 
       def success(send_code_result)
-        rate_limit_service = PhoneVerification::Users::RateLimitService
-        rate_limit_service.increase_daily_attempts
-
-        if rate_limit_service.daily_transaction_soft_limit_exceeded?
+        if ::Gitlab::ApplicationRateLimiter.throttled?(:soft_phone_verification_transactions_limit, scope: nil)
           log_limit_exceeded_event(:soft_phone_verification_transactions_limit)
         end
 
-        if rate_limit_service.daily_transaction_hard_limit_exceeded?
+        if ::Gitlab::ApplicationRateLimiter.throttled?(:hard_phone_verification_transactions_limit, scope: nil)
           log_limit_exceeded_event(:hard_phone_verification_transactions_limit)
         end
 

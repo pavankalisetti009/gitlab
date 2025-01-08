@@ -264,8 +264,9 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
 
     describe 'phone verification service daily transaction limit check' do
       it 'is executed' do
-        service = PhoneVerification::Users::RateLimitService
-        expect(service).to receive(:assume_user_high_risk_if_daily_limit_exceeded!).with(an_instance_of(User))
+        expect_next_instance_of(IdentityVerification::UserRiskProfile) do |instance|
+          expect(instance).to receive(:assume_high_risk_if_phone_verification_limit_exceeded!)
+        end
 
         create_user
       end

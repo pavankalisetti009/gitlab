@@ -29,9 +29,8 @@ module Users
       end
 
       track_arkose_challenge_result
-
-      service = PhoneVerification::Users::RateLimitService
-      service.assume_user_high_risk_if_daily_limit_exceeded!(@user)
+      risk_profile = ::IdentityVerification::UserRiskProfile.new(@user)
+      risk_profile.assume_high_risk_if_phone_verification_limit_exceeded!
 
       redirect_to action: :show
     end

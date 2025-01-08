@@ -4,7 +4,7 @@ module ArkoseHelper
   def arkose_data_exchange_payload(use_case)
     show_challenge =
       if use_case == Arkose::DataExchangePayload::USE_CASE_SIGN_UP
-        PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
+        ::Gitlab::ApplicationRateLimiter.peek(:hard_phone_verification_transactions_limit, scope: nil)
       else
         use_case == Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION
       end

@@ -239,4 +239,39 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
       it { is_expected.to be_nil }
     end
   end
+
+  describe '#assume_high_risk_if_phone_verification_limit_exceeded!' do
+    subject(:check_risk_profile) { risk_profile.assume_high_risk_if_phone_verification_limit_exceeded! }
+
+    # Use shared context for rate limiter setup
+    shared_context 'with phone verification limit' do |is_exceeded|
+      before do
+        allow(Gitlab::ApplicationRateLimiter)
+          .to receive(:peek)
+          .with(:soft_phone_verification_transactions_limit, scope: nil)
+          .and_return(is_exceeded)
+      end
+    end
+
+    context 'when verification limit is exceeded' do
+      include_context 'with phone verification limit', true
+
+      it 'marks user as high risk' do
+        expect(user).to receive(:assume_high_risk!)
+          .with(reason: 'Phone verification daily transaction limit exceeded')
+
+        check_risk_profile
+      end
+    end
+
+    context 'when verification limit is not exceeded' do
+      include_context 'with phone verification limit', false
+
+      it 'does not mark user as high risk' do
+        expect(user).not_to receive(:assume_high_risk!)
+
+        check_risk_profile
+      end
+    end
+  end
 end

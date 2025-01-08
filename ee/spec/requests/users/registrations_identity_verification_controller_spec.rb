@@ -501,14 +501,13 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         end
 
         it_behaves_like 'logs challenge solved event'
-
-        describe 'phone verification service daily transaction limit check' do
-          it 'is executed' do
-            service = PhoneVerification::Users::RateLimitService
-            expect(service).to receive(:assume_user_high_risk_if_daily_limit_exceeded!).with(user)
-
-            do_request
+        it 'executes the phone verification limit check' do
+          expect_next_instance_of(IdentityVerification::UserRiskProfile, user) {} # Empty block with {}
+          expect_next_instance_of(IdentityVerification::UserRiskProfile, user) do |risk_profile|
+            expect(risk_profile).to receive(:assume_high_risk_if_phone_verification_limit_exceeded!)
           end
+
+          do_request
         end
       end
     end
