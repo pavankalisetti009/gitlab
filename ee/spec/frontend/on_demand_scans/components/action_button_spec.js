@@ -32,7 +32,7 @@ describe('ActionButton', () => {
 
     expect(button.exists()).toBe(true);
     expect(tooltip.exists()).toBe(true);
-    expect(tooltip.props('target')).toBe(button.attributes('id'));
+    expect(tooltip.attributes('target')).toBe(button.attributes('id'));
   });
 
   it('sets the label on the button and in the tooltip', () => {
