@@ -18,6 +18,7 @@ module Projects
         push_frontend_feature_flag(:security_policy_custom_roles, project.group)
         push_frontend_feature_flag(:security_policies_split_view, project.group)
         push_frontend_feature_flag(:security_policies_skip_ci, project.group)
+        push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
       end
 
       feature_category :security_policy_management

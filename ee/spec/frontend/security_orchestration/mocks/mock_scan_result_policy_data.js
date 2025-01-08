@@ -558,6 +558,18 @@ export const mockGroupApprovalSettingsScanResultObject = {
   },
 };
 
+export const mockWarnActionScanResultObject = {
+  ...mockDefaultBranchesScanResultObject,
+  actions: [
+    {
+      type: 'require_approval',
+      approvals_required: 0,
+      id: actionId,
+    },
+    { type: 'send_bot_message', enabled: true, id: `action_0` },
+  ],
+};
+
 const defaultScanResultPolicy = {
   __typename: 'ScanResultPolicy',
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
