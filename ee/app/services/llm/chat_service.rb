@@ -22,7 +22,10 @@ module Llm
       )
 
       if Feature.disabled?(:move_ai_tracking_to_instrumentation_layer, user)
-        Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response', user: user)
+        Gitlab::Tracking::AiTracking.track_event('request_duo_chat_response',
+          user: user,
+          project: project,
+          namespace: namespace)
       end
 
       prompt_message.save!

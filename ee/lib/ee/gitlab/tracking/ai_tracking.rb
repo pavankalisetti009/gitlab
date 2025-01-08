@@ -26,6 +26,7 @@ module EE
 
           context_hash = context_hash.with_indifferent_access
           context_hash[:event] = event_name
+          context_hash[:namespace_path] ||= build_traversal_path(context_hash)
 
           if ::Feature.enabled?(:move_ai_tracking_to_instrumentation_layer, context_hash[:user])
             context_hash = filter_attributes(context_hash, matched_model)
@@ -51,6 +52,11 @@ module EE
           return unless event.respond_to?(:store_to_pg)
 
           event.store_to_pg
+        end
+
+        def build_traversal_path(context_hash)
+          context_hash[:project]&.project_namespace&.traversal_path ||
+            context_hash[:namespace]&.traversal_path
         end
       end
     end
