@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlFormInput, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlFormInput, GlIcon, GlPopover, GlSprintf } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -10,15 +10,25 @@ import {
   createActionFromApprovers,
   actionHasType,
   getDefaultHumanizedTemplate,
+  WARN_TEMPLATE,
+  WARN_TEMPLATE_HELP_TITLE,
+  WARN_TEMPLATE_HELP_DESCRIPTION,
 } from '../lib/actions';
 import SectionLayout from '../../section_layout.vue';
 import ApproverSelectionWrapper from './approver_selection_wrapper.vue';
 
 export default {
+  warnId: 'warn-help-text',
+  i18n: {
+    WARN_TEMPLATE_HELP_TITLE,
+    WARN_TEMPLATE_HELP_DESCRIPTION,
+  },
   name: 'ApproverAction',
   components: {
     GlAlert,
     GlFormInput,
+    GlIcon,
+    GlPopover,
     GlSprintf,
     ApproverSelectionWrapper,
     SectionLayout,
@@ -34,6 +44,11 @@ export default {
     initAction: {
       type: Object,
       required: true,
+    },
+    isWarnType: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     existingApprovers: {
       type: Object,
@@ -77,7 +92,7 @@ export default {
       return this.glFeatures.multipleApprovalActions;
     },
     humanizedTemplate() {
-      return getDefaultHumanizedTemplate(this.approvalsRequired);
+      return this.isWarnType ? WARN_TEMPLATE : getDefaultHumanizedTemplate(this.approvalsRequired);
     },
     isApproverFieldValid() {
       return this.errors.every((error) => error.field !== 'approvers_ids');
@@ -185,7 +200,7 @@ export default {
         <div class="gl-mb-3 gl-ml-5 gl-flex gl-items-center">
           <gl-sprintf :message="humanizedTemplate">
             <template #require="{ content }">
-              <strong>{{ content }}</strong>
+              <strong class="gl-mr-3">{{ content }}</strong>
             </template>
 
             <template #approvalsRequired>
@@ -194,7 +209,7 @@ export default {
                 :value="approvalsRequired"
                 data-testid="approvals-required-input"
                 type="number"
-                class="gl-mx-3 !gl-w-11"
+                class="gl-mr-3 !gl-w-11"
                 :min="1"
                 :max="100"
                 @update="handleUpdateApprovalsRequired"
@@ -205,6 +220,13 @@ export default {
               <strong class="gl-mr-3">{{ content }}</strong>
             </template>
           </gl-sprintf>
+          <template v-if="isWarnType">
+            <gl-icon :id="$options.warnId" name="information-o" variant="info" class="gl-ml-3" />
+            <gl-popover :target="$options.warnId" placement="bottom">
+              <template #title>{{ $options.i18n.WARN_TEMPLATE_HELP_TITLE }}</template>
+              {{ $options.i18n.WARN_TEMPLATE_HELP_DESCRIPTION }}
+            </gl-popover>
+          </template>
         </div>
 
         <approver-selection-wrapper

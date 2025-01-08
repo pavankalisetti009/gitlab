@@ -58,10 +58,11 @@ import {
   BOT_MESSAGE_TYPE,
   PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
+  WARN_TYPE,
 } from './lib';
 
 export default {
-  ACTION_LISTBOX_ITEMS,
+  ACTION_LISTBOX_ITEMS: ACTION_LISTBOX_ITEMS(),
   ADD_RULE_LABEL,
   RULES_LABEL,
   SECURITY_POLICY_ACTIONS,
@@ -241,6 +242,14 @@ export default {
       const botActions = this.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
       return botActions.filter(({ enabled }) => enabled);
     },
+    hasWarnAction() {
+      return (
+        this.glFeatures.securityPolicyApprovalWarnMode &&
+        this.botActions.length === 1 &&
+        this.approversActions.length === 1 &&
+        this.approversActions[0].approvals_required === 0
+      );
+    },
     isProject() {
       return isProject(this.namespaceType);
     },
@@ -337,11 +346,28 @@ export default {
       return BRANCHES_KEY in rule;
     },
     addAction(type) {
-      if (type === REQUIRE_APPROVAL_TYPE) {
-        this.addApproverAction();
-      } else {
-        this.addBotAction();
+      if (
+        (this.hasWarnAction && type !== WARN_TYPE) ||
+        (!this.hasWarnAction && type === WARN_TYPE)
+      ) {
+        this.policy.actions = [];
+        this.updatePolicyApprovers({}, 0);
       }
+
+      switch (type) {
+        case WARN_TYPE:
+          this.addWarnAction();
+          break;
+        case REQUIRE_APPROVAL_TYPE:
+          this.addApproverAction();
+          break;
+        case BOT_MESSAGE_TYPE:
+        default:
+          this.addBotAction();
+          break;
+      }
+
+      this.updateYamlEditorValue(this.policy);
     },
     addApproverAction() {
       const lastApproverActionIndex = this.policy.actions.findLastIndex(
@@ -351,16 +377,26 @@ export default {
       this.policy.actions.splice(nextIndex, 0, buildAction(REQUIRE_APPROVAL_TYPE));
     },
     addBotAction() {
+      const action = buildAction(BOT_MESSAGE_TYPE);
+
       if (this.hasDisabledBotMessageAction) {
-        this.updateBotAction(buildAction(BOT_MESSAGE_TYPE));
+        this.updateBotAction(action);
       } else {
-        this.policy.actions.push(buildAction(BOT_MESSAGE_TYPE));
+        this.policy.actions.push(action);
       }
+    },
+    addWarnAction() {
+      this.policy.actions = buildAction(WARN_TYPE);
     },
     removeApproverAction(index) {
       this.policy.actions?.splice(index, 1);
       this.updateYamlEditorValue(this.policy);
       this.updatePolicyApprovers({}, index);
+    },
+    removeWarnAction() {
+      this.policy.actions = [];
+      this.updateYamlEditorValue(this.policy);
+      this.updatePolicyApprovers({}, 0);
     },
     updateAction(values, index) {
       this.policy.actions.splice(index, 1, values);
@@ -481,15 +517,19 @@ export default {
       );
     },
     shouldDisableActionSelector(filter) {
+      if (filter === WARN_TYPE) {
+        return this.hasWarnAction;
+      }
+
       if (filter === BOT_MESSAGE_TYPE) {
-        return this.botActions.length > 0;
+        return !this.hasWarnAction && this.botActions.length > 0;
       }
 
       const maxApproverActionCount = this.hasMultipleApproversActionsEnabled
         ? MAX_ALLOWED_APPROVER_ACTION_LENGTH
         : 1;
 
-      return this.approversActions.length >= maxApproverActionCount;
+      return !this.hasWarnAction && this.approversActions.length >= maxApproverActionCount;
     },
     customFilterSelectorTooltip(filter) {
       if (filter.value === BOT_MESSAGE_TYPE) {
@@ -574,28 +614,48 @@ export default {
           <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
-        <action-section
-          v-for="(action, index) in approversActions"
-          :key="`${action.id}_${index}`"
-          :data-testid="`action-${index}`"
-          class="gl-mb-4"
-          :action-index="index"
-          :init-action="action"
-          :errors="actionError.action"
-          :existing-approvers="getExistingApprover(index)"
-          @error="handleParsingError"
-          @updateApprovers="updatePolicyApprovers($event, index)"
-          @changed="updateAction($event, index)"
-          @remove="removeApproverAction(index)"
-        />
+        <div v-if="!hasWarnAction">
+          <action-section
+            v-for="(action, index) in approversActions"
+            :key="`${action.id}_${index}`"
+            :data-testid="`action-${index}`"
+            class="gl-mb-4"
+            :action-index="index"
+            :init-action="action"
+            :errors="actionError.action"
+            :existing-approvers="getExistingApprover(index)"
+            @error="handleParsingError"
+            @updateApprovers="updatePolicyApprovers($event, index)"
+            @changed="updateAction($event, index)"
+            @remove="removeApproverAction(index)"
+          />
 
-        <bot-comment-action
-          v-for="action in botActions"
-          :key="action.id"
-          class="gl-mb-4"
-          :init-action="action"
-          @changed="updateBotAction($event)"
-        />
+          <bot-comment-action
+            v-for="action in botActions"
+            :key="action.id"
+            class="gl-mb-4"
+            :init-action="action"
+            @changed="updateBotAction($event)"
+          />
+        </div>
+
+        <div v-else>
+          <action-section
+            v-for="(action, index) in approversActions"
+            :key="`${action.id}_${index}`"
+            :data-testid="`warn-action`"
+            class="gl-mb-4"
+            :action-index="index"
+            :init-action="action"
+            :is-warn-type="true"
+            :errors="actionError.action"
+            :existing-approvers="getExistingApprover(index)"
+            @error="handleParsingError"
+            @updateApprovers="updatePolicyApprovers($event, index)"
+            @changed="updateAction($event, index)"
+            @remove="removeWarnAction"
+          />
+        </div>
 
         <scan-filter-selector
           class="gl-w-full"

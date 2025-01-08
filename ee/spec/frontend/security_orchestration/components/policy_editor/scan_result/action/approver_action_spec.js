@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlAlert, GlFormInput, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlFormInput, GlPopover, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
 import ApproverAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_action.vue';
@@ -79,6 +79,7 @@ describe('ApproverAction', () => {
   const findActionApprover = () => wrapper.findComponent(ApproverSelectionWrapper);
   const findAllApproverSelectionWrapper = () => wrapper.findAllComponents(ApproverSelectionWrapper);
   const findAllAlerts = () => wrapper.findAllComponents(GlAlert);
+  const findPopover = () => wrapper.findComponent(GlPopover);
   const findSectionLayout = () => wrapper.findComponent(SectionLayout);
 
   const emit = async (event, value) => {
@@ -150,6 +151,29 @@ describe('ApproverAction', () => {
 
     it('renders the correct message for the first type added', () => {
       expect(findSectionLayout().text()).toBe('Require  approval from:');
+    });
+
+    it('does not render the popover when the action is not a warn type', () => {
+      expect(findPopover().exists()).toBe(false);
+    });
+  });
+
+  describe('warn action', () => {
+    beforeEach(() => {
+      return createWrapper({ isWarnType: true });
+    });
+
+    it('renders the message', () => {
+      expect(findSectionLayout().text()).toContain(
+        'Generates a bot comment and selected users as the security consultant that developers can reach out for help.',
+      );
+    });
+
+    it('renders the popover', () => {
+      expect(findPopover().exists()).toBe(true);
+      expect(findPopover().text()).toBe(
+        'A consultant will show up in the bot comment and developers should ask them for help if needed.',
+      );
     });
   });
 

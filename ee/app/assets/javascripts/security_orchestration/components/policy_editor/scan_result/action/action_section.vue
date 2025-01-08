@@ -24,6 +24,11 @@ export default {
       type: Object,
       required: true,
     },
+    isWarnType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     existingApprovers: {
       type: Object,
       required: true,
@@ -57,6 +62,7 @@ export default {
         <approver-action
           :action-index="actionIndex"
           :init-action="initAction"
+          :is-warn-type="isWarnType"
           :errors="errors"
           :existing-approvers="existingApprovers"
           @error="$emit('error')"

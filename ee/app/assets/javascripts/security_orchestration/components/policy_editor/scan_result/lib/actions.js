@@ -100,6 +100,16 @@ export const approversOutOfSync = (action, { user = [], group = [] }) => {
   return usersOutOfSync(action, user) || groupsOutOfSync(action, group);
 };
 
+export const WARN_TEMPLATE = s__(
+  'SecurityOrchestration|%{requireStart}Generates a bot comment%{requireEnd} and selected users as the security consultant that developers can reach out for help.',
+);
+
+export const WARN_TEMPLATE_HELP_TITLE = s__('SecurityOrchestration|Who is a consultant?');
+
+export const WARN_TEMPLATE_HELP_DESCRIPTION = s__(
+  'SecurityOrchestration|A consultant will show up in the bot comment and developers should ask them for help if needed.',
+);
+
 export const getDefaultHumanizedTemplate = (numOfApproversRequired) => {
   return n__(
     '%{requireStart}Require%{requireEnd} %{approvalsRequired} %{approvalStart}approval%{approvalEnd} from:',
@@ -114,27 +124,50 @@ export const REQUIRE_APPROVAL_TYPE = 'require_approval';
 
 export const BOT_MESSAGE_TYPE = 'send_bot_message';
 
-export const buildApprovalAction = () => {
-  return { type: REQUIRE_APPROVAL_TYPE, approvals_required: 1, id: uniqueId('action_') };
+export const WARN_TYPE = 'warn';
+
+export const buildApprovalAction = (approvalsRequired = 1) => {
+  return {
+    type: REQUIRE_APPROVAL_TYPE,
+    approvals_required: approvalsRequired,
+    id: uniqueId('action_'),
+  };
 };
 
 export const buildBotMessageAction = () => {
   return { type: BOT_MESSAGE_TYPE, enabled: true, id: uniqueId('action_') };
 };
 
-export const buildAction = (type) => {
-  if (type === BOT_MESSAGE_TYPE) {
-    return buildBotMessageAction();
-  }
-
-  return buildApprovalAction();
+export const buildWarnAction = () => {
+  return [buildApprovalAction(0), buildBotMessageAction()];
 };
+
+export const buildAction = (type) => {
+  switch (type) {
+    case REQUIRE_APPROVAL_TYPE:
+      return buildApprovalAction();
+    case WARN_TYPE:
+      return buildWarnAction();
+    case BOT_MESSAGE_TYPE:
+    default:
+      return buildBotMessageAction();
+  }
+};
+
+export const WARN_TYPE_TEXT = s__('SecurityOrchestration|Warn in merge request');
 
 export const ACTION_OPTIONS = {
   [REQUIRE_APPROVAL_TYPE]: s__('SecurityOrchestration|Require Approvers'),
   [BOT_MESSAGE_TYPE]: s__('SecurityOrchestration|Send bot message'),
 };
 
-export const ACTION_LISTBOX_ITEMS = mapToListboxItems(ACTION_OPTIONS);
+export const ACTION_LISTBOX_ITEMS = () => {
+  const options = {
+    ...ACTION_OPTIONS,
+    ...(gon.features?.securityPolicyApprovalWarnMode && { [WARN_TYPE]: WARN_TYPE_TEXT }),
+  };
+
+  return mapToListboxItems(options);
+};
 
 export const DISABLED_BOT_MESSAGE_ACTION = { ...buildAction(BOT_MESSAGE_TYPE), enabled: false };

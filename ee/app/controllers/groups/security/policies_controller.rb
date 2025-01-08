@@ -17,6 +17,7 @@ module Groups
         push_frontend_feature_flag(:security_policy_custom_roles, group)
         push_frontend_feature_flag(:security_policies_split_view, group)
         push_frontend_feature_flag(:security_policies_skip_ci, group)
+        push_frontend_feature_flag(:security_policy_approval_warn_mode, group)
       end
 
       feature_category :security_policy_management

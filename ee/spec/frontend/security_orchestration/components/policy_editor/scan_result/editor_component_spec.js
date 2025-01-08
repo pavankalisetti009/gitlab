@@ -20,6 +20,7 @@ import {
   ACTION_LISTBOX_ITEMS,
   BLOCK_GROUP_BRANCH_MODIFICATION,
   BOT_MESSAGE_TYPE,
+  WARN_TYPE,
   buildApprovalAction,
   buildBotMessageAction,
   DISABLED_BOT_MESSAGE_ACTION,
@@ -43,6 +44,7 @@ import {
   mockDefaultBranchesScanResultObjectWithoutBotAction,
   mockDeprecatedScanResultManifest,
   mockDeprecatedScanResultObject,
+  mockWarnActionScanResultObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
   unsupportedManifest,
@@ -162,6 +164,7 @@ describe('EditorComponent', () => {
   const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
   const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
   const findBotCommentActions = () => wrapper.findAllComponents(BotCommentAction);
+  const findWarnAction = () => wrapper.findByTestId('warn-action');
 
   const verifiesParsingError = () => {
     expect(findPolicyEditorLayout().props('hasParsingError')).toBe(true);
@@ -243,6 +246,57 @@ describe('EditorComponent', () => {
         expect(findAllRuleSections()).toHaveLength(1);
         expect(findAllActionSections()).toHaveLength(1);
         expect(findBotCommentActions()).toHaveLength(1);
+      });
+    });
+
+    describe('warn action', () => {
+      it('does not display the warn action without a warn action', () => {
+        factory();
+        expect(findWarnAction().exists()).toBe(false);
+      });
+
+      it('does not display the warn action with the feature flag off', () => {
+        factoryWithExistingPolicy({ policy: mockWarnActionScanResultObject });
+        expect(findWarnAction().exists()).toBe(false);
+      });
+
+      it('displays the warn action', () => {
+        factoryWithExistingPolicy({
+          provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
+          policy: mockWarnActionScanResultObject,
+        });
+        expect(findWarnAction().exists()).toBe(true);
+      });
+
+      it('updates the policy actions to be empty on removal of warn mode', async () => {
+        factoryWithExistingPolicy({
+          provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
+          policy: mockWarnActionScanResultObject,
+        });
+        await findWarnAction().vm.$emit('remove');
+        expect(findWarnAction().exists()).toBe(false);
+        expect(findAllActionSections()).toHaveLength(0);
+      });
+
+      it('replaces policy actions with a new action when warn mode action is present', async () => {
+        factoryWithExistingPolicy({
+          provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
+          policy: mockWarnActionScanResultObject,
+        });
+        expect(findWarnAction().exists()).toBe(true);
+        await findScanFilterSelector().vm.$emit('select', BOT_MESSAGE_TYPE);
+        expect(findAllActionSections()).toHaveLength(0);
+        expect(findWarnAction().exists()).toBe(false);
+        expect(findBotCommentAction().exists()).toBe(true);
+      });
+
+      it('replaces policy actions with warn mode actions on addition', async () => {
+        await factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
+        expect(findBotCommentAction().exists()).toBe(true);
+        await findScanFilterSelector().vm.$emit('select', WARN_TYPE);
+        expect(findBotCommentAction().exists()).toBe(false);
+        expect(findAllActionSections()).toHaveLength(1);
+        expect(findWarnAction().exists()).toBe(true);
       });
     });
   });
@@ -361,7 +415,7 @@ describe('EditorComponent', () => {
               },
             });
             expect(findAllActionSections()).toHaveLength(0);
-            expect(findScanFilterSelector().props('filters')).toEqual(ACTION_LISTBOX_ITEMS);
+            expect(findScanFilterSelector().props('filters')).toEqual(ACTION_LISTBOX_ITEMS());
           });
 
           it('displays a bot message action section if there is no bot message action in the policy', () => {
