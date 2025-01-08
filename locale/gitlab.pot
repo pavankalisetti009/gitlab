@@ -23216,22 +23216,22 @@ msgstr ""
 msgid "Experiment features' settings not allowed."
 msgstr ""
 
-msgid "ExperimentTracking|Candidate"
-msgstr ""
-
-msgid "ExperimentTracking|Create candidate using MLflow"
+msgid "ExperimentTracking|Create run using MLflow"
 msgstr ""
 
 msgid "ExperimentTracking|Metric value"
 msgstr ""
 
-msgid "ExperimentTracking|No candidates with logged metrics"
+msgid "ExperimentTracking|No runs with logged metrics"
 msgstr ""
 
 msgid "ExperimentTracking|Performance"
 msgstr ""
 
-msgid "ExperimentTracking|Performance graph will be shown when candidates with logged metrics are available"
+msgid "ExperimentTracking|Performance graph will be shown when runs with logged metrics are available"
+msgstr ""
+
+msgid "ExperimentTracking|Run"
 msgstr ""
 
 msgid "Experiments"
@@ -33471,9 +33471,6 @@ msgstr ""
 msgid "MLExperimentTracking|Delete experiment?"
 msgstr ""
 
-msgid "MLOps|Something went wrong while trying to delete the model version. Please try again later."
-msgstr ""
-
 msgid "MRApprovals|Approvals"
 msgstr ""
 
@@ -35518,19 +35515,10 @@ msgstr ""
 msgid "MlExperimentTracking|CI Job"
 msgstr ""
 
-msgid "MlExperimentTracking|Candidate %{id}"
-msgstr ""
-
-msgid "MlExperimentTracking|Candidate removed"
-msgstr ""
-
-msgid "MlExperimentTracking|Candidates"
-msgstr ""
-
 msgid "MlExperimentTracking|Create an experiment using MLflow"
 msgstr ""
 
-msgid "MlExperimentTracking|Create new candidates"
+msgid "MlExperimentTracking|Create new runs"
 msgstr ""
 
 msgid "MlExperimentTracking|Created"
@@ -35548,22 +35536,22 @@ msgstr ""
 msgid "MlExperimentTracking|Creator"
 msgstr ""
 
-msgid "MlExperimentTracking|Delete candidate"
-msgstr ""
-
-msgid "MlExperimentTracking|Delete candidate?"
-msgstr ""
-
 msgid "MlExperimentTracking|Delete experiment"
 msgstr ""
 
-msgid "MlExperimentTracking|Deleting this candidate will delete the associated parameters, metrics, and metadata."
+msgid "MlExperimentTracking|Delete run"
 msgstr ""
 
-msgid "MlExperimentTracking|Deleting this experiment will also delete its candidates and their associated metadata."
+msgid "MlExperimentTracking|Delete run?"
+msgstr ""
+
+msgid "MlExperimentTracking|Deleting this experiment will also delete its runs and their associated metadata."
 msgstr ""
 
 msgid "MlExperimentTracking|Deleting this model also deletes all its versions, including any imported or uploaded artifacts, and their associated settings."
+msgstr ""
+
+msgid "MlExperimentTracking|Deleting this run will delete the associated parameters, metrics, and metadata."
 msgstr ""
 
 msgid "MlExperimentTracking|Details"
@@ -35581,13 +35569,13 @@ msgstr ""
 msgid "MlExperimentTracking|Experiment removed"
 msgstr ""
 
-msgid "MlExperimentTracking|Experiments keep track of comparable model candidates, and determine which parameters provides the best performance."
+msgid "MlExperimentTracking|Experiments keep track of comparable model runs, and determine which parameters provides the best performance."
 msgstr ""
 
 msgid "MlExperimentTracking|Failed to load experiment candidates with error: %{message}"
 msgstr ""
 
-msgid "MlExperimentTracking|Filter candidates"
+msgid "MlExperimentTracking|Filter runs"
 msgstr ""
 
 msgid "MlExperimentTracking|Get started with model experiments!"
@@ -35614,13 +35602,7 @@ msgstr ""
 msgid "MlExperimentTracking|No artifacts"
 msgstr ""
 
-msgid "MlExperimentTracking|No candidates"
-msgstr ""
-
 msgid "MlExperimentTracking|No candidates associated with this experiment"
-msgstr ""
-
-msgid "MlExperimentTracking|No candidates logged for the query. Create new candidates using the MLflow client."
 msgstr ""
 
 msgid "MlExperimentTracking|No logged experiment metadata"
@@ -35629,13 +35611,28 @@ msgstr ""
 msgid "MlExperimentTracking|No name"
 msgstr ""
 
-msgid "MlExperimentTracking|Number of candidates"
+msgid "MlExperimentTracking|No runs"
+msgstr ""
+
+msgid "MlExperimentTracking|No runs logged for the query. Create new runs using the MLflow client."
+msgstr ""
+
+msgid "MlExperimentTracking|Number of runs"
 msgstr ""
 
 msgid "MlExperimentTracking|Overview"
 msgstr ""
 
 msgid "MlExperimentTracking|Performance"
+msgstr ""
+
+msgid "MlExperimentTracking|Run %{id}"
+msgstr ""
+
+msgid "MlExperimentTracking|Run removed"
+msgstr ""
+
+msgid "MlExperimentTracking|Runs"
 msgstr ""
 
 msgid "MlExperimentTracking|To learn more about MLflow client compatibility, see %{linkStart}the documentation%{linkEnd}."
@@ -35701,9 +35698,6 @@ msgstr ""
 msgid "MlModelRegistry|CI Info"
 msgstr ""
 
-msgid "MlModelRegistry|Candidate not linked to a CI build"
-msgstr ""
-
 msgid "MlModelRegistry|Create"
 msgstr ""
 
@@ -35743,7 +35737,7 @@ msgstr ""
 msgid "MlModelRegistry|Creating models is also possible through the MLflow client. %{linkStart}Follow the documentation to learn more.%{linkEnd}"
 msgstr ""
 
-msgid "MlModelRegistry|Creating models, model versions and candidates is also possible using the MLflow client:"
+msgid "MlModelRegistry|Creating models, model versions and runs is also possible using the MLflow client:"
 msgstr ""
 
 msgid "MlModelRegistry|Default experiment"
@@ -35812,7 +35806,7 @@ msgstr ""
 msgid "MlModelRegistry|Failed to delete model with error: %{message}"
 msgstr ""
 
-msgid "MlModelRegistry|Failed to load model candidates with error: %{message}"
+msgid "MlModelRegistry|Failed to load model runs with error: %{message}"
 msgstr ""
 
 msgid "MlModelRegistry|Failed to load model versions with error: %{message}"
@@ -35899,9 +35893,6 @@ msgstr ""
 msgid "MlModelRegistry|New version"
 msgstr ""
 
-msgid "MlModelRegistry|No candidates associated with this model"
-msgstr ""
-
 msgid "MlModelRegistry|No description available. To add a description, click \"Edit model version\" above."
 msgstr ""
 
@@ -35926,6 +35917,9 @@ msgstr ""
 msgid "MlModelRegistry|No registered versions"
 msgstr ""
 
+msgid "MlModelRegistry|No runs associated with this model"
+msgstr ""
+
 msgid "MlModelRegistry|Package creation failed"
 msgstr ""
 
@@ -35944,10 +35938,19 @@ msgstr ""
 msgid "MlModelRegistry|Publisher"
 msgstr ""
 
+msgid "MlModelRegistry|Run not linked to a CI build"
+msgstr ""
+
+msgid "MlModelRegistry|Runs"
+msgstr ""
+
 msgid "MlModelRegistry|Save changes"
 msgstr ""
 
 msgid "MlModelRegistry|Setting up the client"
+msgstr ""
+
+msgid "MlModelRegistry|Something went wrong while trying to delete the model version. Please try again later."
 msgstr ""
 
 msgid "MlModelRegistry|Status"
@@ -35962,7 +35965,7 @@ msgstr ""
 msgid "MlModelRegistry|Subfolder cannot contain spaces"
 msgstr ""
 
-msgid "MlModelRegistry|This model has no candidates"
+msgid "MlModelRegistry|This model has no runs"
 msgstr ""
 
 msgid "MlModelRegistry|Total versions"
@@ -35971,7 +35974,7 @@ msgstr ""
 msgid "MlModelRegistry|Triggered by"
 msgstr ""
 
-msgid "MlModelRegistry|Use candidates to track performance, parameters, and metadata"
+msgid "MlModelRegistry|Use runs to track performance, parameters, and metadata"
 msgstr ""
 
 msgid "MlModelRegistry|Use versions to track performance, parameters, and metadata"
@@ -35984,9 +35987,6 @@ msgid "MlModelRegistry|Using the MLflow client"
 msgstr ""
 
 msgid "MlModelRegistry|Version"
-msgstr ""
-
-msgid "MlModelRegistry|Version candidates"
 msgstr ""
 
 msgid "MlModelRegistry|Version card"
