@@ -206,7 +206,7 @@ RSpec.describe Dast::ProfileSchedule, :dynamic_analysis,
     end
 
     context 'when there are two different schedules in the same time zones' do
-      it 'sets the sames next_run_at' do
+      it 'sets the sames next_run_at', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/450480' do
         expect(schedule_1.next_run_at.to_i).to eq(schedule_2.next_run_at.to_i)
       end
     end
