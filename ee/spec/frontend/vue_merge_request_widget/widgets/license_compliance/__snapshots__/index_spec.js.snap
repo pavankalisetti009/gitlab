@@ -50,11 +50,11 @@ exports[`License Compliance extension expanded data with new licenses displays a
               class="gl-flex gl-items-baseline"
             >
               <div
-                class="gl-mr-3 gl-relative gl-rounded-full mr-widget-status-icon-level-2 mr-widget-status-icon-success"
+                class="gl-mr-3 gl-relative gl-rounded-full"
               >
                 <svg
                   aria-label="Success WidgetLicenseCompliance"
-                  class="gl-fill-current gl-icon gl-relative gl-z-1 s12"
+                  class="gl-fill-current gl-fill-status-success gl-icon gl-relative gl-z-1 s12"
                   data-testid="status-success-icon"
                   role="img"
                 >
@@ -239,11 +239,11 @@ exports[`License Compliance extension expanded data with new licenses displays d
               class="gl-flex gl-items-start"
             >
               <div
-                class="gl-mr-3 gl-relative gl-rounded-full mr-widget-status-icon-failed mr-widget-status-icon-level-2"
+                class="gl-mr-3 gl-relative gl-rounded-full"
               >
                 <svg
                   aria-label="Failed WidgetLicenseCompliance"
-                  class="gl-fill-current gl-icon gl-relative gl-z-1 s12"
+                  class="gl-fill-current gl-fill-status-danger gl-icon gl-relative gl-z-1 s12"
                   data-testid="status-failed-icon"
                   role="img"
                 >
@@ -347,11 +347,11 @@ exports[`License Compliance extension expanded data with new licenses displays u
               class="gl-flex gl-items-baseline"
             >
               <div
-                class="gl-mr-3 gl-relative gl-rounded-full mr-widget-status-icon-level-2 mr-widget-status-icon-notice"
+                class="gl-mr-3 gl-relative gl-rounded-full"
               >
                 <svg
                   aria-label="Notice WidgetLicenseCompliance"
-                  class="gl-fill-current gl-icon gl-relative gl-z-1 s12"
+                  class="gl-fill-current gl-fill-status-neutral gl-icon gl-relative gl-z-1 s12"
                   data-testid="status-notice-icon"
                   role="img"
                 >
