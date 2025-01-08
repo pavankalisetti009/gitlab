@@ -54337,6 +54337,33 @@ msgstr ""
 msgid "Squash commits when merge request is accepted."
 msgstr ""
 
+msgid "Squash commits when merging"
+msgstr ""
+
+msgid "SquashSettings|Allow"
+msgstr ""
+
+msgid "SquashSettings|Checkbox is visible and selected by default."
+msgstr ""
+
+msgid "SquashSettings|Checkbox is visible and unselected by default."
+msgstr ""
+
+msgid "SquashSettings|Do not allow"
+msgstr ""
+
+msgid "SquashSettings|Encourage"
+msgstr ""
+
+msgid "SquashSettings|Require"
+msgstr ""
+
+msgid "SquashSettings|Squashing is always performed. Checkbox is visible and selected, and users cannot change it."
+msgstr ""
+
+msgid "SquashSettings|Squashing is never performed and the checkbox is hidden."
+msgstr ""
+
 msgid "SquashTmIntegration|Secret token (optional)"
 msgstr ""
 
