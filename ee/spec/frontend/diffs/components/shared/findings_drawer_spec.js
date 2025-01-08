@@ -27,7 +27,7 @@ describe('FindingsDrawer', () => {
 
   const createWrapper = ({
     findingDrawerOverrides = {},
-    featureFlags = { vulnerabilityCodeFlow: false, mrVulnerabilityCodeFlow: false },
+    featureFlags = { mrVulnerabilityCodeFlow: false },
     mountFn = mountExtended,
   } = {}) => {
     const propsData = {
@@ -51,7 +51,6 @@ describe('FindingsDrawer', () => {
       propsData,
       provide: {
         glFeatures: {
-          vulnerabilityCodeFlow: featureFlags.vulnerabilityCodeFlow,
           mrVulnerabilityCodeFlow: featureFlags.mrVulnerabilityCodeFlow,
         },
       },
@@ -142,7 +141,7 @@ describe('FindingsDrawer', () => {
     });
   });
 
-  describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are enabled', () => {
+  describe('when `mrVulnerabilityCodeFlow` is enabled', () => {
     describe('when `details` object is not empty', () => {
       beforeEach(() => {
         createWrapper({
@@ -158,7 +157,6 @@ describe('FindingsDrawer', () => {
             },
           },
           featureFlags: {
-            vulnerabilityCodeFlow: true,
             mrVulnerabilityCodeFlow: true,
           },
           mountFn: shallowMountExtended,
@@ -189,7 +187,6 @@ describe('FindingsDrawer', () => {
       beforeEach(() => {
         createWrapper({
           featureFlags: {
-            vulnerabilityCodeFlow: true,
             mrVulnerabilityCodeFlow: true,
           },
         });
@@ -205,7 +202,7 @@ describe('FindingsDrawer', () => {
     });
   });
 
-  describe('when `vulnerabilityCodeFlow` and `mrVulnerabilityCodeFlow` are disabled', () => {
+  describe('when `mrVulnerabilityCodeFlow` is disabled', () => {
     describe('when `details` object is not empty', () => {
       beforeEach(() => {
         createWrapper({
@@ -221,7 +218,6 @@ describe('FindingsDrawer', () => {
             },
           },
           featureFlags: {
-            vulnerabilityCodeFlow: false,
             mrVulnerabilityCodeFlow: false,
           },
         });
@@ -240,7 +236,6 @@ describe('FindingsDrawer', () => {
       beforeEach(() => {
         createWrapper({
           featureFlags: {
-            vulnerabilityCodeFlow: false,
             mrVulnerabilityCodeFlow: false,
           },
         });
