@@ -57,27 +57,29 @@ describe('CountryOrRegionSelector', () => {
         wrapper = createComponent({ trackActionForErrors: '_trackActionForErrors_' });
       });
 
-      it('adds track error class for country selector', () => {
+      it('adds an error tracking class to the country and state selectors', () => {
         expect(findFormInput('country-dropdown').props('selectClass')).toContain('js-track-error');
+        expect(findFormInput('state-dropdown').props('selectClass')).toContain('js-track-error');
       });
     });
   });
 
   describe.each`
-    country | display
-    ${'US'} | ${true}
-    ${'CA'} | ${true}
-    ${'NL'} | ${false}
-  `('Country & State handling', ({ country, display }) => {
+    country | hidden   | required
+    ${'US'} | ${false} | ${'true'}
+    ${'CA'} | ${false} | ${'true'}
+    ${'NL'} | ${true}  | ${undefined}
+  `('Country & State handling', ({ country, hidden, required }) => {
     describe(`when provided country is set to ${country}`, () => {
       beforeEach(() => {
         wrapper = createComponent({ country });
       });
 
-      it(`should${display ? '' : ' not'} render the state`, async () => {
+      it(`should${hidden ? ' not' : ''} render the state`, async () => {
         await nextTick();
 
-        expect(findFormInput('state-dropdown').exists()).toBe(display);
+        expect(findFormInput('state-form-group').classes('gl-hidden')).toBe(hidden);
+        expect(findFormInput('state-dropdown').attributes('required')).toBe(required);
       });
     });
   });

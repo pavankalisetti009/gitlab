@@ -49,7 +49,7 @@ export default {
     stateSelectPrompt: TRIAL_STATE_PROMPT,
   },
   computed: {
-    countryClass() {
+    trackClass() {
       return this.trackActionForErrors ? 'js-track-error' : '';
     },
     countryOptionsWithDefault() {
@@ -126,7 +126,8 @@ export default {
         id="country"
         v-model="selectedCountry"
         name="country"
-        :select-class="countryClass"
+        class="gl-field-error-anchor"
+        :select-class="trackClass"
         :options="countryOptionsWithDefault"
         value-field="id"
         text-field="name"
@@ -137,21 +138,24 @@ export default {
       />
     </gl-form-group>
     <gl-form-group
-      v-if="showState"
+      :class="{ 'gl-hidden': !showState }"
       :label="$options.i18n.stateLabel"
       label-size="sm"
       label-for="state"
+      data-testid="state-form-group"
     >
       <gl-form-select
         id="state"
         v-model="selectedState"
         v-autofocusonshow
         name="state"
+        class="gl-field-error-anchor"
+        :select-class="trackClass"
         :options="stateOptionsWithDefault"
         value-field="id"
         text-field="name"
         data-testid="state-dropdown"
-        :required="required"
+        :required="showState"
         @change="selected"
       />
     </gl-form-group>

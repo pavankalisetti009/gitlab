@@ -106,7 +106,12 @@ export default {
 </script>
 
 <template>
-  <gl-form :action="submitPath" method="post" @submit="trackCompanyForm">
+  <gl-form
+    :action="submitPath"
+    class="gl-show-field-errors"
+    method="post"
+    @submit="trackCompanyForm"
+  >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
     <p data-testid="description" class="gl-mt-2">{{ $options.i18n.description[formType] }}</p>
     <div class="gl-mt-6 gl-flex gl-flex-col sm:gl-flex-row">
@@ -157,6 +162,7 @@ export default {
     <gl-form-group :label="$options.i18n.companySizeLabel" label-size="sm" label-for="company_size">
       <gl-form-select
         id="company_size"
+        class="gl-field-error-anchor"
         :value="companySize"
         name="company_size"
         select-class="js-track-error"
