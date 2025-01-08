@@ -11,6 +11,7 @@ import {
   projectPipelineResultPolicies,
   groupPipelineResultPolicies,
   projectVulnerabilityManagementPolicies,
+  groupVulnerabilityManagementPolicies,
   mockLinkedSppItemsResponse,
 } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { mockScanExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
@@ -27,6 +28,7 @@ import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/quer
 import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
 import projectVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_vulnerability_management_policies.query.graphql';
+import groupVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_vulnerability_management_policies.query.graphql';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { DEFAULT_PROVIDE } from './mocks';
@@ -48,6 +50,9 @@ const groupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies(
 const projectVulnerabilityManagementPoliciesSpy = projectVulnerabilityManagementPolicies(
   mockVulnerabilityManagementPoliciesResponse,
 );
+const groupVulnerabilityManagementPoliciesSpy = groupVulnerabilityManagementPolicies(
+  mockVulnerabilityManagementPoliciesResponse,
+);
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 
 const defaultRequestHandlers = {
@@ -58,6 +63,7 @@ const defaultRequestHandlers = {
   projectPipelineExecutionPolicies: projectPipelineExecutionPoliciesSpy,
   groupPipelineExecutionPolicies: groupPipelineExecutionPoliciesSpy,
   projectVulnerabilityManagementPolicies: projectVulnerabilityManagementPoliciesSpy,
+  groupVulnerabilityManagementPolicies: groupVulnerabilityManagementPoliciesSpy,
   linkedSppItemsResponse: linkedSppItemsResponseSpy,
 };
 
@@ -90,6 +96,10 @@ describe('Policies List', () => {
           projectVulnerabilityManagementPoliciesQuery,
           requestHandlers.projectVulnerabilityManagementPolicies,
         ],
+        [
+          groupVulnerabilityManagementPoliciesQuery,
+          requestHandlers.groupVulnerabilityManagementPolicies,
+        ],
         [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
       ]),
     });
@@ -111,10 +121,12 @@ describe('Policies List', () => {
       expect(requestHandlers.groupScanResultPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.groupScanExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.groupPipelineExecutionPolicies).not.toHaveBeenCalled();
+      expect(requestHandlers.groupVulnerabilityManagementPolicies).not.toHaveBeenCalled();
 
       expect(requestHandlers.projectScanResultPolicies).toHaveBeenCalled();
       expect(requestHandlers.projectScanExecutionPolicies).toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).toHaveBeenCalled();
+      expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
     });
 
     it('fetches vulnerability management policies if feature flag is enabled', () => {
@@ -136,11 +148,22 @@ describe('Policies List', () => {
       expect(requestHandlers.groupScanResultPolicies).toHaveBeenCalled();
       expect(requestHandlers.groupScanExecutionPolicies).toHaveBeenCalled();
       expect(requestHandlers.groupPipelineExecutionPolicies).toHaveBeenCalled();
+      expect(requestHandlers.groupVulnerabilityManagementPolicies).not.toHaveBeenCalled();
 
       expect(requestHandlers.projectScanResultPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectScanExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
+    });
+
+    it('fetches vulnerability management policies if feature flag is enabled', () => {
+      createWrapper({
+        provide: {
+          namespaceType: NAMESPACE_TYPES.GROUP,
+          glFeatures: { vulnerabilityManagementPolicyTypeGroup: true },
+        },
+      });
+      expect(requestHandlers.groupVulnerabilityManagementPolicies).toHaveBeenCalled();
     });
   });
 
