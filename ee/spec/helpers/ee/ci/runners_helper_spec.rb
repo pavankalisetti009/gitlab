@@ -56,7 +56,7 @@ RSpec.describe EE::Ci::RunnersHelper, feature_category: :fleet_visibility do
   shared_examples_for 'minutes notification' do
     let(:show_warning) { true }
     let(:context_level) { project }
-    let(:threshold) { double('Ci::Minutes::Notification', show?: show_warning) }
+    let(:threshold) { double('Ci::Minutes::Notification', show_callout?: show_warning) }
 
     before do
       allow(::Ci::Minutes::Notification).to receive(:new).and_return(threshold)
@@ -93,7 +93,7 @@ RSpec.describe EE::Ci::RunnersHelper, feature_category: :fleet_visibility do
 
           context 'when show_pipeline_minutes_notification_dot? has been called before' do
             it 'does not do all the notification and query work again' do
-              expect(threshold).not_to receive(:show?)
+              expect(threshold).not_to receive(:show_callout?)
               expect(project).to receive(:persisted?).once
 
               helper.show_pipeline_minutes_notification_dot?(project, namespace)
@@ -111,7 +111,7 @@ RSpec.describe EE::Ci::RunnersHelper, feature_category: :fleet_visibility do
 
         context 'when show_pipeline_minutes_notification_dot? has been called before' do
           it 'does not do all the notification and query work again' do
-            expect(threshold).to receive(:show?).once
+            expect(threshold).to receive(:show_callout?).once
             expect(project).to receive(:persisted?).once
 
             helper.show_pipeline_minutes_notification_dot?(project, namespace)

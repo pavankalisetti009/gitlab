@@ -65,7 +65,7 @@ module EE
         strong_memoize(:show_out_of_pipeline_minutes_notification) do
           next unless project&.persisted? || namespace&.persisted?
 
-          ::Ci::Minutes::Notification.new(project, namespace).show?(current_user)
+          ::Ci::Minutes::Notification.new(project, namespace).show_callout?(current_user)
         end
       end
     end
