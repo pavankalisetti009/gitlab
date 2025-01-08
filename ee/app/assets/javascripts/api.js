@@ -4,10 +4,9 @@ import { contentTypeMultipartFormData } from '~/lib/utils/headers';
 
 export default {
   ...Api,
-  // geo_nodes API to be renamed geo_sites API => https://gitlab.com/gitlab-org/gitlab/-/issues/369140
-  geoSitePath: '/api/:version/geo_nodes/:id',
-  geoSitesPath: '/api/:version/geo_nodes',
-  geoSitesStatusPath: '/api/:version/geo_nodes/status',
+  geoSitePath: '/api/:version/geo_sites/:id',
+  geoSitesPath: '/api/:version/geo_sites',
+  geoSitesStatusPath: '/api/:version/geo_sites/status',
   ldapGroupsPath: '/api/:version/ldap/:provider/groups.json',
   subscriptionPath: '/api/:version/namespaces/:id/gitlab_subscription',
   childEpicPath: '/api/:version/groups/:id/epics',
