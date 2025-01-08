@@ -1338,7 +1338,7 @@ RSpec.describe User, feature_category: :system_access do
       let(:expected_where) do
         'WHERE \("users"."state" IN \(\'active\'\)\)
         AND
-        "users"."user_type" IN \(0, 6, 4, 13, 16\)
+        "users"."user_type" IN \(0, 6, 4, 13\)
         AND
         "users"."user_type" IN \(0, 4, 5, 15, 17\)'.squish
       end
@@ -1365,7 +1365,7 @@ RSpec.describe User, feature_category: :system_access do
       let(:expected_where) do
         'WHERE \("users"."state" IN \(\'active\'\)\)
         AND
-        "users"."user_type" IN \(0, 6, 4, 13, 16\)
+        "users"."user_type" IN \(0, 6, 4, 13\)
         AND
         "users"."user_type" IN \(0, 4, 5, 15, 17\)
         AND
