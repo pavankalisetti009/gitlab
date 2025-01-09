@@ -9,6 +9,7 @@ module Search
       include Gitlab::Loggable
 
       DEFAULT_RESERVED_STORAGE_BYTES = 1.gigabyte.freeze
+      DEFAULT_USED_STORAGE_BYTES = 1.kilobyte.freeze
       SEARCHEABLE_STATES = %i[ready].freeze
       SHOULD_BE_DELETED_STATES = %i[orphaned pending_deletion].freeze
       STORAGE_IDEAL_PERCENT_USED = 0.4
@@ -107,8 +108,10 @@ module Search
           Search::Zoekt::Repository.where(zoekt_index_id: zoekt_index.id).each_batch do |repo_batch|
             sum_for_index += repo_batch.sum(:size_bytes)
           end
+          used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
+          next if used_storage_bytes == zoekt_index.used_storage_bytes
 
-          zoekt_index.update!(used_storage_bytes: sum_for_index) if sum_for_index != zoekt_index.used_storage_bytes
+          zoekt_index.update!(used_storage_bytes: used_storage_bytes)
         end
       end
 
@@ -146,15 +149,15 @@ module Search
         reserved_storage_bytes.to_i - used_storage_bytes
       end
 
-      def storage_percent_used
-        used_storage_bytes / reserved_storage_bytes.to_f
-      end
-
       def should_be_deleted?
         SHOULD_BE_DELETED_STATES.include? state.to_sym
       end
 
       private
+
+      def storage_percent_used
+        used_storage_bytes / reserved_storage_bytes.to_f
+      end
 
       def appropriate_watermark_level
         case storage_percent_used
