@@ -65,7 +65,7 @@ export default {
       return this.skipCi ? 'check-circle-filled' : 'check-circle-dashed';
     },
     cssClass() {
-      return this.skipCi ? 'gl-text-green-400' : 'gl-text-gray-400';
+      return this.skipCi ? 'gl-text-success' : 'gl-text-disabled';
     },
     showUserList() {
       return !this.skipCi && this.userIds?.length > 0;

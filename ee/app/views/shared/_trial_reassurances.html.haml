@@ -16,5 +16,5 @@
     %ul.gl-pl-0.gl-mb-6.gl-pl-0.gl-mb-6x.gl-text-default.gl-text-sm
       - ultimate_trial_value_props.each do |value_prop|
         %li.gl-flex.gl-mb-5
-          %span.gl-mr-3.gl-text-green-400= sprite_icon 'check-circle', css_class: 'gl-icon'
+          %span.gl-mr-3= sprite_icon 'check-circle', css_class: 'gl-icon gl-fill-icon-success'
           = value_prop

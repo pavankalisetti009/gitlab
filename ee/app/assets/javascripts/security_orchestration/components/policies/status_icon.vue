@@ -37,7 +37,7 @@ export default {
       return this.enabled ? 'check-circle-filled' : 'check-circle-dashed';
     },
     cssClass() {
-      return this.enabled ? 'gl-text-green-400' : 'gl-text-gray-400';
+      return this.enabled ? 'gl-text-success' : 'gl-text-disabled';
     },
   },
 };
