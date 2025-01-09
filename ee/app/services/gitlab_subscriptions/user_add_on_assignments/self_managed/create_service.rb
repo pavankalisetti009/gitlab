@@ -13,7 +13,7 @@ module GitlabSubscriptions
         def after_success_hook
           super
 
-          send_duo_seat_assignment_email if Feature.enabled?(:duo_seat_assignment_email_for_sm, :instance)
+          send_duo_seat_assignment_email
         end
 
         def eligible_for_gitlab_duo_pro_seat?

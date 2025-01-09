@@ -416,15 +416,6 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
                 bulk_assign
               end.to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).exactly(3).times
             end
-
-            it 'does not call the worker when duo_seat_assignment_email_for_sm flag is off' do
-              stub_feature_flags(duo_seat_assignment_email_for_sm: false)
-
-              expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
-                .not_to receive(:perform_async)
-
-              bulk_assign
-            end
           end
 
           context 'when some users are invalid' do
