@@ -1083,4 +1083,23 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       })
     end
   end
+
+  describe '#pages_deployments_usage_quota_data' do
+    let_it_be(:project) { create(:project) }
+
+    before_all do
+      project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: 100)
+      create(:pages_deployment, project: project, path_prefix: '/foo')
+    end
+
+    it 'returns expected hash' do
+      expect(helper.pages_deployments_usage_quota_data(project)).to match(
+        {
+          full_path: project.full_path,
+          deployments_count: 1,
+          deployments_limit: 100
+        }
+      )
+    end
+  end
 end

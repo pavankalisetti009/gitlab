@@ -778,11 +778,16 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
   describe '#pages_deployments_app_data' do
     let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:project) { create(:project, namespace: group) }
+    let_it_be(:project2) { create(:project, namespace: group) }
 
     before_all do
       project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: 100)
+      project2.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: 100)
+      project.project_setting.update!(pages_unique_domain_enabled: false)
+      project2.project_setting.update!(pages_unique_domain_enabled: true, pages_unique_domain: 'example.com')
       create(:pages_deployment, project: project, path_prefix: '/foo')
+      create(:pages_deployment, project: project2, path_prefix: '/foo')
     end
 
     it 'returns expected hash' do

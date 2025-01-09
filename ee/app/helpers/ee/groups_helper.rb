@@ -196,7 +196,10 @@ module EE
 
       {
         full_path: group.full_path,
-        deployments_count: ::PagesDeployment.count_versioned_deployments_for(group.all_projects, limit),
+        deployments_count: ::PagesDeployment.count_versioned_deployments_for(
+          group.all_projects.with_namespace_domain_pages,
+          limit
+        ),
         deployments_limit: limit
       }
     end

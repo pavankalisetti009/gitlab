@@ -7,12 +7,11 @@ query GetNamespacePagesDeployments(
   $active: Boolean
   $versioned: Boolean
   $sort: Sort
-  $projectIds: [ID!]
 ) {
   namespace(fullPath: $fullPath) {
     id
     name
-    projects(includeSubgroups: true, ids: $projectIds) {
+    projects(withNamespaceDomainPages: true, includeSubgroups: true) {
       nodes {
         id
         name

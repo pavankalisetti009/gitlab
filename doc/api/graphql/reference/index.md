@@ -26113,6 +26113,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupprojectssort"></a>`sort` | [`NamespaceProjectSort`](#namespaceprojectsort) | Sort projects by the criteria. |
 | <a id="groupprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
 | <a id="groupprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
+| <a id="groupprojectswithnamespacedomainpages"></a>`withNamespaceDomainPages` | [`Boolean`](#boolean) | Return only projects that use the namespace domain for pages projects. |
 
 ##### `Group.releases`
 
@@ -30355,6 +30356,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="namespaceprojectssort"></a>`sort` | [`NamespaceProjectSort`](#namespaceprojectsort) | Sort projects by the criteria. |
 | <a id="namespaceprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
 | <a id="namespaceprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
+| <a id="namespaceprojectswithnamespacedomainpages"></a>`withNamespaceDomainPages` | [`Boolean`](#boolean) | Return only projects that use the namespace domain for pages projects. |
 
 ##### `Namespace.remoteDevelopmentClusterAgents`
 
