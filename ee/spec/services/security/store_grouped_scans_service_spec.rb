@@ -147,6 +147,42 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
             expect(Security::StoreScanService).to have_received(:execute).with(artifact_3, empty_set, true).ordered
           end
         end
+
+        context 'with multiple artifacts related to the same job' do
+          using RSpec::Parameterized::TableSyntax
+
+          let_it_be(:user) { create(:user) }
+          let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
+          let_it_be(:build) { create(:ee_ci_build, :success, pipeline: pipeline) }
+          let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: build) }
+          let_it_be(:dependency_scanning_artifact) { create(:ee_ci_job_artifact, :dependency_scanning, job: build) }
+          let_it_be(:affected_package) { create(:pm_affected_package, purl_type: :gem, package_name: 'activesupport', affected_range: "<5.1.5") }
+          let_it_be(:report_type) { :dependency_scanning }
+
+          before do
+            allow(Security::StoreScanService).to receive(:execute).and_call_original
+            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: feature_flag_enabled)
+          end
+
+          where(:input_artifacts, :feature_flag_enabled, :cyclonedx_finding_count, :dependency_scanning_finding_count) do
+            [ref(:cyclonedx_artifact)] | true | 1 | 0
+            [ref(:dependency_scanning_artifact)] | true | 0 | 4
+            [ref(:cyclonedx_artifact), ref(:dependency_scanning_artifact)] | true | 1 | 4
+            [ref(:dependency_scanning_artifact), ref(:cyclonedx_artifact)] | true | 1 | 4
+            [ref(:cyclonedx_artifact)] | false | 1 | 0
+            [ref(:dependency_scanning_artifact)] | false | 0 | 4
+            [ref(:cyclonedx_artifact), ref(:dependency_scanning_artifact)] | false | 0 | 4
+            [ref(:dependency_scanning_artifact), ref(:cyclonedx_artifact)] | false | 0 | 4
+          end
+
+          with_them do
+            let(:artifacts) { input_artifacts }
+
+            it 'creates findings related to the artifacts' do
+              expect { store_scan_group }.to change { Security::Finding.count }.by(cyclonedx_finding_count + dependency_scanning_finding_count)
+            end
+          end
+        end
       end
 
       context 'when the artifacts are sast' do

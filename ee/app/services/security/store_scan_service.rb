@@ -68,10 +68,12 @@ module Security
     end
 
     def store_findings
-      StoreFindingsService.execute(security_scan, vulnerability_scanner, security_report, register_finding_keys).then do |result|
+      StoreFindingsService.execute(security_scan, vulnerability_scanner, security_report, register_finding_keys, multiple_artifacts_allowed?).then do |result|
         # If `StoreFindingsService` returns error, it means the findings
         # have already been stored before so we may re-run the deduplication logic.
-        update_deduplicated_findings if result[:status] == :error && deduplicate_findings?
+        if result[:status] == :error && !multiple_artifacts_allowed? && deduplicate_findings?
+          update_deduplicated_findings
+        end
       end
 
       security_scan.succeeded!
@@ -128,6 +130,12 @@ module Security
       project.vulnerability_scanners.safe_find_or_create_by!(external_id: security_report.primary_scanner.external_id) do |scanner|
         scanner.assign_attributes(security_report.primary_scanner.to_hash)
       end
+    end
+
+    def multiple_artifacts_allowed?
+      return false if ::Feature.disabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, project)
+
+      vulnerability_scanner.vulnerability_scanner?
     end
   end
 end
