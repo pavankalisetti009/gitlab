@@ -3353,7 +3353,7 @@ class Project < ApplicationRecord
   end
 
   def pages_domain_present?(domain_url)
-    pages_url == domain_url || pages_domains.exists?(domain: domain_url)
+    pages_url == domain_url || pages_domains.any? { |domain| domain.url == domain_url }
   end
 
   # overridden in EE
