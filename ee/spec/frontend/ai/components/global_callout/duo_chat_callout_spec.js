@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlPopover, GlButton } from '@gitlab/ui';
+import { GlPopover, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
@@ -7,6 +7,7 @@ import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser
 import DuoChatCallout, {
   DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS,
 } from 'ee/ai/components/global_callout/duo_chat_callout.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 describe('DuoChatCallout', () => {
   let wrapper;
@@ -15,11 +16,14 @@ describe('DuoChatCallout', () => {
   const findCalloutDismisser = () => wrapper.findComponent(UserCalloutDismisser);
   const findPopoverWithinDismisser = () => findCalloutDismisser().findComponent(GlPopover);
   const findLinkWithinDismisser = () => findCalloutDismisser().findComponent(GlButton);
+  const findLearnHowLink = () => wrapper.findComponent(GlLink);
   const findTargetElements = () =>
     document.querySelectorAll(`.${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}`);
   const findFirstTargetElement = () => findTargetElements()[0];
   const findParagraphWithinPopover = () =>
     wrapper.find('[data-testid="duo-chat-callout-description"]');
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = ({ shouldShowCallout = true } = {}) => {
     userCalloutDismissSpy = jest.fn();
@@ -32,6 +36,7 @@ describe('DuoChatCallout', () => {
           dismiss: userCalloutDismissSpy,
           shouldShowCallout,
         }),
+        GlSprintf,
       },
     });
   };
@@ -55,11 +60,13 @@ describe('DuoChatCallout', () => {
     expect(findLinkWithinDismisser().exists()).toBe(true);
   });
 
-  it('renders the correct texts', () => {
-    expect(findPopoverWithinDismisser().text()).toContain('GitLab Duo Chat');
+  it('renders the correct texts and link', () => {
+    expect(findPopoverWithinDismisser().text()).toContain('AI features are now available');
     expect(findPopoverWithinDismisser().text()).toContain(
-      'Use AI to answer questions about things like:',
+      'You can also use Chat in GitLab. Ask questions about:',
     );
+    expect(findLearnHowLink().attributes('href')).toBe('/help/user/gitlab_duo/index');
+    expect(findLearnHowLink().text()).toBe('Learn how');
     expect(findLinkWithinDismisser().text()).toBe('Ask GitLab Duo');
   });
 
@@ -145,6 +152,34 @@ describe('DuoChatCallout', () => {
     it('does not fail if the chat button is clicked after callout was dismissed', () => {
       createComponent({ shouldShowCallout: false });
       expect(() => findFirstTargetElement().click()).not.toThrow();
+    });
+  });
+
+  describe('tracking', () => {
+    it('should track render', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledWith('render_duo_chat_callout', {}, undefined);
+    });
+
+    it('should track click learn how link', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await findLearnHowLink().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_learn_how_link_duo_chat_callout',
+        {},
+        undefined,
+      );
+    });
+
+    it('should track dismiss', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await findLinkWithinDismisser().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith('dismiss_duo_chat_callout', {}, undefined);
     });
   });
 });

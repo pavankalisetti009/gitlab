@@ -1,14 +1,19 @@
 <script>
-import { GlPopover, GlButton } from '@gitlab/ui';
+import { GlPopover, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
+import { InternalEvents } from '~/tracking';
 import DUO_CHAT_ILLUSTRATION from './popover-gradient.svg?url';
 
 export const DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS = 'js-tanuki-bot-chat-toggle';
+const trackingMixin = InternalEvents.mixin();
 
 const i18n = {
-  POPOVER_LABEL: s__('DuoChat|GitLab Duo Chat'),
-  POPOVER_DESCRIPTION: s__('DuoChat|Use AI to answer questions about things like:'),
+  POPOVER_LABEL: s__('DuoChat|AI features are now available'),
+  POPOVER_DESCRIPTION: s__(
+    'DuoChat|%{linkStart}Learn how%{linkEnd} to set up Code Suggestions and Chat in your IDE. You can also use Chat in GitLab. Ask questions about:',
+  ),
   POPOVER_LIST_ITEMS: [
     s__("DuoChat|The issue, epic, merge request, or code you're viewing"),
     s__('DuoChat|How to use GitLab'),
@@ -21,9 +26,11 @@ export default {
   components: {
     GlPopover,
     GlButton,
+    GlSprintf,
+    GlLink,
     UserCalloutDismisser,
   },
-
+  mixins: [trackingMixin],
   beforeMount() {
     const allButtons = Array.from(
       document.querySelectorAll(`.${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}`),
@@ -36,6 +43,7 @@ export default {
   },
   mounted() {
     this.popoverTarget?.addEventListener('click', this.handleButtonClick);
+    this.trackEvent('render_duo_chat_callout');
   },
   beforeDestroy() {
     this.stopListeningToPopover();
@@ -54,6 +62,7 @@ export default {
     dismissCallout(dismissFn) {
       this.stopListeningToPopover();
       dismissFn();
+      this.trackEvent('dismiss_duo_chat_callout');
     },
     notifyAboutDismiss() {
       this.$emit('callout-dismissed');
@@ -65,6 +74,7 @@ export default {
   },
   DUO_CHAT_ILLUSTRATION,
   i18n,
+  learnHowPath: helpPagePath('user/gitlab_duo/index'),
 };
 </script>
 <template>
@@ -89,7 +99,15 @@ export default {
           {{ $options.i18n.POPOVER_LABEL }}
         </h5>
         <p class="gl-m-0 gl-w-7/10" data-testid="duo-chat-callout-description">
-          {{ $options.i18n.POPOVER_DESCRIPTION }}
+          <gl-sprintf :message="$options.i18n.POPOVER_DESCRIPTION">
+            <template #link="{ content }">
+              <gl-link
+                :href="$options.learnHowPath"
+                @click="trackEvent('click_learn_how_link_duo_chat_callout')"
+                >{{ content }}</gl-link
+              >
+            </template>
+          </gl-sprintf>
         </p>
         <ul class="gl-w-3/4 gl-pl-5 gl-pt-3">
           <li v-for="item in $options.i18n.POPOVER_LIST_ITEMS" :key="item">{{ item }}</li>
