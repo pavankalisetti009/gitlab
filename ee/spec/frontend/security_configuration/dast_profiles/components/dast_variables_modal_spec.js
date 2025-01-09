@@ -26,9 +26,9 @@ describe('DastVariablesModal', () => {
   };
 
   const variableMock = {
-    id: 'DAST_CHECKS_TO_EXCLUDE',
-    type: 'string',
-    value: 'yes',
+    id: 'DAST_ACTIVE_SCAN_TIMEOUT',
+    type: 'Duration string',
+    value: '3h',
     description: descriptionMock,
   };
 

@@ -41,9 +41,9 @@ export const mockSharedData = {
 
 export const mockVariables = [
   {
-    name: 'Excluded checks',
-    variable: 'DAST_CHECKS_TO_EXCLUDE',
-    value: '552.2,78.1',
+    name: 'Active scan timeout',
+    variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
+    value: '3h',
   },
   {
     name: 'Clear input fields',

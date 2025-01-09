@@ -79,7 +79,7 @@ export default {
       return filteredVariables.map(([id, { description }]) => ({
         value: id,
         text: id,
-        secondaryText: description.message,
+        secondaryText: description.message || '',
       }));
     },
     componentByType() {
