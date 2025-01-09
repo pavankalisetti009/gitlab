@@ -46,6 +46,7 @@ module EE
         mount ::API::MergeRequestDependencies
         mount ::API::Scim::GroupScim
         mount ::API::Scim::InstanceScim
+        mount ::API::Manage::GroupManage
         mount ::API::ServiceAccounts
         mount ::API::ManagedLicenses
         mount ::API::ProjectApprovals
