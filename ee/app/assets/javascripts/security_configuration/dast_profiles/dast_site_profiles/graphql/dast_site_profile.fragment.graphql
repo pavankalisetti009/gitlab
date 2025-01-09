@@ -20,4 +20,5 @@ fragment DastSiteProfileFragment on DastSiteProfile {
   requestHeaders
   scanMethod
   scanFilePath
+  optionalVariables
 }
