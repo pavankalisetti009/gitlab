@@ -273,6 +273,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     context 'when both work items have a synced epic' do
       let_it_be(:child_epic) { create(:epic, :with_synced_work_item, group: group) }
       let_it_be(:parent_work_item) { parent_epic.work_item }
+      let_it_be(:parent_epic) { parent_work_item.synced_epic }
       let(:child_work_item) { child_epic.work_item }
 
       context 'when synced_work_item param is true' do
@@ -314,6 +315,30 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
             expect(parent_work_item.notes.last.note).to eq("added #{child_work_item.to_reference} as child epic")
             expect(child_work_item.notes.last.note).to eq("added #{parent_work_item.to_reference} as parent epic")
+          end
+
+          context 'when already assigned to an epic' do
+            before do
+              # Using -13 specifically since move_to_start would set -13 and we want not trigger any changes
+              # to the record only from `relative_position` to ensure Notes still get created.
+              create(:parent_link, work_item: child_work_item, work_item_parent: other_epic_work_item,
+                relative_position: -13)
+              child_epic.update!(parent: other_epic_work_item.synced_epic, relative_position: -13)
+            end
+
+            it 'syncs the parent epic, updates the FK and creates notes' do
+              expect { create_link }.to change { child_epic.reload.parent }.to(parent_epic)
+                .and not_change { WorkItems::ParentLink.count }
+                .and change { Note.count }.by(2)
+                .and not_change { parent_epic.own_notes.count }
+                .and not_change { child_epic.own_notes.count }
+
+              expect(child_epic.relative_position).to eq(child_work_item.parent_link.relative_position)
+              expect(child_epic.work_item_parent_link).to eq(child_work_item.parent_link)
+
+              expect(parent_work_item.notes.last.note).to eq("added #{child_work_item.to_reference} as child epic")
+              expect(child_work_item.notes.last.note).to eq("added #{parent_work_item.to_reference} as parent epic")
+            end
           end
 
           it_behaves_like 'link creation with failures' do

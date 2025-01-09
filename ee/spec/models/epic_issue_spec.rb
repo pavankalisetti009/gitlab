@@ -9,6 +9,17 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
   let_it_be(:epic) { create(:epic, group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
 
+  describe 'scopes' do
+    let_it_be(:epic_issue1) { create(:epic_issue, epic: epic, issue: issue) }
+    let_it_be(:epic_issue2) { create(:epic_issue, epic: epic) }
+
+    describe '.for_issue' do
+      it 'only returns epic issues for the given issues' do
+        expect(described_class.for_issue([epic_issue1.issue.id])).to match_array([epic_issue1])
+      end
+    end
+  end
+
   describe "associations" do
     it { is_expected.to belong_to(:work_item) }
 

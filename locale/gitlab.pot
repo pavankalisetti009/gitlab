@@ -66407,7 +66407,7 @@ msgstr ""
 msgid "cannot assign a linked work item as a parent"
 msgstr ""
 
-msgid "cannot assign a non-confidential work item to a confidential parent. Make the work item confidential and try again."
+msgid "cannot assign a non-confidential %{work_item_type} to a confidential parent. Make the %{work_item_type} confidential and try again."
 msgstr ""
 
 msgid "cannot be a date in the past"
