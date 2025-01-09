@@ -61496,6 +61496,9 @@ msgstr ""
 msgid "UserMapping|Source name"
 msgstr ""
 
+msgid "UserMapping|The file is being processed and you will receive an email when completed."
+msgstr ""
+
 msgid "UserMapping|The invitation could not be accepted."
 msgstr ""
 
@@ -61524,6 +61527,9 @@ msgid "UserMapping|You have rejected the reassignment of contributions from %{st
 msgstr ""
 
 msgid "UserMapping|You might have already accepted or rejected the reassignment, or the assignment might have been canceled."
+msgstr ""
+
+msgid "UserMapping|You must upload a CSV file with a .csv file extension."
 msgstr ""
 
 msgid "UserProfile|%{count} %{file}"
