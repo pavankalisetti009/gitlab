@@ -27,8 +27,15 @@ module GitlabSubscriptions
         user_ids_to_delete = user_ids_with_delete_priority.first(overage_count)
 
         user_ids_to_delete.each_slice(BATCH_SIZE) do |user_ids|
+          deletable_assigned_users = add_on_purchase.assigned_users.by_user(user_ids)
+          count = deletable_assigned_users.count
+          removed_seats_count += count
+
           log_reconcile_user_add_on_assignments_deletion(user_ids)
-          removed_seats_count += add_on_purchase.assigned_users.by_user(user_ids).delete_all
+
+          # rubocop:disable Cop/DestroyAll -- callbacks required
+          deletable_assigned_users.destroy_all
+          # rubocop:enable Cop/DestroyAll
 
           cache_keys = user_ids.map do |user_id|
             format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id)

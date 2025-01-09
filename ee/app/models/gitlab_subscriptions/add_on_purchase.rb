@@ -100,9 +100,15 @@ module GitlabSubscriptions
 
       assigned_users.each_batch(of: batch_size) do |batch|
         ineligible_user_ids = filter_ineligible_assigned_user_ids(batch.pluck_user_ids.to_set)
+        deletable_assigned_users = batch.for_user_ids(ineligible_user_ids)
+        count = deletable_assigned_users.count
+        deleted_assignments_count += count
 
-        log_ineligible_users_add_on_assignments_deletion(ineligible_user_ids) if ineligible_user_ids.present?
-        deleted_assignments_count += batch.for_user_ids(ineligible_user_ids).delete_all
+        log_ineligible_users_add_on_assignments_deletion(ineligible_user_ids) if count > 0
+
+        # rubocop:disable Cop/DestroyAll -- callbacks required
+        deletable_assigned_users.destroy_all
+        # rubocop:enable Cop/DestroyAll
 
         cache_keys = ineligible_user_ids.map do |user_id|
           format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id)
