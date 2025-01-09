@@ -8229,6 +8229,7 @@ CREATE TABLE audit_events_streaming_headers (
     value text NOT NULL,
     active boolean DEFAULT true NOT NULL,
     group_id bigint,
+    CONSTRAINT check_3feba4e364 CHECK ((group_id IS NOT NULL)),
     CONSTRAINT check_53c3152034 CHECK ((char_length(key) <= 255)),
     CONSTRAINT check_ac213cca22 CHECK ((char_length(value) <= 255))
 );
