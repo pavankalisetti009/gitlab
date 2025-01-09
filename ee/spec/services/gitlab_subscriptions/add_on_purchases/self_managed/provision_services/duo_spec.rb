@@ -10,7 +10,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     let_it_be(:add_on_duo_pro) { create(:gitlab_subscription_add_on, :code_suggestions) }
     let_it_be(:add_on_duo_enterprise) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
-    let_it_be(:default_organization) { create(:organization, :default) }
+    let_it_be(:organization) { create(:organization) }
 
     let(:quantity_duo_pro) { 0 }
     let(:quantity_duo_enterprise) { 0 }
