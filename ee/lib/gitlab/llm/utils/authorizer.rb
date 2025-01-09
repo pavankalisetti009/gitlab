@@ -61,10 +61,6 @@ module Gitlab
         end
 
         private_class_method def self.no_access_message
-          log_info(message: "No access to Duo Chat",
-            event_name: 'permission_denied',
-            ai_component: 'abstraction_layer',
-            ai_error_code: "M3004")
           s_("AI|I'm sorry, I can't generate a response. You do not have access to GitLab Duo Chat.")
         end
 

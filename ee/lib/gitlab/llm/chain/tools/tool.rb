@@ -40,7 +40,7 @@ module Gitlab
 
           def execute(&block)
             return already_used_answer if already_used?
-            return not_found unless authorize
+            return not_authorized unless authorize
 
             perform(&block)
           rescue ::Gitlab::AiGateway::ForbiddenError => e
@@ -98,6 +98,15 @@ module Gitlab
               "either don't exist, you don't have access to them, or your session has expired."
 
             Answer.error_answer(context: context, content: content, error_code: "M3003")
+          end
+
+          def not_authorized
+            log_info(message: 'No access to Duo Chat',
+              event_name: 'permission_denied',
+              ai_component: 'abstraction_layer',
+              ai_error_code: 'M3004')
+
+            not_found
           end
 
           def error_with_message(content, error_code:, source: "tool")
