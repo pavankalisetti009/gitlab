@@ -3,12 +3,18 @@
 require "spec_helper"
 
 RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
-  let(:group) { build_stubbed(:group, gitlab_subscription: build_stubbed(:gitlab_subscription)) }
+  let(:group) do
+    build_stubbed(
+      :group,
+      gitlab_subscription: build_stubbed(:gitlab_subscription, plan_code: Plan::FREE)
+    )
+  end
+
   let(:project_over_limit) { build_stubbed(:project, namespace: group) }
   let(:project_under_limit) { build_stubbed(:project, namespace: group) }
   let(:user) { build_stubbed(:user) }
-  let(:alert_title) { /You have used \d+% of the purchased storage for #{group.name}/ }
-  let(:alert_title_over_storage_limit) { "You have used all available storage for #{group.name}" }
+  let(:alert_title_default) { "#{group.name} has 1 read-only project" }
+  let(:alert_title_purchased_storage) { /You have used \d+% of the purchased storage for #{group.name}/ }
   let(:alert_title_free_tier) { "You have reached the free storage limit of 10 GiB on 1 project" }
 
   let(:alert_message_below_limit) do
@@ -63,7 +69,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
         end
       end
 
-      it 'renders the alert title' do
+      it 'renders free tier alert title' do
         render_inline(component)
         expect(page).to have_content(alert_title_free_tier)
       end
@@ -71,6 +77,20 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       it 'renders the alert message' do
         render_inline(component)
         expect(page).to have_content(alert_message_above_limit_no_purchased_storage)
+      end
+
+      context 'when group is paid' do
+        let(:group) do
+          build_stubbed(
+            :group,
+            gitlab_subscription: build_stubbed(:gitlab_subscription, plan_code: Plan::ULTIMATE)
+          )
+        end
+
+        it 'renders the default alert title' do
+          render_inline(component)
+          expect(page).to have_content(alert_title_default)
+        end
       end
     end
 
@@ -85,7 +105,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
 
         it 'renders the alert title' do
           render_inline(component)
-          expect(page).to have_content(alert_title)
+          expect(page).to have_content(alert_title_purchased_storage)
         end
 
         it 'renders the alert message' do
@@ -103,7 +123,10 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
 
       context 'and above storage size limit' do
         before do
-          allow(group).to receive(:additional_purchased_storage_size).and_return(1)
+          allow(group).to receive_messages(
+            repository_size_excess_project_count: 1,
+            additional_purchased_storage_size: 1
+          )
           allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
             allow(size_checker).to receive_messages(
               usage_ratio: 1,
@@ -114,13 +137,43 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
 
         it 'renders the alert title' do
           render_inline(component)
-          expect(page).to have_content(alert_title_over_storage_limit)
+          expect(page).to have_content(alert_title_default)
         end
 
         it 'renders the alert message' do
           render_inline(component)
           expect(page).to have_content(alert_message_above_limit_with_purchased_storage)
         end
+      end
+    end
+
+    context 'when group is paid and its approaching limit' do
+      let(:group) do
+        build_stubbed(
+          :group,
+          gitlab_subscription: build_stubbed(:gitlab_subscription, plan_code: Plan::ULTIMATE)
+        )
+      end
+
+      before do
+        allow(group).to receive_messages(
+          actual_size_limit: 500.gigabytes,
+          additional_purchased_storage_size: 100.gigabytes,
+          total_repository_size: 550.gigabytes
+        )
+      end
+
+      it 'renders the alert title' do
+        render_inline(component)
+        expect(page).to have_content("We've noticed an unusually high storage usage on #{group.name}")
+      end
+
+      it 'renders the alert message' do
+        render_inline(component)
+        expect(page).to have_content(
+          "To manage your usage and prevent your projects from being placed in a read-only state, " \
+            "you should immediately reduce storage, or contact support to help you manage your usage."
+        )
       end
     end
 
@@ -195,7 +248,12 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       end
 
       context 'when group is a user namespace' do
-        let(:group) { build_stubbed(:user_namespace, gitlab_subscription: build_stubbed(:gitlab_subscription)) }
+        let(:group) do
+          build_stubbed(
+            :user_namespace,
+            gitlab_subscription: build_stubbed(:gitlab_subscription, plan_code: Plan::FREE)
+          )
+        end
 
         it 'renders the alert' do
           render_inline(component)

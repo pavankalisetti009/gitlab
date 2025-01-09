@@ -36418,6 +36418,11 @@ msgstr ""
 msgid "NamespaceLimits|You must select a namespace and add a reason for excluding it"
 msgstr ""
 
+msgid "NamespaceStorageSize|%{namespace_name} has %{readonly_project_count} read-only project"
+msgid_plural "NamespaceStorageSize|%{namespace_name} has %{readonly_project_count} read-only projects"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "NamespaceStorageSize|%{namespace_name} is now read-only. Your ability to write new data to this namespace is restricted. %{read_only_link_start}Which actions are restricted?%{link_end}"
 msgstr ""
 
@@ -36428,6 +36433,9 @@ msgid "NamespaceStorageSize|If %{namespace_name} exceeds the storage quota, your
 msgstr ""
 
 msgid "NamespaceStorageSize|If a project reaches 100%% of the storage quota (%{free_size_limit}) the project will be in a read-only state, and you won't be able to push to your repository or add large files."
+msgstr ""
+
+msgid "NamespaceStorageSize|To manage your usage and prevent your projects from being placed in a read-only state, you should immediately %{manage_storage_link_start}reduce storage%{link_end}, or %{support_link_start}contact support%{link_end} to help you manage your usage."
 msgstr ""
 
 msgid "NamespaceStorageSize|To prevent your projects from being in a read-only state %{manage_storage_link_start}manage your storage usage%{link_end}, or %{purchase_more_link_start}purchase more storage%{link_end}."
@@ -36451,6 +36459,9 @@ msgstr ""
 msgid "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
 msgstr ""
 
+msgid "NamespaceStorageSize|We've noticed an unusually high storage usage on %{namespace_name}"
+msgstr ""
+
 msgid "NamespaceStorageSize|You have consumed all available storage and you can't push or add large files to projects over the free tier limit (%{free_size_limit})."
 msgstr ""
 
@@ -36466,9 +36477,6 @@ msgid "NamespaceStorageSize|You have used %{usage_in_percent} of the purchased s
 msgstr ""
 
 msgid "NamespaceStorageSize|You have used %{usage_in_percent} of the storage quota for %{namespace_name} (%{used_storage} of %{storage_limit})"
-msgstr ""
-
-msgid "NamespaceStorageSize|You have used all available storage for %{namespace_name}"
 msgstr ""
 
 msgid "NamespaceStorage|%{name_with_link} is now read-only. Projects under this namespace are locked and actions are restricted."
