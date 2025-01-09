@@ -155,7 +155,7 @@ PATH
   specs:
     cloud_profiler_agent (0.0.1.pre)
       google-cloud-profiler-v2 (~> 0.3)
-      google-protobuf (~> 3.13)
+      google-protobuf (~> 3.25)
       googleauth (>= 0.14)
       stackprof (~> 0.2)
 
