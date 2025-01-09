@@ -11372,7 +11372,8 @@ CREATE TABLE dast_site_profile_secret_variables (
     project_id bigint,
     CONSTRAINT check_236213f179 CHECK ((length(encrypted_value) <= 13352)),
     CONSTRAINT check_8cbef204b2 CHECK ((char_length(key) <= 255)),
-    CONSTRAINT check_b49080abbf CHECK ((length(encrypted_value_iv) <= 17))
+    CONSTRAINT check_b49080abbf CHECK ((length(encrypted_value_iv) <= 17)),
+    CONSTRAINT check_d972e5f59d CHECK ((project_id IS NOT NULL))
 );
 
 COMMENT ON TABLE dast_site_profile_secret_variables IS '{"owner":"group::dynamic analysis","description":"Secret variables used in DAST on-demand scans"}';
