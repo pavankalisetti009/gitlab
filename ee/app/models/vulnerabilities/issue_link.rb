@@ -6,6 +6,8 @@ module Vulnerabilities
 
     self.table_name = 'vulnerability_issue_links'
 
+    after_commit :trigger_vulnerability_webhook_event, on: :create
+
     belongs_to :vulnerability
     belongs_to :issue
 
@@ -29,5 +31,11 @@ module Vulnerabilities
     scope :with_associations, -> { preload(:issue, vulnerability: [:project]) }
     scope :with_issues, -> { includes(:issue) }
     scope :by_vulnerability, ->(values) { where(vulnerability_id: values) }
+
+    private
+
+    def trigger_vulnerability_webhook_event
+      vulnerability.trigger_webhook_event
+    end
   end
 end

@@ -54,6 +54,14 @@ RSpec.describe TestHooks::ProjectService, feature_category: :code_testing do
                   url: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-41123'
                 }
               ],
+              issues: [
+                {
+                  title: 'REXML ReDoS vulnerability',
+                  url: "#{project.web_url}/-/issues/1",
+                  created_at: Time.current,
+                  updated_at: Time.current
+                }
+              ],
               report_type: "dependency_scanning",
               confidence: "unknown",
               confidence_overridden: false,
