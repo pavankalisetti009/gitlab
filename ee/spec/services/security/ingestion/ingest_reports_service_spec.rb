@@ -61,8 +61,8 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
     end
 
     it 'marks vulnerabilities as resolved' do
-      expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).once.with(sast_scanner, ids_1)
-      expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).once.with(gemnasium_scanner, [])
+      expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).once.with(pipeline, sast_scanner, ids_1)
+      expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).once.with(pipeline, gemnasium_scanner, [])
       ingest_reports
     end
 

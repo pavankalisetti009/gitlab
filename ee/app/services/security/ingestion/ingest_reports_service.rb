@@ -72,7 +72,7 @@ module Security
 
       def mark_resolved_vulnerabilities
         ingested_ids_by_scanner.each do |scanner, ingested_ids|
-          MarkAsResolvedService.execute(scanner, ingested_ids)
+          MarkAsResolvedService.execute(pipeline, scanner, ingested_ids)
         end
       end
 

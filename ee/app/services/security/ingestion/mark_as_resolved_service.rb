@@ -17,11 +17,12 @@ module Security
       BATCH_SIZE = 1000
       AUTO_RESOLVE_LIMIT = 1000
 
-      def self.execute(scanner, ingested_ids)
-        new(scanner, ingested_ids).execute
+      def self.execute(...)
+        new(...).execute
       end
 
-      def initialize(scanner, ingested_ids)
+      def initialize(pipeline, scanner, ingested_ids)
+        @pipeline = pipeline
         @scanner = scanner
         @ingested_ids = ingested_ids
         @auto_resolved_count = 0
@@ -44,7 +45,7 @@ module Security
       private
 
       attr_accessor :auto_resolved_count
-      attr_reader :ingested_ids, :scanner
+      attr_reader :pipeline, :scanner, :ingested_ids
 
       delegate :project, to: :scanner, private: true
       delegate :vulnerability_reads, to: :project, private: true
@@ -59,12 +60,16 @@ module Security
       def mark_as_no_longer_detected(missing_ids)
         return if missing_ids.blank?
 
-        resolved_count = Vulnerability.id_in(missing_ids)
-          .with_resolution(false)
-          .not_requiring_manual_resolution
-          .update_all(resolved_on_default_branch: true)
+        no_longer_detected_vulnerability_ids = Vulnerability
+                  .id_in(missing_ids)
+                  .with_resolution(false)
+                  .not_requiring_manual_resolution
+                  .pluck_primary_key
 
-        track_no_longer_detected_vulnerabilities(resolved_count)
+        Vulnerability.id_in(no_longer_detected_vulnerability_ids).update_all(resolved_on_default_branch: true)
+
+        CreateVulnerabilityRepresentationInformation.execute(pipeline, no_longer_detected_vulnerability_ids)
+        track_no_longer_detected_vulnerabilities(no_longer_detected_vulnerability_ids.count)
       end
 
       def auto_resolve(missing_ids)
