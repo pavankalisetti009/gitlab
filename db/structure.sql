@@ -19768,7 +19768,8 @@ CREATE TABLE related_epic_links (
     updated_at timestamp with time zone NOT NULL,
     link_type smallint DEFAULT 0 NOT NULL,
     group_id bigint,
-    issue_link_id bigint
+    issue_link_id bigint,
+    CONSTRAINT check_9c7bbef67d CHECK ((group_id IS NOT NULL))
 );
 
 CREATE SEQUENCE related_epic_links_id_seq
