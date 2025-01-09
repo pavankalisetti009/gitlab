@@ -8,7 +8,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, :public, :repository, name: 'awesome project', group: group) }
   let(:fields) { all_graphql_fields_for(Types::Search::Blob::BlobSearchType, max_depth: 4) }
-  let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}" } }
+  let(:arguments) { { search: 'maintainers', group_id: "gid://gitlab/Group/#{group.id}", chunk_count: 3 } }
 
   let(:query) { graphql_query_for(:blobSearch, arguments, fields) }
 
@@ -80,16 +80,39 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       end
     end
 
-    it 'returns the correct fields' do
+    it 'returns the correct fields', :aggregate_failures do
       post_graphql(query, current_user: current_user)
-      expect(graphql_data_at(:blobSearch))
-        .to include('fileCount', 'files', 'matchCount', 'perPage', 'searchLevel', 'searchType')
-      file = graphql_data_at(:blobSearch, :files).find { |f| f['chunks'].any? }
-      expect(file).to include('path', 'fileUrl', 'blameUrl', 'matchCountTotal', 'matchCount', 'chunks', 'projectPath')
-      chunk = file['chunks'].first
-      expect(chunk).to include('lines', 'matchCountInChunk')
-      line = chunk['lines'].first
-      expect(line).to include('lineNumber', 'richText', 'text')
+
+      expect(graphql_data_at(:blobSearch, :fileCount)).to eq(1)
+      expect(graphql_data_at(:blobSearch, :matchCount)).to eq(2)
+      expect(graphql_data_at(:blobSearch, :perPage)).to eq(20)
+      expect(graphql_data_at(:blobSearch, :searchType)).to eq('ZOEKT')
+      expect(graphql_data_at(:blobSearch, :searchLevel)).to eq('GROUP')
+
+      # rubocop:disable Layout/LineLength -- Keep it readable
+      expected_file = {
+        "path" => "PROCESS.md",
+        "fileUrl" => "http://localhost/#{project.full_path}/-/blob/master/PROCESS.md",
+        "blameUrl" => "http://localhost/#{project.full_path}/-/blame/master/PROCESS.md",
+        "matchCountTotal" => 2,
+        "matchCount" => 2,
+        "projectPath" => project.full_path,
+        "language" => "Markdown",
+        "chunks" => [{
+          'matchCountInChunk' => 2,
+          'lines' => [
+            { "highlights" => nil, "lineNumber" => 4, "richText" => "", "text" => "" },
+            { 'highlights' => [[116, 126], [188, 198]],
+              'lineNumber' => 5,
+              'richText' => "<span id=\"LC1\" class=\"line\" lang=\"markdown\">Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from <b>maintainers</b> (possible responses, friendly treatment, etc.). And so that <b>maintainers</b> know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).</span>",
+              'text' => "Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from maintainers (possible responses, friendly treatment, etc.). And so that maintainers know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).\n" },
+            { "highlights" => nil, "lineNumber" => 6, "richText" => "", "text" => "" }
+          ]
+        }]
+      }
+      # rubocop:enable Layout/LineLength
+
+      expect(graphql_data_at(:blobSearch, :files).first).to eq(expected_file)
     end
 
     context 'when project is archived' do
@@ -159,6 +182,18 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
           expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
           expect(graphql_data_at(:blobSearch, :files)).to be_empty
         end
+      end
+    end
+
+    context 'when search term is abusive' do
+      let(:query) { graphql_query_for(:blobSearch, { search: 'not', group_id: "gid://gitlab/Group/#{group.id}" }) }
+
+      it 'returns empty results' do
+        post_graphql(query, current_user: current_user)
+        expect(graphql_data_at(:blobSearch))
+          .to include('fileCount', 'matchCount', 'perPage', 'searchLevel', 'searchType')
+        expect(graphql_data_at(:blobSearch, :fileCount)).to be(0)
+        expect(graphql_data_at(:blobSearch, :matchCount)).to be(0)
       end
     end
   end

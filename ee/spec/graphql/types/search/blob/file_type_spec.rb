@@ -6,7 +6,7 @@ RSpec.describe Types::Search::Blob::FileType, feature_category: :global_search d
   it { expect(described_class.graphql_name).to eq('SearchBlobFileType') }
 
   it 'has all the required fields' do
-    expect(described_class).to have_graphql_fields(:path, :file_url, :blame_url, :match_count_total, :match_count,
-      :chunks, :project_path)
+    expect(described_class).to have_graphql_fields(:blame_url, :chunks, :file_url, :language, :match_count,
+      :match_count_total, :path, :project_path)
   end
 end
