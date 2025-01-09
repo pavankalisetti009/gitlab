@@ -39,6 +39,22 @@ RSpec.describe Issues::CloneService, feature_category: :team_planning do
       end
     end
 
+    # We will use this service in order to clone WorkItem to a new project. As WorkItem inherits from Issue, there
+    # should not be any problem with passing a WorkItem instead of an Issue to this service.
+    # Epics are not supported in legacy `clone` functionality, so Epic Work Item is not supported either.
+    # Adding a test case to cover the Epic Work Item case
+    context "when we pass a work_item" do
+      subject(:clone) do
+        described_class.new(container: group, current_user: user).execute(original_work_item, new_project)
+      end
+
+      context "work item is of epic type" do
+        let(:original_work_item) { create(:work_item, :epic, project: old_project) }
+
+        it { expect { clone }.to raise_error(described_class::CloneError) }
+      end
+    end
+
     context 'epics' do
       context 'issue assigned to epic' do
         let_it_be(:epic) { create(:epic, group: group) }
