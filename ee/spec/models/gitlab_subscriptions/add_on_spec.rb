@@ -17,6 +17,20 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
     it { is_expected.to validate_length_of(:description).is_at_most(512) }
   end
 
+  describe 'scopes' do
+    describe '.duo_add_ons' do
+      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+      subject(:duo_add_ons) { described_class.duo_add_ons }
+
+      it 'only queries the duo add-ons' do
+        expect(duo_add_ons.map(&:id)).to contain_exactly(duo_pro_add_on.id, duo_enterprise_add_on.id)
+      end
+    end
+  end
+
   describe '.descriptions' do
     subject(:descriptions) { described_class.descriptions }
 

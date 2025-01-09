@@ -19,6 +19,8 @@ module GitlabSubscriptions
 
     DUO_ADD_ONS = %i[code_suggestions duo_enterprise].freeze
 
+    scope :duo_add_ons, -> { where(name: DUO_ADD_ONS) }
+
     # Note: If a new enum is added, make sure to update this method to reflect that as well.
     def self.descriptions
       {
