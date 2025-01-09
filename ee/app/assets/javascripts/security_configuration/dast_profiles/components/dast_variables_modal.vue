@@ -9,18 +9,11 @@ import {
   GlFormRadioGroup,
   GlSprintf,
   GlLink,
+  GlButton,
 } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
 import DAST_VARIABLES from '../dast_variables';
-import { booleanOptions } from '../constants';
-
-const getEmptyVariable = () => ({
-  id: null,
-  value: '',
-  type: null,
-  description: '',
-  example: '',
-});
+import { booleanOptions, getEmptyVariable } from '../constants';
 
 export default {
   name: 'DastVariablesModal',
@@ -34,6 +27,7 @@ export default {
     GlFormRadioGroup,
     GlSprintf,
     GlLink,
+    GlButton,
   },
   props: {
     preSelectedVariables: {
@@ -47,15 +41,6 @@ export default {
       default: () => getEmptyVariable(),
     },
   },
-  i18n: {
-    title: s__('DastProfiles|Add DAST variable'),
-    dropdownPlaceholder: s__('DastProfiles|Select a variable'),
-    searchPlaceholder: s__('DastProfiles|Search...'),
-    emptySearchResult: s__('DastProfiles|No variables found'),
-    variableLabel: s__('DastProfiles|Variable'),
-    valueLabel: s__('DastProfiles|Value'),
-    requiredFieldFeedback: s__('DastProfiles|Field must not be blank'),
-  },
   data() {
     return {
       selectedVariable: {
@@ -64,6 +49,7 @@ export default {
       searchTerm: '',
       selectedValueValid: true,
       selectedVariableValid: true,
+      isEdit: false,
     };
   },
   computed: {
@@ -71,34 +57,25 @@ export default {
       if (this.selectedVariable.id) {
         return this.selectedVariable.id;
       }
-      return this.$options.i18n.dropdownPlaceholder;
-    },
-    modalActionPrimary() {
-      return {
-        text: s__('DastProfiles|Add variable'),
-      };
-    },
-    modalActionCancel() {
-      return {
-        text: __('Cancel'),
-        attributes: {
-          variant: 'default',
-        },
-      };
+      return this.i18n.dropdownPlaceholder;
     },
     items() {
-      const preSelectedVariablesNames = this.preSelectedVariables
-        .map((existVariable) => existVariable.variable)
-        .filter(Boolean);
+      let filteredVariables = {};
+      if (this.isEdit) {
+        filteredVariables = Object.entries(DAST_VARIABLES);
+      } else {
+        const preSelectedVariablesNames = this.preSelectedVariables
+          .map((existVariable) => existVariable.variable)
+          .filter(Boolean);
 
-      const searchTermLower = this.searchTerm?.toLowerCase() || '';
+        const searchTermLower = this.searchTerm?.toLowerCase() || '';
 
-      const filteredVariables = Object.entries(DAST_VARIABLES).filter(
-        ([id]) =>
-          (!searchTermLower || id.toLowerCase().includes(searchTermLower)) &&
-          !preSelectedVariablesNames.includes(id),
-      );
-
+        filteredVariables = Object.entries(DAST_VARIABLES).filter(
+          ([id]) =>
+            (!searchTermLower || id.toLowerCase().includes(searchTermLower)) &&
+            !preSelectedVariablesNames.includes(id),
+        );
+      }
       return filteredVariables.map(([id, { description }]) => ({
         value: id,
         text: id,
@@ -115,27 +92,77 @@ export default {
       }
       return null;
     },
+    i18n() {
+      return {
+        title: this.isEdit
+          ? s__('DastProfiles|Edit DAST variable')
+          : s__('DastProfiles|Add DAST variable'),
+        dropdownPlaceholder: s__('DastProfiles|Select a variable'),
+        searchPlaceholder: s__('DastProfiles|Search...'),
+        emptySearchResult: s__('DastProfiles|No variables found'),
+        variableLabel: s__('DastProfiles|Variable'),
+        valueLabel: s__('DastProfiles|Value'),
+        delete: s__('DastProfiles|Delete'),
+        submit: this.isEdit
+          ? s__('DastProfiles|Update variable')
+          : s__('DastProfiles|Add variable'),
+        requiredFieldFeedback: s__('DastProfiles|Field must not be blank'),
+      };
+    },
   },
   methods: {
+    extendSelectedVariable() {
+      const { type, description, example } = DAST_VARIABLES[this.selectedVariable.id] || {};
+      this.selectedVariable.type = type || null;
+      this.selectedVariable.description = description || '';
+      this.selectedVariable.example = example || '';
+    },
     show() {
       this.$refs.modal.show();
     },
-    addVariable(modalEvent) {
+    close() {
+      this.$refs.modal.hide();
+    },
+    onDelete() {
+      const { id, value } = this.selectedVariable;
+      this.$emit('deleteVariable', {
+        variable: id,
+        value,
+      });
+      this.close();
+    },
+    editVariable() {
+      this.isEdit = true;
+      this.selectedVariableValid = true;
+      this.selectedValueValid = true;
+      this.selectedVariable = { ...this.variable };
+      this.extendSelectedVariable();
+      this.show();
+    },
+    createVariable() {
+      this.isEdit = false;
+      this.selectedVariableValid = true;
+      this.selectedValueValid = true;
+      this.extendSelectedVariable();
+      this.show();
+    },
+    addOrUpdateVariable(modalEvent) {
       if (!this.selectedVariable.type) {
         this.selectedVariableValid = false;
         modalEvent.preventDefault();
         return;
       }
-      if (!this.selectedVariable.id || !this.selectedVariable.value) {
+      if (!this.selectedVariable.id || this.selectedVariable.value === '') {
         this.selectedValueValid = false;
         modalEvent.preventDefault();
         return;
       }
       const { id, value } = this.selectedVariable;
-      this.$emit('addVariable', {
+      this.$emit(this.isEdit ? 'updateVariable' : 'addVariable', {
         variable: id,
         value: value.toString(),
       });
+      this.close();
     },
     onSearch(searchTerm) {
       this.searchTerm = searchTerm.trim().toLowerCase();
@@ -145,14 +172,11 @@ export default {
       this.searchTerm = '';
     },
     onSelect(id) {
-      const { type, description, example } = DAST_VARIABLES[id] || {};
       this.selectedVariable.id = id;
       this.selectedVariable.value = '';
-      this.selectedVariable.type = type || null;
-      this.selectedVariable.description = description || '';
-      this.selectedVariable.example = example || '';
       this.selectedValueValid = true;
       this.selectedVariableValid = true;
+      this.extendSelectedVariable();
     },
     checkSelectorType(type) {
       return this.selectedVariable.type === type;
@@ -167,16 +191,14 @@ export default {
     ref="modal"
     size="sm"
     modal-id="dast-variable-modal"
-    :action-primary="modalActionPrimary"
-    :action-cancel="modalActionCancel"
-    :title="$options.i18n.title"
-    @primary="addVariable"
+    :title="i18n.title"
+    @primary="addOrUpdateVariable"
     @hidden="resetModal"
   >
     <gl-form-group
-      :label="$options.i18n.variableLabel"
+      :label="i18n.variableLabel"
       label-for="dast_variable_selector"
-      :invalid-feedback="$options.i18n.requiredFieldFeedback"
+      :invalid-feedback="i18n.requiredFieldFeedback"
       :state="selectedVariableValid"
     >
       <gl-collapsible-listbox
@@ -186,8 +208,9 @@ export default {
         is-check-centered
         :items="items"
         :toggle-text="dropdownText"
-        :search-placeholder="$options.i18n.searchPlaceholder"
-        :no-results-text="$options.i18n.emptySearchResult"
+        :search-placeholder="i18n.searchPlaceholder"
+        :no-results-text="i18n.emptySearchResult"
+        :disabled="isEdit"
         fluid-width
         @search="onSearch"
         @select="onSelect($event)"
@@ -206,9 +229,10 @@ export default {
     </gl-form-group>
     <gl-form-group
       v-if="selectedVariable.type"
-      :label="$options.i18n.valueLabel"
+      :label="i18n.valueLabel"
+      :label-description="selectedVariable.description.message"
       label-for="dast_value_input"
-      :invalid-feedback="$options.i18n.requiredFieldFeedback"
+      :invalid-feedback="i18n.requiredFieldFeedback"
       :state="selectedValueValid"
     >
       <template v-if="selectedVariable.description" #label-description>
@@ -248,5 +272,29 @@ export default {
         no-resize
       />
     </gl-form-group>
+
+    <template #modal-footer>
+      <div :class="{ 'flex-fill gl-flex gl-justify-between': isEdit }">
+        <gl-button
+          v-if="isEdit"
+          category="secondary"
+          variant="danger"
+          data-testid="delete-btn"
+          @click="onDelete"
+        >
+          {{ i18n.delete }}
+        </gl-button>
+        <div>
+          <gl-button data-testid="cancel-btn" @click="close">{{ __('Cancel') }}</gl-button>
+          <gl-button
+            category="primary"
+            variant="confirm"
+            data-testid="submit-btn"
+            @click="addOrUpdateVariable"
+            >{{ i18n.submit }}</gl-button
+          >
+        </div>
+      </div>
+    </template>
   </gl-modal>
 </template>

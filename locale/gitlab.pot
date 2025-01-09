@@ -17956,10 +17956,16 @@ msgstr ""
 msgid "DastProfiles|Debug messages"
 msgstr ""
 
+msgid "DastProfiles|Delete"
+msgstr ""
+
 msgid "DastProfiles|Delete profile"
 msgstr ""
 
 msgid "DastProfiles|Disables clearing of username and password fields before attempting manual login. Set to false by default."
+msgstr ""
+
+msgid "DastProfiles|Edit DAST variable"
 msgstr ""
 
 msgid "DastProfiles|Edit profile"
@@ -18173,6 +18179,9 @@ msgid "DastProfiles|URL"
 msgstr ""
 
 msgid "DastProfiles|URLs to skip during the authenticated scan."
+msgstr ""
+
+msgid "DastProfiles|Update variable"
 msgstr ""
 
 msgid "DastProfiles|Username"

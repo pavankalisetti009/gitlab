@@ -16,12 +16,29 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 describe('DastVariablesModal', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
+  const descriptionLinkMock = {
+    message: 'More details %{linkStart}here%{linkEnd}',
+    path: 'https://example.com',
+  };
+
+  const descriptionMock = {
+    message: 'More details',
+  };
+
+  const variableMock = {
+    id: 'DAST_CHECKS_TO_EXCLUDE',
+    type: 'string',
+    value: 'yes',
+    description: descriptionMock,
+  };
+
+  const createComponent = (props = {}, stubs = {}) => {
     wrapper = shallowMountExtended(DastVariablesModal, {
       propsData: props,
       stubs: {
         GlFormGroup,
         GlSprintf,
+        ...stubs,
       },
     });
   };
@@ -35,6 +52,8 @@ describe('DastVariablesModal', () => {
   const findFormTextArea = () => wrapper.findComponent(GlFormTextarea);
   const findLink = () => wrapper.findComponent(GlLink);
   const findLabelDescription = () => wrapper.findByTestId('label-description');
+  const findDeleteButton = () => wrapper.findByTestId('delete-btn');
+  const findSubmitButton = () => wrapper.findByTestId('submit-btn');
 
   beforeEach(() => {
     createComponent();
@@ -49,38 +68,21 @@ describe('DastVariablesModal', () => {
     expect(findValueInput().exists()).toBe(false);
   });
 
-  it('should display only one form-group when the modal is open', () => {
-    expect(findAllFormsGroups().length).toBe(1);
-  });
-
-  it('emits addVariable event when modal is submitted with valid data', async () => {
-    await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
-    findValueInput().vm.$emit('input', '120');
-    await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
-    expect(wrapper.emitted('addVariable')).toHaveLength(1);
-    expect(wrapper.emitted('addVariable')).toEqual([
-      [
-        {
-          variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
-          value: '120',
-        },
-      ],
-    ]);
-  });
-
-  it('does not emit addVariable event when modal is submitted with invalid `variable` data', async () => {
+  it('does not emit event when modal is submitted with invalid `variable` data', async () => {
     const preventDefault = jest.fn();
     await findModal().vm.$emit('primary', { preventDefault });
     expect(preventDefault).toHaveBeenCalled();
     expect(wrapper.emitted('addVariable')).toBeUndefined();
+    expect(wrapper.emitted('updateVariable')).toBeUndefined();
   });
 
-  it('does not emit addVariable event when modal is submitted with invalid `value` data', async () => {
+  it('does not emit event when modal is submitted with invalid `value` data', async () => {
     const preventDefault = jest.fn();
     await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
     await findModal().vm.$emit('primary', { preventDefault });
     expect(preventDefault).toHaveBeenCalled();
     expect(wrapper.emitted('addVariable')).toBeUndefined();
+    expect(wrapper.emitted('updateVariable')).toBeUndefined();
   });
 
   it('emits resetModal event when modal is closed', async () => {
@@ -96,27 +98,20 @@ describe('DastVariablesModal', () => {
   });
 
   it('renders the description with a link', () => {
-    const description = {
-      message: 'More details %{linkStart}here%{linkEnd}',
-      path: 'https://example.com',
-    };
     createComponent({
-      variable: { id: 'DAST_AUTH_CLEAR_INPUT_FIELDS', type: 'string', description },
+      variable: { ...variableMock, description: descriptionLinkMock },
     });
 
     expect(findAllFormsGroups().at(1).attributes('label')).toBe('Value');
     expect(findLabelDescription().text()).toBe('More details here');
     expect(findLink().exists()).toBe(true);
-    expect(findLink().attributes('href')).toBe(description.path);
+    expect(findLink().attributes('href')).toBe(descriptionLinkMock.path);
     expect(findLink().text()).toBe('here');
   });
 
   it('renders the description without a link', () => {
-    const description = {
-      message: 'More details',
-    };
     createComponent({
-      variable: { id: 'DAST_AUTH_CLEAR_INPUT_FIELDS', type: 'string', description },
+      variable: variableMock,
     });
 
     expect(findAllFormsGroups().at(1).attributes('label')).toBe('Value');
@@ -124,76 +119,12 @@ describe('DastVariablesModal', () => {
     expect(findLink().exists()).toBe(false);
   });
 
-  describe('on create mode', () => {
-    it('displays radio buttons when a boolean variable is selected', async () => {
-      createComponent();
-      await findVariableSelector().vm.$emit('select', 'DAST_AUTH_CLEAR_INPUT_FIELDS');
-      expect(findRadioGroup().exists()).toBe(true);
-    });
-
-    it('displays form input when variable is not boolean or selector (for non-selector type)', async () => {
-      createComponent();
-      await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
-      expect(findValueInput().exists()).toBe(true);
-    });
-
-    it('displays textarea when variable type is selector', async () => {
-      createComponent();
-      await findVariableSelector().vm.$emit('select', 'DAST_AUTH_BEFORE_LOGIN_ACTIONS');
-      expect(findFormTextArea().exists()).toBe(true);
-    });
-
-    it('dont display any form input when type is null', async () => {
-      createComponent();
-      await findVariableSelector().vm.$emit('select', null);
-      expect(findAllFormsGroups().exists()).toBe(true);
-      expect(findAllFormsGroups().length).toBe(1);
-    });
-  });
-
-  describe('on edit mode', () => {
-    it('displays radio buttons when a boolean variable is selected', () => {
-      createComponent({ variable: { type: 'boolean' } });
-      expect(findRadioGroup().exists()).toBe(true);
-      expect(findAllFormRadio().length).toBe(2);
-    });
-
-    it('displays form input when variable is not boolean or selector (for non-selector type)', () => {
-      createComponent({ variable: { type: 'Duration string' } });
-      expect(findValueInput().exists()).toBe(true);
-    });
-
-    it('displays textarea when variable type is selector', () => {
-      createComponent({ variable: { type: 'selector' } });
-      expect(findFormTextArea().exists()).toBe(true);
-    });
-
-    it('does not display any form input when type is null', () => {
-      createComponent({ variable: { type: null } });
-      expect(findAllFormsGroups().exists()).toBe(true);
-      expect(findAllFormsGroups().length).toBe(1);
-    });
-  });
-
-  it('while `preSelectedVariables`, the items array should exclude those values', () => {
-    const preSelectedVariables = [
-      { variable: 'DAST_ACTIVE_SCAN_TIMEOUT', value: 'Duration string' },
-    ];
-    createComponent({
-      preSelectedVariables,
-    });
-    expect(findVariableSelector().props('items')).not.toContain(preSelectedVariables);
-  });
-
   it('displays variable items with secondary text as description.message', () => {
     const preSelectedVariables = [
       {
         variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
         value: 'Duration string',
-        description: {
-          message: 'More details %{linkStart}here%{linkEnd}',
-          path: 'https://example.com',
-        },
+        description: descriptionLinkMock,
       },
     ];
     createComponent({
@@ -202,5 +133,159 @@ describe('DastVariablesModal', () => {
 
     const items = findVariableSelector().props('items');
     expect(items[0].secondaryText).not.toBe('More details here');
+  });
+
+  describe('on create mode', () => {
+    it('should display only one form-group when the modal is open', () => {
+      expect(findAllFormsGroups().length).toBe(1);
+    });
+
+    it('displays radio buttons when a boolean variable is selected', async () => {
+      await findVariableSelector().vm.$emit('select', 'DAST_AUTH_CLEAR_INPUT_FIELDS');
+      expect(findRadioGroup().exists()).toBe(true);
+    });
+
+    it('displays form input when variable is not boolean or selector (for non-selector type)', async () => {
+      await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
+      expect(findValueInput().exists()).toBe(true);
+    });
+
+    it('displays textarea when variable type is selector', async () => {
+      await findVariableSelector().vm.$emit('select', 'DAST_AUTH_BEFORE_LOGIN_ACTIONS');
+      expect(findFormTextArea().exists()).toBe(true);
+    });
+
+    it('does not display any form input when type is null', async () => {
+      await findVariableSelector().vm.$emit('select', null);
+      expect(findAllFormsGroups().exists()).toBe(true);
+      expect(findAllFormsGroups().length).toBe(1);
+    });
+
+    it('emits addVariable event when modal is submitted with valid data', async () => {
+      createComponent(
+        {},
+        {
+          GlModal: {
+            template:
+              '<div><slot name="modal-title"></slot><slot></slot><slot name="modal-footer"></slot></div>',
+            methods: {
+              hide: jest.fn(),
+            },
+          },
+        },
+      );
+      await findVariableSelector().vm.$emit('select', 'DAST_ACTIVE_SCAN_TIMEOUT');
+      await findValueInput().vm.$emit('input', '120');
+      findSubmitButton().vm.$emit('click');
+      expect(wrapper.emitted('updateVariable')).toBeUndefined();
+      expect(wrapper.emitted('addVariable')).toHaveLength(1);
+      expect(wrapper.emitted('addVariable')).toEqual([
+        [
+          {
+            variable: 'DAST_ACTIVE_SCAN_TIMEOUT',
+            value: '120',
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('on edit mode', () => {
+    it('displays the Delete button', async () => {
+      createComponent(
+        {
+          variable: variableMock,
+        },
+        {
+          GlModal: {
+            template: '<div><slot name="modal-footer"></slot></div>',
+            methods: {
+              hide: jest.fn(),
+              show: jest.fn(),
+            },
+          },
+        },
+      );
+      wrapper.vm.editVariable();
+      await findSubmitButton().vm.$emit('click');
+      expect(findDeleteButton().exists()).toBe(true);
+    });
+
+    it('displays radio buttons when a boolean variable is selected', async () => {
+      createComponent({
+        variable: {
+          id: 'DAST_AUTH_CLEAR_INPUT_FIELDS',
+          value: 'true',
+          type: 'boolean',
+          description: descriptionMock,
+        },
+      });
+      await nextTick();
+      expect(findRadioGroup().exists()).toBe(true);
+      expect(findAllFormRadio().length).toBe(2);
+    });
+
+    it('displays form input when variable is not boolean or selector (for non-selector type)', async () => {
+      createComponent({
+        variable: {
+          id: 'DAST_ACTIVE_SCAN_TIMEOUT',
+          value: '3h',
+          type: 'Duration string',
+          description: descriptionMock,
+        },
+      });
+      await nextTick();
+      expect(findValueInput().exists()).toBe(true);
+    });
+
+    it('displays textarea when variable type is selector', async () => {
+      createComponent({
+        variable: {
+          id: 'DAST_AUTH_BEFORE_LOGIN_ACTIONS',
+          value: 'css:.user',
+          type: 'selector',
+          description: descriptionMock,
+        },
+      });
+      await nextTick();
+      expect(findFormTextArea().exists()).toBe(true);
+    });
+
+    it('does not display any form input when type is null', () => {
+      createComponent({ variable: { type: null } });
+      expect(findAllFormsGroups().exists()).toBe(true);
+      expect(findAllFormsGroups().length).toBe(1);
+    });
+
+    it('emits updateVariable event when modal is submitted with valid data', () => {
+      createComponent(
+        {
+          variable: variableMock,
+        },
+        {
+          GlModal: {
+            template: '<div><slot name="modal-footer"></slot></div>',
+            methods: {
+              hide: jest.fn(),
+              show: jest.fn(),
+            },
+          },
+        },
+      );
+      wrapper.vm.editVariable();
+      findSubmitButton().vm.$emit('click');
+      expect(wrapper.emitted('updateVariable')).toHaveLength(1);
+      expect(wrapper.emitted('addVariable')).toBeUndefined();
+    });
+
+    it('while `preSelectedVariables`, the items array should exclude those values', () => {
+      const preSelectedVariables = [
+        { variable: 'DAST_ACTIVE_SCAN_TIMEOUT', value: 'Duration string' },
+      ];
+      createComponent({
+        preSelectedVariables,
+      });
+      expect(findVariableSelector().props('items')).not.toContain(preSelectedVariables);
+    });
   });
 });
