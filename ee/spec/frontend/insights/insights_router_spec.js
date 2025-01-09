@@ -4,16 +4,17 @@ import store from 'ee/insights/stores';
 describe('insights router', () => {
   let router;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     router = createRouter('base');
+    await router.push('/initial');
   });
 
-  it(`sets the activeTab when route changed`, () => {
+  it(`sets the activeTab when route changed`, async () => {
     const route = 'route';
 
     jest.spyOn(store, 'dispatch').mockImplementation(() => {});
 
-    router.push(`/${route}`);
+    await router.push(`/${route}`);
 
     expect(store.dispatch).toHaveBeenCalledWith('insights/setActiveTab', route);
   });
