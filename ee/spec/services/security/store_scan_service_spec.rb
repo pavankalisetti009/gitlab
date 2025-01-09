@@ -188,6 +188,7 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
       describe 'executing `StoreFindingsService`' do
         let_it_be(:project) { artifact.project }
         let_it_be(:security_scanner) { artifact.security_report.primary_scanner }
+        let_it_be(:multiple_artifacts_allowed) { false }
 
         context 'when there is already a vulnerability scanner' do
           let_it_be(:scanner) do
@@ -198,7 +199,53 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
             store_scan
 
             expect(Security::StoreFindingsService).to have_received(:execute).with(
-              an_instance_of(Security::Scan), scanner, artifact.security_report, an_instance_of(Array))
+              an_instance_of(Security::Scan),
+              scanner,
+              artifact.security_report,
+              an_instance_of(Array),
+              multiple_artifacts_allowed)
+          end
+
+          context 'with vulnerability scanner' do
+            let_it_be(:multiple_artifacts_allowed) { true }
+            let_it_be(:scanner_external_id) { Gitlab::VulnerabilityScanning::SecurityScanner::EXTERNAL_ID }
+            let_it_be(:scanner) do
+              create(:vulnerabilities_scanner, project: project, external_id: scanner_external_id)
+            end
+
+            before do
+              allow(artifact.security_report.primary_scanner).to receive(:external_id).and_return(scanner_external_id)
+            end
+
+            it 'calls the `Security::StoreFindingsService` to store findings' do
+              store_scan
+
+              expect(Security::StoreFindingsService).to have_received(:execute).with(
+                an_instance_of(Security::Scan),
+                scanner,
+                artifact.security_report,
+                an_instance_of(Array),
+                multiple_artifacts_allowed)
+            end
+
+            context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
+              let_it_be(:multiple_artifacts_allowed) { false }
+
+              before do
+                stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
+              end
+
+              it 'calls the `Security::StoreFindingsService` to store findings' do
+                store_scan
+
+                expect(Security::StoreFindingsService).to have_received(:execute).with(
+                  an_instance_of(Security::Scan),
+                  scanner,
+                  artifact.security_report,
+                  an_instance_of(Array),
+                  multiple_artifacts_allowed)
+              end
+            end
           end
 
           it 'does not create a new scanner' do
@@ -213,7 +260,11 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
             created_scanner = project.vulnerability_scanners.find_by(external_id: security_scanner.external_id)
 
             expect(Security::StoreFindingsService).to have_received(:execute).with(
-              an_instance_of(Security::Scan), created_scanner, artifact.security_report, an_instance_of(Array))
+              an_instance_of(Security::Scan),
+              created_scanner,
+              artifact.security_report,
+              an_instance_of(Array),
+              multiple_artifacts_allowed)
           end
 
           it 'creates a new scanner' do
