@@ -16799,6 +16799,7 @@ CREATE TABLE packages_debian_project_distribution_keys (
     fingerprint text NOT NULL,
     project_id bigint,
     CONSTRAINT check_9e8a5eef0a CHECK ((char_length(fingerprint) <= 255)),
+    CONSTRAINT check_c2a4dc05d5 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_d188f6547f CHECK ((char_length(public_key) <= 524288))
 );
 
