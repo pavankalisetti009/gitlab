@@ -20,7 +20,7 @@ module RemoteDevelopment
             attributes:
               gl/inject-editor: true
             container:
-              image: "registry.gitlab.com/gitlab-org/gitlab-build-images/workspaces/ubuntu-24.04:golang-1.23@sha256:3bf9ab30623b621b2d09bd3f1eae91996eec6f2264d1f0cb7072141baa0b42a1"
+              image: "registry.gitlab.com/gitlab-org/gitlab-build-images/workspaces/ubuntu-24.04:20250109224147-golang-1.23@sha256:c3d5527641bc0c6f4fbbea4bb36fe225b8e9f1df69f682c927941327312bc676"
       DEVFILE
 
       # ALL REMOTE DEVELOPMENT SETTINGS MUST BE DECLARED HERE.
