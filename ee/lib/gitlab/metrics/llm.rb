@@ -3,6 +3,11 @@
 module Gitlab
   module Metrics
     module Llm
+      include Gitlab::Metrics::SliConfig
+
+      sidekiq_enabled!
+      ee_only!
+
       class << self
         CLIENT_NAMES = {
           'Gitlab::Llm::AiGateway::Client' => :ai_gateway,

@@ -3,6 +3,11 @@
 module Gitlab
   module Metrics
     module GlobalSearchIndexingSlis
+      include Gitlab::Metrics::SliConfig
+
+      sidekiq_enabled!
+      ee_only!
+
       CODE_DOCUMENT_TYPES = %w[Code Wiki].freeze
 
       # Non-Code indexing bytes/second should be above these values

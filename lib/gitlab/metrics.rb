@@ -101,5 +101,14 @@ module Gitlab
 
       retval
     end
+
+    def self.initialize_slis!
+      Gitlab::Metrics::SliConfig.sli_implementations do |klass|
+        next if klass.ee_only? && !Gitlab.ee?
+
+        klass.initialize_slis! if Gitlab::Runtime.puma?
+        klass.initialize_slis! if Gitlab::Runtime.sidekiq?
+      end
+    end
   end
 end
