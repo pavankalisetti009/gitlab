@@ -12,6 +12,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
   let(:agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
+  let(:workflow_definition) { 'software_development' }
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -19,7 +20,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
-    let(:params) { { project_id: project.id, agent_privileges: agent_privileges } }
+    let(:params) do
+      { project_id: project.id, agent_privileges: agent_privileges, workflow_definition: workflow_definition }
+    end
 
     context 'when success' do
       it 'creates the Ai::DuoWorkflows::Workflow' do
@@ -32,6 +35,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         created_workflow = Ai::DuoWorkflows::Workflow.last
 
         expect(created_workflow.agent_privileges).to eq(agent_privileges)
+        expect(created_workflow.workflow_definition).to eq(workflow_definition)
       end
 
       context 'when agent_privileges is not provided' do
@@ -45,6 +49,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(created_workflow.agent_privileges).to match_array(
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
           )
+        end
+      end
+
+      context 'when workflow definition is not provided' do
+        let(:params) { { project_id: project.id } }
+
+        it 'creates a workflow with the default workflow_definition' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.workflow_definition).to eq('software_development')
         end
       end
 

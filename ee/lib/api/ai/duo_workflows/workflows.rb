@@ -63,6 +63,8 @@ module API
               documentation: { example: 'Fix pipeline for merge request 1 in project 1' }
             optional :agent_privileges, type: [Integer], desc: 'The actions the agent is allowed to perform',
               documentation: { example: [1] }
+            optional :workflow_definition, type: String, desc: 'workflow type based on its capability',
+              documentation: { example: 'software_developer' }
           end
         end
 

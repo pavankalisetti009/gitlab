@@ -23627,6 +23627,7 @@ A Duo Workflow.
 | <a id="duoworkflowprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | ID of the project. |
 | <a id="duoworkflowupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the workflow was last updated. |
 | <a id="duoworkflowuserid"></a>`userId` | [`UserID!`](#userid) | ID of the user. |
+| <a id="duoworkflowworkflowdefinition"></a>`workflowDefinition` | [`String`](#string) | Duo Workflow type based on its capabilities. |
 
 ### `DuoWorkflowEnablement`
 
@@ -23664,6 +23665,7 @@ Events that describe the history and progress of a Duo Workflow.
 | <a id="duoworkfloweventmetadata"></a>`metadata` | [`JsonString`](#jsonstring) | Metadata associated with the event. |
 | <a id="duoworkfloweventparenttimestamp"></a>`parentTimestamp` | [`Time`](#time) | Time of the parent event. |
 | <a id="duoworkfloweventtimestamp"></a>`timestamp` | [`Time`](#time) | Time of the event. |
+| <a id="duoworkfloweventworkflowdefinition"></a>`workflowDefinition` | [`String`](#string) | Duo Workflow type based on its capabilities. |
 | <a id="duoworkfloweventworkflowgoal"></a>`workflowGoal` | [`String`](#string) | Goal of the workflow. |
 | <a id="duoworkfloweventworkflowstatus"></a>`workflowStatus` | [`DuoWorkflowStatus`](#duoworkflowstatus) | Status of the workflow. |
 
