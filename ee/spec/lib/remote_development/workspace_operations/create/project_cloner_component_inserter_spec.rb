@@ -22,7 +22,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
     {
       params: {
         project: project,
-        devfile_ref: "master"
+        project_ref: "master"
       },
       processed_devfile: input_processed_devfile,
       volume_mounts: {

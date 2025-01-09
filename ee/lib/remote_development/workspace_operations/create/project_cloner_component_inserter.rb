@@ -19,7 +19,7 @@ module RemoteDevelopment
           data_volume => { path: String => volume_path }
           params => {
             project: project,
-            devfile_ref: String => devfile_ref,
+            project_ref: String => project_ref,
           }
           settings => {
             project_cloner_image: String => image,
@@ -52,7 +52,7 @@ module RemoteDevelopment
               rm -rf "#{Shellwords.shellescape(clone_dir)}";
             fi
             echo "Cloning project";
-            git clone --branch "#{Shellwords.shellescape(devfile_ref)}" "#{Shellwords.shellescape(project_url)}" "#{Shellwords.shellescape(clone_dir)}";
+            git clone --branch "#{Shellwords.shellescape(project_ref)}" "#{Shellwords.shellescape(project_url)}" "#{Shellwords.shellescape(clone_dir)}";
             exit_code=$?
             if [ "${exit_code}" -eq 0 ];
             then

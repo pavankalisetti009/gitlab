@@ -13,7 +13,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:user) { create(:user) }
   let(:group) { create(:group, name: 'test-group', developers: user) }
   let(:random_string) { 'abcdef' }
-  let(:devfile_ref) { 'master' }
+  let(:project_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml' }
   let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
@@ -27,8 +27,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     ]
   end
 
+  let(:default_devfile_yaml) { ::RemoteDevelopment::Settings::DefaultSettings::DEFAULT_DEVFILE_YAML }
+
   let(:project) do
-    files = { devfile_path => devfile_yaml }
+    files = devfile_path.nil? ? {} : { devfile_path => devfile_yaml }
     create(:project, :in_group, :custom_repo, path: 'test-project', files: files, namespace: group)
   end
 
@@ -45,7 +47,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       project: project,
       max_hours_before_termination: 24,
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
-      devfile_ref: devfile_ref,
+      project_ref: project_ref,
       devfile_path: devfile_path,
       variables: variables
     }
@@ -66,7 +68,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:settings) do
     {
       project_cloner_image: 'alpine/git:2.45.2',
-      tools_injector_image: tools_injector_image_from_settings
+      tools_injector_image: tools_injector_image_from_settings,
+      default_devfile_yaml: default_devfile_yaml
     }
   end
 
@@ -89,14 +92,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   context 'when params are valid' do
     before do
       allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
+      allow(SecureRandom).to receive(:alphanumeric) { random_string }
     end
 
     context 'when devfile is valid' do
       let(:expected_workspaces_agent_config_version) { 1 }
-
-      before do
-        allow(SecureRandom).to receive(:alphanumeric) { random_string }
-      end
 
       it 'creates a new workspace and returns success', :aggregate_failures do
         # NOTE: This example is structured and ordered to give useful and informative error messages in case of failures
@@ -155,6 +155,16 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       end
     end
 
+    context 'when devfile_path is nil' do
+      let(:devfile_path) { nil }
+
+      it 'creates a new workspace using default_devfile_yaml from settings' do
+        workspace = response.fetch(:payload).fetch(:workspace)
+
+        expect(workspace.devfile).to eq(default_devfile_yaml)
+      end
+    end
+
     context 'when devfile is not valid', :aggregate_failures do
       let(:devfile_fixture_name) { 'example.invalid-components-entry-missing-devfile.yaml' }
 
@@ -184,8 +194,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(response).to eq({
           status: :error,
           message:
-            "Workspace create devfile load failed: Devfile path '#{devfile_path}' at ref '#{devfile_ref}' " \
-              "does not exist in project repository", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- RubyMine formatting conflict. See https://gitlab.com/gitlab-org/gitlab/-/issues/442626
+            "Workspace create devfile load failed: Devfile path '#{devfile_path}' at ref '#{project_ref}' " \
+              "does not exist in the project repository", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- RubyMine formatting conflict. See https://gitlab.com/gitlab-org/gitlab/-/issues/442626
           reason: :bad_request
         })
       end

@@ -10,6 +10,8 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
     { requested_setting_names: requested_setting_names }
   end
 
+  let(:default_devfile_yaml) { ::RemoteDevelopment::Settings::DefaultSettings::DEFAULT_DEVFILE_YAML }
+
   subject(:returned_value) do
     described_class.init(context)
   end
@@ -24,6 +26,7 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
             :allow_privilege_escalation,
             :annotations,
             :default_branch_name,
+            :default_devfile_yaml,
             :default_max_hours_before_termination,
             :default_resources_per_workspace_container,
             :default_runtime_class,
@@ -48,6 +51,7 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           allow_privilege_escalation: false,
           annotations: {},
           default_branch_name: nil,
+          default_devfile_yaml: default_devfile_yaml,
           default_max_hours_before_termination: 24,
           default_resources_per_workspace_container: {},
           default_runtime_class: "",
@@ -75,6 +79,7 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           allow_privilege_escalation: :Boolean,
           annotations: Hash,
           default_branch_name: String,
+          default_devfile_yaml: String,
           default_max_hours_before_termination: Integer,
           default_resources_per_workspace_container: Hash,
           default_runtime_class: String,

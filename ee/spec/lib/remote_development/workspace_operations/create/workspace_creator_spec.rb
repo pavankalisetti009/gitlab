@@ -25,7 +25,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
       project: project,
       max_hours_before_termination: 24,
       desired_state: desired_state,
-      devfile_ref: 'main',
+      project_ref: 'main',
       devfile_path: devfile_path
     }
   end

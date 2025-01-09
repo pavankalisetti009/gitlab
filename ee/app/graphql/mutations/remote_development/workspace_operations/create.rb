@@ -43,15 +43,23 @@ module Mutations
           required: true,
           description: 'ID of the project that will provide the Devfile for the created workspace.'
 
+        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/510078 - Remove in 19.0
         argument :devfile_ref,
           GraphQL::Types::String,
-          required: true,
-          description: 'Project repo git ref containing the devfile used to configure the workspace.'
+          required: false,
+          description: 'Project repo git ref containing the devfile used to configure the workspace.',
+          deprecated: { reason: 'Argument is renamed to project_ref', milestone: '17.8' }
+
+        argument :project_ref,
+          GraphQL::Types::String,
+          required: false,
+          description: 'Project repo git ref.'
 
         argument :devfile_path,
           GraphQL::Types::String,
-          required: true,
-          description: 'Project repo git path containing the devfile used to configure the workspace.'
+          required: false,
+          description: 'Project path containing the devfile used to configure the workspace. ' \
+            'If not provided, the GitLab default devfile is used.'
 
         argument :variables, [::Types::RemoteDevelopment::WorkspaceVariableInput],
           required: false,
@@ -69,6 +77,18 @@ module Mutations
           project = authorized_find!(id: project_id)
 
           cluster_agent_id = args.delete(:cluster_agent_id)
+
+          # Ensure that at least one of 'devfile_ref' or 'project_ref' is provided,
+          # raising an error if neither is present.
+          unless args[:devfile_ref] || args[:project_ref]
+            raise ::Gitlab::Graphql::Errors::ArgumentError,
+              "Either 'project_ref' or deprecated 'devfile_ref' must be provided."
+          end
+
+          # Remove 'devfile_ref' from the arguments.
+          # If 'project_ref' is not specified, assign 'devfile_ref' to 'project_ref' for backward compatibility.
+          devfile_ref = args.delete(:devfile_ref)
+          args[:project_ref] = devfile_ref if args[:project_ref].nil?
 
           # NOTE: What the following line actually does - the agent is delegating to the project to check that the user
           # has the :create_workspace ability on the _agent's_ project, which will be true if the user is a developer

@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['Workspace'], feature_category: :workspaces do
       id cluster_agent project_id user name namespace max_hours_before_termination
       desired_state desired_state_updated_at actual_state responded_to_agent_at
       url editor devfile_ref devfile_path devfile_web_url devfile processed_devfile
-      deployment_resource_version desired_config_generator_version
+      project_ref deployment_resource_version desired_config_generator_version
       workspaces_agent_config_version force_include_all_resources created_at updated_at
     ]
   end

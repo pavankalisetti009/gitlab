@@ -28,8 +28,8 @@ module RemoteDevelopment
           params => {
             desired_state: String => desired_state,
             max_hours_before_termination: Integer => max_hours_before_termination,
-            devfile_ref: String => devfile_ref,
-            devfile_path: String => devfile_path,
+            project_ref: String => project_ref,
+            devfile_path: String | nil => devfile_path,
             agent: Clusters::Agent => agent,
             user: User => user,
             project: Project => project,
@@ -42,7 +42,7 @@ module RemoteDevelopment
           workspace.desired_state = desired_state
           workspace.actual_state = CREATION_REQUESTED
           workspace.max_hours_before_termination = max_hours_before_termination
-          workspace.devfile_ref = devfile_ref
+          workspace.project_ref = project_ref
           workspace.devfile_path = devfile_path
           workspace.devfile = devfile_yaml
           workspace.processed_devfile = YAML.dump(processed_devfile.deep_stringify_keys)

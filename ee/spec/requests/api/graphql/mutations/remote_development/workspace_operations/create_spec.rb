@@ -44,7 +44,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
       max_hours_before_termination: 24,
       cluster_agent_id: agent.to_global_id.to_s,
       project_id: workspace_project.to_global_id.to_s,
-      devfile_ref: 'main',
+      project_ref: 'main',
       devfile_path: '.devfile.yaml',
       variables: [
         { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
@@ -176,12 +176,24 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   end
 
   context 'when required arguments are missing' do
-    let(:mutation_args) { all_mutation_args.except(:desired_state) }
+    context 'when validates against GraphQL not allow null behaviour' do
+      let(:mutation_args) { all_mutation_args.except(:desired_state) }
 
-    it 'returns error about required argument' do
-      post_graphql_mutation(mutation, current_user: user)
+      it 'returns error about required argument' do
+        post_graphql_mutation(mutation, current_user: user)
 
-      expect_graphql_errors_to_include(/provided invalid value for desiredState \(Expected value to not be null\)/)
+        expect_graphql_errors_to_include(/provided invalid value for desiredState \(Expected value to not be null\)/)
+      end
+    end
+
+    context 'when both project_ref and devfile_ref not present' do
+      let(:mutation_args) { all_mutation_args.except(:project_ref, :devfile_ref) }
+
+      it 'returns error about required argument' do
+        post_graphql_mutation(mutation, current_user: user)
+
+        expect_graphql_errors_to_include(/Either 'project_ref' or deprecated 'devfile_ref' must be provided./)
+      end
     end
   end
 
