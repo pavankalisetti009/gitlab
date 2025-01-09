@@ -14,7 +14,7 @@ RSpec.describe MergeRequestDiff, feature_category: :geo_replication do
     stub_external_diffs_setting(enabled: true)
   end
 
-  include_examples 'a replicable model with a separate table for verification state' do
+  include_examples 'a verifiable model with a separate table for verification state' do
     let(:verifiable_model_record) { build(:merge_request_diff, :external, external_diff_store: ::ObjectStorage::Store::LOCAL) }
     let(:unverifiable_model_record) { build(:merge_request_diff) }
   end

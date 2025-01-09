@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe DependencyProxy::Manifest do
   include EE::GeoHelpers
 
-  include_examples 'a replicable model with a separate table for verification state' do
+  include_examples 'a verifiable model with a separate table for verification state' do
     before do
       stub_dependency_proxy_setting(enabled: true)
       stub_dependency_proxy_object_storage

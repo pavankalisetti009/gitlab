@@ -8,7 +8,7 @@ RSpec.describe Upload do
 
   it { is_expected.to have_one(:upload_state).inverse_of(:upload).class_name('Geo::UploadState') }
 
-  include_examples 'a replicable model with a separate table for verification state' do
+  include_examples 'a verifiable model with a separate table for verification state' do
     let(:verifiable_model_record) { build(:upload) }
     let(:unverifiable_model_record) { build(:upload, store: ObjectStorage::Store::REMOTE) }
   end

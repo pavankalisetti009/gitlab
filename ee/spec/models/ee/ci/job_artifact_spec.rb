@@ -8,7 +8,7 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
 
   let_it_be(:job) { create(:ci_build) }
 
-  include_examples 'a replicable model with a separate table for verification state' do
+  include_examples 'a verifiable model with a separate table for verification state' do
     before do
       stub_artifacts_object_storage
     end
