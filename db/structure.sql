@@ -22043,6 +22043,7 @@ CREATE TABLE vulnerability_flags (
     origin text NOT NULL,
     description text NOT NULL,
     project_id bigint,
+    CONSTRAINT check_36177ddefa CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_45e743349f CHECK ((char_length(description) <= 1024)),
     CONSTRAINT check_49c1d00032 CHECK ((char_length(origin) <= 255))
 );
