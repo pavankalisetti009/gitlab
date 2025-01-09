@@ -59,7 +59,7 @@ export default {
       >
         <span class="js-environment-name gl-font-bold"> {{ environment.name }}</span>
       </gl-link>
-      <gl-badge v-if="environment.within_folder">{{ environment.size }}</gl-badge>
+      <gl-badge v-if="environment.within_folder" variant="neutral">{{ environment.size }}</gl-badge>
     </div>
     <gl-icon
       v-if="environment.within_folder"

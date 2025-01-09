@@ -125,7 +125,7 @@ exports[`Environment Header with environments grouped into a folder matches the 
       iconsize="md"
       tag="span"
       target="_self"
-      variant="muted"
+      variant="neutral"
     >
       5
     </gl-badge-stub>
