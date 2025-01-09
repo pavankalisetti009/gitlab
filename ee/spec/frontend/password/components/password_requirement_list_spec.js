@@ -1,5 +1,6 @@
 import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import { GlIcon } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
@@ -8,7 +9,6 @@ import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import {
   RED_TEXT_CLASS,
   GREEN_TEXT_CLASS,
-  HIDDEN_ELEMENT_CLASS,
   INVALID_INPUT_CLASS,
   INVALID_FORM_CLASS,
   I18N,
@@ -34,6 +34,7 @@ describe('Password requirement list component', () => {
 
   const PASSWORD_INPUT_CLASS = 'js-password-complexity-validation';
   const findStatusIcon = (ruleType) => wrapper.findByTestId(`password-${ruleType}-status-icon`);
+  const findGlIcon = (statusIcon) => findStatusIcon(statusIcon).findComponent(GlIcon);
   const findRuleTextsByClass = (colorClassName) =>
     wrapper.findAllByTestId('password-rule-text').filter((c) => c.classes(colorClassName));
   const findPasswordInputElement = () => document.querySelector(`.${PASSWORD_INPUT_CLASS}`);
@@ -133,10 +134,22 @@ describe('Password requirement list component', () => {
       const ruleAndResultTable = ruleTypes.map((ruleType, index) => [ruleType, resultList[index]]);
 
       describe.each(ruleAndResultTable)('match %s %s', (ruleType, result) => {
-        it(`should show checked icon correctly on ${ruleType} line`, async () => {
+        it(`should show icon correctly on ${ruleType} line`, async () => {
           await nextTick();
 
-          expect(findStatusIcon(ruleType).classes(HIDDEN_ELEMENT_CLASS)).toBe(!result);
+          const glIcon = findGlIcon(ruleType);
+
+          expect(glIcon.classes(GREEN_TEXT_CLASS)).toBe(result);
+          expect(glIcon.props('name')).toBe(result ? 'check' : 'status_created_borderless');
+          expect(glIcon.props('size')).toBe(result ? 16 : 12);
+
+          findSubmitButton().dispatchEvent(new Event('click'));
+
+          await nextTick();
+
+          expect(glIcon.classes(RED_TEXT_CLASS)).toBe(!result);
+          expect(glIcon.props('name')).toBe(result ? 'check' : 'close');
+          expect(glIcon.props('size')).toBe(16);
         });
 
         it(`should aria label correctly on ${ruleType} line`, async () => {
@@ -215,8 +228,8 @@ describe('Password requirement list component', () => {
         const errorRules = findRuleTextsByClass(RED_TEXT_CLASS);
 
         expect(errorRules.length).toBe(2);
-        expect(errorRules.at(0).text()).toBe('cannot use common phrases (e.g. "password")');
-        expect(errorRules.at(1).text()).toBe('cannot include your name, username, or email');
+        expect(errorRules.at(0).text()).toBe('Cannot use common phrases (e.g. "password")');
+        expect(errorRules.at(1).text()).toBe('Cannot include your name, username, or email');
         expect(findRuleTextsByClass(GREEN_TEXT_CLASS).length).toBe(0);
         expect(findForm().classList.contains(INVALID_FORM_CLASS)).toBe(true);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(true);
@@ -242,8 +255,8 @@ describe('Password requirement list component', () => {
         const validRules = findRuleTextsByClass(GREEN_TEXT_CLASS);
 
         expect(validRules.length).toBe(2);
-        expect(validRules.at(0).text()).toBe('cannot use common phrases (e.g. "password")');
-        expect(validRules.at(1).text()).toBe('cannot include your name, username, or email');
+        expect(validRules.at(0).text()).toBe('Cannot use common phrases (e.g. "password")');
+        expect(validRules.at(1).text()).toBe('Cannot include your name, username, or email');
         expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(0);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(false);
       });

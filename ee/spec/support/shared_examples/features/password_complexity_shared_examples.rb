@@ -36,13 +36,10 @@ RSpec.shared_examples 'password complexity validations' do
 
       it 'renders only basic rules' do
         basic_rules.each do |rule|
-          expect(page).to have_selector(
-            "[data-testid=\"password-#{rule}-status-icon\"].gl-invisible",
-            visible: false,
-            count: 1
-          )
+          expect(page).to have_selector("[data-testid=\"password-#{rule}-status-icon\"]", count: 1)
         end
 
+        expect(page).to have_selector('[data-testid="status_created_borderless-icon"]', count: basic_rules.size)
         expect(page).to have_selector('[data-testid="password-rule-text"]', count: basic_rules.size)
       end
     end
@@ -59,13 +56,10 @@ RSpec.shared_examples 'password complexity validations' do
 
       it 'shows basic rules and two complexity rules' do
         all_rules.each do |rule|
-          expect(page).to have_selector(
-            "[data-testid=\"password-#{rule}-status-icon\"].gl-invisible",
-            visible: false,
-            count: 1
-          )
+          expect(page).to have_selector("[data-testid=\"password-#{rule}-status-icon\"]", count: 1)
         end
 
+        expect(page).to have_selector('[data-testid="status_created_borderless-icon"]', count: all_rules.size)
         expect(page).to have_selector('[data-testid="password-rule-text"]', count: all_rules.size)
       end
     end
@@ -79,33 +73,40 @@ RSpec.shared_examples 'password complexity validations' do
       end
 
       context 'password does not meet all rules' do
-        let(:password) { 'aA!' }
+        let(:password) { 'aaaAAA!!!' }
         let(:complexity_rules) { [:number] }
 
-        it 'does not show check circle' do
+        it 'does not show check for not matched rules' do
           all_rules.each do |rule|
-            expect(page).to have_selector(
-              "[data-testid=\"password-#{rule}-status-icon\"].gl-invisible",
-              visible: false,
-              count: 1
-            )
+            expect(page).to have_selector("[data-testid=\"password-#{rule}-status-icon\"]", count: 1)
           end
+
+          expect(page).to have_selector(
+            '[data-testid="status_created_borderless-icon"]',
+            count: complexity_rules.size
+          )
         end
       end
 
       context 'when clicking on submit button' do
         context 'when password rules are not fully matched' do
-          let(:password) { 'aA' }
+          let(:password) { 'bbbbBBBB' }
           let(:complexity_rules) { [:number, :symbol] }
 
           it 'highlights not matched rules' do
+            expect(page).to have_selector('[data-testid="close-icon"].gl-text-red-500', count: 0)
             expect(page).to have_selector('[data-testid="password-rule-text"].gl-text-red-500', count: 0)
 
             click_button submit_button_selector
 
             expect(page).to have_selector(
+              '[data-testid="close-icon"].gl-text-red-500',
+              count: complexity_rules.size
+            )
+
+            expect(page).to have_selector(
               '[data-testid="password-rule-text"].gl-text-red-500',
-              count: all_rules.size
+              count: complexity_rules.size
             )
           end
         end
