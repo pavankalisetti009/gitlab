@@ -5,6 +5,11 @@ require 'spec_helper'
 RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
   let(:ai_setting) { Ai::Setting.instance }
   let(:url) { 'http://ai-gateway.example.com:5052' }
+  let(:namespace_ids) { [1, 2, 3] }
+  let(:enablement_type) { 'add_on' }
+  let(:auth_response) do
+    instance_double(Ai::UserAuthorizable::Response, namespace_ids: namespace_ids, enablement_type: enablement_type)
+  end
 
   describe '.url' do
     context 'when ai_gateway_url setting is set' do
@@ -93,7 +98,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
   describe '.headers' do
     let(:user) { build(:user, id: 1) }
     let(:token) { 'instance token' }
-    let(:enabled_by_namespace_ids) { [1, 2] }
     let(:service_name) { :test }
     let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
     let(:agent) { nil }
@@ -105,7 +109,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Global-User-Id' => '123ABC',
         'X-Gitlab-Realm' => 'self-managed',
         'X-Gitlab-Version' => '17.1.0',
-        'X-Gitlab-Duo-Seat-Count' => "50"
+        'X-Gitlab-Duo-Seat-Count' => "50",
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
       }
     end
 
@@ -113,7 +118,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{token}",
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '1,2',
+        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(','),
         'Content-Type' => 'application/json',
         'X-Request-ID' => an_instance_of(String),
         'X-Gitlab-Rails-Send-Start' => an_instance_of(String),
@@ -125,9 +131,9 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
     before do
       allow(service).to receive(:access_token).with(user).and_return(token)
-      allow(user).to receive(:allowed_by_namespace_ids).with(service_name).and_return(enabled_by_namespace_ids)
+      allow(user).to receive(:allowed_to_use).with(service_name).and_return(auth_response)
       allow(::CloudConnector).to(
-        receive(:ai_headers).with(user, namespace_ids: enabled_by_namespace_ids).and_return(cloud_connector_headers)
+        receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
       )
     end
 
@@ -174,7 +180,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
     context 'when there is no user' do
       let(:user) { nil }
-      let(:enabled_by_namespace_ids) { [] }
+      let(:namespace_ids) { [] }
+      let(:enablement_type) { '' }
 
       it { is_expected.to match(expected_headers.merge('X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '')) }
     end
@@ -183,17 +190,15 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
   describe '.public_headers' do
     let(:user) { build(:user, id: 1) }
     let(:service_name) { :test }
-    let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
-    let(:namespace_ids) { [1, 2, 3] }
     let(:enabled_feature_flags) { %w[feature_a feature_b] }
     let(:ai_headers) { { 'X-Gitlab-Duo-Seat-Count' => 1, 'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '' } }
 
-    subject(:public_headers) { described_class.public_headers(user: user, service: service) }
+    subject(:public_headers) { described_class.public_headers(user: user, service_name: service_name) }
 
     before do
-      allow(user).to receive(:allowed_by_namespace_ids)
-        .with(service)
-        .and_return(namespace_ids)
+      allow(user).to receive(:allowed_to_use)
+        .with(service_name)
+        .and_return(auth_response)
 
       allow(described_class).to receive(:enabled_feature_flags)
         .and_return(enabled_feature_flags)
@@ -206,6 +211,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     it 'returns headers with enabled feature flags and AI headers' do
       expected_headers = {
         'X-Gitlab-Duo-Seat-Count' => 1,
+        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
         'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
         'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
       }
@@ -219,6 +225,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       it 'returns headers with empty feature flags string' do
         expected_headers = {
           'X-Gitlab-Duo-Seat-Count' => 1,
+          'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
           'x-gitlab-enabled-feature-flags' => ''
         }
@@ -233,6 +240,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       it 'returns headers with unique feature flags' do
         expected_headers = {
           'X-Gitlab-Duo-Seat-Count' => 1,
+          'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
           'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
         }

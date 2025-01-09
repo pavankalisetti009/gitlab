@@ -11,6 +11,12 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   let(:expected_request_body) { default_body_params }
 
   let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:enablement_type) { 'add_on' }
+  let(:auth_response) do
+    instance_double(Ai::UserAuthorizable::Response,
+      namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
+  end
+
   let(:expected_feature_name) { :duo_chat }
   let(:expected_access_token) { '123' }
   let(:expected_gitlab_realm) { ::CloudConnector::GITLAB_REALM_SELF_MANAGED }
@@ -26,6 +32,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       'X-Gitlab-Authentication-Type' => 'oidc',
       'Authorization' => "Bearer #{expected_access_token}",
       "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
+      'X-Gitlab-Feature-Enablement-Type' => enablement_type,
       'Content-Type' => 'application/json',
       'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
     }
@@ -58,7 +65,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
     service = instance_double(CloudConnector::BaseAvailableServiceData)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_feature_name).and_return(service)
     allow(service).to receive_messages(access_token: expected_access_token, name: expected_feature_name)
-    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
   describe '#search', :with_cloud_connector do

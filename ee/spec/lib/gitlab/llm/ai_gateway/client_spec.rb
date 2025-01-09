@@ -12,6 +12,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
   let(:timeout) { described_class::DEFAULT_TIMEOUT }
   let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :test) }
   let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:enablement_type) { 'add_on' }
+  let(:auth_response) do
+    instance_double(Ai::UserAuthorizable::Response,
+      namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
+  end
+
   let(:expected_access_token) { active_token.token }
   let(:expected_gitlab_realm) { ::CloudConnector::GITLAB_REALM_SELF_MANAGED }
   let(:expected_gitlab_host_name) { Gitlab.config.gitlab.host }
@@ -26,6 +32,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       'X-Gitlab-Authentication-Type' => 'oidc',
       'Authorization' => "Bearer #{expected_access_token}",
       "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
+      'X-Gitlab-Feature-Enablement-Type' => enablement_type,
       'Content-Type' => 'application/json',
       'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
     }
@@ -58,7 +65,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
     allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(service).to receive(:access_token).and_return(expected_access_token)
-    allow(user).to receive(:allowed_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
   subject(:ai_client) { described_class.new(user, service_name: :test, tracking_context: tracking_context) }

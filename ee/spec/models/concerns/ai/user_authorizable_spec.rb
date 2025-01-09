@@ -5,12 +5,20 @@ require 'spec_helper'
 RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
   let_it_be(:user) { create(:user) }
 
-  describe '#allowed_to_use?' do
+  describe '#allowed_to_use' do
     let(:ai_feature) { :my_feature }
     let(:service_name) { ai_feature }
     let(:maturity) { :ga }
     let(:free_access) { true }
+    let(:expected_allowed) { true }
+    let(:expected_namespace_ids) { [] }
+    let(:expected_enablement_type) { nil }
     let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro]) }
+    let(:expected_response) do
+      described_class::Response.new(
+        allowed?: expected_allowed, namespace_ids: expected_namespace_ids, enablement_type: expected_enablement_type)
+    end
+
     let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
     let_it_be(:expired_gitlab_purchase) do
       create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_add_on)
@@ -27,24 +35,31 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       allow(service).to receive(:free_access?).and_return(free_access)
     end
 
-    subject { user.allowed_to_use?(ai_feature) }
+    subject { user.allowed_to_use(ai_feature) }
 
     shared_examples_for 'checking assigned seats' do
       context 'when the service data is missing' do
         let(:service) { CloudConnector::MissingServiceData.new }
+        let(:expected_allowed) { false }
 
-        it { is_expected.to be false }
+        it { is_expected.to eq expected_response }
       end
 
       context 'when the AI feature is missing' do
+        let(:expected_allowed) { false }
+
         before do
           stub_const("Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", {})
         end
 
-        it { is_expected.to be false }
+        it { is_expected.to eq expected_response }
       end
 
       context 'when the user has an active assigned seat' do
+        let(:expected_allowed) { true }
+        let(:expected_namespace_ids) { allowed_by_namespace_ids }
+        let(:expected_enablement_type) { 'add_on' }
+
         before do
           create(
             :gitlab_subscription_user_add_on_assignment,
@@ -53,15 +68,14 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           )
         end
 
-        it { is_expected.to be true }
-
-        it { expect(user.allowed_by_namespace_ids(ai_feature)).to match_array(allowed_by_namespace_ids) }
+        it { is_expected.to eq expected_response }
       end
 
       context "when the user doesn't have an active assigned seat and free access is not available" do
         let(:free_access) { false }
+        let(:expected_allowed) { false }
 
-        it { is_expected.to be false }
+        it { is_expected.to eq expected_response }
 
         context 'when the user has an expired seat' do
           before do
@@ -72,7 +86,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
             )
           end
 
-          it { is_expected.to be false }
+          it { is_expected.to eq expected_response }
         end
       end
     end
@@ -88,7 +102,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
       context "when the user doesn't have a seat but the service has free access" do
         context "when the user doesn't belong to any namespaces with eligible plans" do
-          it { is_expected.to be false }
+          let(:expected_allowed) { false }
+
+          it { is_expected.to eq expected_response }
         end
 
         context "when the user belongs to groups with eligible plans" do
@@ -120,19 +136,27 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           end
 
           shared_examples 'checking available groups' do
-            it { is_expected.to be true }
+            let(:expected_namespace_ids) { [group.id, group_without_experiment_features_enabled.id] }
+            let(:expected_enablement_type) { 'tier' }
+
+            it { is_expected.to eq expected_response }
 
             context 'when the feature is not GA' do
+              let(:expected_namespace_ids) { [group.id] }
               let(:maturity) { :beta }
 
-              it { is_expected.to be true }
+              it { is_expected.to eq expected_response }
 
               context "when none of the user groups have experiment features enabled" do
+                let(:expected_allowed) { false }
+                let(:expected_namespace_ids) { [] }
+                let(:expected_enablement_type) { nil }
+
                 before do
                   group.namespace_settings.update!(experiment_features_enabled: false)
                 end
 
-                it { is_expected.to be false }
+                it { is_expected.to eq expected_response }
               end
             end
           end
@@ -140,24 +164,23 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           it_behaves_like 'checking available groups'
 
           describe 'returning namespace ids that allow using a feature' do
-            it 'returns the relevant namespace ids' do
-              expect(user.allowed_by_namespace_ids(ai_feature))
-                .to match_array([group.id, group_without_experiment_features_enabled.id])
-            end
+            let(:expected_enablement_type) { 'tier' }
+            let(:expected_namespace_ids) { [group.id, group_without_experiment_features_enabled.id] }
+
+            it { is_expected.to eq expected_response }
 
             context 'when the feature is not GA' do
               let(:maturity) { :beta }
+              let(:expected_namespace_ids) { [group.id] }
 
-              it 'returns the relevant namespace ids' do
-                expect(user.allowed_by_namespace_ids(ai_feature)).to match_array([group.id])
-              end
+              it { is_expected.to eq expected_response }
             end
           end
 
           context 'when specifying a service name' do
             let(:service_name) { :my_service }
 
-            subject { user.allowed_to_use?(ai_feature, service_name: service_name) }
+            subject { user.allowed_to_use(ai_feature, service_name: service_name) }
 
             it_behaves_like 'checking available groups'
           end
@@ -180,7 +203,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         shared_examples 'when checking licensed features' do
           let(:licensed_feature) { :ai_features }
 
-          where(:licensed_feature_available, :free_access, :allowed_to_use) do
+          where(:licensed_feature_available, :free_access, :expected_allowed) do
             true  | true  | true
             true  | false | false
             false | true  | false
@@ -191,7 +214,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
               stub_licensed_features(licensed_feature => licensed_feature_available)
             end
 
-            it { is_expected.to be(allowed_to_use) }
+            it { is_expected.to eq expected_response }
           end
         end
 
@@ -204,20 +227,34 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
             stub_licensed_features(ai_features: true)
           end
 
-          subject { user.allowed_to_use?(ai_feature, service_name: service_name) }
+          subject { user.allowed_to_use(ai_feature, service_name: service_name) }
 
-          it { is_expected.to be true }
+          it { is_expected.to eq expected_response }
         end
 
         context 'when specifying a licensed feature name' do
           it_behaves_like 'when checking licensed features' do
             let(:licensed_feature) { :generate_commit_message }
 
-            subject(:allowed_to_use?) { user.allowed_to_use?(ai_feature, licensed_feature: licensed_feature) }
+            subject(:allowed_to_use) { user.allowed_to_use(ai_feature, licensed_feature: licensed_feature) }
           end
         end
       end
     end
+  end
+
+  describe '#allowed_to_use?' do
+    let(:ai_feature) { :my_feature }
+    let(:allowed) { true }
+
+    subject { user.allowed_to_use?(ai_feature) }
+
+    before do
+      allow(user).to receive(:allowed_to_use).with(ai_feature)
+        .and_return(described_class::Response.new(allowed?: allowed))
+    end
+
+    it { is_expected.to eq(allowed) }
   end
 
   describe '#allowed_by_namespace_ids' do

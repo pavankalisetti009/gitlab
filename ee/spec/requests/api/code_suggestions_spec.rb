@@ -17,6 +17,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   end
 
   let(:enabled_by_namespace_ids) { [] }
+  let(:enablement_type) { '' }
   let(:current_user) { nil }
   let(:headers) { {} }
   let(:access_code_suggestions) { true }
@@ -963,6 +964,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
       let(:duo_seat_count) { '0' }
+      let(:enablement_type) { 'add_on' }
 
       let(:base_headers) do
         {
@@ -974,6 +976,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Authentication-Type' => 'oidc',
           'X-Gitlab-Duo-Seat-Count' => duo_seat_count,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
+          "X-Gitlab-Feature-Enablement-Type" => enablement_type,
           'x-gitlab-enabled-feature-flags' => ''
         }
       end
