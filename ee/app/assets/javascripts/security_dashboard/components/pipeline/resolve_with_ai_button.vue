@@ -106,9 +106,6 @@ export default {
         })
         .then(({ data }) => {
           this.createdVulnerabilityId = data.securityFindingCreateVulnerability.vulnerability.id;
-        })
-        .catch((e) => {
-          this.handleError(e);
         });
     },
     resolveVulnerabilityWithAi() {
@@ -142,7 +139,12 @@ export default {
       this.isResolving = true;
       // if there is no vulnerability then kick of the mutation to create one
       if (!this.vulnerabilityId) {
-        await this.createVulnerabilityForFinding();
+        try {
+          await this.createVulnerabilityForFinding();
+        } catch (e) {
+          this.handleError(e);
+          return;
+        }
       }
       this.startResolveWithAISubscription();
       this.$emit('resolveStart');

@@ -173,15 +173,19 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
       });
 
       describe('error handling', () => {
-        it('emits an error when the "securityFindingCreateVulnerability" errors', async () => {
+        const setupErrorFindingCreationSpy = () => {
           const findingCreationSpy = jest.fn().mockRejectedValue(new Error('creation error'));
-
           createWrapperWithApollo({
             responseHandlers: {
               securityFindingCreateVulnerability: findingCreationSpy,
             },
             propsData: { vulnerabilityId: undefined },
           });
+          return findingCreationSpy;
+        };
+
+        it('emits an error when the "securityFindingCreateVulnerability" errors', async () => {
+          const findingCreationSpy = setupErrorFindingCreationSpy();
 
           expect(wrapper.emitted('error')).toBeUndefined();
 
@@ -192,6 +196,20 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
           expect(findingCreationSpy).toHaveBeenCalledWith({ uuid: '1' });
           expect(wrapper.emitted('error')).toHaveLength(1);
           expect(wrapper.emitted('error')[0][0]).toEqual(new Error('creation error'));
+          expect(wrapper.emitted('resolveStart')).toBeUndefined();
+        });
+
+        it('prevents error message from being cleared by "resolveStart" when "securityFindingCreateVulnerability" errors', async () => {
+          setupErrorFindingCreationSpy();
+
+          expect(wrapper.emitted('error')).toBeUndefined();
+          expect(wrapper.emitted('resolveStart')).toBeUndefined();
+
+          clickButton();
+
+          await waitForPromises();
+          expect(wrapper.emitted('error')).toHaveLength(1);
+          expect(wrapper.emitted('resolveStart')).toBeUndefined();
         });
       });
     });
