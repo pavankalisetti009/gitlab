@@ -173,7 +173,7 @@ export default {
         </div>
       </div>
       <div v-if="project.complianceFrameworks.nodes.length">
-        <h3 class="gl-mt-0 gl-text-lg" data-testid="sidebar-frameworks-title">
+        <h3 class="gl-mt-0" data-testid="sidebar-frameworks-title">
           {{ s__('ComplianceStandardsAdherence|All attached frameworks') }}
         </h3>
 
