@@ -32488,10 +32488,6 @@ Returns [`ProjectDataTransfer`](#projectdatatransfer).
 
 Software dependencies used by the project.
 
-DETAILS:
-**Introduced** in GitLab 15.9.
-**Status**: Experiment.
-
 Returns [`DependencyConnection`](#dependencyconnection).
 
 This field returns a [connection](#connections). It accepts the
