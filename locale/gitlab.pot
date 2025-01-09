@@ -20744,6 +20744,12 @@ msgstr ""
 msgid "Due to inactivity, this project is scheduled to be deleted on %{deletion_date}. %{link_start}Why is this scheduled?%{link_end}"
 msgstr ""
 
+msgid "DuoChat|%{linkStart}Learn how%{linkEnd} to set up Code Suggestions and Chat in your IDE. You can also use Chat in GitLab. Ask questions about:"
+msgstr ""
+
+msgid "DuoChat|AI features are now available"
+msgstr ""
+
 msgid "DuoChat|An administrator has turned off GitLab Duo for this %{reason}"
 msgstr ""
 
@@ -20775,9 +20781,6 @@ msgid "DuoChat|The issue, epic, merge request, or code you're viewing"
 msgstr ""
 
 msgid "DuoChat|There was an error communicating with GitLab Duo Chat. Please try again later."
-msgstr ""
-
-msgid "DuoChat|Use AI to answer questions about things like:"
 msgstr ""
 
 msgid "DuoChat|What is a fork?"
