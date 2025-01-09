@@ -3,8 +3,7 @@
 module Gitlab
   class GlRepository
     class RepoType
-      attr_reader :name,
-        :access_checker_class,
+      attr_reader :access_checker_class,
         :repository_resolver,
         :container_class,
         :project_resolver,
@@ -12,20 +11,22 @@ module Gitlab
         :suffix
 
       def initialize(
-        name:,
         access_checker_class:,
         repository_resolver:,
         container_class: default_container_class,
         project_resolver: nil,
         guest_read_ability: :download_code,
         suffix: nil)
-        @name = name
         @access_checker_class = access_checker_class
         @repository_resolver = repository_resolver
         @container_class = container_class
         @project_resolver = project_resolver
         @guest_read_ability = guest_read_ability
         @suffix = suffix
+      end
+
+      def name
+        raise NotImplementedError
       end
 
       def identifier_for_container(container)

@@ -4,7 +4,6 @@ module Gitlab
   class GlRepository
     class WikiRepository < Gitlab::GlRepository::RepoType
       def initialize
-        @name = :wiki
         @access_checker_class = Gitlab::GitAccessWiki
         @repository_resolver = ->(container) do
           wiki = container.is_a?(Wiki) ? container : container.wiki # Also allow passing a Project, Group, or Geo::DeletedProject
@@ -15,6 +14,8 @@ module Gitlab
         @guest_read_ability = :download_wiki_code
         @suffix = :wiki
       end
+
+      def name = :wiki
     end
   end
 end
