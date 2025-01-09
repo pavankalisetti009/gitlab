@@ -40,7 +40,7 @@ RSpec.describe Search::Zoekt::NodeBackoff, :clean_gitlab_redis_cache, feature_ca
   end
 
   describe '.backoff!' do
-    it 'increments number of failures in redis and sets expiry correctly' do
+    it 'increments number of failures in redis and sets expiry correctly', :freeze_time do
       fake_redis = instance_double(::Redis)
 
       allow(backoff).to receive(:expires_in_s).and_return(max_backoff)
