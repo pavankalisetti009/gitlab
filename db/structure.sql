@@ -11804,7 +11804,8 @@ CREATE TABLE dast_profiles_tags (
     id bigint NOT NULL,
     dast_profile_id bigint NOT NULL,
     tag_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_b1aa92f799 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE dast_profiles_tags_id_seq
