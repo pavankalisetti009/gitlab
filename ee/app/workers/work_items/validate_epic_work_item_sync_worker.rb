@@ -25,6 +25,13 @@ module WorkItems
       'state_id' => BASE_ATTRIBUTES_EVENT
     }.freeze
 
+    def self.can_handle?(event)
+      ::Namespace.find_by_id(event.data[:namespace_id])&.group_namespace? &&
+        ::Feature.enabled?(:validate_epic_work_item_sync,
+          ::Group.actor_from_id(event.data[:namespace_id])) &&
+        ::Epic.find_by_issue_id(event.data[:id]).present?
+    end
+
     def handle_event(event)
       epic, work_item = find_epic_and_work_item_from_event(event)
 

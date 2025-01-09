@@ -72,9 +72,9 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
         expect(work_item.closed_at).to eq(epic.closed_at)
       end
 
-      it 'publishes a work item updated event' do
+      it 'publishes a work item closed event' do
         expect { execute }
-          .to publish_event(::WorkItems::WorkItemUpdatedEvent)
+          .to publish_event(::WorkItems::WorkItemClosedEvent)
           .with({
             id: work_item.id,
             namespace_id: work_item.namespace.id

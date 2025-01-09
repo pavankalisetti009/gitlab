@@ -147,21 +147,19 @@ module EE
 
           store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
             to: ::WorkItems::WorkItemCreatedEvent,
-            if: ->(event) {
-                  ::Namespace.find_by_id(event.data[:namespace_id])&.group_namespace? &&
-                    ::Feature.enabled?(:validate_epic_work_item_sync,
-                      ::Group.actor_from_id(event.data[:namespace_id])) &&
-                    ::Epic.find_by_issue_id(event.data[:id]).present?
-                }
+            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
 
           store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
             to: ::WorkItems::WorkItemUpdatedEvent,
-            if: ->(event) {
-                  ::Namespace.find_by_id(event.data[:namespace_id])&.group_namespace? &&
-                    ::Feature.enabled?(:validate_epic_work_item_sync,
-                      ::Group.actor_from_id(event.data[:namespace_id])) &&
-                    ::Epic.find_by_issue_id(event.data[:id]).present?
-                }
+            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
+
+          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
+            to: ::WorkItems::WorkItemClosedEvent,
+            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
+
+          store.subscribe ::WorkItems::ValidateEpicWorkItemSyncWorker,
+            to: ::WorkItems::WorkItemReopenedEvent,
+            if: ->(event) { ::WorkItems::ValidateEpicWorkItemSyncWorker.can_handle?(event) }
         end
 
         def subscribe_to_milestone_events(store)
