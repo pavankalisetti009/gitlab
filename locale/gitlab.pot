@@ -64702,6 +64702,9 @@ msgstr ""
 msgid "Workspaces|Creating"
 msgstr ""
 
+msgid "Workspaces|Defines the workspace's development environment."
+msgstr ""
+
 msgid "Workspaces|Devfile location"
 msgstr ""
 
@@ -64718,9 +64721,6 @@ msgid "Workspaces|Failed to create workspace"
 msgstr ""
 
 msgid "Workspaces|Failed to update workspace"
-msgstr ""
-
-msgid "Workspaces|Git reference"
 msgstr ""
 
 msgid "Workspaces|Group agents"
@@ -64762,6 +64762,12 @@ msgstr ""
 msgid "Workspaces|Project"
 msgstr ""
 
+msgid "Workspaces|Project reference"
+msgstr ""
+
+msgid "Workspaces|Provide a relative path if the devfile is not in the project's root directory."
+msgstr ""
+
 msgid "Workspaces|Restart"
 msgstr ""
 
@@ -64795,7 +64801,7 @@ msgstr ""
 msgid "Workspaces|Terminating"
 msgstr ""
 
-msgid "Workspaces|The branch, tag, or commit hash GitLab uses to create your workspace."
+msgid "Workspaces|The source branch, tag, or commit hash of your workspace."
 msgstr ""
 
 msgid "Workspaces|This agent is already allowed."

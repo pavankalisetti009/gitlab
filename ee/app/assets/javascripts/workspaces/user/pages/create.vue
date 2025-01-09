@@ -8,8 +8,6 @@ import {
   GlFormInput,
   GlFormSelect,
   GlFormInputGroup,
-  GlIcon,
-  GlPopover,
   GlTooltipDirective,
   GlLink,
   GlSprintf,
@@ -21,7 +19,6 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { logError } from '~/lib/logger';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import RefSelector from '~/ref/components/ref_selector.vue';
-import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import GetProjectDetailsQuery from '../../common/components/get_project_details_query.vue';
 import WorkspaceVariables from '../components/workspace_variables.vue';
 import SearchProjectsListbox from '../components/search_projects_listbox.vue';
@@ -35,14 +32,12 @@ import {
 } from '../constants';
 
 export const i18n = {
-  devfileRefHelp: s__(
-    'Workspaces|The branch, tag, or commit hash GitLab uses to create your workspace.',
-  ),
+  devfileRefHelp: s__('Workspaces|The source branch, tag, or commit hash of your workspace.'),
   title: s__('Workspaces|New workspace'),
   subtitle: s__('Workspaces|A workspace is a virtual sandbox environment for your code in GitLab.'),
   form: {
     devfileProject: s__('Workspaces|Project'),
-    gitReference: s__('Workspaces|Git reference'),
+    projectReference: s__('Workspaces|Project reference'),
     devfileLocation: {
       label: s__('Workspaces|Devfile location'),
       title: s__('Workspaces|What is a devfile?'),
@@ -52,6 +47,10 @@ export const i18n = {
       contentParagraph2: s__(
         'Workspaces|If your devfile is not in the root directory of your project, specify a relative path.',
       ),
+      descriptionContent: s__(
+        "Workspaces|Provide a relative path if the devfile is not in the project's root directory.",
+      ),
+      labelDescriptionContent: s__("Workspaces|Defines the workspace's development environment."),
       linkText: s__('Workspaces|Learn more.'),
     },
     pathToDevfile: s__('Workspaces|Path to devfile'),
@@ -92,15 +91,12 @@ export default {
     GlFormInputGroup,
     GlFormSelect,
     GlFormInput,
-    GlIcon,
-    GlPopover,
     GlLink,
     GlSprintf,
     RefSelector,
     SearchProjectsListbox,
     GetProjectDetailsQuery,
     WorkspaceVariables,
-    HelpIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -322,7 +318,6 @@ export default {
       </gl-form-group>
       <template v-if="!emptyAgents">
         <gl-form-group
-          class="gl-mb-3"
           :label="$options.i18n.form.agentId"
           label-for="workspace-cluster-agent-id"
           data-testid="workspace-cluster-agent-form-group"
@@ -340,15 +335,11 @@ export default {
           />
         </gl-form-group>
         <template v-if="selectedAgent">
-          <gl-form-group class="gl-mb-2" data-testid="devfile-ref">
-            <label class="gl-flex gl-items-center gl-gap-3" for="workspace-devfile-ref">
-              {{ $options.i18n.form.gitReference }}
-              <gl-icon
-                v-gl-tooltip="$options.i18n.devfileRefHelp"
-                name="information-o"
-                :size="14"
-              />
-            </label>
+          <gl-form-group
+            data-testid="devfile-ref"
+            :label="$options.i18n.form.projectReference"
+            :label-description="$options.i18n.devfileRefHelp"
+          >
             <div class="gl-flex">
               <ref-selector
                 id="workspace-devfile-ref"
@@ -357,27 +348,12 @@ export default {
               />
             </div>
           </gl-form-group>
-          <gl-form-group data-testid="devfile-path">
-            <div class="gl-mb-3 gl-flex gl-flex-row gl-items-center gl-gap-3">
-              <label class="gl-mb-0 gl-flex" for="workspace-devfile-path">
-                {{ $options.i18n.form.devfileLocation.label }}
-              </label>
-              <help-icon id="devfile-location-popover" />
-              <gl-popover
-                triggers="hover focus"
-                :title="$options.i18n.form.devfileLocation.title"
-                placement="top"
-                target="devfile-location-popover"
-              >
-                <div class="gl-flex gl-flex-col">
-                  <p>{{ $options.i18n.form.devfileLocation.contentParagraph1 }}</p>
-                  <p>{{ $options.i18n.form.devfileLocation.contentParagraph2 }}</p>
-                </div>
-                <gl-link :href="$options.devfileHelpPath" target="_blank">
-                  {{ $options.i18n.form.devfileLocation.linkText }}
-                </gl-link>
-              </gl-popover>
-            </div>
+          <gl-form-group
+            data-testid="devfile-path"
+            :label="$options.i18n.form.devfileLocation.label"
+            :description="$options.i18n.form.devfileLocation.descriptionContent"
+            :label-description="$options.i18n.form.devfileLocation.labelDescriptionContent"
+          >
             <gl-form-input-group>
               <template #prepend>
                 <div class="input-group-text">{{ selectedProjectFullPathDisplay }}</div>
