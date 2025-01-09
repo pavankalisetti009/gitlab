@@ -12,6 +12,7 @@ import {
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import { getEmptyVariable } from 'ee/security_configuration/dast_profiles/constants';
 import DastVariablesModal from './dast_variables_modal.vue';
 
 export default {
@@ -46,7 +47,8 @@ export default {
     },
     value: {
       type: Array,
-      required: true,
+      required: false,
+      default: () => [],
     },
   },
   data() {
@@ -58,6 +60,7 @@ export default {
       ],
       existingVariables: this.value,
       additionalVariables: [],
+      editedVariable: getEmptyVariable(),
     };
   },
   computed: {
@@ -72,24 +75,35 @@ export default {
   },
   methods: {
     showAddVariableModal() {
-      this.$refs.addVariableModal.show();
+      this.editedVariable = getEmptyVariable();
+      this.$refs.addVariableModal.createVariable();
     },
-    addVariableToList(newVariable) {
-      this.additionalVariables.push(newVariable);
-    },
-    deleteVariableFromList(item) {
-      const { variable: variableToBeDeleted } = item;
+    filterVariableList(item) {
+      const { variable: variableToBeOverride } = item;
       this.existingVariables = this.existingVariables.filter(
-        ({ variable }) => variable !== variableToBeDeleted,
+        ({ variable }) => variable !== variableToBeOverride,
       );
       this.additionalVariables = this.additionalVariables.filter(
-        ({ variable }) => variable !== variableToBeDeleted,
+        ({ variable }) => variable !== variableToBeOverride,
       );
     },
+    updateVariableList(item) {
+      this.filterVariableList(item);
+      this.additionalVariables.push(item);
+    },
+    addVariableToList(item) {
+      this.additionalVariables.push(item);
+    },
+    deleteVariableFromList(item) {
+      this.filterVariableList(item);
+    },
     updateVariable(item) {
+      const { value, variable } = item;
+      this.editedVariable.value = value;
+      this.editedVariable.id = variable;
+      this.$refs.addVariableModal.editVariable();
       return item;
     },
-
     editItem(item) {
       return {
         text: __('Edit'),
@@ -137,6 +151,7 @@ export default {
           bordered
           hover
           class="dast-variables-table gl-mb-0 gl-border-none"
+          data-testid="variables-table"
           borderless
         >
           <template #cell(variable)="{ item }">
@@ -173,7 +188,10 @@ export default {
     <dast-variables-modal
       ref="addVariableModal"
       :pre-selected-variables="variableList"
+      :variable="editedVariable"
       @addVariable="addVariableToList"
+      @updateVariable="updateVariableList"
+      @deleteVariable="deleteVariableFromList"
     />
   </div>
 </template>

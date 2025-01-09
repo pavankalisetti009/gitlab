@@ -13,3 +13,11 @@ export const booleanOptions = [
     text: __('False'),
   },
 ];
+
+export const getEmptyVariable = () => ({
+  id: null,
+  value: '',
+  type: null,
+  description: '',
+  example: '',
+});
