@@ -81,7 +81,8 @@ namespace :tw do
       CodeOwnerRule.new('Source Code', '@brendan777'),
       CodeOwnerRule.new('Static Analysis', '@rdickenson'),
       # CodeOwnerRule.new('Subscription Management', ''),
-      CodeOwnerRule.new('Tenant Scale', '@emily.sahlani'),
+      CodeOwnerRule.new('Organizations', '@emily.sahlani'),
+      CodeOwnerRule.new('Cells Infrastructure', '@emily.sahlani'),
       CodeOwnerRule.new('Testing', '@eread'),
       CodeOwnerRule.new('Tutorials', '@kpaizee'),
       # CodeOwnerRule.new('US Public Sector Services', ''),
@@ -114,7 +115,8 @@ namespace :tw do
       CodeOwnerRule.new('Pipeline Authoring', '@gitlab-org/maintainers/cicd-verify'),
       CodeOwnerRule.new('Pipeline Execution', '@gitlab-org/maintainers/cicd-verify'),
       CodeOwnerRule.new('Platform Insights', '@gitlab-org/analytics-section/product-analytics/engineers/frontend'),
-      CodeOwnerRule.new('Tenant Scale', '@abdwdd @alexpooley @manojmj'),
+      CodeOwnerRule.new('Organizations', '@abdwdd @alexpooley'),
+      CodeOwnerRule.new('Cells Infrastructure', '@OmarQunsulGitlab @bmarjanovic'),
       CodeOwnerRule.new('Threat Insights', '@gitlab-org/govern/threat-insights-frontend-team')
     ].freeze
 
