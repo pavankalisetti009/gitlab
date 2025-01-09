@@ -5,6 +5,7 @@ import * as UsersApi from 'ee/api/users_api';
 import { __ } from '~/locale';
 import { createAlert } from '~/alert';
 import { THOUSAND } from '~/lib/utils/constants';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 
 import {
   COMMON,
@@ -15,7 +16,6 @@ import {
   PASSWORD_RULE_MAP,
   RED_TEXT_CLASS,
   GREEN_TEXT_CLASS,
-  HIDDEN_ELEMENT_CLASS,
   I18N,
 } from '../constants';
 
@@ -188,6 +188,21 @@ export default {
         [this.$options.GREEN_TEXT_CLASS]: rule.valid,
       };
     },
+    iconAttrs(rule) {
+      if (this.submitted && !rule.valid) {
+        return { name: 'close', size: 16 };
+      }
+
+      if (rule.valid) {
+        return { name: 'check', size: 16 };
+      }
+
+      return { name: 'status_created_borderless', size: 12 };
+    },
+    ruleText(rule) {
+      // make text capitalization permanent with display_password_requirements ff removal
+      return this.ruleTypes.includes(COMMON) ? capitalizeFirstCharacter(rule.text) : rule.text;
+    },
     passwordComplexityParams() {
       return {
         ...(this.firstName && { first_name: this.firstName.value }),
@@ -200,7 +215,6 @@ export default {
   },
   RED_TEXT_CLASS,
   GREEN_TEXT_CLASS,
-  HIDDEN_ELEMENT_CLASS,
 };
 </script>
 
@@ -209,19 +223,18 @@ export default {
     <div
       v-for="(rule, index) in ruleList"
       :key="rule.text"
-      class="gl-flex gl-items-center gl-leading-28"
+      class="gl-mb-3 gl-flex"
       aria-live="polite"
     >
       <span
-        :class="{ [$options.HIDDEN_ELEMENT_CLASS]: !rule.valid }"
         :data-testid="`password-${ruleTypes[index]}-status-icon`"
-        class="password-status-icon password-status-icon-success gl-mr-2 gl-flex gl-items-center"
+        class="gl-mr-2 gl-flex gl-w-5 gl-items-center gl-justify-center"
         :aria-label="getAriaLabel(rule)"
       >
-        <gl-icon name="check" :size="16" />
+        <gl-icon :class="calculateTextClass(rule)" v-bind="iconAttrs(rule)" />
       </span>
       <span data-testid="password-rule-text" :class="calculateTextClass(rule)">
-        {{ rule.text }}
+        {{ ruleText(rule) }}
       </span>
     </div>
   </div>
