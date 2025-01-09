@@ -12,6 +12,8 @@ module Ai
     GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_PERIOD = 1.hour
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
+    # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
+    DUO_ADD_ONS_CACHE_KEY = 'user-%{user_id}-duo-add-ons-cache'
 
     Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, keyword_init: true)
 
@@ -23,6 +25,20 @@ module Ai
           GitlabSubscriptions::UserAddOnAssignment.by_user(self).for_active_gitlab_duo_pro_purchase
             .pluck('subscription_add_on_purchases.namespace_id') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's purchases
         end
+      end
+
+      def duo_available_namespace_ids
+        cache_key = duo_addons_cache_key_formatted
+
+        Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+          GitlabSubscriptions::UserAddOnAssignment.by_user(self).for_active_gitlab_duo_purchase
+            .pluck('subscription_add_on_purchases.namespace_id') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's purchases
+            .uniq
+        end
+      end
+
+      def duo_addons_cache_key_formatted
+        format(DUO_ADD_ONS_CACHE_KEY, user_id: id)
       end
 
       def duo_pro_cache_key_formatted

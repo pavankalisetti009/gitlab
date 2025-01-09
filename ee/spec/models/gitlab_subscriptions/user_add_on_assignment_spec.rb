@@ -115,40 +115,66 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
       end
     end
 
-    describe '.for_active_gitlab_duo_pro_purchase' do
-      context 'when the assignment is for an active gitlab duo pro purchase' do
+    shared_examples 'filters for active gitlab duo purchase' do
+      context 'when the assignment is for an active gitlab duo purchase' do
         it 'is included in the scope' do
-          purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+          purchase = create(:gitlab_subscription_add_on_purchase, tested_add_on_type)
           assignment = create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
 
-          expect(described_class.for_active_gitlab_duo_pro_purchase).to eq [assignment]
+          expect(scope_result).to eq [assignment]
         end
       end
 
-      context 'when the assignment is for an expired gitlab duo pro purchase' do
+      context 'when the assignment is for an expired gitlab duo purchase' do
         it 'is not included in the scope' do
-          purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, expires_on: 1.week.ago)
+          purchase = create(:gitlab_subscription_add_on_purchase, tested_add_on_type, expires_on: 1.week.ago)
           create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
 
-          expect(described_class.for_active_gitlab_duo_pro_purchase).to be_empty
+          expect(scope_result).to be_empty
         end
       end
 
-      context 'when the assignment is for a non-gitlab duo pro add on' do
+      context 'when the assignment is for a non-gitlab duo add on' do
         it 'is not included in the scope' do
           add_on = create(:gitlab_subscription_add_on).tap { |add_on| add_on.update_column(:name, -1) }
           purchase = create(:gitlab_subscription_add_on_purchase, add_on: add_on)
           create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
 
-          expect(described_class.for_active_gitlab_duo_pro_purchase).to be_empty
+          expect(scope_result).to be_empty
         end
       end
 
-      context 'when there are no assignments for an active gitlab duo pro purchase' do
+      context 'when there are no assignments for an active gitlab duo purchase' do
         it 'returns an empty relation' do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+          create(:gitlab_subscription_add_on_purchase, tested_add_on_type)
 
-          expect(described_class.for_active_gitlab_duo_pro_purchase).to be_empty
+          expect(scope_result).to be_empty
+        end
+      end
+    end
+
+    describe '.for_active_gitlab_duo_pro_purchase' do
+      it_behaves_like 'filters for active gitlab duo purchase' do
+        subject(:scope_result) { described_class.for_active_gitlab_duo_pro_purchase }
+
+        let(:tested_add_on_type) { :gitlab_duo_pro }
+      end
+    end
+
+    describe '.for_active_gitlab_duo_purchase' do
+      context 'for duo pro add-ons' do
+        it_behaves_like 'filters for active gitlab duo purchase' do
+          subject(:scope_result) { described_class.for_active_gitlab_duo_purchase }
+
+          let(:tested_add_on_type) { :gitlab_duo_pro }
+        end
+      end
+
+      context 'for duo enterprise add-ons' do
+        it_behaves_like 'filters for active gitlab duo purchase' do
+          subject(:scope_result) { described_class.for_active_gitlab_duo_purchase }
+
+          let(:tested_add_on_type) { :duo_enterprise }
         end
       end
     end

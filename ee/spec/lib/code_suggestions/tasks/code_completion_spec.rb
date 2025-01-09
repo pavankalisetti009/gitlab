@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_suggestions do
+  include GitlabSubscriptions::SaasSetAssignmentHelpers
+
   let(:endpoint_path) { 'v2/code/completions' }
 
   let(:current_file) do
@@ -32,7 +34,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     }.with_indifferent_access
   end
 
-  let(:current_user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
   let(:task) do
     described_class.new(
@@ -44,7 +46,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
   before do
     stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
-    stub_feature_flags(fireworks_qwen_code_completion: false)
     stub_feature_flags(incident_fail_over_completion_provider: false)
   end
 
@@ -97,10 +98,12 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
   describe 'saas primary models' do
     before do
       stub_feature_flags(incident_fail_over_completion_provider: false)
+      stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
     end
 
     let(:expected_feature_name) { :code_suggestions }
 
+    let(:model_engine) { 'telemetry-model-engine' }
     let(:request_body_without_model_details) do
       {
         "current_file" => {
@@ -108,7 +111,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "content_above_cursor" => "sor",
           "content_below_cursor" => "som"
         },
-        "prompt_version" => 1
+        "prompt_version" => 1,
+        "telemetry" => [{ "model_engine" => model_engine }]
       }
     end
 
@@ -117,18 +121,64 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         stub_feature_flags(fireworks_qwen_code_completion: true)
       end
 
-      let(:model_engine) { 'fireworks-ai' }
-
-      let(:request_body_for_fireworks_qwen_with_model_details) do
+      let(:request_body_for_fireworks_qwen) do
         request_body_without_model_details.merge(
           "model_name" => "qwen2p5-coder-7b",
-          "model_provider" => "fireworks_ai",
-          "telemetry" => [{ "model_engine" => "fireworks-ai" }]
+          "model_provider" => "fireworks_ai"
         )
       end
 
-      it_behaves_like 'code suggestion task' do
-        let(:expected_body) { request_body_for_fireworks_qwen_with_model_details }
+      context 'on GitLab self-managed' do
+        before do
+          allow(Gitlab).to receive(:org_or_com?).and_return(false)
+        end
+
+        it_behaves_like 'code suggestion task' do
+          let(:expected_body) { request_body_for_fireworks_qwen }
+        end
+
+        context 'when opted out of Fireworks/Qwen through the ops FF' do
+          it_behaves_like 'code suggestion task' do
+            before do
+              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
+            end
+
+            let(:expected_body) { request_body_without_model_details }
+          end
+        end
+      end
+
+      context 'on GitLab saas' do
+        before do
+          allow(Gitlab).to receive(:org_or_com?).and_return(true)
+        end
+
+        let_it_be(:group1) do
+          create(:group).tap do |g|
+            setup_addon_purchase_and_seat_assignment(current_user, g, :code_suggestions)
+          end
+        end
+
+        let_it_be(:group2) do
+          create(:group).tap do |g|
+            setup_addon_purchase_and_seat_assignment(current_user, g, :duo_enterprise)
+          end
+        end
+
+        it_behaves_like 'code suggestion task' do
+          let(:expected_body) { request_body_for_fireworks_qwen }
+        end
+
+        context "when one of user's root groups has opted out of Fireworks/Qwen through the ops FF" do
+          before do
+            # opt out for group2
+            stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: group2)
+          end
+
+          it_behaves_like 'code suggestion task' do
+            let(:expected_body) { request_body_without_model_details }
+          end
+        end
       end
     end
 
@@ -137,16 +187,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         stub_feature_flags(fireworks_qwen_code_completion: false)
       end
 
-      let(:model_engine) { 'vertex-ai' }
-
-      let(:request_body_for_vertex_codegecko) do
-        request_body_without_model_details.merge(
-          "telemetry" => [{ "model_engine" => "vertex-ai" }]
-        )
-      end
-
       it_behaves_like 'code suggestion task' do
-        let(:expected_body) { request_body_for_vertex_codegecko }
+        let(:expected_body) { request_body_without_model_details }
       end
     end
   end

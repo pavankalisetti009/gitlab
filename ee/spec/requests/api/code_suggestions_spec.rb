@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   include WorkhorseHelpers
+  include GitlabSubscriptions::SaasSetAssignmentHelpers
 
   let_it_be(:authorized_user) { create(:user) }
   let_it_be(:unauthorized_user) { build(:user) }
@@ -48,6 +49,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
     allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
       .and_return(enabled_by_namespace_ids)
+
+    stub_feature_flags(incident_fail_over_completion_provider: false)
+    stub_feature_flags(fireworks_qwen_code_completion: false)
+    stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
   end
 
   shared_examples 'a response' do |case_name|
@@ -239,7 +244,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     before do
       allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
-      stub_feature_flags(fireworks_qwen_code_completion: false)
     end
 
     shared_examples 'code completions endpoint' do
@@ -265,22 +269,90 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         it_behaves_like 'rate limited and tracked endpoint',
           { rate_limit_key: :code_suggestions_api_endpoint,
             event_name: 'code_suggestions_rate_limit_exceeded' } do
-          before do
-            stub_feature_flags(incident_fail_over_completion_provider: false)
-          end
-
           def request
             post api('/code_suggestions/completions', current_user), headers: headers, params: body.to_json
           end
         end
 
-        context 'when incident_fail_over_completion_provider is disabled' do
+        it 'delegates downstream service call to Workhorse with correct auth token' do
+          post_api
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response.body).to eq("".to_json)
+          command, params = workhorse_send_data
+          expect(command).to eq('send-url')
+          expect(params).to include(
+            'URL' => "#{::Gitlab::AiGateway.url}/v2/code/completions",
+            'AllowRedirects' => false,
+            'Body' => body.merge(prompt_version: 1).to_json,
+            'Method' => 'POST',
+            'ResponseHeaderTimeout' => '55s'
+          )
+          expect(params['Header']).to include(
+            'X-Gitlab-Authentication-Type' => ['oidc'],
+            'X-Gitlab-Instance-Id' => [global_instance_id],
+            'X-Gitlab-Global-User-Id' => [global_user_id],
+            'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
+            'X-Gitlab-Realm' => [gitlab_realm],
+            'Authorization' => ["Bearer #{token}"],
+            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
+            'Content-Type' => ['application/json'],
+            'User-Agent' => ['Super Awesome Browser 43.144.12'],
+            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+          )
+        end
+
+        context 'when expanded_ai_logging is disabled' do
           before do
-            stub_feature_flags(incident_fail_over_completion_provider: false)
+            # this will set Feature.enabled?(expanded_ai_logging, unauthorized_user) to true
+            # and Feature.enabled?(expanded_ai_logging, authorized_user) to false
+            # post_api is calling the api with authorized_user
+            stub_feature_flags(expanded_ai_logging: [unauthorized_user])
           end
 
           it 'delegates downstream service call to Workhorse with correct auth token' do
             post_api
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response.body).to eq("".to_json)
+            _, params = workhorse_send_data
+            expect(params['Header']).to include("x-gitlab-enabled-feature-flags" => [""])
+          end
+        end
+
+        context 'when incident_fail_over_completion_provider is enabled' do
+          before do
+            stub_feature_flags(incident_fail_over_completion_provider: true)
+          end
+
+          let(:current_user) { authorized_user }
+
+          it 'delegates downstream service call to Workhorse with correct auth token' do
+            post_api
+            expected_body = body.merge(
+              'model_provider' => 'anthropic',
+              'model_name' => 'claude-3-5-sonnet-20240620',
+              'prompt_version' => 3,
+              'prompt' => [
+                {
+                  "role" => "system",
+                  "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
+                    "complete the Python code between the given prefix and suffix inside the file 'test.py'.\n" \
+                    "Your task is to provide valid code without any additional explanations, comments, or feedback." \
+                    "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
+                    "output code exclusively.\n- The suggested code MUST work by simply concatenating to the " \
+                    "provided code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or " \
+                    "modify any part of the prefix or suffix.\n- You MUST only provide the missing code that fits " \
+                    "between them.\n\nIf you are not able to complete code based on the given instructions, " \
+                    "return an empty result."
+                },
+                {
+                  "role" => "user",
+                  "content" => "<SUFFIX>\ndef add(x, y):\n  return x + y\n\ndef sub(x, y):\n  return x - " \
+                    "y\n\ndef multiple(x, y):\n  return x * y\n\ndef divide(x, y):\n  return x / y\n\n" \
+                    "def is_even(n: int) ->\n\n</SUFFIX>\n<PREFIX>\n\n</PREFIX>"
+                }
+              ]
+            )
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(response.body).to eq("".to_json)
@@ -289,7 +361,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(params).to include(
               'URL' => "#{::Gitlab::AiGateway.url}/v2/code/completions",
               'AllowRedirects' => false,
-              'Body' => body.merge(prompt_version: 1).to_json,
+              'Body' => expected_body.to_json,
               'Method' => 'POST',
               'ResponseHeaderTimeout' => '55s'
             )
@@ -306,76 +378,27 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
             )
           end
-
-          context 'when expanded_ai_logging is disabled' do
-            before do
-              # this will set Feature.enabled?(expanded_ai_logging, unauthorized_user) to true
-              # and Feature.enabled?(expanded_ai_logging, authorized_user) to false
-              # post_api is calling the api with authorized_user
-              stub_feature_flags(expanded_ai_logging: [unauthorized_user])
-            end
-
-            it 'delegates downstream service call to Workhorse with correct auth token' do
-              post_api
-              expect(response).to have_gitlab_http_status(:ok)
-              expect(response.body).to eq("".to_json)
-              _, params = workhorse_send_data
-              expect(params['Header']).to include("x-gitlab-enabled-feature-flags" => [""])
-            end
-          end
         end
 
-        it 'delegates downstream service call to Workhorse with correct auth token' do
-          post_api
-          expected_body = body.merge(
-            'model_provider' => 'anthropic',
-            'model_name' => 'claude-3-5-sonnet-20240620',
-            'prompt_version' => 3,
-            'prompt' => [
-              {
-                "role" => "system",
-                "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
-                  "complete the Python code between the given prefix and suffix inside the file 'test.py'.\n" \
-                  "Your task is to provide valid code without any additional explanations, comments, or feedback." \
-                  "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
-                  "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
-                  "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
-                  "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
-                  "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
-                  "empty result."
-              },
-              {
-                "role" => "user",
-                "content" => "<SUFFIX>\ndef add(x, y):\n  return x + y\n\ndef sub(x, y):\n  return x - " \
-                  "y\n\ndef multiple(x, y):\n  return x * y\n\ndef divide(x, y):\n  return x / y\n\ndef is_even(n: " \
-                  "int) ->\n\n</SUFFIX>\n<PREFIX>\n\n</PREFIX>"
-              }
-            ]
-          )
+        context 'when Fireworks/Qwen beta FF is enabled' do
+          before do
+            stub_feature_flags(fireworks_qwen_code_completion: true)
+          end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response.body).to eq("".to_json)
-          command, params = workhorse_send_data
-          expect(command).to eq('send-url')
-          expect(params).to include(
-            'URL' => "#{::Gitlab::AiGateway.url}/v2/code/completions",
-            'AllowRedirects' => false,
-            'Body' => expected_body.to_json,
-            'Method' => 'POST',
-            'ResponseHeaderTimeout' => '55s'
-          )
-          expect(params['Header']).to include(
-            'X-Gitlab-Authentication-Type' => ['oidc'],
-            'X-Gitlab-Instance-Id' => [global_instance_id],
-            'X-Gitlab-Global-User-Id' => [global_user_id],
-            'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-            'X-Gitlab-Realm' => [gitlab_realm],
-            'Authorization' => ["Bearer #{token}"],
-            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
-            'Content-Type' => ['application/json'],
-            'User-Agent' => ['Super Awesome Browser 43.144.12'],
-            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
-          )
+          let(:fireworks_qwen_model_details) do
+            {
+              'model_provider' => 'fireworks_ai',
+              'model_name' => 'qwen2p5-coder-7b'
+            }
+          end
+
+          it 'sends a code completion request with the fireworks/qwen model details' do
+            post_api
+
+            _command, params = workhorse_send_data
+            code_completion_params = Gitlab::Json.parse(params['Body'])
+            expect(code_completion_params).to include(**fireworks_qwen_model_details)
+          end
         end
 
         context 'with telemetry headers' do
@@ -801,6 +824,25 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           it_behaves_like 'code completions endpoint'
 
           it_behaves_like 'an endpoint authenticated with token', :ok
+
+          describe 'Fireworks/Qwen opt out by ops FF' do
+            before do
+              stub_feature_flags(fireworks_qwen_code_completion: true)
+              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: user_duo_group)
+            end
+
+            let(:user_duo_group) do
+              Group.by_id(current_user.duo_available_namespace_ids).first
+            end
+
+            it 'does not send code completion model details' do
+              post_api
+
+              _command, params = workhorse_send_data
+              code_completion_params = Gitlab::Json.parse(params['Body'])
+              expect(code_completion_params.keys).not_to include('model_provider', 'model_name')
+            end
+          end
         end
       end
     end
@@ -874,10 +916,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   end
 
   describe 'POST /code_suggestions/direct_access', :freeze_time do
-    before do
-      stub_feature_flags(incident_fail_over_completion_provider: false)
-    end
-
     subject(:post_api) { post api('/code_suggestions/direct_access', current_user) }
 
     context 'when unauthorized' do
@@ -894,7 +932,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               allow(client).to receive(:direct_access_token)
                 .and_return({ status: :success, token: token, expires_at: expected_expiration })
             end
-            stub_feature_flags(fireworks_qwen_code_completion: false)
           end
 
           let(:expected_response) do
@@ -913,15 +950,18 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(json_response).to match(expected_response)
           end
 
-          context 'when code completions FFs are disabled' do
+          context 'when Fireworks/Qwen beta FF is enabled' do
             before do
-              stub_feature_flags(fireworks_qwen_code_completion: false)
+              stub_feature_flags(fireworks_qwen_code_completion: true)
             end
 
-            it 'does not include the model metadata in the direct access details' do
+            it 'includes the fireworks/qwen model metadata in the direct access details' do
               post_api
 
-              expect(json_response['model_details']).to be_nil
+              expect(json_response['model_details']).to eq({
+                'model_provider' => 'fireworks_ai',
+                'model_name' => 'qwen2p5-coder-7b'
+              })
             end
           end
 
@@ -1023,6 +1063,28 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         end
 
         it_behaves_like 'user request with code suggestions allowed'
+
+        describe 'Fireworks/Qwen opt out by ops FF' do
+          before do
+            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+              allow(client).to receive(:direct_access_token)
+                .and_return({ status: :success, token: token, expires_at: expected_expiration })
+            end
+
+            stub_feature_flags(fireworks_qwen_code_completion: true)
+            stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: user_duo_group)
+          end
+
+          let(:user_duo_group) do
+            Group.by_id(current_user.duo_available_namespace_ids).first
+          end
+
+          it 'does not include the model metadata in the direct access details' do
+            post_api
+
+            expect(json_response['model_details']).to be_nil
+          end
+        end
       end
 
       context 'when not SaaS' do

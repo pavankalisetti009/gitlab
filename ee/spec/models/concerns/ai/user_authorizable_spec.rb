@@ -389,43 +389,39 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe '#duo_pro_add_on_available_namespace_ids', :saas do
-    let_it_be(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on) }
+  shared_examples 'returns IDs of namespaces with duo add-on' do
+    let_it_be(:gitlab_duo_add_on) { create(:gitlab_subscription_add_on, add_on_type) }
 
-    let_it_be(:expired_gitlab_duo_pro_purchase) do
-      create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_duo_pro_add_on)
+    let_it_be(:expired_gitlab_duo_purchase) do
+      create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_duo_add_on)
     end
 
-    let_it_be_with_reload(:active_gitlab_duo_pro_purchase) do
-      create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
+    let_it_be_with_reload(:active_gitlab_duo_purchase) do
+      create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_add_on)
     end
 
-    let(:active_gitlab_duo_pro_purchase_namespace_id) { active_gitlab_duo_pro_purchase.namespace_id }
-
-    subject(:duo_pro_add_on_available_namespace_ids) { user.duo_pro_add_on_available_namespace_ids }
-
-    context 'when the user has an active assigned duo pro seat' do
+    context 'when the user has an active assigned duo seat' do
       it 'returns the namespace ID' do
         create(
           :gitlab_subscription_user_add_on_assignment,
           user: user,
-          add_on_purchase: active_gitlab_duo_pro_purchase
+          add_on_purchase: active_gitlab_duo_purchase
         )
 
-        expect(duo_pro_add_on_available_namespace_ids).to eq([active_gitlab_duo_pro_purchase.namespace_id])
+        expect(duo_namespace_ids).to eq([active_gitlab_duo_purchase.namespace_id])
       end
     end
 
-    context 'when the user belongs to multiple namespaces with an active assigned duo pro seat' do
+    context 'when the user belongs to multiple namespaces with an active assigned duo seat' do
       let!(:active_gitlab_duo_pro_purchase_2) do
-        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
+        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_add_on)
       end
 
       it 'returns the namespace IDs' do
         create(
           :gitlab_subscription_user_add_on_assignment,
           user: user,
-          add_on_purchase: active_gitlab_duo_pro_purchase
+          add_on_purchase: active_gitlab_duo_purchase
         )
 
         create(
@@ -434,27 +430,53 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           add_on_purchase: active_gitlab_duo_pro_purchase_2
         )
 
-        expect(duo_pro_add_on_available_namespace_ids)
-          .to contain_exactly(active_gitlab_duo_pro_purchase.namespace_id,
+        expect(duo_namespace_ids)
+          .to contain_exactly(active_gitlab_duo_purchase.namespace_id,
             active_gitlab_duo_pro_purchase_2.namespace_id)
       end
     end
 
-    context 'when the user has an expired assigned duo pro seat' do
+    context 'when the user has an expired assigned duo seat' do
       it 'returns empty' do
         create(
           :gitlab_subscription_user_add_on_assignment,
           user: user,
-          add_on_purchase: expired_gitlab_duo_pro_purchase
+          add_on_purchase: expired_gitlab_duo_purchase
         )
 
-        expect(duo_pro_add_on_available_namespace_ids).to be_empty
+        expect(duo_namespace_ids).to be_empty
       end
     end
 
     context 'when the user has no add on seat assignments' do
       it 'returns empty' do
-        expect(duo_pro_add_on_available_namespace_ids).to be_empty
+        expect(duo_namespace_ids).to be_empty
+      end
+    end
+  end
+
+  describe '#duo_pro_add_on_available_namespace_ids', :saas do
+    it_behaves_like 'returns IDs of namespaces with duo add-on' do
+      subject(:duo_namespace_ids) { user.duo_pro_add_on_available_namespace_ids }
+
+      let_it_be(:add_on_type) { :code_suggestions }
+    end
+  end
+
+  describe '#duo_available_namespace_ids' do
+    context 'when user has duo pro add-on' do
+      it_behaves_like 'returns IDs of namespaces with duo add-on' do
+        subject(:duo_namespace_ids) { user.duo_available_namespace_ids }
+
+        let_it_be(:add_on_type) { :code_suggestions }
+      end
+    end
+
+    context 'when user has duo enterprise add-on' do
+      it_behaves_like 'returns IDs of namespaces with duo add-on' do
+        subject(:duo_namespace_ids) { user.duo_available_namespace_ids }
+
+        let_it_be(:add_on_type) { :duo_enterprise }
       end
     end
   end
