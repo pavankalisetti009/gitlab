@@ -16671,6 +16671,7 @@ CREATE TABLE packages_debian_group_distribution_keys (
     public_key text NOT NULL,
     fingerprint text NOT NULL,
     group_id bigint,
+    CONSTRAINT check_008dba9ceb CHECK ((group_id IS NOT NULL)),
     CONSTRAINT check_bc95dc3fbe CHECK ((char_length(fingerprint) <= 255)),
     CONSTRAINT check_f708183491 CHECK ((char_length(public_key) <= 524288))
 );
