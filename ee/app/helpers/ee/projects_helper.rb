@@ -388,6 +388,16 @@ module EE
       })
     end
 
+    def pages_deployments_usage_quota_data(project)
+      limit = project.actual_limits.active_versioned_pages_deployments_limit_by_namespace
+
+      {
+        full_path: project.full_path,
+        deployments_count: ::PagesDeployment.count_versioned_deployments_for(project, limit),
+        deployments_limit: limit
+      }
+    end
+
     private
 
     def security_dashboard_pipeline_data(project)

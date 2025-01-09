@@ -96,6 +96,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
     let(:limit) { 2 }
     let(:path_prefix) { "other_prefix" }
     let(:build_options) { { pages: { path_prefix: path_prefix } } }
+    let(:pages_unique_domain_enabled) { false }
 
     before do
       allow(::Gitlab::Pages)
@@ -103,6 +104,10 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
         .and_return(true)
 
       project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: limit)
+      project.project_setting.update!(
+        pages_unique_domain_enabled: pages_unique_domain_enabled,
+        pages_unique_domain: 'foo123.example.com'
+      )
     end
 
     include_examples "valid pages deployment"
@@ -114,8 +119,19 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
         end
       end
 
-      include_examples "invalid pages deployment",
-        message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+      context "when unique domains are disabled" do
+        let(:pages_unique_domain_enabled) { false }
+
+        include_examples "invalid pages deployment",
+          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+      end
+
+      context "when unique domains are enabled" do
+        let(:pages_unique_domain_enabled) { true }
+
+        include_examples "invalid pages deployment",
+          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+      end
     end
 
     context "when overuse is from multiple projects" do
@@ -129,8 +145,18 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
         create(:pages_deployment, project: other_project, path_prefix: path_prefix)
       end
 
-      include_examples "invalid pages deployment",
-        message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+      context "when unique domains are disabled" do
+        let(:pages_unique_domain_enabled) { false }
+
+        include_examples "invalid pages deployment",
+          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+      end
+
+      context "when unique domains are enabled" do
+        let(:pages_unique_domain_enabled) { true }
+
+        include_examples "valid pages deployment"
+      end
     end
   end
 

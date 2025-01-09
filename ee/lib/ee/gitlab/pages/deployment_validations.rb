@@ -45,7 +45,7 @@ module EE
 
         def versioned_deployments_count
           ::PagesDeployment.count_versioned_deployments_for(
-            project.root_ancestor.all_projects,
+            project.project_setting.pages_unique_domain_enabled ? project : project.root_ancestor.all_projects,
             versioned_deployments_limit + 1
           )
         end

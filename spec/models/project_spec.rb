@@ -3116,6 +3116,28 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
     end
   end
 
+  describe '#pages_unique_domain_enabled?' do
+    let(:project) { create(:project) }
+
+    subject { project.pages_unique_domain_enabled? }
+
+    context 'if unique domain is enabled' do
+      before do
+        project.project_setting.update!(pages_unique_domain_enabled: true, pages_unique_domain: 'foo123.example.com')
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'if unique domain is disabled' do
+      before do
+        project.project_setting.update!(pages_unique_domain_enabled: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '#default_branch_protected?' do
     let_it_be(:namespace) { create(:namespace) }
     let_it_be(:project) { create(:project, namespace: namespace) }
