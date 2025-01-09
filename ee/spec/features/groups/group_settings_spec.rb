@@ -906,7 +906,6 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
     let(:amazon_q_connected) { true }
 
     before do
-      stub_feature_flags(amazon_q_integration: true)
       stub_licensed_features(amazon_q: true)
       ::Ai::Setting.instance.update!(
         amazon_q_service_account_user: amazon_q_user,

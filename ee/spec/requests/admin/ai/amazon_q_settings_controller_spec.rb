@@ -20,7 +20,6 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
   before do
     stub_licensed_features(amazon_q: true, service_accounts: true)
-    stub_feature_flags(amazon_q_integration: true)
     allow(::Ai::AmazonQ).to receive(:connected?).and_return(connected)
 
     stub_ee_application_setting(duo_availability: 'default_on')

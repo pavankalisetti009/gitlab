@@ -4,7 +4,7 @@ module Ai
   module AmazonQ
     class << self
       def feature_available?
-        ::Feature.enabled?(:amazon_q_integration, nil) && License.feature_available?(:amazon_q)
+        License.feature_available?(:amazon_q)
       end
 
       def connected?
