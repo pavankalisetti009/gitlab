@@ -366,7 +366,6 @@ module EE
         field :dependencies, ::Types::Sbom::DependencyType.connection_type,
           null: true,
           description: 'Software dependencies used by the project.',
-          experiment: { milestone: '15.9' },
           resolver: ::Resolvers::Sbom::DependenciesResolver
 
         field :merge_requests_disable_committers_approval, GraphQL::Types::Boolean,
