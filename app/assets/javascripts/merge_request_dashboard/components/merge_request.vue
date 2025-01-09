@@ -72,10 +72,11 @@ export default {
     },
     isMergeRequestBroken() {
       return (
-        this.mergeRequest.commitCount === 0 ||
-        !this.mergeRequest.sourceBranchExists ||
-        !this.mergeRequest.targetBranchExists ||
-        this.mergeRequest.conflicts
+        this.mergeRequest.state === 'opened' &&
+        (this.mergeRequest.commitCount === 0 ||
+          !this.mergeRequest.sourceBranchExists ||
+          !this.mergeRequest.targetBranchExists ||
+          this.mergeRequest.conflicts)
       );
     },
   },
@@ -177,6 +178,7 @@ export default {
           name="warning-solid"
           variant="subtle"
           class="gl-mt-1"
+          data-testid="mr-broken-badge"
         />
         <discussions-badge
           v-if="mergeRequest.resolvableDiscussionsCount"
