@@ -579,6 +579,7 @@ lib/gitlab/checks/**
 /doc/administration/dedicated/hosted_runners.md @rsarangadharan
 /doc/administration/diff_limits.md @brendan777
 /doc/administration/docs_self_host.md @axil
+/doc/administration/duo_add_on_seat_management_with_ldap.md @lciutacu
 /doc/administration/encrypted_configuration.md @axil
 /doc/administration/environment_variables.md @axil
 /doc/administration/external_users.md @jglassman1
@@ -951,10 +952,10 @@ lib/gitlab/checks/**
 /doc/development/avoiding_required_stops.md @gitlab-org/distribution
 /doc/development/build_test_package.md @gitlab-org/distribution
 /doc/development/cascading_settings.md @gitlab-org/foundations/engineering
-/doc/development/cells/ @abdwdd @alexpooley @manojmj
+/doc/development/cells/ @OmarQunsulGitlab @bmarjanovic
 /doc/development/cicd/ @gitlab-org/maintainers/cicd-verify
 /doc/development/contributing/verify/ @gitlab-org/maintainers/cicd-verify
-/doc/development/database/ @abdwdd @alexpooley @manojmj
+/doc/development/database/ @OmarQunsulGitlab @bmarjanovic
 /doc/development/distributed_tracing.md @gitlab-org/analytics-section/product-analytics/engineers/frontend
 /doc/development/distribution/ @gitlab-org/distribution
 /doc/development/documentation/ @fneill
@@ -964,15 +965,16 @@ lib/gitlab/checks/**
 /doc/development/git_object_deduplication.md @proglottis @toon
 /doc/development/gitaly.md @proglottis @toon
 /doc/development/gitpod_internals.md @gl-dx/eng-prod
-/doc/development/image_scaling.md @abdwdd @alexpooley @manojmj
+/doc/development/image_scaling.md @abdwdd @alexpooley
 /doc/development/internal_analytics/ @gitlab-org/analytics-section/product-analytics/engineers/frontend @gitlab-org/analytics-section/analytics-instrumentation/engineers
+/doc/development/internal_analytics/product_analytics.md @gitlab-org/analytics-section/product-analytics/engineers/frontend
 /doc/development/logging.md @gitlab-org/analytics-section/product-analytics/engineers/frontend
 /doc/development/logs.md @gitlab-org/analytics-section/product-analytics/engineers/frontend
 /doc/development/metrics.md @gitlab-org/analytics-section/product-analytics/engineers/frontend
 /doc/development/navigation_sidebar.md @gitlab-org/foundations/engineering
 /doc/development/observability/ @gitlab-org/analytics-section/product-analytics/engineers/frontend
 /doc/development/omnibus.md @gitlab-org/distribution
-/doc/development/organization/ @abdwdd @alexpooley @manojmj
+/doc/development/organization/ @abdwdd @alexpooley
 /doc/development/permissions.md @gitlab-org/govern/authorization/approvers
 /doc/development/permissions/ @gitlab-org/govern/authorization/approvers
 /doc/development/pipelines/ @gl-dx/eng-prod
