@@ -141,7 +141,7 @@ export default {
 <template>
   <div
     v-if="filePath"
-    class="well-segment blob-auxiliary-viewer file-owner-content gl-flex gl-items-center gl-justify-between"
+    class="well-segment blob-auxiliary-viewer file-owner-content gl-flex gl-items-baseline gl-justify-between"
   >
     <div class="gl-flex gl-flex-wrap gl-pr-3">
       <div>
@@ -165,7 +165,7 @@ export default {
       </div>
 
       <template v-if="hasCodeOwners && !isLoading">
-        <gl-badge class="gl-mx-3">{{ codeOwnersTotal }}</gl-badge>
+        <gl-badge class="gl-mx-3 gl-self-center">{{ codeOwnersTotal }}</gl-badge>
         <gl-button
           variant="link"
           size="small"
