@@ -9,6 +9,13 @@ FactoryBot.define do
 
     relative_position { RelativePositioning::START_POSITION }
 
+    trait :with_parent_link do
+      work_item_parent_link do
+        association(:parent_link, work_item: WorkItem.find(issue.id), work_item_parent: epic.work_item,
+          relative_position: relative_position)
+      end
+    end
+
     after(:build) do |epic_issue, evaluator|
       epic = evaluator.epic
       issue = evaluator.issue

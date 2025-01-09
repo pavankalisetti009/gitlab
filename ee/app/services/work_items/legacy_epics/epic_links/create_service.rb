@@ -6,14 +6,11 @@ module WorkItems
       class CreateService
         include ::Gitlab::Utils::StrongMemoize
 
-        ALREADY_ASSIGNED_ERROR_MSG = "already assigned"
-        NOT_FOUND_ERROR_MSG = "No matching work item found"
-
         def initialize(legacy_epic, user, params)
           @legacy_epic = legacy_epic
           @user = user
           @params = params
-          @previous_parent_links = []
+          @previous_parent_links = {}
         end
 
         def execute
@@ -27,11 +24,15 @@ module WorkItems
             params: {},
             widget_params: { hierarchy_widget: { children: target_work_items } }
           ).execute(parent_work_item).then do |result|
-            transform_result(result)
+            Gitlab::WorkItems::LegacyEpics::TransformServiceResponse.new(result:)
+              .transform(created_references_lambda: -> { created_references },
+                error_message_lambda: -> { error_message_creator })
           end
         end
 
         private
+
+        attr_reader :legacy_epic, :user, :params, :previous_parent_links
 
         def parent_work_item
           legacy_epic.work_item
@@ -57,41 +58,18 @@ module WorkItems
           extractor.epics
         end
 
-        def transform_result(result)
-          if result[:status] == :success
-            result.delete(:message)
-            result.delete(:work_item)
+        def created_references
+          target_work_items.filter_map do |work_item|
+            next if previous_parent_links[work_item.id] == work_item.reset.parent_link&.work_item_parent_id
+            next if work_item.parent_link.nil?
 
-            result[:created_references] = target_work_items.filter_map do |work_item|
-              next if previous_parent_links[work_item.id] == work_item.reset.parent_link&.work_item_parent_id
-              next if work_item.parent_link.nil?
-
-              work_item.synced_epic
-            end
-          else
-            transform_error(result)
-          end
-
-          result
-        end
-
-        def transform_error(result)
-          result[:http_status] = 422 if result[:http_status] == :unprocessable_entity
-          error_message = ::Gitlab::WorkItems::IssuableLinks::ErrorMessage.new(target_type: 'epic',
-            container_type: 'group')
-
-          if result[:message].include?(ALREADY_ASSIGNED_ERROR_MSG)
-            result[:http_status] = 409
-            result[:message] = error_message.already_assigned
-          elsif result[:message].include?(NOT_FOUND_ERROR_MSG)
-            result[:http_status] = 404
-            result[:message] = error_message.not_found
-          else
-            result[:message] = result[:message].gsub("work item", "epic")
+            work_item.synced_epic
           end
         end
 
-        attr_reader :legacy_epic, :user, :params, :previous_parent_links
+        def error_message_creator
+          ::Gitlab::WorkItems::IssuableLinks::ErrorMessage.new(target_type: 'epic', container_type: 'group')
+        end
       end
     end
   end
