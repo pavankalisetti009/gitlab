@@ -9525,6 +9525,9 @@ msgstr ""
 msgid "BlobViewer|If you delete the file, it will be removed from the branch %{branch}."
 msgstr ""
 
+msgid "BlobViewer|Open raw"
+msgstr ""
+
 msgid "BlobViewer|The file could not be displayed because it is too large."
 msgstr ""
 
