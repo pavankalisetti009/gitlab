@@ -6,18 +6,24 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
   include CycleAnalyticsHelpers
   include ListboxHelpers
 
+  group_label1_title = 'Jordan'
+  group_label2_title = 'Pippen'
+  milestone_title = 'beta'
+  username = 'joebloggs'
+  project_id = 1337
+
   let_it_be(:group) { create(:group, :with_organization) }
-  let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, namespace: group, name: 'Cool fun project') }
+  let_it_be(:user) { create(:user, username: username) }
+  let_it_be(:project) { create(:project, :repository, id: project_id, namespace: group, name: 'Cool fun project') }
   let_it_be(:sub_group) { create(:group, name: 'CA-sub-group', parent: group, organization_id: group.organization_id) }
   let_it_be(:sub_group_project) { create(:project, :repository, namespace: group, name: 'Cool sub group project') }
-  let_it_be(:group_label1) { create(:group_label, group: group) }
-  let_it_be(:group_label2) { create(:group_label, group: group) }
+  let_it_be(:group_label1) { create(:group_label, title: group_label1_title, group: group) }
+  let_it_be(:group_label2) { create(:group_label, title: group_label2_title, group: group) }
   let_it_be(:custom_value_stream_name) { "First custom value stream" }
   let_it_be(:predefined_date_ranges_dropdown_selector) { '[data-testid="vsa-predefined-date-ranges-dropdown"]' }
   let_it_be(:date_range_picker_selector) { '[data-testid="vsa-date-range-picker"]' }
 
-  let(:milestone) { create(:milestone, project: project) }
+  let(:milestone) { create(:milestone, title: milestone_title, project: project) }
   let(:mr) { create_merge_request_closing_issue(user, project, issue, commit_message: "References #{issue.to_reference}") }
   let(:pipeline) { create(:ci_empty_pipeline, status: 'created', project: project, ref: mr.source_branch, sha: mr.source_branch_sha, head_pipeline_of: mr) }
 
@@ -393,7 +399,8 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
       issue.update!(created_at: 5.days.ago.middle_of_day)
       mr.update!(created_at: issue.created_at + 1.day)
       create_cycle(user, project, issue, mr, milestone, pipeline)
-      create(:labeled_issue, created_at: issue.created_at, project: create(:project, group: group), labels: [group_label1])
+      create(:labeled_issue, created_at: issue.created_at, project: create(:project, group: group), labels: [group_label1], assignees: [user])
+      create(:labeled_issue, created_at: issue.created_at + 1.day, project: create(:project, group: group), labels: [group_label1], assignees: [user])
       create(:labeled_issue, created_at: issue.created_at + 2.days, project: create(:project, group: group), labels: [group_label2])
 
       issue.metrics.update!(first_mentioned_in_commit_at: mr.created_at - 5.hours, first_associated_with_milestone_at: issue.created_at + 2.days)
@@ -491,6 +498,37 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
           _('No data available ' \
             'Try adjusting the filters, or creating an issue or merge request to collect more data')
         )
+      end
+    end
+
+    context 'lifecycle metrics' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:filter, :value, :new_issues_value, :deploys_value) do
+        'fake_filter_that_doesnt_work' | 'fake-filter' | 7 | 1
+        'project_ids[]' | project_id | 1 | 1
+        'label_name[]' | group_label1_title | 2 | 1
+        'label_name[]' | group_label2_title | 1 | 1
+        'milestone_title' | milestone_title | 1 | 1
+        'assignee_username[]' | username | 2 | 1
+        'author_username' | username | "-" | 1
+      end
+
+      with_them do
+        before do
+          visit "#{group_analytics_cycle_analytics_path(group)}?#{filter}=#{value}"
+
+          wait_for_stages_to_load
+        end
+
+        it 'filters lifecycle metrics', :aggregate_failures do
+          issue_count = page.all(card_metric_selector)[2]
+          expect(issue_count).to have_content(n_('New issue', 'New issues', new_issues_value))
+          expect(issue_count).to have_content(new_issues_value)
+
+          deploys_count = page.all(card_metric_selector)[3]
+          expect(deploys_count).to have_content(deploys_value)
+        end
       end
     end
   end
