@@ -108,6 +108,16 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
       # noinspection HttpUrlsUsage - suppress RubyMine warning for insecure http link.
       expect(workspace.devfile_web_url).to eq("http://#{Gitlab.config.gitlab.host}/#{workspace.project.path_with_namespace}/-/blob/main/.devfile.yaml")
     end
+
+    context 'when devfile_path is nil' do
+      before do
+        workspace.devfile_path = nil
+      end
+
+      it 'returns nil as devfile_web_url' do
+        expect(workspace.devfile_web_url).to eq(nil)
+      end
+    end
   end
 
   describe '.before_save' do

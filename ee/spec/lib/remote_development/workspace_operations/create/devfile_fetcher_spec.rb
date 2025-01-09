@@ -15,10 +15,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   let_it_be(:project) { create(:project, :in_group, :repository) }
   let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let(:random_string) { 'abcdef' }
-  let(:devfile_ref) { 'main' }
-  let(:devfile_path) { '.devfile.yaml' }
-  let(:devfile_fixture_name) { 'example.devfile.yaml' }
-  let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
+  let(:project_ref) { 'main' }
   let(:workspace_root) { '/projects' }
   let(:params) do
     {
@@ -27,12 +24,21 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
       project: project,
       max_hours_before_termination: 24,
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
-      devfile_ref: devfile_ref,
+      project_ref: project_ref,
       devfile_path: devfile_path
     }
   end
 
-  let(:context) { { params: params } }
+  let(:default_devfile_yaml) { ::RemoteDevelopment::Settings::DefaultSettings::DEFAULT_DEVFILE_YAML }
+
+  let(:context) do
+    {
+      params: params,
+      settings: {
+        default_devfile_yaml: default_devfile_yaml
+      }
+    }
+  end
 
   before do
     allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
@@ -41,19 +47,50 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   context 'when params are valid' do
     let(:devfile) { yaml_safe_load_symbolized(devfile_yaml) }
 
-    it 'returns an ok Result containing the original params and the devfile_yaml_string' do
-      expect(result).to eq(
-        Gitlab::Fp::Result.ok({
-          params: params,
-          devfile_yaml: devfile_yaml,
-          devfile: devfile
-        })
-      )
+    context 'when devfile_path is points to an existing file' do
+      let(:devfile_path) { '.devfile.yaml' }
+      let(:devfile_fixture_name) { 'example.devfile.yaml' }
+      let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
+
+      it 'returns an ok Result containing the original params and the devfile_yaml' do
+        expect(result).to eq(
+          Gitlab::Fp::Result.ok({
+            params: params,
+            devfile_yaml: devfile_yaml,
+            devfile: devfile,
+            settings: {
+              default_devfile_yaml: default_devfile_yaml
+            }
+          })
+        )
+      end
+    end
+
+    context 'when devfile_path is nil' do
+      let(:devfile_path) { nil }
+      let(:devfile_yaml) { default_devfile_yaml }
+
+      it 'returns an ok Result containing the original params and the default devfile_yaml_string' do
+        expect(project.repository).not_to receive(:blob_at_branch)
+
+        expect(result).to eq(
+          Gitlab::Fp::Result.ok({
+            params: params,
+            devfile_yaml: devfile_yaml,
+            devfile: devfile,
+            settings: {
+              default_devfile_yaml: default_devfile_yaml
+            }
+          })
+        )
+      end
     end
   end
 
   context 'when params are invalid' do
     context 'when agent has no associated config' do
+      let(:devfile_path) { '.devfile.yaml' }
+
       let_it_be(:agent) { create(:cluster_agent) }
 
       it 'returns an err Result containing error details' do
@@ -80,12 +117,31 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
           expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileLoadFailed)
           message.content => { details: String => error_details }
           expect(error_details)
-            .to eq("Devfile path '#{devfile_path}' at ref '#{devfile_ref}' does not exist in project repository")
+            .to eq("Devfile path '#{devfile_path}' at ref '#{project_ref}' does not exist in the project repository")
+        end
+      end
+    end
+
+    context 'when devfile_path is empty string' do
+      let(:devfile_path) { '' }
+
+      before do
+        allow(project.repository).to receive(:blob_at_branch).and_return(nil)
+      end
+
+      it 'returns an err Result containing error details' do
+        expect(result).to be_err_result do |message|
+          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileLoadFailed)
+          message.content => { details: String => error_details }
+          expect(error_details)
+            .to eq("Devfile path '#{devfile_path}' at ref '#{project_ref}' does not exist in the project repository")
         end
       end
     end
 
     context 'when devfile blob data could not be loaded' do
+      let(:devfile_path) { '.devfile.yaml' }
+
       before do
         allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { '' }
       end
@@ -100,6 +156,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
     end
 
     context 'when devfile YAML cannot be loaded' do
+      let(:devfile_path) { '.devfile.yaml' }
       let(:devfile_yaml) { "invalid: yaml: boom" }
 
       it 'returns an err Result containing error details' do
@@ -112,6 +169,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
     end
 
     context 'when devfile YAML is valid but is invalid JSON' do
+      let(:devfile_path) { '.devfile.yaml' }
       let(:devfile_yaml) { "!binary key: value" }
 
       it 'returns an err Result containing error details' do

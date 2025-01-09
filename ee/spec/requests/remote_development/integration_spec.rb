@@ -60,7 +60,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:workspace_project_name) { "workspace-project" }
   let(:workspace_namespace_path) { "#{common_parent_namespace_name}/#{workspace_project_namespace_name}" }
   let(:random_string) { "abcdef" }
-  let(:devfile_ref) { "master" }
+  let(:project_ref) { "master" }
   let(:devfile_path) { ".devfile.yaml" }
   let(:devfile_fixture_name) { "example.devfile.yaml" }
   let(:devfile_yaml) do
@@ -272,7 +272,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       max_hours_before_termination: 24,
       cluster_agent_id: cluster_agent_gid,
       project_id: workspace_project.to_global_id.to_s,
-      devfile_ref: devfile_ref,
+      project_ref: project_ref,
       devfile_path: devfile_path,
       variables: user_provided_variables.each_with_object([]) do |variable, arr|
         arr << variable.merge(type: variable[:type].to_s.upcase)

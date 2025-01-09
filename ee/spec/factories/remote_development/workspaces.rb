@@ -19,7 +19,7 @@ FactoryBot.define do
     deployment_resource_version { 2 }
     max_hours_before_termination { 24 }
 
-    devfile_ref { 'main' }
+    project_ref { 'main' }
     devfile_path { '.devfile.yaml' }
 
     devfile do

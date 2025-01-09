@@ -9,6 +9,8 @@ module RemoteDevelopment
 
     columns_changing_default :desired_config_generator_version
 
+    ignore_column :devfile_ref, remove_with: '17.8', remove_after: '2025-01-08'
+
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
     belongs_to :agent, class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :workspaces
@@ -153,8 +155,9 @@ module RemoteDevelopment
         query: url_query_string).to_s
     end
 
+    # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/503465 - Remove in 19.0
     def devfile_web_url
-      project.http_url_to_repo.gsub(/\.git$/, "/-/blob/#{devfile_ref}/#{devfile_path}")
+      devfile_path.nil? ? nil : project.http_url_to_repo.gsub(/\.git\Z/, "/-/blob/#{project_ref}/#{devfile_path}")
     end
 
     private

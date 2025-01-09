@@ -55,14 +55,22 @@ module Types
       field :max_hours_before_termination, GraphQL::Types::Int,
         null: false, description: 'Number of hours until the workspace automatically terminates.'
 
+      # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/510078 - Remove in 19.0
       field :devfile_ref, GraphQL::Types::String,
-        null: false, description: 'Git reference that contains the devfile used to configure the workspace.'
+        null: false, description: 'Git reference that contains the devfile used to configure the workspace.',
+        deprecated: { reason: 'Field is renamed to project_ref', milestone: '17.8' }, method: :project_ref
+
+      field :project_ref, GraphQL::Types::String, # rubocop:disable GraphQL/ExtractType -- We don't want to extract this to a type
+        null: false, description: 'Git reference that contains the devfile used to configure the workspace, ' \
+                       'and that will be cloned into the workspace'
 
       field :devfile_path, GraphQL::Types::String,
-        null: false, description: 'Path to the devfile used to configure the workspace.'
+        null: true, description: 'Path to the devfile used to configure the workspace.'
 
+      # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/503465 - Remove in 19.0
       field :devfile_web_url, GraphQL::Types::String, # rubocop:disable GraphQL/ExtractType -- We don't want to extract this to a type, it would cause confusion with the devfile field
-        null: false, description: 'Web URL of the devfile used to configure the workspace.'
+        null: true, description: 'Web URL of the devfile used to configure the workspace.',
+        deprecated: { reason: 'Field is not used', milestone: '17.8' }
 
       field :devfile, GraphQL::Types::String,
         null: false, description: 'Source YAML of the devfile used to configure the workspace.'
