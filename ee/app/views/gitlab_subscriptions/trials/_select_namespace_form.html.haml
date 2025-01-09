@@ -5,8 +5,8 @@
   = render 'layouts/one_trust'
 = render 'layouts/google_tag_manager_body'
 
-.row
-  .col-md-6.m-sm-6
+.gl-flex.gl-flex-col.md:gl-flex-row.gl-items-center.gl-justify-center
+  .sm:gl-m-8.gl-max-w-80
     %h2.gl-pb-5.gl-my-0
       - if @eligible_namespaces.any?
         = s_('Trial|Apply your trial to a new or existing group')
@@ -24,5 +24,4 @@
       = render Pajamas::ButtonComponent.new(type: :submit, variant: :confirm, button_options: {data: { testid: 'start-your-free-trial-button' }}) do
         = _('Activate my trial')
 
-  .col-md-4.gl-mt-9
-    = image_tag 'illustrations/saas-trial-illustration.svg', alt: '', class: 'gl-hidden md:gl-inline gl-w-full'
+  = render 'trial_illustration'
