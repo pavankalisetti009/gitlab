@@ -71,8 +71,11 @@ module Namespaces
         )
       end
 
+      def usage_ratio
+        root_storage_size.usage_ratio
+      end
+
       def alert_level
-        usage_ratio = root_storage_size.usage_ratio
         current_level = usage_thresholds.each_key.first
 
         usage_thresholds.each do |level, threshold|

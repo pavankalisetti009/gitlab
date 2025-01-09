@@ -37,7 +37,7 @@ RSpec.describe "Repository size limit banner", :js, :saas, feature_category: :co
 
       visit(project_path(paid_group_project))
 
-      expect(page).to have_text("You have reached the free storage limit of 10 MiB on 1 project")
+      expect(page).to have_text("#{paid_group.name} has 1 read-only project")
     end
   end
 
@@ -51,7 +51,7 @@ RSpec.describe "Repository size limit banner", :js, :saas, feature_category: :co
 
       visit(project_path(paid_group_project))
 
-      expect(page).to have_text("You have reached the free storage limit of 10 MiB on 1 project")
+      expect(page).to have_text("#{paid_group.name} has 1 read-only project")
     end
   end
 end
