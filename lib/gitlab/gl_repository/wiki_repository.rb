@@ -12,10 +12,11 @@ module Gitlab
         @container_class = ProjectWiki
         @project_resolver = ->(wiki) { wiki.try(:project) }
         @guest_read_ability = :download_wiki_code
-        @suffix = :wiki
       end
 
       def name = :wiki
+
+      def suffix = :wiki
     end
   end
 end

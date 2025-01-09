@@ -7,27 +7,26 @@ module Gitlab
         :repository_resolver,
         :container_class,
         :project_resolver,
-        :guest_read_ability,
-        :suffix
+        :guest_read_ability
 
       def initialize(
         access_checker_class:,
         repository_resolver:,
         container_class: default_container_class,
         project_resolver: nil,
-        guest_read_ability: :download_code,
-        suffix: nil)
+        guest_read_ability: :download_code)
         @access_checker_class = access_checker_class
         @repository_resolver = repository_resolver
         @container_class = container_class
         @project_resolver = project_resolver
         @guest_read_ability = guest_read_ability
-        @suffix = suffix
       end
 
       def name
-        raise NotImplementedError
+        raise NotImplementedError, 'Define a name in a RepoType subclass'
       end
+
+      def suffix = nil
 
       def identifier_for_container(container)
         "#{name}-#{container.id}"
