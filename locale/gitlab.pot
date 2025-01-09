@@ -13920,7 +13920,7 @@ msgstr ""
 msgid "Comma-separated list of branches to be automatically inspected. Leave blank to include all branches."
 msgstr ""
 
-msgid "Comma-separated list of email addresses."
+msgid "Comma-separated list of recipient email addresses."
 msgstr ""
 
 msgid "Command"
@@ -52387,6 +52387,9 @@ msgid "Send notifications about project events to Mattermost channels."
 msgstr ""
 
 msgid "Send notifications for broken pipelines."
+msgstr ""
+
+msgid "Send notifications for the default branch."
 msgstr ""
 
 msgid "Send report"
