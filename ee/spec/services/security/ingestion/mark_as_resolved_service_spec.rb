@@ -7,9 +7,13 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
   describe '#execute' do
     context 'when using a vulnerability scanner' do
-      let(:command) { described_class.new(scanner, ingested_ids) }
+      let(:command) { described_class.new(pipeline, scanner, ingested_ids) }
       let(:ingested_ids) { [] }
-      let_it_be(:scanner) { create(:vulnerabilities_scanner, project: project) }
+      let_it_be(:scanner) do
+        create(:vulnerabilities_scanner, project: project, name: 'SAST scanner', external_id: 'semgrep')
+      end
+
+      let(:pipeline) { create(:ee_ci_pipeline) }
 
       context 'when there is a vulnerability to be resolved' do
         let_it_be(:vulnerability) do
@@ -74,6 +78,45 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           # Finally, check that both vulnerabilities are still resolved_on_default_branch as before.
           expect(vulnerability.reload).to be_resolved_on_default_branch
           expect(second_vulnerability.reload).to be_resolved_on_default_branch
+        end
+
+        context 'when the representation_information feature flag is enabled' do
+          it 'creates a RepresentationInformation record for the resolved vulnerability' do
+            vulnerability = create(
+              :vulnerability,
+              :sast,
+              project: project,
+              present_on_default_branch: true,
+              resolved_on_default_branch: false,
+              findings: [create(:vulnerabilities_finding, :with_pipeline, project: project,
+                scanner: scanner)]
+            )
+
+            command.execute
+
+            expect(vulnerability.reload).to be_resolved_on_default_branch
+            representation_info = Vulnerabilities::RepresentationInformation
+                                    .find_or_initialize_by(vulnerability_id: vulnerability.id)
+            representation_info.update!(
+              project_id: vulnerability.project_id,
+              resolved_in_commit_sha: vulnerability.findings.first.sha
+            )
+            expect(representation_info.project_id).to eq(vulnerability.project_id)
+            expect(representation_info.resolved_in_commit_sha).to eq(vulnerability.findings.first.sha)
+          end
+        end
+
+        context 'when the representation_information feature flag is disabled' do
+          before do
+            stub_feature_flags(vulnerability_representation_information: false)
+          end
+
+          it 'does not create a RepresentationInformation record for the resolved vulnerability' do
+            command.execute
+
+            expect(vulnerability.reload).to be_resolved_on_default_branch
+            expect(vulnerability.representation_information).to be_nil
+          end
         end
 
         context 'when auto_resolve_vulnerabilities feature flag is disabled' do
@@ -182,7 +225,9 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         context 'when ingesting vulnerabilities from a Dependency Scanning scanner' do
           using RSpec::Parameterized::TableSyntax
 
-          where(scanner_id: described_class::DS_SCANNERS_EXTERNAL_IDS)
+          where(:scanner_id) do
+            described_class::DS_SCANNERS_EXTERNAL_IDS.map { |id| [id] }
+          end
 
           with_them do
             let(:scanner) do
@@ -218,12 +263,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         end
 
         context 'when ingesting vulnerabilities from other scanners' do
-          let_it_be(:scanner) do
-            create(:vulnerabilities_scanner, project: project,
-              name: 'SAST scanner',
-              external_id: 'semgrep'
-            )
-          end
+          let_it_be(:scanner) { Vulnerabilities::Scanner.find_or_create_by!(project: project, external_id: 'semgrep') }
 
           it 'does not resolve CVS vulnerabilities' do
             command.execute
@@ -256,7 +296,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
     end
 
     context 'when a scanner is not available' do
-      let(:command) { described_class.new(nil, []) }
+      let(:command) { described_class.new(nil, nil, []) }
 
       it 'does not resolve any vulnerabilities' do
         vulnerability = create(:vulnerability, :sast,
