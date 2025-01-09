@@ -88,7 +88,8 @@ module EE
         :duo_workflow_oauth_application_id,
         :scan_execution_policies_action_limit,
         :secret_detection_service_auth_token,
-        :secret_detection_service_url
+        :secret_detection_service_url,
+        :fetch_observability_alerts_from_cloud
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
         settings.concat(enable_promotion_management_attributes)

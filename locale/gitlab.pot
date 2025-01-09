@@ -20355,6 +20355,9 @@ msgstr ""
 msgid "Disable What's new"
 msgstr ""
 
+msgid "Disable fetching cloud alerts if this GitLab instance is isolated from the public internet, or does not use observe.gitlab.com for Observability features."
+msgstr ""
+
 msgid "Disable for this project"
 msgstr ""
 
@@ -24032,6 +24035,9 @@ msgid "February"
 msgstr ""
 
 msgid "Fetch and check out this merge request's feature branch:"
+msgstr ""
+
+msgid "Fetch cloud observability alerts"
 msgstr ""
 
 msgid "Fetching incoming email"

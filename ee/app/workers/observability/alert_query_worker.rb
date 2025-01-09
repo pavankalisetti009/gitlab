@@ -13,6 +13,7 @@ module Observability
 
     def perform
       return unless License.feature_available?(:observability_alerts)
+      return unless ::Gitlab::CurrentSettings.fetch_observability_alerts_from_cloud
 
       api_response = fetch_alerts
       return unless api_response
