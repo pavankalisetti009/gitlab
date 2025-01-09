@@ -7,12 +7,13 @@ module EE
     extend ::Gitlab::Utils::Override
 
     override :common_invite_group_modal_data
-    def common_invite_group_modal_data(source, _member_class, _is_project)
+    def common_invite_group_modal_data(source, _member_class)
       super.merge(
         free_user_cap_enabled: ::Namespaces::FreeUserCap::Enforcement.new(source.root_ancestor).enforce_cap?.to_s,
         free_users_limit: ::Namespaces::FreeUserCap.dashboard_limit,
         overage_members_modal_available: overage_members_modal_available.to_s,
-        has_gitlab_subscription: gitlab_com_subscription?.to_s
+        has_gitlab_subscription: gitlab_com_subscription?.to_s,
+        invite_with_custom_role_enabled: custom_roles_enabled?(source).to_s
       )
     end
 
@@ -91,11 +92,12 @@ module EE
       ::Gitlab::Saas.feature_available?(:overage_members_modal)
     end
 
-    override :invite_group_dataset
-    def invite_group_dataset(source)
-      super.merge(
-        custom_role_for_group_link_enabled: custom_role_for_group_link_enabled?(source).to_s
-      )
+    private
+
+    def custom_roles_enabled?(source)
+      return custom_role_for_project_link_enabled?(source) if source.is_a?(Project)
+
+      custom_role_for_group_link_enabled?(source)
     end
   end
 end

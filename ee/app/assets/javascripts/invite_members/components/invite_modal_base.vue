@@ -43,7 +43,7 @@ export default {
     overageMembersModalAvailable: {
       default: false,
     },
-    customRoleForGroupLinkEnabled: {
+    inviteWithCustomRoleEnabled: {
       default: false,
     },
   },
@@ -135,11 +135,11 @@ export default {
         Sentry.captureException(error);
       },
       skip() {
-        if (this.customRoleForGroupLinkEnabled) {
-          return !this.isVisible;
+        if (this.isGroupInvite) {
+          return !this.inviteWithCustomRoleEnabled || !this.isVisible;
         }
 
-        return this.isGroupInvite || !this.isVisible;
+        return !this.isVisible;
       },
     },
   },

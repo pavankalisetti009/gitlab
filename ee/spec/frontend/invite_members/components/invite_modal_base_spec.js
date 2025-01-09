@@ -54,7 +54,7 @@ describe('EEInviteModalBase', () => {
     props = {},
     glFeatures = {},
     overageMembersModalAvailable = true,
-    customRoleForGroupLinkEnabled = false,
+    inviteWithCustomRoleEnabled = false,
     queryHandler = defaultReconciliationMock,
     getBillableUserCountChangesQueryHandler = defaultBillableMock,
     showModal = true,
@@ -81,7 +81,7 @@ describe('EEInviteModalBase', () => {
       provide: {
         glFeatures,
         overageMembersModalAvailable,
-        customRoleForGroupLinkEnabled,
+        inviteWithCustomRoleEnabled,
       },
       stubs: {
         GlSprintf,
@@ -190,20 +190,15 @@ describe('EEInviteModalBase', () => {
     });
 
     describe('when `isGroupInvite` is true', () => {
-      it('skips fetching', async () => {
-        createComponent({ props: { isGroupInvite: true } });
-        await waitForPromises();
-
-        expect(groupMemberRolesResponse).toHaveBeenCalledTimes(0);
-        expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
-      });
-
-      describe('when customRoleForGroupLinkEnabled is true', () => {
-        it('fetches custom roles', async () => {
+      describe('when inviteWithCustomRoleEnabled is true', () => {
+        it('fetches custom roles when modal is shown', async () => {
           createComponent({
             props: { isGroupInvite: true },
-            customRoleForGroupLinkEnabled: true,
+            inviteWithCustomRoleEnabled: true,
           });
+
+          expect(groupMemberRolesResponse).toHaveBeenCalledTimes(0);
+          expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
 
           await waitForPromises();
 
@@ -212,12 +207,15 @@ describe('EEInviteModalBase', () => {
         });
       });
 
-      describe('when customRoleForGroupLinkEnabled is false', () => {
-        it('fetches custom roles', async () => {
+      describe('when inviteWithCustomRoleEnabled is false', () => {
+        it('does not fetch custom roles even when modal is shown', async () => {
           createComponent({
             props: { isGroupInvite: true },
-            customRoleForGroupLinkEnabled: false,
+            inviteWithCustomRoleEnabled: false,
           });
+
+          expect(groupMemberRolesResponse).toHaveBeenCalledTimes(0);
+          expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
 
           await waitForPromises();
 
