@@ -105,6 +105,11 @@ module EE
         presence: true,
         numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 90 }
 
+      jsonb_accessor :observability_settings,
+        fetch_observability_alerts_from_cloud: [:boolean, { default: true }]
+
+      validates :observability_settings, json_schema: { filename: "application_setting_observability_settings" }
+
       validates :mirror_capacity_threshold,
         :mirror_max_capacity,
         :elasticsearch_indexed_file_size_limit_kb,

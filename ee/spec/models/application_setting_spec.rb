@@ -45,6 +45,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.unverified_account_group_creation_limit).to eq(2) }
     it { expect(setting.hard_phone_verification_transactions_daily_limit).to eq(20000) }
     it { expect(setting.telesign_intelligence_enabled).to eq(true) }
+    it { expect(setting.fetch_observability_alerts_from_cloud).to eq(true) }
   end
 
   describe 'validations' do

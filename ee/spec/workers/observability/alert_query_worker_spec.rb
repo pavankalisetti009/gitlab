@@ -167,6 +167,16 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
     end
   end
 
+  context 'when fetch_observability_alerts_from_cloud application setting is disabled' do
+    before do
+      stub_application_setting(fetch_observability_alerts_from_cloud: false)
+    end
+
+    it 'does not create any alert' do
+      expect { worker.perform }.not_to change { ::AlertManagement::Alert.count }
+    end
+  end
+
   context 'when not licensed' do
     before do
       stub_licensed_features(observability_alerts: false, observability: false)
