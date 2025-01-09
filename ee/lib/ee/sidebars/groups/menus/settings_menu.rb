@@ -18,6 +18,7 @@ module EE
               insert_item_after(:general, service_accounts_menu_item)
               insert_item_after(:service_accounts, roles_and_permissions_menu_item)
               insert_item_after(:integrations, webhooks_menu_item)
+              insert_item_after(:group_projects, group_work_items_menu_item)
               insert_item_after(:ci_cd, analytics_menu_item)
               insert_item_after(:usage_quotas, gitlab_duo_settings_menu_item)
               add_item(ldap_sync_menu_item)
@@ -221,6 +222,26 @@ module EE
               active_routes: { path: ['configuration#index, seat_utilization#index', 'gitlab_duo#show'] },
               item_id: :gitlab_duo_settings
             )
+          end
+
+          def group_work_items_menu_item
+            unless show_group_work_items_settings_menu_item?
+              return ::Sidebars::NilMenuItem.new(item_id: :group_work_items)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: _('Issues'),
+              link: group_settings_issues_path(context.group),
+              active_routes: { controller: :work_items },
+              item_id: :group_work_items
+            )
+          end
+
+          def show_group_work_items_settings_menu_item?
+            context.group.root? &&
+              context.group.licensed_feature_available?(:custom_fields) &&
+              can?(context.current_user, :admin_custom_field, context.group) &&
+              ::Feature.enabled?('custom_fields_feature', context.group)
           end
         end
       end
