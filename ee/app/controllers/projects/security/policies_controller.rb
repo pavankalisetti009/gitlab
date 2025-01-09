@@ -31,11 +31,11 @@ module Projects
       end
 
       def new
-        @policy_type = params[:type]
+        @policy_type = policy_params[:type]
       end
 
       def edit
-        @policy_name = URI.decode_www_form_component(params[:id])
+        @policy_name = URI.decode_www_form_component(policy_params[:id])
         @policy = policy
         @approvers = approvers
 
@@ -48,8 +48,12 @@ module Projects
 
       private
 
+      def policy_params
+        params.permit(:type, :id)
+      end
+
       def validate_policy_configuration
-        @policy_type = params[:type].presence&.to_sym
+        @policy_type = policy_params[:type].presence&.to_sym
         result = ::Security::SecurityOrchestrationPolicies::PolicyConfigurationValidationService.new(
           policy_configuration: policy_configuration,
           type: @policy_type

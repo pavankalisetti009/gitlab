@@ -26,11 +26,11 @@ module Groups
       track_govern_activity 'security_policies', :index, :edit, :new
 
       def new
-        @policy_type = params[:type]
+        @policy_type = policy_params[:type]
       end
 
       def edit
-        @policy_name = URI.decode_www_form_component(params[:id])
+        @policy_name = URI.decode_www_form_component(policy_params[:id])
         @policy = policy
 
         render_404 if @policy.nil?
@@ -48,8 +48,12 @@ module Groups
 
       private
 
+      def policy_params
+        params.permit(:type, :id)
+      end
+
       def policy_configuration_invalid_component_and_message
-        @policy_type = params[:type].presence&.to_sym
+        @policy_type = policy_params[:type].presence&.to_sym
 
         result = ::Security::SecurityOrchestrationPolicies::PolicyConfigurationValidationService.new(
           policy_configuration: policy_configuration,

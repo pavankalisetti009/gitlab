@@ -33,7 +33,7 @@ module Projects
       private
 
       def vulnerability
-        @issuable = @noteable = @vulnerability ||= vulnerable.vulnerabilities.find(params[:id])
+        @issuable = @noteable = @vulnerability ||= vulnerable.vulnerabilities.find(params.permit(:id)[:id])
       end
 
       alias_method :issuable, :vulnerability
