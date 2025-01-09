@@ -36,6 +36,9 @@ module Types
         field :goal, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features],
           description: 'Goal of the workflow.'
+
+        field :workflow_definition, GraphQL::Types::String,
+          description: 'Duo Workflow type based on its capabilities.'
       end
     end
   end

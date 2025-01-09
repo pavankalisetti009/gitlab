@@ -6,5 +6,6 @@ FactoryBot.define do
     user { association(:user, developer_of: project) }
     goal { "Fix pipeline" }
     agent_privileges { [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
+    workflow_definition { "software_development" }
   end
 end

@@ -8,6 +8,7 @@ module API
           expose :id
           expose :agent_privileges
           expose :agent_privileges_names
+          expose :workflow_definition
 
           def agent_privileges_names
             object.agent_privileges.map do |privilege|
