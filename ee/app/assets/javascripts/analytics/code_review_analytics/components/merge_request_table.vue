@@ -154,10 +154,8 @@ export default {
     </template>
 
     <template #cell(line_changes)="items">
-      <span class="font-weight-bold gl-text-green-600">
-        +{{ items.item.diff_stats.additions }}
-      </span>
-      <span class="font-weight-bold gl-text-red-500"> -{{ items.item.diff_stats.deletions }} </span>
+      <span class="font-weight-bold gl-text-success"> +{{ items.item.diff_stats.additions }} </span>
+      <span class="font-weight-bold gl-text-danger"> -{{ items.item.diff_stats.deletions }} </span>
     </template>
   </gl-table-lite>
 </template>

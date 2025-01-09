@@ -56,15 +56,15 @@ export const HEALTH_STATUS_UI = {
 
 export const REPLICATION_STATUS_UI = {
   enabled: {
-    color: 'gl-text-green-600',
+    color: 'gl-text-success',
     text: __('Enabled'),
   },
   paused: {
-    color: 'gl-text-orange-600',
+    color: 'gl-text-warning',
     text: __('Paused'),
   },
   disabled: {
-    color: 'gl-text-red-600',
+    color: 'gl-text-danger',
     text: __('Disabled'),
   },
 };
