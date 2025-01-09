@@ -22707,15 +22707,6 @@ CREATE TABLE work_item_types (
     CONSTRAINT check_fecb3a98d1 CHECK ((char_length(icon_name) <= 255))
 );
 
-CREATE SEQUENCE work_item_types_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE work_item_types_id_seq OWNED BY work_item_types.id;
-
 CREATE TABLE work_item_weights_sources (
     work_item_id bigint NOT NULL,
     namespace_id bigint NOT NULL,
