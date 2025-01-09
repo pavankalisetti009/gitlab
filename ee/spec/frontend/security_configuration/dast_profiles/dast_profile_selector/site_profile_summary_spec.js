@@ -37,7 +37,7 @@ describe('DastSiteProfileSummary', () => {
 
   const findAdditionalVariables = () =>
     wrapper.findAllByTestId('additional-variable-summary-cell').wrappers.map((variableCell) => ({
-      variable: variableCell.props('label'),
+      name: variableCell.props('label'),
       value: variableCell.text(),
     }));
 
@@ -90,7 +90,7 @@ describe('DastSiteProfileSummary', () => {
   it('renders properly', () => {
     createComponent();
 
-    expect(wrapper.element).toMatchSnapshot(); // generates the snapshot
+    expect(wrapper.element).toMatchSnapshot();
   });
 
   describe('additional variables', () => {
@@ -106,7 +106,9 @@ describe('DastSiteProfileSummary', () => {
           propsData: { profile: { ...profile, optionalVariables: mockVariables } },
         });
 
-        expect(findAdditionalVariables()).toStrictEqual(expectedVariables);
+        expect(findAdditionalVariables()).toStrictEqual(
+          expectedVariables.map(({ name, value }) => ({ name, value })),
+        );
       },
     );
   });
