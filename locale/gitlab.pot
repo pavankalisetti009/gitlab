@@ -51839,6 +51839,9 @@ msgstr ""
 msgid "SecurityReports|Download %{artifactName}"
 msgstr ""
 
+msgid "SecurityReports|Download %{artifactName} (%{fileType})"
+msgstr ""
+
 msgid "SecurityReports|Download results"
 msgstr ""
 
