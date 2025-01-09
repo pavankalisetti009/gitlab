@@ -93,7 +93,7 @@ export default {
       </div>
     </event-item>
     <template v-if="commentDetails && !isEditingDismissal">
-      <hr class="my-3" />
+      <hr class="gl-my-5" />
       <event-item
         :action-buttons="actionButtons"
         :author="commentDetails.comment_author"
