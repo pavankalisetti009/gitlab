@@ -15,8 +15,52 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
     end
 
     it 'has expected common attributes' do
-      expect(helper.common_invite_group_modal_data(project, ProjectMember, 'true'))
+      expect(helper.common_invite_group_modal_data(project, ProjectMember))
         .to include({ free_user_cap_enabled: 'true', free_users_limit: 5 })
+    end
+
+    describe 'invite_with_custom_role_enabled' do
+      context 'with a group' do
+        subject(:data) { helper.common_invite_group_modal_data(group, GroupMember) }
+
+        before do
+          allow(helper).to receive(:custom_role_for_group_link_enabled?).with(group)
+            .and_return(custom_role_for_group_link_enabled)
+        end
+
+        context 'when `custom_role_for_group_link_enabled` is false' do
+          let(:custom_role_for_group_link_enabled) { false }
+
+          it { is_expected.to include({ invite_with_custom_role_enabled: 'false' }) }
+        end
+
+        context 'when `custom_role_for_group_link_enabled` is true' do
+          let(:custom_role_for_group_link_enabled) { true }
+
+          it { is_expected.to include({ invite_with_custom_role_enabled: 'true' }) }
+        end
+      end
+
+      context 'with a project' do
+        subject(:data) { helper.common_invite_group_modal_data(project, ProjectMember) }
+
+        before do
+          allow(helper).to receive(:custom_role_for_project_link_enabled?).with(project)
+            .and_return(custom_role_for_project_link_enabled)
+        end
+
+        context 'when `custom_role_for_project_link_enabled` is false' do
+          let(:custom_role_for_project_link_enabled) { false }
+
+          it { is_expected.to include({ invite_with_custom_role_enabled: 'false' }) }
+        end
+
+        context 'when `custom_role_for_project_link_enabled` is true' do
+          let(:custom_role_for_project_link_enabled) { true }
+
+          it { is_expected.to include({ invite_with_custom_role_enabled: 'true' }) }
+        end
+      end
     end
   end
 
@@ -233,35 +277,6 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
 
       it 'returns false' do
         expect(helper.overage_members_modal_available).to be(false)
-      end
-    end
-  end
-
-  describe '#invite_group_dataset' do
-    let(:group) { build(:group) }
-
-    before do
-      allow(helper).to receive(:custom_role_for_group_link_enabled?).with(group)
-        .and_return(custom_role_for_group_link_enabled)
-    end
-
-    context 'when `custom_role_for_group_link_enabled` is false' do
-      let(:custom_role_for_group_link_enabled) { false }
-
-      it 'returns expected data' do
-        expect(helper.invite_group_dataset(group)).to eq({
-          custom_role_for_group_link_enabled: 'false'
-        })
-      end
-    end
-
-    context 'when `custom_role_for_group_link_enabled` is true' do
-      let(:custom_role_for_group_link_enabled) { true }
-
-      it 'returns expected data' do
-        expect(helper.invite_group_dataset(group)).to eq({
-          custom_role_for_group_link_enabled: 'true'
-        })
       end
     end
   end
