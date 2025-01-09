@@ -22749,7 +22749,8 @@ CREATE TABLE workspace_variables (
     encrypted_value bytea NOT NULL,
     encrypted_value_iv bytea NOT NULL,
     project_id bigint,
-    CONSTRAINT check_5545042100 CHECK ((char_length(key) <= 255))
+    CONSTRAINT check_5545042100 CHECK ((char_length(key) <= 255)),
+    CONSTRAINT check_ed95da8691 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE workspace_variables_id_seq
