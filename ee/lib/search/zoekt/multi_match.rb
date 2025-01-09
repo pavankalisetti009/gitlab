@@ -23,7 +23,8 @@ module Search
           blame_url: Gitlab::Routing.url_helpers.project_blame_url(project, File.join(ref, result[:path])),
           match_count_total: result[:match_count_total],
           match_count: result[:match_count],
-          project: project
+          project: project,
+          language: result[:language]
         )
       end
 
@@ -45,7 +46,8 @@ module Search
             project_id: file[:RepositoryID].to_i,
             chunks: chunks,
             match_count_total: file[:LineMatches].inject(0) { |sum, line| sum + line[:LineFragments].count },
-            match_count: match_count
+            match_count: match_count,
+            language: file[:Language]
           }
           i += 1
         end
@@ -69,9 +71,11 @@ module Search
           end
 
           text = Base64.decode64(match[:Line]).force_encoding('UTF-8')
+          highlights, rich_text = highlight_match(text, match[:LineFragments], file_name, language)
           chunk[:lines][match[:LineNumber]] = {
+            highlights: highlights,
             text: text,
-            rich_text: highlight_match(text, match[:LineFragments], file_name, language)
+            rich_text: rich_text
           }
           match_count_per_line = match[:LineFragments].count
           chunk[:match_count_in_chunk] += match_count_per_line
@@ -91,19 +95,10 @@ module Search
       end
 
       def generate_context_blobs(match, chunk, context, file_name, language)
-        context_encoded_string = if context == :before
-                                   return if match[:LineNumber] == 1 # There is no before context if first line is match
+        # There is no before context if first line is match
+        return if context == :before && match[:LineNumber] == 1
 
-                                   match[:Before]
-                                 else
-                                   match[:After]
-                                 end
-
-        decoded_context_array = if context_encoded_string.empty?
-                                  [context_encoded_string]
-                                else
-                                  Base64.decode64(context_encoded_string).force_encoding('UTF-8').split("\n", -1)
-                                end
+        decoded_context_array = generate_decoded_context_array(match, context)
 
         if context == :before
           decoded_context_array.reverse_each.with_index(1) do |line, line_idx|
@@ -122,25 +117,43 @@ module Search
         end
       end
 
+      def generate_decoded_context_array(match, context)
+        context_encoded_string = context == :before ? match[:Before] : match[:After]
+
+        return [''] if context_encoded_string.empty?
+
+        decoded_string = Base64.decode64(context_encoded_string).force_encoding('UTF-8')
+        return [''] if decoded_string == "\n"
+
+        decoded_string.split("\n", -1)
+      end
+
       def transform_chunk(chunk)
         {
           match_count_in_chunk: chunk[:match_count_in_chunk],
           lines: chunk[:lines].sort.map do |e|
-            { line_number: e[0], text: e[1][:text], rich_text: e[1][:rich_text] }
+            { line_number: e[0], text: e[1][:text], rich_text: e[1][:rich_text], highlights: e[1][:highlights] }
           end
         }
       end
 
       def highlight_match(text, match_line_fragments, file_name, language)
+        highlights = []
         ranges = match_line_fragments.map do |fragment|
-          fragment[:LineOffset]..(fragment[:LineOffset] + fragment[:MatchLength] - 1)
+          start_highlight = fragment[:LineOffset]
+          end_highlight = (fragment[:LineOffset] + fragment[:MatchLength] - 1)
+
+          highlights << [start_highlight, end_highlight]
+          start_highlight..end_highlight
         end
+
         line = Gitlab::StringRangeMarker.new(text).mark(ranges) do |text|
           "#{HIGHLIGHT_START_TAG}#{text}#{HIGHLIGHT_END_TAG}"
         end
         syntax_decorated_line = syntax_decorate(file_name, line, language)
         replacements = { HIGHLIGHT_START_TAG => '<b>', HIGHLIGHT_END_TAG => '</b>' }
-        syntax_decorated_line.gsub(%r{(#{HIGHLIGHT_START_TAG}|#{HIGHLIGHT_END_TAG})}o, replacements)
+
+        [highlights, syntax_decorated_line.gsub(%r{(#{HIGHLIGHT_START_TAG}|#{HIGHLIGHT_END_TAG})}o, replacements)]
       end
 
       def syntax_decorate(file_name, line, language)

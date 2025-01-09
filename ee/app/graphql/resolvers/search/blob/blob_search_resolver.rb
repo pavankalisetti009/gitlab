@@ -89,9 +89,12 @@ module Resolvers
           raise Gitlab::Graphql::Errors::BaseError, search_results.error if search_results.failed?
 
           {
-            match_count: search_results.blobs_count, file_count: search_results.file_count,
-            search_level: @search_level, search_type: @search_type,
-            per_page: args[:per_page], files: @results
+            match_count: search_results.blobs_count,
+            file_count: search_results.file_count,
+            search_level: @search_level,
+            search_type: @search_type,
+            per_page: args[:per_page],
+            files: @results
           }
         end
       end
