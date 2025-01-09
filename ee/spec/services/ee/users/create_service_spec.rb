@@ -104,7 +104,17 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
           )
         end
 
-        describe 'when block overages is disabled' do
+        context 'when seat control feature is not licensed' do
+          before do
+            stub_licensed_features(seat_control: false)
+          end
+
+          it 'creates a user' do
+            expect { service.execute }.to change(User, :count).by(1)
+          end
+        end
+
+        context 'when block overages is disabled' do
           before do
             stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF)
           end
