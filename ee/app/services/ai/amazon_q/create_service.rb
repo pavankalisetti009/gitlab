@@ -3,6 +3,8 @@
 module Ai
   module AmazonQ
     class CreateService < BaseService
+      DEFAULT_USERNAME = 'amazon-q'
+
       def execute
         return ServiceResponse.error(message: 'Missing role_arn parameter') unless params[:role_arn].present?
         return availability_param_error if availability_param_error
@@ -48,6 +50,7 @@ module Ai
             @user,
             {
               name: 'Amazon Q Service',
+              username: username,
               avatar: Users::Internal.bot_avatar(image: 'q_avatar.png'),
               composite_identity_enforced: true,
               organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID,
@@ -77,6 +80,24 @@ module Ai
 
       def existing_q_service_account
         Ai::Setting.instance.amazon_q_service_account_user
+      end
+
+      def username
+        format_username = ->(counter) do
+          if counter.to_i > 0
+            "#{DEFAULT_USERNAME}-#{counter}"
+          else
+            DEFAULT_USERNAME
+          end
+        end
+
+        Gitlab::Utils::Uniquify.new.string(format_username) do |candidate|
+          username_exists?(candidate)
+        end
+      end
+
+      def username_exists?(username)
+        User.find_by_username(username).present?
       end
 
       def find_or_create_oauth_app

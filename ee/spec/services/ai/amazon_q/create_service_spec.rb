@@ -113,6 +113,28 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
         expect(service_account_user.composite_identity_enforced?).to be true
         expect(service_account_user.private_profile?).to be true
       end
+
+      context 'when there is no user with the username amazon-q' do
+        it 'sets the username as amazon-q' do
+          instance.execute
+
+          service_account_user = Ai::Setting.instance.amazon_q_service_account_user
+          expect(service_account_user.username).to eq 'amazon-q'
+        end
+      end
+
+      context 'when there us a user with the username amazon-q' do
+        before do
+          create(:user, username: 'amazon-q')
+        end
+
+        it 'add a dash and integer to the username' do
+          instance.execute
+
+          service_account_user = Ai::Setting.instance.amazon_q_service_account_user
+          expect(service_account_user.username).to eq 'amazon-q-1'
+        end
+      end
     end
 
     context 'when q service account already exists' do
