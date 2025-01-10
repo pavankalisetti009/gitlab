@@ -25,3 +25,10 @@ export const TANUKI_BOT_TRACKING_EVENT_NAME = 'ask_gitlab_chat';
 export const GENIE_CHAT_RESET_MESSAGE = '/reset';
 export const GENIE_CHAT_CLEAR_MESSAGE = '/clear';
 export const GENIE_CHAT_EXPLAIN_MESSAGE = '/explain';
+
+export const COMMENT_TEMPERATURE_EVENTS = {
+  MEASUREMENT_REQUESTED: 'requested_comment_temperature',
+  HIGH_TEMP: 'detected_high_comment_temperature',
+  REPEATED_HIGH_TEMP: 'detected_repeated_high_comment_temperature',
+  FORCED_COMMENT: 'forced_high_temperature_commenting',
+};

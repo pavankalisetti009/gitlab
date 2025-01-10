@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GlAlert, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
+import { InternalEvents } from '~/tracking';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { scrollToElement } from '~/lib/utils/common_utils';
 import { TYPENAME_USER } from '~/graphql_shared/constants';
@@ -10,8 +11,10 @@ import { fetchPolicies } from '~/lib/graphql';
 import { logError } from '~/lib/logger';
 import { createAlert } from '~/alert';
 import { __ } from '~/locale';
+import { COMMENT_TEMPERATURE_EVENTS } from '../constants';
 
 const CLIENT_SUBSCRIPTION_ID = uuidv4();
+const trackingMixin = InternalEvents.mixin();
 
 export default {
   name: 'AiCommentTemperature',
@@ -30,6 +33,7 @@ export default {
     checkAgain: __('Updated. Check again'),
     leaveFeedback: __('Leave feedback'),
   },
+  mixins: [trackingMixin],
   props: {
     userId: {
       type: Number,
@@ -92,12 +96,18 @@ export default {
             if (match) {
               try {
                 const { rating, issues } = JSON.parse(match[1]);
+                const alreadyHadHighTemp = this.commentTemperatureIssues.length > 0;
                 if (rating === 1) {
                   this.save();
                   return;
                 }
                 this.commentTemperatureIssues = issues;
                 scrollToElement(this.$el);
+                if (alreadyHadHighTemp) {
+                  this.trackEvent(COMMENT_TEMPERATURE_EVENTS.REPEATED_HIGH_TEMP);
+                } else {
+                  this.trackEvent(COMMENT_TEMPERATURE_EVENTS.HIGH_TEMP);
+                }
               } catch (e) {
                 logError(e);
                 createAlert({
@@ -128,12 +138,16 @@ export default {
       this.commentTemperatureIssues = [];
       this.subscribedToTemperatureUpdates = false;
     },
-    save() {
+    save(forced = false) {
       this.resetCommentTemperature();
       this.$emit('save');
+      if (forced) {
+        this.trackEvent(COMMENT_TEMPERATURE_EVENTS.FORCED_COMMENT);
+      }
     },
     measureCommentTemperature() {
       this.isMeasuring = true;
+      this.trackEvent(COMMENT_TEMPERATURE_EVENTS.MEASUREMENT_REQUESTED);
       this.$apollo
         .mutate({
           mutation: aiActionMutation,
@@ -190,7 +204,7 @@ export default {
           category="primary"
           variant="danger"
           class="gl-mr-3"
-          @click="save"
+          @click="save(true)"
           >{{ $options.i18n.commentAnyway }}</gl-button
         >
         <gl-button
