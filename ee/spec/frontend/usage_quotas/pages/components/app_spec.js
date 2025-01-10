@@ -14,10 +14,9 @@ describe('PagesDeployments', () => {
     expect(wrapper.exists()).toBe(true);
   });
 
-  it('renders the heading', () => {
-    const heading = wrapper.find('h2');
-    expect(heading.exists()).toBe(true);
-    expect(heading.text()).toBe('Pages deployments');
+  it('passes the heading to the stats component', () => {
+    const statsComponent = wrapper.findComponent(PagesDeploymentsStats);
+    expect(statsComponent.props('title')).toBe('Parallel deployments');
   });
 
   it('renders the PagesDeploymentStats component', () => {
