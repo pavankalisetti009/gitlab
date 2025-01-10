@@ -27,8 +27,16 @@ module QA
             has_element?('gl-empty-state-content')
           end
 
-          def has_response?(expected_response)
-            has_css?('.duo-chat-message p', text: expected_response, wait: 30)
+          def latest_response
+            find_all('.duo-chat-message p').last&.text
+          end
+
+          def has_feedback_message?
+            has_css?('.duo-chat-message-feedback', wait: 30)
+          end
+
+          def has_error?
+            has_css?('.has-error', text: 'Error code', wait: 1)
           end
 
           def number_of_messages
