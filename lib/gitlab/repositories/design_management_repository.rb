@@ -15,14 +15,14 @@ module Gitlab
 
       def container_class = DesignManagement::Repository
 
+      def project_for(design_management_repository)
+        design_management_repository&.project
+      end
+
       private
 
       def repository_resolver(design_management_repository)
         design_management_repository.repository
-      end
-
-      def project_resolver(design_management_repository)
-        design_management_repository&.project
       end
     end
   end

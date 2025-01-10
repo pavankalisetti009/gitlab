@@ -57,9 +57,7 @@ module Gitlab
       end
 
       def project_for(container)
-        return container unless project_resolver
-
-        project_resolver(container)
+        raise NotImplementedError, 'Define a project_for in a RepoType subclass'
       end
 
       def valid?(repository_path)
@@ -74,10 +72,6 @@ module Gitlab
 
       def repository_resolver
         raise NotImplementedError, 'Define a repository_resolver in a RepoType subclass'
-      end
-
-      def project_resolver
-        raise NotImplementedError, 'Define a project_resolver in a RepoType subclass'
       end
 
       def check_container(container)

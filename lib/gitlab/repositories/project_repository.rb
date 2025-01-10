@@ -13,6 +13,10 @@ module Gitlab
 
       def container_class = Project
 
+      def project_for(container)
+        container
+      end
+
       private
 
       def repository_resolver(project)
@@ -23,9 +27,6 @@ module Gitlab
           disk_path: project.disk_path
         )
       end
-
-      # For project repository we always use the container, so a resolver is never used
-      def project_resolver = nil
 
       def check_container(container)
         # Don't check container for projects because it accepts several container types.

@@ -15,6 +15,10 @@ module Gitlab
 
       def container_class = ProjectWiki
 
+      def project_for(wiki)
+        wiki.try(:project)
+      end
+
       private
 
       def repository_resolver(container)
@@ -28,10 +32,6 @@ module Gitlab
           disk_path: wiki.disk_path,
           repo_type: Gitlab::GlRepository::WIKI
         )
-      end
-
-      def project_resolver(wiki)
-        wiki.try(:project)
       end
 
       def check_container(container)

@@ -13,6 +13,10 @@ module Gitlab
 
       def container_class = Snippet
 
+      def project_for(snippet)
+        snippet&.project
+      end
+
       private
 
       def repository_resolver(snippet)
@@ -23,10 +27,6 @@ module Gitlab
           disk_path: snippet.disk_path,
           repo_type: Gitlab::GlRepository::SNIPPET
         )
-      end
-
-      def project_resolver(snippet)
-        snippet&.project
       end
     end
   end
