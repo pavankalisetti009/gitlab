@@ -42,6 +42,7 @@ module Security
     validates :fallback_behavior, json_schema: { filename: 'approval_policies_fallback_behavior' },
       allow_blank: true
     validates :policy_tuning, json_schema: { filename: 'approval_policies_policy_tuning' }
+    validates :licenses, json_schema: { filename: 'approval_policies_licenses' }, allow_blank: true
 
     scope :for_project, ->(project) { where(project: project) }
     scope :targeting_commits, -> { where.not(commits: nil) }
