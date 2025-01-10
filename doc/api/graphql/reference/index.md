@@ -26537,7 +26537,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupworkitemdescriptiontemplatesname"></a>`name` | [`String`](#string) | Fetches the specific DescriptionTemplate. |
-| <a id="groupworkitemdescriptiontemplatessearch"></a>`search` | [`String`](#string) | Search for DescriptionTemplates by name. |
+| <a id="groupworkitemdescriptiontemplatessearch"></a>`search` **{warning-solid}** | [`String`](#string) | **Deprecated** in GitLab 17.8. search on template names is performed on the FE only. |
 
 ##### `Group.workItemStateCounts`
 
@@ -30474,7 +30474,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="namespaceworkitemdescriptiontemplatesname"></a>`name` | [`String`](#string) | Fetches the specific DescriptionTemplate. |
-| <a id="namespaceworkitemdescriptiontemplatessearch"></a>`search` | [`String`](#string) | Search for DescriptionTemplates by name. |
+| <a id="namespaceworkitemdescriptiontemplatessearch"></a>`search` **{warning-solid}** | [`String`](#string) | **Deprecated** in GitLab 17.8. search on template names is performed on the FE only. |
 
 ##### `Namespace.workItemTypes`
 
