@@ -3376,6 +3376,9 @@ msgstr ""
 msgid "Add new emoji"
 msgstr ""
 
+msgid "Add new file"
+msgstr ""
+
 msgid "Add new key"
 msgstr ""
 
@@ -6220,6 +6223,9 @@ msgid "An error occured when subscribing to the comment temperature updates. Ple
 msgstr ""
 
 msgid "An error occured while parsing comment temperature. Please try again."
+msgstr ""
+
+msgid "An error occurred creating the blob"
 msgstr ""
 
 msgid "An error occurred creating the new branch."
@@ -20837,9 +20843,6 @@ msgstr ""
 msgid "Don't have an account yet?"
 msgstr ""
 
-msgid "Don't include description in commit message"
-msgstr ""
-
 msgid "Don't paste the private part of the GPG key. Paste the public part which begins with '-----BEGIN PGP PUBLIC KEY BLOCK-----'."
 msgstr ""
 
@@ -29812,9 +29815,6 @@ msgid "Include additional optional data in Service Ping. To enable optional data
 msgstr ""
 
 msgid "Include author name in notification email body"
-msgstr ""
-
-msgid "Include description in commit message"
 msgstr ""
 
 msgid "Include new features from all tiers."
@@ -66123,9 +66123,6 @@ msgid "Your browser doesn't support WebAuthn. Please use a supported browser, e.
 msgstr ""
 
 msgid "Your changes can be committed to %{branchName} because a merge request is open."
-msgstr ""
-
-msgid "Your changes can be committed to %{branch_name} because a merge request is open."
 msgstr ""
 
 msgid "Your changes have been committed. Commit %{commitId} %{commitStats}"

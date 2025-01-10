@@ -88,7 +88,8 @@ module QA
 
               form.has_normalized_ws_text?(template[:content])
             end
-            form.commit_changes
+            form.click_commit_changes_in_header
+            form.commit_changes_through_modal
 
             aggregate_failures "indications of file created" do
               expect(form).to have_content(template[:file_name])
