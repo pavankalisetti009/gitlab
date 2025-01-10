@@ -11476,6 +11476,7 @@ Input type: `WorkItemCreateInput`
 | <a id="mutationworkitemcreatecrmcontactswidget"></a>`crmContactsWidget` | [`WorkItemWidgetCrmContactsCreateInput`](#workitemwidgetcrmcontactscreateinput) | Input for CRM contacts widget. |
 | <a id="mutationworkitemcreatedescription"></a>`description` **{warning-solid}** | [`String`](#string) | **Deprecated:** use description widget instead. Deprecated in GitLab 16.9. |
 | <a id="mutationworkitemcreatedescriptionwidget"></a>`descriptionWidget` | [`WorkItemWidgetDescriptionInput`](#workitemwidgetdescriptioninput) | Input for description widget. |
+| <a id="mutationworkitemcreatediscussionstoresolve"></a>`discussionsToResolve` | [`WorkItemResolveDiscussionsInput`](#workitemresolvediscussionsinput) | Information required to resolve discussions in a noteable, when the work item is created. |
 | <a id="mutationworkitemcreatehealthstatuswidget"></a>`healthStatusWidget` | [`WorkItemWidgetHealthStatusInput`](#workitemwidgethealthstatusinput) | Input for health status widget. |
 | <a id="mutationworkitemcreatehierarchywidget"></a>`hierarchyWidget` | [`WorkItemWidgetHierarchyCreateInput`](#workitemwidgethierarchycreateinput) | Input for hierarchy widget. |
 | <a id="mutationworkitemcreateiterationwidget"></a>`iterationWidget` | [`WorkItemWidgetIterationInput`](#workitemwidgetiterationinput) | Iteration widget of the work item. |
@@ -45307,6 +45308,15 @@ Attributes for value stream stage.
 | <a id="workitemconverttaskinputlockversion"></a>`lockVersion` | [`Int!`](#int) | Current lock version of the work item containing the task in the description. |
 | <a id="workitemconverttaskinputtitle"></a>`title` | [`String!`](#string) | Full string of the task to be replaced. New title for the created work item. |
 | <a id="workitemconverttaskinputworkitemtypeid"></a>`workItemTypeId` | [`WorkItemsTypeID!`](#workitemstypeid) | Global ID of the work item type used to create the new work item. |
+
+### `WorkItemResolveDiscussionsInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemresolvediscussionsinputdiscussionid"></a>`discussionId` | [`String`](#string) | ID of a discussion to resolve. |
+| <a id="workitemresolvediscussionsinputnoteableid"></a>`noteableId` | [`NoteableID!`](#noteableid) | Global ID of the noteable where discussions will be resolved when the work item is created. Only `MergeRequestID` is supported at the moment. |
 
 ### `WorkItemWidgetAssigneesInput`
 
