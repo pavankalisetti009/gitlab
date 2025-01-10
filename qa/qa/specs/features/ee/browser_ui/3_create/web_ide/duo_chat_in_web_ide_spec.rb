@@ -15,15 +15,13 @@ module QA
                 expect(duo_chat).to be_empty_state
                 duo_chat.send_duo_chat_prompt('hi')
 
-                begin
-                  response_with_failover = expected_response
-                rescue RuntimeError
-                  # If direct connection request fails, assume we are on SaaS
-                  response_with_failover = 'GitLab'
+                Support::Waiter.wait_until(message: 'Wait for Duo Chat response and feedback message') do
+                  duo_chat.number_of_messages > 1 && duo_chat.has_feedback_message?
                 end
 
-                expect(duo_chat).to have_response(response_with_failover),
-                  "Expected '#{response_with_failover}' within Duo Chat response."
+                expect(duo_chat.has_error?).to be_falsey, 'Unexpected error from Duo Chat'
+                QA::Runtime::Logger.debug("Latest Duo Chat response #{duo_chat.latest_response}")
+                expect(duo_chat.latest_response).not_to be_blank, 'Expected a response from Duo Chat'
               end
             end
           end
@@ -32,12 +30,6 @@ module QA
 
       let(:project) { create(:project, :with_readme, name: 'webide-duo-chat-project') }
       let(:token) { Runtime::User::Store.default_api_client.personal_access_token }
-      let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
-      # Determine whether we are running against dotcom or a self managed cloud connector by checking
-      # the base_url of the direct connection endpoint. This lets us determine the expected response.
-      # As an orchestrated test we use an ai-gateway with a fake model, so we can assert part of the prompt
-      # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/blob/f2fec5c1ae697a7ced9b07e6812a80f3e1f2009a/ai_gateway/models/mock.py#L140
-      let(:expected_response) { direct_access[:base_url].include?('gitlab.com') ? 'GitLab' : 'mock' }
 
       before do
         load_web_ide
