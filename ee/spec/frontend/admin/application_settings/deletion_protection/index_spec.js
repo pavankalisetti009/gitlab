@@ -1,6 +1,7 @@
-import Vue from 'vue';
+import { createWrapper } from '@vue/test-utils';
 import { initAdminDeletionProtectionSettings } from 'ee/admin/application_settings/deletion_protection';
 import { parseFormProps } from 'ee/admin/application_settings/deletion_protection/utils';
+import FormGroup from 'ee/admin/application_settings/deletion_protection/components/form_group.vue';
 
 jest.mock('ee/admin/application_settings/deletion_protection/utils', () => ({
   parseFormProps: jest.fn().mockReturnValue({
@@ -12,6 +13,7 @@ jest.mock('ee/admin/application_settings/deletion_protection/utils', () => ({
 
 describe('initAdminDeletionProtectionSettings', () => {
   let appRoot;
+  let wrapper;
 
   const createAppRoot = () => {
     appRoot = document.createElement('div');
@@ -29,6 +31,8 @@ describe('initAdminDeletionProtectionSettings', () => {
     }
   });
 
+  const findFormGroup = () => wrapper.findComponent(FormGroup);
+
   describe('when there is no app root', () => {
     it('returns false', () => {
       expect(initAdminDeletionProtectionSettings()).toBe(false);
@@ -38,15 +42,14 @@ describe('initAdminDeletionProtectionSettings', () => {
   describe('when there is an app root', () => {
     beforeEach(() => {
       createAppRoot();
+      wrapper = createWrapper(initAdminDeletionProtectionSettings());
     });
 
-    it('returns a Vue instance', () => {
-      expect(initAdminDeletionProtectionSettings()).toBeInstanceOf(Vue);
+    it('renders FormGroup', () => {
+      expect(findFormGroup().exists()).toBe(true);
     });
 
     it('parses the form props from the dataset', () => {
-      initAdminDeletionProtectionSettings();
-
       expect(parseFormProps).toHaveBeenCalledWith(appRoot.dataset);
     });
   });
