@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Gitlab
-  class GlRepository
+  module Repositories
     class DesignManagementRepository < Gitlab::GlRepository::RepoType
       def initialize
         @access_checker_class = ::Gitlab::GitAccessDesign
