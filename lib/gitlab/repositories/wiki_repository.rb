@@ -6,7 +6,6 @@ module Gitlab
       def initialize
         @access_checker_class = Gitlab::GitAccessWiki
         @container_class = ProjectWiki
-        @project_resolver = ->(wiki) { wiki.try(:project) }
         @guest_read_ability = :download_wiki_code
       end
 
@@ -27,6 +26,10 @@ module Gitlab
           disk_path: wiki.disk_path,
           repo_type: Gitlab::GlRepository::WIKI
         )
+      end
+
+      def project_resolver(wiki)
+        wiki.try(:project)
       end
     end
   end

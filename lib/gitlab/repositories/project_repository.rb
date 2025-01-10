@@ -19,6 +19,9 @@ module Gitlab
           disk_path: project.disk_path
         )
       end
+
+      # For project repository we always use the container, so a resolver is never used
+      def project_resolver = nil
     end
   end
 end

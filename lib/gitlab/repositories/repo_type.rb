@@ -5,17 +5,14 @@ module Gitlab
     class RepoType
       attr_reader :access_checker_class,
         :container_class,
-        :project_resolver,
         :guest_read_ability
 
       def initialize(
         access_checker_class:,
         container_class: default_container_class,
-        project_resolver: nil,
         guest_read_ability: :download_code)
         @access_checker_class = access_checker_class
         @container_class = container_class
-        @project_resolver = project_resolver
         @guest_read_ability = guest_read_ability
       end
 
@@ -59,7 +56,7 @@ module Gitlab
       def project_for(container)
         return container unless project_resolver
 
-        project_resolver.call(container)
+        project_resolver(container)
       end
 
       def valid?(repository_path)
@@ -74,6 +71,10 @@ module Gitlab
 
       def repository_resolver
         raise NotImplementedError, 'Define a repository_resolver in a RepoType subclass'
+      end
+
+      def project_resolver
+        raise NotImplementedError, 'Define a project_resolver in a RepoType subclass'
       end
 
       def default_container_class

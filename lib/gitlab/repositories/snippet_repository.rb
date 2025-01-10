@@ -6,7 +6,6 @@ module Gitlab
       def initialize
         @access_checker_class = Gitlab::GitAccessSnippet
         @container_class = Snippet
-        @project_resolver = ->(snippet) { snippet&.project }
         @guest_read_ability = :read_snippet
       end
 
@@ -22,6 +21,10 @@ module Gitlab
           disk_path: snippet.disk_path,
           repo_type: Gitlab::GlRepository::SNIPPET
         )
+      end
+
+      def project_resolver(snippet)
+        snippet&.project
       end
     end
   end
