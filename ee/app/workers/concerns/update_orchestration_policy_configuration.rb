@@ -8,11 +8,14 @@ module UpdateOrchestrationPolicyConfiguration
       configuration.delete_all_schedules
       Security::ScanResultPolicies::DeleteScanResultPolicyReadsWorker.perform_async(configuration.id)
 
-      configuration.update!(configured_at: Time.current)
+      update_configuration_timestamp!(configuration)
       return
     end
 
-    return unless configuration.policies_changed?
+    unless configuration.policies_changed?
+      update_configuration_timestamp!(configuration)
+      return
+    end
 
     Security::PersistSecurityPoliciesWorker.perform_async(configuration.id)
     Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService.new(configuration).execute
@@ -24,6 +27,12 @@ module UpdateOrchestrationPolicyConfiguration
         .execute
     end
 
+    update_configuration_timestamp!(configuration)
+  end
+
+  private
+
+  def update_configuration_timestamp!(configuration)
     configuration.update!(configured_at: Time.current)
   end
 end
