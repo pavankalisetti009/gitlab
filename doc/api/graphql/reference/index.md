@@ -7723,6 +7723,7 @@ Input type: `MlModelVersionCreateInput`
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mutationmlmodelversioncreatecandidateid"></a>`candidateId` | [`MlCandidateID`](#mlcandidateid) | Global ID of a candidate to promote optionally. |
 | <a id="mutationmlmodelversioncreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationmlmodelversioncreatedescription"></a>`description` | [`String`](#string) | Description of the model version. |
 | <a id="mutationmlmodelversioncreatemodelid"></a>`modelId` | [`MlModelID!`](#mlmodelid) | Global ID of the model the version belongs to. |

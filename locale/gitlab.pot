@@ -23459,6 +23459,9 @@ msgstr ""
 msgid "ExperimentTracking|Performance graph will be shown when runs with logged metrics are available"
 msgstr ""
 
+msgid "ExperimentTracking|Promote run"
+msgstr ""
+
 msgid "ExperimentTracking|Run"
 msgstr ""
 
@@ -35926,6 +35929,9 @@ msgstr ""
 msgid "MlModelRegistry|CI Info"
 msgstr ""
 
+msgid "MlModelRegistry|Complete the form below to promote run to a model version."
+msgstr ""
+
 msgid "MlModelRegistry|Create"
 msgstr ""
 
@@ -36155,6 +36161,12 @@ msgid "MlModelRegistry|Parameters"
 msgstr ""
 
 msgid "MlModelRegistry|Performance"
+msgstr ""
+
+msgid "MlModelRegistry|Promote"
+msgstr ""
+
+msgid "MlModelRegistry|Promote run"
 msgstr ""
 
 msgid "MlModelRegistry|Provide a subfolder name to organize your artifacts. Entering an existing subfolder's name will place artifacts in the existing folder"
@@ -48037,6 +48049,9 @@ msgstr ""
 msgid "Run container scanning job whenever a container image with the latest tag is pushed."
 msgstr ""
 
+msgid "Run has already a model version"
+msgstr ""
+
 msgid "Run housekeeping"
 msgstr ""
 
@@ -48047,6 +48062,9 @@ msgid "Run job"
 msgstr ""
 
 msgid "Run manual or delayed jobs"
+msgstr ""
+
+msgid "Run not found"
 msgstr ""
 
 msgid "Run pipeline"
@@ -48062,6 +48080,9 @@ msgid "Run this job again in order to create the necessary resources."
 msgstr ""
 
 msgid "Run untagged jobs"
+msgstr ""
+
+msgid "Run's experiment does not belong to this model"
 msgstr ""
 
 msgid "Runner"
