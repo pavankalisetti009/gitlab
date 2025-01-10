@@ -85,6 +85,7 @@ describe('EE Create work item component', () => {
       },
       provide: {
         fullPath: 'full-path',
+        groupPath: 'group-path',
         hasIssuableHealthStatusFeature: false,
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
