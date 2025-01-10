@@ -52,7 +52,8 @@ module Users
           skip_confirmation: true, # Bot users should always have their emails confirmed.
           organization_id: params[:organization_id],
           avatar: params[:avatar].presence,
-          composite_identity_enforced: !!params[:composite_identity_enforced]
+          composite_identity_enforced: !!params[:composite_identity_enforced],
+          private_profile: private_profile
         }
       end
 
@@ -73,6 +74,10 @@ module Users
 
       def name
         params[:name] || 'Service account user'
+      end
+
+      def private_profile
+        params[:private_profile] || false
       end
 
       def error(message, reason)

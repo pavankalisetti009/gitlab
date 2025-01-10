@@ -107,8 +107,11 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
         expect(Ai::Setting.instance.amazon_q_service_account_user).to be_falsey
 
         instance.execute
-        expect(Ai::Setting.instance.amazon_q_service_account_user).to be_truthy
-        expect(Ai::Setting.instance.amazon_q_service_account_user.composite_identity_enforced?).to be true
+
+        service_account_user = Ai::Setting.instance.amazon_q_service_account_user
+        expect(service_account_user).to be_truthy
+        expect(service_account_user.composite_identity_enforced?).to be true
+        expect(service_account_user.private_profile?).to be true
       end
     end
 
