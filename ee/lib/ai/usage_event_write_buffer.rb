@@ -2,6 +2,8 @@
 
 module Ai
   module UsageEventWriteBuffer
+    include Gitlab::Redis::BackwardsCompatibility
+
     BUFFER_KEY_PREFIX = 'usage_event_write_buffer_'
 
     class << self
@@ -12,10 +14,8 @@ module Ai
       end
 
       def pop(model_name, limit)
-        Gitlab::Redis::SharedState.with do |redis|
-          Array.wrap(redis.lpop(buffer_key(model_name), limit)).map do |hash|
-            Gitlab::Json.parse(hash)
-          end
+        Array.wrap(lpop_with_limit(buffer_key(model_name), limit)).map do |hash|
+          Gitlab::Json.parse(hash)
         end
       end
 
