@@ -211,7 +211,6 @@ export default {
           {{ $options.i18n.overrideWarningText }}
         </template>
       </gl-modal>
-      {{ showRemoveConfirmModal }}
       <gl-modal
         v-model="showRemoveConfirmModal"
         modal-id="remove-requested-changes-modal"
