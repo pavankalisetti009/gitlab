@@ -177,17 +177,17 @@ module QA
               end
 
               context 'when seat is not assigned', :ai_gateway_no_seat_assigned do
-                it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451487'
+                include_examples 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451487'
               end
             end
 
             context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on do
-              it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452448'
+              include_examples 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452448'
             end
           end
 
           context 'with no license', :ai_gateway_no_license do
-            it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/446249'
+            include_examples 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/446249'
           end
         end
 
@@ -196,7 +196,7 @@ module QA
 
           context 'on SaaS', :smoke, :external_ai_provider,
             only: { pipeline: %w[staging-canary staging canary production] } do
-            it_behaves_like 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436994'
+            include_examples 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436994'
           end
 
           context 'on Self-managed', :orchestrated do
@@ -205,7 +205,7 @@ module QA
             context 'with a valid license' do
               context 'with a Duo Enterprise add-on' do
                 context 'when seat is assigned', :ai_gateway do
-                  it_behaves_like 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462968'
+                  include_examples 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462968'
                 end
               end
             end
@@ -285,8 +285,8 @@ module QA
         # cannot run this spec on canary/production
         context 'on SaaS when direct connection', :smoke, :external_ai_provider,
           only: { pipeline: %w[staging-canary staging] } do
-          it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
-          it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
+          include_examples 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
+          include_examples 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
         end
 
         context 'on Self-managed', :orchestrated do
@@ -295,13 +295,13 @@ module QA
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :ai_gateway do
-                it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
-                it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
+                include_examples 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
+                include_examples 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
 
                 context 'with context' do
                   let(:prompt_data) { super().merge(context: context) }
 
-                  it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
+                  include_examples 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
                 end
               end
             end
