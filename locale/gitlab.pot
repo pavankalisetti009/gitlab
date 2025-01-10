@@ -39245,6 +39245,9 @@ msgstr ""
 msgid "Only Issue ID or merge request ID is required"
 msgstr ""
 
+msgid "Only Merge Requests are allowed as a noteable to resolve discussions of at the moment."
+msgstr ""
+
 msgid "Only Project Members"
 msgstr ""
 
@@ -39276,6 +39279,9 @@ msgid "Only one source is required but both were provided"
 msgstr ""
 
 msgid "Only policy:"
+msgstr ""
+
+msgid "Only project level work items can be created to resolve noteable discussions"
 msgstr ""
 
 msgid "Only project members can comment."

@@ -274,6 +274,31 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
       it_behaves_like 'creates work item with iteration widget'
 
+      context 'when using resolve discussion in merge request arguments' do
+        let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+        let(:mutation) do
+          graphql_mutation(
+            :workItemCreate,
+            {
+              title: 'some WI',
+              workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s,
+              namespacePath: group.full_path,
+              discussions_to_resolve: { noteable_id: merge_request.to_gid.to_s }
+            }
+          )
+        end
+
+        it 'returns an error' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(graphql_errors).to contain_exactly(
+            hash_including(
+              'message' => _('Only project level work items can be created to resolve noteable discussions')
+            )
+          )
+        end
+      end
+
       context 'with rolledup dates widget input' do
         before do
           stub_licensed_features(epics: true)
