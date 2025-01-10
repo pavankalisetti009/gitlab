@@ -2,12 +2,16 @@
 
 module Authn
   class UnauthenticatedSecurityEventAuditor
-    def initialize(user, authentication_method = 'STANDARD')
-      if user.instance_of?(String)
-        @author = ::Gitlab::Audit::UnauthenticatedAuthor.new(name: user)
-        @scope = Gitlab::Audit::InstanceScope.new
+    attr_reader :author, :scope, :authentication_method
+
+    def initialize(user_or_login, authentication_method = 'STANDARD')
+      if user_or_login.is_a?(User)
+        @author = @scope = user_or_login
       else
-        @author = @scope = user
+        @author = ::Gitlab::Audit::UnauthenticatedAuthor.new(
+          name: user_or_login.is_a?(String) ? user_or_login : nil
+        )
+        @scope = Gitlab::Audit::InstanceScope.new
       end
 
       @authentication_method = authentication_method
