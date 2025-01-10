@@ -21,7 +21,7 @@ module Resolvers
         # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The flag is used without an actor here
         # ee/app/graphql/resolvers/ai/user_chat_access_resolver.rb we have the same pattern
         Feature.enabled?(:ai_duo_chat_switch, type: :ops) &&
-          Ability.allowed?(current_user, :access_duo_chat)
+          ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: current_user).allowed?
         # rubocop:enable Gitlab/FeatureFlagWithoutActor
       end
 

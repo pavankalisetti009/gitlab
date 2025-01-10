@@ -37,7 +37,7 @@ RSpec.describe 'Querying user chat access', :clean_gitlab_redis_cache, feature_c
 
     context 'when user has access to chat' do
       it 'returns true' do
-        expect(Ability).to receive(:allowed?).at_least(:once).with(current_user, :access_duo_chat).and_return(true)
+        allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user, :allowed?).and_return(true)
 
         post_graphql(query, current_user: current_user)
 
@@ -47,7 +47,7 @@ RSpec.describe 'Querying user chat access', :clean_gitlab_redis_cache, feature_c
 
     context 'when user does not have access to chat' do
       it 'returns false' do
-        expect(Ability).to receive(:allowed?).at_least(:once).with(current_user, :access_duo_chat).and_return(false)
+        allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user, :allowed?).and_return(false)
 
         post_graphql(query, current_user: current_user)
 

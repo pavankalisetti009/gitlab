@@ -40,7 +40,7 @@ module Llm
     end
 
     def user_can_send_to_ai?
-      user.can?(:access_duo_chat)
+      ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
     end
 
     def agent_not_found_message
