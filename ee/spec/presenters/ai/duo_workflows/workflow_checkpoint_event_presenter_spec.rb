@@ -48,4 +48,10 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
       expect(presenter.workflow_goal).to eq(checkpoint.workflow.goal)
     end
   end
+
+  describe 'workflow_definition' do
+    it 'returns the workflow definition' do
+      expect(presenter.workflow_definition).to eq(checkpoint.workflow.workflow_definition)
+    end
+  end
 end

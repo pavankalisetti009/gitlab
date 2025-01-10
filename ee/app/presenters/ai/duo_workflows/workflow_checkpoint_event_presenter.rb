@@ -20,6 +20,10 @@ module Ai
       def workflow_goal
         event.workflow.goal
       end
+
+      def workflow_definition
+        event.workflow.workflow_definition
+      end
     end
   end
 end
