@@ -7331,6 +7331,7 @@ Input type: `MergeRequestCreateInput`
 | <a id="mutationmergerequestcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationmergerequestcreatedescription"></a>`description` | [`String`](#string) | Description of the merge request (Markdown rendered as HTML for caching). |
 | <a id="mutationmergerequestcreatelabels"></a>`labels` | [`[String!]`](#string) | Labels of the merge request. |
+| <a id="mutationmergerequestcreatemergeafter"></a>`mergeAfter` | [`Time`](#time) | Date after which the merge request can be merged. |
 | <a id="mutationmergerequestcreateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project full path the merge request is associated with. |
 | <a id="mutationmergerequestcreatesourcebranch"></a>`sourceBranch` | [`String!`](#string) | Source branch of the merge request. |
 | <a id="mutationmergerequestcreatetargetbranch"></a>`targetBranch` | [`String!`](#string) | Target branch of the merge request. |
@@ -7548,6 +7549,7 @@ Input type: `MergeRequestUpdateInput`
 | <a id="mutationmergerequestupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationmergerequestupdatedescription"></a>`description` | [`String`](#string) | Description of the merge request (Markdown rendered as HTML for caching). |
 | <a id="mutationmergerequestupdateiid"></a>`iid` | [`String!`](#string) | IID of the merge request to mutate. |
+| <a id="mutationmergerequestupdatemergeafter"></a>`mergeAfter` | [`Time`](#time) | Date after which the merge request can be merged. |
 | <a id="mutationmergerequestupdateoverriderequestedchanges"></a>`overrideRequestedChanges` | [`Boolean`](#boolean) | Override all requested changes. Can only be set by users who have permissionto merge this merge request. |
 | <a id="mutationmergerequestupdateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project the merge request to mutate is in. |
 | <a id="mutationmergerequestupdatestate"></a>`state` | [`MergeRequestNewState`](#mergerequestnewstate) | Action to perform to change the state. |
@@ -27928,7 +27930,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestiid"></a>`iid` | [`String!`](#string) | Internal ID of the merge request. |
 | <a id="mergerequestinprogressmergecommitsha"></a>`inProgressMergeCommitSha` | [`String`](#string) | Commit SHA of the merge request if merge is in progress. |
 | <a id="mergerequestlabels"></a>`labels` | [`LabelConnection`](#labelconnection) | Labels of the merge request. (see [Connections](#connections)) |
-| <a id="mergerequestmergeafter"></a>`mergeAfter` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. Date after which the merge request can be merged. |
+| <a id="mergerequestmergeafter"></a>`mergeAfter` | [`Time`](#time) | Date after which the merge request can be merged. |
 | <a id="mergerequestmergecommitsha"></a>`mergeCommitSha` | [`String`](#string) | SHA of the merge request commit (set once merged). |
 | <a id="mergerequestmergeerror"></a>`mergeError` | [`String`](#string) | Error message due to a merge error. |
 | <a id="mergerequestmergeongoing"></a>`mergeOngoing` | [`Boolean!`](#boolean) | Indicates if a merge is currently occurring. |
