@@ -6,6 +6,7 @@ module API
       module DuoWorkflows
         class Workflow < Grape::Entity
           expose :id
+          expose :project_id
           expose :agent_privileges
           expose :agent_privileges_names
           expose :workflow_definition
