@@ -144,49 +144,35 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
     end
 
     context 'with duo assignment emails' do
-      context 'when feature flag `duo_seat_assignment_email_for_sm` is not enabled' do
-        before do
-          stub_feature_flags(duo_seat_assignment_email_for_sm: false)
+      context 'when add on is not duo related' do
+        let_it_be(:add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on) }
+
+        it 'does not send a duo pro email' do
+          expect { response }
+            .not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
         end
 
-        it 'does not enqueue the seat assignment email' do
-          expect do
-            response
-          end.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
+        it 'does not send a duo enterprise email' do
+          expect { response }
+            .not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_enterprise_email)
         end
       end
 
-      context 'when feature flag `duo_seat_assignment_email_for_sm` is enabled' do
-        context 'when add on is not duo related' do
-          let_it_be(:add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
-          let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on) }
-
-          it 'does not send a duo pro email' do
-            expect { response }
-              .not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
-          end
-
-          it 'does not send a duo enterprise email' do
-            expect { response }
-              .not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_enterprise_email)
-          end
+      context 'when add on is duo pro' do
+        it 'sends seat assignment email' do
+          expect { response }.to have_enqueued_mail(
+            GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).with(user)
         end
+      end
 
-        context 'when add on is duo pro' do
-          it 'sends seat assignment email' do
-            expect { response }.to have_enqueued_mail(
-              GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).with(user)
-          end
-        end
+      context 'when add on is duo enterprise' do
+        let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on) }
 
-        context 'when add on is duo enterprise' do
-          let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-          let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on) }
-
-          it 'sends seat assignment email' do
-            expect { response }.to have_enqueued_mail(
-              GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_enterprise_email).with(user)
-          end
+        it 'sends seat assignment email' do
+          expect { response }.to have_enqueued_mail(
+            GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_enterprise_email).with(user)
         end
       end
     end
