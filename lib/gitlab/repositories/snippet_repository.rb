@@ -5,16 +5,24 @@ module Gitlab
     class SnippetRepository < Gitlab::Repositories::RepoType
       def initialize
         @access_checker_class = Gitlab::GitAccessSnippet
-        @repository_resolver = ->(snippet) do
-          ::Repository.new(snippet.full_path, snippet, shard: snippet.repository_storage,
-            disk_path: snippet.disk_path, repo_type: SNIPPET)
-        end
         @container_class = Snippet
         @project_resolver = ->(snippet) { snippet&.project }
         @guest_read_ability = :read_snippet
       end
 
       def name = :snippet
+
+      private
+
+      def repository_resolver(snippet)
+        ::Repository.new(
+          snippet.full_path,
+          snippet,
+          shard: snippet.repository_storage,
+          disk_path: snippet.disk_path,
+          repo_type: Gitlab::GlRepository::SNIPPET
+        )
+      end
     end
   end
 end

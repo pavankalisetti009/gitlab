@@ -5,7 +5,6 @@ module Gitlab
     class DesignManagementRepository < Gitlab::Repositories::RepoType
       def initialize
         @access_checker_class = ::Gitlab::GitAccessDesign
-        @repository_resolver = ->(design_management_repository) { design_management_repository.repository }
         @project_resolver = ->(design_management_repository) { design_management_repository&.project }
         @container_class = DesignManagement::Repository
       end
@@ -13,6 +12,12 @@ module Gitlab
       def name = :design
 
       def suffix = :design
+
+      private
+
+      def repository_resolver(design_management_repository)
+        design_management_repository.repository
+      end
     end
   end
 end
