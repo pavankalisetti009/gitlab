@@ -4,8 +4,6 @@ module Onboarding
   class Progress < ApplicationRecord
     self.table_name = 'onboarding_progresses'
 
-    ignore_column :git_write_at, remove_with: '17.8', remove_after: '2025-01-11'
-
     belongs_to :namespace, optional: false
 
     validate :namespace_is_root_namespace
