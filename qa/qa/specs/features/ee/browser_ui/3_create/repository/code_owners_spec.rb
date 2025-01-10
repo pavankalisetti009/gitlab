@@ -47,7 +47,10 @@ module QA
 
         # Check the files and code owners
         Page::Project::Show.perform { |project_page| project_page.click_file 'file.txt' }
-        Page::File::Show.perform(&:reveal_code_owners)
+        Page::File::Show.perform do |file|
+          file.reveal_code_owners
+          expect(file).to have_code_owners_container, "Expected Code owners section to be present for file"
+        end
 
         expect(page).to have_content(user.name), "Expected \"#{user.name}\" to be in Code owners section"
         expect(page).not_to have_content(user2.name)
