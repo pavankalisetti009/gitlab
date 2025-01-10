@@ -90,6 +90,16 @@ RSpec.describe AppSec::Dast::SiteProfiles::Audit::UpdateService, feature_categor
         expect { auditor.execute }.not_to change { AuditEvent.count }
       end
 
+      it 'does audit when removing all optional_variables' do
+        auditor = described_class.new(project, user, {
+          dast_site_profile: profile,
+          new_params: { optional_variables: [] },
+          old_params: old_params
+        })
+
+        expect { auditor.execute }.to change { AuditEvent.count }
+      end
+
       it 'audits when optional_variables content is different' do
         auditor = described_class.new(project, user, {
           dast_site_profile: profile,
