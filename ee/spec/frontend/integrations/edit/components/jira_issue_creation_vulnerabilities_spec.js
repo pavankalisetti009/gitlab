@@ -87,6 +87,7 @@ describe('JiraIssueCreationVulnerabilities', () => {
       'toggles the hidden "vulnerabilities_enabled" input value',
       async (isChecked) => {
         await setEnableJiraVulnerabilitiesChecked(isChecked);
+
         expect(findHiddenInput('vulnerabilities_enabled').attributes('value')).toBe(`${isChecked}`);
       },
     );

@@ -6,6 +6,7 @@ import StreamItem from 'ee/audit_events/components/stream/stream_item.vue';
 import StreamDestinationEditor from 'ee/audit_events/components/stream/stream_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from 'ee/audit_events/components/stream/stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from 'ee/audit_events/components/stream/stream_amazon_s3_destination_editor.vue';
+import { stubTransition } from 'helpers/stub_transition';
 import {
   groupPath,
   mockExternalDestinations,
@@ -41,6 +42,7 @@ describe('StreamItem', () => {
         StreamDestinationEditor: true,
         StreamGcpLoggingDestinationEditor: true,
         StreamAmazonS3DestinationEditor: true,
+        transition: stubTransition(),
       },
     });
   };

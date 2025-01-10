@@ -535,8 +535,6 @@ describe('WorkItemActions component', () => {
   });
 
   describe('More actions menu', () => {
-    createComponent();
-
     it('renders the dropdown button', () => {
       createComponent();
 
