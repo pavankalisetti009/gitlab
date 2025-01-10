@@ -47,14 +47,14 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
           allow(License).to receive(:current).and_return(license)
         end
 
-        allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
+        stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF)
       end
 
       it { is_expected.to be should_render }
 
       context "when block overages is enabled" do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
+          stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
         end
 
         it { is_expected.to be_nil }
@@ -97,14 +97,14 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
           allow(License).to receive(:current).and_return(license)
         end
 
-        allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
+        stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
       end
 
       it { is_expected.to be should_render }
 
       context "when block overages is disabled" do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
+          stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF)
         end
 
         it { is_expected.to be_nil }

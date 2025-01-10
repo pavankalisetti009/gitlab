@@ -133,7 +133,7 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
         context 'when user signup cap is set' do
           before do
             allow(Gitlab::CurrentSettings).to receive(:new_user_signups_cap).and_return(3)
-            stub_application_setting(seat_control: 1)
+            stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
           end
 
           context 'when new user signup exceeds user cap' do

@@ -78,7 +78,7 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
     it 'includes add_seats_href for an owner' do
       stub_member_access_level(group, owner: current_user)
 
-      allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
+      stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF)
 
       expect(helper.common_invite_modal_dataset(project)[:add_seats_href])
         .to eq(::Gitlab::Routing.url_helpers.subscription_portal_add_extra_seats_url(project.root_ancestor.id))
@@ -104,7 +104,7 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
       before do
         allow(helper).to receive(:help_page_url).and_return(purchase_seats_docs_url)
 
-        allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
+        stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
       end
 
       it 'passes docs link to add_seats_href' do
