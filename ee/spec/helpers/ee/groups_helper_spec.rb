@@ -795,7 +795,13 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         {
           full_path: group.full_path,
           deployments_count: 1,
-          deployments_limit: 100
+          deployments_limit: 100,
+          deployments_by_project: [
+            {
+              name: project.name,
+              count: 1
+            }
+          ].to_json
         }
       )
     end

@@ -10,9 +10,8 @@ export default {
 
 <template>
   <div class="gl-py-3">
-    <h2 class="gl-heading-2">{{ s__('Pages|Pages deployments') }}</h2>
     <div class="gl-mb-8">
-      <pages-deployment-stats />
+      <pages-deployment-stats :title="s__('Pages|Parallel deployments')" />
     </div>
     <project-list />
   </div>

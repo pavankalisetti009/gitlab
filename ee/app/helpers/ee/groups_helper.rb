@@ -193,14 +193,24 @@ module EE
 
     def pages_deployments_app_data(group)
       limit = group.actual_limits.active_versioned_pages_deployments_limit_by_namespace
+      count_by_project = ::PagesDeployment.count_versioned_deployments_for(
+        group.all_projects.with_namespace_domain_pages,
+        limit,
+        group_by_project: true
+      )
 
       {
         full_path: group.full_path,
-        deployments_count: ::PagesDeployment.count_versioned_deployments_for(
-          group.all_projects.with_namespace_domain_pages,
-          limit
-        ),
-        deployments_limit: limit
+        deployments_count: count_by_project.values.sum,
+        deployments_limit: limit,
+        # rubocop: disable CodeReuse/ActiveRecord -- Limited re-usability for this pluck
+        deployments_by_project: group.all_projects.with_namespace_domain_pages.pluck(:id, :name).map do |id, name|
+          {
+            name: name,
+            count: count_by_project[id]
+          }
+        end.to_json
+        # rubocop: enable CodeReuse/ActiveRecord
       }
     end
 

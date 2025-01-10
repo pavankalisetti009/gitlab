@@ -4,12 +4,13 @@ import { PAGES_TAB_METADATA_EL_SELECTOR } from '../constants';
 import PagesDeploymentsApp from './components/app.vue';
 
 export const parseProvideData = (el) => {
-  const { fullPath, deploymentsLimit, deploymentsCount } = el.dataset;
+  const { fullPath, deploymentsLimit, deploymentsCount, deploymentsByProject } = el.dataset;
 
   return {
     fullPath,
     deploymentsLimit: parseInt(deploymentsLimit, 10),
     deploymentsCount: parseInt(deploymentsCount, 10),
+    deploymentsByProject: deploymentsByProject ? JSON.parse(deploymentsByProject) : [],
   };
 };
 
