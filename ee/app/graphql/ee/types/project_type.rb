@@ -464,6 +464,12 @@ module EE
           description: 'Find a specific AI Agent.',
           resolver: ::Resolvers::Ai::Agents::AgentDetailResolver
 
+        field :ai_xray_reports, ::Types::Ai::XrayReportType.connection_type,
+          null: false,
+          experiment: { milestone: '17.8' },
+          description: 'X-ray reports of the project.',
+          method: :xray_reports
+
         field :value_stream_analytics,
           ::Types::Analytics::ValueStreamAnalyticsType,
           description: 'Information about Value Stream Analytics within the project.',

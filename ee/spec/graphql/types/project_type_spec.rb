@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Project'] do
+RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
   using RSpec::Parameterized::TableSyntax
   include GraphqlHelpers
 
@@ -30,7 +30,8 @@ RSpec.describe GitlabSchema.types['Project'] do
       security_policy_project security_training_urls vulnerability_images only_allow_merge_if_all_status_checks_passed
       security_policy_project_linked_projects security_policy_project_linked_namespaces
       dependencies merge_requests_disable_committers_approval has_jira_vulnerability_issue_creation_enabled
-      ci_upstream_project_subscriptions ci_downstream_project_subscriptions ci_subscriptions_projects ci_subscribed_projects ai_agents ai_agent duo_features_enabled
+      ci_upstream_project_subscriptions ci_downstream_project_subscriptions ci_subscriptions_projects ci_subscribed_projects
+      ai_agents ai_agent ai_xray_reports duo_features_enabled
       runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
       is_adjourned_deletion_enabled permanent_deletion_date ai_metrics ai_usage_data ai_user_metrics saved_reply
       merge_trains pending_member_approvals observability_logs_links observability_metrics_links
