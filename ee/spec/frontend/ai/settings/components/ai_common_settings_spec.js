@@ -1,8 +1,7 @@
-import { GlButton, GlForm, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
-import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
-import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
+import AiCommonSettingsForm from 'ee/ai/settings/components/ai_common_settings_form.vue';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
@@ -20,8 +19,9 @@ describe('AiCommonSettings', () => {
       provide: {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         experimentFeaturesEnabled: false,
-        onGeneralSettingsPage: true,
+        onGeneralSettingsPage: false,
         configurationSettingsPath: '/settings/gitlab_duo',
+        showRedirectBanner: false,
         ...provide,
       },
       stubs: {
@@ -41,14 +41,13 @@ describe('AiCommonSettings', () => {
   };
 
   const findSettingsBlock = () => wrapper.findComponent(SettingsBlock);
+  const findGeneralSettingsDescriptionText = () =>
+    wrapper.findByTestId('general-settings-subtitle');
   const findPageHeading = () => wrapper.findComponent(PageHeading);
-  const findDuoAvailability = () => wrapper.findComponent(DuoAvailabilityForm);
-  const findDuoExperimentBetaFeatures = () => wrapper.findComponent(DuoExperimentBetaFeaturesForm);
-  const findSaveButton = () => wrapper.findComponent(GlButton);
-  const findForm = () => wrapper.findComponent(GlForm);
-  const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
+  const findForm = () => wrapper.findComponent(AiCommonSettingsForm);
   const findMovedSettingsAlert = () => wrapper.findByTestId('duo-moved-settings-alert');
-  const findMovedDescriptionText = () => wrapper.findComponent(GlSprintf);
+  const findMovedDescriptionText = () =>
+    wrapper.findByTestId('duo-moved-settings-alert-description-text');
   const findMovedSettingsLink = () => wrapper.findComponent(GlLink);
 
   beforeEach(() => {
@@ -59,7 +58,28 @@ describe('AiCommonSettings', () => {
     expect(wrapper.exists()).toBe(true);
   });
 
+  it('renders the AiCommonSettingsForm component', () => {
+    expect(findForm().exists()).toBe(true);
+  });
+
+  it('emits submit event with correct data when form is submitted via AiCommonSettingsForm component', async () => {
+    await findForm().vm.$emit('radio-changed', AVAILABILITY_OPTIONS.DEFAULT_OFF);
+    await findForm().vm.$emit('checkbox-changed', true);
+    findForm().vm.$emit('submit', {
+      preventDefault: jest.fn(),
+    });
+    const emittedData = wrapper.emitted('submit')[0][0];
+    expect(emittedData).toEqual({
+      duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+      experimentFeaturesEnabled: true,
+    });
+  });
+
   describe('when on general settings page', () => {
+    beforeEach(() => {
+      createComponent({}, { onGeneralSettingsPage: true });
+    });
+
     it('renders SettingsBlock component', () => {
       expect(findSettingsBlock().exists()).toBe(true);
     });
@@ -72,21 +92,64 @@ describe('AiCommonSettings', () => {
       });
     });
 
-    it('renders the moved settings alert', () => {
-      expect(findMovedSettingsAlert().exists()).toBe(true);
-      expect(findMovedSettingsAlert().props('title')).toBe('GitLab Duo settings have moved');
+    describe('when showRedirectBanner is true', () => {
+      beforeEach(() => {
+        createComponent({}, { onGeneralSettingsPage: true, showRedirectBanner: true });
+      });
+
+      it('renders the moved settings alert', () => {
+        expect(findMovedSettingsAlert().exists()).toBe(true);
+        expect(findMovedSettingsAlert().props('title')).toBe('GitLab Duo settings have moved');
+      });
+
+      it('renders the alert with correct link based on group context', () => {
+        createComponent(
+          { isGroup: true },
+          { onGeneralSettingsPage: true, showRedirectBanner: true },
+        );
+        expect(findMovedDescriptionText().attributes('message')).toContain('Settings > GitLab Duo');
+        expect(findMovedSettingsLink().attributes('href')).toBe('/settings/gitlab_duo');
+      });
+
+      it('includes the correct path text for non-group context', () => {
+        createComponent(
+          {},
+          {
+            configurationSettingsPath: '/admin/gitlab_duo',
+            onGeneralSettingsPage: true,
+            showRedirectBanner: true,
+          },
+        );
+        expect(findMovedDescriptionText().attributes('message')).toContain(
+          'Admin Area > GitLab Duo',
+        );
+        expect(findMovedSettingsLink().attributes('href')).toBe('/admin/gitlab_duo');
+      });
+
+      it('does not render the form component', () => {
+        expect(findForm().exists()).toBe(false);
+      });
+
+      it('does not render the settings block description text', () => {
+        expect(findGeneralSettingsDescriptionText().exists()).toBe(false);
+      });
     });
 
-    it('renders the alert with correct link based on group context', () => {
-      createComponent({ isGroup: true });
-      expect(findMovedDescriptionText().attributes('message')).toContain('Settings > GitLab Duo');
-      expect(findMovedSettingsLink().attributes('href')).toBe('/settings/gitlab_duo');
-    });
+    describe('when showRedirectBanner is false', () => {
+      beforeEach(() => {
+        createComponent({}, { onGeneralSettingsPage: true, showRedirectBanner: false });
+      });
 
-    it('includes the correct path text for non-group context', () => {
-      createComponent({}, { configurationSettingsPath: '/admin/gitlab_duo' });
-      expect(findMovedDescriptionText().attributes('message')).toContain('Admin Area > GitLab Duo');
-      expect(findMovedSettingsLink().attributes('href')).toBe('/admin/gitlab_duo');
+      it('does not render the moved settings alert', () => {
+        expect(findMovedSettingsAlert().exists()).toBe(false);
+      });
+
+      it('renders the settings block description text', () => {
+        expect(findGeneralSettingsDescriptionText().exists()).toBe(true);
+        expect(findGeneralSettingsDescriptionText().text()).toContain(
+          'Configure AI-powered GitLab Duo features',
+        );
+      });
     });
   });
 
@@ -105,71 +168,6 @@ describe('AiCommonSettings', () => {
 
     it('renders correct subtitle in PageHeading', () => {
       expect(wrapper.findByTestId('configuration-page-subtitle').exists()).toBe(true);
-    });
-
-    it('renders GlForm component', () => {
-      expect(findForm().exists()).toBe(true);
-    });
-
-    it('renders DuoAvailabilityForm component', () => {
-      expect(findDuoAvailability().exists()).toBe(true);
-    });
-
-    it('renders DuoExperimentBetaFeaturesForm component', () => {
-      expect(findDuoExperimentBetaFeatures().exists()).toBe(true);
-    });
-
-    it('disables save button when no changes are made', () => {
-      expect(findSaveButton().props('disabled')).toBe(true);
-    });
-
-    it('enables save button when changes are made', async () => {
-      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
-      await findDuoExperimentBetaFeatures().vm.$emit('change', true);
-      expect(findSaveButton().props('disabled')).toBe(false);
-    });
-
-    it('enables save button when parent form changes are made', () => {
-      createComponent({ hasParentFormChanged: true }, { onGeneralSettingsPage: false });
-      expect(findSaveButton().props('disabled')).toBe(false);
-    });
-
-    it('does not show warning alert when form unchanged', () => {
-      expect(findDuoSettingsWarningAlert().exists()).toBe(false);
-    });
-
-    it('does not show warning alert when availability is changed to default_on', async () => {
-      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_ON);
-      expect(findDuoSettingsWarningAlert().exists()).toBe(false);
-    });
-
-    it('shows warning alert when availability is changed to default_off', async () => {
-      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
-      expect(findDuoSettingsWarningAlert().exists()).toBe(true);
-      expect(findDuoSettingsWarningAlert().text()).toContain(
-        'When you save, GitLab Duo will be turned off for all groups, subgroups, and projects.',
-      );
-    });
-
-    it('shows warning alert when availability is changed to never_on', async () => {
-      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
-      expect(findDuoSettingsWarningAlert().exists()).toBe(true);
-      expect(findDuoSettingsWarningAlert().text()).toContain(
-        'When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
-      );
-    });
-
-    it('emits submit event with correct data when form is submitted', async () => {
-      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
-      await findDuoExperimentBetaFeatures().vm.$emit('change', true);
-      findForm().vm.$emit('submit', {
-        preventDefault: jest.fn(),
-      });
-      const emittedData = wrapper.emitted('submit')[0][0];
-      expect(emittedData).toEqual({
-        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
-        experimentFeaturesEnabled: true,
-      });
     });
   });
 });

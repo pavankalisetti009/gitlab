@@ -1,34 +1,23 @@
 <script>
-import { GlLink, GlSprintf, GlForm, GlAlert, GlButton } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlAlert } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { AVAILABILITY_OPTIONS } from '../constants';
-import DuoAvailability from './duo_availability_form.vue';
-import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
+import AiCommonSettingsForm from './ai_common_settings_form.vue';
 
 export default {
   name: 'AiCommonSettings',
   components: {
     GlLink,
     GlSprintf,
-    GlForm,
     GlAlert,
-    GlButton,
     SettingsBlock,
-    DuoAvailability,
-    DuoExperimentBetaFeatures,
+    AiCommonSettingsForm,
     PageHeading,
   },
   i18n: {
     confirmButtonText: __('Save changes'),
-    defaultOffWarning: s__(
-      'AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects.',
-    ),
-    neverOnWarning: s__(
-      'AiPowered|When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
-    ),
     settingsBlockTitle: __('GitLab Duo features'),
     settingsBlockDescription: s__(
       'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
@@ -45,6 +34,7 @@ export default {
     'experimentFeaturesEnabled',
     'onGeneralSettingsPage',
     'configurationSettingsPath',
+    'showRedirectBanner',
   ],
   props: {
     hasParentFormChanged: {
@@ -65,45 +55,6 @@ export default {
     };
   },
   computed: {
-    hasAvailabilityChanged() {
-      return this.availability !== this.duoAvailability;
-    },
-    hasExperimentCheckboxChanged() {
-      return this.experimentsEnabled !== this.experimentFeaturesEnabled;
-    },
-    hasFormChanged() {
-      return (
-        this.hasAvailabilityChanged ||
-        this.hasExperimentCheckboxChanged ||
-        this.hasParentFormChanged
-      );
-    },
-    showWarning() {
-      return this.hasAvailabilityChanged && this.warningAvailability;
-    },
-    warningAvailability() {
-      switch (this.availability) {
-        case AVAILABILITY_OPTIONS.DEFAULT_OFF:
-          return true;
-        case AVAILABILITY_OPTIONS.NEVER_ON:
-          return true;
-        default:
-          return false;
-      }
-    },
-    warningMessage() {
-      switch (this.availability) {
-        case AVAILABILITY_OPTIONS.DEFAULT_OFF:
-          return this.$options.i18n.defaultOffWarning;
-        case AVAILABILITY_OPTIONS.NEVER_ON:
-          return this.$options.i18n.neverOnWarning;
-        default:
-          return null;
-      }
-    },
-    disableExperimentCheckbox() {
-      return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
-    },
     movedAlertDescription() {
       const path = this.isGroup ? 'Settings > GitLab Duo' : 'Admin Area > GitLab Duo';
       return `${this.$options.i18n.movedAlertDescriptionText}%{linkStart}${path}%{linkEnd}.`;
@@ -130,15 +81,33 @@ export default {
   <div>
     <template v-if="onGeneralSettingsPage">
       <settings-block class="gl-mb-5 !gl-pt-5" :title="$options.i18n.settingsBlockTitle">
+        <template v-if="!showRedirectBanner" #description>
+          <gl-sprintf
+            data-testid="general-settings-subtitle"
+            :message="
+              s__(
+                'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
+            </template>
+          </gl-sprintf>
+        </template>
         <template #default>
           <gl-alert
+            v-if="showRedirectBanner"
             variant="info"
             :title="$options.i18n.movedAlertTitle"
             :dismissible="false"
             class="gl-mb-5"
             data-testid="duo-moved-settings-alert"
           >
-            <gl-sprintf :message="movedAlertDescription">
+            <gl-sprintf
+              data-testid="duo-moved-settings-alert-description-text"
+              :message="movedAlertDescription"
+            >
               <template #link="{ content }">
                 <gl-link class="!gl-no-underline" :href="configurationSettingsPath">{{
                   content
@@ -146,6 +115,19 @@ export default {
               </template>
             </gl-sprintf>
           </gl-alert>
+          <ai-common-settings-form
+            v-else
+            :duo-availability="duoAvailability"
+            :experiment-features-enabled="experimentFeaturesEnabled"
+            :has-parent-form-changed="hasParentFormChanged"
+            @submit="submitForm"
+            @radio-changed="onRadioChanged"
+            @checkbox-changed="onCheckboxChanged"
+          >
+            <template #ai-common-settings-top>
+              <slot name="ai-common-settings-top"></slot>
+            </template>
+          </ai-common-settings-form>
         </template>
       </settings-block>
     </template>
@@ -161,28 +143,21 @@ export default {
           </span>
         </template>
       </page-heading>
-      <gl-form @submit.prevent="submitForm">
-        <slot name="ai-common-settings-top"></slot>
-        <duo-availability :duo-availability="availability" @change="onRadioChanged" />
-        <duo-experiment-beta-features
-          :experiment-features-enabled="experimentsEnabled"
-          :disabled-checkbox="disableExperimentCheckbox"
-          @change="onCheckboxChanged"
-        />
-        <slot name="ai-common-settings-bottom"></slot>
-        <gl-alert
-          v-if="showWarning"
-          :dismissible="false"
-          variant="warning"
-          data-testid="duo-settings-show-warning-alert"
-          >{{ warningMessage }}</gl-alert
-        >
-        <div class="gl-mt-6">
-          <gl-button type="submit" variant="confirm" :disabled="!hasFormChanged">
-            {{ $options.i18n.confirmButtonText }}
-          </gl-button>
-        </div>
-      </gl-form>
+      <ai-common-settings-form
+        :duo-availability="duoAvailability"
+        :experiment-features-enabled="experimentFeaturesEnabled"
+        :has-parent-form-changed="hasParentFormChanged"
+        @submit="submitForm"
+        @radio-changed="onRadioChanged"
+        @checkbox-changed="onCheckboxChanged"
+      >
+        <template #ai-common-settings-top>
+          <slot name="ai-common-settings-top"></slot>
+        </template>
+        <template #ai-common-settings-bottom>
+          <slot name="ai-common-settings-bottom"></slot>
+        </template>
+      </ai-common-settings-form>
     </template>
   </div>
 </template>

@@ -25,6 +25,7 @@ export const initAiSettings = (id, component) => {
     onGeneralSettingsPage,
     configurationSettingsPath,
     areExperimentSettingsAllowed,
+    showRedirectBanner,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -52,6 +53,7 @@ export const initAiSettings = (id, component) => {
       onGeneralSettingsPage: parseBoolean(onGeneralSettingsPage),
       configurationSettingsPath,
       areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
+      showRedirectBanner: parseBoolean(showRedirectBanner),
     },
     render: (createElement) =>
       createElement(component, {

@@ -37,7 +37,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       it 'returns the expected data' do
         expect(admin_ai_general_settings_helper_data).to include(
           on_general_settings_page: 'true',
-          configuration_settings_path: '/admin/gitlab_duo'
+          configuration_settings_path: '/admin/gitlab_duo',
+          show_redirect_banner: 'true'
         )
       end
     end

@@ -2,7 +2,7 @@
 
 module GitlabSubscriptions
   module SubscriptionHelper
-    def gitlab_com_subscription?
+    def self.gitlab_com_subscription?
       # There is a plan to enable self-hosted features on Staging Ref:
       #
       # https://gitlab.com/gitlab-org/gitlab/-/issues/497784
@@ -12,6 +12,10 @@ module GitlabSubscriptions
       return false if ::Feature.enabled?(:allow_self_hosted_features_for_com) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
 
       ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+    end
+
+    def gitlab_com_subscription?
+      GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
     end
   end
 end
