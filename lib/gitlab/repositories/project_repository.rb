@@ -2,7 +2,7 @@
 
 module Gitlab
   module Repositories
-    class ProjectRepository < Gitlab::GlRepository::RepoType
+    class ProjectRepository < Gitlab::Repositories::RepoType
       def initialize
         @access_checker_class = Gitlab::GitAccessProject
         @repository_resolver = ->(project) do

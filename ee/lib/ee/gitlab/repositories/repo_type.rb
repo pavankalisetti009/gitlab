@@ -2,7 +2,7 @@
 
 module EE
   module Gitlab
-    module GlRepository
+    module Repositories
       module RepoType
         extend ::Gitlab::Utils::Override
 

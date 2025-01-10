@@ -1,7 +1,8 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
-RSpec.describe Gitlab::GlRepository::RepoType do
+RSpec.describe Gitlab::Repositories::RepoType, feature_category: :source_code_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:personal_snippet) { create(:personal_snippet, author: project.first_owner) }
   let_it_be(:project_snippet) { create(:project_snippet, project: project, author: project.first_owner) }
@@ -18,7 +19,10 @@ RSpec.describe Gitlab::GlRepository::RepoType do
       let(:expected_identifier) { "project-#{expected_id}" }
       let(:expected_suffix) { '' }
       let(:expected_container) { project }
-      let(:expected_repository) { ::Repository.new(project.full_path, project, shard: project.repository_storage, disk_path: project.disk_path, repo_type: described_class) }
+      let(:expected_repository) do
+        ::Repository.new(project.full_path, project, shard: project.repository_storage,
+          disk_path: project.disk_path, repo_type: described_class)
+      end
     end
 
     it 'knows its type' do
@@ -49,7 +53,10 @@ RSpec.describe Gitlab::GlRepository::RepoType do
       let(:expected_identifier) { "wiki-#{expected_id}" }
       let(:expected_suffix) { '.wiki' }
       let(:expected_container) { wiki }
-      let(:expected_repository) { ::Repository.new(wiki.full_path, wiki, shard: wiki.repository_storage, disk_path: wiki.disk_path, repo_type: described_class) }
+      let(:expected_repository) do
+        ::Repository.new(wiki.full_path, wiki, shard: wiki.repository_storage,
+          disk_path: wiki.disk_path, repo_type: described_class)
+      end
     end
 
     it 'knows its type' do
@@ -78,8 +85,11 @@ RSpec.describe Gitlab::GlRepository::RepoType do
         let(:expected_id) { personal_snippet.id }
         let(:expected_identifier) { "snippet-#{expected_id}" }
         let(:expected_suffix) { '' }
-        let(:expected_repository) { ::Repository.new(personal_snippet.full_path, personal_snippet, shard: personal_snippet.repository_storage, disk_path: personal_snippet.disk_path, repo_type: described_class) }
         let(:expected_container) { personal_snippet }
+        let(:expected_repository) do
+          ::Repository.new(personal_snippet.full_path, personal_snippet, shard: personal_snippet.repository_storage,
+            disk_path: personal_snippet.disk_path, repo_type: described_class)
+        end
       end
 
       it 'knows its type' do
@@ -107,8 +117,11 @@ RSpec.describe Gitlab::GlRepository::RepoType do
         let(:expected_id) { project_snippet.id }
         let(:expected_identifier) { "snippet-#{expected_id}" }
         let(:expected_suffix) { '' }
-        let(:expected_repository) { ::Repository.new(project_snippet.full_path, project_snippet, shard: project_snippet.repository_storage, disk_path: project_snippet.disk_path, repo_type: described_class) }
         let(:expected_container) { project_snippet }
+        let(:expected_repository) do
+          ::Repository.new(project_snippet.full_path, project_snippet, shard: project_snippet.repository_storage,
+            disk_path: project_snippet.disk_path, repo_type: described_class)
+        end
       end
 
       it 'knows its type' do
@@ -171,15 +184,17 @@ RSpec.describe Gitlab::GlRepository::RepoType do
   end
 
   describe '.repository_for' do
-    subject { Gitlab::GlRepository::DESIGN }
+    subject(:design_repository) { Gitlab::GlRepository::DESIGN }
 
     let(:expected_message) do
       "Expected container class to be #{subject.container_class} for " \
-        "repo type #{subject.name}, but found #{project.class.name} instead."
+        "repo type #{design_repository.name}, but found #{project.class.name} instead."
     end
 
     it 'raises an error when container class does not match given container_class' do
-      expect { subject.repository_for(project) }.to raise_error(Gitlab::GlRepository::ContainerClassMismatchError, expected_message)
+      expect do
+        design_repository.repository_for(project)
+      end.to raise_error(Gitlab::Repositories::ContainerClassMismatchError, expected_message)
     end
   end
 end

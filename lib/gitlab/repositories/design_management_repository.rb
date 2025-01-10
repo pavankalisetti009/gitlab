@@ -2,7 +2,7 @@
 
 module Gitlab
   module Repositories
-    class DesignManagementRepository < Gitlab::GlRepository::RepoType
+    class DesignManagementRepository < Gitlab::Repositories::RepoType
       def initialize
         @access_checker_class = ::Gitlab::GitAccessDesign
         @repository_resolver = ->(design_management_repository) { design_management_repository.repository }

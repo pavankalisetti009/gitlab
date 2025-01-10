@@ -4,10 +4,10 @@ module Gitlab
   class GlRepository
     include Singleton
 
-    PROJECT = Gitlab::GlRepository::ProjectRepository.new.freeze
-    WIKI = Gitlab::GlRepository::WikiRepository.new.freeze
-    SNIPPET = Gitlab::GlRepository::SnippetRepository.new.freeze
-    DESIGN = ::Gitlab::GlRepository::DesignManagementRepository.new.freeze
+    PROJECT = Gitlab::Repositories::ProjectRepository.new.freeze
+    WIKI = Gitlab::Repositories::WikiRepository.new.freeze
+    SNIPPET = Gitlab::Repositories::SnippetRepository.new.freeze
+    DESIGN = ::Gitlab::Repositories::DesignManagementRepository.new.freeze
 
     TYPES = {
       PROJECT.name.to_s => PROJECT,
@@ -21,7 +21,7 @@ module Gitlab
     end
 
     def self.parse(gl_repository)
-      identifier = ::Gitlab::GlRepository::Identifier.parse(gl_repository)
+      identifier = ::Gitlab::Repositories::Identifier.parse(gl_repository)
 
       repo_type = identifier.repo_type
       container = identifier.container

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Gitlab
-  class GlRepository
+  module Repositories
     class RepoType
       attr_reader :access_checker_class,
         :repository_resolver,
@@ -93,4 +93,4 @@ module Gitlab
   end
 end
 
-Gitlab::GlRepository::RepoType.prepend_mod_with('Gitlab::GlRepository::RepoType')
+Gitlab::Repositories::RepoType.prepend_mod_with('Gitlab::Repositories::RepoType')

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Gitlab
-  class GlRepository
+  module Repositories
     class ContainerClassMismatchError < StandardError
       def initialize(container_class, repo_type)
         @container_class = container_class

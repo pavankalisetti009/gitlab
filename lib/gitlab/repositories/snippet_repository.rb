@@ -2,7 +2,7 @@
 
 module Gitlab
   module Repositories
-    class SnippetRepository < Gitlab::GlRepository::RepoType
+    class SnippetRepository < Gitlab::Repositories::RepoType
       def initialize
         @access_checker_class = Gitlab::GitAccessSnippet
         @repository_resolver = ->(snippet) do
