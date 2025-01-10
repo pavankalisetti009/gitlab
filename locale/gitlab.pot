@@ -64237,6 +64237,9 @@ msgstr ""
 msgid "WorkItem|Add up to %{MAX_WORK_ITEMS} items at a time."
 msgstr ""
 
+msgid "WorkItem|Adds this %{workItemType} as related to the %{relatedWorkItemType} it was created from"
+msgstr ""
+
 msgid "WorkItem|All activity"
 msgstr ""
 
@@ -64520,6 +64523,9 @@ msgid "WorkItem|New %{workItemType}"
 msgstr ""
 
 msgid "WorkItem|New related %{workItemType}"
+msgstr ""
+
+msgid "WorkItem|New related item"
 msgstr ""
 
 msgid "WorkItem|New task"
