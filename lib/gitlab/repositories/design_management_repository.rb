@@ -5,12 +5,13 @@ module Gitlab
     class DesignManagementRepository < Gitlab::Repositories::RepoType
       def initialize
         @access_checker_class = ::Gitlab::GitAccessDesign
-        @container_class = DesignManagement::Repository
       end
 
       def name = :design
 
       def suffix = :design
+
+      def container_class = DesignManagement::Repository
 
       private
 

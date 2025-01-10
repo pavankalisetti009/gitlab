@@ -9,6 +9,8 @@ module Gitlab
 
       def name = :project
 
+      def container_class = Project
+
       private
 
       def repository_resolver(project)
