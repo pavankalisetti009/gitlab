@@ -11,7 +11,8 @@ introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/151586
 feature_category: code_review_workflow
 milestone: '17.0'
 group_ability: true
+enabled_for_group_access_levels: [50]
 project_ability: true
+enabled_for_project_access_levels: [50]
 requirements:
   - read_code
-available_from_access_level:

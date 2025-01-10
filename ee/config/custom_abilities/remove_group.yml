@@ -7,6 +7,7 @@ introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145166
 feature_category: groups_and_projects
 milestone: '16.10'
 group_ability: true
+enabled_for_group_access_levels: [50]
 project_ability: false
 requirements: []
 available_from_access_level: 50
