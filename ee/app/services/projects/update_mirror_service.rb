@@ -27,7 +27,7 @@ module Projects
       end
 
       fetch_result = update_tags do
-        project.fetch_mirror(forced: true, check_tags_changed: true, check_repo_changed: true)
+        project.fetch_mirror(forced: true, check_tags_changed: true)
       end
 
       update_lfs_objects_and_branches(fetch_result)
@@ -43,32 +43,9 @@ module Projects
     end
 
     def update_lfs_objects_and_branches(fetch_result)
-      if ::Feature.enabled?(:lfs_sync_before_branch_updates, project) && fetch_result.try(:repo_changed)
-        # If project.fetch_mirror() indicates the 'repo changed', let's sync LFS
-        # objects _before_ we call #update_branches() so there's no race
-        # condition where branches have been updated but LFS objects are still
-        # being fetched and stored.
-        #
-        # We also need to check `Gitaly::FetchRemoteResponse` to ensure it knows
-        # about the `repo_changed` field, as the necessary Gitaly work may not
-        # be merged yet.
-        #
-        update_lfs_objects
-      end
+      update_lfs_objects if fetch_result.repo_changed
 
-      # Update git branches from project.fetch_mirror()'s work
       update_branches
-
-      if !::Feature.enabled?(:lfs_sync_before_branch_updates, project) || !fetch_result.respond_to?(:repo_changed)
-        # We also need to check `Gitaly::FetchRemoteResponse` to ensure it knows
-        # about the `repo_changed` field, as the necessary Gitaly work may not
-        # be merged yet. In the event `Gitaly::FetchRemoteResponse` doesn't
-        # know about the `repo_changed` field, we call update_lfs_objects() here
-        # only after update_branches() has been called, which was the prior logic
-        # order.
-        #
-        update_lfs_objects
-      end
     end
 
     private

@@ -724,7 +724,7 @@ module EE
       mirror? && !empty_repo?
     end
 
-    def fetch_mirror(forced: false, check_tags_changed: false, check_repo_changed: false)
+    def fetch_mirror(forced: false, check_tags_changed: false)
       return unless mirror?
 
       # Only send the password if it's needed
@@ -737,9 +737,7 @@ module EE
 
       repository.fetch_upstream(url,
         forced: forced,
-        check_tags_changed: check_tags_changed,
-        check_repo_changed: check_repo_changed,
-        lfs_sync_before_branch_updates: ::Feature.enabled?(:lfs_sync_before_branch_updates, self)
+        check_tags_changed: check_tags_changed
       )
     end
 
