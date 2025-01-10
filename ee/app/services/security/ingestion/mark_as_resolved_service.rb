@@ -73,8 +73,6 @@ module Security
       end
 
       def auto_resolve(missing_ids)
-        return unless auto_resolve_enabled?
-
         budget = AUTO_RESOLVE_LIMIT - auto_resolved_count
         return unless budget > 0
 
@@ -82,11 +80,6 @@ module Security
 
         @auto_resolved_count += result.payload[:count] if result.success?
       end
-
-      def auto_resolve_enabled?
-        ::Feature.enabled?(:auto_resolve_vulnerabilities, project)
-      end
-      strong_memoize_attr :auto_resolve_enabled?
 
       def process_existing_cvs_vulnerabilities_for_container_scanning
         vulnerability_reads

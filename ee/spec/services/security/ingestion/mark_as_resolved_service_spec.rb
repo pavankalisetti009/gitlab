@@ -118,18 +118,6 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
             expect(vulnerability.representation_information).to be_nil
           end
         end
-
-        context 'when auto_resolve_vulnerabilities feature flag is disabled' do
-          before do
-            stub_feature_flags(auto_resolve_vulnerabilities: false)
-          end
-
-          it 'does not call AutoResolveService' do
-            expect(Vulnerabilities::AutoResolveService).not_to receive(:new)
-
-            command.execute
-          end
-        end
       end
 
       context 'with multiple vulnerabilities' do
