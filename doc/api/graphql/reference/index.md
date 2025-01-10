@@ -18163,6 +18163,29 @@ The edge type for [`WorkItem`](#workitem).
 | <a id="workitemedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="workitemedgenode"></a>`node` | [`WorkItem`](#workitem) | The item at the end of the edge. |
 
+#### `WorkItemLinkedResourceConnection`
+
+The connection type for [`WorkItemLinkedResource`](#workitemlinkedresource).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemlinkedresourceconnectionedges"></a>`edges` | [`[WorkItemLinkedResourceEdge]`](#workitemlinkedresourceedge) | A list of edges. |
+| <a id="workitemlinkedresourceconnectionnodes"></a>`nodes` | [`[WorkItemLinkedResource]`](#workitemlinkedresource) | A list of nodes. |
+| <a id="workitemlinkedresourceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `WorkItemLinkedResourceEdge`
+
+The edge type for [`WorkItemLinkedResource`](#workitemlinkedresource).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemlinkedresourceedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="workitemlinkedresourceedgenode"></a>`node` | [`WorkItemLinkedResource`](#workitemlinkedresource) | The item at the end of the edge. |
+
 #### `WorkItemRelatedBranchConnection`
 
 The connection type for [`WorkItemRelatedBranch`](#workitemrelatedbranch).
@@ -37796,6 +37819,14 @@ Returns [`String!`](#string).
 | <a id="workitemdescriptiontemplatecontent"></a>`content` | [`String!`](#string) | Content of Description Template. |
 | <a id="workitemdescriptiontemplatename"></a>`name` | [`String!`](#string) | Name of Description Template. |
 
+### `WorkItemLinkedResource`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemlinkedresourceurl"></a>`url` | [`String!`](#string) | URL of resource. |
+
 ### `WorkItemPermissions`
 
 Check permissions for the current user on a work item.
@@ -38192,6 +38223,17 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetlinkeditemslinkeditemsfilter"></a>`filter` | [`WorkItemRelatedLinkType`](#workitemrelatedlinktype) | Filter by link type. Supported values: RELATED, BLOCKED_BY, and BLOCKS. Returns all types if omitted. |
+
+### `WorkItemWidgetLinkedResources`
+
+Represents the linked resources widget.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetlinkedresourceslinkedresources"></a>`linkedResources` | [`WorkItemLinkedResourceConnection`](#workitemlinkedresourceconnection) | Resources for the work item. (see [Connections](#connections)) |
+| <a id="workitemwidgetlinkedresourcestype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 
 ### `WorkItemWidgetMilestone`
 
@@ -42038,6 +42080,7 @@ Type of a work item widget.
 | <a id="workitemwidgettypeiteration"></a>`ITERATION` | Iteration widget. |
 | <a id="workitemwidgettypelabels"></a>`LABELS` | Labels widget. |
 | <a id="workitemwidgettypelinked_items"></a>`LINKED_ITEMS` | Linked Items widget. |
+| <a id="workitemwidgettypelinked_resources"></a>`LINKED_RESOURCES` | Linked Resources widget. |
 | <a id="workitemwidgettypemilestone"></a>`MILESTONE` | Milestone widget. |
 | <a id="workitemwidgettypenotes"></a>`NOTES` | Notes widget. |
 | <a id="workitemwidgettypenotifications"></a>`NOTIFICATIONS` | Notifications widget. |
@@ -44363,6 +44406,7 @@ Implementations:
 - [`WorkItemWidgetIteration`](#workitemwidgetiteration)
 - [`WorkItemWidgetLabels`](#workitemwidgetlabels)
 - [`WorkItemWidgetLinkedItems`](#workitemwidgetlinkeditems)
+- [`WorkItemWidgetLinkedResources`](#workitemwidgetlinkedresources)
 - [`WorkItemWidgetMilestone`](#workitemwidgetmilestone)
 - [`WorkItemWidgetNotes`](#workitemwidgetnotes)
 - [`WorkItemWidgetNotifications`](#workitemwidgetnotifications)
