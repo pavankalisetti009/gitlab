@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlForm, GlCollapsibleListbox } from '@gitlab/ui';
+import { GlForm } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -11,8 +11,15 @@ import createSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/
 import updateSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
 import { createAlert } from '~/alert';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
-import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/self_hosted_models/constants';
-import { SELF_HOSTED_MODEL_OPTIONS, mockSelfHostedModel as mockModelData } from './mock_data';
+import {
+  SELF_HOSTED_MODEL_MUTATIONS,
+  BEDROCK_DUMMY_ENDPOINT,
+} from 'ee/pages/admin/ai/self_hosted_models/constants';
+import {
+  SELF_HOSTED_MODEL_OPTIONS,
+  mockSelfHostedModel as mockModelData,
+  mockBedrockSelfHostedModel,
+} from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -43,6 +50,7 @@ describe('SelfHostedModelForm', () => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
     wrapper = mountExtended(SelfHostedModelForm, {
+      attachTo: document.body,
       apolloProvider: mockApollo,
       provide: {
         basePath,
@@ -70,45 +78,137 @@ describe('SelfHostedModelForm', () => {
   const findGlForm = () => wrapper.findComponent(GlForm);
   const findNameInputField = () => wrapper.findByLabelText('Deployment name', { exact: false });
   const findEndpointInputField = () => wrapper.findByLabelText('Endpoint', { exact: false });
+  const findPlatformDropdownSelector = () => wrapper.findByTestId('platform-dropdown-selector');
   const findIdentifierInputField = () =>
     wrapper.findByLabelText('Model identifier', { exact: false });
   const findApiKeyInputField = () => wrapper.findComponent(InputCopyToggleVisibility);
-  const findCollapsibleListBox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findModelDropDownSelector = () => wrapper.findByTestId('model-dropdown-selector');
   const findCreateButton = () => wrapper.find('button[type="submit"]');
   const findCancelButton = () => wrapper.findByText('Cancel');
   const findTestConnectionButton = () => wrapper.findComponent(TestConnectionButton);
 
-  it('renders the self-hosted model details form', () => {
+  const findNameValidationMessage = () => wrapper.findByText('Please enter a deployment name.');
+  const findModelValidationMessage = () => wrapper.findByText('Please select a model.');
+  const findEndpointValidationMessage = () => wrapper.findByText('Please enter an endpoint.');
+  const findIdentifierValidationMessage = () =>
+    wrapper.findByText('Please enter a model identifier.');
+  const findIdentifierTooLongValidationMessage = () =>
+    wrapper.findByText('Model identifier must be less than 255 characters.');
+  const findBedrockIdentifierValidationMessage = () =>
+    wrapper.findByText('Model identifier must start with "bedrock/"');
+
+  it('renders the self-hosted model form', () => {
     expect(findGlForm().exists()).toBe(true);
   });
 
   describe('form fields', () => {
-    it('renders the name input field', () => {
-      expect(findNameInputField().exists()).toBe(true);
+    describe('for all platforms', () => {
+      it('renders the name input field', () => {
+        expect(findNameInputField().exists()).toBe(true);
+      });
+
+      it('renders the platform select dropdown', () => {
+        expect(findPlatformDropdownSelector().exists()).toBe(true);
+      });
+
+      it('renders the model select dropdown', () => {
+        const modelDropdownSelector = findModelDropDownSelector();
+
+        expect(modelDropdownSelector.props('toggleText')).toEqual('Select model');
+
+        const modelOptions = modelDropdownSelector.props('items');
+        expect(modelOptions.map((model) => model.text)).toEqual([
+          'CodeGemma',
+          'Code-Llama',
+          'Codestral',
+          'Mistral',
+          'Deepseek Coder',
+          'Llama 3',
+        ]);
+      });
+
+      it('renders the model identifier input field', () => {
+        expect(findPlatformDropdownSelector().exists()).toBe(true);
+      });
     });
 
-    it('renders a model dropdown selector with model options', () => {
-      const modelDropdownSelector = findCollapsibleListBox();
+    describe('API platform', () => {
+      it('renders the endpoint input field', () => {
+        expect(findEndpointInputField().exists()).toBe(true);
+      });
 
-      expect(modelDropdownSelector.props('toggleText')).toEqual('Select model');
-
-      const modelOptions = modelDropdownSelector.props('items');
-      expect(modelOptions.map((model) => model.text)).toEqual([
-        'CodeGemma',
-        'Code-Llama',
-        'Codestral',
-        'Mistral',
-        'Deepseek Coder',
-        'LLaMA 3',
-      ]);
+      it('renders the optional API token input field', () => {
+        expect(findApiKeyInputField().exists()).toBe(true);
+      });
     });
 
-    it('renders the endpoint input field', () => {
-      expect(findEndpointInputField().exists()).toBe(true);
+    describe('Bedrock platform', () => {
+      beforeEach(() => {
+        findPlatformDropdownSelector().vm.$emit('select', 'bedrock');
+      });
+
+      it('does not render the endpoint input field', () => {
+        expect(findEndpointInputField().exists()).toBe(false);
+      });
+
+      it('does not render the API token input field', () => {
+        expect(findApiKeyInputField().exists()).toBe(false);
+      });
+
+      it('renders aws setup message', () => {
+        expect(findGlForm().text()).toMatch(
+          'To fully set up AWS credentials for this model please refer to the AWS Bedrock Configuration Guide',
+        );
+      });
+    });
+  });
+
+  describe('form validations', () => {
+    describe('API platform', () => {
+      it('displays validation errors when required fields are empty', async () => {
+        await findGlForm().trigger('submit');
+
+        expect(findNameValidationMessage().exists()).toBe(true);
+        expect(findModelValidationMessage().exists()).toBe(true);
+        expect(findEndpointValidationMessage().exists()).toBe(true);
+      });
+
+      it('displays validation error when identifier is too long', async () => {
+        const longModelIdentifier = `identifier/${'looooong-identifier'.repeat(255)}`;
+        await findIdentifierInputField().setValue(longModelIdentifier);
+        await findGlForm().trigger('submit');
+
+        expect(findIdentifierTooLongValidationMessage().exists()).toBe(true);
+      });
     });
 
-    it('renders the optional API token input field', () => {
-      expect(findApiKeyInputField().exists()).toBe(true);
+    describe('Bedrock platform', () => {
+      beforeEach(() => {
+        findPlatformDropdownSelector().vm.$emit('select', 'bedrock');
+      });
+
+      it('displays validation errors when required fields are empty', async () => {
+        await findGlForm().trigger('submit');
+
+        expect(findNameValidationMessage().exists()).toBe(true);
+        expect(findModelValidationMessage().exists()).toBe(true);
+        expect(findIdentifierValidationMessage().exists()).toBe(true);
+      });
+
+      it('displays validation error for invalid identifier', async () => {
+        await findIdentifierInputField().setValue('invalid/identifier');
+        await findGlForm().trigger('submit');
+
+        expect(findBedrockIdentifierValidationMessage().exists()).toBe(true);
+      });
+
+      it('displays validation error when identifier is too long', async () => {
+        const longModelIdentifier = `bedrock/${'looooong-identifier'.repeat(255)}`;
+        await findIdentifierInputField().setValue(longModelIdentifier);
+        await findGlForm().trigger('submit');
+
+        expect(findIdentifierTooLongValidationMessage().exists()).toBe(true);
+      });
     });
   });
 
@@ -120,7 +220,7 @@ describe('SelfHostedModelForm', () => {
     it('passes the correct props', async () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
-      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+      await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
       await findIdentifierInputField().setValue('identifier/test');
       await findApiKeyInputField().vm.$emit('input', 'test-abc-123');
 
@@ -175,7 +275,7 @@ describe('SelfHostedModelForm', () => {
       it('renders an error message', async () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('http://test.com');
-        await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+        await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -206,7 +306,7 @@ describe('SelfHostedModelForm', () => {
       it('renders an error message', async () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('invalid endpoint');
-        await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+        await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -227,7 +327,7 @@ describe('SelfHostedModelForm', () => {
 
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('http://test.com');
-        await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+        await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -248,7 +348,7 @@ describe('SelfHostedModelForm', () => {
     beforeEach(async () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
-      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+      await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
       await findIdentifierInputField().setValue('provider/model-name');
 
       wrapper.find('form').trigger('submit.prevent');
@@ -284,6 +384,27 @@ describe('SelfHostedModelForm', () => {
         }),
       ]);
     });
+
+    describe('bedrock models', () => {
+      it('invokes the create mutation with correct input variables', async () => {
+        await findPlatformDropdownSelector().vm.$emit('select', 'bedrock');
+        await findIdentifierInputField().setValue('bedrock/example-model');
+
+        wrapper.find('form').trigger('submit.prevent');
+
+        await waitForPromises();
+
+        expect(createMutationSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            name: 'test deployment',
+            endpoint: BEDROCK_DUMMY_ENDPOINT,
+            model: 'MISTRAL',
+            apiToken: '',
+            identifier: 'bedrock/example-model',
+          },
+        });
+      });
+    });
   });
 
   describe('When editing a self-hosted model', () => {
@@ -318,7 +439,7 @@ describe('SelfHostedModelForm', () => {
     it('invokes the update mutation with correct input variables', async () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
-      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+      await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
       await findApiKeyInputField().vm.$emit('input', 'abc123');
       await findIdentifierInputField().setValue('provider/model-name');
 
@@ -351,6 +472,41 @@ describe('SelfHostedModelForm', () => {
           variant: 'success',
         }),
       ]);
+    });
+
+    describe('bedrock models', () => {
+      beforeEach(async () => {
+        await createComponent({
+          props: {
+            initialFormValues: mockBedrockSelfHostedModel,
+            mutationData: {
+              name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
+              mutation: updateSelfHostedModelMutation,
+            },
+            submitButtonText: 'Edit self-hosted model',
+          },
+          apolloHandlers: [[updateSelfHostedModelMutation, updateMutationSuccessHandler]],
+        });
+      });
+
+      it('invokes the update mutation with correct input variables', async () => {
+        await findIdentifierInputField().setValue('bedrock/new-example-model');
+
+        wrapper.find('form').trigger('submit.prevent');
+
+        await waitForPromises();
+
+        expect(updateMutationSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            id: mockBedrockSelfHostedModel.id,
+            name: 'mock-bedrock-model',
+            endpoint: BEDROCK_DUMMY_ENDPOINT,
+            model: 'MISTRAL',
+            apiToken: '',
+            identifier: 'bedrock/new-example-model',
+          },
+        });
+      });
     });
   });
 });

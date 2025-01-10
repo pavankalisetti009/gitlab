@@ -14,6 +14,7 @@ import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
+import { BEDROCK_DUMMY_ENDPOINT } from '../constants';
 import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disclosure_item.vue';
 
 export default {
@@ -122,6 +123,9 @@ export default {
         to: `${getIdFromGraphQLId(model.id)}/edit`,
       };
     },
+    getModelEndpointText(endpoint) {
+      return endpoint === BEDROCK_DUMMY_ENDPOINT ? '--' : endpoint;
+    },
   },
   apollo: {
     selfHostedModels: {
@@ -180,7 +184,9 @@ export default {
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"
           ><rect y="6" :width="item.loaderWidth.endpoint" height="36" rx="10" />
         </gl-skeleton-loader>
-        <span v-else><gl-truncate :text="item.endpoint" position="end" with-tooltip /></span>
+        <span v-else
+          ><gl-truncate :text="getModelEndpointText(item.endpoint)" position="end" with-tooltip
+        /></span>
       </template>
       <template #cell(identifier)="{ item }">
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="300"

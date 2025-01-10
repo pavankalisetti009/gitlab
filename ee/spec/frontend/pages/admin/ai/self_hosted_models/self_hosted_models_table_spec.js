@@ -94,7 +94,7 @@ describe('SelfHostedModelsTable', () => {
     });
 
     it('renders self-hosted model entries', () => {
-      expect(findTableRows().length).toEqual(2);
+      expect(findTableRows().length).toEqual(3);
 
       const firstModel = findNthTableRow(0);
 
@@ -109,6 +109,17 @@ describe('SelfHostedModelsTable', () => {
       expect(firstModel.find('[data-testid="check-circle-icon"]').exists()).toBe(true);
     });
 
+    describe('bedrock model entries', () => {
+      it('does not render the dummy endpoint', () => {
+        const bedrockModel = findNthTableRow(2);
+        const bedrockModelName = bedrockModel.find('[data-label="Name"]').text();
+        const bedrockModelEndpoint = bedrockModel.find('[data-label="Endpoint"]').text();
+
+        expect(bedrockModelName).toBe('mock-bedrock-self-hosted-model');
+        expect(bedrockModelEndpoint).toBe('--');
+      });
+    });
+
     it('truncates name and endpoint', () => {
       const model = mockSelfHostedModelsList[0];
 
@@ -120,7 +131,7 @@ describe('SelfHostedModelsTable', () => {
     });
 
     it('renders a disclosure dropdown for each self-hosted model entry', () => {
-      expect(findDisclosureDropdowns().length).toBe(2);
+      expect(findDisclosureDropdowns().length).toBe(3);
     });
 
     describe('search', () => {
@@ -177,7 +188,7 @@ describe('SelfHostedModelsTable', () => {
       });
 
       it('renders an edit button for each model', () => {
-        expect(findEditButtons().length).toBe(2);
+        expect(findEditButtons().length).toBe(3);
 
         findEditButtons().wrappers.forEach((button) => {
           expect(button.text()).toEqual('Edit');
@@ -200,7 +211,7 @@ describe('SelfHostedModelsTable', () => {
 
         await waitForPromises();
 
-        expect(findDeleteDisclosureItems().length).toBe(2);
+        expect(findDeleteDisclosureItems().length).toBe(3);
 
         findDeleteDisclosureItems().wrappers.forEach((button) => {
           expect(button.text()).toEqual('Delete');
