@@ -21,6 +21,10 @@ module Gitlab
         raise NotImplementedError, 'Define a container_class in a RepoType subclass'
       end
 
+      def type_id
+        name.to_s
+      end
+
       def identifier_for_container(container)
         "#{name}-#{container.id}"
       end

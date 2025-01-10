@@ -10,10 +10,10 @@ module Gitlab
     DESIGN = ::Gitlab::Repositories::DesignManagementRepository.instance
 
     TYPES = {
-      PROJECT.name.to_s => PROJECT,
-      WIKI.name.to_s => WIKI,
-      SNIPPET.name.to_s => SNIPPET,
-      DESIGN.name.to_s => DESIGN
+      PROJECT.type_id => PROJECT,
+      WIKI.type_id => WIKI,
+      SNIPPET.type_id => SNIPPET,
+      DESIGN.type_id => DESIGN
     }.freeze
 
     def self.types
