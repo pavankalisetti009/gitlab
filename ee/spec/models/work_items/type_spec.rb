@@ -142,6 +142,77 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     end
   end
 
+  describe '#supported_conversion_types' do
+    let_it_be(:resource_parent) { create(:project) }
+    let_it_be(:issue_type) { create(:work_item_type, :issue) }
+    let(:work_item_type) { issue_type }
+
+    shared_examples 'licensed type availability' do |type, licensed_feature|
+      let_it_be(:wi_type) { create(:work_item_type, type.to_sym) }
+
+      context "when #{licensed_feature} is available" do
+        before do
+          stub_licensed_features(licensed_feature => true)
+        end
+
+        it "returns #{type} type in the supported types" do
+          expect(work_item_type.supported_conversion_types(resource_parent)).to include(wi_type)
+        end
+      end
+
+      context "when #{licensed_feature} is unavailable" do
+        before do
+          stub_licensed_features(licensed_feature => false)
+        end
+
+        it "does not return #{type} type in the supported types" do
+          expect(work_item_type.supported_conversion_types(resource_parent)).not_to include(wi_type)
+        end
+      end
+    end
+
+    shared_examples 'okrs types not included' do
+      it 'does not return Objective and Key Result types in the supported types' do
+        expect(work_item_type.supported_conversion_types(resource_parent))
+          .not_to include(objective, key_result)
+      end
+    end
+
+    WorkItems::Type::LICENSED_TYPES.each do |type, licensed_feature|
+      it_behaves_like 'licensed type availability', type, licensed_feature
+    end
+
+    context 'when okrs_mvc is disabled' do
+      let_it_be(:objective) { create(:work_item_type, :objective) }
+      let_it_be(:key_result) { create(:work_item_type, :key_result) }
+
+      before do
+        stub_feature_flags(okrs_mvc: false)
+      end
+
+      it_behaves_like 'okrs types not included'
+
+      context 'when resource parent is group' do
+        let_it_be(:resource_parent) { resource_parent.reload.project_namespace }
+
+        it_behaves_like 'okrs types not included'
+      end
+    end
+
+    context 'when work_item_epics is disabled' do
+      let_it_be(:epic) { create(:work_item_type, :epic) }
+
+      before do
+        stub_feature_flags(work_item_epics: false)
+        stub_licensed_features(epics: true)
+      end
+
+      it "does not return epic type in the supported types" do
+        expect(work_item_type.supported_conversion_types(resource_parent)).not_to include(epic)
+      end
+    end
+  end
+
   def feature_hash
     available_features = licensed_features - disabled_features
 

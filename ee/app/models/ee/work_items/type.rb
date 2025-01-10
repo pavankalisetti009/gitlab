@@ -20,6 +20,8 @@ module EE
         epic_colors: ::WorkItems::Widgets::Color
       }.freeze
 
+      LICENSED_TYPES = { epic: :epics, objective: :okrs, key_result: :okrs, requirement: :requirements }.freeze
+
       class_methods do
         extend ::Gitlab::Utils::Override
 
@@ -55,6 +57,27 @@ module EE
         LICENSED_WIDGETS.flat_map do |licensed_feature, widget_class|
           widget_class unless resource_parent.licensed_feature_available?(licensed_feature)
         end.compact
+      end
+
+      override :supported_conversion_base_types
+      def supported_conversion_base_types(resource_parent)
+        ee_base_types = LICENSED_TYPES.flat_map do |type, licensed_feature|
+          type.to_s if resource_parent.licensed_feature_available?(licensed_feature.to_sym)
+        end.compact
+
+        unless ::Feature.enabled?(:work_item_epics, resource_parent.root_ancestor, type: :beta)
+          ee_base_types -= %w[epic]
+        end
+
+        project = if resource_parent.is_a?(Project)
+                    resource_parent
+                  elsif resource_parent.respond_to?(:project)
+                    resource_parent.project.presence
+                  end
+
+        ee_base_types -= %w[objective key_result] unless project && ::Feature.enabled?(:okrs_mvc, project)
+
+        super + ee_base_types
       end
     end
   end
