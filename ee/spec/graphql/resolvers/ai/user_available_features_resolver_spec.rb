@@ -39,7 +39,8 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
 
         context 'when user does not have access to duo chat' do
           before do
-            allow(Ability).to receive(:allowed?).with(user, :access_duo_chat).and_return(false)
+            allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user,
+              :allowed?).and_return(false)
           end
 
           it 'returns an empty array' do
@@ -49,7 +50,8 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
 
         context 'when user has access to duo chat' do
           before do
-            allow(Ability).to receive(:allowed?).with(user, :access_duo_chat).and_return(true)
+            allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user,
+              :allowed?).and_return(true)
             allow(current_user).to receive(:allowed_to_use?).and_return(true)
           end
 

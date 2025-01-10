@@ -34,7 +34,7 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
 
     before do
       allow(Ability).to receive(:allowed?).and_call_original
-      allow(Ability).to receive(:allowed?).with(current_user, :access_duo_chat).and_return(true)
+      allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user, :allowed?).and_return(true)
 
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service_not_available)
       allow(service_not_available).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?)
@@ -71,7 +71,7 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
 
     context 'when user does not have access to chat' do
       before do
-        allow(Ability).to receive(:allowed?).with(current_user, :access_duo_chat).and_return(false)
+        allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user, :allowed?).and_return(false)
       end
 
       it 'returns an empty response' do
