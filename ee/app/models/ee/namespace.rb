@@ -289,7 +289,8 @@ module EE
         next ::Plan.default unless ::Gitlab.com?
 
         if parent_id
-          root_ancestor.actual_plan
+          # remove safe navigation and `::Plan.free` with https://gitlab.com/gitlab-org/gitlab/-/issues/508611
+          root_ancestor&.actual_plan || ::Plan.free
         else
           subscription = gitlab_subscription || generate_subscription
           hosted_plan_for(subscription) || ::Plan.free
