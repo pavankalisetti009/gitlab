@@ -4,9 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category: :navigation do
   let_it_be(:owner) { create(:user) }
+  let_it_be(:guest) { create(:user) }
   let_it_be_with_refind(:group) do
     create(:group, :private).tap do |g|
       g.add_owner(owner)
+      g.add_guest(guest)
     end
   end
 
@@ -14,6 +16,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
   let(:show_group_discover_security) { false }
   let(:context) { Sidebars::Groups::Context.new(current_user: user, container: group, show_discover_group_security: show_group_discover_security) }
   let(:menu) { described_class.new(context) }
+  let(:menu_items) { menu.renderable_items.map(&:title) }
 
   describe '#link' do
     subject(:link) { menu.link }
@@ -93,6 +96,20 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         end
 
         it { is_expected.not_to be_nil }
+
+        context 'when the user is authorized to read_vulnerability' do
+          it 'lists Security dashboard in the menu list' do
+            expect(menu_items).to include("Security dashboard")
+          end
+        end
+
+        context 'when the user is not authorized to read_vulnerability' do
+          let(:user) { guest }
+
+          it 'does not list Security dashboard in the menu list' do
+            expect(menu_items).not_to include("Security dashboard")
+          end
+        end
       end
 
       context 'when security_dashboard feature is not enabled' do
@@ -109,6 +126,20 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         end
 
         it { is_expected.not_to be_nil }
+
+        context 'when the user is authorized to read_vulnerability' do
+          it 'lists Vulnerability report in the menu list' do
+            expect(menu_items).to include("Vulnerability report")
+          end
+        end
+
+        context 'when the user is not authorized to read_vulnerability' do
+          let(:user) { guest }
+
+          it 'does not list Vulnerability report in the menu list' do
+            expect(menu_items).not_to include("Vulnerability report")
+          end
+        end
       end
 
       context 'when security_dashboard feature is not enabled' do

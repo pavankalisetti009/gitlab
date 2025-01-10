@@ -54,7 +54,7 @@ module Sidebars
         private
 
         def security_dashboard_menu_item
-          unless context.group.licensed_feature_available?(:security_dashboard)
+          unless can_access_group_security_dashboard_and_vulnerability_report?
             return ::Sidebars::NilMenuItem.new(item_id: :security_dashboard)
           end
 
@@ -68,7 +68,7 @@ module Sidebars
         end
 
         def vulnerability_report_menu_item
-          unless context.group.licensed_feature_available?(:security_dashboard)
+          unless can_access_group_security_dashboard_and_vulnerability_report?
             return ::Sidebars::NilMenuItem.new(item_id: :vulnerability_report)
           end
 
@@ -173,6 +173,11 @@ module Sidebars
         def read_group_level_dependencies_available?
           context.group.licensed_feature_available?(:security_dashboard) &&
             can?(context.current_user, :read_dependency, context.group)
+        end
+
+        def can_access_group_security_dashboard_and_vulnerability_report?
+          context.group.licensed_feature_available?(:security_dashboard) &&
+            can?(context.current_user, :read_vulnerability, context.group)
         end
       end
     end
