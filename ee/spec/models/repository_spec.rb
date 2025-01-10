@@ -61,11 +61,9 @@ RSpec.describe Repository, feature_category: :source_code_management do
     let(:url) { "http://example.com" }
 
     it 'fetches the URL without creating a remote' do
-      stub_feature_flags(lfs_sync_before_branch_updates: false)
-
       expect(repository)
         .to receive(:fetch_remote)
-        .with(url, refmap: ['+refs/heads/*:refs/remotes/upstream/*'], ssh_auth: nil, forced: true, check_tags_changed: true, check_repo_changed: false, lfs_sync_before_branch_updates: false)
+        .with(url, refmap: ['+refs/heads/*:refs/remotes/upstream/*'], ssh_auth: nil, forced: true, check_tags_changed: true)
         .and_return(nil)
 
       repository.fetch_upstream(url, forced: true, check_tags_changed: true)

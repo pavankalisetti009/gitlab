@@ -30,6 +30,8 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
     end
 
     it "fetches the upstream repository" do
+      stub_fetch_mirror(project)
+
       expect(project).to receive(:fetch_mirror)
 
       service.execute
@@ -513,58 +515,26 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
   end
 
   describe "#update_lfs_objects_and_branches" do
-    context "when the lfs_sync_before_branch_updates FF is disabled" do
-      before do
-        stub_feature_flags(lfs_sync_before_branch_updates: false)
-      end
+    let(:fetch_result) { double('Gitaly::FetchRemoteResponse', repo_changed: repo_changed) }
 
-      it 'calls #update_lfs_objects after #update_branches' do
-        expect(service).to receive(:update_branches).ordered
-        expect(service).to receive(:update_lfs_objects).ordered
+    context "and fetch_result.repo_changed is false" do
+      let(:repo_changed) { false }
 
-        service.update_lfs_objects_and_branches(nil)
+      it 'does not call #update_lfs_objects' do
+        expect(service).not_to receive(:update_lfs_objects)
+
+        service.update_lfs_objects_and_branches(fetch_result)
       end
     end
 
-    context "when the lfs_sync_before_branch_updates FF is enabled" do
-      before do
-        stub_feature_flags(lfs_sync_before_branch_updates: true)
-      end
+    context "and fetch_result.repo_changed is true" do
+      let(:repo_changed) { true }
 
-      context "but fetch_result does not have the repo_changed attribute" do
-        let(:fetch_result) { double('Gitaly::FetchRemoteResponse') }
+      it 'calls #update_lfs_objects before #update_branches' do
+        expect(service).to receive(:update_lfs_objects).ordered
+        expect(service).to receive(:update_branches).ordered
 
-        it 'calls #update_lfs_objects after #update_branches' do
-          expect(service).to receive(:update_branches).ordered
-          expect(service).to receive(:update_lfs_objects).ordered
-
-          service.update_lfs_objects_and_branches(nil)
-        end
-      end
-
-      context "and fetch_result has the repo_changed attribute" do
-        let(:fetch_result) { double('Gitaly::FetchRemoteResponse', repo_changed: repo_changed) }
-
-        context "and fetch_result.repo_changed is false" do
-          let(:repo_changed) { false }
-
-          it 'does not call #update_lfs_objects' do
-            expect(service).not_to receive(:update_lfs_objects)
-
-            service.update_lfs_objects_and_branches(fetch_result)
-          end
-        end
-
-        context "and fetch_result.repo_changed is true" do
-          let(:repo_changed) { true }
-
-          it 'calls #update_lfs_objects before #update_branches' do
-            expect(service).to receive(:update_lfs_objects).ordered
-            expect(service).to receive(:update_branches).ordered
-
-            service.update_lfs_objects_and_branches(fetch_result)
-          end
-        end
+        service.update_lfs_objects_and_branches(fetch_result)
       end
     end
   end

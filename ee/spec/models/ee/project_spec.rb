@@ -1959,10 +1959,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let(:project) { build(:project, :mirror, import_url: import_url, import_data_attributes: { auth_method: auth_method }) }
 
       specify do
-        stub_feature_flags(lfs_sync_before_branch_updates: false)
-
-        expect(project.repository).to receive(:fetch_upstream).with(expected, forced: false, check_tags_changed: false, check_repo_changed: false, lfs_sync_before_branch_updates: false)
-
+        expect(project.repository).to receive(:fetch_upstream).with(expected, forced: false, check_tags_changed: false)
         project.fetch_mirror
       end
     end
