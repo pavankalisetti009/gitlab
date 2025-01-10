@@ -29,6 +29,7 @@ RSpec.describe 'Create epic work item', :js, feature_category: :team_planning do
           expect(page).to have_selector('[data-testid="work-item-rolledup-dates"]')
           expect(page).to have_selector('[data-testid="work-item-health-status"]')
           expect(page).to have_selector('[data-testid="work-item-color"]')
+          expect(page).to have_selector('[data-testid="work-item-parent"]')
 
           send_keys 'I am a new epic'
           click_button 'Create epic'
