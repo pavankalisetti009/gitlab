@@ -7,6 +7,7 @@ module Ai
         class PythonPip < Base
           OPTION_REGEX = /^-/
           NAME_VERSION_REGEX = /(?<name>^[^!=><~]+)(?<version>[!=><~]+.*$)?/
+          EXTRAS_SPECIFIER_REGEX = /\[[\w,\-]*\]/ # Matches the extras specifier, e.g. lib-name[extra_1,extra-2]
           OTHER_SPECIFIERS_REGEX = /[@;]+.*$/ # Matches URL or other non-version specifiers at the end of line
           COMMENT_ONLY_REGEX = /^#/
           INLINE_COMMENT_REGEX = /\s+#.*$/
@@ -53,7 +54,7 @@ module Ai
           end
 
           def parse_lib(line)
-            line.gsub!(Regexp.union(INLINE_COMMENT_REGEX, OTHER_SPECIFIERS_REGEX), '')
+            line.gsub!(Regexp.union(INLINE_COMMENT_REGEX, EXTRAS_SPECIFIER_REGEX, OTHER_SPECIFIERS_REGEX), '')
             match = NAME_VERSION_REGEX.match(line)
 
             Lib.new(name: match[:name], version: match[:version]) if match

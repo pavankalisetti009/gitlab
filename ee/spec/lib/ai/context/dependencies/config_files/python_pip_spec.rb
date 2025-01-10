@@ -24,6 +24,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPip, feature_catego
         openpyxl == 3.1.2
         urllib3 @ https://github.com/path/main.zip
         requests [security] >= 2.8.1, == 2.8.*
+        other-lib [extra-1,extra_2] == 2.1.0
 
         # Options
         -r other_requirements.txt
@@ -43,7 +44,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPip, feature_catego
         'pytest (>= 2.6.4)',
         'openpyxl (== 3.1.2)',
         'urllib3',
-        'requests [security] (>= 2.8.1, == 2.8.*)'
+        'requests (>= 2.8.1, == 2.8.*)',
+        'other-lib (== 2.1.0)'
       ]
     end
   end

@@ -36,7 +36,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::GoModules, feature_catego
       [
         'golang.org/x/mod (0.15.0)',
         'go.uber.org/goleak (1.3.0)',
-        'github.com/go-http-utils/headers (0.0.0-20181008091004-fed159eddc2a)'
+        'github.com/go-http-utils/headers (0.0.0)'
       ]
     end
   end

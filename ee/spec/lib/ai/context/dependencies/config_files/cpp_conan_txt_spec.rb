@@ -29,7 +29,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::CppConanTxt, feature_cate
     let(:expected_formatted_lib_names) do
       [
         'libiconv (1.17)',
-        'openssl (3.2.2u)',
+        'openssl (3.2.2)',
         'poco (>1.0,<1.9)',
         'zlib (1.2.13)',
         'boost (1.67.0)'

@@ -160,6 +160,111 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     end
   end
 
+  describe 'string sanitization and validation' do
+    it_behaves_like 'parsing a valid dependency config file' do
+      let(:config_file_content) do
+        Gitlab::Json.dump({
+          'parent_node' => { 'child_node' => [
+            { name: 'my-lib-1     ', version: nil },
+            { name: ' My_LibName2 ', version: 123 },
+            { name: 'path.org/lib3', version: 1.0 },
+            { name: 'My.Lib.Name4 ', version: ' ' },
+            { name: 'lib5 ', version: '1.0.0-alpha ' },
+            { name: 'lib6 ', version: ' >1.0 <2.1.0-beta.11 ' },
+            { name: 'lib7 ', version: ' >2.0,<3.0.0-0.3.7' },
+            { name: 'lib8 ', version: '^1.4.0+2024' },
+            { name: 'lib9 ', version: '^10.3.4-rc.1+build.2 || ^11.5.4+meta-data' },
+            { name: 'lib10', version: '>=2.3.4+build.sha.45465,<3.0.0-alpha+001' },
+            { name: 'lib11', version: '==5.0.0-pre+betaOnly' },
+            { name: 'lib12', version: '> 1.4.6-pre.2+exp.3567, == 1.4.*' },
+            { name: 'lib13', version: '!=4.3.1postfix' },
+            { name: 'lib14', version: '2.2.3u' }
+          ] }
+        })
+      end
+
+      let(:expected_formatted_lib_names) do
+        [
+          'my-lib-1', 'My_LibName2 (123)', 'path.org/lib3 (1.0)', 'My.Lib.Name4', 'lib5 (1.0.0)', 'lib6 (>1.0 <2.1.0)',
+          'lib7 (>2.0,<3.0.0)', 'lib8 (^1.4.0)', 'lib9 (^10.3.4 || ^11.5.4)', 'lib10 (>=2.3.4,<3.0.0)',
+          'lib11 (==5.0.0)', 'lib12 (> 1.4.6, == 1.4.*)', 'lib13 (!=4.3.1)', 'lib14 (2.2.3)'
+        ]
+      end
+    end
+
+    context 'when a dependency name contains invalid characters' do
+      where(:lib_name) { ['my-lib-', '.lib-name', 'lib@name'] }
+
+      with_them do
+        it_behaves_like 'parsing an invalid dependency config file' do
+          let(:invalid_config_file_content) do
+            Gitlab::Json.dump({
+              'parent_node' => { 'child_node' => [
+                { name: lib_name, version: '1.0' }
+              ] }
+            })
+          end
+
+          let(:expected_error_message) { "dependency name `#{lib_name}` contains invalid characters" }
+        end
+      end
+    end
+
+    context 'when a dependency name is too long' do
+      before do
+        stub_const("#{described_class}::MAX_NAME_LENGTH", 4)
+      end
+
+      it_behaves_like 'parsing an invalid dependency config file' do
+        let(:invalid_config_file_content) do
+          Gitlab::Json.dump({
+            'parent_node' => { 'child_node' => [
+              { name: 'long-lib-name', version: '1.0' }
+            ] }
+          })
+        end
+
+        let(:expected_error_message) { 'dependency name `long-...` exceeds 4 characters' }
+      end
+    end
+
+    context 'when a dependency version contains invalid characters' do
+      where(:lib_version) { ['a1.0.0', 'invalid-word', '1.0/2.0'] }
+
+      with_them do
+        it_behaves_like 'parsing an invalid dependency config file' do
+          let(:invalid_config_file_content) do
+            Gitlab::Json.dump({
+              'parent_node' => { 'child_node' => [
+                { name: 'my-lib', version: lib_version }
+              ] }
+            })
+          end
+
+          let(:expected_error_message) { "dependency version `#{lib_version}` contains invalid characters" }
+        end
+      end
+    end
+
+    context 'when a dependency version is too long' do
+      before do
+        stub_const("#{described_class}::MAX_VERSION_LENGTH", 4)
+      end
+
+      it_behaves_like 'parsing an invalid dependency config file' do
+        let(:invalid_config_file_content) do
+          Gitlab::Json.dump({
+            'parent_node' => { 'child_node' => [
+              { name: 'my-lib', version: '12345.66.77' }
+            ] }
+          })
+        end
+
+        let(:expected_error_message) { 'dependency version `12345...` exceeds 4 characters' }
+      end
+    end
+  end
+
   describe '.matches?' do
     where(:path, :matches) do
       'test.json'             | true

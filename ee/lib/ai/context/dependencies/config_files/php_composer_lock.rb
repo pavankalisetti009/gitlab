@@ -34,10 +34,7 @@ module Ai
             parsed = ::Gitlab::Json.parse(content)
 
             dig_in(parsed, 'packages').try(:map) do |dep|
-              version = dig_in(dep, 'version')
-              version.try(:delete_prefix!, 'v')
-
-              Lib.new(name: dig_in(dep, 'name'), version: version)
+              Lib.new(name: dig_in(dep, 'name'), version: dig_in(dep, 'version'))
             end
           rescue JSON::ParserError
             raise ParsingError, 'content is not valid JSON'
