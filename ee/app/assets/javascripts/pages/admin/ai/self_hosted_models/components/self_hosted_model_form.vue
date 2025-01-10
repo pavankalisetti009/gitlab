@@ -1,12 +1,85 @@
 <script>
-import { GlForm, GlButton, GlCollapsibleListbox, GlFormFields } from '@gitlab/ui';
+import {
+  GlForm,
+  GlButton,
+  GlCollapsibleListbox,
+  GlFormFields,
+  GlLink,
+  GlSprintf,
+} from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
-import { s__, sprintf } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
+import { SELF_HOSTED_MODEL_PLATFORMS, BEDROCK_DUMMY_ENDPOINT } from '../constants';
 import TestConnectionButton from './test_connection_button.vue';
+
+const isBedrockModelIdentifier = (identifier) => identifier.startsWith('bedrock/');
+const baseFormFieldClasses = ['gl-bg-subtle', 'gl-w-full', 'gl-p-6', 'gl-pb-2', 'gl-m-0'];
+const baseFormFields = {
+  name: {
+    label: s__('AdminSelfHostedModels|Deployment name'),
+    validators: [
+      formValidators.required(s__('AdminSelfHostedModels|Please enter a deployment name.')),
+    ],
+  },
+  platform: {
+    label: s__('AdminSelfHostedModels|Platform'),
+  },
+  model: {
+    label: s__('AdminSelfHostedModels|Model family'),
+    validators: [formValidators.required(s__('AdminSelfHostedModels|Please select a model.'))],
+    groupAttrs: {
+      class: baseFormFieldClasses,
+    },
+  },
+};
+const apiFormFields = {
+  endpoint: {
+    label: s__('AdminSelfHostedModels|Endpoint'),
+    validators: [formValidators.required(s__('AdminSelfHostedModels|Please enter an endpoint.'))],
+    groupAttrs: {
+      class: baseFormFieldClasses,
+    },
+  },
+  identifier: {
+    label: s__('AdminSelfHostedModels|Model identifier (optional)'),
+    validators: [
+      formValidators.factory(
+        s__('AdminSelfHostedModels|Model identifier must be less than 255 characters.'),
+        (val) => val.length <= 255,
+      ),
+    ],
+    groupAttrs: {
+      class: baseFormFieldClasses,
+    },
+  },
+};
+const bedrockFormFields = {
+  identifier: {
+    label: s__('AdminSelfHostedModels|Model identifier'),
+    validators: [
+      formValidators.required(s__('AdminSelfHostedModels|Please enter a model identifier.')),
+      formValidators.factory(
+        s__('AdminSelfHostedModels|Model identifier must start with "bedrock/"'),
+        (val) => isBedrockModelIdentifier(val),
+      ),
+      formValidators.factory(
+        s__('AdminSelfHostedModels|Model identifier must be less than 255 characters.'),
+        (val) => val.length <= 255,
+      ),
+    ],
+    groupAttrs: {
+      class: baseFormFieldClasses,
+    },
+    inputAttrs: {
+      placeholder: s__('AdminSelfHostedModels|bedrock/'),
+    },
+  },
+};
 
 export default {
   name: 'SelfHostedModelForm',
@@ -15,6 +88,8 @@ export default {
     GlButton,
     GlCollapsibleListbox,
     GlFormFields,
+    GlLink,
+    GlSprintf,
     InputCopyToggleVisibility,
     TestConnectionButton,
   },
@@ -39,18 +114,33 @@ export default {
     defaultError: s__(
       'AdminSelfHostedModels|There was an error saving the self-hosted model. Please try again.',
     ),
-    missingDeploymentNameError: s__('AdminSelfHostedModels|Please enter a deployment name.'),
-    missingEndpointError: s__('AdminSelfHostedModels|Please enter an endpoint.'),
-    modelNotSelectedError: s__('AdminSelfHostedModels|Please select a model.'),
     nonUniqueDeploymentNameError: s__(
       'AdminSelfHostedModels|Please enter a unique deployment name.',
     ),
     invalidEndpointError: s__('AdminSelfHostedModels|Please add a valid endpoint.'),
     successMessage: s__('AdminSelfHostedModels|The self-hosted model was successfully %{action}.'),
+    awsSetupMessage: s__(
+      'AdminSelfHostedModels|To fully set up AWS credentials for this model please refer to the %{linkStart}AWS Bedrock Configuration Guide%{linkEnd}',
+    ),
   },
   formId: 'self-hosted-model-form',
+  platforms: [
+    {
+      text: __('API'),
+      value: SELF_HOSTED_MODEL_PLATFORMS.API,
+    },
+    {
+      text: s__('AdminSelfHostedModels|Amazon Bedrock'),
+      value: SELF_HOSTED_MODEL_PLATFORMS.BEDROCK,
+    },
+  ],
+  awsSetupUrl: helpPagePath('administration/self_hosted_models/supported_llm_serving_platforms', {
+    anchor: 'for-cloud-hosted-model-deployments',
+  }),
+  baseFormFieldClasses,
   data() {
     const {
+      id = '',
       name = '',
       model = '',
       endpoint = '',
@@ -59,36 +149,24 @@ export default {
     } = this.initialFormValues;
     const modelToUpperCase = model.toUpperCase();
 
+    /*
+      When an identifier starts with "bedrock/", we can infer it to be a bedrock model.
+      This is only a workaround for going GA in 17.9 - as a more permanent solution this value should
+      be stored and read from the DB https://gitlab.com/gitlab-org/gitlab/-/issues/507967
+    */
+    const platform =
+      id !== '' && isBedrockModelIdentifier(identifier)
+        ? SELF_HOSTED_MODEL_PLATFORMS.BEDROCK
+        : SELF_HOSTED_MODEL_PLATFORMS.API;
+
     return {
-      fields: {
-        name: {
-          label: s__('AdminSelfHostedModels|Deployment name'),
-          validators: [formValidators.required(this.$options.i18n.missingDeploymentNameError)],
-        },
-        model: {
-          label: s__('AdminSelfHostedModels|Model family'),
-          validators: [formValidators.required(this.$options.i18n.modelNotSelectedError)],
-        },
-        endpoint: {
-          label: s__('AdminSelfHostedModels|Endpoint'),
-          validators: [formValidators.required(this.$options.i18n.missingEndpointError)],
-        },
-        identifier: {
-          label: s__('AdminSelfHostedModels|Model identifier (optional)'),
-          validators: [
-            formValidators.factory(
-              s__('AdminSelfHostedModels|Model identifier must be less than 255 characters.'),
-              (val) => val.length <= 255,
-            ),
-          ],
-        },
-      },
       baseFormValues: {
         name,
         endpoint,
         identifier,
         model: modelToUpperCase,
       },
+      platform,
       apiToken,
       selectedModel: {
         modelValue: model || '',
@@ -110,16 +188,32 @@ export default {
     dropdownToggleText() {
       return this.selectedModel.modelName || s__('AdminSelfHostedModels|Select model');
     },
+    formFields() {
+      const platformFields = this.isApiPlatform ? apiFormFields : bedrockFormFields;
+
+      return {
+        ...baseFormFields,
+        ...platformFields,
+      };
+    },
     hasValidInput() {
-      return (
-        this.baseFormValues.name !== '' &&
-        this.baseFormValues.model !== '' &&
-        this.baseFormValues.identifier.length <= 255 &&
-        this.baseFormValues.endpoint !== ''
-      );
+      const { name, model, endpoint, identifier } = this.baseFormValues;
+
+      if (name === '' || model === '') {
+        return false;
+      }
+
+      if (this.isApiPlatform) {
+        return endpoint !== '' && identifier.length <= 255;
+      }
+
+      return isBedrockModelIdentifier(identifier) && identifier.length <= 255;
     },
     isEditing() {
       return Boolean(this.initialFormValues.id);
+    },
+    isApiPlatform() {
+      return this.platform === SELF_HOSTED_MODEL_PLATFORMS.API;
     },
     successMessage() {
       return sprintf(this.$options.i18n.successMessage, {
@@ -127,6 +221,20 @@ export default {
       });
     },
     formValues() {
+      /*
+        Endpoint and api tokens aren't used for Bedrock models. There is currently a non-null constraint
+        on the endpoint column so so we still need to send a placeholder. This is a workaround for
+        going GA in 17.9 - the columns should be made nullable as a more permanent solution.
+        https://gitlab.com/gitlab-org/gitlab/-/issues/507966
+      */
+      if (!this.isApiPlatform) {
+        return {
+          ...this.baseFormValues,
+          endpoint: BEDROCK_DUMMY_ENDPOINT,
+          apiToken: '',
+        };
+      }
+
       return {
         apiToken: this.apiToken,
         ...this.baseFormValues,
@@ -232,8 +340,9 @@ export default {
 <template>
   <gl-form :id="$options.formId" class="gl-max-w-62" @submit.prevent="onSubmit">
     <gl-form-fields
+      :key="`${platform}-form-fields`"
       v-model="baseFormValues"
-      :fields="fields"
+      :fields="formFields"
       :form-id="$options.formId"
       :server-validations="serverValidations"
       @input-field="onInputField"
@@ -243,12 +352,33 @@ export default {
         {{ s__('AdminSelfHostedModels|A unique and descriptive name for your deployment.') }}
       </template>
 
+      <template #input(platform)>
+        <gl-collapsible-listbox
+          v-model="platform"
+          data-testid="platform-dropdown-selector"
+          :items="$options.platforms"
+          :toggle-text="platform.text"
+          block
+        />
+      </template>
+
       <template #group(model)-label-description>
         {{
           s__(
             'AdminSelfHostedModels|Select an appropriate model family from the list of approved GitLab models.',
           )
         }}
+      </template>
+      <template #input(model)>
+        <gl-collapsible-listbox
+          data-testid="model-dropdown-selector"
+          :items="availableModels"
+          block
+          fluid-width
+          :toggle-text="dropdownToggleText"
+          :selected="selectedModel.modelName"
+          @select="onSelect"
+        />
       </template>
 
       <template #group(endpoint)-label-description>
@@ -262,36 +392,33 @@ export default {
       <template #group(identifier)-label-description>
         {{
           s__(
-            'AdminSelfHostedModels|If necessary, provide the model identifier in the form of provider/model-name',
+            'AdminSelfHostedModels|Provide the model identifier in the form of provider/model-name',
           )
         }}
       </template>
-
-      <template #input(model)>
-        <gl-collapsible-listbox
-          :items="availableModels"
-          block
-          fluid-width
-          :toggle-text="dropdownToggleText"
-          :selected="selectedModel.modelName"
-          @select="onSelect"
-        />
-      </template>
     </gl-form-fields>
-    <input-copy-toggle-visibility
-      v-model="apiToken"
-      :value="apiToken"
-      :label="s__('AdminSelfHostedModels|API Key (optional)')"
-      :initial-visibility="false"
-      :disabled="isSaving"
-      :show-copy-button="false"
-      :label-description="
-        s__(
-          'AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment.',
-        )
-      "
-    />
-    <div class="gl-pt-5">
+    <div :class="[...$options.baseFormFieldClasses, 'gl-pb-6']">
+      <input-copy-toggle-visibility
+        v-if="isApiPlatform"
+        v-model="apiToken"
+        :value="apiToken"
+        :label="s__('AdminSelfHostedModels|API Key (optional)')"
+        :initial-visibility="false"
+        :disabled="isSaving"
+        :show-copy-button="false"
+        :label-description="
+          s__(
+            'AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment.',
+          )
+        "
+      />
+      <gl-sprintf v-else :message="$options.i18n.awsSetupMessage">
+        <template #link="{ content }">
+          <gl-link :href="$options.awsSetupUrl" target="_blank">{{ content }} </gl-link>
+        </template>
+      </gl-sprintf>
+    </div>
+    <div class="gl-pt-6">
       <gl-button
         type="submit"
         variant="confirm"

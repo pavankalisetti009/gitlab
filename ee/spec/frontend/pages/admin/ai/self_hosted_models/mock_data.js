@@ -1,3 +1,5 @@
+import { BEDROCK_DUMMY_ENDPOINT } from 'ee/pages/admin/ai/self_hosted_models/constants';
+
 export const mockSelfHostedModel = {
   id: 'gid://gitlab/Ai::SelfHostedModel/1',
   name: 'mock-self-hosted-model',
@@ -6,6 +8,19 @@ export const mockSelfHostedModel = {
   endpoint: 'https://mock-endpoint.com',
   identifier: 'provider/some-model-1',
   apiToken: 'mock-api-token-123',
+  featureSettings: {
+    nodes: [],
+  },
+};
+
+export const mockBedrockSelfHostedModel = {
+  id: 'gid://gitlab/Ai::SelfHostedModel/1',
+  name: 'mock-bedrock-model',
+  model: 'mistral',
+  modelDisplayName: 'Mistral',
+  endpoint: BEDROCK_DUMMY_ENDPOINT,
+  identifier: 'bedrock/some-model-1',
+  apiToken: '',
   featureSettings: {
     nodes: [],
   },
@@ -41,6 +56,18 @@ export const mockSelfHostedModelsList = [
       nodes: [],
     },
   },
+  {
+    id: 'gid://gitlab/Ai::SelfHostedModel/3',
+    name: 'mock-bedrock-self-hosted-model',
+    model: 'mistral',
+    modelDisplayName: 'Mistral',
+    endpoint: BEDROCK_DUMMY_ENDPOINT,
+    identifier: 'bedrock/example-model',
+    hasApiToken: false,
+    featureSettings: {
+      nodes: [],
+    },
+  },
 ];
 
 export const mockModelConnectionTestInput = {
@@ -57,5 +84,5 @@ export const SELF_HOSTED_MODEL_OPTIONS = [
   { modelValue: 'CODESTRAL', modelName: 'Codestral' },
   { modelValue: 'MISTRAL', modelName: 'Mistral' },
   { modelValue: 'DEEPSEEKCODER', modelName: 'Deepseek Coder' },
-  { modelValue: 'LLAMA3', modelName: 'LLaMA 3' },
+  { modelValue: 'LLAMA3', modelName: 'Llama 3' },
 ];
