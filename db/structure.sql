@@ -21247,7 +21247,8 @@ CREATE TABLE user_achievements (
     revoked_at timestamp with time zone,
     priority integer,
     namespace_id bigint,
-    show_on_profile boolean DEFAULT true NOT NULL
+    show_on_profile boolean DEFAULT true NOT NULL,
+    CONSTRAINT check_2236a10887 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE user_achievements_id_seq
