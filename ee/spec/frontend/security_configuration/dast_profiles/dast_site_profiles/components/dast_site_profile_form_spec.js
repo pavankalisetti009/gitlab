@@ -40,6 +40,8 @@ const defaultProps = {
   projectFullPath,
 };
 
+const optionalVariables = mockVariables.map(({ variable, value }) => ({ variable, value }));
+
 Vue.use(VueApollo);
 
 describe('DastSiteProfileForm', () => {
@@ -424,7 +426,6 @@ describe('DastSiteProfileForm', () => {
   });
 
   describe('DastVariablesFormGroup', () => {
-    const optionalVariables = mockVariables;
     beforeEach(() => {
       createShallowComponent({
         propsData: {

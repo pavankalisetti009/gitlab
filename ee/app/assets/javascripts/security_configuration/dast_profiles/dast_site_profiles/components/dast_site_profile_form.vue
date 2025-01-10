@@ -188,6 +188,10 @@ export default {
       }
       return authFields;
     },
+    optionalVariables() {
+      const variables = this.form.fields.optionalVariables.value;
+      return variables.map(({ variable, value }) => ({ variable, value }));
+    },
     isGraphQlMethod() {
       return this.form.fields.scanMethod.value === SCAN_METHODS.GRAPHQL.value;
     },
@@ -207,15 +211,8 @@ export default {
       return this.$options.DAST_BROWSER_AVAILABLE_VARIABLES_PATH;
     },
     mutationVariables() {
-      const {
-        profileName,
-        targetUrl,
-        targetType,
-        requestHeaders,
-        scanMethod,
-        scanFilePath,
-        optionalVariables,
-      } = serializeFormObject(this.form.fields);
+      const { profileName, targetUrl, targetType, requestHeaders, scanMethod, scanFilePath } =
+        serializeFormObject(this.form.fields);
 
       return {
         ...(this.isEdit ? { id: this.profile.id } : { fullPath: this.projectFullPath }),
@@ -228,7 +225,9 @@ export default {
           requestHeaders,
         }),
         ...(this.isTargetAPI && { scanMethod, scanFilePath }),
-        ...(this.glFeatures.dastUiAdditionalVariables && { optionalVariables }),
+        ...(this.glFeatures.dastUiAdditionalVariables && {
+          optionalVariables: this.optionalVariables,
+        }),
       };
     },
     showWarningTextForTargetUrl() {
