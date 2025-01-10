@@ -7,6 +7,7 @@ introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/151551
 feature_category: webhooks
 milestone: '17.0'
 group_ability: true
+enabled_for_group_access_levels: [50]
 project_ability: true
+enabled_for_project_access_levels: [40, 50]
 requirements: []
-available_from_access_level:

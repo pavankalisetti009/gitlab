@@ -7,6 +7,7 @@ introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/154017
 feature_category: team_planning
 milestone: '17.1'
 group_ability: true
+enabled_for_group_access_levels: [15, 20, 30, 40, 50]
 project_ability: false
 requirements: []
 available_from_access_level: 15
