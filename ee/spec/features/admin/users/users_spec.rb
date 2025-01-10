@@ -101,10 +101,6 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
   end
 
   describe 'GET /admin/users/new', :js do
-    before do
-      allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
-    end
-
     def fill_in_new_user_form
       fill_in 'user_name', with: 'Big Bang'
       fill_in 'user_username', with: 'bang'
@@ -114,7 +110,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
     context 'with a user cap set' do
       before do
         stub_application_setting(new_user_signups_cap: 2)
-        stub_application_setting(seat_control: 1)
+        stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
       end
 
       context 'when the cap has not been reached' do
@@ -190,9 +186,9 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
         expect(page).to have_content('User was successfully created.')
       end
 
-      context 'when block seat overages feature flag is active' do
+      context 'when block seat overages is active' do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
+          stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
         end
 
         it 'shows an error' do

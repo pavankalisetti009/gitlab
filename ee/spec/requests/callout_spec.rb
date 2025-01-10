@@ -31,7 +31,7 @@ RSpec.describe 'callout alerts', feature_category: :navigation do
 
     before do
       stub_application_setting(new_user_signups_cap: 1)
-      stub_application_setting(seat_control: 1)
+      stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
       allow(User).to receive(:billable).and_return(billable_users)
 
       login_as(user)

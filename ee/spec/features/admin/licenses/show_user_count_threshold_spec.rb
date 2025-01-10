@@ -46,7 +46,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
   before do
     create_list(:user, active_user_count)
 
-    allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(false)
+    stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF)
   end
 
   context 'with reached user count threshold' do
@@ -68,7 +68,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
 
         context 'with seat control block seats overages enabled' do
           before do
-            allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
+            stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
           end
 
           it_behaves_like 'a visible block seats overages banner'
@@ -81,7 +81,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
 
           context 'with seat control block seats overages enabled' do
             before do
-              allow(::Gitlab::CurrentSettings).to receive(:seat_control_block_overages?).and_return(true)
+              stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
             end
 
             it_behaves_like 'a visible block seats overages banner'

@@ -184,7 +184,7 @@ RSpec.describe Admin::ApplicationSettingsController do
 
         context 'with new_user_signup_cap' do
           let(:settings) do
-            { new_user_signups_cap: 100, seat_control: 1 }
+            { new_user_signups_cap: 100, seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP }
           end
 
           it 'updates the setting to user_cap' do

@@ -273,13 +273,13 @@ RSpec.describe ApplicationSettings::UpdateService do
 
       context 'when new user cap is set to nil' do
         context 'when changing new user cap to any number' do
-          let(:opts) { { new_user_signups_cap: 10, seat_control: 1 } }
+          let(:opts) { { new_user_signups_cap: 10, seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP } }
 
           include_examples 'worker is not called'
         end
 
         context 'when leaving new user cap set to nil' do
-          let(:opts) { { new_user_signups_cap: nil, seat_control: 0 } }
+          let(:opts) { { new_user_signups_cap: nil, seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF } }
 
           include_examples 'worker is not called'
         end
@@ -287,7 +287,7 @@ RSpec.describe ApplicationSettings::UpdateService do
 
       context 'when new user cap is set to a number' do
         let(:setting) do
-          create(:application_setting, new_user_signups_cap: 10, seat_control: 1)
+          create(:application_setting, new_user_signups_cap: 10, seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
         end
 
         context 'when decreasing new user cap' do
@@ -309,12 +309,12 @@ RSpec.describe ApplicationSettings::UpdateService do
         end
 
         context 'when changing user cap to nil' do
-          let(:opts) { { new_user_signups_cap: nil, seat_control: 0 } }
+          let(:opts) { { new_user_signups_cap: nil, seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF } }
 
           include_examples 'worker is not called'
 
           context 'when auto approval is enabled' do
-            let(:opts) { { new_user_signups_cap: nil, seat_control: 0, auto_approve_pending_users: 'true' } }
+            let(:opts) { { new_user_signups_cap: nil, seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF, auto_approve_pending_users: 'true' } }
 
             include_examples 'worker is called'
           end
