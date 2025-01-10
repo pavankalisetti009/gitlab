@@ -649,6 +649,27 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('project_policy_job', 'project-test')
       end
     end
+
+    context 'when variable defined in the policy is referencing itself' do
+      let(:project_policy_content) do
+        {
+          project_policy_job: {
+            variables: { 'SAMPLE_VARIABLE' => '$SAMPLE_VARIABLE' },
+            script: 'project script'
+          }
+        }
+      end
+
+      it 'does not cause circular variable reference error', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(4)
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        test_stage = execute.payload.stages.find_by(name: 'test')
+        project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+        expect(get_job_variable(project_policy_job, 'SAMPLE_VARIABLE')).to eq('$SAMPLE_VARIABLE')
+      end
+    end
   end
 
   context 'when both Scan Execution Policy and Pipeline Execution Policy are applied on the project' do
