@@ -37857,6 +37857,7 @@ Represents total number of work items for the represented states.
 | <a id="workitemtypeiconname"></a>`iconName` | [`String`](#string) | Icon name of the work item type. |
 | <a id="workitemtypeid"></a>`id` | [`WorkItemsTypeID!`](#workitemstypeid) | Global ID of the work item type. |
 | <a id="workitemtypename"></a>`name` | [`String!`](#string) | Name of the work item type. |
+| <a id="workitemtypesupportedconversiontypes"></a>`supportedConversionTypes` **{warning-solid}** | [`[WorkItemType!]`](#workitemtype) | **Introduced** in GitLab 17.8. **Status**: Experiment. Supported conversion types for the work item type. |
 | <a id="workitemtypewidgetdefinitions"></a>`widgetDefinitions` **{warning-solid}** | [`[WorkItemWidgetDefinition!]`](#workitemwidgetdefinition) | **Introduced** in GitLab 16.7. **Status**: Experiment. Available widgets for the work item type. |
 
 ### `WorkItemTypeCountsByState`
