@@ -81,10 +81,6 @@ module Gitlab
       end
 
       def check_container(container)
-        # Don't check container for wiki or project because these repo types
-        # accept several container types.
-        return if wiki? || project?
-
         return unless container.present? && container_class.present?
         return if container.is_a?(container_class)
 

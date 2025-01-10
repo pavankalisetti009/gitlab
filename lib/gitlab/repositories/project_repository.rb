@@ -26,6 +26,10 @@ module Gitlab
 
       # For project repository we always use the container, so a resolver is never used
       def project_resolver = nil
+
+      def check_container(container)
+        # Don't check container for projects because it accepts several container types.
+      end
     end
   end
 end

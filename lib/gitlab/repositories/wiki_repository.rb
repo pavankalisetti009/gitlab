@@ -33,6 +33,10 @@ module Gitlab
       def project_resolver(wiki)
         wiki.try(:project)
       end
+
+      def check_container(container)
+        # Don't check container for wikis because it accepts several container types.
+      end
     end
   end
 end
