@@ -54,7 +54,7 @@ module Ai
             line.delete_prefix!(KEYWORD)
             name, version = line.split(' ')
 
-            Lib.new(name: name, version: version&.delete_prefix('v'))
+            Lib.new(name: name, version: version)
           end
         end
       end

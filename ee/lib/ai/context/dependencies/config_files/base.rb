@@ -15,9 +15,19 @@ module Ai
         #    the corresponding documentation (see comments in ConfigFiles::Constants.)
         #
         class Base
-          EXPECTED_LIB_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
+          EXPECTED_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
+
+          VALID_NAME_REGEX = %r{\A[a-zA-Z0-9][\w\/\-.]*[a-zA-Z0-9]\z} # Must start and end with alphanumeric
+          VALID_VERSION_REGEX = /\A[0-9 .<>=+^*!|,]+\z/
+          MAX_NAME_LENGTH = 60
+          MAX_VERSION_LENGTH = 30
+
+          VERSION_PREFIX_REGEX = /\bv(?=\d)/
+          VERSION_QUALIFIER_REGEX = /(?<=\d)([-|+][0-9A-Za-z.\-\+]+)/ # Pre-release and/or build metadata
+          VERSION_ALPHABETIC_POSTFIX_REGEX = /(?<=\d)([a-zA-Z]+)/
 
           ParsingError = Class.new(StandardError)
+          StringValidationError = Class.new(StandardError)
 
           Lib = Struct.new(:name, :version, keyword_init: true)
 
@@ -60,7 +70,7 @@ module Ai
 
             # Default error message if there are no other errors
             error('unexpected format or dependencies not present') if libs.blank? && errors.empty?
-          rescue ParsingError => e
+          rescue ParsingError, StringValidationError => e
             error(e)
           end
 
@@ -97,13 +107,44 @@ module Ai
               raise ParsingError, "unexpected dependency name type `#{lib.name.class}`" unless lib.name.is_a?(String)
               raise ParsingError, 'dependency name is blank' if lib.name.blank?
 
-              unless lib.version.class.in?(EXPECTED_LIB_VERSION_TYPES)
+              unless lib.version.class.in?(EXPECTED_VERSION_TYPES)
                 raise ParsingError, "unexpected dependency version type `#{lib.version.class}`"
               end
 
               lib.name = lib.name.strip
-              lib.version = lib.version.to_s.strip
+              lib.version = sanitize_version(lib.version)
+
+              validate_name!(lib.name)
+              validate_version!(lib.version) if lib.version.present?
             end
+          end
+
+          def validate_name!(name)
+            unless name.size <= MAX_NAME_LENGTH
+              raise StringValidationError, "dependency name `#{name.truncate(MAX_NAME_LENGTH * 2)}` " \
+                "exceeds #{MAX_NAME_LENGTH} characters"
+            end
+
+            return if VALID_NAME_REGEX.match?(name)
+
+            raise StringValidationError, "dependency name `#{name}` contains invalid characters"
+          end
+
+          def validate_version!(version)
+            unless version.size <= MAX_VERSION_LENGTH
+              raise StringValidationError, "dependency version `#{version.truncate(MAX_VERSION_LENGTH * 2)}` " \
+                "exceeds #{MAX_VERSION_LENGTH} characters"
+            end
+
+            return if VALID_VERSION_REGEX.match?(version)
+
+            raise StringValidationError, "dependency version `#{version}` contains invalid characters"
+          end
+
+          # Removes any version qualifiers that may fail validation
+          def sanitize_version(version)
+            regex_union = Regexp.union(VERSION_PREFIX_REGEX, VERSION_QUALIFIER_REGEX, VERSION_ALPHABETIC_POSTFIX_REGEX)
+            version.to_s.strip.gsub(regex_union, '')
           end
 
           def sanitize_content(content)
@@ -114,9 +155,9 @@ module Ai
 
           def formatted_libs
             libs.map do |lib|
-              lib_name = lib.version.presence ? "#{lib.name} (#{lib.version})" : lib.name
+              name = lib.version.presence ? "#{lib.name} (#{lib.version})" : lib.name
 
-              { name: lib_name }
+              { name: name }
             end
           end
 
