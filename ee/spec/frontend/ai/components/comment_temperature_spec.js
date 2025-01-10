@@ -4,7 +4,9 @@ import VueApollo from 'vue-apollo';
 import { GlAlert } from '@gitlab/ui';
 import { createMockSubscription } from 'mock-apollo-client';
 import CommentTemperature from 'ee/ai/components/comment_temperature.vue';
+import { COMMENT_TEMPERATURE_EVENTS } from 'ee/ai/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -21,7 +23,10 @@ describe('AiCommentTemperature', () => {
   let aiActionMutationHandler;
   let aiResponseSubscriptionHandler;
   let mockSubscription;
+  let trackEventSpy;
   const issues = ['Issue 1', 'Issue 2'];
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const defaultProps = {
     userId: 1,
@@ -52,6 +57,8 @@ describe('AiCommentTemperature', () => {
         GlAlert,
       },
     });
+
+    trackEventSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
@@ -64,6 +71,16 @@ describe('AiCommentTemperature', () => {
     it('does not show the alert', () => {
       createComponent();
       expect(findAlert().exists()).toBe(false);
+    });
+
+    it('logs the correct event when measuring the temperature', () => {
+      createComponent();
+      wrapper.vm.measureCommentTemperature();
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        COMMENT_TEMPERATURE_EVENTS.MEASUREMENT_REQUESTED,
+        {},
+        undefined,
+      );
     });
   });
 
@@ -135,6 +152,15 @@ describe('AiCommentTemperature', () => {
         findCommentAnywayButton().vm.$emit('click');
         expect(findIssues().length).toEqual(2);
       });
+
+      it('logs the correct event', () => {
+        findCommentAnywayButton().vm.$emit('click');
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.FORCED_COMMENT,
+          {},
+          undefined,
+        );
+      });
     });
   });
 
@@ -168,6 +194,79 @@ describe('AiCommentTemperature', () => {
         await nextTick();
         expect(findAlert().exists()).toBe(true);
         expect(findIssues().length).toBe(issues.length);
+      });
+    });
+
+    describe('events logging', () => {
+      it('logs the correct event if the temperature is high', () => {
+        mockSubscription.next({
+          data: {
+            aiCompletionResponse: {
+              content: `<temperature_rating>{"rating": 2, "issues": ${JSON.stringify(issues)}}</temperature_rating>`,
+            },
+          },
+        });
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.HIGH_TEMP,
+          {},
+          undefined,
+        );
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.REPEATED_HIGH_TEMP,
+          {},
+          undefined,
+        );
+      });
+
+      it('logs the correct event if the temperature is high repeatedly', () => {
+        createComponent({
+          data: {
+            subscribedToTemperatureUpdates: true,
+            commentTemperatureIssues: issues,
+          },
+        });
+        mockSubscription.next({
+          data: {
+            aiCompletionResponse: {
+              content: `<temperature_rating>{"rating": 2, "issues": ${JSON.stringify(issues)}}</temperature_rating>`,
+            },
+          },
+        });
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.REPEATED_HIGH_TEMP,
+          {},
+          undefined,
+        );
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.HIGH_TEMP,
+          {},
+          undefined,
+        );
+      });
+
+      it('does not log any events beyond normal when the temperature is not high', () => {
+        mockSubscription.next({
+          data: {
+            aiCompletionResponse: {
+              content: `<temperature_rating>${JSON.stringify({ rating: 1, issues: [] })}</temperature_rating>`,
+            },
+          },
+        });
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.HIGH_TEMP,
+          {},
+          undefined,
+        );
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.REPEATED_HIGH_TEMP,
+          {},
+          undefined,
+        );
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          COMMENT_TEMPERATURE_EVENTS.FORCED_COMMENT,
+          {},
+          undefined,
+        );
       });
     });
 
