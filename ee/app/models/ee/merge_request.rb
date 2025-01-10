@@ -212,7 +212,12 @@ module EE
           :blocking_merge_requests, :scan_result_policy_reads_through_violations,
           :scan_result_policy_reads_through_approval_rules,
           :approval_rules, :running_scan_result_policy_violations,
-          target_project: [:regular_or_any_approver_approval_rules, { group: :saml_provider }]
+          target_project: [
+            :regular_or_any_approver_approval_rules,
+            :all_protected_branches,
+            :protected_branches,
+            { group: :saml_provider }
+          ]
         )
       end
 
@@ -615,6 +620,18 @@ module EE
     def temporarily_unapproved?
       approval_state.temporarily_unapproved?
     end
+
+    override :squash_option
+    def squash_option
+      if ::Feature.enabled?(:branch_rule_squash_settings, target_project)
+        protected_branch = target_project.all_protected_branches.find_by(name: target_branch)
+
+        return protected_branch.squash_option if protected_branch&.squash_option
+      end
+
+      super
+    end
+    strong_memoize_attr :squash_option
 
     private
 
