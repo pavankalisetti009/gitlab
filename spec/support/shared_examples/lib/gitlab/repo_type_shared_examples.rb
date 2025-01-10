@@ -2,24 +2,26 @@
 
 RSpec.shared_examples 'a repo type' do
   describe '#identifier_for_container' do
-    subject { described_class.identifier_for_container(expected_container) }
+    it 'returns expected identifier' do
+      identifier = subject.identifier_for_container(expected_container)
 
-    it { is_expected.to eq(expected_identifier) }
+      expect(identifier).to eq(expected_identifier)
+    end
   end
 
   describe '#path_suffix' do
-    subject { described_class.path_suffix }
-
-    it { is_expected.to eq(expected_suffix) }
+    it 'returns expected path_suffix' do
+      expect(subject.path_suffix).to eq(expected_suffix)
+    end
   end
 
   describe '#repository_for' do
     it 'finds the repository for the repo type' do
-      expect(described_class.repository_for(expected_container)).to eq(expected_repository)
+      expect(subject.repository_for(expected_container)).to eq(expected_repository)
     end
 
     it 'returns nil when container is nil' do
-      expect(described_class.repository_for(nil)).to eq(nil)
+      expect(subject.repository_for(nil)).to eq(nil)
     end
   end
 end
