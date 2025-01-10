@@ -179,7 +179,7 @@ export default {
     existingFrameworkButtonText: s__('ComplianceFrameworks|Save changes to the framework'),
     nameInput: s__('ComplianceFrameworks|Name'),
     descriptionInput: s__('ComplianceFrameworks|Description'),
-    controlsTitle: s__('ComplianceFrameworks|Controls'),
+    controlsTitle: s__('ComplianceFrameworks|Controls (optional)'),
     controlsText: s__(
       'ComplianceFrameworks|Controls are pre-defined rules that are configured for GitLab resources.',
     ),

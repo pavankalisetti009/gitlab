@@ -3,6 +3,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import RequirementModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirement_modal.vue';
+import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { mockRequirements, mockRequirementControls } from 'ee_jest/compliance_dashboard/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -33,13 +34,16 @@ describe('Requirements section', () => {
   const findDeleteAction = () => wrapper.findByTestId('delete-action');
   const findEditAction = () => wrapper.findByTestId('edit-action');
 
-  const createComponent = async (controlsQueryHandlerMockResponse = controlsQueryHandler) => {
+  const createComponent = async ({
+    controlsQueryHandlerMockResponse = controlsQueryHandler,
+    isNewFramework = true,
+  } = {}) => {
     const mockApollo = createMockApollo([[controlsQuery, controlsQueryHandlerMockResponse]]);
 
     wrapper = mountExtended(RequirementsSection, {
       propsData: {
         requirements: mockRequirements,
-        isNewFramework: true,
+        isNewFramework,
       },
       apolloProvider: mockApollo,
       stubs: { GlDisclosureDropdown, GlDisclosureDropdownItem },
@@ -75,6 +79,15 @@ describe('Requirements section', () => {
     it('passes correct items prop to a table', () => {
       const { items } = findTable().vm.$attrs;
       expect(items).toHaveLength(mockRequirements.length);
+    });
+
+    it('renders section as initially expanded if is-new-framework prop is true', () => {
+      expect(wrapper.findComponent(EditSection).props('initiallyExpanded')).toBe(true);
+    });
+
+    it('renders section as collapsed if is-new-framework prop is false', async () => {
+      await createComponent({ isNewFramework: false });
+      expect(wrapper.findComponent(EditSection).props('initiallyExpanded')).toBe(false);
     });
 
     it.each`
@@ -148,7 +161,7 @@ describe('Requirements section', () => {
   describe('Error handling', () => {
     beforeEach(async () => {
       controlsQueryHandler = jest.fn().mockRejectedValue(error);
-      await createComponent(controlsQueryHandler);
+      await createComponent({ controlsQueryHandler });
     });
 
     it('calls createAlert with the correct message on query error', () => {
