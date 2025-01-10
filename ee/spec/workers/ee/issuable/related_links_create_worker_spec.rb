@@ -19,6 +19,13 @@ RSpec.describe Issuable::RelatedLinksCreateWorker, feature_category: :portfolio_
 
   subject { described_class.new.perform(params) }
 
+  before_all do
+    # Ensure support bot user is created so creation doesn't count towards query limit
+    # and we don't try to obtain an exclusive lease within a transaction.
+    # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+    Users::Internal.support_bot_id
+  end
+
   describe '#perform' do
     context 'when items are marked as blocked' do
       let(:blocked1) { item1 }
