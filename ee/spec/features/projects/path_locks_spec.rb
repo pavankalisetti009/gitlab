@@ -42,7 +42,7 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
       click_button "Lock"
     end
 
-    accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Okay')
+    accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Lock')
 
     expect(page).to have_button('Unlock')
   end
@@ -56,7 +56,7 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
       click_button "Lock"
     end
 
-    accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Okay')
+    accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Lock')
 
     expect(page).to have_button('Unlock')
 
@@ -64,7 +64,7 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
       click_button "Unlock"
     end
 
-    accept_gl_confirm('Are you sure you want to unlock VERSION?', button_text: 'Okay')
+    accept_gl_confirm('Are you sure you want to unlock VERSION?', button_text: 'Unlock')
 
     expect(page).to have_link('Lock')
   end

@@ -33588,13 +33588,13 @@ msgstr ""
 msgid "Lock %{issuableType}"
 msgstr ""
 
-msgid "Lock File?"
-msgstr ""
-
 msgid "Lock directory?"
 msgstr ""
 
 msgid "Lock discussion"
+msgstr ""
+
+msgid "Lock file?"
 msgstr ""
 
 msgid "Lock label after a merge request is merged"
@@ -60503,6 +60503,9 @@ msgid "Unlock account"
 msgstr ""
 
 msgid "Unlock discussion"
+msgstr ""
+
+msgid "Unlock file?"
 msgstr ""
 
 msgid "Unlock more features with GitLab Ultimate"
