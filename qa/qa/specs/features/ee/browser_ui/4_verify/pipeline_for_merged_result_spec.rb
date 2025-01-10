@@ -53,9 +53,9 @@ module QA
         merge_request.visit!
 
         Page::MergeRequest::Show.perform do |show|
-          expect { show }.to eventually_have_content('Merged result pipeline running').within(
+          expect { show }.to eventually_have_content('Merged results pipeline running').within(
             sleep_interval: 5, reload_page: show
-          ), 'Expected pipeline to be merged result pipeline.'
+          ), 'Expected pipeline to be a merged results pipeline.'
 
           show.merge_immediately!
 
