@@ -3,6 +3,8 @@
 module Gitlab
   module Repositories
     class SnippetRepository < Gitlab::Repositories::RepoType
+      include Singleton
+
       def name = :snippet
 
       def access_checker_class = Gitlab::GitAccessSnippet

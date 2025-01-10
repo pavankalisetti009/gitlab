@@ -4,10 +4,10 @@ module Gitlab
   class GlRepository
     include Singleton
 
-    PROJECT = Gitlab::Repositories::ProjectRepository.new.freeze
-    WIKI = Gitlab::Repositories::WikiRepository.new.freeze
-    SNIPPET = Gitlab::Repositories::SnippetRepository.new.freeze
-    DESIGN = ::Gitlab::Repositories::DesignManagementRepository.new.freeze
+    PROJECT = Gitlab::Repositories::ProjectRepository.instance
+    WIKI = Gitlab::Repositories::WikiRepository.instance
+    SNIPPET = Gitlab::Repositories::SnippetRepository.instance
+    DESIGN = ::Gitlab::Repositories::DesignManagementRepository.instance
 
     TYPES = {
       PROJECT.name.to_s => PROJECT,

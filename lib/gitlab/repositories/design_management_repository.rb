@@ -3,6 +3,8 @@
 module Gitlab
   module Repositories
     class DesignManagementRepository < Gitlab::Repositories::RepoType
+      include Singleton
+
       def name = :design
 
       def suffix = :design

@@ -3,6 +3,8 @@
 module Gitlab
   module Repositories
     class WikiRepository < Gitlab::Repositories::RepoType
+      include Singleton
+
       def name = :wiki
 
       def suffix = :wiki

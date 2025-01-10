@@ -3,6 +3,8 @@
 module Gitlab
   module Repositories
     class ProjectRepository < Gitlab::Repositories::RepoType
+      include Singleton
+
       def name = :project
 
       def access_checker_class = Gitlab::GitAccessProject
