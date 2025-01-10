@@ -3,13 +3,11 @@
 module Gitlab
   module Repositories
     class DesignManagementRepository < Gitlab::Repositories::RepoType
-      def initialize
-        @access_checker_class = ::Gitlab::GitAccessDesign
-      end
-
       def name = :design
 
       def suffix = :design
+
+      def access_checker_class = ::Gitlab::GitAccessDesign
 
       def container_class = DesignManagement::Repository
 

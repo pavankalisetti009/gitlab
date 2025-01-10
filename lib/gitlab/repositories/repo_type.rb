@@ -3,18 +3,19 @@
 module Gitlab
   module Repositories
     class RepoType
-      attr_reader :access_checker_class,
-        :guest_read_ability
+      attr_reader :guest_read_ability
 
       def initialize(
-        access_checker_class:,
         guest_read_ability: :download_code)
-        @access_checker_class = access_checker_class
         @guest_read_ability = guest_read_ability
       end
 
       def name
         raise NotImplementedError, 'Define a name in a RepoType subclass'
+      end
+
+      def access_checker_class
+        raise NotImplementedError, 'Define an access_checker_class in a RepoType subclass'
       end
 
       def suffix = nil

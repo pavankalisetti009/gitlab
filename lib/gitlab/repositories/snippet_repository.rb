@@ -4,11 +4,12 @@ module Gitlab
   module Repositories
     class SnippetRepository < Gitlab::Repositories::RepoType
       def initialize
-        @access_checker_class = Gitlab::GitAccessSnippet
         @guest_read_ability = :read_snippet
       end
 
       def name = :snippet
+
+      def access_checker_class = Gitlab::GitAccessSnippet
 
       def container_class = Snippet
 

@@ -3,11 +3,9 @@
 module Gitlab
   module Repositories
     class ProjectRepository < Gitlab::Repositories::RepoType
-      def initialize
-        @access_checker_class = Gitlab::GitAccessProject
-      end
-
       def name = :project
+
+      def access_checker_class = Gitlab::GitAccessProject
 
       def container_class = Project
 
