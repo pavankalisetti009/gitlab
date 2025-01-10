@@ -41,10 +41,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
     it { is_expected.to be_instance_of(Gitlab::Ci::Variables::Collection) }
 
     describe 'variables ordering' do
-      def var(name, value)
-        { key: name, value: value.to_s, public: true, masked: false }
-      end
-
       before do
         pipeline_variables_builder = instance_double(
           ::Gitlab::Ci::Variables::Builder::Pipeline,
@@ -79,7 +75,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
       end
 
       it 'returns variables in order depending on resource hierarchy' do
-        expect(scoped_variables.to_runner_variables).to eq(
+        expect(scoped_variables.to_hash_variables).to eq(
           [var('A', 1), var('B', 1),
             var('B', 2), var('C', 2),
             var('C', 3), var('D', 3),
@@ -115,15 +111,14 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
           job.options.merge!(execution_policy_job: true)
         end
 
-        it 're-applies yaml_variables with the highest precedence' do
-          expect(scoped_variables.to_runner_variables).to eq(
+        it 'replaces yaml_variables to apply them with the highest precedence' do
+          expect(scoped_variables.to_hash_variables).to eq(
             [var('A', 1), var('B', 1),
               var('B', 2), var('C', 2),
               var('C', 3), var('D', 3),
               var('D', 4), var('E', 4),
               var('E', 5), var('F', 5),
-              var('G', 7), var('H', 7),
-              var('H', 8), var('I', 8),
+              var('I', 8),
               var('I', 9), var('J', 9),
               var('J', 10), var('K', 10),
               var('K', 11), var('L', 11),
@@ -198,10 +193,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
     it { is_expected.to be_instance_of(Gitlab::Ci::Variables::Collection) }
 
     describe 'variables ordering' do
-      def var(name, value)
-        { key: name, value: value.to_s, public: true, masked: false }
-      end
-
       before do
         pipeline_variables_builder = instance_double(
           ::Gitlab::Ci::Variables::Builder::Pipeline,
@@ -232,7 +223,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
       end
 
       it 'returns variables in order depending on resource hierarchy' do
-        expect(scoped_variables_for_pipeline_seed.to_runner_variables).to eq(
+        expect(scoped_variables_for_pipeline_seed.to_hash_variables).to eq(
           [var('A', 1), var('B', 1),
             var('B', 2), var('C', 2),
             var('C', 3), var('D', 3),
@@ -281,5 +272,9 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
         )
       end
     end
+  end
+
+  def var(name, value)
+    { key: name, value: value.to_s, public: true, masked: false, raw: false, file: false }
   end
 end
