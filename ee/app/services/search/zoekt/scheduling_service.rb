@@ -341,13 +341,12 @@ module Search
 
       def index_should_be_marked_as_orphaned_check
         execute_every 10.minutes do
-          Search::Zoekt::Index.should_be_marked_as_orphaned.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::OrphanedIndexEvent.new(
-                data: { index_ids: batch.pluck_primary_key }
-              )
-            )
+          unless Index.should_be_marked_as_orphaned.exists?
+            logger.info(build_structured_payload(task: task, message: 'Nothing to mark as orphaned'))
+            break
           end
+
+          Gitlab::EventStore.publish(OrphanedIndexEvent.new(data: {}))
         end
       end
 

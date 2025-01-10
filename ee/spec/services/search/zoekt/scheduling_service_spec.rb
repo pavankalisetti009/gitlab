@@ -594,19 +594,28 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
   describe '#index_should_be_marked_as_orphaned_check' do
     let(:task) { :index_should_be_marked_as_orphaned_check }
+    let_it_be_with_reload(:index) { create(:zoekt_index) }
 
-    it 'publishes an OrphanedIndexEvent with indices that should be marked as orphaned' do
-      stubbed_orphaned_indices = Search::Zoekt::Index.all
+    context 'when there are no indices that should be marked as orphaned' do
+      before do
+        allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+      end
 
-      expect(Search::Zoekt::Index).to receive_message_chain(:should_be_marked_as_orphaned,
-        :each_batch).and_yield(stubbed_orphaned_indices)
-      expect(stubbed_orphaned_indices).to receive(:pluck_primary_key).and_return([1, 2, 3])
+      it 'does not publish any event' do
+        expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
+                                                'message' => 'Nothing to mark as orphaned' })
+        expect { execute_task }.not_to publish_event(Search::Zoekt::OrphanedIndexEvent)
+      end
+    end
 
-      expected_data = { index_ids: [1, 2, 3] }
+    context 'when there are indices that should be marked as orphaned' do
+      before do
+        index.update_column(:zoekt_replica_id, nil)
+      end
 
-      expect { execute_task }
-        .to publish_event(Search::Zoekt::OrphanedIndexEvent)
-        .with(expected_data)
+      it 'publishes Search::Zoekt::OrphanedIndexEvent event' do
+        expect { execute_task }.to publish_event(Search::Zoekt::OrphanedIndexEvent).with(Hash.new({}))
+      end
     end
   end
 
