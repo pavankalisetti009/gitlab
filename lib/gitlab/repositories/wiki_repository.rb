@@ -3,15 +3,13 @@
 module Gitlab
   module Repositories
     class WikiRepository < Gitlab::Repositories::RepoType
-      def initialize
-        @guest_read_ability = :download_wiki_code
-      end
-
       def name = :wiki
 
       def suffix = :wiki
 
       def access_checker_class = Gitlab::GitAccessWiki
+
+      def guest_read_ability = :download_wiki_code
 
       def container_class = ProjectWiki
 

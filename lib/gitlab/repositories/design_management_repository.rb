@@ -9,6 +9,8 @@ module Gitlab
 
       def access_checker_class = ::Gitlab::GitAccessDesign
 
+      def guest_read_ability = :download_code
+
       def container_class = DesignManagement::Repository
 
       private
