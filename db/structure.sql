@@ -7626,7 +7626,8 @@ CREATE TABLE approval_group_rules_protected_branches (
     id bigint NOT NULL,
     approval_group_rule_id bigint NOT NULL,
     protected_branch_id bigint NOT NULL,
-    group_id bigint
+    group_id bigint,
+    CONSTRAINT check_b14ec67f68 CHECK ((group_id IS NOT NULL))
 );
 
 CREATE SEQUENCE approval_group_rules_protected_branches_id_seq
