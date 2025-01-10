@@ -21,7 +21,11 @@ module EE
         }
       end
 
-      def show_group_ai_settings?
+      def show_group_ai_settings_general?
+        GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchased_or_trial?(@group.root_ancestor)
+      end
+
+      def show_group_ai_settings_page?
         @group.licensed_ai_features_available? && show_gitlab_duo_settings_app?(@group)
       end
 
@@ -34,8 +38,9 @@ module EE
       def group_ai_general_settings_helper_data
         {
           on_general_settings_page: 'true',
-          configuration_settings_path: group_settings_gitlab_duo_path(@group)
-        }
+          configuration_settings_path: group_settings_gitlab_duo_path(@group),
+          show_redirect_banner: (@group.root? && gitlab_com_subscription?).to_s
+        }.merge(group_ai_settings_helper_data)
       end
 
       def group_ai_configuration_settings_helper_data
@@ -52,7 +57,7 @@ module EE
           duo_availability: @group.namespace_settings.duo_availability.to_s,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: @group.namespace_settings.experiment_features_enabled.to_s,
-          are_experiment_settings_allowed: @group.experiment_settings_allowed?.to_s,
+          are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           show_early_access_banner: show_early_access_program_banner?.to_s,
           early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id

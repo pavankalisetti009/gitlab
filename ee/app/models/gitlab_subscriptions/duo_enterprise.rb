@@ -16,5 +16,10 @@ module GitlabSubscriptions
     def self.namespace_plan_eligible?(namespace)
       namespace.actual_plan_name.in?(ELIGIBLE_PLANS)
     end
+
+    def self.any_pro_enterprise_add_on_purchase_for_namespace(namespace)
+      GitlabSubscriptions::NamespaceAddOnPurchasesFinder
+        .new(namespace, add_on: :duo, only_active: false).execute.first
+    end
   end
 end
