@@ -16,7 +16,7 @@ module QA
         create(:commit, project: project, api_client: api_client, actions: [
           { action: 'create', file_path: file_name, content: '# test' }
         ])
-        load_web_ide(file_name)
+        load_web_ide(file_name: file_name)
       end
 
       shared_examples 'a code generation suggestion' do |testcase|
