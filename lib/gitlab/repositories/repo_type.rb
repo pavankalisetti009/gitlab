@@ -70,7 +70,7 @@ module Gitlab
 
       private
 
-      def repository_resolver
+      def repository_resolver(container)
         raise NotImplementedError, 'Define a repository_resolver in a RepoType subclass'
       end
 
