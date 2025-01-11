@@ -874,7 +874,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
         end
 
         it 'raises an error' do
-          expect { service.execute }.to raise_error(NoMethodError, "undefined method `registry' for nil:NilClass")
+          expect { service.execute }.to raise_error(NoMethodError, /^undefined method `registry' for nil/)
         end
       end
 
@@ -897,7 +897,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
 
             context 'when GitLab managed replication is enabled' do
               it 'raises an error' do
-                expect { service.execute }.to raise_error(NoMethodError, "undefined method `registry' for nil:NilClass")
+                expect { service.execute }.to raise_error(NoMethodError, /^undefined method `registry' for nil/)
               end
             end
 
@@ -905,7 +905,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
               it 'raises an error' do
                 allow(secondary).to receive(:sync_object_storage).and_return(false)
 
-                expect { service.execute }.to raise_error(NoMethodError, "undefined method `registry' for nil:NilClass")
+                expect { service.execute }.to raise_error(NoMethodError, /^undefined method `registry' for nil/)
               end
             end
           end
@@ -917,7 +917,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
 
             context 'when GitLab managed replication is enabled' do
               it 'raises an error' do
-                expect { service.execute }.to raise_error(NoMethodError, "undefined method `registry' for nil:NilClass")
+                expect { service.execute }.to raise_error(NoMethodError, /^undefined method `registry' for nil/)
               end
             end
 
@@ -927,7 +927,7 @@ RSpec.describe Geo::FileRegistryRemovalService, :geo, feature_category: :geo_rep
               end
 
               it 'raises an error' do
-                expect { service.execute }.to raise_error(NoMethodError, "undefined method `registry' for nil:NilClass")
+                expect { service.execute }.to raise_error(NoMethodError, /^undefined method `registry' for nil/)
               end
             end
           end

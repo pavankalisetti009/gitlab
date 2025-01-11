@@ -341,7 +341,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
 
             expect(response).to be_a(::EE::Gitlab::Scim::ProvisioningResponse)
             expect(response.as_json).to match(hash_including('status' => 'error',
-              'message' => /^undefined method `save' for nil:NilClass/,
+              'message' => /^undefined method `save' for nil/,
               'identity' => nil))
           end
         end
