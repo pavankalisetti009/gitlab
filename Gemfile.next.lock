@@ -113,7 +113,7 @@ PATH
       grpc (= 1.63.0)
       grpc-tools (= 1.63.0)
       parallel (~> 1.22)
-      re2 (~> 2.4)
+      re2 (~> 2.7)
       toml-rb (~> 2.2)
 
 PATH
