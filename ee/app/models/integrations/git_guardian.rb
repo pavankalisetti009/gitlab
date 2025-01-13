@@ -40,8 +40,8 @@ module Integrations
       []
     end
 
-    def execute(blobs)
-      ::Gitlab::GitGuardian::Client.new(token).execute(blobs) if activated?
+    def execute(blobs, repository_url)
+      ::Gitlab::GitGuardian::Client.new(token).execute(blobs, repository_url) if activated?
     end
 
     def testable?

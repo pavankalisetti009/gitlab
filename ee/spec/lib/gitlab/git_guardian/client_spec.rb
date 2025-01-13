@@ -11,6 +11,7 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
 
   let(:file_paths) { [] }
   let(:request_body) { [] }
+  let(:project_repository_url) { 'gitlab.example.com/my-project' }
 
   let(:stubbed_response) do
     # see doc https://api.gitguardian.com/docs#operation/multiple_scan to know more about the response structure
@@ -34,7 +35,11 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
   let(:stub_guardian_request) do
     stub_request(:post, guardian_url).with(
       body: request_body.to_json,
-      headers: { 'Content-Type' => 'application/json', Authorization: "Token #{token}" }
+      headers: {
+        'Content-Type' => 'application/json',
+        Authorization: "Token #{token}",
+        'GGshield-Repository-URL' => project_repository_url
+      }
     ).to_return(
       status: status,
       body: stubbed_response
@@ -55,7 +60,7 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
 
   context 'with credential' do
     let!(:guardian_api_request) { stub_guardian_request }
-    let(:client_response) { client.execute(blobs) }
+    let(:client_response) { client.execute(blobs, project_repository_url) }
 
     context 'with no blobs' do
       let(:blobs) { [] }
@@ -302,7 +307,7 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
         end
 
         it 'does not raise an error' do
-          expect(client).to receive(:perform_request).with(params).and_return(response)
+          expect(client).to receive(:perform_request).with(params, project_repository_url).and_return(response)
           expect(client_response).to eq []
         end
       end
@@ -322,7 +327,7 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
         it 'does not raise an error' do
           number_of_trimmed_characters = long_filename.length - described_class::FILENAME_LIMIT
           expect(number_of_trimmed_characters).to be(4)
-          expect(client).to receive(:perform_request).with(params).and_return(response)
+          expect(client).to receive(:perform_request).with(params, project_repository_url).and_return(response)
           expect(client_response).to eq []
         end
       end
@@ -347,7 +352,7 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
       expect(::Gitlab::AppJsonLogger).to receive(:warn).with(class: described_class.name,
         message: "Nothing to process")
 
-      expect(client.execute(blobs)).to eq([])
+      expect(client.execute(blobs, project_repository_url)).to eq([])
     end
   end
 end
