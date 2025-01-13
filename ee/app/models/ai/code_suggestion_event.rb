@@ -19,7 +19,7 @@ module Ai
       'code_suggestion_direct_access_token_refresh' => 5 # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
     }.freeze
 
-    PAYLOAD_ATTRIBUTES = %w[language suggestion_size unique_tracking_id].freeze
+    PAYLOAD_ATTRIBUTES = %w[language suggestion_size unique_tracking_id branch_name].freeze
 
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
@@ -38,7 +38,8 @@ module Ai
       super.merge({
         unique_tracking_id: payload['unique_tracking_id'],
         suggestion_size: payload['suggestion_size'],
-        language: payload['language']
+        language: payload['language'],
+        branch_name: payload['branch_name']
       })
     end
 

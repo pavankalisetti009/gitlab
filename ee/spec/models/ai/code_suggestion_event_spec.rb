@@ -42,7 +42,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
 
   describe '#to_clickhouse_csv_row', :freeze_time do
     let(:attributes) do
-      super().merge(user: user, timestamp: 1.day.ago, suggestion_size: 3, language: 'foo', unique_tracking_id: 'bar')
+      super().merge(user: user, timestamp: 1.day.ago, suggestion_size: 3, language: 'foo', unique_tracking_id: 'bar',
+        branch_name: 'main')
     end
 
     it 'returns serialized attributes hash' do
@@ -52,7 +53,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
         timestamp: 1.day.ago.to_f,
         suggestion_size: 3,
         language: 'foo',
-        unique_tracking_id: 'bar'
+        unique_tracking_id: 'bar',
+        branch_name: 'main'
       })
     end
   end
