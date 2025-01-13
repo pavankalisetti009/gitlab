@@ -6,6 +6,7 @@ import {
   GlAvatarLabeled,
   GlBadge,
   GlModal,
+  GlTooltip,
 } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
@@ -53,6 +54,7 @@ const fakeStore = ({ initialState, initialGetters }) =>
       perPage: 5,
       sort: 'last_activity_on_desc',
       seatUsageExportPath: MOCK_SEAT_USAGE_EXPORT_PATH,
+      removedBillableMemberId: null,
       ...initialState,
     },
   });
@@ -89,6 +91,7 @@ describe('Subscription User List', () => {
   const findSearchAndSortBar = () => wrapper.findComponent(SearchAndSortBar);
   const findPagination = () => wrapper.findComponent(GlPagination);
   const findAllRemoveUserItems = () => wrapper.findAllByTestId('remove-user');
+  const findRemoveMemberItem = (id) => wrapper.find(`[id="remove-member-${id}"]`);
   const findErrorModal = () => wrapper.findComponent(GlModal);
 
   const serializeTableRow = (rowWrapper) => {
@@ -167,7 +170,7 @@ describe('Subscription User List', () => {
     });
 
     describe('with error modal', () => {
-      it('does not render the model if the user is not removable', async () => {
+      it('does not render the modal if the user is not removable', async () => {
         await findAllRemoveUserItems().at(0).trigger('click');
 
         expect(findErrorModal().html()).toBe('');
@@ -177,6 +180,37 @@ describe('Subscription User List', () => {
         await findAllRemoveUserItems().at(2).trigger('click');
 
         expect(findErrorModal().text()).toContain(CANNOT_REMOVE_BILLABLE_MEMBER_MODAL_CONTENT);
+      });
+    });
+
+    describe('when the remove billable user is set', () => {
+      const selectedItem = 0;
+      const { user } = mockTableItems[selectedItem];
+
+      beforeEach(() => {
+        createComponent({ initialState: { removedBillableMemberId: user.id }, mountFn: mount });
+      });
+
+      it('disables the related remove button', () => {
+        expect(findAllRemoveUserItems().at(selectedItem).attributes().disabled).toBe('disabled');
+      });
+
+      it('does not disable unrelated remove button', () => {
+        expect(findAllRemoveUserItems().at(1).attributes().disabled).toBeUndefined();
+      });
+
+      it('shows a tooltip for related users', () => {
+        expect(findRemoveMemberItem(user.id).findComponent(GlTooltip).text()).toBe(
+          'This user is scheduled for removal.',
+        );
+      });
+
+      it('doe snot show a tooltip for unrelated user', () => {
+        const [, { user: nonRemovedUser }] = mockTableItems;
+
+        expect(findRemoveMemberItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(
+          false,
+        );
       });
     });
 

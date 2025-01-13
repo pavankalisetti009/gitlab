@@ -9501,6 +9501,9 @@ msgid_plural "Billing|This action will remove GitLab Duo seats from %d users"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Billing|This user is scheduled for removal."
+msgstr ""
+
 msgid "Billing|To ensure all members can access the group when your trial ends, you can upgrade to a paid tier."
 msgstr ""
 

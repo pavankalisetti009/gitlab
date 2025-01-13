@@ -13,6 +13,7 @@ export default ({
   isLoadingGitlabSubscription: false,
   isChangingMembershipState: false,
   isRemovingBillableMember: false,
+  removedBillableMemberId: null,
   hasError: false,
   namespaceId,
   namespaceName,

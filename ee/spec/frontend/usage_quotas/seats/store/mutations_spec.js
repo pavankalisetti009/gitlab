@@ -186,10 +186,10 @@ describe('Usage Quotas Seats mutations', () => {
   });
 
   describe('Billable member removal', () => {
-    const memberToRemove = mockDataSeats.data[0];
+    const [memberToRemove] = mockDataSeats.data;
 
     beforeEach(() => {
-      state.billableMemberToRemove = { id: 42 };
+      state.billableMemberToRemove = memberToRemove;
       mutations[types.RECEIVE_BILLABLE_MEMBERS_SUCCESS](state, mockDataSeats);
     });
 
@@ -206,11 +206,18 @@ describe('Usage Quotas Seats mutations', () => {
     });
 
     it(`${types.REMOVE_BILLABLE_MEMBER_SUCCESS}`, () => {
-      mutations[types.REMOVE_BILLABLE_MEMBER_SUCCESS](state, memberToRemove);
+      expect(state).toMatchObject({
+        isRemovingBillableMember: false,
+        billableMemberToRemove: memberToRemove,
+        removedBillableMemberId: null,
+      });
+
+      mutations[types.REMOVE_BILLABLE_MEMBER_SUCCESS](state, { memberId: memberToRemove.id });
 
       expect(state).toMatchObject({
         isRemovingBillableMember: false,
         billableMemberToRemove: null,
+        removedBillableMemberId: memberToRemove.id,
       });
     });
 

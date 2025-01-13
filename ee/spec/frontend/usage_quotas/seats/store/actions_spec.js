@@ -250,7 +250,7 @@ describe('Usage Quotas Seats actions', () => {
         await testAction({
           action: actions.removeBillableMember,
           state,
-          expectedActions: [{ type: 'removeBillableMemberSuccess' }],
+          expectedActions: [{ type: 'removeBillableMemberSuccess', payload: 2 }],
           expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER }],
         });
 
@@ -278,16 +278,19 @@ describe('Usage Quotas Seats actions', () => {
   });
 
   describe('removeBillableMemberSuccess', () => {
+    const memberId = 13;
+
     it('dispatches fetchBillableMembersList', async () => {
       await testAction({
         action: actions.removeBillableMemberSuccess,
+        payload: memberId,
         state,
         expectedActions: [
           { type: 'fetchBillableMembersList' },
           { type: 'fetchGitlabSubscription' },
         ],
 
-        expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER_SUCCESS }],
+        expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER_SUCCESS, payload: { memberId } }],
       });
 
       expect(createAlert).toHaveBeenCalledWith({
