@@ -161,3 +161,5 @@ but it does increase the overall size of your project's repository.
 - The keychain for user `gitlab` is not publicly available. You must create a keychain instead.
 - Hosted runners on macOS run in headless mode.
   Any workloads that require UI interactions such as `testmanagerd` are not supported.
+- Job performance might vary between job executions as Apple silicon chips have efficiency and
+  performance cores. You can't control core allocation or scheduling, which might lead to inconsistencies.
