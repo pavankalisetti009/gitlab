@@ -624,6 +624,9 @@ module EE
     end
 
     def private_profile?
+      return super unless ::License.feature_available?(:disable_private_profiles)
+      return super unless ::Feature.enabled?(:disallow_private_profiles) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- instance-wide setting
+
       super && ::Gitlab::CurrentSettings.make_profile_private
     end
 
