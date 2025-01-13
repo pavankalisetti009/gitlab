@@ -24,6 +24,10 @@ module EE
           options_with_owner.merge(MINIMAL_ACCESS_HASH)
         end
 
+        def options_for_custom_roles
+          options_with_minimal_access.tap { |options| options.delete('Owner') }
+        end
+
         def values_with_minimal_access
           options_with_minimal_access.values
         end

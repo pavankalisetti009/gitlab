@@ -80,7 +80,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
 
     context 'member role namespace' do
-      let_it_be_with_reload(:member) { create(:group_member) }
+      let_it_be_with_reload(:member) { create(:group_member, :maintainer) }
 
       before do
         stub_licensed_features(custom_roles: true)

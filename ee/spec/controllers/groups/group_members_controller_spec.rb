@@ -142,20 +142,20 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
           })
         end
 
-        let_it_be(:custom_owner_role) { create(:member_role, :owner, namespace: root_group) }
+        let_it_be(:custom_maintainer_role) { create(:member_role, :maintainer, namespace: root_group) }
 
         let_it_be(:sub_2_group_membership) do
           create(:group_member, { user: member_user,
                                   group: sub_2_group,
-                                  access_level: Gitlab::Access::OWNER,
-                                  member_role: custom_owner_role })
+                                  access_level: Gitlab::Access::MAINTAINER,
+                                  member_role: custom_maintainer_role })
         end
 
         let_it_be(:invited_membership) do
           create(:group_member, :invited, { user: member_user,
                                             group: sub_3_group,
-                                            access_level: Gitlab::Access::OWNER,
-                                            member_role: custom_owner_role })
+                                            access_level: Gitlab::Access::MAINTAINER,
+                                            member_role: custom_maintainer_role })
         end
 
         it 'queries all customizable role of a user' do

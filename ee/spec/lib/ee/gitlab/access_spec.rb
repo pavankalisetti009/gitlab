@@ -82,4 +82,25 @@ RSpec.describe Gitlab::Access, feature_category: :permissions do
       expect(minimal_access_member.role_description).to eq(description)
     end
   end
+
+  describe '.options_with_minimal_access' do
+    it 'returns the hash of roles with Owner' do
+      expected_result = {
+        "Guest" => 10, "Planner" => 15, "Reporter" => 20, "Developer" => 30, "Maintainer" => 40, 'Owner' => 50,
+        "Minimal Access" => 5
+      }
+
+      expect(described_class.options_with_minimal_access).to eq(expected_result)
+    end
+  end
+
+  describe '.options_for_custom_roles' do
+    it 'returns the hash of roles without Owner' do
+      expected_result = {
+        "Guest" => 10, "Planner" => 15, "Reporter" => 20, "Developer" => 30, "Maintainer" => 40, "Minimal Access" => 5
+      }
+
+      expect(described_class.options_for_custom_roles).to eq(expected_result)
+    end
+  end
 end
