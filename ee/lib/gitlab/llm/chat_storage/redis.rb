@@ -50,6 +50,25 @@ module Gitlab
           clear_memoization(:messages)
         end
 
+        # Redis streams are immutable, so we must first delete all the messages
+        # and then re-add them along with the updated message in the same order.
+        def update(message)
+          with_redis do |redis|
+            redis.multi do |multi|
+              multi.xtrim(key, 0)
+              messages.each do |m|
+                if m.id == message.id
+                  multi.xadd(key, dump_message(message))
+                else
+                  multi.xadd(key, dump_message(m))
+                end
+              end
+              multi.expire(key, EXPIRE_TIME)
+            end
+          end
+          clear_memoization(:messages)
+        end
+
         private
 
         attr_reader :user, :agent_version_id

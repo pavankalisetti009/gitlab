@@ -5,6 +5,7 @@ module Gitlab
     class ChatStorage
       include Gitlab::Utils::StrongMemoize
 
+      SUPPORTED_EXTRAS = ['resource_content'].freeze
       POSTGRESQL_STORAGE = "postgresql"
       REDIS_STORAGE = "redis"
 
@@ -18,6 +19,17 @@ module Gitlab
       def add(message)
         postgres_storage.add(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
         redis_storage.add(message)
+      end
+
+      def update_message_extras(request_id, key, value)
+        raise ArgumentError, "The key #{key} is not supported" unless key.in?(SUPPORTED_EXTRAS)
+
+        message = messages.find { |m| m.request_id == request_id }
+        return unless message
+
+        message.extras[key] = value
+        postgres_storage.update_message_extras(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
+        redis_storage.update(message)
       end
 
       def set_has_feedback(message)

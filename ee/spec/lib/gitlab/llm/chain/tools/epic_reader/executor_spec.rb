@@ -156,6 +156,10 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
           let(:resource) { epic1 }
 
           it_behaves_like 'success response'
+          it_behaves_like 'updating chat storage message extras' do
+            let(:key) { 'resource_content' }
+            let(:expected_message_value) { 'Please use this information about identified epic:' }
+          end
         end
 
         context 'when epic is identified by iid' do
