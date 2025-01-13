@@ -365,6 +365,7 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
           expect(details[:system_event]).to eq(true)
           expect(details[:author_name]).to eq('(System)')
           expect(details[:author_class]).to eq(Gitlab::Audit::UnauthenticatedAuthor.name)
+          expect(details[:reason]).to eq('SCIM')
         end
       end
 

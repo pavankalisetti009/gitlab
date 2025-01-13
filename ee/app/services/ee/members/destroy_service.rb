@@ -53,6 +53,7 @@ module EE
         case action
         when :destroy
           audit_context[:message] = 'Membership destroyed'
+          audit_context[:additional_details][:reason] = 'SCIM' if author.nil?
         when :expired
           audit_context[:message] = "Membership expired on #{member.expires_at}"
           audit_context[:additional_details][:reason] = "access expired on #{member.expires_at}"
