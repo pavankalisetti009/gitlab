@@ -112,7 +112,11 @@ module EE
       def build_scim_identity
         scim_identity_params = params.slice(*scim_identity_attributes)
 
-        user.scim_identities.build(scim_identity_params.merge(active: true))
+        if ::Feature.enabled?(:separate_group_scim_table, ::Group.find(params[:group_id]))
+          user.group_scim_identities.build(scim_identity_params.merge(active: true))
+        else
+          user.instance_scim_identities.build(scim_identity_params.merge(active: true))
+        end
       end
 
       def set_pending_approval_state

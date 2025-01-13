@@ -1200,6 +1200,42 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: authn_sync_group_scim_identity_record
+  :worker_name: Authn::SyncGroupScimIdentityRecordWorker
+  :feature_category: :system_access
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: authn_sync_group_scim_token_record
+  :worker_name: Authn::SyncGroupScimTokenRecordWorker
+  :feature_category: :system_access
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: authn_sync_scim_identity_record
+  :worker_name: Authn::SyncScimIdentityRecordWorker
+  :feature_category: :system_access
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: authn_sync_scim_token_record
+  :worker_name: Authn::SyncScimTokenRecordWorker
+  :feature_category: :system_access
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: ci_runners_export_usage_csv
   :worker_name: Ci::Runners::ExportUsageCsvWorker
   :feature_category: :fleet_visibility

@@ -35,7 +35,6 @@ module EE
       has_many :iterations
       has_many :iterations_cadences, class_name: 'Iterations::Cadence'
       has_one :saml_provider
-      has_many :scim_identities
       has_many :ip_restrictions, autosave: true
       has_many :protected_environments, inverse_of: :group
       has_one :insight, foreign_key: :namespace_id
@@ -45,7 +44,6 @@ module EE
       accepts_nested_attributes_for :analytics_dashboards_pointer, allow_destroy: true
       accepts_nested_attributes_for :value_stream_dashboard_aggregation, update_only: true
       has_one :analytics_dashboards_configuration_project, through: :analytics_dashboards_pointer, source: :target_project
-      has_one :scim_oauth_access_token
       has_one :index_status, class_name: 'Elastic::GroupIndexStatus', foreign_key: :namespace_id, dependent: :destroy
       has_one :google_cloud_platform_workload_identity_federation_integration, class_name: 'Integrations::GoogleCloudPlatform::WorkloadIdentityFederation'
       has_many :external_audit_event_destinations, class_name: "AuditEvents::ExternalAuditEventDestination", foreign_key: 'namespace_id'
@@ -62,6 +60,12 @@ module EE
       has_many :hooks, class_name: 'GroupHook'
 
       has_many :allowed_email_domains, -> { order(id: :asc) }, autosave: true
+
+      # extra association can be removed with deletion of feature flag separate_group_scim_table
+      has_many :instance_scim_identities, class_name: 'ScimIdentity'
+      has_many :group_scim_identities
+      has_one :instance_scim_oauth_access_token, class_name: 'ScimOauthAccessToken'
+      has_one :group_scim_auth_access_token
 
       # We cannot simply set `has_many :audit_events, as: :entity, dependent: :destroy`
       # here since Group inherits from Namespace, the entity_type would be set to `Namespace`.
@@ -207,6 +211,12 @@ module EE
         joins(group_wiki_repository: :shard).where(shards: { name: storage })
       end
 
+      scope :with_scim_identities, -> {
+        left_joins(:instance_scim_identities, :group_scim_identities)
+       .group("namespaces.id")
+       .where("scim_identities.id IS NOT NULL OR group_scim_identities.id IS NOT NULL")
+      }
+
       state_machine :ldap_sync_status, namespace: :ldap_sync, initial: :ready do
         state :ready
         state :started
@@ -303,6 +313,18 @@ module EE
 
     def work_item_epics_ssot_enabled?
       ::Feature.enabled?(:work_item_epics_ssot, root_ancestor)
+    end
+
+    def scim_identities
+      return group_scim_identities if ::Feature.enabled?(:separate_group_scim_table, self)
+
+      instance_scim_identities
+    end
+
+    def scim_oauth_access_token
+      return group_scim_auth_access_token if ::Feature.enabled?(:separate_group_scim_table, self)
+
+      instance_scim_oauth_access_token
     end
 
     class_methods do

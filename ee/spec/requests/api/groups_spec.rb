@@ -1790,7 +1790,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     let_it_be(:group) { create(:group) }
     let_it_be(:regular_user) { create(:user) }
     let_it_be(:saml_provider) { create(:saml_provider, group: group) }
-    let_it_be(:scim_identity) { create(:scim_identity, group: group) }
+    let_it_be(:scim_identity) { create(:group_scim_identity, group: group) }
     let_it_be(:developer) { create(:user, developer_of: group) }
     let_it_be(:maintainer) { create(:user, maintainer_of: group) }
 

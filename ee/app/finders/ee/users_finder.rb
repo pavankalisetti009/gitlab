@@ -30,7 +30,11 @@ module EE
       return users unless params[:extern_uid] && params[:provider]
       return super unless params[:provider] == "scim"
 
-      users.with_scim_identities_by_extern_uid(params[:extern_uid])
+      if ::Gitlab.com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- SaaS scim is not marked as separate feature
+        users.with_group_scim_identities_by_extern_uid(params[:extern_uid])
+      else
+        users.with_instance_scim_identities_by_extern_uid(params[:extern_uid])
+      end
     end
 
     def by_auditors(users)

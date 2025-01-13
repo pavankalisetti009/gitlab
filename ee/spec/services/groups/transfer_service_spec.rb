@@ -50,7 +50,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
 
       context 'when the group has a scim token' do
         before do
-          create(:scim_oauth_access_token, group: group)
+          create(:group_scim_auth_access_token, group: group)
         end
 
         it_behaves_like 'raises error for paid group'

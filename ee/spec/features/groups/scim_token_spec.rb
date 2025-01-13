@@ -34,7 +34,7 @@ RSpec.describe 'SCIM Token handling', :js, feature_category: :system_access do
   end
 
   context 'when group has existing SCIM token' do
-    let_it_be(:scim_token) { create(:scim_oauth_access_token, group: group) }
+    let_it_be(:scim_token) { create(:group_scim_auth_access_token, group: group) }
 
     before do
       sign_in(user)

@@ -97,7 +97,10 @@ module EE
       has_many :deployment_approvals, class_name: 'Deployments::Approval'
 
       has_many :smartcard_identities
-      has_many :scim_identities
+
+      # extra association can be removed with deletion of feature flag separate_group_scim_table
+      has_many :instance_scim_identities, class_name: 'ScimIdentity'
+      has_many :group_scim_identities
 
       has_many :board_preferences, class_name: 'BoardUserPreference', inverse_of: :user
 
@@ -169,7 +172,9 @@ module EE
         where(id: ::PersonalAccessToken.with_invalid_expires_at(expiration_date).select(:user_id))
       end
 
-      scope :with_scim_identities_by_extern_uid, ->(extern_uid) { joins(:scim_identities).merge(ScimIdentity.with_extern_uid(extern_uid)) }
+      scope :with_group_scim_identities_by_extern_uid, ->(extern_uid) { joins(:group_scim_identities).merge(GroupScimIdentity.with_extern_uid(extern_uid)) }
+
+      scope :with_instance_scim_identities_by_extern_uid, ->(extern_uid) { joins(:instance_scim_identities).merge(ScimIdentity.with_extern_uid(extern_uid)) }
 
       scope :with_email_domain, ->(domain) { where("lower(split_part(email, '@', 2)) = ?", domain.downcase) }
 
@@ -665,6 +670,19 @@ module EE
         .reorder(nil)
 
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
+    end
+
+    def scim_identities
+      return group_scim_identities if ::Gitlab.com? && ::Feature.enabled?(:separate_group_scim_table, :instance)
+      return instance_scim_identities unless ::Gitlab.com?
+
+      groups.top_level.with_scim_identities.filter_map do |group|
+        if ::Feature.enabled?(:separate_group_scim_table, group)
+          group_scim_identities.find_by(group: group, user: self)
+        else
+          instance_scim_identities.find_by(group: group, user: self)
+        end
+      end.compact
     end
 
     protected

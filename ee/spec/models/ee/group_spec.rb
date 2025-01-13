@@ -4353,4 +4353,56 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       it { is_expected.to eq(expected) }
     end
   end
+
+  describe '#scim_identities' do
+    let(:group) { create(:group) }
+    let(:instance_scim_identity) { create(:scim_identity, group: group) }
+    let(:group_scim_identity) { create(:group_scim_identity, group: group) }
+
+    context 'when separate_group_scim_table feature flag is enabled' do
+      before do
+        stub_feature_flags(separate_group_scim_table: true)
+      end
+
+      it 'returns group_scim_identities' do
+        expect(group.scim_identities).to match_array([group_scim_identity])
+      end
+    end
+
+    context 'when separate_group_scim_table feature flag is disabled' do
+      before do
+        stub_feature_flags(separate_group_scim_table: false)
+      end
+
+      it 'returns instance_scim_identities' do
+        expect(group.scim_identities).to match_array([instance_scim_identity])
+      end
+    end
+  end
+
+  describe '#scim_oauth_access_token' do
+    let(:group) { create(:group) }
+    let!(:instance_scim_token) { create(:scim_oauth_access_token, group: group) }
+    let!(:group_scim_token) { create(:group_scim_auth_access_token, group: group) }
+
+    context 'when separate_group_scim_table feature flag is enabled' do
+      before do
+        stub_feature_flags(separate_group_scim_table: true)
+      end
+
+      it 'returns group_scim_identities' do
+        expect(group.scim_oauth_access_token).to eql(group_scim_token)
+      end
+    end
+
+    context 'when separate_group_scim_table feature flag is disabled' do
+      before do
+        stub_feature_flags(separate_group_scim_table: false)
+      end
+
+      it 'returns instance_scim_identities' do
+        expect(group.scim_oauth_access_token).to eql(instance_scim_token)
+      end
+    end
+  end
 end

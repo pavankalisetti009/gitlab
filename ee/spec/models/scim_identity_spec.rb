@@ -59,11 +59,10 @@ RSpec.describe ScimIdentity, feature_category: :system_access do
   describe '.with_extern_uid' do
     it 'finds identity regardless of case' do
       user = create(:user)
-      group = create(:group)
 
-      identity = user.scim_identities.create!(group: group, extern_uid: user.email)
+      identity = user.scim_identities.create!(extern_uid: user.email)
 
-      expect(group.scim_identities.with_extern_uid(user.email.upcase).first).to eq identity
+      expect(described_class.with_extern_uid(user.email.upcase).first).to eq identity
     end
   end
 

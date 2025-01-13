@@ -167,7 +167,7 @@ RSpec.shared_examples 'member group domain validations' do |source_type|
 
       context 'with group SCIM users' do
         let!(:scim_identity) do
-          create(:scim_identity, user: unconfirmed_gitlab_user, group: group)
+          create(:group_scim_identity, user: unconfirmed_gitlab_user, group: group)
         end
 
         it 'user emails does not have to be verified' do
@@ -197,7 +197,7 @@ RSpec.shared_examples 'member group domain validations' do |source_type|
 
         context 'with group SCIM users' do
           let!(:scim_identity) do
-            create(:scim_identity, user: unconfirmed_gitlab_user, group: group)
+            create(:group_scim_identity, user: unconfirmed_gitlab_user, group: group)
           end
 
           it 'user emails does not have to be verified' do

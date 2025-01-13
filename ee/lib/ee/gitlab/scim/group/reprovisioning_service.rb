@@ -14,7 +14,7 @@ module EE
           end
 
           def execute
-            ScimIdentity.transaction do
+            GroupScimIdentity.transaction do
               identity.update!(active: true)
               add_member unless existing_member?
             end
