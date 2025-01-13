@@ -9,6 +9,7 @@ RSpec.describe Gitlab::Checks::Integrations::GitGuardianCheck, feature_category:
   let_it_be(:newrev) { 'e774ebd33ca5de8e6ef1e633fd887bb52b9d0a7a' }
 
   let(:integration_check) { Gitlab::Checks::IntegrationsCheck.new(changes_access) }
+  let(:project_repository_url) { Gitlab::Checks::Integrations::GitGuardianProjectUrlHeader.build(project) }
 
   before_all do
     project.repository.delete_branch('add-pdf-file')
@@ -45,12 +46,14 @@ RSpec.describe Gitlab::Checks::Integrations::GitGuardianCheck, feature_category:
       context 'when integration is active' do
         it 'does not raise any error if no policy was broken' do
           expect_next_instance_of(::Gitlab::GitGuardian::Client) do |client|
-            expect(client).to receive(:execute) do |blobs|
+            expect(client).to receive(:execute) do |blobs, repository_url|
               expect(blobs.size).to eq(1)
 
               blob = blobs.first
               expect(blob).to be_kind_of(Gitlab::Git::Blob)
               expect(blob.path).to eq('files/pdf/test.pdf')
+
+              expect(repository_url).to eq(project_repository_url)
             end.and_return([])
           end
 
@@ -59,7 +62,7 @@ RSpec.describe Gitlab::Checks::Integrations::GitGuardianCheck, feature_category:
 
         it 'filters out the large blobs' do
           expect_next_instance_of(::Gitlab::GitGuardian::Client) do |client|
-            expect(client).to receive(:execute).with([]).and_return([])
+            expect(client).to receive(:execute).with([], project_repository_url).and_return([])
           end
 
           stub_const("#{described_class}::BLOB_BYTES_LIMIT", 1)
@@ -98,12 +101,14 @@ RSpec.describe Gitlab::Checks::Integrations::GitGuardianCheck, feature_category:
 
           it 'does raise an error' do
             expect_next_instance_of(::Gitlab::GitGuardian::Client) do |client|
-              expect(client).to receive(:execute) do |blobs|
+              expect(client).to receive(:execute) do |blobs, repository_url|
                 expect(blobs.size).to eq(1)
 
                 blob = blobs.first
                 expect(blob).to be_kind_of(Gitlab::Git::Blob)
                 expect(blob.path).to eq('files/pdf/test.pdf')
+
+                expect(repository_url).to eq(project_repository_url)
               end.and_return(policy_breaks)
             end
 

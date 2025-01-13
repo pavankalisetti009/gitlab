@@ -43,7 +43,8 @@ module Gitlab
             blobs.reject! { |blob| blob.size > BLOB_BYTES_LIMIT || blob.binary }
 
             format_git_guardian_response do
-              project.git_guardian_integration.execute(blobs)
+              repository_url = GitGuardianProjectUrlHeader.build(project)
+              project.git_guardian_integration.execute(blobs, repository_url)
             end
           end
         end

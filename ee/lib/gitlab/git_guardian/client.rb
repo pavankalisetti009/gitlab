@@ -23,10 +23,10 @@ module Gitlab
         @api_token = api_token
       end
 
-      def execute(blobs = [])
+      def execute(blobs = [], repository_url = NA)
         threaded_batches = []
         blobs.each_slice(BATCH_SIZE).map.with_object([]) do |blobs_batch, _|
-          threaded_batches << execute_batched_request(blobs_batch)
+          threaded_batches << execute_batched_request(blobs_batch, repository_url)
         end
 
         threaded_batches.filter_map(&:value).flatten
@@ -34,7 +34,7 @@ module Gitlab
 
       private
 
-      def execute_batched_request(blobs_batch)
+      def execute_batched_request(blobs_batch, repository_url)
         Thread.new do
           params = blobs_batch.each_with_object([]) do |blob, all|
             # GitGuardian limits filename field to 256 characters.
@@ -61,7 +61,7 @@ module Gitlab
             Gitlab::AppJsonLogger.warn(class: self.class.name, message: "Nothing to process")
             nil
           else
-            response = perform_request(params)
+            response = perform_request(params, repository_url)
             policy_breaks = process_response(response, blobs_batch)
 
             policy_breaks.presence
@@ -87,9 +87,9 @@ module Gitlab
         false
       end
 
-      def perform_request(params)
+      def perform_request(params, repository_url)
         options = {
-          headers: headers,
+          headers: headers(repository_url),
           body: params.to_json,
           timeout: TIMEOUT
         }
@@ -101,10 +101,11 @@ module Gitlab
         response
       end
 
-      def headers
+      def headers(repository_url)
         {
           'Content-Type': 'application/json',
-          Authorization: "Token #{api_token}"
+          Authorization: "Token #{api_token}",
+          'GGshield-Repository-URL': repository_url
         }
       end
 
