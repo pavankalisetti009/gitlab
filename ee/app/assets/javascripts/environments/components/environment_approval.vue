@@ -23,6 +23,12 @@ export default {
       required: false,
       default: true,
     },
+    size: {
+      type: String,
+      required: false,
+      default: 'medium',
+      validator: (value) => ['small', 'medium'].includes(value),
+    },
   },
   computed: {
     buttonTitle() {
@@ -44,6 +50,7 @@ export default {
     :title="buttonTitle"
     :aria-label="buttonTitle"
     :href="deploymentWebPath"
+    :size="size"
     icon="thumb-up"
   >
     <template v-if="showText">

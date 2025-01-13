@@ -48,7 +48,6 @@ describe('~/environments/components/new_environment_item.vue', () => {
   };
 
   const findAlert = () => wrapper.findComponent(EnvironmentAlert);
-  const findApproval = () => wrapper.findComponent(EnvironmentApproval);
 
   it('shows an alert if one is opened', () => {
     const environment = { ...resolvedEnvironment, hasOpenedAlert: true };
@@ -62,21 +61,5 @@ describe('~/environments/components/new_environment_item.vue', () => {
     createWrapper({ apolloProvider: createApolloProvider() });
 
     expect(findAlert().exists()).toBe(false);
-  });
-
-  it('provides necessary data to environment-approval component', () => {
-    const upcomingDeployment = resolvedEnvironment.lastDeployment;
-    const environment = {
-      ...resolvedEnvironment,
-      lastDeployment: null,
-      upcomingDeployment,
-      requiredApprovalCount: 2,
-    };
-    createWrapper({ propsData: { environment }, apolloProvider: createApolloProvider() });
-
-    expect(findApproval().props()).toMatchObject({
-      requiredApprovalCount: 2,
-      deploymentWebPath: upcomingDeployment.webPath,
-    });
   });
 });

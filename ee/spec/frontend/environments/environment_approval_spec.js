@@ -46,4 +46,18 @@ describe('ee/environments/components/environment_approval.vue', () => {
       expect(findButton().attributes('title')).toBe('Approval options');
     });
   });
+
+  describe('size', () => {
+    it('should render medium button by default', () => {
+      createWrapper();
+
+      expect(findButton().props('size')).toBe('medium');
+    });
+
+    it('should render a small button if provided', () => {
+      createWrapper({ size: 'small' });
+
+      expect(findButton().props('size')).toBe('small');
+    });
+  });
 });

@@ -72,6 +72,7 @@ describe('~/environments/environment_details/components/deployment_actions.vue',
           deploymentWebPath,
           requiredApprovalCount: 1,
           showText: false,
+          size: 'medium',
         });
       });
     });
