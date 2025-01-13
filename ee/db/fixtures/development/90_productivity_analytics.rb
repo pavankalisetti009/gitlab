@@ -110,12 +110,14 @@ class Gitlab::Seeder::ProductivityAnalytics
   end
 
   def create_maintainers!
-    5.times do |i|
+    5.times do
+      name = FFaker::Name.unique.name
+      username = "p-user-#{name.parameterize}-#{suffix}"
       user =
         ::User.create!(
-          username: "p-user-#{i}-#{suffix}",
-          name: "P User#{i}",
-          email: "p-user-#{i}@#{suffix}.com",
+          username: username,
+          name: "P #{name}",
+          email: "#{username}@example.com",
           confirmed_at: DateTime.now,
           password: ::User.random_password
         ) do |user|
@@ -246,7 +248,7 @@ class Gitlab::Seeder::ProductivityAnalytics
   end
 
   def suffix
-    @suffix ||= Gitlab.config.cell.id ? "#{Gitlab.config.cell.id}-#{Time.now.to_i}" : Time.now.to_i
+    @suffix ||= SecureRandom.hex(6)
   end
 
   def get_date_after(date)
