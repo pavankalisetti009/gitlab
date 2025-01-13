@@ -17,14 +17,29 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
         {
           language: 'ruby',
           timestamp: '2024-01-01',
-          unrelated_info: 'bar'
+          unrelated_info: 'bar',
+          branch_name: 'foo'
         }
+      end
+
+      let_it_be(:allowed_fields_for_internal_event) do
+        # Does not persist branch name on internal telemetry
+        additional_properties.except(:branch_name).symbolize_keys
       end
 
       let(:event_name) { 'code_suggestion_shown_in_ide' }
 
       it 'triggers AI tracking' do
-        allow(Gitlab::InternalEvents).to receive(:track_event)
+        expect(Gitlab::InternalEvents).to receive(:track_event)
+                                            .with(
+                                              event_name,
+                                              additional_properties: allowed_fields_for_internal_event,
+                                              project: nil,
+                                              namespace: nil,
+                                              send_snowplow_event: false,
+                                              user: user
+                                            )
+
         expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
                                                   .with(
                                                     event_name,

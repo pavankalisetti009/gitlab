@@ -8,10 +8,11 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
     let(:current_user) { build_stubbed(:user) }
 
-    let(:event_context) { { user: current_user } }
+    let(:event_context) { { user: current_user, branch_name: 'main' } }
     let(:event_name) { 'some_unknown_event' }
 
     before do
+      stub_feature_flags(move_ai_tracking_to_instrumentation_layer: false)
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
     end
 
@@ -25,7 +26,8 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       let(:expected_event_hash) do
         {
           user: current_user,
-          event: event_name
+          event: event_name,
+          branch_name: 'main'
         }
       end
 
