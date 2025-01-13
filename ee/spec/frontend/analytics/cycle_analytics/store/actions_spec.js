@@ -24,8 +24,8 @@ import {
 } from '~/lib/utils/http_status';
 import { allowedStages as stages, valueStreams, endpoints, groupLabels } from '../mock_data';
 
-const milestonesPath = `/${namespace.fullPath}/-/milestones.json`;
-const labelsPath = `/${namespace.fullPath}/-/labels.json`;
+const milestonesPath = `/${namespace.restApiRequestPath}/-/milestones.json`;
+const labelsPath = `/${namespace.restApiRequestPath}/-/labels.json`;
 const groupEndpoint = 'groups/foo';
 
 const alertErrorMessage = 'There was an error while fetching value stream analytics data.';
@@ -45,7 +45,7 @@ const defaultState = {
 };
 
 const mockGetters = {
-  namespacePath: () => namespace.fullPath,
+  namespaceRestApiRequestPath: () => namespace.restApiRequestPath,
   currentValueStreamId: () => selectedValueStream.id,
 };
 
@@ -317,7 +317,7 @@ describe('Value Stream Analytics actions', () => {
     describe('with initialData', () => {
       it.each`
         action                        | args
-        ${'setPaths'}                 | ${{ namespacePath: namespace.fullPath }}
+        ${'setPaths'}                 | ${{ namespacePath: namespace.restApiRequestPath }}
         ${'filters/initialize'}       | ${{ selectedAuthor, selectedMilestone, selectedAssigneeList, selectedLabelList }}
         ${'durationChart/setLoading'} | ${true}
       `('dispatches $action', async ({ action, args }) => {

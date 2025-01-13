@@ -32,7 +32,7 @@ const selectedUserParams = getFilterParams(filterUsers, { prop: 'name' });
 const milestoneValues = getFilterValues(filterMilestones);
 const labelValues = getFilterValues(filterLabels);
 const userValues = getFilterValues(filterUsers, { prop: 'name' });
-const { fullPath } = namespace;
+const { restApiRequestPath } = namespace;
 
 describe('Value Stream Analytics getters', () => {
   describe('hasNoAccessError', () => {
@@ -71,21 +71,21 @@ describe('Value Stream Analytics getters', () => {
     });
   });
 
-  describe('namespacePath', () => {
+  describe('namespaceRestApiRequestPath', () => {
     describe('with namespace set', () => {
       it('returns the `fullPath` value of the group', () => {
         state = {
           namespace,
         };
 
-        expect(getters.namespacePath(state)).toEqual(fullPath);
+        expect(getters.namespaceRestApiRequestPath(state)).toEqual(restApiRequestPath);
       });
     });
 
     describe('without a namespace set', () => {
       it.each([[''], [{}], [null]])('given "%s" will return null', (value) => {
         state = { namespace: value };
-        expect(getters.namespacePath(state)).toEqual(null);
+        expect(getters.namespaceRestApiRequestPath(state)).toEqual(null);
       });
     });
   });

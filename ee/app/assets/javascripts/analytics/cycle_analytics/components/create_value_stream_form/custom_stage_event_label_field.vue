@@ -92,10 +92,10 @@ export default {
     }
   },
   methods: {
-    ...mapGetters(['namespacePath']),
+    ...mapGetters(['namespaceRestApiRequestPath']),
     async fetchLabels() {
       try {
-        const { data } = await getGroupLabels(this.namespacePath, {
+        const { data } = await getGroupLabels(this.namespaceRestApiRequestPath, {
           search: this.searchTerm,
           only_group_labels: true,
         });

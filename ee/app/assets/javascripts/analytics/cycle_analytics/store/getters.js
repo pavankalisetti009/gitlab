@@ -15,7 +15,7 @@ import { NAMESPACE_TYPES } from '../../../vue_shared/components/runner_tags_drop
 export const isProjectNamespace = ({ namespace }) =>
   Boolean(namespace.type?.toLowerCase() === NAMESPACE_TYPES.PROJECT);
 
-export const namespacePath = ({ namespace }) => namespace?.fullPath || null;
+export const namespaceRestApiRequestPath = ({ namespace }) => namespace?.restApiRequestPath || null;
 
 export const hasNoAccessError = (state) => state.errorCode === HTTP_STATUS_FORBIDDEN;
 
