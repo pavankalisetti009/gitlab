@@ -288,19 +288,6 @@ GitLab applies concurrency control when:
 
 The concurrency control distributes the scheduled pipelines according to the [`time_window` settings](#time_window-schema) defined in the policy.
 
-#### Set the maximum top-level group concurrency for security policy scheduled scans
-
-For GitLab.com, this limit is managed by GitLab administrators. The current limit is 100.
-
-For self-managed instances, the limit has a default value of 10,000 can be changed in the **Admin** area.
-
-To update the **Security policy scheduled scans maximum top-level group concurrency** setting:
-
-1. Go to **Admin** > **Settings** > **CI/CD**.
-1. Expand **Continuous Integration and Deployment**.
-1. Set the **Security policy scheduled scans maximum top-level group concurrency**.
-1. Select **Save changes**.
-
 ## `scan` action type
 
 > - Scan Execution Policies variable precedence was [changed](https://gitlab.com/gitlab-org/gitlab/-/issues/424028) in GitLab 16.7 [with a flag](../../../administration/feature_flags.md) named `security_policies_variables_precedence`. Enabled by default. [Feature flag removed in GitLab 16.8](https://gitlab.com/gitlab-org/gitlab/-/issues/435727).
