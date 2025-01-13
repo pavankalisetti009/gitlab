@@ -45,6 +45,11 @@ module Gitlab
           clear_memoization(:messages)
         end
 
+        def update_message_extras(message)
+          user.ai_conversation_messages.for_message_xid(message.id).update!(extras: message.extras.to_json)
+          clear_memoization(:messages)
+        end
+
         private
 
         def current_thread
