@@ -62,5 +62,3 @@ class ReindexWikiToUpdateAnalyzerForContent < Elastic::Migration
     Elastic::Latest::WikiConfig.index_name
   end
 end
-
-ReindexWikiToUpdateAnalyzerForContent.prepend ::Elastic::MigrationObsolete
