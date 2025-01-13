@@ -52,6 +52,12 @@ RSpec.describe 'Profile > CI shared runner limits', feature_category: :runner do
       end
 
       it_behaves_like 'project pages with alerts'
+
+      it_behaves_like 'page with the alert', true do
+        before do
+          visit profile_usage_quotas_path(namespace)
+        end
+      end
     end
   end
 
@@ -67,5 +73,11 @@ RSpec.describe 'Profile > CI shared runner limits', feature_category: :runner do
     end
 
     it_behaves_like 'project pages with alerts'
+
+    it_behaves_like 'page with the alert', true do
+      before do
+        visit profile_usage_quotas_path(namespace)
+      end
+    end
   end
 end

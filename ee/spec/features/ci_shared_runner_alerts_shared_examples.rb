@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.shared_examples 'page with the alert' do
+RSpec.shared_examples 'page with the alert' do |usage_quotas_link_hidden = false|
   it 'displays the alert' do
     expect(has_testid?('ci-minute-limit-banner', count: 1)).to be true
 
@@ -12,8 +12,16 @@ RSpec.shared_examples 'page with the alert' do
     within(banner) do
       expect(page).to have_content(message)
       expect(page).to have_link 'Buy more compute minutes', href: buy_minutes_subscriptions_link(namespace)
-      expect(page).to have_link 'See usage statistics',
-        href: usage_quotas_path(namespace, anchor: 'pipelines-quota-tab')
+
+      # rubocop: disable RSpec/AvoidConditionalStatements -- this is a minor difference in the UI that is not worth a separate test
+      if usage_quotas_link_hidden
+        expect(page).not_to have_link 'See usage statistics',
+          href: usage_quotas_path(namespace, anchor: 'pipelines-quota-tab')
+      else
+        expect(page).to have_link 'See usage statistics',
+          href: usage_quotas_path(namespace, anchor: 'pipelines-quota-tab')
+      end
+      # rubocop: enable RSpec/AvoidConditionalStatements
     end
   end
 end
