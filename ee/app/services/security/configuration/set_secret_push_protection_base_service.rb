@@ -9,15 +9,17 @@ module Security
         @enable = enable
         @current_user = current_user
         @excluded_projects_ids = excluded_projects_ids
+        @filtered_out_projects_ids = []
       end
 
       def execute
         return unless valid_request?
 
         any_updated = false
+        project_ids = subject_project_ids
         ApplicationRecord.transaction do
-          projects_scope.each_batch(of: PROJECTS_BATCH_SIZE) do |project_batch|
-            updated_count = update_security_setting(project_batch.id_not_in(@excluded_projects_ids))
+          project_ids.each_slice(PROJECTS_BATCH_SIZE) do |project_ids_batch|
+            updated_count = update_security_setting(project_ids_batch)
             any_updated ||= updated_count > 0
           end
           audit if any_updated
@@ -31,19 +33,19 @@ module Security
         @subject.present? && @current_user.present? && [true, false].include?(@enable)
       end
 
-      def update_security_setting(projects)
+      def update_security_setting(project_ids)
         # rubocop:disable CodeReuse/ActiveRecord -- Specific use-case for this service
-        updated_records = ProjectSecuritySetting.for_projects(projects.select(:id))
+        updated_records = ProjectSecuritySetting.for_projects(project_ids)
                               .where(pre_receive_secret_detection_enabled: !@enable)
                                 .update_all(pre_receive_secret_detection_enabled: @enable,
                                   updated_at: Time.current)
         # rubocop:enable CodeReuse/ActiveRecord
 
-        create_missing_security_setting(projects) + updated_records
+        create_missing_security_setting(project_ids) + updated_records
       end
 
-      def create_missing_security_setting(projects)
-        projects_without_security_setting = projects.without_security_setting
+      def create_missing_security_setting(project_ids)
+        projects_without_security_setting = Project.id_in(project_ids).without_security_setting
         security_setting_attributes = projects_without_security_setting.map do |project|
           {
             project_id: project.id,
@@ -70,7 +72,7 @@ module Security
         raise NotImplementedError
       end
 
-      def projects_scope
+      def subject_project_ids
         raise NotImplementedError
       end
     end

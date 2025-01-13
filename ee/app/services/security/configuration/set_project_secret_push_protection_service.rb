@@ -5,9 +5,8 @@ module Security
     class SetProjectSecretPushProtectionService < SetSecretPushProtectionBaseService
       private
 
-      def projects_scope
-        # convert project object into a relation for unified logic in parent class
-        Project.id_in(@subject.id)
+      def subject_project_ids
+        [@subject.id] - @excluded_projects_ids
       end
 
       def audit

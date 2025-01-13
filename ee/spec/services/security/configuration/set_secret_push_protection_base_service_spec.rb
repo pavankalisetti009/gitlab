@@ -10,7 +10,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
   describe '#execute' do
     context 'when the call is valid' do
       it 'executes the transaction and returns the enable value' do
-        allow(service).to receive_messages(valid_request?: true, projects_scope: Project.id_in(project_1.id),
+        allow(service).to receive_messages(valid_request?: true, subject_project_ids: [project_1.id],
           audit: nil)
         expect { service.execute }.to change {
           project_1.security_setting.reload.pre_receive_secret_detection_enabled
@@ -21,7 +21,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
 
     context 'when the call is invalid' do
       it 'does nothing and returns nil' do
-        allow(service).to receive_messages(valid_request?: false, projects_scope: Project.id_in(project_1.id),
+        allow(service).to receive_messages(valid_request?: false, subject_project_ids: [project_1.id],
           audit: nil)
         expect { service.execute }.not_to change {
           project_1.security_setting.reload.pre_receive_secret_detection_enabled
@@ -37,9 +37,9 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
     end
   end
 
-  describe '#projects_scope' do
+  describe '#subject_project_ids' do
     it 'requires a subclass overrides it' do
-      expect { service.send(:projects_scope) }.to raise_error(NotImplementedError)
+      expect { service.send(:subject_project_ids) }.to raise_error(NotImplementedError)
     end
   end
 end
