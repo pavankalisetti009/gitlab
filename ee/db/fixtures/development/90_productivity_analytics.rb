@@ -52,6 +52,9 @@ class Gitlab::Seeder::ProductivityAnalytics
           create_maintainers!
           print '.'
 
+          create_milestone!
+          print '.'
+
           issues = create_issues
           print '.'
 
@@ -88,12 +91,21 @@ class Gitlab::Seeder::ProductivityAnalytics
 
   def create_project_with_group
     Sidekiq::Testing.inline! do
-      namespace = FactoryBot.create(
-        :group,
-        :public,
+      group = Group.new(
         name: "Productivity Group #{suffix}",
-        path: "p-analytics-group-#{suffix}"
+        path: "p-analytics-group-#{suffix}",
+        description: FFaker::Lorem.sentence,
+        organization: Organizations::Organization.default_organization
       )
+
+      group.save!
+      group.add_owner(admin)
+      group.create_namespace_settings
+
+      # Set group traversal ids inline to avoid
+      # authorization issues on next steps.
+      group.update!(traversal_ids: [group.id])
+
       project = FactoryBot.create(
         :project,
         :public,
@@ -101,12 +113,24 @@ class Gitlab::Seeder::ProductivityAnalytics
         name: "Productivity Project #{suffix}",
         path: "p-analytics-project-#{suffix}",
         creator: admin,
-        namespace: namespace
+        group: group
       )
 
       project.create_repository
       project
     end
+  end
+
+  def create_milestone!
+    milestone_params = {
+      title: "Sprint - #{FFaker::Lorem.sentence}",
+      description: FFaker::Lorem.sentence,
+      state: 'active',
+      start_date: Time.zone.today,
+      due_date: rand(5..10).days.from_now
+    }
+
+    @milestone = Milestones::CreateService.new(@project, @project.team.users.sample, milestone_params).execute
   end
 
   def create_maintainers!
@@ -147,7 +171,12 @@ class Gitlab::Seeder::ProductivityAnalytics
       }
 
       travel_to(random_past_date) do
-        Issues::CreateService.new(container: project, current_user: maintainers.sample, params: issue_params, perform_spam_check: false).execute[:issue]
+        Issues::CreateService.new(
+          container: project,
+          current_user: maintainers.sample,
+          params: issue_params,
+          perform_spam_check: false
+        ).execute[:issue]
       end
     end
   end
@@ -175,6 +204,7 @@ class Gitlab::Seeder::ProductivityAnalytics
 
       travel_to(random_past_date) do
         commit_user = maintainers.sample
+
         issue.project.repository.add_branch(commit_user, branch_name, 'HEAD')
 
         commit_sha = issue.project.repository.create_file(commit_user, filename, 'content', message: "Commit for #{issue.to_reference}", branch_name: branch_name)
