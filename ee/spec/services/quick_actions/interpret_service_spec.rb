@@ -1386,23 +1386,23 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     end
 
     context 'unlink command' do
-      let_it_be(:other_issue) { create(:issue, project: project) }
-      let(:content) { "/unlink #{other_issue.to_reference(issue)}" }
+      let_it_be(:unlink_target) { create(:issue, project: project) }
+      let(:content) { "/unlink #{unlink_target.to_reference(issue)}" }
 
       subject(:unlink_issues) { service.execute(content, issue) }
 
       shared_examples 'command applied successfully' do
         it 'executes command successfully' do
           expect { unlink_issues }.to change { IssueLink.count }.by(-1)
-          expect(unlink_issues[2]).to eq("Removed linked item #{other_issue.to_reference(issue)}.")
-          expect(issue.notes.last.note).to eq("removed the relation with #{other_issue.to_reference}")
-          expect(other_issue.notes.last.note).to eq("removed the relation with #{issue.to_reference}")
+          expect(unlink_issues[2]).to eq("Removed linked item #{unlink_target.to_reference(issue)}.")
+          expect(issue.notes.last.note).to eq("removed the relation with #{unlink_target.to_reference}")
+          expect(unlink_target.notes.last.note).to eq("removed the relation with #{issue.to_reference}")
         end
       end
 
       context 'when command includes blocking issue' do
         before do
-          create(:issue_link, source: other_issue, target: issue, link_type: 'blocks')
+          create(:issue_link, source: unlink_target, target: issue, link_type: 'blocks')
         end
 
         it_behaves_like 'command applied successfully'
@@ -1410,7 +1410,22 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
       context 'when command includes blocked issue' do
         before do
-          create(:issue_link, source: issue, target: other_issue, link_type: 'blocks')
+          create(:issue_link, source: issue, target: unlink_target, link_type: 'blocks')
+        end
+
+        it_behaves_like 'command applied successfully'
+      end
+
+      context 'when target is not an issue' do
+        let_it_be(:unlink_target) { create(:work_item, :epic, namespace: group) }
+        let_it_be(:unlink_source) { create(:work_item, :epic, namespace: group) }
+        let_it_be(:issue) { unlink_source }
+
+        before do
+          group.add_owner(current_user)
+          stub_licensed_features(epics: true)
+
+          create(:issue_link, source: unlink_source, target: unlink_target, link_type: 'relates_to')
         end
 
         it_behaves_like 'command applied successfully'
