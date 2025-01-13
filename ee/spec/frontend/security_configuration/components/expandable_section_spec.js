@@ -1,13 +1,13 @@
 import { mount, shallowMount } from '@vue/test-utils';
 import ExpandableSection from 'ee/security_configuration/components/expandable_section.vue';
-import { stubTransition } from 'helpers/stub_transition';
+import waitForPromises from 'helpers/wait_for_promises';
 
 describe('ExpandableSection component', () => {
   let wrapper;
 
   const createComponent = (options, mountFn = shallowMount) => {
     wrapper = mountFn(ExpandableSection, {
-      stubs: { transition: stubTransition() },
+      stubs: { transition: false },
       ...options,
     });
   };
@@ -71,8 +71,10 @@ describe('ExpandableSection component', () => {
   });
 
   describe('expand/collapse behavior', () => {
-    it('hides the content by default', () => {
+    it('hides the content by default', async () => {
       createComponent({}, mount);
+
+      await waitForPromises();
 
       expect(findContent().isVisible()).toBe(false);
     });
