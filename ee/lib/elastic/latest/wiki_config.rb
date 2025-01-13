@@ -33,7 +33,7 @@ module Elastic
           fields: { reverse: { type: :text, analyzer: :whitespace_reverse } }
 
         indexes :content,
-          type: :text, index_options: 'positions', analyzer: :text_analyzer
+          type: :text, index_options: 'positions', analyzer: :code_analyzer
         indexes :language, type: :keyword
 
         indexes :schema_version, type: :short

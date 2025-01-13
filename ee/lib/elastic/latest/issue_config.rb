@@ -22,8 +22,8 @@ module Elastic
         indexes :id, type: :integer
         indexes :iid, type: :integer
 
-        indexes :title, type: :text, index_options: 'positions', analyzer: :text_analyzer
-        indexes :description, type: :text, index_options: 'positions', analyzer: :text_analyzer
+        indexes :title, type: :text, index_options: 'positions', analyzer: :title_analyzer
+        indexes :description, type: :text, index_options: 'positions', analyzer: :code_analyzer
         indexes :created_at, type: :date
         indexes :updated_at, type: :date
         indexes :state, type: :keyword
