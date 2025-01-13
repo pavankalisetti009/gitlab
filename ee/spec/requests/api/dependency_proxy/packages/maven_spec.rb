@@ -221,20 +221,6 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
                     expect(response.headers[md5_checksum_header]).to be_nil
                   end
                 end
-
-                context 'with packages_maven_remote_included_checksum disabled' do
-                  before do
-                    stub_feature_flags(packages_maven_remote_included_checksum: false)
-                  end
-
-                  it 'does not return any checksum' do
-                    subject
-
-                    expect(response).to have_gitlab_http_status(:ok)
-                    expect(response.headers[sha1_checksum_header]).to be_nil
-                    expect(response.headers[md5_checksum_header]).to be_nil
-                  end
-                end
               end
             end
           end
