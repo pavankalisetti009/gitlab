@@ -37763,6 +37763,9 @@ msgstr ""
 msgid "Not enabled"
 msgstr ""
 
+msgid "Not fixed"
+msgstr ""
+
 msgid "Not found"
 msgstr ""
 
