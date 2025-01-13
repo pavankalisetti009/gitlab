@@ -222,6 +222,8 @@ However, in a few rare cases, features can be title case. These exceptions are:
 - Added to the [word list](word_list.md).
 
 If the term is not in the word list, ask a GitLab Technical Writer for advice.
+For assistance naming a feature and ensuring it meets GitLab standards, see
+[the handbook](https://handbook.gitlab.com/handbook/product/categories/gitlab-the-product/#naming-features).
 
 Do not match the capitalization of terms or phrases on the [Features page](https://about.gitlab.com/features/)
 or [`features.yml`](https://gitlab.com/gitlab-com/www-gitlab-com/blob/master/data/features.yml)
