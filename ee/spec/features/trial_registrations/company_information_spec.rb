@@ -103,5 +103,14 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
         expect(page).to have_content('Create or import your first project')
       end
     end
+
+    context 'when phone number is entered by the user' do
+      it 'validates the phone number' do
+        fill_in 'phone_number', with: 'invalid_number'
+
+        click_on s_('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
+        expect(page).to have_css('input[name="phone_number"]:invalid')
+      end
+    end
   end
 end

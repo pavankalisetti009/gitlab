@@ -56,8 +56,15 @@ RSpec.describe 'Trial lead form submission and validation', :saas, :js, feature_
     def fill_in_company_information
       fill_in 'company_name', with: form_data[:company_name]
       select form_data[:company_size], from: 'company_size'
-      fill_in 'phone_number', with: form_data[:phone_number]
       select form_data.dig(:country, :name), from: 'country'
+      expect_phone_number_validation
+      fill_in 'phone_number', with: form_data[:phone_number]
+    end
+
+    def expect_phone_number_validation
+      fill_in 'phone_number', with: 'invalid_number'
+      click_button 'Continue'
+      expect(page).to have_css('input[name="phone_number"]:invalid')
     end
   end
 end

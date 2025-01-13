@@ -197,7 +197,7 @@ export default {
         name="phone_number"
         type="tel"
         data-testid="phone_number"
-        pattern="^(\+)*[0-9-\s]+$"
+        pattern="^(\+)*[0-9\-\s]+$"
       />
     </gl-form-group>
     <gl-form-group
