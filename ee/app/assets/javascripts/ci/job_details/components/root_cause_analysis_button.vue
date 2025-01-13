@@ -1,6 +1,7 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { sendDuoChatCommand } from 'ee/ai/utils';
+import { InternalEvents } from '~/tracking';
 import { TYPENAME_CI_BUILD } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 
@@ -8,6 +9,7 @@ export default {
   components: {
     GlButton,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     canTroubleshootJob: {
       type: Boolean,
@@ -46,8 +48,13 @@ export default {
       return this.jobFailed && this.canTroubleshootJob && this.isBuild;
     },
   },
+  mounted() {
+    this.trackEvent('render_root_cause_analysis');
+  },
   methods: {
     callDuo() {
+      this.trackEvent('click_root_cause_analysis');
+
       sendDuoChatCommand({
         question: '/troubleshoot',
         resourceId: this.resourceId,
