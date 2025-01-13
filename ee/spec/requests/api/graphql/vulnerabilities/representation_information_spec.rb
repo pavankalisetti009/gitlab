@@ -60,7 +60,7 @@ RSpec.describe 'Query.vulnerabilities.representationInformation', feature_catego
   it 'avoids N+1 queries' do
     post_graphql(vulnerabilities_query, current_user: user)
 
-    control = ActiveRecord::QueryRecorder.new do
+    control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
       post_graphql(vulnerabilities_query, current_user: user)
     end
 
