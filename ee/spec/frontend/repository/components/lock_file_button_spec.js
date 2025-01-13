@@ -72,7 +72,17 @@ describe('LockFileButton component', () => {
     it('displays a confirm modal when the lock button is clicked', () => {
       createComponent();
       findLockFileButton().vm.$emit('click');
+      expect(findModal().props('title')).toBe('Lock file?');
       expect(findModal().text()).toBe('Are you sure you want to lock some_file.js?');
+      expect(findModal().props('actionPrimary').text).toBe('Lock');
+    });
+
+    it('displays a confirm modal when the unlock button is clicked', () => {
+      createComponent({ isLocked: true });
+      findLockFileButton().vm.$emit('click');
+      expect(findModal().props('title')).toBe('Unlock file?');
+      expect(findModal().text()).toBe('Are you sure you want to unlock some_file.js?');
+      expect(findModal().props('actionPrimary').text).toBe('Unlock');
     });
 
     it('should hide the confirm modal when a hide action is triggered', async () => {

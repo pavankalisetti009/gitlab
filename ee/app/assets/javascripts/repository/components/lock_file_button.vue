@@ -8,8 +8,8 @@ export default {
   i18n: {
     lock: __('Lock'),
     unlock: __('Unlock'),
-    modalTitle: __('Lock File?'),
-    actionPrimary: __('Okay'),
+    modalTitleLock: __('Lock file?'),
+    modalTitleUnlock: __('Unlock file?'),
     actionCancel: __('Cancel'),
   },
   components: {
@@ -48,6 +48,9 @@ export default {
   computed: {
     lockButtonTitle() {
       return this.locked ? this.$options.i18n.unlock : this.$options.i18n.lock;
+    },
+    modalTitle() {
+      return this.locked ? this.$options.i18n.modalTitleUnlock : this.$options.i18n.modalTitleLock;
     },
     lockConfirmText() {
       return sprintf(__('Are you sure you want to %{action} %{name}?'), {
@@ -101,9 +104,9 @@ export default {
     <gl-modal
       modal-id="lock-file-modal"
       :visible="isModalVisible"
-      :title="$options.i18n.modalTitle"
+      :title="modalTitle"
       :action-primary="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {
-        text: $options.i18n.actionPrimary,
+        text: lockButtonTitle,
         attributes: { variant: 'confirm', 'data-testid': 'confirm-ok-button' },
       } /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */"
       :action-cancel="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {
