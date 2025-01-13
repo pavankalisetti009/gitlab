@@ -94,9 +94,10 @@ export default {
     state.hasError = false;
   },
 
-  [types.REMOVE_BILLABLE_MEMBER_SUCCESS](state) {
+  [types.REMOVE_BILLABLE_MEMBER_SUCCESS](state, { memberId }) {
     state.isRemovingBillableMember = false;
     state.billableMemberToRemove = null;
+    state.removedBillableMemberId = memberId;
   },
 
   [types.REMOVE_BILLABLE_MEMBER_ERROR](state) {

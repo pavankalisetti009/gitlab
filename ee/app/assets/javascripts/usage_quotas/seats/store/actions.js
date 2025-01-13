@@ -60,8 +60,10 @@ export const setBillableMemberToRemove = ({ commit }, member) => {
 export const removeBillableMember = ({ dispatch, state, commit }) => {
   commit(types.REMOVE_BILLABLE_MEMBER);
 
-  return GroupsApi.removeBillableMemberFromGroup(state.namespaceId, state.billableMemberToRemove.id)
-    .then(() => dispatch('removeBillableMemberSuccess'))
+  const { id } = state.billableMemberToRemove;
+
+  return GroupsApi.removeBillableMemberFromGroup(state.namespaceId, id)
+    .then(() => dispatch('removeBillableMemberSuccess', id))
     .catch(() => dispatch('removeBillableMemberError'));
 };
 
@@ -71,7 +73,7 @@ const removeBillableMemberSuccessMessage = window.gon?.features?.billableMemberA
     )
   : s__('Billing|User was successfully removed');
 
-export const removeBillableMemberSuccess = ({ dispatch, commit }) => {
+export const removeBillableMemberSuccess = ({ dispatch, commit }, memberId) => {
   dispatch('fetchBillableMembersList');
   dispatch('fetchGitlabSubscription');
 
@@ -80,7 +82,7 @@ export const removeBillableMemberSuccess = ({ dispatch, commit }) => {
     variant: VARIANT_SUCCESS,
   });
 
-  commit(types.REMOVE_BILLABLE_MEMBER_SUCCESS);
+  commit(types.REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId });
 };
 
 export const removeBillableMemberError = ({ commit }) => {

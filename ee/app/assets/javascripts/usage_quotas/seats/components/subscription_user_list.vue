@@ -9,6 +9,7 @@ import {
   GlIcon,
   GlPagination,
   GlTable,
+  GlTooltip,
   GlTooltipDirective,
 } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
@@ -45,6 +46,7 @@ export default {
     GlIcon,
     GlPagination,
     GlTable,
+    GlTooltip,
     RemoveBillableMemberModal,
     SearchAndSortBar,
     SubscriptionSeatDetails,
@@ -67,6 +69,7 @@ export default {
       'seatUsageExportPath',
       'billableMemberToRemove',
       'search',
+      'removedBillableMemberId',
     ]),
     ...mapGetters(['tableItems', 'isLoading']),
     currentPage: {
@@ -115,6 +118,9 @@ export default {
     },
     isProjectInvite(user) {
       return user.membership_type === 'project_invite';
+    },
+    isUserRemoved(user) {
+      return this.removedBillableMemberId === user?.id;
     },
   },
   i18n: {
@@ -230,15 +236,24 @@ export default {
       </template>
 
       <template #cell(actions)="data">
-        <gl-button
-          v-gl-modal="$options.removeBillableMemberModalId"
-          category="secondary"
-          variant="danger"
-          data-testid="remove-user"
-          @click="displayRemoveMemberModal(data.item.user)"
-        >
-          {{ __('Remove user') }}
-        </gl-button>
+        <span :id="`remove-member-${data.item.user.id}`" class="gl-inline-block" tabindex="0">
+          <gl-button
+            v-gl-modal="$options.removeBillableMemberModalId"
+            category="secondary"
+            variant="danger"
+            data-testid="remove-user"
+            :disabled="isUserRemoved(data.item.user)"
+            @click="displayRemoveMemberModal(data.item.user)"
+          >
+            {{ __('Remove user') }}
+          </gl-button>
+          <gl-tooltip
+            v-if="isUserRemoved(data.item.user)"
+            :target="`remove-member-${data.item.user.id}`"
+          >
+            {{ s__('Billing|This user is scheduled for removal.') }}</gl-tooltip
+          >
+        </span>
       </template>
 
       <template #row-details="{ item }">
