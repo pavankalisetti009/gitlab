@@ -2352,6 +2352,10 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
     end
 
     RSpec.shared_examples 'creates multiple memberships' do
+      before do
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(104)
+      end
+
       it do
         expect { post_request }.to change { ::Member.count }.by(2)
 

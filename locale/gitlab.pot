@@ -2959,6 +2959,9 @@ msgstr ""
 msgid "AccessTokens|Static object token"
 msgstr ""
 
+msgid "AccessTokens|The last five distinct IP addresses from where the token was used"
+msgstr ""
+
 msgid "AccessTokens|The last time a token was used"
 msgstr ""
 
@@ -32882,6 +32885,9 @@ msgid "Last GitLab activity"
 msgstr ""
 
 msgid "Last Used"
+msgstr ""
+
+msgid "Last Used IPs"
 msgstr ""
 
 msgid "Last accessed on"
