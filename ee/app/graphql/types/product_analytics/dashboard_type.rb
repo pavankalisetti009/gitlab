@@ -53,6 +53,11 @@ module Types
         type: [GraphQL::Types::String],
         null: true,
         description: 'Errors on yaml definition.'
+
+      field :filters,
+        type: GraphQL::Types::JSON,
+        null: true,
+        description: 'Dashboard global filters.'
     end
   end
 end

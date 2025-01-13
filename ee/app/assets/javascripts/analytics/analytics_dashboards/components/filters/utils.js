@@ -58,3 +58,7 @@ export const filtersToQueryParams = ({ dateRangeOption, startDate, endDate, filt
     filterAnonUsers: filterAnonUsers || null,
   });
 };
+
+export function isDashboardFilterEnabled(filter) {
+  return filter?.enabled || false;
+}

@@ -39,6 +39,7 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
       expect(dashboard.title).to eq('Value Streams Dashboard')
       expect(dashboard.slug).to eq('value_streams_dashboard')
       expect(dashboard.description).to eq('Track key DevSecOps metrics throughout the development lifecycle.')
+      expect(dashboard.filters).to be_nil
       expect(dashboard.schema_version).to eq('2')
     end
   end
@@ -115,6 +116,8 @@ description: with missing properties
           expect(subject.last.slug).to eq('dashboard_example_1')
           expect(subject.last.description).to eq('North Star Metrics across all departments for the last 3 quarters.')
           expect(subject.last.schema_version).to eq('2')
+          expect(subject.last.filters).to eq({ "dateRange" => { "enabled" => true },
+              "excludeAnonymousUsers" => { "enabled" => true } })
           expect(subject.last.errors).to be_nil
         end
       end
@@ -301,6 +304,7 @@ description: with missing properties
         expect(subject.title).to eq('AI impact analytics')
         expect(subject.slug).to eq('ai_impact')
         expect(subject.schema_version).to eq('2')
+        expect(subject.filters).to be_nil
       end
 
       context 'when clickhouse is not enabled' do
@@ -319,6 +323,7 @@ description: with missing properties
         expect(subject.title).to eq('AI impact analytics')
         expect(subject.slug).to eq('ai_impact')
         expect(subject.schema_version).to eq('2')
+        expect(subject.filters).to be_nil
       end
 
       context 'when clickhouse is not enabled' do
@@ -358,7 +363,7 @@ description: with missing properties
 
       it 'loads the dashboard config' do
         expect(subject["title"]).to eq('Behavior')
-        expect(subject.size).to eq(4)
+        expect(subject.size).to eq(5)
       end
     end
   end

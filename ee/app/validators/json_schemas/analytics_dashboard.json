@@ -39,6 +39,16 @@
               "type": "null"
             }
           ]
+        },
+        "filters": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DashboardFilters"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -46,6 +56,28 @@
         "panels"
       ],
       "title": "AnalyticsDashboard"
+    },
+    "DashboardFilters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "excludeAnonymousUsers": {
+          "$ref": "#/definitions/DashboardFilter"
+        },
+        "dateRange": {
+          "$ref": "#/definitions/DashboardFilter"
+        }
+      },
+      "title": "DashboardFilters"
+    },
+    "DashboardFilter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
     },
     "Panel": {
       "type": "object",
@@ -133,7 +165,7 @@
           "type": "string"
         },
         "filters": {
-          "$ref": "#/definitions/Filters"
+          "$ref": "#/definitions/QueryFilters"
         }
       },
       "required": [
@@ -148,7 +180,7 @@
       },
       "title": "TimeDimensions"
     },
-    "Filters": {
+    "QueryFilters": {
       "type": "object",
       "additionalProperties": false,
       "properties": {

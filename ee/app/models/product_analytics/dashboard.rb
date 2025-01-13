@@ -5,7 +5,7 @@ module ProductAnalytics
     include SchemaValidator
 
     attr_reader :title, :description, :schema_version, :status, :panels, :container,
-      :config_project, :slug, :path, :user_defined, :category, :errors
+      :config_project, :slug, :path, :user_defined, :category, :errors, :filters
 
     DASHBOARD_ROOT_LOCATION = '.gitlab/analytics/dashboards'
 
@@ -50,6 +50,7 @@ module ProductAnalytics
       @category = 'analytics'
 
       @errors = schema_errors_for(@yaml_definition)
+      @filters = @yaml_definition['filters']
     end
 
     def ==(other)

@@ -2,6 +2,11 @@
 title: Audience
 description: Understand your audience
 version: "2"
+filters: 
+  excludeAnonymousUsers: 
+    enabled: true
+  dateRange: 
+    enabled: true
 panels:
   - visualization: daily_active_users
     title: Daily Active Users
