@@ -31,14 +31,27 @@ module Sbom
 
     DEFAULT_COMPONENT_NAMES_LIMIT = 30
     def self.by_namespace(namespace, query, limit = DEFAULT_COMPONENT_NAMES_LIMIT)
-      return Sbom::Component.none unless namespace.is_a?(Group)
+      case namespace
+      when Group
+        component_names_group_query(
+          namespace.traversal_ids,
+          namespace.next_traversal_ids,
+          query,
+          limit
+        )
+      when Project
+        # rubocop:disable GitlabSecurity/SqlInjection -- sanitized
+        sanitized_query = sanitize_sql_like(query || '')
 
-      component_names_group_query(
-        namespace.traversal_ids,
-        namespace.next_traversal_ids,
-        query,
-        limit
-      )
+        joins(:occurrences)
+          .where(sbom_occurrences: { project_id: namespace.id })
+          .where('sbom_components.name ILIKE ?', "%#{sanitized_query}%")
+          .order(name: :asc)
+          .limit(limit)
+        # rubocop:enable GitlabSecurity/SqlInjection
+      else
+        Sbom::Component.none
+      end
     end
 
     # In addition we need to perform a loose index scan with custom collation for performance reasons.

@@ -31,7 +31,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       security_policy_project_linked_projects security_policy_project_linked_namespaces
       dependencies merge_requests_disable_committers_approval has_jira_vulnerability_issue_creation_enabled
       ci_upstream_project_subscriptions ci_downstream_project_subscriptions ci_subscriptions_projects ci_subscribed_projects
-      ai_agents ai_agent ai_xray_reports duo_features_enabled
+      ai_agents ai_agent ai_xray_reports duo_features_enabled components
       runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
       is_adjourned_deletion_enabled permanent_deletion_date ai_metrics ai_usage_data ai_user_metrics saved_reply
       merge_trains pending_member_approvals observability_logs_links observability_metrics_links
@@ -159,6 +159,77 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
     it 'returns a list of analyzers which were run in the last pipeline for the project' do
       query_result = subject.dig('data', 'project', 'securityScanners', 'pipelineRun')
       expect(query_result).to match_array(%w[DAST SAST])
+    end
+  end
+
+  describe 'components' do
+    subject(:components) do
+      GitlabSchema.execute(query, context: { current_user: user })
+        .as_json.dig(*%w[data project components])
+    end
+
+    let_it_be(:guest) { create(:user) }
+    let_it_be(:developer) { create(:user) }
+
+    let_it_be(:group) { create(:group, developers: developer, guests: guest) }
+    let_it_be(:project_1) { create(:project, namespace: group) }
+    let_it_be(:project_2) { create(:project, namespace: group) }
+
+    let_it_be(:sbom_occurrence_1) { create(:sbom_occurrence, project: project_1) }
+    let_it_be(:sbom_occurrence_2) { create(:sbom_occurrence, project: project_1) }
+    let_it_be(:sbom_occurrence_3) { create(:sbom_occurrence, project: project_2) }
+
+    let(:component_1) { sbom_occurrence_1.component }
+    let(:component_2) { sbom_occurrence_2.component }
+    let(:component_3) { sbom_occurrence_3.component }
+
+    let(:filtered_query) { "components(name: \"#{component_name}\") { id name }" }
+    let(:unfiltered_query) { 'components { id name }' }
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project_1.full_path}") {
+            name
+            #{components_query}
+          }
+        }
+      )
+    end
+
+    before do
+      stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+    end
+
+    context 'with developer access' do
+      let(:user) { developer }
+
+      context 'when no name is passed' do
+        let(:components_query) { unfiltered_query }
+
+        it 'returns all components for all projects under given group' do
+          names = components.pluck('name')
+
+          expect(components.count).to be(2)
+          expect(names).to match_array([component_1.name, component_2.name])
+        end
+      end
+
+      context 'when name is passed' do
+        let(:component_name) { component_1.name }
+        let(:components_query) { filtered_query }
+
+        it "returns all components that match the name" do
+          expect(components.count).to be(1)
+          expect(components.first['name']).to eq(component_1.name)
+        end
+      end
+    end
+
+    context 'without developer access' do
+      let(:user) { guest }
+      let(:components_query) { unfiltered_query }
+
+      it { is_expected.to be_nil }
     end
   end
 
