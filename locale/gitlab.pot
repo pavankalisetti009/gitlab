@@ -27150,6 +27150,9 @@ msgstr ""
 msgid "Group can't be be deleted"
 msgstr ""
 
+msgid "Group cannot be deleted because one of its projects is linked as Security Policy Project"
+msgstr ""
+
 msgid "Group comment templates"
 msgstr ""
 
