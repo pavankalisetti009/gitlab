@@ -90,7 +90,7 @@ module Vulnerabilities
 
       attr_accessor :project_ids
 
-      delegate :connection, to: ApplicationRecord, private: true
+      delegate :connection, to: Statistic, private: true
 
       def filter_project_ids
         self.project_ids = Project.id_in(project_ids).pluck_primary_key
