@@ -1,11 +1,35 @@
-import { GlBadge, GlLabel, GlButton, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlLabel,
+  GlButton,
+  GlLink,
+  GlPopover,
+  GlSprintf,
+  GlLoadingIcon,
+} from '@gitlab/ui';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { createFramework } from 'ee_jest/compliance_dashboard/mock_data';
+import { cacheConfig } from 'ee/compliance_dashboard/graphql/client';
+import projectsInNamespaceWithFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/graphql/projects_in_namespace_with_framework.query.graphql';
+import { shallowMountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { createFramework, mockPageInfo } from 'ee_jest/compliance_dashboard/mock_data';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+
+Vue.use(VueApollo);
 
 describe('FrameworkInfoDrawer component', () => {
   let wrapper;
+
+  function createMockApolloProvider({ projectsInNamespaceResolverMock }) {
+    return createMockApollo(
+      [[projectsInNamespaceWithFrameworkQuery, projectsInNamespaceResolverMock]],
+      {},
+      { cacheConfig },
+    );
+  }
 
   const $toast = {
     show: jest.fn(),
@@ -16,7 +40,6 @@ describe('FrameworkInfoDrawer component', () => {
 
   const defaultFramework = createFramework({ id: 1, isDefault: true, projects: 3 });
   const nonDefaultFramework = createFramework({ id: 2 });
-  const associatedProjectsCount = defaultFramework.projects.nodes.length;
   const policiesCount =
     defaultFramework.scanExecutionPolicies.nodes.length +
     defaultFramework.scanResultPolicies.nodes.length +
@@ -38,6 +61,8 @@ describe('FrameworkInfoDrawer component', () => {
   const findProjectsTitle = () => wrapper.findByTestId('sidebar-projects-title');
   const findProjectsLinks = () =>
     wrapper.findByTestId('sidebar-projects').findAllComponents(GlLink);
+  const findLoadMoreButton = () =>
+    extendedWrapper(wrapper.findByTestId('sidebar-projects')).findByText('Load more');
   const findProjectsCount = () => wrapper.findByTestId('sidebar-projects').findComponent(GlBadge);
   const findPoliciesTitle = () => wrapper.findByTestId('sidebar-policies-title');
   const findPoliciesLinks = () =>
@@ -45,17 +70,27 @@ describe('FrameworkInfoDrawer component', () => {
   const findPoliciesCount = () => wrapper.findByTestId('sidebar-policies').findComponent(GlBadge);
   const findPopover = () => wrapper.findByTestId('edit-framework-popover');
 
-  const createComponent = ({ props = {}, vulnerabilityManagementPolicyTypeGroup = true } = {}) => {
+  const pendingPromiseMock = jest.fn().mockResolvedValue(new Promise(() => {}));
+
+  const createComponent = ({
+    props = {},
+    vulnerabilityManagementPolicyTypeGroup = true,
+    projectsInNamespaceResolverMock = pendingPromiseMock,
+  } = {}) => {
+    const apolloProvider = createMockApolloProvider({
+      projectsInNamespaceResolverMock,
+    });
+
     wrapper = shallowMountExtended(FrameworkInfoDrawer, {
+      apolloProvider,
       propsData: {
         showDrawer: true,
         ...props,
       },
       stubs: {
         GlSprintf,
-        GlLilnk: {
-          template: '<a>{{ $attrs.href }}</a>',
-        },
+        GlButton,
+        BButton: false,
       },
       provide: {
         groupSecurityPoliciesPath: '/group-policies',
@@ -134,16 +169,98 @@ describe('FrameworkInfoDrawer component', () => {
         expect(findProjectsTitle().text()).toBe(`Associated Projects`);
       });
 
-      it('renders the Associated Projects count', () => {
-        expect(findProjectsCount().text()).toBe(`${associatedProjectsCount}`);
+      it('renders the Associated Projects count badge as loading', () => {
+        expect(findProjectsCount().findComponent(GlLoadingIcon).exists()).toBe(true);
       });
 
-      it('renders the Associated Projects list', () => {
-        expect(findProjectsLinks().wrappers).toHaveLength(3);
-        expect(findProjectsLinks().at(0).text()).toContain(defaultFramework.projects.nodes[0].name);
-        expect(findProjectsLinks().at(0).attributes('href')).toBe(
-          defaultFramework.projects.nodes[0].webUrl,
-        );
+      describe('Associated projects list when loaded', () => {
+        const TOTAL_COUNT = 30;
+        const makeProjectsListResponse = ({ pageInfo = mockPageInfo() } = {}) => {
+          return {
+            namespace: {
+              __typename: 'Group',
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                ...defaultFramework.projects,
+                count: TOTAL_COUNT,
+                pageInfo,
+              },
+            },
+          };
+        };
+
+        let projectsInNamespaceResolverMock;
+        beforeEach(() => {
+          projectsInNamespaceResolverMock = jest.fn().mockResolvedValue({
+            data: makeProjectsListResponse(),
+          });
+
+          createComponent({
+            projectsInNamespaceResolverMock,
+            props: {
+              groupPath: GROUP_PATH,
+              projectPath: PROJECT_PATH,
+              rootAncestor: {
+                path: GROUP_PATH,
+              },
+              framework: defaultFramework,
+            },
+          });
+
+          return waitForPromises();
+        });
+
+        it('renders the Associated Projects count', () => {
+          expect(findProjectsCount().text()).toBe(`${TOTAL_COUNT}`);
+        });
+
+        it('renders the Associated Projects list', () => {
+          expect(findProjectsLinks().wrappers).toHaveLength(3);
+          expect(findProjectsLinks().at(0).text()).toContain(
+            defaultFramework.projects.nodes[0].name,
+          );
+          expect(findProjectsLinks().at(0).attributes('href')).toBe(
+            defaultFramework.projects.nodes[0].webUrl,
+          );
+        });
+
+        describe('load more button', () => {
+          it('renders when we have next page in list', () => {
+            expect(findLoadMoreButton().exists()).toBe(true);
+          });
+
+          it('clicking button loads next page', async () => {
+            await findLoadMoreButton().trigger('click');
+            await waitForPromises();
+            expect(projectsInNamespaceResolverMock).toHaveBeenCalledWith(
+              expect.objectContaining({
+                after: mockPageInfo().endCursor,
+              }),
+            );
+          });
+
+          it('does not render when we do not have next page', async () => {
+            const secondPageResponse = makeProjectsListResponse();
+            secondPageResponse.namespace.projects.pageInfo.hasNextPage = false;
+
+            createComponent({
+              projectsInNamespaceResolverMock: jest.fn().mockResolvedValue({
+                data: secondPageResponse,
+              }),
+              props: {
+                groupPath: GROUP_PATH,
+                projectPath: PROJECT_PATH,
+                rootAncestor: {
+                  path: GROUP_PATH,
+                },
+                framework: defaultFramework,
+              },
+            });
+
+            await waitForPromises();
+            expect(findLoadMoreButton().exists()).toBe(false);
+          });
+        });
       });
 
       it('renders the Policies accordion', () => {

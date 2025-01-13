@@ -7,6 +7,7 @@ query complianceFrameworksGroupList(
   $after: String
   $first: Int
   $last: Int
+  $projectLimit: Int = 10
 ) {
   namespace: group(fullPath: $fullPath) {
     id
@@ -21,12 +22,16 @@ query complianceFrameworksGroupList(
       ...ComplianceFrameworkConnectionDetails
       nodes {
         id
-        projects {
+        projects(first: $projectLimit) {
+          count
           nodes {
             id
             name
             webUrl
             fullPath
+          }
+          pageInfo {
+            hasNextPage
           }
         }
       }

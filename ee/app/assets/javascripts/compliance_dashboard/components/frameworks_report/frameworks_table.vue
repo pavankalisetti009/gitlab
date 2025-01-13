@@ -6,6 +6,7 @@ import {
   GlTable,
   GlToast,
   GlLink,
+  GlSprintf,
   GlButton,
   GlAlert,
   GlDisclosureDropdown,
@@ -35,6 +36,7 @@ export default {
     GlAlert,
     GlDisclosureDropdown,
     GlButton,
+    GlSprintf,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -81,7 +83,7 @@ export default {
 
     selectedFramework() {
       return this.$route.query.id
-        ? this.frameworksWithFilteredProjects.find(
+        ? this.frameworks.find(
             (framework) => framework.id === convertFrameworkIdToGraphQl(this.$route.query.id),
           )
         : null;
@@ -93,36 +95,22 @@ export default {
       return !this.frameworks.length && !this.isLoading && !this.isTopLevelGroup;
     },
     tableFields() {
-      return this.projectPath
+      return this.projectPath || !this.isTopLevelGroup
         ? this.$options.fields.filter((f) => f.key !== 'associatedProjects')
         : this.$options.fields;
-    },
-    frameworksWithFilteredProjects() {
-      return this.frameworks.map((framework) => {
-        const filteredProjects =
-          this.groupPath && framework.projects
-            ? {
-                ...framework.projects,
-                nodes: framework.projects.nodes.filter((p) =>
-                  p.fullPath.startsWith(this.groupPath),
-                ),
-              }
-            : framework.projects;
-
-        return {
-          ...framework,
-          projects: filteredProjects,
-        };
-      });
     },
   },
   methods: {
     getIdFromGraphQLId,
     toggleDrawer(item) {
-      if (this.selectedFramework?.id === item.id) {
+      if (this.selectedFramework?.id !== item.id) {
         this.closeDrawer();
+        // eslint-disable-next-line promise/catch-or-return
+        this.$nextTick().then(() => {
+          this.openDrawer(item);
+        });
       } else {
-        this.openDrawer(item);
+        this.closeDrawer();
       }
     },
     copyFrameworkId(id) {
@@ -174,6 +162,10 @@ export default {
           : this.$options.i18n.deleteButtonLinkedPoliciesDisabledTooltip;
       }
       return '';
+    },
+
+    remainingProjectsCount(projects) {
+      return projects.count - projects.nodes.length;
     },
   },
   fields: [
@@ -227,6 +219,7 @@ export default {
     deleteButtonDefaultFrameworkDisabledTooltip: s__(
       "ComplianceFrameworks|The default framework can't be deleted",
     ),
+    andMore: s__('ComplianceReport|and %{count} more'),
   },
   CREATE_FRAMEWORKS_DOCS_URL,
 };
@@ -258,7 +251,7 @@ export default {
     <gl-table
       :fields="tableFields"
       :busy="isLoading"
-      :items="frameworksWithFilteredProjects"
+      :items="frameworks"
       no-local-sorting
       show-empty
       stacked="md"
@@ -268,21 +261,20 @@ export default {
       <template #cell(frameworkName)="{ item }">
         <framework-badge :framework="item" :show-edit="isTopLevelGroup" />
       </template>
-      <template
-        #cell(associatedProjects)="{
-          item: {
-            projects: { nodes: associatedProjects },
-          },
-        }"
-      >
+      <template #cell(associatedProjects)="{ item: { projects } }">
         <div
-          v-for="(associatedProject, index) in associatedProjects"
+          v-for="(associatedProject, index) in projects.nodes"
           :key="associatedProject.id"
           class="gl-inline-block"
         >
           <gl-link :href="associatedProject.webUrl">{{ associatedProject.name }}</gl-link
-          ><span v-if="!isLastItem(index, associatedProjects)">,&nbsp;</span>
+          ><span v-if="!isLastItem(index, projects.nodes)">,&nbsp;</span>
         </div>
+        <template v-if="projects.pageInfo.hasNextPage">
+          <gl-sprintf :message="$options.i18n.andMore">
+            <template #count>{{ remainingProjectsCount(projects) }}</template>
+          </gl-sprintf>
+        </template>
       </template>
       <template #cell(policies)="{ item }">
         {{ getPoliciesList(item) }}

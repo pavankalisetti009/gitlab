@@ -35,9 +35,11 @@ describe('FrameworksTable component', () => {
 
   const GROUP_PATH = 'group';
   const SUBGROUP_PATH = `${GROUP_PATH}/subgroup`;
+  const PROJECTS_TOTAL_COUNT = 50;
   const frameworksResponse = createComplianceFrameworksReportResponse({
     count: 2,
     projects: 2,
+    projectsTotalCount: PROJECTS_TOTAL_COUNT,
     groupPath: GROUP_PATH,
   });
   const frameworks = frameworksResponse.data.namespace.complianceFrameworks.nodes;
@@ -108,6 +110,7 @@ describe('FrameworksTable component', () => {
       },
       stubs: {
         EditForm: true,
+        FrameworkInfoDrawer: true,
         GlModal: GlModalStub,
       },
       attachTo: document.body,
@@ -132,7 +135,7 @@ describe('FrameworksTable component', () => {
       expect(emptyState.text()).toBe('No frameworks found');
     });
 
-    it('has the correct table headers', () => {
+    it('has the correct table headers for top-level group', () => {
       wrapper = createComponent({ isLoading: false });
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
 
@@ -263,6 +266,7 @@ describe('FrameworksTable component', () => {
       );
       expect(frameworkName).toContain(frameworks[idx].name);
       expect(associatedProjects).toContain(projects[idx].name);
+      expect(associatedProjects).toContain(`and ${PROJECTS_TOTAL_COUNT - projects.length} more`);
       expect(findTableLinks(idx).wrappers).toHaveLength(2);
       expect(findTableLinks(idx).wrappers.map((w) => w.attributes('href'))).toStrictEqual(
         projects.map((p) => p.webUrl),
@@ -479,14 +483,8 @@ describe('FrameworksTable component', () => {
       });
     });
 
-    it('does not include projects not from a subgroup', () => {
-      const [, associatedProjects] = findTableRowData(0).wrappers.map((d) => d.text());
-      expect(associatedProjects).not.toContain(projects[0].name);
-    });
-
-    it('include projects from a subgroup', () => {
-      const [, associatedProjects] = findTableRowData(0).wrappers.map((d) => d.text());
-      expect(associatedProjects).toContain(projects[1].name);
+    it('does not render associated projects column in subgroup', () => {
+      expect(findTableHeaders().wrappers.map((w) => w.text())).not.toContain('Associated projects');
     });
 
     it('renders only copy id action in action dropdown', () => {

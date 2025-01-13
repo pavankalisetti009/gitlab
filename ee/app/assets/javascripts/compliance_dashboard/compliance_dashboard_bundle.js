@@ -2,10 +2,8 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
 import { parseBoolean } from '~/lib/utils/common_utils';
-
-import createDefaultClient from '~/lib/graphql';
-
-import { createRouter } from 'ee/compliance_dashboard/router';
+import { createRouter } from './router';
+import { apolloProvider } from './graphql/client';
 import {
   ROUTE_FRAMEWORKS,
   ROUTE_STANDARDS_ADHERENCE,
@@ -45,10 +43,6 @@ export default () => {
 
   Vue.use(VueApollo);
   Vue.use(VueRouter);
-
-  const apolloProvider = new VueApollo({
-    defaultClient: createDefaultClient(),
-  });
 
   const routes = Object.entries({
     [ROUTE_STANDARDS_ADHERENCE]: parseBoolean(featureAdherenceReportEnabled),
