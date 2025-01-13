@@ -13,7 +13,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
   let_it_be(:requirement_archived) { create(:work_item, :requirement, project: project, title: 'Some requirement-3', description: 'Sample description', state: :closed, author: user, created_at: 8.days.ago, updated_at: 2.days.ago).requirement }
 
   def create_requirement(title)
-    page.within('.nav-controls') do
+    within_testid('requirements-tabs') do
       find('button.js-new-requirement').click
     end
 
@@ -99,7 +99,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
 
     context 'new requirement' do
       it 'shows requirement create form when "New requirement" button is clicked' do
-        page.within('.nav-controls') do
+        within_testid('requirements-tabs') do
           find('button.js-new-requirement').click
         end
 
@@ -109,7 +109,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
       end
 
       it 'disables new requirement button while create form is open' do
-        page.within('.nav-controls') do
+        within_testid('requirements-tabs') do
           find('button.js-new-requirement').click
           expect(find('button.js-new-requirement')[:disabled]).to eq "true"
         end
@@ -145,7 +145,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
 
     context 'open tab' do
       it 'shows button "New requirement"' do
-        page.within('.nav-controls') do
+        within_testid('requirements-tabs') do
           expect(page).to have_selector('button.js-new-requirement')
           expect(find('button.js-new-requirement')).to have_content('New requirement')
         end
