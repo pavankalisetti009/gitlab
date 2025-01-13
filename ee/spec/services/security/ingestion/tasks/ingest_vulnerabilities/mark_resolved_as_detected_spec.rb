@@ -40,6 +40,10 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
       .from("detected")
   end
 
+  it 'resets the `resolved_at` attribute' do
+    expect { mark_resolved_as_detected }.to change { resolved_vulnerability.reload.resolved_at }.to(nil)
+  end
+
   it 'creates state transition entry for each vulnerability' do
     expect { mark_resolved_as_detected }.to change { ::Vulnerabilities::StateTransition.count }
       .from(0)
