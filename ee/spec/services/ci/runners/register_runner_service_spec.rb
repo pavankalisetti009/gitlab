@@ -8,7 +8,6 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
 
   let(:registration_token) { 'abcdefg123456' }
   let(:token) {}
-  let(:audit_service) { instance_double(::AuditEvents::RunnerAuditEventService) }
   let(:runner) { execute.payload[:runner] }
   let(:expected_audit_kwargs) do
     {
@@ -27,7 +26,7 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
   subject(:execute) { described_class.new(token, {}).execute }
 
   RSpec::Matchers.define :last_ci_runner do
-    match { |runner| runner == ::Ci::Runner.last }
+    match { |runner| runner.is_a?(::Ci::Runner) && runner == ::Ci::Runner.last }
   end
 
   RSpec::Matchers.define :a_ci_runner_with_errors do
@@ -36,34 +35,36 @@ RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, f
 
   shared_examples 'a service logging a runner registration audit event' do
     it 'returns newly-created runner' do
-      expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-        .with(last_ci_runner, token, token_scope, **expected_audit_kwargs)
-        .and_return(audit_service)
-      expect(audit_service).to receive(:track_event).once
+      expect_next_instance_of(
+        ::AuditEvents::RunnerAuditEventService,
+        last_ci_runner, token, expected_token_scope, **expected_audit_kwargs
+      ) do |service|
+        expect(service).to receive(:track_event).once.and_call_original
+      end
 
       expect(execute).to be_success
-
+      expect(runner).not_to be_nil
       expect(runner).to eq(::Ci::Runner.last)
     end
   end
 
   context 'with a registration token' do
     let(:token) { registration_token }
-    let(:token_scope) { an_instance_of(Gitlab::Audit::InstanceScope) }
+    let(:expected_token_scope) { an_instance_of(Gitlab::Audit::InstanceScope) }
 
     it_behaves_like 'a service logging a runner registration audit event'
   end
 
   context 'when project token is used' do
-    let(:token) { project.runners_token }
-    let(:token_scope) { project }
+    let_it_be(:token) { project.runners_token }
+    let(:expected_token_scope) { project }
 
     it_behaves_like 'a service logging a runner registration audit event'
   end
 
   context 'when group token is used' do
-    let(:token) { group.runners_token }
-    let(:token_scope) { group }
+    let_it_be(:token) { group.runners_token }
+    let(:expected_token_scope) { group }
 
     it_behaves_like 'a service logging a runner registration audit event'
   end
