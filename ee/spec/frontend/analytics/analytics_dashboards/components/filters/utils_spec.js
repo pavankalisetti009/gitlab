@@ -4,6 +4,7 @@ import {
   dateRangeOptionToFilter,
   filtersToQueryParams,
   getDateRangeOption,
+  isDashboardFilterEnabled,
 } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   DATE_RANGE_OPTIONS,
@@ -116,5 +117,25 @@ describe('dateRangeOptionToFilter', () => {
       endDate: option.endDate,
       dateRangeOption: option.key,
     });
+  });
+});
+
+describe('isDashboardFilterEnabled', () => {
+  it('should return true when the filter is enabled', () => {
+    expect(isDashboardFilterEnabled({ enabled: true })).toBe(true);
+  });
+
+  it('should return false when the filter is disabled', () => {
+    expect(isDashboardFilterEnabled({ enabled: false })).toBe(false);
+  });
+
+  it('should return false when the filter object is empty', () => {
+    const emptyFilter = {};
+    expect(isDashboardFilterEnabled(emptyFilter)).toBe(false);
+  });
+
+  it('should return false when the filter is null or undefined', () => {
+    expect(isDashboardFilterEnabled(null)).toBe(false);
+    expect(isDashboardFilterEnabled(undefined)).toBe(false);
   });
 });

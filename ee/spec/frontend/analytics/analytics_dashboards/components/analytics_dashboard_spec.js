@@ -358,6 +358,16 @@ describe('AnalyticsDashboard', () => {
         expect(mockCustomizableDashboardDeletePanel).toHaveBeenCalled();
       });
     });
+
+    it('should not render filters by default', async () => {
+      createWrapper();
+
+      await waitForPromises();
+
+      expect(findUrlSync().exists()).toBe(false);
+      expect(findAnonUsersFilter().exists()).toBe(false);
+      expect(findDateRangeFilter().exists()).toBe(false);
+    });
   });
 
   describe('when dashboard fails to load', () => {
@@ -883,22 +893,28 @@ describe('AnalyticsDashboard', () => {
     const defaultFilters = buildDefaultDashboardFilters('');
     let trackEventSpy;
 
+    const setupDashboardWithFilters = (filters) => {
+      setupDashboard(createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ filters })));
+      createWrapper({});
+      return waitForPromises();
+    };
+
     beforeEach(() => {
       trackEventSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;
-      mockDashboardResponse(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
-      createWrapper({});
-
-      return waitForPromises();
-    });
-
-    it('synchronizes the filters with the URL', () => {
-      expect(findUrlSync().props()).toMatchObject({
-        historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
-        query: filtersToQueryParams(defaultFilters),
-      });
     });
 
     describe('anonymous user filter', () => {
+      beforeEach(async () => {
+        await setupDashboardWithFilters({ excludeAnonymousUsers: { enabled: true } });
+      });
+
+      it('synchronizes the filters with the URL', () => {
+        expect(findUrlSync().props()).toMatchObject({
+          historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+          query: filtersToQueryParams(defaultFilters),
+        });
+      });
+
       it('sets the default filter on the anon users filter component', () => {
         expect(findAnonUsersFilter().props('value')).toBe(defaultFilters.filterAnonUsers);
       });
@@ -942,6 +958,17 @@ describe('AnalyticsDashboard', () => {
       });
     });
     describe('date range filter', () => {
+      beforeEach(async () => {
+        await setupDashboardWithFilters({ dateRange: { enabled: true } });
+      });
+
+      it('synchronizes the filters with the URL', () => {
+        expect(findUrlSync().props()).toMatchObject({
+          historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+          query: filtersToQueryParams(defaultFilters),
+        });
+      });
+
       it('shows the date range filter and passes the default options and filters', () => {
         expect(findDateRangeFilter().props()).toMatchObject({
           startDate: defaultFilters.startDate,

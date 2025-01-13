@@ -2,6 +2,11 @@
 title: Behavior
 description: All insights on user activity
 version: "2"
+filters: 
+  excludeAnonymousUsers: 
+    enabled: true
+  dateRange: 
+    enabled: true
 panels:
   - visualization: page_views_over_time
     title: Page views over time

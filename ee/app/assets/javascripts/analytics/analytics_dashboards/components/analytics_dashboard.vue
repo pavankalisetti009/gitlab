@@ -35,16 +35,12 @@ import {
 } from '../constants';
 import getAvailableVisualizations from '../graphql/queries/get_all_customizable_visualizations.query.graphql';
 import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
-import { buildDefaultDashboardFilters, filtersToQueryParams } from './filters/utils';
+import {
+  buildDefaultDashboardFilters,
+  filtersToQueryParams,
+  isDashboardFilterEnabled,
+} from './filters/utils';
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
-
-// Avoid adding new values here, as this will eventually be migrated to the dashboard YAML config.
-// See: https://gitlab.com/gitlab-org/gitlab/-/issues/452228
-const HIDE_DASHBOARD_FILTERS = [
-  BUILT_IN_VALUE_STREAM_DASHBOARD,
-  CUSTOM_VALUE_STREAM_DASHBOARD,
-  AI_IMPACT_DASHBOARD,
-];
 
 export default {
   name: 'AnalyticsDashboard',
@@ -139,8 +135,14 @@ export default {
         BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS.includes(this.currentDashboard?.slug)
       );
     },
-    showDashboardFilters() {
-      return !HIDE_DASHBOARD_FILTERS.includes(this.currentDashboard?.slug);
+    showFilters() {
+      return this.showAnonUserFilter || this.showDateRangeFilter;
+    },
+    showDateRangeFilter() {
+      return isDashboardFilterEnabled(this.currentDashboard?.filters?.dateRange);
+    },
+    showAnonUserFilter() {
+      return isDashboardFilterEnabled(this.currentDashboard?.filters?.excludeAnonymousUsers);
     },
     invalidDashboardErrors() {
       return this.currentDashboard?.errors ?? [];
@@ -487,15 +489,20 @@ export default {
           </div>
         </template>
 
-        <template v-if="showDashboardFilters" #filters>
+        <template v-if="showFilters" #filters>
           <date-range-filter
+            v-if="showDateRangeFilter"
             :default-option="filters.dateRangeOption"
             :start-date="filters.startDate"
             :end-date="filters.endDate"
             :date-range-limit="0"
             @change="setDateRangeFilter"
           />
-          <anon-users-filter :value="filters.filterAnonUsers" @change="setAnonymousUsersFilter" />
+          <anon-users-filter
+            v-if="showAnonUserFilter"
+            :value="filters.filterAnonUsers"
+            @change="setAnonymousUsersFilter"
+          />
           <url-sync
             :query="queryParams"
             :history-update-method="$options.HISTORY_REPLACE_UPDATE_METHOD"

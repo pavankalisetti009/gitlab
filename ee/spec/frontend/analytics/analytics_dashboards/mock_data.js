@@ -29,6 +29,7 @@ export const getGraphQLDashboard = (options = {}, withPanels = true) => {
     description: 'Understand your audience',
     __typename: 'CustomizableDashboard',
     errors: [],
+    filters: {},
     ...options,
   };
 
