@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe ::Ci::Runners::UnregisterRunnerService, '#execute', feature_category: :runner do
   let_it_be(:group) { create(:group) }
 
-  let(:audit_service) { instance_double(::AuditEvents::RunnerAuditEventService) }
   let(:current_user) { nil }
   let(:token) { 'abc123' }
   let(:expected_message) do
@@ -26,31 +25,34 @@ RSpec.describe ::Ci::Runners::UnregisterRunnerService, '#execute', feature_categ
 
   subject(:execute) { described_class.new(runner, current_user || token).execute }
 
+  shared_examples 'a service logging a runner audit event' do
+    it 'logs an audit event with the instance scope' do
+      expect_next_instance_of(
+        ::AuditEvents::RunnerAuditEventService,
+        runner, expected_author, expected_token_scope, **expected_audit_kwargs
+      ) do |service|
+        expect(service).to receive(:track_event).once.and_call_original
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
   context 'on an instance runner' do
     let(:runner) { create(:ci_runner) }
+    let(:expected_author) { token }
+    let(:expected_token_scope) { an_instance_of(::Gitlab::Audit::InstanceScope) }
 
-    it 'logs an audit event with the instance scope' do
-      expect(audit_service).to receive(:track_event).once
-      expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-        .with(runner, token, an_instance_of(::Gitlab::Audit::InstanceScope), **expected_audit_kwargs)
-        .and_return(audit_service)
-
-      execute
-    end
+    it_behaves_like 'a service logging a runner audit event'
   end
 
   context 'on a group runner' do
     let(:runner) { create(:ci_runner, :group, groups: [group]) }
-    let(:current_user) { build(:user) }
+    let(:current_user) { create(:user) }
+    let(:expected_author) { current_user }
+    let(:expected_token_scope) { group }
 
-    it 'logs an audit event with the group scope' do
-      expect(audit_service).to receive(:track_event)
-      expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-        .with(runner, current_user, group, **expected_audit_kwargs)
-        .and_return(audit_service)
-
-      execute
-    end
+    it_behaves_like 'a service logging a runner audit event'
   end
 
   context 'on a project runner' do
@@ -58,11 +60,12 @@ RSpec.describe ::Ci::Runners::UnregisterRunnerService, '#execute', feature_categ
     let(:runner) { create(:ci_runner, :project, projects: projects) }
 
     it 'logs an audit event for each project' do
-      expect(audit_service).to receive(:track_event).twice
       projects.each do |project|
-        expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-          .with(runner, token, project, **expected_audit_kwargs)
-          .and_return(audit_service)
+        expect_next_instance_of(
+          ::AuditEvents::RunnerAuditEventService, runner, token, project, **expected_audit_kwargs
+        ) do |service|
+          expect(service).to receive(:track_event).once.and_call_original
+        end
       end
 
       execute

@@ -8,7 +8,6 @@ RSpec.describe ::Ci::Runners::CreateRunnerService, '#execute', feature_category:
   let_it_be(:group) { create(:group, owners: group_owner) }
   let_it_be(:project) { create(:project, namespace: group) }
 
-  let(:audit_service) { instance_double(::AuditEvents::RunnerAuditEventService) }
   let(:runner) { execute.payload[:runner] }
   let(:expected_audit_kwargs) do
     {
@@ -25,13 +24,14 @@ RSpec.describe ::Ci::Runners::CreateRunnerService, '#execute', feature_category:
 
   shared_examples 'a service logging a runner audit event' do
     it 'returns newly-created runner' do
-      expect(::AuditEvents::RunnerAuditEventService).to receive(:new)
-        .with(last_ci_runner, current_user, expected_token_scope, **expected_audit_kwargs)
-        .and_return(audit_service)
-      expect(audit_service).to receive(:track_event).once
+      expect_next_instance_of(
+        ::AuditEvents::RunnerAuditEventService,
+        last_ci_runner, current_user, expected_token_scope, **expected_audit_kwargs
+      ) do |service|
+        expect(service).to receive(:track_event).once.and_call_original
+      end
 
       expect(execute).to be_success
-
       expect(runner).to eq(::Ci::Runner.last)
     end
   end
