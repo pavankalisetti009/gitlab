@@ -93,6 +93,12 @@ groups/projects")
           expect(AuditEvent.last.details[:author_name]).to eq(user.name)
           expect(AuditEvent.last.details[:event_name]).to eq("group_secret_push_protection_updated")
           expect(AuditEvent.last.details[:target_details]).to eq(top_level_group.name)
+
+          expect { execute_service(subject: top_level_group, excluded_projects_ids: [], enable: false) }
+            .to change { AuditEvent.count }.by(1)
+          expect(AuditEvent.last.details[:custom_message]).to eq(
+            "Secret push protection has been disabled for group #{top_level_group.name} and all of its inherited \
+groups/projects")
         end
       end
 
