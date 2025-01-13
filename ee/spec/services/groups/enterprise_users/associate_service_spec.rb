@@ -221,7 +221,7 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
           end
 
           context 'when SCIM identity' do
-            let!(:scim_identity) { create(:scim_identity, group: group, user: user) }
+            let!(:scim_identity) { create(:group_scim_identity, group: group, user: user) }
 
             include_examples 'marks the user as an enterprise user of the group'
             include_examples 'marks the enterprise user of another group as an enterprise user of the group'
@@ -336,7 +336,7 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
             end
 
             context 'when SCIM identity' do
-              let!(:scim_identity) { create(:scim_identity, group: group, user: user) }
+              let!(:scim_identity) { create(:group_scim_identity, group: group, user: user) }
 
               include_examples(
                 'does not mark the user as an enterprise user of the group',

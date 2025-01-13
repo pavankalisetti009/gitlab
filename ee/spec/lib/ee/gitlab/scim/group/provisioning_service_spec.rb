@@ -33,7 +33,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
       end
 
       it 'contains an identity in the response' do
-        expect(service.execute.identity).to be_a(Identity).or be_a(ScimIdentity)
+        expect(service.execute.identity).to be_a(Identity).or be_a(GroupScimIdentity)
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
       it_behaves_like 'success response'
 
       it 'creates the SCIM identity' do
-        expect { service.execute }.to change { ScimIdentity.count }.by(1)
+        expect { service.execute }.to change { GroupScimIdentity.count }.by(1)
       end
 
       it 'does not create the SAML identity' do
@@ -255,7 +255,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
     end
 
     it 'creates the SCIM identity' do
-      expect { service.execute }.to change { ScimIdentity.count }.by(1)
+      expect { service.execute }.to change { GroupScimIdentity.count }.by(1)
     end
 
     it 'creates the SAML identity' do
@@ -288,7 +288,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
           end
 
           it 'does not create the SCIM identity' do
-            expect { service.execute }.not_to change { ScimIdentity.count }
+            expect { service.execute }.not_to change { GroupScimIdentity.count }
           end
         end
       end

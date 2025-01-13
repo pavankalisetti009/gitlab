@@ -33,11 +33,11 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
   end
 
   let_it_be(:scim_identity_one) do
-    create(:scim_identity, user: guest_user_1, group: group, extern_uid: 'scim-uid-1')
+    create(:group_scim_identity, user: guest_user_1, group: group, extern_uid: 'scim-uid-1')
   end
 
   let_it_be(:scim_identity_two) do
-    create(:scim_identity, user: owner, group: group, extern_uid: 'scim-uid-2')
+    create(:group_scim_identity, user: owner, group: group, extern_uid: 'scim-uid-2')
   end
 
   let_it_be(:saml_identity_with_dot) do
@@ -46,7 +46,7 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
   end
 
   let_it_be(:scim_identity_with_dot) do
-    create(:scim_identity, user: guest_user_2, group: group, extern_uid: 'scim-test@gmail.com')
+    create(:group_scim_identity, user: guest_user_2, group: group, extern_uid: 'scim-test@gmail.com')
   end
 
   describe "Provider Identity API" do

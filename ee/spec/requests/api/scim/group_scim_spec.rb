@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
   let(:user) { create(:user) }
-  let(:scim_token) { create(:scim_oauth_access_token, group: group) }
   let(:group) { identity.group }
 
   let_it_be(:password) { User.random_password }
@@ -63,7 +62,7 @@ RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['Resources']).not_to be_empty
-        expect(json_response['totalResults']).to eq(ScimIdentity.count)
+        expect(json_response['totalResults']).to eq(GroupScimIdentity.count + ScimIdentity.count)
       end
 
       it 'responds with an error for unsupported filters' do
@@ -220,7 +219,7 @@ RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
         let(:old_user) { create(:user, email: 'work@example.com') }
 
         before do
-          create(:scim_identity, user: old_user, group: group, extern_uid: 'test_uid')
+          create(:group_scim_identity, user: old_user, group: group, extern_uid: 'test_uid')
           group.add_guest(old_user)
 
           post scim_api("scim/v2/groups/#{group.full_path}/Users?params=#{post_params}")
@@ -538,14 +537,38 @@ RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
   end
 
   context 'when user with an alphanumeric extern_uid' do
-    let(:identity) { create(:scim_identity, user: user, extern_uid: generate(:username)) }
+    let(:identity) { create(:group_scim_identity, user: user, extern_uid: generate(:username)) }
+    let(:scim_token) { create(:group_scim_auth_access_token, group: group) }
 
     it_behaves_like 'SCIM API endpoints'
+
+    context 'when separate_group_scim_table feature flag is disabled' do
+      let(:scim_token) { create(:scim_oauth_access_token, group: group) }
+      let(:identity) { create(:scim_identity, user: user, extern_uid: user.email) }
+
+      before do
+        stub_feature_flags(separate_group_scim_table: false)
+      end
+
+      it_behaves_like 'SCIM API endpoints'
+    end
   end
 
   context 'when user with an email extern_uid' do
-    let(:identity) { create(:scim_identity, user: user, extern_uid: user.email) }
+    let(:identity) { create(:group_scim_identity, user: user, extern_uid: user.email) }
+    let(:scim_token) { create(:group_scim_auth_access_token, group: group) }
 
     it_behaves_like 'SCIM API endpoints'
+
+    context 'when separate_group_scim_table feature flag is disabled' do
+      let(:scim_token) { create(:scim_oauth_access_token, group: group) }
+      let(:identity) { create(:scim_identity, user: user, extern_uid: user.email) }
+
+      before do
+        stub_feature_flags(separate_group_scim_table: false)
+      end
+
+      it_behaves_like 'SCIM API endpoints'
+    end
   end
 end

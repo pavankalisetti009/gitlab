@@ -561,19 +561,35 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
 
       let(:group) { create(:group) }
       let(:group_scim_user) { create(:user) }
-      let!(:group_scim_identity) { create(:scim_identity, user: group_scim_user, group: group, extern_uid: 'test_uid') }
+      let!(:group_scim_identity) { create(:group_scim_identity, user: group_scim_user, group: group, extern_uid: 'test_uid') }
       let(:group_scim_user_2) { create(:user) }
-      let!(:group_scim_identity_2) { create(:scim_identity, user: group_scim_user_2, group: group, extern_uid: 'test_uid_2') }
+      let!(:group_scim_identity_2) { create(:group_scim_identity, user: group_scim_user_2, group: group, extern_uid: 'test_uid_2') }
 
-      it 'returns only users for the extern_uid' do
-        non_scim_user = create(:user)
+      context 'when Gitlab.com' do
+        before do
+          allow(Gitlab).to receive(:com?).and_return(true)
+        end
 
-        get api("/users", admin, admin_mode: true), params: { extern_uid: 'test_uid', provider: 'scim' }
+        it 'returns only users for the extern_uid' do
+          non_scim_user = create(:user)
 
-        expect(json_response.map { |u| u['id'] }).to include(instance_scim_user.id)
-        expect(json_response.map { |u| u['id'] }).to include(group_scim_user.id)
-        expect(json_response.map { |u| u['id'] }).not_to include(group_scim_user_2.id)
-        expect(json_response.map { |u| u['id'] }).not_to include(non_scim_user.id)
+          get api("/users", admin, admin_mode: true), params: { extern_uid: 'test_uid', provider: 'scim' }
+
+          expect(json_response.map { |u| u['id'] }).to include(group_scim_user.id)
+          expect(json_response.map { |u| u['id'] }).not_to include(group_scim_user_2.id)
+          expect(json_response.map { |u| u['id'] }).not_to include(non_scim_user.id)
+        end
+      end
+
+      context 'when self managed' do
+        it 'returns only users for the extern_uid' do
+          non_scim_user = create(:user)
+
+          get api("/users", admin, admin_mode: true), params: { extern_uid: 'test_uid', provider: 'scim' }
+
+          expect(json_response.map { |u| u['id'] }).to include(instance_scim_user.id)
+          expect(json_response.map { |u| u['id'] }).not_to include(non_scim_user.id)
+        end
       end
     end
   end

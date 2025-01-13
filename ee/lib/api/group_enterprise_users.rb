@@ -42,7 +42,7 @@ module API
           current_user,
           declared_params.merge(enterprise_group: user_group))
 
-        users = finder.execute.preload(:identities, :scim_identities) # rubocop: disable CodeReuse/ActiveRecord -- preload
+        users = finder.execute.preload(:identities, :group_scim_identities, :instance_scim_identities) # rubocop: disable CodeReuse/ActiveRecord -- preload
 
         present paginate(users), with: ::API::Entities::UserPublic
       end

@@ -3790,6 +3790,46 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#scim_identities' do
+    context "For instance scim" do
+      let(:scim_identity_instance) { create(:scim_identity) }
+      let(:user) { scim_identity_instance.user }
+
+      it "returns instance scim identities" do
+        expect(user.scim_identities).to match_array([scim_identity_instance])
+      end
+    end
+
+    context "In SaaS", :saas do
+      let(:group_scim_identity) { create(:group_scim_identity) }
+      let(:user) { group_scim_identity.user }
+
+      it "returns instance scim identities" do
+        expect(user.scim_identities).to match_array([group_scim_identity])
+      end
+
+      context "when the feature flag separate_group_scim_table is disabled" do
+        let(:user) { create(:user) }
+        let(:group_1) { create(:group) }
+        let(:group_2) { create(:group) }
+
+        let!(:group_scim_identity_1) { create(:group_scim_identity, user: user, group: group_1) }
+        let!(:group_scim_identity_2) { create(:group_scim_identity, user: user, group: group_2) }
+        let!(:instance_scim_identity) { create(:scim_identity, user: user, group: group_2) }
+
+        before do
+          group_1.add_developer(user)
+          group_2.add_developer(user)
+          stub_feature_flags(separate_group_scim_table: group_1)
+        end
+
+        it "returns instance scim identities" do
+          expect(user.scim_identities).to match_array([group_scim_identity_1, instance_scim_identity])
+        end
+      end
+    end
+  end
+
   context 'normalized email reuse check' do
     let(:error_message) { 'Email is not allowed. Please enter a different email address and try again.' }
     let(:tumbled_email) { 'user+inbox1@test.com' }

@@ -316,7 +316,7 @@ module EE
             bad_request!(users_params_error) unless any_allowed_filters_present?(params)
 
             finder = ::Groups::UsersFinder.new(current_user, user_group, params)
-            users = finder.execute.preload(:identities, :scim_identities)
+            users = finder.execute.preload(:identities, :group_scim_identities, :instance_scim_identities)
 
             present paginate(users), with: ::API::Entities::UserPublic
           end

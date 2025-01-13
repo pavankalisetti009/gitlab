@@ -23,7 +23,7 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipEnforcer, feature_category: :s
   context 'when the user has an inactive scim identity' do
     before do
       stub_licensed_features(extended_audit_events: true)
-      create(:scim_identity, group: group, user: user, active: false)
+      create(:group_scim_identity, group: group, user: user, active: false)
     end
 
     it 'does not allow adding a user with an inactive scim identity for the group' do
@@ -51,8 +51,9 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipEnforcer, feature_category: :s
   end
 
   it 'does allow adding a user with an active scim identity for the group' do
-    _inactive_scim_identity_for_other_user = create(:scim_identity, group: group, user: create(:user), active: false)
-    create(:scim_identity, group: group, user: user, active: true)
+    _inactive_scim_identity_for_other_user = create(:group_scim_identity, group: group, user: create(:user),
+      active: false)
+    create(:group_scim_identity, group: group, user: user, active: true)
 
     expect(described_class.new(group).can_add_user?(user)).to be_truthy
   end

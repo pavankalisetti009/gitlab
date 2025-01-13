@@ -6,55 +6,14 @@ RSpec.describe ScimFinder, feature_category: :system_access do
   include LoginHelpers
 
   let_it_be(:group) { create(:group) }
-
   let(:unused_params) { double }
 
   subject(:finder) { described_class.new(group) }
 
-  shared_examples 'look up by id available' do
-    it 'allows identity lookup by id/externalId' do
-      expect(finder.search(filter: "id eq #{id.extern_uid}")).to be_a ActiveRecord::Relation
-      expect(finder.search(filter: "id eq #{id.extern_uid}").first).to eq id
-      expect(finder.search(filter: "externalId eq #{id.extern_uid}").first).to eq id
-    end
-
-    it 'allows lookup by userName' do
-      expect(finder.search(filter: "userName eq \"#{id.user.username}\"").first).to eq id
-    end
-  end
-
-  shared_examples 'look up by username available' do
-    it 'finds user by an email address' do
-      expect(finder.search(filter: "userName eq #{id.user.email}").first).to eq id
-    end
-
-    it 'finds user by using local part of email address as username' do
-      email = "#{id.user.username}@example.com"
-      expect(finder.search(filter: "userName eq #{email}").first).to eq id
-    end
-
-    it 'finds user by username' do
-      expect(finder.search(filter: "userName eq \"#{id.user.username}\"").first).to eq id
-    end
-
-    it 'finds user by extern_uid' do
-      expect(finder.search(filter: "userName eq \"#{id.extern_uid}\"").first).to eq id
-    end
-
-    context 'when email id is invalid' do
-      it 'returns an empty scim identity relation' do
-        expect(User).not_to receive(:find_by_any_email)
-        expect(User).to receive(:find_by_username).once
-
-        expect(finder.search(filter: "userName eq abc@example")).to be_empty
-      end
-    end
-  end
-
   describe '#initialize' do
     context 'on Gitlab.com', :saas do
       it 'raises error for group not passed' do
-        expect { described_class.new }.to raise_error { ArgumentError }
+        expect { described_class.new }.to raise_error(ArgumentError)
       end
     end
 
@@ -85,53 +44,78 @@ RSpec.describe ScimFinder, feature_category: :system_access do
     context 'with SCIM enabled' do
       let_it_be(:saml_provider) { create(:saml_provider, group: group) }
       let_it_be(:user) { create(:user, username: 'foo', email: 'bar@example.com') }
+      let_it_be(:scim_identity) { create(:scim_identity, group: group, user: user) }
 
-      context 'with an eq filter and group parameter is passed' do
-        let_it_be(:id) { create(:scim_identity, group: group, user: user) }
-
-        it_behaves_like 'look up by id available'
-        it_behaves_like 'look up by username available'
-      end
-
-      context "with an eq filter and no group parameter" do
-        subject(:finder) { described_class.new }
-
-        let_it_be(:id) { create(:scim_identity, user: user) }
-
+      context 'when separate_group_scim_table feature flag is disabled' do
         before do
-          stub_basic_saml_config
+          stub_feature_flags(separate_group_scim_table: false)
         end
 
-        it_behaves_like 'look up by id available'
-        it_behaves_like 'look up by username available'
-      end
-
-      context 'with no filter' do
-        it 'returns all related scim_identities' do
-          create_list(:scim_identity, 4, group: group)
-          expect(finder.search({}).count).to eq 4
-        end
-      end
-
-      context 'with no filter and no group parameter' do
-        subject(:finder) { described_class.new }
-
-        before do
-          stub_basic_saml_config
+        context 'filtering by ID or externalId' do
+          it 'allows lookup by id and externalId' do
+            expect(finder.search(filter: "id eq #{scim_identity.extern_uid}").first).to eq scim_identity
+            expect(finder.search(filter: "externalId eq #{scim_identity.extern_uid}").first).to eq scim_identity
+          end
         end
 
-        it 'returns all related scim_identities' do
-          create_list(:scim_identity, 4)
-          expect(finder.search({}).count).to eq 4
+        context 'filtering by userName' do
+          it 'finds by username' do
+            expect(finder.search(filter: "userName eq \"#{scim_identity.user.username}\"").first).to eq scim_identity
+          end
+
+          it 'finds by email address' do
+            expect(finder.search(filter: "userName eq #{scim_identity.user.email}").first).to eq scim_identity
+          end
+
+          it 'finds by username derived from email' do
+            email = "#{scim_identity.user.username}@example.com"
+            expect(finder.search(filter: "userName eq #{email}").first).to eq scim_identity
+          end
+
+          it 'finds by extern_uid' do
+            expect(finder.search(filter: "userName eq \"#{scim_identity.extern_uid}\"").first).to eq scim_identity
+          end
+
+          context 'when email id is invalid' do
+            it 'returns an empty scim identity relation' do
+              expect(User).not_to receive(:find_by_any_email)
+              expect(User).to receive(:find_by_username).once
+              expect(finder.search(filter: "userName eq abc@example")).to be_empty
+            end
+          end
         end
-      end
 
-      it 'raises an error if the filter is unsupported' do
-        expect { finder.search(filter: 'id ne 1').count }.to raise_error(ScimFinder::UnsupportedFilter)
-      end
+        context 'with unsupported filters' do
+          it 'raises an error for unsupported filter' do
+            expect { finder.search(filter: 'id ne 1').count }.to raise_error(ScimFinder::UnsupportedFilter)
+          end
 
-      it 'raises an error if the attribute path is unsupported' do
-        expect { finder.search(filter: 'displayName eq "name"').count }.to raise_error(ScimFinder::UnsupportedFilter)
+          it 'raises an error for unsupported attribute path' do
+            expect do
+              finder.search(filter: 'displayName eq "name"').count
+            end.to raise_error(ScimFinder::UnsupportedFilter)
+          end
+        end
+
+        context 'without filters' do
+          it 'returns all related scim identities' do
+            create_list(:scim_identity, 4, group: group)
+            expect(finder.search({}).count).to eq 5
+          end
+        end
+
+        context 'without filters or group parameter' do
+          subject(:finder) { described_class.new }
+
+          before do
+            stub_basic_saml_config
+          end
+
+          it 'returns all related scim identities' do
+            create_list(:scim_identity, 4)
+            expect(finder.search({}).count).to eq 5
+          end
+        end
       end
     end
   end

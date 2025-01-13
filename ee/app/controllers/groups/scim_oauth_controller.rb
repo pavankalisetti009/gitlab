@@ -12,7 +12,11 @@ class Groups::ScimOauthController < Groups::ApplicationController
 
   # rubocop: disable CodeReuse/ActiveRecord
   def create
-    scim_token = ScimOauthAccessToken.find_or_initialize_by(group: @group)
+    scim_token = if Feature.enabled?(:separate_group_scim_table, @group)
+                   GroupScimAuthAccessToken.find_or_initialize_by(group: @group)
+                 else
+                   ScimOauthAccessToken.find_or_initialize_by(group: @group)
+                 end
 
     if scim_token.new_record?
       scim_token.save
