@@ -79,11 +79,8 @@ export default {
 </script>
 
 <template>
-  <div
-    data-testid="requirements-tabs"
-    class="gl-flex gl-flex-col-reverse gl-flex-wrap gl-justify-between sm:gl-flex-row sm:gl-items-center"
-  >
-    <gl-tabs content-class="gl-p-0">
+  <div class="gl-mt-4 gl-flex gl-flex-col-reverse sm:gl-mt-0 sm:gl-flex-row">
+    <gl-tabs content-class="gl-p-0" class="gl-flex-1" nav-class="!gl-border-0">
       <gl-tab
         :title-link-attributes="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {
           'data-testid': 'state-opened',
@@ -121,14 +118,11 @@ export default {
         </template>
       </gl-tab>
     </gl-tabs>
-    <div
-      v-if="isOpenTab && canCreateRequirement"
-      class="gl-mt-3 gl-self-end sm:gl-mt-0 sm:gl-self-center"
-    >
+    <div v-if="isOpenTab && canCreateRequirement" class="gl-flex gl-items-center">
       <gl-button
         category="primary"
         variant="confirm"
-        class="js-new-requirement"
+        class="js-new-requirement gl-w-full"
         :disabled="showCreateForm"
         @click="$emit('click-new-requirement')"
         >{{ __('New requirement') }}</gl-button

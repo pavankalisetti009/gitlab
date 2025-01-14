@@ -134,20 +134,17 @@ describe('RequirementItem', () => {
     });
 
     it('renders requirement-status-badge component', () => {
-      const statusBadgeElSm = wrapper
-        .find('.issuable-main-info')
-        .findComponent(RequirementStatusBadge);
-      const statusBadgeElMd = wrapper.find('.controls').findComponent(RequirementStatusBadge);
+      const statusBadgeElSm = wrapper.findComponent(RequirementStatusBadge);
+      const statusBadgeElMd = wrapper.findComponent(RequirementStatusBadge);
 
       expect(statusBadgeElSm.exists()).toBe(true);
       expect(statusBadgeElMd.exists()).toBe(true);
       expect(statusBadgeElSm.props('testReport')).toBe(mockTestReport);
       expect(statusBadgeElMd.props('testReport')).toBe(mockTestReport);
-      expect(statusBadgeElMd.props('elementType')).toBe('li');
     });
 
     it('renders element containing requirement `Edit` button when `requirement.userPermissions.updateRequirement` is true', () => {
-      const editButtonEl = wrapper.find('.controls .requirement-edit').findComponent(GlButton);
+      const editButtonEl = wrapper.find('.requirement-edit').findComponent(GlButton);
 
       expect(editButtonEl.exists()).toBe(true);
       expect(editButtonEl.attributes('title')).toBe('Edit');
@@ -167,15 +164,13 @@ describe('RequirementItem', () => {
         },
       });
 
-      expect(wrapperNoEdit.find('.controls .requirement-edit').exists()).toBe(false);
+      expect(wrapperNoEdit.find('.requirement-edit').exists()).toBe(false);
 
       wrapperNoEdit.destroy();
     });
 
     it('renders element containing requirement `Archive` button when `requirement.userPermissions.adminRequirement` is true', () => {
-      const archiveButtonEl = wrapper
-        .find('.controls .requirement-archive')
-        .findComponent(GlButton);
+      const archiveButtonEl = wrapper.find('.requirement-archive').findComponent(GlButton);
 
       expect(archiveButtonEl.exists()).toBe(true);
       expect(archiveButtonEl.attributes('title')).toBe('Archive');
@@ -190,7 +185,7 @@ describe('RequirementItem', () => {
         },
       });
 
-      expect(wrapperNoArchive.find('.controls .requirement-archive').exists()).toBe(false);
+      expect(wrapperNoArchive.find('.requirement-archive').exists()).toBe(false);
 
       wrapperNoArchive.destroy();
     });
@@ -215,7 +210,7 @@ describe('RequirementItem', () => {
       });
 
       await nextTick();
-      expect(wrapperArchived.find('.controls .requirement-reopen').exists()).toBe(false);
+      expect(wrapperArchived.find('.requirement-reopen').exists()).toBe(false);
     });
   });
 });

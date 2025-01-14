@@ -13,7 +13,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
   let_it_be(:requirement_archived) { create(:work_item, :requirement, project: project, title: 'Some requirement-3', description: 'Sample description', state: :closed, author: user, created_at: 8.days.ago, updated_at: 2.days.ago).requirement }
 
   def create_requirement(title)
-    within_testid('requirements-tabs') do
+    page.within('.requirements-list-container') do
       find('button.js-new-requirement').click
     end
 
@@ -99,7 +99,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
 
     context 'new requirement' do
       it 'shows requirement create form when "New requirement" button is clicked' do
-        within_testid('requirements-tabs') do
+        page.within('.requirements-list-container') do
           find('button.js-new-requirement').click
         end
 
@@ -109,7 +109,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
       end
 
       it 'disables new requirement button while create form is open' do
-        within_testid('requirements-tabs') do
+        page.within('.requirements-list-container') do
           find('button.js-new-requirement').click
           expect(find('button.js-new-requirement')[:disabled]).to eq "true"
         end
@@ -145,7 +145,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
 
     context 'open tab' do
       it 'shows button "New requirement"' do
-        within_testid('requirements-tabs') do
+        page.within('.requirements-list-container') do
           expect(page).to have_selector('button.js-new-requirement')
           expect(find('button.js-new-requirement')).to have_content('New requirement')
         end
@@ -164,8 +164,8 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
           expect(page.find('.issue-title-text')).to have_content(requirement1.title)
           expect(page.find('.issuable-authored')).to have_content('created 5 days ago by')
           expect(page.find('.author')).to have_content(user.name)
-          expect(page.find('.controls')).to have_selector('li.requirement-edit button[title="Edit"]')
-          expect(page.find('.controls')).to have_selector('li.requirement-archive button[title="Archive"]')
+          expect(page.find('.requirement-controls')).to have_selector('li.requirement-edit button[title="Edit"]')
+          expect(page.find('.requirement-controls')).to have_selector('li.requirement-archive button[title="Archive"]')
           expect(page.find('.issuable-updated-at')).to have_content('updated 2 days ago')
         end
       end
@@ -241,7 +241,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
       end
 
       it 'does not show button "New requirement"' do
-        expect(page).not_to have_selector('.nav-controls button.js-new-requirement')
+        expect(page).not_to have_selector('.requirements-list-container button.js-new-requirement')
       end
 
       it 'shows list of all archived requirements' do
@@ -257,7 +257,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
           expect(page.find('.issue-title-text')).to have_content(requirement_archived.title)
           expect(page.find('.issuable-authored')).to have_content('created 1 week ago by')
           expect(page.find('.author')).to have_content(user.name)
-          expect(page.find('.controls')).to have_selector('li.requirement-reopen button', text: 'Reopen')
+          expect(page.find('.requirement-controls')).to have_selector('li.requirement-reopen button', text: 'Reopen')
           expect(page.find('.issuable-updated-at')).to have_content('updated 2 days ago')
         end
       end
@@ -285,7 +285,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
       end
 
       it 'does not show button "New requirement"' do
-        expect(page).not_to have_selector('.nav-controls button.js-new-requirement')
+        expect(page).not_to have_selector('.requirements-list-container button.js-new-requirement')
       end
 
       it 'shows list of all requirements' do
@@ -319,7 +319,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
     end
 
     it 'open tab does not show button "New requirement"' do
-      expect(page).not_to have_selector('.nav-controls button.js-new-requirement')
+      expect(page).not_to have_selector('.requirements-list-container button.js-new-requirement')
     end
   end
 
