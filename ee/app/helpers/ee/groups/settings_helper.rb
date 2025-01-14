@@ -22,7 +22,7 @@ module EE
       end
 
       def show_group_ai_settings_general?
-        GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchased_or_trial?(@group.root_ancestor)
+        GitlabSubscriptions::Trials::DuoAddOn.any_add_on_purchased_or_trial?(@group.root_ancestor)
       end
 
       def show_group_ai_settings_page?

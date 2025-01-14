@@ -118,4 +118,54 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
       it { is_expected.to be(true) }
     end
   end
+
+  describe '.any_add_on_purchase_for_namespace' do
+    let_it_be(:namespace) { create(:namespace) }
+
+    context 'when there is an add-on purchase for the namespace' do
+      let_it_be(:add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
+      end
+
+      it 'returns the add-on purchase' do
+        expect(described_class.any_add_on_purchase_for_namespace(namespace).id).to eq(add_on_purchase.id)
+      end
+    end
+
+    context 'when the enterprise add-on purchase is expired for the namespace' do
+      let_it_be(:add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired, namespace: namespace)
+      end
+
+      it 'returns the add-on purchase' do
+        expect(described_class.any_add_on_purchase_for_namespace(namespace).id).to eq(add_on_purchase.id)
+      end
+    end
+
+    context 'when there is a pro add-on purchase for the namespace' do
+      let_it_be(:add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+      end
+
+      it 'returns the add-on purchase' do
+        expect(described_class.any_add_on_purchase_for_namespace(namespace).id).to eq(add_on_purchase.id)
+      end
+    end
+
+    context 'when the pro add-on purchase is expired for the namespace' do
+      let_it_be(:add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
+      end
+
+      it 'returns the add-on purchase' do
+        expect(described_class.any_add_on_purchase_for_namespace(namespace).id).to eq(add_on_purchase.id)
+      end
+    end
+
+    context 'when there is no add-on purchase for the namespace' do
+      it 'returns nil' do
+        expect(described_class.any_add_on_purchase_for_namespace(namespace)).to be_nil
+      end
+    end
+  end
 end
