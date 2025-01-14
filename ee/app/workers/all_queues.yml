@@ -2379,15 +2379,6 @@
   :weight: 1
   :idempotent: true
   :tags: []
-- :name: search_zoekt_delete_project
-  :worker_name: Search::Zoekt::DeleteProjectWorker
-  :feature_category: :global_search
-  :has_external_dependencies: false
-  :urgency: :throttled
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
 - :name: search_zoekt_delete_project_event
   :worker_name: Search::Zoekt::DeleteProjectEventWorker
   :feature_category: :global_search

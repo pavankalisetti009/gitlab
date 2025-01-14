@@ -1,9 +1,0 @@
----
-name: zoekt_delete_project_worker_concurrency
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/471647
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158906
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/471777
-milestone: '17.2'
-group: group::global search
-type: ops
-default_enabled: true
