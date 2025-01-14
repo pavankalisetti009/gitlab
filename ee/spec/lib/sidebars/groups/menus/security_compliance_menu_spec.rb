@@ -218,14 +218,6 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         end
 
         it_behaves_like 'menu access rights'
-
-        context 'when the feature flag is disabled' do
-          before do
-            stub_feature_flags(group_credentials_inventory: false)
-          end
-
-          it { is_expected.to be_nil }
-        end
       end
     end
 

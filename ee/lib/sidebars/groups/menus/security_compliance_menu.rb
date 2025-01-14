@@ -129,8 +129,7 @@ module Sidebars
         end
 
         def group_level_credentials_inventory_available?
-          Feature.enabled?(:group_credentials_inventory, context.group) &&
-            can?(context.current_user, :read_group_credentials_inventory, context.group)
+          can?(context.current_user, :read_group_credentials_inventory, context.group)
         end
 
         def scan_policies_menu_item

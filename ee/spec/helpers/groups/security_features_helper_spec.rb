@@ -36,23 +36,22 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
   describe '#group_level_credentials_inventory_available?', :aggregate_failures, feature_category: :system_access do
     using RSpec::Parameterized::TableSyntax
 
-    where(:group_owner?, :saas?, :licensed?, :feature_flag_enabled?, :result) do
-      false | false | false | false | false
-      false | false | false | true  | false
-      false | false | true  | false | false
-      false | false | true  | true  | false
-      false | true  | false | false | false
-      false | true  | false | true  | false
-      false | true  | true  | false | false
-      false | true  | true  | true  | false
-      true  | false | false | false | false
-      true  | false | false | true  | false
-      true  | false | true  | false | false
-      true  | false | true  | true  | false
-      true  | true  | false | false | false
-      true  | true  | false | true  | false
-      true  | true  | true  | false | false
-      true  | true  | true  | true  | true
+    where(:group_owner?, :saas?, :licensed?, :result) do
+      false | false | false | false
+      false | false | false | false
+      false | false | true  | false
+      false | false | true  | false
+      false | true  | false | false
+      false | true  | false | false
+      false | true  | true  | false
+      false | true  | true  | false
+      true  | false | false | false
+      true  | false | false | false
+      true  | false | true  | false
+      true  | false | true  | false
+      true  | true  | false | false
+      true  | true  | false | false
+      true  | true  | true  | true
     end
 
     subject { helper.group_level_credentials_inventory_available?(group) }
@@ -62,7 +61,6 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
         access_level = group_owner? ? :owner : :maintainer
         group.add_member(user, access_level)
         stub_licensed_features(credentials_inventory: licensed?)
-        stub_feature_flags(group_credentials_inventory: feature_flag_enabled?)
         allow(helper).to receive(:can?).with(user, :read_group_credentials_inventory, group).and_call_original
       end
 
