@@ -9087,7 +9087,8 @@ CREATE TABLE boards_epic_board_labels (
     id bigint NOT NULL,
     epic_board_id bigint NOT NULL,
     label_id bigint NOT NULL,
-    group_id bigint
+    group_id bigint,
+    CONSTRAINT check_c71449be47 CHECK ((group_id IS NOT NULL))
 );
 
 CREATE SEQUENCE boards_epic_board_labels_id_seq
