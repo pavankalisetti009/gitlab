@@ -91,25 +91,23 @@ export default {
 
 <template>
   <li
-    class="issue requirement gl-cursor-pointer"
+    class="issue requirement gl-cursor-pointer sm:!gl-flex"
     :class="{ 'disabled-content': stateChangeRequestActive, 'gl-bg-blue-50': active }"
     @click="$emit('show-click', requirement)"
   >
-    <div class="issuable-info-container">
-      <span class="issuable-reference gl-mr-3 gl-hidden gl-text-subtle sm:!gl-block">{{
-        reference
-      }}</span>
-      <div class="issuable-main-info">
-        <span class="issuable-reference gl-block gl-text-subtle sm:!gl-hidden">{{
-          reference
+    <div class="gl-flex-1">
+      <div>
+        <span :id="legacyReferencePopoverId" class="issuable-legacy-reference gl-mr-2">{{
+          legacyReference
         }}</span>
-        <div class="issue-title title">
+        <div class="gl-inline gl-font-bold">
           <span class="issue-title-text">{{ requirement.title }}</span>
         </div>
+      </div>
+      <div class="">
+        <span class="issuable-reference gl-inline gl-text-sm gl-text-subtle">{{ reference }}</span>
+
         <div class="issuable-info gl-hidden sm:!gl-inline-block">
-          <span :id="legacyReferencePopoverId" class="issuable-legacy-reference">{{
-            legacyReference
-          }}</span>
           <span class="issuable-authored">
             <span v-gl-tooltip:tooltipcontainer.bottom :title="tooltipTitle(requirement.createdAt)"
               >&middot; {{ createdAtFormatted }}</span
@@ -133,43 +131,44 @@ export default {
           class="gl-block sm:!gl-hidden"
         />
       </div>
-      <div class="gl-flex">
-        <ul v-if="showIssuableMetaActions" class="controls gl-flex-col sm:!gl-flex-row">
-          <requirement-status-badge
-            v-if="testReport"
-            :test-report="testReport"
-            :last-test-report-manually-created="requirement.lastTestReportManuallyCreated"
-            element-type="li"
-            class="gl-hidden sm:!gl-block"
-          />
-          <li v-if="canUpdate && !isArchived" class="requirement-edit sm:!gl-block">
-            <gl-button
-              v-gl-tooltip
-              icon="pencil"
-              :title="$options.i18n.editLabel"
-              :aria-label="$options.i18n.editLabel"
-              @click="$emit('edit-click', requirement)"
-            />
-          </li>
-          <li v-if="canArchive && !isArchived" class="requirement-archive sm:!gl-block">
-            <gl-button
-              v-if="!stateChangeRequestActive"
-              v-gl-tooltip
-              icon="archive"
-              :loading="stateChangeRequestActive"
-              :title="$options.i18n.archiveLabel"
-              :aria-label="$options.i18n.archiveLabel"
-              @click.stop="handleArchiveClick"
-            />
-          </li>
-          <li v-if="canArchive && isArchived" class="requirement-reopen sm:!gl-block">
-            <gl-button :loading="stateChangeRequestActive" @click="handleReopenClick">{{
-              __('Reopen')
-            }}</gl-button>
-          </li>
-        </ul>
-      </div>
     </div>
+    <ul
+      v-if="showIssuableMetaActions"
+      class="requirement-controls gl-mt-3 gl-flex gl-list-none gl-gap-3 gl-self-start gl-pl-0 sm:gl-ml-4 sm:gl-mt-0"
+    >
+      <requirement-status-badge
+        v-if="testReport"
+        :test-report="testReport"
+        :last-test-report-manually-created="requirement.lastTestReportManuallyCreated"
+        element-type="li"
+        class="gl-hidden sm:!gl-block"
+      />
+      <li v-if="canUpdate && !isArchived" class="requirement-edit">
+        <gl-button
+          v-gl-tooltip
+          icon="pencil"
+          :title="$options.i18n.editLabel"
+          :aria-label="$options.i18n.editLabel"
+          @click="$emit('edit-click', requirement)"
+        />
+      </li>
+      <li v-if="!stateChangeRequestActive && canArchive && !isArchived" class="requirement-archive">
+        <gl-button
+          v-gl-tooltip
+          icon="archive"
+          :loading="stateChangeRequestActive"
+          :title="$options.i18n.archiveLabel"
+          :aria-label="$options.i18n.archiveLabel"
+          @click.stop="handleArchiveClick"
+        />
+      </li>
+      <li v-if="canArchive && isArchived" class="requirement-reopen">
+        <gl-button :loading="stateChangeRequestActive" @click="handleReopenClick">{{
+          __('Reopen')
+        }}</gl-button>
+      </li>
+    </ul>
+
     <gl-popover :target="getAuthorPopoverTarget()" placement="top">
       <div class="gl-flex gl-leading-normal">
         <div class="gl-flex-shrink-1 gl-p-2">

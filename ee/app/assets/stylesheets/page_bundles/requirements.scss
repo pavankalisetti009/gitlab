@@ -67,26 +67,6 @@
       flex-grow: 100;
     }
   }
-
-  .issuable-info {
-    // The size here is specific to correctly
-    // align info row perfectly with action buttons & updated date.
-    margin-top: 9px;
-  }
-
-  .controls {
-    align-items: flex-start;
-
-    @include media-breakpoint-down(xs) {
-      .requirement-archive {
-        margin-top: $gl-padding-4;
-      }
-
-      .requirement-edit {
-        margin-right: 0;
-      }
-    }
-  }
 }
 
 .requirement-status-tooltip {
