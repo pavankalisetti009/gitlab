@@ -39,6 +39,7 @@ exports[`Status Page settings form default state should match the default snapsh
       >
         <h2
           class="!gl-mb-2 gl-heading-2"
+          data-event-tracking="settings-block-title"
         >
           Status page
         </h2>
