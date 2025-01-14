@@ -2,18 +2,20 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project Subscriptions', :js,
+RSpec.describe 'Project Subscriptions',
   feature_category: :continuous_integration do
-  let(:project) { create(:project, :public, :repository) }
-  let(:upstream_project) { create(:project, :public, :repository) }
-  let(:downstream_project) { create(:project, :public, :repository, upstream_projects: [project]) }
-  let(:user) { create(:user) }
+  let_it_be(:project) { create(:project, :public, :repository) }
+  let_it_be(:upstream_project) { create(:project, :public, :repository) }
+  let_it_be(:downstream_project) { create(:project, :public, :repository, upstream_projects: [project]) }
+  let_it_be(:user) { create(:user) }
 
-  before do
+  before_all do
     project.add_maintainer(user)
     upstream_project.add_maintainer(user)
     downstream_project.add_maintainer(user)
+  end
 
+  before do
     stub_licensed_features(ci_project_subscriptions: true)
     stub_feature_flags(pipeline_subscriptions_vue: false)
 
@@ -85,7 +87,7 @@ RSpec.describe 'Project Subscriptions', :js,
     expect(page).to have_content('This project path either does not exist or you do not have access.')
   end
 
-  it 'subscription is removed successfully', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/438106' do
+  it 'subscription is removed successfully', :js, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/438106' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
       within 'form' do
