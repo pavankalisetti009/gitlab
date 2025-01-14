@@ -5,7 +5,7 @@ import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { DURATION_STAGE_TIME_DESCRIPTION } from 'ee/analytics/cycle_analytics/constants';
-import DurationChart from 'ee/analytics/cycle_analytics/components/duration_chart.vue';
+import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_chart.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import {
@@ -13,7 +13,7 @@ import {
   durationChartPlottableData as durationData,
   durationDataSeries,
   durationDataNullSeries,
-} from '../mock_data';
+} from '../../mock_data';
 
 Vue.use(Vuex);
 
@@ -48,7 +48,7 @@ function createComponent({
   rootState = {},
   props = {},
 } = {}) {
-  return shallowMount(DurationChart, {
+  return shallowMount(StageChart, {
     store: fakeStore({ initialState, initialGetters, rootGetters, rootState }),
     propsData: {
       ...props,
@@ -60,11 +60,11 @@ function createComponent({
   });
 }
 
-describe('DurationChart', () => {
+describe('StageChart', () => {
   let wrapper;
 
   const findChartDescription = (_wrapper) => _wrapper.findComponent(GlIcon);
-  const findDurationChart = (_wrapper) => _wrapper.findComponent(GlLineChart);
+  const findStageChart = (_wrapper) => _wrapper.findComponent(GlLineChart);
   const findLoader = (_wrapper) => _wrapper.findComponent(ChartSkeletonLoader);
   const findNoDataAvailableState = (_wrapper) => _wrapper.findComponent(NoDataAvailableState);
 
@@ -80,7 +80,7 @@ describe('DurationChart', () => {
     });
 
     it('renders the chart', () => {
-      expect(findDurationChart(wrapper).exists()).toBe(true);
+      expect(findStageChart(wrapper).exists()).toBe(true);
     });
 
     it('renders the stage title', () => {
@@ -88,7 +88,7 @@ describe('DurationChart', () => {
     });
 
     it('sets the chart data', () => {
-      expect(findDurationChart(wrapper).props('data')).toEqual([
+      expect(findStageChart(wrapper).props('data')).toEqual([
         expect.objectContaining(durationDataSeries),
         durationDataNullSeries,
       ]);

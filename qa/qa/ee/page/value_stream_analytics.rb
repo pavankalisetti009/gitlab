@@ -29,11 +29,11 @@ module QA
               element 'vsa-metrics'
             end
 
-            view "ee/app/assets/javascripts/analytics/cycle_analytics/components/duration_chart.vue" do
+            view "ee/app/assets/javascripts/analytics/cycle_analytics/components/duration_charts/stage_chart.vue" do
               element 'vsa-duration-chart'
             end
 
-            view "ee/app/assets/javascripts/analytics/cycle_analytics/components/duration_overview_chart.vue" do
+            view "ee/app/assets/javascripts/analytics/cycle_analytics/components/duration_charts/overview_chart.vue" do
               element 'vsa-duration-overview-chart'
             end
 
