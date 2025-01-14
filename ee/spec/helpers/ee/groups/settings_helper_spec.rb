@@ -154,8 +154,9 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe 'show_group_ai_settings_general?' do
     context 'when group has trial or add on' do
       before do
-        allow(GitlabSubscriptions::Trials::DuoEnterprise).to receive(:any_add_on_purchased_or_trial?)
-                                                               .with(group).and_return(true)
+        allow(GitlabSubscriptions::Trials::DuoAddOn).to receive(:any_add_on_purchased_or_trial?)
+        allow(GitlabSubscriptions::Trials::DuoAddOn).to receive(:any_add_on_purchased_or_trial?)
+          .with(group).and_return(true)
       end
 
       it 'returns true' do
@@ -165,8 +166,8 @@ RSpec.describe EE::Groups::SettingsHelper do
 
     context 'when group has no trial or add on' do
       before do
-        allow(GitlabSubscriptions::Trials::DuoEnterprise).to receive(:any_add_on_purchased_or_trial?)
-                                                               .with(group).and_return(false)
+        allow(GitlabSubscriptions::Trials::DuoAddOn).to receive(:any_add_on_purchased_or_trial?)
+          .with(group).and_return(false)
       end
 
       it 'returns false' do
