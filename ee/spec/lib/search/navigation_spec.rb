@@ -37,7 +37,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           it 'data item condition is set correctly' do
             stub_feature_flags(global_search_epics_tab: feature_flag)
 
-            expect(tabs[:epics][:condition]).to eq(condition)
+            expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
           end
         end
       end
@@ -56,7 +56,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_epics: show_epics } }
 
           it 'data item condition is set correctly' do
-            expect(tabs[:epics][:condition]).to eq(condition)
+            expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
           end
         end
       end
@@ -78,7 +78,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           it 'data item condition is set correctly' do
             stub_feature_flags(global_search_epics_tab: feature_flag)
 
-            expect(tabs[:epics][:condition]).to eq(condition)
+            expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
           end
         end
       end

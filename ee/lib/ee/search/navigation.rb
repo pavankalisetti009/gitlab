@@ -7,10 +7,36 @@ module EE
 
       override :tabs
       def tabs
-        super.merge(epics: { sort: 3, label: _("Epics"), condition: show_epics_search_tab? })
+        (super || {}).tap do |nav|
+          if ::Feature.enabled?(:work_item_scope_frontend, user)
+            nav[:issues][:sub_items] ||= {}
+            nav[:issues][:sub_items].merge!(get_epic_sub_item)
+            next
+          end
+
+          nav[:epics] ||= {
+            sort: 3,
+            label: _("Epics"),
+            condition: show_epics_search_tab?
+          }
+        end
       end
 
       private
+
+      def get_epic_sub_item
+        ::WorkItems::Type::TYPE_NAMES.each_with_object({}) do |(key, value, index), hash|
+          next unless key.to_s == 'epic'
+
+          hash[key] ||= {}
+          hash[key][:scope] = 'epics'
+          hash[key][:label] = value
+          hash[key][:type] = key
+          hash[key][:sort] = index
+          hash[key][:active] = ''
+          hash[key][:condition] = show_epics_search_tab?
+        end
+      end
 
       def zoekt_enabled?
         !!options[:zoekt_enabled]
