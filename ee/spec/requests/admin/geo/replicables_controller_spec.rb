@@ -10,8 +10,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
   let_it_be(:primary_node) { create(:geo_node) }
   let_it_be(:secondary_node) { create(:geo_node, :secondary) }
 
-  let(:replicable_name) { 'replicable' }
-  let(:replicable_class) { class_double("Gitlab::Geo::Replicator", replicable_name_plural: 'replicables', graphql_field_name: 'graphql', graphql_mutation_registry_class: 'REPLICABLE_REGISTRY', verification_enabled?: true) }
+  let(:replicable_class) { Gitlab::Geo.replication_enabled_replicator_classes[0] }
 
   before do
     enable_admin_mode!(admin)
@@ -30,7 +29,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
   end
 
   describe 'GET /admin/geo/replicables/:replicable_name_plural' do
-    let(:url) { "/admin/geo/replication/#{replicable_name}" }
+    let(:url) { "/admin/geo/replication/#{replicable_class.replicable_name_plural}" }
 
     it_behaves_like 'license required'
 
@@ -38,7 +37,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
       before do
         stub_licensed_features(geo: true)
         allow(::Gitlab::Geo::Replicator).to receive(:for_replicable_name)
-          .with(replicable_name).and_return(replicable_class)
+          .with(replicable_class.replicable_name).and_return(replicable_class)
 
         get url
       end
@@ -62,7 +61,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
 
         it do
           is_expected.to redirect_to(
-            site_replicables_admin_geo_node_path(id: secondary_node.id, replicable_name_plural: replicable_name)
+            site_replicables_admin_geo_node_path(id: secondary_node.id, replicable_name_plural: replicable_class.replicable_name_plural)
           )
         end
       end
@@ -70,7 +69,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
   end
 
   describe 'GET /admin/geo/sites/:id/replicables/:replicable_name_plural' do
-    let(:url) { "/admin/geo/sites/#{secondary_node.id}/replication/#{replicable_name}" }
+    let(:url) { "/admin/geo/sites/#{secondary_node.id}/replication/#{replicable_class.replicable_name_plural}" }
 
     it_behaves_like 'license required'
 
@@ -78,7 +77,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
       before do
         stub_licensed_features(geo: true)
         allow(::Gitlab::Geo::Replicator).to receive(:for_replicable_name)
-          .with(replicable_name).and_return(replicable_class)
+          .with(replicable_class.replicable_name).and_return(replicable_class)
       end
 
       where(:current_node) { [nil, lazy { primary_node }, lazy { secondary_node }] }

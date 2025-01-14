@@ -45,17 +45,23 @@ module EE
 
     def replicable_types
       enabled_replicator_classes.map do |replicator_class|
-        {
-          data_type: replicator_class.data_type,
-          data_type_title: replicator_class.data_type_title,
-          data_type_sort_order: replicator_class.data_type_sort_order,
-          title: replicator_class.replicable_title,
-          title_plural: replicator_class.replicable_title_plural,
-          name: replicator_class.replicable_name,
-          name_plural: replicator_class.replicable_name_plural,
-          verification_enabled: replicator_class.verification_enabled?
-        }
+        replicable_class_data(replicator_class)
       end
+    end
+
+    def replicable_class_data(replicator_class)
+      {
+        data_type: replicator_class.data_type,
+        data_type_title: replicator_class.data_type_title,
+        data_type_sort_order: replicator_class.data_type_sort_order,
+        title: replicator_class.replicable_title,
+        title_plural: replicator_class.replicable_title_plural,
+        name: replicator_class.replicable_name,
+        name_plural: replicator_class.replicable_name_plural,
+        graphql_field_name: replicator_class.graphql_field_name,
+        graphql_mutation_registry_class: replicator_class.graphql_mutation_registry_class,
+        verification_enabled: replicator_class.verification_enabled?
+      }
     end
 
     def enabled_replicator_classes

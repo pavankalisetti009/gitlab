@@ -3,9 +3,6 @@
 
 = render "admin/geo/shared/replication_nav"
 #js-geo-replicable{ data: { "geo-replicable-empty-svg-path" => image_path("illustrations/empty-state/empty-geo-md.svg"),
-  "replicable-type" => @replicator_class.replicable_name_plural,
-  "graphql-field-name" => @replicator_class.graphql_field_name,
-  "graphql-mutation-registry-class" => @replicator_class.graphql_mutation_registry_class,
-  "verification-enabled" => @replicator_class.verification_enabled?&.to_s,
+  "replicator-class-data" => replicable_class_data(@replicator_class).to_json,
   "geo-target-site-id" => @target_node&.id,
   "geo-current-site-id" => @current_node&.id } }

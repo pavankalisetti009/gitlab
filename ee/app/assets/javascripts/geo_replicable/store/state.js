@@ -1,14 +1,14 @@
 import { parseBoolean } from '~/lib/utils/common_utils';
 
 const createState = ({
-  replicableType,
+  titlePlural,
   graphqlFieldName,
   graphqlMutationRegistryClass,
   verificationEnabled,
   geoCurrentSiteId,
   geoTargetSiteId,
 }) => ({
-  replicableType,
+  titlePlural,
   graphqlFieldName,
   graphqlMutationRegistryClass,
   verificationEnabled: parseBoolean(verificationEnabled),

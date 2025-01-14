@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Translate from '~/vue_shared/translate';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import GeoReplicableApp from './components/app.vue';
 import createStore from './store';
 
@@ -7,20 +8,15 @@ Vue.use(Translate);
 
 export default () => {
   const el = document.getElementById('js-geo-replicable');
-  const {
-    replicableType,
-    geoReplicableEmptySvgPath,
-    graphqlFieldName,
-    graphqlMutationRegistryClass,
-    verificationEnabled,
-    geoCurrentSiteId,
-    geoTargetSiteId,
-  } = el.dataset;
+  const { geoReplicableEmptySvgPath, geoCurrentSiteId, geoTargetSiteId } = el.dataset;
+
+  const { titlePlural, graphqlFieldName, graphqlMutationRegistryClass, verificationEnabled } =
+    convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicatorClassData));
 
   return new Vue({
     el,
     store: createStore({
-      replicableType,
+      titlePlural,
       graphqlFieldName,
       graphqlMutationRegistryClass,
       verificationEnabled,

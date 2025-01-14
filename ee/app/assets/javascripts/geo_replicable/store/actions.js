@@ -15,7 +15,7 @@ export const receiveReplicableItemsSuccess = ({ commit }, data) =>
 export const receiveReplicableItemsError = ({ state, commit }) => {
   createAlert({
     message: sprintf(__('There was an error fetching the %{replicableType}'), {
-      replicableType: state.replicableType,
+      replicableType: state.titlePlural,
     }),
   });
   commit(types.RECEIVE_REPLICABLE_ITEMS_ERROR);
@@ -73,24 +73,24 @@ export const fetchReplicableItems = ({ state, dispatch }, direction) => {
 export const requestInitiateAllReplicableAction = ({ commit }) =>
   commit(types.REQUEST_INITIATE_ALL_REPLICABLE_ACTION);
 export const receiveInitiateAllReplicableActionSuccess = (
-  { getters, commit, dispatch },
+  { state, commit, dispatch },
   { action },
 ) => {
   toast(
     sprintf(s__('Geo|All %{replicableType} are being scheduled for %{action}'), {
-      replicableType: getters.replicableTypeName,
+      replicableType: state.titlePlural,
       action: action.replace('_', ' '),
     }),
   );
   commit(types.RECEIVE_INITIATE_ALL_REPLICABLE_ACTION_SUCCESS);
   dispatch('fetchReplicableItems');
 };
-export const receiveInitiateAllReplicableActionError = ({ getters, commit }, { action }) => {
+export const receiveInitiateAllReplicableActionError = ({ state, commit }, { action }) => {
   createAlert({
     message: sprintf(
       s__('Geo|There was an error scheduling action %{action} for %{replicableType}'),
       {
-        replicableType: getters.replicableTypeName,
+        replicableType: state.titlePlural,
         action: action.replace('_', ' '),
       },
     ),

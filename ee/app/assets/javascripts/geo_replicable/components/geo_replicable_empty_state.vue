@@ -1,7 +1,7 @@
 <script>
 import { GlEmptyState, GlSprintf, GlLink } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapGetters } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import { __, s__, sprintf } from '~/locale';
 import { GEO_TROUBLESHOOTING_LINK } from '../constants';
 
@@ -19,12 +19,13 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['replicableTypeName', 'hasFilters']),
+    ...mapState(['titlePlural']),
+    ...mapGetters(['hasFilters']),
     title() {
       return this.hasFilters
         ? __('No results found')
         : sprintf(s__('Geo|There are no %{replicable} to show'), {
-            replicable: this.replicableTypeName,
+            replicable: this.titlePlural,
           });
     },
     description() {
@@ -44,7 +45,7 @@ export default {
     <template #description>
       <gl-sprintf :message="description">
         <template #replicable>
-          <span>{{ replicableTypeName }}</span>
+          <span>{{ titlePlural }}</span>
         </template>
         <template #link="{ content }">
           <gl-link :href="$options.GEO_TROUBLESHOOTING_LINK" target="_blank">{{ content }}</gl-link>

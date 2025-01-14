@@ -22,32 +22,40 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
   end
 
   describe '#replicable_types' do
-    subject(:names) { helper.replicable_types.map { |t| t[:name_plural] } }
+    let(:replicators) { Gitlab::Geo.replication_enabled_replicator_classes }
+    let(:enabled_replicator_classes) { [replicators[0], replicators[1]] }
 
-    it 'includes replicator types' do
-      expected_names = helper.enabled_replicator_classes.map { |c| c.replicable_name_plural }
-
-      expect(names).to include(*expected_names)
+    before do
+      allow(helper).to receive(:enabled_replicator_classes).and_return(enabled_replicator_classes)
     end
 
-    it 'includes replicator data types' do
-      data_types = helper.replicable_types.map { |t| t[:data_type] }
-      expected_data_types = helper.enabled_replicator_classes.map { |c| c.data_type }
+    subject(:replicable_types) { helper.replicable_types }
 
-      expect(data_types).to include(*expected_data_types)
+    it 'includes all replicator_class_data' do
+      expected_replicable_types = enabled_replicator_classes.map { |c| replicable_class_data(c) }
+
+      expect(replicable_types).to include(*expected_replicable_types)
     end
+  end
 
-    it 'includes replicator data type titles' do
-      data_type_titles = helper.replicable_types.map { |t| t[:data_type_title] }
-      expected_data_type_titles = helper.enabled_replicator_classes.map { |c| c.data_type_title }
+  describe '#replicable_class_data' do
+    let(:replicator) { Gitlab::Geo.replication_enabled_replicator_classes[0] }
 
-      expect(data_type_titles).to include(*expected_data_type_titles)
-    end
+    subject(:replicable_class_data) { helper.replicable_class_data(replicator) }
 
-    it 'includes replicator data type sort order' do
-      helper.replicable_types.each { |t| expect(t[:data_type_sort_order]).to be_present }
-
-      expect(helper.replicable_types.size >= helper.enabled_replicator_classes.size).to be_truthy
+    it 'returns the correct data map' do
+      expect(replicable_class_data).to eq({
+        data_type: replicator.data_type,
+        data_type_title: replicator.data_type_title,
+        data_type_sort_order: replicator.data_type_sort_order,
+        title: replicator.replicable_title,
+        title_plural: replicator.replicable_title_plural,
+        name: replicator.replicable_name,
+        name_plural: replicator.replicable_name_plural,
+        graphql_field_name: replicator.graphql_field_name,
+        graphql_mutation_registry_class: replicator.graphql_mutation_registry_class,
+        verification_enabled: replicator.verification_enabled?
+      })
     end
   end
 
