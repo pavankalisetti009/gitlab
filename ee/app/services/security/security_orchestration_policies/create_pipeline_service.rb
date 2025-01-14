@@ -85,11 +85,12 @@ module Security
       end
 
       def last_scan_commit_sha
-        @last_scan_commit_sha ||= Ci::Pipeline.order_id_desc
-                                              .for_project(project).for_ref(params[:branch])
-                                              .with_pipeline_source(:security_orchestration_policy)
-                                              .find_by_id(pipeline_ids)&.sha
+        Ci::Pipeline.order_id_desc
+          .for_project(project).for_ref(params[:branch])
+          .with_pipeline_source(:security_orchestration_policy)
+          .find_by_id(pipeline_ids)&.sha
       end
+      strong_memoize_attr :last_scan_commit_sha
 
       def most_recent_commit_sha
         project.repository.commit(params[:branch])&.sha
