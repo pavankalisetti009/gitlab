@@ -67,7 +67,7 @@ RSpec.describe Projects::MarkForDeletionService do
       it 'errors' do
         expect(result).to eq(
           status: :error,
-          message: 'Project cannot be deleted because it is linked as Security Policy Project')
+          message: 'Project cannot be deleted because it is linked as a security policy project')
       end
 
       it "doesn't mark the project for deletion" do

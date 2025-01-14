@@ -394,8 +394,9 @@ module EE
       )
     end
 
-    def project_delete_delayed_button_data(project, button_text = nil)
+    def project_delete_delayed_button_data(project, button_text = nil, is_security_policy_project: false)
       project_delete_button_shared_data(project, button_text).merge({
+        is_security_policy_project: is_security_policy_project.to_s,
         restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
         delayed_deletion_date: permanent_deletion_date_formatted(project, Time.now.utc).to_s,
         form_path: project_path(project)
