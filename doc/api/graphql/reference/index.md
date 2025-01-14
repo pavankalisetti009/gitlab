@@ -33330,7 +33330,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Project.pipeline`
 
-Build pipeline of the project.
+Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch.
 
 Returns [`Pipeline`](#pipeline).
 
@@ -33359,7 +33359,7 @@ Returns [`PipelineAnalytics`](#pipelineanalytics).
 
 ##### `Project.pipelineCounts`
 
-Build pipeline counts of the project.
+Pipeline counts of the project.
 
 Returns [`PipelineCounts`](#pipelinecounts).
 
@@ -33408,7 +33408,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Project.pipelines`
 
-Build pipelines of the project.
+Pipelines of the project.
 
 Returns [`PipelineConnection`](#pipelineconnection).
 
