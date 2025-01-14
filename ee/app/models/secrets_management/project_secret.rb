@@ -35,6 +35,22 @@ module SecretsManagement
       end
     end
 
+    def self.from_name(project, name)
+      secrets_manager = project.secrets_manager
+      client = SecretsManagerClient.new
+      secret = client.read_secret_metadata(secrets_manager.ci_secrets_mount_path, secrets_manager.ci_data_path(name))
+
+      return if secret.nil?
+
+      new(
+        name: name,
+        project: project,
+        description: secret["custom_metadata"]["description"],
+        environment: secret["custom_metadata"]["environment"],
+        branch: secret["custom_metadata"]["branch"]
+      )
+    end
+
     def save(value)
       return false unless valid?
 

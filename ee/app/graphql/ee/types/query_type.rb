@@ -229,6 +229,12 @@ module EE
           description: 'List project secrets.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretsResolver
 
+        field :project_secret, ::Types::SecretsManagement::ProjectSecretType,
+          null: true,
+          experiment: { milestone: '17.9' },
+          description: 'View a specific project secret.',
+          resolver: ::Resolvers::SecretsManagement::ProjectSecretViewResolver
+
         field :ai_feature_settings,
           ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
           null: true,

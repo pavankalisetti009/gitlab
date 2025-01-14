@@ -950,6 +950,23 @@ Returns [`Project`](#project).
 | ---- | ---- | ----------- |
 | <a id="queryprojectfullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the project. For example, `gitlab-org/gitlab-foss`. |
 
+### `Query.projectSecret`
+
+View a specific project secret.
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Returns [`ProjectSecret`](#projectsecret).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryprojectsecretname"></a>`name` | [`String!`](#string) | Name of the project secret to view. |
+| <a id="queryprojectsecretprojectpath"></a>`projectPath` | [`ID!`](#id) | Project the secrets belong to. |
+
 ### `Query.projectSecrets`
 
 List project secrets.
