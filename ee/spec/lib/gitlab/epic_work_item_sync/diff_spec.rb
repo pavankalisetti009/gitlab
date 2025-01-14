@@ -202,7 +202,6 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
       context 'when epic and work item related epic links are equal' do
         before do
           create(:related_epic_link, source: source, target: target)
-          create(:work_item_link, source: source.work_item, target: target.work_item)
         end
 
         it { is_expected.to be_empty }
@@ -210,7 +209,11 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
 
       context 'when work item has no related link but epic has' do
         before do
-          create(:related_epic_link, source: source, target: target)
+          related_epic_link = create(:related_epic_link, source: source, target: target)
+          work_item_link = related_epic_link.related_work_item_link
+
+          related_epic_link.update!(related_work_item_link: nil)
+          work_item_link.destroy!
         end
 
         it { is_expected.to include("related_links") }

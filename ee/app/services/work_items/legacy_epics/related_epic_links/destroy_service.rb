@@ -3,6 +3,8 @@
 module WorkItems
   module LegacyEpics
     module RelatedEpicLinks
+      INSUFFICIENT_PERMISSIONS_MESSAGE = /could not be removed due to insufficient permissions/
+
       class DestroyService
         def initialize(legacy_epic_link, legacy_epic, current_user, synced_epic: false)
           @legacy_epic_link = legacy_epic_link
@@ -42,7 +44,11 @@ module WorkItems
         end
 
         def transform_result(result)
-          result[:message] = 'No Related Epic Link found' if result[:http_status] == 403
+          if result[:message].match?(INSUFFICIENT_PERMISSIONS_MESSAGE) || result[:http_status] == 403
+            result[:message] = 'No Related Epic Link found'
+            result[:http_status] = :not_found
+          end
+
           result[:message] = 'Relation was removed' if result[:status] == :success
 
           result

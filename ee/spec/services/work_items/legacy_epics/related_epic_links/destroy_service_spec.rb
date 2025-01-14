@@ -48,6 +48,12 @@ RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::DestroyService, feature
         create(:related_epic_link, source: source_epic, target: target_epic)
       end
 
+      before do
+        related_work_item_link = related_epic_link.related_work_item_link
+        related_epic_link.update!(related_work_item_link: nil)
+        related_work_item_link.destroy!
+      end
+
       it 'calls the legacy service and destroys the related epic link' do
         allow(Epics::RelatedEpicLinks::DestroyService).to receive(:new).and_call_original
         expect(Epics::RelatedEpicLinks::DestroyService).to receive(:new)
@@ -67,8 +73,8 @@ RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::DestroyService, feature
         create(:related_epic_link, source: source_epic, target: target_epic)
       end
 
-      let_it_be(:work_item_link) do
-        create(:work_item_link, source: source_epic.work_item, target: target_epic.work_item)
+      before do
+        related_epic_link.update!(related_work_item_link: nil)
       end
 
       it_behaves_like 'success'
@@ -76,7 +82,7 @@ RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::DestroyService, feature
 
     context 'when related epic link has a work item link associated' do
       let_it_be(:related_epic_link) do
-        create(:related_epic_link, :with_related_work_item_link, source: source_epic, target: target_epic)
+        create(:related_epic_link, source: source_epic, target: target_epic)
       end
 
       context 'when feature flags are enabled' do

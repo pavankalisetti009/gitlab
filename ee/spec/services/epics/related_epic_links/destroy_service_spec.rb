@@ -25,7 +25,7 @@ RSpec.describe Epics::RelatedEpicLinks::DestroyService, feature_category: :portf
     context 'with a synced work item' do
       let_it_be_with_reload(:source) { create(:epic, group: group) }
       let_it_be_with_reload(:target) { create(:epic, group: group) }
-      let_it_be(:work_item_link) { create(:work_item_link, source: source.work_item, target: target.work_item) }
+      let_it_be(:work_item_link) { issuable_link.related_work_item_link }
       let_it_be_with_refind(:issuable_link) { create(:related_epic_link, source: source, target: target) }
 
       it_behaves_like 'syncs all data from an epic to a work item' do

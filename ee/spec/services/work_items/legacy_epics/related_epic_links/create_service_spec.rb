@@ -14,7 +14,7 @@ RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::CreateService, feature_
     let_it_be(:issuable_a) { create :epic, group: group }
     let_it_be(:issuable_b) { create :epic, group: group }
     let_it_be(:issuable_link) do
-      create :related_epic_link, :with_related_work_item_link, source: issuable, target: issuable_b,
+      create :related_epic_link, source: issuable, target: issuable_b,
         link_type: IssuableLink::TYPE_RELATES_TO
     end
 

@@ -39,7 +39,9 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
       let_it_be(:source) { epic_a.work_item }
       let_it_be(:target) { epic_b.work_item }
       let_it_be(:link) { create(:work_item_link, source: source, target: target) }
-      let_it_be(:related_epic_link) { create(:related_epic_link, source: epic_a, target: epic_b) }
+      let_it_be_with_reload(:related_epic_link) do
+        create(:related_epic_link, source: epic_a, target: epic_b, related_work_item_link: link)
+      end
 
       let_it_be(:ids_to_remove) { [target.id] }
 
@@ -53,6 +55,11 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
 
       context 'when synced_work_item: true' do
         let(:extra_params) { { synced_work_item: true } }
+
+        before do
+          # Remove the FK, because otherwise it gets deleted through the constraint.
+          related_epic_link.update!(related_work_item_link: nil)
+        end
 
         it 'skips the permission check' do
           expect { destroy_links }.to change { WorkItems::RelatedWorkItemLink.count }.by(-1)

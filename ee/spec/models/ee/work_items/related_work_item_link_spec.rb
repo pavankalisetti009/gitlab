@@ -158,7 +158,9 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
     it { is_expected.to be_nil }
 
     context 'when there is a synced related epic record' do
-      let_it_be(:related_epic_link) { create(:related_epic_link, source: epic_a, target: epic_b) }
+      let_it_be(:related_epic_link) do
+        create(:related_epic_link, source: epic_a, target: epic_b, related_work_item_link: link)
+      end
 
       it { is_expected.to eq(related_epic_link) }
     end

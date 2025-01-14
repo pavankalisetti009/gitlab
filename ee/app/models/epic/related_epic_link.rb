@@ -9,7 +9,7 @@ class Epic::RelatedEpicLink < ApplicationRecord
 
   belongs_to :source, class_name: 'Epic'
   belongs_to :target, class_name: 'Epic'
-  belongs_to :related_work_item_link, class_name: 'WorkItems::RelatedWorkItemLink', optional: true,
+  belongs_to :related_work_item_link, class_name: 'WorkItems::RelatedWorkItemLink',
     foreign_key: :issue_link_id, inverse_of: :related_epic_link
 
   scope :with_api_entity_associations, -> do
@@ -18,6 +18,8 @@ class Epic::RelatedEpicLink < ApplicationRecord
       target: [:sync_object, :author, :labels, { group: [:saml_provider, :route] }]
     )
   end
+
+  validates :related_work_item_link, presence: true, on: :create
 
   class << self
     extend ::Gitlab::Utils::Override

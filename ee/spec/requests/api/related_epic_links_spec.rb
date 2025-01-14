@@ -394,19 +394,12 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
     context 'when user can access source epic' do
       before do
         source_group.add_guest(user)
+        target_group.add_guest(user)
       end
 
       context 'when target group is private' do
         let(:related_epic_link) do
           create(:related_epic_link, source: source_epic, target: create(:epic, group: group))
-        end
-
-        it_behaves_like 'not found resource', 'No Related Epic Link found'
-      end
-
-      context 'when epic_relations_for_non_members is disabled' do
-        before do
-          stub_feature_flags(epic_relations_for_non_members: false)
         end
 
         it_behaves_like 'not found resource', 'No Related Epic Link found'
