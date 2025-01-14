@@ -43,6 +43,22 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     end
   end
 
+  describe '#sync_callback_class' do
+    context 'with non existent callback class' do
+      it 'returns nil' do
+        expect(described_class.sync_callback_class('fake_association')).to be_nil
+      end
+    end
+
+    context 'with existent callback class' do
+      it 'returns nil' do
+        expect(described_class.sync_callback_class('related_vulnerabilities')).to eq(
+          ::WorkItems::DataSync::NonWidgets::RelatedVulnerabilities
+        )
+      end
+    end
+  end
+
   describe '#supported_quick_action_commands' do
     subject { work_item.supported_quick_action_commands }
 
