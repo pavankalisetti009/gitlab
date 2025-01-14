@@ -37,7 +37,7 @@ describe('GeoReplicable Store Actions', () => {
 
   beforeEach(() => {
     state = createState({
-      replicableType: MOCK_REPLICABLE_TYPE,
+      titlePlural: MOCK_REPLICABLE_TYPE,
       graphqlFieldName: MOCK_GRAPHQL_REGISTRY,
       graphqlMutationRegistryClass: MOCK_GRAPHQL_REGISTRY_CLASS,
       geoCurrentSiteId: null,

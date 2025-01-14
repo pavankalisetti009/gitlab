@@ -18,8 +18,10 @@ describe('GeoReplicableEmptyState', () => {
 
   const createComponent = (getters) => {
     const store = new Vuex.Store({
+      state: {
+        titlePlural: MOCK_REPLICABLE_TYPE,
+      },
       getters: {
-        replicableTypeName: () => MOCK_REPLICABLE_TYPE,
         hasFilters: () => false,
         ...getters,
       },

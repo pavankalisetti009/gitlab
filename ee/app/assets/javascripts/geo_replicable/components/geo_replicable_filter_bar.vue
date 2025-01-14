@@ -8,7 +8,7 @@ import {
   GlModalDirective,
 } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState, mapGetters } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import { s__, sprintf } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import {
@@ -46,8 +46,13 @@ export default {
     };
   },
   computed: {
-    ...mapState(['statusFilter', 'searchFilter', 'replicableItems', 'verificationEnabled']),
-    ...mapGetters(['replicableTypeName']),
+    ...mapState([
+      'statusFilter',
+      'searchFilter',
+      'replicableItems',
+      'verificationEnabled',
+      'titlePlural',
+    ]),
     search: {
       get() {
         return this.searchFilter;
@@ -60,7 +65,7 @@ export default {
     dropdownItems() {
       return FILTER_OPTIONS.map((option) => {
         if (option.value === FILTER_STATES.ALL.value) {
-          return { ...option, text: `${option.label} ${this.replicableTypeName}` };
+          return { ...option, text: `${option.label} ${this.titlePlural}` };
         }
 
         return { ...option, text: option.label };
@@ -79,7 +84,7 @@ export default {
     modalTitle() {
       return sprintf(this.$options.i18n.modalTitle, {
         action: this.readableModalAction && capitalizeFirstCharacter(this.readableModalAction),
-        replicableType: this.replicableTypeName,
+        replicableType: this.titlePlural,
       });
     },
     readableModalAction() {
@@ -150,7 +155,7 @@ export default {
     >
       <gl-sprintf :message="$options.i18n.modalBody">
         <template #action>{{ readableModalAction }}</template>
-        <template #replicableType>{{ replicableTypeName }}</template>
+        <template #replicableType>{{ titlePlural }}</template>
       </gl-sprintf>
     </gl-modal>
   </nav>

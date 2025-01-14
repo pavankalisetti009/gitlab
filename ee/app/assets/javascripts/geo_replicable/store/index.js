@@ -9,7 +9,7 @@ import createState from './state';
 Vue.use(Vuex);
 
 export const getStoreConfig = ({
-  replicableType,
+  titlePlural,
   graphqlFieldName,
   graphqlMutationRegistryClass,
   verificationEnabled,
@@ -20,7 +20,7 @@ export const getStoreConfig = ({
   getters,
   mutations,
   state: createState({
-    replicableType,
+    titlePlural,
     graphqlFieldName,
     graphqlMutationRegistryClass,
     verificationEnabled,

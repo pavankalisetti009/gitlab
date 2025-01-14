@@ -23,15 +23,13 @@ describe('GeoReplicableFilterBar', () => {
   const defaultState = {
     replicableItems: MOCK_BASIC_GRAPHQL_DATA,
     verificationEnabled: true,
+    titlePlural: MOCK_REPLICABLE_TYPE,
   };
 
   const createComponent = (initialState = {}, featureFlags = {}) => {
     const store = new Vuex.Store({
       state: { ...defaultState, ...initialState },
       actions: actionSpies,
-      getters: {
-        replicableTypeName: () => MOCK_REPLICABLE_TYPE,
-      },
     });
 
     wrapper = shallowMountExtended(GeoReplicableFilterBar, {
