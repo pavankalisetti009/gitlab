@@ -685,7 +685,9 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
 
       it 'does not publish LostNodeEvent' do
-        expect { execute_task }.to not_publish_event(Search::Zoekt::LostNodeEvent)
+        response = nil
+        expect { response = execute_task }.to not_publish_event(Search::Zoekt::LostNodeEvent)
+        expect(response).to be false
       end
     end
 

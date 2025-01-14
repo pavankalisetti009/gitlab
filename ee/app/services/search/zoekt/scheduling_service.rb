@@ -425,10 +425,11 @@ module Search
         return false if Rails.env.development?
         return false unless Node.marking_lost_enabled?
 
+        lost_node = Node.lost.limit(1).select(:id).last
+        return false unless lost_node
+
         execute_every 10.minutes do
-          Node.lost.select(:id).find_each do |node|
-            Gitlab::EventStore.publish(Search::Zoekt::LostNodeEvent.new(data: { zoekt_node_id: node.id }))
-          end
+          Gitlab::EventStore.publish(LostNodeEvent.new(data: { zoekt_node_id: lost_node.id }))
         end
       end
 
