@@ -1,7 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlLink } from '@gitlab/ui';
 import { VULNERABILITY_DETAIL_CODE_FLOWS } from 'ee/security_dashboard/constants';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { __, s__ } from '~/locale';
 import { SAST_FINDING_DISMISSED } from '~/diffs/constants';
 import DrawerItem from './findings_drawer_item.vue';
@@ -10,7 +9,6 @@ export default {
   name: 'FindingsDrawerDetails',
   DrawerItem,
   components: { DrawerItem, GlBadge, GlLink, GlButton },
-  mixins: [glFeatureFlagMixin()],
   props: {
     drawer: {
       type: Object,
@@ -38,7 +36,7 @@ export default {
       const codeFlowData = this.drawer.details?.find(
         (detail) => detail.type === VULNERABILITY_DETAIL_CODE_FLOWS,
       );
-      return this.glFeatures.mrVulnerabilityCodeFlow && codeFlowData?.items?.length > 0;
+      return codeFlowData?.items?.length > 0;
     },
   },
   methods: {

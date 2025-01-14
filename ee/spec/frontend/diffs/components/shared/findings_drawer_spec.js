@@ -25,11 +25,7 @@ describe('FindingsDrawer', () => {
     project: mockProject,
   };
 
-  const createWrapper = ({
-    findingDrawerOverrides = {},
-    featureFlags = { mrVulnerabilityCodeFlow: false },
-    mountFn = mountExtended,
-  } = {}) => {
+  const createWrapper = ({ findingDrawerOverrides = {}, mountFn = mountExtended } = {}) => {
     const propsData = {
       drawer: findingDrawerProps.drawer,
       project: findingDrawerProps.project,
@@ -49,11 +45,6 @@ describe('FindingsDrawer', () => {
 
     wrapper = mountFn(FindingsDrawer, {
       propsData,
-      provide: {
-        glFeatures: {
-          mrVulnerabilityCodeFlow: featureFlags.mrVulnerabilityCodeFlow,
-        },
-      },
       store,
     });
   };
@@ -141,113 +132,55 @@ describe('FindingsDrawer', () => {
     });
   });
 
-  describe('when `mrVulnerabilityCodeFlow` is enabled', () => {
-    describe('when `details` object is not empty', () => {
-      beforeEach(() => {
-        createWrapper({
-          findingDrawerOverrides: {
-            drawer: {
-              findings: [
-                {
-                  ...mockFindingDismissed,
-                  details: mockFindingDetails,
-                },
-              ],
-              index: 0,
-            },
+  describe('when `details` object is not empty', () => {
+    beforeEach(() => {
+      createWrapper({
+        findingDrawerOverrides: {
+          drawer: {
+            findings: [
+              {
+                ...mockFindingDismissed,
+                details: mockFindingDetails,
+              },
+            ],
+            index: 0,
           },
-          featureFlags: {
-            mrVulnerabilityCodeFlow: true,
-          },
-          mountFn: shallowMountExtended,
-        });
-      });
-
-      it('tabs should be shown', () => {
-        expect(findAllTabs()).toHaveLength(2);
-        expect(findTabs().exists()).toBe(true);
-      });
-
-      describe.each`
-        title                                | finderFn                     | index
-        ${VULNERABILITY_TAB_NAMES.DETAILS}   | ${findVulnerabilityDetails}  | ${0}
-        ${VULNERABILITY_TAB_NAMES.CODE_FLOW} | ${findVulnerabilityCodeFlow} | ${1}
-      `('Tabs', ({ title, finderFn, index }) => {
-        it(`renders tab with a title ${title} at index ${index}`, () => {
-          expect(findTabAtIndex(index).attributes('title')).toBe(title);
-        });
-
-        it(`renders ${title} component`, () => {
-          expect(finderFn().exists()).toBe(true);
-        });
+        },
+        mountFn: shallowMountExtended,
       });
     });
 
-    describe('when `details` object is empty', () => {
-      beforeEach(() => {
-        createWrapper({
-          featureFlags: {
-            mrVulnerabilityCodeFlow: true,
-          },
-        });
+    it('tabs should be shown', () => {
+      expect(findAllTabs()).toHaveLength(2);
+      expect(findTabs().exists()).toBe(true);
+    });
+
+    describe.each`
+      title                                | finderFn                     | index
+      ${VULNERABILITY_TAB_NAMES.DETAILS}   | ${findVulnerabilityDetails}  | ${0}
+      ${VULNERABILITY_TAB_NAMES.CODE_FLOW} | ${findVulnerabilityCodeFlow} | ${1}
+    `('Tabs', ({ title, finderFn, index }) => {
+      it(`renders tab with a title ${title} at index ${index}`, () => {
+        expect(findTabAtIndex(index).attributes('title')).toBe(title);
       });
 
-      it('does not show the tabs', () => {
-        expect(findTabs().exists()).toBe(false);
-      });
-
-      it('render `findVulnerabilityDetails` component without tabs', () => {
-        expect(findVulnerabilityDetails().exists()).toBe(true);
+      it(`renders ${title} component`, () => {
+        expect(finderFn().exists()).toBe(true);
       });
     });
   });
 
-  describe('when `mrVulnerabilityCodeFlow` is disabled', () => {
-    describe('when `details` object is not empty', () => {
-      beforeEach(() => {
-        createWrapper({
-          findingDrawerOverrides: {
-            drawer: {
-              findings: [
-                {
-                  ...mockFindingDismissed,
-                  details: mockFindingDetails,
-                },
-              ],
-              index: 0,
-            },
-          },
-          featureFlags: {
-            mrVulnerabilityCodeFlow: false,
-          },
-        });
-      });
-
-      it('does not show the tabs', () => {
-        expect(findTabs().exists()).toBe(false);
-      });
-
-      it('render `findVulnerabilityDetails` component without tabs', () => {
-        expect(findVulnerabilityDetails().exists()).toBe(true);
-      });
+  describe('when `details` object is empty', () => {
+    beforeEach(() => {
+      createWrapper();
     });
 
-    describe('when `details` object is empty', () => {
-      beforeEach(() => {
-        createWrapper({
-          featureFlags: {
-            mrVulnerabilityCodeFlow: false,
-          },
-        });
-      });
+    it('does not show the tabs', () => {
+      expect(findTabs().exists()).toBe(false);
+    });
 
-      it('does not show the tabs', () => {
-        expect(findTabs().exists()).toBe(false);
-      });
-
-      it('render `findVulnerabilityDetails` component without tabs', () => {
-        expect(findVulnerabilityDetails().exists()).toBe(true);
-      });
+    it('render `findVulnerabilityDetails` component without tabs', () => {
+      expect(findVulnerabilityDetails().exists()).toBe(true);
     });
   });
 });

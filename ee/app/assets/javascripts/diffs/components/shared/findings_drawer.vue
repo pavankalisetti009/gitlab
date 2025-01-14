@@ -15,7 +15,6 @@ import { VULNERABILITY_DETAIL_CODE_FLOWS } from 'ee/security_dashboard/constants
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getSeverity } from '~/ci/reports/utils';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import VulnerabilityCodeFlow from 'ee/vue_shared/components/code_flow/vulnerability_code_flow.vue';
 import FindingsDrawerDetails from './findings_drawer_details.vue';
@@ -47,7 +46,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     drawer: {
       type: Object,
@@ -83,7 +81,7 @@ export default {
       const codeFlowData = this.activeElement.details?.find(
         (detail) => detail.type === VULNERABILITY_DETAIL_CODE_FLOWS,
       );
-      return this.glFeatures.mrVulnerabilityCodeFlow && codeFlowData?.items?.length > 0;
+      return codeFlowData?.items?.length > 0;
     },
   },
   DRAWER_Z_INDEX,
