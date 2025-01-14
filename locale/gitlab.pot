@@ -21536,6 +21536,9 @@ msgstr ""
 msgid "Edit inline"
 msgstr ""
 
+msgid "Edit issue"
+msgstr ""
+
 msgid "Edit label"
 msgstr ""
 
