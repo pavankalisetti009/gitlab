@@ -71,7 +71,7 @@ module Vulnerabilities
         LEFT JOIN project_to_namespace_traversal_ids ON
           project_to_namespace_traversal_ids.project_id = vulnerability_statistics.project_id
         WHERE vulnerability_statistics.project_id IN (%{project_ids})
-        GROUP BY traversal_ids, namespace_id, date
+        GROUP BY project_to_namespace_traversal_ids.traversal_ids, namespace_id, date
       SQL
 
       MAX_PROJECTS = 1_000
