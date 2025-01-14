@@ -1,214 +1,141 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative './ci_shared_runner_alerts_shared_examples'
 
 RSpec.describe 'CI shared runner limits', feature_category: :runner do
-  using RSpec::Parameterized::TableSyntax
   include UsageQuotasHelpers
+  include ::Ci::MinutesHelpers
 
-  let_it_be(:user) { create(:user) }
+  using RSpec::Parameterized::TableSyntax
 
-  let(:project) { create(:project, :repository, namespace: group, shared_runners_enabled: true) }
-  let(:group) { create(:group) }
-  let(:pipeline) { create(:ci_empty_pipeline, project: project, sha: project.commit.sha, ref: 'master') }
-  let!(:job) { create(:ci_build, pipeline: pipeline) }
+  let_it_be(:owner) { create(:user) }
+  let_it_be(:developer) { create(:user) }
+
+  let_it_be(:group, reload: true) { create(:group) }
+  let_it_be(:namespace) { group }
+  let_it_be(:project, reload: true) { create(:project, :repository, namespace: group, shared_runners_enabled: true) }
+  let_it_be(:pipeline, reload: true) do
+    create(:ci_empty_pipeline, project: project, sha: project.commit.sha, ref: 'master')
+  end
+
+  let_it_be(:job, reload: true) { create(:ci_build, pipeline: pipeline) }
 
   before do
-    group.add_member(user, membership_level)
-    sign_in(user)
+    stub_ee_application_setting(should_check_namespace_plan: true)
+    group.add_member(owner, :owner)
+    group.add_member(developer, :developer)
+
+    sign_in(owner)
   end
 
-  where(:membership_level, :visible) do
-    :owner | true
-    :developer | false
+  shared_examples 'group pages with alerts' do
+    it_behaves_like 'page with the alert' do
+      before do
+        visit group_path(group)
+      end
+    end
   end
 
-  with_them do
-    context 'when on a project related page' do
-      where(:membership_level, :visible) do
-        :owner | true
-        :developer | false
+  shared_examples 'group pages with no alerts' do
+    it_behaves_like 'page with no alerts' do
+      before do
+        visit group_path(group)
+      end
+    end
+  end
+
+  context 'when the limit is not exceeded' do
+    before do
+      set_ci_minutes_used(group, 500, project: project)
+      group.update!(shared_runners_minutes_limit: 1000)
+    end
+
+    it_behaves_like 'project pages with no alerts'
+    it_behaves_like 'group pages with no alerts'
+  end
+
+  context 'when close to the limit' do
+    where(:case_name, :percentage, :minutes_limit, :minutes_used, :minutes_left) do
+      'warning level' | 25 | 1000 | 750 | 250
+      'danger level'  | 5  | 1000 | 950 | 50
+    end
+
+    with_them do
+      let(:message) do
+        "#{group.name} namespace has #{minutes_left} / #{minutes_limit} (#{percentage}%) shared runner " \
+          "compute minutes remaining. When all compute minutes are used up, no new jobs or pipelines will run " \
+          "in this namespace's projects."
       end
 
       before do
-        group.add_member(user, membership_level)
+        set_ci_minutes_used(group, minutes_used, project: project)
+        group.update!(shared_runners_minutes_limit: minutes_limit)
       end
 
-      where(:case_name, :percentage, :minutes_limit, :minutes_used, :minutes_left) do
-        'warning level' | 25 | 1000 | 750 | 250
-        'danger level'  | 5  | 1000 | 950 | 50
-      end
+      it_behaves_like 'project pages with alerts'
+      it_behaves_like 'group pages with alerts'
 
-      with_them do
-        context "when there is a notification and minutes still exist", :js do
-          let(:message) do
-            "#{group.name} namespace has #{minutes_left} / #{minutes_limit} (#{percentage}%) shared runner " \
-              "compute minutes remaining. When all compute minutes are used up, no new jobs or pipelines will run " \
-              "in this namespace's projects."
-          end
-
-          before do
-            group.update!(shared_runners_minutes_limit: minutes_limit)
-            allow_next_instance_of(::Ci::Minutes::Usage) do |instance|
-              allow(instance).to receive(:total_minutes_used).and_return(minutes_used)
-            end
-          end
-
-          it 'displays a warning message on pipelines page' do
-            visit project_pipelines_path(project)
-
-            alerts_according_to_role(visible: visible, message: message)
-          end
-
-          it 'displays a warning message on project homepage' do
-            visit project_path(project)
-
-            alerts_according_to_role(visible: visible, message: message)
-          end
-
-          it 'displays a warning message on a job page' do
-            visit project_job_path(project, job)
-
-            alerts_according_to_role(visible: visible, message: message)
-          end
-        end
-      end
-
-      context 'when limit is exceeded', :js do
-        let(:group) { create(:group, :with_used_build_minutes_limit) }
-        let(:message) do
-          "#{group.name} namespace has reached its shared runner compute minutes quota. " \
-            "To run new jobs and pipelines in this namespace's projects, buy additional compute minutes."
+      context 'when user role is not eligible to see the alert' do
+        before do
+          sign_in(developer)
         end
 
-        it 'displays a warning message on project homepage' do
-          visit project_path(project)
-
-          alerts_according_to_role(visible: visible, message: message)
-        end
-
-        it 'displays a warning message on pipelines page' do
-          visit project_pipelines_path(project)
-
-          alerts_according_to_role(visible: visible, message: message)
-        end
-
-        it 'displays a warning message on a job page' do
-          visit project_job_path(project, job)
-
-          alerts_according_to_role(visible: visible, message: message)
-        end
-
-        context 'when in a subgroup', :saas do
-          let(:subgroup) { create(:group, parent: group) }
-          let(:subproject) { create(:project, :repository, namespace: subgroup, shared_runners_enabled: true) }
-          let(:pipeline) { create(:ci_empty_pipeline, project: subproject, sha: subproject.commit.sha, ref: 'master') }
-          let!(:job) { create(:ci_build, pipeline: pipeline) }
-
-          it 'displays a warning message on subproject homepage' do
-            visit project_path(subproject)
-
-            alerts_according_to_role(visible: visible, message: message)
-          end
-        end
-      end
-
-      context 'when limit not yet exceeded' do
-        let(:group) { create(:group, :with_not_used_build_minutes_limit) }
-
-        it 'does not display a warning message on project homepage' do
-          visit project_path(project)
-
-          expect_no_quota_exceeded_alert
-        end
-
-        it 'does not display a warning message on pipelines page' do
-          visit project_pipelines_path(project)
-
-          expect_no_quota_exceeded_alert
-        end
-
-        it 'displays a warning message on a job page' do
-          visit project_job_path(project, job)
-
-          expect_no_quota_exceeded_alert
-        end
-      end
-    end
-
-    context 'when on a group related page' do
-      where(:case_name, :percentage, :minutes_limit, :minutes_used, :minutes_left) do
-        'warning level' | 25 | 1000 | 750 | 250
-        'danger level'  | 5  | 1000 | 950 | 50
-      end
-
-      with_them do
-        context "when there is a notification and minutes still exist", :js do
-          let(:message) do
-            "#{group.name} namespace has #{minutes_left} / #{minutes_limit} (#{percentage}%) shared runner " \
-              "compute minutes remaining. When all compute minutes are used up, no new jobs or pipelines will run " \
-              "in this namespace's projects."
-          end
-
-          before do
-            group.update!(shared_runners_minutes_limit: minutes_limit)
-            allow_next_instance_of(::Ci::Minutes::Usage) do |instance|
-              allow(instance).to receive(:total_minutes_used).and_return(minutes_used)
-            end
-          end
-
-          it 'displays a warning message on group information page' do
-            visit group_path(group)
-
-            alerts_according_to_role(visible: visible, message: message)
-          end
-        end
-      end
-
-      context 'when limit is exceeded', :js do
-        let(:group) { create(:group, :with_used_build_minutes_limit) }
-        let(:message) do
-          "#{group.name} namespace has reached its shared runner compute minutes quota. " \
-            "To run new jobs and pipelines in this namespace's projects, buy additional compute minutes."
-        end
-
-        it 'displays a warning message on group information page' do
-          visit group_path(group)
-
-          alerts_according_to_role(visible: visible, message: message)
-        end
-      end
-
-      context 'when limit not yet exceeded' do
-        let(:group) { create(:group, :with_not_used_build_minutes_limit) }
-
-        it 'does not display a warning message on group information page' do
-          visit group_path(group)
-
-          expect_no_quota_exceeded_alert
-        end
+        it_behaves_like 'project pages with no alerts'
+        it_behaves_like 'group pages with no alerts'
       end
     end
   end
 
-  def alerts_according_to_role(visible: false, message: '')
-    visible ? expect_quota_exceeded_alert(message) : expect_no_quota_exceeded_alert
-  end
-
-  def expect_quota_exceeded_alert(message)
-    expect(has_testid?('ci-minute-limit-banner', count: 1)).to be true
-
-    banner = find_by_testid('ci-minute-limit-banner')
-
-    expect(banner).to match_selector('.js-minute-limit-banner')
-    within(banner) do
-      expect(page).to have_content(message)
-      expect(page).to have_link 'Buy more compute minutes', href: buy_minutes_subscriptions_link(group)
-      expect(page).to have_link 'See usage statistics', href: usage_quotas_path(group, anchor: 'pipelines-quota-tab')
+  context 'when the limit is exceeded' do
+    before do
+      set_ci_minutes_used(group, 1001, project: project)
+      group.update!(shared_runners_minutes_limit: 1000)
     end
-  end
 
-  def expect_no_quota_exceeded_alert
-    expect(has_testid?('ci-minute-limit-banner')).to be false
+    let(:message) do
+      "#{group.name} namespace has reached its shared runner compute minutes quota. " \
+        "To run new jobs and pipelines in this namespace's projects, buy additional compute minutes."
+    end
+
+    it_behaves_like 'project pages with alerts'
+    it_behaves_like 'group pages with alerts'
+
+    context 'when user role is not eligible to see the alert' do
+      before do
+        sign_in(developer)
+      end
+
+      it_behaves_like 'project pages with no alerts'
+      it_behaves_like 'group pages with no alerts'
+    end
+
+    context 'when in a subgroup', :saas do
+      let_it_be(:subgroup, reload: true) { create(:group, parent: group) }
+      let_it_be(:subproject, reload: true) do
+        create(:project, :repository, namespace: subgroup, shared_runners_enabled: true)
+      end
+
+      let_it_be(:pipeline, reload: true) do
+        create(:ci_empty_pipeline, project: subproject, sha: subproject.commit.sha, ref: 'master')
+      end
+
+      let_it_be(:job, reload: true) { create(:ci_build, pipeline: pipeline) }
+
+      it_behaves_like 'page with the alert' do
+        before do
+          visit project_path(subproject)
+        end
+      end
+
+      context 'when user role is not eligible to see the alert' do
+        before do
+          sign_in(developer)
+          visit project_path(subproject)
+        end
+
+        it_behaves_like 'page with no alerts'
+      end
+    end
   end
 end
