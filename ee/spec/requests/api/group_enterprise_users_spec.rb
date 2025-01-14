@@ -32,6 +32,7 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
 
   let(:current_user) { owner_of_enterprise_group }
   let(:group_id) { enterprise_group.id }
+  let(:user_id) { enterprise_user_of_the_group.id }
   let(:params) { {} }
 
   shared_examples 'authentication and authorization requirements' do
@@ -195,7 +196,7 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
       end
     end
 
-    context 'for ative parameter' do
+    context 'for active parameter' do
       let(:params) { { active: true } }
 
       it 'returns only active enterprise users' do
@@ -318,6 +319,32 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
             ].sort_by(&:id).reverse.pluck(:id)
           )
         end
+      end
+    end
+  end
+
+  describe 'GET /groups/:id/enterprise_users/:user_id' do
+    subject(:get_group_enterprise_user) do
+      get api("/groups/#{group_id}/enterprise_users/#{user_id}", current_user)
+    end
+
+    include_examples 'authentication and authorization requirements'
+
+    it 'returns the enterprise user of the group' do
+      get_group_enterprise_user
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response['id']).to eq(enterprise_user_of_the_group.id)
+    end
+
+    context 'when user_id does not refer to an enterprise user of the group' do
+      let(:user_id) { enterprise_user_of_another_group.id }
+
+      it 'returns 404 Not found' do
+        get_group_enterprise_user
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 Not found')
       end
     end
   end

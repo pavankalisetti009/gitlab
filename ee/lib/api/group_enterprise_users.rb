@@ -46,6 +46,18 @@ module API
 
         present paginate(users), with: ::API::Entities::UserPublic
       end
+
+      desc 'Get a single enterprise user of the group' do
+        success ::API::Entities::UserPublic
+      end
+      params do
+        requires :user_id, type: Integer, desc: 'ID of user account.'
+      end
+      get ":id/enterprise_users/:user_id" do
+        user = user_group.enterprise_users.find(declared_params[:user_id])
+
+        present user, with: ::API::Entities::UserPublic
+      end
     end
   end
 end
