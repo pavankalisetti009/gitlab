@@ -29,7 +29,7 @@ RSpec.describe 'Single sign on for signing up through sign in flow for user pick
 
   def fills_in_welcome_form
     select 'Software Developer', from: 'user_onboarding_status_role'
-    select 'A different reason', from: 'user_registration_objective'
+    select 'A different reason', from: 'user_onboarding_status_registration_objective'
     fill_in 'Why are you signing up? (optional)', with: 'My reason'
 
     choose 'My company or team'

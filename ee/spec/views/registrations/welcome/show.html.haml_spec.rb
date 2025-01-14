@@ -47,7 +47,7 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
     end
 
     it 'renders a select and text field for additional information' do
-      is_expected.to have_selector('select[name="user[registration_objective]"]')
+      is_expected.to have_selector('select[name="user[onboarding_status_registration_objective]"]')
       is_expected.to have_selector('input[name="jobs_to_be_done_other"]', visible: false)
     end
   end

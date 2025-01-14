@@ -69,7 +69,7 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
 
   def fills_in_welcome_form
     select 'Software Developer', from: 'user_onboarding_status_role'
-    select 'A different reason', from: 'user_registration_objective'
+    select 'A different reason', from: 'user_onboarding_status_registration_objective'
     fill_in 'Why are you signing up? (optional)', with: 'My reason'
 
     choose 'My company or team'

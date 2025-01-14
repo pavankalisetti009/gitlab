@@ -96,6 +96,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
     let(:joining_project) { 'false' }
     let(:role) { 'software_developer' }
     let(:onboarding_status_role) { nil }
+    let(:onboarding_status_registration_objective) { nil }
     let(:extra_params) { {} }
     let(:update_params) do
       {
@@ -104,7 +105,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           setup_for_company: setup_for_company,
           registration_objective: 'code_storage',
           onboarding_status_joining_project: joining_project,
-          onboarding_status_role: onboarding_status_role
+          onboarding_status_role: onboarding_status_role,
+          onboarding_status_registration_objective: onboarding_status_registration_objective
         },
         jobs_to_be_done_other: '_jobs_to_be_done_other_',
         glm_source: 'some_source',
@@ -135,6 +137,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             patch_update
 
             expect(controller.current_user.registration_objective).to eq('code_storage')
+            expect(controller.current_user.onboarding_status_registration_objective).to eq('code_storage')
           end
         end
       end
@@ -159,6 +162,30 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           it 'sets onboarding_status_role and role' do
             expect(user.role).to eq('devops_engineer')
             expect(user.onboarding_status_role).to eq(2)
+          end
+        end
+      end
+
+      context 'with registration_objective updates' do
+        before do
+          patch_update
+          user.reset
+        end
+
+        context 'when registration_objective field is provided' do
+          it 'sets registration_objective and onboarding_status_registration_objective' do
+            expect(user.registration_objective).to eq('code_storage')
+            expect(user.onboarding_status_registration_objective).to eq('code_storage')
+          end
+        end
+
+        context 'when onboarding_status_registration_objective field is provided' do
+          let(:registration_objective) { nil }
+          let(:onboarding_status_registration_objective) { 2 }
+
+          it 'sets onboarding_status_registration_objective and registration_objective' do
+            expect(user.registration_objective).to eq('code_storage')
+            expect(user.onboarding_status_registration_objective).to eq('code_storage')
           end
         end
       end

@@ -225,6 +225,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         user.update!(
           onboarding_status_initial_registration_type: 'trial',
           onboarding_status_registration_type: 'trial',
+          onboarding_status_registration_objective: 'ci',
           onboarding_status_glm_source: glm_source,
           onboarding_status_glm_content: glm_content
         )
