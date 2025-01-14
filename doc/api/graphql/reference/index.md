@@ -27841,6 +27841,7 @@ Represents an entry from the Cloud License history.
 | <a id="linkedworkitemtypelinktype"></a>`linkType` | [`String!`](#string) | Type of link. |
 | <a id="linkedworkitemtypelinkupdatedat"></a>`linkUpdatedAt` | [`Time!`](#time) | Timestamp the link was updated. |
 | <a id="linkedworkitemtypeworkitem"></a>`workItem` | [`WorkItem`](#workitem) | Linked work item. |
+| <a id="linkedworkitemtypeworkitemstate"></a>`workItemState` | [`WorkItemState!`](#workitemstate) | State of the linked work item. |
 
 ### `Location`
 
