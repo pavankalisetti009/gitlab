@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Namespaces
+module AppConfig
   class CascadeDuoFeaturesEnabledWorker
     include ApplicationWorker
     extend ActiveSupport::Concern
@@ -14,12 +14,8 @@ module Namespaces
     loggable_arguments 0
     worker_resource_boundary :memory
 
-    def perform(*args)
-      group_id = args[0]
-      group = Group.find(group_id)
-      duo_features_enabled = group.namespace_settings.duo_features_enabled
-
-      ::Ai::CascadeDuoFeaturesEnabledService.new(duo_features_enabled).cascade_for_group(group)
+    def perform(duo_features_enabled)
+      ::Ai::CascadeDuoFeaturesEnabledService.new(duo_features_enabled).cascade_for_instance
     end
   end
 end
