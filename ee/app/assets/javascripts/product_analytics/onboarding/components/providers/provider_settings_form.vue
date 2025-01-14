@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlButton, GlFormInput, GlFormGroup } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
+import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
 import productAnalyticsProjectSettingsUpdate from 'ee/product_analytics/graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
 import {
   FORM_FIELD_CUBE_API_BASE_URL,

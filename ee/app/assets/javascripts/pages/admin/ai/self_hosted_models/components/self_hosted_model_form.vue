@@ -13,7 +13,7 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
-import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
+import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
 import { SELF_HOSTED_MODEL_PLATFORMS, BEDROCK_DUMMY_ENDPOINT } from '../constants';
 import TestConnectionButton from './test_connection_button.vue';
 
