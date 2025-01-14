@@ -10,7 +10,7 @@ module Types
         graphql_name 'WorkItemWidgetIteration'
         description 'Represents an iteration widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :iteration,
           ::Types::IterationType,

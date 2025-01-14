@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetTestReports'
         description 'Represents a test reports widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :test_reports, ::Types::RequirementsManagement::TestReportType.connection_type,
           null: true,
