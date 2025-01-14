@@ -4116,6 +4116,15 @@
   :weight: 2
   :idempotent: false
   :tags: []
+- :name: repositories_post_receive
+  :worker_name: Repositories::PostReceiveWorker
+  :feature_category: :source_code_management
+  :has_external_dependencies: false
+  :urgency: :high
+  :resource_boundary: :cpu
+  :weight: 5
+  :idempotent: true
+  :tags: []
 - :name: repositories_rewrite_history
   :worker_name: Repositories::RewriteHistoryWorker
   :feature_category: :source_code_management

@@ -118,7 +118,8 @@ RSpec.describe "Code owner approvals reset after merging to source branch", :js,
           # Simulate post receive
           newrev = project.repository.commit(source_branch).sha
           changes = Base64.encode64("#{oldrev} #{newrev} refs/heads/#{source_branch}")
-          PostReceive.new.perform("project-#{project.id}", create(:key, user: user).shell_id, changes)
+          Repositories::PostReceiveWorker.new.perform("project-#{project.id}", create(:key, user: user).shell_id,
+            changes)
         end
 
         context 'and the other merge request contains changes related to code owners' do
