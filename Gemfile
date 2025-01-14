@@ -44,7 +44,6 @@ gem 'bootsnap', '~> 1.18.3', require: false, feature_category: :shared
 gem 'ffi', '~> 1.17', force_ruby_platform: true, feature_category: :shared
 
 gem 'openssl', '~> 3.0', feature_category: :shared
-gem 'ipaddr', '~> 1.2.5', feature_category: :shared
 
 gem 'gitlab-safe_request_store', path: 'gems/gitlab-safe_request_store', feature_category: :shared
 
