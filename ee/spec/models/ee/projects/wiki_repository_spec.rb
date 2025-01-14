@@ -13,7 +13,7 @@ RSpec.describe Projects::WikiRepository, feature_category: :geo_replication do
     }
   end
 
-  include_examples 'a replicable model with a separate table for verification state' do
+  include_examples 'a verifiable model with a separate table for verification state' do
     let(:verifiable_model_record) { build(:project_wiki_repository) }
     let(:unverifiable_model_record) { nil }
   end

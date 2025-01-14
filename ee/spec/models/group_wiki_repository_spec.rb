@@ -30,7 +30,7 @@ RSpec.describe GroupWikiRepository, :geo do
       stub_current_geo_node(node)
     end
 
-    include_examples 'a replicable model with a separate table for verification state' do
+    include_examples 'a verifiable model with a separate table for verification state' do
       let_it_be(:group) { create(:group) }
 
       let(:verifiable_model_record) { build(:group_wiki_repository, group: group) }
