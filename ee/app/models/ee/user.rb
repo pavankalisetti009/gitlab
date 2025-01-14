@@ -50,6 +50,7 @@ module EE
       delegate :provisioned_by_group, :provisioned_by_group=,
         :provisioned_by_group_id, :provisioned_by_group_id=,
         :onboarding_status_step_url, :onboarding_status_step_url=,
+        :onboarding_status_registration_objective, :onboarding_status_registration_objective=,
         :onboarding_status_registration_type, :onboarding_status_registration_type=,
         :onboarding_status_email_opt_in, :onboarding_status_email_opt_in=, :onboarding_status, :onboarding_status=,
         :onboarding_status_initial_registration_type, :onboarding_status_initial_registration_type=,

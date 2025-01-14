@@ -12,8 +12,9 @@ module EE
 
       attribute :onboarding_status, ::Gitlab::Database::Type::IndifferentJsonb.new
       store_accessor(
-        :onboarding_status, :step_url, :email_opt_in, :initial_registration_type, :registration_type, :glm_content,
-        :glm_source, :joining_project, :role, prefix: true
+        :onboarding_status, :step_url, :email_opt_in,
+        :initial_registration_type, :registration_type, :registration_objective,
+        :glm_content, :glm_source, :joining_project, :role, prefix: true
       )
 
       # Values here should match the role enums in app/validators/json_schemas/user_detail_onboarding_status.json
@@ -31,8 +32,24 @@ module EE
         }
       end
 
+      def onboarding_status_registration_objective
+        value = super
+        return unless value
+
+        self.class.onboarding_status_registration_objectives.key(value.to_i)
+      end
+
+      def onboarding_status_registration_objective=(value)
+        # Handle both string keys and integer values
+        if value.is_a?(String)
+          super(self.class.onboarding_status_registration_objectives[value])
+        else
+          super
+        end
+      end
+
       def self.onboarding_status_registration_objectives
-        ::UserDetail::REGISTRATION_OBJECTIVE_PAIRS
+        ::UserDetail::REGISTRATION_OBJECTIVE_PAIRS.transform_keys(&:to_s)
       end
     end
   end

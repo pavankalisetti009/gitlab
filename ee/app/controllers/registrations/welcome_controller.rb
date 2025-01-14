@@ -72,7 +72,8 @@ module Registrations
                         :setup_for_company,
                         :registration_objective,
                         :onboarding_status_joining_project,
-                        :onboarding_status_role
+                        :onboarding_status_role,
+                        :onboarding_status_registration_objective
                       )
                       .merge(params.permit(:jobs_to_be_done_other))
                       .merge(onboarding_registration_type_params)
@@ -89,6 +90,13 @@ module Registrations
       else
         base_params[:onboarding_status_role] = base_params[:onboarding_status_role].to_i
         base_params[:role] = ::UserDetail.onboarding_status_roles.key(base_params[:onboarding_status_role])
+      end
+
+      # Dup registration_objective info for registration_objective and onboarding_status_registration_objective
+      if base_params[:registration_objective].present?
+        base_params[:onboarding_status_registration_objective] = base_params[:registration_objective]
+      elsif base_params[:onboarding_status_registration_objective].present?
+        base_params[:registration_objective] = base_params[:onboarding_status_registration_objective]
       end
 
       base_params

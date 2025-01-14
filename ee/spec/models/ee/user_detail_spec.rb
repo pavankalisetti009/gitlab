@@ -61,4 +61,36 @@ RSpec.describe UserDetail, feature_category: :system_access do
       expect(registration_objective_enum).to eq(described_class.onboarding_status_registration_objectives.values)
     end
   end
+
+  describe '#onboarding_status_registration_objective=' do
+    let(:user_detail) { build(:user_detail) }
+
+    context 'when given valid values' do
+      it 'correctly handles string values' do
+        value = 'basics'
+        user_detail.onboarding_status_registration_objective = value
+        expect(user_detail.onboarding_status_registration_objective).to eq(value)
+      end
+
+      it 'correctly handles integer values' do
+        value = 0
+        user_detail.onboarding_status_registration_objective = value
+        expect(user_detail.onboarding_status_registration_objective).to eq('basics')
+      end
+    end
+
+    context 'when given invalid values' do
+      it 'returns nil for an invalid string value' do
+        value = "something_invalid"
+        user_detail.onboarding_status_registration_objective = value
+        expect(user_detail.onboarding_status_registration_objective).to be_nil
+      end
+
+      it 'returns nil for an invalid integer value' do
+        value = 100
+        user_detail.onboarding_status_registration_objective = value
+        expect(user_detail.onboarding_status_registration_objective).to be_nil
+      end
+    end
+  end
 end
