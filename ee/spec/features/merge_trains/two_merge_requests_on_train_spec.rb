@@ -288,7 +288,7 @@ RSpec.describe 'Two merge requests on a merge train', feature_category: :merge_t
       newrev = project.repository.commit(branch).sha
       changes = Base64.encode64("#{oldrev} #{newrev} refs/heads/#{branch}")
 
-      PostReceive.new.perform("project-#{project.id}", key.shell_id, changes)
+      Repositories::PostReceiveWorker.new.perform("project-#{project.id}", key.shell_id, changes)
     end
   end
 end

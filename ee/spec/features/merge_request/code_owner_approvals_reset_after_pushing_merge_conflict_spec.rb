@@ -125,7 +125,8 @@ RSpec.describe "Code owner approvals reset after pushing merge conflict to sourc
           add_conflict_with_rb_file_to_source_branch
           newrev = project.repository.commit(branch_name).sha
           changes = Base64.encode64("#{oldrev} #{newrev} refs/heads/#{branch_name}")
-          PostReceive.new.perform("project-#{project.id}", create(:key, user: user).shell_id, changes)
+          Repositories::PostReceiveWorker.new.perform("project-#{project.id}", create(:key, user: user).shell_id,
+            changes)
         end
 
         it 'resets code owner approvals' do
