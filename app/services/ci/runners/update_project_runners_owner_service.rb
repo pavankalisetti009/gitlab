@@ -29,10 +29,13 @@ module Ci
           runners_with_fallback_owner = runners_missing_owner_project.where_exists(runner_projects.limit(1))
 
           Ci::Runner.transaction do
+            runner_ids = runners_with_fallback_owner.limit(BATCH_SIZE).pluck_primary_key
+
             runners_with_fallback_owner.update_all(runner_id_update_query(Ci::Runner.arel_table[:id]))
-            Ci::RunnerManager.project_type
-              .for_runner(runners_with_fallback_owner.limit(BATCH_SIZE).pluck_primary_key)
+            Ci::RunnerManager.project_type.for_runner(runner_ids)
               .update_all(runner_id_update_query(Ci::RunnerManager.arel_table[:runner_id]))
+            Ci::RunnerTagging.project_type.for_runner(runner_ids)
+              .update_all(runner_id_update_query(Ci::RunnerTagging.arel_table[:runner_id]))
 
             # Delete any orphaned runners that are still pointing to the project
             #   (they are the ones which no longer have any matching ci_runner_projects records)
