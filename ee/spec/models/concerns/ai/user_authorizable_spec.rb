@@ -636,6 +636,15 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '#duo_pro_cache_key_formatted' do
+    it 'formats the cache key correctly' do
+      formatted_cache_key = user.duo_pro_cache_key_formatted
+      expected_cache_key = "user-#{user.id}-code-suggestions-add-on-cache"
+
+      expect(formatted_cache_key).to eq(expected_cache_key)
+    end
+  end
+
   context 'on .com', :saas do
     let_it_be_with_reload(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan, name: 'ultimate_group') }
     let_it_be_with_reload(:bronze_group) { create(:group_with_plan, plan: :bronze_plan, name: 'bronze_group') }
@@ -771,6 +780,15 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       User.clear_group_with_ai_available_cache(user.id)
 
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to be_nil
+    end
+  end
+
+  describe '.duo_pro_cache_key_formatted' do
+    it 'formats the cache key correctly' do
+      formatted_cache_key = User.duo_pro_cache_key_formatted(123)
+      expected_cache_key = 'user-123-code-suggestions-add-on-cache'
+
+      expect(formatted_cache_key).to eq(expected_cache_key)
     end
   end
 end

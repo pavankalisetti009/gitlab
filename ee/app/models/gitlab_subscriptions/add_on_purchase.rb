@@ -108,7 +108,7 @@ module GitlabSubscriptions
         deleted_assignments_count += batch.for_user_ids(ineligible_user_ids).delete_all
 
         cache_keys = ineligible_user_ids.map do |user_id|
-          format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id)
+          User.duo_pro_cache_key_formatted(user_id)
         end
 
         Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
