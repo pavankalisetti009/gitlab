@@ -17,7 +17,7 @@ module EE
             format(_("Added %{target} as a linked item blocked by this %{work_item_type}."),
               work_item_type: work_item_type(quick_action_target), target: target_issues.to_sentence)
           end
-          params '<#issue | group/project#issue | issue URL>'
+          params '<#item | group/project#item | item URL>'
           types Issue
           condition { can_block_issues? }
           parse_params { |issues| format_params(issues) }
@@ -34,7 +34,7 @@ module EE
             format(_("Added %{target} as a linked item blocking this %{work_item_type}."),
               work_item_type: work_item_type(quick_action_target), target: target_issues.to_sentence)
           end
-          params '<#issue | group/project#issue | issue URL>'
+          params '<#item | group/project#item | item URL>'
           types Issue
           condition { can_block_issues? }
           parse_params { |issues| format_params(issues) }
