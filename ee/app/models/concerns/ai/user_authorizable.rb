@@ -42,7 +42,7 @@ module Ai
       end
 
       def duo_pro_cache_key_formatted
-        format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: id)
+        self.class.duo_pro_cache_key_formatted(id)
       end
 
       def eligible_for_self_managed_gitlab_duo_pro?
@@ -155,6 +155,10 @@ module Ai
         ::Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
           Rails.cache.delete_multi(cache_keys)
         end
+      end
+
+      def duo_pro_cache_key_formatted(user_id)
+        format(DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id)
       end
     end
   end

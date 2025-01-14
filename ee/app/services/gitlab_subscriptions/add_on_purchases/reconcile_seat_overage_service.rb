@@ -31,7 +31,7 @@ module GitlabSubscriptions
           removed_seats_count += add_on_purchase.assigned_users.by_user(user_ids).delete_all
 
           cache_keys = user_ids.map do |user_id|
-            format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id)
+            User.duo_pro_cache_key_formatted(user_id)
           end
 
           Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do

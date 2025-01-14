@@ -82,7 +82,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
         end
 
         it 'expires the cache key for the user', :use_clean_rails_redis_caching do
-          cache_key = format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id)
+          cache_key = User.duo_pro_cache_key_formatted(user_id)
           Rails.cache.write(cache_key, true, expires_in: 1.hour)
 
           expect { subject }.to change { Rails.cache.read(cache_key) }.from(true).to(nil)

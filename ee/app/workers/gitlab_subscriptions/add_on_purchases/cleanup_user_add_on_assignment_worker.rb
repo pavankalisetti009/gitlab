@@ -24,7 +24,7 @@ module GitlabSubscriptions
 
         assignment.destroy!
 
-        Rails.cache.delete(format(User::DUO_PRO_ADD_ON_CACHE_KEY, user_id: user_id))
+        Rails.cache.delete(User.duo_pro_cache_key_formatted(user_id))
 
         log_event
       end
