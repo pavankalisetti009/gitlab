@@ -5,7 +5,7 @@ module Security
     include GovernUsageGroupTracking
 
     layout 'instance_security'
-    track_internal_event :show, name: 'visit_security_dashboard', category: name
+    track_internal_event :show, name: 'visit_security_center', category: name
 
     private
 
