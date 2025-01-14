@@ -68,7 +68,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
     end
 
     describe "#execute" do
-      subject { service.execute }
+      subject(:execute) { service.execute }
 
       let(:error_message) { "foobar" }
 
@@ -92,7 +92,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         end
 
         it "does not create pipelines" do
-          expect { subject }.not_to change(project.all_pipelines, :count)
+          expect { execute }.not_to change(project.all_pipelines, :count)
         end
       end
 
@@ -107,11 +107,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         end
 
         it "creates a single pipeline" do
-          expect { subject }.to change(project.all_pipelines, :count).by(1)
+          expect { execute }.to change(project.all_pipelines, :count).by(1)
         end
 
         it "creates a stage" do
-          expect { subject }.to change(project.stages, :count).by(1)
+          expect { execute }.to change(project.stages, :count).by(1)
         end
 
         it "returns the pipeline" do
@@ -138,15 +138,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
           end
 
           it "creates a single pipeline" do
-            expect { subject }.to change(project.all_pipelines, :count).by(1)
+            expect { execute }.to change(project.all_pipelines, :count).by(1)
           end
 
           it "creates a stage" do
-            expect { subject }.to change(project.stages, :count).by(1)
+            expect { execute }.to change(project.stages, :count).by(1)
           end
 
           it "creates a `test` stage" do
-            subject
+            execute
             expect(project.stages.last.name).to eq("test")
           end
 
@@ -179,15 +179,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
           end
 
           it "creates a single pipeline" do
-            expect { subject }.to change(project.all_pipelines, :count).by(1)
+            expect { execute }.to change(project.all_pipelines, :count).by(1)
           end
 
           it "creates a stage" do
-            expect { subject }.to change(project.stages, :count).by(1)
+            expect { execute }.to change(project.stages, :count).by(1)
           end
 
           it "creates a `dast` stage" do
-            subject
+            execute
             expect(project.stages.last.name).to eq("dast")
           end
 
@@ -217,11 +217,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         end
 
         it "creates two pipelines" do
-          expect { subject }.to change(project.all_pipelines, :count).by(2)
+          expect { execute }.to change(project.all_pipelines, :count).by(2)
         end
 
         it "creates two stages" do
-          expect { subject }.to change(project.stages, :count).by(2)
+          expect { execute }.to change(project.stages, :count).by(2)
         end
 
         it "returns the pipelines" do
@@ -262,7 +262,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
           end
 
           it "creates the on-demand pipeline" do
-            subject
+            execute
             expect(project.all_pipelines).to contain_exactly(on_demand_pipeline)
           end
         end
@@ -284,7 +284,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
           end
 
           it "creates the scan pipeline" do
-            subject
+            execute
             expect(project.all_pipelines).to contain_exactly(pipeline_scan_pipeline)
           end
         end
@@ -308,7 +308,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
           end
 
           it "creates the scan pipeline" do
-            subject
+            execute
             expect(project.all_pipelines).to contain_exactly(pipeline_scan_pipeline)
           end
         end
@@ -389,23 +389,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
           end
 
           context 'without a most most_recent_commit_sha' do
-            let(:expected_variables) { [{ key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true', public: true, masked: false }] }
-            let(:pipeline_scan_pipeline) { project.all_pipelines.find_by!(source: "security_orchestration_policy") }
+            let(:expected_content) { "SECRET_DETECTION_HISTORIC_SCAN: 'true'" }
 
             before do
               allow(project.repository).to receive(:commit).with(branch).and_return(nil)
             end
 
-            it "errors" do
+            it "invokes Ci::CreatePipelineService with the expected variables but does not create pipelines" do
+              pipeline_count = project.all_pipelines.count
+
+              expect_next_instance_of(Ci::CreatePipelineService, project, current_user, ref: branch) do |pipeline_service|
+                expect(pipeline_service).to receive(:execute)
+                                              .with(:security_orchestration_policy,
+                                                content: a_string_including(expected_content),
+                                                variables_attributes: []).and_call_original
+              end
+
               expect(status).to be(:error)
-            end
-
-            it "sets the error message" do
               expect(message).to eq("Commit not found")
-            end
 
-            it "creates the scan pipeline" do
-              expect(project.all_pipelines).to contain_exactly(pipeline_scan_pipeline)
+              execute
+
+              expect(pipeline_count).to eq(project.all_pipelines.count)
             end
           end
         end
@@ -427,7 +432,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
               ).and_call_original
             end
 
-            subject
+            execute
           end
         end
       end
@@ -465,7 +470,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         end
 
         it 'does not include the compliance definition' do
-          subject
+          execute
 
           yaml = YAML.safe_load(pipeline_scan_pipeline.pipeline_config.content, permitted_classes: [Symbol])
           expect(yaml).not_to eq("include" => [{ "file" => ".compliance-gitlab-ci.yml", "project" => "compliance/hippa" }])
