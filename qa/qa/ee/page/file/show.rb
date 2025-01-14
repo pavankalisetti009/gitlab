@@ -52,6 +52,10 @@ module QA
             has_element?('disabled-lock-button')
           end
 
+          def has_code_owners_container?
+            has_element?('codeowners-container')
+          end
+
           def reveal_code_owners
             click_element('collapse-toggle') if has_element?('collapse-toggle', text: 'Show all')
           end

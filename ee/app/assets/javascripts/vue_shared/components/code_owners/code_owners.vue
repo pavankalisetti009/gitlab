@@ -142,6 +142,7 @@ export default {
   <div
     v-if="filePath"
     class="well-segment blob-auxiliary-viewer file-owner-content gl-flex gl-items-baseline gl-justify-between"
+    data-testid="codeowners-container"
   >
     <div class="gl-flex gl-flex-wrap gl-pr-3">
       <div>
