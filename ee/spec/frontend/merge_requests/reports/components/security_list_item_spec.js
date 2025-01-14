@@ -12,6 +12,7 @@ describe('Merge request reports SecurityListApp component', () => {
   const findSecurityFinding = () => wrapper.findByTestId('security-item-finding');
   const findSecurityFindingStatusIcon = () =>
     wrapper.findByTestId('security-item-finding-status-icon');
+  const findSecurityFindingButton = () => wrapper.findByTestId('security-item-finding-button');
 
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(SecurityListApp, {
@@ -60,6 +61,23 @@ describe('Merge request reports SecurityListApp component', () => {
       createComponent({ findings: [{ name: 'Finding', severity: 'high' }] });
 
       expect(findSecurityFindingStatusIcon().props('iconName')).toBe('severityHigh');
+    });
+
+    it('emits open-finding when clicking finding button', () => {
+      createComponent({ findings: [{ name: 'Finding', severity: 'high' }] });
+
+      findSecurityFindingButton().vm.$emit('click');
+
+      expect(wrapper.emitted('open-finding')[0][0]).toEqual({ name: 'Finding', severity: 'high' });
+    });
+
+    it('selects finding button when selectedFinding matches a finding', () => {
+      createComponent({
+        findings: [{ name: 'Finding', severity: 'high' }],
+        selectedFinding: { name: 'Finding' },
+      });
+
+      expect(findSecurityFindingButton().props('selected')).toBe(true);
     });
   });
 

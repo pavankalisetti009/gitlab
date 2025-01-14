@@ -37,6 +37,11 @@ export default {
       type: String,
       required: true,
     },
+    selectedFinding: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     statusIcon() {
@@ -86,6 +91,12 @@ export default {
         EXTENSION_ICONS.severityCritical
       );
     },
+    isFindingDrawerOpen(finding) {
+      return finding.name === this.selectedFinding?.name;
+    },
+    onClickFinding(finding) {
+      this.$emit('open-finding', finding);
+    },
   },
   EVALUATING_ICON: { icon: 'status_running' },
 };
@@ -121,25 +132,34 @@ export default {
         <li
           v-for="(finding, index) in findings"
           :key="index"
-          class="gl-mb-3"
+          class="-gl-ml-4 -gl-mr-4 gl-mb-2"
           data-testid="security-item-finding"
         >
-          <gl-sprintf :message="__('%{icon} %{severity} - %{name}')">
-            <template #icon>
-              <status-icon
-                class="gl-inline-block"
-                :icon-name="findingIcon(finding)"
-                :level="2"
-                data-testid="security-item-finding-status-icon"
-              />
-            </template>
-            <template #severity>
-              {{ findingSeverity(finding) }}
-            </template>
-            <template #name>
-              {{ finding.name }}
-            </template>
-          </gl-sprintf>
+          <gl-button
+            category="tertiary"
+            class="gl-w-full !gl-justify-start"
+            :class="{ '!gl-border-0 !gl-bg-gray-50': isFindingDrawerOpen(finding) }"
+            :selected="isFindingDrawerOpen(finding)"
+            data-testid="security-item-finding-button"
+            @click="onClickFinding(finding)"
+          >
+            <gl-sprintf :message="__('%{icon} %{severity} - %{name}')">
+              <template #icon>
+                <status-icon
+                  class="gl-inline-block"
+                  :icon-name="findingIcon(finding)"
+                  :level="2"
+                  data-testid="security-item-finding-status-icon"
+                />
+              </template>
+              <template #severity>
+                {{ findingSeverity(finding) }}
+              </template>
+              <template #name>
+                {{ finding.name }}
+              </template>
+            </gl-sprintf>
+          </gl-button>
         </li>
       </ul>
     </div>

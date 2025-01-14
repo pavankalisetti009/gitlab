@@ -62653,6 +62653,9 @@ msgstr ""
 msgid "Viewing commit"
 msgstr ""
 
+msgid "Violates security policy"
+msgstr ""
+
 msgid "Violation"
 msgstr ""
 
