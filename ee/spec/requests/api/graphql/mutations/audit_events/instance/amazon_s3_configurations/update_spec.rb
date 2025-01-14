@@ -6,6 +6,8 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
   include GraphqlHelpers
 
   let_it_be_with_reload(:config) { create(:instance_amazon_s3_configuration) }
+  let_it_be_with_reload(:destination) { config }
+
   let_it_be(:current_user) { create(:admin) }
   let_it_be(:updated_access_key_xid) { 'AKIA1234RANDOM5678' }
   let_it_be(:updated_secret_access_key) { 'TEST/SECRET/XYZ/PQR' }
@@ -130,6 +132,32 @@ RSpec.describe 'Update instance Amazon S3 configuration', feature_category: :aud
             'errors' => ['error message']
           )
         end
+      end
+
+      context 'when updating a legacy destination' do
+        let(:stream_destination) do
+          create(:audit_events_instance_external_streaming_destination, :aws,
+            legacy_destination_ref: config.id)
+        end
+
+        it_behaves_like 'updates a streaming destination',
+          :config,
+          proc {
+            {
+              legacy: {
+                bucket_name: updated_bucket_name,
+                aws_region: updated_aws_region,
+                access_key_xid: updated_access_key_xid,
+                name: updated_destination_name
+              },
+              streaming: {
+                "bucketName" => updated_bucket_name,
+                "awsRegion" => updated_aws_region,
+                "accessKeyXid" => updated_access_key_xid,
+                "name" => updated_destination_name
+              }
+            }
+          }
       end
     end
 

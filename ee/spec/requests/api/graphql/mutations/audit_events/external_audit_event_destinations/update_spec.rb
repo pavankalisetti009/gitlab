@@ -23,6 +23,8 @@ RSpec.describe 'Update an external audit event destination', feature_category: :
 
   let(:mutation_response) { graphql_mutation_response(:external_audit_event_destination_update) }
 
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
+
   shared_examples 'a mutation that does not update a destination' do
     it 'does not destroy the destination' do
       expect { post_graphql_mutation(mutation, current_user: owner) }
@@ -90,6 +92,28 @@ RSpec.describe 'Update an external audit event destination', feature_category: :
         end
 
         it_behaves_like 'a mutation that does not update a destination'
+      end
+
+      context 'when updating a legacy destination' do
+        let(:stream_destination) do
+          create(:audit_events_group_external_streaming_destination, :http, group: group,
+            legacy_destination_ref: destination.id)
+        end
+
+        it_behaves_like 'updates a streaming destination',
+          :destination,
+          proc {
+            {
+              legacy: {
+                "destination_url" => "https://example.com/new",
+                "name" => "New Destination"
+              },
+              streaming: {
+                "url" => "https://example.com/new",
+                "name" => "New Destination"
+              }
+            }
+          }
       end
     end
 
