@@ -434,11 +434,11 @@ module Search
 
       def adjust_indices_reserved_storage_bytes
         execute_every 10.minutes do
-          Index.should_be_reserved_storage_bytes_adjusted.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              AdjustIndicesReservedStorageBytesEvent.new(data: { index_ids: batch.pluck_primary_key })
-            )
-          end
+          next unless Index.should_be_reserved_storage_bytes_adjusted.exists?
+
+          Gitlab::EventStore.publish(
+            AdjustIndicesReservedStorageBytesEvent.new(data: {})
+          )
         end
       end
     end

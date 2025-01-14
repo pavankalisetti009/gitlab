@@ -794,17 +794,23 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
   describe '#adjust_indices_reserved_storage_bytes' do
     let(:task) { :adjust_indices_reserved_storage_bytes }
-    let_it_be(:overprovisioned_pending) { create(:zoekt_index, :overprovisioned) }
-    let_it_be(:overprovisioned_ready) { create(:zoekt_index, :overprovisioned, :ready) }
-    let_it_be(:high_watermark_exceeded_pending) { create(:zoekt_index, :high_watermark_exceeded) }
-    let_it_be(:high_watermark_exceeded_ready) { create(:zoekt_index, :high_watermark_exceeded, :ready) }
-    let_it_be(:healthy) { create(:zoekt_index, :healthy) }
 
-    it 'publishes an AdjustIndicesReservedStorageBytesEvent for required indices' do
-      expected = {
-        index_ids: [overprovisioned_ready, high_watermark_exceeded_pending, high_watermark_exceeded_ready].map(&:id)
-      }
-      expect { execute_task }.to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent).with(expected)
+    context 'when should_be_reserved_storage_bytes_adjusted scope returns no indices' do
+      it 'does not publishes an AdjustIndicesReservedStorageBytesEvent' do
+        allow(Search::Zoekt::Index).to receive_message_chain(:should_be_reserved_storage_bytes_adjusted, :exists?)
+          .and_return(false)
+
+        expect { execute_task }.not_to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent)
+      end
+    end
+
+    context 'when should_be_reserved_storage_bytes_adjusted scope returns indices' do
+      it 'publishes an AdjustIndicesReservedStorageBytesEvent' do
+        allow(Search::Zoekt::Index).to receive_message_chain(:should_be_reserved_storage_bytes_adjusted, :exists?)
+          .and_return(true)
+
+        expect { execute_task }.to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent).with({})
+      end
     end
   end
 

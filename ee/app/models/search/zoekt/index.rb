@@ -133,7 +133,7 @@ module Search
         self.reserved_storage_bytes = new_reserved_bytes
         self.watermark_level = appropriate_watermark_level
         save!
-      rescue StandardError => err
+      rescue ActiveRecord::ActiveRecordError => err
         logger.error(build_structured_payload(
           message: 'Error attempting to update reserved_storage_bytes',
           index_id: id,
