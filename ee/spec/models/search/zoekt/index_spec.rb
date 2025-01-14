@@ -360,7 +360,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
   describe '#update_reserved_storage_bytes!' do
     let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 100_000) }
-    let_it_be(:idx) do
+    let_it_be_with_reload(:idx) do
       create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
     end
 
@@ -466,20 +466,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         stubbed_logger = instance_double(::Search::Zoekt::Logger)
         expect(::Search::Zoekt::Logger).to receive(:build).and_return stubbed_logger
 
-        expected_error_message = 'Ka-Boom'
-
         expect(stubbed_logger).to receive(:error).with({
           class: 'Search::Zoekt::Index',
           message: 'Error attempting to update reserved_storage_bytes',
-          error: expected_error_message,
+          error: 'Record invalid',
           new_reserved_bytes: anything,
           reserved_storage_bytes: anything,
           index_id: idx.id
         }.with_indifferent_access)
 
-        expect(idx).to receive(:used_storage_bytes).and_raise expected_error_message
+        expect(idx).to receive(:save!).and_raise ActiveRecord::RecordInvalid
 
-        expect { idx.update_reserved_storage_bytes! }.to raise_error expected_error_message
+        expect { idx.update_reserved_storage_bytes! }.to raise_error ActiveRecord::RecordInvalid
       end
     end
 
