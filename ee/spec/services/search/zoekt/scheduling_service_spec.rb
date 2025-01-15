@@ -776,8 +776,17 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let_it_be(:failed_repo) { create(:zoekt_repository, state: :failed) }
 
     it 'publishes an RepoToIndexEvent with initializing or pending repos' do
-      expected_data = { zoekt_repo_ids: [pending_repo.id, initializing_repo.id] }
-      expect { execute_task }.to publish_event(Search::Zoekt::RepoToIndexEvent).with(expected_data)
+      expect { execute_task }.to publish_event(Search::Zoekt::RepoToIndexEvent).with({})
+    end
+
+    context 'when there are no pending repos' do
+      before do
+        allow(Search::Zoekt::Repository).to receive_message_chain(:pending, :exists?).and_return(false)
+      end
+
+      it 'does not publish an RepoToIndexEvent' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::RepoToIndexEvent)
+      end
     end
   end
 

@@ -386,11 +386,7 @@ module Search
 
       def repo_to_index_check
         execute_every 10.minutes do
-          Search::Zoekt::Repository.pending_or_initializing.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::RepoToIndexEvent.new(data: { zoekt_repo_ids: batch.pluck_primary_key })
-            )
-          end
+          dispatch RepoToIndexEvent, if: -> { Search::Zoekt::Repository.pending.exists? }
         end
       end
 
@@ -440,6 +436,18 @@ module Search
             AdjustIndicesReservedStorageBytesEvent.new(data: {})
           )
         end
+      end
+
+      # Publishes an event to the event store if the given condition is met.
+      #
+      # Example usage:
+      # dispatch RepoMarkedAsToDeleteEvent, if: -> { Search::Zoekt::Repository.should_be_deleted.exists? }
+      # dispatch RepoToIndexEvent # will always be published
+      # dispatch RepoToIndexEvent, if: -> { false } # will never be published
+      def dispatch(event, **kwargs)
+        return false if kwargs[:if].present? && !kwargs[:if].call
+
+        Gitlab::EventStore.publish(event.new(data: {}))
       end
     end
   end

@@ -11,10 +11,12 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_repositories, :zoekt_tasks], 10.minutes
 
-      def handle_event(event)
+      BATCH_SIZE = 1000
+
+      def handle_event(_event)
         return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
-        Repository.id_in(event.data[:zoekt_repo_ids]).pending_or_initializing.create_bulk_tasks
+        Repository.pending.limit(BATCH_SIZE).create_bulk_tasks
       end
     end
   end

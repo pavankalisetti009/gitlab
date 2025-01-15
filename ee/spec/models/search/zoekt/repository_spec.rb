@@ -55,22 +55,6 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       end
     end
 
-    describe '.pending_or_initializing' do
-      let_it_be(:pending_repo) { create(:zoekt_repository, state: :pending) }
-      let_it_be(:pending_repo2) { create(:zoekt_repository, state: :pending) }
-      let_it_be(:initializing_repo) { create(:zoekt_repository, state: :initializing) }
-      let_it_be(:initializing_repo2) { create(:zoekt_repository, state: :initializing) }
-      let_it_be(:ready_repo) { create(:zoekt_repository, state: :ready) }
-      let_it_be(:failed_repo) { create(:zoekt_repository, state: :failed) }
-
-      subject(:collection) { described_class.pending_or_initializing }
-
-      it 'returns only pending or initializing records' do
-        expect(collection).to include pending_repo, pending_repo2, initializing_repo, initializing_repo2
-        expect(collection).not_to include ready_repo, failed_repo
-      end
-    end
-
     describe '.for_zoekt_indices' do
       let_it_be(:zoekt_index) { create(:zoekt_index) }
       let_it_be(:zoekt_index2) { create(:zoekt_index) }
