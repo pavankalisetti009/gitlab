@@ -17,13 +17,7 @@ module EE
       end
 
       class_methods do
-        # @param primary_key_in [Range, Packages::PackageFile] arg to pass to primary_key_in scope
-        # @return [ActiveRecord::Relation<LfsObject>] everything that should be synced to this node, restricted by primary key
-        def replicables_for_current_secondary(primary_key_in)
-          primary_key_in(primary_key_in)
-            .merge(selective_sync_scope)
-            .merge(object_storage_scope)
-        end
+        extend ::Gitlab::Utils::Override
 
         # Search for a list of package_files based on the query given in `query`.
         #
@@ -36,21 +30,12 @@ module EE
           fuzzy_search(query, EE_SEARCHABLE_ATTRIBUTES).limit(500)
         end
 
-        private
+        override :selective_sync_scope
+        def selective_sync_scope(node, **_params)
+          return all unless node.selective_sync?
 
-        # @return [ActiveRecord::Relation<Packages::PackageFile>] scope observing object storage settings
-        def object_storage_scope
-          return self.all if ::Gitlab::Geo.current_node.sync_object_storage?
-
-          self.with_files_stored_locally
-        end
-
-        # @return [ActiveRecord::Relation<Packages::PackageFile>] scope observing selective sync settings
-        def selective_sync_scope
-          return self.all unless ::Gitlab::Geo.current_node.selective_sync?
-
-          self.joins(:package)
-              .where(packages_packages: { project_id: ::Gitlab::Geo.current_node.projects.select(:id) })
+          joins(:package)
+            .where(packages_packages: { project_id: ::Project.selective_sync_scope(node).select(:id) })
         end
       end
     end

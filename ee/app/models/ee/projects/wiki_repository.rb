@@ -49,20 +49,19 @@ module EE
       class_methods do
         extend ::Gitlab::Utils::Override
 
-        # @param primary_key_in [Range, Projects::WikiRepository] arg to pass to primary_key_in scope
-        # @return [ActiveRecord::Relation<Projects::WikiRepository>] everything that should be synced
-        #         to this node, restricted by primary key
-        def replicables_for_current_secondary(primary_key_in)
-          node = ::Gitlab::Geo.current_node
+        # @return [ActiveRecord::Relation<LfsObject>] scope observing selective
+        #         sync settings of the given node
+        override :selective_sync_scope
+        def selective_sync_scope(node, **params)
+          return all unless node.selective_sync?
 
-          replicables = primary_key_in(primary_key_in)
-          return replicables unless node.selective_sync?
-
-          # Note that we can't do node.projects.ids since it can have millions of records.
+          # The primary_key_in in replicables_for_current_secondary method is at most a range
+          # of IDs with a maximum of 10_000 records between them.
+          replicables = params.fetch(:replicables, none)
           replicables_project_ids = replicables.distinct.pluck(:project_id)
-          selective_projects_ids  = node.projects.id_in(replicables_project_ids).pluck_primary_key
+          selective_projects_ids = ::Project.selective_sync_scope(node).id_in(replicables_project_ids).pluck_primary_key
 
-          replicables.project_id_in(selective_projects_ids)
+          project_id_in(selective_projects_ids)
         end
 
         override :verification_state_model_key

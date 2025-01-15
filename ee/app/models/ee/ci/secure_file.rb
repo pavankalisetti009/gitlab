@@ -14,8 +14,8 @@ module EE
       prepended do
         include ::Geo::ReplicableModel
         include ::Geo::VerifiableModel
+        include ::Geo::ReplicableCiArtifactable
         include ::Gitlab::SQL::Pattern
-        include Artifactable
 
         delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :ci_secure_file_state)
 

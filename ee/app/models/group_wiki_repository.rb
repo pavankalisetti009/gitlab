@@ -38,28 +38,23 @@ class GroupWikiRepository < ApplicationRecord
       .where(group_wiki_repository_states: { verification_state: verification_state_value(state) })
   }
 
-  def self.replicables_for_current_secondary(primary_key_in)
-    node = ::Gitlab::Geo.current_node
+  # @return [ActiveRecord::Relation<GroupWikiRepository>] scope observing selective sync
+  #          settings of the given node
+  override :selective_sync_scope
+  def self.selective_sync_scope(node, **_params)
+    return all unless node.selective_sync?
+    return group_wiki_repositories_for_selected_namespaces(node) if node.selective_sync_by_namespaces?
+    return group_wiki_repositories_for_selected_shards(node) if node.selective_sync_by_shards?
 
-    replicables = if !node.selective_sync?
-                    all
-                  elsif node.selective_sync_by_namespaces?
-                    group_wiki_repositories_for_selected_namespaces
-                  elsif node.selective_sync_by_shards?
-                    group_wiki_repositories_for_selected_shards
-                  else
-                    self.none
-                  end
-
-    replicables.primary_key_in(primary_key_in)
+    self.none
   end
 
-  def self.group_wiki_repositories_for_selected_namespaces
-    self.joins(:group).where(group_id: ::Gitlab::Geo.current_node.namespaces_for_group_owned_replicables.select(:id))
+  def self.group_wiki_repositories_for_selected_namespaces(node)
+    self.joins(:group).where(group_id: node.namespaces_for_group_owned_replicables.select(:id))
   end
 
-  def self.group_wiki_repositories_for_selected_shards
-    self.for_repository_storage(::Gitlab::Geo.current_node.selective_sync_shards)
+  def self.group_wiki_repositories_for_selected_shards(node)
+    self.for_repository_storage(node.selective_sync_shards)
   end
 
   override :verification_state_table_class

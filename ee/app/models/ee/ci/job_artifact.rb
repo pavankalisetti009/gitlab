@@ -13,6 +13,7 @@ module EE
     prepended do
       include ::Geo::ReplicableModel
       include ::Geo::VerifiableModel
+      include ::Geo::ReplicableCiArtifactable
 
       delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :job_artifact_state)
 

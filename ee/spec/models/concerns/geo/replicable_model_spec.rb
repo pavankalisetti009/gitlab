@@ -69,6 +69,10 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
   end
 
   describe '.verifiables' do
+    before do
+      stub_current_geo_node(primary_node)
+    end
+
     context 'when geo_object_storage_verification feature flag is disabled' do
       before do
         stub_feature_flags(geo_object_storage_verification: false)
@@ -77,9 +81,11 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
       context 'when the model can be filtered by locally stored files' do
         it 'filters by locally stored files' do
           allow(DummyModel).to receive(:respond_to?).with(:all).and_call_original
+          allow(DummyModel).to receive(:respond_to?).with(:object_storage_scope).and_call_original
+          allow(DummyModel).to receive(:respond_to?).with(:selective_sync_scope).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:with_files_stored_locally).and_return(true)
 
-          expect(DummyModel).to receive(:with_files_stored_locally)
+          expect(DummyModel).to receive(:with_files_stored_locally).once.and_return(DummyModel.none)
 
           DummyModel.verifiables
         end
@@ -88,6 +94,8 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
       context 'when the model cannot be filtered by locally stored files' do
         it 'does not filter by locally stored files' do
           allow(DummyModel).to receive(:respond_to?).with(:all).and_call_original
+          allow(DummyModel).to receive(:respond_to?).with(:object_storage_scope).and_call_original
+          allow(DummyModel).to receive(:respond_to?).with(:selective_sync_scope).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:with_files_stored_locally).and_return(false)
 
           expect(DummyModel).not_to receive(:with_files_stored_locally)
@@ -102,7 +110,7 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
     # This one has only symbolic meaning before the removal
     context 'when geo_object_storage_verification feature flag is enabled' do
       it 'aliasses to .available_replicables' do
-        expect(DummyModel).to receive(:available_replicables)
+        expect(DummyModel).to receive(:available_replicables).once.and_call_original
 
         DummyModel.verifiables
       end

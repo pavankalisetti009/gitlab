@@ -4,6 +4,10 @@ class Admin::Geo::NodesController < Admin::Geo::ApplicationController
   before_action :check_license!, except: :index
   before_action :load_node, only: [:edit, :update]
 
+  before_action do
+    push_frontend_feature_flag(:org_mover_extend_selective_sync_to_primary_checksumming, type: :ops)
+  end
+
   def create
     @node = ::Geo::NodeCreateService.new(geo_node_params).execute
 

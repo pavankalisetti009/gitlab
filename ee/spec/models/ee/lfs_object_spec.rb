@@ -2,24 +2,20 @@
 
 require 'spec_helper'
 
-RSpec.describe ::LfsObject do
-  using RSpec::Parameterized::TableSyntax
+RSpec.describe ::LfsObject, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:another_project) { create(:project, :repository) }
 
-  before do
-    stub_primary_node
-  end
-
   context 'when model_record is part of available_verifiables scope' do
+    let(:primary) { create(:geo_node, :primary) }
     let(:verifiable_model_record) { build(:lfs_object) }
     let(:verification_state_table_class) { verifiable_model_record.class.verification_state_table_class }
 
     before do
-      stub_primary_node
+      stub_current_geo_node(primary)
     end
 
     it 'creates verification details' do
@@ -76,6 +72,8 @@ RSpec.describe ::LfsObject do
   end
 
   describe '.replicables_for_current_secondary' do
+    using RSpec::Parameterized::TableSyntax
+
     where(:selective_sync_enabled, :object_storage_sync_enabled, :lfs_object_object_storage_enabled, :synced_lfs_objects) do
       true  | true  | false  | 1
       true  | false | false  | 1

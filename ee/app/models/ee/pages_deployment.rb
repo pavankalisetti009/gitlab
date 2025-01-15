@@ -44,32 +44,17 @@ module EE
         fuzzy_search(query, EE_SEARCHABLE_ATTRIBUTES)
       end
 
-      def replicables_for_current_secondary(primary_key_in)
-        node = ::Gitlab::Geo.current_node
+      # @return [ActiveRecord::Relation<PagesDeployment>] scope observing selective sync settings of the given node
+      override :selective_sync_scope
+      def selective_sync_scope(node, **_params)
+        return all unless node.selective_sync?
 
-        primary_key_in(primary_key_in)
-          .merge(selective_sync_scope(node))
-          .merge(object_storage_scope(node))
+        project_id_in(::Project.selective_sync_scope(node))
       end
 
       override :verification_state_table_class
-
       def verification_state_table_class
         ::Geo::PagesDeploymentState
-      end
-
-      private
-
-      def object_storage_scope(node)
-        return all if node.sync_object_storage?
-
-        with_files_stored_locally
-      end
-
-      def selective_sync_scope(node)
-        return all unless node.selective_sync?
-
-        project_id_in(node.projects)
       end
     end
 

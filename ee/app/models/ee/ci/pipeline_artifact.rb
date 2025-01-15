@@ -9,6 +9,7 @@ module EE
         include ::Geo::ReplicableModel
         include ::Geo::VerifiableModel
         include ::Geo::VerificationStateDefinition
+        include ::Geo::ReplicableCiArtifactable
 
         with_replicator ::Geo::PipelineArtifactReplicator
       end

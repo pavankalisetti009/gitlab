@@ -609,12 +609,19 @@ module EE
         ::Geo::ProjectState
       end
 
-      # @param primary_key_in [Range, Project] arg to pass to primary_key_in scope
-      # @return [ActiveRecord::Relation<Project>] everything that should be synced to this node, restricted by primary key
-      def replicables_for_current_secondary(primary_key_in)
-        node = ::Gitlab::Geo.current_node
+      # @return [ActiveRecord::Relation<Project>] scope observing selective sync
+      #         settings of the given node
+      override :selective_sync_scope
+      def selective_sync_scope(node, **_params)
+        return all unless node.selective_sync?
 
-        node.projects.primary_key_in(primary_key_in)
+        if node.selective_sync_by_namespaces?
+          where(arel_table.name => { namespace_id: node.namespaces_for_group_owned_replicables.select(:id) })
+        elsif node.selective_sync_by_shards?
+          within_shards(node.selective_sync_shards)
+        else
+          none
+        end
       end
 
       def search_by_visibility(level)

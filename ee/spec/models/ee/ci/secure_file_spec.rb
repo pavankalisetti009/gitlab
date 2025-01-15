@@ -2,8 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::SecureFile do
-  using RSpec::Parameterized::TableSyntax
+RSpec.describe Ci::SecureFile, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   include_examples 'a verifiable model with a separate table for verification state' do
@@ -19,7 +18,9 @@ RSpec.describe Ci::SecureFile do
     end
   end
 
-  describe '#replicables_for_current_secondary' do
+  describe '.replicables_for_current_secondary' do
+    using RSpec::Parameterized::TableSyntax
+
     # Selective sync is configured relative to the secure file's project.
     #
     # Permutations of sync_object_storage combined with object-stored-artifacts

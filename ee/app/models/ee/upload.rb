@@ -52,16 +52,6 @@ module EE
         ::Geo::UploadState
       end
 
-      # @param primary_key_in [Range, Upload] arg to pass to primary_key_in scope
-      # @return [ActiveRecord::Relation<Upload>] everything that should be synced to this node, restricted by primary key
-      def replicables_for_current_secondary(primary_key_in)
-        node = ::Gitlab::Geo.current_node
-
-        primary_key_in(primary_key_in)
-          .merge(selective_sync_scope(node))
-          .merge(object_storage_scope(node))
-      end
-
       # Search for a list of uploads based on the query given in `query`.
       #
       # @param [String] query term that will search over upload :checksum attribute
@@ -73,17 +63,8 @@ module EE
         by_checksum(query)
       end
 
-      private
-
-      # @return [ActiveRecord::Relation<Upload>] scope observing object storage settings of the given node
-      def object_storage_scope(node)
-        return all if node.sync_object_storage?
-
-        with_files_stored_locally
-      end
-
-      # @return [ActiveRecord::Relation<Upload>] scope observing selective sync settings of the given node
-      def selective_sync_scope(node)
+      override :selective_sync_scope
+      def selective_sync_scope(node, **_params)
         if node.selective_sync?
           group_attachments(node).or(project_attachments(node)).or(other_attachments)
         else
@@ -98,7 +79,7 @@ module EE
 
       # @return [ActiveRecord::Relation<Upload>] scope of Project-associated uploads observing selective sync settings of the given node
       def project_attachments(node)
-        where(model_type: 'Project', model_id: node.projects.select(:id))
+        where(model_type: 'Project', model_id: ::Project.selective_sync_scope(node).select(:id))
       end
 
       # @return [ActiveRecord::Relation<Upload>] scope of uploads which are not associated with Namespace or Project

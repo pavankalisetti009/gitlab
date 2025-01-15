@@ -28,10 +28,16 @@ module Geo
       # On secondary, `verifiables` are records that have already been replicated
       # and (ideally) have been checksummed on the primary
       scope :verifiables, -> do
-        if Feature.enabled?(:geo_object_storage_verification)
+        node = ::GeoNode.current_node
+
+        replicables =
           available_replicables
+            .merge(object_storage_scope(node))
+
+        if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
+          replicables.merge(selective_sync_scope(node, replicables: replicables))
         else
-          self.respond_to?(:with_files_stored_locally) ? available_replicables.with_files_stored_locally : available_replicables
+          replicables
         end
       end
 
@@ -47,7 +53,6 @@ module Geo
       # For this, override the scope in the replicable model, e.g. like so in
       # `MergeRequestDiff`,
       # `scope :available_verifiables, -> { joins(:merge_request_diff_detail) }`
-
       scope :available_verifiables, -> { verifiables }
 
       # The method is tested but undercoverage task doesn't detect it.
@@ -58,6 +63,41 @@ module Geo
         log_error("Geo replicator after_create_commit failed", err)
       end
       # :nocov:
+    end
+
+    class_methods do
+      # @param primary_key_in [Range, Replicable] arg to pass to primary_key_in scope
+      # @return [ActiveRecord::Relation<Replicable>] everything that should be synced to this
+      #         node, restricted by primary key
+      def replicables_for_current_secondary(primary_key_in)
+        node = ::Gitlab::Geo.current_node
+
+        replicables =
+          available_replicables
+            .merge(object_storage_scope(node))
+
+        replicables
+          .merge(selective_sync_scope(node, replicables: replicables))
+          .primary_key_in(primary_key_in)
+      end
+
+      # @return [ActiveRecord::Relation<Replicable>] scope observing object storage settings of the given node
+      def object_storage_scope(node)
+        return all unless object_storable?
+        return all if node.primary? && Feature.enabled?(:geo_object_storage_verification)
+        return all if node.secondary? && node.sync_object_storage?
+
+        with_files_stored_locally
+      end
+
+      def object_storable?
+        self.respond_to?(:with_files_stored_locally)
+      end
+
+      # @return [ActiveRecord::Relation<Replicable>] scope observing selective sync settings of the given node
+      def selective_sync_scope(node, **params)
+        raise NotImplementedError, "#{self.name} does not implement #{__method__}"
+      end
     end
 
     def in_replicables_for_current_secondary?

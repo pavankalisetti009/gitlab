@@ -48,36 +48,18 @@ module EE
       class_methods do
         extend ::Gitlab::Utils::Override
 
-        def replicables_for_current_secondary(primary_key_in)
-          node = ::Gitlab::Geo.current_node
-
-          primary_key_in(primary_key_in)
-            .merge(selective_sync_scope(node))
-            .merge(object_storage_scope(node))
-        end
-
         override :verification_state_table_class
         def verification_state_table_class
           Geo::DependencyProxyManifestState
         end
 
-        private
-
-        def selective_sync_scope(node)
+        override :selective_sync_scope
+        def selective_sync_scope(node, **_params)
           return all unless node.selective_sync?
+          return group_id_in(node.namespace_ids) if node.selective_sync_by_namespaces?
+          return group_id_in(node.namespaces_for_group_owned_replicables.select(:id)) if node.selective_sync_by_shards?
 
-          case node.selective_sync_type
-          when 'namespaces'
-            group_id_in(node.namespace_ids)
-          when 'shards'
-            group_id_in(node.namespaces_for_group_owned_replicables.select(:id))
-          end
-        end
-
-        def object_storage_scope(node)
-          return all if node.sync_object_storage?
-
-          with_files_stored_locally
+          none
         end
       end
 

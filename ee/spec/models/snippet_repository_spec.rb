@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
+RSpec.describe SnippetRepository, :geo, type: :model, feature_category: :geo_replication do
   include EE::GeoHelpers
 
-  let(:node) { create(:geo_node) }
+  let(:secondary) { create(:geo_node, :secondary) }
 
   before do
-    stub_current_geo_node(node)
+    stub_current_geo_node(secondary)
   end
 
   context 'with 3 groups, 2 projects, and 5 snippets' do
@@ -47,7 +47,7 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
 
       context 'with selective sync by namespace' do
         before do
-          node.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
+          secondary.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
         end
 
         it 'returns true for snippets in the namespace' do
@@ -65,7 +65,7 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
 
       context 'with selective sync by shard' do
         before do
-          node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+          secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
         end
 
         it 'returns true for snippets in the shard' do
@@ -78,7 +78,7 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
       end
     end
 
-    describe '#replicables_for_current_secondary' do
+    describe '.replicables_for_current_secondary' do
       it 'returns all snippet_repositories without selective sync' do
         expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
           [
@@ -92,7 +92,7 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
 
       context 'with selective sync by namespace' do
         it 'returns snippet_repositories that belong to the namespaces + personal snippets' do
-          node.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
+          secondary.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
 
           expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
             [
@@ -106,7 +106,7 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
 
       context 'with selective sync by shard' do
         it 'returns snippet_repositories that belong to the shards' do
-          node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+          secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
 
           expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
             [
@@ -119,7 +119,7 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
       end
 
       it 'returns nothing if an unrecognised selective sync type is used' do
-        node.update_attribute(:selective_sync_type, 'unknown')
+        secondary.update_attribute(:selective_sync_type, 'unknown')
 
         expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to be_empty
       end

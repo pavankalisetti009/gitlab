@@ -17,10 +17,11 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
   end
 
   context 'on a primary node' do
+    let(:primary) { create(:geo_node, :primary) }
     let(:verifiable_model_class) { verifiable_model_record.class }
 
     before do
-      stub_primary_node
+      stub_current_geo_node(primary)
     end
 
     describe '.with_verification_state' do

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DependencyProxy::Manifest do
+RSpec.describe DependencyProxy::Manifest, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   include_examples 'a verifiable model with a separate table for verification state' do

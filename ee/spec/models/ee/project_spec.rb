@@ -5111,4 +5111,36 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       ai_review_merge_request_allowed?
     end
   end
+
+  describe '.selective_sync_scope' do
+    let_it_be(:node) { create(:geo_node, :secondary) }
+    let_it_be(:group_1) { create(:group) }
+    let_it_be(:group_2) { create(:group) }
+    let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+    let_it_be(:project_1) { create(:project, group: group_1) }
+    let_it_be(:project_2) { create(:project, group: nested_group_1) }
+    let_it_be(:project_3) { create(:project, :broken_storage, group: group_2) }
+
+    it 'returns all projects without selective sync' do
+      expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2, project_3])
+    end
+
+    it 'returns projects that belong to the namespaces with selective sync by namespace' do
+      node.update!(selective_sync_type: 'namespaces', namespaces: [group_1, nested_group_1])
+
+      expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
+    end
+
+    it 'returns projects that belong to the shards with selective sync by shard' do
+      node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+
+      expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
+    end
+
+    it 'returns nothing if an unrecognised selective sync type is used' do
+      node.update_attribute(:selective_sync_type, 'unknown')
+
+      expect(described_class.selective_sync_scope(node)).to be_empty
+    end
+  end
 end

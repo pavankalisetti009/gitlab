@@ -44,11 +44,14 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
     end
 
     context 'state transition: [:started] => [:finished]' do
+      let_it_be(:geo_primary_site) { create(:geo_node, :primary) }
+      let_it_be(:geo_secondary_site) { create(:geo_node, :secondary) }
+
       context 'Geo repository update events' do
         let_it_be(:import_state) { create(:import_state, :started, project: project) }
 
-        it 'calls Geo event code when running on a Geo primary node' do
-          stub_primary_node
+        it 'calls Geo event code when running on a Geo primary site' do
+          stub_current_geo_node(geo_primary_site)
 
           # Makes Gitlab::Geo.secondary_nodes.any? return true
           allow(::Gitlab::Geo).to receive(:secondary_nodes).and_return([''])
@@ -80,7 +83,11 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
 
       with_them do
         before do
-          public_send("stub_#{geo}_node") unless geo == :disabled
+          if geo == :primary
+            stub_current_geo_node(geo_primary_site)
+          elsif geo == :secondary
+            stub_current_geo_node(geo_secondary_site)
+          end
 
           expect(project).to receive(:use_elasticsearch?).and_return(elasticsearch_indexing_enabled)
 

@@ -42,7 +42,7 @@ const fakeStore = ({ getters }) =>
 describe('GeoSiteForm', () => {
   let wrapper;
 
-  const createComponent = (props = {}, store = {}) => {
+  const createComponent = (props = {}, store = {}, glFeatures = {}) => {
     wrapper = shallowMount(GeoSiteForm, {
       store: fakeStore(store),
       propsData: {
@@ -50,6 +50,9 @@ describe('GeoSiteForm', () => {
         selectiveSyncTypes: MOCK_SELECTIVE_SYNC_TYPES,
         syncShardsOptions: MOCK_SYNC_SHARDS,
         ...props,
+      },
+      provide: {
+        glFeatures,
       },
     });
   };
@@ -62,26 +65,39 @@ describe('GeoSiteForm', () => {
 
   describe('template', () => {
     describe.each`
-      primarySite | showCore | showSelectiveSync | showCapacities
-      ${true}     | ${true}  | ${false}          | ${true}
-      ${false}    | ${true}  | ${true}           | ${true}
-    `(`conditional fields`, ({ primarySite, showCore, showSelectiveSync, showCapacities }) => {
-      beforeEach(() => {
-        createComponent({ site: { MOCK_SITE, primary: primarySite } });
-      });
+      primarySite | orgMoverExtendSelectiveSyncToPrimaryChecksumming | showCore | showSelectiveSync | showCapacities
+      ${true}     | ${false}                                         | ${true}  | ${false}          | ${true}
+      ${true}     | ${true}                                          | ${true}  | ${true}           | ${true}
+      ${false}    | ${false}                                         | ${true}  | ${true}           | ${true}
+      ${false}    | ${true}                                          | ${true}  | ${true}           | ${true}
+    `(
+      `conditional fields`,
+      ({
+        primarySite,
+        orgMoverExtendSelectiveSyncToPrimaryChecksumming,
+        showCore,
+        showSelectiveSync,
+        showCapacities,
+      }) => {
+        beforeEach(() => {
+          createComponent({ site: { MOCK_SITE, primary: primarySite } }, undefined, {
+            orgMoverExtendSelectiveSyncToPrimaryChecksumming,
+          });
+        });
 
-      it(`it ${showCore ? 'shows' : 'hides'} the Core Field`, () => {
-        expect(findGeoSiteFormCoreField().exists()).toBe(showCore);
-      });
+        it(`it ${showCore ? 'shows' : 'hides'} the Core Field`, () => {
+          expect(findGeoSiteFormCoreField().exists()).toBe(showCore);
+        });
 
-      it(`it ${showSelectiveSync ? 'shows' : 'hides'} the Selective Sync Field`, () => {
-        expect(findGeoSiteFormSelectiveSyncField().exists()).toBe(showSelectiveSync);
-      });
+        it(`it ${showSelectiveSync ? 'shows' : 'hides'} the Selective Sync Field`, () => {
+          expect(findGeoSiteFormSelectiveSyncField().exists()).toBe(showSelectiveSync);
+        });
 
-      it(`it ${showCapacities ? 'shows' : 'hides'} the Capacities Field`, () => {
-        expect(findGeoSiteFormCapacitiesField().exists()).toBe(showCapacities);
-      });
-    });
+        it(`it ${showCapacities ? 'shows' : 'hides'} the Capacities Field`, () => {
+          expect(findGeoSiteFormCapacitiesField().exists()).toBe(showCapacities);
+        });
+      },
+    );
 
     describe('Save Button', () => {
       describe('with errors on form', () => {
