@@ -15,7 +15,7 @@ module Gitlab
         end
 
         def test_completion
-          return 'Access token is missing' unless access_token
+          return 'Cloud Connector access token is missing' unless access_token
 
           response = call_endpoint task.endpoint, task.body
 
@@ -29,7 +29,7 @@ module Gitlab
         end
 
         def test_model_connection(self_hosted_model)
-          return 'Access token is missing' unless access_token
+          return 'Cloud Connector access token is missing' unless access_token
           return 'No self-hosted model was provided' unless self_hosted_model
 
           test_task = generate_test_task(self_hosted_model)

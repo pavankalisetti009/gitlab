@@ -49,7 +49,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     context 'when there is not valid token' do
       let(:instance_token) { nil }
 
-      it_behaves_like 'error response', "Access token is missing"
+      it_behaves_like 'error response', "Cloud Connector access token is missing"
     end
 
     context 'when request raises an error' do
