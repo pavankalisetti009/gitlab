@@ -13,7 +13,5 @@ instrumentation_class: RedisMetric
 options:
   prefix: audit_events
   event: retain_approvals_on_push_updated
-distribution:
-  - ee
 tiers:
   - ultimate

@@ -13,7 +13,5 @@ events:
 - name: trigger_audit_event
   filter:
     label: delete_work_item
-distribution:
-  - ee
 tiers:
   - ultimate

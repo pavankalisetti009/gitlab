@@ -13,7 +13,5 @@ instrumentation_class: RedisMetric
 options:
   prefix: audit_events
   event: project_fork_relationship_removed
-distribution:
-  - ee
 tiers:
   - ultimate

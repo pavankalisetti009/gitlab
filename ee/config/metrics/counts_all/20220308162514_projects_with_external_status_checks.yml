@@ -14,7 +14,5 @@ data_category: operational
 instrumentation_class: CountProjectsWithExternalStatusChecksMetric
 performance_indicator_type:
   - customer_health_score
-distribution:
-  - ee
 tiers:
   - ultimate

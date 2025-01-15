@@ -13,7 +13,5 @@ instrumentation_class: RedisMetric
 options:
   prefix: audit_events
   event: set_runner_associated_projects
-distribution:
-  - ee
 tiers:
   - ultimate

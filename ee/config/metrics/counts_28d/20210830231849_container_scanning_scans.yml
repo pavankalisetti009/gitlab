@@ -12,8 +12,6 @@ instrumentation_class: CountSecurityScansMetric
 options:
   scan_type: container_scanning
 data_category: operational
-distribution:
-  - ee
 tiers:
   - ultimate
   - premium

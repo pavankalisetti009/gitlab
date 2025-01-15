@@ -13,7 +13,5 @@ events:
 - name: trigger_audit_event
   filter:
     label: delete_merge_request
-distribution:
-  - ee
 tiers:
   - ultimate

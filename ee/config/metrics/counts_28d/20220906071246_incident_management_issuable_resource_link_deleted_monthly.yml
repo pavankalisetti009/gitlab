@@ -14,8 +14,6 @@ performance_indicator_type: []
 options:
   events:
     - incident_management_issuable_resource_link_deleted
-distribution:
-  - ee
 tiers:
   - premium
   - ultimate

@@ -13,8 +13,6 @@ data_category: optional
 instrumentation_class: CountRelatedWorkItemLinksMetric
 options:
   target_type: epic
-distribution:
-  - ee
 tiers:
   - premium
   - ultimate

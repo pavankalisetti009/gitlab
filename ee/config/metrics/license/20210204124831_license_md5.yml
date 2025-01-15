@@ -14,8 +14,6 @@ instrumentation_class: LicenseMetric
 options:
   attribute: md5
 data_category: standard
-distribution:
-  - ee
 tiers:
 - premium
 - ultimate

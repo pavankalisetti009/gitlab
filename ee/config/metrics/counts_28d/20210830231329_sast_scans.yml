@@ -12,8 +12,6 @@ instrumentation_class: CountSecurityScansMetric
 options:
   scan_type: sast
 data_category: operational
-distribution:
-  - ee
 tiers:
   - ultimate
 performance_indicator_type: [customer_health_score]

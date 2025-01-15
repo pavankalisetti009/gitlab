@@ -13,8 +13,6 @@ instrumentation_class: DuoSeatsMetric
 options:
   subscription_type: pro
   seats_type: purchased
-distribution:
-  - ee
 tiers:
   - premium
   - ultimate
