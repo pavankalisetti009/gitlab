@@ -606,7 +606,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       it 'does not publish any event' do
         expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
-                                                'message' => 'Nothing to mark as orphaned' })
+                                                'message' => 'Nothing to dispatch' })
         expect { execute_task }.not_to publish_event(Search::Zoekt::OrphanedIndexEvent)
       end
     end
