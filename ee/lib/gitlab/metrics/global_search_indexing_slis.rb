@@ -6,7 +6,6 @@ module Gitlab
       include Gitlab::Metrics::SliConfig
 
       sidekiq_enabled!
-      ee_only!
 
       CODE_DOCUMENT_TYPES = %w[Code Wiki].freeze
 

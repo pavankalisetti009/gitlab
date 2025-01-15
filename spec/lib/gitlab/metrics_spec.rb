@@ -325,26 +325,5 @@ RSpec.describe Gitlab::Metrics do
         described_class.initialize_slis!
       end
     end
-
-    context 'when ee enabled' do
-      before do
-        stub_env('RAILS_ENV', 'production')
-        stub_const('Gitlab::Runtime::Puma', true)
-        stub_const('Gitlab::Runtime::Sidekiq', true)
-        stub_const('Gitlab::EE', true)
-      end
-
-      it "initializes only EE SLIs" do
-        Gitlab::Metrics::SliConfig.ee_enabled_classes.each do |klass|
-          allow(klass).to receive(:initialize_slis!)
-        end
-        non_ee_classes = Gitlab::Metrics::SliConfig.sli_implementations - Gitlab::Metrics::SliConfig.ee_enabled_classes
-        non_ee_classes.each do |klass|
-          expect(klass).not_to receive(:initialize_slis!)
-        end
-
-        described_class.initialize_slis!
-      end
-    end
   end
 end

@@ -6,7 +6,6 @@ module Gitlab
       include Gitlab::Metrics::SliConfig
 
       sidekiq_enabled!
-      ee_only!
 
       class << self
         CLIENT_NAMES = {
