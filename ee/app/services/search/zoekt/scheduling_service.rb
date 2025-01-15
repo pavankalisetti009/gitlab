@@ -288,21 +288,12 @@ module Search
       # indices that don't have zoekt_repositories are already in `ready` state
       def mark_indices_as_ready
         execute_every 10.minutes do
-          initializing_indices = Search::Zoekt::Index.initializing
-          if initializing_indices.empty?
-            logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready', count: 0))
+          unless Index.initializing.with_all_finished_repositories.exists?
+            logger.info(build_structured_payload(task: task, message: 'Nothing to move to ready'))
             break
           end
 
-          count = 0
-          initializing_indices.each_batch do |batch|
-            records = batch.with_all_finished_repositories
-            next if records.empty?
-
-            count += records.update_all(state: :ready)
-          end
-          logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready',
-            count: count))
+          Gitlab::EventStore.publish(IndexMarkedAsReadyEvent.new(data: {}))
         end
       end
 

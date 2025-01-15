@@ -471,33 +471,36 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#mark_indices_as_ready' do
     let(:logger) { instance_double(::Search::Zoekt::Logger) }
     let(:task) { :mark_indices_as_ready }
-    let_it_be(:idx) { create(:zoekt_index, state: :initializing) }
-    let_it_be(:idx2) { create(:zoekt_index, state: :initializing) }
-    let_it_be(:idx3) { create(:zoekt_index, state: :initializing) }
-    let_it_be(:idx4) { create(:zoekt_index) }
-    let_it_be(:idx_project) { create(:project, namespace_id: idx.namespace_id) }
-    let_it_be(:idx_project2) { create(:project, namespace_id: idx.namespace_id) }
-    let_it_be(:idx2_project2) { create(:project, namespace_id: idx2.namespace_id) }
-    let_it_be(:idx4_project) { create(:project, namespace_id: idx4.namespace_id) }
 
     before do
-      allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
-      idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project, state: :pending)
-      idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project2, state: :ready)
-      idx2.zoekt_repositories.create!(zoekt_index: idx2, project: idx2_project2, state: :ready)
-      idx4.zoekt_repositories.create!(zoekt_index: idx4, project: idx4_project, state: :ready)
+      create(:zoekt_index, :ready)
+      create(:zoekt_index, state: :pending)
+      create(:zoekt_index, state: :in_progress)
+      create(:zoekt_index, state: :reallocating)
+      create(:zoekt_index, state: :orphaned)
+      create(:zoekt_index, state: :pending_deletion)
     end
 
-    # idx has some pending zoekt_repositories
-    # idx2 has all ready zoekt_repositories
-    # idx3 does not have zoekt_repositories
-    # idx4 all ready zoekt_repositories but zoekt_index is pending
-    it 'moves initializing indices to ready that do not have any zoekt_repos or all finished zoekt_repos' do
-      expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task, 'count' => 2,
-                                              'message' => 'Set indices ready' }
-      )
-      execute_task
-      expect([idx, idx2, idx3, idx4].map { |i| i.reload.state }).to eq(%w[initializing ready ready pending])
+    context 'when there are no initializing indices' do
+      before do
+        allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+      end
+
+      it 'does not publish any event' do
+        expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
+                                                'message' => 'Nothing to move to ready' })
+        expect { execute_task }.not_to publish_event(Search::Zoekt::IndexMarkedAsReadyEvent)
+      end
+    end
+
+    context 'when there are initializing indices' do
+      before do
+        create(:zoekt_index, state: :initializing)
+      end
+
+      it 'publishes Search::Zoekt::IndexMarkedAsReadyEvent event' do
+        expect { execute_task }.to publish_event(Search::Zoekt::IndexMarkedAsReadyEvent).with(Hash.new({}))
+      end
     end
   end
 
