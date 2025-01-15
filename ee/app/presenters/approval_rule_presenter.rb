@@ -5,14 +5,17 @@ class ApprovalRulePresenter < Gitlab::View::Presenter::Delegated
 
   presents nil, as: :rule
 
-  # Hide all approvers if any of them might come from a hidden group. This
-  # represents an abundance of caution, but we can't tell which approvers come
-  # from a hidden group and which don't, from here, so this is the simplest
-  # thing we can do
+  # If the current user is a member of the project then it is safe
+  # to show the full list of users because this user can already see
+  # this list of users on the members page.
+  # If the current user is not a member of the project and the rule
+  # contains hidden groups (groups the current user does not have access to),
+  # then we hide all approvers as we do not know what approvers come from
+  # the hidden groups
   def approvers
-    return [] if contains_hidden_groups?
+    return super if show_approvers?
 
-    super
+    []
   end
 
   def groups
@@ -29,5 +32,12 @@ class ApprovalRulePresenter < Gitlab::View::Presenter::Delegated
 
   def group_query_service
     @group_query_service ||= ApprovalRules::GroupFinder.new(rule, current_user)
+  end
+
+  def show_approvers?
+    return !contains_hidden_groups? unless rule.respond_to?(:project)
+
+    (::Feature.enabled?(:mr_approvers_filter_hidden_users, current_user) && rule.project.member?(current_user)) ||
+      !contains_hidden_groups?
   end
 end
