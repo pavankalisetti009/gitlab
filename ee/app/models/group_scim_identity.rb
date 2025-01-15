@@ -17,11 +17,7 @@ class GroupScimIdentity < ApplicationRecord # rubocop:disable Gitlab/NamespacedC
 
   after_commit :sync_records, on: %i[create update]
 
-  def self.for_instance
-    ScimIdentity.first
-  end
-
   def sync_records
-    Authn::SyncScimIdentityRecordWorker.perform_async({ 'group_scim_identity_id' => id })
+    Authn::SyncGroupScimIdentityRecordWorker.perform_async({ 'group_scim_identity_id' => id })
   end
 end

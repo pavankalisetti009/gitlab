@@ -211,12 +211,6 @@ module EE
         joins(group_wiki_repository: :shard).where(shards: { name: storage })
       end
 
-      scope :with_scim_identities, -> {
-        left_joins(:instance_scim_identities, :group_scim_identities)
-       .group("namespaces.id")
-       .where("scim_identities.id IS NOT NULL OR group_scim_identities.id IS NOT NULL")
-      }
-
       state_machine :ldap_sync_status, namespace: :ldap_sync, initial: :ready do
         state :ready
         state :started

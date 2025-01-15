@@ -683,15 +683,8 @@ module EE
 
     def scim_identities
       return group_scim_identities if ::Gitlab.com? && ::Feature.enabled?(:separate_group_scim_table, :instance)
-      return instance_scim_identities unless ::Gitlab.com?
 
-      groups.top_level.with_scim_identities.filter_map do |group|
-        if ::Feature.enabled?(:separate_group_scim_table, group)
-          group_scim_identities.find_by(group: group, user: self)
-        else
-          instance_scim_identities.find_by(group: group, user: self)
-        end
-      end.compact
+      instance_scim_identities
     end
 
     protected

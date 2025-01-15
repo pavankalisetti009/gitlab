@@ -54,13 +54,4 @@ RSpec.describe GroupScimIdentity, type: :model, feature_category: :system_access
       end
     end
   end
-
-  describe '.for_instance' do
-    it 'returns the first ScimIdentity record' do
-      first_identity = create(:scim_identity)
-      create(:scim_identity)
-
-      expect(described_class.for_instance).to eq(first_identity)
-    end
-  end
 end
