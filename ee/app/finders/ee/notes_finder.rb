@@ -11,21 +11,10 @@ module EE
       when 'epic'
         return EpicsFinder.new(@current_user, group_id: @params[:group_id]) # rubocop:disable Gitlab/ModuleWithInstanceVariables
       when 'vulnerability'
-        return ::Security::VulnerabilityReadsFinder.new(@project) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        return ::Security::VulnerabilitiesFinder.new(@project) # rubocop:disable Gitlab/ModuleWithInstanceVariables
       end
 
       super
-    end
-
-    override :notes_on_target
-    def notes_on_target
-      if target.respond_to?(:related_notes)
-        target.related_notes
-      elsif target.is_a?(::Vulnerabilities::Read)
-        target.vulnerability.notes
-      else
-        target.notes
-      end
     end
   end
 end

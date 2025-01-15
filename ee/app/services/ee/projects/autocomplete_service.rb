@@ -20,6 +20,7 @@ module EE
         ::Autocomplete::VulnerabilitiesAutocompleteFinder
           .new(current_user, project, params)
           .execute
+          .select([:id, :title])
       end
     end
   end

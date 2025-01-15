@@ -7,7 +7,6 @@ module Vulnerabilities
     include UnnestedInFilters::Dsl
     include FromUnion
     include SafelyChangeColumnDefault
-    include ::Gitlab::SQL::Pattern
 
     ignore_column :namespace_id, remove_with: '17.7', remove_after: '2024-11-21'
 
@@ -20,10 +19,6 @@ module Vulnerabilities
     self.primary_key = :vulnerability_id
 
     columns_changing_default :owasp_top_10
-
-    delegate :group_name, :title, :created_at, :project_name, :finding_scanner_name, :finding_description, :cve_value, :cwe_value, :location, :notes_summary, :full_path, to: :vulnerability, allow_nil: true
-    delegate :other_identifier_values, :cvss_vectors_with_vendor, to: :vulnerability, allow_nil: true
-    delegate :dismissed?, to: :vulnerability
 
     belongs_to :vulnerability, inverse_of: :vulnerability_read
     belongs_to :project
@@ -143,21 +138,6 @@ module Vulnerabilities
 
     scope :by_group_using_nested_loop, ->(group) do
       where(traversal_ids: all_vulnerable_traversal_ids_for(group))
-    end
-
-    scope :with_findings_scanner_identifiers_and_notes, -> { with_findings_scanner_and_identifiers.includes(vulnerability: :notes) }
-    scope :with_limit, ->(maximum) { limit(maximum) }
-    scope :order_id_desc, -> { reorder(arel_table[:vulnerability_id].desc) }
-
-    scope :autocomplete_search, ->(query) do
-      return self if query.blank?
-
-      id_as_text = Arel::Nodes::NamedFunction.new('CAST', [arel_table[:vulnerability_id].as('TEXT')])
-
-      joins(:vulnerability)
-        .select('vulnerability_reads.*, vulnerabilities.title')
-        .fuzzy_search(query, [Vulnerability.arel_table[:title]])
-        .or(where(id_as_text.matches("%#{sanitize_sql_like(query.squish)}%")))
     end
 
     def self.arel_grouping_by_traversal_ids_and_vulnerability_id
