@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetDefinitionWeight'
         description 'Represents a weight widget definition'
 
-        implements Types::WorkItems::WidgetDefinitionInterface
+        implements ::Types::WorkItems::WidgetDefinitionInterface
 
         field :editable, GraphQL::Types::Boolean,
           null: false,

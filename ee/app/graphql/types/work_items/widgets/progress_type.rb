@@ -10,12 +10,12 @@ module Types
         graphql_name 'WorkItemWidgetProgress'
         description 'Represents a progress widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :progress, GraphQL::Types::Int,
           null: true, description: 'Progress of the work item.'
 
-        field :updated_at, Types::TimeType,
+        field :updated_at, ::Types::TimeType,
           null: true, description: 'Timestamp of last progress update.'
 
         field :current_value, GraphQL::Types::Int,

@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetStatus'
         description 'Represents a status widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :status, GraphQL::Types::String,
           null: true, description: 'Status of the work item.'

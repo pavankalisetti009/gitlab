@@ -9,7 +9,7 @@ module Types
         graphql_name 'WorkItemWidgetRolledupDates'
         description 'Represents the rolledup dates widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :start_date,
           ::Types::DateType,
@@ -32,7 +32,7 @@ module Types
           description: 'Indicates which work_item sources the rolledup start date.'
 
         field :start_date_sourcing_milestone,
-          Types::MilestoneType,
+          ::Types::MilestoneType,
           null: true,
           description: 'Indicates which milestone sources the rolledup start date.'
 

@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetColor'
         description 'Represents a color widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :color, GraphQL::Types::String, null: true, description: 'Color of the Work Item.'
 

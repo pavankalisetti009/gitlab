@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetRequirementLegacy'
         description 'Represents a legacy requirement widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :legacy_iid, GraphQL::Types::Int,
           deprecated: { reason: 'Use Work Item IID instead', milestone: '15.9' },

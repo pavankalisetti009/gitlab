@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetHealthStatus'
         description 'Represents a health status widget'
 
-        implements Types::WorkItems::WidgetInterface
+        implements ::Types::WorkItems::WidgetInterface
 
         field :health_status,
           ::Types::HealthStatusEnum,

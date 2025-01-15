@@ -9,7 +9,7 @@ module Types
         argument :iteration_id,
           ::Types::GlobalIDType[::Iteration],
           required: false,
-          loads: Types::IterationType,
+          loads: ::Types::IterationType,
           description: 'Iteration to assign to the work item.'
       end
     end

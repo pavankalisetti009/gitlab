@@ -8,7 +8,7 @@ module Types
         graphql_name 'WorkItemWidgetDefinitionLabels'
         description 'Represents a labels widget definition'
 
-        implements Types::WorkItems::WidgetDefinitionInterface
+        implements ::Types::WorkItems::WidgetDefinitionInterface
 
         field :allows_scoped_labels, GraphQL::Types::Boolean,
           null: false,
