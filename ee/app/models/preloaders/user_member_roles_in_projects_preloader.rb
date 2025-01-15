@@ -5,40 +5,38 @@ module Preloaders
     include Gitlab::Utils::StrongMemoize
 
     def initialize(projects:, user:)
-      @projects = if projects.is_a?(Array)
-                    Project.select(:id, :namespace_id).where(id: projects)
-                  else
-                    # Push projects base query in to a sub-select to avoid
-                    # table name clashes. Performs better than aliasing.
-                    Project.select(:id, :namespace_id).where(id: projects.reselect(:id))
-                  end
-
+      @projects = projects
       @user = user
     end
 
     def execute
-      ::Preloaders::ProjectRootAncestorPreloader.new(projects, :namespace).execute
+      project_ids = projects.map { |project| project.respond_to?(:id) ? project.id : project }
 
       ::Gitlab::SafeRequestLoader.execute(
         resource_key: resource_key,
-        resource_ids: projects.map(&:id)
-      ) do
-        abilities_for_user_grouped_by_project
+        resource_ids: project_ids,
+        default_value: []
+      ) do |project_ids|
+        abilities_for_user_grouped_by_project(project_ids)
       end
     end
 
     private
 
-    def abilities_for_user_grouped_by_project
-      sql_values_array = projects.filter_map do |project|
+    def abilities_for_user_grouped_by_project(project_ids)
+      projects = Project.select(:id, :namespace_id).where(id: project_ids)
+
+      ::Preloaders::ProjectRootAncestorPreloader.new(projects, :namespace).execute
+
+      projects_with_traversal_ids = projects.filter_map do |project|
         next unless custom_roles_enabled_on?(project)
 
         [project.id, Arel.sql("ARRAY[#{project.namespace.traversal_ids.join(',')}]")]
       end
 
-      return {} if sql_values_array.empty?
+      return {} if projects_with_traversal_ids.empty?
 
-      value_list = Arel::Nodes::ValuesList.new(sql_values_array)
+      value_list = Arel::Nodes::ValuesList.new(projects_with_traversal_ids)
 
       sql = <<~SQL
       SELECT project_ids.project_id, custom_permissions.permissions
@@ -57,7 +55,7 @@ module Preloaders
           Gitlab::Json.parse(value['permissions']).select { |_, v| v }
         end
 
-        project_permissions.inject(:merge).keys.map(&:to_sym) & permissions
+        project_permissions.inject(:merge).keys.map(&:to_sym) & enabled_project_permissions
       end
     end
 
@@ -100,9 +98,7 @@ module Preloaders
         union_queries.push(invited_member_role, source_member_role)
       end
 
-      reset_default = "SELECT '{}'::jsonb AS permissions"
-
-      union_queries.push(project_member, namespace_member, reset_default)
+      union_queries.push(project_member, namespace_member)
 
       union_queries.join(" UNION ALL ")
     end
@@ -122,12 +118,12 @@ module Preloaders
       "member_roles_in_projects:user:#{user.id}"
     end
 
-    def permissions
+    def enabled_project_permissions
       MemberRole
         .all_customizable_project_permissions
         .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
-    strong_memoize_attr :permissions
+    strong_memoize_attr :enabled_project_permissions
 
     def custom_role_for_group_link_enabled?
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)

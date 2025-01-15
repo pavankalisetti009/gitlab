@@ -38,8 +38,8 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
           project_member.update!(member_role: member_role)
         end
 
-        it 'returns project id with nil ability value' do
-          expect(result).to eq(project.id => nil, project_2.id => nil)
+        it 'returns project id with empty array' do
+          expect(result).to eq(project.id => [], project_2.id => [])
         end
       end
 
@@ -64,16 +64,36 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
             end
 
             it 'avoids N+1 queries' do
-              projects = [project]
               control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-                described_class.new(projects: projects, user: user).execute
+                described_class.new(projects: [project], user: user).execute
               end
 
-              projects << create(:project, :private, group: create(:group, parent: group))
-
               expect do
-                described_class.new(projects: projects, user: user).execute
+                described_class.new(projects: [project, project_2], user: user).execute
               end.to issue_same_number_of_queries_as(control).or_fewer
+            end
+
+            context 'with RequestStore enabled', :request_store do
+              it 'only requests the extra projects when uncached projects are passed' do
+                described_class.new(projects: [project], user: user).execute
+
+                queries = ActiveRecord::QueryRecorder.new do
+                  described_class.new(projects: [project, project_2], user: user).execute
+                end
+
+                expect(queries.count).to eq(4)
+                expect(queries.log_message).to match(/VALUES \(#{project_2.id}/)
+                expect(queries.log_message).not_to match(/VALUES \(#{project.id}/)
+              end
+            end
+
+            context 'when an array of project IDs is passed instead of objects' do
+              let(:projects_list) { [project.id, project_2.id] }
+
+              it 'returns all requested project IDs with their respective abilities', :aggregate_failures do
+                expect(result[project.id]).to match_array(expected_abilities)
+                expect(result[project_2.id]).to match_array(expected_abilities_2)
+              end
             end
           end
 
@@ -143,21 +163,6 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
             expect(result).to eq({ project.id => [], project_2.id => [] })
           end
         end
-      end
-
-      it 'avoids N+1 queries' do
-        projects = [project]
-        described_class.new(projects: projects, user: user).execute
-
-        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-          described_class.new(projects: projects, user: user).execute
-        end
-
-        projects = [project, create(:project, :private, :in_group)]
-
-        expect do
-          described_class.new(projects: projects, user: user).execute
-        end.to issue_same_number_of_queries_as(control)
       end
     end
   end
