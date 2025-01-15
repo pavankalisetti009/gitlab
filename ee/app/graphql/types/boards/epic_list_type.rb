@@ -35,20 +35,11 @@ module Types
         resolver: Resolvers::Boards::BoardListEpicsResolver,
         description: 'List epics.'
 
-      field :epics_count, GraphQL::Types::Int,
-        null: true,
-        description: 'Count of epics in the list.',
-        deprecated: { reason: :renamed, replacement: 'metadata', milestone: '14.9' }
-
       field :metadata, Types::Boards::EpicListMetadataType,
         null: true, extras: [:lookahead], description: 'Epic list metatada.'
 
       def collapsed
         object.collapsed?(current_user)
-      end
-
-      def epics_count
-        list_service.metadata([:epics_count])[:epics_count]
       end
 
       def metadata(lookahead: nil)
