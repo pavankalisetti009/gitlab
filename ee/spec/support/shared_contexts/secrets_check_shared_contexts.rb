@@ -34,8 +34,21 @@ RSpec.shared_context 'secrets check context' do
 
   let(:existing_blob) { have_attributes(class: Gitlab::Git::Blob, id: existing_blob_reference, size: 23) }
   let(:new_blob) { have_attributes(class: Gitlab::Git::Blob, id: new_blob_reference, size: 24) }
-  let(:existing_payload) { { id: existing_blob_reference, data: "Documentation goes here", offset: 1 } }
-  let(:new_payload) { { id: new_blob_reference, data: "BASE_URL=https://foo.bar", offset: 1 } }
+  let(:existing_payload) do
+    Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+      id: existing_blob_reference,
+      data: "Documentation goes here",
+      offset: 1
+    )
+  end
+
+  let(:new_payload) do
+    Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+      id: new_blob_reference,
+      data: "BASE_URL=https://foo.bar",
+      offset: 1
+    )
+  end
 
   let(:changes) do
     [
@@ -156,11 +169,11 @@ RSpec.shared_context 'secret detection error and log messages context' do
 
   # Error messsages with formatting
   let(:failed_to_scan_regex_error) do
-    format(error_messages[:failed_to_scan_regex_error], { blob_id: failed_to_scan_blob_reference })
+    format(error_messages[:failed_to_scan_regex_error], { payload_id: failed_to_scan_blob_reference })
   end
 
   let(:blob_timed_out_error) do
-    format(error_messages[:blob_timed_out_error], { blob_id: timed_out_blob_reference })
+    format(error_messages[:blob_timed_out_error], { payload_id: timed_out_blob_reference })
   end
 
   let(:too_many_tree_entries_error) do
@@ -270,7 +283,7 @@ RSpec.shared_context 'secret detection error and log messages context' do
     format(
       log_messages[:finding_message],
       {
-        blob_id: new_blob_reference,
+        payload_id: new_blob_reference,
         line_number: finding_line_number,
         description: finding_description
       }
@@ -311,6 +324,34 @@ RSpec.shared_context 'quarantine directory exists' do
 
     # We also want to have the client return the tree entries.
     allow(gitaly_commit_client).to receive(:tree_entries).and_return([tree_entries, gitaly_pagination_cursor])
+  end
+end
+
+# In response to Incident 19090 (https://gitlab.com/gitlab-com/gl-infra/production/-/issues/19090)
+RSpec.shared_context 'special characters table' do
+  using RSpec::Parameterized::TableSyntax
+
+  where(:special_character, :description) do
+    (+'—').force_encoding('ASCII-8BIT')  | 'em-dash'
+    (+'™').force_encoding('ASCII-8BIT')  | 'trademark'
+    (+'☀').force_encoding('ASCII-8BIT')  | 'sun'
+    (+'♫').force_encoding('ASCII-8BIT')  | 'beamed eighth notes'
+    (+'⚡').force_encoding('ASCII-8BIT') | 'high voltage sign'
+    (+'⚔').force_encoding('ASCII-8BIT')  | 'crossed swords'
+    (+'⚖').force_encoding('ASCII-8BIT')  | 'scales'
+    (+'⚛').force_encoding('ASCII-8BIT')  | 'atom symbol'
+    (+'⚜').force_encoding('ASCII-8BIT')  | 'fleur-de-lis'
+    (+'⚽').force_encoding('ASCII-8BIT') | 'soccer ball'
+    (+'⛄').force_encoding('ASCII-8BIT') | 'snowman without snow'
+    (+'⛅').force_encoding('ASCII-8BIT') | 'sun behind cloud'
+    (+'⛎').force_encoding('ASCII-8BIT') | 'ophiuchus'
+    (+'⛔').force_encoding('ASCII-8BIT') | 'no entry'
+    (+'⛪').force_encoding('ASCII-8BIT') | 'church'
+    (+'⛵').force_encoding('ASCII-8BIT') | 'sailboat'
+    (+'⛺').force_encoding('ASCII-8BIT') | 'tent'
+    (+'⛽').force_encoding('ASCII-8BIT') | 'fuel pump'
+    (+'✈').force_encoding('ASCII-8BIT')  | 'airplane'
+    (+'❄').force_encoding('ASCII-8BIT')  | 'snowflake'
   end
 end
 
