@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlFormSelect } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/namespace_work_item_types.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -26,15 +25,6 @@ Vue.use(VueApollo);
 describe('EE Create work item component', () => {
   let wrapper;
   let mockApollo;
-  const workItemTypeEpicId =
-    namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
-      ({ name }) => name === 'Epic',
-    ).id;
-
-  const workItemTypeIssueId =
-    namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
-      ({ name }) => name === 'Issue',
-    ).id;
 
   const createWorkItemSuccessHandler = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
   const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
@@ -47,7 +37,6 @@ describe('EE Create work item component', () => {
   const findWeightWidget = () => wrapper.findComponent(WorkItemWeight);
   const findColorWidget = () => wrapper.findComponent(WorkItemColor);
   const findRolledupDatesWidget = () => wrapper.findComponent(WorkItemRolledupDates);
-  const findSelect = () => wrapper.findComponent(GlFormSelect);
 
   const createComponent = ({
     props = {},
@@ -61,27 +50,13 @@ describe('EE Create work item component', () => {
         [namespaceWorkItemTypesQuery, namespaceWorkItemTypesHandler],
       ],
       resolvers,
-      { typePolicies: { Project: { merge: true } } },
     );
-
-    mockApollo.clients.defaultClient.cache.writeQuery({
-      query: namespaceWorkItemTypesQuery,
-      variables: { fullPath: 'full-path', name: workItemTypeName },
-      data: namespaceWorkItemTypesQueryResponse.data,
-    });
 
     wrapper = shallowMount(CreateWorkItem, {
       apolloProvider: mockApollo,
       propsData: {
         workItemTypeName,
         ...props,
-      },
-      mocks: {
-        $route: {
-          params: {
-            type: 'epic',
-          },
-        },
       },
       provide: {
         fullPath: 'full-path',
@@ -91,19 +66,6 @@ describe('EE Create work item component', () => {
         hasIssueWeightsFeature: true,
       },
     });
-  };
-
-  const initialiseComponentAndSelectWorkItem = async ({
-    mutationHandler = createWorkItemSuccessHandler,
-    workItemTypeId = workItemTypeEpicId,
-    workItemTypeName = WORK_ITEM_TYPE_ENUM_EPIC,
-  } = {}) => {
-    createComponent({ mutationHandler, workItemTypeName });
-
-    await waitForPromises();
-
-    findSelect().vm.$emit('input', workItemTypeId);
-    await waitForPromises();
   };
 
   const mockCurrentUser = {
@@ -122,7 +84,8 @@ describe('EE Create work item component', () => {
 
   describe('Create work item widgets for Epic work item type', () => {
     beforeEach(async () => {
-      await initialiseComponentAndSelectWorkItem();
+      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC });
+      await waitForPromises();
     });
 
     it('renders the work item health status widget', () => {
@@ -140,10 +103,8 @@ describe('EE Create work item component', () => {
 
   describe('Create work item widgets for Issue work item type', () => {
     beforeEach(async () => {
-      await initialiseComponentAndSelectWorkItem({
-        workItemTypeId: workItemTypeIssueId,
-        workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
-      });
+      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE });
+      await waitForPromises();
     });
 
     it('renders the work item health status widget', () => {
