@@ -13,8 +13,6 @@ instrumentation_class: RedisMetric
 options:
   prefix: audit_events
   event: allow_overrides_to_approver_list_per_merge_request_updated
-distribution:
-  - ee
 tiers:
   - ultimate
 milestone_removed: "17.1"

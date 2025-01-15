@@ -12,8 +12,6 @@ instrumentation_class: LicenseMetric
 options:
   attribute: sha256
 data_category: standard
-distribution:
-  - ee
 tiers:
 - premium
 - ultimate

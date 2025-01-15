@@ -13,8 +13,6 @@ instrumentation_class: RedisHLLMetric
 options:
   events:
     - i_code_review_merge_request_widget_license_compliance_warning
-distribution:
-  - ee
 tiers:
   - premium
   - ultimate

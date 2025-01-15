@@ -14,8 +14,6 @@ options:
   events:
     - approval_project_rule_created
 performance_indicator_type: []
-distribution:
-  - ee
 tiers:
   - premium
   - ultimate
