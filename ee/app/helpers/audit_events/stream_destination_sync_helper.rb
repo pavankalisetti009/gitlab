@@ -5,6 +5,7 @@ module AuditEvents
     include Gitlab::Utils::StrongMemoize
 
     CreateError = Class.new(StandardError)
+    UpdateError = Class.new(StandardError)
 
     CATEGORY_MAPPING = {
       'http' => 'ExternalAuditEventDestination',
@@ -34,6 +35,25 @@ module AuditEvents
         destination
       end
     rescue ActiveRecord::RecordInvalid, CreateError => e
+      Gitlab::ErrorTracking.track_exception(e, audit_event_destination_model: stream_destination_model.class.name)
+      nil
+    end
+
+    def update_legacy_destination(stream_destination_model)
+      return unless stream_destination_sync_enabled?
+
+      destination = stream_destination_model.legacy_destination
+
+      return if destination.nil? || destination.stream_destination_id != stream_destination_model.id
+
+      ApplicationRecord.transaction do
+        destination.update!(
+          name: stream_destination_model.name,
+          **extract_legacy_attributes(stream_destination_model)
+        )
+        destination
+      end
+    rescue ActiveRecord::RecordInvalid, UpdateError => e
       Gitlab::ErrorTracking.track_exception(e, audit_event_destination_model: stream_destination_model.class.name)
       nil
     end

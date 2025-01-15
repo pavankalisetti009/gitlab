@@ -8,5 +8,6 @@ FactoryBot.define do
     end
     aws_region { 'ap-south-2' }
     secret_access_key { SecureRandom.hex(8) }
+    stream_destination_id { nil }
   end
 end

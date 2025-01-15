@@ -43,3 +43,50 @@ RSpec.shared_examples 'creates a legacy destination' do |model_class, attributes
     expect(legacy_model.stream_destination_id).to eq(stream_model.id)
   end
 end
+
+RSpec.shared_examples 'updates a legacy destination' do |destination, attributes|
+  def get_secret_token(model, category)
+    case category
+    when :http then model.verification_token
+    when :aws then model.secret_access_key
+    when :gcp then model.private_key
+    end
+  end
+
+  context 'when feature flag is enabled' do
+    let(:attributes_map) { instance_exec(&attributes) }
+
+    let(:stream_destination) { send(destination) }
+    let(:paired_legacy_destination) { send(:legacy_destination) }
+
+    before do
+      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+      stream_destination.update!(legacy_destination_ref: paired_legacy_destination.id)
+      paired_legacy_destination.update!(stream_destination_id: stream_destination.id)
+    end
+
+    it 'updates the legacy destination with correct attributes' do
+      mutate
+
+      stream_destination.reload
+      paired_legacy_destination.reload
+
+      expect(stream_destination.legacy_destination_ref).to eq(legacy_destination.id)
+      expect(paired_legacy_destination.stream_destination_id).to eq(stream_destination.id)
+      expect(get_secret_token(paired_legacy_destination,
+        stream_destination.category.to_sym)).to eq(stream_destination.secret_token)
+
+      attributes_map[:streaming].each do |key, value|
+        if key == "name"
+          expect(stream_destination.name).to eq(value)
+        else
+          expect(stream_destination.config[key]).to eq(value)
+        end
+
+        attributes_map[:legacy].each do |key, value|
+          expect(paired_legacy_destination[key]).to eq(value)
+        end
+      end
+    end
+  end
+end

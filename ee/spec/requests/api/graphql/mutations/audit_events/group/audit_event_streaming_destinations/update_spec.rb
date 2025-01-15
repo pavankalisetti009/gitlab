@@ -49,6 +49,7 @@ RSpec.describe 'Update group level external audit event streaming destination', 
   context 'when feature is licensed' do
     before do
       stub_licensed_features(external_audit_events: true)
+      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
     end
 
     context 'when current user is a group owner' do
@@ -135,6 +136,30 @@ RSpec.describe 'Update group level external audit event streaming destination', 
             'errors' => ['error message']
           )
         end
+      end
+
+      context 'when destination is updated' do
+        let(:legacy_destination) do
+          create(:amazon_s3_configuration, group: group, stream_destination_id: destination.id)
+        end
+
+        it_behaves_like 'updates a legacy destination', :destination,
+          proc {
+            {
+              legacy: {
+                bucket_name: updated_config["bucketName"],
+                aws_region: updated_config["awsRegion"],
+                access_key_xid: updated_config["accessKeyXid"],
+                name: updated_destination_name
+              },
+              streaming: {
+                "accessKeyXid" => updated_config["accessKeyXid"],
+                "bucketName" => updated_config["bucketName"],
+                "awsRegion" => updated_config["awsRegion"],
+                "name" => updated_destination_name
+              }
+            }
+          }
       end
     end
 
