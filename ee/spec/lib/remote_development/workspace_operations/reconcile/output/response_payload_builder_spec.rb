@@ -187,19 +187,4 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
       end
     end
   end
-
-  context "when workspace.desired_config_generator_version is previous version" do
-    let(:desired_config_generator_version) { previous_desired_config_generator_version }
-    let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::FULL }
-    let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
-    let(:expected_include_all_resources) { true }
-
-    it "includes config_to_apply with all resources included" do
-      allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2)
-        .to(receive(:generate_desired_config))
-        .with(hash_including(include_all_resources: expected_include_all_resources)) { generated_config_to_apply }
-
-      expect(returned_value).to eq(expected_returned_value)
-    end
-  end
 end
