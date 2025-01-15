@@ -1853,7 +1853,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                   context "when the purls list has too many items" do
                     before do
                       purls = []
-                      1001.times { |i| purls << "purl #{i}" }
+                      1001.times { |i| purls << "pkg:gem/bundler@#{i}" }
                       license[:packages] = { excluding: { purls: purls } }
                       rule[:licenses] = { license_list_type.to_sym => [license] }
                     end
@@ -1875,13 +1875,26 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                   end
 
                   context "when the purl is a string" do
-                    before do
-                      license[:packages] = { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
-                      rule[:licenses] = { license_list_type.to_sym => [license] }
+                    context "when the purl is a valid uri without package version" do
+                      before do
+                        license[:packages] = { excluding: { purls: ["pkg:gem/bundler"] } }
+                        rule[:licenses] = { license_list_type.to_sym => [license] }
+                      end
+
+                      specify do
+                        expect(errors).to be_empty
+                      end
                     end
 
-                    specify do
-                      expect(errors).to be_empty
+                    context "when the purl is a valid uri with package version" do
+                      before do
+                        license[:packages] = { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+                        rule[:licenses] = { license_list_type.to_sym => [license] }
+                      end
+
+                      specify do
+                        expect(errors).to be_empty
+                      end
                     end
 
                     context "when excluding key contains additional keys" do
@@ -1902,18 +1915,30 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                       end
 
                       specify do
-                        expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' is invalid: error_type=minLength")
+                        expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' is invalid: error_type=minLength",
+                          "property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' does not match format: uri")
                       end
                     end
 
                     context "when the purl is too long" do
                       before do
-                        license[:packages] = { excluding: { purls: ["a" * 1025] } }
+                        license[:packages] = { excluding: { purls: ["pkg:gem/bundler@#{'0' * 1025}"] } }
                         rule[:licenses] = { license_list_type.to_sym => [license] }
                       end
 
                       specify do
                         expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' is invalid: error_type=maxLength")
+                      end
+                    end
+
+                    context "when the purl is not a valid uri" do
+                      before do
+                        license[:packages] = { excluding: { purls: ["abc"] } }
+                        rule[:licenses] = { license_list_type.to_sym => [license] }
+                      end
+
+                      specify do
+                        expect(errors).to contain_exactly("property '/#{type}/0/rules/0/licenses/#{license_list_type}/0/packages/excluding/purls/0' does not match format: uri")
                       end
                     end
                   end

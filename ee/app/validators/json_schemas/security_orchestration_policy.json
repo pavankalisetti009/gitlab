@@ -1522,7 +1522,8 @@
                     "items": {
                       "minLength": 1,
                       "maxLength": 1024,
-                      "type": "string"
+                      "type": "string",
+                      "format": "uri"
                     }
                   }
                 },
