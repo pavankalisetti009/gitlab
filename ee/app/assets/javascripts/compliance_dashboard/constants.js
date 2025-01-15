@@ -67,8 +67,8 @@ export const i18n = {
   projectsTab: __('Projects'),
   heading: __('Compliance center'),
   standardsAdherenceTab: s__('Compliance Center|Standards Adherence'),
-  subheading: __(
-    'Report and manage standards adherence, violations, and compliance frameworks for the group.',
+  subheading: s__(
+    'Compliance Center|Report and manage standards adherence, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}.',
   ),
   violationsTab: s__('Compliance Center|Violations'),
 };

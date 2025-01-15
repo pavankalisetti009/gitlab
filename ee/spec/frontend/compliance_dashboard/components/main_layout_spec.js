@@ -1,9 +1,10 @@
 import { mount } from '@vue/test-utils';
-import { GlTabs, GlTooltip } from '@gitlab/ui';
+import { GlTabs, GlTooltip, GlLink } from '@gitlab/ui';
 import { extendedWrapper, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import MainLayout from 'ee/compliance_dashboard/components/main_layout.vue';
-import ReportHeader from 'ee/compliance_dashboard/components/shared/report_header.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { stubComponent } from 'helpers/stub_component';
 import { mockTracking } from 'helpers/tracking_helper';
 import {
@@ -36,7 +37,7 @@ describe('ComplianceReportsApp component', () => {
     complianceCenterPath: 'top-level-group-path/compliance-center-path',
   };
 
-  const findHeader = () => wrapper.findComponent(ReportHeader);
+  const findHeader = () => wrapper.findComponent(PageHeading);
   const findExportDropdown = () => wrapper.findByText('Export');
   const findMergeCommitsExportButton = () => wrapper.findByText('Export chain of custody report');
   const findViolationsExportButton = () => wrapper.findByText('Export violations report');
@@ -150,12 +151,13 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('passes the expected values to the header', () => {
-      expect(findHeader().props()).toMatchObject({
-        heading: 'Compliance center',
-        subheading:
-          'Report and manage standards adherence, violations, and compliance frameworks for the group.',
-        documentationPath: '/help/user/compliance/compliance_center/index.md',
-      });
+      expect(findHeader().props('heading')).toBe('Compliance center');
+      expect(findHeader().text()).toContain(
+        'Report and manage standards adherence, violations, and compliance frameworks for the group. Learn more.',
+      );
+      expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
+        helpPagePath('user/compliance/compliance_center/index.md'),
+      );
     });
 
     it('renders the violations export button', () => {
@@ -191,12 +193,13 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('passes the expected values to the header', () => {
-      expect(findHeader().props()).toMatchObject({
-        heading: 'Compliance center',
-        subheading:
-          'Report and manage standards adherence, violations, and compliance frameworks for the group.',
-        documentationPath: '/help/user/compliance/compliance_center/index.md',
-      });
+      expect(findHeader().props('heading')).toBe('Compliance center');
+      expect(findHeader().text()).toContain(
+        'Report and manage standards adherence, violations, and compliance frameworks for the group. Learn more.',
+      );
+      expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
+        helpPagePath('user/compliance/compliance_center/index.md'),
+      );
     });
 
     it('renders the project frameworks export button', () => {

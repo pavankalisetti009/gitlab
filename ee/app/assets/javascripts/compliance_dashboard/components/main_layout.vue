@@ -9,6 +9,7 @@ import {
   GlLink,
 } from '@gitlab/ui';
 
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import Tracking from '~/tracking';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
@@ -23,7 +24,6 @@ import {
   i18n,
 } from '../constants';
 
-import ReportHeader from './shared/report_header.vue';
 import ReportsExport from './shared/export_disclosure_dropdown.vue';
 
 const tabConfigs = {
@@ -54,8 +54,8 @@ export default {
     GlTooltip,
     GlSprintf,
     GlLink,
-    ReportHeader,
     ReportsExport,
+    PageHeading,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -137,15 +137,17 @@ export default {
 </script>
 <template>
   <div>
-    <report-header
-      :heading="$options.i18n.heading"
-      :subheading="$options.i18n.subheading"
-      :documentation-path="$options.documentationPath"
-    >
+    <page-heading :heading="$options.i18n.heading">
+      <template #description>
+        <gl-sprintf :message="$options.i18n.subheading">
+          <template #link="{ content }">
+            <gl-link :href="$options.documentationPath" target="_blank">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </template>
       <template #actions>
         <reports-export
           v-if="hasAtLeastOneExportAvailable"
-          class="gl-mb-3 gl-mr-2"
           :project-frameworks-csv-export-path="projectFrameworksCsvExportPath"
           :merge-commits-csv-export-path="mergeCommitsCsvExportPath"
           :violations-csv-export-path="violationsCsvExportPath"
@@ -164,7 +166,6 @@ export default {
         <span ref="newFrameworkButton">
           <gl-button
             v-if="canAdminComplianceFramework"
-            class="gl-mb-3"
             variant="confirm"
             category="secondary"
             :disabled="!isTopLevelGroup"
@@ -173,7 +174,7 @@ export default {
           >
         </span>
       </template>
-    </report-header>
+    </page-heading>
 
     <gl-tabs :value="tabIndex" content-class="gl-p-0" lazy>
       <gl-tab

@@ -14375,6 +14375,9 @@ msgstr ""
 msgid "Compliance Center|Frameworks"
 msgstr ""
 
+msgid "Compliance Center|Report and manage standards adherence, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
 msgid "Compliance Center|Standards Adherence"
 msgstr ""
 
@@ -47271,9 +47274,6 @@ msgid "Report abuse"
 msgstr ""
 
 msgid "Report abuse to administrator"
-msgstr ""
-
-msgid "Report and manage standards adherence, violations, and compliance frameworks for the group."
 msgstr ""
 
 msgid "Report couldn't be prepared."
