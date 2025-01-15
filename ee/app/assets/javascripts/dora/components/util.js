@@ -184,3 +184,18 @@ export const forecastDataToSeries = ({
   // Add the last point from the data series so the chart visually joins together
   return [...dataSeries.slice(-1), ...data];
 };
+
+/**
+ * Takes the raw snake_case query parameters and extracts supported query parameters
+ * @param {Object} params.requestParams - Object containing the supported query parameters
+ * @param {Date} params.requestParams.start_date
+ * @param {Date} params.requestParams.end_date
+ *
+ * @returns {{ startDate: Date, endDate: Date }} CamelCased parameters
+ */
+export const extractOverviewMetricsQueryParameters = ({
+  requestParams: { start_date: startDate, end_date: endDate } = {},
+} = {}) => ({
+  startDate,
+  endDate,
+});

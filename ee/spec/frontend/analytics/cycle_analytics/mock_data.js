@@ -1,8 +1,6 @@
 import { DATA_VIZ_BLUE_500, DATA_VIZ_ORANGE_600 } from '@gitlab/ui/src/tokens/build/js/tokens';
 import { uniq } from 'lodash';
 import valueStreamAnalyticsStages from 'test_fixtures/analytics/value_stream_analytics/stages.json';
-import valueStreamAnalyticsSummary from 'test_fixtures/analytics/metrics/value_stream_analytics/summary.json';
-import valueStreamAnalyticsTimeSummary from 'test_fixtures/analytics/metrics/value_stream_analytics/time_summary.json';
 import tasksByType from 'test_fixtures/analytics/charts/type_of_work/tasks_by_type.json';
 import apiGroupLabels from 'test_fixtures/api/group_labels.json';
 
@@ -48,8 +46,6 @@ import { getDatesInRange } from '~/lib/utils/datetime_utility';
 
 export const endpoints = {
   groupLabels: /groups\/[A-Z|a-z|\d|\-|_]+\/-\/labels.json/,
-  recentActivityData: /analytics\/value_stream_analytics\/summary/,
-  timeMetricsData: /analytics\/value_stream_analytics\/time_summary/,
   durationData:
     /analytics\/value_stream_analytics\/value_streams\/\w+\/stages\/\w+\/average_duration_chart/,
   stageData: /analytics\/value_stream_analytics\/value_streams\/\w+\/stages\/\w+\/records/,
@@ -75,10 +71,6 @@ export const groupLabels = apiGroupLabels.map((l) =>
   convertObjectPropsToCamelCase({ ...l, title: l.name }),
 );
 export const groupLabelNames = groupLabels.map(({ title }) => title);
-
-export const recentActivityData = valueStreamAnalyticsSummary;
-
-export const timeMetricsData = valueStreamAnalyticsTimeSummary;
 
 export const customizableStagesAndEvents = valueStreamAnalyticsStages;
 

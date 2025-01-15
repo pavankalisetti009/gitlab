@@ -126,8 +126,8 @@ describe('time_to_restore_service_charts.vue', () => {
 
       it('correctly computes the requestParams', () => {
         expect(findValueStreamMetrics().props('requestParams')).toMatchObject({
-          created_after: '2015-06-04T00:00:00+0000',
-          created_before: '2015-07-04T00:00:00+0000',
+          startDate: '2015-06-04T00:00:00+0000',
+          endDate: '2015-07-04T00:00:00+0000',
         });
       });
     });

@@ -30,7 +30,12 @@ import {
   LAST_180_DAYS,
   CHART_TITLE,
 } from './static_data/deployment_frequency';
-import { apiDataToChartSeries, seriesToAverageSeries, forecastDataToSeries } from './util';
+import {
+  apiDataToChartSeries,
+  seriesToAverageSeries,
+  forecastDataToSeries,
+  extractOverviewMetricsQueryParameters,
+} from './util';
 
 const VISIBLE_METRICS = ['deploys', 'deployment-frequency', 'deployment_frequency'];
 const filterFn = (data) =>
@@ -232,16 +237,8 @@ export default {
       this.selectedChartIndex = selectedChartIndex;
       this.calculateForecast();
     },
-    getMetricsRequestParams(selectedChartIndex) {
-      const {
-        // eslint-disable-next-line camelcase
-        requestParams: { start_date: created_after, end_date: created_before },
-      } = allChartDefinitions[selectedChartIndex];
-
-      return {
-        created_after,
-        created_before,
-      };
+    getMetricsRequestParams(selectedChart) {
+      return extractOverviewMetricsQueryParameters(allChartDefinitions[selectedChart]);
     },
     calculateForecast() {
       if (!this.shouldBuildForecast) return;

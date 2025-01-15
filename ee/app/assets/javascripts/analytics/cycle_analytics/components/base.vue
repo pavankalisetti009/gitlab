@@ -4,7 +4,10 @@ import { mapActions, mapState, mapGetters } from 'vuex';
 import { GlEmptyState } from '@gitlab/ui';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
 import { VSA_METRICS_GROUPS, FLOW_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
-import { generateValueStreamsDashboardLink } from '~/analytics/shared/utils';
+import {
+  generateValueStreamsDashboardLink,
+  overviewMetricsRequestParams,
+} from '~/analytics/shared/utils';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import PathNavigation from '~/analytics/cycle_analytics/components/path_navigation.vue';
 import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
@@ -12,7 +15,6 @@ import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_str
 import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { METRICS_REQUESTS } from '../constants';
 import StageChart from './duration_charts/stage_chart.vue';
 import TypeOfWorkChartsLoader from './type_of_work_charts_loader.vue';
 import ValueStreamAggregationStatus from './value_stream_aggregation_status.vue';
@@ -165,6 +167,9 @@ export default {
     isAllowed() {
       return this.canReadCycleAnalytics;
     },
+    overviewRequestParams() {
+      return overviewMetricsRequestParams(this.cycleAnalyticsRequestParams);
+    },
   },
   methods: {
     ...mapActions([
@@ -201,7 +206,6 @@ export default {
       refreshCurrentPage();
     },
   },
-  METRICS_REQUESTS,
   VSA_METRICS_GROUPS,
   aggregationPopoverOptions: {
     triggers: 'hover',
@@ -272,7 +276,7 @@ export default {
         <value-stream-metrics
           v-if="isOverviewStageSelected"
           :request-path="namespace.path"
-          :request-params="cycleAnalyticsRequestParams"
+          :request-params="overviewRequestParams"
           :group-by="$options.VSA_METRICS_GROUPS"
           :dashboards-path="dashboardsPath"
           :query-type="$options.FLOW_METRICS_QUERY_TYPE"

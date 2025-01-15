@@ -9,6 +9,7 @@ import {
   extractTimeSeriesTooltip,
   formatAsPercentage,
   forecastDataToSeries,
+  extractOverviewMetricsQueryParameters,
 } from 'ee/dora/components/util';
 import { forecastDataToChartDate } from './helpers';
 import { mockLastWeekData, mockLastWeekRawForecastData } from './mock_data';
@@ -207,6 +208,22 @@ describe('ee/dora/components/util.js', () => {
 
     it('includes the last data point from the data series', () => {
       expect(res[0]).toEqual(['Jul 03, 2015', 1]);
+    });
+  });
+
+  describe('extractOverviewMetricsQueryParameters', () => {
+    it('returns empty object when no requestParams property provided', () => {
+      expect(extractOverviewMetricsQueryParameters()).toEqual({});
+      expect(extractOverviewMetricsQueryParameters({})).toEqual({});
+    });
+
+    it.each`
+      param           | value           | expected
+      ${'start_date'} | ${'2024-01-01'} | ${'startDate'}
+      ${'end_date'}   | ${'2024-12-31'} | ${'endDate'}
+    `('correctly transforms the $param parameter', ({ param, value, expected }) => {
+      const result = extractOverviewMetricsQueryParameters({ requestParams: { [param]: value } });
+      expect(result[expected]).toBe(value);
     });
   });
 });

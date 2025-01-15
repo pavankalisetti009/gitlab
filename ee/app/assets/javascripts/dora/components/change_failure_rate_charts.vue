@@ -27,6 +27,7 @@ import {
   seriesToMedianSeries,
   extractTimeSeriesTooltip,
   formatAsPercentage,
+  extractOverviewMetricsQueryParameters,
 } from './util';
 
 const VISIBLE_METRICS = [DoraApi.CHANGE_FAILURE_RATE];
@@ -154,15 +155,7 @@ export default {
       }
     },
     getMetricsRequestParams(selectedChart) {
-      const {
-        // eslint-disable-next-line camelcase
-        requestParams: { start_date: created_after, end_date: created_before },
-      } = allChartDefinitions[selectedChart];
-
-      return {
-        created_after,
-        created_before,
-      };
+      return extractOverviewMetricsQueryParameters(allChartDefinitions[selectedChart]);
     },
     formatTooltipText(params) {
       const { tooltipTitle, tooltipValue } = extractTimeSeriesTooltip(
