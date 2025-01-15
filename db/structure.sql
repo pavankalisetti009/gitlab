@@ -9206,7 +9206,8 @@ CREATE TABLE boards_epic_user_preferences (
     user_id bigint NOT NULL,
     epic_id bigint NOT NULL,
     collapsed boolean DEFAULT false NOT NULL,
-    group_id bigint
+    group_id bigint,
+    CONSTRAINT check_e23d7636e9 CHECK ((group_id IS NOT NULL))
 );
 
 CREATE SEQUENCE boards_epic_user_preferences_id_seq
