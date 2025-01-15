@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe VirtualRegistries::Packages::DestroyOrphanCachedResponsesWorker, type: :worker, feature_category: :virtual_registry do
+RSpec.describe VirtualRegistries::Packages::Cache::DestroyOrphanEntriesWorker, type: :worker, feature_category: :virtual_registry do
   let(:worker) { described_class.new }
   let(:model) { ::VirtualRegistries::Packages::Maven::Cache::Entry }
 
