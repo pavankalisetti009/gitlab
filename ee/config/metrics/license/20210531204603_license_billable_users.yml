@@ -18,4 +18,5 @@ options:
 tiers:
 - premium
 - ultimate
-performance_indicator_type: []
+performance_indicator_type:
+- lighthouse
