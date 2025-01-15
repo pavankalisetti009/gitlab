@@ -128,76 +128,110 @@ describeSkipVue3(skipReason, () => {
   });
 
   describe('fetching the cached messages', () => {
-    it('fetches the cached messages on mount and updates the messages with the returned result', async () => {
-      createComponent();
-      expect(queryHandlerMock).toHaveBeenCalled();
-      await waitForPromises();
-      expect(actionSpies.setMessages).toHaveBeenCalledWith(
-        expect.anything(),
-        MOCK_CHAT_CACHED_MESSAGES_RES.data.aiMessages.nodes,
-      );
-    });
-    it('updates the messages even if the returned result has no messages', async () => {
-      queryHandlerMock.mockResolvedValue({
-        data: {
-          aiMessages: {
-            nodes: [],
-          },
-        },
+    describe('when Duo Chat is shown', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isShown = true;
       });
-      createComponent();
-      await waitForPromises();
-      expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+
+      it('fetches the cached messages on mount and updates the messages with the returned result', async () => {
+        createComponent();
+        expect(queryHandlerMock).toHaveBeenCalled();
+        await waitForPromises();
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(
+          expect.anything(),
+          MOCK_CHAT_CACHED_MESSAGES_RES.data.aiMessages.nodes,
+        );
+      });
+
+      it('updates the messages even if the returned result has no messages', async () => {
+        queryHandlerMock.mockResolvedValue({
+          data: {
+            aiMessages: {
+              nodes: [],
+            },
+          },
+        });
+        createComponent();
+        await waitForPromises();
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+      });
+    });
+
+    describe('when Duo Chat is not shown', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isShown = false;
+      });
+
+      it('does not fetch cached messages', () => {
+        createComponent();
+        expect(queryHandlerMock).not.toHaveBeenCalled();
+      });
     });
   });
 
   describe('rendering', () => {
-    beforeEach(() => {
-      createComponent();
-      duoChatGlobalState.isShown = true;
-    });
+    describe('when Duo Chat is shown', () => {
+      beforeEach(() => {
+        createComponent();
+        duoChatGlobalState.isShown = true;
+      });
 
-    it('renders the DuoChat component', () => {
-      expect(findDuoChat().exists()).toBe(true);
-    });
+      it('renders the DuoChat component', () => {
+        expect(findDuoChat().exists()).toBe(true);
+      });
 
-    it('sets correct `badge-type` and `badge-help-page-url` props on the chat component', () => {
-      expect(findDuoChat().props('badgeType')).toBe(null);
-    });
+      it('sets correct `badge-type` and `badge-help-page-url` props on the chat component', () => {
+        expect(findDuoChat().props('badgeType')).toBe(null);
+      });
 
-    it('calls the slash commands GraphQL query when component loads', () => {
-      expect(slashCommandsQueryHandlerMock).toHaveBeenCalledWith({
-        url: 'http://test.host/',
+      it('calls the slash commands GraphQL query when component loads', () => {
+        expect(slashCommandsQueryHandlerMock).toHaveBeenCalledWith({
+          url: 'http://test.host/',
+        });
+      });
+
+      it('passes the correct slash commands to the DuoChat component', async () => {
+        await waitForPromises();
+
+        const duoChat = findDuoChat();
+
+        expect(duoChat.props('slashCommands')).toEqual([
+          {
+            description: 'Reset conversation and ignore previous messages.',
+            name: '/reset',
+            shouldSubmit: true,
+          },
+          {
+            description: 'Delete all messages in the current conversation.',
+            name: '/clear',
+            shouldSubmit: true,
+          },
+          {
+            description: 'Learn what Duo Chat can do.',
+            name: '/help',
+            shouldSubmit: true,
+          },
+        ]);
+      });
+
+      it('renders the duo-chat-callout component', () => {
+        expect(findCallout().exists()).toBe(true);
       });
     });
 
-    it('passes the correct slash commands to the DuoChat component', async () => {
-      createComponent();
-      await waitForPromises();
+    describe('when Duo Chat is not shown', () => {
+      beforeEach(() => {
+        createComponent();
+        duoChatGlobalState.isShown = false;
+      });
 
-      const duoChat = findDuoChat();
+      it('does not call the slash commands GraphQL query', () => {
+        expect(slashCommandsQueryHandlerMock).not.toHaveBeenCalled();
+      });
 
-      expect(duoChat.props('slashCommands')).toEqual([
-        {
-          description: 'Reset conversation and ignore previous messages.',
-          name: '/reset',
-          shouldSubmit: true,
-        },
-        {
-          description: 'Delete all messages in the current conversation.',
-          name: '/clear',
-          shouldSubmit: true,
-        },
-        {
-          description: 'Learn what Duo Chat can do.',
-          name: '/help',
-          shouldSubmit: true,
-        },
-      ]);
-    });
-
-    it('renders the duo-chat-callout component', () => {
-      expect(findCallout().exists()).toBe(true);
+      it('does not render the DuoChat component', () => {
+        expect(findDuoChat().exists()).toBe(false);
+      });
     });
   });
 

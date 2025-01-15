@@ -69,6 +69,9 @@ export default {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     aiMessages: {
       query: getAiMessages,
+      skip() {
+        return !this.duoChatGlobalState.isShown;
+      },
       result({ data }) {
         if (data?.aiMessages?.nodes) {
           this.setMessages(data.aiMessages.nodes);
@@ -80,6 +83,9 @@ export default {
     },
     aiSlashCommands: {
       query: getAiSlashCommands,
+      skip() {
+        return !this.duoChatGlobalState.isShown;
+      },
       variables() {
         return {
           url: typeof window !== 'undefined' && window.location ? window.location.href : '',
