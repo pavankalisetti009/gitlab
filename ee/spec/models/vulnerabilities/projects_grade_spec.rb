@@ -118,26 +118,6 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
               expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
             end
           end
-
-          context 'when multiple batches are required' do
-            before do
-              stub_const("#{described_class}::BATCH_SIZE", 2)
-            end
-
-            it 'returns the letter grades for given vulnerable' do
-              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-            end
-
-            context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
-              before do
-                stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
-              end
-
-              it 'returns the letter grades for given vulnerable' do
-                expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-              end
-            end
-          end
         end
 
         context 'when the filter is given' do

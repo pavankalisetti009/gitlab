@@ -24,6 +24,14 @@ module Vulnerabilities
     scope :by_projects, ->(values) { where(project_id: values) }
     scope :by_grade, ->(grade) { where(letter_grade: grade) }
 
+    scope :by_group_excluding_subgroups, ->(group) { where(traversal_ids: group.traversal_ids) }
+    scope :by_group, ->(group) do
+      traversal_ids_gteq(group.traversal_ids).traversal_ids_lt(group.next_traversal_ids)
+    end
+    scope :traversal_ids_gteq, ->(traversal_ids) { where(arel_table[:traversal_ids].gteq(traversal_ids)) }
+    scope :traversal_ids_lt, ->(traversal_ids) { where(arel_table[:traversal_ids].lt(traversal_ids)) }
+    scope :unarchived, -> { where(archived: false) }
+
     class << self
       # Takes an object which responds to `#[]` method call
       # like an instance of ActiveRecord::Base or a Hash and
