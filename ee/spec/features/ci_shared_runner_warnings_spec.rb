@@ -35,12 +35,24 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
         visit group_path(group)
       end
     end
+
+    it_behaves_like 'page with the alert', true do
+      before do
+        visit group_usage_quotas_path(group)
+      end
+    end
   end
 
   shared_examples 'group pages with no alerts' do
     it_behaves_like 'page with no alerts' do
       before do
         visit group_path(group)
+      end
+    end
+
+    it_behaves_like 'page with no alerts' do
+      before do
+        visit group_usage_quotas_path(group)
       end
     end
   end
