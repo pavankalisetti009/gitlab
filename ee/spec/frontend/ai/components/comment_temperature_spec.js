@@ -95,6 +95,25 @@ describe('AiCommentTemperature', () => {
       aiActionMutationHandler.mockResolvedValue({ data: { aiAction: { errors: [] } } });
     });
 
+    it('accepts a well-formatted gid as `itemId`', async () => {
+      createComponent({
+        props: {
+          itemId: 'gid://gitlab/Issue/123',
+        },
+      });
+      await nextTick();
+      wrapper.vm.measureCommentTemperature();
+      expect(aiActionMutationHandler).toHaveBeenCalledWith({
+        input: {
+          measureCommentTemperature: {
+            content: defaultProps.value,
+            resourceId: 'gid://gitlab/Issue/123',
+          },
+          clientSubscriptionId: expect.any(String),
+        },
+      });
+    });
+
     it('correctly renders the feedback issue link', () => {
       expect(findTheFeedbackLink().exists()).toBe(true);
       expect(findTheFeedbackLink().attributes('href')).toBe(
