@@ -5,6 +5,7 @@ module Security
   module PipelineExecutionPolicy
     class Config
       include Gitlab::Utils::StrongMemoize
+      include ::Security::PolicyCiSkippable
 
       DEFAULT_SUFFIX_STRATEGY = 'on_conflict'
       SUFFIX_STRATEGIES = { on_conflict: 'on_conflict', never: 'never' }.freeze
@@ -40,12 +41,7 @@ module Security
       end
 
       def skip_ci_allowed?(user_id)
-        allowed = skip_ci_strategy[:allowed]
-        allowlist = skip_ci_strategy.dig(:allowlist, :users)
-
-        return allowed if allowed || allowlist.blank?
-
-        allowlist.any? { |user| user[:id] == user_id }
+        skip_ci_allowed_for_strategy?(skip_ci_strategy, user_id)
       end
     end
   end

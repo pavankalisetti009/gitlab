@@ -780,6 +780,47 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         expect(execute).to be_success
         expect(execute.payload).to be_skipped
       end
+
+      context 'when there are additionally scan execution policies' do
+        let(:project_policy_yaml) do
+          build(:orchestration_policy_yaml,
+            pipeline_execution_policy: [project_policy],
+            scan_execution_policy: [scan_execution_policy])
+        end
+
+        before do
+          create(:security_policy, :scan_execution_policy, linked_projects: [project],
+            content: scan_execution_policy.slice(:actions),
+            security_orchestration_policy_configuration: project_configuration)
+        end
+
+        context 'when they disallow skip_ci' do
+          let(:scan_execution_policy) do
+            build(:scan_execution_policy, :skip_ci_disallowed, actions: [{ scan: 'secret_detection' }])
+          end
+
+          it 'does not skip pipeline creation and injects policy jobs', :aggregate_failures do
+            expect { execute }.to change { Ci::Build.count }.from(0).to(5)
+
+            stages = execute.payload.stages
+            expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('build', 'namespace_policy_job')
+            expect(stages.find_by(name: 'test').builds.map(&:name))
+              .to contain_exactly('rspec', 'project_policy_job', 'secret-detection-0')
+          end
+        end
+
+        context 'when they allow skip_ci' do
+          let(:scan_execution_policy) do
+            build(:scan_execution_policy, :skip_ci_allowed, actions: [{ scan: 'secret_detection' }])
+          end
+
+          it 'skips the pipeline', :aggregate_failures do
+            expect { execute }.not_to change { Ci::Build.count }
+            expect(execute).to be_success
+            expect(execute.payload).to be_skipped
+          end
+        end
+      end
     end
   end
 

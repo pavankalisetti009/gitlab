@@ -33,8 +33,8 @@ module Gitlab
             end
           end
 
-          def skip_ci_allowed?
-            pipeline_execution_context.skip_ci_allowed?
+          def skip_ci_allowed?(ref:)
+            pipeline_execution_context.skip_ci_allowed? && scan_execution_context(ref).skip_ci_allowed?
           end
 
           private

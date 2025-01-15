@@ -12,5 +12,9 @@ FactoryBot.define do
       policy = attributes[:policy]
       new(policy: policy)
     end
+
+    trait :skip_ci_disallowed do
+      policy factory: [:scan_execution_policy, :skip_ci_disallowed]
+    end
   end
 end

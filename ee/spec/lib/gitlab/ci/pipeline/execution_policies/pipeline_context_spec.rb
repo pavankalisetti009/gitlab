@@ -48,7 +48,7 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
   end
 
   describe '#skip_ci_allowed?' do
-    subject { context.skip_ci_allowed? }
+    subject { context.skip_ci_allowed?(ref: pipeline.ref) }
 
     it { is_expected.to be(true) }
 
@@ -67,6 +67,29 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
         let(:allowed) { true }
 
         it { is_expected.to be(true) }
+      end
+    end
+
+    context 'when there are scan execution policies' do
+      let(:skip_allowed) { true }
+
+      before do
+        scan_execution_context_double =
+          instance_double(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext,
+            skip_ci_allowed?: skip_allowed)
+        allow(context).to receive(:scan_execution_context).with(pipeline.ref).and_return(scan_execution_context_double)
+      end
+
+      context 'when they are allowed to be skipped' do
+        let(:skip_allowed) { true }
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when they are not allowed to be skipped' do
+        let(:skip_allowed) { false }
+
+        it { is_expected.to be(false) }
       end
     end
   end

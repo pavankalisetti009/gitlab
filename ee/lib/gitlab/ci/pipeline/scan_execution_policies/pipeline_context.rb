@@ -24,6 +24,12 @@ module Gitlab
           end
           strong_memoize_attr :active_scan_execution_actions
 
+          def skip_ci_allowed?
+            return true unless has_scan_execution_policies?
+
+            policies.all? { |policy| policy.skip_ci_allowed?(current_user&.id) }
+          end
+
           private
 
           attr_reader :project, :ref, :current_user, :source
