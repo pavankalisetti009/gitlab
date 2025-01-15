@@ -183,6 +183,25 @@ RSpec.describe InstanceSecurityDashboard do
     end
   end
 
+  describe '#vulnerabilities' do
+    let_it_be(:vulnerability1) { create(:vulnerability, project: project1) }
+    let_it_be(:vulnerability2) { create(:vulnerability, project: project2) }
+
+    context 'when the user cannot read all resources' do
+      it 'returns only vulnerabilities from projects on their dashboard that they can read' do
+        expect(subject.vulnerabilities).to contain_exactly(vulnerability1)
+      end
+    end
+
+    context 'when the user can read all resources' do
+      let(:user) { create(:auditor) }
+
+      it "returns vulnerabilities from all projects on the user's dashboard" do
+        expect(subject.vulnerabilities).to contain_exactly(vulnerability1, vulnerability2)
+      end
+    end
+  end
+
   describe '#vulnerability_reads' do
     let_it_be(:vulnerability1) { create(:vulnerability, :with_findings, project: project1) }
     let_it_be(:vulnerability2) { create(:vulnerability, :with_findings, project: project2) }

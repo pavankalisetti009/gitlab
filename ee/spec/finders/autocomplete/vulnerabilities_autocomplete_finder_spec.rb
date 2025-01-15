@@ -6,10 +6,10 @@ RSpec.describe Autocomplete::VulnerabilitiesAutocompleteFinder, feature_category
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group, refind: true) { create(:group) }
-    let_it_be(:project, refind: true) { create(:project, group: group).tap(&:mark_as_vulnerable!) }
+    let_it_be(:project, refind: true) { create(:project, group: group) }
     let_it_be(:vulnerabilities) do
       max_plus_one = described_class::DEFAULT_AUTOCOMPLETE_LIMIT + 1
-      create_list(:vulnerability, max_plus_one, :with_read, project: project, group: group) do |vulnerability, i|
+      create_list(:vulnerability, max_plus_one, :with_finding, project: project) do |vulnerability, i|
         # The default title provided by FactoryBot is "My title {i}"
         # We test fuzzy-finding by title in these specs. The
         # fuzzy_find module has a `use_minimum_char_limit:`, which we
