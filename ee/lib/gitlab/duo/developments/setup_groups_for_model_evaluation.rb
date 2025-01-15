@@ -19,12 +19,14 @@ module Gitlab
         def initialize(group)
           @main_group = group
           @current_user = User.find_by(username: 'root') # rubocop:disable CodeReuse/ActiveRecord -- we need admin user
+          @errors = []
         end
 
         def execute
           ensure_dev_mode!
           set_token!
           ensure_server_running!
+          ensure_instance_setting!
           download_and_unpack_file
           create_subgroups
           create_subprojects
@@ -36,7 +38,7 @@ module Gitlab
 
         private
 
-        attr_reader :main_group, :current_user, :token_value, :token
+        attr_reader :main_group, :current_user, :token_value, :token, :errors
 
         # rubocop:disable Style/GuardClause -- Keep it explicit
         def ensure_dev_mode!
@@ -64,6 +66,12 @@ module Gitlab
           return true if Gitlab::HTTP.get(instance_url).success?
 
           raise 'Server is not running, please start your GitLab server'
+        end
+
+        def ensure_instance_setting!
+          settings = Gitlab::CurrentSettings
+          settings.import_sources << 'gitlab_project'
+          settings.save!
         end
 
         def download_and_unpack_file
@@ -121,6 +129,8 @@ module Gitlab
 
           response = Gitlab::HTTP.post(url, headers: headers, body: body)
 
+          errors << { group: params[:name] } unless response.success?
+
           puts "API response for #{params[:name]} import"
           puts response.body
         end
@@ -140,6 +150,8 @@ module Gitlab
 
           response = Gitlab::HTTP.post(url, headers: headers, body: body)
 
+          errors << { project: params[:name] } unless response.success?
+
           puts "API response for #{params[:name]} import"
           puts response.body
         end
@@ -155,7 +167,7 @@ module Gitlab
         def print_output
           puts <<~MSG
             ----------------------------------------
-            Setup for evaluation Complete!
+            Setup for evaluation Performed!
             ----------------------------------------
 
             Visit "#{Gitlab.config.gitlab.protocol}://#{Gitlab.config.gitlab.host}:#{Gitlab.config.gitlab.port}/#{main_group.full_path}"
@@ -166,6 +178,15 @@ module Gitlab
             |
             - gitlab-org
             |   - gitlab
+
+            #{if errors.empty?
+                'The import has been successfully completed! You can start interacting with your evaluation datasets.'
+              end}
+
+            #{if errors.any?
+                "The import has finished with errors for those resources: #{errors}. Please review the logs for more details."
+              end}
+
           MSG
         end
       end
