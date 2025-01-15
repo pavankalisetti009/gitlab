@@ -1361,24 +1361,6 @@ msgid_plural "%{strongStart}%{count}%{strongEnd} commits"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%{strongStart}%{you}%{strongEnd}%{break}%{name} left feedback"
-msgstr ""
-
-msgid "%{strongStart}%{you}%{strongEnd}%{break}%{name} requested changes"
-msgstr ""
-
-msgid "%{strongStart}%{you}%{strongEnd}%{break}%{name} started a review"
-msgstr ""
-
-msgid "%{strongStart}%{you}%{strongEnd}%{break}Approved by %{name}"
-msgstr ""
-
-msgid "%{strongStart}%{you}%{strongEnd}%{break}Assigned to %{name}"
-msgstr ""
-
-msgid "%{strongStart}%{you}%{strongEnd}%{break}Review requested from %{name}"
-msgstr ""
-
 msgid "%{strongStart}Merge reports (%{reportsCount}):%{strongEnd} %{summaryText}"
 msgstr ""
 
@@ -58118,9 +58100,6 @@ msgid "This is the number of %{billable_users_link_start}billable users%{billabl
 msgstr ""
 
 msgid "This is the only time the secret is accessible. Copy the secret and store it securely."
-msgstr ""
-
-msgid "This is you."
 msgstr ""
 
 msgid "This is your current session"
