@@ -21,10 +21,9 @@ RSpec.describe Authn::SyncGroupScimTokenRecordWorker, feature_category: :system_
         it 'initializes a new scim_token with matching id' do
           expect { perform_worker }.to change { ScimOauthAccessToken.count }.by(1)
 
-          scim_token = ScimOauthAccessToken.find_by(id: group_scim_token.temp_source_id)
+          scim_token = ScimOauthAccessToken.find_by(group: group_scim_token.group)
 
           expect(scim_token).to have_attributes(
-            id: group_scim_token.temp_source_id,
             group: group,
             token_encrypted: group_scim_token.token_encrypted
           )

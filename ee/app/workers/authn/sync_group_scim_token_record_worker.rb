@@ -14,13 +14,18 @@ module Authn
 
       return if group_scim_token.blank?
 
-      scim_token = ScimOauthAccessToken.find_or_initialize_by(id: group_scim_token.temp_source_id) # rubocop:disable CodeReuse/ActiveRecord -- temporary worker for the purpose of syncing
+      scim_token = ScimOauthAccessToken.find_by(id: group_scim_token.temp_source_id) # rubocop:disable CodeReuse/ActiveRecord -- temporary worker for the purpose of syncing
 
-      return unless scim_token.new_record? || group_scim_token.updated_at > scim_token.updated_at
+      scim_token ||= ScimOauthAccessToken.find_by(group: group_scim_token.group) # rubocop:disable CodeReuse/ActiveRecord -- temporary worker for the purpose of syncing
+
+      return if scim_token && scim_token.updated_at >= group_scim_token.updated_at
+
+      scim_token ||= ScimOauthAccessToken.new
 
       scim_token.assign_attributes(
         token_encrypted: group_scim_token.token_encrypted,
-        group: group_scim_token.group
+        group: group_scim_token.group,
+        updated_at: group_scim_token.updated_at
       )
       scim_token.save!
     end

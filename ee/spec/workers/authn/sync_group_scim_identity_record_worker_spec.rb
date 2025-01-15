@@ -29,6 +29,7 @@ RSpec.describe Authn::SyncGroupScimIdentityRecordWorker, feature_category: :syst
         it 'initializes a new scim_identity with matching id' do
           expect { perform_worker }.to change { ScimIdentity.count }.by(1)
 
+          group_scim_identity.reload
           scim_identity = ScimIdentity.find_by(id: group_scim_identity.temp_source_id)
 
           expect(scim_identity).to have_attributes(
