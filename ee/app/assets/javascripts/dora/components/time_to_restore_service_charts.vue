@@ -22,7 +22,12 @@ import {
   LAST_180_DAYS,
   CHART_TITLE,
 } from './static_data/time_to_restore_service';
-import { apiDataToChartSeries, seriesToMedianSeries, extractTimeSeriesTooltip } from './util';
+import {
+  apiDataToChartSeries,
+  seriesToMedianSeries,
+  extractTimeSeriesTooltip,
+  extractOverviewMetricsQueryParameters,
+} from './util';
 
 const VISIBLE_METRICS = [DoraApi.TIME_TO_RESTORE_SERVICE];
 
@@ -149,15 +154,7 @@ export default {
       }
     },
     getMetricsRequestParams(selectedChart) {
-      const {
-        // eslint-disable-next-line camelcase
-        requestParams: { start_date: created_after, end_date: created_before },
-      } = allChartDefinitions[selectedChart];
-
-      return {
-        created_after,
-        created_before,
-      };
+      return extractOverviewMetricsQueryParameters(allChartDefinitions[selectedChart]);
     },
     formatTooltipText(params) {
       const { tooltipTitle, tooltipValue } = extractTimeSeriesTooltip(params, CHART_TITLE);

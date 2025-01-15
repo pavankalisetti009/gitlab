@@ -1,5 +1,3 @@
-import { getValueStreamMetrics } from 'ee/api/analytics_api';
-import { METRIC_TYPE_SUMMARY, METRIC_TYPE_TIME_SUMMARY } from '~/api/analytics_api';
 import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import { __, s__ } from '~/locale';
 import { DEFAULT_NULL_SERIES_OPTIONS } from '../shared/constants';
@@ -27,19 +25,6 @@ export const OVERVIEW_STAGE_CONFIG = {
   title: __('Overview'),
   icon: 'home',
 };
-
-export const METRICS_REQUESTS = [
-  {
-    endpoint: METRIC_TYPE_TIME_SUMMARY,
-    request: getValueStreamMetrics,
-    name: __('time summary'),
-  },
-  {
-    endpoint: METRIC_TYPE_SUMMARY,
-    request: getValueStreamMetrics,
-    name: __('recent activity'),
-  },
-];
 
 export const DURATION_OVERVIEW_CHART_NO_DATA = s__('CycleAnalytics|No data');
 export const DURATION_OVERVIEW_CHART_NO_DATA_LEGEND_ITEM = {

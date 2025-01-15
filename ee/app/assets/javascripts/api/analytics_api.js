@@ -1,4 +1,3 @@
-import { METRIC_TYPE_SUMMARY } from '~/api/analytics_api';
 import { buildApiUrl } from '~/api/api_utils';
 import axios from '~/lib/utils/axios_utils';
 import { joinPaths } from '~/lib/utils/url_utility';
@@ -36,15 +35,6 @@ export const getValueStreamStageMedian = (
   const stageBase = buildValueStreamStagePath({ namespacePath, valueStreamId, stageId });
   return axios.get(`${stageBase}/median`, { params });
 };
-
-export const getValueStreamMetrics = ({
-  endpoint = METRIC_TYPE_SUMMARY,
-  requestPath: namespacePath,
-  params = {},
-}) =>
-  axios.get(joinPaths(buildAnalyticsPath({ namespacePath }), 'value_stream_analytics', endpoint), {
-    params,
-  });
 
 export const getTypeOfWorkTasksByType = (namespacePath, params = {}) => {
   const endpoint = '/type_of_work/tasks_by_type';

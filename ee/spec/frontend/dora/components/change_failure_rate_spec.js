@@ -128,8 +128,8 @@ describe('change_failure_rate_charts.vue', () => {
       it('correctly computes the requestParams', () => {
         const metricsComponent = findValueStreamMetrics();
         expect(metricsComponent.props('requestParams')).toMatchObject({
-          created_after: '2015-06-04T00:00:00+0000',
-          created_before: '2015-07-04T00:00:00+0000',
+          startDate: '2015-06-04T00:00:00+0000',
+          endDate: '2015-07-04T00:00:00+0000',
         });
       });
     });
