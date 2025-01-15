@@ -42,7 +42,7 @@ module EE
 
     def display_password_requirements?
       ::License.feature_available?(:password_complexity) &&
-        ::Feature.enabled?(:display_password_requirements, :instance, type: :wip)
+        ::Feature.enabled?(:display_password_requirements, :instance, type: :gitlab_com_derisk)
     end
 
     private
