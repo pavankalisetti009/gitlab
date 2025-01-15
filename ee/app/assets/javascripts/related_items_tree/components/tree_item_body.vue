@@ -244,7 +244,8 @@ export default {
               :title="__('Confidential')"
               :aria-label="__('Confidential')"
               name="eye-slash"
-              class="confidential-icon align-self-baseline align-self-md-auto mt-xl-0 gl-mr-2"
+              class="align-self-baseline align-self-md-auto mt-xl-0 gl-mr-2"
+              variant="warning"
             />
             <gl-link
               v-gl-tooltip.hover
