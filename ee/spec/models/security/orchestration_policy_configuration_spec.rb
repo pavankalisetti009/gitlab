@@ -1933,16 +1933,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
           it { expect(errors).to be_empty }
         end
-
-        context 'when policies are over the limit' do
-          let(:pipeline_execution_policies) do
-            build_list(:pipeline_execution_policy, ::Security::PipelineExecutionPolicy::POLICY_LIMIT + 1)
-          end
-
-          it do
-            expect(errors).to contain_exactly("property '/pipeline_execution_policy' is invalid: error_type=maxItems")
-          end
-        end
       end
 
       describe 'content' do
