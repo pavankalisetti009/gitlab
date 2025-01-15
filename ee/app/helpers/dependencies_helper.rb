@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module DependenciesHelper
+  include API::Helpers::RelatedResourcesHelpers
+
   def project_dependencies_data(project)
     pipeline = project.latest_ingested_sbom_pipeline
 
@@ -41,6 +43,10 @@ module DependenciesHelper
       vulnerabilities_endpoint: nil,
       below_group_limit: 'false'
     })
+  end
+
+  def dependencies_export_download_url(export)
+    expose_url(api_v4_dependency_list_exports_download_path(export_id: export.id))
   end
 
   private

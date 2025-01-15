@@ -50,6 +50,7 @@ module Dependencies
       end
 
       dependency_list_export.finish!
+      dependency_list_export.send_completion_email!
     rescue StandardError, Dependencies::ExportSerializers::Sbom::PipelineService::SchemaValidationError
       dependency_list_export.reset_state!
 
