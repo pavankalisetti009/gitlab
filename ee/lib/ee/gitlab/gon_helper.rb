@@ -29,6 +29,7 @@ module EE
         gon.payment_form_url                 = ::Gitlab::Routing.url_helpers.subscription_portal_payment_form_url
         gon.payment_validation_form_id       = ::Gitlab::SubscriptionPortal::PAYMENT_VALIDATION_FORM_ID
         push_frontend_feature_flag(:duo_chat_dynamic_dimension, current_user)
+        push_frontend_feature_flag(:duo_chat_multi_thread, current_user)
         push_frontend_feature_flag(:advanced_context_resolver, current_user)
       end
 
