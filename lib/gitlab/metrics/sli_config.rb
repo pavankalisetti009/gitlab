@@ -3,32 +3,37 @@
 module Gitlab
   module Metrics
     module SliConfig
-      @puma_enabled_classes = []
-      @sidekiq_enabled_classes = []
-
-      def self.puma_enabled_classes
-        @puma_enabled_classes
+      def self.registered_classes
+        @registered_classes ||= []
       end
 
-      def self.sidekiq_enabled_classes
-        @sidekiq_enabled_classes
+      def self.enabled_slis
+        @enabled_slis ||= SliConfig.registered_classes.filter_map(&:call)
       end
 
-      def self.sli_implementations
-        @puma_enabled_classes | @sidekiq_enabled_classes
+      # reset_slis! is a helper method to clear the evaluated SLI classes for testing purposes only
+      def self.reset_slis!
+        @enabled_slis = nil
+      end
+
+      def self.register(klass, is_runtime_enabled)
+        SliConfig.registered_classes << -> do
+          return unless is_runtime_enabled.call
+
+          Gitlab::AppLogger.info "Gitlab::Metrics::SliConfig: enabling #{self}"
+          klass
+        end
       end
 
       module ConfigMethods
-        def puma_enabled!(value = true)
-          return unless value
-
-          Gitlab::AppLogger.info "Gitlab::Metrics::SliConfig: enabling #{self} for Puma"
-          SliConfig.puma_enabled_classes << self
+        def puma_enabled!(enable = true)
+          is_runtime_enabled = -> { enable && Gitlab::Runtime.puma? }
+          SliConfig.register(self, is_runtime_enabled)
         end
 
-        def sidekiq_enabled!(value = true)
-          Gitlab::AppLogger.info "Gitlab::Metrics::SliConfig: enabling #{self} for Sidekiq"
-          SliConfig.sidekiq_enabled_classes << self if value
+        def sidekiq_enabled!(enable = true)
+          is_runtime_enabled = -> { enable && Gitlab::Runtime.sidekiq? }
+          SliConfig.register(self, is_runtime_enabled)
         end
       end
 

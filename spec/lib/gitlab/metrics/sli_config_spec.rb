@@ -9,7 +9,7 @@ module SliConfigTest
     puma_enabled!
   end
 
-  class SidekiqEeSli
+  class SidekiqSli
     include Gitlab::Metrics::SliConfig
 
     sidekiq_enabled!
@@ -17,9 +17,25 @@ module SliConfigTest
 end
 
 RSpec.describe Gitlab::Metrics::SliConfig, feature_category: :error_budgets do
-  describe '.sli_implementations' do
-    specify do
-      expect(described_class.sli_implementations).to include(SliConfigTest::PumaSli, SliConfigTest::SidekiqEeSli)
+  before do
+    described_class.reset_slis!
+  end
+
+  describe '.enabled_slis' do
+    context 'when runtime is puma' do
+      specify do
+        allow(Gitlab::Runtime).to receive_messages(puma?: true, sidekiq?: false)
+
+        expect(described_class.enabled_slis).to include(SliConfigTest::PumaSli)
+      end
+    end
+
+    context 'when runtime is sidekiq' do
+      specify do
+        allow(Gitlab::Runtime).to receive_messages(puma?: false, sidekiq?: true)
+
+        expect(described_class.enabled_slis).to include(SliConfigTest::SidekiqSli)
+      end
     end
   end
 end

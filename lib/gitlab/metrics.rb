@@ -103,10 +103,7 @@ module Gitlab
     end
 
     def self.initialize_slis!
-      Gitlab::Metrics::SliConfig.sli_implementations do |klass|
-        klass.initialize_slis! if Gitlab::Runtime.puma?
-        klass.initialize_slis! if Gitlab::Runtime.sidekiq?
-      end
+      Gitlab::Metrics::SliConfig.enabled_slis.each(&:initialize_slis!)
     end
   end
 end

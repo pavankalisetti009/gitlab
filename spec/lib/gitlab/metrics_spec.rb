@@ -285,42 +285,43 @@ RSpec.describe Gitlab::Metrics do
 
   describe '.initialize_slis!', feature_category: :error_budgets do
     before do
-      Rails.application.eager_load!
+      Gitlab::Metrics::SliConfig.reset_slis!
     end
 
     context 'when puma runtime' do
-      before do
-        stub_env('RAILS_ENV', 'production')
-        stub_const('Gitlab::Runtime::Puma', true)
-        stub_const('Gitlab::Runtime::Sidekiq', false)
-      end
-
       it "initializes only puma SLIs" do
-        Gitlab::Metrics::SliConfig.puma_enabled_classes.each do |klass|
-          allow(klass).to receive(:initialize_slis!)
-        end
-        Gitlab::Metrics::SliConfig.sidekiq_enabled_classes.each do |klass|
-          expect(klass).not_to receive(:initialize_slis!)
-        end
+        allow(Gitlab::Runtime).to receive_messages(puma?: true, sidekiq?: false)
+        # This will force rails to reload the classes and evaluate the defined SLIs again.
+        # This time with runtime equal puma.
+        Rails.application.eager_load!
+
+        expect(Gitlab::Metrics::SliConfig.enabled_slis).to match_array [
+          SliConfigTest::PumaSli, # testing class defined in spec/lib/gitlab/metrics/sli_config_spec.rb
+          Gitlab::Metrics::RequestsRackMiddleware,
+          Gitlab::Metrics::GlobalSearchSlis,
+          Gitlab::Metrics::Middleware::PathTraversalCheck
+        ]
+        expect(Gitlab::Metrics::SliConfig.enabled_slis).to all(receive(:initialize_slis!))
 
         described_class.initialize_slis!
       end
     end
 
     context 'when sidekiq runtime' do
-      before do
-        stub_env('RAILS_ENV', 'production')
-        stub_const('Gitlab::Runtime::Puma', false)
-        stub_const('Gitlab::Runtime::Sidekiq', true)
-      end
-
       it "initializes only sidekiq SLIs" do
-        Gitlab::Metrics::SliConfig.puma_enabled_classes.each do |klass|
-          expect(klass).not_to receive(:initialize_slis!)
-        end
-        Gitlab::Metrics::SliConfig.sidekiq_enabled_classes.each do |klass|
-          allow(klass).to receive(:initialize_slis!)
-        end
+        allow(Gitlab::Runtime).to receive_messages(puma?: false, sidekiq?: true)
+        # This will force rails to reload the classes and evaluate the defined SLIs again.
+        # This time with runtime equal sidekiq.
+        Rails.application.eager_load!
+
+        expect(Gitlab::Metrics::SliConfig.enabled_slis).to match_array [
+          SliConfigTest::SidekiqSli, # testing class defined in spec/lib/gitlab/metrics/sli_config_spec.rb
+          Gitlab::Metrics::Lfs,
+          Gitlab::Metrics::LooseForeignKeysSlis,
+          Gitlab::Metrics::GlobalSearchIndexingSlis,
+          Gitlab::Metrics::Llm
+        ]
+        expect(Gitlab::Metrics::SliConfig.enabled_slis).to all(receive(:initialize_slis!))
 
         described_class.initialize_slis!
       end
