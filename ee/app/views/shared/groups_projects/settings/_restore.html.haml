@@ -13,7 +13,7 @@
 = render Pajamas::CardComponent.new(body_options: { class: 'gl-bg-orange-50' }) do |c|
   - c.with_header do
     .gl-flex.gl-grow
-      %h4.gl-text-base.gl-text-orange-500.gl-leading-24.gl-m-0= _('Restore %{context}') % { context: context_name }
+      %h4.gl-text-base.gl-text-warning.gl-leading-24.gl-m-0= _('Restore %{context}') % { context: context_name }
 
   - c.with_body do
     %p

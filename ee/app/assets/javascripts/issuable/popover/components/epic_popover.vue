@@ -96,9 +96,9 @@ export default {
         v-gl-tooltip
         name="eye-slash"
         :title="__('Confidential')"
-        class="gl-text-orange-500"
         :aria-label="__('Confidential')"
         data-testid="confidential-icon"
+        variant="warning"
       />
       <span class="gl-text-subtle" data-testid="created-at">
         {{ __('Opened') }} <time :datetime="epic.createdAt">{{ formattedTime }}</time>

@@ -95,10 +95,10 @@ describe('AdminRunnersApp', () => {
     });
 
     it.each`
-      version     | description                                | colorClass              | index
-      ${'15.1.1'} | ${'displays no upgrade icon (up to date)'} | ${null}                 | ${1}
-      ${'15.1.0'} | ${'displays upgrade recommended'}          | ${'gl-text-orange-500'} | ${2}
-      ${'15.0.0'} | ${'displays upgrade available'}            | ${'gl-text-blue-500'}   | ${3}
+      version     | description                                | colorClass            | index
+      ${'15.1.1'} | ${'displays no upgrade icon (up to date)'} | ${null}               | ${1}
+      ${'15.1.0'} | ${'displays upgrade recommended'}          | ${'gl-text-warning'}  | ${2}
+      ${'15.0.0'} | ${'displays upgrade available'}            | ${'gl-text-blue-500'} | ${3}
     `('with $version $description', ({ version, index, colorClass }) => {
       const row = findRunnerRows().wrappers.map(extendedWrapper)[index];
       const upgradeIcon = row.findComponent(RunnerUpgradeStatusIcon).find('svg');

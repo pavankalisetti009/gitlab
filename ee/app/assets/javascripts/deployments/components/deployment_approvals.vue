@@ -69,10 +69,10 @@ export default {
     },
     commentCharacterCountClasses() {
       return {
-        'gl-text-orange-500':
+        'gl-text-warning':
           this.remainingCharacterCount <= WARNING_CHARACTERS_LEFT &&
           this.remainingCharacterCount >= 0,
-        'gl-text-red-500': this.remainingCharacterCount < 0,
+        'gl-text-danger': this.remainingCharacterCount < 0,
       };
     },
     characterCountTooltip() {

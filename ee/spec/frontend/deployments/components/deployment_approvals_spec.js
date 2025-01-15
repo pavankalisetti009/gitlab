@@ -163,10 +163,10 @@ describe('ee/deployments/components/deployment_approvals.vue', () => {
     });
 
     it.each`
-      count  | classes                 | tooltip
-      ${50}  | ${'gl-self-end'}        | ${'Characters left'}
-      ${230} | ${'gl-text-orange-500'} | ${'Characters left'}
-      ${251} | ${'gl-text-red-500'}    | ${'Characters over limit'}
+      count  | classes              | tooltip
+      ${50}  | ${'gl-self-end'}     | ${'Characters left'}
+      ${230} | ${'gl-text-warning'} | ${'Characters left'}
+      ${251} | ${'gl-text-danger'}  | ${'Characters over limit'}
     `(
       'shows the remaining characters a user can input for a comment for $count characters',
       async ({ count, classes, tooltip }) => {
