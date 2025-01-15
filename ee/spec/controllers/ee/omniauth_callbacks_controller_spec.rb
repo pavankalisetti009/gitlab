@@ -122,6 +122,83 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
       end
     end
 
+    context 'when required_groups membership is configured' do
+      let(:connect_config) do
+        ActiveSupport::InheritableOptions.new(
+          HashWithIndifferentAccess.new({
+            name: provider,
+            args: {
+              name: provider,
+              client_options: {
+                identifier: 'gitlab-test-client',
+                gitlab: {
+                  required_groups: ['Owls']
+                }
+              }
+            }
+          })
+        )
+      end
+
+      context 'when licensed feature is available' do
+        before do
+          stub_licensed_features(oidc_client_groups_claim: true)
+        end
+
+        context 'when the IDP auth hash has required_groups' do
+          before do
+            mock_auth_hash(
+              provider.to_s,
+              extern_uid,
+              user.email,
+              additional_info: {
+                groups: ['Owls'],
+                extra: {
+                  raw_info: {
+                    groups: ['Owls']
+                  }
+                }
+              }
+            )
+            stub_omniauth_provider(provider, context: request)
+          end
+
+          it 'allows sign in', :aggregate_failures do
+            post provider
+
+            expect(request.env['omniauth.auth'].groups).to include('Owls')
+            expect(request.env['warden']).to be_authenticated
+          end
+        end
+
+        context 'when the IDP auth hash has the wrong required_groups' do
+          before do
+            mock_auth_hash(
+              provider.to_s,
+              extern_uid,
+              user.email,
+              additional_info: {
+                groups: ['Bears'],
+                extra: {
+                  raw_info: {
+                    groups: ['Bears']
+                  }
+                }
+              }
+            )
+            stub_omniauth_provider(provider, context: request)
+          end
+
+          it 'prevents sign in', :aggregate_failures do
+            post provider
+
+            expect(request.env['omniauth.auth'].groups).not_to include('Owls')
+            expect(request.env['warden']).not_to be_authenticated
+          end
+        end
+      end
+    end
+
     context 'when linking to existing profile' do
       let(:user) { create(:user) }
       let(:connect_config) do
