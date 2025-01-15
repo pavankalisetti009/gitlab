@@ -5,6 +5,11 @@ FactoryBot.define do
     project
     initialize_with { Vulnerabilities::Statistic.find_or_initialize_by(project_id: project.id) }
 
+    after(:build) do |vulnerability_statistic, _|
+      vulnerability_statistic.archived = vulnerability_statistic.project&.archived
+      vulnerability_statistic.traversal_ids = vulnerability_statistic.project&.namespace&.traversal_ids
+    end
+
     trait :grade_a do
       info { 1 }
     end

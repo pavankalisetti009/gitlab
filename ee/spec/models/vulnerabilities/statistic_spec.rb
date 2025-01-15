@@ -46,6 +46,53 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
     it { is_expected.to match_array([statistic_grade_a]) }
   end
 
+  describe '.by_group' do
+    let_it_be(:group_1) { create(:group) }
+    let_it_be(:group_2) { create(:group) }
+    let_it_be(:group_1_1) { create(:group, parent: group_1) }
+    let_it_be(:project_1) { create(:project, group: group_1) }
+    let_it_be(:project_1_1) { create(:project, group: group_1_1) }
+    let_it_be(:project_2) { create(:project, group: group_2) }
+    let_it_be(:vulnerability_statistic_1) { create(:vulnerability_statistic, project: project_1) }
+    let_it_be(:vulnerability_statistic_1_1) { create(:vulnerability_statistic, project: project_1_1) }
+    let_it_be(:vulnerability_statistic_2) { create(:vulnerability_statistic, project: project_2) }
+
+    subject { described_class.by_group(group_1) }
+
+    it 'returns all records within the group hierarchy' do
+      is_expected.to contain_exactly(vulnerability_statistic_1, vulnerability_statistic_1_1)
+    end
+  end
+
+  describe '.by_group_excluding_subgroups' do
+    let_it_be(:group_1) { create(:group) }
+    let_it_be(:group_2) { create(:group) }
+    let_it_be(:group_1_1) { create(:group, parent: group_1) }
+    let_it_be(:project_1) { create(:project, group: group_1) }
+    let_it_be(:project_1_1) { create(:project, group: group_1_1) }
+    let_it_be(:project_2) { create(:project, group: group_2) }
+    let_it_be(:vulnerability_statistic_1) { create(:vulnerability_statistic, project: project_1) }
+    let_it_be(:vulnerability_statistic_1_1) { create(:vulnerability_statistic, project: project_1_1) }
+    let_it_be(:vulnerability_statistic_2) { create(:vulnerability_statistic, project: project_2) }
+
+    subject { described_class.by_group_excluding_subgroups(group_1) }
+
+    it 'returns all records within the group hierarchy' do
+      is_expected.to contain_exactly(vulnerability_statistic_1)
+    end
+  end
+
+  describe '.unarchived' do
+    let_it_be(:active_project) { create(:project) }
+    let_it_be(:archived_project) { create(:project, :archived) }
+    let_it_be(:archived_vulnerability_statistic) { create(:vulnerability_statistic, project: archived_project) }
+    let_it_be(:unarchived_vulnerability_statistic) { create(:vulnerability_statistic, project: active_project) }
+
+    subject(:unarchived) { described_class.unarchived }
+
+    it { is_expected.to contain_exactly(unarchived_vulnerability_statistic) }
+  end
+
   describe '.letter_grade_for' do
     subject { described_class.letter_grade_for(object) }
 
