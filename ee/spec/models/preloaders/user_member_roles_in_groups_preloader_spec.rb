@@ -34,8 +34,8 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
           group_member.update!(member_role: member_role)
         end
 
-        it 'returns group id with nil ability value' do
-          expect(result).to eq(sub_group_1.id => nil, sub_group_2.id => nil)
+        it 'returns group id with empty array' do
+          expect(result).to eq(sub_group_1.id => [], sub_group_2.id => [])
         end
       end
 
@@ -57,6 +57,39 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
             it 'returns all requested group IDs with their respective abilities', :aggregate_failures do
               expect(result[sub_group_1.id]).to match_array(expected_abilities)
               expect(result[sub_group_2.id]).to match_array(expected_abilities_2)
+            end
+
+            it 'avoids N+1 queries' do
+              control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+                described_class.new(groups: [sub_group_1], user: user).execute
+              end
+
+              expect do
+                described_class.new(groups: [sub_group_1, sub_group_2], user: user).execute
+              end.to issue_same_number_of_queries_as(control).or_fewer
+            end
+
+            context 'with RequestStore enabled', :request_store do
+              it 'only requests the extra groups when uncached groups are passed' do
+                described_class.new(groups: [sub_group_1], user: user).execute
+
+                queries = ActiveRecord::QueryRecorder.new do
+                  described_class.new(groups: [sub_group_1, sub_group_2], user: user).execute
+                end
+
+                expect(queries.count).to eq(3)
+                expect(queries.log_message).to match(/VALUES \(#{sub_group_2.id}/)
+                expect(queries.log_message).not_to match(/VALUES \(#{sub_group_1.id}/)
+              end
+            end
+
+            context 'when an array of group IDs is passed instead of objects' do
+              let(:groups_list) { [sub_group_1.id, sub_group_2.id] }
+
+              it 'returns all requested group IDs with their respective abilities', :aggregate_failures do
+                expect(result[sub_group_1.id]).to match_array(expected_abilities)
+                expect(result[sub_group_2.id]).to match_array(expected_abilities_2)
+              end
             end
           end
 

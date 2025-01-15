@@ -22,9 +22,16 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
   describe '#elastic_search' do
     context 'when type is blob' do
       shared_examples 'a search that respects custom roles' do |search_level:|
+        let_it_be(:member_role) { create(:member_role, :guest, :read_code, namespace: group) }
+
+        let_it_be(:sub_group) { create(:group, :private, parent: group) }
+
+        let_it_be(:project_2) { create(:project, :private, :repository, developers: user, group: sub_group) }
+        let_it_be(:project_3) { create(:project, :private, :repository, guests: user) }
+
         before_all do
-          role = create(:member_role, :guest, :read_code, namespace: group)
-          create(:group_member, :guest, member_role: role, user: user, source: group)
+          create(:group_member, :guest, member_role: member_role, user: user, group: group)
+          create(:project_member, :guest, member_role: member_role, user: user, project: project)
         end
 
         subject(:search_results) do
@@ -38,32 +45,24 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           )
         end
 
-        if search_level.to_sym != :project
-          it 'avoids N+1 queries' do
-            control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-              proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-            end
-
-            project_ids = [project.id]
-            project_2 = create(:project, :private, :repository, developers: user,
-              group: create(:group, :private, parent: project.group))
-            project_ids << project_2.id
-
-            if search_level.to_sym == :group
-              project_3 = create(:project, :private, :repository, guests: user)
-              project_ids << project_3.id
-            end
-
-            options = search_options.merge(project_ids: project_ids)
-
-            # for global search, user does not have direct access to all project's namespaces
-            # so one extra call is made
-            threshold = search_level.to_sym == :global ? 1 : 0
-
-            expect do
-              proxy.elastic_search('Mailer.deliver', type: 'blob', options: options)
-            end.not_to exceed_query_limit(control).with_threshold(threshold)
+        it 'avoids N+1 queries' do
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
           end
+
+          project_ids = [project.id, project_2.id]
+
+          project_ids << project_3.id if search_level.to_sym == :group
+
+          options = search_options.merge(project_ids: project_ids)
+
+          # for global search, user does not have direct access to all project's namespaces
+          # so one extra call is made
+          threshold = search_level.to_sym == :global ? 1 : 0
+
+          expect do
+            proxy.elastic_search('Mailer.deliver', type: 'blob', options: options)
+          end.not_to exceed_query_limit(control).with_threshold(threshold)
         end
       end
 

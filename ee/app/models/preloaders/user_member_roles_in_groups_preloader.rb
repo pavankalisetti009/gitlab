@@ -5,38 +5,38 @@ module Preloaders
     include Gitlab::Utils::StrongMemoize
 
     def initialize(groups:, user:)
-      @groups = if groups.is_a?(Array)
-                  Group.where(id: groups)
-                else
-                  # Push groups base query in to a sub-select to avoid
-                  # table name clashes. Performs better than aliasing.
-                  Group.where(id: groups.reselect(:id))
-                end
-
+      @groups = groups
       @user = user
     end
 
     def execute
+      group_ids = groups.map { |group| group.respond_to?(:id) ? group.id : group }
+
       ::Gitlab::SafeRequestLoader.execute(
         resource_key: resource_key,
-        resource_ids: groups.map(&:id)
-      ) do
-        abilities_for_user_grouped_by_group
+        resource_ids: group_ids,
+        default_value: []
+      ) do |group_ids|
+        abilities_for_user_grouped_by_group(group_ids)
       end
     end
 
     private
 
-    def abilities_for_user_grouped_by_group
-      sql_values_array = groups.filter_map do |group|
+    def abilities_for_user_grouped_by_group(group_ids)
+      groups = Group.where(id: group_ids)
+
+      ::Preloaders::GroupRootAncestorPreloader.new(groups).execute
+
+      groups_with_traversal_ids = groups.filter_map do |group|
         next unless group.custom_roles_enabled?
 
         [group.id, Arel.sql("ARRAY[#{group.traversal_ids.join(',')}]")]
       end
 
-      return {} if sql_values_array.empty?
+      return {} if groups_with_traversal_ids.empty?
 
-      value_list = Arel::Nodes::ValuesList.new(sql_values_array)
+      value_list = Arel::Nodes::ValuesList.new(groups_with_traversal_ids)
 
       sql = <<~SQL
       SELECT namespace_ids.namespace_id, custom_permissions.permissions
@@ -55,15 +55,14 @@ module Preloaders
           Gitlab::Json.parse(value['permissions']).select { |_, v| v }
         end
 
-        group_permissions.inject(&:merge).keys.map(&:to_sym) & permissions
+        group_permissions.inject(&:merge).keys.map(&:to_sym) & enabled_group_permissions
       end
     end
 
     def union_query
       union_queries = []
 
-      member = Member.select('member_roles.permissions')
-        .with_user(user)
+      member = Member.select('member_roles.permissions').with_user(user)
 
       group_member = member
         .joins(:member_role)
@@ -92,9 +91,7 @@ module Preloaders
         union_queries.push(invited_member_role, source_member_role)
       end
 
-      reset_default = "SELECT '{}'::jsonb AS permissions"
-
-      union_queries.push(group_member, reset_default)
+      union_queries.push(group_member)
 
       union_queries.join(" UNION ALL ")
     end
@@ -103,12 +100,11 @@ module Preloaders
       "member_roles_in_groups:user:#{user.id}"
     end
 
-    def permissions
-      MemberRole
-        .all_customizable_group_permissions
+    def enabled_group_permissions
+      MemberRole.all_customizable_group_permissions
         .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
-    strong_memoize_attr :permissions
+    strong_memoize_attr :enabled_group_permissions
 
     def custom_role_for_group_link_enabled?
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)

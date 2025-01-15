@@ -41,10 +41,10 @@ module Elastic
 
       private
 
-      def abilities_for(projects, user)
+      def abilities_for(project_ids, user)
         return {} if user.blank?
 
-        ::Authz::Project.new(user, scope: projects).permitted
+        ::Authz::Project.new(user, scope: project_ids).permitted
       end
 
       def filter_ids_by_ability(project_ids, user, abilities)
