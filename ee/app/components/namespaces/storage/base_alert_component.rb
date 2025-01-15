@@ -104,10 +104,6 @@ module Namespaces
         "#{root_storage_size.enforcement_type}_alert_#{alert_level}_threshold"
       end
 
-      def content_class
-        "container-limited" unless user.layout == "fluid"
-      end
-
       def usage_thresholds
         DEFAULT_USAGE_THRESHOLDS
       end
