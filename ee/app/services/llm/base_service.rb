@@ -78,7 +78,7 @@ module Llm
     def schedule_completion_worker(job_options = options)
       message = prompt_message
 
-      job_options[:start_time] = ::Gitlab::Metrics::System.monotonic_time
+      job_options[:start_time] = start_time
 
       log_conditional_info(
         message.user,
@@ -102,6 +102,10 @@ module Llm
 
     def error(message)
       ServiceResponse.error(message: message)
+    end
+
+    def start_time
+      ::Gitlab::Metrics::System.monotonic_time
     end
   end
 end
