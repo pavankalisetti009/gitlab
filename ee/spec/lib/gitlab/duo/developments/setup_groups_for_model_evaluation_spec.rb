@@ -26,6 +26,7 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
       it 'goes through the process' do
         expect(setup_evaluation).to receive(:set_token!)
         expect(setup_evaluation).to receive(:ensure_server_running!)
+        expect(setup_evaluation).to receive(:ensure_instance_setting!)
         expect(setup_evaluation).to receive(:download_and_unpack_file)
         expect(setup_evaluation).to receive(:create_subgroups)
         expect(setup_evaluation).to receive(:create_subprojects)
@@ -47,6 +48,14 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
           setup_evaluation.send(:set_token!)
 
           expect { setup_evaluation.send(:clean_up_token!) }.to change { PersonalAccessToken.count }.by(-1)
+        end
+      end
+
+      describe '#ensure_instance_setting!' do
+        it 'sets Gitlab::CurrentSettings import_sources' do
+          setup_evaluation.send(:ensure_instance_setting!)
+
+          expect(Gitlab::CurrentSettings.import_sources.include?('gitlab_project')).to be_truthy
         end
       end
 
@@ -156,7 +165,16 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
         it 'shows a message' do
           expect do
             setup_evaluation.send(:print_output)
-          end.to output(a_string_including('Setup for evaluation Complete!')).to_stdout
+          end.to output(a_string_including('Setup for evaluation Performed!')).to_stdout
+        end
+
+        context 'when there are errors' do
+          it 'shows a message' do
+            setup_evaluation.instance_variable_set(:@errors, [{ group: 'gitlab-com' }, { project: 'www-gitlab-com' }])
+            expect do
+              setup_evaluation.send(:print_output)
+            end.to output(a_string_including('The import has finished with errors for those resources')).to_stdout
+          end
         end
       end
     end
