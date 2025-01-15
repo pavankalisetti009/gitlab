@@ -2,22 +2,84 @@
 
 require 'spec_helper'
 
-RSpec.describe ContainerRepository, :saas do
+RSpec.describe ContainerRepository, feature_category: :geo_replication do
   include_examples 'a verifiable model with a separate table for verification state' do
     let(:verifiable_model_record) { build(:container_repository) }
     let(:unverifiable_model_record) { nil }
   end
 
-  describe '#push_blob' do
-    let_it_be(:gitlab_container_repository) { create(:container_repository) }
+  describe '.replicables_for_current_secondary' do
+    let_it_be(:secondary) { create(:geo_node, :secondary) }
 
-    it "calls client's push blob with path passed" do
-      client = instance_double("ContainerRegistry::Client")
-      allow(gitlab_container_repository).to receive(:client).and_return(client)
+    let_it_be(:synced_group) { create(:group) }
+    let_it_be(:nested_group) { create(:group, parent: synced_group) }
+    let_it_be(:synced_project) { create(:project, group: synced_group) }
+    let_it_be(:synced_project_in_nested_group) { create(:project, group: nested_group) }
+    let_it_be(:unsynced_project) { create(:project) }
+    let_it_be(:project_broken_storage) { create(:project, :broken_storage) }
 
-      expect(client).to receive(:push_blob).with(gitlab_container_repository.path, 'a123cd', ['body'], 32456)
+    let_it_be(:container_repository_1) { create(:container_repository, project: synced_project) }
+    let_it_be(:container_repository_2) { create(:container_repository, project: synced_project_in_nested_group) }
+    let_it_be(:container_repository_3) { create(:container_repository, project: unsynced_project) }
+    let_it_be(:container_repository_4) { create(:container_repository, project: project_broken_storage) }
 
-      gitlab_container_repository.push_blob('a123cd', ['body'], 32456)
+    before do
+      stub_current_geo_node(secondary)
+      stub_registry_replication_config(enabled: true)
+    end
+
+    context 'with registry replication disabled' do
+      before do
+        stub_registry_replication_config(enabled: false)
+      end
+
+      it 'returns an empty relation' do
+        replicables =
+          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
+
+        expect(replicables).to be_empty
+      end
+    end
+
+    context 'without selective sync' do
+      it 'returns all container repositories' do
+        expected = [container_repository_1, container_repository_2, container_repository_3, container_repository_4]
+
+        replicables =
+          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
+
+        expect(replicables).to match_array(expected)
+      end
+    end
+
+    context 'with selective sync by namespace' do
+      before do
+        secondary.update!(selective_sync_type: 'namespaces', namespaces: [synced_group])
+      end
+
+      it 'excludes container repositories that are not in selectively synced projects' do
+        expected = [container_repository_1, container_repository_2]
+
+        replicables =
+          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
+
+        expect(replicables).to match_array(expected)
+      end
+    end
+
+    context 'with selective sync by shard' do
+      before do
+        secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['broken'])
+      end
+
+      it 'excludes container repositories that are not in selectively synced shards' do
+        expected = [container_repository_4]
+
+        replicables =
+          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
+
+        expect(replicables).to match_array(expected)
+      end
     end
   end
 
@@ -61,6 +123,18 @@ RSpec.describe ContainerRepository, :saas do
           end
         end
       end
+    end
+  end
+
+  describe '#push_blob' do
+    it "calls client's push blob with path passed" do
+      gitlab_container_repository = create(:container_repository)
+      client = instance_double("ContainerRegistry::Client")
+      allow(gitlab_container_repository).to receive(:client).and_return(client)
+
+      expect(client).to receive(:push_blob).with(gitlab_container_repository.path, 'a123cd', ['body'], 32456)
+
+      gitlab_container_repository.push_blob('a123cd', ['body'], 32456)
     end
   end
 end

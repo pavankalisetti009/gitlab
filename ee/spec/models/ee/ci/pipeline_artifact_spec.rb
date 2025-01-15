@@ -2,11 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::PipelineArtifact do
-  using RSpec::Parameterized::TableSyntax
+RSpec.describe Ci::PipelineArtifact, feature_category: :geo_replication do
   include EE::GeoHelpers
 
-  describe '#replicables_for_current_secondary' do
+  describe '.replicables_for_current_secondary' do
+    using RSpec::Parameterized::TableSyntax
+
     # Selective sync is configured relative to the pipeline artifact's project.
     #
     # Permutations of sync_object_storage combined with object-stored-artifacts

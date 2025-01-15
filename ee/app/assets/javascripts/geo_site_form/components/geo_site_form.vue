@@ -4,6 +4,7 @@ import { GlButton } from '@gitlab/ui';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { __ } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import GeoSiteFormCapacities from './geo_site_form_capacities.vue';
 import GeoSiteFormCore from './geo_site_form_core.vue';
 import GeoSiteFormSelectiveSync from './geo_site_form_selective_sync.vue';
@@ -20,6 +21,7 @@ export default {
     GeoSiteFormSelectiveSync,
     GeoSiteFormCapacities,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     site: {
       type: Object,
@@ -57,6 +59,11 @@ export default {
   computed: {
     ...mapGetters(['formHasError']),
     ...mapState(['sitesPath']),
+    showSelectiveSyncForm() {
+      return (
+        this.glFeatures.orgMoverExtendSelectiveSyncToPrimaryChecksumming || !this.siteData.primary
+      );
+    },
   },
   created() {
     if (this.site) {
@@ -82,7 +89,7 @@ export default {
       class="gl-border-b-1 gl-border-b-default gl-pb-4 gl-border-b-solid"
     />
     <geo-site-form-selective-sync
-      v-if="!siteData.primary"
+      v-if="showSelectiveSyncForm"
       class="gl-border-b-1 gl-border-b-default gl-pb-4 gl-border-b-solid"
       :site-data="siteData"
       :selective-sync-types="selectiveSyncTypes"

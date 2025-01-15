@@ -21,6 +21,11 @@ RSpec.describe MergeRequestDiff, feature_category: :geo_replication do
 
   describe '#after_save' do
     let(:mr_diff) { build(:merge_request_diff, :external, external_diff_store: ::ObjectStorage::Store::LOCAL) }
+    let(:primary) { create(:geo_node, :primary) }
+
+    before do
+      stub_current_geo_node(primary)
+    end
 
     context 'when diff is stored externally and locally' do
       it 'does not create verification details when diff is without files' do
@@ -36,10 +41,6 @@ RSpec.describe MergeRequestDiff, feature_category: :geo_replication do
       end
 
       it 'creates verification details' do
-        # This stub has to be set for the whole '#after_save' block but due to the bug
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/413852
-        # this specs will fail in that case. Move it up when the bug is fixed
-        stub_primary_node
         mr_diff[:state] = :collected
 
         expect { mr_diff.save! }.to change { MergeRequestDiffDetail.count }.by(1)

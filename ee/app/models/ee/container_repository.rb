@@ -48,16 +48,26 @@ module EE
       end
 
       # @param primary_key_in [Range, ContainerRepository] arg to pass to primary_key_in scope
-      # @return [ActiveRecord::Relation<ContainerRepository>] everything that should be synced to this node, restricted by primary key
+      # @return [ActiveRecord::Relation<ContainerRepository>] everything that should be synced
+      #         to this node, restricted by primary key
+      override :replicables_for_current_secondary
       def replicables_for_current_secondary(primary_key_in)
-        node = ::Gitlab::Geo.current_node
+        return none unless replicator_class.replication_enabled?
 
-        node.container_repositories.primary_key_in(primary_key_in)
+        super
       end
 
       override :verification_state_table_class
       def verification_state_table_class
         ::Geo::ContainerRepositoryState
+      end
+
+      # @return [ActiveRecord::Relation<ContainerRepository>] scope observing selective sync settings of the given node
+      override :selective_sync_scope
+      def selective_sync_scope(node, **_params)
+        return all unless node.selective_sync?
+
+        project_id_in(::Project.selective_sync_scope(node))
       end
     end
 

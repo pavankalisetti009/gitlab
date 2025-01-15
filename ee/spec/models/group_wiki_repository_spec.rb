@@ -21,7 +21,7 @@ RSpec.describe GroupWikiRepository, :geo do
     end
   end
 
-  describe 'Geo Replication' do
+  describe 'Geo replication', feature_category: :geo_replication do
     include EE::GeoHelpers
 
     let(:node) { create(:geo_node, :secondary) }
@@ -82,7 +82,7 @@ RSpec.describe GroupWikiRepository, :geo do
         end
       end
 
-      describe '#replicables_for_current_secondary' do
+      describe '.replicables_for_current_secondary' do
         it 'returns all group wiki repositories without selective sync' do
           expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
             [

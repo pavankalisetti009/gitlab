@@ -246,61 +246,6 @@ class GeoNode < ApplicationRecord
     end
   end
 
-  def container_repositories
-    return ContainerRepository.none unless Geo::ContainerRepositoryRegistry.replication_enabled?
-    return ContainerRepository.all unless selective_sync?
-
-    ContainerRepository.project_id_in(projects)
-  end
-
-  def container_repositories_include?(container_repository_id)
-    return false unless Geo::ContainerRepositoryRegistry.replication_enabled?
-    return true unless selective_sync?
-
-    container_repositories.where(id: container_repository_id).exists?
-  end
-
-  def designs
-    projects.with_designs
-  end
-
-  def designs_include?(project_id)
-    return true unless selective_sync?
-
-    designs.where(id: project_id).exists?
-  end
-
-  # @param primary_key_in [Range, LfsObject] arg to pass to primary_key_in scope
-  # @return [ActiveRecord::Relation<LfsObject>] scope of LfsObject filtered by selective sync settings and primary key arg
-  def lfs_objects(primary_key_in:)
-    return LfsObject.primary_key_in(primary_key_in) unless selective_sync?
-
-    ids = LfsObjectsProject.project_id_in(projects)
-                           .where(lfs_object_id: primary_key_in)
-                           .select(:lfs_object_id)
-                           .distinct
-
-    LfsObject.where(id: ids)
-  end
-
-  def projects
-    return Project.all unless selective_sync?
-
-    if selective_sync_by_namespaces?
-      projects_for_selected_namespaces
-    elsif selective_sync_by_shards?
-      projects_for_selected_shards
-    else
-      Project.none
-    end
-  end
-
-  def projects_include?(project_id)
-    return true unless selective_sync?
-
-    projects.where(id: project_id).exists?
-  end
-
   def replication_slots_count
     return unless primary?
 
@@ -433,13 +378,5 @@ class GeoNode < ApplicationRecord
     return value if value.blank?
 
     value.sub(%r{/$}, '')
-  end
-
-  def projects_for_selected_namespaces
-    Project.where(Project.arel_table.name => { namespace_id: selected_namespaces_and_descendants.select(:id) })
-  end
-
-  def projects_for_selected_shards
-    Project.within_shards(selective_sync_shards)
   end
 end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Packages::PackageFile, type: :model do
+RSpec.describe Packages::PackageFile, type: :model, feature_category: :geo_replication do
   include ::EE::GeoHelpers
 
   describe '.replicables_for_current_secondary' do

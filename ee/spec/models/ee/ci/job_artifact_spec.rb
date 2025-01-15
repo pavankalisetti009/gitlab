@@ -229,8 +229,6 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
   end
 
   describe '.associated_file_types_for' do
-    using RSpec::Parameterized::TableSyntax
-
     subject { described_class.associated_file_types_for(file_type) }
 
     where(:file_type, :result) do
@@ -308,7 +306,7 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
     end
   end
 
-  describe '#replicables_for_current_secondary' do
+  describe '.replicables_for_current_secondary' do
     # Selective sync is configured relative to the job artifact's project.
     #
     # Permutations of sync_object_storage combined with object-stored-artifacts

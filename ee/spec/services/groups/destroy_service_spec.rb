@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
+  include ::EE::GeoHelpers
+
   let!(:user) { create(:user) }
   let!(:group) { create(:group) }
 
@@ -73,9 +75,11 @@ RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
     end
   end
 
-  context 'when on a Geo primary node' do
+  context 'when on a Geo primary site' do
+    let_it_be(:geo_primary_site) { create(:geo_node, :primary) }
+
     before do
-      allow(Gitlab::Geo).to receive(:primary?) { true }
+      stub_current_geo_node(geo_primary_site)
     end
 
     context 'when group_wiki_repository does not exist' do
@@ -95,7 +99,7 @@ RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
     end
   end
 
-  context 'when not on a Geo primary node' do
+  context 'when not on a Geo primary site' do
     it 'does not call replicator to update Geo' do
       group.wiki.create_wiki_repository
 

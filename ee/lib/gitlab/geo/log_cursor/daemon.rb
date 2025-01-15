@@ -148,12 +148,13 @@ module Gitlab
         # rubocop: disable CodeReuse/ActiveRecord
         def can_replay?(event_log)
           return true if event_log.project_id.nil?
-
           # Always replay events for deleted projects
           return true unless Project.exists?(event_log.project_id)
+          return true unless Gitlab::Geo.current_node&.selective_sync?
 
-          Gitlab::Geo.current_node&.projects_include?(event_log.project_id)
+          ::Project.replicables_for_current_secondary(event_log.project_id).exists?
         end
+
         # rubocop: enable CodeReuse/ActiveRecord
 
         # Sleeps for the specified duration plus some random seconds.

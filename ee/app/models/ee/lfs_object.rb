@@ -50,24 +50,41 @@ module EE
       end
 
       # @param primary_key_in [Range, LfsObject] arg to pass to primary_key_in scope
-      # @return [ActiveRecord::Relation<LfsObject>] everything that should be synced to this node, restricted by primary key
+      # @return [ActiveRecord::Relation<LfsObject>] everything that should be synced
+      #         to this node, restricted by primary key
+      override :replicables_for_current_secondary
       def replicables_for_current_secondary(primary_key_in)
         node = ::Gitlab::Geo.current_node
-        node.lfs_objects(primary_key_in: primary_key_in)
-          .merge(object_storage_scope(node))
+
+        replicables =
+          available_replicables
+            .merge(object_storage_scope(node))
+            .primary_key_in(primary_key_in)
+
+        replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+      end
+
+      # @return [ActiveRecord::Relation<LfsObject>] scope observing selective
+      #         sync settings of the given node
+      override :selective_sync_scope
+      def selective_sync_scope(node, **params)
+        return all unless node.selective_sync?
+
+        replicables = params.fetch(:replicables, none)
+
+        lfs_object_projects =
+          if params.key?(:primary_key_in)
+            LfsObjectsProject.project_id_in(::Project.selective_sync_scope(node)).where(lfs_object_id: params[:primary_key_in])
+          else
+            LfsObjectsProject.project_id_in(::Project.selective_sync_scope(node))
+          end
+
+        replicables.where(id: lfs_object_projects.select(:lfs_object_id).distinct)
       end
 
       override :verification_state_table_class
       def verification_state_table_class
         Geo::LfsObjectState
-      end
-
-      private
-
-      def object_storage_scope(node)
-        return all if node.sync_object_storage?
-
-        with_files_stored_locally
       end
     end
 

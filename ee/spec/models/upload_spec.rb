@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Upload do
+RSpec.describe Upload, feature_category: :geo_replication do
   include EE::GeoHelpers
-  using RSpec::Parameterized::TableSyntax
 
   it { is_expected.to have_one(:upload_state).inverse_of(:upload).class_name('Geo::UploadState') }
 
@@ -14,6 +13,8 @@ RSpec.describe Upload do
   end
 
   describe '.replicables_for_current_secondary' do
+    using RSpec::Parameterized::TableSyntax
+
     # Selective sync is configured relative to the upload's model. Take care not
     # to specify a model_factory that contradicts factory.
     #

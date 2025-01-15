@@ -350,5 +350,9 @@ module Gitlab
     def self.postgresql_replication_agnostic_enabled?
       Feature.enabled?(:geo_postgresql_replication_agnostic, :instance, type: :wip)
     end
+
+    def self.org_mover_extend_selective_sync_to_primary_checksumming?
+      Feature.enabled?(:org_mover_extend_selective_sync_to_primary_checksumming, type: :ops) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Checksumming is instance wide
+    end
   end
 end

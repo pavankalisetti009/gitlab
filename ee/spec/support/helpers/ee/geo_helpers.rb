@@ -4,6 +4,7 @@ module EE
   module GeoHelpers
     def stub_current_geo_node(node)
       allow(::Gitlab::Geo).to receive(:current_node).and_return(node)
+      allow(GeoNode).to receive(:current_node).and_return(node)
 
       # GeoNode.current? returns true only when the node is passed
       # otherwise it returns false
@@ -135,6 +136,10 @@ module EE
         def self.replicables_for_current_secondary(primary_key_in)
           self.primary_key_in(primary_key_in)
         end
+
+        def self.selective_sync_scope(node, **_params)
+          all
+        end
       end
 
       DummyModel.reset_column_information
@@ -246,6 +251,10 @@ module EE
 
         def verification_state_object
           _test_dummy_model_state
+        end
+
+        def self.selective_sync_scope(node, **_params)
+          all
         end
 
         def self.replicables_for_current_secondary(primary_key_in)

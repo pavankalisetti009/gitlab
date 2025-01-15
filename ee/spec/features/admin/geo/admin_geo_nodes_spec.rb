@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Admin Geo Sites', :js, :geo, feature_category: :geo_replication do
+  let_it_be(:admin) { create(:admin) }
+
   let!(:geo_site) { create(:geo_node) }
 
   def expect_fields(site_fields)
@@ -27,7 +29,6 @@ RSpec.describe 'Admin Geo Sites', :js, :geo, feature_category: :geo_replication 
 
   before do
     allow(Gitlab::Geo).to receive(:license_allows?).and_return(true)
-    admin = create(:admin)
     sign_in(admin)
     enable_admin_mode!(admin)
   end
@@ -47,15 +48,40 @@ RSpec.describe 'Admin Geo Sites', :js, :geo, feature_category: :geo_replication 
   end
 
   describe 'site form fields' do
-    primary_only_fields = %w[site-reverification-interval-field]
-    secondary_only_fields = %w[site-selective-synchronization-field site-repository-capacity-field site-file-capacity-field site-object-storage-field]
+    let(:primary_only_fields) { %w[site-reverification-interval-field] }
+    let(:secondary_only_fields) { %w[site-selective-synchronization-field site-repository-capacity-field site-file-capacity-field site-object-storage-field] }
 
-    it 'when primary renders only primary fields' do
-      geo_site.update!(primary: true)
-      visit edit_admin_geo_node_path(geo_site)
+    context 'when primary' do
+      before do
+        geo_site.update!(primary: true)
+      end
 
-      expect_fields(primary_only_fields)
-      expect_no_fields(secondary_only_fields)
+      context 'with org_mover_extend_selective_sync_to_primary_checksumming disabled' do
+        before do
+          stub_feature_flags(org_mover_extend_selective_sync_to_primary_checksumming: false)
+        end
+
+        it 'renders only primary fields' do
+          visit edit_admin_geo_node_path(geo_site)
+
+          expect_fields(primary_only_fields)
+          expect_no_fields(secondary_only_fields)
+        end
+      end
+
+      context 'with org_mover_extend_selective_sync_to_primary_checksumming enabled' do
+        before do
+          stub_feature_flags(org_mover_extend_selective_sync_to_primary_checksumming: true)
+        end
+
+        it 'renders the selective sync field' do
+          selective_sync_field = %w[site-selective-synchronization-field]
+
+          visit edit_admin_geo_node_path(geo_site)
+
+          expect_fields(primary_only_fields + selective_sync_field)
+        end
+      end
     end
 
     it 'when secondary renders only secondary fields' do

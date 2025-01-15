@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DependencyProxy::Blob do
+RSpec.describe DependencyProxy::Blob, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   include_examples 'a verifiable model with a separate table for verification state' do
@@ -15,7 +15,7 @@ RSpec.describe DependencyProxy::Blob do
     let(:unverifiable_model_record) { build(:dependency_proxy_blob, :remote_store) }
   end
 
-  describe '#replicables_for_current_secondary' do
+  describe '.replicables_for_current_secondary' do
     let(:model) { create(:group) }
     let(:blob_with_model_group) { create(:dependency_proxy_blob, group: model) }
     let(:blob_without_model_group) { create(:dependency_proxy_blob) }
