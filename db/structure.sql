@@ -16321,7 +16321,8 @@ CREATE TABLE operations_strategies (
     feature_flag_id bigint NOT NULL,
     name character varying(255) NOT NULL,
     parameters jsonb DEFAULT '{}'::jsonb NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_85b486853f CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE operations_strategies_id_seq
