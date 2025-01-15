@@ -22,12 +22,12 @@ RSpec.describe Search::Zoekt::TaskFailedEventWorker, :zoekt_settings_enabled, fe
     end
 
     context 'when retries_left is greater than one' do
-      it 'decrements the retries_left and not change the state' do
+      it 'decrements the retries_left and changes the state to pending' do
         expect(logger).not_to receive(:info)
         expect { consume_event(subscriber: described_class, event: event) }.to change {
           repo.reload.retries_left
         }.by(-1)
-        expect(repo.state).not_to eq('failed')
+        expect(repo.state).to eq('pending')
       end
     end
 

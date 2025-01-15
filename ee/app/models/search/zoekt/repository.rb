@@ -39,8 +39,6 @@ module Search
 
       scope :uncompleted, -> { where.not(state: %i[ready failed]) }
 
-      scope :pending_or_initializing, -> { where(state: %i[pending initializing]) }
-
       scope :for_project_id, ->(project_id) { where(project_identifier: project_id) }
 
       scope :for_replica_id, ->(replica_id) { joins(:zoekt_index).where(zoekt_index: { zoekt_replica_id: replica_id }) }

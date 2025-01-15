@@ -3,12 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_search do
-  let(:data) do
-    { zoekt_repo_ids: Search::Zoekt::Repository.pending_or_initializing.pluck_primary_key }
-  end
-
-  let(:event) { Search::Zoekt::RepoToIndexEvent.new(data: data) }
-  let(:target_scope) { Search::Zoekt::Repository.id_in(data[:zoekt_repo_ids]) }
+  let(:event) { Search::Zoekt::RepoToIndexEvent.new(data: {}) }
 
   it_behaves_like 'subscribes to event'
 
@@ -18,9 +13,10 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
         allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return false
       end
 
-      it 'does not calls message chain pending_or_initializing.create_bulk_tasks on Search::Zoekt::Repository' do
-        expect(Search::Zoekt::Repository).not_to receive(:id_in)
-        consume_event(subscriber: described_class, event: event)
+      it 'does not create any indexing tasks' do
+        expect do
+          consume_event(subscriber: described_class, event: event)
+        end.not_to change { Search::Zoekt::Task.count }
       end
     end
 
@@ -29,10 +25,13 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
         allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return true
       end
 
-      it 'calls message chain pending_or_initializing.create_bulk_tasks on Search::Zoekt::Repository' do
-        expect(Search::Zoekt::Repository).to receive(:id_in).with(data[:zoekt_repo_ids]).and_return target_scope
-        expect(target_scope).to receive_message_chain(:pending_or_initializing, :create_bulk_tasks)
-        consume_event(subscriber: described_class, event: event)
+      it 'creates indexing tasks for Search::Zoekt::Repository' do
+        batch_size = 2
+        create_list(:zoekt_repository, batch_size + 1)
+        stub_const("Search::Zoekt::RepoToIndexEventWorker::BATCH_SIZE", batch_size)
+        expect do
+          consume_event(subscriber: described_class, event: event)
+        end.to change { Search::Zoekt::Task.count }.from(0).to(batch_size)
       end
     end
   end

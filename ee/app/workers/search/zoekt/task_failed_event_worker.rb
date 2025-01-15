@@ -17,7 +17,8 @@ module Search
         return if repo.nil?
 
         sql = "retries_left = retries_left - 1," \
-          "state = CASE retries_left WHEN 1 THEN #{::Search::Zoekt::Repository.states[:failed]} ELSE state END"
+          "state = CASE retries_left WHEN 1 THEN #{::Search::Zoekt::Repository.states[:failed]} " \
+          "ELSE #{::Search::Zoekt::Repository.states[:pending]} END"
         ::Search::Zoekt::Repository.id_in(repo.id).update_all(sql)
         return unless repo.reset.failed?
 
