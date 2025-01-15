@@ -45,9 +45,14 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       rules: [{ type: 'pipeline', branches: %w[other] }])
   end
 
-  let(:policy_yaml) do
-    build(:orchestration_policy_yaml,
-      scan_execution_policy: [policy, policy_duplicated_action, disabled_policy, inapplicable_policy])
+  let(:policies) { [policy, policy_duplicated_action, disabled_policy, inapplicable_policy] }
+  let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: policies) }
+  let!(:db_policies) do
+    policies.map.with_index do |policy, index|
+      create(:security_policy, :scan_execution_policy, linked_projects: [project], policy_index: index,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration,
+        content: policy.slice(:actions, :skip_ci))
+    end
   end
 
   before do
@@ -58,25 +63,18 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   end
 
   describe '#has_scan_execution_policies?' do
-    let_it_be_with_reload(:db_policy) do
-      create(:security_policy, :scan_execution_policy, linked_projects: [project],
-        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
-    end
-
     subject { context.has_scan_execution_policies? }
 
     it { is_expected.to be(true) }
 
     context 'when no policies are returned' do
-      let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: []) }
+      let(:policies) { [] }
 
       it { is_expected.to be(false) }
     end
 
     context 'when no scan execution policies are associated with the project in the database' do
-      before do
-        db_policy.destroy!
-      end
+      let!(:db_policies) { [] }
 
       it { is_expected.to be(false) }
     end
@@ -109,6 +107,55 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   describe '#active_scan_execution_actions' do
     it 'returns the active scan execution actions' do
       expect(context.active_scan_execution_actions).to match_array(policy[:actions])
+    end
+  end
+
+  describe '#skip_ci_allowed?' do
+    subject { context.skip_ci_allowed? }
+
+    context 'when policies have no skip_ci configuration' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when there are no policies' do
+      let(:policies) { [] }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when there are multiple policies that allow skip_ci' do
+      let(:policies) { [policy1, policy2] }
+      let(:policy1) do
+        build(:scan_execution_policy, :skip_ci_allowed, actions: [{ scan: 'secret_detection' }])
+      end
+
+      let(:policy2) do
+        build(:scan_execution_policy, :skip_ci_allowed, actions: [{ scan: 'dependency_scanning' }])
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when there is a single policy that disallows skip_ci' do
+      let(:policies) { [policy] }
+      let(:policy) do
+        build(:scan_execution_policy, :skip_ci_disallowed, actions: [{ scan: 'secret_detection' }])
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there are multiple policies and only one disallows skip_ci' do
+      let(:policies) { [policy1, policy2] }
+      let(:policy1) do
+        build(:scan_execution_policy, :skip_ci_disallowed, actions: [{ scan: 'secret_detection' }])
+      end
+
+      let(:policy2) do
+        build(:scan_execution_policy, :skip_ci_allowed, actions: [{ scan: 'dependency_scanning' }])
+      end
+
+      it { is_expected.to be(false) }
     end
   end
 end

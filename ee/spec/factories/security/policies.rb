@@ -80,7 +80,7 @@ FactoryBot.define do
 
     trait :scan_execution_policy do
       type { Security::Policy.types[:scan_execution_policy] }
-      content { { actions: [{ scan: 'secret_detection' }] } }
+      content { { actions: [{ scan: 'secret_detection' }], skip_ci: { allowed: true } } }
     end
 
     trait :pipeline_execution_policy do
@@ -105,7 +105,7 @@ FactoryBot.define do
   end
 
   factory :scan_execution_policy,
-    class: Struct.new(:name, :description, :enabled, :actions, :rules, :policy_scope, :metadata) do
+    class: Struct.new(:name, :description, :enabled, :actions, :rules, :policy_scope, :metadata, :skip_ci) do
     skip_create
 
     initialize_with do
@@ -116,8 +116,12 @@ FactoryBot.define do
       rules = attributes[:rules]
       policy_scope = attributes[:policy_scope]
       metadata = attributes[:metadata]
+      skip_ci = attributes[:skip_ci]
 
-      new(name, description, enabled, actions, rules, policy_scope, metadata).to_h
+      new(name, description, enabled, actions, rules, policy_scope, metadata, skip_ci).to_h.then do |hash|
+        hash.except!(:skip_ci) unless hash[:skip_ci]
+        hash
+      end
     end
 
     transient do
@@ -132,6 +136,7 @@ FactoryBot.define do
     actions { [{ scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' }] }
     policy_scope { {} }
     metadata { {} }
+    skip_ci { nil }
 
     trait :with_schedule do
       rules { [{ type: 'schedule', branches: %w[master], cadence: '*/15 * * * *' }] }
@@ -140,6 +145,14 @@ FactoryBot.define do
     trait :with_schedule_and_agent do
       rules { [{ type: 'schedule', agents: { agent.name => { namespaces: namespaces } }, cadence: '30 2 * * *' }] }
       actions { [{ scan: 'container_scanning' }] }
+    end
+
+    trait :skip_ci_disallowed do
+      skip_ci { { allowed: false } }
+    end
+
+    trait :skip_ci_allowed do
+      skip_ci { { allowed: true } }
     end
   end
 

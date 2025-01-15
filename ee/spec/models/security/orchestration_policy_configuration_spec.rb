@@ -1017,6 +1017,108 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
 
       it_behaves_like "policy_scope"
+
+      describe 'skip_ci' do
+        context 'when skip_ci is not provided' do
+          before do
+            scan_execution_policy.delete(:skip_ci)
+          end
+
+          it 'is valid' do
+            expect(errors).to be_empty
+          end
+        end
+
+        context 'when skip_ci is allowed' do
+          before do
+            scan_execution_policy[:skip_ci] = { allowed: true }
+          end
+
+          it 'is valid' do
+            expect(errors).to be_empty
+          end
+
+          context 'and has allowlist provided' do
+            before do
+              scan_execution_policy[:skip_ci] = { allowed: true, allowlist: { users: [{ id: 123 }] } }
+            end
+
+            it 'is valid' do
+              expect(errors).to be_empty
+            end
+          end
+        end
+
+        context 'when skip_ci is disallowed' do
+          before do
+            scan_execution_policy[:skip_ci] = { allowed: false }
+          end
+
+          it 'is valid' do
+            expect(errors).to be_empty
+          end
+
+          context 'and has allowlist provided' do
+            before do
+              scan_execution_policy[:skip_ci] = { allowed: false, allowlist: { users: [{ id: 123 }] } }
+            end
+
+            it 'is valid' do
+              expect(errors).to be_empty
+            end
+          end
+        end
+
+        context 'when skip_ci is nil' do
+          before do
+            scan_execution_policy[:skip_ci] = nil
+          end
+
+          it 'returns errors' do
+            expect(errors).to contain_exactly(
+              "property '/scan_execution_policy/0/skip_ci' is not of type: object"
+            )
+          end
+        end
+
+        context 'when skip_ci is empty' do
+          before do
+            scan_execution_policy[:skip_ci] = {}
+          end
+
+          it 'returns errors' do
+            expect(errors).to contain_exactly(
+              "property '/scan_execution_policy/0/skip_ci' is missing required keys: allowed"
+            )
+          end
+        end
+
+        context 'when skip_ci is invalid' do
+          context 'when allowed is in wrong format' do
+            before do
+              scan_execution_policy[:skip_ci] = { allowed: 'invalid' }
+            end
+
+            it 'returns errors' do
+              expect(errors).to contain_exactly(
+                "property '/scan_execution_policy/0/skip_ci/allowed' is not of type: boolean"
+              )
+            end
+          end
+
+          context 'when users id is in wrong format' do
+            before do
+              scan_execution_policy[:skip_ci] = { allowed: false, allowlist: { users: [{ id: 'invalid' }] } }
+            end
+
+            it 'returns errors' do
+              expect(errors).to contain_exactly(
+                "property '/scan_execution_policy/0/skip_ci/allowlist/users/0/id' is not of type: integer"
+              )
+            end
+          end
+        end
+      end
     end
 
     shared_examples_for "approval policy validations" do |type|

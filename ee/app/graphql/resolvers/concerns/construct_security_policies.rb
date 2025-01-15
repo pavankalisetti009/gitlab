@@ -59,7 +59,7 @@ module ConstructSecurityPolicies
         edit_path: edit_path(policy, :scan_execution_policy),
         enabled: policy[:enabled],
         policy_scope: policy_scope(policy[:policy_scope]),
-        yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES).deep_stringify_keys),
+        yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES, :skip_ci).deep_stringify_keys),
         updated_at: policy[:config].policy_last_updated_at,
         deprecated_properties: deprecated_properties(policy),
         source: {

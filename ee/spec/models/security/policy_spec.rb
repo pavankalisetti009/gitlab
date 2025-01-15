@@ -312,6 +312,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           policy_scope: {},
           metadata: {},
           actions: [{ scan: 'secret_detection' }],
+          skip_ci: { allowed: true },
           rules: [{ type: 'pipeline', branches: [] }]
         )
       end
