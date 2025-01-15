@@ -43,7 +43,37 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             stub_licensed_features(pre_receive_secret_detection: true)
           end
 
-          it_behaves_like "skips sending requests to the SDS"
+          context 'when SDS should be called (on SaaS)' do
+            before do
+              stub_saas_features(secret_detection_service: true)
+              stub_application_setting(secret_detection_service_url: 'https://example.com')
+            end
+
+            context 'when instance is Dedicated (temporarily not using SDS)' do
+              before do
+                stub_application_setting(gitlab_dedicated_instance: true)
+              end
+
+              it_behaves_like 'skips sending requests to the SDS'
+            end
+
+            context 'when instance is GitLab.com' do
+              # this is the happy path (as FFs are enabled by default)
+              it_behaves_like 'sends requests to the SDS'
+
+              context 'when `use_secret_detection_service` feature flag is disabled' do
+                before do
+                  stub_feature_flags(use_secret_detection_service: false)
+                end
+
+                it_behaves_like 'skips sending requests to the SDS'
+              end
+            end
+          end
+
+          context 'when SDS should not be called (Self-Managed)' do
+            it_behaves_like 'skips sending requests to the SDS'
+          end
 
           context 'when deleting the branch' do
             # We instantiate the described class with delete_changes_access object to ensure
@@ -51,14 +81,6 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             subject(:secrets_check) { described_class.new(delete_changes_access) }
 
             it_behaves_like 'skips the push check'
-          end
-
-          context 'when SDS URL is defined' do
-            before do
-              stub_application_setting(secret_detection_service_url: 'https://example.com')
-            end
-
-            it_behaves_like 'skips sending requests to the SDS'
           end
 
           context 'when the spp_scan_diffs flag is disabled' do
@@ -76,11 +98,13 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             it_behaves_like 'scan skipped when a commit has special bypass flag'
             it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
             it_behaves_like 'scan discarded secrets because they match exclusions'
+            it_behaves_like 'detects secrets with special characters in full files'
           end
 
           context 'when the spp_scan_diffs flag is enabled' do
             it_behaves_like 'diff scan passed'
             it_behaves_like 'scan detected secrets in diffs'
+            it_behaves_like 'detects secrets with special characters in diffs'
 
             context 'when the protocol is web' do
               subject(:secrets_check) { described_class.new(changes_access_web) }
@@ -95,46 +119,84 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               it_behaves_like 'scan skipped when a commit has special bypass flag'
               it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
               it_behaves_like 'scan discarded secrets because they match exclusions'
+              it_behaves_like 'detects secrets with special characters in full files'
             end
 
             context 'when the spp_scan_diffs flag is enabled' do
               it_behaves_like 'diff scan passed'
               it_behaves_like 'scan detected secrets in diffs'
               it_behaves_like 'processes hunk headers'
+              it_behaves_like 'detects secrets with special characters in diffs'
 
               context 'when the protocol is web' do
                 subject(:secrets_check) { described_class.new(changes_access_web) }
 
                 it_behaves_like 'entire file scan passed'
                 it_behaves_like 'scan detected secrets'
-              end
-            end
-          end
-
-          context 'when SDS URL is set' do
-            before do
-              stub_application_setting(secret_detection_service_url: 'https://example.com')
-            end
-
-            it_behaves_like 'skips sending requests to the SDS'
-
-            context 'when instance is GitLab.com' do
-              before do
-                stub_saas_features(secret_detection_service: true)
-              end
-
-              it_behaves_like 'sends requests to the SDS'
-
-              context 'when `use_secret_detection_service` is disabled`' do
-                before do
-                  stub_feature_flags(use_secret_detection_service: false)
-                end
-
-                it_behaves_like 'skips sending requests to the SDS'
+                it_behaves_like 'detects secrets with special characters in full files'
               end
             end
           end
         end
+      end
+    end
+  end
+
+  # While we prefer not to test private methods directly, the structure of the shared examples
+  # makes testing this code difficult and time-sonsuming.
+  # Remove this if refactoring the shared exazmples makes this easier through testing public methods
+  describe '#get_project_security_exclusion_from_sds_exclusion' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:pse) { create(:project_security_exclusion, :with_rule, project: project) }
+
+    let(:sds_exclusion) do
+      Gitlab::SecretDetection::GRPC::Exclusion.new(
+        exclusion_type: Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
+        value: pse.value
+      )
+    end
+
+    it 'returns the same object if it is a ProjectSecurityExclusion' do
+      result = secrets_check.send(:get_project_security_exclusion_from_sds_exclusion, pse)
+      expect(result).to be pse
+    end
+
+    it 'returns the ProjectSecurityExclusion with the same value' do
+      result = secrets_check.send(:get_project_security_exclusion_from_sds_exclusion, sds_exclusion)
+      expect(result).to eq pse
+    end
+  end
+
+  # Most of the shared examples exercise build_payload normally, but this tests it specifically for
+  # a situation where the data is not a valid utf8 string after being forced into one.
+  # Remove this if refactoring the shared exazmples makes this easier through testing public methods
+  describe '#build_payload' do
+    context 'when data has invalid encoding' do
+      let(:datum_id) { 'test-blob-id' }
+      let(:datum_offset) { 1 }
+      let(:original_encoding) { 'ASCII-8BIT' }
+
+      let(:data_content) { +'encoded string' }
+
+      let(:invalid_datum) do
+        {
+          id: datum_id,
+          data: data_content,
+          offset: datum_offset
+        }
+      end
+
+      it 'returns nil and logs a warning' do
+        expect(data_content).to receive(:encoding).and_return(original_encoding)
+        expect(data_content).to receive(:dup).and_return(data_content)
+        expect(data_content).to receive(:force_encoding).and_return(data_content)
+        expect(data_content).to receive(:valid_encoding?).and_return(false)
+
+        expect(secret_detection_logger).to receive(:warn)
+          .with(message: format(log_messages[:invalid_encoding], { encoding: original_encoding }))
+
+        result = secrets_check.send(:build_payload, invalid_datum)
+        expect(result).to be_nil
       end
     end
   end
