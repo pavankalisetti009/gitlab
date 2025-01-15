@@ -20,9 +20,7 @@ module CodeSuggestions
         # use the same v3 `/completions` endpoint or v4 `/suggestions` endpoint.
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/477891.
         if task_name == 'code_generation' && !self_hosted?
-          if supports_sse_streaming? && Feature.enabled?(:enable_code_generation_sse_stream_v4_endpoint, current_user)
-            return "#{base_url}/v4/code/suggestions"
-          end
+          return "#{base_url}/v4/code/suggestions" if supports_sse_streaming?
 
           "#{base_url}/v3/code/completions"
         else
