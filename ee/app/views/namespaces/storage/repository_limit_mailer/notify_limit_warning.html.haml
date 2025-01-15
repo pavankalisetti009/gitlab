@@ -1,0 +1,7 @@
+%p
+  = safe_format(_("We've noticed an unusually high storage usage on %{strong_start}%{project_name}%{strong_end}"),
+    { project_name: @project_name, **tag_pair(tag.strong, :strong_start, :strong_end) })
+
+%p
+  = safe_format(_("To manage your usage and prevent your project from being placed in a read-only state, %{support_link_start}contact support%{link_end} immediately."),
+    tag_pair(link_to('', @support_url), :support_link_start, :link_end))

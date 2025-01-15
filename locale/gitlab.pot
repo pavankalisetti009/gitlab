@@ -3102,6 +3102,9 @@ msgstr ""
 msgid "Action required: %{project_name} is read-only"
 msgstr ""
 
+msgid "Action required: Unusually high storage usage on %{project_name}"
+msgstr ""
+
 msgid "Action to take when receiving an alert. %{docsLink}"
 msgstr ""
 
@@ -59059,6 +59062,12 @@ msgstr ""
 msgid "To manage seats for all members associated with this group and its subgroups and projects, visit the %{link_start}usage quotas page%{link_end}."
 msgstr ""
 
+msgid "To manage your usage and prevent your project from being placed in a read-only state, %{support_link_start}contact support%{link_end} immediately."
+msgstr ""
+
+msgid "To manage your usage and prevent your project from being placed in a read-only state, contact support immediately: %{support_link}."
+msgstr ""
+
 msgid "To merge, either the title or description must reference a Jira issue."
 msgstr ""
 
@@ -63454,6 +63463,12 @@ msgid "We've detected some unusual activity"
 msgstr ""
 
 msgid "We've detected unusual activity"
+msgstr ""
+
+msgid "We've noticed an unusually high storage usage on %{project_name}"
+msgstr ""
+
+msgid "We've noticed an unusually high storage usage on %{strong_start}%{project_name}%{strong_end}"
 msgstr ""
 
 msgid "Web IDE"

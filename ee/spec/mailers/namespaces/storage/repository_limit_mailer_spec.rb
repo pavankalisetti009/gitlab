@@ -26,4 +26,19 @@ RSpec.describe Namespaces::Storage::RepositoryLimitMailer, feature_category: :co
       )
     end
   end
+
+  describe '#notify_limit_warning' do
+    it 'creates an email message for a project', :aggregate_failures do
+      mail = described_class.notify_limit_warning(project_name: project.name, recipients: recipients)
+
+      expect(mail).to have_subject "Action required: Unusually high storage usage on #{project.name}"
+      expect(mail).to bcc_to recipients
+      expect(mail).to have_text("We've noticed an unusually high storage usage on #{project.name}")
+
+      expect(mail).to have_text(
+        "To manage your usage and prevent your project from being placed in a read-only state, " \
+          "contact support immediately."
+      )
+    end
+  end
 end

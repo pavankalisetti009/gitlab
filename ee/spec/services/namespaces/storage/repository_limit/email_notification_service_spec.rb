@@ -59,6 +59,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::EmailNotificationService,
 
       it 'does not send any notifiction' do
         expect(mailer).not_to receive(:notify_out_of_storage)
+        expect(mailer).not_to receive(:notify_limit_warning)
 
         described_class.execute(project)
       end
@@ -91,14 +92,43 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::EmailNotificationService,
         end
       end
 
+      context 'when available storage is ending' do
+        where(:actual_size_limit, :additional_purchased_storage_size, :repository_size) do
+          100 | 0 | 90
+          100 | 0 | 99
+          100 | 100 | 190
+        end
+
+        with_them do
+          before do
+            allow(group).to receive_messages(
+              owners_emails: [owner.email],
+              actual_size_limit: actual_size_limit.megabytes,
+              additional_purchased_storage_size: additional_purchased_storage_size,
+              total_repository_size_excess: [repository_size - actual_size_limit, 0].max.megabytes
+            )
+            allow(project_statistics).to receive(:repository_size).and_return(repository_size.megabytes)
+          end
+
+          it 'sends an approaching storage limit notifiction' do
+            expect(mailer).to receive(:notify_limit_warning)
+            .with(
+              project_name: project.name,
+              recipients: [owner.email]
+            )
+            .and_return(action_mailer)
+            expect(action_mailer).to receive(:deliver_later)
+
+            described_class.execute(project)
+          end
+        end
+      end
+
       context 'when there is available storage' do
         where(:actual_size_limit, :additional_purchased_storage_size, :repository_size) do
           0   | 0 | 50
           100 | 0 | 50
-          100 | 0 | 90
-          100 | 0 | 99
           100 | 100 | 50
-          100 | 100 | 190
         end
 
         with_them do
