@@ -22409,7 +22409,8 @@ CREATE TABLE vulnerability_exports (
     file_store integer,
     format smallint DEFAULT 0 NOT NULL,
     group_id bigint,
-    organization_id bigint NOT NULL
+    organization_id bigint NOT NULL,
+    expires_at timestamp with time zone
 );
 
 CREATE SEQUENCE vulnerability_exports_id_seq
