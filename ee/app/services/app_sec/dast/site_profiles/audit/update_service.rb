@@ -11,7 +11,7 @@ module AppSec
 
               case new_value
               when Array
-                if new_value.first.instance_of?(Hash)
+                if new_value.first.instance_of?(Hash) || old_value.first.instance_of?(Hash)
                   next if new_value.flat_map { |k, v| [k, v].join("") }.flatten.sort ==
                     old_value.flat_map { |k, v| [k, v].join("") }.flatten.sort
                 elsif old_value.sort == new_value.sort
