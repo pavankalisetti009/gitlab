@@ -94,7 +94,7 @@ export const i18n = {
   colorInputLabel: s__('ComplianceFrameworks|Background color'),
 
   editSaveBtnText: __('Update framework'),
-  addSaveBtnText: s__('ComplianceFrameworks|Add framework'),
+  addSaveBtnText: s__('ComplianceFrameworks|Create framework'),
   fetchError: s__(
     'ComplianceFrameworks|Error fetching compliance frameworks data. Please refresh the page or try a different framework',
   ),

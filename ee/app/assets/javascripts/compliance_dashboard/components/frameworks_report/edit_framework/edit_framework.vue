@@ -302,12 +302,12 @@ export default {
       }
 
       const createRequirementPromises = newRequirements.map((requirement) =>
-        this.createRequirement(requirement, frameworkId),
+        this.createRequirementAtIndex(requirement, frameworkId),
       );
 
       await Promise.all(createRequirementPromises);
     },
-    async createRequirement(requirement, frameworkId, index = null) {
+    async createRequirementAtIndex(requirement, frameworkId, index = null) {
       const { data } = await this.$apollo.mutate({
         mutation: createRequirementMutation,
         variables: {
@@ -427,7 +427,7 @@ export default {
         }
       } else {
         try {
-          await this.createRequirement(requirement, this.graphqlId, index);
+          await this.createRequirementAtIndex(requirement, this.graphqlId, index);
         } catch (error) {
           this.setError(error, error);
         }
@@ -609,6 +609,7 @@ export default {
 
         <policies-section
           v-if="shouldRenderPolicySection"
+          :is-expanded="isNewFramework"
           :full-path="groupPath"
           :graphql-id="graphqlId"
         />

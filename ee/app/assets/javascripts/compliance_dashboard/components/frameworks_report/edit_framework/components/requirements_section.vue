@@ -122,9 +122,10 @@ export default {
     },
     {
       key: 'action',
+      thAlignRight: true,
       label: s__('ComplianceFrameworks|Action'),
       thClass: 'gl-w-1 !gl-border-t-0 gl-w-1/10',
-      tdClass: '!gl-bg-white',
+      tdClass: '!gl-text-right !gl-bg-white',
     },
   ],
   i18n: {
@@ -145,6 +146,7 @@ export default {
     :title="$options.i18n.requirements"
     :description="$options.i18n.requirementsDescription"
     :items-count="requirements.length"
+    :initially-expanded="isNewFramework"
   >
     <gl-table
       v-if="requirements.length"
@@ -165,7 +167,7 @@ export default {
         {{ item.description }}
       </template>
       <template #cell(controls)="{ item }">
-        <ul v-if="item.controls.length" class="gl-m-0 gl-p-0">
+        <ul v-if="item.controls.length" class="gl-m-0 gl-pl-4">
           <li v-for="control in item.controls" :key="control.id">
             {{ control.name }}
           </li>
