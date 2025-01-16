@@ -126,19 +126,6 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         end
       end
 
-      context 'when audit event type is tracked for count' do
-        before do
-          allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter::KNOWN_EVENTS).to receive(:include?).and_return(true)
-        end
-
-        it 'tracks the event count and makes http call' do
-          expect(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter).to receive(:count).with('event_type_filters_created')
-          expect(Gitlab::HTTP).to receive(:post).once
-
-          subject
-        end
-      end
-
       context 'when audit event type is tracked as an internal event' do
         let(:event_name) { AuditEvents::Strategies::ExternalDestinationStrategy::INTERNAL_EVENTS.first }
 
@@ -157,19 +144,6 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
           before do
             allow(Gitlab::HTTP).to receive(:post).once
           end
-        end
-      end
-
-      context 'when audit event type is not tracked for count' do
-        before do
-          allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter::KNOWN_EVENTS).to receive(:include?).and_return(false)
-        end
-
-        it 'does not track the event count and makes http call' do
-          expect(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter).not_to receive(:count).with('event_type_filters_created')
-          expect(Gitlab::HTTP).to receive(:post).once
-
-          subject
         end
       end
 
@@ -387,18 +361,6 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
         it_behaves_like 'no HTTP calls are made'
       end
-    end
-  end
-
-  context 'when connecting to redis fails' do
-    before do
-      allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter).to receive(:count).and_raise(Redis::CannotConnectError)
-    end
-
-    it_behaves_like 'a successful audit event stream' do
-      let_it_be(:group) { create(:group) }
-      let_it_be(:project) { create(:project, group: group) }
-      let_it_be(:audit_event) { create(:audit_event, :project_event, target_project: project) }
     end
   end
 end

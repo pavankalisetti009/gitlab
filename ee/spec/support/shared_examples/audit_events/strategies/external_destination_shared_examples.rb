@@ -42,34 +42,6 @@ RSpec.shared_examples 'streams audit events to external destination' do
       subject
     end
   end
-
-  context 'when audit event type is tracked for count' do
-    before do
-      allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter::KNOWN_EVENTS).to receive(:include?)
-                                                                                          .and_return(true)
-    end
-
-    it 'tracks the event count and makes http call' do
-      expect(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter).to receive(:count).with(event_type)
-      expect(Gitlab::HTTP).to receive(:post).once
-
-      subject
-    end
-  end
-
-  context 'when audit event type is not tracked for count' do
-    before do
-      allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter::KNOWN_EVENTS).to receive(:include?)
-                                                                                          .and_return(false)
-    end
-
-    it 'does not track the event count and makes http call' do
-      expect(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter).not_to receive(:count).with(event_type)
-      expect(Gitlab::HTTP).to receive(:post).once
-
-      subject
-    end
-  end
 end
 
 RSpec.shared_examples 'streams audit events to several external destinations' do
@@ -91,15 +63,6 @@ RSpec.shared_examples 'does not stream anywhere' do
 
     subject
   end
-end
-
-RSpec.shared_examples 'redis connection failure for audit event counter' do
-  before do
-    allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter).to receive(:count)
-                                                                          .and_raise(Redis::CannotConnectError)
-  end
-
-  it_behaves_like 'streams audit events to external destination'
 end
 
 RSpec.shared_examples 'audit event external destination http post error' do
