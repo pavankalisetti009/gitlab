@@ -156,16 +156,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
         it_behaves_like 'code suggestion task' do
           let(:endpoint_path) { 'v4/code/suggestions' }
         end
-
-        context 'when FF `enable_code_generation_sse_stream_v4_endpoint` is disabled' do
-          before do
-            stub_feature_flags(enable_code_generation_sse_stream_v4_endpoint: false)
-          end
-
-          it_behaves_like 'code suggestion task' do
-            let(:endpoint_path) { 'v3/code/completions' }
-          end
-        end
       end
 
       context 'when the client does not support SSE streaming' do
