@@ -4,6 +4,7 @@ import Vue from 'vue';
 import AgentTable from '~/clusters_list/components/agent_table.vue';
 import Agents from '~/clusters_list/components/agents.vue';
 import getAgentsQuery from 'ee/clusters_list/graphql/queries/get_agents.query.graphql';
+import getSharedAgentsQuery from 'ee/clusters_list/graphql/queries/get_shared_agents.query.graphql';
 import getTreeListQuery from '~/clusters_list/graphql/queries/get_tree_list.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -90,25 +91,32 @@ describe('Agents', () => {
           id: 'gid://gitlab/Project/1',
           clusterAgents: {
             nodes: agents,
+            count: agents.length,
             connections: { nodes: [] },
             tokens: { nodes: [] },
-          },
-          ciAccessAuthorizedAgents: {
-            nodes: [],
-          },
-          userAccessAuthorizedAgents: {
-            nodes: [],
           },
         },
       },
     };
 
+    const sharedAgentsQueryResponseData = {
+      data: {
+        project: {
+          id: 'gid://gitlab/Project/1',
+          ciAccessAuthorizedAgents: { nodes: [] },
+          userAccessAuthorizedAgents: { nodes: [] },
+        },
+      },
+    };
+
     const agentQueryResponse = jest.fn().mockResolvedValue(queryResponseData);
+    const sharedAgentsQueryResponse = jest.fn().mockResolvedValue(sharedAgentsQueryResponseData);
     const treeListQueryResponse = jest.fn().mockResolvedValue(treeListResponseData);
 
     const apolloProvider = createMockApollo(
       [
         [getAgentsQuery, agentQueryResponse],
+        [getSharedAgentsQuery, sharedAgentsQueryResponse],
         [getTreeListQuery, treeListQueryResponse],
       ],
       {},

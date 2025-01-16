@@ -8,24 +8,7 @@ query getAgentsEE($projectPath: ID!) {
         ...ClusterAgentFragment
         isReceptive
       }
-    }
-
-    ciAccessAuthorizedAgents {
-      nodes {
-        agent {
-          ...ClusterAgentFragment
-          isReceptive
-        }
-      }
-    }
-
-    userAccessAuthorizedAgents {
-      nodes {
-        agent {
-          ...ClusterAgentFragment
-          isReceptive
-        }
-      }
+      count
     }
   }
 }

@@ -1,12 +1,13 @@
 import {
   clusterAgentsResponse as clusterAgentsResponseCE,
+  sharedAgentsResponse as sharedAgentsResponseCE,
   treeListResponseData as treeListResponseDataCE,
   expectedAgentsList as expectedAgentsListCE,
 } from 'jest/clusters_list/components/mock_data';
 import { agent, tokens, connections } from 'jest/clusters_list/mocks/apollo';
 
-function extendAgentsWithReceptiveField() {
-  const response = JSON.parse(JSON.stringify(clusterAgentsResponseCE));
+function extendAgentsWithReceptiveField(agentResponse) {
+  const response = JSON.parse(JSON.stringify(agentResponse));
   const { project } = response.data;
 
   const addReceptiveField = (agentNode) => ({ ...agentNode, isReceptive: false });
@@ -16,14 +17,26 @@ function extendAgentsWithReceptiveField() {
       item.agent ? { agent: addReceptiveField(item.agent) } : addReceptiveField(item),
     );
 
-  project.clusterAgents.nodes = updateAgents(project.clusterAgents.nodes);
-  project.ciAccessAuthorizedAgents.nodes = updateAgents(project.ciAccessAuthorizedAgents.nodes);
-  project.userAccessAuthorizedAgents.nodes = updateAgents(project.userAccessAuthorizedAgents.nodes);
-
+  if (project.clusterAgents) {
+    project.clusterAgents = {
+      nodes: updateAgents(project.clusterAgents.nodes),
+      count: project.clusterAgents.nodes.length,
+    };
+  }
+  if (project.ciAccessAuthorizedAgents) {
+    project.ciAccessAuthorizedAgents.nodes = updateAgents(project.ciAccessAuthorizedAgents.nodes);
+  }
+  if (project.userAccessAuthorizedAgents) {
+    project.userAccessAuthorizedAgents.nodes = updateAgents(
+      project.userAccessAuthorizedAgents.nodes,
+    );
+  }
   return response;
 }
 
-export const clusterAgentsResponse = extendAgentsWithReceptiveField();
+export const clusterAgentsResponse = extendAgentsWithReceptiveField(clusterAgentsResponseCE);
+
+export const sharedAgentsResponse = extendAgentsWithReceptiveField(sharedAgentsResponseCE);
 
 export const treeListResponseData = treeListResponseDataCE;
 
@@ -53,23 +66,6 @@ export const createAgentErrorResponse = {
         tokens,
       },
       errors: ['could not create agent'],
-    },
-  },
-};
-
-export const getAgentResponse = {
-  data: {
-    project: {
-      __typename: 'Project',
-      id: 'project-1',
-      clusterAgents: { nodes: [{ ...agent, isReceptive: false, connections, tokens }] },
-      ciAccessAuthorizedAgents: { nodes: [] },
-      userAccessAuthorizedAgents: { nodes: [] },
-      repository: {
-        tree: {
-          trees: { nodes: [{ ...agent, path: null }] },
-        },
-      },
     },
   },
 };
