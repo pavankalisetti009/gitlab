@@ -5,6 +5,7 @@ import { GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import CodeBlockHighlighted from '~/vue_shared/components/code_block_highlighted.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 
 export default {
   components: {
@@ -13,6 +14,7 @@ export default {
     GlIcon,
     GlLink,
     GlSprintf,
+    SettingsSection,
   },
   props: {
     id: {
@@ -62,11 +64,8 @@ gcloud projects add-iam-policy-binding ${this.googleCloudProjectId} \\
 </script>
 
 <template>
-  <div class="gl-mb-5">
-    <h3>
-      {{ s__('GoogleArtifactRegistry|2. Set up permissions') }}
-    </h3>
-    <p>
+  <settings-section :heading="s__('GoogleArtifactRegistry|2. Set up permissions')">
+    <template #description>
       <gl-sprintf
         :message="
           s__(
@@ -89,7 +88,8 @@ gcloud projects add-iam-policy-binding ${this.googleCloudProjectId} \\
           </gl-link>
         </template>
       </gl-sprintf>
-    </p>
+    </template>
+
     <ol>
       <li>
         <gl-sprintf
@@ -175,5 +175,5 @@ gcloud projects add-iam-policy-binding ${this.googleCloudProjectId} \\
         </gl-sprintf>
       </li>
     </ol>
-  </div>
+  </settings-section>
 </template>

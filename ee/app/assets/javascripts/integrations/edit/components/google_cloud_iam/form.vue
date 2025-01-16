@@ -49,7 +49,7 @@ export default {
 
 <template>
   <div>
-    <h4 class="gl-mt-0">{{ s__('GoogleCloud|Google Cloud project') }}</h4>
+    <h3 class="gl-heading-3 gl-mt-6">{{ s__('GoogleCloud|Google Cloud project') }}</h3>
     <p>
       <gl-sprintf
         :message="
@@ -72,11 +72,11 @@ export default {
     <configuration
       :fields="gcProjectFields"
       field-class="gl-grow gl-basis-0"
-      class="gl-mb-6 gl-flex-row gl-gap-5 md:gl-flex"
+      class="gl-mb-4 gl-flex-row gl-gap-5 md:gl-flex"
       v-on="$listeners"
     />
 
-    <h4 class="gl-mt-0">{{ s__('GoogleCloud|Workload identity federation') }}</h4>
+    <h3 class="gl-heading-3">{{ s__('GoogleCloud|Workload identity federation') }}</h3>
     <p>
       <gl-sprintf :message="avoidCollisionMessage">
         <template #suggested>
@@ -91,7 +91,5 @@ export default {
       class="gl-mb-6 gl-flex-row gl-gap-5 md:gl-flex"
       v-on="$listeners"
     />
-
-    <hr />
   </div>
 </template>

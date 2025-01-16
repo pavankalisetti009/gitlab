@@ -4,12 +4,13 @@ import ConfigurationInstructions from 'ee/integrations/edit/components/google_ar
 import CodeBlockHighlighted from '~/vue_shared/components/code_block_highlighted.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { createStore } from '~/integrations/edit/store';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import { mockIntegrationProps } from '../../mock_data';
 
 describe('ConfigurationInstructions', () => {
   let wrapper;
 
-  const findHeader = () => wrapper.find('h3');
+  const findHeader = () => wrapper.find('h2');
   const findCodeBlockHighlighted = () => wrapper.findComponent(CodeBlockHighlighted);
   const findClipboardButton = () => wrapper.findComponent(ClipboardButton);
   const findLinks = () => wrapper.findAllComponents(GlLink);
@@ -26,6 +27,7 @@ describe('ConfigurationInstructions', () => {
       store,
       stubs: {
         GlSprintf,
+        SettingsSection,
       },
     });
   };
