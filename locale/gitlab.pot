@@ -59295,6 +59295,9 @@ msgstr ""
 msgid "Todos|Snooze"
 msgstr ""
 
+msgid "Todos|Snooze..."
+msgstr ""
+
 msgid "Todos|Snoozed"
 msgstr ""
 
