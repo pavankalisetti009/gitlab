@@ -35,37 +35,33 @@ RSpec.shared_examples 'slash command tool' do
   shared_examples 'prompt is called with command options' do
     it 'calls prompt with correct params' do
       expect(prompt_class).to receive(:prompt).with(expected_params.merge(input: instruction))
-
       tool.execute
     end
   end
 
-  shared_examples 'user input blank for IDE' do |platform_origin|
+  shared_examples 'user input blank' do |platform_origin, platform|
     let(:platform_origin) { platform_origin }
+    let(:user_input) { nil }
+    let(:input_blank_message) do
+      "Your request does not seem to contain code to #{described_class::ACTION}. " \
+        "To #{described_class::HUMAN_NAME.downcase} select the lines of code in your #{platform} " \
+        "and then type the command #{command.name} in the chat. " \
+        "You may add additional instructions after this command. If you have no code to select, " \
+        "you can also simply add the code after the command."
+    end
 
-    context 'when user input is not present' do
-      let(:user_input) { nil }
-      let(:input_blank_message) do
-        "Your request does not seem to contain code to #{described_class::ACTION}. " \
-          "To #{described_class::HUMAN_NAME.downcase} select the lines of code in your editor " \
-          "and then type the command #{command.name} in the chat. " \
-          "You may add additional instructions after this command. If you have no code to select, " \
-          "you can also simply add the code after the command."
-      end
+    context 'when selected text is present' do
+      it_behaves_like 'prompt is called with command options'
+    end
 
-      context 'when selected text is present' do
-        it_behaves_like 'prompt is called with command options'
-      end
+    context 'when selected text is not present' do
+      let(:selected_text) { nil }
 
-      context 'when selected text is not present' do
-        let(:selected_text) { nil }
+      it 'returns input blank answer' do
+        answer = tool.execute
 
-        it 'returns input blank answer' do
-          answer = tool.execute
-
-          expect(answer.content).to eq(input_blank_message)
-          expect(answer.status).to eq(:not_executed)
-        end
+        expect(answer.content).to eq(input_blank_message)
+        expect(answer.status).to eq(:not_executed)
       end
     end
   end
@@ -98,27 +94,9 @@ RSpec.shared_examples 'slash command tool' do
     it_behaves_like 'prompt is called with command options'
 
     context 'when user input is blank' do
-      context 'with web platform origin' do
-        let(:platform_origin) { 'web' }
+      it_behaves_like 'user input blank', 'web', 'browser'
 
-        it_behaves_like 'prompt is called with command options'
-
-        context 'when selected text is not present' do
-          let(:selected_text) { nil }
-          let(:expected_params) do
-            super().merge(
-              selected_text: '',
-              file_content: "Here is the content of the file user is working with:\n" \
-                            "<file>\n  code abovecode below\n</file>\n")
-          end
-
-          it_behaves_like 'prompt is called with command options'
-        end
-      end
-
-      context 'with VS Code extension client platform origin' do
-        it_behaves_like 'user input blank for IDE', 'vs_code_extension'
-      end
+      it_behaves_like 'user input blank', 'vs_code_extension', 'editor'
     end
   end
 

@@ -9,7 +9,11 @@ module Gitlab
           extend ::Gitlab::Utils::Override
 
           def perform
-            return input_blank_message(command) if input_blank_for_ide?
+            return input_blank_message(command, 'editor') if input_blank_for_ide?
+            # TODO: this should never happen after
+            # https://gitlab.com/gitlab-org/gitlab/-/issues/513141 is resolved
+            # eg, if no text is selected, frontend auto sends the whole file as input payload
+            return input_blank_message(command, 'browser') if input_blank_for_web?
 
             content = request(&streamed_request_handler(StreamedAnswer.new))
 
@@ -100,21 +104,32 @@ module Gitlab
             "The code is written in #{language.name} and stored as #{filename}"
           end
 
-          def input_blank_for_ide?
+          def input_blank?
             return unless command
 
-            SlashCommand::VS_CODE_EXTENSION == command.platform_origin &&
-              command.user_input.blank? &&
-              context.current_file[:selected_text].blank?
+            command.user_input.blank? && context.current_file[:selected_text].blank?
           end
 
-          def input_blank_message(command)
-            content = format(s_("AI|Your request does not seem to contain code to %{action}. " \
-              "To %{human_name} select the lines of code in your editor " \
-              "and then type the command %{command_name} in the chat. " \
-              "You may add additional instructions after this command. If you have no code to select, " \
-              "you can also simply add the code after the command."),
-              action: self.class::ACTION, human_name: self.class::HUMAN_NAME.downcase, command_name: command.name)
+          def input_blank_for_ide?
+            input_blank? && command.platform_origin == SlashCommand::VS_CODE_EXTENSION
+          end
+
+          def input_blank_for_web?
+            input_blank? && command.platform_origin == SlashCommand::WEB
+          end
+
+          def input_blank_message(command, platform)
+            content = format(
+              s_("AI|Your request does not seem to contain code to %{action}. " \
+                "To %{human_name} select the lines of code in your %{platform} " \
+                "and then type the command %{command_name} in the chat. " \
+                "You may add additional instructions after this command. If you have no code to select, " \
+                "you can also simply add the code after the command."),
+              action: self.class::ACTION,
+              human_name: self.class::HUMAN_NAME.downcase,
+              command_name: command.name,
+              platform: platform
+            )
 
             Answer.new(status: :not_executed, context: context, content: content, tool: nil)
           end
