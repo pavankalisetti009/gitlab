@@ -17349,7 +17349,8 @@ CREATE TABLE packages_debian_publications (
     id bigint NOT NULL,
     package_id bigint NOT NULL,
     distribution_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_30a36cda06 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE packages_debian_publications_id_seq
