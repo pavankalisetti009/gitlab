@@ -12,7 +12,7 @@ describe('AgentTable', () => {
       propsData: {
         agents,
       },
-      provide: { kasCheckVersion: '14.8.0', projectPath: 'path/to/project', canAdminCluster: true },
+      provide: { projectPath: 'path/to/project', canAdminCluster: true },
     });
   };
 

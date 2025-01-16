@@ -13225,9 +13225,6 @@ msgstr ""
 msgid "ClusterAgents|You will need to create a token to connect to your agent"
 msgstr ""
 
-msgid "ClusterAgents|Your agent version is out of sync with your GitLab KAS version (v%{version}), which might cause compatibility problems. Update the agent installed on your cluster to the most recent version."
-msgstr ""
-
 msgid "ClusterAgents|Your instance doesn't have the %{linkStart}GitLab Agent Server (KAS)%{linkEnd} set up. Ask a GitLab Administrator to install it."
 msgstr ""
 
