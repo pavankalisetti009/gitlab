@@ -231,20 +231,24 @@ If you encounter issues:
 1. Ensure that you've checked out the branch for the code you'd like to change.
 1. Check your Docker and Docker socket configuration:
    1. [Install Docker and set the socket file path](#install-docker-and-set-the-socket-file-path).
-   1. Restart your container manager. For example, if using Colima:
-
-      ```shell
-      colima stop
-      colima start
-      ```
-
+   1. Restart your container manager. For example, if you use Colima, `colima restart`.
    1. Pull the base Docker image:
 
       ```shell
       docker pull registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4
       ```
 
+   1. If this does not work the DNS configuration of Colima might be at fault. Edit the DNS setting in  `~/.colima/default/colima.yaml` to `dns: [1.1.1.1]` and then restart Colima with `colima restart`.
+1. Check the Language Server logs:
+   1. To open the logs in VS Code, select **View** > **Output**. In the output panel at the bottom, in the top-right corner, select **GitLab Workflow** or **GitLab Language Server** from the list.
+   1. Review for errors, warnings, connection issues, or authentication problems.
+   1. For more output in the logs, open the settings:
+      - On macOS: <kbd>Cmd</kbd> + <kbd>,</kbd>
    1. For permission issues, ensure your operating system user has the necessary Docker permissions.
+   1. Verify Docker's internet connectivity by executing the command `docker image pull redhat/ubi8`.
+      
+      If this does not work, the DNS configuration of Colima might be at fault.
+      Edit the DNS setting in `~/.colima/default/colima.yaml` to `dns: [1.1.1.1]` and then restart Colima with `colima restart`.
 1. Check the Language Server logs:
    1. To open the logs in VS Code, select **View** > **Output**. In the output panel at the bottom, in the top-right corner, select **GitLab Workflow** or **GitLab Language Server** from the list.
    1. Review for errors, warnings, connection issues, or authentication problems.
