@@ -159,6 +159,10 @@ module Gitlab
         def push_feature_flags
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
 
+          if Feature.enabled?(:enable_anthropic_prompt_caching, user)
+            Gitlab::AiGateway.push_feature_flag(:enable_anthropic_prompt_caching, user)
+          end
+
           return if ::CloudConnector.self_managed_cloud_connected?
 
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
