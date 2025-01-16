@@ -1,11 +1,11 @@
 import { GlButton, GlSkeletonLoader, GlProgressBar } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
-import ProjectLimitsExcessStorageBreakdownCard from 'ee/usage_quotas/storage/components/project_limits_excess_storage_breakdown_card.vue';
+import ProjectLimitsExcessStorageBreakdownCard from 'ee/usage_quotas/storage/namespace/components/project_limits_excess_storage_breakdown_card.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import { defaultNamespaceProvideValues } from '../mock_data';
+import { defaultNamespaceProvideValues } from '../../mock_data';
 
 describe('ProjectLimitsExcessStorageBreakdownCard', () => {
   /** @type { import('helpers/vue_test_utils_helper').ExtendedWrapper } */

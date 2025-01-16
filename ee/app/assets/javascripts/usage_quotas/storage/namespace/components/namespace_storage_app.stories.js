@@ -4,12 +4,12 @@ import {
   mockGetProjectListStorageGraphQLResponse,
 } from 'jest/usage_quotas/storage/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import getNamespaceStorageQuery from 'ee/usage_quotas/storage/queries/namespace_storage.query.graphql';
-import getProjectListStorageQuery from 'ee/usage_quotas/storage/queries/project_list_storage.query.graphql';
-import NamespaceStorageApp from '~/usage_quotas/storage/components/namespace_storage_app.vue';
+import getNamespaceStorageQuery from 'ee/usage_quotas/storage/namespace/queries/namespace_storage.query.graphql';
+import getProjectListStorageQuery from 'ee/usage_quotas/storage/namespace/queries/project_list_storage.query.graphql';
+import NamespaceStorageApp from '~/usage_quotas/storage/namespace/components/namespace_storage_app.vue';
 
 const meta = {
-  title: 'ee/usage_quotas/storage/namespace_storage_app',
+  title: 'ee/usage_quotas/storage/namespace/namespace_storage_app',
   component: NamespaceStorageApp,
 };
 

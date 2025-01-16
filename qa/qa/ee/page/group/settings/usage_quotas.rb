@@ -10,7 +10,7 @@ module QA
               element 'storage-tab'
             end
 
-            view 'ee/app/assets/javascripts/usage_quotas/storage/components/storage_usage_statistics.vue' do
+            view 'ee/app/assets/javascripts/usage_quotas/storage/namespace/components/storage_usage_statistics.vue' do
               element 'namespace-usage-total-content'
             end
 
@@ -18,11 +18,11 @@ module QA
               element 'group-usage-message-content'
             end
 
-            view 'app/assets/javascripts/usage_quotas/storage/components/dependency_proxy_usage.vue' do
+            view 'app/assets/javascripts/usage_quotas/storage/namespace/components/dependency_proxy_usage.vue' do
               element 'dependency-proxy-size-content'
             end
 
-            view 'app/assets/javascripts/usage_quotas/storage/components/project_list.vue' do
+            view 'app/assets/javascripts/usage_quotas/storage/namespace/components/project_list.vue' do
               element 'project-repository-size-content'
               element 'project-wiki-size-content'
               element 'project-snippets-size-content'

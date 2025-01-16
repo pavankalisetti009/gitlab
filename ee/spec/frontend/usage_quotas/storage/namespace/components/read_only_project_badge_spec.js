@@ -1,6 +1,6 @@
 import { GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import ReadOnlyProjectBadge from 'ee/usage_quotas/storage/components/read_only_project_badge.vue';
+import ReadOnlyProjectBadge from 'ee/usage_quotas/storage/namespace/components/read_only_project_badge.vue';
 
 describe('ReadOnlyProjectBadge', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
