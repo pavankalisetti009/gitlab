@@ -396,6 +396,26 @@ FactoryBot.define do
       end
     end
 
+    trait :license_finding_with_allowed_licenses do
+      rules do
+        [
+          {
+            type: 'license_finding',
+            branches: branches,
+            license_states: %w[newly_detected detected],
+            licenses: {
+              allowed: [
+                {
+                  name: "MIT License",
+                  packages: { excluding: { purls: ["pkg:gem/bundler@1.0.0"] } }
+                }
+              ]
+            }
+          }
+        ]
+      end
+    end
+
     trait :any_merge_request do
       rules do
         [
