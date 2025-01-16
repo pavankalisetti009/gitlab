@@ -1010,6 +1010,9 @@ msgstr ""
 msgid "%{labelStart}Project:%{labelEnd} %{project}"
 msgstr ""
 
+msgid "%{labelStart}Report Type:%{labelEnd} %{reportType}"
+msgstr ""
+
 msgid "%{labelStart}Scanner:%{labelEnd} %{scanner}"
 msgstr ""
 
@@ -1017,9 +1020,6 @@ msgid "%{labelStart}Sent request:%{labelEnd} %{headers}"
 msgstr ""
 
 msgid "%{labelStart}Severity:%{labelEnd} %{severity}"
-msgstr ""
-
-msgid "%{labelStart}Tool:%{labelEnd} %{reportType}"
 msgstr ""
 
 msgid "%{labelStart}URL:%{labelEnd} %{url}"
@@ -47425,6 +47425,9 @@ msgstr ""
 msgid "Reports|New"
 msgstr ""
 
+msgid "Reports|Report Type"
+msgstr ""
+
 msgid "Reports|See test results while the pipeline is running"
 msgstr ""
 
@@ -47435,9 +47438,6 @@ msgid "Reports|Test summary failed to load results"
 msgstr ""
 
 msgid "Reports|Test summary results are being parsed"
-msgstr ""
-
-msgid "Reports|Tool"
 msgstr ""
 
 msgid "Reports|View partial report"
