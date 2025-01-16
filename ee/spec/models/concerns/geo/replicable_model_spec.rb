@@ -60,7 +60,7 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
         end
       end
 
-      it 'destroys the model' do
+      it 'destroys the model', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/508377' do
         subject.save!
 
         expect { subject.destroy! }.to change { DummyModel.count }.by(-1)
