@@ -6,8 +6,6 @@ identifiers:
 product_group: activation
 milestone: "14.2"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/66443
-distributions:
-- ee
 tiers:
 - premium
 - ultimate

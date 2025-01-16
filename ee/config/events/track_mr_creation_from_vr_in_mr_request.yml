@@ -1,5 +1,5 @@
 ---
-description: Tracks the merge request created from vulnerability resolution in mr 
+description: Tracks the merge request created from vulnerability resolution in mr
 internal_events: true
 action: track_mr_creation_from_vr_in_mr_request
 identifiers:
@@ -20,7 +20,5 @@ additional_properties:
 product_group: security_insights
 milestone: '17.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/170152
-distributions:
-- ee
 tiers:
 - ultimate

@@ -8,8 +8,6 @@ identifiers:
 product_group: optimize
 milestone: '17.0'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/149959
-distributions:
-- ee
 tiers:
 - premium
 - ultimate

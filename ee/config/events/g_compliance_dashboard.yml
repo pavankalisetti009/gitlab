@@ -10,7 +10,5 @@ identifiers:
 product_group: compliance
 milestone: "16.4"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/131045
-distributions:
-- ee
 tiers:
 - ultimate

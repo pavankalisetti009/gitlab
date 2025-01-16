@@ -11,7 +11,5 @@ additional_properties:
 product_group: security_policies
 milestone: '17.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168862
-distributions:
-- ee
 tiers:
 - ultimate

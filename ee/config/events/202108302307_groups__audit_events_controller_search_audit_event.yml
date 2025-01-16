@@ -6,8 +6,6 @@ identifiers:
 product_group: compliance
 milestone: "13.5"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/44888
-distributions:
-- ee
 tiers:
 - premium
 - ultimate
