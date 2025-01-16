@@ -75,6 +75,13 @@ module IdentityVerification
       destroy_custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT)
     end
 
+    def assume_high_risk_if_phone_verification_limit_exceeded!
+      return unless user
+      return unless ::Gitlab::ApplicationRateLimiter.peek(:soft_phone_verification_transactions_limit, scope: nil)
+
+      user.assume_high_risk!(reason: 'Phone verification daily transaction limit exceeded')
+    end
+
     private
 
     def user_custom_attributes

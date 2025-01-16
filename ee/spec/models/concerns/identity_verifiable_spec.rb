@@ -11,6 +11,16 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     create(:user_custom_attribute, key: UserCustomAttribute::ARKOSE_RISK_BAND, value: value, user_id: user.id)
   end
 
+  def stub_phone_verification_limits(soft: false, hard: false)
+    allow(::Gitlab::ApplicationRateLimiter).to receive(:peek)
+      .with(:soft_phone_verification_transactions_limit, scope: nil)
+      .and_return(soft)
+
+    allow(::Gitlab::ApplicationRateLimiter).to receive(:peek)
+      .with(:hard_phone_verification_transactions_limit, scope: nil)
+      .and_return(hard)
+  end
+
   describe('#signup_identity_verification_enabled?') do
     where(
       identity_verification: [true, false],
@@ -370,9 +380,10 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
           user.assume_high_risk!(reason: 'test') if assumed_high_risk
           user.confirm if email_verified
 
-          # Disables phone number verification method
-          allow(PhoneVerification::Users::RateLimitService)
-            .to receive(:daily_transaction_hard_limit_exceeded?).and_return(affected_by_phone_verifications_limit)
+          stub_phone_verification_limits(
+            soft: affected_by_phone_verifications_limit,
+            hard: affected_by_phone_verifications_limit
+          )
         end
 
         it { is_expected.to eq(result) }
@@ -389,10 +400,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
       with_them do
         before do
-          allow(PhoneVerification::Users::RateLimitService)
-            .to receive(:daily_transaction_soft_limit_exceeded?).and_return(true)
-          allow(PhoneVerification::Users::RateLimitService)
-            .to receive(:daily_transaction_hard_limit_exceeded?).and_return(false)
+          stub_phone_verification_limits(soft: true, hard: false)
           add_user_risk_band(risk_band) if risk_band
         end
 
@@ -402,11 +410,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     context 'when phone verifications hard limit has been exceeded' do
       before do
-        allow(PhoneVerification::Users::RateLimitService)
-          .to receive(:daily_transaction_soft_limit_exceeded?).and_return(true)
-        allow(PhoneVerification::Users::RateLimitService)
-          .to receive(:daily_transaction_hard_limit_exceeded?).and_return(true)
-
+        stub_phone_verification_limits(soft: true, hard: true)
         add_user_risk_band(risk_band) if risk_band
       end
 

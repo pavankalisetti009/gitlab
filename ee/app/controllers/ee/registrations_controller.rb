@@ -103,8 +103,8 @@ module EE
 
       send_custom_confirmation_instructions
 
-      service = PhoneVerification::Users::RateLimitService
-      service.assume_user_high_risk_if_daily_limit_exceeded!(user)
+      risk_profile = IdentityVerification::UserRiskProfile.new(user)
+      risk_profile.assume_high_risk_if_phone_verification_limit_exceeded!
 
       ::Onboarding::StatusCreateService
         .new(onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path).execute

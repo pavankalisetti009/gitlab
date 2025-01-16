@@ -171,7 +171,7 @@ module IdentityVerifiable
     case method
     when 'phone'
       ::Gitlab::CurrentSettings.phone_verification_enabled &&
-        !PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
+        !::Gitlab::ApplicationRateLimiter.peek(:hard_phone_verification_transactions_limit, scope: nil)
     when 'credit_card'
       ::Gitlab::CurrentSettings.credit_card_verification_enabled
     when 'email'
@@ -193,12 +193,12 @@ module IdentityVerifiable
 
   def affected_by_phone_verifications_limit?
     # All users will be required to verify 1. email 2. credit card
-    return true if PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
+    return true if ::Gitlab::ApplicationRateLimiter.peek(:hard_phone_verification_transactions_limit, scope: nil)
 
     # Actual high risk users will be subject to the same order of required steps
     # as users assumed high risk when the daily phone verification transaction
     # limit is exceeded until it is reset
-    return high_risk? if PhoneVerification::Users::RateLimitService.daily_transaction_soft_limit_exceeded?
+    return high_risk? if ::Gitlab::ApplicationRateLimiter.peek(:soft_phone_verification_transactions_limit, scope: nil)
 
     false
   end
