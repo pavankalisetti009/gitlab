@@ -521,23 +521,25 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
 
     context 'when the vulnerability has representation information' do
       before do
-        vulnerability.representation_information = create(:vulnerability_representation_information, vulnerability: vulnerability, project: project, resolved_in_commit_sha: 'abc123def456')
+        vulnerability.representation_information = create(:vulnerability_representation_information, vulnerability: vulnerability, project: project, resolved_in_commit_sha: 'abc123def456', created_at: Date.yesterday)
       end
 
       it 'returns and formats the representation information' do
         expect(subject[:resolved_in_commit_sha]).to eq('abc123def456')
         expect(subject[:resolved_in_commit_sha_link]).to match(%r{\/namespace\d+\/project-\d+\/\-\/commit\/abc123def456})
+        expect(subject[:created_at]).to eq(Date.yesterday)
       end
     end
 
     context 'when the vulnerability has representation information but resolved_in_commit_sha is nil' do
       before do
-        vulnerability.representation_information = create(:vulnerability_representation_information, vulnerability: vulnerability, project: project, resolved_in_commit_sha: nil)
+        vulnerability.representation_information = create(:vulnerability_representation_information, vulnerability: vulnerability, project: project, resolved_in_commit_sha: nil, created_at: Date.yesterday)
       end
 
       it 'returns the representation information with nil values' do
         expect(subject[:resolved_in_commit_sha]).to be_nil
         expect(subject[:resolved_in_commit_sha_link]).to be_nil
+        expect(subject[:created_at]).to eq(Date.yesterday)
       end
     end
   end
