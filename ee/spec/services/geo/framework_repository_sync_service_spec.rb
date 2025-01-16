@@ -67,7 +67,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
   describe '#execute', :clean_gitlab_redis_shared_state, :aggregate_failures do
     shared_examples 'runs the garbage collection task specifically' do
       it 'runs the garbage collection task specifically' do
-        expect_next_instance_of(Repositories::HousekeepingService, model_record, :gc) do |service|
+        expect_next_instance_of(::Repositories::HousekeepingService, model_record, :gc) do |service|
           expect(service).to receive(:increment!).once
           expect(service).to receive(:execute).once
         end
@@ -78,7 +78,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
 
     shared_examples 'does not run any task specifically' do
       it 'does not run any task specifically' do
-        expect_next_instance_of(Repositories::HousekeepingService, model_record, nil) do |service|
+        expect_next_instance_of(::Repositories::HousekeepingService, model_record, nil) do |service|
           expect(service).to receive(:increment!).once
           expect(service).to receive(:execute).once
         end
@@ -89,7 +89,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
 
     shared_examples 'does not run housekeeping' do
       it 'does not run housekeeping' do
-        expect_next_instance_of(Repositories::HousekeepingService, model_record, nil) do |service|
+        expect_next_instance_of(::Repositories::HousekeepingService, model_record, nil) do |service|
           expect(service).to receive(:increment!).once
           expect(service).not_to receive(:execute)
         end
@@ -166,7 +166,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
         end
 
         it 'runs housekeeping' do
-          expect_next_instance_of(Repositories::HousekeepingService, model_record, anything) do |service|
+          expect_next_instance_of(::Repositories::HousekeepingService, model_record, anything) do |service|
             expect(service).to receive(:increment!).once
             expect(service).to receive(:execute).once.and_call_original
           end
@@ -181,7 +181,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
             expect(lease).to receive(:try_obtain).and_return(nil)
           end
 
-          allow_next_instance_of(Repositories::HousekeepingService, model_record, anything) do |service|
+          allow_next_instance_of(::Repositories::HousekeepingService, model_record, anything) do |service|
             expect(service).to receive(:increment!).once
             expect(service).to receive(:execute).once.and_call_original
           end
@@ -195,7 +195,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
             .with(url_to_repo, forced: true, http_authorization_header: anything)
             .and_raise(Gitlab::Git::Repository::NoRepository.new('repository at given URL not found'))
 
-          expect(Repositories::HousekeepingService).not_to receive(:new)
+          expect(::Repositories::HousekeepingService).not_to receive(:new)
 
           subject.execute
         end
@@ -206,7 +206,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
             .with(url_to_repo, forced: true, http_authorization_header: anything)
             .and_raise(Gitlab::Git::Repository::NoRepository.new('A repository for this project does not exist yet'))
 
-          expect(Repositories::HousekeepingService).not_to receive(:new)
+          expect(::Repositories::HousekeepingService).not_to receive(:new)
 
           subject.execute
         end
@@ -218,7 +218,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
         end
 
         it 'does not run housekeeping' do
-          expect(Repositories::HousekeepingService).not_to receive(:new)
+          expect(::Repositories::HousekeepingService).not_to receive(:new)
 
           subject.execute
         end

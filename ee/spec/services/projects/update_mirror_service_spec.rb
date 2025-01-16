@@ -40,7 +40,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
     it 'runs project housekeeping' do
       stub_fetch_mirror(project)
 
-      expect_next_instance_of(Repositories::HousekeepingService) do |svc|
+      expect_next_instance_of(::Repositories::HousekeepingService) do |svc|
         expect(svc).to receive(:increment!)
         expect(svc).to receive(:needed?).and_return(true)
         expect(svc).to receive(:execute)

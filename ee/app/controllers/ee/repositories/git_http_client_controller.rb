@@ -55,7 +55,7 @@ module EE
 
         # Order of ActionController filters are important. IP must be set prior
         # to using it in IpRestriction::Enforcer.
-        # However, Repositories::GitHttpClientController#authenticate_user
+        # However, ::Repositories::GitHttpClientController#authenticate_user
         # (triggered via a controller filter) evaluates policies before setting
         # the IP. The evaluated policies are cached, so IP enforcement is not
         # checked anymore - even if IP is set at this point.

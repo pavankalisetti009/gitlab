@@ -149,7 +149,7 @@ module Geo
       return if skip_housekeeping?
 
       task = new_repository? ? :gc : nil
-      service = Repositories::HousekeepingService.new(replicator.housekeeping_model_record, task)
+      service = ::Repositories::HousekeepingService.new(replicator.housekeeping_model_record, task)
       service.increment!
 
       return if task.nil? && !service.needed?
@@ -157,7 +157,7 @@ module Geo
       service.execute do
         replicator.before_housekeeping
       end
-    rescue Repositories::HousekeepingService::LeaseTaken
+    rescue ::Repositories::HousekeepingService::LeaseTaken
       # best-effort
     end
 

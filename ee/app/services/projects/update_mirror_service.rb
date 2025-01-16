@@ -190,11 +190,11 @@ module Projects
     end
 
     def run_housekeeping
-      service = Repositories::HousekeepingService.new(project)
+      service = ::Repositories::HousekeepingService.new(project)
 
       service.increment!
       service.execute if service.needed?
-    rescue Repositories::HousekeepingService::LeaseTaken
+    rescue ::Repositories::HousekeepingService::LeaseTaken
       # best-effort
     end
 

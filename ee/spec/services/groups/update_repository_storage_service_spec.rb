@@ -110,7 +110,7 @@ RSpec.describe Groups::UpdateRepositoryStorageService, feature_category: :groups
 
         expect do
           subject.execute
-        end.to raise_error(Repositories::ReplicateService::Error, /Failed to verify wiki repository checksum from \w+ to not matching checksum/)
+        end.to raise_error(::Repositories::ReplicateService::Error, /Failed to verify wiki repository checksum from \w+ to not matching checksum/)
 
         expect(group).not_to be_repository_read_only
         expect(wiki.repository_storage).to eq('default')

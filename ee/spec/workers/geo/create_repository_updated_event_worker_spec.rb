@@ -10,7 +10,7 @@ RSpec.describe Geo::CreateRepositoryUpdatedEventWorker, feature_category: :geo_r
   let_it_be(:secondary_site) { create(:geo_node) }
   let_it_be(:project) { create(:project, :repository) }
 
-  let(:event) { Repositories::KeepAroundRefsCreatedEvent.new(data: { project_id: project.id }) }
+  let(:event) { ::Repositories::KeepAroundRefsCreatedEvent.new(data: { project_id: project.id }) }
 
   subject { consume_event(subscriber: described_class, event: event) }
 

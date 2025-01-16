@@ -30,7 +30,7 @@ module Geo
       return unless full_path
 
       repository = Repository.new(params[:disk_path], self, shard: params[:repository_storage])
-      result = Repositories::DestroyService.new(repository).execute
+      result = ::Repositories::DestroyService.new(repository).execute
 
       if result[:status] == :success
         log_info('Repository removed', params)
