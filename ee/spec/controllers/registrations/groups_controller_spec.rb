@@ -3,42 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
-  let_it_be(:user, reload: true) { create(:user) }
+  let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
   let_it_be(:group) { create(:group) }
 
   let(:onboarding_enabled?) { true }
 
   before do
     stub_saas_features(onboarding: onboarding_enabled?)
-  end
-
-  shared_examples 'finishing onboarding' do
-    let_it_be(:url) { '_url_' }
-    let_it_be(:onboarding_in_progress) { true }
-
-    let_it_be(:user) do
-      create(:user, onboarding_in_progress: onboarding_in_progress, onboarding_status_step_url: url)
-    end
-
-    context 'when onboarding feature is not available' do
-      let(:onboarding_enabled?) { false }
-
-      it 'does not finish onboarding' do
-        subject
-        user.reload
-
-        expect(user.onboarding_in_progress).to be(true)
-      end
-    end
-
-    context 'when onboarding feature is available' do
-      it 'finishes onboarding' do
-        subject
-        user.reload
-
-        expect(user.onboarding_in_progress).to be(false)
-      end
-    end
   end
 
   describe 'GET #new' do
@@ -102,7 +73,9 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
         end
 
         context 'when user does not have the ability to create a group' do
-          let(:user) { create(:user, can_create_group: false) }
+          before do
+            user.update!(can_create_group: false)
+          end
 
           it { is_expected.to have_gitlab_http_status(:not_found) }
         end
@@ -141,6 +114,28 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
       }
     end
 
+    shared_examples 'finishing onboarding' do
+      context 'when onboarding feature is not available' do
+        let(:onboarding_enabled?) { false }
+
+        it 'does not finish onboarding' do
+          post_create
+          user.reload
+
+          expect(user.onboarding_in_progress).to be(true)
+        end
+      end
+
+      context 'when onboarding feature is available' do
+        it 'finishes onboarding' do
+          post_create
+          user.reload
+
+          expect(user.onboarding_in_progress).to be(false)
+        end
+      end
+    end
+
     context 'with an unauthenticated user' do
       it { is_expected.to have_gitlab_http_status(:redirect) }
       it { is_expected.to redirect_to(new_user_session_path) }
@@ -162,7 +157,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
       it 'sets the cookie for confetti for learn gitlab' do
         post_create
 
-        expect(cookies[:confetti_post_signup]).to eq(true)
+        expect(cookies[:confetti_post_signup]).to be(true)
       end
 
       context 'when form is successfully submitted' do
@@ -238,7 +233,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
         let(:group_params) { { name: '⛄⛄⛄', path: '' } }
 
         it 'creates a group' do
-          expect { subject }.to change { Group.count }.by(1)
+          expect { post_create }.to change { Group.count }.by(1)
         end
       end
 
@@ -292,8 +287,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
         let(:project_params) { { name: '', path: '', visibility_level: Gitlab::VisibilityLevel::PRIVATE } }
 
         it 'does not create a project', :aggregate_failures do
-          expect { post_create }.to change { Group.count }
-          expect { post_create }.not_to change { Project.count }
+          expect { post_create }.to change { Group.count }.and not_change { Project.count }
           expect(assigns(:project).errors).not_to be_blank
         end
 
@@ -313,15 +307,14 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
       end
 
       context "when a group is already created but a project isn't" do
-        before do
+        before_all do
           group.add_owner(user)
         end
 
         let(:group_params) { { id: group.id } }
 
         it 'creates a project and not another group', :aggregate_failures do
-          expect { post_create }.to change { Project.count }
-          expect { post_create }.not_to change { Group.count }
+          expect { post_create }.to change { Project.count }.and not_change { Group.count }
         end
       end
 

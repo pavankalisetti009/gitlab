@@ -13,6 +13,14 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
     stub_saas_features(onboarding: onboarding_enabled?)
   end
 
+  shared_examples 'user not in onboarding' do
+    before do
+      user.update!(onboarding_in_progress: false)
+    end
+
+    it { is_expected.to redirect_to(root_path) }
+  end
+
   describe '#show' do
     let(:show_params) { {} }
 
@@ -28,6 +36,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
       end
 
       it { is_expected.to render_template(:show) }
+
+      it_behaves_like 'user not in onboarding'
 
       context 'when onboarding feature is not available' do
         let(:onboarding_enabled?) { false }
@@ -124,6 +134,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
       before do
         sign_in(user)
       end
+
+      it_behaves_like 'user not in onboarding'
 
       context 'when onboarding feature is not available' do
         let(:onboarding_enabled?) { false }

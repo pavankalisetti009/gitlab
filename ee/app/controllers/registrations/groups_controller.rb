@@ -6,9 +6,11 @@ module Registrations
     include GoogleAnalyticsCSP
     include GoogleSyndicationCSP
     include ::Onboarding::SetRedirect
+    include ::Onboarding::InProgress
 
     skip_before_action :set_confirm_warning
     before_action :verify_onboarding_enabled!
+    before_action :verify_in_onboarding_flow!
     before_action :authorize_create_group!, only: :new
 
     layout 'minimal'
