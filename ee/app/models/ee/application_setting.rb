@@ -23,6 +23,12 @@ module EE
       jsonb_accessor :clickhouse,
         use_clickhouse_for_analytics: [:boolean, { default: false }]
 
+      jsonb_accessor :search,
+        global_search_code_enabled: [:boolean, { default: true }],
+        global_search_commits_enabled: [:boolean, { default: true }],
+        global_search_wiki_enabled: [:boolean, { default: true }],
+        global_search_snippet_titles_enabled: [:boolean, { default: true }]
+
       jsonb_accessor :zoekt_settings,
         zoekt_auto_delete_lost_nodes: [:boolean, { default: true }],
         zoekt_indexing_enabled: [:boolean, { default: false }],
@@ -276,6 +282,7 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
+      validates :search, json_schema: { filename: 'application_setting_search' }
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
 

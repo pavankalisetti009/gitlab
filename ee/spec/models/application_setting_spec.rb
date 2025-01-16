@@ -46,6 +46,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.hard_phone_verification_transactions_daily_limit).to eq(20000) }
     it { expect(setting.telesign_intelligence_enabled).to eq(true) }
     it { expect(setting.fetch_observability_alerts_from_cloud).to eq(true) }
+    it { expect(setting.global_search_code_enabled).to be(true) }
+    it { expect(setting.global_search_commits_enabled).to be(true) }
+    it { expect(setting.global_search_merge_requests_enabled).to be(true) }
+    it { expect(setting.global_search_work_items_enabled).to be(true) }
+    it { expect(setting.global_search_wiki_enabled).to be(true) }
+    it { expect(setting.global_search_users_enabled).to be(true) }
+    it { expect(setting.global_search_snippet_titles_enabled).to be(true) }
   end
 
   describe 'validations' do
@@ -686,6 +693,10 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     describe 'instance_level_ai_beta_features_enabled', feature_category: :cloud_connector do
       it { is_expected.to allow_values([true, false]).for(:instance_level_ai_beta_features_enabled) }
       it { is_expected.not_to allow_value(nil).for(:instance_level_ai_beta_features_enabled) }
+    end
+
+    describe 'search settings', feature_category: :global_search do
+      it { expect(described_class).to validate_jsonb_schema(['application_setting_search']) }
     end
 
     describe 'zoekt settings', feature_category: :global_search do
