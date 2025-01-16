@@ -12512,6 +12512,9 @@ msgstr ""
 msgid "Click %{link_to} to view the request."
 msgstr ""
 
+msgid "Click here to download the export"
+msgstr ""
+
 msgid "Click the link below to confirm your email address (%{email})"
 msgstr ""
 
@@ -19408,6 +19411,9 @@ msgid "Dependency Scanning"
 msgstr ""
 
 msgid "Dependency list"
+msgstr ""
+
+msgid "Dependency list export"
 msgstr ""
 
 msgid "DependencyProxy|%{docLinkStart}See the documentation%{docLinkEnd} for other ways to store Docker images in Dependency Proxy cache."
@@ -57001,6 +57007,9 @@ msgid "The default branch for this project has been changed. Please update your 
 msgstr ""
 
 msgid "The dependency list details information about the components used within your project."
+msgstr ""
+
+msgid "The dependency list export has been completed."
 msgstr ""
 
 msgid "The deployment of this job to %{environmentLink} did not succeed."
