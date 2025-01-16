@@ -11880,7 +11880,8 @@ CREATE TABLE design_management_repositories (
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_4f95da7ef9 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE design_management_repositories_id_seq
