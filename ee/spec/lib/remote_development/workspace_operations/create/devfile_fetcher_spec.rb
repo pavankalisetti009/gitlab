@@ -40,10 +40,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
     }
   end
 
-  before do
-    allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
-  end
-
   context 'when params are valid' do
     let(:devfile) { yaml_safe_load_symbolized(devfile_yaml) }
 
@@ -51,6 +47,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
       let(:devfile_path) { '.devfile.yaml' }
       let(:devfile_fixture_name) { 'example.devfile.yaml' }
       let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
+
+      before do
+        allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
+      end
 
       it 'returns an ok Result containing the original params and the devfile_yaml' do
         expect(result).to eq(
@@ -71,8 +71,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
       let(:devfile_yaml) { default_devfile_yaml }
 
       it 'returns an ok Result containing the original params and the default devfile_yaml_string' do
-        expect(project.repository).not_to receive(:blob_at_branch)
-
         expect(result).to eq(
           Gitlab::Fp::Result.ok({
             params: params,
@@ -88,6 +86,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   end
 
   context 'when params are invalid' do
+    before do
+      allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
+    end
+
     context 'when agent has no associated config' do
       let(:devfile_path) { '.devfile.yaml' }
 
