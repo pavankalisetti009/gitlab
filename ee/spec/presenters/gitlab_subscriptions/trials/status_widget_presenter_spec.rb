@@ -122,22 +122,6 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
         trial_starts_on: Date.current, trial_ends_on: trial_duration.days.from_now)
     end
 
-    it 'returns the expected attributes for the legacy ultimate trial' do
-      expect(attributes).to eq(
-        trial_widget_data_attrs: {
-          trial_type: 'legacy_ultimate',
-          trial_days_used: 1,
-          days_remaining: trial_duration,
-          percentage_complete: 1.67,
-          group_id: group.id,
-          trial_discover_page_path: group_discover_path(group),
-          purchase_now_url: group_billings_path(group),
-          feature_id: described_class::EXPIRED_TRIAL_WIDGET,
-          dismiss_endpoint: group_callouts_path
-        }
-      )
-    end
-
     context 'when duo enterprise is available' do
       before do
         allow(GitlabSubscriptions::Trials::DuoEnterprise)

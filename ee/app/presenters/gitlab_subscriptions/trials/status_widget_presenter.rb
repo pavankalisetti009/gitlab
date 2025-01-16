@@ -18,7 +18,7 @@ module GitlabSubscriptions
       def attributes
         {
           trial_widget_data_attrs: {
-            trial_type: determine_trial_type,
+            trial_type: 'ultimate',
             trial_days_used: trial_status.days_used,
             days_remaining: trial_status.days_remaining,
             percentage_complete: trial_status.percentage_complete,
@@ -46,14 +46,6 @@ module GitlabSubscriptions
         GitlabSubscriptions::Trials.namespace_plan_eligible?(namespace) &&
           trial_ends_on > TIME_FRAME_AFTER_EXPIRATION.ago &&
           !user_dismissed_widget?
-      end
-
-      def determine_trial_type
-        if duo_enterprise_status.show?
-          'ultimate'
-        else
-          'legacy_ultimate'
-        end
       end
 
       def trial_starts_on

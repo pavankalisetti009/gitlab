@@ -2,7 +2,6 @@ import { __, s__ } from '~/locale';
 
 const DUO_PRO = 'duo_pro';
 const DUO_ENTERPRISE = 'duo_enterprise';
-const LEGACY_ULTIMATE = 'legacy_ultimate';
 const ULTIMATE_WITH_DUO = 'ultimate';
 
 export const TRIAL_WIDGET = {
@@ -23,11 +22,6 @@ export const TRIAL_WIDGET = {
       name: s__('TrialWidget|GitLab Duo Enterprise'),
       widgetTitle: s__('TrialWidget|GitLab Duo Enterprise Trial'),
       widgetTitleExpiredTrial: s__('TrialWidget|Your trial of GitLab Duo Enterprise has ended'),
-    },
-    [LEGACY_ULTIMATE]: {
-      name: s__('TrialWidget|Ultimate'),
-      widgetTitle: s__('TrialWidget|Ultimate Trial'),
-      widgetTitleExpiredTrial: s__('TrialWidget|Your trial of Ultimate has ended'),
     },
     [ULTIMATE_WITH_DUO]: {
       name: s__('TrialWidget|Ultimate with GitLab Duo Enterprise'),
