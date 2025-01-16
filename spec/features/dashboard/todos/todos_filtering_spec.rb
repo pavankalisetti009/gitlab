@@ -53,9 +53,22 @@ RSpec.describe 'Dashboard > User filters todos', :js, feature_category: :notific
       expect(find_by_testid('todo-item-list-container')).not_to have_content '#'
     end
 
-    # Not implemented yet:
-    xit 'shows only authors of existing todos'
-    xit 'shows only authors of existing done todos'
+    it 'shows only authors of existing todos' do
+      create :user # should not show
+
+      expect_filter_values('Author', [user_1.name, user_2.name])
+    end
+
+    it 'shows only authors of existing done todos' do
+      user_3 = create :user
+      user_4 = create :user
+      create(:todo, user: user_1, author: user_3, project: project_1, target: issue1, action: 1, state: :done)
+      create(:todo, user: user_1, author: user_4, project: project_2, target: merge_request, action: 2, state: :done)
+
+      visit dashboard_todos_path(state: 'done')
+
+      expect_filter_values('Author', [user_3.name, user_4.name])
+    end
   end
 
   it 'filters by category' do
@@ -142,5 +155,19 @@ RSpec.describe 'Dashboard > User filters todos', :js, feature_category: :notific
     end
 
     wait_for_requests
+  end
+
+  def expect_filter_values(filter, expected_values)
+    find_by_testid('filtered-search-term').click
+    find('li', text: filter).click
+
+    within '.gl-filtered-search-suggestion-list' do
+      expected_values.each do |value|
+        expect(page).to have_css('.gl-filtered-search-suggestion', text: value)
+      end
+
+      # Make sure no other suggestions are shown
+      expect(page).to have_css('.gl-filtered-search-suggestion', count: expected_values.count)
+    end
   end
 end
