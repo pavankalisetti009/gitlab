@@ -12,15 +12,24 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices], 10.minutes
 
-      def handle_event(event)
-        watermark_level = event.data[:watermark_level]
-        index_ids = event.data[:index_ids]
+      BATCH_SIZE = 1000
 
-        return unless watermark_level.present? && index_ids.present?
+      def handle_event(_event)
+        indices = Search::Zoekt::Index.with_mismatched_watermark_levels
+          .or(Search::Zoekt::Index.negative_reserved_storage_bytes).limit(BATCH_SIZE)
 
-        Search::Zoekt::Index.id_in(event.data[:index_ids]).each_batch do |batch|
-          batch.each(&:update_reserved_storage_bytes!)
+        return unless indices.exists?
+
+        updated_count = 0
+        indices.find_each do |idx|
+          idx.update_reserved_storage_bytes!
+
+          updated_count += 1
+        rescue ActiveRecord::ActiveRecordError
+          # no-op, record will be processed on next worker run
         end
+
+        log_extra_metadata_on_done(:indices_updated_count, updated_count)
       end
     end
   end

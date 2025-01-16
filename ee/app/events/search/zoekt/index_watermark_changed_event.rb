@@ -9,8 +9,7 @@ module Search
           'properties' => {
             'index_ids' => { 'type' => 'array', 'items' => { 'type' => 'integer' } },
             'watermark_level' => { 'type' => 'string' }
-          },
-          'required' => %w[index_ids watermark_level]
+          }
         }
       end
     end
