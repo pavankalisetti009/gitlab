@@ -13105,6 +13105,9 @@ msgstr ""
 msgid "ClusterAgents|Premium"
 msgstr ""
 
+msgid "ClusterAgents|Project agents"
+msgstr ""
+
 msgid "ClusterAgents|Receptive"
 msgstr ""
 
@@ -13133,6 +13136,9 @@ msgid "ClusterAgents|See agent activity updates, like tokens created or revoked 
 msgstr ""
 
 msgid "ClusterAgents|Shared"
+msgstr ""
+
+msgid "ClusterAgents|Shared agents"
 msgstr ""
 
 msgid "ClusterAgents|Tell us what you think"
