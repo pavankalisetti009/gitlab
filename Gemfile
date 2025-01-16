@@ -754,8 +754,6 @@ gem 'duo_api', '~> 1.3', feature_category: :system_access
 
 gem 'gitlab-sdk', '~> 0.3.0', feature_category: :application_instrumentation
 
-gem 'openbao_client', path: 'gems/openbao_client', feature_category: :artifact_security
-
 gem 'paper_trail', '~> 15.0', feature_category: :shared
 
 gem "i18n_data", "~> 0.13.1", feature_category: :system_access

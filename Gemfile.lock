@@ -133,12 +133,6 @@ PATH
       oj (~> 3.13.16)
 
 PATH
-  remote: gems/openbao_client
-  specs:
-    openbao_client (1.0.0)
-      typhoeus (~> 1.0, >= 1.0.1)
-
-PATH
   remote: vendor/gems/attr_encrypted
   specs:
     attr_encrypted (3.2.4)
@@ -2210,7 +2204,6 @@ DEPENDENCIES
   omniauth-shibboleth-redux (~> 2.0)
   omniauth_crowd (~> 2.4.0)!
   omniauth_openid_connect (~> 0.8.0)
-  openbao_client!
   openid_connect (~> 2.3.0)
   openssl (~> 3.0)
   opentelemetry-exporter-otlp
