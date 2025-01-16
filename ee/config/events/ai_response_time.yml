@@ -8,8 +8,6 @@ identifiers:
 product_group: ai_framework
 milestone: '17.2'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158431
-distributions:
-- ee
 tiers:
 - premium
 - ultimate

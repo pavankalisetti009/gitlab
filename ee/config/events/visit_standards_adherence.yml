@@ -11,7 +11,5 @@ additional_properties:
 product_group: compliance
 milestone: '17.6'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168865
-distributions:
-- ee
 tiers:
 - ultimate

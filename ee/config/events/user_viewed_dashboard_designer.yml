@@ -10,7 +10,5 @@ identifiers:
 product_group: platform_insights
 milestone: "16.6"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/135566
-distributions:
-- ee
 tiers:
 - ultimate

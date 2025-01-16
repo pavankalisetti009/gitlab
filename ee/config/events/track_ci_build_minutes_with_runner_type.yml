@@ -12,8 +12,6 @@ additional_properties:
 product_group: pipeline_execution
 milestone: '17.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168894
-distributions:
-- ee
 tiers:
 - premium
 - ultimate

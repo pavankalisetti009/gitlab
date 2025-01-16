@@ -6,8 +6,6 @@ identifiers:
 product_group: package_registry
 milestone: "12.6"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/20967
-distributions:
-- ee
 tiers:
 - premium
 - ultimate

@@ -10,9 +10,7 @@ identifiers:
 product_group: ai_framework
 milestone: "16.3"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/128503
-distributions:
-- ee
-tiers: 
+tiers:
 - premium
 - ultimate
 additional_properties:

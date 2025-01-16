@@ -14,7 +14,5 @@ additional_properties:
 product_group: optimize
 milestone: '17.2'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/157363
-distributions:
-- ee
 tiers:
 - ultimate

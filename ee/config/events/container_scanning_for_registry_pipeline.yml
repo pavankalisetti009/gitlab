@@ -12,7 +12,5 @@ additional_properties:
 product_group: composition_analysis
 milestone: '17.1'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/154285
-distributions:
-- ee
 tiers:
 - ultimate

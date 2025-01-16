@@ -5,8 +5,6 @@ identifiers:
 product_group: composition_analysis
 milestone: '16.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166618
-distributions:
-- ee
 tiers:
 - ultimate
 additional_properties:
