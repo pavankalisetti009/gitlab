@@ -95,7 +95,7 @@ module Dependencies
 
       return unless group
 
-      Notify.dependency_export_completion_email(self, group)
+      Sbom::ExportMailer.completion_email(self, group)
     end
 
     def schedule_export_deletion

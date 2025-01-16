@@ -226,7 +226,7 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       let(:export) { create(:dependency_list_export, project: project) }
 
       it 'passes project.group as second argument' do
-        expect(Notify).to receive(:dependency_export_completion_email).with(export, project.group)
+        expect(Sbom::ExportMailer).to receive(:completion_email).with(export, project.group)
 
         send_completion_email!
       end
@@ -236,7 +236,7 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       let(:export) { create(:dependency_list_export, group: group, project: nil) }
 
       it 'passes group as second argument' do
-        expect(Notify).to receive(:dependency_export_completion_email).with(export, group)
+        expect(Sbom::ExportMailer).to receive(:completion_email).with(export, group)
 
         send_completion_email!
       end
@@ -246,7 +246,7 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       let(:export) { create(:dependency_list_export, pipeline: pipeline, project: pipeline.project) }
 
       it 'does not send email' do
-        expect(Notify).not_to receive(:dependency_export_completion_email)
+        expect(Sbom::ExportMailer).not_to receive(:completion_email)
 
         send_completion_email!
       end
