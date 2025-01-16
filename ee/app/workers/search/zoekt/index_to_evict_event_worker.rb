@@ -12,14 +12,15 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices, :zoekt_replicas], 10.minutes
 
-      def handle_event(event)
-        index_ids = event.data[:index_ids]
+      BATCH_SIZE = 1000
 
-        return unless index_ids.present?
+      def handle_event(_event)
+        indices = Search::Zoekt::Index.should_be_evicted.limit(BATCH_SIZE)
+        return unless indices.exists?
 
-        Search::Zoekt::Index.id_in(index_ids).each_batch do |batch|
-          ::Search::Zoekt::Replica.id_in(batch.select(:zoekt_replica_id)).delete_all
-        end
+        deleted_count = ::Search::Zoekt::Replica.id_in(indices.select(:zoekt_replica_id)).delete_all
+
+        log_extra_metadata_on_done(:replicas_deleted_count, deleted_count)
       end
     end
   end

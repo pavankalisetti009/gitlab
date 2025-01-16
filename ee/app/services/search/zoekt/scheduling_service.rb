@@ -395,11 +395,11 @@ module Search
       end
 
       def indices_to_evict_check
-        Search::Zoekt::Index.critical_watermark_exceeded.each_batch do |batch|
-          Gitlab::EventStore.publish(
-            Search::Zoekt::IndexToEvictEvent.new(data: { index_ids: batch.pluck_primary_key })
-          )
-        end
+        return unless Search::Zoekt::Index.should_be_evicted.exists?
+
+        Gitlab::EventStore.publish(
+          Search::Zoekt::IndexToEvictEvent.new(data: {})
+        )
       end
 
       def index_mismatched_watermark_check
