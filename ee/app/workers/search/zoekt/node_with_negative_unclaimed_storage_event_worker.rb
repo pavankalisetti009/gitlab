@@ -31,7 +31,7 @@ module Search
           total_reserved_bytes = 0
           index_ids_to_evict = []
 
-          node.indices.find_each do |index|
+          node.indices.not_critical_watermark_exceeded.find_each do |index|
             total_reserved_bytes += index.reserved_storage_bytes if index.reserved_storage_bytes > 0
 
             index_ids_to_evict << index.id
@@ -39,11 +39,13 @@ module Search
             break if total_reserved_bytes >= unclaimed_storage_bytes.abs
           end
 
-          index_ids_to_evict.each_slice(BATCH_SIZE) do |index_ids|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::IndexToEvictEvent.new(data: { index_ids: index_ids })
-            )
-          end
+          indices = Search::Zoekt::Index.id_in(index_ids_to_evict).limit(BATCH_SIZE)
+          updated_count = indices.update_all(watermark_level: :critical_watermark_exceeded)
+          log_extra_metadata_on_done(:indices_updated_count, updated_count)
+
+          Gitlab::EventStore.publish(
+            Search::Zoekt::IndexToEvictEvent.new(data: {})
+          )
         end
       end
     end

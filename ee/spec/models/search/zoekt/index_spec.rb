@@ -229,6 +229,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.should_be_evicted' do
+      let_it_be(:idx_healthy) { create(:zoekt_index, :healthy) }
+      let_it_be(:idx_critical_watermark_exceeded) { create(:zoekt_index, :critical_watermark_exceeded) }
+      let_it_be(:idx_critical_watermark_exceeded_no_replica) do
+        create(:zoekt_index, :critical_watermark_exceeded, zoekt_replica_id: nil)
+      end
+
+      it 'returns indices that are idx_critical_watermark_exceeded that contain zoekt_replica_id' do
+        expect(described_class.should_be_evicted).to match_array([idx_critical_watermark_exceeded])
+      end
+    end
+
     describe '.with_mismatched_watermark_levels' do
       let(:ideal_percent) { Search::Zoekt::Index::STORAGE_IDEAL_PERCENT_USED }
       let(:low_watermark) { Search::Zoekt::Index::STORAGE_LOW_WATERMARK }

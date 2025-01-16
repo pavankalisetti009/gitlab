@@ -8,8 +8,7 @@ module Search
           'type' => 'object',
           'properties' => {
             'index_ids' => { 'type' => 'array', 'items' => { 'type' => 'integer' } }
-          },
-          'required' => %w[index_ids]
+          }
         }
       end
     end

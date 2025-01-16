@@ -81,6 +81,10 @@ module Search
         where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: SHOULD_BE_DELETED_STATES)
       end
 
+      scope :should_be_evicted, -> do
+        critical_watermark_exceeded.where.not(replica: nil)
+      end
+
       scope :should_be_deleted, -> do
         where(state: SHOULD_BE_DELETED_STATES)
       end
