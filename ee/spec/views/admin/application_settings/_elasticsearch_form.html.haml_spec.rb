@@ -17,11 +17,33 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
   let(:projects_not_indexed_count) { 0 }
   let(:projects_not_indexed)       { [] }
 
+  let(:subtask) do
+    build_stubbed(
+      :elastic_reindexing_subtask,
+      documents_count: 0,
+      documents_count_target: 0
+    )
+  end
+
+  let(:fake_subtasks) { [subtask] }
+
+  let(:task) do
+    build_stubbed(:elastic_reindexing_task).tap do |t|
+      allow(t).to receive(:subtasks).and_return(fake_subtasks)
+      allow(fake_subtasks).to receive(:order_by_alias_name_asc).and_return(fake_subtasks)
+
+      allow(t).to receive(:in_progress?).and_return(true)
+      allow(t).to receive(:error_message).and_return(nil)
+      allow(t).to receive(:state).and_return(:in_progress)
+    end
+  end
+
   before do
     assign(:application_setting, application_setting)
     assign(:elasticsearch_reindexing_task, elastic_reindexing_task)
     assign(:projects_not_indexed_count, projects_not_indexed_count)
     assign(:projects_not_indexed, projects_not_indexed)
+    assign(:last_elasticsearch_reindexing_task, task)
 
     allow(Elastic::DataMigrationService).to receive(:halted_migrations?).and_return(halted_migrations)
     allow(Elastic::DataMigrationService).to receive(:pending_migrations?).and_return(pending_migrations)
@@ -46,11 +68,28 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         expect(rendered).to have_css('a.btn-confirm', text: button_text)
       end
 
-      it 'renders an enabled pause checkbox' do
-        render
+      context 'indexing is enabled' do
+        let(:es_indexing) { true }
+        let(:pause_indexing) { false }
+        let(:task) do
+          build_stubbed(:elastic_reindexing_task).tap do |t|
+            allow(t).to receive(:in_progress?).and_return(false) # Ensure task is not in progress
+          end
+        end
 
-        expect(rendered).to have_css('input[id=application_setting_elasticsearch_pause_indexing]')
-        expect(rendered).not_to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
+        before do
+          assign(:last_elasticsearch_reindexing_task, task)
+
+          allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(es_indexing)
+          allow(Gitlab::CurrentSettings).to receive(:elasticsearch_pause_indexing?).and_return(pause_indexing)
+        end
+
+        it 'renders an enabled pause checkbox' do
+          render
+
+          expect(rendered).to have_css('input[id=application_setting_elasticsearch_pause_indexing]')
+          expect(rendered).not_to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
+        end
       end
 
       context 'pending migrations' do
@@ -59,11 +98,15 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         let(:elasticsearch_available) { true }
         let(:pending_migrations) { true }
         let(:migration) { Elastic::DataMigrationService.migrations.first }
+        let(:task) do
+          build_stubbed(:elastic_reindexing_task, state: :success, in_progress: false)
+        end
 
         before do
           allow(Elastic::DataMigrationService).to receive(:pending_migrations).and_return([migration])
           allow(migration).to receive(:running?).and_return(running)
           allow(migration).to receive(:pause_indexing?).and_return(pause_indexing)
+          assign(:last_elasticsearch_reindexing_task, task)
         end
 
         where(:running, :pause_indexing, :disabled) do
@@ -136,12 +179,18 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
   context 'zero-downtime elasticsearch reindexing' do
     let(:application_setting) { build(:application_setting) }
-    let(:task)                { build_stubbed(:elastic_reindexing_task) }
-    let(:subtask)             { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task) }
+    let(:subtask) { build_stubbed(:elastic_reindexing_subtask) }
+    let(:task) do
+      build_stubbed(:elastic_reindexing_task).tap do |t|
+        allow(t).to receive_message_chain(:subtasks, :order_by_alias_name_asc).and_return([subtask])
+        allow(t).to receive(:in_progress?).and_return(true)
+        allow(t).to receive(:error_message).and_return(nil)
+      end
+    end
 
     before do
+      assign(:application_setting, application_setting)
       assign(:last_elasticsearch_reindexing_task, task)
-      allow(task).to receive_message_chain(:subtasks, :order_by_alias_name_asc).and_return([subtask])
     end
 
     context 'when task is in progress' do
@@ -162,55 +211,102 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
     context 'without extended details' do
       let(:task) { build(:elastic_reindexing_task) }
+      let(:application_setting) { build_stubbed(:application_setting) }
+
+      before do
+        assign(:application_setting, application_setting)
+        assign(:last_elasticsearch_reindexing_task, task)
+        assign(:elasticsearch_reindexing_human_state, "starting")
+        assign(:elasticsearch_reindexing_human_state_color, "tip")
+
+        allow(view).to receive(:expanded) { true }
+      end
 
       it 'renders the task' do
         render
 
-        expect(rendered).to include("Reindexing Status: #{task.state}")
-        expect(rendered).not_to include("Task ID:")
-        expect(rendered).not_to include("Error:")
-        expect(rendered).not_to include("Expected documents:")
-        expect(rendered).not_to include("Documents reindexed:")
+        expect(rendered).to have_selector('[role="alert"]', text: /Status: starting/)
+        expect(rendered).not_to have_selector('[role="alert"]', text: /Error: error-message/)
       end
     end
 
     context 'with extended details' do
-      let(:task)    { build_stubbed(:elastic_reindexing_task, state: :reindexing, error_message: 'error-message') }
-      let(:subtask) { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count_target: 5, documents_count: 10) }
-
-      it 'renders the task information' do
-        render
-
-        expect(rendered).to include("Reindexing Status: #{task.state}")
-        expect(rendered).to include("Error: #{task.error_message}")
-        expect(rendered).to include("Expected documents: #{subtask.documents_count}")
-        expect(rendered).to include("Documents reindexed: #{subtask.documents_count_target} (50.0%)")
+      let(:application_setting) { build(:application_setting) }
+      let(:task) do
+        build_stubbed(:elastic_reindexing_task, state: :reindexing, error_message: 'error-message').tap do |t|
+          allow(t).to receive(:in_progress?).and_return(true)
+          allow(t).to receive(:state).and_return(:reindexing)
+          allow(t).to receive(:documents_count).and_return(50)
+          allow(t).to receive(:documents_count_target).and_return(100)
+        end
       end
-    end
 
-    context 'with extended details, but without documents_count_target' do
-      let(:task)    { build_stubbed(:elastic_reindexing_task, state: :reindexing) }
-      let(:subtask) { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count: 10) }
+      let(:subtask) do
+        build_stubbed(:elastic_reindexing_subtask,
+          elastic_reindexing_task: task,
+          documents_count_target: 100,
+          documents_count: 50
+        )
+      end
+
+      let(:ordered_subtasks) { [subtask] }
+      let(:elasticsearch_available) { true }
+
+      before do
+        assign(:application_setting, application_setting)
+        assign(:last_elasticsearch_reindexing_task, task)
+
+        allow(task).to receive(:subtasks).and_return(ordered_subtasks)
+        allow(ordered_subtasks).to receive(:count).and_return(1)
+        allow(ordered_subtasks).to receive(:any?).and_return(true)
+        allow(ordered_subtasks).to receive(:order_by_alias_name_asc).and_return(ordered_subtasks)
+
+        assign(:elasticsearch_reindexing_human_state, "reindexing")
+        assign(:elasticsearch_reindexing_human_state_color, "info")
+
+        allow(License).to receive(:feature_available?).with(:elastic_search).and_return(true)
+        allow(License).to receive(:current).and_return(true)
+        allow(Elastic::IndexSetting).to receive(:exists?).and_return(true)
+      end
 
       it 'renders the task information' do
         render
-
-        expect(rendered).to include("Reindexing Status: #{task.state}")
-        expect(rendered).to include("Expected documents: #{subtask.documents_count}")
-        expect(rendered).not_to include("Error:")
-        expect(rendered).not_to include("Documents reindexed:")
+        expect(rendered).to have_selector('[role="alert"]', text: /Status: reindexing/)
+        expect(rendered).to have_selector('[role="alert"]', text: /Error: error-message/)
       end
     end
 
     context 'when there are 0 documents expected' do
-      let(:task)    { build_stubbed(:elastic_reindexing_task, state: :reindexing) }
-      let(:subtask) { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count_target: 0, documents_count: 0) }
+      let(:task) do
+        build_stubbed(:elastic_reindexing_task, state: :reindexing)
+      end
 
-      it 'renders 100% completed progress' do
+      let(:subtask) do
+        build_stubbed(
+          :elastic_reindexing_subtask,
+          elastic_reindexing_task: task,
+          documents_count_target: 0,
+          documents_count: 0
+        )
+      end
+
+      before do
+        allow(task).to receive_message_chain(:subtasks, :order_by_alias_name_asc).and_return([subtask])
+        allow(task.subtasks).to receive(:any?).and_return(true)
+        allow(task.subtasks).to receive(:count).and_return(1)
+        assign(:last_elasticsearch_reindexing_task, task)
+        assign(:application_setting, build(:application_setting))
+        assign(:projects_not_indexed_count, 0)
+        assign(:projects_not_indexed, [])
+        assign(:elasticsearch_reindexing_human_state, "successfully indexed")
+        assign(:elasticsearch_reindexing_human_state_color, "success")
+      end
+
+      it 'renders successfully indexed' do
         render
 
-        expect(rendered).to include('Expected documents: 0')
-        expect(rendered).to include('Documents reindexed: 0 (100%)')
+        expect(rendered).to have_selector('[role="alert"]', text: /Status: successfully indexed/)
+        expect(rendered).not_to have_selector('[role="alert"]', text: /Error: error-message/)
       end
     end
   end
@@ -279,6 +375,10 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       end
 
       context 'when there is no reindexing' do
+        before do
+          allow(task).to receive(:in_progress?).and_return(false)
+        end
+
         it 'shows the retry migration card' do
           render
 

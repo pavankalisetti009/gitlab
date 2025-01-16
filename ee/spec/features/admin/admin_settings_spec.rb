@@ -56,9 +56,40 @@ RSpec.describe 'Admin updates EE-only settings' do
 
   context 'Elasticsearch settings', :elastic_delete_by_query, feature_category: :global_search do
     let(:elastic_search_license) { true }
+    let(:admin) { create(:admin) }
+
+    let(:task) do
+      create(:elastic_reindexing_task).tap do |t|
+        allow(t).to receive_messages(
+          in_progress?: false,
+          error_message: nil,
+          state: :in_progress
+        )
+      end
+    end
+
+    let(:subtask) do
+      create(:elastic_reindexing_subtask,
+        documents_count: 0,
+        documents_count_target: 0,
+        reindexing_task: task
+      )
+    end
 
     before do
       stub_licensed_features(elastic_search: elastic_search_license)
+
+      allow(::Search::Elastic::ReindexingTask)
+        .to receive(:last)
+        .and_return(task)
+
+      sign_in(admin)
+      enable_admin_mode!(admin)
+
+      allow(task).to receive_messages(
+        human_state_name: "Reindexing",
+        human_state_color: "gl-text-blue-400"
+      )
     end
 
     it 'changes elasticsearch settings' do

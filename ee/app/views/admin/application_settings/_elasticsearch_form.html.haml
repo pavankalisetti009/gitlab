@@ -44,6 +44,7 @@
               - first_pending_migration = Elastic::DataMigrationService.pending_migrations.first if elasticsearch_available && Elastic::DataMigrationService.pending_migrations?
               - pending_migration_running_and_pauses_indexing = first_pending_migration&.running? && first_pending_migration&.pause_indexing?
               - disable_checkbox = !Gitlab::CurrentSettings.elasticsearch_indexing? || pending_migration_running_and_pauses_indexing || @last_elasticsearch_reindexing_task&.in_progress?
+
               = f.gitlab_ui_checkbox_component :elasticsearch_pause_indexing, s_('AdminSettings|Pause Elasticsearch indexing'), checkbox_options: { disabled: disable_checkbox }, help_text: pending_migration_running_and_pauses_indexing ? s_('AdminSettings|There are Advanced Search migrations pending that require indexing to pause. Indexing must remain paused until GitLab completes the migrations.') : s_('AdminSettings|Use for cluster and index migrations. When indexing is paused, GitLab still tracks changes.')
 
             .form-group
@@ -240,28 +241,70 @@
             = html_escape(_('Set the maximum number of slices allowed to run concurrently during Elasticsearch reindexing. Learn more about %{max_slices_running_link_start}maximum running slices configuration%{max_slices_link_end}.')) % { max_slices_running_link_start: max_slices_running_link_start, max_slices_link_end: '</a>'.html_safe }
 
         = f.submit _('Trigger cluster reindexing'), pajamas_button: true, disabled: @last_elasticsearch_reindexing_task&.in_progress?, data: { confirm: _('Are you sure you want to reindex?') }
-        .form-text.gl-text-subtle
-        - Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.each do |task|
-          .form-text.gl-text-red-500.gl-mt-0
-            = _("Unused, previous indices: %{index_names} will be deleted after %{time} automatically.") % { index_names: task.subtasks.map(&:index_name_from).join(', '), time: task.delete_original_index_at }
-            = link_to _('Cancel index deletion'), admin_elasticsearch_cancel_index_deletion_path(task_id: task.id), class: 'gl-mb-2', method: :post
+        .form-text.gl-text-subtle.gl-mt-5
+
         - if @last_elasticsearch_reindexing_task
-          %h5= _('Reindexing Status: %{status} (Slice multiplier: %{multiplier}, Maximum running slices: %{max_slices})') % { status: @last_elasticsearch_reindexing_task.state, max_slices: @last_elasticsearch_reindexing_task.max_slices_running, multiplier: @last_elasticsearch_reindexing_task.slice_multiplier }
-          - if @last_elasticsearch_reindexing_task.error_message
-            %p= _('Error: %{error_message}') % { error_message: @last_elasticsearch_reindexing_task.error_message }
-          - @last_elasticsearch_reindexing_task.subtasks.order_by_alias_name_asc.each do |subtask|
-            .gl-card-body.form-group
-              %h5= subtask.alias_name
-              - expected_documents = subtask.documents_count
-              - if subtask.elastic_task
-                %p= _('Task ID: %{elastic_task}') % { elastic_task: subtask.elastic_task }
-              - if expected_documents
-                - processed_documents = subtask.documents_count_target
-                %p= _('Expected documents: %{expected_documents}') % { expected_documents: expected_documents }
-                - if processed_documents && expected_documents
+          %hr
+
+          - title = _('Status: %{status}') % { status: @elasticsearch_reindexing_human_state }
+          = render Pajamas::AlertComponent.new(variant: @elasticsearch_reindexing_human_state_color, title: title, dismissible: false, alert_options: { id: 'error_explanation', class: 'gl-mb-5' }) do |c|
+            - if @last_elasticsearch_reindexing_task&.error_message
+              - c.with_body do
+                = _('Error: %{error_message}') % { error_message: @last_elasticsearch_reindexing_task&.error_message }
+
+        - elsif @last_elasticsearch_reindexing_task&.subtasks&.any?
+          %p= _('(Slice multiplier: %{multiplier}, Maximum running slices: %{max_slices})') % { max_slices: @last_elasticsearch_reindexing_task.max_slices_running, multiplier: @last_elasticsearch_reindexing_task.slice_multiplier }
+          - component_params = { card_options: { class: 'gl-h-full' }, header_options: { class: 'gl-flex gl-justify-between gl-items-start' }, body_options: { class: 'gl-h-full gl-pt-0' } }
+          = render Pajamas::CardComponent.new(**component_params) do |c|
+            - c.with_header do
+              %h3.gl-self-center.gl-text-base.gl-inline-flex.gl-gap-2.gl-items-center.gl-m-0
+                - approximate_index_count = @last_elasticsearch_reindexing_task.subtasks.count
+                = s_('GlobalSearch|Overview')
+                = render Pajamas::BadgeComponent.new(approximate_index_count, variant: :muted)
+            - c.with_body do
+              .gl-flex.gl-flex-col.gl-h-full.gl-items-stretch
+                - ordered_subtasks = @last_elasticsearch_reindexing_task.subtasks.order_by_alias_name_asc
+                - ordered_subtasks.each do |subtask|
+                  - expected_documents = subtask.documents_count
+                  - processed_documents = subtask.documents_count_target.nil? ? 0 : subtask.documents_count_target
                   - percentage = expected_documents > 0 ? ((processed_documents / expected_documents.to_f) * 100).round(2) : 100
-                  %p= _('Documents reindexed: %{processed_documents} (%{percentage}%%)') % { processed_documents: processed_documents, percentage: percentage }
-                  = render Pajamas::ProgressComponent.new(value: percentage)
+                  - formatted_percentage = percentage % 1 == 0 ? percentage.to_i : percentage
+
+                  .gl-flex.gl-justify-between.gl-items-center.gl-py-4{ class: ('gl-border-b' if subtask != ordered_subtasks.last) }
+                    .gl-w-40.gl-truncat.gl-h-auto
+                      = subtask.alias_name
+                      %span.gl-mx-auto.gl-whitespace-nowrap.gl-text-left.gl-text-sm.gl-text-subtle
+                        %p.gl-text-left{ class: '!gl-mb-0' }
+                          = _('Indexed documents: %{processed_documents}/%{expected_documents}') % { expected_documents: expected_documents, processed_documents: processed_documents }
+                    .gl-flex.gl-text-right.gl-justify-end.gl-items-center{ class: 'gl-w-2/3' }
+                      - if percentage < 100
+                        = render Pajamas::ProgressComponent.new(value: percentage)
+                      - else
+                        = render Pajamas::BadgeComponent.new(_('%{percentage}%%') % { percentage: formatted_percentage }, variant: 'success')
+
+        - if Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.any?
+          - component_params = { card_options: { class: 'gl-h-full gl-mt-6' }, header_options: { class: 'gl-flex gl-justify-between gl-items-start' }, body_options: { class: 'gl-h-full gl-pt-0' }, footer_options: { class: 'gl-pt-4' } }
+          = render Pajamas::CardComponent.new(**component_params) do |c|
+            - c.with_header do
+              %h3.gl-self-center.gl-text-base.gl-inline-flex.gl-gap-2.gl-items-center.gl-m-0
+                - unused_indices_count = Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.sum { |task| task.subtasks.size }
+                = _('Unused indices scheduled for deletion')
+                = render Pajamas::BadgeComponent.new(unused_indices_count, variant: :muted)
+
+            - c.with_body do
+              .gl-flex.gl-flex-col.gl-h-full.gl-items-stretch
+                - Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.each do |task|
+                  - task.subtasks.each_with_index do |subtask, index|
+                    .gl-flex.gl-justify-between.gl-items-center.gl-py-4{ class: ('gl-border-b' if index != task.subtasks.size - 1) }
+                      .gl-w-40.gl-truncate.gl-h-auto
+                        = subtask.index_name_from
+                      .gl-flex.gl-text-sm.gl-text-subtle
+                        = _('Deletion scheduled at: %{time}') % { time: task.delete_original_index_at }
+
+            - c.with_footer do
+              .gl-flex.gl-justify-end
+                = render Pajamas::ButtonComponent.new(variant: :danger, href: admin_elasticsearch_cancel_index_deletion_path, method: :post) do
+                  = _('Cancel deletion for all indices')
 
 = render ::Layouts::SettingsBlockComponent.new(_('Indexing status'),
   id: 'js-indexing-status',
