@@ -5,13 +5,13 @@ require 'spec_helper'
 RSpec.describe 'OneTrust in the sign up flow', feature_category: :system_access do
   let_it_be(:onetrust_url) { 'https://*.onetrust.com' }
   let_it_be(:one_trust_id) { SecureRandom.uuid }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, onboarding_in_progress: true) }
   let_it_be(:group) { create(:group) }
 
   before do
     stub_config(extra: { one_trust_id: one_trust_id })
     stub_feature_flags(ecomm_instrumentation: true)
-    allow(::Gitlab).to receive(:com?).and_return(true)
+    stub_saas_features(onboarding: true)
     sign_in(user)
   end
 

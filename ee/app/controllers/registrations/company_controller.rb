@@ -6,11 +6,13 @@ module Registrations
     include GoogleAnalyticsCSP
     include GoogleSyndicationCSP
     include ::Onboarding::SetRedirect
+    include ::Onboarding::InProgress
 
     layout 'minimal'
 
     before_action :verify_onboarding_enabled!
     before_action :authenticate_user!
+    before_action :verify_in_onboarding_flow!
 
     feature_category :onboarding
 

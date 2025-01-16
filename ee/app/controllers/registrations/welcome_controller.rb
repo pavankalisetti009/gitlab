@@ -8,6 +8,7 @@ module Registrations
     include ::Gitlab::Utils::StrongMemoize
     include ::Onboarding::Redirectable
     include ::Onboarding::SetRedirect
+    include ::Onboarding::InProgress
 
     layout 'minimal'
 
@@ -17,6 +18,7 @@ module Registrations
       verify_welcome_needed!
     end
 
+    before_action :verify_in_onboarding_flow!
     before_action :set_update_onboarding_status_params, only: :update
 
     helper_method :onboarding_status_presenter
@@ -131,7 +133,7 @@ module Registrations
       if onboarding_status_presenter.joining_a_project?
         Onboarding::FinishService.new(current_user).execute
         path_for_signed_in_user
-      elsif onboarding_status_presenter.redirect_to_company_form?
+      elsif onboarding_status_presenter.redirect_to_company_form? # trial only
         Onboarding::StatusStepUpdateService
           .new(current_user, new_users_sign_up_company_path(passed_through_params)).execute[:step_url]
       else

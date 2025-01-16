@@ -15,6 +15,14 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
     sign_in(user) if logged_in
   end
 
+  shared_examples 'user not in onboarding' do
+    before do
+      user.update!(onboarding_in_progress: false)
+    end
+
+    it { is_expected.to redirect_to(root_path) }
+  end
+
   shared_examples 'user authentication' do
     context 'when not authenticated' do
       let(:logged_in) { false }
@@ -44,6 +52,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
 
     it_behaves_like 'user authentication'
     it_behaves_like 'a dot-com only feature'
+    it_behaves_like 'user not in onboarding'
 
     context 'on render' do
       it { is_expected.to render_template 'layouts/minimal' }
@@ -93,6 +102,8 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
     end
 
     subject(:post_create) { post :create, params: params }
+
+    it_behaves_like 'user not in onboarding'
 
     context 'on success' do
       before do
