@@ -1,11 +1,11 @@
 import { GlProgressBar } from '@gitlab/ui';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
 import { namespace } from 'jest/usage_quotas/storage/mock_data';
-import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/components/namespace_limits_storage_usage_overview_card.vue';
+import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/namespace/components/namespace_limits_storage_usage_overview_card.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import { defaultNamespaceProvideValues } from '../mock_data';
+import { defaultNamespaceProvideValues } from '../../mock_data';
 
 describe('NamespaceLimitsStorageUsageOverviewCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

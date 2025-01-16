@@ -3,17 +3,17 @@ import VueApollo from 'vue-apollo';
 import Vue from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import NamespaceStorageApp from '~/usage_quotas/storage/components/namespace_storage_app.vue';
-import ProjectList from '~/usage_quotas/storage/components/project_list.vue';
-import getNamespaceStorageQuery from 'ee/usage_quotas/storage/queries/namespace_storage.query.graphql';
-import getProjectListStorageQuery from 'ee/usage_quotas/storage/queries/project_list_storage.query.graphql';
+import NamespaceStorageApp from '~/usage_quotas/storage/namespace/components/namespace_storage_app.vue';
+import ProjectList from '~/usage_quotas/storage/namespace/components/project_list.vue';
+import getNamespaceStorageQuery from 'ee/usage_quotas/storage/namespace/queries/namespace_storage.query.graphql';
+import getProjectListStorageQuery from 'ee/usage_quotas/storage/namespace/queries/project_list_storage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import StorageUsageStatistics from 'ee/usage_quotas/storage/components/storage_usage_statistics.vue';
+import StorageUsageStatistics from 'ee/usage_quotas/storage/namespace/components/storage_usage_statistics.vue';
 import {
   mockGetNamespaceStorageGraphQLResponse,
   mockGetProjectListStorageGraphQLResponse,
 } from 'jest/usage_quotas/storage/mock_data';
-import { defaultNamespaceProvideValues } from '../mock_data';
+import { defaultNamespaceProvideValues } from '../../mock_data';
 
 jest.mock('~/ci/runner/sentry_utils');
 

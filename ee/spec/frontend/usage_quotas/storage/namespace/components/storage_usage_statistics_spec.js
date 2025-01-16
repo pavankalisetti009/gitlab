@@ -2,20 +2,20 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlButton, GlSprintf, GlProgressBar } from '@gitlab/ui';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import StorageUsageOverviewCard from '~/usage_quotas/storage/components/storage_usage_overview_card.vue';
-import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/components/namespace_limits_storage_usage_overview_card.vue';
-import NamespaceLimitsTotalStorageAvailableBreakdownCard from 'ee/usage_quotas/storage/components/namespace_limits_total_storage_available_breakdown_card.vue';
-import NoLimitsPurchasedStorageBreakdownCard from 'ee/usage_quotas/storage/components/no_limits_purchased_storage_breakdown_card.vue';
-import ProjectLimitsExcessStorageBreakdownCard from 'ee/usage_quotas/storage/components/project_limits_excess_storage_breakdown_card.vue';
+import StorageUsageOverviewCard from '~/usage_quotas/storage/namespace/components/storage_usage_overview_card.vue';
+import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/namespace/components/namespace_limits_storage_usage_overview_card.vue';
+import NamespaceLimitsTotalStorageAvailableBreakdownCard from 'ee/usage_quotas/storage/namespace/components/namespace_limits_total_storage_available_breakdown_card.vue';
+import NoLimitsPurchasedStorageBreakdownCard from 'ee/usage_quotas/storage/namespace/components/no_limits_purchased_storage_breakdown_card.vue';
+import ProjectLimitsExcessStorageBreakdownCard from 'ee/usage_quotas/storage/namespace/components/project_limits_excess_storage_breakdown_card.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import StorageUsageStatistics from 'ee/usage_quotas/storage/components/storage_usage_statistics.vue';
+import StorageUsageStatistics from 'ee/usage_quotas/storage/namespace/components/storage_usage_statistics.vue';
 import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.vue';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { namespace } from 'jest/usage_quotas/storage/mock_data';
-import { defaultNamespaceProvideValues } from '../mock_data';
+import { defaultNamespaceProvideValues } from '../../mock_data';
 
 Vue.use(VueApollo);
 

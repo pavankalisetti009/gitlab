@@ -1,21 +1,20 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
+import NoLimitsPurchasedStorageBreakdownCard from 'ee/usage_quotas/storage/namespace/components/no_limits_purchased_storage_breakdown_card.vue';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
-import StorageUsageOverviewCard from '~/usage_quotas/storage/components/storage_usage_overview_card.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { mockGetNamespaceStorageGraphQLResponse } from '../mock_data';
 
-describe('StorageUsageOverviewCard', () => {
-  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
+describe('NoLimitsPurchasedStorageBreakdownCard', () => {
+  /** @type { import('helpers/vue_test_utils_helper').ExtendedWrapper } */
   let wrapper;
+
   const defaultProps = {
-    usedStorage:
-      mockGetNamespaceStorageGraphQLResponse.data.namespace.rootStorageStatistics.storageSize,
+    purchasedStorage: 256,
     loading: false,
   };
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMountExtended(StorageUsageOverviewCard, {
+    wrapper = shallowMountExtended(NoLimitsPurchasedStorageBreakdownCard, {
       propsData: { ...defaultProps, ...props },
       stubs: {
         NumberToHumanSize,
@@ -23,11 +22,14 @@ describe('StorageUsageOverviewCard', () => {
     });
   };
 
+  const findPurchacedStorage = () => wrapper.findByTestId('storage-purchased');
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
 
-  it('displays the used storage value', () => {
+  it('renders the purchaced storage value', () => {
     createComponent();
-    expect(wrapper.text()).toContain(numberToHumanSize(defaultProps.usedStorage, 1));
+    expect(findPurchacedStorage().text()).toContain(
+      numberToHumanSize(defaultProps.purchasedStorage, 1),
+    );
   });
 
   describe('skeleton loader', () => {

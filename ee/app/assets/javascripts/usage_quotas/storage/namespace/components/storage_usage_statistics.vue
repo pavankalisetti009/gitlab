@@ -1,11 +1,11 @@
 <script>
 import { GlSprintf, GlButton, GlModalDirective } from '@gitlab/ui';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import StorageUsageOverviewCard from '~/usage_quotas/storage/components/storage_usage_overview_card.vue';
+import StorageUsageOverviewCard from '~/usage_quotas/storage/namespace/components/storage_usage_overview_card.vue';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import LimitedAccessModal from '../../components/limited_access_modal.vue';
+import LimitedAccessModal from '../../../components/limited_access_modal.vue';
 import NamespaceLimitsStorageUsageOverviewCard from './namespace_limits_storage_usage_overview_card.vue';
 import NamespaceLimitsTotalStorageAvailableBreakdownCard from './namespace_limits_total_storage_available_breakdown_card.vue';
 import ProjectLimitsExcessStorageBreakdownCard from './project_limits_excess_storage_breakdown_card.vue';
