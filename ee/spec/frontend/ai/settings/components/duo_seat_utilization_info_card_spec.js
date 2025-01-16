@@ -24,8 +24,8 @@ describe('DuoSeatUtilizationInfoCard', () => {
       },
       provide: {
         addDuoProHref: 'http://example.com/add-duo-pro',
-        subscriptionStartDate: '2023-01-01',
-        subscriptionEndDate: '2023-12-31',
+        duoAddOnStartDate: '2023-01-01',
+        duoAddOnEndDate: '2023-12-31',
         duoSeatUtilizationPath: 'http://example.com/duo-seat-utilization',
         ...injected,
       },

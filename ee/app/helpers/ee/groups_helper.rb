@@ -145,10 +145,19 @@ module EE
 
       return {} unless active_duo_add_on
 
+      duo_add_on_end_date = if active_duo_add_on.trial?
+                              active_duo_add_on.expires_on
+                            else
+                              # When the purchase is not a trial, we add the 14-day grace
+                              # period to expires_on. For displaying purposes, we subtract
+                              # the grace period to show the correct end date.
+                              active_duo_add_on.expires_on - SUBSCRIPTION_GRACE_PERIOD
+                            end
+
       {
         duo_add_on_is_trial: active_duo_add_on.trial?.to_s,
         duo_add_on_start_date: active_duo_add_on.started_at,
-        duo_add_on_end_date: active_duo_add_on.expires_on
+        duo_add_on_end_date: duo_add_on_end_date
       }
     end
 
@@ -215,6 +224,9 @@ module EE
     end
 
     private
+
+    SUBSCRIPTION_GRACE_PERIOD = 14.days
+    private_constant :SUBSCRIPTION_GRACE_PERIOD
 
     def duo_pro_trial_link(group)
       if GitlabSubscriptions::DuoPro.no_add_on_purchase_for_namespace?(group) &&

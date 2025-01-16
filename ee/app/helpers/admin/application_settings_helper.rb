@@ -45,6 +45,15 @@ module Admin
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
         self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s
+      }.merge(duo_add_on_data)
+    end
+
+    def duo_add_on_data
+      duo_purchase = GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.last
+
+      {
+        duo_add_on_start_date: duo_purchase&.started_at,
+        duo_add_on_end_date: duo_purchase&.expires_on
       }
     end
 

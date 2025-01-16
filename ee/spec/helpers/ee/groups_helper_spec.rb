@@ -556,7 +556,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         expect(helper.active_duo_add_on_data(group)).to eq({
           duo_add_on_is_trial: 'false',
           duo_add_on_start_date: add_on.started_at,
-          duo_add_on_end_date: add_on.expires_on
+          duo_add_on_end_date: add_on.expires_on - ::EE::GroupsHelper.const_get(:SUBSCRIPTION_GRACE_PERIOD, false)
         })
       end
     end
