@@ -5,8 +5,6 @@ module Gitlab
     module Reports
       module LicenseScanning
         class Report
-          include Gitlab::Utils::StrongMemoize
-
           delegate :empty?, :fetch, :[], to: :found_licenses
           attr_accessor :version
 
@@ -86,12 +84,12 @@ module Gitlab
           end
 
           def new_license_with_dependencies(license, new_dependencies_for_existing_license)
-            new_license = ::Gitlab::Ci::Reports::LicenseScanning::License.new(id: license.id, name: license.name,
-              url: license.url)
-            new_dependencies_for_existing_license.each do |dependency|
-              new_license.add_dependency(**dependency.instance_values.with_indifferent_access)
+            ::Gitlab::Ci::Reports::LicenseScanning::License.new(id: license.id, name: license.name,
+              url: license.url).tap do |new_license|
+              new_dependencies_for_existing_license.each do |dependency|
+                new_license.add_dependency(**dependency.instance_values.with_indifferent_access)
+              end
             end
-            new_license
           end
 
           attr_reader :found_licenses
