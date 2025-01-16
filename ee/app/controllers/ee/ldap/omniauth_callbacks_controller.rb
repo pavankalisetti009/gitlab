@@ -25,7 +25,9 @@ module EE
       private
 
       override :enqueue_after_sign_in_workers
-      def enqueue_after_sign_in_workers(user)
+      def enqueue_after_sign_in_workers(user, auth_user)
+        return if auth_user.ldap_config.duo_add_on_groups.blank?
+
         ::GitlabSubscriptions::AddOnPurchases::LdapAddOnSeatSyncWorker.perform_async({ 'user_id' => user.id })
       end
 
