@@ -46,13 +46,7 @@ RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Report, feature_category: :
     end
   end
 
-  describe '#diff_with' do
-    subject { base_report.diff_with(head_report) }
-
-    def names_from(licenses)
-      licenses.map(&:name)
-    end
-
+  shared_examples_for 'diff_with' do
     context 'when the other report is not available' do
       let(:base_report) { build(:license_scan_report, :version_2) }
       let(:head_report) { nil }
@@ -147,11 +141,87 @@ RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Report, feature_category: :
     end
   end
 
+  describe '#diff_with' do
+    subject { base_report.diff_with(head_report) }
+
+    it_behaves_like 'diff_with'
+  end
+
+  describe '#diff_with_including_new_dependencies_for_unchanged_licenses' do
+    subject { base_report.diff_with_including_new_dependencies_for_unchanged_licenses(head_report) }
+
+    it_behaves_like 'diff_with'
+
+    context 'with new dependencies for unchanged licenses' do
+      context 'when a new dependency is added' do
+        let(:base_report) { build(:license_scan_report) }
+        let(:head_report) { build(:license_scan_report) }
+
+        before do
+          base_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'bundler')
+
+          head_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'bundler')
+          head_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'rails')
+        end
+
+        it 'returns the new dependencies for unchanged licenses' do
+          expect(subject[:added]).to contain_exactly(
+            have_attributes(name: 'MIT License',
+              dependencies: contain_exactly(have_attributes(name: 'rails'))))
+        end
+      end
+
+      context 'when a dependency is replaced' do
+        let(:base_report) { build(:license_scan_report) }
+        let(:head_report) { build(:license_scan_report) }
+
+        before do
+          base_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'bundler')
+
+          head_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'rails')
+        end
+
+        it 'returns the new dependencies for unchanged licenses' do
+          expect(subject[:added]).to contain_exactly(
+            have_attributes(name: 'MIT License',
+              dependencies: contain_exactly(have_attributes(name: 'rails'))))
+        end
+      end
+
+      context 'when a new version of the dependency is added' do
+        let(:base_report) { build(:license_scan_report) }
+        let(:head_report) { build(:license_scan_report) }
+
+        before do
+          base_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'rails',
+            purl_type: 'gem',
+            version: '8.0.0')
+
+          head_report.add_license(id: 'MIT', name: 'MIT License').add_dependency(name: 'rails',
+            purl_type: 'gem',
+            version: '8.0.1')
+        end
+
+        it 'returns the new dependencies for unchanged licenses' do
+          expect(subject[:added]).to contain_exactly(
+            have_attributes(name: 'MIT License',
+              dependencies: contain_exactly(have_attributes(name: 'rails', version: '8.0.1'))))
+        end
+      end
+    end
+  end
+
   describe '#empty?' do
     let(:completed_report) { build(:ci_reports_license_scanning_report, :report_1) }
     let(:empty_report) { build(:ci_reports_license_scanning_report) }
 
     it { expect(empty_report).to be_empty }
     it { expect(completed_report).not_to be_empty }
+  end
+
+  private
+
+  def names_from(licenses)
+    licenses.map(&:name)
   end
 end

@@ -5,6 +5,8 @@ module Gitlab
     module Reports
       module LicenseScanning
         class Report
+          include Gitlab::Utils::StrongMemoize
+
           delegate :empty?, :fetch, :[], to: :found_licenses
           attr_accessor :version
 
@@ -52,7 +54,45 @@ module Gitlab
             }
           end
 
+          def diff_with_including_new_dependencies_for_unchanged_licenses(other_report)
+            base = self.licenses
+            head = other_report&.licenses || []
+
+            diff_with(other_report).tap do |licenses|
+              add_new_dependencies_for_unchanged_licenses(base, head, licenses)
+            end
+          end
+
           private
+
+          def add_new_dependencies_for_unchanged_licenses(base, head, licenses)
+            licenses[:unchanged].each do |license|
+              new_dependencies_for_existing_license = new_dependencies_for_existing_license(base, head, license)
+              next unless new_dependencies_for_existing_license.present?
+
+              licenses[:added] << new_license_with_dependencies(license, new_dependencies_for_existing_license)
+            end
+          end
+
+          def new_dependencies_for_existing_license(base, head, license)
+            license_name = license.name
+            head_license = head.find { |license| license.name == license_name }
+            base_license = base.find { |license| license.name == license_name }
+            return unless head_license && base_license
+
+            head_license_dependencies = head_license.dependencies || Set.new
+            base_license_dependencies = base_license.dependencies || Set.new
+            head_license_dependencies - base_license_dependencies
+          end
+
+          def new_license_with_dependencies(license, new_dependencies_for_existing_license)
+            new_license = ::Gitlab::Ci::Reports::LicenseScanning::License.new(id: license.id, name: license.name,
+              url: license.url)
+            new_dependencies_for_existing_license.each do |dependency|
+              new_license.add_dependency(**dependency.instance_values.with_indifferent_access)
+            end
+            new_license
+          end
 
           attr_reader :found_licenses
         end
