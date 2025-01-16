@@ -5,6 +5,24 @@ module Search
     class ReindexingTask < ApplicationRecord
       include EachBatch
 
+      HUMAN_STATES = {
+        "initial" => "starting",
+        "indexing_paused" => "in progress",
+        "reindexing" => "reindexing",
+        "success" => "successfully indexed",
+        "failure" => "indexing failed",
+        "original_index_deleted" => "original index deleted"
+      }.freeze
+
+      HUMAN_STATE_COLORS = {
+        "initial" => "tip",
+        "indexing_paused" => "info",
+        "reindexing" => "info",
+        "success" => "success",
+        "failure" => "danger",
+        "original_index_deleted" => "info"
+      }.freeze
+
       self.table_name = 'elastic_reindexing_tasks'
 
       validates :max_slices_running, presence: true

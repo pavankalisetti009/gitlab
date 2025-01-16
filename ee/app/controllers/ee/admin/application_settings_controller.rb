@@ -13,6 +13,7 @@ module EE
         include MicrosoftApplicationActions
 
         before_action :elasticsearch_reindexing_task, only: [:advanced_search]
+        before_action :elasticsearch_reindexing_state, only: [:advanced_search]
         before_action :elasticsearch_index_settings, only: [:advanced_search]
         before_action :elasticsearch_warn_if_not_using_aliases, only: [:advanced_search]
         before_action :elasticsearch_warn_if_obsolete_migrations, only: [:advanced_search]
@@ -43,6 +44,15 @@ module EE
 
         def elasticsearch_index_settings
           @elasticsearch_index_settings = Elastic::IndexSetting.order_by_name
+        end
+
+        def elasticsearch_reindexing_state
+          human_states = ::Search::Elastic::ReindexingTask::HUMAN_STATES
+          human_state_colors = ::Search::Elastic::ReindexingTask::HUMAN_STATE_COLORS
+          normalized_status = @last_elasticsearch_reindexing_task&.state || 'initial'
+
+          @elasticsearch_reindexing_human_state = human_states[normalized_status]
+          @elasticsearch_reindexing_human_state_color = human_state_colors[normalized_status]
         end
 
         def elasticsearch_warn_if_not_using_aliases

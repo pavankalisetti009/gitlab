@@ -652,7 +652,7 @@ RSpec.describe Admin::ApplicationSettingsController do
         get :advanced_search
 
         expect(assigns(:last_elasticsearch_reindexing_task)).to eq(task)
-        expect(response.body).to include("Reindexing Status: #{task.state}")
+        expect(response.body).to have_selector('[role="alert"]', text: /Status: starting/)
       end
     end
 
