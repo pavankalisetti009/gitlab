@@ -8,6 +8,7 @@ module SecretsManagement
     KV_VALUE_FIELD = 'value'
 
     ApiError = Class.new(StandardError)
+    ConnectionError = Class.new(StandardError)
     Configuration = Struct.new(:host, :base_path)
 
     def self.configuration
@@ -24,26 +25,19 @@ module SecretsManagement
     end
 
     def enable_secrets_engine(mount_path, type)
-      handle_request do
-        system_api.mounts_enable_secrets_engine(
-          mount_path,
-          OpenbaoClient::MountsEnableSecretsEngineRequest.new(type: type)
-        )
-      end
+      make_request(:post, "sys/mounts/#{mount_path}", { type: type })
     end
 
     def disable_secrets_engine(mount_path)
-      handle_request do
-        system_api.mounts_disable_secrets_engine(mount_path)
-      end
+      make_request(:delete, "sys/mounts/#{mount_path}")
     end
 
     def list_secrets(mount_path, secret_path)
-      result = connection.get("#{mount_path}/metadata/#{secret_path}", list: true)
-      return [] if result.status == 404
+      result = make_request(:list, "#{mount_path}/metadata/#{secret_path}", {}, optional: true)
+      return [] unless result
 
       # This N+1 query is temporary until https://github.com/openbao/openbao/pull/766 is merged.
-      result.body["data"]["keys"].filter_map do |key|
+      result["data"]["keys"].filter_map do |key|
         metadata = read_secret_metadata(mount_path, "#{secret_path}/#{key}")
         next unless metadata
 
@@ -58,38 +52,36 @@ module SecretsManagement
     end
 
     def read_secret_metadata(mount_path, secret_path)
-      result = connection.get("#{mount_path}/metadata/#{secret_path}")
-      return if result.status == 404
+      result = make_request(:get, "#{mount_path}/metadata/#{secret_path}", {}, optional: true)
+      return unless result
 
-      result.body["data"]
+      result["data"]
     end
 
     def create_kv_secret(mount_path, secret_path, value, custom_metadata = {})
-      handle_request do
-        secrets_api.kv_write_data_path(
-          secret_path,
-          mount_path,
-          OpenbaoClient::KvWriteDataPathRequest.new(
-            data: { KV_VALUE_FIELD => value },
-            options: {
-              cas: 0
-            }
-          )
-        )
+      result = make_request(
+        :post,
+        "#{mount_path}/data/#{secret_path}",
+        {
+          data: { KV_VALUE_FIELD => value },
+          options: {
+            cas: 0
+          }
+        }
+      )
 
-        # NOTE: This is only temporary. Once OpenBao has the endpoint for
-        # creating a secret and its metadata in one transaction, we will
-        # use that instead.
-        if custom_metadata&.any?
-          secrets_api.kv_write_metadata_path(
-            secret_path,
-            mount_path,
-            OpenbaoClient::KvWriteMetadataPathRequest.new(
-              custom_metadata: custom_metadata
-            )
-          )
-        end
-      end
+      return result unless custom_metadata&.any?
+
+      # NOTE: This is only temporary. Once OpenBao has the endpoint for
+      # creating a secret and its metadata in one transaction, we will
+      # use that instead.
+      make_request(
+        :post,
+        "#{mount_path}/metadata/#{secret_path}",
+        {
+          custom_metadata: custom_metadata
+        }
+      )
     end
 
     def get_policy(name)
@@ -105,40 +97,15 @@ module SecretsManagement
     end
 
     def delete_policy(name)
-      handle_optional_request do
-        system_api.policies_delete_acl_policy(name)
-      end
+      make_request(
+        :delete,
+        "sys/policies/acl/#{name}",
+        {},
+        optional: true
+      )
     end
 
     private
-
-    def handle_request
-      yield
-    rescue OpenbaoClient::ApiError => e
-      raise ApiError, e.message
-    end
-
-    # handle_optional_request returns nil rather than having the OpenAPI
-    # client raise an exception; returning (nil, nil) from a request handler
-    # in OpenBao gets translated to a 404 response, even if the path was
-    # otherwise valid.
-    def handle_optional_request
-      yield
-    rescue OpenbaoClient::ApiError => e
-      return if e.code == 404
-
-      raise ApiError, e.message
-    end
-
-    def system_api
-      OpenbaoClient::SystemApi.new
-    end
-    strong_memoize_attr(:system_api)
-
-    def secrets_api
-      OpenbaoClient::SecretsApi.new
-    end
-    strong_memoize_attr(:secrets_api)
 
     # save_raw_policy and read_raw_policy handle raw (direct API responses)
     # and the get_policy/set_policy forms should be preferred as they return
@@ -146,29 +113,54 @@ module SecretsManagement
     # direct usage with HCL will result in non-JSON-parseable policies that
     # cannot be easily modified by Rails.
     def save_raw_policy(name, value)
-      handle_request do
-        system_api.policies_write_acl_policy(
-          name,
-          OpenbaoClient::PoliciesWriteAclPolicyRequest.new(
-            policy: value
-          )
-        )
-      end
+      make_request(
+        :post,
+        "sys/policies/acl/#{name}",
+        {
+          policy: value
+        }
+      )
     end
 
     def read_raw_policy(name)
-      handle_optional_request do
-        body = system_api.policies_read_acl_policy(name, debug_return_type: "String")
-        Gitlab::Json.parse(body)["data"]
-      end
+      body = make_request(:get, "sys/policies/acl/#{name}", {}, optional: true)
+      body["data"] if body
     end
 
     def connection
       Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
+        f.request :json
         f.response :json
       end
     end
     strong_memoize_attr(:connection)
+
+    def make_request(method, url, params = {}, optional: false)
+      response = case method
+                 when :get
+                   connection.get(url, params)
+                 when :list
+                   connection.get(url, params.merge(list: true))
+                 when :delete
+                   connection.delete(url, params)
+                 else
+                   connection.post(url, params)
+                 end
+
+      body = response.body
+
+      raise ApiError, body["errors"].to_sentence if body && body["errors"]&.any?
+
+      if response.status == 404
+        raise ApiError, 'not found' unless optional
+
+        return
+      end
+
+      body
+    rescue ::Faraday::Error => e
+      raise ConnectionError, e.message
+    end
 
     def configuration
       self.class.configuration

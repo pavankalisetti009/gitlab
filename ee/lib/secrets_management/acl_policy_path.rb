@@ -24,8 +24,8 @@ module SecretsManagement
       capabilities = Set.new(object["capabilities"]) if object.key?("capabilities")
 
       ret = new(path, capabilities)
-      ret.allowed_parameters = Set.new(object["allowed_parameters"]) if object.key?("allowed_parameters")
-      ret.denied_parameters = Set.new(object["denied_parameters"]) if object.key?("denied_parameters")
+      ret.allowed_parameters = object["allowed_parameters"] if object.key?("allowed_parameters")
+      ret.denied_parameters = object["denied_parameters"] if object.key?("denied_parameters")
       ret.required_parameters = Set.new(object["required_parameters"]) if object.key?("required_parameters")
 
       ret
@@ -37,8 +37,8 @@ module SecretsManagement
       self.capabilities = Set.new(capabilities)
 
       # Most callers will not need to set parameter restrictions.
-      self.allowed_parameters = Set.new
-      self.denied_parameters = Set.new
+      self.allowed_parameters = {}
+      self.denied_parameters = {}
       self.required_parameters = Set.new
     end
 
