@@ -240,6 +240,7 @@ describe('Vulnerability status description component', () => {
           representationInformation: {
             resolvedInCommitShaLink: 'https://gitlab.com/gitlab-org/gitlab/-/commit/0123456789',
             resolvedInCommitSha: '0123456789',
+            createdAt: '2021-08-25T16:21:18Z',
           },
         },
       });
@@ -248,6 +249,25 @@ describe('Vulnerability status description component', () => {
         'https://gitlab.com/gitlab-org/gitlab/-/commit/0123456789',
       );
       expect(commitShaLink().text()).toBe('0123456789');
+    });
+
+    it('shows the timestamp of when the representationInformation was created', () => {
+      const pipelineDate = createDate('2002');
+      const representationInformationDate = createDate('2004');
+
+      createWrapper({
+        vulnerability: {
+          pipeline: { createdAt: pipelineDate },
+          resolvedOnDefaultBranch: true,
+          representationInformation: {
+            resolvedInCommitShaLink: 'https://gitlab.com/gitlab-org/gitlab/-/commit/0123456789',
+            resolvedInCommitSha: '0123456789',
+            createdAt: representationInformationDate,
+          },
+        },
+      });
+      expect(timeAgo().props('time')).toBe(representationInformationDate);
+      expect(timeAgo().props('time')).not.toBe(pipelineDate);
     });
 
     it.each`

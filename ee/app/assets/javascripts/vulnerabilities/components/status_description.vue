@@ -55,24 +55,31 @@ export default {
       return this.vulnerability.state;
     },
 
+    representationInformation() {
+      return this.vulnerability.representationInformation;
+    },
+
+    representationInformationAvailable() {
+      const { resolvedOnDefaultBranch } = this.vulnerability;
+      return (
+        this.glFeatures.vulnerabilityRepresentationInformation &&
+        resolvedOnDefaultBranch &&
+        this.representationInformation?.resolvedInCommitShaLink
+      );
+    },
+
     time() {
+      if (this.representationInformationAvailable) {
+        return this.representationInformation.createdAt;
+      }
+
       return this.state === 'detected' && !this.isVulnerabilityScanner
         ? this.vulnerability.pipeline?.createdAt
         : this.vulnerability[`${this.state}At`];
     },
 
-    representationInformation() {
-      return this.vulnerability.representationInformation;
-    },
-
     statusText() {
-      const { resolvedOnDefaultBranch } = this.vulnerability;
-
-      if (
-        this.glFeatures.vulnerabilityRepresentationInformation &&
-        resolvedOnDefaultBranch &&
-        this.representationInformation?.resolvedInCommitShaLink
-      ) {
+      if (this.representationInformationAvailable) {
         return s__(
           'VulnerabilityManagement|No longer detected %{timeago} as of commit %{commitShaLink}',
         );

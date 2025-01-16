@@ -92,7 +92,8 @@ module VulnerabilitiesHelper
 
     {
       resolved_in_commit_sha: representation_information.resolved_in_commit_sha,
-      resolved_in_commit_sha_link: resolved_in_commit_sha_link(representation_information)
+      resolved_in_commit_sha_link: resolved_in_commit_sha_link(representation_information),
+      created_at: representation_information.created_at
     }
   end
 
