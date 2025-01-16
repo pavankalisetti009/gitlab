@@ -28,7 +28,6 @@ module EE
     override :projects
     def projects
       return unless params[:project_ids].present? && params[:project_ids].is_a?(String)
-      return unless ::Feature.enabled?(:advanced_search_multi_project_select, current_user)
 
       project_ids = params[:project_ids].split(',')
       the_projects = ::Project.where(id: project_ids)
