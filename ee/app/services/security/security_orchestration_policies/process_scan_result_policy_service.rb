@@ -59,7 +59,7 @@ module Security
           policy_configuration, policy_index: real_policy_index, rule_index: rule_index
         )
 
-        if license_finding?(rule)
+        if create_licenses?(rule)
           if Feature.enabled?(:bulk_create_scan_result_policies, project)
             bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
           else
@@ -97,8 +97,8 @@ module Security
         approval_actions.present?
       end
 
-      def license_finding?(rule)
-        rule[:type] == Security::ScanResultPolicy::LICENSE_FINDING
+      def create_licenses?(rule)
+        rule[:type] == Security::ScanResultPolicy::LICENSE_FINDING && rule[:license_types].present?
       end
 
       def bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
@@ -144,7 +144,8 @@ module Security
           project_approval_settings: policy[:approval_settings] || {},
           send_bot_message: send_bot_message_action&.slice(:enabled) || {},
           fallback_behavior: policy.fetch(:fallback_behavior, {}),
-          policy_tuning: policy.fetch(:policy_tuning, {})
+          policy_tuning: policy.fetch(:policy_tuning, {}),
+          licenses: rule.fetch(:licenses, {})
         )
       end
 

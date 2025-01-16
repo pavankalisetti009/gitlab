@@ -698,6 +698,36 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       context 'when the policy has the YAML has the match_on_inclusion_license attribute' do
         it_behaves_like 'license_finding_rule_type'
       end
+
+      context 'when using licenses with package exclusions' do
+        let(:policy) { build(:scan_result_policy, :license_finding_with_allowed_licenses) }
+
+        it 'persists the licenses on scan_result_policy_read' do
+          subject
+
+          scan_result_policy_read = project.approval_rules.first.scan_result_policy_read
+          policy_licenses = policy.dig(:rules, 0, :licenses)
+          expect(scan_result_policy_read.licenses).to eq(policy_licenses.with_indifferent_access)
+        end
+
+        it 'does not calls SoftwareLicensePolicies::BulkCreateScanResultPolicyService' do
+          expect(SoftwareLicensePolicies::BulkCreateScanResultPolicyService).not_to receive(:new)
+
+          subject
+        end
+
+        context 'with bulk_create_scan_result_policies feature flag disabled' do
+          before do
+            stub_feature_flags(bulk_create_scan_result_policies: false)
+          end
+
+          it 'does not calls SoftwareLicensePolicies::CreateService' do
+            expect(SoftwareLicensePolicies::CreateService).not_to receive(:new)
+
+            subject
+          end
+        end
+      end
     end
 
     context 'with any_merge_request rule_type' do
