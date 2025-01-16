@@ -5,6 +5,8 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
+      include ::Gitlab::Utils::StrongMemoize
+
       condition(:operations_dashboard_available) do
         License.feature_available?(:operations_dashboard)
       end
@@ -124,8 +126,11 @@ module EE
         License.feature_available?(:remote_development)
       end
 
-      condition(:custom_role_enables_read_admin_dashboard) do
-        ::Authz::CustomAbility.allowed?(@user, :read_admin_dashboard)
+      MemberRole.all_customizable_admin_permission_keys.each do |ability|
+        desc "Admin custom role that enables #{ability.to_s.tr('_', ' ')}"
+        condition(:"custom_role_enables_#{ability}") do
+          custom_role_ability(@user).allowed?(ability)
+        end
       end
 
       rule { ~anonymous & remote_development_feature_licensed }.policy do
@@ -214,6 +219,11 @@ module EE
         enable :access_admin_area
         enable :read_admin_dashboard
       end
+
+      rule { custom_role_enables_read_admin_cicd }.policy do
+        enable :access_admin_area
+        enable :read_admin_cicd
+      end
     end
 
     def duo_chat
@@ -227,6 +237,12 @@ module EE
 
     def self_hosted_models_available_for?(user)
       CloudConnector::AvailableServices.find_by_name(:self_hosted_models).allowed_for?(user)
+    end
+
+    def custom_role_ability(user)
+      strong_memoize_with(:custom_role_ability, user) do
+        ::Authz::CustomAbility.new(user)
+      end
     end
   end
 end

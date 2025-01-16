@@ -286,11 +286,15 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       ]
     end
 
-    let_it_be(:admin_area_link) do
+    let_it_be(:link_to_admin_dashboard) do
       { title: s_('Navigation|Admin area'), link: '/admin', icon: 'admin' }
     end
 
-    subject(:super_sidebar_context) do
+    let_it_be(:link_to_admin_cicd) do
+      { title: s_('Navigation|Admin area'), link: '/admin/runners', icon: 'admin' }
+    end
+
+    subject(:sidebar_context) do
       helper.super_sidebar_context(user, group: nil, project: nil, panel: panel, panel_type: panel_type)
     end
 
@@ -303,34 +307,34 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
 
     context 'when user is not an admin' do
       it 'returns only the public links for a user' do
-        expect(super_sidebar_context[:context_switcher_links]).to eq(public_links_for_user)
+        expect(sidebar_context[:context_switcher_links]).to eq(public_links_for_user)
       end
 
       context 'when user is allowed to access_admin_area' do
-        before do
-          allow(user).to receive(:can?).and_call_original
+        let(:with_link_to_admin_dashboard) { [*public_links_for_user, link_to_admin_dashboard] }
+        let(:with_link_to_admin_cicd) { [*public_links_for_user, link_to_admin_cicd] }
+        let(:without_link_to_admin_area) { public_links_for_user }
 
-          allow(user).to receive(:can?).with(:access_admin_area).and_return(true)
-          allow(user).to receive(:can_admin_all_resources?).and_return(false)
+        where(:read_admin_dashboard_ff, :read_admin_cicd_ff, :links) do
+          false | false | ref(:without_link_to_admin_area)
+          true  | false | ref(:with_link_to_admin_dashboard)
+          false | true  | ref(:with_link_to_admin_cicd)
+          true  | true  | ref(:with_link_to_admin_dashboard)
         end
 
-        context 'when custom_ability_read_admin_dashboard FF is enabled' do
-          it 'returns public links and enter admin mode link' do
-            expect(super_sidebar_context[:context_switcher_links]).to eq([
-              *public_links_for_user, admin_area_link
-            ])
-          end
-        end
-
-        context 'when custom_ability_read_admin_dashboard FF is disabled' do
+        with_them do
           before do
-            stub_feature_flags(custom_ability_read_admin_dashboard: false)
+            allow(user).to receive(:can?).and_call_original
+
+            allow(user).to receive(:can?).with(:access_admin_area).and_return(true)
+            allow(user).to receive(:can_admin_all_resources?).and_return(false)
+
+            stub_feature_flags(custom_ability_read_admin_dashboard: read_admin_dashboard_ff)
+            stub_feature_flags(custom_ability_read_admin_cicd: read_admin_cicd_ff)
           end
 
-          it 'returns only public links' do
-            expect(super_sidebar_context[:context_switcher_links]).to eq([
-              *public_links_for_user
-            ])
+          it 'returns the correct links' do
+            expect(sidebar_context[:context_switcher_links]).to eq(links)
           end
         end
       end

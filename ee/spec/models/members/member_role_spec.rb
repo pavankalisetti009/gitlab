@@ -50,10 +50,32 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           expect(member_role).not_to be_valid
         end
 
-        it 'is valid with read_admin_dashboard without base_access_level' do
-          admin_role = build(:member_role, :instance, read_admin_dashboard: true, base_access_level: nil)
+        context 'with nil base_access_level' do
+          where(:admin_ability) { MemberRole.all_customizable_admin_permission_keys }
 
-          expect(admin_role).to be_valid
+          with_them do
+            context "when admin ability #{params[:admin_ability]} is enabled" do
+              let(:admin_role) { build(:member_role, admin_ability) }
+
+              it "is valid" do
+                expect(admin_role.base_access_level).to be_nil
+                expect(admin_role).to be_valid
+              end
+            end
+          end
+
+          context 'when no custom admin ability feature flag is enabled' do
+            let(:admin_role) { build(:member_role, :read_admin_dashboard) }
+
+            before do
+              stub_feature_flags(custom_ability_read_admin_dashboard: false, custom_ability_read_admin_cicd: false)
+            end
+
+            it "is invalid" do
+              expect(admin_role.base_access_level).to be_nil
+              expect(admin_role).not_to be_valid
+            end
+          end
         end
       end
 
