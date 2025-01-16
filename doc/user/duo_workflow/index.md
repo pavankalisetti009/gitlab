@@ -203,12 +203,12 @@ GitLab Duo Workflow is aware of the context you're working in, specifically:
 
 | Area           | How to use GitLab Duo Workflow                                                                     |
 |----------------|----------------------------------------------------------------------------------------------------|
-| Merge requests | Enter the merge request ID and project ID in the Duo Workflow panel                                |
+| Local files | Duo Workflow can access all files available to Git in the project you have open in your editor. |
+| Merge requests | Enter the merge request ID if the MR is in the current project. In addition, enter the project ID if it is in a separate project. The accessed project must also fulfill the Duo Workflow [prerequisites](#prerequisites). |
+| Issues | Enter the issue ID if the MR is in the current project. In addition, enter the project ID if it is in a separate project. The accessed project must also fulfill the Duo Workflow [prerequisites](#prerequisites). |
+| CI Pipeline for Merge Request | Enter the merge request ID of the pipeline, if the pipeline is in the current project. In addition, enter the project ID if it is in a separate project. The accessed project must also fulfill the Duo Workflow [prerequisites](#prerequisites).  |
 
-In addition, Duo Workflow has read-only access to:
-
-- The GitLab API for fetching project and merge request information.
-- Merge request's CI pipeline trace to locate errors in the pipeline job execution.
+Duo Workflow also has access to the GitLab Search API to find related issues, merge requests, code or commits.
 
 ## Current limitations
 
