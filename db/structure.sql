@@ -10968,6 +10968,7 @@ CREATE TABLE cluster_agent_tokens (
     CONSTRAINT check_0fb634d04d CHECK ((name IS NOT NULL)),
     CONSTRAINT check_2b79dbb315 CHECK ((char_length(name) <= 255)),
     CONSTRAINT check_4e4ec5070a CHECK ((char_length(description) <= 1024)),
+    CONSTRAINT check_5aff240050 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_c60daed227 CHECK ((char_length(token_encrypted) <= 255))
 );
 
