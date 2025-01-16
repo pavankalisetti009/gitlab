@@ -35,6 +35,7 @@ module GitlabSubscriptions
     scope :trial, -> { where(trial: true) }
     scope :by_add_on_name, ->(name) { joins(:add_on).where(add_on: { name: name }) }
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
+    scope :for_self_managed, -> { where(namespace: nil) }
     scope :for_gitlab_duo_pro, -> { where(subscription_add_on_id: AddOn.code_suggestions.pick(:id)) }
     scope :for_product_analytics, -> { where(subscription_add_on_id: AddOn.product_analytics.pick(:id)) }
     scope :for_duo_enterprise, -> { where(subscription_add_on_id: AddOn.duo_enterprise.pick(:id)) }

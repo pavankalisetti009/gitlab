@@ -273,6 +273,20 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
 
+    describe '.for_self_managed' do
+      include_context 'with add-on purchases'
+
+      let!(:self_managed_purchase) do
+        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on, namespace: nil)
+      end
+
+      subject(:self_managed_purchases) { described_class.for_self_managed }
+
+      it 'returns only add-on purchases without a namespace' do
+        expect(self_managed_purchases).to contain_exactly(self_managed_purchase)
+      end
+    end
+
     describe '.for_gitlab_duo_pro' do
       subject(:gitlab_duo_pro_purchases) { described_class.for_gitlab_duo_pro }
 

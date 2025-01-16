@@ -198,8 +198,34 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         direct_code_suggestions_enabled: 'false',
         experiment_features_enabled: 'true',
         self_hosted_models_enabled: 'true',
-        are_experiment_settings_allowed: 'true'
+        are_experiment_settings_allowed: 'true',
+        duo_add_on_start_date: nil,
+        duo_add_on_end_date: nil
       })
+    end
+
+    context 'when the instance has a Duo purchase' do
+      let(:duo_start_date) { Date.current - 1.month }
+      let(:duo_end_date) { Date.current + 11.months }
+      let(:duo_purchase) do
+        build(
+          :gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise,
+          started_at: duo_start_date,
+          expires_on: duo_end_date
+        )
+      end
+
+      before do
+        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+          :for_self_managed, :for_duo_pro_or_duo_enterprise, :last
+        ).and_return(duo_purchase)
+      end
+
+      it 'includes the correct values' do
+        result = helper.admin_duo_home_app_data
+
+        expect(result).to include(duo_add_on_start_date: duo_start_date, duo_add_on_end_date: duo_end_date)
+      end
     end
   end
 end

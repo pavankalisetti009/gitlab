@@ -30,12 +30,7 @@ export default {
     UsageStatistics,
   },
   mixins: [InternalEvents.mixin()],
-  inject: [
-    'addDuoProHref',
-    'subscriptionStartDate',
-    'subscriptionEndDate',
-    'duoSeatUtilizationPath',
-  ],
+  inject: ['addDuoProHref', 'duoSeatUtilizationPath', 'duoAddOnStartDate', 'duoAddOnEndDate'],
   props: {
     usageValue: {
       type: Number,
@@ -70,13 +65,13 @@ export default {
     duoSubscriptionStartDate() {
       return this.$options.i18n.duoSubscriptionStartText.replace(
         '%{startDate}',
-        this.formatSubscriptionDate(this.subscriptionStartDate),
+        this.formatSubscriptionDate(this.duoAddOnStartDate),
       );
     },
     duoSubscriptionEndDate() {
       return this.$options.i18n.duoSubscriptionEndText.replace(
         '%{endDate}',
-        this.formatSubscriptionDate(this.subscriptionEndDate),
+        this.formatSubscriptionDate(this.duoAddOnEndDate),
       );
     },
   },
