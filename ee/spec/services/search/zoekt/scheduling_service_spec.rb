@@ -736,38 +736,28 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
   describe '#index_mismatched_watermark_check' do
     let(:task) { :index_mismatched_watermark_check }
-    let_it_be(:should_overprovisioned) { create(:zoekt_index, :overprovisioned) }
-    let_it_be(:should_healthy) { create(:zoekt_index, :healthy) }
-    let_it_be(:should_low_watermark_exceeded) { create(:zoekt_index, :low_watermark_exceeded) }
-    let_it_be(:should_high_watermark_exceeded) { create(:zoekt_index, :high_watermark_exceeded) }
-    let_it_be(:negative_reserved_storage_bytes) { create(:zoekt_index, :negative_reserved_storage_bytes) }
-    let_it_be(:overprovisioned) { create(:zoekt_index, :overprovisioned) }
-    let_it_be(:healthy) { create(:zoekt_index, :healthy) }
-    let_it_be(:low_watermark_exceeded) { create(:zoekt_index, :low_watermark_exceeded) }
-    let_it_be(:high_watermark_exceeded) { create(:zoekt_index, :high_watermark_exceeded) }
-    let(:index_ids) do
-      [should_overprovisioned,
-        should_healthy,
-        should_low_watermark_exceeded,
-        should_high_watermark_exceeded,
-        negative_reserved_storage_bytes].map(&:id)
+
+    context 'when no indexes have mismatched watermark levels or negative reserved storage bytes' do
+      it 'does nothing, publishes no events' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
+      end
     end
 
-    before do
-      negative_reserved_storage_bytes.overprovisioned!
-      should_overprovisioned.healthy!
-      should_healthy.overprovisioned!
-      should_low_watermark_exceeded.high_watermark_exceeded!
-      should_high_watermark_exceeded.healthy!
+    context 'when indexes have mismatched watermark levels' do
+      it 'publishes a Search::Zoekt::IndexWatermarkChangedEvent' do
+        idx = create(:zoekt_index, :low_watermark_exceeded)
+        idx.healthy!
+
+        expect { execute_task }.to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
+      end
     end
 
-    it 'publishes an IndexWatermarkChangedEvent with indices that have mismatched watermarks' do
-      expect { execute_task }
-        .to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
-        .with({
-          index_ids: match_array(index_ids),
-          watermark_level: 'mismatched'
-        })
+    context 'when indexes have negative reserved storage bytes' do
+      it 'publishes a Search::Zoekt::IndexWatermarkChangedEvent' do
+        create(:zoekt_index, :negative_reserved_storage_bytes)
+
+        expect { execute_task }.to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
+      end
     end
   end
 

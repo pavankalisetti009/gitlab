@@ -391,19 +391,12 @@ module Search
 
       def index_mismatched_watermark_check
         execute_every 10.minutes do
-          Search::Zoekt::Index.each_batch do |batch|
-            ids = batch.with_mismatched_watermark_levels.or(batch.negative_reserved_storage_bytes).pluck_primary_key
-            next if ids.empty?
+          next unless Search::Zoekt::Index.with_mismatched_watermark_levels
+            .or(Search::Zoekt::Index.negative_reserved_storage_bytes).exists?
 
-            Gitlab::EventStore.publish(
-              Search::Zoekt::IndexWatermarkChangedEvent.new(
-                data: {
-                  index_ids: ids,
-                  watermark_level: "mismatched"
-                }
-              )
-            )
-          end
+          Gitlab::EventStore.publish(
+            Search::Zoekt::IndexWatermarkChangedEvent.new(data: {})
+          )
         end
       end
 
