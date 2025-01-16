@@ -4,6 +4,7 @@ module EE
   module Admin
     module RunnersController
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
 
       prepended do
         before_action(only: [:index]) { push_licensed_feature(:runner_performance_insights) }
@@ -15,6 +16,16 @@ module EE
 
       def dashboard
         render_404 unless License.feature_available?(:runner_performance_insights)
+      end
+
+      private
+
+      override :authenticate_admin!
+      def authenticate_admin!
+        return super unless action_name == 'index'
+        return if can?(current_user, :read_admin_cicd)
+
+        super
       end
     end
   end

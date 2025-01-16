@@ -15,8 +15,14 @@ FactoryBot.define do
     Gitlab::CustomRoles::Definition.all.each_value do |attributes|
       trait attributes[:name].to_sym do
         send(attributes[:name].to_sym) { true }
+
         attributes.fetch(:requirements, []).each do |requirement|
           send(requirement.to_sym) { true }
+        end
+
+        if attributes[:admin_ability]
+          namespace { nil }
+          base_access_level { nil }
         end
       end
     end

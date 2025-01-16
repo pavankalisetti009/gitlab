@@ -140,7 +140,10 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   def admin_related_role?
-    return false unless Feature.enabled?(:custom_ability_read_admin_dashboard, Feature.current_request)
+    if Feature.disabled?(:custom_ability_read_admin_dashboard, Feature.current_request) &&
+        Feature.disabled?(:custom_ability_read_admin_cicd, Feature.current_request)
+      return false
+    end
 
     admin_related_permissions.present?
   end

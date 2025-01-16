@@ -79,9 +79,24 @@ module EE
     def display_admin_area_link?
       return true if super
 
-      return false unless ::Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
+      if ::Feature.disabled?(:custom_ability_read_admin_dashboard, current_user) &&
+          ::Feature.disabled?(:custom_ability_read_admin_cicd, current_user)
+        return false
+      end
 
       current_user&.can?(:access_admin_area)
+    end
+
+    override :admin_area_link
+    def admin_area_link
+      has_access_to_dashboard = ::Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
+
+      # if user does not have access to /admin (dashboard) but has access to /admin/runners then link them  there
+      if ::Feature.enabled?(:custom_ability_read_admin_cicd, current_user) && !has_access_to_dashboard
+        return admin_runners_path
+      end
+
+      super
     end
 
     def super_sidebar_default_pins(panel_type)

@@ -9,10 +9,7 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
   subject(:result) { described_class.new(user: user).execute }
 
   def create_member_role(ability, user)
-    create(:member_role, :admin).tap do |record|
-      record.assign_attributes(ability => true)
-      record.save!
-
+    create(:member_role, ability).tap do |record|
       create(:user_member_role, user: user, member_role: record)
     end
   end

@@ -881,24 +881,31 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   end
 
   context 'custom permissions' do
-    context 'when a user is assigned custom role with :read_admin_dashboard true' do
-      let_it_be(:role) { create(:member_role, :admin) }
-      let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: current_user) }
+    where(:custom_ability, :enabled_permissions) do
+      :read_admin_dashboard | %i[read_admin_dashboard access_admin_area]
+      :read_admin_cicd      | %i[read_admin_cicd access_admin_area]
+    end
 
-      context 'when custom_roles feature is enabled' do
-        before do
-          stub_licensed_features(custom_roles: true)
+    with_them do
+      context 'when a user is assigned an admin custom role' do
+        let!(:role) { create(:member_role, custom_ability) }
+        let!(:user_member_role) { create(:user_member_role, member_role: role, user: current_user) }
+
+        context 'when custom_roles feature is enabled' do
+          before do
+            stub_licensed_features(custom_roles: true)
+          end
+
+          it { is_expected.to be_allowed(*enabled_permissions) }
         end
 
-        it { is_expected.to be_allowed(:read_admin_dashboard, :access_admin_area) }
-      end
+        context 'when custom_roles feature is disabled' do
+          before do
+            stub_licensed_features(custom_roles: false)
+          end
 
-      context 'when custom_roles feature is disabled' do
-        before do
-          stub_licensed_features(custom_roles: false)
+          it { is_expected.to be_disallowed(*enabled_permissions) }
         end
-
-        it { is_expected.to be_disallowed(:read_admin_dashboard, :access_admin_area) }
       end
     end
   end
