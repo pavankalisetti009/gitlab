@@ -33,10 +33,6 @@ module Namespaces
           over_user_limit?(root_namespace)
         end
 
-        def content_class
-          "container-limited" unless user.layout == "fluid"
-        end
-
         def storage_limit_docs_link
           help_page_path('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
         end
