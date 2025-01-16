@@ -185,6 +185,14 @@ module EE
         unauthorized! unless can?(current_user, :admin_group_saml, group)
       end
 
+      def authorize_read_application_statistics!
+        return super unless ::Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
+
+        return true if current_user&.can?(:read_admin_dashboard)
+
+        super
+      end
+
       def check_group_saml_configured
         forbidden!('Group SAML not enabled.') unless ::Gitlab::Auth::GroupSaml::Config.enabled?
       end
