@@ -17,7 +17,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::Update, featur
       create(:vulnerability,
         :with_finding,
         :high_severity,
-        confidence: :high,
         present_on_default_branch: true,
         resolved_on_default_branch: true,
         cvss: [{ 'vector' => 'vector_text', 'vendor' => 'GitLab' }],
@@ -29,7 +28,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::Update, featur
       create(:vulnerability,
         :with_finding,
         :high_severity,
-        confidence: :high,
         present_on_default_branch: false,
         resolved_on_default_branch: true,
         cvss: [{ 'vector' => 'vector_text', 'vendor' => 'GitLab' }],
@@ -55,7 +53,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::Update, featur
         vulnerability_2.reload
       end.to change { vulnerability_1.title }.to('changed')
          .and change { vulnerability_1.severity }.to('critical')
-         .and change { vulnerability_1.confidence }.to('medium')
          .and change { vulnerability_1.resolved_on_default_branch }.to(false)
          .and change { vulnerability_1.cvss }.to(cvss)
          .and change { vulnerability_1.updated_at }.to(Time.zone.now)

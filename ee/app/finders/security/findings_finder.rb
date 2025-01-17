@@ -9,7 +9,6 @@
 #   pipeline - object to filter findings
 #   params:
 #     severity:    Array<String>
-#     confidence:  Array<String>
 #     report_type: Array<String>
 #     scope:       String
 #     limit:       Int
@@ -57,7 +56,6 @@ module Security
         .deduplicated
         .ordered(params[:sort])
         .then { |relation| by_uuid(relation) }
-        .then { |relation| by_confidence_levels(relation) }
         .then { |relation| by_scanner_external_ids(relation) }
         .then { |relation| by_state(relation) }
         .then { |relation| by_include_dismissed(relation) }
@@ -116,12 +114,6 @@ module Security
       return relation unless params[:state].present?
 
       relation.by_state(params[:state])
-    end
-
-    def by_confidence_levels(relation)
-      return relation unless params[:confidence]
-
-      relation.by_confidence_levels(params[:confidence])
     end
 
     def by_report_types(relation)

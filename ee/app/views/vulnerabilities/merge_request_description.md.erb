@@ -21,9 +21,6 @@ Please see [our documentation](https://docs.gitlab.com/ee/user/application_secur
 <% if vulnerability.severity.present? %>
 * Severity: <%= vulnerability.severity %>
 <% end %>
-<% if vulnerability.confidence.present? %>
-* Confidence: <%= vulnerability.confidence %>
-<% end %>
 <% if defined?(vulnerability.file) && vulnerability.file.present? %>
 * Location: [<%= finding.location_text %>](<%= finding.location_link %>)
 <% end %>

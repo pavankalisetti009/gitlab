@@ -50,7 +50,6 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
         identifiers: [identifier_attributes],
         state: "detected",
         severity: "unknown",
-        confidence: "unknown",
         solution: "rm -rf --no-preserve-root /"
       }
     end
@@ -113,7 +112,6 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
               identifiers: [identifier_attributes],
               state: state,
               severity: "unknown",
-              confidence: "unknown",
               detected_at: detected_at,
               confirmed_at: confirmed_at,
               resolved_at: resolved_at,

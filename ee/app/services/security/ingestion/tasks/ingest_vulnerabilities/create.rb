@@ -36,7 +36,6 @@ module Security
               title: report_finding.name.to_s.truncate(::Issuable::TITLE_LENGTH_MAX),
               state: :detected, # this will be detected because if there is any interaction for dismissal for finding, there will be vulnerability already
               severity: report_finding.severity,
-              confidence: report_finding.confidence,
               report_type: report_finding.report_type,
               present_on_default_branch: true,
               cvss: report_finding.cvss,

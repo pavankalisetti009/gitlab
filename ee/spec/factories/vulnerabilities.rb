@@ -8,7 +8,6 @@ FactoryBot.define do
     title { generate(:title) }
     title_html { "<h2>#{title}</h2>" }
     severity { :high }
-    confidence { :medium }
     report_type { :sast }
     description { "Description of #{title}" }
     present_on_default_branch { true }
