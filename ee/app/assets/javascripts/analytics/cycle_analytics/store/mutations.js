@@ -3,7 +3,7 @@ import {
   PAGINATION_SORT_DIRECTION_DESC,
 } from '~/analytics/cycle_analytics/constants';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { transformRawStages, prepareStageErrors, formatMedianValuesWithOverview } from '../utils';
+import { transformRawStages, prepareStageErrors, formatMedianValues } from '../utils';
 import * as types from './mutation_types';
 
 export default {
@@ -60,7 +60,7 @@ export default {
     state.medians = {};
   },
   [types.RECEIVE_STAGE_MEDIANS_SUCCESS](state, medians = []) {
-    state.medians = formatMedianValuesWithOverview(medians);
+    state.medians = formatMedianValues(medians);
   },
   [types.RECEIVE_STAGE_MEDIANS_ERROR](state) {
     state.medians = {};

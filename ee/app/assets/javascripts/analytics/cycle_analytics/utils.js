@@ -3,7 +3,6 @@ import dateFormat from '~/lib/dateformat';
 import { s__, n__, sprintf } from '~/locale';
 import { dateFormats } from '~/analytics/shared/constants';
 import { toYmd } from '~/analytics/shared/utils';
-import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import { medianTimeToParsedSeconds } from '~/analytics/cycle_analytics/utils';
 import { createAlert } from '~/alert';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -455,25 +454,14 @@ export const throwIfUserForbidden = (error) => {
  * @param {Array} Medians - Array of stage median objects, each contains a `id`, `value` and `error`
  * @returns {Object} Returns key value pair with the stage name and its display median value
  */
-export const formatMedianValuesWithOverview = (medians = []) => {
-  const calculatedMedians = medians.reduce(
-    (acc, { id, value = 0 }) => {
-      return {
-        ...acc,
-        [id]: value ? medianTimeToParsedSeconds(value) : '-',
-        [OVERVIEW_STAGE_ID]: acc[OVERVIEW_STAGE_ID] + value,
-      };
-    },
-    {
-      [OVERVIEW_STAGE_ID]: 0,
-    },
+export const formatMedianValues = (medians = []) =>
+  medians.reduce(
+    (acc, { id, value = 0 }) => ({
+      ...acc,
+      [id]: value ? medianTimeToParsedSeconds(value) : '-',
+    }),
+    {},
   );
-  const overviewMedian = calculatedMedians[OVERVIEW_STAGE_ID];
-  return {
-    ...calculatedMedians,
-    [OVERVIEW_STAGE_ID]: overviewMedian ? medianTimeToParsedSeconds(overviewMedian) : '-',
-  };
-};
 
 /**
  * Takes an array of objects with potential duplicates and returns the deduplicated array
