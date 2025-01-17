@@ -12197,7 +12197,8 @@ CREATE TABLE deploy_tokens (
     creator_id bigint,
     read_virtual_registry boolean DEFAULT false NOT NULL,
     project_id bigint,
-    group_id bigint
+    group_id bigint,
+    write_virtual_registry boolean DEFAULT false NOT NULL
 );
 
 CREATE SEQUENCE deploy_tokens_id_seq
