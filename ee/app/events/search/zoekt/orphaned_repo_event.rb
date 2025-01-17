@@ -8,8 +8,7 @@ module Search
           'type' => 'object',
           'properties' => {
             'zoekt_repo_ids' => { 'type' => 'array', 'items' => { 'type' => 'integer' } }
-          },
-          'required' => %w[zoekt_repo_ids]
+          }
         }
       end
     end

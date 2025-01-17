@@ -362,13 +362,11 @@ module Search
 
       def repo_should_be_marked_as_orphaned_check
         execute_every 10.minutes do
-          Search::Zoekt::Repository.should_be_marked_as_orphaned.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::OrphanedRepoEvent.new(
-                data: { zoekt_repo_ids: batch.pluck_primary_key }
-              )
-            )
-          end
+          next unless Search::Zoekt::Repository.should_be_marked_as_orphaned.exists?
+
+          Gitlab::EventStore.publish(
+            Search::Zoekt::OrphanedRepoEvent.new(data: {})
+          )
         end
       end
 
