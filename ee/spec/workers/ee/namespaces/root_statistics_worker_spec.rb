@@ -9,7 +9,7 @@ RSpec.describe Namespaces::RootStatisticsWorker, '#perform', :saas, feature_cate
   let_it_be(:project, refind: true) { create(:project, namespace: group) }
   let_it_be(:owner) { create(:user, owner_of: group) }
 
-  let(:mailer) { class_double(::Emails::NamespaceStorageUsageMailer).as_stubbed_const }
+  let(:mailer) { class_double(::Namespaces::Storage::NamespaceLimitMailer).as_stubbed_const }
   let(:action_mailer) { instance_double(ActionMailer::MessageDelivery) }
 
   subject(:worker) { described_class.new }

@@ -9,10 +9,7 @@ module EE
 
       override :notify_storage_usage
       def notify_storage_usage(namespace)
-        return unless ::Namespaces::Storage::Enforcement.enforce_limit?(namespace)
-
-        mailer = ::Emails::NamespaceStorageUsageMailer
-        ::Namespaces::Storage::EmailNotificationService.new(mailer).execute(namespace)
+        ::Namespaces::Storage::NamespaceLimit::EmailNotificationService.execute(namespace)
       end
     end
   end
