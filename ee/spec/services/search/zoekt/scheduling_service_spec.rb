@@ -646,18 +646,23 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#repo_should_be_marked_as_orphaned_check' do
     let(:task) { :repo_should_be_marked_as_orphaned_check }
 
-    it 'publishes an OrphanedRepoEvent with repositories that should be marked as orphaned' do
-      stubbed_orphaned_repos = Search::Zoekt::Repository.all
+    context 'when repositories exist in should_be_marked_as_orphaned scope' do
+      it 'publishes an OrphanedRepoEvent' do
+        expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_marked_as_orphaned, :exists?)
+                                         .and_return(true)
 
-      expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_marked_as_orphaned,
-        :each_batch).and_yield(stubbed_orphaned_repos)
-      expect(stubbed_orphaned_repos).to receive(:pluck_primary_key).and_return([1, 2, 3])
+        expect { execute_task }
+          .to publish_event(Search::Zoekt::OrphanedRepoEvent).with({})
+      end
+    end
 
-      expected_data = { zoekt_repo_ids: [1, 2, 3] }
+    context 'when no repositories exist in should_be_marked_as_orphaned scope' do
+      it 'does not publish an event' do
+        expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_marked_as_orphaned, :exists?)
+                                         .and_return(false)
 
-      expect { execute_task }
-        .to publish_event(Search::Zoekt::OrphanedRepoEvent)
-        .with(expected_data)
+        expect { execute_task }.not_to publish_event(Search::Zoekt::OrphanedRepoEvent)
+      end
     end
   end
 
