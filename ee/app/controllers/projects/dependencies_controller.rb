@@ -65,8 +65,15 @@ module Projects
     end
 
     def dependency_list_params
-      params.permit(:sort_by, :sort, :filter, :page, :per_page, source_types: []).with_defaults(
-        source_types: default_source_type_filters)
+      params.permit(
+        :component_name,
+        :filter,
+        :page,
+        :per_page,
+        :sort,
+        :sort_by,
+        source_types: []
+      ).with_defaults(source_types: default_source_type_filters)
     end
 
     def default_source_type_filters

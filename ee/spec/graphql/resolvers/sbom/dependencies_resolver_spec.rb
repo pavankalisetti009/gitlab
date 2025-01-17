@@ -23,8 +23,16 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
 
   subject { sync(resolve_dependencies(args: args)) }
 
+  shared_examples 'supports filtering by component name' do
+    let(:args) { { component_names: [component_1.name] } }
+
+    it { is_expected.to match_array([occurrence_1]) }
+  end
+
   context 'when given a project' do
     let(:project_or_namespace) { project_1 }
+
+    it_behaves_like 'supports filtering by component name'
 
     context 'when given component_ids' do
       let(:args) do
@@ -47,6 +55,8 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
 
   context 'when given a namespace' do
     let(:project_or_namespace) { namespace }
+
+    it_behaves_like 'supports filtering by component name'
 
     context 'when given component_ids' do
       let(:args) do
