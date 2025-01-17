@@ -3,6 +3,7 @@ fragment LastStateTransition on Vulnerability {
     nodes {
       id
       dismissalReason
+      comment
     }
   }
 }
