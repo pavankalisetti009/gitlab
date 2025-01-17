@@ -169,7 +169,9 @@ module EE
 
     override :remote_mirror_setting_enabled?
     def remote_mirror_setting_enabled?
-      ::Gitlab::CurrentSettings.import_sources.any? && ::License.feature_available?(:ci_cd_projects) && ::Gitlab::CurrentSettings.current_application_settings.mirror_available
+      ::Gitlab::CurrentSettings.import_sources.any? &&
+        ::License.feature_available?(:ci_cd_projects) &&
+        (::Gitlab::CurrentSettings.current_application_settings.mirror_available || current_user.can_admin_all_resources?)
     end
 
     def merge_pipelines_available?
