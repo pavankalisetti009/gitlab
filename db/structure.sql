@@ -296,7 +296,8 @@ CREATE TABLE projects (
     suggestion_commit_message character varying(255),
     project_namespace_id bigint,
     hidden boolean DEFAULT false NOT NULL,
-    organization_id bigint
+    organization_id bigint,
+    CONSTRAINT check_1a6f946a8a CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE FUNCTION find_projects_by_id(projects_id bigint) RETURNS projects
@@ -25668,9 +25669,6 @@ ALTER TABLE ONLY chat_names
 
 ALTER TABLE ONLY chat_teams
     ADD CONSTRAINT chat_teams_pkey PRIMARY KEY (id);
-
-ALTER TABLE projects
-    ADD CONSTRAINT check_1a6f946a8a CHECK ((organization_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
