@@ -1,51 +1,38 @@
-import { withVuexStore } from 'storybook_addons/vuex_store';
 import OverviewChart from './overview_chart.vue';
 import { overviewChartData } from './stories_constants';
 
 export default {
   component: OverviewChart,
   title: 'ee/analytics/cycle_analytics/components/overview_chart',
-  decorators: [withVuexStore],
 };
 
-const createStoryWithState = ({ durationChart: { getters, state } = {} }) => {
-  return (args, { argTypes, createVuexStore }) => ({
-    components: { OverviewChart },
-    props: Object.keys(argTypes),
-    template: '<overview-chart v-bind="$props" />',
-    store: createVuexStore({
-      modules: {
-        durationChart: {
-          namespaced: true,
-          getters: {
-            durationOverviewChartPlottableData: () => overviewChartData,
-            ...getters,
-          },
-          state: {
-            isLoading: false,
-            ...state,
-          },
-        },
-      },
-    }),
-  });
+const Template = (args, { argTypes }) => ({
+  components: { OverviewChart },
+  props: Object.keys(argTypes),
+  template: '<overview-chart v-bind="$props" />',
+});
+
+export const Default = Template.bind({});
+Default.args = {
+  isLoading: false,
+  plottableData: overviewChartData,
 };
 
-const defaultState = {};
-
-export const Default = createStoryWithState(defaultState).bind({});
-
-const noDataState = {
-  durationChart: { getters: { durationOverviewChartPlottableData: () => [] } },
+export const Loading = Template.bind({});
+Loading.args = {
+  isLoading: true,
+  plottableData: [],
 };
 
-export const NoData = createStoryWithState(noDataState).bind({});
-
-const errorState = {
-  durationChart: {
-    ...noDataState.durationChart,
-    state: { errorMessage: 'Failed to load chart' },
-  },
+export const NoData = Template.bind({});
+NoData.args = {
+  isLoading: false,
+  plottableData: [],
 };
 
-export const ErrorMessage = createStoryWithState(errorState).bind({});
+export const ErrorMessage = Template.bind({});
+ErrorMessage.args = {
+  isLoading: false,
+  plottableData: [],
+  errorMessage: 'Failed to load chart',
+};

@@ -316,10 +316,9 @@ describe('Value Stream Analytics actions', () => {
 
     describe('with initialData', () => {
       it.each`
-        action                        | args
-        ${'setPaths'}                 | ${{ namespacePath: namespace.restApiRequestPath }}
-        ${'filters/initialize'}       | ${{ selectedAuthor, selectedMilestone, selectedAssigneeList, selectedLabelList }}
-        ${'durationChart/setLoading'} | ${true}
+        action                  | args
+        ${'setPaths'}           | ${{ namespacePath: namespace.restApiRequestPath }}
+        ${'filters/initialize'} | ${{ selectedAuthor, selectedMilestone, selectedAssigneeList, selectedLabelList }}
       `('dispatches $action', async ({ action, args }) => {
         await actions.initializeCycleAnalytics(store, initialData);
 

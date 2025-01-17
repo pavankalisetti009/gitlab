@@ -1,7 +1,4 @@
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
 import { GlIcon, GlAlert } from '@gitlab/ui';
 import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
@@ -19,31 +16,6 @@ import {
   durationOverviewLegendSeriesInfo,
 } from '../../mock_data';
 
-Vue.use(Vuex);
-
-const fakeStore = ({ initialGetters, initialState, rootGetters, rootState }) =>
-  new Vuex.Store({
-    state: {
-      ...rootState,
-    },
-    getters: {
-      ...rootGetters,
-    },
-    modules: {
-      durationChart: {
-        namespaced: true,
-        getters: {
-          durationOverviewChartPlottableData: () => mockOverviewChartPlottableData,
-          ...initialGetters,
-        },
-        state: {
-          isLoading: false,
-          ...initialState,
-        },
-      },
-    },
-  });
-
 describe('OverviewChart', () => {
   let wrapper;
   let mockEChartInstance;
@@ -58,13 +30,7 @@ describe('OverviewChart', () => {
 
   const mockChartOptionSeries = [...durationOverviewDataSeries, ...durationOverviewDataNullSeries];
 
-  const createComponent = ({
-    stubs = {},
-    initialState = {},
-    initialGetters = {},
-    rootGetters = {},
-    rootState = {},
-  } = {}) => {
+  const createComponent = (props = {}) => {
     mockEChartInstance = {
       on: jest.fn(),
       off: jest.fn(),
@@ -76,17 +42,20 @@ describe('OverviewChart', () => {
     };
 
     wrapper = shallowMount(OverviewChart, {
-      store: fakeStore({ initialState, initialGetters, rootGetters, rootState }),
+      propsData: {
+        isLoading: false,
+        plottableData: mockOverviewChartPlottableData,
+        ...props,
+      },
       stubs: {
         ChartSkeletonLoader: true,
-        ...stubs,
       },
     });
   };
 
   describe('default', () => {
     beforeEach(() => {
-      createComponent({});
+      createComponent();
       emitChartCreated();
     });
 
@@ -125,12 +94,8 @@ describe('OverviewChart', () => {
 
       beforeEach(() => {
         createComponent({
-          initialGetters: {
-            durationOverviewChartPlottableData: () => [],
-          },
-          initialState: {
-            errorMessage,
-          },
+          errorMessage,
+          plottableData: [],
         });
       });
 
@@ -143,9 +108,7 @@ describe('OverviewChart', () => {
     describe('if there is no error', () => {
       beforeEach(() => {
         createComponent({
-          initialGetters: {
-            durationOverviewChartPlottableData: () => [],
-          },
+          plottableData: [],
         });
       });
 
@@ -157,7 +120,7 @@ describe('OverviewChart', () => {
 
   describe('when isLoading=true', () => {
     beforeEach(() => {
-      createComponent({ initialState: { isLoading: true } });
+      createComponent({ isLoading: true });
     });
 
     it('renders a loader', () => {

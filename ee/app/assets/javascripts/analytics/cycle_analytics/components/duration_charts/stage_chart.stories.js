@@ -1,33 +1,42 @@
-import { withVuexStore } from 'storybook_addons/vuex_store';
 import StageChart from './stage_chart.vue';
-import { stageChartData, selectedStage } from './stories_constants';
+import { stageChartData } from './stories_constants';
 
 export default {
   component: StageChart,
   title: 'ee/analytics/cycle_analytics/components/stage_chart',
-  decorators: [withVuexStore],
 };
 
-const Template = (args, { argTypes, createVuexStore }) => ({
+const Template = (args, { argTypes }) => ({
   components: { StageChart },
   props: Object.keys(argTypes),
   template: '<stage-chart v-bind="$props" />',
-  store: createVuexStore({
-    state: {
-      selectedStage,
-    },
-    modules: {
-      durationChart: {
-        namespaced: true,
-        getters: {
-          durationChartPlottableData: () => stageChartData,
-        },
-        state: {
-          isLoading: false,
-        },
-      },
-    },
-  }),
 });
 
 export const Default = Template.bind({});
+Default.args = {
+  stageTitle: 'VSA stage',
+  isLoading: false,
+  plottableData: stageChartData,
+};
+
+export const Loading = Template.bind({});
+Loading.args = {
+  stageTitle: 'VSA stage',
+  isLoading: true,
+  plottableData: [],
+};
+
+export const NoData = Template.bind({});
+NoData.args = {
+  stageTitle: 'VSA stage',
+  isLoading: false,
+  plottableData: [],
+};
+
+export const ErrorMessage = Template.bind({});
+ErrorMessage.args = {
+  stageTitle: 'VSA stage',
+  isLoading: false,
+  plottableData: [],
+  errorMessage: 'Failed to load chart',
+};

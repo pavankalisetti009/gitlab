@@ -376,17 +376,13 @@ describe('Value Stream Analytics actions / value streams', () => {
       mock.onGet(endpoints.valueStreamData).reply(HTTP_STATUS_OK, { stages: [], events: [] });
     });
 
-    it('dispatches fetchGroupStagesAndEvents, fetchStageMedianValues and durationChart/fetchDurationData', () => {
+    it('dispatches fetchGroupStagesAndEvents and fetchStageMedianValues', () => {
       return testAction(
         actions.fetchValueStreamData,
         null,
         state,
         [],
-        [
-          { type: 'fetchGroupStagesAndEvents' },
-          { type: 'fetchStageMedianValues' },
-          { type: 'durationChart/fetchDurationData' },
-        ],
+        [{ type: 'fetchGroupStagesAndEvents' }, { type: 'fetchStageMedianValues' }],
       );
     });
   });

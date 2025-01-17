@@ -4,7 +4,6 @@ import {
   deleteValueStream as apiDeleteValueStream,
   getValueStreams,
 } from 'ee/api/analytics_api';
-import { FETCH_VALUE_STREAM_DATA } from '../../constants';
 import * as types from '../mutation_types';
 
 export const receiveCreateValueStreamSuccess = ({ commit }, valueStream = {}) => {
@@ -54,12 +53,11 @@ export const deleteValueStream = ({ commit, dispatch, getters }, valueStreamId) 
 export const fetchValueStreamData = ({ dispatch }) =>
   Promise.resolve()
     .then(() => dispatch('fetchGroupStagesAndEvents'))
-    .then(() => dispatch('fetchStageMedianValues'))
-    .then(() => dispatch('durationChart/fetchDurationData'));
+    .then(() => dispatch('fetchStageMedianValues'));
 
 export const setSelectedValueStream = ({ commit, dispatch }, valueStream) => {
   commit(types.SET_SELECTED_VALUE_STREAM, valueStream);
-  return dispatch(FETCH_VALUE_STREAM_DATA);
+  return dispatch('fetchValueStreamData');
 };
 
 export const receiveValueStreamsSuccess = (
@@ -80,7 +78,7 @@ export const receiveValueStreamsSuccess = (
   }
 
   return Promise.resolve()
-    .then(() => dispatch(FETCH_VALUE_STREAM_DATA))
+    .then(() => dispatch('fetchValueStreamData'))
     .then(() => dispatch('fetchStageCountValues'));
 };
 

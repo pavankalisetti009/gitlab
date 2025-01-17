@@ -1,9 +1,6 @@
 import { GlIcon } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { DURATION_STAGE_TIME_DESCRIPTION } from 'ee/analytics/cycle_analytics/constants';
 import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_chart.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
@@ -15,47 +12,18 @@ import {
   durationDataNullSeries,
 } from '../../mock_data';
 
-Vue.use(Vuex);
+const [selectedStage] = stages;
 
-const fakeStore = ({ initialGetters, initialState, rootGetters, rootState }) =>
-  new Vuex.Store({
-    state: {
-      ...rootState,
-    },
-    getters: {
-      ...rootGetters,
-    },
-    modules: {
-      durationChart: {
-        namespaced: true,
-        getters: {
-          durationChartPlottableData: () => durationData,
-          ...initialGetters,
-        },
-        state: {
-          isLoading: false,
-          ...initialState,
-        },
-      },
-    },
-  });
-
-function createComponent({
-  stubs = {},
-  initialState = {},
-  initialGetters = {},
-  rootGetters = {},
-  rootState = {},
-  props = {},
-} = {}) {
+function createComponent(props = {}) {
   return shallowMount(StageChart, {
-    store: fakeStore({ initialState, initialGetters, rootGetters, rootState }),
     propsData: {
+      stageTitle: selectedStage.title,
+      isLoading: false,
+      plottableData: durationData,
       ...props,
     },
     stubs: {
       ChartSkeletonLoader: true,
-      ...stubs,
     },
   });
 }
@@ -69,14 +37,8 @@ describe('StageChart', () => {
   const findNoDataAvailableState = (_wrapper) => _wrapper.findComponent(NoDataAvailableState);
 
   describe('default', () => {
-    const [selectedStage] = stages;
-
     beforeEach(() => {
-      wrapper = createComponent({
-        rootState: {
-          selectedStage,
-        },
-      });
+      wrapper = createComponent();
     });
 
     it('renders the chart', () => {
@@ -103,12 +65,7 @@ describe('StageChart', () => {
     describe('with no chart data', () => {
       beforeEach(() => {
         wrapper = createComponent({
-          initialGetters: {
-            durationChartPlottableData: () => [[new Date(), null]],
-          },
-          rootState: {
-            selectedStage,
-          },
+          plottableData: [[new Date(), null]],
         });
       });
 
@@ -120,7 +77,7 @@ describe('StageChart', () => {
 
   describe('when isLoading=true', () => {
     beforeEach(() => {
-      wrapper = createComponent({ initialState: { isLoading: true } });
+      wrapper = createComponent({ isLoading: true });
     });
 
     it('renders a loader', () => {
