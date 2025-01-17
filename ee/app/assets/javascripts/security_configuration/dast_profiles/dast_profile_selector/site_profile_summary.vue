@@ -253,20 +253,18 @@ export default {
         :label="selectedScanMethod.inputLabel"
         :value="profile.scanFilePath"
       />
-      <template v-if="glFeatures.dastUiAdditionalVariables">
-        <summary-cell
-          v-for="{ variable, value } in profile.optionalVariables"
-          :key="variable"
-          :label="getVariableName(variable)"
-          data-testid="additional-variable-summary-cell"
-        >
-          <tooltip-on-truncate :title="value" truncate-target="child">
-            <div class="gl-truncate">
-              {{ value }}
-            </div>
-          </tooltip-on-truncate>
-        </summary-cell>
-      </template>
+      <summary-cell
+        v-for="{ variable, value } in profile.optionalVariables"
+        :key="variable"
+        :label="getVariableName(variable)"
+        data-testid="additional-variable-summary-cell"
+      >
+        <tooltip-on-truncate :title="value" truncate-target="child">
+          <div class="gl-truncate">
+            {{ value }}
+          </div>
+        </tooltip-on-truncate>
+      </summary-cell>
     </template>
   </dast-profile-summary-card>
 </template>
