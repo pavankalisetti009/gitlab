@@ -50,7 +50,8 @@ module Namespaces
         def alert_message_explanation
           text_args = {
             namespace_name: root_namespace.name,
-            **tag_pair(link_to('', help_page_path('user/read_only_namespaces.md')), :read_only_link_start, :link_end)
+            **tag_pair(link_to('', help_page_path('user/read_only_namespaces.md')), :read_only_link_start, :link_end),
+            **tag_pair(link_to('', storage_docs_link), :storage_docs_link_start, :link_end)
           }
 
           if root_storage_size.above_size_limit?
@@ -64,7 +65,8 @@ module Namespaces
           else
             safe_format(
               s_(
-                "NamespaceStorageSize|If %{namespace_name} exceeds the storage quota, your ability to " \
+                "NamespaceStorageSize|If %{namespace_name} exceeds the " \
+                  "%{storage_docs_link_start}storage quota%{link_end}, your ability to " \
                   "write new data to this namespace will be restricted. " \
                   "%{read_only_link_start}Which actions become restricted?%{link_end}"
               ),

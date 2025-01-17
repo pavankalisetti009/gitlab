@@ -49,26 +49,12 @@ module Namespaces
 
       def alert_message
         [
-          alert_message_explanation << " " << alert_message_cta,
-          alert_message_faq
+          alert_message_explanation << " " << alert_message_cta
         ]
       end
 
-      def alert_message_faq
-        text_args = {
-          **tag_pair(
-            link_to('', "#{promo_url}/pricing/#what-happens-if-i-exceed-my-storage-and-transfer-limits"),
-            :faq_link_start,
-            :link_end
-          )
-        }
-
-        safe_format(
-          s_(
-            "NamespaceStorageSize|For more information about storage limits, see our %{faq_link_start}FAQ%{link_end}."
-          ),
-          text_args
-        )
+      def storage_docs_link
+        help_page_path('user/storage_usage_quotas.md')
       end
 
       def usage_ratio

@@ -107,13 +107,15 @@ module Namespaces
 
         def alert_message_explanation
           text_args = {
-            free_size_limit: formatted(limit)
+            free_size_limit: formatted(limit),
+            **tag_pair(link_to('', storage_docs_link), :storage_docs_link_start, :link_end)
           }
 
           if root_storage_size.above_size_limit?
             safe_format(
               s_(
-                "NamespaceStorageSize|You have consumed all available storage and you can't " \
+                "NamespaceStorageSize|You have consumed all available " \
+                  "%{storage_docs_link_start}storage%{link_end} and you can't " \
                   "push or add large files to projects over the free tier limit (%{free_size_limit})."
               ),
               text_args
@@ -121,9 +123,9 @@ module Namespaces
           else
             safe_format(
               s_(
-                "NamespaceStorageSize|If a project reaches 100%% of the storage quota (%{free_size_limit}) " \
-                  "the project will be in a read-only state, and you won't be able to push to " \
-                  "your repository or add large files."
+                "NamespaceStorageSize|If a project reaches 100%% of the " \
+                  "%{storage_docs_link_start}storage quota%{link_end} (%{free_size_limit}) the project will be " \
+                  "in a read-only state, and you won't be able to push to your repository or add large files."
               ),
               text_args
             )
