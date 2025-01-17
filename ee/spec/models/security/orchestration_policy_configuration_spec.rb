@@ -189,6 +189,57 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     it { is_expected.to contain_exactly(policy_configuration_b, policy_configuration_c, policy_configuration_d) }
   end
 
+  describe '.for_namespace_and_projects' do
+    let_it_be(:top_level_group) { create(:group) }
+    let_it_be(:subgroup_a) { create(:group, parent: top_level_group) }
+    let_it_be(:subgroup_b) { create(:group, parent: subgroup_a) }
+
+    let_it_be(:top_level_group_project) { create(:project, group: top_level_group) }
+    let_it_be(:subgroup_project) { create(:project, group: subgroup_a) }
+
+    let_it_be(:policy_project) { create(:project) }
+
+    let!(:policy_configuration_a) do
+      create(
+        :security_orchestration_policy_configuration,
+        :namespace,
+        namespace_id: top_level_group.id)
+    end
+
+    let!(:policy_configuration_b) do
+      create(
+        :security_orchestration_policy_configuration,
+        :namespace,
+        namespace_id: subgroup_b.id,
+        security_policy_management_project_id: policy_project.id)
+    end
+
+    let!(:policy_configuration_c) do
+      create(
+        :security_orchestration_policy_configuration,
+        project: top_level_group_project,
+        security_policy_management_project_id: policy_project.id)
+    end
+
+    let!(:policy_configuration_d) do
+      create(
+        :security_orchestration_policy_configuration,
+        project: subgroup_project,
+        security_policy_management_project_id: policy_project.id)
+    end
+
+    let!(:other_policy_configuration) do
+      create(
+        :security_orchestration_policy_configuration,
+        :namespace,
+        namespace_id: subgroup_a.id)
+    end
+
+    subject { described_class.for_namespace_and_projects(subgroup_a.self_and_descendant_ids, subgroup_a.all_project_ids) }
+
+    it { is_expected.to contain_exactly(policy_configuration_b, policy_configuration_d, other_policy_configuration) }
+  end
+
   describe '.policy_management_project?' do
     before do
       create(:security_orchestration_policy_configuration, security_policy_management_project: security_policy_management_project)
