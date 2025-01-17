@@ -626,10 +626,14 @@ module EE
     end
 
     def seat_control_user_cap?
+      return false unless License.feature_available?(:seat_control) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency as it's not used for Registration features
+
       seat_control == SEAT_CONTROL_USER_CAP
     end
 
     def seat_control_block_overages?
+      return false unless License.feature_available?(:seat_control) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency as it's not used for Registration features
+
       seat_control == SEAT_CONTROL_BLOCK_OVERAGES
     end
 

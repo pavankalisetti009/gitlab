@@ -78,6 +78,7 @@ module GitlabSubscriptions
       product_analytics_usage_quotas
       wip_limits
       zoekt_code_search
+      seat_control
     ].freeze
 
     PREMIUM_FEATURES = %i[

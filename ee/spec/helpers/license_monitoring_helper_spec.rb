@@ -8,6 +8,10 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
   let(:user) { build_stubbed(:user) }
   let(:license) { build_stubbed(:gitlab_license) }
 
+  before do
+    stub_licensed_features(seat_control: true)
+  end
+
   describe '#show_active_user_count_threshold_banner?' do
     subject { helper.show_active_user_count_threshold_banner? }
 
@@ -58,6 +62,14 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
         end
 
         it { is_expected.to be_nil }
+
+        context "when seat control feature is not licensed" do
+          before do
+            stub_licensed_features(seat_control: false)
+          end
+
+          it { is_expected.to be should_render }
+        end
       end
     end
   end
@@ -101,6 +113,14 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
       end
 
       it { is_expected.to be should_render }
+
+      context "when seat control feature is not licensed" do
+        before do
+          stub_licensed_features(seat_control: false)
+        end
+
+        it { is_expected.to be_nil }
+      end
 
       context "when block overages is disabled" do
         before do

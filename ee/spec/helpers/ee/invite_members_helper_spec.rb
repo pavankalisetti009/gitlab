@@ -12,6 +12,7 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
     before do
       stub_ee_application_setting(dashboard_limit_enabled: true)
       stub_ee_application_setting(dashboard_limit: 5)
+      stub_licensed_features(seat_control: true)
     end
 
     it 'has expected common attributes' do
@@ -66,7 +67,7 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
 
   describe '#common_invite_modal_dataset', :saas do
     let(:current_user) { build(:user) }
-    let(:group) { build(:group) }
+    let(:group) { build(:group, id: 13) }
     let(:project) { build(:project, namespace: group) }
 
     before do
@@ -98,12 +99,8 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
       end
     end
 
-    context 'when sm_seat_control_block_overage is enabled' do
-      purchase_seats_docs_url = 'https://gitlab.com/docs/subscriptions/self_managed/index.md#add-seats-to-a-subscription'
-
+    context 'when seat control restricted access is enabled' do
       before do
-        allow(helper).to receive(:help_page_url).and_return(purchase_seats_docs_url)
-
         stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
       end
 
@@ -111,7 +108,20 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
         stub_member_access_level(group, owner: current_user)
 
         expect(helper.common_invite_modal_dataset(project)[:add_seats_href])
-          .to eq(purchase_seats_docs_url)
+          .to eq(help_page_url("subscriptions/self_managed/index.md", anchor: "add-seats-to-a-subscription"))
+      end
+
+      context "when seat control feature is not licensed" do
+        before do
+          stub_licensed_features(seat_control: false)
+        end
+
+        it 'passes docs link to add_seats_href' do
+          stub_member_access_level(group, owner: current_user)
+
+          expect(helper.common_invite_modal_dataset(project)[:add_seats_href])
+            .to eq(::Gitlab::Routing.url_helpers.subscription_portal_add_extra_seats_url('13'))
+        end
       end
     end
 

@@ -46,6 +46,8 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
   before do
     create_list(:user, active_user_count)
 
+    stub_licensed_features(seat_control: true)
+
     stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_OFF)
   end
 
@@ -72,6 +74,14 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
           end
 
           it_behaves_like 'a visible block seats overages banner'
+
+          context "when seat control feature is not licensed" do
+            before do
+              stub_licensed_features(seat_control: false)
+            end
+
+            it_behaves_like 'a visible banner'
+          end
         end
 
         context 'when remaining users are 0' do
@@ -85,6 +95,14 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
             end
 
             it_behaves_like 'a visible block seats overages banner'
+
+            context "when seat control feature is not licensed" do
+              before do
+                stub_licensed_features(seat_control: false)
+              end
+
+              it_behaves_like 'a visible banner'
+            end
           end
         end
 
