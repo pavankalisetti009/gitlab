@@ -16,6 +16,28 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
   let_it_be(:pipeline_id) { pipeline.id }
 
   let(:artifacts) { [artifact_1, artifact_2, artifact_3, artifact_with_missing_version] }
+  let(:mock_report) { instance_double(::Gitlab::Ci::Reports::Security::Report, primary_scanner_order_to: -1) }
+  let(:failure_mock_report) { instance_double(::Gitlab::Ci::Reports::Security::Report, primary_scanner_order_to: -1) }
+
+  let(:scan_object) do
+    ::Gitlab::Ci::Reports::Security::Scan.new(
+      {
+        "type" => report_type,
+        "start_time" => "20241022T11:56:41",
+        "end_time" => "20241022T11:57:39",
+        "status" => "success"
+      })
+  end
+
+  let(:failure_scan_object) do
+    ::Gitlab::Ci::Reports::Security::Scan.new(
+      {
+        "type" => report_type,
+        "start_time" => "20241022T11:56:41",
+        "end_time" => "20241022T11:57:39",
+        "status" => "failure"
+      })
+  end
 
   before do
     allow(Ci::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
@@ -49,6 +71,16 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
   describe '#execute' do
     let(:service_object) { described_class.new(artifacts, pipeline, report_type) }
     let(:empty_set) { Set.new }
+    let(:start_time) { "20241022T11:56:41" }
+    let(:scan_object) do
+      ::Gitlab::Ci::Reports::Security::Scan.new(
+        {
+          "type" => report_type,
+          "start_time" => start_time,
+          "end_time" => "20241022T11:57:39",
+          "status" => "success"
+        })
+    end
 
     subject(:store_scan_group) { service_object.execute }
 
@@ -79,13 +111,11 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
       end
 
       context 'schema validation' do
-        let(:mock_report) { instance_double(::Gitlab::Ci::Reports::Security::Report, primary_scanner_order_to: -1) }
-
         before do
-          allow(artifact_1).to receive(:security_report).and_return(mock_report)
-          allow(artifact_2).to receive(:security_report).and_return(mock_report)
-          allow(artifact_3).to receive(:security_report).and_return(mock_report)
-          allow(artifact_with_missing_version).to receive(:security_report).and_return(mock_report)
+          artifacts.each do |artifact|
+            allow(artifact).to receive(:security_report).and_return(mock_report)
+            allow(mock_report).to receive(:scans).and_return({ start_time => scan_object })
+          end
         end
 
         context 'when there is only one report' do
@@ -118,12 +148,19 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
 
           let(:artifacts) { [invalid_artifact_1, invalid_artifact_2, invalid_artifact_3] }
 
+          before do
+            artifacts.each do |artifact|
+              allow(artifact).to receive(:security_report).and_return(mock_report)
+            end
+            allow(mock_report).to receive(:scans).and_return({ start_time => scan_object })
+          end
+
           it 'calls the Security::StoreScanService with ordered artifacts' do
             store_scan_group
 
-            expect(Security::StoreScanService).to have_received(:execute).with(invalid_artifact_3, empty_set, false).ordered
+            expect(Security::StoreScanService).to have_received(:execute).with(invalid_artifact_1, empty_set, false).ordered
             expect(Security::StoreScanService).to have_received(:execute).with(invalid_artifact_2, empty_set, true).ordered
-            expect(Security::StoreScanService).to have_received(:execute).with(invalid_artifact_1, empty_set, true).ordered
+            expect(Security::StoreScanService).to have_received(:execute).with(invalid_artifact_3, empty_set, true).ordered
           end
         end
 
@@ -199,6 +236,9 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
           allow(sast_artifact_1).to receive(:security_report).and_return(mock_report_1)
           allow(sast_artifact_2).to receive(:security_report).and_return(mock_report_2)
           allow(sast_artifact_3).to receive(:security_report).and_return(mock_report_3)
+          [mock_report_1, mock_report_2, mock_report_3].each do |report|
+            allow(report).to receive(:scans).and_return({ start_time => scan_object })
+          end
         end
 
         it 'calls the Security::StoreScanService with ordered artifacts' do
@@ -221,6 +261,9 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
           allow(artifact_1).to receive(:security_report).and_return(mock_report_1)
           allow(artifact_2).to receive(:security_report).and_return(mock_report_2)
           allow(artifact_3).to receive(:security_report).and_return(mock_report_3)
+          [mock_report_1, mock_report_2, mock_report_3].each do |report|
+            allow(report).to receive(:scans).and_return({ start_time => scan_object })
+          end
         end
 
         it 'calls the Security::StoreScanService with ordered artifacts' do
@@ -232,7 +275,82 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
         end
       end
 
-      it_behaves_like 'handling the security MR widget caching'
+      context "when cache miss" do
+        let(:mock_report) { instance_double(::Gitlab::Ci::Reports::Security::Report, primary_scanner_order_to: 1) }
+
+        before do
+          artifacts.each do |artifact|
+            allow(artifact).to receive(:security_report).and_return(mock_report)
+          end
+          allow(mock_report).to receive(:scans).and_return({ start_time => scan_object })
+        end
+
+        it_behaves_like 'handling the security MR widget caching'
+      end
+
+      context 'when recording error rate metrics' do
+        before do
+          allow(artifact_1).to receive(:security_report).and_return(mock_report)
+          allow(artifact_2).to receive(:security_report).and_return(mock_report)
+          allow(mock_report).to receive(:scans).and_return({ start_time => scan_object })
+        end
+
+        context 'with success scans' do
+          let(:artifacts) { [artifact_1, artifact_2] }
+
+          it 'emits error rate' do
+            labels = { scan_type: report_type, feature_category: 'dynamic_application_security_testing' }
+            expect(Gitlab::Metrics::SecurityScanSlis.error_rate).to receive(:increment)
+                                                                      .with(error: false, labels: labels)
+                                                                      .twice
+
+            store_scan_group
+          end
+
+          context 'when feature flag disabled' do
+            it 'does not emit error rate' do
+              stub_feature_flags(security_scan_error_rate: false)
+
+              expect(Gitlab::Metrics::SecurityScanSlis.error_rate).not_to receive(:increment)
+
+              store_scan_group
+            end
+          end
+        end
+
+        context 'with failed scan' do
+          let(:artifacts) { [artifact_1, artifact_2, artifact_3] }
+
+          it 'emits error rate' do
+            allow(artifact_3).to receive(:security_report).and_return(failure_mock_report)
+            allow(failure_mock_report).to receive(:scans).and_return({ start_time => failure_scan_object })
+
+            labels = { scan_type: report_type, feature_category: 'dynamic_application_security_testing' }
+            expect(Gitlab::Metrics::SecurityScanSlis.error_rate).to receive(:increment).with(error: false, labels: labels).twice
+            expect(Gitlab::Metrics::SecurityScanSlis.error_rate).to receive(:increment).with(error: true, labels: labels).once
+
+            store_scan_group
+          end
+
+          context 'when feature flag disabled' do
+            it 'does not emit error rate' do
+              stub_feature_flags(security_scan_error_rate: false)
+
+              expect(Gitlab::Metrics::SecurityScanSlis.error_rate).not_to receive(:increment)
+
+              store_scan_group
+            end
+          end
+        end
+
+        context 'with missing security report scan' do
+          let(:artifacts) { [artifact_1, artifact_2, artifact_3] }
+
+          it 'does not emit error rate' do
+            expect(Gitlab::Metrics::SecurityScanSlis.error_rate).not_to receive(:increment)
+          end
+        end
+      end
     end
   end
 end
