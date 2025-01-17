@@ -168,8 +168,8 @@ RSpec.describe Groups::AutocompleteService, feature_category: :groups_and_projec
   end
 
   describe '#vulnerability' do
-    let_it_be_with_refind(:project) { create(:project, group: group) }
-    let_it_be(:vulnerability) { create(:vulnerability, :with_finding, project: project) }
+    let_it_be_with_refind(:project) { create(:project, group: group).tap(&:mark_as_vulnerable!) }
+    let_it_be(:vulnerability) { create(:vulnerability, :with_read, project: project) }
     let_it_be(:guest) { create(:user) }
 
     let(:autocomplete_user) { user }
