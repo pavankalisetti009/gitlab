@@ -61,6 +61,7 @@ module Projects
 
     def reject_security_policy_project_deletion?
       return false unless ::Feature.enabled?(:reject_security_policy_project_deletion, project)
+      return false unless project.licensed_feature_available?(:security_orchestration_policies)
 
       ::Security::OrchestrationPolicyConfiguration.for_management_project(project).exists?
     end
