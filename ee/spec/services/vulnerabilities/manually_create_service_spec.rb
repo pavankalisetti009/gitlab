@@ -287,6 +287,10 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         expect(subject.error?).to be_truthy
       end
 
+      it 'returns all ActiveRecord errors' do
+        expect(subject.payload[:errors]).to include("Name can't be blank", "Severity can't be blank")
+      end
+
       it 'does not mark project as vulnerable' do
         expect { subject }.not_to change { project.reload.project_setting.has_vulnerabilities? }.from(false)
       end
