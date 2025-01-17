@@ -1,9 +1,8 @@
 <script>
 import { GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
 import { __ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { validateTypeFilter } from 'ee/security_orchestration/components/policies/utils';
-import { POLICY_TYPE_FILTER_OPTIONS, VULNERABILITY_MANAGEMENT_FILTER_OPTION } from '../constants';
+import { POLICY_TYPE_FILTER_OPTIONS } from '../constants';
 
 export default {
   name: 'PolicyTypeFilter',
@@ -11,7 +10,6 @@ export default {
     GlFormGroup,
     GlCollapsibleListbox,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     value: {
       type: String,
@@ -20,25 +18,16 @@ export default {
     },
   },
   computed: {
-    options() {
-      return this.glFeatures.vulnerabilityManagementPolicyType ||
-        this.glFeatures.vulnerabilityManagementPolicyTypeGroup
-        ? {
-            ...POLICY_TYPE_FILTER_OPTIONS,
-            ...VULNERABILITY_MANAGEMENT_FILTER_OPTION,
-          }
-        : POLICY_TYPE_FILTER_OPTIONS;
-    },
-
     listboxItems() {
-      return Object.values(this.options).map((option) => ({
+      return Object.values(POLICY_TYPE_FILTER_OPTIONS).map((option) => ({
         value: option.value,
         text: option.text,
       }));
     },
 
     selectedValueText() {
-      return Object.values(this.options).find(({ value }) => value === this.value).text;
+      return Object.values(POLICY_TYPE_FILTER_OPTIONS).find(({ value }) => value === this.value)
+        .text;
     },
   },
   methods: {

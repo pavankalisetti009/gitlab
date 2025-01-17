@@ -11,7 +11,6 @@ module Projects
       before_action :validate_policy_configuration, only: :edit
 
       before_action do
-        push_frontend_feature_flag(:vulnerability_management_policy_type, project)
         push_frontend_feature_flag(:scan_execution_policy_action_limit, project)
         push_frontend_feature_flag(:security_policies_new_yaml_format, project.group)
         push_frontend_feature_flag(:exclude_license_packages, project.group)

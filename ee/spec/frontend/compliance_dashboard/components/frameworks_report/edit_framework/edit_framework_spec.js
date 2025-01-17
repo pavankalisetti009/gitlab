@@ -104,19 +104,13 @@ describe('Edit Framework Form', () => {
 
   function createComponent(
     mountFn = mountExtended,
-    {
-      requestHandlers = [],
-      routeParams = { id: '1' },
-      provide = {},
-      vulnerabilityManagementPolicyTypeGroup = true,
-    } = {},
+    { requestHandlers = [], routeParams = { id: '1' }, provide = {} } = {},
   ) {
     return mountFn(EditFramework, {
       apolloProvider: createMockApollo(requestHandlers),
       provide: {
         ...provideData,
         ...provide,
-        glFeatures: { vulnerabilityManagementPolicyTypeGroup },
       },
       propsData,
       stubs: {
@@ -806,27 +800,24 @@ describe('Edit Framework Form', () => {
     });
 
     it.each`
-      policyType                           | policyCursor | vulnerabilityManagementPolicyTypeGroup | buttonState
-      ${'scanResultPolicies'}              | ${'MQ'}      | ${true}                                | ${true}
-      ${'scanResultPolicies'}              | ${null}      | ${true}                                | ${false}
-      ${'pipelineExecutionPolicies'}       | ${'MQ'}      | ${true}                                | ${true}
-      ${'pipelineExecutionPolicies'}       | ${null}      | ${true}                                | ${false}
-      ${'scanExecutionPolicies'}           | ${'MQ'}      | ${true}                                | ${true}
-      ${'scanExecutionPolicies'}           | ${null}      | ${true}                                | ${false}
-      ${'vulnerabilityManagementPolicies'} | ${'MQ'}      | ${true}                                | ${true}
-      ${'vulnerabilityManagementPolicies'} | ${null}      | ${true}                                | ${false}
-      ${'vulnerabilityManagementPolicies'} | ${'MQ'}      | ${false}                               | ${false}
-      ${'vulnerabilityManagementPolicies'} | ${null}      | ${false}                               | ${false}
+      policyType                           | policyCursor | buttonState
+      ${'scanResultPolicies'}              | ${'MQ'}      | ${true}
+      ${'scanResultPolicies'}              | ${null}      | ${false}
+      ${'pipelineExecutionPolicies'}       | ${'MQ'}      | ${true}
+      ${'pipelineExecutionPolicies'}       | ${null}      | ${false}
+      ${'scanExecutionPolicies'}           | ${'MQ'}      | ${true}
+      ${'scanExecutionPolicies'}           | ${null}      | ${false}
+      ${'vulnerabilityManagementPolicies'} | ${'MQ'}      | ${true}
+      ${'vulnerabilityManagementPolicies'} | ${null}      | ${false}
     `(
-      'sets disabled attribute to $buttonState and renders correct tooltip when $policyType has cursor $policyCursor and feature flag vulnerabilityManagementPolicyTypeGroup is $vulnerabilityManagementPolicyTypeGroup',
-      async ({ policyType, policyCursor, vulnerabilityManagementPolicyTypeGroup, buttonState }) => {
+      'sets disabled attribute to $buttonState and renders correct tooltip when $policyType has cursor $policyCursor',
+      async ({ policyType, policyCursor, buttonState }) => {
         const response = createComplianceFrameworksReportResponse();
         response.data.namespace.complianceFrameworks.nodes[0][policyType].pageInfo.startCursor =
           policyCursor;
 
         wrapper = createComponent(shallowMountExtended, {
           requestHandlers: [[getComplianceFrameworkQuery, () => response]],
-          vulnerabilityManagementPolicyTypeGroup,
         });
 
         await waitForPromises();

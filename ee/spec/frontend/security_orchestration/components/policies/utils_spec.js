@@ -9,7 +9,6 @@ import {
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
-  VULNERABILITY_MANAGEMENT_FILTER_OPTION,
 } from 'ee/security_orchestration/components/policies/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { mockDastScanExecutionManifest } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
@@ -36,43 +35,24 @@ describe('utils', () => {
   });
 
   describe('validateTypeFilter', () => {
-    beforeEach(() => {
-      window.gon.features = {
-        vulnerabilityManagementPolicyType: true,
-      };
-    });
-
     it.each`
-      value                                                                                  | valid
-      ${POLICY_TYPE_FILTER_OPTIONS.ALL.value}                                                | ${true}
-      ${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value}                                     | ${true}
-      ${POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value}                                           | ${true}
-      ${''}                                                                                  | ${true}
-      ${'invalid key'}                                                                       | ${false}
-      ${undefined}                                                                           | ${false}
-      ${null}                                                                                | ${false}
-      ${{}}                                                                                  | ${false}
-      ${0}                                                                                   | ${false}
-      ${POLICY_TYPE_FILTER_OPTIONS.ALL.value.toLowerCase()}                                  | ${true}
-      ${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value.toLowerCase()}                       | ${true}
-      ${POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value.toLowerCase()}                             | ${true}
-      ${POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value.toLowerCase()}                   | ${true}
-      ${VULNERABILITY_MANAGEMENT_FILTER_OPTION.VULNERABILITY_MANAGEMENT.value.toLowerCase()} | ${true}
+      value                                                                      | valid
+      ${POLICY_TYPE_FILTER_OPTIONS.ALL.value}                                    | ${true}
+      ${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value}                         | ${true}
+      ${POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value}                               | ${true}
+      ${''}                                                                      | ${true}
+      ${'invalid key'}                                                           | ${false}
+      ${undefined}                                                               | ${false}
+      ${null}                                                                    | ${false}
+      ${{}}                                                                      | ${false}
+      ${0}                                                                       | ${false}
+      ${POLICY_TYPE_FILTER_OPTIONS.ALL.value.toLowerCase()}                      | ${true}
+      ${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value.toLowerCase()}           | ${true}
+      ${POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value.toLowerCase()}                 | ${true}
+      ${POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value.toLowerCase()}       | ${true}
+      ${POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value.toLowerCase()} | ${true}
     `('should validate type filters for $value', ({ value, valid }) => {
       expect(validateTypeFilter(value)).toBe(valid);
-    });
-
-    it('returns false for vulnerability management filter option when feature flag is disabled', () => {
-      // Both project-level and group-level feature flags need to be disabled
-      window.gon.features = {
-        vulnerabilityManagementPolicyType: false,
-        vulnerabilityManagementPolicyTypeGroup: false,
-      };
-      expect(
-        validateTypeFilter(
-          VULNERABILITY_MANAGEMENT_FILTER_OPTION.VULNERABILITY_MANAGEMENT.value.toLowerCase(),
-        ),
-      ).toBe(false);
     });
   });
 
