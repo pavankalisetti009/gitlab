@@ -2100,6 +2100,10 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
         context 'when attempting to delete security policy project' do
           before do
+            stub_licensed_features(
+              adjourned_deletion_for_projects_and_groups: true,
+              security_orchestration_policies: true)
+
             create(
               :security_orchestration_policy_configuration,
               security_policy_management_project: project)

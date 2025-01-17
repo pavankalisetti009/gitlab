@@ -17,7 +17,9 @@ RSpec.describe Projects::MarkForDeletionService do
 
   context 'with delayed delete feature turned on' do
     before do
-      stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
+      stub_licensed_features(
+        adjourned_deletion_for_projects_and_groups: true,
+        security_orchestration_policies: true)
     end
 
     context 'marking project for deletion' do
@@ -75,6 +77,18 @@ RSpec.describe Projects::MarkForDeletionService do
       context 'with feature disabled' do
         before do
           stub_feature_flags(reject_security_policy_project_deletion: false)
+        end
+
+        it 'marks the project for deletion' do
+          expect { result }.to change { project.marked_for_deletion? }.from(false).to(true)
+        end
+      end
+
+      context 'without licensed feature' do
+        before do
+          stub_licensed_features(
+            adjourned_deletion_for_projects_and_groups: true,
+            security_orchestration_policies: false)
         end
 
         it 'marks the project for deletion' do

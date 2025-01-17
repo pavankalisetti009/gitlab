@@ -994,6 +994,10 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         subject(:delete_project) { delete :destroy, params: { namespace_id: project.namespace, id: project } }
 
         before do
+          stub_licensed_features(
+            adjourned_deletion_for_projects_and_groups: true,
+            security_orchestration_policies: true)
+
           create(
             :security_orchestration_policy_configuration,
             security_policy_management_project: project)
