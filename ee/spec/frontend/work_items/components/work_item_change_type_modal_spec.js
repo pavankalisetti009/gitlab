@@ -8,10 +8,10 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
 
-import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_type_modal.vue';
+import WorkItemChangeTypeModal from 'ee_else_ce/work_items/components/work_item_change_type_modal.vue';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import getWorkItemDesignListQuery from '~/work_items/components/design_management/graphql/design_collection.query.graphql';
-
+import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
 import {
   WORK_ITEM_TYPE_VALUE_TASK,
   WORK_ITEM_WIDGETS_NAME_MAP,
@@ -19,14 +19,16 @@ import {
   WORK_ITEM_TYPE_ENUM_KEY_RESULT,
   WORK_ITEM_TYPE_VALUE_KEY_RESULT,
   WORK_ITEM_TYPE_ENUM_ISSUE,
+  WORK_ITEM_TYPE_ENUM_EPIC,
 } from '~/work_items/constants';
 
-import { workItemChangeTypeWidgets } from '../mock_data';
+import { workItemChangeTypeWidgets, promoteToEpicMutationResponse } from '../mock_data';
 
 describe('WorkItemChangeTypeModal component', () => {
   Vue.use(VueApollo);
 
   let wrapper;
+  const graphqlError = 'GraphQL error';
   // Progress is missing as there is no WorkItemWidgetDefinitionProgress
   // So, the work_items.rb is not generating progress data in fixture
   // This is till we figure out why progress is not being added in the fixture data
@@ -60,11 +62,31 @@ describe('WorkItemChangeTypeModal component', () => {
     },
   });
 
-  const createComponent = ({ widgets = [], workItemType = WORK_ITEM_TYPE_VALUE_TASK } = {}) => {
+  const promoteToEpicMutationSuccessHandler = jest
+    .fn()
+    .mockResolvedValue(promoteToEpicMutationResponse);
+
+  const promoteToEpicMutationErrorResponse = {
+    errors: [
+      {
+        message: graphqlError,
+      },
+    ],
+    data: {
+      promoteToEpic: null,
+    },
+  };
+
+  const createComponent = ({
+    widgets = [],
+    workItemType = WORK_ITEM_TYPE_VALUE_TASK,
+    promoteToEpicMutationHandler = promoteToEpicMutationSuccessHandler,
+  } = {}) => {
     wrapper = mountExtended(WorkItemChangeTypeModal, {
       apolloProvider: createMockApollo([
         [namespaceWorkItemTypesQuery, typesQuerySuccessHandler],
         [getWorkItemDesignListQuery, noDesignQueryHandler],
+        [promoteToEpicMutation, promoteToEpicMutationHandler],
       ]),
       propsData: {
         workItemId: 'gid://gitlab/WorkItem/1',
@@ -73,6 +95,7 @@ describe('WorkItemChangeTypeModal component', () => {
         hasChildren: false,
         widgets,
         workItemType,
+        workItemIid: '1',
       },
       provide: {
         hasOkrsFeature: true,
@@ -92,10 +115,18 @@ describe('WorkItemChangeTypeModal component', () => {
   const findChangeTypeModal = () => wrapper.findComponent(GlModal);
   const findGlFormSelect = () => wrapper.findComponent(GlFormSelect);
   const findWarningAlert = () => wrapper.findByTestId('change-type-warning-message');
+  const findEpicTypeOption = () => findGlFormSelect().findAll('option').at(4);
 
   beforeEach(async () => {
     createComponent();
     await waitForPromises();
+  });
+
+  it('renders epic type as select option when work item type is an issue', () => {
+    createComponent({ workItemType: WORK_ITEM_TYPE_VALUE_ISSUE });
+
+    expect(findGlFormSelect().findAll('option')).toHaveLength(5);
+    expect(findEpicTypeOption().text()).toBe('Epic (Promote to group)');
   });
 
   describe('when widget data has difference', () => {
@@ -122,6 +153,55 @@ describe('WorkItemChangeTypeModal component', () => {
 
         expect(findWarningAlert().text()).toContain(expectedString);
         expect(findChangeTypeModal().props('actionPrimary').attributes.disabled).toBe(false);
+      },
+    );
+  });
+
+  describe('promote issue to epic', () => {
+    it('successfully changes a work item type when conditions are met', async () => {
+      createComponent({ workItemType: WORK_ITEM_TYPE_VALUE_ISSUE });
+
+      await waitForPromises();
+
+      findGlFormSelect().vm.$emit('change', WORK_ITEM_TYPE_ENUM_EPIC);
+
+      await nextTick();
+
+      findChangeTypeModal().vm.$emit('primary');
+
+      await waitForPromises();
+
+      expect(promoteToEpicMutationSuccessHandler).toHaveBeenCalledWith({
+        input: {
+          iid: '1',
+          projectPath: 'gitlab-org/gitlab-test',
+        },
+      });
+    });
+
+    it.each`
+      errorType          | expectedErrorMessage | failureHandler
+      ${'graphql error'} | ${graphqlError}      | ${jest.fn().mockResolvedValue(promoteToEpicMutationErrorResponse)}
+      ${'network error'} | ${'Network error'}   | ${jest.fn().mockRejectedValue(new Error('Network error'))}
+    `(
+      'emits an error when there is a $errorType',
+      async ({ expectedErrorMessage, failureHandler }) => {
+        createComponent({
+          workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
+          promoteToEpicMutationHandler: failureHandler,
+        });
+
+        await waitForPromises();
+
+        findGlFormSelect().vm.$emit('change', WORK_ITEM_TYPE_ENUM_EPIC);
+
+        await nextTick();
+
+        findChangeTypeModal().vm.$emit('primary');
+
+        await waitForPromises();
+
+        expect(wrapper.emitted('error')[0][0]).toEqual(expectedErrorMessage);
       },
     );
   });

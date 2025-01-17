@@ -18,6 +18,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import toast from '~/vue_shared/plugins/global_toast';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 
+import WorkItemChangeTypeModal from 'ee_else_ce/work_items/components/work_item_change_type_modal.vue';
 import {
   sprintfWorkItem,
   I18N_WORK_ITEM_DELETE,
@@ -48,7 +49,6 @@ import updateWorkItemMutation from '../graphql/update_work_item.mutation.graphql
 import updateWorkItemNotificationsMutation from '../graphql/update_work_item_notifications.mutation.graphql';
 import convertWorkItemMutation from '../graphql/work_item_convert.mutation.graphql';
 import namespaceWorkItemTypesQuery from '../graphql/namespace_work_item_types.query.graphql';
-import WorkItemChangeTypeModal from './work_item_change_type_modal.vue';
 import WorkItemStateToggle from './work_item_state_toggle.vue';
 import CreateWorkItemModal from './create_work_item_modal.vue';
 
@@ -219,6 +219,11 @@ export default {
       required: false,
       default: () => [],
     },
+    namespaceFullName: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -313,7 +318,7 @@ export default {
         : this.$options.i18n.confidentialityEnabled;
     },
     showChangeType() {
-      return !this.isEpic && this.glFeatures.workItemsBeta;
+      return !this.isEpic && this.glFeatures.workItemsBeta && this.$options.isLoggedIn;
     },
     upperCaseWorkItemTypeName() {
       return this.workItemType?.toUpperCase();
@@ -615,13 +620,16 @@ export default {
       v-if="showChangeType"
       ref="workItemsChangeTypeModal"
       :work-item-id="workItemId"
+      :work-item-iid="workItemIid"
       :work-item-type="workItemType"
       :full-path="fullPath"
       :has-children="hasChildren"
       :has-parent="hasParent"
       :widgets="widgets"
       :allowed-child-types="allowedChildTypes"
+      :namespace-full-name="namespaceFullName"
       @workItemTypeChanged="$emit('workItemTypeChanged')"
+      @error="$emit('error', $event)"
     />
   </div>
 </template>

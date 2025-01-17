@@ -85,6 +85,11 @@ export default {
       required: false,
       default: () => [],
     },
+    namespaceFullName: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   computed: {
     canUpdate() {
@@ -196,6 +201,7 @@ export default {
             :widgets="widgets"
             :allowed-child-types="allowedChildTypes"
             :parent-id="parentId"
+            :namespace-full-name="namespaceFullName"
             @deleteWorkItem="$emit('deleteWorkItem')"
             @toggleWorkItemConfidentiality="
               $emit('toggleWorkItemConfidentiality', !workItem.confidential)

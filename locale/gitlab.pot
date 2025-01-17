@@ -22703,6 +22703,9 @@ msgstr ""
 msgid "Epic"
 msgstr ""
 
+msgid "Epic (Promote to group)"
+msgstr ""
+
 msgid "Epic Boards"
 msgstr ""
 
@@ -64571,6 +64574,9 @@ msgid "WorkItem|Emoji reactions"
 msgstr ""
 
 msgid "WorkItem|Epic"
+msgstr ""
+
+msgid "WorkItem|Epic will be moved to parent group %{groupName}."
 msgstr ""
 
 msgid "WorkItem|Existing %{workItemName}"
