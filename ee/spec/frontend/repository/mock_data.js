@@ -65,6 +65,7 @@ export const headerAppInjected = {
   downloadArtifacts: [
     'https://gitlab.com/example-group/example-project/-/jobs/artifacts/main/download?job=build',
   ],
+  isBinary: false,
 };
 
 export const userPermissionsMock = {
