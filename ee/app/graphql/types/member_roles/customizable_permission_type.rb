@@ -39,6 +39,16 @@ module Types
         null: true,
         description: 'Access level from which the permission is available.'
 
+      field :enabled_for_group_access_levels,
+        type: [Types::AccessLevelEnum],
+        null: true,
+        description: 'Group access levels from which the permission is allowed.'
+
+      field :enabled_for_project_access_levels,
+        type: [Types::AccessLevelEnum],
+        null: true,
+        description: 'Project access levels from which the permission is allowed.'
+
       def available_for
         result = []
         result << :project if MemberRole.all_customizable_project_permissions.include?(object)
@@ -61,6 +71,14 @@ module Types
 
       def available_from_access_level
         permission[:available_from_access_level]
+      end
+
+      def enabled_for_group_access_levels
+        permission[:enabled_for_group_access_levels]
+      end
+
+      def enabled_for_project_access_levels
+        permission[:enabled_for_project_access_levels]
       end
 
       def permission

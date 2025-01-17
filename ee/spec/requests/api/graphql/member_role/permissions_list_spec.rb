@@ -13,6 +13,8 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
         name
         requirements
         value
+        enabledForGroupAccessLevels
+        enabledForProjectAccessLevels
         availableFromAccessLevel {
           integerValue
         }
@@ -48,19 +50,23 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
           title: 'Admin something',
           description: 'Allows admin access to do something.',
           project_ability: true,
-          available_from_access_level: 50
+          available_from_access_level: 50,
+          enabled_for_project_access_levels: [50]
         },
         admin_ability_two: {
           title: 'Admin something else',
           description: 'Allows admin access to do something else.',
           requirements: [:read_ability_two],
-          group_ability: true
+          group_ability: true,
+          enabled_for_group_access_levels: [40, 50]
         },
         read_ability_two: {
           title: 'Read something else',
           description: 'Allows read access to do something else.',
           group_ability: true,
-          project_ability: true
+          project_ability: true,
+          enabled_for_group_access_levels: [20, 30, 40, 50],
+          enabled_for_project_access_levels: [20, 30, 40, 50]
         }
       }
     )
@@ -82,13 +88,16 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
     expected_result = [
       { 'availableFor' => ['project'], 'description' => 'Allows admin access to do something.',
         'name' => 'Admin something', 'requirements' => nil, 'value' => 'ADMIN_ABILITY_ONE',
-        'availableFromAccessLevel' => { 'integerValue' => 50 } },
+        'availableFromAccessLevel' => { 'integerValue' => 50 }, 'enabledForGroupAccessLevels' => nil,
+        'enabledForProjectAccessLevels' => ['OWNER'] },
       { 'availableFor' => %w[project group], 'description' => 'Allows read access to do something else.',
         'name' => 'Read something else', 'requirements' => nil, 'value' => 'READ_ABILITY_TWO',
-        'availableFromAccessLevel' => nil },
+        'availableFromAccessLevel' => nil, 'enabledForGroupAccessLevels' => %w[REPORTER DEVELOPER MAINTAINER OWNER],
+        'enabledForProjectAccessLevels' => %w[REPORTER DEVELOPER MAINTAINER OWNER] },
       { 'availableFor' => ['group'], 'description' => "Allows admin access to do something else.",
         'requirements' => ['READ_ABILITY_TWO'], 'name' => 'Admin something else', 'value' => 'ADMIN_ABILITY_TWO',
-        'availableFromAccessLevel' => nil }
+        'availableFromAccessLevel' => nil, 'enabledForGroupAccessLevels' => %w[MAINTAINER OWNER],
+        'enabledForProjectAccessLevels' => nil }
     ]
 
     expect(subject).to match_array(expected_result)
