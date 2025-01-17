@@ -6,8 +6,7 @@ import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import Component from 'ee/analytics/cycle_analytics/components/base.vue';
-import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_chart.vue';
-import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
+import DurationChartLoader from 'ee/analytics/cycle_analytics/components/duration_charts/duration_chart_loader.vue';
 import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/type_of_work_charts_loader.vue';
 import ValueStreamSelect from 'ee/analytics/cycle_analytics/components/value_stream_select.vue';
 import ValueStreamAggregationStatus from 'ee/analytics/cycle_analytics/components/value_stream_aggregation_status.vue';
@@ -66,7 +65,7 @@ jest.mock('~/alert');
 const defaultStubs = {
   'tasks-by-type-chart': true,
   'labels-selector': true,
-  StageChart: true,
+  DurationChartLoader: true,
   ValueStreamSelect: true,
   Metrics: true,
   UrlSync,
@@ -186,8 +185,7 @@ describe('EE Value Stream Analytics component', () => {
   const findStageTable = () => wrapper.findComponent(StageTable);
   const findOverviewMetrics = () => wrapper.findComponent(ValueStreamMetrics);
   const findFilterBar = () => wrapper.findComponent(ValueStreamFilters);
-  const findStageChart = () => wrapper.findComponent(StageChart);
-  const findOverviewChart = () => wrapper.findComponent(OverviewChart);
+  const findDurationChart = () => wrapper.findComponent(DurationChartLoader);
   const findTypeOfWorkCharts = () => wrapper.findComponent(TypeOfWorkChartsLoader);
   const findValueStreamSelect = () => wrapper.findComponent(ValueStreamSelect);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
@@ -212,15 +210,14 @@ describe('EE Value Stream Analytics component', () => {
     });
 
     it.each`
-      component                    | componentFinder          | exists   | result
-      ${'Filter bar'}              | ${findFilterBar}         | ${false} | ${'not render'}
-      ${'Aggregation status'}      | ${findAggregationStatus} | ${false} | ${'not render'}
-      ${'Value stream select'}     | ${findValueStreamSelect} | ${false} | ${'not render'}
-      ${'Stage table'}             | ${findStageTable}        | ${false} | ${'not render'}
-      ${'Stage duration chart'}    | ${findStageChart}        | ${false} | ${'not render'}
-      ${'Overview metrics'}        | ${findOverviewMetrics}   | ${false} | ${'not render'}
-      ${'Type of work chart'}      | ${findTypeOfWorkCharts}  | ${false} | ${'not render'}
-      ${'Duration overview chart'} | ${findOverviewChart}     | ${false} | ${'not render'}
+      component                | componentFinder          | exists   | result
+      ${'Filter bar'}          | ${findFilterBar}         | ${false} | ${'not render'}
+      ${'Aggregation status'}  | ${findAggregationStatus} | ${false} | ${'not render'}
+      ${'Value stream select'} | ${findValueStreamSelect} | ${false} | ${'not render'}
+      ${'Stage table'}         | ${findStageTable}        | ${false} | ${'not render'}
+      ${'Duration chart'}      | ${findDurationChart}     | ${false} | ${'not render'}
+      ${'Overview metrics'}    | ${findOverviewMetrics}   | ${false} | ${'not render'}
+      ${'Type of work chart'}  | ${findTypeOfWorkCharts}  | ${false} | ${'not render'}
     `(`will $result the $component`, ({ componentFinder, exists }) => {
       expect(componentFinder().exists()).toBe(exists);
     });
@@ -248,15 +245,14 @@ describe('EE Value Stream Analytics component', () => {
     });
 
     it.each`
-      component                    | componentFinder          | exists   | result
-      ${'Filter bar'}              | ${findFilterBar}         | ${true}  | ${'render'}
-      ${'Aggregation status'}      | ${findAggregationStatus} | ${true}  | ${'render'}
-      ${'Value stream select'}     | ${findValueStreamSelect} | ${true}  | ${'render'}
-      ${'Stage table'}             | ${findStageTable}        | ${false} | ${'not render'}
-      ${'Stage duration chart'}    | ${findStageChart}        | ${false} | ${'not render'}
-      ${'Overview metrics'}        | ${findOverviewMetrics}   | ${false} | ${'not render'}
-      ${'Type of work chart'}      | ${findTypeOfWorkCharts}  | ${false} | ${'not render'}
-      ${'Duration overview chart'} | ${findOverviewChart}     | ${false} | ${'not render'}
+      component                | componentFinder          | exists   | result
+      ${'Filter bar'}          | ${findFilterBar}         | ${true}  | ${'render'}
+      ${'Aggregation status'}  | ${findAggregationStatus} | ${true}  | ${'render'}
+      ${'Value stream select'} | ${findValueStreamSelect} | ${true}  | ${'render'}
+      ${'Stage table'}         | ${findStageTable}        | ${false} | ${'not render'}
+      ${'Duration chart'}      | ${findDurationChart}     | ${false} | ${'not render'}
+      ${'Overview metrics'}    | ${findOverviewMetrics}   | ${false} | ${'not render'}
+      ${'Type of work chart'}  | ${findTypeOfWorkCharts}  | ${false} | ${'not render'}
     `(`will $result the $component`, ({ componentFinder, exists }) => {
       expect(componentFinder().exists()).toBe(exists);
     });
@@ -278,16 +274,15 @@ describe('EE Value Stream Analytics component', () => {
     });
 
     it.each`
-      component                    | componentFinder          | exists   | result
-      ${'Path navigation'}         | ${findPathNavigation}    | ${true}  | ${'render'}
-      ${'Filter bar'}              | ${findFilterBar}         | ${true}  | ${'render'}
-      ${'Aggregation status'}      | ${findAggregationStatus} | ${true}  | ${'render'}
-      ${'Value stream select'}     | ${findValueStreamSelect} | ${true}  | ${'render'}
-      ${'Overview metrics'}        | ${findOverviewMetrics}   | ${true}  | ${'render'}
-      ${'Type of work chart'}      | ${findTypeOfWorkCharts}  | ${true}  | ${'render'}
-      ${'Duration overview chart'} | ${findOverviewChart}     | ${true}  | ${'render'}
-      ${'Stage table'}             | ${findStageTable}        | ${false} | ${'not render'}
-      ${'Stage duration chart'}    | ${findStageChart}        | ${false} | ${'not render'}
+      component                | componentFinder          | exists   | result
+      ${'Path navigation'}     | ${findPathNavigation}    | ${true}  | ${'render'}
+      ${'Filter bar'}          | ${findFilterBar}         | ${true}  | ${'render'}
+      ${'Aggregation status'}  | ${findAggregationStatus} | ${true}  | ${'render'}
+      ${'Value stream select'} | ${findValueStreamSelect} | ${true}  | ${'render'}
+      ${'Overview metrics'}    | ${findOverviewMetrics}   | ${true}  | ${'render'}
+      ${'Type of work chart'}  | ${findTypeOfWorkCharts}  | ${true}  | ${'render'}
+      ${'Duration chart'}      | ${findDurationChart}     | ${true}  | ${'render'}
+      ${'Stage table'}         | ${findStageTable}        | ${false} | ${'not render'}
     `(`will $result the $component`, ({ componentFinder, exists }) => {
       expect(componentFinder().exists()).toBe(exists);
     });
@@ -312,15 +307,14 @@ describe('EE Value Stream Analytics component', () => {
       });
 
       describe.each`
-        component                    | componentFinder          | exists   | visible
-        ${'Filter bar'}              | ${findFilterBar}         | ${true}  | ${true}
-        ${'Aggregation status'}      | ${findAggregationStatus} | ${true}  | ${true}
-        ${'Value stream select'}     | ${findValueStreamSelect} | ${true}  | ${true}
-        ${'Stage table'}             | ${findStageTable}        | ${true}  | ${true}
-        ${'Stage duration chart'}    | ${findStageChart}        | ${true}  | ${true}
-        ${'Overview metrics'}        | ${findOverviewMetrics}   | ${false} | ${false}
-        ${'Type of work chart'}      | ${findTypeOfWorkCharts}  | ${true}  | ${false}
-        ${'Duration overview chart'} | ${findOverviewChart}     | ${false} | ${false}
+        component                | componentFinder          | exists   | visible
+        ${'Filter bar'}          | ${findFilterBar}         | ${true}  | ${true}
+        ${'Aggregation status'}  | ${findAggregationStatus} | ${true}  | ${true}
+        ${'Value stream select'} | ${findValueStreamSelect} | ${true}  | ${true}
+        ${'Stage table'}         | ${findStageTable}        | ${true}  | ${true}
+        ${'Duration chart'}      | ${findDurationChart}     | ${true}  | ${true}
+        ${'Overview metrics'}    | ${findOverviewMetrics}   | ${false} | ${false}
+        ${'Type of work chart'}  | ${findTypeOfWorkCharts}  | ${true}  | ${false}
       `(`for $component`, ({ componentFinder, exists, visible }) => {
         it(`${exists ? 'will' : 'will not'} render`, () => {
           expect(componentFinder().exists()).toBe(exists);
@@ -343,15 +337,14 @@ describe('EE Value Stream Analytics component', () => {
         });
 
         describe.each`
-          component                    | componentFinder          | exists   | visible
-          ${'Filter bar'}              | ${findFilterBar}         | ${true}  | ${true}
-          ${'Aggregation status'}      | ${findAggregationStatus} | ${true}  | ${true}
-          ${'Value stream select'}     | ${findValueStreamSelect} | ${true}  | ${true}
-          ${'Stage table'}             | ${findStageTable}        | ${false} | ${false}
-          ${'Stage duration chart'}    | ${findStageChart}        | ${true}  | ${true}
-          ${'Overview metrics'}        | ${findOverviewMetrics}   | ${false} | ${false}
-          ${'Type of work chart'}      | ${findTypeOfWorkCharts}  | ${true}  | ${false}
-          ${'Duration overview chart'} | ${findOverviewChart}     | ${false} | ${false}
+          component                | componentFinder          | exists   | visible
+          ${'Filter bar'}          | ${findFilterBar}         | ${true}  | ${true}
+          ${'Aggregation status'}  | ${findAggregationStatus} | ${true}  | ${true}
+          ${'Value stream select'} | ${findValueStreamSelect} | ${true}  | ${true}
+          ${'Stage table'}         | ${findStageTable}        | ${false} | ${false}
+          ${'Duration chart'}      | ${findDurationChart}     | ${true}  | ${true}
+          ${'Overview metrics'}    | ${findOverviewMetrics}   | ${false} | ${false}
+          ${'Type of work chart'}  | ${findTypeOfWorkCharts}  | ${true}  | ${false}
         `(`for $component`, ({ componentFinder, exists, visible }) => {
           it(`${exists ? 'will' : 'will not'} render`, () => {
             expect(componentFinder().exists()).toBe(exists);

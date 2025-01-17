@@ -1,7 +1,5 @@
 <script>
 import { GlAreaChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
-// eslint-disable-next-line no-restricted-imports
-import { mapGetters, mapState } from 'vuex';
 import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import { dateFormats } from '~/analytics/shared/constants';
@@ -36,6 +34,21 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  props: {
+    isLoading: {
+      type: Boolean,
+      required: true,
+    },
+    errorMessage: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    plottableData: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return {
       chart: null,
@@ -45,21 +58,17 @@ export default {
     };
   },
   computed: {
-    ...mapState('durationChart', ['isLoading', 'errorMessage']),
-    ...mapGetters('durationChart', ['durationOverviewChartPlottableData']),
     hasData() {
       return Boolean(
         !this.isLoading &&
-          this.durationOverviewChartPlottableData.some(({ data }) =>
-            data.some(([, metric]) => metric !== null),
-          ),
+          this.plottableData.some(({ data }) => data.some(([, metric]) => metric !== null)),
       );
     },
     chartData() {
       const nonNullSeries = [];
       const nullSeries = [];
 
-      this.durationOverviewChartPlottableData.forEach(({ name: seriesName, data: seriesData }) => {
+      this.plottableData.forEach(({ name: seriesName, data: seriesData }) => {
         const valuesSeries = {
           name: seriesName,
           data: seriesData,

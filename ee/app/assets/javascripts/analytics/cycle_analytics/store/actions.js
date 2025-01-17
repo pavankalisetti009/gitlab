@@ -63,14 +63,7 @@ export const fetchCycleAnalyticsData = ({ dispatch }) => {
     .then(() => dispatch('requestCycleAnalyticsData'))
     .then(() => dispatch('fetchValueStreams'))
     .then(() => dispatch('receiveCycleAnalyticsDataSuccess'))
-    .catch((error) => {
-      const promises = [
-        dispatch('receiveCycleAnalyticsDataError', error),
-        dispatch('durationChart/setLoading', false),
-      ];
-
-      return Promise.all(promises);
-    });
+    .catch((error) => dispatch('receiveCycleAnalyticsDataError', error));
 };
 
 export const initializeCycleAnalyticsSuccess = ({ commit }) =>
@@ -99,7 +92,6 @@ export const initializeCycleAnalytics = ({ dispatch, commit }, initialData = {})
         selectedAssigneeList,
         selectedLabelList,
       }),
-      dispatch('durationChart/setLoading', true),
     ];
 
     if (selectedStage) {

@@ -18,8 +18,6 @@ export const TASKS_BY_TYPE_FILTERS = {
 
 export const DEFAULT_VALUE_STREAM_ID = 'default';
 
-export const FETCH_VALUE_STREAM_DATA = 'fetchValueStreamData';
-
 export const OVERVIEW_STAGE_CONFIG = {
   id: OVERVIEW_STAGE_ID,
   title: __('Overview'),

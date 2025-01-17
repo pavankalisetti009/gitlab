@@ -1,6 +1,4 @@
 <script>
-// eslint-disable-next-line no-restricted-imports
-import { mapState, mapGetters } from 'vuex';
 import { DATA_VIZ_BLUE_500 } from '@gitlab/ui/src/tokens/build/js/tokens';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
 import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
@@ -37,22 +35,37 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  props: {
+    stageTitle: {
+      type: String,
+      required: true,
+    },
+    isLoading: {
+      type: Boolean,
+      required: true,
+    },
+    errorMessage: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    plottableData: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return { tooltipTitle: '', tooltipContent: [] };
   },
   computed: {
-    ...mapState(['selectedStage']),
-    ...mapState('durationChart', ['isLoading', 'errorMessage']),
-    ...mapGetters('durationChart', ['durationChartPlottableData']),
     hasData() {
       return Boolean(
-        !this.isLoading &&
-          this.durationChartPlottableData.some((dataPoint) => dataPoint[1] !== null),
+        !this.isLoading && this.plottableData.some((dataPoint) => dataPoint[1] !== null),
       );
     },
     title() {
       return sprintf(DURATION_STAGE_TIME_LABEL, {
-        title: capitalizeFirstCharacter(this.selectedStage.title),
+        title: capitalizeFirstCharacter(this.stageTitle),
       });
     },
     tooltipText() {
@@ -62,7 +75,7 @@ export default {
       const valuesSeries = [
         {
           name: this.$options.i18n.yAxisTitle,
-          data: this.durationChartPlottableData,
+          data: this.plottableData,
           lineStyle: {
             color: DATA_VIZ_BLUE_500,
           },
