@@ -101,6 +101,12 @@ module Types
       field :updated_at, Types::TimeType,
         null: false, description: 'Timestamp of the last update to any mutable workspace property.'
 
+      field :workspace_variables,
+        ::Types::RemoteDevelopment::WorkspaceVariableType.connection_type,
+        null: true,
+        experiment: { milestone: '17.9' },
+        description: 'User defined variables associated with the workspace.', method: :user_provided_workspace_variables
+
       def project_id
         "gid://gitlab/Project/#{object.project_id}"
       end

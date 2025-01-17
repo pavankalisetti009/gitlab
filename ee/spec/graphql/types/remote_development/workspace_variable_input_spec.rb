@@ -8,6 +8,7 @@ RSpec.describe GitlabSchema.types['WorkspaceVariableInput'], feature_category: :
       key
       type
       value
+      variableType
     ]
   end
 

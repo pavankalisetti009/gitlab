@@ -10,6 +10,7 @@ RSpec.describe GitlabSchema.types['Workspace'], feature_category: :workspaces do
       url editor devfile_ref devfile_path devfile_web_url devfile processed_devfile
       project_ref deployment_resource_version desired_config_generator_version
       workspaces_agent_config_version force_include_all_resources created_at updated_at
+      workspace_variables
     ]
   end
 

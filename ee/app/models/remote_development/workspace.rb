@@ -23,6 +23,10 @@ module RemoteDevelopment
     # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
     has_one :remote_development_agent_config, through: :agent, source: :remote_development_agent_config
     has_many :workspace_variables, class_name: 'RemoteDevelopment::WorkspaceVariable', inverse_of: :workspace
+    # Currently we only support :environment type for user provided variables
+    has_many :user_provided_workspace_variables, -> {
+      user_provided.with_variable_type_environment.order_id_desc
+    }, class_name: 'RemoteDevelopment::WorkspaceVariable', inverse_of: :workspace
 
     validates :user, presence: true
     validates :agent, presence: true

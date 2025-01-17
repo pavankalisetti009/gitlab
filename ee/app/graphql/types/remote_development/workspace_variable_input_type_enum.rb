@@ -10,6 +10,10 @@ module Types
         ::RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL,
         description: "#{%(name).capitalize} type."
       )
+
+      def self.environment
+        enum[:environment]
+      end
     end
   end
 end

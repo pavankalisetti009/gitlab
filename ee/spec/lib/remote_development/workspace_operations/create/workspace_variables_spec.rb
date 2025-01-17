@@ -142,12 +142,14 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       {
         key: "VAR1",
         value: "value 1",
+        user_provided: true,
         variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
         workspace_id: workspace_id
       },
       {
         key: "/path/to/file",
         value: "value 2",
+        user_provided: true,
         variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file],
         workspace_id: workspace_id
       }

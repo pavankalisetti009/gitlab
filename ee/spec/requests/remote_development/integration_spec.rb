@@ -87,7 +87,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     ]
   end
 
-  let(:expected_static_variables) do
+  let(:expected_internal_variables) do
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
     [
       { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
@@ -238,15 +238,20 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(actual_processed_devfile.fetch(:components)).to eq(expected_processed_devfile.fetch(:components))
     expect(actual_processed_devfile).to eq(expected_processed_devfile)
 
-    all_expected_vars = (expected_static_variables + user_provided_variables).sort_by { |v| v[:key] }
+    all_expected_vars = (expected_internal_variables + user_provided_variables).sort_by { |v| v[:key] }
     # NOTE: We convert the actual records into hashes and sort them as a hash rather than ordering in
     #       ActiveRecord, to account for platform- or db-specific sorting differences.
     types = RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES
-    all_actual_vars =
-      RemoteDevelopment::WorkspaceVariable
-        .where(workspace: workspace)
-        .map { |v| { key: v.key, type: types.invert[v.variable_type], value: v.value } }
-        .sort_by { |v| v[:key] }
+    all_actual_vars = RemoteDevelopment::WorkspaceVariable.where(workspace: workspace)
+
+    actual_user_provided_vars = all_actual_vars.select(&:user_provided)
+
+    all_actual_vars = all_actual_vars.map { |v| { key: v.key, type: types.invert[v.variable_type], value: v.value } }
+    .sort_by { |v| v[:key] }
+
+    # Check that user provided variables had their flag set correctly.
+    expect(actual_user_provided_vars.count).to eq(user_provided_variables.count)
+    expect(actual_user_provided_vars[0][:key]).to eq(user_provided_variables[0][:key])
 
     # Check just keys first, to get an easy failure message if a new key has been added
     expect(all_actual_vars.pluck(:key)).to match_array(all_expected_vars.pluck(:key))
@@ -256,7 +261,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     actual_without_regexes = all_actual_vars.reject { |v| v[:key] == "gl_token" }
     expect(expected_without_regexes).to match(actual_without_regexes)
 
-    expected_gl_token_value = expected_static_variables.find { |var| var[:key] == "gl_token" }[:value]
+    expected_gl_token_value = expected_internal_variables.find { |var| var[:key] == "gl_token" }[:value]
     actual_gl_token_value = all_actual_vars.find { |var| var[:key] == "gl_token" }[:value]
     expect(actual_gl_token_value).to match(expected_gl_token_value)
 

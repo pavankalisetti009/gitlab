@@ -46,7 +46,7 @@ module RemoteDevelopment
             resource_url_template: String => vscode_extensions_gallery_resource_url_template,
           }
 
-          static_variables = [
+          internal_variables = [
             {
               key: File.basename(TOKEN_FILE),
               value: personal_access_token_value,
@@ -157,11 +157,12 @@ module RemoteDevelopment
               key: variable.fetch(:key),
               value: variable.fetch(:value),
               variable_type: variable.fetch(:type),
+              user_provided: true,
               workspace_id: workspace_id
             }
           end
 
-          static_variables + user_provided_variables
+          internal_variables + user_provided_variables
         end
       end
     end
