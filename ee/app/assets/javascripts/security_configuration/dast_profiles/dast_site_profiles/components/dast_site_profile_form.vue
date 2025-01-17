@@ -225,9 +225,7 @@ export default {
           requestHeaders,
         }),
         ...(this.isTargetAPI && { scanMethod, scanFilePath }),
-        ...(this.glFeatures.dastUiAdditionalVariables && {
-          optionalVariables: this.optionalVariables,
-        }),
+        optionalVariables: this.optionalVariables,
       };
     },
     showWarningTextForTargetUrl() {
@@ -469,10 +467,6 @@ export default {
       :stacked="stacked"
     />
 
-    <dast-variables-form-group
-      v-if="glFeatures.dastUiAdditionalVariables"
-      v-model="form.fields.optionalVariables.value"
-      class="gl-mb-6"
-    />
+    <dast-variables-form-group v-model="form.fields.optionalVariables.value" class="gl-mb-6" />
   </base-dast-profile-form>
 </template>

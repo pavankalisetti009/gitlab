@@ -420,11 +420,6 @@ describe('DastSiteProfileForm', () => {
     });
   });
 
-  it('does not render DastVariablesFormGroup', () => {
-    createShallowComponent();
-    expect(findDastVariablesFormGroup().exists()).toBe(false);
-  });
-
   describe('DastVariablesFormGroup', () => {
     beforeEach(() => {
       createShallowComponent({
@@ -434,15 +429,10 @@ describe('DastSiteProfileForm', () => {
             optionalVariables,
           },
         },
-        provide: {
-          glFeatures: {
-            dastUiAdditionalVariables: true,
-          },
-        },
       });
     });
 
-    it('renders DastVariablesFormGroup when feature flag is enabled', () => {
+    it('renders DastVariablesFormGroup', () => {
       expect(findDastVariablesFormGroup().exists()).toBe(true);
     });
 

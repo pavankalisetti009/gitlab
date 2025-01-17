@@ -93,23 +93,13 @@ describe('DastSiteProfileSummary', () => {
     expect(wrapper.element).toMatchSnapshot();
   });
 
-  describe('additional variables', () => {
-    it.each`
-      dastUiAdditionalVariables | expectation          | expectedVariables
-      ${true}                   | ${'renders'}         | ${mockVariables}
-      ${false}                  | ${'does not render'} | ${[]}
-    `(
-      '$expectation when feature flag is $dastUiAdditionalVariables',
-      ({ dastUiAdditionalVariables, expectedVariables }) => {
-        createComponent({
-          provide: { glFeatures: { dastUiAdditionalVariables } },
-          propsData: { profile: { ...profile, optionalVariables: mockVariables } },
-        });
+  it('renders additional variables', () => {
+    createComponent({
+      propsData: { profile: { ...profile, optionalVariables: mockVariables } },
+    });
 
-        expect(findAdditionalVariables()).toStrictEqual(
-          expectedVariables.map(({ name, value }) => ({ name, value })),
-        );
-      },
+    expect(findAdditionalVariables()).toStrictEqual(
+      mockVariables.map(({ name, value }) => ({ name, value })),
     );
   });
 
