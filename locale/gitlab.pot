@@ -2776,6 +2776,9 @@ msgstr ""
 msgid "AbuseReport|Reported profile"
 msgstr ""
 
+msgid "AbuseReport|Reporter"
+msgstr ""
+
 msgid "AbuseReport|Screenshot of reported abuse"
 msgstr ""
 
