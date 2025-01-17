@@ -127,18 +127,8 @@ describe('App', () => {
   });
 
   describe('loading', () => {
-    it('renders the policies list correctly when vulnerabilityManagementPolicyType is false', () => {
+    it('renders the policies list correctly', () => {
       createWrapper();
-      expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
-    });
-
-    it('renders the policies list correctly when vulnerabilityManagementPolicyType is true', () => {
-      createWrapper({ provide: { glFeatures: { vulnerabilityManagementPolicyType: true } } });
-      expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
-    });
-
-    it('renders the policies list correctly when vulnerabilityManagementPolicyTypeGroup is true', () => {
-      createWrapper({ provide: { glFeatures: { vulnerabilityManagementPolicyTypeGroup: true } } });
       expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
     });
   });
@@ -163,39 +153,8 @@ describe('App', () => {
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: mockScanResultPoliciesResponse,
         [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
           mockPipelineExecutionPoliciesResponse,
-      });
-    });
-
-    it('does not fetch project-level vulnerability management policies', () => {
-      expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
-    });
-
-    describe('when vulnerabilityManagementPolicyType is true', () => {
-      beforeEach(async () => {
-        createWrapper({
-          provide: { glFeatures: { vulnerabilityManagementPolicyType: true } },
-        });
-        await waitForPromises();
-      });
-
-      it('fetches project-level vulnerability management policies', () => {
-        expect(requestHandlers.projectVulnerabilityManagementPolicies).toHaveBeenCalledWith({
-          fullPath: namespacePath,
-          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-        });
-      });
-    });
-
-    describe('when vulnerabilityManagementPolicyTypeGroup is true', () => {
-      beforeEach(async () => {
-        createWrapper({
-          provide: { glFeatures: { vulnerabilityManagementPolicyTypeGroup: true } },
-        });
-        await waitForPromises();
-      });
-
-      it('does not fetch group-level vulnerability management policies', () => {
-        expect(requestHandlers.groupVulnerabilityManagementPolicies).not.toHaveBeenCalled();
+        [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
+          mockVulnerabilityManagementPoliciesResponse,
       });
     });
 
@@ -222,10 +181,11 @@ describe('App', () => {
     });
 
     it.each`
-      type                    | groupHandler                        | projectHandler
-      ${'scan execution'}     | ${'groupScanExecutionPolicies'}     | ${'projectScanExecutionPolicies'}
-      ${'scan result'}        | ${'groupScanResultPolicies'}        | ${'projectScanResultPolicies'}
-      ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
+      type                          | groupHandler                              | projectHandler
+      ${'scan execution'}           | ${'groupScanExecutionPolicies'}           | ${'projectScanExecutionPolicies'}
+      ${'scan result'}              | ${'groupScanResultPolicies'}              | ${'projectScanResultPolicies'}
+      ${'pipeline execution'}       | ${'groupPipelineExecutionPolicies'}       | ${'projectPipelineExecutionPolicies'}
+      ${'vulnerability management'} | ${'groupVulnerabilityManagementPolicies'} | ${'projectVulnerabilityManagementPolicies'}
     `(
       'fetches project-level $type policies instead of group-level',
       ({ groupHandler, projectHandler }) => {
@@ -256,7 +216,7 @@ describe('App', () => {
     });
 
     it('shows an alert', () => {
-      expect(createAlert).toHaveBeenCalledTimes(4);
+      expect(createAlert).toHaveBeenCalledTimes(5);
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Something went wrong, unable to fetch policies',
       });
@@ -266,7 +226,12 @@ describe('App', () => {
       expect(findPoliciesList().props()).toEqual(
         expect.objectContaining({
           linkedSppItems: [],
-          policiesByType: { APPROVAL: [], PIPELINE_EXECUTION: [], SCAN_EXECUTION: [] },
+          policiesByType: {
+            APPROVAL: [],
+            PIPELINE_EXECUTION: [],
+            SCAN_EXECUTION: [],
+            VULNERABILITY_MANAGEMENT: [],
+          },
         }),
       );
     });
@@ -282,50 +247,12 @@ describe('App', () => {
       expect(linkedSppItemsResponseSpy).toHaveBeenCalledTimes(0);
     });
 
-    it('does not fetch group-level vulnerability management policies', () => {
-      expect(requestHandlers.groupVulnerabilityManagementPolicies).not.toHaveBeenCalled();
-    });
-
-    describe('when vulnerabilityManagementPolicyTypeGroup is true', () => {
-      beforeEach(async () => {
-        createWrapper({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.GROUP,
-            glFeatures: { vulnerabilityManagementPolicyTypeGroup: true },
-          },
-        });
-        await waitForPromises();
-      });
-
-      it('fetches group-level vulnerability management polices', () => {
-        expect(requestHandlers.groupVulnerabilityManagementPolicies).toHaveBeenCalledWith({
-          fullPath: namespacePath,
-          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-        });
-      });
-    });
-
-    describe('when vulnerabilityManagementPolicyType is true', () => {
-      beforeEach(async () => {
-        createWrapper({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.GROUP,
-            glFeatures: { vulnerabilityManagementPolicyType: true },
-          },
-        });
-        await waitForPromises();
-      });
-
-      it('does not fetch project-level vulnerability management policies', () => {
-        expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
-      });
-    });
-
     it.each`
-      type                    | groupHandler                        | projectHandler
-      ${'scan execution'}     | ${'groupScanExecutionPolicies'}     | ${'projectScanExecutionPolicies'}
-      ${'scan result'}        | ${'groupScanResultPolicies'}        | ${'projectScanResultPolicies'}
-      ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
+      type                          | groupHandler                              | projectHandler
+      ${'scan execution'}           | ${'groupScanExecutionPolicies'}           | ${'projectScanExecutionPolicies'}
+      ${'scan result'}              | ${'groupScanResultPolicies'}              | ${'projectScanResultPolicies'}
+      ${'pipeline execution'}       | ${'groupPipelineExecutionPolicies'}       | ${'projectPipelineExecutionPolicies'}
+      ${'vulnerability management'} | ${'groupVulnerabilityManagementPolicies'} | ${'projectVulnerabilityManagementPolicies'}
     `(
       'fetches group-level $type policies instead of project-level',
       ({ groupHandler, projectHandler }) => {

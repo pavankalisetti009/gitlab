@@ -126,11 +126,6 @@ describe('Policies List', () => {
       expect(requestHandlers.projectScanResultPolicies).toHaveBeenCalled();
       expect(requestHandlers.projectScanExecutionPolicies).toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).toHaveBeenCalled();
-      expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
-    });
-
-    it('fetches vulnerability management policies if feature flag is enabled', () => {
-      createWrapper({ provide: { glFeatures: { vulnerabilityManagementPolicyType: true } } });
       expect(requestHandlers.projectVulnerabilityManagementPolicies).toHaveBeenCalled();
     });
   });
@@ -148,22 +143,12 @@ describe('Policies List', () => {
       expect(requestHandlers.groupScanResultPolicies).toHaveBeenCalled();
       expect(requestHandlers.groupScanExecutionPolicies).toHaveBeenCalled();
       expect(requestHandlers.groupPipelineExecutionPolicies).toHaveBeenCalled();
-      expect(requestHandlers.groupVulnerabilityManagementPolicies).not.toHaveBeenCalled();
+      expect(requestHandlers.groupVulnerabilityManagementPolicies).toHaveBeenCalled();
 
       expect(requestHandlers.projectScanResultPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectScanExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectVulnerabilityManagementPolicies).not.toHaveBeenCalled();
-    });
-
-    it('fetches vulnerability management policies if feature flag is enabled', () => {
-      createWrapper({
-        provide: {
-          namespaceType: NAMESPACE_TYPES.GROUP,
-          glFeatures: { vulnerabilityManagementPolicyTypeGroup: true },
-        },
-      });
-      expect(requestHandlers.groupVulnerabilityManagementPolicies).toHaveBeenCalled();
     });
   });
 

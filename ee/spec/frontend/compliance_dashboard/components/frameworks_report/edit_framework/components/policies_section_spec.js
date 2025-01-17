@@ -170,20 +170,13 @@ describe('PoliciesSection component', () => {
   const findPoliciesTable = () => wrapper.findComponent(GlTable);
   const findDrawer = () => wrapper.findComponent(DrawerWrapper);
 
-  function createComponent({
-    requestHandlers = [],
-    provide,
-    vulnerabilityManagementPolicyTypeGroup = true,
-  } = {}) {
+  function createComponent({ requestHandlers = [], provide } = {}) {
     return mountExtended(PoliciesSection, {
       apolloProvider: createMockApollo(requestHandlers),
       provide: {
         disableScanPolicyUpdate: false,
         groupSecurityPoliciesPath: '/group-security-policies',
         ...provide,
-        glFeatures: {
-          vulnerabilityManagementPolicyTypeGroup,
-        },
       },
       stubs: {
         DrawerWrapper: true,
@@ -306,32 +299,6 @@ describe('PoliciesSection component', () => {
       expect(policies.find((p) => p.name === 'testE2')).toBeDefined();
       expect(policies.find((p) => p.name === 'testPE')).toBeDefined();
       expect(policies.find((p) => p.name === 'testVM')).toBeDefined();
-    });
-
-    describe('when `vulnerabilityManagementPolicyTypeGroup` feature flag is disabled', () => {
-      beforeEach(() => {
-        wrapper = createComponent({
-          requestHandlers: [
-            [namespacePoliciesQuery, jest.fn().mockResolvedValue(makeNamespacePoliciesResponse())],
-            [
-              complianceFrameworkPoliciesQuery,
-              jest.fn().mockResolvedValue(makeCompliancePoliciesResponse()),
-            ],
-          ],
-          vulnerabilityManagementPolicyTypeGroup: false,
-        });
-
-        return waitForPromises();
-      });
-
-      it('does not show vulnerability management policies', () => {
-        const { items: policies } = findPoliciesTable().vm.$attrs;
-        expect(policies).toHaveLength(3);
-        expect(policies.find((p) => p.name === 'test')).toBeDefined();
-        expect(policies.find((p) => p.name === 'testE2')).toBeDefined();
-        expect(policies.find((p) => p.name === 'testPE')).toBeDefined();
-        expect(policies.find((p) => p.name === 'testVM')).toBeUndefined();
-      });
     });
 
     it('displays disabled badge for disabled policy', () => {

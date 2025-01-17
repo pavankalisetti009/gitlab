@@ -1,27 +1,15 @@
 import { GlCollapsibleListbox, GlListboxItem } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import {
-  POLICY_TYPE_FILTER_OPTIONS,
-  VULNERABILITY_MANAGEMENT_FILTER_OPTION,
-} from 'ee/security_orchestration/components/policies/constants';
+import { POLICY_TYPE_FILTER_OPTIONS } from 'ee/security_orchestration/components/policies/constants';
 import TypeFilter from 'ee/security_orchestration/components/policies/filters/type_filter.vue';
 
 describe('TypeFilter component', () => {
   let wrapper;
 
-  const createWrapper = ({
-    value = '',
-    glFeatures = {
-      vulnerabilityManagementPolicyTypeGroup: true,
-      vulnerabilityManagementPolicyType: true,
-    },
-  } = {}) => {
+  const createWrapper = ({ value = '' } = {}) => {
     wrapper = shallowMount(TypeFilter, {
       propsData: {
         value,
-      },
-      provide: {
-        glFeatures,
       },
       stubs: {
         GlCollapsibleListbox,
@@ -36,20 +24,8 @@ describe('TypeFilter component', () => {
       createWrapper();
 
       expect(findToggle().props('items')).toMatchObject(
-        Object.values({ ...POLICY_TYPE_FILTER_OPTIONS, ...VULNERABILITY_MANAGEMENT_FILTER_OPTION }),
+        Object.values({ ...POLICY_TYPE_FILTER_OPTIONS }),
       );
-    });
-
-    it('does not pass vulnerability management option when feature flag is disabled', () => {
-      // Both project-level and group-level feature flags need to be disabled
-      createWrapper({
-        glFeatures: {
-          vulnerabilityManagementPolicyType: false,
-          vulnerabilityManagementPolicyTypeGroup: false,
-        },
-      });
-
-      expect(findToggle().props('items')).toMatchObject(Object.values(POLICY_TYPE_FILTER_OPTIONS));
     });
 
     it.each`

@@ -2,7 +2,6 @@ import {
   BREAKING_CHANGES_POPOVER_CONTENTS,
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
-  VULNERABILITY_MANAGEMENT_FILTER_OPTION,
 } from 'ee/security_orchestration/components/policies/constants';
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import { sprintf } from '~/locale';
@@ -28,15 +27,7 @@ const validateFilter = (allowedValues, value, lowerCase = false) => {
  * @returns {boolean}
  */
 export const validateTypeFilter = (value) => {
-  const { vulnerabilityManagementPolicyType, vulnerabilityManagementPolicyTypeGroup } =
-    window.gon.features || {};
-
-  let options = POLICY_TYPE_FILTER_OPTIONS;
-  if (vulnerabilityManagementPolicyType || vulnerabilityManagementPolicyTypeGroup) {
-    options = { ...options, ...VULNERABILITY_MANAGEMENT_FILTER_OPTION };
-  }
-
-  return validateFilter(options, value, true);
+  return validateFilter(POLICY_TYPE_FILTER_OPTIONS, value, true);
 };
 
 /**

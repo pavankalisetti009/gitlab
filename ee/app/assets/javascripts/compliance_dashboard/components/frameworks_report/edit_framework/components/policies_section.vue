@@ -1,7 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlLoadingIcon, GlTable, GlIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 import { getPolicyType } from 'ee/security_orchestration/utils';
 import { i18n } from '../constants';
@@ -29,7 +28,6 @@ export default {
     GlTable,
     GlLink,
   },
-  mixins: [glFeatureFlagsMixin()],
   provide() {
     return {
       namespacePath: this.fullPath,
@@ -171,12 +169,10 @@ export default {
         ...mapPolicies('namespaceApprovalPolicies', approvalPoliciesSet),
         ...mapPolicies('namespaceScanExecutionPolicies', scanExecutionPoliciesSet),
         ...mapPolicies('namespacePipelineExecutionPolicies', pipelineExecutionPoliciesSet),
-        ...(this.glFeatures.vulnerabilityManagementPolicyTypeGroup
-          ? mapPolicies(
-              'namespaceVulnerabilityManagementPolicies',
-              vulnerabilityManagementPoliciesSet,
-            )
-          : []),
+        ...mapPolicies(
+          'namespaceVulnerabilityManagementPolicies',
+          vulnerabilityManagementPoliciesSet,
+        ),
       ].sort((a, b) => (a.name > b.name ? 1 : -1));
     },
 

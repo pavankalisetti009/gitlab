@@ -31,10 +31,11 @@ describe('PolicyTypeSelector component', () => {
 
   describe('cards', () => {
     describe.each`
-      title                                                   | description
-      ${PolicyTypeSelector.i18n.scanResultPolicyTitle}        | ${PolicyTypeSelector.i18n.scanResultPolicyDesc}
-      ${PolicyTypeSelector.i18n.scanExecutionPolicyTitle}     | ${PolicyTypeSelector.i18n.scanExecutionPolicyDesc}
-      ${PolicyTypeSelector.i18n.pipelineExecutionPolicyTitle} | ${PolicyTypeSelector.i18n.pipelineExecutionPolicyDesc}
+      title                                                         | description
+      ${PolicyTypeSelector.i18n.scanResultPolicyTitle}              | ${PolicyTypeSelector.i18n.scanResultPolicyDesc}
+      ${PolicyTypeSelector.i18n.scanExecutionPolicyTitle}           | ${PolicyTypeSelector.i18n.scanExecutionPolicyDesc}
+      ${PolicyTypeSelector.i18n.pipelineExecutionPolicyTitle}       | ${PolicyTypeSelector.i18n.pipelineExecutionPolicyDesc}
+      ${PolicyTypeSelector.i18n.vulnerabilityManagementPolicyTitle} | ${PolicyTypeSelector.i18n.vulnerabilityManagementPolicyDesc}
     `('selection card: $title', ({ title, description }) => {
       beforeEach(() => {
         factory();
@@ -48,31 +49,6 @@ describe('PolicyTypeSelector component', () => {
         expect(wrapper.findByText(description).exists()).toBe(true);
       });
     });
-
-    describe.each(['vulnerabilityManagementPolicyType', 'vulnerabilityManagementPolicyTypeGroup'])(
-      'feature flag `%s` is enabled',
-      (featureFlag) => {
-        beforeEach(() => {
-          factory({
-            glFeatures: {
-              [featureFlag]: true,
-            },
-          });
-        });
-
-        it(`displays the title`, () => {
-          expect(
-            wrapper.findByText(PolicyTypeSelector.i18n.vulnerabilityManagementPolicyTitle).exists(),
-          ).toBe(true);
-        });
-
-        it(`displays the description`, () => {
-          expect(
-            wrapper.findByText(PolicyTypeSelector.i18n.vulnerabilityManagementPolicyDesc).exists(),
-          ).toBe(true);
-        });
-      },
-    );
 
     describe('navigation button', () => {
       beforeEach(() => {
@@ -135,9 +111,6 @@ describe('PolicyTypeSelector component', () => {
         factory(
           {
             maxActiveVulnerabilityManagementPoliciesReached: true,
-            glFeatures: {
-              vulnerabilityManagementPolicyType: true,
-            },
           },
           {
             GlSprintf,

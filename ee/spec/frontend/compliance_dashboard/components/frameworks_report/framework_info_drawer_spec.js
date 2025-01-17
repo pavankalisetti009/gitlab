@@ -74,7 +74,6 @@ describe('FrameworkInfoDrawer component', () => {
 
   const createComponent = ({
     props = {},
-    vulnerabilityManagementPolicyTypeGroup = true,
     projectsInNamespaceResolverMock = pendingPromiseMock,
   } = {}) => {
     const apolloProvider = createMockApolloProvider({
@@ -94,9 +93,6 @@ describe('FrameworkInfoDrawer component', () => {
       },
       provide: {
         groupSecurityPoliciesPath: '/group-policies',
-        glFeatures: {
-          vulnerabilityManagementPolicyTypeGroup,
-        },
       },
       mocks: {
         $toast,
@@ -277,37 +273,6 @@ describe('FrameworkInfoDrawer component', () => {
         expect(findPoliciesLinks().at(1).attributes('href')).toBe(
           `/group-policies/${defaultFramework.scanResultPolicies.nodes[0].name}/edit?type=approval_policy`,
         );
-      });
-
-      describe('when `vulnerabilityManagementPolicyTypeGroup` feature flag is disabled', () => {
-        beforeEach(() => {
-          createComponent({
-            props: {
-              groupPath: GROUP_PATH,
-              projectPath: PROJECT_PATH,
-              rootAncestor: {
-                path: GROUP_PATH,
-              },
-              framework: defaultFramework,
-            },
-            vulnerabilityManagementPolicyTypeGroup: false,
-          });
-        });
-
-        const policiesCountWithoutVulnManagement = policiesCount - 1;
-
-        it('renders the Policies count without vulnerability management policies', () => {
-          expect(findPoliciesCount().text()).toBe(`${policiesCountWithoutVulnManagement}`);
-        });
-
-        it('renders the Policies list without vulnerability management policies', () => {
-          expect(findPoliciesLinks().wrappers).toHaveLength(policiesCountWithoutVulnManagement);
-          expect(
-            findPoliciesLinks()
-              .wrappers.map((link) => link.text())
-              .join(' '),
-          ).not.toContain('vuln management');
-        });
       });
 
       it('does not render edit button popover', () => {

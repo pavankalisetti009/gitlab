@@ -5,7 +5,6 @@ import pipelineIllustrationUrl from '@gitlab/svgs/dist/illustrations/milestone-s
 import vulnerabilityIllustrationUrl from '@gitlab/svgs/dist/illustrations/scan-alert-sm.svg';
 import { GlButton, GlCard, GlIcon, GlSprintf } from '@gitlab/ui';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { s__, __, n__ } from '~/locale';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
@@ -57,7 +56,6 @@ export default {
   directives: {
     SafeHtml,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: [
     'maxActiveScanExecutionPoliciesReached',
     'maxActiveScanResultPoliciesReached',
@@ -70,14 +68,8 @@ export default {
     'policiesPath',
   ],
   computed: {
-    showVulnerabilityManagementPolicyType() {
-      return (
-        this.glFeatures.vulnerabilityManagementPolicyType ||
-        this.glFeatures.vulnerabilityManagementPolicyTypeGroup
-      );
-    },
     policies() {
-      const policies = [
+      return [
         {
           text: POLICY_TYPE_COMPONENT_OPTIONS.approval.text.toLowerCase(),
           urlParameter: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
@@ -108,10 +100,7 @@ export default {
           hasMax: this.maxActivePipelineExecutionPoliciesReached,
           maxPoliciesAllowed: this.maxPipelineExecutionPoliciesAllowed,
         },
-      ];
-
-      if (this.showVulnerabilityManagementPolicyType) {
-        policies.push({
+        {
           text: POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.text.toLowerCase(),
           urlParameter: POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter,
           title: i18n.vulnerabilityManagementPolicyTitle,
@@ -120,10 +109,8 @@ export default {
           imageSrc: vulnerabilityIllustrationUrl,
           hasMax: this.maxActiveVulnerabilityManagementPoliciesReached,
           maxPoliciesAllowed: this.maxVulnerabilityManagementPoliciesAllowed,
-        });
-      }
-
-      return policies;
+        },
+      ];
     },
   },
   methods: {

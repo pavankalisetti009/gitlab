@@ -71,11 +71,7 @@ describe('FrameworksTable component', () => {
     await nextTick();
   };
 
-  const createComponent = (
-    props = {},
-    queryParams = {},
-    vulnerabilityManagementPolicyTypeGroup = true,
-  ) => {
+  const createComponent = (props = {}, queryParams = {}) => {
     const currentQueryParams = { ...queryParams };
     $router = {
       push: jest.fn().mockImplementation(({ query }) => {
@@ -99,9 +95,6 @@ describe('FrameworksTable component', () => {
       },
       provide: {
         groupSecurityPoliciesPath: '/example-group-security-policies-path',
-        glFeatures: {
-          vulnerabilityManagementPolicyTypeGroup,
-        },
       },
       mocks: {
         $route: { query: currentQueryParams },
@@ -232,23 +225,6 @@ describe('FrameworksTable component', () => {
           .map((x) => x.name)
           .join(','),
       );
-    });
-
-    describe('when `vulnerabilityManagementPolicyTypeGroup` feature flag is disabled', () => {
-      beforeEach(() => {
-        wrapper = createComponent(
-          {
-            frameworks,
-            isLoading: false,
-          },
-          {},
-          false,
-        );
-      });
-
-      it('does not show vulnerability management policies', () => {
-        expect(findTable().text()).not.toContain('vuln management');
-      });
     });
   });
 
