@@ -15,9 +15,11 @@ RSpec.describe Resolvers::Vulnerabilities::ScannersResolver, feature_category: :
     let_it_be(:user) { create(:user, security_dashboard_projects: [project_with_no_group]) }
 
     let_it_be(:vulnerability_scanner_1) { create(:vulnerabilities_scanner, project: project) }
+    let_it_be(:vulnerability_statistic_1) { create(:vulnerability_statistic, project: project) }
     let_it_be(:finding_1) { create(:vulnerabilities_finding, project: project, scanner: vulnerability_scanner_1) }
 
     let_it_be(:vulnerability_scanner_2) { create(:vulnerabilities_scanner, project: project_with_no_group) }
+    let_it_be(:vulnerability_statistic_2) { create(:vulnerability_statistic, project: project_with_no_group) }
     let_it_be(:finding_2) { create(:vulnerabilities_finding, project: project_with_no_group, scanner: vulnerability_scanner_2) }
 
     let(:current_user) { user }
@@ -28,6 +30,14 @@ RSpec.describe Resolvers::Vulnerabilities::ScannersResolver, feature_category: :
       let(:vulnerable) { group }
 
       it { is_expected.to contain_exactly(Representation::VulnerabilityScannerEntry.new(vulnerability_scanner_1, finding_1.report_type)) }
+
+      context 'when group_vulnerability_scanners_using_statistics is disabled' do
+        before do
+          stub_feature_flags(group_vulnerability_scanners_using_statistics: false)
+        end
+
+        it { is_expected.to contain_exactly(Representation::VulnerabilityScannerEntry.new(vulnerability_scanner_1, finding_1.report_type)) }
+      end
     end
 
     context 'when listing scanners for project' do

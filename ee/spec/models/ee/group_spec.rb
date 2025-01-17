@@ -752,17 +752,40 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     subject { group.vulnerability_scanners }
 
     let(:subgroup) { create(:group, parent: group) }
+    let(:unrelated_group) { create(:group) }
+
     let(:group_project) { create(:project, namespace: group) }
     let(:subgroup_project) { create(:project, namespace: subgroup) }
     let(:archived_project) { create(:project, :archived, namespace: group) }
     let(:deleted_project) { create(:project, pending_delete: true, namespace: group) }
+    let(:unrelated_project) { create(:project, namespace: unrelated_group) }
+
     let!(:group_vulnerability_scanner) { create(:vulnerabilities_scanner, project: group_project) }
     let!(:subgroup_vulnerability_scanner) { create(:vulnerabilities_scanner, project: subgroup_project) }
     let!(:archived_vulnerability_scanner) { create(:vulnerabilities_scanner, project: archived_project) }
     let!(:deleted_vulnerability_scanner) { create(:vulnerabilities_scanner, project: deleted_project) }
+    let!(:unrelated_vulnerability_scanner) { create(:vulnerabilities_scanner, project: unrelated_project) }
 
-    it 'returns vulnerability scanners for all non-archived, non-deleted projects in the group and its subgroups' do
-      is_expected.to contain_exactly(group_vulnerability_scanner, subgroup_vulnerability_scanner)
+    let!(:group_vulnerability_statistic) { create(:vulnerability_statistic, project: group_project) }
+    let!(:subgroup_vulnerability_statistic) { create(:vulnerability_statistic, project: subgroup_project) }
+    let!(:archived_vulnerability_statistic) { create(:vulnerability_statistic, project: archived_project) }
+    let!(:deleted_vulnerability_statistic) { create(:vulnerability_statistic, project: deleted_project) }
+    let!(:unrelated_vulnerability_statistic) { create(:vulnerability_statistic, project: unrelated_project) }
+
+    it 'returns vulnerability scanners for all non-archived projects in the group and its subgroups' do
+      is_expected.to include(group_vulnerability_scanner, subgroup_vulnerability_scanner, deleted_vulnerability_scanner)
+      is_expected.not_to include(archived_vulnerability_scanner, unrelated_vulnerability_scanner)
+    end
+
+    context 'when group_vulnerability_scanners_using_statistics is disabled' do
+      before do
+        stub_feature_flags(group_vulnerability_scanners_using_statistics: false)
+      end
+
+      it 'returns vulnerability scanners for all non-archived, non-deleted projects in the group and its subgroups' do
+        is_expected.to include(group_vulnerability_scanner, subgroup_vulnerability_scanner)
+        is_expected.not_to include(archived_vulnerability_scanner, deleted_vulnerability_scanner, unrelated_vulnerability_scanner)
+      end
     end
   end
 
