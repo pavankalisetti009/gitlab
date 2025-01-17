@@ -60,6 +60,10 @@ module Security
         .merge(for_management_project(management_project_id))
     end
 
+    scope :for_namespace_and_projects, ->(namespace_ids, project_ids) do
+      for_namespace(namespace_ids).or(for_project(project_ids))
+    end
+
     delegate :actual_limits, :actual_plan_name, :actual_plan, to: :source
 
     def self.policy_management_project?(project_id)

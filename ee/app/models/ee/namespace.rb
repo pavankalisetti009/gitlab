@@ -584,7 +584,10 @@ module EE
     def all_descendant_security_orchestration_policy_configurations
       return [] if self_and_descendant_ids.blank?
 
-      security_orchestration_policies_for_namespaces(self_and_descendant_ids)
+      configurations = ::Security::OrchestrationPolicyConfiguration
+        .for_namespace_and_projects(self_and_descendant_ids, all_project_ids)
+
+      validated_security_orchestration_policies(configurations)
     end
 
     def all_inherited_security_orchestration_policy_configurations(include_invalid: false)
@@ -631,9 +634,14 @@ module EE
     private
 
     def security_orchestration_policies_for_namespaces(namespace_ids, include_invalid: false)
-      configurations = ::Security::OrchestrationPolicyConfiguration
-        .for_namespace(namespace_ids)
-        .with_project_and_namespace
+      validated_security_orchestration_policies(
+        ::Security::OrchestrationPolicyConfiguration.for_namespace(namespace_ids),
+        include_invalid: include_invalid
+      )
+    end
+
+    def validated_security_orchestration_policies(configurations, include_invalid: false)
+      configurations = configurations.with_project_and_namespace
 
       return configurations if include_invalid
 
