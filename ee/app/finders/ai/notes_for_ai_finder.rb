@@ -12,7 +12,7 @@ module Ai
     def execute
       return Note.none unless Ability.allowed?(current_user, :read_note, resource)
 
-      limited_notes = resource.notes.without_hidden.by_humans.fresh
+      limited_notes = resource.notes.user.without_hidden.fresh
       if Ability.allowed?(current_user, :read_internal_note, resource)
         limited_notes
       else
