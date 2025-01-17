@@ -223,9 +223,9 @@ module EE
 
     override :build_event
     def build_event
-      event = super
-      event.entity = @entity
-      event
+      super.tap do |event|
+        event.entity = @entity
+      end
     end
 
     def for_custom_model(model:, target_details:, target_id:)
