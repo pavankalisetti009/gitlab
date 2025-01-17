@@ -16,6 +16,7 @@ describe('Iterations report tabs', () => {
     fullPath,
     iterationId: `gid://gitlab/Iteration/${id}`,
     namespaceType: WORKSPACE_GROUP,
+    totalIterationIssueCount: 100,
   };
 
   const findGlFormSelectOptionAt = (index) =>

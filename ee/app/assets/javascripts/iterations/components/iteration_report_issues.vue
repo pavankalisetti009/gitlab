@@ -4,6 +4,7 @@ import {
   GlAvatar,
   GlBadge,
   GlButton,
+  GlIcon,
   GlLabel,
   GlLink,
   GlPagination,
@@ -54,6 +55,7 @@ export default {
     GlAvatar,
     GlBadge,
     GlButton,
+    GlIcon,
     GlLabel,
     GlLink,
     GlPagination,
@@ -120,6 +122,11 @@ export default {
       required: false,
       default: WORKSPACE_GROUP,
       validator: (value) => [WORKSPACE_GROUP, WORKSPACE_PROJECT].includes(value),
+    },
+    hasInaccessibleIssues: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
   },
   data() {
@@ -260,6 +267,14 @@ export default {
       <div v-for="n in $options.skeletonLoaderLimit" :key="n" class="gl-mx-5 gl-my-6">
         <gl-skeleton-loader />
       </div>
+    </div>
+    <div
+      v-if="hasInaccessibleIssues"
+      data-testid="has-inaccessible-issues-label"
+      class="gl-p-4 gl-pt-0 gl-text-subtle"
+    >
+      <gl-icon name="eye-slash" class="gl-text-orange-700 dark:gl-text-orange-500" />
+      {{ __('This iteration contains confidential items you do not have access to.') }}
     </div>
     <gl-table
       v-show="shouldShowTable"

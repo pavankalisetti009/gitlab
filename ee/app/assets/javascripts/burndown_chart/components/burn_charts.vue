@@ -107,6 +107,10 @@ export default {
           },
         };
       },
+      result({ data }) {
+        const total = data?.[this.parent]?.report?.stats?.total?.[this.displayValue] || 0;
+        this.$emit('updateTotal', total);
+      },
       error() {
         this.error = __('Error fetching burnup chart data');
       },

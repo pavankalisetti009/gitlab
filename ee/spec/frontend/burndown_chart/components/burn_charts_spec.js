@@ -81,6 +81,15 @@ describe('burndown_chart', () => {
 
   useFakeDateFromDay(day2);
 
+  it('emits updateTotal when report query resolves', async () => {
+    createComponent({
+      props: { iterationId: 'gid://gitlab/Iteration/1' },
+    });
+    await waitForPromises();
+
+    expect(wrapper.emitted('updateTotal').length).toBe(1);
+  });
+
   it('passes loading through to charts', async () => {
     createComponent({
       props: { iterationId: 'gid://gitlab/Iteration/1' },
