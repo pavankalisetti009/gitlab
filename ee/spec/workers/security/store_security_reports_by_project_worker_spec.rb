@@ -16,6 +16,16 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
     )
   end
 
+  let(:scan_object) do
+    ::Gitlab::Ci::Reports::Security::Scan.new(
+      {
+        "type" => :sast,
+        "start_time" => "20241022T11:56:41",
+        "end_time" => "20241022T11:57:39",
+        "status" => "success"
+      })
+  end
+
   describe '.cache_key' do
     subject { described_class.cache_key(project_id: project.id) }
 
@@ -138,6 +148,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
           it 'does not duplicate vulnerabilities' do
             # seeding a scan that should be ingested as a vulnerability
+            allow(artifact_bandit1.security_report).to receive(:scan).and_return(scan_object)
             Security::StoreGroupedScansService.execute([artifact_bandit1], pipeline, 'sast')
             expect(Security::Finding.count).to eq 1
             expect(Security::Scan.count).to eq 1
@@ -150,6 +161,8 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
             # seeding a scan that is indicating the same vulnerability
             # we just ingested
+            allow(artifact_bandit2.security_report).to receive(:scan).and_return(scan_object)
+            allow(artifact_semgrep.security_report).to receive(:scan).and_return(scan_object)
             Security::StoreGroupedScansService.execute([artifact_bandit2, artifact_semgrep], pipeline2, 'sast')
             expect(Security::Finding.count).to eq 3
             expect(Security::Scan.count).to eq 3
@@ -189,6 +202,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
           it 'does not duplicate vulnerabilities' do
             # seeding a scan that should be ingested as a vulnerability
+            allow(artifact_gosec1.security_report).to receive(:scan).and_return(scan_object)
             Security::StoreGroupedScansService.execute([artifact_gosec1], pipeline, 'sast')
             expect(Security::Finding.count).to eq 1
             expect(Security::Scan.count).to eq 1
@@ -201,6 +215,8 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
             # seeding a scan that is indicating the same vulnerability
             # we just ingested
+            allow(artifact_gosec2.security_report).to receive(:scan).and_return(scan_object)
+            allow(artifact_semgrep.security_report).to receive(:scan).and_return(scan_object)
             Security::StoreGroupedScansService.execute([artifact_gosec2, artifact_semgrep], pipeline2, 'sast')
             expect(Security::Finding.count).to eq 3
             expect(Security::Scan.count).to eq 3
@@ -220,6 +236,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
     context 'when resolving dropped identifiers', :sidekiq_inline do
       let(:artifact_semgrep1) { create(:ee_ci_job_artifact, :sast_semgrep_for_multiple_findings, job: semgrep1_build) }
+
       let(:semgrep1_build) do
         create(:ci_build, :sast, :success, user: project.creator, pipeline: pipeline, project: project)
       end
@@ -246,6 +263,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
       end
 
       it 'resolves vulnerabilities' do
+        allow(artifact_semgrep1.security_report).to receive(:scan).and_return(scan_object)
         expect do
           Security::StoreGroupedScansService.execute([artifact_semgrep1], pipeline, 'sast')
         end.to change { Security::Finding.count }.by(2)
@@ -258,6 +276,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
            .and change { project.vulnerabilities.with_resolution(false).count }.by(2)
            .and change { project.vulnerabilities.with_states(%w[detected]).count }.by(2)
 
+        allow(artifact_semgrep2.security_report).to receive(:scan).and_return(scan_object)
         expect do
           Security::StoreGroupedScansService.execute([artifact_semgrep2], pipeline2, 'sast')
         end.to change { Security::Finding.count }.by(1)
@@ -298,10 +317,12 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
       it "does not mark any of the detected vulnerabilities as resolved",
         :aggregate_failures do
+        allow(artifact_sast2.security_report).to receive(:scan).and_return(scan_object)
         Security::StoreGroupedScansService.execute([artifact_sast2], pipeline, 'sast')
         expect(Security::Finding.count).to eq 1
         expect(Security::Scan.count).to eq 1
 
+        allow(artifact_sast1.security_report).to receive(:scan).and_return(scan_object)
         Security::StoreGroupedScansService.execute([artifact_sast1], pipeline, 'sast')
         expect(Security::Finding.count).to eq 2
         expect(Security::Scan.count).to eq 2

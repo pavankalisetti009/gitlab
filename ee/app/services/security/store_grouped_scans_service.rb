@@ -20,11 +20,14 @@ module Security
     end
 
     def execute
-      in_lock(lease_key, ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER) do
+      scan_result = in_lock(lease_key, ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER) do
         sorted_artifacts.reduce(false) do |deduplicate, artifact|
           store_scan_for(artifact, deduplicate)
         end
       end
+
+      record_error_rate
+      scan_result
     rescue Gitlab::Ci::Parsers::ParserError => error
       Gitlab::ErrorTracking.track_exception(error)
     ensure
@@ -32,6 +35,7 @@ module Security
         pipeline_id: pipeline.id,
         report_type: file_type
       )
+      artifacts.each(&:clear_security_report)
     end
 
     private
@@ -57,8 +61,22 @@ module Security
 
     def store_scan_for(artifact, deduplicate)
       StoreScanService.execute(artifact, known_keys, deduplicate)
-    ensure
-      artifact.clear_security_report
+    end
+
+    def record_error_rate
+      return if Feature.disabled?(:security_scan_error_rate, Feature.current_request, type: :wip)
+
+      sorted_artifacts.each do |artifact|
+        artifact.security_report.scans.each_value do |scan|
+          feature_category = Enums::Vulnerability.report_type_feature_category(scan.type)
+
+          Gitlab::Metrics::SecurityScanSlis.error_rate.increment(
+            labels: { scan_type: scan.type, feature_category: feature_category },
+            # https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/blob/941f497a3824d4393eb8a7efced497f738895ab4/src/security-report-format.json#L128
+            error: scan.status != "success"
+          )
+        end
+      end
     end
   end
 end
