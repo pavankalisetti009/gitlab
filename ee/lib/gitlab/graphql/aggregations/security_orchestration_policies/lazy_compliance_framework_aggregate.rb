@@ -4,33 +4,41 @@ module Gitlab
   module Graphql
     module Aggregations
       module SecurityOrchestrationPolicies
-        class LazyComplianceFrameworkAggregate
-          include ::Gitlab::Graphql::Deferred
+        class LazyComplianceFrameworkAggregate < BaseLazyAggregate
           include ConstructSecurityPolicies
 
-          attr_reader :object, :policy_type, :lazy_state, :current_user
+          attr_reader :object, :policy_type, :current_user
 
           def initialize(query_ctx, object, policy_type)
             @current_user = query_ctx[:current_user]
             @object = Gitlab::Graphql::Lazy.force(object)
             @policy_type = policy_type
 
-            @lazy_state = query_ctx[:lazy_compliance_framework_in_policies_aggregate] ||= {
-              pending_frameworks: [],
-              loaded_objects: Hash.new { |h, k| h[k] = {} }
-            }
-            @lazy_state[:pending_frameworks] << object
-          end
-
-          def execute
-            load_records_into_loaded_objects if @lazy_state[:pending_frameworks].present?
-
-            @lazy_state[:loaded_objects][@object.id][policy_type]
+            super(query_ctx, object)
           end
 
           private
 
-          def load_records_into_loaded_objects
+          def state_key
+            :lazy_compliance_framework_in_policies_aggregate
+          end
+
+          def initial_state
+            {
+              pending_frameworks: [],
+              loaded_objects: Hash.new { |h, k| h[k] = {} }
+            }
+          end
+
+          def result
+            @lazy_state[:loaded_objects][@object.id][policy_type]
+          end
+
+          def queued_objects
+            @lazy_state[:pending_frameworks]
+          end
+
+          def load_queued_records
             policy_configurations_by_frameworks = @lazy_state[:pending_frameworks]
               .index_with(&:security_orchestration_policy_configurations)
 
