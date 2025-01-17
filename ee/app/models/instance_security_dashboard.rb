@@ -27,6 +27,11 @@ class InstanceSecurityDashboard
     License.feature_available?(feature)
   end
 
+  def non_archived_project_ids
+    limit = UsersSecurityDashboardProject::SECURITY_DASHBOARD_PROJECTS_LIMIT
+    projects.non_archived.limit(limit).pluck_primary_key
+  end
+
   def projects
     Project.where(id: visible_users_security_dashboard_projects)
            .with_feature_available_for_user(:security_and_compliance, user)

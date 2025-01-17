@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe InstanceSecurityDashboard do
+RSpec.describe InstanceSecurityDashboard, feature_category: :vulnerability_management do
   let_it_be(:project1) { create(:project, :with_duo_features_disabled) }
   let_it_be(:project2) { create(:project, :with_duo_features_disabled) }
   let_it_be(:project3) { create(:project, :with_duo_features_disabled) }
@@ -138,6 +138,17 @@ RSpec.describe InstanceSecurityDashboard do
         permitted_roles.each { |role| it_behaves_like 'user with project role', as: role, permitted: true }
         unpermitted_roles.each { |role| it_behaves_like 'user with project role', as: role, permitted: false }
       end
+    end
+  end
+
+  describe '#non_archived_project_ids' do
+    subject { instance_dashboard.non_archived_project_ids }
+
+    let(:user) { create(:auditor) }
+    let_it_be(:project3) { create(:project, :with_duo_features_disabled, archived: true) }
+
+    it 'returns ID of visible projects that are not archived' do
+      is_expected.to match_array([project1, project2].map(&:id))
     end
   end
 

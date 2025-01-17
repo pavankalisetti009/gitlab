@@ -33,6 +33,8 @@ module Vulnerabilities
           else
             ::Vulnerabilities::Statistic.by_group_excluding_subgroups(vulnerable).unarchived
           end
+        elsif vulnerable.is_a?(InstanceSecurityDashboard)
+          Vulnerabilities::Statistic.for_project(vulnerable.non_archived_project_ids)
         else
           collection = include_subgroups ? vulnerable.all_projects : vulnerable.projects
           collection = collection.non_archived
