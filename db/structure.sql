@@ -26300,6 +26300,9 @@ ALTER TABLE events
 ALTER TABLE projects
     ADD CONSTRAINT check_fa75869cb1 CHECK ((project_namespace_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE ci_pipeline_messages
+    ADD CONSTRAINT check_fe8ee122a2 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE ONLY ci_build_needs
     ADD CONSTRAINT ci_build_needs_pkey PRIMARY KEY (id);
 
@@ -30968,6 +30971,8 @@ CREATE UNIQUE INDEX index_ci_pipeline_chat_data_on_pipeline_id ON ci_pipeline_ch
 CREATE INDEX index_ci_pipeline_chat_data_on_project_id ON ci_pipeline_chat_data USING btree (project_id);
 
 CREATE INDEX index_ci_pipeline_messages_on_pipeline_id ON ci_pipeline_messages USING btree (pipeline_id);
+
+CREATE INDEX index_ci_pipeline_messages_on_project_id ON ci_pipeline_messages USING btree (project_id);
 
 CREATE INDEX index_ci_pipeline_metadata_on_project_id ON ci_pipeline_metadata USING btree (project_id);
 
