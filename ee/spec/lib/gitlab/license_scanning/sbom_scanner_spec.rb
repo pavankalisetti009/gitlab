@@ -134,40 +134,6 @@ RSpec.describe ::Gitlab::LicenseScanning::SbomScanner, feature_category: :softwa
             end
           end
 
-          context "when the feature flag `license_scanning_with_sbom_licenses` is disabled" do
-            before do
-              stub_feature_flags(license_scanning_with_sbom_licenses: false)
-            end
-
-            context 'when the component is not present in the database' do
-              it 'gives the component the unknown license' do
-                license = report.licenses.find { |license| license.name == "unknown" }
-
-                expect(license.dependencies).to include(
-                  have_attributes(name: component_name, version: component_version)
-                )
-              end
-            end
-
-            context 'when the component is present in the database' do
-              before do
-                component = Hashie::Mash.new(name: component_name, purl_type: purl.type,
-                  versions: [purl.version])
-
-                create(:pm_package, name: component.name, purl_type: component.purl_type,
-                  other_licenses: [{ license_names: [database_license], versions: component.versions }])
-              end
-
-              it 'gives the component the licenses fetched from the database' do
-                bsd_license = report.licenses.find { |license| license.id == database_license }
-
-                expect(bsd_license.dependencies).to include(
-                  have_attributes(name: component_name, version: component_version)
-                )
-              end
-            end
-          end
-
           it 'gives the component the licenses it has in the report' do
             license = report.licenses.find { |license| license.name == report_license }
 

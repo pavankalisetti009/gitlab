@@ -27,20 +27,6 @@ RSpec.describe Gitlab::LicenseScanning::PipelineComponents, feature_category: :s
           expect(fetch.count).to eql(expected_number_of_components)
         end
 
-        context 'when the feature flag `license_scanning_with_sbom_licenses` is disabled' do
-          before do
-            stub_feature_flags(license_scanning_with_sbom_licenses: false)
-          end
-
-          it 'returns a list containing the expected elements' do
-            expect(fetch).to include(
-              { name: "org.codehaus.plexus/plexus-utils", purl_type: "maven", version: "3.0.22", path: nil },
-              { name: "org.apache.commons/commons-lang3", purl_type: "maven", version: "3.4", path: nil },
-              { name: "com.example/util/library", purl_type: "maven", version: "2.0.0", path: nil }
-            )
-          end
-        end
-
         it 'returns a list containing the expected elements' do
           expect(fetch).to include(
             { name: "org.codehaus.plexus/plexus-utils", purl_type: "maven", version: "3.0.22", path: nil,

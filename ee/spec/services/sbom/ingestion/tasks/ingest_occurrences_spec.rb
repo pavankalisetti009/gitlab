@@ -312,18 +312,6 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
       context 'when SBOM provides licenses for all components' do
         let(:occurrence_maps) { [occurrence_map_with_license] }
 
-        context 'when the feature flag `license_scanning_with_sbom_licenses` is disabled' do
-          before do
-            stub_feature_flags(license_scanning_with_sbom_licenses: false)
-          end
-
-          it 'sets the license using the license database' do
-            task
-
-            expect(Sbom::Occurrence.last&.licenses).to match_array(default_licenses)
-          end
-        end
-
         it 'sets the license according to the information provided in the report' do
           task
 
