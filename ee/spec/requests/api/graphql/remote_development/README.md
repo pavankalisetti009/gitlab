@@ -14,7 +14,7 @@ Here are the related spec folders for the fields (in alphabetical order by resol
 - GraphQL Field: `Query.workspaces`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/workspaces`
     - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#queryworkspaces
-    - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/admin_workspaces_resolver.rb`
+    - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/workspaces_admin_resolver.rb`
     - Notes: Only admins may use this field.
 
 - GraphQL Field: `Query.project.clusterAgent.remoteDevelopmentAgentConfig`
@@ -51,6 +51,12 @@ Here are the related spec folders for the fields (in alphabetical order by resol
   - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/namespace/workspaces_resolver.rb`
   - Notes: This is the same resolver used by `Query.currentUser.workspaces`
 
+- GraphQL Field: `Query.workspace.workspaceVariables`
+    - Spec folder: `ee/spec/requests/api/graphql/remote_development/workspace_variables`
+    - API docs:  https://docs.gitlab.com/ee/api/graphql/reference/index.html##workspacevariableconnection
+    - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/namespace/workspaces_resolver.rb`
+    - Notes: This is the same resolver used by `Query.currentUser.workspaces`
+
 - GraphQL Field: `Query.currentUser.workspaces`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/current_user/workspaces`
     - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#currentuserworkspaces
@@ -74,6 +80,8 @@ Without this approach, achieving equivalent coverage across all of this same Gra
 ## Adding new spec files
 
 If you add new spec files, you should update `tests.yml` and `scripts/verify-tff-mapping` accordingly.
+
+Add entries for relevant types and resolvers in these files.
 
 ## Why aren't all individual fields of graphql types tested in these specs?
 

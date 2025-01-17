@@ -37,6 +37,20 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
 
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
 
+  let(:mutation_expected_varaiables) do
+    [
+      { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT', variable_type: 'ENVIRONMENT' },
+      { key: 'VAR2', value: 'value 2', type: 'ENVIRONMENT', variable_type: 'ENVIRONMENT' }
+    ]
+  end
+
+  let(:service_class_expected_variables) do
+    [
+      { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT', variable_type: 0 },
+      { key: 'VAR2', value: 'value 2', type: 'ENVIRONMENT', variable_type: 0 }
+    ]
+  end
+
   let(:all_mutation_args) do
     {
       desired_state: desired_state,
@@ -46,10 +60,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
       project_id: workspace_project.to_global_id.to_s,
       project_ref: 'main',
       devfile_path: '.devfile.yaml',
-      variables: [
-        { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
-        { key: 'VAR2', value: 'value 2', type: 'ENVIRONMENT' }
-      ]
+      variables: mutation_expected_varaiables
     }
   end
 
@@ -61,6 +72,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
 
   let(:expected_service_args) do
     params = all_mutation_args.except(:cluster_agent_id, :project_id)
+    params[:variables] = service_class_expected_variables
     params[:agent] = agent
     params[:user] = current_user
     params[:project] = workspace_project

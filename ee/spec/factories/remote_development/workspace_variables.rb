@@ -6,6 +6,7 @@ FactoryBot.define do
 
     key { 'my_key' }
     value { 'my_value' }
+    user_provided { false }
     variable_type { RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file] }
   end
 end

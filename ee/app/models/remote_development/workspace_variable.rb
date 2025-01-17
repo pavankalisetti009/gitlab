@@ -2,6 +2,8 @@
 
 module RemoteDevelopment
   class WorkspaceVariable < ApplicationRecord
+    include Sortable
+
     belongs_to :workspace, class_name: 'RemoteDevelopment::Workspace', inverse_of: :workspace_variables
 
     validates :variable_type, presence: true, inclusion: {
@@ -17,6 +19,13 @@ module RemoteDevelopment
     }
     scope :with_variable_type_file, -> {
       where(variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file])
+    }
+
+    scope :by_workspace_ids, ->(ids) { where(workspace_id: ids) }
+    scope :by_project_ids, ->(ids) { where(project_id: ids) }
+
+    scope :user_provided, -> {
+      where(user_provided: true)
     }
 
     attr_encrypted :value,
