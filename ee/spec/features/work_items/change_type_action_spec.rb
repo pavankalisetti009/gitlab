@@ -4,20 +4,24 @@ require 'spec_helper'
 
 RSpec.describe 'Change type action', :js, feature_category: :portfolio_management do
   include ListboxHelpers
+  # Ensure support bot user is created so creation doesn't count towards query limit
+  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+  let_it_be(:support_bot) { Users::Internal.support_bot }
 
-  let_it_be_with_reload(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
 
   let_it_be(:group) { create(:group, :nested) }
   let_it_be(:project) { create(:project, :public, namespace: group, developers: user) }
   let_it_be(:objective) { create(:work_item, :objective, project: project) }
   let_it_be(:key_result) { create(:work_item, :key_result, project: project) }
+  let_it_be(:issue) { create(:work_item, :issue, project: project) }
   let_it_be(:milestone) { create(:milestone, project: project) }
 
   context 'for signed in user' do
     before do
       sign_in(user)
 
-      stub_licensed_features(okrs: true)
+      stub_licensed_features(epics: true, okrs: true)
       stub_feature_flags(okrs_mvc: true)
     end
 
@@ -92,6 +96,35 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
 
           expect(page).to have_button('Change type', disabled: true)
         end
+      end
+    end
+
+    context 'when user selects option `Epic (promote to group)' do
+      before_all do
+        group.add_owner(user)
+      end
+
+      before do
+        visit project_work_item_path(project, issue.iid)
+        wait_for_all_requests
+      end
+
+      it 'redirects to an epic' do
+        # TODO: restore threshold after epic-work item sync
+        # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
+        trigger_change_type('Epic (Promote to group)')
+
+        # wait for epic widget definitions
+        wait_for_requests
+
+        expect(page).to have_button('Change type', disabled: false)
+
+        click_button s_('WorkItem|Change type')
+
+        wait_for_all_requests
+
+        expect(page).to have_current_path(group_epic_path(group, 1))
       end
     end
   end

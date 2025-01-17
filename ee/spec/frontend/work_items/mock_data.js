@@ -200,3 +200,35 @@ export const workItemChangeTypeWidgets = {
     __typename: 'WorkItemWidgetProgress',
   },
 };
+
+export const promoteToEpicMutationResponse = {
+  data: {
+    promoteToEpic: {
+      epic: {
+        id: 'gid://gitlab/Epic/225',
+        webPath: '/groups/gitlab-org/-/epics/265',
+        __typename: 'Epic',
+      },
+      errors: [],
+      __typename: 'PromoteToEpicPayload',
+    },
+  },
+};
+
+export const getEpicWeightWidgetDefinitions = (editable = false) => {
+  return [
+    {
+      id: 'gid://gitlab/WorkItems::Type/6',
+      name: 'Epic',
+      widgetDefinitions: [
+        {
+          type: 'WEIGHT',
+          editable,
+          rollUp: false,
+          __typename: 'WorkItemWidgetDefinitionWeight',
+        },
+      ],
+      __typename: 'WorkItemType',
+    },
+  ];
+};

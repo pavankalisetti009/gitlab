@@ -481,6 +481,9 @@ export default {
     showCreateBranchMergeRequestSplitButton() {
       return this.workItemDevelopment && this.workItemIsOpen;
     },
+    namespaceFullName() {
+      return this.workItem?.namespace?.fullName || '';
+    },
   },
   methods: {
     handleWorkItemCreated() {
@@ -766,6 +769,7 @@ export default {
       :is-group="isGroupWorkItem"
       :allowed-child-types="allowedChildTypes"
       :parent-id="parentWorkItemId"
+      :namespace-full-name="namespaceFullName"
       @hideStickyHeader="hideStickyHeader"
       @showStickyHeader="showStickyHeader"
       @deleteWorkItem="$emit('deleteWorkItem', { workItemType, workItemId: workItem.id })"
@@ -870,6 +874,7 @@ export default {
                 :is-group="isGroupWorkItem"
                 :widgets="widgets"
                 :allowed-child-types="allowedChildTypes"
+                :namespace-full-name="namespaceFullName"
                 @deleteWorkItem="$emit('deleteWorkItem', { workItemType, workItemId: workItem.id })"
                 @toggleWorkItemConfidentiality="toggleConfidentiality"
                 @error="updateError = $event"
