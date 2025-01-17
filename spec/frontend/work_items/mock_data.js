@@ -5803,12 +5803,16 @@ export const mockUserPreferences = (useWorkItemsView = true) => ({
   },
 });
 
-export const mockProjectPermissionsQueryResponse = ({ createDesign = true } = {}) => ({
+export const mockProjectPermissionsQueryResponse = ({
+  createDesign = true,
+  moveDesign = true,
+} = {}) => ({
   data: {
     workspace: {
       id: 'gid://gitlab/Project/1',
       userPermissions: {
         createDesign,
+        moveDesign,
         __typename: 'ProjectPermissions',
       },
       __typename: 'Project',
