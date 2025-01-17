@@ -95,7 +95,15 @@ export const mockVulnerabilityMetricsResponse = (values = []) =>
 
 export const mockAiMetricsResponse = (values = []) =>
   values.reduce(
-    (acc, { codeContributorsCount, codeSuggestionsContributorsCount }) =>
+    (
+      acc,
+      {
+        codeContributorsCount,
+        codeSuggestionsContributorsCount,
+        codeSuggestionsAcceptedCount,
+        codeSuggestionsShownCount,
+      },
+    ) =>
       acc.mockResolvedValueOnce({
         data: {
           project: null,
@@ -104,6 +112,8 @@ export const mockAiMetricsResponse = (values = []) =>
             aiMetrics: {
               codeContributorsCount,
               codeSuggestionsContributorsCount,
+              codeSuggestionsAcceptedCount,
+              codeSuggestionsShownCount,
               __typename: 'AiMetrics',
             },
           },

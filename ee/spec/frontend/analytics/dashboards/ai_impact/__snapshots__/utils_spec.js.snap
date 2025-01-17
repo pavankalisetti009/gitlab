@@ -185,6 +185,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
       "value": "Code Suggestions usage",
     },
   },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "code_suggestions_acceptance_rate",
+      "value": "Code Suggestions acceptance rate",
+    },
+  },
 ]
 `;
 

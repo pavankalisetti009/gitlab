@@ -7,6 +7,7 @@ import {
   calculateRate,
   getRestrictedTableMetrics,
   generateTableAlerts,
+  generateMetricTableTooltip,
 } from 'ee/analytics/dashboards/ai_impact/utils';
 import {
   SUPPORTED_DORA_METRICS,
@@ -132,6 +133,20 @@ describe('AI impact Dashboard utils', () => {
         `${errors}: Cycle time, Lead time`,
         `${warnings}: Deployment frequency, Change failure rate`,
       ]);
+    });
+  });
+
+  describe('generateMetricTableTooltip', () => {
+    const noDataMsg = 'No data';
+
+    it.each`
+      numerator    | denominator  | result
+      ${4}         | ${5}         | ${'4/5'}
+      ${0}         | ${20}        | ${'0/20'}
+      ${undefined} | ${10}        | ${noDataMsg}
+      ${8}         | ${undefined} | ${noDataMsg}
+    `(`returns the metric table's tooltip as expected`, ({ numerator, denominator, result }) => {
+      expect(generateMetricTableTooltip({ numerator, denominator })).toBe(result);
     });
   });
 });

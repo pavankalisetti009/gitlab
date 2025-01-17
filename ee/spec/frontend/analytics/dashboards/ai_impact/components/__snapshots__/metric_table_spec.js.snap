@@ -62,9 +62,71 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
 }
 `;
 
+exports[`Metric table for the code_suggestions_acceptance_rate table row when the data is loaded renders the metric values 1`] = `
+"Code Suggestions acceptance rate  
+    Monthly GitLab Duo Code Suggestions accepted / total Code Suggestions generated.
+    
+      Go to docs
+      
+        20.0%
+       3/15
+        42.9%
+       3/7
+        66.7%
+       10/15
+        50.0%
+       9/18
+        17.6%
+       3/17
+        33.3%
+       4/12
+  11.8%
+    %"
+`;
+
+exports[`Metric table for the code_suggestions_acceptance_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      20,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      42.9,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      66.7,
+    ],
+    [
+      "Apr 6 - May 6",
+      50,
+    ],
+    [
+      "May 6 - Jun 6",
+      17.6,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      33.3,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "%",
+}
+`;
+
 exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the metric values 1`] = `
 "Code Suggestions usage  
-    Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors.
+    Monthly user engagement with GitLab Duo Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors.
     
       Go to docs
       

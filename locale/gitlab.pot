@@ -5220,7 +5220,7 @@ msgstr ""
 msgid "AiImpactAnalytics|%{duoUsedCount} out of %{duoAssignedUsersCount} GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "AiImpactAnalytics|Code Suggestions acceptance usage"
+msgid "AiImpactAnalytics|Code Suggestions acceptance rate"
 msgstr ""
 
 msgid "AiImpactAnalytics|Code Suggestions usage"
@@ -5232,10 +5232,13 @@ msgstr ""
 msgid "AiImpactAnalytics|Duo seats: Assigned and used"
 msgstr ""
 
+msgid "AiImpactAnalytics|Monthly GitLab Duo Code Suggestions accepted / total Code Suggestions generated."
+msgstr ""
+
 msgid "AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors."
+msgid "AiImpactAnalytics|Monthly user engagement with GitLab Duo Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors."
 msgstr ""
 
 msgid "AiImpactAnalytics|No usage data for the selected time range."
