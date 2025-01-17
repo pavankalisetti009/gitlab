@@ -4,40 +4,40 @@ module Gitlab
   module Graphql
     module Aggregations
       module SecurityOrchestrationPolicies
-        class LazyDastProfileAggregate
-          include ::Gitlab::Graphql::Deferred
-
-          attr_reader :dast_profile, :lazy_state, :current_user
+        class LazyDastProfileAggregate < BaseLazyAggregate
+          attr_reader :dast_profile, :current_user
 
           def initialize(query_ctx, dast_profile)
             raise ArgumentError, 'only DastSiteProfile or DastScannerProfile are allowed' if !dast_profile.is_a?(DastSiteProfile) && !dast_profile.is_a?(DastScannerProfile)
 
             @dast_profile = Gitlab::Graphql::Lazy.force(dast_profile)
-            # Initialize the loading state for this query,
-            # or get the previously-initiated state
-            @lazy_state = query_ctx[:lazy_dast_profile_in_policies_aggregate] ||= {
-              dast_pending_profiles: [],
-              loaded_objects: {}
-            }
-            # Register this ID to be loaded later:
-            @lazy_state[:dast_pending_profiles] << dast_profile
-
             @current_user = query_ctx[:current_user]
-          end
 
-          # Return the loaded record, hitting the database if needed
-          def execute
-            # Check if the record was already loaded
-            if @lazy_state[:dast_pending_profiles].present?
-              load_records_into_loaded_objects
-            end
-
-            @lazy_state[:loaded_objects][@dast_profile]
+            super
           end
 
           private
 
-          def load_records_into_loaded_objects
+          def state_key
+            :lazy_dast_profile_in_policies_aggregate
+          end
+
+          def initial_state
+            {
+              dast_pending_profiles: [],
+              loaded_objects: {}
+            }
+          end
+
+          def result
+            @lazy_state[:loaded_objects][dast_profile]
+          end
+
+          def queued_objects
+            @lazy_state[:dast_pending_profiles]
+          end
+
+          def load_queued_records
             # The record hasn't been loaded yet, so
             # hit the database with all pending IDs to prevent N+1
             profiles_by_project_id = @lazy_state[:dast_pending_profiles].group_by(&:project_id)

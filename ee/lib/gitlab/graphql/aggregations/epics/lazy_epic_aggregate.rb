@@ -4,11 +4,10 @@ module Gitlab
   module Graphql
     module Aggregations
       module Epics
-        class LazyEpicAggregate
+        class LazyEpicAggregate < BaseLazyAggregate
           include ::Gitlab::Graphql::Aggregations::Epics::Constants
-          include ::Gitlab::Graphql::Deferred
 
-          attr_reader :facet, :epic_id, :lazy_state
+          attr_reader :facet, :epic_id
 
           PERMITTED_FACETS = [COUNT, WEIGHT_SUM, HEALTH_STATUS_SUM].freeze
 
@@ -26,38 +25,49 @@ module Gitlab
 
             @facet = aggregate_facet.to_sym
 
-            # Initialize the loading state for this query,
-            # or get the previously-initiated state
-            @lazy_state = query_ctx[:lazy_epic_aggregate] ||= {
+            super(query_ctx, epic_id, &block)
+
+            # Register this facet to later determine what types of data are requested
+            @lazy_state[:facets] << @facet
+          end
+
+          alias_method :epic_aggregate, :execute
+
+          private
+
+          def state_key
+            :lazy_epic_aggregate
+          end
+
+          def initial_state
+            {
               pending_ids: Set.new,
               facets: Set.new,
               tree: {}
             }
-            # Register this ID to be loaded later:
-            @lazy_state[:pending_ids] << epic_id
-            # Register this facet to later determine what types of data are requested
-            @lazy_state[:facets] << @facet
-
-            @block = block
           end
 
-          # Return the loaded record, hitting the database if needed
-          def epic_aggregate
-            # Check if the record was already loaded:
-            # load from tree by epic
+          def queued_objects
+            @lazy_state[:pending_ids]
+          end
+
+          def result
+            aggregate_object(node)
+          end
+
+          def block_params
+            [node, aggregate_object(node)]
+          end
+
+          def node
+            tree[@epic_id]
+          end
+
+          def load_queued_records
             unless tree[@epic_id]
               load_records_into_tree
             end
-
-            node = tree[@epic_id]
-            object = aggregate_object(node)
-
-            @block ? @block.call(node, object) : object
           end
-
-          alias_method :execute, :epic_aggregate
-
-          private
 
           def validate_facet(aggregate_facet)
             unless aggregate_facet.present?
@@ -76,7 +86,7 @@ module Gitlab
           def load_records_into_tree
             # The record hasn't been loaded yet, so
             # hit the database with all pending IDs
-            pending_ids = @lazy_state[:pending_ids].to_a
+            pending_ids = queued_objects.to_a
 
             # Fire off the db query and get the results (grouped by epic_id and facet)
             raw_epic_aggregates = Gitlab::Graphql::Loaders::BulkEpicAggregateLoader.new(
@@ -84,7 +94,7 @@ module Gitlab
               count_health_status: health_status_sum_requested?
             ).execute
             create_epic_nodes(raw_epic_aggregates)
-            @lazy_state[:pending_ids].clear
+            queued_objects.clear
           end
 
           def create_epic_nodes(aggregate_records)
