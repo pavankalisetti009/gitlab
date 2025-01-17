@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  # Ingest archived events to enqueue updating of vulnerability read denormalized column.
+  # Ingest archived events to enqueue updating of denormalized column.
   # Check for presence of vulnerabilities to avoid redundant job queueing.
 
   class ProcessArchivedEventsWorker
@@ -22,6 +22,7 @@ module Vulnerabilities
       return unless project_setting
 
       Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService.execute(project_setting.project_id)
+      Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService.execute(project_setting.project_id)
     end
   end
 end
