@@ -90,6 +90,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
       :admin_push_rules              | 'Repository'
       :manage_protected_tags         | 'Repository'
       :admin_protected_branch        | 'Repository'
+      :admin_protected_environments  | 'CI/CD'
       :admin_runners                 | 'CI/CD'
       :manage_deploy_tokens          | 'Repository'
       :manage_merge_request_settings | 'Merge requests'

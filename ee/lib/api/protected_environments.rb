@@ -97,7 +97,7 @@ module API
         end
       end
 
-      before { authorize_admin_project }
+      before { authorize! :admin_protected_environments, user_project }
 
       desc 'List protected environments' do
         detail 'Gets a list of protected environments from a project. This feature was introduced in GitLab 12.8.'
@@ -232,7 +232,7 @@ module API
       end
 
       before do
-        authorize! :admin_protected_environment, user_group
+        authorize! :admin_protected_environments, user_group
       end
 
       desc 'List group-level protected environments' do

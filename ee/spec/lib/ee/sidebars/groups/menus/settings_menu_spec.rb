@@ -439,6 +439,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         :admin_cicd_variables          | 'CI/CD'
         :admin_compliance_framework    | 'General'
         :admin_push_rules              | 'Repository'
+        :admin_protected_environments  | 'CI/CD'
         :admin_runners                 | 'CI/CD'
         :manage_deploy_tokens          | 'Repository'
         :manage_group_access_tokens    | 'Access tokens'
