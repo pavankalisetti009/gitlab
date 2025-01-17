@@ -37896,6 +37896,7 @@ Check permissions for the current user on a work item.
 | <a id="workitempermissionsdeleteworkitem"></a>`deleteWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `delete_work_item` on this resource. |
 | <a id="workitempermissionsmarknoteasinternal"></a>`markNoteAsInternal` | [`Boolean!`](#boolean) | If `true`, the user can perform `mark_note_as_internal` on this resource. |
 | <a id="workitempermissionsreadworkitem"></a>`readWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_work_item` on this resource. |
+| <a id="workitempermissionsreportspam"></a>`reportSpam` | [`Boolean!`](#boolean) | If `true`, the user can perform `report_spam` on this resource. |
 | <a id="workitempermissionssetworkitemmetadata"></a>`setWorkItemMetadata` | [`Boolean!`](#boolean) | If `true`, the user can perform `set_work_item_metadata` on this resource. |
 | <a id="workitempermissionsupdateworkitem"></a>`updateWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `update_work_item` on this resource. |
 
