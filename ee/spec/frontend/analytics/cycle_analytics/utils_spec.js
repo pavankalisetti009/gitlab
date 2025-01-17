@@ -15,7 +15,7 @@ import {
   orderByDate,
   toggleSelectedLabel,
   prepareStageErrors,
-  formatMedianValuesWithOverview,
+  formatMedianValues,
   generateFilterTextDescription,
   groupDurationsByDay,
   formatDurationOverviewChartData,
@@ -30,7 +30,6 @@ import {
   rawStageMedians,
 } from 'jest/analytics/cycle_analytics/mock_data';
 import { toYmd } from '~/analytics/shared/utils';
-import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import { medianTimeToParsedSeconds } from '~/analytics/cycle_analytics/utils';
 import { getDatesInRange, getDayDifference } from '~/lib/utils/datetime_utility';
 import {
@@ -487,17 +486,13 @@ describe('Value Stream Analytics utils', () => {
     });
   });
 
-  describe('formatMedianValuesWithOverview', () => {
-    const calculatedMedians = formatMedianValuesWithOverview(rawStageMedians);
+  describe('formatMedianValues', () => {
+    const calculatedMedians = formatMedianValues(rawStageMedians);
 
     it('returns an object with each stage and their median formatted for display', () => {
       rawStageMedians.forEach(({ id, value }) => {
         expect(calculatedMedians).toMatchObject({ [id]: medianTimeToParsedSeconds(value) });
       });
-    });
-
-    it('calculates a median for the overview stage', () => {
-      expect(calculatedMedians).toMatchObject({ [OVERVIEW_STAGE_ID]: '3 weeks' });
     });
   });
 

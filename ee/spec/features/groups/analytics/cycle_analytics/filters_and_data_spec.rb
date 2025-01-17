@@ -188,7 +188,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
         it 'each stage will have median values' do
           stage_medians = page.all('.gl-path-button span').collect(&:text)
 
-          expect(stage_medians).to match_array(["-"] * 4)
+          expect(stage_medians).to match_array(["-"] * 3)
         end
 
         it 'displays the default list of stages' do
