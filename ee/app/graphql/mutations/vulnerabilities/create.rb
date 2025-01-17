@@ -87,7 +87,6 @@ module Mutations
             name
             state
             severity
-            confidence
             description
             solution
             detected_at

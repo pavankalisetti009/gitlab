@@ -63,8 +63,6 @@ RSpec.describe TestHooks::ProjectService, feature_category: :code_testing do
                 }
               ],
               report_type: "dependency_scanning",
-              confidence: "unknown",
-              confidence_overridden: false,
               confirmed_at: Time.current,
               confirmed_by_id: current_user.id,
               dismissed_at: nil,

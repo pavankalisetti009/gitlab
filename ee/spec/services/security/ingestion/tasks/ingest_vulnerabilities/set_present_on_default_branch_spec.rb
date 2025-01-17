@@ -17,7 +17,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::SetPresentOnDe
       create(:vulnerability,
         :with_finding,
         :high_severity,
-        confidence: :high,
         present_on_default_branch: true,
         resolved_on_default_branch: true,
         cvss: [{ 'vector' => 'vector_text', 'vendor' => 'GitLab' }],
@@ -29,7 +28,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::SetPresentOnDe
       create(:vulnerability,
         :with_finding,
         :high_severity,
-        confidence: :high,
         present_on_default_branch: false,
         resolved_on_default_branch: true,
         cvss: [{ 'vector' => 'vector_text', 'vendor' => 'GitLab' }],
@@ -55,7 +53,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::SetPresentOnDe
         vulnerability_2.reload
       end.to change { vulnerability_2.title }.to('changed')
          .and change { vulnerability_2.severity }.to('critical')
-         .and change { vulnerability_2.confidence }.to('medium')
          .and change { vulnerability_2.present_on_default_branch }.to(true)
          .and change { vulnerability_2.resolved_on_default_branch }.to(false)
          .and change { vulnerability_2.cvss }.to(cvss)

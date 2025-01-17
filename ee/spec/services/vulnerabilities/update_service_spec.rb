@@ -12,10 +12,9 @@ RSpec.describe Vulnerabilities::UpdateService, feature_category: :vulnerability_
   let!(:project) { create(:project) } # cannot use let_it_be here: caching causes problems with permission-related tests
   let!(:updated_finding) { create(:vulnerabilities_finding, project: project, name: finding_name, severity: :critical, vulnerability: vulnerability) }
 
-  let!(:vulnerability) { create(:vulnerability, project: project, severity: :low, severity_overridden: severity_overridden, confidence_overridden: confidence_overridden) }
+  let!(:vulnerability) { create(:vulnerability, project: project, severity: :low, severity_overridden: severity_overridden) }
   let(:finding_name) { 'New title' }
   let(:severity_overridden) { false }
-  let(:confidence_overridden) { false }
   let(:resolved_on_default_branch) { nil }
 
   subject { described_class.new(project, user, finding: updated_finding, resolved_on_default_branch: resolved_on_default_branch).execute }
@@ -57,20 +56,6 @@ RSpec.describe Vulnerabilities::UpdateService, feature_category: :vulnerability_
         expect(vulnerability).to(
           have_attributes(
             title: 'New title'
-          ))
-      end
-    end
-
-    context 'when confidence is overridden' do
-      let(:confidence_overridden) { true }
-
-      it 'updates the vulnerability from updated finding (title and severity only)' do
-        expect { subject }.not_to change { project.vulnerabilities.count }
-        expect(vulnerability.previous_changes.keys).to contain_exactly(*%w[updated_at title title_html severity])
-        expect(vulnerability).to(
-          have_attributes(
-            title: 'New title',
-            severity: 'critical'
           ))
       end
     end
