@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
+import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import { createRouter } from './router';
-import { apolloProvider } from './graphql/client';
 import {
   ROUTE_FRAMEWORKS,
   ROUTE_STANDARDS_ADHERENCE,
@@ -61,6 +61,10 @@ export default () => {
     rootAncestorName,
     rootAncestorComplianceCenterPath,
     routes,
+  });
+
+  const apolloProvider = new VueApollo({
+    defaultClient: createDefaultClient(),
   });
 
   return new Vue({

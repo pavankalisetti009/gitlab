@@ -59,6 +59,7 @@ export default {
   emits: ['edit', 'close'],
   data() {
     return {
+      after: null,
       projects: {
         nodes: [],
         pageInfo: {
@@ -77,10 +78,15 @@ export default {
         return {
           fullPath: this.groupPath,
           frameworkId: this.framework.id,
+          after: this.after,
         };
       },
       update(data) {
-        return data.namespace.projects;
+        return {
+          ...this.projects,
+          ...data.namespace.projects,
+          nodes: [...this.projects.nodes, ...data.namespace.projects.nodes],
+        };
       },
     },
   },
@@ -141,11 +147,7 @@ export default {
     },
 
     loadMoreProjects() {
-      this.$apollo.queries.projects.fetchMore({
-        variables: {
-          after: this.projects.pageInfo.endCursor,
-        },
-      });
+      this.after = this.projects.pageInfo.endCursor;
     },
 
     copyIdToClipboard() {

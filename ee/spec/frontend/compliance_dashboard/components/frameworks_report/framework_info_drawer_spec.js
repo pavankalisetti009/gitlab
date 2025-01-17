@@ -10,7 +10,6 @@ import {
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
-import { cacheConfig } from 'ee/compliance_dashboard/graphql/client';
 import projectsInNamespaceWithFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/graphql/projects_in_namespace_with_framework.query.graphql';
 import { shallowMountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { createFramework, mockPageInfo } from 'ee_jest/compliance_dashboard/mock_data';
@@ -24,11 +23,9 @@ describe('FrameworkInfoDrawer component', () => {
   let wrapper;
 
   function createMockApolloProvider({ projectsInNamespaceResolverMock }) {
-    return createMockApollo(
-      [[projectsInNamespaceWithFrameworkQuery, projectsInNamespaceResolverMock]],
-      {},
-      { cacheConfig },
-    );
+    return createMockApollo([
+      [projectsInNamespaceWithFrameworkQuery, projectsInNamespaceResolverMock],
+    ]);
   }
 
   const $toast = {
@@ -230,6 +227,14 @@ describe('FrameworkInfoDrawer component', () => {
           });
 
           it('clicking button loads next page', async () => {
+            const secondPageResponse = makeProjectsListResponse();
+            secondPageResponse.namespace.projects.nodes.forEach((node) => {
+              // eslint-disable-next-line no-param-reassign
+              node.id = `gid://gitlab/Project/${node.id}-page-2`;
+            });
+            projectsInNamespaceResolverMock.mockResolvedValueOnce({
+              data: secondPageResponse,
+            });
             await findLoadMoreButton().trigger('click');
             await waitForPromises();
             expect(projectsInNamespaceResolverMock).toHaveBeenCalledWith(
