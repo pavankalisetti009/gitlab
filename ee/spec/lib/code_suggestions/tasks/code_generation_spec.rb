@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_suggestions do
+  let_it_be(:current_user) { create(:user) }
+
   let(:content_above_cursor) { 'some content_above_cursor' }
   let(:content_below_cursor) { 'some content_below_cursor' }
   let(:instruction) { CodeSuggestions::Instruction.from_trigger_type('comment') }
@@ -21,7 +23,12 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
   let(:client) { nil }
 
   subject(:task) do
-    described_class.new(params: params, unsafe_passthrough_params: unsafe_params, client: client)
+    described_class.new(
+      params: params,
+      unsafe_passthrough_params: unsafe_params,
+      client: client,
+      current_user: current_user
+    )
   end
 
   context 'when using saas anthropic model' do
@@ -59,6 +66,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
               'content_below_cursor' => 'some content_below_cursor',
               'language_identifier' => 'Python',
               'prompt_id' => 'code_suggestions/generations',
+              'prompt_version' => '^1.0.0',
               'prompt_enhancer' => {
                 'examples_array' => [
                   {
@@ -126,7 +134,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                 'libraries' => '',
                 'user_instruction' => 'Generate the best possible code based on instructions.'
               },
-              'prompt_id' => 'code_suggestions/generations'
+              'prompt_id' => 'code_suggestions/generations',
+              'prompt_version' => '^1.0.0'
             },
             'type' => 'code_editor_generation'
           }
@@ -140,7 +149,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     it 'calls code creation Anthropic' do
       task.body
       expect(CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages)
-        .to have_received(:new).with(params)
+        .to have_received(:new).with(params, current_user)
     end
 
     it_behaves_like 'code suggestion task' do

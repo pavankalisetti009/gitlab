@@ -17,7 +17,8 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages, feat
               content_above_cursor: expected_content_above_cursor,
               content_below_cursor: expected_content_below_cursor,
               language_identifier: expected_language_identifier,
-              prompt_id: 'code_suggestions/generations',
+              prompt_id: expected_prompt_id,
+              prompt_version: expected_prompt_version,
               stream: expected_stream,
               prompt_enhancer: {
                 examples_array: expected_examples_array,

@@ -23,9 +23,9 @@ module CodeSuggestions
       def prompt
         if self_hosted?
           CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages.new(
-            feature_setting: feature_setting, params: params)
+            feature_setting: feature_setting, params: params, current_user: current_user)
         else
-          CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params)
+          CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params, current_user)
         end
       end
 

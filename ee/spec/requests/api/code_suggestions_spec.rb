@@ -205,7 +205,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 "function that outputs the first 20 fibonacci numbers\n",
               "content_below_cursor" => "",
               "language_identifier" => "Python",
-              "prompt_id" => "code_suggestions/generations",
               "stream" => false,
               "prompt_enhancer" => {
                 "examples_array" => [
@@ -231,7 +230,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 'related_snippets' => [],
                 'libraries' => [],
                 'user_instruction' => 'Generate the best possible code based on instructions.'
-              }
+              },
+              'prompt_id' => 'code_suggestions/generations',
+              'prompt_version' => '2.0.0'
             }
           }
         ]

@@ -23,9 +23,9 @@ module CodeSuggestions
                   content_above_cursor: content_above_cursor,
                   content_below_cursor: content_below_cursor,
                   language_identifier: language.name,
-                  prompt_id: PROMPT_ID,
                   stream: params.fetch(:stream, false),
-                  prompt_enhancer: code_generation_enhancer
+                  prompt_enhancer: code_generation_enhancer,
+                  **prompt_info
                 }
               }
             ]
@@ -33,6 +33,24 @@ module CodeSuggestions
         end
 
         private
+
+        def prompt_info
+          # anthropic + claude_3_5_sonnet_20240620
+          prompt_version = '^1.0.0'
+
+          if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
+            # vertex + claude_3_5_sonnet_20240620
+            prompt_version = '2.0.0'
+          elsif Feature.enabled?(:claude_3_5_sonnet_20241022_for_code_gen, current_user)
+            # anthropic + claude_3_5_sonnet_20241022
+            prompt_version = '1.0.1-dev'
+          end
+
+          {
+            prompt_id: PROMPT_ID,
+            prompt_version: prompt_version
+          }
+        end
 
         def code_generation_enhancer
           # the fields here are used in AIGW to populate prompt template

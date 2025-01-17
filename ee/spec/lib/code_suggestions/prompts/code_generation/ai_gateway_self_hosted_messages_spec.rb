@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages, feature_category: :"self-hosted_models" do
   let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :self_hosted) }
+  let_it_be(:current_user) { create(:user) }
 
   let(:prompt_version) { 2 }
 
@@ -30,7 +31,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMess
     }
   end
 
-  subject(:prompt) { described_class.new(feature_setting: feature_setting, params: params) }
+  subject(:prompt) { described_class.new(feature_setting: feature_setting, params: params, current_user: current_user) }
 
   describe '#request_params' do
     let(:request_params) do

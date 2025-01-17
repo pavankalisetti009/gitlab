@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage, feature_category: :"self-hosted_models" do
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:ai_self_hosted_model) { create(:ai_self_hosted_model, model: :codestral, name: 'whatever', endpoint: 'http://example.com/endpoint') }
   let_it_be(:ai_feature_setting) do
     create(
@@ -35,7 +36,11 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
   end
 
   let(:dummy_message) do
-    dummy_class.new(feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions), params: params)
+    dummy_class.new(
+      feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions),
+      params: params,
+      current_user: current_user
+    )
   end
 
   describe '#request_params' do
@@ -58,7 +63,8 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
     it 'raises NotImplementedError for the abstract class' do
       expect(described_class.new(
         feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions),
-        params: params
+        params: params,
+        current_user: current_user
       ).prompt).to be_nil
     end
   end
