@@ -134,6 +134,7 @@ describe('Metric table', () => {
   const leadTimeTestId = 'ai-impact-metric-lead-time';
   const vulnerabilityCriticalTestId = 'ai-impact-metric-vulnerability-critical';
   const codeSuggestionsUsageRateTestId = 'ai-impact-metric-code-suggestions-usage-rate';
+  const codeSuggestionsAcceptanceRateTestId = 'ai-impact-metric-code-suggestions-acceptance-rate';
 
   const findTableRow = (rowTestId) => wrapper.findByTestId(rowTestId);
   const findMetricTableCell = (rowTestId) => findTableRow(rowTestId).findComponent(MetricTableCell);
@@ -158,13 +159,14 @@ describe('Metric table', () => {
   });
 
   describe.each`
-    identifier                                | testId                            | requestPath  | trackingProperty
-    ${DORA_METRICS.DEPLOYMENT_FREQUENCY}      | ${deploymentFrequencyTestId}      | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
-    ${DORA_METRICS.CHANGE_FAILURE_RATE}       | ${changeFailureRateTestId}        | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
-    ${FLOW_METRICS.CYCLE_TIME}                | ${cycleTimeTestId}                | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
-    ${FLOW_METRICS.LEAD_TIME}                 | ${leadTimeTestId}                 | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
-    ${VULNERABILITY_METRICS.CRITICAL}         | ${vulnerabilityCriticalTestId}    | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
-    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE} | ${codeSuggestionsUsageRateTestId} | ${''}        | ${''}
+    identifier                                     | testId                                 | requestPath  | trackingProperty
+    ${DORA_METRICS.DEPLOYMENT_FREQUENCY}           | ${deploymentFrequencyTestId}           | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${DORA_METRICS.CHANGE_FAILURE_RATE}            | ${changeFailureRateTestId}             | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.CYCLE_TIME}                     | ${cycleTimeTestId}                     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.LEAD_TIME}                      | ${leadTimeTestId}                      | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${VULNERABILITY_METRICS.CRITICAL}              | ${vulnerabilityCriticalTestId}         | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${codeSuggestionsUsageRateTestId}      | ${''}        | ${''}
+    ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${codeSuggestionsAcceptanceRateTestId} | ${''}        | ${''}
   `('for the $identifier table row', ({ identifier, testId, requestPath, trackingProperty }) => {
     beforeEach(() => {
       createWrapper();
@@ -178,13 +180,14 @@ describe('Metric table', () => {
   });
 
   describe.each`
-    identifier                                | name                                    | testId
-    ${DORA_METRICS.DEPLOYMENT_FREQUENCY}      | ${'Deployment frequency'}               | ${deploymentFrequencyTestId}
-    ${DORA_METRICS.CHANGE_FAILURE_RATE}       | ${'Change failure rate'}                | ${changeFailureRateTestId}
-    ${FLOW_METRICS.CYCLE_TIME}                | ${'Cycle time'}                         | ${cycleTimeTestId}
-    ${FLOW_METRICS.LEAD_TIME}                 | ${'Lead time'}                          | ${leadTimeTestId}
-    ${VULNERABILITY_METRICS.CRITICAL}         | ${'Critical vulnerabilities over time'} | ${vulnerabilityCriticalTestId}
-    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE} | ${'Code Suggestions usage'}             | ${codeSuggestionsUsageRateTestId}
+    identifier                                     | name                                    | testId
+    ${DORA_METRICS.DEPLOYMENT_FREQUENCY}           | ${'Deployment frequency'}               | ${deploymentFrequencyTestId}
+    ${DORA_METRICS.CHANGE_FAILURE_RATE}            | ${'Change failure rate'}                | ${changeFailureRateTestId}
+    ${FLOW_METRICS.CYCLE_TIME}                     | ${'Cycle time'}                         | ${cycleTimeTestId}
+    ${FLOW_METRICS.LEAD_TIME}                      | ${'Lead time'}                          | ${leadTimeTestId}
+    ${VULNERABILITY_METRICS.CRITICAL}              | ${'Critical vulnerabilities over time'} | ${vulnerabilityCriticalTestId}
+    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions usage'}             | ${codeSuggestionsUsageRateTestId}
+    ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}   | ${codeSuggestionsAcceptanceRateTestId}
   `('for the $identifier table row', ({ name, testId }) => {
     describe('when loading data', () => {
       beforeEach(() => {

@@ -20,8 +20,14 @@ export const SUPPORTED_DORA_METRICS = [
 
 export const SUPPORTED_VULNERABILITY_METRICS = [VULNERABILITY_METRICS.CRITICAL];
 
-export const SUPPORTED_AI_METRICS = [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE];
-export const HIDE_METRIC_DRILL_DOWN = [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE];
+export const SUPPORTED_AI_METRICS = [
+  AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
+  AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE,
+];
+export const HIDE_METRIC_DRILL_DOWN = [
+  AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
+  AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE,
+];
 
 // The AI impact metrics supported for over time tiles
 export const AI_IMPACT_OVER_TIME_METRICS = {
@@ -30,7 +36,7 @@ export const AI_IMPACT_OVER_TIME_METRICS = {
     units: UNITS.PERCENT,
   },
   [AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE]: {
-    label: s__('AiImpactAnalytics|Code Suggestions acceptance usage'),
+    label: s__('AiImpactAnalytics|Code Suggestions acceptance rate'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.DUO_CHAT_USAGE_RATE]: {

@@ -255,3 +255,18 @@ export const generateTableAlerts = (alertGroups) =>
     const formattedMetrics = metrics.map((metric) => AI_IMPACT_TABLE_METRICS[metric].label);
     return [...alerts, `${message}: ${formattedMetrics.join(', ')}`];
   }, []);
+
+/**
+ * Generates a string with a rate's numerator and denominator to be used
+ * in the metric table's tooltips.
+ * @param {number} numerator
+ * @param {number} denominator
+ * @returns {String|'No data'} The rate's raw values as a fraction. If the rate is `null`, returns 'No data.'
+ */
+export const generateMetricTableTooltip = ({ numerator, denominator }) => {
+  const rate = calculateRate({ numerator, denominator });
+
+  if (rate === null) return __('No data');
+
+  return `${numerator}/${denominator}`;
+};

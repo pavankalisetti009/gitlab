@@ -3,4 +3,6 @@
 fragment AiCodeContributorsMetricItem on AiMetrics {
   codeContributorsCount
   codeSuggestionsContributorsCount
+  codeSuggestionsAcceptedCount
+  codeSuggestionsShownCount
 }
