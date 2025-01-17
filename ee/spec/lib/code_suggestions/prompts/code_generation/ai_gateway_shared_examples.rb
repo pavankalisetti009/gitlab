@@ -53,8 +53,9 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
     }
   end
 
-  subject { described_class.new(params) }
+  subject { described_class.new(params, current_user) }
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- We need extra helpers to define tables
   describe '#request_params' do
     context 'when all parameters are present' do
       before_all do
@@ -72,6 +73,8 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)', 'jwt (3.1.2)'] }
       let(:expected_user_instruction) { comment }
       let(:expected_stream) { true }
+      let(:expected_prompt_id) { "code_suggestions/generations" }
+      let(:expected_prompt_version) { "2.0.0" }
 
       let(:expected_related_files) do
         [
@@ -131,6 +134,50 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
           end
         end
       end
+
+      context 'when using claude_3_5_sonnet_20241022_for_code_gen' do
+        let(:expected_saas) { true }
+        let(:expected_prompt_id) { "code_suggestions/generations" }
+        let(:expected_prompt_version) { "1.0.1-dev" }
+
+        before do
+          stub_feature_flags(incident_fail_over_generation_provider: false)
+          stub_feature_flags(claude_3_5_sonnet_20241022_for_code_gen: true)
+        end
+
+        it 'returns expected request params' do
+          expect(subject.request_params).to eq(expected_request_params)
+        end
+      end
+
+      context 'when using claude_3_5_sonnet_20240620_for_code_gen' do
+        let(:expected_saas) { true }
+        let(:expected_prompt_id) { "code_suggestions/generations" }
+        let(:expected_prompt_version) { "^1.0.0" }
+
+        before do
+          stub_feature_flags(incident_fail_over_generation_provider: false)
+          stub_feature_flags(claude_3_5_sonnet_20241022_for_code_gen: false)
+        end
+
+        it 'returns expected request params' do
+          expect(subject.request_params).to eq(expected_request_params)
+        end
+      end
+
+      context 'when failed over' do
+        let(:expected_saas) { true }
+        let(:expected_prompt_id) { "code_suggestions/generations" }
+        let(:expected_prompt_version) { "2.0.0" }
+
+        before do
+          stub_feature_flags(incident_fail_over_generation_provider: true)
+        end
+
+        it 'returns expected request params' do
+          expect(subject.request_params).to eq(expected_request_params)
+        end
+      end
     end
 
     context 'when all parameters are blank' do
@@ -151,6 +198,9 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_related_files) { [] }
       let(:expected_related_snippets) { [] }
       let(:expected_stream) { false }
+      let(:expected_saas) { true }
+      let(:expected_prompt_id) { "code_suggestions/generations" }
+      let(:expected_prompt_version) { "2.0.0" }
 
       it 'returns expected request params' do
         expect(subject.request_params).to eq(expected_request_params)
@@ -163,4 +213,5 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       end
     end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

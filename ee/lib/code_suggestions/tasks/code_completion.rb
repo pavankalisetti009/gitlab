@@ -30,15 +30,15 @@ module CodeSuggestions
 
       def self_hosted_prompt
         CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage.new(
-          feature_setting: feature_setting, params: params)
+          feature_setting: feature_setting, params: params, current_user: current_user)
       end
 
       def saas_prompt
         if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
           # claude hosted on anthropic
-          CodeSuggestions::Prompts::CodeCompletion::Anthropic.new(params)
+          CodeSuggestions::Prompts::CodeCompletion::Anthropic.new(params, current_user)
         else
-          saas_primary_model_class.new(params)
+          saas_primary_model_class.new(params, current_user)
         end
       end
     end

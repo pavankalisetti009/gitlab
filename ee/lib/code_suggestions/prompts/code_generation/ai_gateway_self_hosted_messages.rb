@@ -10,10 +10,10 @@ module CodeSuggestions
 
         attr_reader :feature_setting
 
-        def initialize(feature_setting:, params:)
+        def initialize(feature_setting:, params:, current_user:)
           @feature_setting = feature_setting
 
-          super(params)
+          super(params, current_user)
         end
 
         def request_params

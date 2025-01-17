@@ -5,13 +5,14 @@ module CodeSuggestions
     class Base
       include Gitlab::Utils::StrongMemoize
 
-      def initialize(params)
+      def initialize(params, current_user)
         @params = params
+        @current_user = current_user
       end
 
       private
 
-      attr_reader :params
+      attr_reader :params, :current_user
 
       def file_name
         params.dig(:current_file, :file_name).to_s

@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Prompts::CodeCompletion::Anthropic, feature_category: :code_suggestions do
+  let_it_be(:current_user) { create(:user) }
+
   let(:content_above_cursor) do
     <<~CONTENT_ABOVE_CURSOR
       package main
@@ -33,7 +35,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::Anthropic, feature_cate
     }
   end
 
-  subject(:anthropic_completion) { described_class.new(params) }
+  subject(:anthropic_completion) { described_class.new(params, current_user) }
 
   describe '#request_params' do
     it 'returns expected request params' do
