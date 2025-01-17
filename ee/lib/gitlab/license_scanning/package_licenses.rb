@@ -55,16 +55,12 @@ module Gitlab
           #    lookup the corresponding licenses. This query is executed by the
           #    `package.licenses_for` method.
           components.each_slice(BATCH_SIZE).each do |components_batch|
-            if project && Feature.enabled?(:license_scanning_with_sbom_licenses, project)
-              components_with_licenses, components_without_licenses = components_batch.partition do |c|
-                c.licenses.present?
-              end
-
-              add_components_with_license(components_with_licenses)
-              add_components_without_licenses(components_without_licenses)
-            else
-              add_components_without_licenses(components_batch)
+            components_with_licenses, components_without_licenses = components_batch.partition do |c|
+              c.licenses.present?
             end
+
+            add_components_with_license(components_with_licenses)
+            add_components_without_licenses(components_without_licenses)
           end
 
           track_events

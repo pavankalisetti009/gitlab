@@ -159,7 +159,7 @@ module EE
     def parse_sbom_report
       ::Gitlab::Ci::Reports::Sbom::Report.new.tap do |report|
         each_blob do |blob|
-          ::Gitlab::Ci::Parsers.fabricate!(file_type, project: project).parse!(blob, report)
+          ::Gitlab::Ci::Parsers.fabricate!(file_type).parse!(blob, report)
         end
       end
     end

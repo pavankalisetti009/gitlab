@@ -613,43 +613,6 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
         ]
       end
 
-      context 'when the feature flag `license_scanning_with_sbom_licenses` is disabled' do
-        before do
-          stub_feature_flags(license_scanning_with_sbom_licenses: false)
-        end
-
-        it 'ignores the component license information and returns the information from pm_packages table' do
-          expect(fetch).to contain_exactly(
-            have_attributes(name: 'beego',
-              purl_type: 'golang',
-              version: 'v1.10.0',
-              licenses: [{
-                "name" => "Open LDAP Public License v2.1",
-                "spdx_identifier" => "OLDAP-2.1",
-                "url" => "https://spdx.org/licenses/OLDAP-2.1.html"
-              }, {
-                "name" => "Open LDAP Public License v2.2",
-                "spdx_identifier" => "OLDAP-2.2",
-                "url" => "https://spdx.org/licenses/OLDAP-2.2.html"
-              }])
-          )
-        end
-
-        it 'tracks scan events' do
-          expect { fetch }.to trigger_internal_events('license_scanning_scan')
-            .with(project: project,
-              additional_properties: {
-                label: 'golang',
-                property: 'dependency_scanning',
-                value: 1,
-                components_with_licenses_from_sbom: 0,
-                components_with_scan_results: 1,
-                components_without_scan_results: 0
-              }
-            ).exactly(:once)
-        end
-      end
-
       context 'when a component is not supported by license scanning' do
         let(:components_to_fetch) do
           [
