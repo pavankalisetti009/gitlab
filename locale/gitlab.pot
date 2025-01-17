@@ -5238,6 +5238,9 @@ msgstr ""
 msgid "AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
+msgid "AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors."
+msgstr ""
+
 msgid "AiImpactAnalytics|Monthly user engagement with GitLab Duo Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors."
 msgstr ""
 

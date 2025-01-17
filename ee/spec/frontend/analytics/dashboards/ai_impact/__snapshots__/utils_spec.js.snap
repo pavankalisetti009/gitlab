@@ -192,6 +192,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
       "value": "Code Suggestions acceptance rate",
     },
   },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "duo_chat_usage_rate",
+      "value": "Duo Chat: Unique users",
+    },
+  },
 ]
 `;
 

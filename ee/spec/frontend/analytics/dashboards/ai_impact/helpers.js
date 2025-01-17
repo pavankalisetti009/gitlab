@@ -102,6 +102,9 @@ export const mockAiMetricsResponse = (values = []) =>
         codeSuggestionsContributorsCount,
         codeSuggestionsAcceptedCount,
         codeSuggestionsShownCount,
+        duoChatContributorsCount,
+        duoAssignedUsersCount,
+        duoUsedCount,
       },
     ) =>
       acc.mockResolvedValueOnce({
@@ -114,6 +117,9 @@ export const mockAiMetricsResponse = (values = []) =>
               codeSuggestionsContributorsCount,
               codeSuggestionsAcceptedCount,
               codeSuggestionsShownCount,
+              duoChatContributorsCount,
+              duoAssignedUsersCount,
+              duoUsedCount,
               __typename: 'AiMetrics',
             },
           },

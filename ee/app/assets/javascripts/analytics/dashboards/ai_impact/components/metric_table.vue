@@ -19,7 +19,7 @@ import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashbo
 import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from '../graphql/dora_metrics.query.graphql';
-import AiCodeContributorsMetricsQuery from '../graphql/ai_code_contributors_metrics.query.graphql';
+import AiMetricsQuery from '../graphql/ai_metrics.query.graphql';
 import MetricTableCell from '../../components/metric_table_cell.vue';
 import TrendIndicator from '../../components/trend_indicator.vue';
 import {
@@ -108,7 +108,7 @@ export default {
       return [
         { metrics: SUPPORTED_DORA_METRICS, queryFn: this.fetchDoraMetricsQuery },
         { metrics: SUPPORTED_FLOW_METRICS, queryFn: this.fetchFlowMetricsQuery },
-        { metrics: SUPPORTED_AI_METRICS, queryFn: this.fetchAiCodeContributorsMetricsQuery },
+        { metrics: SUPPORTED_AI_METRICS, queryFn: this.fetchAiMetricsQuery },
         {
           metrics: SUPPORTED_VULNERABILITY_METRICS,
           queryFn: this.fetchVulnerabilitiesMetricsQuery,
@@ -261,9 +261,9 @@ export default {
       };
     },
 
-    async fetchAiCodeContributorsMetricsQuery({ startDate, endDate }, timePeriod) {
+    async fetchAiMetricsQuery({ startDate, endDate }, timePeriod) {
       const result = await this.$apollo.query({
-        query: AiCodeContributorsMetricsQuery,
+        query: AiMetricsQuery,
         variables: {
           fullPath: this.namespace,
           startDate,

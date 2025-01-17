@@ -156,6 +156,8 @@ const mockTableRow = (
   criticalVulnerabilities,
   [codeSuggestionsContributorsCount, codeContributorsCount],
   [codeSuggestionsAcceptedCount, codeSuggestionsShownCount],
+  [duoChatContributorsCount, duoAssignedUsersCount],
+  duoUsedCount,
   // eslint-disable-next-line max-params
 ) => ({
   deploymentFrequency,
@@ -167,42 +169,45 @@ const mockTableRow = (
   codeContributorsCount,
   codeSuggestionsAcceptedCount,
   codeSuggestionsShownCount,
+  duoChatContributorsCount,
+  duoAssignedUsersCount,
+  duoUsedCount,
 });
 
 export const mockTableValues = [
-  mockTableRow(10, 0.2, 1, 1, 40, [1, 20], [3, 15]),
-  mockTableRow(20, 0.4, 2, 2, 20, [1, 10], [3, 7]),
-  mockTableRow(40, 0.6, 4, 4, 10, [1, 4], [10, 15]),
-  mockTableRow(10, 0.2, 1, 1, 40, [1, 20], [9, 18]),
-  mockTableRow(20, 0.4, 2, 2, 20, [1, 10], [3, 17]),
-  mockTableRow(40, 0.6, 4, 4, 10, [1, 4], [4, 12]),
+  mockTableRow(10, 0.2, 1, 1, 40, [1, 20], [3, 15], [3, 15], 100),
+  mockTableRow(20, 0.4, 2, 2, 20, [1, 10], [3, 7], [3, 7], 100),
+  mockTableRow(40, 0.6, 4, 4, 10, [1, 4], [10, 15], [10, 15], 100),
+  mockTableRow(10, 0.2, 1, 1, 40, [1, 20], [9, 18], [9, 18], 100),
+  mockTableRow(20, 0.4, 2, 2, 20, [1, 10], [3, 17], [3, 17], 100),
+  mockTableRow(40, 0.6, 4, 4, 10, [1, 4], [4, 12], [4, 12], 100),
 ];
 
 export const mockTableLargeValues = [
-  mockTableRow(10000, 0.1, 4, 0, 4000, [500, 1000], [800, 2000]),
-  mockTableRow(20000, 0.2, 2, 2, 2000, [1000, 2000], [1000, 1500]),
-  mockTableRow(40000, 0.4, 1, 4, 1000, [2500, 5000], [1200, 2400]),
-  mockTableRow(10000, 0.1, 4, 1, 4000, [5000, 10000], [2000, 6000]),
-  mockTableRow(20000, 0.2, 2, 2, 2000, [1000, 2000], [8000, 9000]),
-  mockTableRow(40, 0.4, 1, 4, 5000, [2500, 5000], [7000, 8500]),
+  mockTableRow(10000, 0.1, 4, 0, 4000, [500, 1000], [800, 2000], [800, 2000], 10000),
+  mockTableRow(20000, 0.2, 2, 2, 2000, [1000, 2000], [1000, 1500], [1000, 1500], 10000),
+  mockTableRow(40000, 0.4, 1, 4, 1000, [2500, 5000], [1200, 2400], [1200, 2400], 10000),
+  mockTableRow(10000, 0.1, 4, 1, 4000, [5000, 10000], [2000, 6000], [2000, 6000], 10000),
+  mockTableRow(20000, 0.2, 2, 2, 2000, [1000, 2000], [8000, 9000], [8000, 9000], 10000),
+  mockTableRow(40, 0.4, 1, 4, 5000, [2500, 5000], [7000, 8500], [7000, 8500], 10000),
 ];
 
 export const mockTableBlankValues = [
-  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-']),
-  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-']),
-  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-']),
-  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-']),
-  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-']),
-  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-']),
+  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-'], ['-', '-'], '-'),
+  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-'], ['-', '-'], '-'),
+  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-'], ['-', '-'], '-'),
+  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-'], ['-', '-'], '-'),
+  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-'], ['-', '-'], '-'),
+  mockTableRow('-', '-', '-', '-', '-', ['-', '-'], ['-', '-'], ['-', '-'], '-'),
 ];
 
 export const mockTableZeroValues = [
-  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0]),
-  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0]),
-  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0]),
-  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0]),
-  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0]),
-  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0]),
+  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0], [0, 0], 0),
+  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0], [0, 0], 0),
+  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0], [0, 0], 0),
+  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0], [0, 0], 0),
+  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0], [0, 0], 0),
+  mockTableRow(0, 0, 0, 0, 0, [0, 0], [0, 0], [0, 0], 0),
 ];
 
 export const mockTableAndChartValues = [...mockTableValues, ...mockTableValues];
