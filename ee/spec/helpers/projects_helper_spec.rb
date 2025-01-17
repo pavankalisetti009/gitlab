@@ -901,12 +901,27 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         end
 
         context 'when application setting mirror_available is disabled' do
+          let_it_be(:user) { create(:user) }
+
           before do
+            allow(helper).to receive(:current_user).and_return(user)
             stub_application_setting(mirror_available: false)
           end
 
-          it 'is false' do
-            expect(helper.remote_mirror_setting_enabled?).to be_falsey
+          context 'when mirror is not available but user is admin' do
+            before do
+              allow(user).to receive(:can_admin_all_resources?).and_return(true)
+            end
+
+            it 'is true' do
+              expect(helper.remote_mirror_setting_enabled?).to be_truthy
+            end
+          end
+
+          context 'when mirror is not available and user is not admin' do
+            it 'is false' do
+              expect(helper.remote_mirror_setting_enabled?).to be_falsey
+            end
           end
         end
       end
