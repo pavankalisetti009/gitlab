@@ -12,6 +12,8 @@ additional_properties:
     description: Result of creating a pipeline
   property:
     description: Source of the policy (project or group)
+  time_window:
+    description: Whether the time_window was used to distribute the scheduled scans or not
 product_group: security_policies
 milestone: '17.6'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/170449

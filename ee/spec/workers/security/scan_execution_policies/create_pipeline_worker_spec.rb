@@ -30,11 +30,12 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
     end
   end
 
-  shared_examples_for 'tracks internal metrics' do |scan_count, policy_source|
+  shared_examples_for 'tracks scheduled_scan_execution metrics' do |scan_count, policy_source, time_window|
     it 'tracks internal metrics with the right parameters' do
       expect { run_worker }.to trigger_internal_events('enforce_scheduled_scan_execution_policy_in_project')
                                  .with(project: project, additional_properties: { value: scan_count, label: anything,
-                                                                                  property: policy_source })
+                                                                                  property: policy_source,
+                                                                                  time_window: time_window })
     end
   end
 
@@ -69,7 +70,17 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
         run_worker
       end
 
-      it_behaves_like 'tracks internal metrics', 1, 'project'
+      it_behaves_like 'tracks scheduled_scan_execution metrics', 1, 'project', 0
+
+      context 'when the schedule defines the time_window' do
+        before do
+          allow_next_found_instance_of(Security::OrchestrationPolicyRuleSchedule) do |instance|
+            allow(instance).to receive(:time_window).and_return(3600)
+          end
+        end
+
+        it_behaves_like 'tracks scheduled_scan_execution metrics', 1, 'project', 1
+      end
 
       context 'when create pipeline service returns errors' do
         before do
@@ -78,7 +89,7 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
           end
         end
 
-        it_behaves_like 'tracks internal metrics', 1, 'project'
+        it_behaves_like 'tracks scheduled_scan_execution metrics', 1, 'project', 0
 
         it 'logs the error' do
           expect(::Gitlab::AppJsonLogger).to receive(:warn).with({
@@ -88,6 +99,24 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
             'message' => 'message'
           })
           run_worker
+        end
+
+        context 'when the schedule defines the time_window' do
+          before do
+            allow_next_found_instance_of(Security::OrchestrationPolicyRuleSchedule) do |instance|
+              allow(instance).to receive(:time_window).and_return(3600)
+            end
+          end
+
+          it_behaves_like 'tracks scheduled_scan_execution metrics', 1, 'project', 1
+
+          context 'with multiple scans' do
+            let(:policy) do
+              build(:scan_execution_policy, enabled: true, actions: [{ scan: 'sast' }, { scan: 'secret_detection' }])
+            end
+
+            it_behaves_like 'tracks scheduled_scan_execution metrics', 2, 'project', 1
+          end
         end
       end
     end

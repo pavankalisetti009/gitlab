@@ -52,7 +52,8 @@ module Security
           additional_properties: {
             value: scans_count, # Number of enforced scans,
             label: result.to_s, # Was the creation of the pipeline successful,
-            property: schedule.policy_source
+            property: schedule.policy_source,
+            time_window: schedule.time_window.present? ? 1 : 0 # time_window was used to distribute scans or not
           }
         )
       end
