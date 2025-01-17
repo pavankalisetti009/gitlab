@@ -39,7 +39,7 @@ module Gitlab
           # by other providers.
           @context = ::Gitlab::Llm::Chain::GitlabContext.new(
             current_user: user,
-            container: resource.try(:resource_parent)&.root_ancestor,
+            container: resource.try(:resource_parent),
             resource: resource,
             ai_request: ai_request,
             extra_resource: options.delete(:extra_resource) || {},

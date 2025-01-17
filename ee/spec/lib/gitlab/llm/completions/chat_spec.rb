@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   let_it_be(:agent_version) { create(:ai_agent_version) }
 
   let(:resource) { issue }
-  let(:expected_container) { group }
+  let(:expected_container) { resource.try(:resource_parent) }
   let(:content) { 'Summarize issue' }
   let(:ai_request) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
   let(:blob) { fake_blob(path: 'file.md') }
@@ -43,7 +43,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
     }
   end
 
-  let(:container) { group }
+  let(:container) { resource.try(:resource_parent) }
   let(:context) do
     Gitlab::Llm::Chain::GitlabContext.new(
       container: container,
