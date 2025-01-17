@@ -34,6 +34,8 @@ class GroupHook < WebHook
     :wiki_page_hooks
   ]
 
+  has_many :web_hook_logs, foreign_key: 'web_hook_id', inverse_of: :web_hook
+
   belongs_to :group
 
   def pluralized_name

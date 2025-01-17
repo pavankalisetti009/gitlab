@@ -8,6 +8,14 @@ FactoryBot.define do
 
     group
 
+    trait :url_variables do
+      url_variables { { 'abc' => 'supers3cret', 'def' => 'foobar' } }
+    end
+
+    trait :token do
+      token { generate(:token) }
+    end
+
     trait :all_events_enabled do
       push_events { true }
       merge_requests_events { true }
