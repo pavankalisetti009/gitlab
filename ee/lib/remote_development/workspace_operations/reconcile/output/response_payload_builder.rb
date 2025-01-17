@@ -5,7 +5,6 @@ module RemoteDevelopment
     module Reconcile
       module Output
         class ResponsePayloadBuilder
-          include Messages
           include UpdateTypes
 
           ALL_RESOURCES_INCLUDED = :all_resources_included

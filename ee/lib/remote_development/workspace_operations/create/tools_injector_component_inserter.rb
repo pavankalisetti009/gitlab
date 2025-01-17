@@ -4,21 +4,18 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class ToolsInjectorComponentInserter
-        include Messages
+        include CreateConstants
 
         # @param [Hash] context
         # @return [Hash]
         def self.insert(context)
           context => {
             processed_devfile: Hash => processed_devfile,
-            volume_mounts: Hash => volume_mounts,
+            tools_dir: String => tools_dir,
             settings: Hash => settings,
           }
-          volume_mounts => { data_volume: Hash => data_volume }
-          data_volume => { path: String => volume_path }
           settings => { tools_injector_image: String => image_from_settings }
 
-          tools_dir = "#{volume_path}/.gl-tools"
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409775 - choose image based on which editor is passed.
           insert_tools_injector_component(
             processed_devfile: processed_devfile,
@@ -34,15 +31,13 @@ module RemoteDevelopment
         # @param [String] image
         # @return [void]
         def self.insert_tools_injector_component(processed_devfile:, tools_dir:, image:)
-          component_name = "gl-tools-injector"
-
           processed_devfile[:components] << {
-            name: component_name,
+            name: TOOLS_INJECTOR_COMPONENT_NAME,
             container: {
               image: image,
               env: [
                 {
-                  name: "GL_TOOLS_DIR",
+                  name: TOOLS_DIR_ENV_VAR,
                   value: tools_dir
                 }
               ],
@@ -53,11 +48,11 @@ module RemoteDevelopment
             }
           }
 
-          command_name = "#{component_name}-command"
+          command_name = "#{TOOLS_INJECTOR_COMPONENT_NAME}-command"
           processed_devfile[:commands] << {
             id: command_name,
             apply: {
-              component: component_name
+              component: TOOLS_INJECTOR_COMPONENT_NAME
             }
           }
 

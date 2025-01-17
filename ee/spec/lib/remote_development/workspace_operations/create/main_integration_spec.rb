@@ -115,7 +115,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.desired_state_updated_at).to eq(Time.current)
         expect(workspace.actual_state).to eq(RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
-        expect(workspace.namespace).to eq("gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}")
+        namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
+        expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
           host: "60001-#{workspace.name}.#{dns_zone}",
@@ -225,11 +226,13 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     let(:vscode_extensions_gallery_metadata_enabled) { false }
 
     it 'uses image override' do
+      tools_injector_component_name =
+        RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOOLS_INJECTOR_COMPONENT_NAME
       workspace = response.fetch(:payload).fetch(:workspace)
       processed_devfile = yaml_safe_load_symbolized(workspace.processed_devfile)
       image_from_processed_devfile =
         processed_devfile.fetch(:components)
-          .find { |component| component.fetch(:name) == "gl-tools-injector" }
+          .find { |component| component.fetch(:name) == tools_injector_component_name }
           .dig(:container, :image)
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
     end

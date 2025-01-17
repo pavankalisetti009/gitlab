@@ -29,7 +29,7 @@ module RemoteDevelopment
               .map(
                 # As the final step, return the response_payload content in a WorkspaceReconcileSuccessful message
                 ->(context) do
-                  RemoteDevelopment::Messages::WorkspaceReconcileSuccessful.new(context.fetch(:response_payload))
+                  WorkspaceReconcileSuccessful.new(context.fetch(:response_payload))
                 end
               )
 

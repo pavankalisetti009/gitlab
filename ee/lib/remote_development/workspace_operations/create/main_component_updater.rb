@@ -4,26 +4,26 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class MainComponentUpdater
-        include Messages
+        include CreateConstants
 
         # @param [Hash] context
         # @return [Hash]
         def self.update(context)
           context => {
             processed_devfile: Hash => processed_devfile,
-            volume_mounts: Hash => volume_mounts,
+            tools_dir: String => tools_dir,
             vscode_extensions_gallery_metadata: Hash => vscode_extensions_gallery_metadata
           }
-          volume_mounts => { data_volume: Hash => data_volume }
-          data_volume => { path: String => volume_path }
 
           editor_port = WorkspaceCreator::WORKSPACE_PORT
           ssh_port = 60022
-          tools_dir = "#{volume_path}/.gl-tools"
 
           # NOTE: We will always have exactly one main_component found, because we have already
           #       validated this in post_flatten_devfile_validator.rb
-          main_component = processed_devfile.fetch(:components).find { |c| c.dig(:attributes, :'gl/inject-editor') }
+          main_component =
+            processed_devfile
+              .fetch(:components)
+              .find { |component| component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym) }
 
           container = main_component.fetch(:container)
 
@@ -57,7 +57,9 @@ module RemoteDevelopment
         def self.update_env_vars(container:, tools_dir:, editor_port:, ssh_port:, enable_marketplace:)
           (container[:env] ||= []).append(
             {
-              name: "GL_TOOLS_DIR",
+              # NOTE: Only "TOOLS_DIR" env var is extracted to a constant, because it is the only one referenced
+              #       in multiple different classes.
+              name: TOOLS_DIR_ENV_VAR,
               value: tools_dir
             },
             {

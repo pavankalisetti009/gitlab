@@ -11,8 +11,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentIn
 
   let(:expected_processed_devfile_name) { "example.processed-devfile.yaml" }
   let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
-  let(:component_name) { "gl-workspace-data" }
-  let(:volume_name) { "gl-workspace-data" }
+  let(:volume_name) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_NAME }
   let(:context) do
     {
       processed_devfile: input_processed_devfile,

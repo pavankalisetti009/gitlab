@@ -5,8 +5,6 @@ module RemoteDevelopment
     module Reconcile
       module Input
         class ParamsToInfosConverter
-          include Messages
-
           # @param [Hash] context
           # @return [Hash]
           def self.convert(context)

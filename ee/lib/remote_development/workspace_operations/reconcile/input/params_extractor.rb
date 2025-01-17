@@ -5,8 +5,6 @@ module RemoteDevelopment
     module Reconcile
       module Input
         class ParamsExtractor
-          include Messages
-
           # @param [Hash] context
           # @return [Hash]
           def self.extract(context)

@@ -4,8 +4,6 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class VolumeComponentInserter
-        include Messages
-
         # @param [Hash] context
         # @return [Hash]
         def self.insert(context)
