@@ -105,6 +105,27 @@ Returns [`[AddOnPurchase!]`](#addonpurchase).
 | ---- | ---- | ----------- |
 | <a id="queryaddonpurchasesnamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | ID of namespace that the add-ons were purchased for. |
 
+### `Query.aiConversationThreads`
+
+List conversation threads of AI features.
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Returns [`AiConversationsThreadConnection!`](#aiconversationsthreadconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaiconversationthreadsconversationtype"></a>`conversationType` | [`AiConversationsThreadsConversationType`](#aiconversationsthreadsconversationtype) | Conversation type of the thread. |
+| <a id="queryaiconversationthreadsid"></a>`id` | [`AiConversationThreadID`](#aiconversationthreadid) | Id of the thread. |
+
 ### `Query.aiFeatureSettings`
 
 List of configurable AI features.
@@ -12006,6 +12027,29 @@ The edge type for [`AiAgent`](#aiagent).
 | <a id="aiagentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aiagentedgenode"></a>`node` | [`AiAgent`](#aiagent) | The item at the end of the edge. |
 
+#### `AiConversationsThreadConnection`
+
+The connection type for [`AiConversationsThread`](#aiconversationsthread).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiconversationsthreadconnectionedges"></a>`edges` | [`[AiConversationsThreadEdge]`](#aiconversationsthreadedge) | A list of edges. |
+| <a id="aiconversationsthreadconnectionnodes"></a>`nodes` | [`[AiConversationsThread]`](#aiconversationsthread) | A list of nodes. |
+| <a id="aiconversationsthreadconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiConversationsThreadEdge`
+
+The edge type for [`AiConversationsThread`](#aiconversationsthread).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiconversationsthreadedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aiconversationsthreadedgenode"></a>`node` | [`AiConversationsThread`](#aiconversationsthread) | The item at the end of the edge. |
+
 #### `AiFeatureSettingConnection`
 
 The connection type for [`AiFeatureSetting`](#aifeaturesetting).
@@ -19125,6 +19169,20 @@ Version of an AI Agent.
 | <a id="aiagentversionid"></a>`id` | [`ID!`](#id) | ID of the agent version. |
 | <a id="aiagentversionmodel"></a>`model` | [`String!`](#string) | Model of the agent. |
 | <a id="aiagentversionprompt"></a>`prompt` | [`String!`](#string) | Prompt of the agent. |
+
+### `AiConversationsThread`
+
+Conversation thread of the AI feature.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiconversationsthreadconversationtype"></a>`conversationType` | [`AiConversationsThreadsConversationType!`](#aiconversationsthreadsconversationtype) | Conversation type of the thread. |
+| <a id="aiconversationsthreadcreatedat"></a>`createdAt` | [`Time!`](#time) | Created date of the thread. |
+| <a id="aiconversationsthreadid"></a>`id` | [`ID!`](#id) | ID of the thread. |
+| <a id="aiconversationsthreadlastupdatedat"></a>`lastUpdatedAt` | [`Time!`](#time) | Last updated date of the thread. |
+| <a id="aiconversationsthreadtitle"></a>`title` | [`String`](#string) | Title of the thread. |
 
 ### `AiFeatureSetting`
 

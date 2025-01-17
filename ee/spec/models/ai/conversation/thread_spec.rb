@@ -40,6 +40,17 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
         expect(threads).to contain_exactly(duo_chat_thread)
       end
     end
+
+    describe '.ordered' do
+      subject(:threads) { described_class.ordered }
+
+      let_it_be(:thread_1) { create(:ai_conversation_thread, last_updated_at: 1.day.ago) }
+      let_it_be(:thread_2) { create(:ai_conversation_thread) }
+
+      it 'returns the recently interacted thread first' do
+        expect(threads).to eq([thread_2, thread_1])
+      end
+    end
   end
 
   describe 'callbacks' do
