@@ -52397,6 +52397,9 @@ msgstr ""
 msgid "SecurityReports|New feature: Grouping"
 msgstr ""
 
+msgid "SecurityReports|New status must be different than current status."
+msgstr ""
+
 msgid "SecurityReports|No identifiers found."
 msgstr ""
 
@@ -62993,6 +62996,9 @@ msgid "VulnerabilityManagement|Create Jira issue"
 msgstr ""
 
 msgid "VulnerabilityManagement|Dismiss as..."
+msgstr ""
+
+msgid "VulnerabilityManagement|Dismissed: %{dismissalReason}"
 msgstr ""
 
 msgid "VulnerabilityManagement|Enter a name"
