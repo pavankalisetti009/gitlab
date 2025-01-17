@@ -345,31 +345,5 @@ RSpec.describe ApplicationSettings::UpdateService do
         expect(setting.reload.duo_features_enabled).to be(true)
       end
     end
-
-    context 'when cascade_duo_features_for_instance FF not enabled' do
-      context 'when updating duo_features_enabled' do
-        let(:params) { { duo_features_enabled: true } }
-        let(:service) { described_class.new(setting, user, params) }
-
-        before do
-          setting.update!(duo_features_enabled: false)
-          stub_feature_flags(cascade_duo_features_for_instance: false)
-        end
-
-        it 'does not trigger the CascadeDuoFeaturesEnabledWorker' do
-          expect(AppConfig::CascadeDuoFeaturesEnabledWorker).not_to receive(:perform_async)
-
-          service.execute
-        end
-
-        it 'updates the duo_features_enabled setting' do
-          result = service.execute
-
-          expect(result).to be_truthy
-
-          expect(setting.reload.duo_features_enabled).to be(true)
-        end
-      end
-    end
   end
 end
