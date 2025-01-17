@@ -7,7 +7,8 @@ module RemoteDevelopment
     module Reconcile
       module Output
         class DevfileParser
-          RUN_AS_USER = 5001
+          include WorkspaceOperationsConstants
+          include ReconcileConstants
 
           # @param [String] processed_devfile
           # @param [Hash] k8s_resources_params
@@ -227,7 +228,7 @@ module RemoteDevelopment
               volume_mounts = [
                 {
                   'name' => volume_name,
-                  'mountPath' => RemoteDevelopment::WorkspaceOperations::FileMounts::VARIABLES_FILE_DIR
+                  'mountPath' => VARIABLES_FILE_DIR
                 }
               ]
               env_from = env_secret_names.map { |v| { 'secretRef' => { 'name' => v } } }

@@ -8,6 +8,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
   include_context 'with remote development shared fixtures'
 
   let(:flattened_devfile_name) { 'example.flattened-with-entries-devfile.yaml' }
+  let(:main_component_indicator_attribute) do
+    ::RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::MAIN_COMPONENT_INDICATOR_ATTRIBUTE
+  end
+
   let(:processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(flattened_devfile_name)) }
   let(:context) { { processed_devfile: processed_devfile } }
 
@@ -48,8 +52,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
       'example.invalid-components-entry-empty-devfile.yaml' | "No components present in devfile"
       'example.invalid-components-entry-missing-devfile.yaml' | "No components present in devfile"
       'example.invalid-component-missing-name.yaml' | "Components must have a 'name'"
-      'example.invalid-attributes-tools-injector-absent-devfile.yaml' | "No component has 'gl/inject-editor' attribute"
-      'example.invalid-attributes-tools-injector-multiple-devfile.yaml' | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have 'gl/inject-editor' attribute"
+      'example.invalid-attributes-tools-injector-absent-devfile.yaml' | "No component has '#{main_component_indicator_attribute}' attribute"
+      'example.invalid-attributes-tools-injector-multiple-devfile.yaml' | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute"
       'example.invalid-unsupported-component-container-dedicated-pod-devfile.yaml' | "Property 'dedicatedPod' of component 'example' is not yet supported"
       'example.invalid-unsupported-starter-projects-devfile.yaml' | "'starterProjects' is not yet supported"
       'example.invalid-unsupported-projects-devfile.yaml' | "'projects' is not yet supported"

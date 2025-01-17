@@ -17,7 +17,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
 
   let(:expected_processed_devfile_name) { "example.project-cloner-inserted-devfile.yaml" }
   let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
-  let(:component_name) { "gl-project-cloner" }
   let(:context) do
     {
       params: {

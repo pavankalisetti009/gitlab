@@ -4,6 +4,8 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class WorkspaceVariables
+        include CreateConstants
+
         GIT_CREDENTIAL_STORE_SCRIPT = <<~SH.chomp
           #!/bin/sh
           # This is a readonly store so we can exit cleanly when git attempts a store or erase action
@@ -46,13 +48,13 @@ module RemoteDevelopment
 
           static_variables = [
             {
-              key: File.basename(RemoteDevelopment::WorkspaceOperations::FileMounts::GITLAB_TOKEN_FILE),
+              key: File.basename(TOKEN_FILE),
               value: personal_access_token_value,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file],
               workspace_id: workspace_id
             },
             {
-              key: File.basename(RemoteDevelopment::WorkspaceOperations::FileMounts::GITLAB_GIT_CREDENTIAL_STORE_FILE),
+              key: File.basename(GIT_CREDENTIAL_STORE_FILE),
               value: GIT_CREDENTIAL_STORE_SCRIPT,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file],
               workspace_id: workspace_id
@@ -71,7 +73,7 @@ module RemoteDevelopment
             },
             {
               key: 'GIT_CONFIG_VALUE_0',
-              value: RemoteDevelopment::WorkspaceOperations::FileMounts::GITLAB_GIT_CREDENTIAL_STORE_FILE,
+              value: GIT_CREDENTIAL_STORE_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
@@ -101,13 +103,13 @@ module RemoteDevelopment
             },
             {
               key: 'GL_GIT_CREDENTIAL_STORE_FILE_PATH',
-              value: RemoteDevelopment::WorkspaceOperations::FileMounts::GITLAB_GIT_CREDENTIAL_STORE_FILE,
+              value: GIT_CREDENTIAL_STORE_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
               key: 'GL_TOKEN_FILE_PATH',
-              value: RemoteDevelopment::WorkspaceOperations::FileMounts::GITLAB_TOKEN_FILE,
+              value: TOKEN_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
@@ -144,7 +146,7 @@ module RemoteDevelopment
             },
             {
               key: 'GITLAB_WORKFLOW_TOKEN_FILE',
-              value: RemoteDevelopment::WorkspaceOperations::FileMounts::GITLAB_TOKEN_FILE,
+              value: TOKEN_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             }

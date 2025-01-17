@@ -36666,7 +36666,7 @@ msgstr ""
 msgid "Multiple Prometheus integrations are not supported"
 msgstr ""
 
-msgid "Multiple components '%{name}' have 'gl/inject-editor' attribute"
+msgid "Multiple components '%{name}' have '%{attribute}' attribute"
 msgstr ""
 
 msgid "Multiple integrations of a single type are not supported for this project"
@@ -37548,7 +37548,7 @@ msgstr ""
 msgid "No committers"
 msgstr ""
 
-msgid "No component has 'gl/inject-editor' attribute"
+msgid "No component has '%{attribute}' attribute"
 msgstr ""
 
 msgid "No components present in devfile"

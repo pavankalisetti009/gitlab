@@ -4,6 +4,7 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class PostFlattenDevfileValidator
+        include CreateConstants
         include Messages
 
         # Since this is called after flattening the devfile, we can safely assume that it has valid syntax
@@ -70,16 +71,21 @@ module RemoteDevelopment
           return err(_("No components present in devfile")) if components.blank?
 
           injected_main_components = components.select do |component|
-            component.dig(:attributes, :"gl/inject-editor")
+            component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
           end
 
-          return err(_("No component has 'gl/inject-editor' attribute")) if injected_main_components.empty?
+          if injected_main_components.empty?
+            return err(
+              format(_("No component has '%{attribute}' attribute"), attribute: MAIN_COMPONENT_INDICATOR_ATTRIBUTE)
+            )
+          end
 
           if injected_main_components.length > 1
             return err(
               format(
-                _("Multiple components '%{name}' have 'gl/inject-editor' attribute"),
-                name: injected_main_components.pluck(:name) # rubocop:disable CodeReuse/ActiveRecord -- this pluck isn't from ActiveRecord, it's from ActiveSupport
+                _("Multiple components '%{name}' have '%{attribute}' attribute"),
+                name: injected_main_components.pluck(:name), # rubocop:disable CodeReuse/ActiveRecord -- this pluck isn't from ActiveRecord, it's from ActiveSupport
+                attribute: MAIN_COMPONENT_INDICATOR_ATTRIBUTE
               )
             )
           end

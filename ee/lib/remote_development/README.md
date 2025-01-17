@@ -21,13 +21,14 @@
   - [Higher order functions](#higher-order-functions)
   - [Pure functions](#pure-functions)
   - [Concurrency and parallelism](#concurrency-and-parallelism)
-  - [Error Handling](#error-handling)
+  - [Error handling](#error-handling)
 - [Object-Oriented patterns](#object-oriented-patterns)
-  - [Value Objects](#value-objects)
+  - [Value objects](#value-objects)
   - [Code sharing patterns and DRYness](#code-sharing-patterns-and-dryness)
-- [Other Patterns](#other-patterns)
-  - [Inversion of Control](#inversion-of-control)
+- [Other patterns](#other-patterns)
+  - [Inversion of control](#inversion-of-control)
   - [Metaprogramming](#metaprogramming)
+  - [Constant declarations](#constant-declarations)
 - [Railway Oriented Programming and the Result class](#railway-oriented-programming-and-the-result-class)
   - [Result class](#result-class)
   - [Message class and Messages module](#message-class-and-messages-module)
@@ -265,7 +266,7 @@ By using patterns such as immutable state and pure functions, we are able to sup
 
 This may be useful in the future for the Remote Development feature, as operations such as reconciliation of workspace state involve processing data for many independent workspaces in a single request.
 
-### Error Handling
+### Error handling
 
 The domain logic of the Remote Development feature is based on the
 ["Railway Oriented Programming"](https://fsharpforfunandprofit.com/rop/) pattern, through the usage of a standard [`Result` class](https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/fp/result.rb) as found in many programming languages (ours is based on the [Rust implementation](https://doc.rust-lang.org/std/result/index.html)).
@@ -276,7 +277,7 @@ This Railway Oriented Programming pattern allows us to keep the business logic d
 
 Although the functional patterns above are used when they provide benefits, we otherwise still try to adhere to standard OO/Ruby/Rails idioms and patterns, for example:
 
-### Value Objects
+### Value objects
 
 When we need to pass data around, we encapsulate it in objects. This may be a standard libary class such as `Hash` or `String`, or it may be a custom class which we create.
 
@@ -298,9 +299,9 @@ In other cases, we do not use a mixin/module, but instead directly call a class/
 
 However, we do use inheritance in the higher layers of the architecture where this is necessary confirm with existing patterns, e.g. in controllers or API classes.
 
-## Other Patterns
+## Other patterns
 
-### Inversion of Control
+### Inversion of control
 
 We use the pattern of "Inversion of Control" when applicable, to help achieve loose coupling between modules which implement business logic.
 
@@ -315,6 +316,21 @@ See more details and examples of this in the sections below.
 ### Metaprogramming
 
 We _currently_ do not make heavy use of metaprogramming. But, we may make use of it in the future in areas where it makes sense.
+
+### Constant declarations
+
+- If a constant is only used in a single class or module, it should be declared within that class/module.
+- If constants are used by multiple classes or modules, they are grouped in a single class at each Ruby module/namespace level corresponding to the domain use-case, at the lowest level at which they are used.
+  For example, constants used only within `RemoteDevelopment::WorkspaceOperations::Create` will all be declared in `RemoteDevelopment::WorkspaceOperations::Create::CreateConstants` class.
+  Likewise, constants shared across multiple sub-modules of `RemoteDevelopment::WorkspaceOperations` will be declared in `RemoteDevelopment::WorkspaceOperations::WorkspaceOperationConstants`
+    - We could split these up in more specific classes (e.g. `FileConstants`, `EnvVarConstants`, etc.), but this results in several more classes in the domain code files, without much benefit.
+      Grouping them in fewer files is easier, but scoping them by namespace still gives an indication of the scope where they are used.
+      Note that there may be some exceptions to this.
+      If we have many constants of a single category, we might decide to put them in their own file.
+    - Even though we could name all the classes just `Constants`, naming them uniquely after their corresponding namespace level makes it easier to find them, and understand the scope to which they are limited.
+    - Constants within a single file should be kept alphabetized. This is so no thought is required on how to group them - if grouping is desired, name them with the same prefix.
+    - Spec/factory code may refer to constants from different modules than their own if necessary. The scoping rules only apply to usages within production code.
+- Do not declare string constants which are only interpolated into other string constants, and are not used anywhere else. Instead, declare a single constant as single string.
 
 ## Railway Oriented Programming and the Result class
 

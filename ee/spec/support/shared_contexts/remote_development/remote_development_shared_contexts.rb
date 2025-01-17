@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# NOTE: These fixtures act somewhat as a "Golden Master" source of truth, so we do not use the constant values from
+#       RemoteDevelopment::WorkspaceOperations::Create::Constants, but instead hardcode the corresponding values here.
 RSpec.shared_context 'with remote development shared fixtures' do
   # rubocop:todo Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
   def create_workspace_agent_info_hash(
@@ -636,12 +638,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     default_runtime_class:,
     desired_config_generator_version:
   )
-    variables_file_mount_path = RemoteDevelopment::WorkspaceOperations::FileMounts::VARIABLES_FILE_DIR
+    variables_file_mount_path = RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::VARIABLES_FILE_DIR
     container_security_context = {
       'allowPrivilegeEscalation' => allow_privilege_escalation,
       'privileged' => false,
       'runAsNonRoot' => true,
-      'runAsUser' => 5001
+      'runAsUser' => RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::RUN_AS_USER
     }
 
     deployment = {
@@ -940,7 +942,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             ],
             securityContext: {
               runAsNonRoot: true,
-              runAsUser: 5001,
+              runAsUser: RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::RUN_AS_USER,
               fsGroup: 0,
               fsGroupChangePolicy: "OnRootMismatch"
             }

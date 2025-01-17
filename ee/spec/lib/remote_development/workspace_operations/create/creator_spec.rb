@@ -33,10 +33,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
   let(:workspace) { instance_double("RemoteDevelopment::Workspace") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 
   let(:updated_value) do
+    namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
     initial_value.merge(
       {
         workspace_name: "workspace-#{agent.id}-#{user.id}-#{random_string}",
-        workspace_namespace: "gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}"
+        workspace_namespace: "#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}"
       }
     )
   end

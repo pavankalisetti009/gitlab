@@ -12,7 +12,10 @@ FactoryBot.define do
     name { "workspace-#{agent.id}-#{user.id}-#{random_string}" }
     force_include_all_resources { true }
 
-    add_attribute(:namespace) { "gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}" }
+    add_attribute(:namespace) do
+      namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
+      "#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}"
+    end
 
     desired_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     actual_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }

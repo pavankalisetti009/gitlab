@@ -31,6 +31,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
   end
 
   let(:context) do
+    namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
     {
       params: params,
       user: user,
@@ -38,10 +39,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
       processed_devfile: processed_devfile,
       personal_access_token: personal_access_token,
       workspace_name: "workspace-#{agent.id}-#{user.id}-#{random_string}",
-      workspace_namespace: "gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}",
+      workspace_namespace: "#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}",
       volume_mounts: {
         data_volume: {
-          name: "gl-workspace-data",
+          name: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_NAME,
           path: workspace_root
         }
       }

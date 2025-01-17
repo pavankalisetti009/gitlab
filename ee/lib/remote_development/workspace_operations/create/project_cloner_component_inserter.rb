@@ -4,7 +4,7 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class ProjectClonerComponentInserter
-        include Messages
+        include CreateConstants
 
         # @param [Hash] context
         # @return [Hash]
@@ -70,7 +70,7 @@ module RemoteDevelopment
           #       implement better error handling to allow cloner to be able to deal with different categories of errors
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/408451
           cloner_component = {
-            name: "gl-project-cloner",
+            name: PROJECT_CLONER_COMPONENT_NAME,
             container: {
               image: image,
               args: [container_args],
@@ -94,7 +94,7 @@ module RemoteDevelopment
 
           # create a command that will invoke the cloner
           cloner_command = {
-            id: "gl-project-cloner-command",
+            id: "#{PROJECT_CLONER_COMPONENT_NAME}-command",
             apply: {
               component: cloner_component[:name]
             }

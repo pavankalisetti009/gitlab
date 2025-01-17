@@ -23,11 +23,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
   let(:context) do
     {
       processed_devfile: input_processed_devfile,
-      volume_mounts: {
-        data_volume: {
-          path: "/projects"
-        }
-      },
+      tools_dir: "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_PATH}/" \
+        "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOOLS_DIR_NAME}",
       settings: settings,
       vscode_extensions_gallery_metadata: { enabled: vscode_extensions_gallery_metadata_enabled }
     }

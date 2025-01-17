@@ -4,6 +4,7 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class Creator
+        include CreateConstants
         include Messages
 
         RANDOM_STRING_LENGTH = 6
@@ -22,7 +23,7 @@ module RemoteDevelopment
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409774
           #       We can come maybe come up with a better/cooler way to get a unique name, for now this works
           context[:workspace_name] = "workspace-#{agent.id}-#{user.id}-#{random_string}"
-          context[:workspace_namespace] = "gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}"
+          context[:workspace_namespace] = "#{NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}"
           model_errors = nil
 
           updated_value = ApplicationRecord.transaction do
