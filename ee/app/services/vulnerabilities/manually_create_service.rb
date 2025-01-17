@@ -12,7 +12,7 @@ module Vulnerabilities
       raise Gitlab::Access::AccessDeniedError unless authorized?
 
       timestamps_dont_match_state_message = match_state_fields_with_state
-      return ServiceResponse.error(message: timestamps_dont_match_state_message) if timestamps_dont_match_state_message
+      return error(message: timestamps_dont_match_state_message) if timestamps_dont_match_state_message
 
       ensure_timestamps!
 
@@ -28,7 +28,7 @@ module Vulnerabilities
       )
 
       unless validate_quota!
-        return ServiceResponse.error(
+        return error(
           message: "Vulnerability count has passed its limit. Vulnerabilities cannot be created."
         )
       end
@@ -55,12 +55,19 @@ module Vulnerabilities
       response
     rescue ActiveRecord::RecordNotUnique => e
       Gitlab::AppLogger.error(e.message)
-      ServiceResponse.error(message: "Vulnerability with those details already exists")
+      error(message: "Vulnerability with those details already exists")
     rescue ActiveRecord::RecordInvalid => e
-      ServiceResponse.error(message: e.message)
+      error(message: e.message, errors: e.record.errors.full_messages)
     end
 
     private
+
+    def error(message:, errors: [])
+      ServiceResponse.error(
+        message: message,
+        payload: { errors: [message] + errors }
+      )
+    end
 
     def location_fingerprint(_location_hash)
       uuid = SecureRandom.uuid

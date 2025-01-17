@@ -75,7 +75,7 @@ module Mutations
 
         {
           vulnerability: result.payload[:vulnerability],
-          errors: result.success? ? [] : Array(result.message)
+          errors: result.success? ? [] : result.payload[:errors]
         }
       end
 
