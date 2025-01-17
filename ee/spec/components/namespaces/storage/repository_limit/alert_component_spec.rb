@@ -20,19 +20,19 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
   let(:alert_message_below_limit) do
     "If a project reaches 100% of the storage quota (10 GiB) the project will be in a read-only state, " \
       "and you won't be able to push to your repository or add large files. To reduce storage usage, " \
-      "reduce git repository and git LFS storage. For more information about storage limits, see our FAQ."
+      "reduce git repository and git LFS storage."
   end
 
   let(:alert_message_above_limit_no_purchased_storage) do
     "You have consumed all available storage and you can't push or add large files to projects over the " \
       "free tier limit (10 GiB). To remove the read-only state, reduce git repository and git LFS storage, " \
-      "or purchase more storage. For more information about storage limits, see our FAQ."
+      "or purchase more storage."
   end
 
   let(:alert_message_above_limit_with_purchased_storage) do
     "You have consumed all available storage and you can't push or add large files to projects over the " \
       "free tier limit (10 GiB). To remove the read-only state, reduce git repository and git LFS storage, " \
-      "or purchase more storage. For more information about storage limits, see our FAQ."
+      "or purchase more storage."
   end
 
   let(:alert_message_non_owner_copy) do

@@ -27,19 +27,19 @@ RSpec.describe Namespaces::Storage::NamespaceLimit::AlertComponent, :saas, type:
   let(:alert_message_below_limit) do
     "If #{group.name} exceeds the storage quota, your ability to write new data to this namespace will be " \
       "restricted. Which actions become restricted? To prevent your projects from being in a read-only state manage " \
-      "your storage usage, or purchase more storage. For more information about storage limits, see our FAQ."
+      "your storage usage, or purchase more storage."
   end
 
   let(:alert_message_above_limit_no_purchased_storage) do
     "#{group.name} is now read-only. Your ability to write new data to this namespace is restricted. " \
       "Which actions are restricted? To remove the read-only state manage your storage usage, or purchase " \
-      "more storage. For more information about storage limits, see our FAQ."
+      "more storage."
   end
 
   let(:alert_message_above_limit_with_purchased_storage) do
     "#{group.name} is now read-only. Your ability to write new data to this namespace is restricted. " \
       "Which actions are restricted? To remove the read-only state manage your storage usage, or purchase " \
-      "more storage. For more information about storage limits, see our FAQ."
+      "more storage."
   end
 
   let(:alert_message_non_owner_copy) do
