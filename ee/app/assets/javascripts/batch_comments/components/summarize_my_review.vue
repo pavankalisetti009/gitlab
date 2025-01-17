@@ -83,7 +83,7 @@ export default {
         Sentry.captureException(e);
 
         createAlert({
-          message: __('There was an summarizing your pending comments.'),
+          message: __('There was an error summarizing your pending comments.'),
           primaryButton: {
             text: __('Try again'),
             clickHandler: () => this.triggerAiMutation(),
