@@ -24,11 +24,11 @@ module Preloaders
     private
 
     def abilities_for_user_grouped_by_project(project_ids)
-      projects = Project.select(:id, :namespace_id).where(id: project_ids)
+      @projects_relation = Project.select(:id, :namespace_id).where(id: project_ids)
 
-      ::Preloaders::ProjectRootAncestorPreloader.new(projects, :namespace).execute
+      ::Preloaders::ProjectRootAncestorPreloader.new(projects_relation, :namespace).execute
 
-      projects_with_traversal_ids = projects.filter_map do |project|
+      projects_with_traversal_ids = projects_relation.filter_map do |project|
         next unless custom_roles_enabled_on?(project)
 
         [project.id, Arel.sql("ARRAY[#{project.namespace.traversal_ids.join(',')}]")]
@@ -127,12 +127,14 @@ module Preloaders
 
     def custom_role_for_group_link_enabled?
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        projects.any? { |project| ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, project.root_ancestor) }
+        projects_relation.any? do |project|
+          ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, project.root_ancestor)
+        end
       else
         ::Feature.enabled?(:assign_custom_roles_to_group_links_sm, :instance)
       end
     end
 
-    attr_reader :projects, :user
+    attr_reader :projects, :projects_relation, :user
   end
 end

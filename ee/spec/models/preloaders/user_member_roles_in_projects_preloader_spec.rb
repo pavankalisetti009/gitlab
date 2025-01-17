@@ -175,13 +175,27 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
     let(:source) { project }
 
     include_context 'with multiple users in a group with custom roles'
+
     it_behaves_like 'returns expected member role abilities'
+
+    context 'when an array of project IDs is passed instead of objects' do
+      let(:projects_list) { [project.id, project_2.id] }
+
+      it_behaves_like 'returns expected member role abilities'
+    end
   end
 
   context "when project's parent group invites multiple groups with a custom role" do
     let(:source) { project }
 
     include_context 'with a user in multiple groups with custom role'
+
     it_behaves_like 'returns expected member role abilities for the user'
+
+    context 'when an array of project IDs is passed instead of objects' do
+      let(:projects_list) { [project.id, project_2.id] }
+
+      it_behaves_like 'returns expected member role abilities for the user'
+    end
   end
 end
