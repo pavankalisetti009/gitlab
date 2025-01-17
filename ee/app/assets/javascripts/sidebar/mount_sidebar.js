@@ -117,7 +117,7 @@ export function mountHealthStatusDropdown() {
   });
 }
 
-function mountSidebarCveIdRequest(store) {
+function mountSidebarCveIdRequest(store, pinia) {
   const el = document.querySelector('.js-sidebar-cve-id-request-root');
 
   if (!el) {
@@ -128,6 +128,7 @@ function mountSidebarCveIdRequest(store) {
 
   return new Vue({
     store,
+    pinia,
     el,
     name: 'SidebarCveIdRequestRoot',
     provide: {
@@ -322,12 +323,12 @@ function mountSidebarEscalationPolicy() {
 
 export const { getSidebarOptions } = CEMountSidebar;
 
-export function mountSidebar(mediator, store) {
-  CEMountSidebar.mountSidebar(mediator, store);
+export function mountSidebar(mediator, store, pinia) {
+  CEMountSidebar.mountSidebar(mediator, store, pinia);
   mountSidebarWeightWidget();
   mountSidebarHealthStatusWidget();
   mountSidebarEpicWidget();
   mountSidebarIterationWidget();
   mountSidebarEscalationPolicy();
-  mountSidebarCveIdRequest(store);
+  mountSidebarCveIdRequest(store, pinia);
 }
