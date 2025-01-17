@@ -392,11 +392,23 @@ module EE
 
     def pages_deployments_usage_quota_data(project)
       limit = project.actual_limits.active_versioned_pages_deployments_limit_by_namespace
+      project_deployments_count = ::PagesDeployment.count_versioned_deployments_for(project, limit)
+      deployments_count = if project.pages_unique_domain_enabled?
+                            project_deployments_count
+                          else
+                            ::PagesDeployment.count_versioned_deployments_for(
+                              project.root_ancestor.all_projects.with_namespace_domain_pages,
+                              limit
+                            )
+                          end
 
       {
         full_path: project.full_path,
-        deployments_count: ::PagesDeployment.count_versioned_deployments_for(project, limit),
-        deployments_limit: limit
+        deployments_count: deployments_count,
+        deployments_limit: limit,
+        uses_namespace_domain: (!project.pages_unique_domain_enabled?).to_s,
+        project_deployments_count: project_deployments_count,
+        domain: ::Gitlab::Pages::UrlBuilder.new(project).hostname
       }
     end
 

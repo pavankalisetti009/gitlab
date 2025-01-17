@@ -1,3 +1,5 @@
+import { GROUP_VIEW_TYPE, PROJECT_VIEW_TYPE } from '~/usage_quotas/constants';
+
 export const getNamespacePagesDeploymentsMockData = {
   data: {
     namespace: {
@@ -288,4 +290,42 @@ export const restoreDeploymentSuccess = {
       __typename: 'RestorePagesDeploymentPayload',
     },
   },
+};
+
+export const groupViewStatsData = {
+  fullPath: 'my-group',
+  deploymentsLimit: 500,
+  deploymentsCount: 50,
+  projectDeploymentsCount: null,
+  usesNamespaceDomain: null,
+  deploymentsByProject: [
+    {
+      name: 'Project 1',
+      count: 35,
+    },
+    {
+      name: 'Project 2',
+      count: 15,
+    },
+  ],
+  domain: 'pages.example.com',
+  viewType: GROUP_VIEW_TYPE,
+};
+
+export const projectViewNamespaceDomainStatsData = {
+  fullPath: 'my-group/my-project',
+  deploymentsLimit: 500,
+  deploymentsCount: 60,
+  projectDeploymentsCount: 17,
+  deploymentsByProject: null,
+  domain: 'pages.example.com',
+  usesNamespaceDomain: true,
+  viewType: PROJECT_VIEW_TYPE,
+};
+
+export const projectViewUniqueDomainStatsData = {
+  ...projectViewNamespaceDomainStatsData,
+  deploymentsCount: 19,
+  projectDeploymentsCount: 19,
+  usesNamespaceDomain: false,
 };

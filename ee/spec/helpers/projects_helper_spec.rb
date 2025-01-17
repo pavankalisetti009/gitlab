@@ -1100,21 +1100,53 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   end
 
   describe '#pages_deployments_usage_quota_data' do
-    let_it_be(:project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+    let_it_be_with_reload(:project) { create(:project, namespace: group) }
+    let_it_be(:project2) { create(:project, namespace: group) }
 
     before_all do
       project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: 100)
+      project2.project_setting.update!(pages_unique_domain_enabled: false)
       create(:pages_deployment, project: project, path_prefix: '/foo')
+      create(:pages_deployment, project: project2, path_prefix: '/foo')
     end
 
-    it 'returns expected hash' do
-      expect(helper.pages_deployments_usage_quota_data(project)).to match(
-        {
-          full_path: project.full_path,
-          deployments_count: 1,
-          deployments_limit: 100
-        }
-      )
+    context 'when project has unique domain enabled' do
+      before do
+        project.project_setting.update!(pages_unique_domain_enabled: true, pages_unique_domain: 'foo123')
+      end
+
+      it 'returns expected hash' do
+        expect(helper.pages_deployments_usage_quota_data(project)).to match(
+          {
+            full_path: project.full_path,
+            project_deployments_count: 1,
+            deployments_count: 1,
+            deployments_limit: 100,
+            domain: 'foo123.example.com',
+            uses_namespace_domain: 'false'
+          }
+        )
+      end
+    end
+
+    context 'when project has unique domain disabled' do
+      before do
+        project.project_setting.update!(pages_unique_domain_enabled: false)
+      end
+
+      it 'returns expected hash' do
+        expect(helper.pages_deployments_usage_quota_data(project)).to match(
+          {
+            full_path: project.full_path,
+            project_deployments_count: 1,
+            deployments_count: 2,
+            deployments_limit: 100,
+            domain: "#{group.path}.example.com",
+            uses_namespace_domain: 'true'
+          }
+        )
+      end
     end
   end
 end
