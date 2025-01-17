@@ -2,16 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe Emails::NamespaceStorageUsageMailer, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::NamespaceLimitMailer, feature_category: :consumables_cost_management do
   include NamespacesHelper
   include EmailSpec::Matchers
 
-  let_it_be(:namespace) { create(:namespace) }
-  let_it_be(:usage_quotas_link) do
+  let(:recipients) { %w[bob@example.com john@example.com] }
+  let(:namespace) { build_stubbed(:namespace) }
+  let(:usage_quotas_link) do
     ActionController::Base.helpers.link_to(namespace.name, usage_quotas_url(namespace, anchor: 'storage-quota-tab'))
   end
-
-  let(:recipients) { %w[bob@example.com john@example.com] }
 
   describe '#notify_out_of_storage' do
     it 'creates an email message for a namespace', :aggregate_failures do

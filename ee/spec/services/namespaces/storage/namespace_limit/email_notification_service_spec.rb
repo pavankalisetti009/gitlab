@@ -2,14 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::NamespaceLimit::EmailNotificationService,
+  feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
   using RSpec::Parameterized::TableSyntax
 
   describe 'execute' do
-    let(:mailer) { class_double(::Emails::NamespaceStorageUsageMailer) }
+    let(:mailer) { ::Namespaces::Storage::NamespaceLimitMailer }
     let(:action_mailer) { instance_double(ActionMailer::MessageDelivery) }
-    let(:service) { described_class.new(mailer) }
+
+    before do
+      enforce_namespace_storage_limit(group)
+    end
 
     context 'in a saas environment', :saas do
       let_it_be(:group, refind: true) { create(:group_with_plan, plan: :ultimate_plan) }
@@ -43,7 +47,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
             .and_return(action_mailer)
           expect(action_mailer).to receive(:deliver_later)
 
-          service.execute(group)
+          described_class.execute(group)
 
           expect(group.root_storage_statistics.reload.notification_level.to_sym).to eq(expected_level)
         end
@@ -79,7 +83,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
             .and_return(action_mailer)
           expect(action_mailer).to receive(:deliver_later)
 
-          service.execute(group)
+          described_class.execute(group)
 
           expect(group.root_storage_statistics.reload.notification_level.to_sym).to eq(expected_level)
         end
@@ -104,7 +108,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
           expect(mailer).not_to receive(:notify_out_of_storage)
           expect(mailer).not_to receive(:notify_limit_warning)
 
-          service.execute(group)
+          described_class.execute(group)
         end
       end
 
@@ -130,7 +134,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
           expect(mailer).not_to receive(:notify_out_of_storage)
           expect(mailer).not_to receive(:notify_limit_warning)
 
-          service.execute(group)
+          described_class.execute(group)
 
           expect(group.root_storage_statistics.reload.notification_level.to_sym).to eq(:storage_remaining)
         end
@@ -156,7 +160,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
           .and_return(action_mailer)
         expect(action_mailer).to receive(:deliver_later)
 
-        service.execute(group)
+        described_class.execute(group)
       end
 
       it 'does not send an out of storage notification twice' do
@@ -166,7 +170,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
 
         expect(mailer).not_to receive(:notify_out_of_storage)
 
-        service.execute(group)
+        described_class.execute(group)
       end
 
       where(:limit, :current_size, :last_notification_level) do
@@ -183,7 +187,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
 
           expect(mailer).not_to receive(:notify_limit_warning)
 
-          service.execute(group)
+          described_class.execute(group)
         end
       end
 
@@ -194,7 +198,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
         expect(mailer).not_to receive(:notify_out_of_storage)
         expect(mailer).not_to receive(:notify_limit_warning)
 
-        service.execute(group)
+        described_class.execute(group)
 
         expect(group.reload.root_storage_statistics).to be_nil
       end
@@ -204,6 +208,10 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
 
         before_all do
           create(:namespace_root_storage_statistics, namespace: namespace)
+        end
+
+        before do
+          enforce_namespace_storage_limit(namespace)
         end
 
         it 'sends a limit notification' do
@@ -220,7 +228,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
             .and_return(action_mailer)
           expect(action_mailer).to receive(:deliver_later)
 
-          service.execute(namespace)
+          described_class.execute(namespace)
         end
 
         it 'sends an out of storage notification' do
@@ -237,14 +245,15 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
             .and_return(action_mailer)
           expect(action_mailer).to receive(:deliver_later)
 
-          service.execute(namespace)
+          described_class.execute(namespace)
         end
       end
     end
 
     context 'in a self-managed environment' do
+      let_it_be(:group) { create(:group) }
+
       it 'does nothing' do
-        group = create(:group)
         create(:namespace_root_storage_statistics, namespace: group)
         owner = create(:user)
         group.add_owner(owner)
@@ -253,7 +262,7 @@ RSpec.describe Namespaces::Storage::EmailNotificationService, feature_category: 
         expect(mailer).not_to receive(:notify_out_of_storage)
         expect(mailer).not_to receive(:notify_limit_warning)
 
-        service.execute(group)
+        described_class.execute(group)
 
         expect(group.root_storage_statistics.reload.notification_level).to eq('storage_remaining')
       end
