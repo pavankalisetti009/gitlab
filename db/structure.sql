@@ -12312,7 +12312,8 @@ CREATE TABLE design_management_designs (
     namespace_id bigint,
     CONSTRAINT check_07155e2715 CHECK ((char_length((filename)::text) <= 255)),
     CONSTRAINT check_aaf9fa6ae5 CHECK ((char_length(description) <= 1000000)),
-    CONSTRAINT check_cfb92df01a CHECK ((iid IS NOT NULL))
+    CONSTRAINT check_cfb92df01a CHECK ((iid IS NOT NULL)),
+    CONSTRAINT check_ed4c70e3f1 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE design_management_designs_id_seq
