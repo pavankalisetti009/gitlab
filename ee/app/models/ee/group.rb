@@ -721,7 +721,12 @@ module EE
     end
 
     def vulnerability_scanners
-      ::Vulnerabilities::Scanner.where(project: projects_for_group_and_its_subgroups_without_deleted).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486216')
+      if ::Feature.enabled?(:group_vulnerability_scanners_using_statistics, self)
+        return ::Vulnerabilities::Scanner.where(project: Vulnerabilities::Statistic.by_group(self).unarchived.select(:project_id))
+      end
+
+      ::Vulnerabilities::Scanner.where(project: projects_for_group_and_its_subgroups_without_deleted)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486216')
     end
 
     def vulnerability_historical_statistics
