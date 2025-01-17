@@ -77,19 +77,6 @@ RSpec.describe SearchService, feature_category: :global_search do
         expect(projects).to be_nil
       end
     end
-
-    context 'when the advanced_search_multi_project_select feature is not enabled' do
-      before do
-        stub_feature_flags(advanced_search_multi_project_select: false)
-      end
-
-      it 'returns nil' do
-        project_ids = accessible_project.id.to_s
-        projects = described_class.new(user, project_ids: project_ids).projects
-
-        expect(projects).to be_nil
-      end
-    end
   end
 
   describe '#use_elasticsearch?' do
