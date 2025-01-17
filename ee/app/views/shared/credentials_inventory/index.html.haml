@@ -16,6 +16,9 @@
     - if gpg_keys_available?
       = gl_tab_link_to s_('CredentialsInventory|GPG Keys'), credentials_inventory_path(filter: 'gpg_keys'), { item_active: active_when(show_gpg_keys?) }
 
+.gl-py-4
+  #js-credentials-filter-app
+
 - if @credentials.empty?
   = render Pajamas::EmptyStateComponent.new(svg_path: 'illustrations/empty-state/empty-access-token-md.svg',
     title: s_('CredentialsInventory|No credentials found'))
