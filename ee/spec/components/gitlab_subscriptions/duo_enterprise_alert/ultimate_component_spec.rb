@@ -47,13 +47,16 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas
     end
 
     it 'has the primary action' do
+      expected_link = new_trials_duo_enterprise_path(namespace_id: namespace.id)
+
       is_expected.to have_link(
         'Start a free GitLab Duo Enterprise Trial',
-        href: new_trials_duo_enterprise_path(namespace_id: namespace.id)
+        href: expected_link
       )
 
-      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'duo_enterprise_trial' }
-      is_expected.to have_internal_tracking(attributes)
+      expect(component.find(:link, href: expected_link))
+        .to trigger_internal_events('click_duo_enterprise_trial_billing_page').on_click
+        .with(additional_properties: { label: 'duo_enterprise_trial' })
     end
 
     it 'has the hand raise lead selector' do

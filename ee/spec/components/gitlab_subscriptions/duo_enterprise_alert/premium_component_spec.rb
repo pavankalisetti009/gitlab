@@ -38,13 +38,16 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
 
   shared_examples 'has the primary action' do
     it 'has the action' do
+      expected_link = new_trial_path(namespace_id: namespace.id)
+
       is_expected.to have_link(
         'Start free trial of GitLab Ultimate and GitLab Duo Enterprise',
-        href: new_trial_path(namespace_id: namespace.id)
+        href: expected_link
       )
 
-      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'ultimate_and_duo_enterprise_trial' }
-      is_expected.to have_internal_tracking(attributes)
+      expect(component.find(:link, href: expected_link))
+        .to trigger_internal_events('click_duo_enterprise_trial_billing_page').on_click
+        .with(additional_properties: { label: 'ultimate_and_duo_enterprise_trial' })
     end
   end
 
@@ -84,12 +87,13 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
     it { is_expected.to have_content(duo_pro_text) }
 
     it 'has the secondary action' do
-      is_expected.to have_link(
-        'Try GitLab Duo Pro', href: new_trials_duo_pro_path(namespace_id: namespace.id)
-      )
+      expected_link = new_trials_duo_pro_path(namespace_id: namespace.id)
 
-      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'duo_pro_trial' }
-      is_expected.to have_internal_tracking(attributes)
+      is_expected.to have_link('Try GitLab Duo Pro', href: expected_link)
+
+      expect(component.find(:link, href: expected_link))
+        .to trigger_internal_events('click_duo_enterprise_trial_billing_page').on_click
+        .with(additional_properties: { label: 'duo_pro_trial' })
     end
   end
 end
