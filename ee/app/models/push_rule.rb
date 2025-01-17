@@ -3,8 +3,6 @@
 class PushRule < ApplicationRecord
   extend Gitlab::Cache::RequestCache
 
-  ignore_columns %i[delete_branch_regex force_push_regex], remove_with: '17.8', remove_after: '2024-12-14'
-
   request_cache_key do
     [self.id]
   end
