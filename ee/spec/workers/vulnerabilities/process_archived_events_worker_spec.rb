@@ -6,6 +6,7 @@ RSpec.describe Vulnerabilities::ProcessArchivedEventsWorker, feature_category: :
   let_it_be(:old_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :with_vulnerability, group: group) }
+  let_it_be(:vulnerability_statistic) { create(:vulnerability_statistic, project: project) }
   let_it_be(:project_without_vulnerabilities) { create(:project, group: group) }
 
   let(:event) do
@@ -29,6 +30,14 @@ RSpec.describe Vulnerabilities::ProcessArchivedEventsWorker, feature_category: :
 
     it 'enqueues a vulnerability reads namespace id update job for the project id' do
       expect(Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService).to receive(:execute).with(
+        project.id
+      )
+
+      use_event
+    end
+
+    it 'enqueues a vulnerability statistics namespace id update job for the project id' do
+      expect(Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService).to receive(:execute).with(
         project.id
       )
 
