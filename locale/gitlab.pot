@@ -40789,7 +40789,16 @@ msgstr ""
 msgid "PagesUsageQuota|Learn about limits for Pages deployments"
 msgstr ""
 
+msgid "PagesUsageQuota|Other projects in namespace"
+msgstr ""
+
 msgid "PagesUsageQuota|Remaining deployments"
+msgstr ""
+
+msgid "PagesUsageQuota|This project"
+msgstr ""
+
+msgid "PagesUsageQuota|This project is using the namespace domain \"%{domain}\". The usage quota includes parallel deployments for all projects in the namespace that use this domain."
 msgstr ""
 
 msgid "Pages|+ %{n} more deployments"
