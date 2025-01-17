@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import BlockersPage from 'ee/merge_requests/reports/pages/blockers_page.vue';
 import SecurityListItem from 'ee/merge_requests/reports/components/security_list_item.vue';
 import PolicyDrawer from 'ee/merge_requests/reports/components/policy_drawer.vue';
+import FindingDrawer from 'ee/merge_requests/reports/components/finding_drawer.vue';
 import projectPoliciesQuery from 'ee/merge_requests/reports/queries/project_policies.query.graphql';
 import policyViolationsQuery from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
 
@@ -40,6 +41,7 @@ describe('Merge request reports blockers page component', () => {
 
   const findSecurityListItems = () => wrapper.findAllComponents(SecurityListItem);
   const findPolicyDrawer = () => wrapper.findComponent(PolicyDrawer);
+  const findFindingDrawer = () => wrapper.findComponent(FindingDrawer);
 
   const createComponent = ({ policyViolations = null, approvalPolicies = [] } = {}) => {
     const apolloProvider = createMockApollo(
@@ -191,6 +193,82 @@ describe('Merge request reports blockers page component', () => {
         comparisonPipelines: null,
         targetBranch: 'main',
         sourceBranch: 'feature',
+      });
+    });
+  });
+
+  describe('when selecting a finding', () => {
+    it('opens finding drawer', async () => {
+      createComponent({
+        approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
+        policyViolations: {
+          anyMergeRequest: [{ commits: 'commits', name: 'name' }],
+          licenseScanning: [],
+          newScanFinding: [],
+          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          previousScanFinding: [],
+          comparisonPipelines: [],
+        },
+      });
+
+      await waitForPromises();
+
+      findSecurityListItems().at(0).vm.$emit('open-finding', { name: 'policy' });
+
+      await waitForPromises();
+
+      expect(findFindingDrawer().props()).toMatchObject({
+        open: true,
+      });
+    });
+
+    it('closes finding drawer from close event on drawer', async () => {
+      createComponent({
+        approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
+        policyViolations: {
+          anyMergeRequest: [{ commits: 'commits', name: 'name' }],
+          licenseScanning: [],
+          newScanFinding: [],
+          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          previousScanFinding: [],
+          comparisonPipelines: [],
+        },
+      });
+
+      await waitForPromises();
+
+      findSecurityListItems().at(0).vm.$emit('open-finding', { name: 'policy' });
+
+      findFindingDrawer().vm.$emit('close');
+
+      await waitForPromises();
+
+      expect(findFindingDrawer().props()).toMatchObject({
+        open: false,
+      });
+    });
+
+    it('sets selected finding on security list item', async () => {
+      createComponent({
+        approvalPolicies: [createMockApprovalPolicy({ name: 'policy', enabled: true })],
+        policyViolations: {
+          anyMergeRequest: [{ commits: 'commits', name: 'name' }],
+          licenseScanning: [],
+          newScanFinding: [],
+          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          previousScanFinding: [],
+          comparisonPipelines: [],
+        },
+      });
+
+      await waitForPromises();
+
+      findSecurityListItems().at(0).vm.$emit('open-finding', { name: 'policy' });
+
+      await waitForPromises();
+
+      expect(findSecurityListItems().at(0).props('selectedFinding')).toMatchObject({
+        name: 'policy',
       });
     });
   });

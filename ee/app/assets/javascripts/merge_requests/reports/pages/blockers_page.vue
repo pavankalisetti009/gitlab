@@ -4,6 +4,7 @@ import projectPoliciesQuery from '../queries/project_policies.query.graphql';
 import policyViolationsQuery from '../queries/policy_violations.query.graphql';
 import SecurityListItem from '../components/security_list_item.vue';
 import PolicyDrawer from '../components/policy_drawer.vue';
+import FindingDrawer from '../components/finding_drawer.vue';
 
 const VIOLATIONS_DATA_MAP = {
   ANY_MERGE_REQUEST: 'anyMergeRequest',
@@ -38,6 +39,7 @@ export default {
     GlLoadingIcon,
     SecurityListItem,
     PolicyDrawer,
+    FindingDrawer,
   },
   inject: ['projectPath', 'iid'],
   data() {
@@ -45,6 +47,7 @@ export default {
       policies: [],
       mergeRequest: {},
       openPolicy: null,
+      selectedFinding: null,
     };
   },
   computed: {
@@ -61,6 +64,9 @@ export default {
   methods: {
     openPolicyDrawer(policyName) {
       this.openPolicy = this.policies.find((p) => p.name === policyName);
+    },
+    setSelectedFinding(finding) {
+      this.selectedFinding = finding;
     },
     getPolicyStatus(name) {
       const policy = this.policyViolations?.policies?.find((p) => p.name === name);
@@ -106,9 +112,11 @@ export default {
         :findings="getFindingsForPolicyForName(policy.name)"
         :status="getPolicyStatus(policy.name)"
         :loading="false"
+        :selected-finding="selectedFinding"
         class="gl-mb-3 gl-pb-3"
         :class="{ 'gl-border-b': index !== policies.length - 1 }"
         @open-drawer="openPolicyDrawer"
+        @open-finding="setSelectedFinding"
       />
       <policy-drawer
         :open="Boolean(openPolicy)"
@@ -119,6 +127,7 @@ export default {
         :pipeline="mergeRequest.headPipeline"
         @close="openPolicy = null"
       />
+      <finding-drawer :open="Boolean(selectedFinding)" @close="setSelectedFinding(null)" />
     </template>
   </div>
 </template>
