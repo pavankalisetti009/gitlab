@@ -9,7 +9,7 @@ RSpec.describe ::Search::Zoekt::DefaultBranchChangedWorker, :zoekt_settings_enab
     create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace, node: create(:zoekt_node))
   end
 
-  let(:default_branch_changed_event) { Repositories::DefaultBranchChangedEvent.new(data: data) }
+  let(:default_branch_changed_event) { ::Repositories::DefaultBranchChangedEvent.new(data: data) }
   let(:container) { project }
   let(:data) { { container_id: container.id, container_type: container.class.name } }
 

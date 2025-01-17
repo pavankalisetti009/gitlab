@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Search::ElasticDefaultBranchChangedWorker, feature_category: :global_search do
   let_it_be_with_reload(:project) { create(:project, :repository) }
 
-  let(:default_branch_changed_event) { Repositories::DefaultBranchChangedEvent.new(data: data) }
+  let(:default_branch_changed_event) { ::Repositories::DefaultBranchChangedEvent.new(data: data) }
   let(:container) { project }
   let(:data) { { container_id: container.id, container_type: container.class.name } }
 

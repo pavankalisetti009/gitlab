@@ -10,7 +10,7 @@ module Geo
 
     override :housekeeping_model_record
     def housekeeping_model_record
-      # The Repositories::HousekeepingService and Wikis::GitGarbageCollectWorker
+      # The ::Repositories::HousekeepingService and Wikis::GitGarbageCollectWorker
       # still rely on an instance of Wiki being the resource. We can remove this
       # when we update both to rely on the Projects::WikiRepository model.
       model_record.wiki

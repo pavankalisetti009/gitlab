@@ -107,7 +107,7 @@ module Geo
     # Called by Geo::FrameworkRepositorySyncService#execute_housekeeping
     #
     # Override this if you need to pass a different model instance to
-    # the Repositories::HousekeepingService.
+    # the ::Repositories::HousekeepingService.
     #
     # @return [ApplicationRecord] instance
     def housekeeping_model_record

@@ -77,7 +77,7 @@ RSpec.describe Repositories::GroupPushRulesChangesAuditor, feature_category: :so
     it 'defines audit event types for all the audit log allowlist attributes for group push rule changes' do
       expect(
         PushRule::AUDIT_LOG_ALLOWLIST.keys -
-          Repositories::GroupPushRulesChangesAuditor::EVENT_TYPE_PER_ATTR.keys
+          ::Repositories::GroupPushRulesChangesAuditor::EVENT_TYPE_PER_ATTR.keys
       ).to be_empty
     end
   end

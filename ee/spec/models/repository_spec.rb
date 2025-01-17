@@ -118,7 +118,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
 
   describe '#keep_around' do
     let(:sha) { sample_commit.id }
-    let(:event) { instance_double('Repositories::KeepAroundRefsCreatedEvent') }
+    let(:event) { instance_double('::Repositories::KeepAroundRefsCreatedEvent') }
     let(:event_data) { { project_id: project.id } }
 
     context 'on a Geo primary' do
@@ -128,7 +128,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
 
       context 'when a single SHA is passed' do
         it 'publishes Repositories::KeepAroundRefsCreatedEvent' do
-          allow(Repositories::KeepAroundRefsCreatedEvent)
+          allow(::Repositories::KeepAroundRefsCreatedEvent)
             .to receive(:new)
             .with(data: event_data)
             .and_return(event)
@@ -146,7 +146,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
 
       context 'when multiple SHAs are passed' do
         it 'publishes exactly one Repositories::KeepAroundRefsCreatedEvent' do
-          allow(Repositories::KeepAroundRefsCreatedEvent)
+          allow(::Repositories::KeepAroundRefsCreatedEvent)
             .to receive(:new)
             .with(data: event_data)
             .and_return(event)
@@ -170,7 +170,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
 
       context 'when multiple SHAs are passed' do
         it 'publishes a Repositories::KeepAroundRefsCreatedEvent' do
-          allow(Repositories::KeepAroundRefsCreatedEvent)
+          allow(::Repositories::KeepAroundRefsCreatedEvent)
             .to receive(:new)
             .with(data: event_data)
             .and_return(event)
@@ -190,7 +190,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
         it 'does not publish a Repositories::KeepAroundRefsCreatedEvent' do
           allow(Gitlab::EventStore).to receive(:publish)
 
-          expect(Gitlab::EventStore).not_to have_received(:publish).with(instance_of(Repositories::KeepAroundRefsCreatedEvent))
+          expect(Gitlab::EventStore).not_to have_received(:publish).with(instance_of(::Repositories::KeepAroundRefsCreatedEvent))
 
           repository.keep_around(nil, source: 'repository_spec')
         end

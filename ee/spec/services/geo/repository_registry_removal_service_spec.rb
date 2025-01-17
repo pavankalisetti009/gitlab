@@ -29,7 +29,7 @@ RSpec.describe Geo::RepositoryRegistryRemovalService, feature_category: :geo_rep
     end
 
     it 'removes repository' do
-      expect_next_instance_of(Repositories::DestroyService) do |service|
+      expect_next_instance_of(::Repositories::DestroyService) do |service|
         expect(service).to receive(:execute).and_return({ status: :success })
       end
 

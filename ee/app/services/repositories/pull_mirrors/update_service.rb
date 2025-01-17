@@ -50,7 +50,7 @@ module Repositories
       end
 
       def allowed_attributes
-        @allowed_attributes ||= Repositories::PullMirrors::Attributes.new(params).allowed
+        @allowed_attributes ||= ::Repositories::PullMirrors::Attributes.new(params).allowed
       end
 
       def allowed?
