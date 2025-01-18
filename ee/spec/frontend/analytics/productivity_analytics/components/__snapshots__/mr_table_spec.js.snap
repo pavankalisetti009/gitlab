@@ -8,34 +8,34 @@ exports[`MergeRequestTable component matches the snapshot 1`] = `
     class="card"
   >
     <div
-      class="border-bottom-0 card-header"
+      class="border-bottom-0 card-header gl-bg-transparent gl-font-bold"
     >
       <div
-        class="gl-flex gl-responsive-table-row py-0 table-row-header"
+        class="gl-border-1 gl-border-b gl-border-b-solid gl-border-none gl-flex gl-py-0 gl-responsive-table-row md:gl-border-b-0 table-row-header"
         role="row"
       >
         <div
-          class="gl-hidden md:gl-flex section-50 table-section"
+          class="gl-border-none gl-hidden gl-px-0 md:gl-flex section-50 table-section"
           role="rowheader"
         >
           Title
         </div>
         <div
-          class="section-50 table-section"
+          class="!gl-border-none gl-px-0 section-50 table-section"
           role="rowheader"
         >
           <div
             class="gl-flex"
           >
             <span
-              class="gl-hidden md:gl-flex metric-col"
+              class="gl-basis-1/2 gl-grow-0 gl-hidden gl-max-w-1/2 gl-shrink-0 md:gl-flex"
             >
               Time to merge
             </span>
             <gl-collapsible-listbox-stub
               block="true"
               category="primary"
-              class="metric-col"
+              class="gl-basis-1/2 gl-grow-0 gl-max-w-1/2 gl-shrink-0"
               fluidwidth="true"
               headertext=""
               icon=""

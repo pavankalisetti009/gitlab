@@ -2,16 +2,17 @@
 
 exports[`MergeRequestTableRow component on creation matches the snapshot 1`] = `
 <div
-  class="gl-responsive-table-row gl-responsive-table-row-layout"
+  class="gl-border-b gl-border-b-solid gl-border-none gl-responsive-table-row gl-responsive-table-row-layout md:gl-border-b-0"
 >
   <div
-    class="flex-md-row flex-row-reverse gl-flex js-mr-details justify-content-between justify-content-md-start section-50 table-section"
+    class="flex-md-row flex-row-reverse gl-border-none gl-flex js-mr-details justify-content-between justify-content-md-start section-50 table-section"
   >
     <div
       class="gl-flex mr-md-2"
     >
       <gl-avatar-stub
         alt="avatar"
+        class="!gl-mr-0"
         entityid="0"
         entityname=""
         shape="circle"
@@ -50,7 +51,7 @@ exports[`MergeRequestTableRow component on creation matches the snapshot 1`] = `
     </div>
   </div>
   <div
-    class="align-items-start flex-row gl-flex js-mr-metrics section-50 table-section"
+    class="align-items-start flex-row gl-border-none gl-flex js-mr-metrics section-50 table-section"
   >
     <metric-column-stub
       label="Time to merge"

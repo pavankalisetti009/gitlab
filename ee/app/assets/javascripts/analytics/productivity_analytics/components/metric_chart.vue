@@ -93,7 +93,7 @@ export default {
       <template v-else>
         <gl-collapsible-listbox
           v-if="hasMetricTypes"
-          class="metric-dropdown gl-mb-4"
+          class="metric-dropdown gl-mb-4 gl-w-full sm:gl-w-auto"
           fluid-width
           is-check-centered
           toggle-class="dropdown-menu-toggle !gl-w-full"
