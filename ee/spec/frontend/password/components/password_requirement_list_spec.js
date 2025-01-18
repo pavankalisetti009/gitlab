@@ -3,7 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlIcon } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
-import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { HTTP_STATUS_OK, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '~/lib/utils/http_status';
 import { THOUSAND } from '~/lib/utils/constants';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import {
@@ -19,6 +19,9 @@ import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { PASSWORD_COMPLEXITY_PATH } from 'ee/api/users_api';
 import PasswordRequirementList from 'ee/password/components/password_requirement_list.vue';
+import { createAlert } from '~/alert';
+
+jest.mock('~/alert');
 
 describe('Password requirement list component', () => {
   let wrapper;
@@ -279,6 +282,25 @@ describe('Password requirement list component', () => {
         expect(validRules.at(1).text()).toBe('Cannot include your name, username, or email');
         expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(0);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(false);
+      });
+    });
+
+    describe('when password complexity validation failed', () => {
+      beforeEach(() => {
+        mockAxios.onPost(PASSWORD_COMPLEXITY_PATH).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+      });
+
+      it('calls createAlert with error message', async () => {
+        const passwordInputElement = findPasswordInputElement();
+
+        passwordInputElement.value = password;
+        passwordInputElement.dispatchEvent(new Event('input'));
+
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Failed to validate password due to server or connection issue. Try again.',
+        });
       });
     });
   });
