@@ -16,10 +16,7 @@ describe('Findings Drawer Details', () => {
     project: mockProject,
   };
 
-  const createWrapper = (
-    findingDetailsOverrides = {},
-    { mrVulnerabilityCodeFlow = false } = {},
-  ) => {
+  const createWrapper = (findingDetailsOverrides = {}) => {
     const propsData = {
       drawer: findingDetailsProps.drawer,
       project: findingDetailsProps.project,
@@ -29,9 +26,6 @@ describe('Findings Drawer Details', () => {
 
     wrapper = mountExtended(FindingsDrawerDetails, {
       propsData,
-      provide: {
-        glFeatures: { mrVulnerabilityCodeFlow },
-      },
     });
   };
 
@@ -62,63 +56,32 @@ describe('Findings Drawer Details', () => {
     });
   });
 
-  describe('when `mrVulnerabilityCodeFlow` is enabled', () => {
-    describe('when `details` object is not empty', () => {
-      beforeEach(() => {
-        createWrapper(
-          {
-            insideTab: true,
-            drawer: {
-              ...mockFindingDismissed,
-              details: mockFindingDetails,
-            },
-          },
-          {
-            mrVulnerabilityCodeFlow: true,
-          },
-        );
-      });
-
-      it('should add class `gl-pl-0`', () => {
-        expect(getById('drawer-container').classes('gl-pl-0')).toBe(true);
-      });
-
-      it('should show code flow button', () => {
-        expect(getById('code-flow-button').exists()).toBe(true);
-      });
-    });
-
-    describe('when `details` object is empty', () => {
-      beforeEach(() => {
-        createWrapper(
-          { insideTab: false },
-          {
-            mrVulnerabilityCodeFlow: true,
-          },
-        );
-      });
-
-      it('should not add class `gl-pl-0`', () => {
-        expect(getById('drawer-container').classes('gl-pl-0')).toBe(false);
-      });
-
-      it('should not show code flow button', () => {
-        expect(getById('code-flow-button').exists()).toBe(false);
-      });
-    });
-  });
-
-  describe('when `mrVulnerabilityCodeFlow` is disabled', () => {
+  describe('when `details` object is not empty', () => {
     beforeEach(() => {
-      createWrapper(
-        {},
-        {
-          mrVulnerabilityCodeFlow: false,
+      createWrapper({
+        insideTab: true,
+        drawer: {
+          ...mockFindingDismissed,
+          details: mockFindingDetails,
         },
-      );
+      });
     });
 
     it('should add class `gl-pl-0`', () => {
+      expect(getById('drawer-container').classes('gl-pl-0')).toBe(true);
+    });
+
+    it('should show code flow button', () => {
+      expect(getById('code-flow-button').exists()).toBe(true);
+    });
+  });
+
+  describe('when `details` object is empty', () => {
+    beforeEach(() => {
+      createWrapper({ insideTab: false });
+    });
+
+    it('should not add class `gl-pl-0`', () => {
       expect(getById('drawer-container').classes('gl-pl-0')).toBe(false);
     });
 
