@@ -56,19 +56,27 @@ export default {
 <template>
   <div class="mr-table">
     <div class="card">
-      <div class="card-header border-bottom-0">
-        <div role="row" class="gl-responsive-table-row table-row-header py-0 gl-flex">
-          <div role="rowheader" class="table-section section-50 gl-hidden md:gl-flex">
+      <div class="card-header border-bottom-0 gl-bg-transparent gl-font-bold">
+        <div
+          role="row"
+          class="gl-responsive-table-row table-row-header gl-border-b gl-flex gl-border-1 gl-border-none gl-py-0 gl-border-b-solid md:gl-border-b-0"
+        >
+          <div
+            role="rowheader"
+            class="table-section section-50 gl-hidden gl-border-none gl-px-0 md:gl-flex"
+          >
             {{ __('Title') }}
           </div>
-          <div role="rowheader" class="table-section section-50">
+          <div role="rowheader" class="table-section section-50 !gl-border-none gl-px-0">
             <div class="gl-flex">
-              <span class="metric-col gl-hidden md:gl-flex">{{ __('Time to merge') }}</span>
+              <span class="gl-hidden gl-max-w-1/2 gl-shrink-0 gl-grow-0 gl-basis-1/2 md:gl-flex">{{
+                __('Time to merge')
+              }}</span>
 
               <gl-collapsible-listbox
                 block
                 fluid-width
-                class="metric-col"
+                class="gl-max-w-1/2 gl-shrink-0 gl-grow-0 gl-basis-1/2"
                 toggle-class="dropdown-menu-toggle !gl-w-full"
                 placement="bottom-end"
                 is-check-centered

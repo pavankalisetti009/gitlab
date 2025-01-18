@@ -2,18 +2,20 @@
 
 exports[`MetricColumn component on creation matches the snapshot 1`] = `
 <div
-  class="metric-col"
+  class="gl-basis-1/2 gl-grow-0 gl-max-w-1/2 gl-shrink-0"
 >
   <span
-    class="time"
+    class="gl-text-lg time"
   >
     10
-    <span>
+    <span
+      class="gl-text-base"
+    >
       hrs
     </span>
   </span>
   <span
-    class="gl-flex gl-text-subtle md:gl-hidden metric-label"
+    class="gl-flex gl-text-subtle gl-whitespace-pre-wrap md:gl-hidden"
   >
     Time from first comment to last commit
   </span>

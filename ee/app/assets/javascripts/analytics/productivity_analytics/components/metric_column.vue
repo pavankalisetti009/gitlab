@@ -34,14 +34,16 @@ export default {
 };
 </script>
 <template>
-  <div class="metric-col">
-    <span class="time">
+  <div class="gl-max-w-1/2 gl-shrink-0 gl-grow-0 gl-basis-1/2">
+    <span class="time gl-text-lg">
       <template v-if="isNumber">
         {{ value }}
-        <span> {{ unit }} </span>
+        <span class="gl-text-base"> {{ unit }} </span>
       </template>
       <template v-else> &ndash; </template>
     </span>
-    <span v-if="label" class="metric-label gl-flex gl-text-subtle md:gl-hidden">{{ label }}</span>
+    <span v-if="label" class="gl-flex gl-whitespace-pre-wrap gl-text-subtle md:gl-hidden">{{
+      label
+    }}</span>
   </div>
 </template>

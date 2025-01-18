@@ -21,7 +21,7 @@ exports[`MetricChart component template when isLoading is false and chartData is
 <div>
   <gl-collapsible-listbox-stub
     category="primary"
-    class="gl-mb-4 metric-dropdown"
+    class="gl-mb-4 gl-w-full metric-dropdown sm:gl-w-auto"
     fluidwidth="true"
     headertext=""
     icon=""

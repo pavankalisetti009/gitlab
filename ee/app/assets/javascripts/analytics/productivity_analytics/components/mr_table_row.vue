@@ -48,12 +48,14 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-responsive-table-row-layout gl-responsive-table-row">
+  <div
+    class="gl-responsive-table-row-layout gl-responsive-table-row gl-border-b gl-border-none gl-border-b-solid md:gl-border-b-0"
+  >
     <div
-      class="table-section section-50 flex-row-reverse flex-md-row justify-content-between justify-content-md-start js-mr-details gl-flex"
+      class="table-section section-50 flex-row-reverse flex-md-row justify-content-between justify-content-md-start js-mr-details gl-flex gl-border-none"
     >
       <div class="mr-md-2 gl-flex">
-        <gl-avatar :src="mergeRequest.author_avatar_url" :size="16" />
+        <gl-avatar :src="mergeRequest.author_avatar_url" class="!gl-mr-0" :size="16" />
       </div>
       <div class="flex-column overflow-auto gl-mr-1 gl-flex gl-grow">
         <h5 class="item-title my-0 str-truncated gl-block gl-max-w-34">
@@ -73,7 +75,9 @@ export default {
         </ul>
       </div>
     </div>
-    <div class="table-section section-50 flex-row align-items-start js-mr-metrics gl-flex">
+    <div
+      class="table-section section-50 flex-row align-items-start js-mr-metrics gl-flex gl-border-none"
+    >
       <metric-column
         type="days_to_merge"
         :value="mergeRequest.days_to_merge"
