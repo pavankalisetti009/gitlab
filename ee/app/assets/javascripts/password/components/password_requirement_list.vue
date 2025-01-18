@@ -142,7 +142,9 @@ export default {
         )
         .catch(() =>
           createAlert({
-            message: __('An error occurred while validating password'),
+            message: __(
+              'Failed to validate password due to server or connection issue. Try again.',
+            ),
           }),
         );
     },
