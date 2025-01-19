@@ -44,6 +44,11 @@ module Security
     validates :policy_tuning, json_schema: { filename: 'approval_policies_policy_tuning' }
 
     scope :for_project, ->(project) { where(project: project) }
+    scope :for_policy_configuration, ->(policy_configuration) {
+      where(security_orchestration_policy_configuration: policy_configuration)
+    }
+    scope :for_policy_index, ->(policy_index) { where(orchestration_policy_idx: policy_index) }
+    scope :for_rule_index, ->(rule_index) { where(rule_idx: rule_index) }
     scope :targeting_commits, -> { where.not(commits: nil) }
     scope :including_approval_merge_request_rules, -> { includes(:approval_merge_request_rules) }
     scope :blocking_branch_modification, -> do

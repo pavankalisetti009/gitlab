@@ -604,6 +604,73 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#delete_scan_result_policy_reads_for_project' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy_configuration) do
+      create(:security_orchestration_policy_configuration, project: project)
+    end
+
+    let_it_be(:other_policy_configuration) do
+      create(:security_orchestration_policy_configuration, namespace: create(:group), project: nil)
+    end
+
+    let_it_be(:policy) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+    end
+
+    let_it_be(:approval_policy_rules) do
+      create_list(:approval_policy_rule, 3, security_policy: policy)
+    end
+
+    let_it_be(:rules) { approval_policy_rules.first(2) }
+
+    before do
+      3.times.each do |i|
+        create(:scan_result_policy_read,
+          project: project,
+          security_orchestration_policy_configuration: policy_configuration,
+          orchestration_policy_idx: policy.policy_index,
+          rule_idx: approval_policy_rules[i].rule_index)
+      end
+
+      create_list(:scan_result_policy_read, 3,
+        project: project, security_orchestration_policy_configuration: other_policy_configuration)
+    end
+
+    subject(:delete_scan_result_policy_reads_for_project) do
+      policy.delete_scan_result_policy_reads_for_project(project, rules)
+    end
+
+    context 'when project has a linked policy' do
+      before do
+        create(:security_policy_project_link, project: project, security_policy: policy)
+      end
+
+      it 'deletes only the matching scan result policy reads' do
+        expected_reads = project.scan_result_policy_reads.where(
+          security_orchestration_policy_configuration: policy_configuration,
+          rule_idx: approval_policy_rules.last.rule_index
+        )
+
+        delete_scan_result_policy_reads_for_project
+
+        expect(project.scan_result_policy_reads.where(
+          security_orchestration_policy_configuration: policy_configuration
+        )).to match_array(expected_reads)
+
+        expect(project.scan_result_policy_reads.where(
+          security_orchestration_policy_configuration: other_policy_configuration
+        )).not_to be_empty
+      end
+    end
+
+    context 'when project does not have linked policies' do
+      it 'does not delete any scan result policy reads' do
+        expect { delete_scan_result_policy_reads_for_project }.not_to change { project.scan_result_policy_reads.count }
+      end
+    end
+  end
+
   describe '#edit_path' do
     subject(:edit_path) { policy.edit_path }
 

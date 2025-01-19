@@ -100,6 +100,61 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
         expect(described_class.prevent_pushing_and_force_pushing).to contain_exactly(blocking_read)
       end
     end
+
+    describe '.for_policy_configuration' do
+      let_it_be(:policy_configuration_1) { create(:security_orchestration_policy_configuration) }
+      let_it_be(:policy_configuration_2) { create(:security_orchestration_policy_configuration) }
+
+      let_it_be(:scan_result_policy_1) do
+        create(:scan_result_policy_read,
+          security_orchestration_policy_configuration: policy_configuration_1,
+          orchestration_policy_idx: 0,
+          rule_idx: 1
+        )
+      end
+
+      let_it_be(:scan_result_policy_2) do
+        create(:scan_result_policy_read,
+          security_orchestration_policy_configuration: policy_configuration_2,
+          orchestration_policy_idx: 1,
+          rule_idx: 2
+        )
+      end
+
+      it 'returns policies for the specified policy configuration' do
+        expect(
+          described_class.for_policy_configuration(policy_configuration_1)
+        ).to contain_exactly(scan_result_policy_1)
+      end
+    end
+
+    describe '.for_policy_index' do
+      let_it_be(:scan_result_policy) do
+        create(:scan_result_policy_read, orchestration_policy_idx: 1)
+      end
+
+      it 'returns policies with matching orchestration policy index' do
+        expect(described_class.for_policy_index(1)).to contain_exactly(scan_result_policy)
+      end
+
+      it 'returns empty when no matching policy index exists' do
+        expect(described_class.for_policy_index(99)).to be_empty
+      end
+    end
+
+    describe '.for_rule_index' do
+      let_it_be(:scan_result_policy) do
+        create(:scan_result_policy_read, rule_idx: 1)
+      end
+
+      it 'returns policies with matching rule index' do
+        expect(described_class.for_rule_index(1)).to contain_exactly(scan_result_policy)
+      end
+
+      it 'returns empty when no matching rule index exists' do
+        expect(described_class.for_rule_index(99)).to be_empty
+      end
+    end
   end
 
   describe '#newly_detected?' do
