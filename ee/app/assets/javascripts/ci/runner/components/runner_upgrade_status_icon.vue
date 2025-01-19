@@ -40,7 +40,7 @@ export default {
           };
         case UPGRADE_STATUS_RECOMMENDED:
           return {
-            class: 'gl-text-orange-500',
+            class: 'gl-text-warning',
             tooltip: s__('Runners|An upgrade is recommended for this runner'),
           };
         default:

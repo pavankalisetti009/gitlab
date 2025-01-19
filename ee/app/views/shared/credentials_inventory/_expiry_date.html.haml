@@ -7,7 +7,7 @@
       = sprite_icon('error', css_class: "gl-icon gl-mr-2")
       = expiry_date
   - elsif credential.expires_soon?
-    %span{ class: date_classes + ' gl-text-orange-500', data: { testid: 'expiry-date-icon' } }
+    %span{ class: date_classes + ' gl-text-warning', data: { testid: 'expiry-date-icon' } }
       = sprite_icon('warning', css_class: "gl-icon gl-mr-2")
       = expiry_date
   - else

@@ -92,8 +92,8 @@ export default {
           class="vertical-timeline-row gl-flex"
           data-testid="ancestor-parent-warning"
         >
-          <div class="vertical-timeline-icon gl-bg-default gl-text-orange-500">
-            <gl-icon name="warning" />
+          <div class="vertical-timeline-icon gl-bg-default">
+            <gl-icon name="warning" variant="warning" />
           </div>
           <div class="vertical-timeline-content">
             <span class="gl-text-default">{{

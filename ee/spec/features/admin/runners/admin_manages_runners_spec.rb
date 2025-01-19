@@ -23,7 +23,7 @@ RSpec.describe 'Admin manages runners in admin runner list', :js, feature_catego
     shared_examples 'upgrade is recommended' do
       it 'shows an orange upgrade recommended icon' do
         within_runner_row(runner.id) do
-          expect(page).to have_selector '.gl-text-orange-500[data-testid="upgrade-icon"]'
+          expect(page).to have_selector '.gl-text-warning[data-testid="upgrade-icon"]'
         end
       end
     end

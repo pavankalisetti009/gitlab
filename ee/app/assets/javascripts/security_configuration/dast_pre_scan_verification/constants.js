@@ -59,17 +59,17 @@ export const SUMMARY_STATUS_STYLE_MAP = {
   },
   [PRE_SCAN_VERIFICATION_STATUS.COMPLETE_WITH_ERRORS]: {
     icon: 'status_warning',
-    iconColor: 'gl-text-orange-500',
+    iconColor: 'gl-text-warning',
     borderColor: 'border-color: #c17d10',
   },
   [PRE_SCAN_VERIFICATION_STATUS.FAILED]: {
     icon: 'status_failed',
-    iconColor: 'gl-text-red-500',
+    iconColor: 'gl-text-danger',
     borderColor: 'border-color: #ec5941',
   },
   [PRE_SCAN_VERIFICATION_STATUS.INVALIDATED]: {
     icon: 'status_failed',
-    iconColor: 'gl-text-red-500',
+    iconColor: 'gl-text-danger',
     borderColor: 'border-color: #ec5941',
   },
 };

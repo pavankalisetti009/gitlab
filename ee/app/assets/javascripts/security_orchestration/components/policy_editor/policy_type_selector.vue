@@ -155,7 +155,7 @@ export default {
             </gl-button>
             <span
               v-else
-              class="gl-text-orange-500"
+              class="gl-text-warning"
               :data-testid="`max-allowed-text-${option.urlParameter}`"
             >
               <gl-icon name="warning" />
