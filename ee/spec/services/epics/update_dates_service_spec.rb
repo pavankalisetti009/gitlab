@@ -340,6 +340,22 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           it_behaves_like 'syncs all data from an epic to a work item'
           it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_item_epics_ssot is enabled'
 
+          it "doesn't update cyclic hierarchies" do
+            parent_epic = create(:epic, group: group).tap do |parent|
+              epic.update!(parent: parent)
+            end
+            create(:epic, group: group).tap do |cycle_link|
+              parent_epic.update!(parent: cycle_link)
+              cycle_link.parent = epic
+              cycle_link.save!(validate: false)
+            end
+
+            expect(Epics::UpdateEpicsDatesWorker)
+              .not_to receive(:perform_async)
+
+            described_class.new([epic]).execute
+          end
+
           context "when epic dates are propagated upwards", :sidekiq_inline do
             let_it_be(:top_level_parent_epic) { create(:epic, group: group) }
             let_it_be(:parent_epic) { create(:epic, group: group, parent: top_level_parent_epic) }
