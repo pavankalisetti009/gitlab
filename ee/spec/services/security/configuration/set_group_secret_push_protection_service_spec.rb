@@ -30,9 +30,9 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
         security_setting = project.security_setting
 
         boolean_values.each do |enable_value|
-          expect { execute_service(subject: top_level_group, enable: enable_value) }.to change {
-            security_setting.reload.pre_receive_secret_detection_enabled
-          }.from(!enable_value).to(enable_value)
+          expect { execute_service(subject: top_level_group, enable: enable_value, excluded_projects_ids: nil) }
+            .to change { security_setting.reload.pre_receive_secret_detection_enabled }
+            .from(!enable_value).to(enable_value)
 
           expect { execute_service(subject: top_level_group, enable: enable_value) }
             .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
