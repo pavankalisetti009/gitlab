@@ -32,7 +32,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions('allDependencies', ['setSearchFilterParameters']),
+    ...mapActions('allDependencies', ['setSearchFilterParameters', 'fetchDependencies']),
   },
   i18n: {
     searchInputPlaceholder: s__('Dependencies|Search or filter dependencies...'),
@@ -49,6 +49,7 @@ export default {
       :available-tokens="tokens"
       terms-as-tokens
       @input="setSearchFilterParameters"
+      @submit="fetchDependencies({ page: 1 })"
     />
   </div>
 </template>

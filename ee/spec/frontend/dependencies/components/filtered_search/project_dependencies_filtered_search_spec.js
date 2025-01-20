@@ -46,4 +46,19 @@ describe('ProjectDependenciesFilteredSearch', () => {
       );
     });
   });
+
+  describe('submit', () => {
+    beforeEach(createComponent);
+
+    it('dispatches the "fetchDependencies" Vuex action and resets the pagination', () => {
+      expect(store.dispatch).not.toHaveBeenCalled();
+
+      const filterPayload = [{ type: 'license', value: { data: ['MIT'] } }];
+      findFilteredSearch().vm.$emit('submit', filterPayload);
+
+      expect(store.dispatch).toHaveBeenCalledWith('allDependencies/fetchDependencies', {
+        page: 1,
+      });
+    });
+  });
 });
