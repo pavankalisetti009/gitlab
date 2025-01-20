@@ -4,8 +4,6 @@ module AuditEvents
   module LegacyDestinationSyncHelper
     include Gitlab::Utils::StrongMemoize
 
-    CreateError = Class.new(StandardError)
-
     STREAMING_TOKEN_HEADER_KEY = 'X-Gitlab-Event-Streaming-Token'
 
     def create_stream_destination(legacy_destination_model:, category:, is_instance:)
@@ -30,13 +28,45 @@ module AuditEvents
         destination.save!
 
         copy_event_type_filters(legacy_destination_model, destination)
-        copy_namespace_filters(legacy_destination_model, destination)
+        copy_namespace_filter(legacy_destination_model, destination)
 
         legacy_destination_model.update!(stream_destination_id: destination.id)
         destination
       end
 
-    rescue ActiveRecord::RecordInvalid, CreateError => e
+    rescue ActiveRecord::RecordInvalid, StandardError => e
+      Gitlab::ErrorTracking.track_exception(e, audit_event_destination_model: legacy_destination_model.class.name)
+      nil
+    end
+
+    def update_stream_destination(legacy_destination_model:)
+      return unless legacy_destination_sync_enabled?
+
+      stream_destination = legacy_destination_model.stream_destination
+
+      return if stream_destination.nil? || stream_destination.legacy_destination_ref != legacy_destination_model.id
+
+      category = stream_destination.category.to_sym
+
+      ApplicationRecord.transaction do
+        stream_destination.update!(
+          name: legacy_destination_model.name,
+          category: category,
+          config: build_streaming_config(legacy_destination_model, category),
+          secret_token: secret_token(legacy_destination_model, category)
+        )
+
+        if stream_destination.respond_to?(:event_type_filters)
+          copy_event_type_filters(legacy_destination_model, stream_destination)
+        end
+
+        if stream_destination.respond_to?(:namespace_filters)
+          copy_namespace_filter(legacy_destination_model, stream_destination)
+        end
+
+        stream_destination
+      end
+    rescue ActiveRecord::RecordInvalid, StandardError => e
       Gitlab::ErrorTracking.track_exception(e, audit_event_destination_model: legacy_destination_model.class.name)
       nil
     end
@@ -54,29 +84,36 @@ module AuditEvents
     def copy_event_type_filters(source, destination)
       return unless source.respond_to?(:event_type_filters)
 
-      source.event_type_filters.find_each do |filter|
-        filter_class = "#{audit_event_namespace(destination)}::EventTypeFilter".constantize
+      filter_class = "#{audit_event_namespace(destination)}::EventTypeFilter".constantize
+      filter_class.delete_by(external_streaming_destination_id: destination.id)
 
-        attributes = {
+      timestamp = Time.current
+
+      attributes = source.event_type_filters.map do |filter|
+        base_attributes = {
           audit_event_type: filter.audit_event_type,
-          external_streaming_destination: destination
+          external_streaming_destination_id: destination.id,
+          created_at: timestamp,
+          updated_at: timestamp
         }
 
-        attributes[:namespace] = destination.group unless destination.instance_level?
-
-        filter_class.create!(attributes)
+        base_attributes[:namespace_id] = destination.group_id unless destination.instance_level?
+        base_attributes
       end
+
+      filter_class.insert_all!(attributes) if attributes.any?
     end
 
-    def copy_namespace_filters(source, destination)
+    def copy_namespace_filter(source, destination)
       return unless source.respond_to?(:namespace_filter)
       return unless source.namespace_filter
 
       filter_class = "#{audit_event_namespace(destination)}::NamespaceFilter".constantize
+      filter_class.delete_by(external_streaming_destination_id: destination.id)
 
       filter_class.create!(
-        namespace: source.namespace_filter.namespace,
-        external_streaming_destination: destination
+        namespace_id: source.namespace_filter.namespace_id,
+        external_streaming_destination_id: destination.id
       )
     end
 
