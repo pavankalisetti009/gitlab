@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::GlRepository::RepoType do
+RSpec.describe Gitlab::Repositories::RepoType, feature_category: :source_code_management do
   describe Gitlab::GlRepository::WIKI do
-    context 'group wiki' do
+    context 'with group wiki' do
       let_it_be(:wiki) { create(:group_wiki) }
 
       it_behaves_like 'a repo type' do
@@ -12,7 +12,10 @@ RSpec.describe Gitlab::GlRepository::RepoType do
         let(:expected_identifier) { "group-#{expected_id}-wiki" }
         let(:expected_suffix) { '.wiki' }
         let(:expected_container) { wiki }
-        let(:expected_repository) { ::Repository.new(wiki.full_path, wiki, shard: wiki.repository_storage, disk_path: wiki.disk_path, repo_type: described_class) }
+        let(:expected_repository) do
+          ::Repository.new(wiki.full_path, wiki, shard: wiki.repository_storage,
+            disk_path: wiki.disk_path, repo_type: described_class)
+        end
       end
 
       describe '#identifier_for_container' do
