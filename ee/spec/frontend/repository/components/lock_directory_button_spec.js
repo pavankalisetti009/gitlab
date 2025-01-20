@@ -12,6 +12,7 @@ import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import LockDirectoryButton from 'ee_component/repository/components/lock_directory_button.vue';
 import {
   projectMock,
+  getProjectMockWithSpecifiedAccessLevel,
   exactDirectoryLock,
   upstreamDirectoryLock,
   downstreamDirectoryLock,
@@ -117,29 +118,49 @@ describe('LockDirectoryButton', () => {
       expect(findLockDirectoryButton().props('loading')).toBe(true);
     });
 
-    it('renders disabled with correct tooltip if user does not have permissions to push code', async () => {
-      const projectWithNoPushPermission = {
-        data: {
-          project: {
-            ...projectMock,
-            userPermissions: {
-              ...userPermissionsMock,
-              pushCode: false,
+    describe('renders disabled with correct tooltip', () => {
+      const testCases = [
+        {
+          name: 'user does not have permissions to push code',
+          data: {
+            project: {
+              ...projectMock,
+              userPermissions: {
+                canPushCode: false,
+              },
             },
           },
         },
-      };
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue(projectWithNoPushPermission),
-      });
-      await waitForPromises();
+        {
+          name: 'user is not a project member',
+          data: {
+            project: {
+              ...projectMock,
+              projectMembers: { nodes: [] },
+            },
+          },
+        },
+        {
+          name: 'user is does not have developer access level',
+          data: {
+            project: getProjectMockWithSpecifiedAccessLevel(10),
+          },
+        },
+      ];
 
-      expect(findLockDirectoryButton().text()).toBe('Lock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(findTooltip().text()).toBe('You do not have permission to lock this');
+      it.each(testCases)('disables button and shows tooltip when $name', async ({ data }) => {
+        createComponent({
+          projectInfoResolver: jest.fn().mockResolvedValue({ data }),
+        });
+        await waitForPromises();
+
+        expect(findLockDirectoryButton().text()).toBe('Lock');
+        expect(findLockDirectoryButton().props('disabled')).toBe(true);
+        expect(findTooltip().text()).toBe('You do not have permission to lock this');
+      });
     });
 
-    it('renders enabled without a tooltip when user can push code', async () => {
+    it('renders enabled without a tooltip when user have permission to lock', async () => {
       const projectWithNoLocks = {
         data: {
           project: {
@@ -155,17 +176,61 @@ describe('LockDirectoryButton', () => {
       expect(findLockDirectoryButton().props('disabled')).toBe(false);
       expect(findTooltip().exists()).toBe(false);
     });
-  });
 
-  describe('lock types', () => {
-    it.each`
-      mock                       | type                  | isExactLock | isUpstreamLock | isDownstreamLock
-      ${exactDirectoryLock}      | ${'isExactLock'}      | ${true}     | ${false}       | ${false}
-      ${upstreamDirectoryLock}   | ${'isUpstreamLock'}   | ${false}    | ${true}        | ${false}
-      ${downstreamDirectoryLock} | ${'isDownstreamLock'} | ${false}    | ${false}       | ${true}
-    `(
-      'correctly assigns the lock type as $type depending on PathLock data',
-      async ({ mock, type, isExactLock, isUpstreamLock, isDownstreamLock }) => {
+    describe('lock types', () => {
+      it.each`
+        mock                       | type                  | isExactLock | isUpstreamLock | isDownstreamLock
+        ${exactDirectoryLock}      | ${'isExactLock'}      | ${true}     | ${false}       | ${false}
+        ${upstreamDirectoryLock}   | ${'isUpstreamLock'}   | ${false}    | ${true}        | ${false}
+        ${downstreamDirectoryLock} | ${'isDownstreamLock'} | ${false}    | ${false}       | ${true}
+      `(
+        'correctly assigns the lock type as $type depending on PathLock data',
+        async ({ mock, type, isExactLock, isUpstreamLock, isDownstreamLock }) => {
+          createComponent({
+            projectInfoResolver: jest.fn().mockResolvedValue({
+              data: {
+                project: {
+                  ...projectMock,
+                  pathLocks: {
+                    __typename: 'PathLockConnection',
+                    nodes: [mock],
+                  },
+                },
+              },
+            }),
+          });
+          await waitForPromises();
+
+          expect(wrapper.vm.$data.pathLock[type]).toBe(true);
+          expect(wrapper.vm.$data.pathLock.isExactLock).toBe(isExactLock);
+          expect(wrapper.vm.pathLock.isUpstreamLock).toBe(isUpstreamLock);
+          expect(wrapper.vm.pathLock.isDownstreamLock).toBe(isDownstreamLock);
+        },
+      );
+    });
+
+    describe('when there is an exact lock', () => {
+      it('renders an enabled "Unlock" button with a tooltip when user is a project maintainer', async () => {
+        createComponent({
+          projectInfoResolver: jest.fn().mockResolvedValue({
+            data: {
+              project: {
+                ...getProjectMockWithSpecifiedAccessLevel(40),
+                pathLocks: {
+                  __typename: 'PathLockConnection',
+                  nodes: [exactDirectoryLock],
+                },
+              },
+            },
+          }),
+        });
+        await waitForPromises();
+        expect(findLockDirectoryButton().text()).toBe('Unlock');
+        expect(findLockDirectoryButton().props('disabled')).toBe(false);
+        expect(findTooltip().text()).toContain('Locked by User2');
+      });
+
+      it('renders an enabled "Unlock" button when lock author is allowed to unlock', async () => {
         createComponent({
           projectInfoResolver: jest.fn().mockResolvedValue({
             data: {
@@ -173,7 +238,17 @@ describe('LockDirectoryButton', () => {
                 ...projectMock,
                 pathLocks: {
                   __typename: 'PathLockConnection',
-                  nodes: [mock],
+                  nodes: [
+                    {
+                      ...exactDirectoryLock,
+                      user: {
+                        __typename: 'CurrentUser',
+                        id: 'gid://gitlab/User/1',
+                        username: 'root',
+                        name: 'Administrator',
+                      },
+                    },
+                  ],
                 },
               },
             },
@@ -181,296 +256,333 @@ describe('LockDirectoryButton', () => {
         });
         await waitForPromises();
 
-        expect(wrapper.vm.$data.pathLock[type]).toBe(true);
-        expect(wrapper.vm.$data.pathLock.isExactLock).toBe(isExactLock);
-        expect(wrapper.vm.pathLock.isUpstreamLock).toBe(isUpstreamLock);
-        expect(wrapper.vm.pathLock.isDownstreamLock).toBe(isDownstreamLock);
-      },
-    );
-  });
+        expect(findLockDirectoryButton().text()).toBe('Unlock');
+        expect(findLockDirectoryButton().props('disabled')).toBe(false);
+        expect(findTooltip().exists()).toBe(false);
+      });
 
-  describe('when there is an exact lock', () => {
-    it('renders an enabled "Unlock" button with a tooltip when user is allowed to unlock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
-          data: {
-            project: {
-              ...projectMock,
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [exactDirectoryLock],
+      describe('renders disabled with correct tooltip', () => {
+        const pathLocks = {
+          __typename: 'PathLockConnection',
+          nodes: [exactDirectoryLock],
+        };
+        const testCases = [
+          {
+            name: 'user does not have permissions to push code',
+            data: {
+              project: {
+                ...projectMock,
+                userPermissions: {
+                  ...userPermissionsMock,
+                  pushCode: false,
+                },
+                pathLocks,
               },
             },
+            expectedTooltipText: 'Locked by User2. You do not have permission to unlock this',
           },
-        }),
-      });
-      await waitForPromises();
-      expect(findLockDirectoryButton().text()).toBe('Unlock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(false);
-      expect(findTooltip().text()).toContain('Locked by User2');
-    });
-
-    it('renders an enabled "Unlock" button when lock author is allowed to unlock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
-          data: {
-            project: {
-              ...projectMock,
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [
-                  {
-                    ...exactDirectoryLock,
-                    user: {
-                      __typename: 'CurrentUser',
-                      id: 'gid://gitlab/User/1',
-                      username: 'root',
-                      name: 'Administrator',
-                    },
-                  },
-                ],
+          {
+            name: 'user is not a project member',
+            data: {
+              project: {
+                ...projectMock,
+                pathLocks,
+                projectMembers: { nodes: [] },
               },
             },
+            expectedTooltipText: 'Locked by User2. You do not have permission to unlock this',
           },
-        }),
-      });
-      await waitForPromises();
+          {
+            name: 'user is not the lock author',
+            data: {
+              project: {
+                ...projectMock,
+                pathLocks,
+              },
+            },
+            expectedTooltipText: 'Locked by User2',
+          },
+        ];
 
-      expect(findLockDirectoryButton().text()).toBe('Unlock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(false);
-      expect(findTooltip().exists()).toBe(false);
+        it.each(testCases)(
+          'disables button and shows tooltip when $name',
+          async ({ data, expectedTooltipText }) => {
+            createComponent({
+              projectInfoResolver: jest.fn().mockResolvedValue({ data }),
+            });
+            await waitForPromises();
+
+            expect(findLockDirectoryButton().text()).toBe('Unlock');
+            expect(findLockDirectoryButton().props('disabled')).toBe(true);
+            expect(findTooltip().text()).toContain(expectedTooltipText);
+          },
+        );
+      });
     });
 
-    it('renders a disabled "Unlock" button with a tooltip when user is not allowed to unlock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
+    describe('when there is an upstream lock', () => {
+      const pathLocks = {
+        __typename: 'PathLockConnection',
+        nodes: [upstreamDirectoryLock],
+      };
+      const project = {
+        ...projectMock,
+        pathLocks,
+      };
+
+      const testCases = [
+        {
+          name: 'user is allowed to unlock',
+          data: {
+            project,
+          },
+          expectedTooltipText:
+            'User2 has a lock on "test". Unlock that directory in order to unlock this',
+        },
+        {
+          name: 'user does not have permissions to push code',
           data: {
             project: {
-              ...projectMock,
+              ...project,
               userPermissions: {
                 ...userPermissionsMock,
-                adminPathLocks: false,
-                canPushCode: false,
-              },
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [exactDirectoryLock],
+                pushCode: false,
               },
             },
           },
-        }),
-      });
-      await waitForPromises();
-      expect(findLockDirectoryButton().text()).toBe('Unlock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(findTooltip().text()).toContain(
-        'Locked by User2. You do not have permission to unlock this',
-      );
-    });
-  });
-
-  describe('when there is an upstream lock', () => {
-    it('renders a disabled "Unlock" button with a tooltip when user is allowed to unlock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
+          expectedTooltipText:
+            'User2 has a lock on "test". You do not have permission to unlock it',
+        },
+        {
+          name: 'user is not a project member',
           data: {
             project: {
-              ...projectMock,
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [upstreamDirectoryLock],
-              },
+              ...project,
+              projectMembers: { nodes: [] },
             },
           },
-        }),
-      });
-      await waitForPromises();
-
-      expect(findLockDirectoryButton().text()).toBe('Unlock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(findTooltip().text()).toContain('Unlock that directory in order to unlock this');
-    });
-
-    it('renders a disabled "Unlock" button with a tooltip when user is not allowed to unlock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
+          expectedTooltipText:
+            'User2 has a lock on "test". You do not have permission to unlock it',
+        },
+        {
+          name: 'user is does not have developer access level',
           data: {
             project: {
-              ...projectMock,
-              userPermissions: {
-                ...userPermissionsMock,
-                adminPathLocks: false,
-              },
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [upstreamDirectoryLock],
-              },
+              ...getProjectMockWithSpecifiedAccessLevel(10),
+              pathLocks,
             },
           },
-        }),
-      });
-      await waitForPromises();
+          expectedTooltipText:
+            'User2 has a lock on "test". You do not have permission to unlock it',
+        },
+      ];
 
-      expect(findLockDirectoryButton().text()).toBe('Unlock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(findTooltip().text()).toContain('You do not have permission to unlock it');
-    });
-  });
+      it.each(testCases)(
+        'disables button and shows tooltip when $name',
+        async ({ data, expectedTooltipText }) => {
+          createComponent({
+            projectInfoResolver: jest.fn().mockResolvedValue({ data }),
+          });
+          await waitForPromises();
 
-  describe('when there is a downstream lock', () => {
-    it('renders a disabled "Lock" button with a tooltip when user is allowed to lock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
-          data: {
-            project: {
-              ...projectMock,
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [downstreamDirectoryLock],
-              },
-            },
-          },
-        }),
-      });
-      await waitForPromises();
-
-      expect(findLockDirectoryButton().text()).toBe('Lock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(findTooltip().text()).toContain(
-        'This directory cannot be locked while User2 has a lock on "test/component/icon". Unlock this in order to proceed',
+          expect(findLockDirectoryButton().text()).toBe('Unlock');
+          expect(findLockDirectoryButton().props('disabled')).toBe(true);
+          expect(findTooltip().text()).toBe(expectedTooltipText);
+        },
       );
     });
 
-    it('renders a disabled "Lock" button with a tooltip when user is not allowed to lock', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
-          data: {
-            project: {
-              ...projectMock,
-              userPermissions: {
-                ...userPermissionsMock,
-                adminPathLocks: false,
-              },
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [downstreamDirectoryLock],
+    describe('when there is a downstream lock', () => {
+      const testCases = [
+        {
+          name: 'user is allowed to unlock',
+          projectInfoResolvedValue: {
+            data: {
+              project: {
+                ...projectMock,
+                pathLocks: {
+                  __typename: 'PathLockConnection',
+                  nodes: [downstreamDirectoryLock],
+                },
               },
             },
           },
-        }),
-      });
-      await waitForPromises();
+          expectedTooltipText:
+            'This directory cannot be locked while User2 has a lock on "test/component/icon". Unlock this in order to proceed',
+        },
+        {
+          name: 'user does not have permissions to push code',
+          projectInfoResolvedValue: {
+            data: {
+              project: {
+                ...projectMock,
+                userPermissions: {
+                  ...userPermissionsMock,
+                  pushCode: false,
+                },
+                pathLocks: {
+                  __typename: 'PathLockConnection',
+                  nodes: [downstreamDirectoryLock],
+                },
+              },
+            },
+          },
+          expectedTooltipText:
+            'This directory cannot be locked while User2 has a lock on "test/component/icon". You do not have permission to unlock it',
+        },
+        {
+          name: 'user is not a project member',
+          projectInfoResolvedValue: {
+            data: {
+              project: {
+                ...projectMock,
+                pathLocks: {
+                  __typename: 'PathLockConnection',
+                  nodes: [downstreamDirectoryLock],
+                },
+                projectMembers: { nodes: [] },
+              },
+            },
+          },
+          expectedTooltipText:
+            'This directory cannot be locked while User2 has a lock on "test/component/icon". You do not have permission to unlock it',
+        },
+        {
+          name: 'user is does not have developer access level',
+          projectInfoResolvedValue: {
+            data: {
+              project: {
+                ...getProjectMockWithSpecifiedAccessLevel(10),
+                pathLocks: {
+                  __typename: 'PathLockConnection',
+                  nodes: [downstreamDirectoryLock],
+                },
+              },
+            },
+          },
+          expectedTooltipText:
+            'This directory cannot be locked while User2 has a lock on "test/component/icon". You do not have permission to unlock it',
+        },
+      ];
 
-      expect(findLockDirectoryButton().text()).toBe('Lock');
-      expect(findLockDirectoryButton().props('disabled')).toBe(true);
-      expect(findTooltip().text()).toContain(
-        'This directory cannot be locked while User2 has a lock on "test/component/icon". You do not have permission to unlock it',
+      it.each(testCases)(
+        'disables button and shows tooltip when $name',
+        async ({ projectInfoResolvedValue, expectedTooltipText }) => {
+          createComponent({
+            projectInfoResolver: jest.fn().mockResolvedValue(projectInfoResolvedValue),
+          });
+          await waitForPromises();
+
+          expect(findLockDirectoryButton().text()).toBe('Lock');
+          expect(findLockDirectoryButton().props('disabled')).toBe(true);
+          expect(findTooltip().text()).toBe(expectedTooltipText);
+        },
       );
     });
-  });
 
-  describe('modal', () => {
-    it('shows a modal when clicked', async () => {
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      expect(findModal().exists()).toBe(true);
-    });
+    describe('modal', () => {
+      it('shows a modal when clicked', async () => {
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        expect(findModal().exists()).toBe(true);
+      });
 
-    it('has a unique modal id', async () => {
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      expect(findModal().props('modalId')).toBe('lock-directory-modal-test-component');
-    });
+      it('has a unique modal id', async () => {
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        expect(findModal().props('modalId')).toBe('lock-directory-modal-test-component');
+      });
 
-    it('displays correct content, when user tries to lock the directory', async () => {
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      expect(findModal().text()).toContain('Are you sure you want to lock this directory?');
-    });
+      it('displays correct content, when user tries to lock the directory', async () => {
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        expect(findModal().text()).toContain('Are you sure you want to lock this directory?');
+      });
 
-    it('displays correct content, when user tries to unlock the directory', async () => {
-      createComponent({
-        projectInfoResolver: jest.fn().mockResolvedValue({
-          data: {
-            project: {
-              ...projectMock,
-              pathLocks: {
-                __typename: 'PathLockConnection',
-                nodes: [exactDirectoryLock],
+      it('displays correct content, when user tries to unlock the directory', async () => {
+        createComponent({
+          projectInfoResolver: jest.fn().mockResolvedValue({
+            data: {
+              project: {
+                ...projectMock,
+                pathLocks: {
+                  __typename: 'PathLockConnection',
+                  nodes: [exactDirectoryLock],
+                },
               },
             },
-          },
-        }),
-      });
-      await waitForPromises();
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      expect(findModal().text()).toContain('Are you sure you want to unlock this directory?');
-    });
-  });
-
-  describe('when the user confirms the action in the modal', () => {
-    useMockLocationHelper();
-
-    it('calls the mutation and reloads the page, when mutation is successful', async () => {
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      findModal().vm.$emit('primary');
-      await waitForPromises();
-      expect(lockPathMutationMockResolver).toHaveBeenCalledWith({
-        filePath: 'test/component',
-        projectPath: 'group/project',
-        lock: true,
-      });
-      expect(window.location.reload).toHaveBeenCalled();
-    });
-
-    it('calls the mutation and and creates an alert with the correct message, when mutation fails', async () => {
-      createComponent({
-        lockPathMutationResolver: lockPathMutationErrorResolver,
-      });
-      await waitForPromises();
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      findModal().vm.$emit('primary');
-      await waitForPromises();
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while editing lock information, please try again.',
-        captureError: true,
-        error: expect.any(Error),
-      });
-      expect(window.location.reload).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('when user cancels the action in the modal', () => {
-    it('does not call the mutation', async () => {
-      findLockDirectoryButton().trigger('click');
-      await waitForPromises();
-      findModal().vm.$emit('cancel');
-      await waitForPromises();
-      expect(lockPathMutationMockResolver).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('alert', () => {
-    it('creates an alert with the correct message, when projectInfo query fails', async () => {
-      createComponent({
-        projectInfoResolver: projectInfoQueryErrorResolver,
-      });
-      await waitForPromises();
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while fetching lock information, please try again.',
+          }),
+        });
+        await waitForPromises();
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        expect(findModal().text()).toContain('Are you sure you want to unlock this directory?');
       });
     });
 
-    it('creates an alert with the correct message, when currentUser query fails', async () => {
-      createComponent({
-        currentUserResolver: currentUserErrorResolver,
+    describe('when the user confirms the action in the modal', () => {
+      useMockLocationHelper();
+
+      it('calls the mutation and reloads the page, when mutation is successful', async () => {
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        findModal().vm.$emit('primary');
+        await waitForPromises();
+        expect(lockPathMutationMockResolver).toHaveBeenCalledWith({
+          filePath: 'test/component',
+          projectPath: 'group/project',
+          lock: true,
+        });
+        expect(window.location.reload).toHaveBeenCalled();
       });
-      await waitForPromises();
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while fetching lock information, please try again.',
+
+      it('calls the mutation and and creates an alert with the correct message, when mutation fails', async () => {
+        createComponent({
+          lockPathMutationResolver: lockPathMutationErrorResolver,
+        });
+        await waitForPromises();
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        findModal().vm.$emit('primary');
+        await waitForPromises();
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while editing lock information, please try again.',
+          captureError: true,
+          error: expect.any(Error),
+        });
+        expect(window.location.reload).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when user cancels the action in the modal', () => {
+      it('does not call the mutation', async () => {
+        findLockDirectoryButton().trigger('click');
+        await waitForPromises();
+        findModal().vm.$emit('cancel');
+        await waitForPromises();
+        expect(lockPathMutationMockResolver).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('alert', () => {
+      it('creates an alert with the correct message, when projectInfo query fails', async () => {
+        createComponent({
+          projectInfoResolver: projectInfoQueryErrorResolver,
+        });
+        await waitForPromises();
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while fetching lock information, please try again.',
+        });
+      });
+
+      it('creates an alert with the correct message, when currentUser query fails', async () => {
+        createComponent({
+          currentUserResolver: currentUserErrorResolver,
+        });
+        await waitForPromises();
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while fetching lock information, please try again.',
+        });
       });
     });
   });
