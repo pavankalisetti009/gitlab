@@ -9,50 +9,50 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
   let(:mutated_vulnerability) { subject[:vulnerability] }
   let(:project_gid) { GitlabSchema.id_from_object(project) }
 
+  let(:current_user) { user }
+
+  let(:identifier_attributes) do
+    {
+      name: "Test identifier",
+      url: "https://vulnerabilities.com/test"
+    }
+  end
+
+  let(:scanner_attributes) do
+    {
+      id: "my-custom-scanner",
+      name: "My Custom Scanner",
+      url: "https://superscanner.com",
+      vendor: vendor_attributes,
+      version: "21.37.00"
+    }
+  end
+
+  let(:vendor_attributes) do
+    {
+      name: "Custom Scanner Vendor"
+    }
+  end
+
+  let(:attributes) do
+    {
+      project: project_gid,
+      name: "Test vulnerability",
+      description: "Test vulnerability created via GraphQL",
+      scanner: scanner_attributes,
+      identifiers: [identifier_attributes],
+      state: "detected",
+      severity: "unknown",
+      solution: "rm -rf --no-preserve-root /"
+    }
+  end
+
   before do
     stub_licensed_features(security_dashboard: true)
   end
 
   describe '#resolve' do
     subject { resolve(described_class, args: attributes, ctx: query_context) }
-
-    let(:current_user) { user }
-
-    let(:identifier_attributes) do
-      {
-        name: "Test identifier",
-        url: "https://vulnerabilities.com/test"
-      }
-    end
-
-    let(:scanner_attributes) do
-      {
-        id: "my-custom-scanner",
-        name: "My Custom Scanner",
-        url: "https://superscanner.com",
-        vendor: vendor_attributes,
-        version: "21.37.00"
-      }
-    end
-
-    let(:vendor_attributes) do
-      {
-        name: "Custom Scanner Vendor"
-      }
-    end
-
-    let(:attributes) do
-      {
-        project: project_gid,
-        name: "Test vulnerability",
-        description: "Test vulnerability created via GraphQL",
-        scanner: scanner_attributes,
-        identifiers: [identifier_attributes],
-        state: "detected",
-        severity: "unknown",
-        solution: "rm -rf --no-preserve-root /"
-      }
-    end
 
     shared_examples 'successfully created vulnerability' do
       it 'returns the created vulnerability' do
@@ -81,6 +81,10 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
         expect_graphql_error_to_be_created(GraphQL::Schema::Validator::ValidationFailedError) do
           resolve(described_class, args: attributes, ctx: query_context)
         end
+      end
+
+      it 'does not record events or metrics' do
+        expect { resolve(described_class, args: attributes, ctx: query_context) }.to not_trigger_internal_events('manually_create_vulnerability')
       end
     end
 
@@ -146,8 +150,21 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
               subject
             end
           end
+
+          it 'does not record events or metrics' do
+            expect { resolve(described_class, args: attributes, ctx: query_context) }.to not_trigger_internal_events('manually_create_vulnerability')
+          end
         end
       end
+    end
+  end
+
+  describe 'event tracking' do
+    it_behaves_like 'internal event tracking', :clean_gitlab_redis_shared_state do
+      let(:event) { 'manually_create_vulnerability' }
+      let(:category) { described_class.name }
+      let(:additional_properties) { { label: 'graphql' } }
+      subject(:service_action) { resolve(described_class, args: attributes, ctx: query_context) }
     end
   end
 end
