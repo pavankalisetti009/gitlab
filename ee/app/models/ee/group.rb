@@ -559,10 +559,6 @@ module EE
       projects.detect { |project| !project.empty_repo? }
     end
 
-    def project_ids_with_security_reports
-      all_projects.with_security_reports_stored.pluck_primary_key
-    end
-
     def root_ancestor_ip_restrictions
       return ip_restrictions if parent_id.nil?
 
