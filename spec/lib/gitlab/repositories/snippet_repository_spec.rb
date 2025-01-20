@@ -17,13 +17,25 @@ RSpec.describe Gitlab::Repositories::SnippetRepository, feature_category: :sourc
 
   context 'when PersonalSnippet' do
     it_behaves_like 'a repo type' do
-      let(:expected_id) { personal_snippet.id }
-      let(:expected_identifier) { "snippet-#{expected_id}" }
+      let(:expected_identifier) { "snippet-#{personal_snippet.id}" }
       let(:expected_suffix) { '' }
       let(:expected_container) { personal_snippet }
       let(:expected_repository) do
         ::Repository.new(personal_snippet.full_path, personal_snippet, shard: personal_snippet.repository_storage,
           disk_path: personal_snippet.disk_path, repo_type: snippet_repository)
+      end
+
+      describe '#repository_for' do
+        it 'raises an error when container class does not match given container_class' do
+          user = build(:user)
+
+          expected_message = "Expected container class to be #{snippet_repository.container_class} for " \
+            "repo type #{snippet_repository.name}, but found #{user.class.name} instead."
+
+          expect do
+            snippet_repository.repository_for(user)
+          end.to raise_error(Gitlab::Repositories::ContainerClassMismatchError, expected_message)
+        end
       end
     end
 

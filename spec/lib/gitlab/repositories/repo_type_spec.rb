@@ -13,18 +13,43 @@ RSpec.describe Gitlab::Repositories::RepoType, feature_category: :source_code_ma
   let(:personal_snippet_path) { "snippets/#{personal_snippet.id}" }
   let(:project_snippet_path) { "#{project.full_path}/snippets/#{project_snippet.id}" }
 
-  describe '.repository_for' do
-    subject(:design_repository) { Gitlab::GlRepository::DESIGN }
+  subject(:repo_type) { described_class.new }
 
-    let(:expected_message) do
-      "Expected container class to be #{subject.container_class} for " \
-        "repo type #{design_repository.name}, but found #{project.class.name} instead."
+  context 'with abstract methods' do
+    describe '#name' do
+      it 'raises a NotImplementedError' do
+        expect { repo_type.name }.to raise_error NotImplementedError
+      end
     end
 
-    it 'raises an error when container class does not match given container_class' do
-      expect do
-        design_repository.repository_for(project)
-      end.to raise_error(Gitlab::Repositories::ContainerClassMismatchError, expected_message)
+    describe '#access_checker_class' do
+      it 'raises a NotImplementedError' do
+        expect { repo_type.access_checker_class }.to raise_error NotImplementedError
+      end
+    end
+
+    describe '#guest_read_ability' do
+      it 'raises a NotImplementedError' do
+        expect { repo_type.guest_read_ability }.to raise_error NotImplementedError
+      end
+    end
+
+    describe '#container_class' do
+      it 'raises a NotImplementedError' do
+        expect { repo_type.container_class }.to raise_error NotImplementedError
+      end
+    end
+
+    describe '#project_for' do
+      it 'raises a NotImplementedError' do
+        expect { repo_type.project_for(project) }.to raise_error NotImplementedError
+      end
+    end
+
+    describe '#repository_resolver' do
+      it 'raises a NotImplementedError' do
+        expect { repo_type.send(:repository_resolver, project) }.to raise_error NotImplementedError
+      end
     end
   end
 end

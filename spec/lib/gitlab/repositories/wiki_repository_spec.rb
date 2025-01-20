@@ -17,8 +17,7 @@ RSpec.describe Gitlab::Repositories::WikiRepository, feature_category: :source_c
   subject(:wiki_repository) { described_class.instance }
 
   it_behaves_like 'a repo type' do
-    let(:expected_id) { wiki.project.id }
-    let(:expected_identifier) { "wiki-#{expected_id}" }
+    let(:expected_identifier) { "wiki-#{wiki.project.id}" }
     let(:expected_suffix) { '.wiki' }
     let(:expected_container) { wiki }
     let(:expected_repository) do

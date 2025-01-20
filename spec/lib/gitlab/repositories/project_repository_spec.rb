@@ -16,8 +16,7 @@ RSpec.describe Gitlab::Repositories::ProjectRepository, feature_category: :sourc
   subject(:project_repository) { described_class.instance }
 
   it_behaves_like 'a repo type' do
-    let(:expected_id) { project.id }
-    let(:expected_identifier) { "project-#{expected_id}" }
+    let(:expected_identifier) { "project-#{project.id}" }
     let(:expected_suffix) { '' }
     let(:expected_container) { project }
     let(:expected_repository) do

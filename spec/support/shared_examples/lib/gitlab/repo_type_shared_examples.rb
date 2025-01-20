@@ -1,6 +1,20 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'a repo type' do
+  describe '#name' do
+    it 'returns a symbol' do
+      expect(subject.name).to be_a(Symbol)
+    end
+  end
+
+  describe '#type_id' do
+    it 'returns a string' do
+      expect(subject.type_id).to be_a(String)
+    end
+  end
+
+  describe
+
   describe '#identifier_for_container' do
     it 'returns expected identifier' do
       identifier = subject.identifier_for_container(expected_container)

@@ -18,9 +18,21 @@ RSpec.describe Gitlab::Repositories::DesignManagementRepository, feature_categor
   it_behaves_like 'a repo type' do
     let(:expected_repository) { project.design_repository }
     let(:expected_container) { project.design_management_repository }
-    let(:expected_id) { expected_container.id }
-    let(:expected_identifier) { "design-#{expected_id}" }
+    let(:expected_identifier) { "design-#{expected_container.id}" }
     let(:expected_suffix) { '.design' }
+
+    describe '#repository_for' do
+      it 'raises an error when container class does not match given container_class' do
+        user = build(:user)
+
+        expected_message = "Expected container class to be #{design_repository.container_class} for " \
+          "repo type #{design_repository.name}, but found #{user.class.name} instead."
+
+        expect do
+          design_repository.repository_for(user)
+        end.to raise_error(Gitlab::Repositories::ContainerClassMismatchError, expected_message)
+      end
+    end
   end
 
   it 'uses the design access checker' do
