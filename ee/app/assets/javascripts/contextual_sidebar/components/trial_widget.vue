@@ -6,23 +6,35 @@ import { sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
-import { TRIAL_WIDGET } from './constants';
+import {
+  DUO_PRO,
+  TRIAL_WIDGET_REMAINING_DAYS,
+  TRIAL_WIDGET_LEARN_MORE,
+  TRIAL_WIDGET_UPGRADE_TEXT,
+  TRIAL_WIDGET_SEE_UPGRADE_OPTIONS,
+  TRIAL_WIDGET_DISMISS,
+  TRIAL_WIDGET_CONTAINER_ID,
+  TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS,
+  TRIAL_WIDGET_CLICK_UPGRADE,
+  TRIAL_WIDGET_CLICK_LEARN_MORE,
+  TRIAL_WIDGET_CLICK_SEE_UPGRADE,
+  TRIAL_WIDGET_CLICK_DISMISS,
+  HAND_RAISE_LEAD_ATTRIBUTES,
+  TRIAL_TYPES_CONFIG,
+} from './constants';
 
 export default {
   name: 'TrialWidget',
-  trialWidget: TRIAL_WIDGET,
-  handRaiseLeadAttributes: {
-    variant: 'link',
-    category: 'tertiary',
-    size: 'small',
-  },
+
   components: {
     GlProgressBar,
     GlButton,
     GlLink,
     HandRaiseLeadButton,
   },
+
   mixins: [InternalEvents.mixin()],
+
   inject: {
     trialType: { default: '' },
     daysRemaining: { default: 0 },
@@ -33,43 +45,63 @@ export default {
     featureId: { default: '' },
     dismissEndpoint: { default: '' },
   },
-  data() {
-    return { isDismissed: false };
+
+  trialWidget: {
+    containerId: TRIAL_WIDGET_CONTAINER_ID,
+    dismissLabel: TRIAL_WIDGET_DISMISS,
+    upgradeOptionsText: TRIAL_WIDGET_SEE_UPGRADE_OPTIONS,
+    upgradeThresholdDays: TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS,
   },
+
+  handRaiseLeadAttributes: HAND_RAISE_LEAD_ATTRIBUTES,
+
+  data() {
+    return {
+      isDismissed: false,
+    };
+  },
+
   computed: {
     currentTrialType() {
-      return this.$options.trialWidget.trialTypes[this.trialType];
+      return TRIAL_TYPES_CONFIG[this.trialType];
     },
+
+    isWithinUpgradeThreshold() {
+      return this.daysRemaining < TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS;
+    },
+
     widgetRemainingDays() {
-      return sprintf(this.$options.trialWidget.i18n.widgetRemainingDays, {
+      return sprintf(TRIAL_WIDGET_REMAINING_DAYS, {
         daysLeft: this.daysRemaining,
       });
     },
+
     widgetTitle() {
       return this.currentTrialType.widgetTitle;
     },
+
     expiredWidgetTitleText() {
       return this.currentTrialType.widgetTitleExpiredTrial;
     },
+
     ctaLink() {
-      return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
-        ? this.purchaseNowUrl
-        : this.trialDiscoverPagePath;
+      return this.isWithinUpgradeThreshold ? this.purchaseNowUrl : this.trialDiscoverPagePath;
     },
+
     ctaText() {
-      return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
-        ? this.$options.trialWidget.i18n.upgradeText
-        : this.$options.trialWidget.i18n.learnMore;
+      return this.isWithinUpgradeThreshold ? TRIAL_WIDGET_UPGRADE_TEXT : TRIAL_WIDGET_LEARN_MORE;
     },
+
     ctaEventName() {
-      return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
-        ? this.$options.trialWidget.clickUpgradeLinkEventAction
-        : this.$options.trialWidget.clickLearnMoreLinkEventAction;
+      return this.isWithinUpgradeThreshold
+        ? TRIAL_WIDGET_CLICK_UPGRADE
+        : TRIAL_WIDGET_CLICK_LEARN_MORE;
     },
+
     ctaUseHandRaiseLead() {
-      const { trialUpgradeThresholdDays } = this.$options.trialWidget;
-      return this.daysRemaining < trialUpgradeThresholdDays && this.trialType !== 'duo_pro';
+      return this.isWithinUpgradeThreshold && this.trialType !== DUO_PRO;
     },
+
     ctaHandRaiseLeadTracking() {
       return {
         category: 'trial_widget',
@@ -77,27 +109,33 @@ export default {
         label: `${this.trialType}_contact_sales`,
       };
     },
+
     isTrialActive() {
       return this.daysRemaining > 0;
     },
+
     isDismissable() {
       return this.groupId && this.featureId && this.dismissEndpoint;
     },
+
     trackingLabel() {
       return snakeCase(this.currentTrialType.name.toLowerCase());
     },
   },
+
   methods: {
     onCtaClick() {
       this.trackEvent(this.ctaEventName, {
         label: this.trackingLabel,
       });
     },
+
     onSeeUpgradeOptionsClick() {
-      this.trackEvent(this.$options.trialWidget.clickSeeUpgradeOptionsLinkEventAction, {
+      this.trackEvent(TRIAL_WIDGET_CLICK_SEE_UPGRADE, {
         label: this.trackingLabel,
       });
     },
+
     handleDismiss() {
       axios
         .post(this.dismissEndpoint, {
@@ -110,7 +148,7 @@ export default {
 
       this.isDismissed = true;
 
-      this.trackEvent(this.$options.trialWidget.clickDismissButtonEventAction, {
+      this.trackEvent(TRIAL_WIDGET_CLICK_DISMISS, {
         label: this.trackingLabel,
       });
     },
@@ -185,7 +223,7 @@ export default {
               :title="ctaText"
               @click.stop="onSeeUpgradeOptionsClick"
             >
-              {{ $options.trialWidget.i18n.seeUpgradeOptionsText }}
+              {{ $options.trialWidget.upgradeOptionsText }}
             </gl-link>
           </div>
         </div>
@@ -198,7 +236,7 @@ export default {
       icon="close"
       category="tertiary"
       data-testid="dismiss-btn"
-      :aria-label="$options.trialWidget.i18n.dismiss"
+      :aria-label="$options.trialWidget.dismissLabel"
       @click="handleDismiss"
     />
   </div>
