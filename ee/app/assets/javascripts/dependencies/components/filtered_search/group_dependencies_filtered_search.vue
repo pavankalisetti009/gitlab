@@ -1,7 +1,5 @@
 <script>
-import { GlFilteredSearch, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
+import { GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -10,24 +8,21 @@ import LicenseToken from './tokens/license_token.vue';
 import ProjectToken from './tokens/project_token.vue';
 import ComponentToken from './tokens/component_token.vue';
 import PackagerToken from './tokens/package_manager_token.vue';
+import DependenciesFilteredSearch from './dependencies_filtered_search.vue';
 
 export default {
   components: {
-    GlFilteredSearch,
     GlPopover,
     GlLink,
     GlSprintf,
+    DependenciesFilteredSearch,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: ['belowGroupLimit'],
-  data() {
-    return {
-      value: [],
-      currentFilterParams: null,
-    };
-  },
   computed: {
-    ...mapState(['currentList']),
+    viewOnly() {
+      return !this.belowGroupLimit;
+    },
     tokens() {
       return [
         {
@@ -69,12 +64,8 @@ export default {
       ];
     },
   },
-  methods: {
-    ...mapActions('allDependencies', ['setSearchFilterParameters', 'fetchDependencies']),
-  },
   GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/index'),
   i18n: {
-    searchInputPlaceholder: s__('Dependencies|Search or filter dependencies...'),
     popoverTitle: s__('Dependencies|Filtering unavailable'),
     description: s__(
       `Dependencies|This group exceeds the maximum number of 600 sub-groups. We cannot accurately filter or search the dependency list above this maximum. To view or filter a subset of this information, go to a subgroup's dependency list.`,
@@ -86,14 +77,10 @@ export default {
 
 <template>
   <div>
-    <gl-filtered-search
-      :id="$options.filteredSearchId"
-      :view-only="!belowGroupLimit"
-      :placeholder="$options.i18n.searchInputPlaceholder"
-      :available-tokens="tokens"
-      terms-as-tokens
-      @input="setSearchFilterParameters"
-      @submit="fetchDependencies({ page: 1 })"
+    <dependencies-filtered-search
+      :view-only="viewOnly"
+      :tokens="tokens"
+      :filtered-search-id="$options.filteredSearchId"
     />
     <gl-popover
       v-if="!belowGroupLimit"

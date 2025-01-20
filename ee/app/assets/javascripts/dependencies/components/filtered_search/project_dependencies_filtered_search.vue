@@ -1,23 +1,14 @@
 <script>
-import { GlFilteredSearch } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
-import { __, s__ } from '~/locale';
+import { __ } from '~/locale';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
+import DependenciesFilteredSearch from './dependencies_filtered_search.vue';
 import ComponentToken from './tokens/component_token.vue';
 
 export default {
   components: {
-    GlFilteredSearch,
-  },
-  data() {
-    return {
-      value: [],
-      currentFilterParams: null,
-    };
+    DependenciesFilteredSearch,
   },
   computed: {
-    ...mapState(['currentList']),
     tokens() {
       return [
         {
@@ -31,25 +22,12 @@ export default {
       ];
     },
   },
-  methods: {
-    ...mapActions('allDependencies', ['setSearchFilterParameters', 'fetchDependencies']),
-  },
-  i18n: {
-    searchInputPlaceholder: s__('Dependencies|Search or filter dependencies...'),
-  },
-  filteredSearchId: 'project-level-filtered-search',
 };
 </script>
 
 <template>
-  <div>
-    <gl-filtered-search
-      :id="$options.filteredSearchId"
-      :placeholder="$options.i18n.searchInputPlaceholder"
-      :available-tokens="tokens"
-      terms-as-tokens
-      @input="setSearchFilterParameters"
-      @submit="fetchDependencies({ page: 1 })"
-    />
-  </div>
+  <dependencies-filtered-search
+    :tokens="tokens"
+    filtered-search-id="project-level-filtered-search"
+  />
 </template>
