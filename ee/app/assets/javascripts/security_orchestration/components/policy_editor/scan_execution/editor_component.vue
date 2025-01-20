@@ -11,7 +11,10 @@ import {
   extractPolicyContent,
 } from 'ee/security_orchestration/components/utils';
 import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
-import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import {
+  DEFAULT_SKIP_SI_CONFIGURATION,
+  POLICY_TYPE_COMPONENT_OPTIONS,
+} from 'ee/security_orchestration/components/constants';
 import {
   policyBodyToYaml,
   policyToYaml,
@@ -160,7 +163,7 @@ export default {
 
     const hasSkipCi = 'skip_ci' in policy;
     if (!hasSkipCi && this.glFeatures.securityPoliciesSkipCi) {
-      policy.skip_ci = { allowed: true, allowlist: { users: [] } };
+      policy.skip_ci = DEFAULT_SKIP_SI_CONFIGURATION;
     }
 
     return {

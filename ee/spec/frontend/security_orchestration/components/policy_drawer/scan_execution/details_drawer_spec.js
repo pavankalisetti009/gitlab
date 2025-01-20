@@ -18,6 +18,7 @@ import {
   mockProjectScanExecutionWithConfigurationPolicy,
   mockScanExecutionPolicyManifestWithWrapper,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
+import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
 
 describe('DetailsDrawer component', () => {
   let wrapper;
@@ -134,10 +135,9 @@ describe('DetailsDrawer component', () => {
       });
 
       expect(findConfigurationRow().exists()).toBe(true);
-      expect(findSkipCiConfiguration().props('configuration')).toEqual({
-        allowed: true,
-        allowlist: { users: [] },
-      });
+      expect(findSkipCiConfiguration().props('configuration')).toEqual(
+        DEFAULT_SKIP_SI_CONFIGURATION,
+      );
     });
 
     it('renders configuration row when there is a configuration', () => {
@@ -146,10 +146,9 @@ describe('DetailsDrawer component', () => {
       });
 
       expect(findConfigurationRow().exists()).toBe(true);
-      expect(findSkipCiConfiguration().props('configuration')).toEqual({
-        allowed: true,
-        allowlist: { users: [] },
-      });
+      expect(findSkipCiConfiguration().props('configuration')).toEqual(
+        DEFAULT_SKIP_SI_CONFIGURATION,
+      );
     });
   });
 });

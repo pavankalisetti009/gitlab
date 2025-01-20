@@ -30,9 +30,7 @@ describe('SkipCiSelector', () => {
 
     findAllowSkipCiSelector().vm.$emit('change', true);
 
-    expect(wrapper.emitted('changed')).toEqual([
-      ['skip_ci', { allowed: false, allowlist: { users: [] } }],
-    ]);
+    expect(wrapper.emitted('changed')).toEqual([['skip_ci', { allowed: false }]]);
   });
 
   it('selects user exceptions', () => {

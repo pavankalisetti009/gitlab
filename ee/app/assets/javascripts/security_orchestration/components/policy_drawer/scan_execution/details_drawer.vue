@@ -3,6 +3,7 @@ import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/skip_ci_configuration.vue';
+import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
 import { fromYaml } from '../../policy_editor/scan_execution/lib';
 import { ACTIONS } from '../../policy_editor/constants';
 import { CONFIGURATION_TITLE, SUMMARY_TITLE } from '../constants';
@@ -67,7 +68,7 @@ export default {
       return fromYaml({ manifest: this.policy.yaml }).policy;
     },
     configuration() {
-      return this.parsedYaml.skip_ci || { allowed: true, allowlist: { users: [] } };
+      return this.parsedYaml.skip_ci || DEFAULT_SKIP_SI_CONFIGURATION;
     },
   },
   methods: {

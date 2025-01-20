@@ -41,8 +41,6 @@ export default {
   methods: {
     updateConfiguration(value) {
       this.$emit('changed', 'skip_ci', {
-        ...this.skipCiConfiguration,
-        allowlist: { users: [] },
         allowed: !value,
       });
     },
