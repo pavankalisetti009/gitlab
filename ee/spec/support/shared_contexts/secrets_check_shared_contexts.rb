@@ -93,6 +93,7 @@ RSpec.shared_context 'secrets check context' do
   let(:logger) { Gitlab::Checks::TimedLogger.new(timeout: timeout) }
   let(:user_access) { Gitlab::UserAccess.new(user, container: project) }
   let(:push_options) { nil }
+  let(:gitaly_context) { {} }
 
   let(:changes_access) do
     Gitlab::Checks::ChangesAccess.new(
@@ -101,7 +102,8 @@ RSpec.shared_context 'secrets check context' do
       user_access: user_access,
       protocol: protocol,
       logger: logger,
-      push_options: push_options
+      push_options: push_options,
+      gitaly_context: gitaly_context
     )
   end
 
@@ -112,7 +114,8 @@ RSpec.shared_context 'secrets check context' do
       user_access: user_access,
       protocol: 'web',
       logger: logger,
-      push_options: push_options
+      push_options: push_options,
+      gitaly_context: gitaly_context
     )
   end
 
@@ -123,7 +126,8 @@ RSpec.shared_context 'secrets check context' do
       user_access: user_access,
       protocol: protocol,
       logger: logger,
-      push_options: push_options
+      push_options: push_options,
+      gitaly_context: gitaly_context
     )
   end
 

@@ -8,6 +8,7 @@ RSpec.describe Gitlab::Checks::ChangesAccess, feature_category: :source_code_man
 
     let(:push_rule) { create(:push_rule, deny_delete_tag: true) }
     let(:push_options) { nil }
+    let(:gitaly_context) { {} }
     let(:changes) do
       [
         { oldrev: oldrev, newrev: newrev, ref: ref }
@@ -21,7 +22,8 @@ RSpec.describe Gitlab::Checks::ChangesAccess, feature_category: :source_code_man
         user_access: user_access,
         protocol: protocol,
         logger: logger,
-        push_options: push_options
+        push_options: push_options,
+        gitaly_context: gitaly_context
       )
     end
 

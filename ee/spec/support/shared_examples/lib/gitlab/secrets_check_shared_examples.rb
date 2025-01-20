@@ -1957,7 +1957,8 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
       user_access: user_access,
       protocol: protocol,
       logger: logger,
-      push_options: ::Gitlab::PushOptions.new(["secret_push_protection.skip_all"])
+      push_options: ::Gitlab::PushOptions.new(["secret_push_protection.skip_all"]),
+      gitaly_context: gitaly_context
     )
   end
 

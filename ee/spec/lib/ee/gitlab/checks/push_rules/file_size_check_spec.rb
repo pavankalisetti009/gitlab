@@ -6,6 +6,7 @@ RSpec.describe EE::Gitlab::Checks::PushRules::FileSizeCheck, feature_category: :
   include_context 'push rules checks context'
 
   let(:push_options) { nil }
+  let(:gitaly_context) { {} }
   let(:changes) do
     [
       # Update of existing branch
@@ -24,7 +25,8 @@ RSpec.describe EE::Gitlab::Checks::PushRules::FileSizeCheck, feature_category: :
       user_access: user_access,
       protocol: protocol,
       logger: logger,
-      push_options: push_options
+      push_options: push_options,
+      gitaly_context: gitaly_context
     )
   end
 
