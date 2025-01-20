@@ -220,6 +220,34 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
+  describe '.index_async' do
+    subject(:index_async) { described_class.index_async(project.id) }
+
+    context 'when licensed_and_indexing_enabled? returns false' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(false)
+      end
+
+      it 'does not call IndexingTaskWorker' do
+        expect(Search::Zoekt::IndexingTaskWorker).not_to receive(:perform_async)
+
+        expect(index_async).to be false
+      end
+    end
+
+    context 'when licensed_and_indexing_enabled? returns true' do
+      before do
+        allow(described_class).to receive(:licensed_and_indexing_enabled?).and_return(true)
+      end
+
+      it 'calls IndexingTaskWorker async' do
+        expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async).with(project.id, :index_repo)
+
+        index_async
+      end
+    end
+  end
+
   describe '.index_in' do
     subject(:index_in) { described_class.index_in(1.second, project.id) }
 
