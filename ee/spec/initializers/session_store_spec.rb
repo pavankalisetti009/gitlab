@@ -17,7 +17,7 @@ RSpec.describe 'Session initializer for GitLab EE' do
     shared_examples 'normal session cookie' do
       it 'returns the regular cookie without a suffix' do
         expect(subject).to receive(:session_store).with(
-          Gitlab::Sessions::RedisStore, a_hash_including(key: '_gitlab_session')
+          Gitlab::Sessions::CacheStore, a_hash_including(key: '_gitlab_session')
         )
 
         load_session_store
@@ -55,7 +55,7 @@ RSpec.describe 'Session initializer for GitLab EE' do
 
       it 'returns a geo specific cookie' do
         expect(subject).to receive(:session_store).with(
-          ::Gitlab::Sessions::RedisStore,
+          ::Gitlab::Sessions::CacheStore,
           a_hash_including(key: /_gitlab_session_geo_[0-9a-f]{64}/)
         )
 
