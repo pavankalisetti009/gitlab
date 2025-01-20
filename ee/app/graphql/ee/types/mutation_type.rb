@@ -265,6 +265,8 @@ module EE
           experiment: { milestone: '17.7' }
         mount_mutation ::Mutations::Ai::SelfHostedModels::ConnectionCheck,
           experiment: { milestone: '17.7' }
+        mount_mutation ::Mutations::ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::Create,
+          experiment: { milestone: '17.9' }
 
         prepend(Types::DeprecatedMutations)
       end
