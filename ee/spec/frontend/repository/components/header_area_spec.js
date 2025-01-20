@@ -2,8 +2,8 @@ import { RouterLinkStub } from '@vue/test-utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HeaderArea from '~/repository/components/header_area.vue';
 import LockDirectoryButton from 'ee_component/repository/components/lock_directory_button.vue';
+import CompactCodeDropdown from 'ee_component/repository/components/code_dropdown/compact_code_dropdown.vue';
 import CodeDropdown from '~/vue_shared/components/code_dropdown/code_dropdown.vue';
-import CompactCodeDropdown from '~/repository/components/code_dropdown/compact_code_dropdown.vue';
 import CloneCodeDropdown from '~/vue_shared/components/code_dropdown/clone_code_dropdown.vue';
 import { headerAppInjected } from 'ee_else_ce_jest/repository/mock_data';
 
@@ -24,10 +24,15 @@ describe('HeaderArea', () => {
 
   const findLockDirectoryButton = () => wrapper.findComponent(LockDirectoryButton);
   const findCodeDropdown = () => wrapper.findComponent(CodeDropdown);
-  const findCompactCodeDropdown = () => wrapper.findComponent(CompactCodeDropdown);
   const findCloneCodeDropdown = () => wrapper.findComponent(CloneCodeDropdown);
+  const findCompactCodeDropdown = () => wrapper.findComponent(CompactCodeDropdown);
 
-  const createComponent = (props = {}, params = { path: '/directory' }, provided = {}) => {
+  const createComponent = ({
+    props = {},
+    params = { path: '/directory' },
+    provided = {},
+    stubs = {},
+  } = {}) => {
     return shallowMountExtended(HeaderArea, {
       provide: {
         ...headerAppInjected,
@@ -43,6 +48,7 @@ describe('HeaderArea', () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        ...stubs,
       },
       mocks: {
         $route: {
@@ -64,7 +70,7 @@ describe('HeaderArea', () => {
       });
 
       it('does not render Lock directory button for root directory', () => {
-        wrapper = createComponent({}, 'treePathDecoded', { params: '/' });
+        wrapper = createComponent({ params: { path: '/' } });
         expect(findLockDirectoryButton().exists()).toBe(false);
       });
     });
@@ -77,12 +83,19 @@ describe('HeaderArea', () => {
       });
 
       describe('when `directory_code_dropdown_updates` flag is true', () => {
-        it('renders CommpactCodeDropdown component with correct props for desktop layout', () => {
-          wrapper = createComponent({}, '', {
-            glFeatures: {
-              directoryCodeDropdownUpdates: true,
+        it('renders CompactCodeDropdown component with correct props for desktop layout', () => {
+          wrapper = createComponent({
+            provided: {
+              glFeatures: {
+                directoryCodeDropdownUpdates: true,
+              },
+              newWorkspacePath: '/workspaces/new',
+            },
+            stubs: {
+              CompactCodeDropdown,
             },
           });
+
           expect(findCompactCodeDropdown().exists()).toBe(true);
           expect(findCompactCodeDropdown().props('kerberosUrl')).toBe(
             headerAppInjected.kerberosUrl,
