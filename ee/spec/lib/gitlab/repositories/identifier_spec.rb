@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::GlRepository::Identifier do
+RSpec.describe Gitlab::Repositories::Identifier, feature_category: :source_code_management do
   # GitLab Starter feature
-  context 'group wiki' do
+  context 'with group wiki' do
     let_it_be(:wiki) { create(:group_wiki) }
 
     it_behaves_like 'parsing gl_repository identifier' do

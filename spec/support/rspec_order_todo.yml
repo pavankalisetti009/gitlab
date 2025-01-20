@@ -5066,8 +5066,6 @@
 - './spec/lib/gitlab/git/wraps_gitaly_errors_spec.rb'
 - './spec/lib/gitlab/global_id/deprecations_spec.rb'
 - './spec/lib/gitlab/global_id_spec.rb'
-- './spec/lib/gitlab/gl_repository/identifier_spec.rb'
-- './spec/lib/gitlab/gl_repository/repo_type_spec.rb'
 - './spec/lib/gitlab/gl_repository_spec.rb'
 - './spec/lib/gitlab/gon_helper_spec.rb'
 - './spec/lib/gitlab/gpg/commit_spec.rb'
