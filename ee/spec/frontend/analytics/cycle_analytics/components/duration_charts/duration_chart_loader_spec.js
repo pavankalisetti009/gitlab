@@ -2,12 +2,13 @@ import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
+import { createdAfter, createdBefore } from 'jest/analytics/cycle_analytics/mock_data';
 import DurationChartLoader from 'ee/analytics/cycle_analytics/components/duration_charts/duration_chart_loader.vue';
 import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_chart.vue';
 import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
 import {
   allowedStages as stages,
-  durationChartPlottableData,
+  transformedDurationData,
   durationOverviewChartPlottableData,
 } from '../../mock_data';
 
@@ -23,6 +24,8 @@ describe('DurationChartLoader', () => {
     const store = new Vuex.Store({
       state: {
         selectedStage,
+        createdAfter,
+        createdBefore,
       },
       getters: {
         isOverviewStageSelected: () => isOverviewStageSelected,
@@ -39,11 +42,8 @@ describe('DurationChartLoader', () => {
           state: {
             isLoading: false,
             errorMessage: '',
+            durationData: transformedDurationData,
             ...state,
-          },
-          getters: {
-            durationChartPlottableData: () => durationChartPlottableData,
-            durationOverviewChartPlottableData: () => durationOverviewChartPlottableData,
           },
           actions: {
             fetchDurationData,
@@ -84,7 +84,7 @@ describe('DurationChartLoader', () => {
       expect(findOverviewChart().props()).toMatchObject({
         isLoading: false,
         errorMessage: '',
-        plottableData: durationOverviewChartPlottableData,
+        plottableData: expect.arrayContaining(durationOverviewChartPlottableData),
       });
     });
 
@@ -106,6 +106,12 @@ describe('DurationChartLoader', () => {
 
       expect(findOverviewChart().props('errorMessage')).toBe(errorMessage);
     });
+
+    it('shows an empty chart when there is no data', () => {
+      createWrapper({ state: { durationData: [] } });
+
+      expect(findOverviewChart().props('plottableData')).toEqual([]);
+    });
   });
 
   describe('stage chart', () => {
@@ -116,7 +122,10 @@ describe('DurationChartLoader', () => {
         stageTitle: selectedStage.title,
         isLoading: false,
         errorMessage: '',
-        plottableData: durationChartPlottableData,
+        plottableData: expect.arrayContaining([
+          ['2019-01-01', 1134000],
+          ['2019-01-02', 2321000],
+        ]),
       });
     });
 
@@ -137,6 +146,12 @@ describe('DurationChartLoader', () => {
       createWrapper({ isOverviewStageSelected: false, state: { errorMessage } });
 
       expect(findStageChart().props('errorMessage')).toBe(errorMessage);
+    });
+
+    it('shows an empty chart when there is no data', () => {
+      createWrapper({ isOverviewStageSelected: false, state: { durationData: [] } });
+
+      expect(findStageChart().props('plottableData')).toEqual([]);
     });
   });
 });
