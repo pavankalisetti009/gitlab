@@ -145,6 +145,34 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, featur
       expect(subscription_seat_assignments.where(namespace_id: other_root_group.id, user_id: user.id).count).to eq(1)
     end
 
+    it 'does not backfill the seat assignment table for user namespaces' do
+      user_namespace = namespaces.create!(name: 'User', path: user.name, type: 'User', owner_id: user.id,
+        organization_id: organization.id).tap do |new_namespace|
+          new_namespace.update!(traversal_ids: [new_namespace.id])
+        end
+      user_namespace_project = projects.create!(
+        organization_id: organization.id,
+        namespace_id: user_namespace.id,
+        project_namespace_id: user_namespace.id,
+        name: 'user namespace project',
+        path: 'user-namespace-project'
+      )
+      members.create!(
+        access_level: 50,
+        source_id: user_namespace_project.id,
+        source_type: "Project",
+        user_id: user.id,
+        state: 0,
+        notification_level: 3,
+        type: "ProjectMember",
+        member_namespace_id: user_namespace_project.project_namespace_id
+      )
+
+      migration.perform
+
+      expect(subscription_seat_assignments.where(namespace_id: user_namespace.id).count).to eq 0
+    end
+
     context 'when user has multiple membership in the hierarchy' do
       before do
         members.create!(

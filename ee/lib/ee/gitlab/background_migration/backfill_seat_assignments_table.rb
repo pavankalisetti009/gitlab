@@ -56,6 +56,7 @@ module EE
 
         def valid_members_subquery(sub_batch)
           namespace_subquery = MigrationNamespace.select(1)
+            .where(type: 'Group')
             .where("namespaces.id = (SELECT traversal_ids[1] FROM namespaces WHERE id = members.member_namespace_id)")
             .arel
           root_namespace_exists = Arel::Nodes::Exists.new(namespace_subquery)
