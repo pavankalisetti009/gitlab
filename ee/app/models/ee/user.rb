@@ -409,7 +409,7 @@ module EE
           .distinct
       else
         params = {
-          min_access_level: ::Feature.enabled?(:project_templates_reporter_access, self) ? ::Gitlab::Access::REPORTER : ::Gitlab::Access::DEVELOPER
+          min_access_level: ::Gitlab::Access::REPORTER
         }
 
         ::GroupsFinder.new(self, params)
