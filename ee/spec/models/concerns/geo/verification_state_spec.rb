@@ -6,9 +6,13 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
   include ::EE::GeoHelpers
 
   let_it_be(:primary_node) { create(:geo_node, :primary) }
-  let_it_be(:secondary_node) { create(:geo_node) }
+  let_it_be(:secondary_node) { create(:geo_node, :secondary) }
 
-  context 'for Model classes' do
+  context 'for model classes' do
+    before do
+      stub_current_geo_node(primary_node)
+    end
+
     context 'when verification state is stored in the model table' do
       before_all do
         create_dummy_model_table
@@ -320,10 +324,6 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
       end
 
       describe '.needs_reverification' do
-        before do
-          stub_current_geo_node(primary_node)
-        end
-
         let(:pending_value) { DummyModel.verification_state_value(:verification_pending) }
         let(:failed_value) { DummyModel.verification_state_value(:verification_failed) }
         let(:succeeded_value) { DummyModel.verification_state_value(:verification_succeeded) }
@@ -361,10 +361,7 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
         let(:succeeded_value) { DummyModel.verification_state_value(:verification_succeeded) }
 
         before do
-          stub_current_geo_node(primary_node)
-
           subject.verification_started
-
           subject.verification_succeeded_with_checksum!('foo', Time.current)
 
           subject.update!(verified_at: 15.days.ago)
@@ -627,7 +624,6 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
       end
 
       before do
-        stub_primary_node
         stub_dummy_replicator_class(model_class: 'TestDummyModelWithSeparateState')
         stub_dummy_model_with_separate_state_class
         stub_dummy_replication_feature_flag
@@ -676,6 +672,10 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
   end
 
   context 'for registry classes' do
+    before do
+      stub_current_geo_node(secondary_node)
+    end
+
     shared_context 'with Geo registries' do
       let_it_be(:factory) { :geo_package_file_registry }
       let_it_be(:registry_class) { Geo::PackageFileRegistry }

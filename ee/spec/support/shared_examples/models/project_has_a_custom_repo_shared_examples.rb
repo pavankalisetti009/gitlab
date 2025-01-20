@@ -9,7 +9,7 @@ RSpec.shared_examples 'a project has a custom repo' do |custom_repository_type|
     let_it_be(:project_2) { create(:project, group: nested_group_1) }
     let_it_be(:project_3) { create(:project, :broken_storage, group: group_2) }
 
-    let(:node) { create(:geo_node) }
+    let(:secondary) { create(:geo_node, :secondary) }
     let(:start_id) { described_class.minimum(:id) }
     let(:end_id) { described_class.maximum(:id) }
 
@@ -18,7 +18,7 @@ RSpec.shared_examples 'a project has a custom repo' do |custom_repository_type|
     let_it_be(:custom_repository_3) { create(custom_repository_type, project: project_3) }
 
     before do
-      stub_current_geo_node(node)
+      stub_current_geo_node(secondary)
     end
 
     context 'without selective sync' do
@@ -36,7 +36,7 @@ RSpec.shared_examples 'a project has a custom repo' do |custom_repository_type|
 
     context 'with selective sync by namespace' do
       before do
-        node.update!(selective_sync_type: 'namespaces', namespaces: [group_1, nested_group_1])
+        secondary.update!(selective_sync_type: 'namespaces', namespaces: [group_1, nested_group_1])
       end
 
       it 'returns replicables that belong to the namespaces' do
@@ -61,7 +61,7 @@ RSpec.shared_examples 'a project has a custom repo' do |custom_repository_type|
 
     context 'with selective sync by shard' do
       before do
-        node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+        secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
       end
 
       it 'returns replicables that belong to the shards' do
