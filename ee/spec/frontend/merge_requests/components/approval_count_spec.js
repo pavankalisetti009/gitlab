@@ -75,4 +75,22 @@ describe('Merge request dashboard approval count FOSS component', () => {
       },
     );
   });
+
+  describe('when current user has approved', () => {
+    beforeEach(() => {
+      gon.current_user_id = 1;
+    });
+
+    it('sets icon as approval-solid', () => {
+      createComponent({
+        mergeRequest: {
+          approvalsRequired: 1,
+          approved: true,
+          approvedBy: { nodes: [{ id: 'gid://gitlab/User/1' }] },
+        },
+      });
+
+      expect(findBadge().props('icon')).toBe('approval-solid');
+    });
+  });
 });
