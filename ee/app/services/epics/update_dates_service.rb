@@ -23,28 +23,37 @@ module Epics
           .new(WorkItem.id_in(@epics.select(:issue_id)))
           .execute
       else
-        each_batch do |relation, parent_ids|
+        @epics.each_batch(of: BATCH_SIZE) do |relation|
           STRATEGIES.each do |strategy|
             strategy.new(relation).execute
           end
 
-          if parent_ids.any?
-            Epics::UpdateEpicsDatesWorker.perform_async(parent_ids)
-          end
+          update_parents(relation)
         end
       end
     end
 
     private
 
-    # rubocop: disable CodeReuse/ActiveRecord
-    def each_batch
-      @epics.in_batches(of: BATCH_SIZE) do |relation| # rubocop: disable Cop/InBatches
-        parent_ids = relation.has_parent.distinct.pluck(:parent_id)
+    def update_parents(relation)
+      parent_ids = parents_for(relation)
+      return if parent_ids.blank?
 
-        yield(relation, parent_ids)
-      end
+      Epics::UpdateEpicsDatesWorker.perform_async(parent_ids)
+    end
+
+    # rubocop: disable CodeReuse/ActiveRecord -- complex update requires some query methods
+    # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- the query already uses the batch limited in 100 items
+    def parents_for(relation)
+      descendants = ::Gitlab::ObjectHierarchy.new(relation).descendants
+
+      relation
+        .has_parent
+        .where.not(parent_id: descendants)
+        .distinct
+        .pluck(:parent_id)
     end
     # rubocop: enable CodeReuse/ActiveRecord
+    # rubocop: enable Database/AvoidUsingPluckWithoutLimit
   end
 end

@@ -109,6 +109,21 @@ RSpec.describe ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateServ
       service.execute
     end
 
+    it "does not update parents part of a cyclic hierarchies" do
+      work_item_1_parent = create(:work_item, :epic, namespace: group).tap do |parent|
+        create(:parent_link, work_item_parent: parent, work_item: work_item_1)
+      end
+      create(:work_item, :epic, namespace: group).tap do |child|
+        create(:parent_link, work_item_parent: work_item_1, work_item: child)
+        build(:parent_link, work_item_parent: child, work_item: work_item_1_parent).save!(validate: false)
+      end
+
+      expect(::WorkItems::RolledupDates::UpdateMultipleRolledupDatesWorker)
+        .not_to receive(:perform_async)
+
+      service.execute
+    end
+
     it "updates the start_date and due_date from milestone" do
       expect { service.execute }
         .to change { work_item_1.reload.dates_source&.start_date }.from(nil).to(milestone.start_date)
