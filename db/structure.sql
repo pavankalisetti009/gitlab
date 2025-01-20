@@ -34301,8 +34301,6 @@ CREATE INDEX index_vulnerabilities_on_author_id ON vulnerabilities USING btree (
 
 CREATE INDEX index_vulnerabilities_on_confirmed_by_id ON vulnerabilities USING btree (confirmed_by_id);
 
-CREATE INDEX index_vulnerabilities_on_detected_at_and_id ON vulnerabilities USING btree (id, detected_at);
-
 CREATE INDEX index_vulnerabilities_on_dismissed_by_id ON vulnerabilities USING btree (dismissed_by_id);
 
 CREATE INDEX index_vulnerabilities_on_finding_id ON vulnerabilities USING btree (finding_id);
