@@ -66,12 +66,12 @@ module Projects
 
     def dependency_list_params
       params.permit(
-        :component_name,
         :filter,
         :page,
         :per_page,
         :sort,
         :sort_by,
+        component_names: [],
         source_types: []
       ).with_defaults(source_types: default_source_type_filters)
     end
