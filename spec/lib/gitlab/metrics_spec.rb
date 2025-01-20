@@ -319,7 +319,8 @@ RSpec.describe Gitlab::Metrics do
           Gitlab::Metrics::Lfs,
           Gitlab::Metrics::LooseForeignKeysSlis,
           Gitlab::Metrics::GlobalSearchIndexingSlis,
-          Gitlab::Metrics::Llm
+          Gitlab::Metrics::Llm,
+          Gitlab::Metrics::SecurityScanSlis
         ]
         expect(Gitlab::Metrics::SliConfig.enabled_slis).to all(receive(:initialize_slis!))
 
