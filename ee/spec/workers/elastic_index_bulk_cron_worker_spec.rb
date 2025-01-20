@@ -18,70 +18,52 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
   end
 
   describe '.perform' do
-    context 'when indexing is not paused' do
-      before do
-        allow(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(false)
+    it 'queues all shards for execution' do
+      shards.each do |shard_number|
+        expect(described_class).to receive(:perform_async).with(shard_number)
       end
 
-      it 'queues all shards for execution' do
-        shards.each do |shard_number|
-          expect(described_class).to receive(:perform_async).with(shard_number)
-        end
+      worker.perform
+    end
+
+    context 'when legacy lease is detected' do
+      before do
+        allow(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return('lease_uuid')
+      end
+
+      it 'skips scheduling' do
+        expect(described_class).not_to receive(:perform_async)
 
         worker.perform
       end
 
-      context 'when legacy lease is detected' do
-        before do
-          allow(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return('lease_uuid')
-        end
-
-        it 'skips scheduling' do
-          expect(described_class).not_to receive(:perform_async)
-
-          worker.perform
-        end
-
-        it 'skips shard execution' do
-          expect(described_class).not_to receive(:perform_async)
-
-          worker.perform(shard_number)
-        end
-      end
-
-      it 'executes the service under an exclusive lease' do
-        expect_to_obtain_exclusive_lease("#{lease_key}/shard/#{shard_number}")
-
-        expect_next_instance_of(::Elastic::ProcessBookkeepingService) do |service|
-          expect(service).to receive(:execute).with(shards: [shard_number])
-        end
+      it 'skips shard execution' do
+        expect(described_class).not_to receive(:perform_async)
 
         worker.perform(shard_number)
       end
-
-      context 'when search cluster is unhealthy' do
-        before do
-          allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
-        end
-
-        it 'does nothing if cluster is not healthy' do
-          expect(::Elastic::ProcessBookkeepingService).not_to receive(:new)
-          expect(worker).to receive(:log).with(/advanced search cluster is unhealthy/)
-
-          expect(worker.perform).to eq(false)
-        end
-      end
     end
 
-    context 'when indexing is paused' do
-      before do
-        allow(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(true)
+    it 'executes the service under an exclusive lease' do
+      expect_to_obtain_exclusive_lease("#{lease_key}/shard/#{shard_number}")
+
+      expect_next_instance_of(::Elastic::ProcessBookkeepingService) do |service|
+        expect(service).to receive(:execute).with(shards: [shard_number])
       end
 
-      it 'does nothing if indexing is paused' do
-        expect(::Elastic::ProcessBookkeepingService).not_to receive(:new)
+      worker.perform(shard_number)
+    end
 
-        expect(worker.perform).to eq(false)
+    context 'when search cluster is unhealthy' do
+      before do
+        allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
+      end
+
+      it 'does nothing if cluster is not healthy' do
+        expect(::Elastic::ProcessBookkeepingService).not_to receive(:new)
+        expect(worker).to receive(:log).with(/advanced search cluster is unhealthy/)
+
+        expect(worker.perform).to be(false)
       end
     end
 
@@ -93,7 +75,7 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
       it 'does nothing if indexing is disabled' do
         expect(::Elastic::ProcessBookkeepingService).not_to receive(:new)
 
-        expect(worker.perform).to eq(false)
+        expect(worker.perform).to be(false)
         expect(described_class).not_to receive(:perform_async)
       end
     end

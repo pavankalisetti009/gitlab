@@ -272,6 +272,14 @@ RSpec.describe API::Releases, feature_category: :release_orchestration do
       )
     end
 
+    it_behaves_like 'enforcing job token policies', :admin_releases do
+      let(:user) { maintainer }
+      let(:request) do
+        post(api("/projects/#{source_project.id}/releases/#{tag_name}/evidence"),
+          params: { job_token: target_job.token })
+      end
+    end
+
     it 'accepts the request' do
       post api("/projects/#{project.id}/releases/#{tag_name}/evidence", maintainer)
 

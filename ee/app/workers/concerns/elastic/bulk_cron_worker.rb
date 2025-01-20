@@ -19,11 +19,6 @@ module Elastic
     def perform(shard_number = nil)
       return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
 
-      if Elastic::IndexingControl.non_cached_pause_indexing?
-        log "elasticsearch_pause_indexing setting is enabled. #{self.class} execution is skipped."
-        return false
-      end
-
       return if legacy_lock_exists? # skip execution if legacy lease is still obtained
 
       unless Search::ClusterHealthCheck::Elastic.healthy?
@@ -76,10 +71,6 @@ module Elastic
       return false unless Gitlab::CurrentSettings.elasticsearch_requeue_workers?
 
       records_count > 0
-    end
-
-    def logger
-      Elastic::IndexingControl.logger
     end
   end
 end

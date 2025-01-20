@@ -5,17 +5,12 @@ class ElasticIndexingControlWorker
   include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- deprecated worker
   include Search::Worker
   prepend ::Geo::SkipSecondary
+
   data_consistency :always
 
   sidekiq_options retry: 3
 
   idempotent!
 
-  def perform
-    if Elastic::IndexingControl.non_cached_pause_indexing?
-      raise 'elasticsearch_pause_indexing is enabled, worker can not proceed'
-    end
-
-    Elastic::IndexingControl.resume_processing!
-  end
+  def perform; end
 end
