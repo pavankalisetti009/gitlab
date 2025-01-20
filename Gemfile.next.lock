@@ -378,7 +378,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.1)
     babosa (2.0.0)
     backport (1.2.0)
-    base32 (0.3.2)
+    base32 (0.3.4)
     base64 (0.2.0)
     batch-loader (2.0.5)
     bcrypt (3.1.18)
@@ -1484,7 +1484,7 @@ GEM
       pry (>= 0.13.0)
       tty-markdown
       tty-prompt
-    psych (5.2.2)
+    psych (5.2.3)
       date
       stringio
     public_suffix (6.0.1)
