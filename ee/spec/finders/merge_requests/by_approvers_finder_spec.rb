@@ -128,7 +128,7 @@ RSpec.describe MergeRequests::ByApproversFinder, feature_category: :code_review_
       expect(merge_requests(names: [group_user.username])).to match_array(
         [merge_request_with_project_group_approver, merge_request_with_group_approver]
       )
-      expect(merge_requests(names: [first_user.username, group_user.username])).to match_array([])
+      expect(merge_requests(names: [first_user.username, group_user.username])).to be_empty
       expect(merge_requests(names: [group_user.username, second_group_user.username])).to match_array(
         [merge_request_with_project_group_approver, merge_request_with_group_approver]
       )

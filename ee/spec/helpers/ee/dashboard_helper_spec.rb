@@ -40,7 +40,7 @@ RSpec.describe DashboardHelper, type: :helper do
 
     context 'when the user has no Group SAML identities' do
       it 'returns an empty array' do
-        expect(user_groups_requiring_reauth).to match_array([])
+        expect(user_groups_requiring_reauth).to be_empty
       end
     end
 
@@ -54,7 +54,7 @@ RSpec.describe DashboardHelper, type: :helper do
 
       context 'when access is not restricted' do
         it 'returns an empty array' do
-          expect(user_groups_requiring_reauth).to match_array([])
+          expect(user_groups_requiring_reauth).to be_empty
         end
       end
 

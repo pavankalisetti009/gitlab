@@ -149,7 +149,7 @@ RSpec.describe ::TodosHelper do
 
     context 'when access is not restricted' do
       it 'returns an empty array' do
-        expect(todo_groups_requiring_saml_reauth).to match_array([])
+        expect(todo_groups_requiring_saml_reauth).to be_empty
       end
     end
 

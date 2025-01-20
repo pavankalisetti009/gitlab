@@ -169,7 +169,7 @@ RSpec.describe EE::AuthHelper do
 
       context 'without any rules' do
         it 'returns an empty array' do
-          expect(password_rule_list(false)).to match_array([])
+          expect(password_rule_list(false)).to be_empty
         end
       end
 
@@ -194,7 +194,7 @@ RSpec.describe EE::AuthHelper do
           end
 
           it 'returns an empty array' do
-            expect(password_rule_list(true)).to match_array([])
+            expect(password_rule_list(true)).to be_empty
           end
         end
       end

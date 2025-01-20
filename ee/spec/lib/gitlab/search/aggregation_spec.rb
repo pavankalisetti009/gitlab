@@ -35,7 +35,7 @@ RSpec.describe Gitlab::Search::Aggregation do
       let(:aggregation_buckets) { nil }
 
       it 'parses the results' do
-        expect(subject.buckets).to match_array([])
+        expect(subject.buckets).to be_empty
       end
     end
   end
