@@ -11,3 +11,5 @@ class ReindexMergeRequestsForTitleCompletion < Elastic::Migration
     true
   end
 end
+
+ReindexMergeRequestsForTitleCompletion.prepend ::Elastic::MigrationObsolete
