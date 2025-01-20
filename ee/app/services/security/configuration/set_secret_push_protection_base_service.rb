@@ -8,7 +8,7 @@ module Security
         @subject = subject
         @enable = enable
         @current_user = current_user
-        @excluded_projects_ids = excluded_projects_ids
+        @excluded_projects_ids = excluded_projects_ids || []
         @filtered_out_projects_ids = []
       end
 
