@@ -2,16 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ComplianceRequirement'], feature_category: :compliance_management do
+RSpec.describe GitlabSchema.types['ComplianceRequirementsControl'], feature_category: :compliance_management do
   subject { described_class }
 
   fields = %w[
     id
     name
-    description
-    controlExpression
-    requirementType
-    complianceRequirementsControls
+    expression
+    control_type
   ]
 
   it 'has the correct fields' do

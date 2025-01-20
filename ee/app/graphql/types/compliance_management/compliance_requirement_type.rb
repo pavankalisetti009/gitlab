@@ -27,6 +27,11 @@ module Types
       field :requirement_type, GraphQL::Types::String,
         null: false,
         description: 'Type of the compliance requirement.'
+
+      field :compliance_requirements_controls,
+        ::Types::ComplianceManagement::ComplianceRequirementsControlType.connection_type,
+        null: true,
+        description: 'Compliance controls of the compliance requirement.'
     end
   end
 end
