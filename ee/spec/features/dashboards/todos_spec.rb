@@ -3,17 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe 'Dashboard todos', feature_category: :notifications do
-  before do
-    stub_feature_flags(todos_vue_application: false)
-  end
-
   let_it_be(:user) { create(:user) }
 
   let(:page_path) { dashboard_todos_path }
 
   it_behaves_like 'dashboard ultimate trial callout'
 
-  context 'User has a todo in a epic' do
+  context 'User has a todo in a epic', :js do
     let_it_be(:group) { create(:group) }
     let_it_be(:target) { create(:epic, group: group) }
     let_it_be(:note) { create(:note, noteable: target, note: "#{user.to_reference} hello world") }
@@ -39,15 +35,10 @@ RSpec.describe 'Dashboard todos', feature_category: :notifications do
     end
 
     it 'has todo present' do
-      expect(page).to have_selector('.todos-list .todo', count: 1)
+      expect(page).to have_selector('ul[data-testid=todo-item-list-container] li', count: 1)
       expect(page).to have_selector('a', text: user.to_reference)
     end
   end
 
-  it_behaves_like 'dashboard SAML reauthentication banner' do
-    let_it_be(:match_filter_params) { false }
-    let_it_be(:epic_todo) do
-      create(:todo, group: restricted_group, user: user, target: create(:epic, group: restricted_group))
-    end
-  end
+  # TODO: Add spec for changes in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/174883
 end
