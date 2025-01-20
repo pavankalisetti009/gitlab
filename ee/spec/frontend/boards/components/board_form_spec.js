@@ -419,7 +419,7 @@ describe('BoardForm', () => {
           }),
         },
       });
-      findModal().vm.$emit('primary');
+      findModal().vm.$emit('primary', { preventDefault: jest.fn() });
 
       await waitForPromises();
 
@@ -441,7 +441,7 @@ describe('BoardForm', () => {
         handlers: { destroy: jest.fn().mockRejectedValue({}) },
       });
 
-      findModal().vm.$emit('primary');
+      findModal().vm.$emit('primary', { preventDefault: jest.fn() });
 
       await waitForPromises();
 
