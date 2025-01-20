@@ -21,39 +21,6 @@ RSpec.describe InstanceSecurityDashboard, feature_category: :vulnerability_manag
 
   subject(:instance_dashboard) { described_class.new(user, project_ids: project_ids) }
 
-  describe '#project_ids_with_security_reports' do
-    context 'when given project IDs' do
-      it "returns the project IDs that are also on the user's security dashboard" do
-        expect(subject.project_ids_with_security_reports).to contain_exactly(project1.id)
-      end
-    end
-
-    context 'when not given project IDs' do
-      let(:project_ids) { [] }
-
-      it "returns the security dashboard projects' IDs" do
-        expect(subject.project_ids_with_security_reports).to contain_exactly(project1.id)
-      end
-    end
-
-    context 'when the user cannot read all resources' do
-      let(:project_ids) { [project1.id, project2.id] }
-
-      it 'only includes projects they can read' do
-        expect(subject.project_ids_with_security_reports).to contain_exactly(project1.id)
-      end
-    end
-
-    context 'when the user can read all resources' do
-      let(:project_ids) { [project1.id, project2.id] }
-      let(:user) { create(:auditor) }
-
-      it 'includes all dashboard projects' do
-        expect(subject.project_ids_with_security_reports).to contain_exactly(project1.id, project2.id)
-      end
-    end
-  end
-
   describe '#feature_available?' do
     subject { described_class.new(user).feature_available?(:security_dashboard) }
 

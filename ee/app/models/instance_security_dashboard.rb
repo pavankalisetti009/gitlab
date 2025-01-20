@@ -19,10 +19,6 @@ class InstanceSecurityDashboard
   end
   alias_method :duo_features_enabled?, :duo_features_enabled
 
-  def project_ids_with_security_reports
-    users_projects_with_security_reports.pluck(:project_id)
-  end
-
   def feature_available?(feature)
     License.feature_available?(feature)
   end
@@ -78,12 +74,6 @@ class InstanceSecurityDashboard
       .first
   end
   strong_memoize_attr :duo_enabled_project
-
-  def users_projects_with_security_reports
-    return visible_users_security_dashboard_projects if project_ids.empty?
-
-    visible_users_security_dashboard_projects.where(project_id: project_ids)
-  end
 
   def visible_users_security_dashboard_projects
     return users_security_dashboard_projects if user.can?(:read_all_resources)
