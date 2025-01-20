@@ -4,7 +4,6 @@ module Search
   class ElasticGroupAssociationDeletionWorker
     include ApplicationWorker
     include Search::Worker
-    prepend ::Elastic::IndexingControl
     prepend ::Geo::SkipSecondary
 
     MAX_JOBS_PER_HOUR = 3600

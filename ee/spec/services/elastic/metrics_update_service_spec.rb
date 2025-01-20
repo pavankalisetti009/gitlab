@@ -10,7 +10,6 @@ RSpec.describe Elastic::MetricsUpdateService, :prometheus, feature_category: :gl
       expect(Elastic::ProcessBookkeepingService).to receive(:queue_size).and_return(4).twice
       expect(Elastic::ProcessInitialBookkeepingService).to receive(:queue_size).and_return(6).twice
       expect(Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:queue_size).and_return(5).once
-      expect(Elastic::IndexingControlService).to receive(:queue_size).and_return(2).twice
 
       incremental_gauge_double = instance_double(Prometheus::Client::Gauge)
       expect(Gitlab::Metrics).to receive(:gauge)
@@ -27,15 +26,9 @@ RSpec.describe Elastic::MetricsUpdateService, :prometheus, feature_category: :gl
         .with(:search_advanced_bulk_cron_embedding_queue_size, anything, {}, :max)
         .and_return(embedding_gauge_double)
 
-      awaiting_indexing_gauge_double = instance_double(Prometheus::Client::Gauge)
-      expect(Gitlab::Metrics).to receive(:gauge)
-        .with(:search_advanced_awaiting_indexing_queue_size, anything, {}, :max)
-        .and_return(awaiting_indexing_gauge_double)
-
       expect(incremental_gauge_double).to receive(:set).with({}, 4)
       expect(initial_gauge_double).to receive(:set).with({}, 6)
       expect(embedding_gauge_double).to receive(:set).with({}, 5)
-      expect(awaiting_indexing_gauge_double).to receive(:set).with({}, 2)
 
       # deprecated metrics
 
@@ -49,14 +42,8 @@ RSpec.describe Elastic::MetricsUpdateService, :prometheus, feature_category: :gl
         .with(:global_search_bulk_cron_initial_queue_size, anything, {}, :max)
         .and_return(initial_gauge_deprecated_double)
 
-      awaiting_indexing_gauge_deprecated_double = instance_double(Prometheus::Client::Gauge)
-      expect(Gitlab::Metrics).to receive(:gauge)
-        .with(:global_search_awaiting_indexing_queue_size, anything, {}, :max)
-        .and_return(awaiting_indexing_gauge_deprecated_double)
-
       expect(incremental_gauge_deprecated_double).to receive(:set).with({}, 4)
       expect(initial_gauge_deprecated_double).to receive(:set).with({}, 6)
-      expect(awaiting_indexing_gauge_deprecated_double).to receive(:set).with({}, 2)
 
       subject.execute
     end

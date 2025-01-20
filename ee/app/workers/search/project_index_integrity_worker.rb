@@ -4,7 +4,6 @@ module Search
   class ProjectIndexIntegrityWorker
     include ApplicationWorker
     include Search::Worker
-    prepend ::Elastic::IndexingControl
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed

@@ -12,9 +12,6 @@ module Elastic
       embedding_gauge = Gitlab::Metrics.gauge(:search_advanced_bulk_cron_embedding_queue_size, 'Number of embedding updates waiting to be synchronized to Elasticsearch', {}, :max)
       embedding_gauge.set({}, ::Search::Elastic::ProcessEmbeddingBookkeepingService.queue_size)
 
-      awaiting_indexing_gauge = Gitlab::Metrics.gauge(:search_advanced_awaiting_indexing_queue_size, 'Number of database updates waiting to be synchronized to Elasticsearch while indexing is paused.', {}, :max)
-      awaiting_indexing_gauge.set({}, ::Elastic::IndexingControlService.queue_size)
-
       # deprecated metrics
 
       incremental_gauge_deprecated = Gitlab::Metrics.gauge(:global_search_bulk_cron_queue_size, 'Deprecated and planned for removal in 18.0. Number of incremental database updates waiting to be synchronized to Elasticsearch', {}, :max)
@@ -22,9 +19,6 @@ module Elastic
 
       initial_gauge_deprecated = Gitlab::Metrics.gauge(:global_search_bulk_cron_initial_queue_size, 'Deprecated and planned for removal in 18.0. Number of initial database updates waiting to be synchronized to Elasticsearch', {}, :max)
       initial_gauge_deprecated.set({}, ::Elastic::ProcessInitialBookkeepingService.queue_size)
-
-      awaiting_indexing_gauge_deprecated = Gitlab::Metrics.gauge(:global_search_awaiting_indexing_queue_size, 'Deprecated and planned for removal in 18.0. Number of database updates waiting to be synchronized to Elasticsearch while indexing is paused', {}, :max)
-      awaiting_indexing_gauge_deprecated.set({}, ::Elastic::IndexingControlService.queue_size)
     end
   end
 end

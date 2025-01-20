@@ -10,7 +10,6 @@ module Search
       include Search::Worker
 
       data_consistency :delayed
-      prepend ::Elastic::IndexingControl
       prepend ::Geo::SkipSecondary
 
       urgency :throttled

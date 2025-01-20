@@ -878,20 +878,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
-  describe '#elasticsearch_pause_indexing', feature_category: :global_search do
-    before do
-      setting.elasticsearch_pause_indexing = true
-    end
-
-    it 'resumes indexing' do
-      expect(ElasticIndexingControlWorker).to receive(:perform_async)
-
-      setting.save!
-      setting.elasticsearch_pause_indexing = false
-      setting.save!
-    end
-  end
-
   describe '#elasticsearch_url', feature_category: :global_search do
     it 'presents a single URL as a one-element array' do
       setting.elasticsearch_url = 'http://example.com'
