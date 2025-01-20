@@ -278,9 +278,9 @@ module Search
       def node_with_negative_unclaimed_storage_bytes_check
         execute_every 1.hour do
           Search::Zoekt::Node.negative_unclaimed_storage_bytes.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent.new(data: { node_ids: batch.pluck_primary_key })
-            )
+            dispatch NodeWithNegativeUnclaimedStorageEvent do
+              { node_ids: batch.pluck_primary_key }
+            end
           end
         end
       end
@@ -299,7 +299,9 @@ module Search
 
       def initial_indexing
         ::Search::Zoekt::Index.pending.ordered.limit(INITIAL_INDEXING_LIMIT).each do |index|
-          Gitlab::EventStore.publish(InitialIndexingEvent.new(data: { index_id: index.id }))
+          dispatch InitialIndexingEvent do
+            { index_id: index.id }
+          end
         end
       end
 
@@ -332,43 +334,28 @@ module Search
 
       def index_should_be_marked_as_orphaned_check
         execute_every 10.minutes do
-          unless Index.should_be_marked_as_orphaned.exists?
-            logger.info(build_structured_payload(task: task, message: 'Nothing to mark as orphaned'))
-            break
-          end
-
-          Gitlab::EventStore.publish(OrphanedIndexEvent.new(data: {}))
+          dispatch OrphanedIndexEvent, if: -> { Index.should_be_marked_as_orphaned.exists? }
         end
       end
 
       def index_to_delete_check
         execute_every 10.minutes do
-          next unless Search::Zoekt::Index.should_be_deleted.exists?
-
-          Gitlab::EventStore.publish(
-            Search::Zoekt::IndexMarkedAsToDeleteEvent.new(data: {})
-          )
+          dispatch IndexMarkedAsToDeleteEvent, if: -> { Index.should_be_deleted.exists? }
         end
       end
 
       def repo_should_be_marked_as_orphaned_check
         execute_every 10.minutes do
-          next unless Search::Zoekt::Repository.should_be_marked_as_orphaned.exists?
-
-          Gitlab::EventStore.publish(
-            Search::Zoekt::OrphanedRepoEvent.new(data: {})
-          )
+          dispatch OrphanedRepoEvent, if: -> { Search::Zoekt::Repository.should_be_marked_as_orphaned.exists? }
         end
       end
 
       def repo_to_delete_check
         execute_every 10.minutes do
           Search::Zoekt::Repository.should_be_deleted.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::RepoMarkedAsToDeleteEvent.new(
-                data: { zoekt_repo_ids: batch.pluck_primary_key }
-              )
-            )
+            dispatch RepoMarkedAsToDeleteEvent do
+              { zoekt_repo_ids: batch.pluck_primary_key }
+            end
           end
         end
       end
@@ -380,21 +367,15 @@ module Search
       end
 
       def indices_to_evict_check
-        return unless Search::Zoekt::Index.should_be_evicted.exists?
-
-        Gitlab::EventStore.publish(
-          Search::Zoekt::IndexToEvictEvent.new(data: {})
-        )
+        dispatch IndexToEvictEvent, if: -> { Index.should_be_evicted.exists? }
       end
 
       def index_mismatched_watermark_check
         execute_every 10.minutes do
-          next unless Search::Zoekt::Index.with_mismatched_watermark_levels
-            .or(Search::Zoekt::Index.negative_reserved_storage_bytes).exists?
-
-          Gitlab::EventStore.publish(
-            Search::Zoekt::IndexWatermarkChangedEvent.new(data: {})
-          )
+          dispatch IndexWatermarkChangedEvent, if: -> {
+            Search::Zoekt::Index.with_mismatched_watermark_levels
+              .or(Search::Zoekt::Index.negative_reserved_storage_bytes).exists?
+          }
         end
       end
 
@@ -406,17 +387,17 @@ module Search
         return false unless lost_node
 
         execute_every 10.minutes do
-          Gitlab::EventStore.publish(LostNodeEvent.new(data: { zoekt_node_id: lost_node.id }))
+          dispatch LostNodeEvent do
+            { zoekt_node_id: lost_node.id }
+          end
         end
       end
 
       def adjust_indices_reserved_storage_bytes
         execute_every 10.minutes do
-          next unless Index.should_be_reserved_storage_bytes_adjusted.exists?
-
-          Gitlab::EventStore.publish(
-            AdjustIndicesReservedStorageBytesEvent.new(data: {})
-          )
+          dispatch AdjustIndicesReservedStorageBytesEvent, if: -> {
+            Index.should_be_reserved_storage_bytes_adjusted.exists?
+          }
         end
       end
 
@@ -426,10 +407,18 @@ module Search
       # dispatch RepoMarkedAsToDeleteEvent, if: -> { Search::Zoekt::Repository.should_be_deleted.exists? }
       # dispatch RepoToIndexEvent # will always be published
       # dispatch RepoToIndexEvent, if: -> { false } # will never be published
+      # dispatch RepoToIndexEvent do # optional: if given a block, it will pass the return value as data to event store
+      #   { id: 123, description: "data to dispatch" }
+      # end
       def dispatch(event, **kwargs)
-        return false if kwargs[:if].present? && !kwargs[:if].call
+        if kwargs[:if].present? && !kwargs[:if].call
+          logger.info(build_structured_payload(task: task, message: 'Nothing to dispatch'))
+          return false
+        end
 
-        Gitlab::EventStore.publish(event.new(data: {}))
+        data = block_given? ? yield : {}
+
+        Gitlab::EventStore.publish(event.new(data: data))
       end
     end
   end
