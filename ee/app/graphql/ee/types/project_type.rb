@@ -368,6 +368,14 @@ module EE
           description: 'Software dependencies used by the project.',
           resolver: ::Resolvers::Sbom::DependenciesResolver
 
+        field :components,
+          [::Types::Sbom::ComponentType],
+          null: true,
+          authorize: :read_dependency,
+          description: 'Find software dependencies by name.',
+          resolver: ::Resolvers::Sbom::ComponentResolver,
+          experiment: { milestone: '17.9' }
+
         field :merge_requests_disable_committers_approval, GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates that committers of the given merge request cannot approve.'

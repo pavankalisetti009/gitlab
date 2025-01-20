@@ -107,8 +107,28 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
       end
     end
 
-    context 'when given anything else' do
+    context 'when passed a project' do
       let(:thing) { project }
+
+      context 'when given a query string' do
+        let(:query) { component_1.name }
+
+        it 'returns matching components' do
+          expect(results).to match_array([component_1])
+        end
+      end
+
+      context 'when no query string is given' do
+        let(:query) { nil }
+
+        it 'returns all components' do
+          expect(results).to match_array([component_1, component_2])
+        end
+      end
+    end
+
+    context 'when given anything else' do
+      let(:thing) { build(:user) }
       let(:query) { "active" }
 
       it 'returns no results' do
