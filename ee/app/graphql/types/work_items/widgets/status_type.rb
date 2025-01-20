@@ -10,8 +10,11 @@ module Types
 
         implements ::Types::WorkItems::WidgetInterface
 
+        # Only represents requirements status right now
         field :status, GraphQL::Types::String,
-          null: true, description: 'Status of the work item.'
+          null: true,
+          experiment: { milestone: '15.5' },
+          description: 'Status of the work item.'
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end
