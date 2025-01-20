@@ -199,7 +199,7 @@ describe('ProtectedBranchesDropdown', () => {
 
     it.each`
       errorMessage              | expectedError
-      ${undefined}              | ${'Could not retrieve the list of protected branches. Use the YAML editor mode, or refresh this page later. To view the list of protected branches, go to %{boldStart}Settings - Branches%{boldEnd} and expand %{boldStart}Protected branches%{boldEnd}.'}
+      ${undefined}              | ${'Could not retrieve the list of protected branches. Use the YAML editor mode, or refresh this page later. To view the list of protected branches, go to %{boldStart}Settings - Repository%{boldEnd} and expand %{boldStart}Protected branches%{boldEnd}.'}
       ${'custom error message'} | ${'custom error message'}
     `(
       'should have error class when hasError and accept custom error message',

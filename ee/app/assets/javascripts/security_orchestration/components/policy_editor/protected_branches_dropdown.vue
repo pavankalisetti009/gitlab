@@ -10,7 +10,7 @@ export default {
   name: 'ProtectedBranchesDropdown',
   i18n: {
     errorMessage: __(
-      'Could not retrieve the list of protected branches. Use the YAML editor mode, or refresh this page later. To view the list of protected branches, go to %{boldStart}Settings - Branches%{boldEnd} and expand %{boldStart}Protected branches%{boldEnd}.',
+      'Could not retrieve the list of protected branches. Use the YAML editor mode, or refresh this page later. To view the list of protected branches, go to %{boldStart}Settings - Repository%{boldEnd} and expand %{boldStart}Protected branches%{boldEnd}.',
     ),
     headerTextMultiple: __('Select protected branches'),
     headerTextSingle: __('Choose protected branch'),
