@@ -369,6 +369,14 @@ RSpec.describe API::Deployments, feature_category: :continuous_delivery do
       )
     end
 
+    it_behaves_like 'enforcing job token policies', :admin_deployments do
+      before do
+        source_project.add_maintainer(user)
+      end
+
+      let(:request) { post(api(path), params: { status: 'approved', job_token: target_job.token }) }
+    end
+
     context 'when user is authorized to read project' do
       before do
         project.add_developer(user)

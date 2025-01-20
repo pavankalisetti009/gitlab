@@ -22,6 +22,7 @@ module EE
             optional :represented_as, type: String, desc: 'The name of the User/Group/Role to use for the approval, when the user belongs to multiple approval rules'
           end
           route_setting :authentication, job_token_allowed: true
+          route_setting :authorization, job_token_policies: :admin_deployments
           post ':id/deployments/:deployment_id/approval' do
             authorize! :read_deployment, user_project
 

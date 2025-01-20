@@ -17,6 +17,7 @@ module API
               resource :site_validations do
                 desc 'Transitions a DAST site validation to a new state.'
                 route_setting :authentication, job_token_allowed: true
+                route_setting :authorization, skip_job_token_policies: true
                 params do
                   requires :event, type: Symbol, values: %i[start fail_op retry pass], desc: 'The transition event.'
                 end
