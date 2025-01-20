@@ -6,6 +6,10 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
 import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
+import {
+  ACCESS_LEVEL_DEVELOPER_INTEGER,
+  ACCESS_LEVEL_MAINTAINER_INTEGER,
+} from '~/access_level/constants';
 
 export default {
   name: 'LockDirectoryButton',
@@ -51,7 +55,7 @@ export default {
         };
       },
       update({ project }) {
-        this.canAdminLocks = project.userPermissions.adminPathLocks;
+        this.projectMembers = project.projectMembers?.nodes;
         this.canPushCode = project.userPermissions.pushCode;
         this.allPathLocks = project.pathLocks?.nodes?.map((lock) => this.mapPathLocks(lock));
         this.pathLock =
@@ -78,11 +82,11 @@ export default {
   data() {
     return {
       isUpdating: false,
-      canAdminLocks: false,
       canPushCode: false,
       allPathLocks: [],
       pathLock: {},
       user: {},
+      projectMembers: [],
     };
   },
   computed: {
@@ -95,6 +99,9 @@ export default {
     isLocked() {
       return this.pathLock.isExactLock || this.pathLock.isUpstreamLock;
     },
+    hasPathLocks() {
+      return Object.keys(this.pathLock).length > 0;
+    },
     locker() {
       return this.pathLock.user?.name || this.pathLock.user?.username;
     },
@@ -104,27 +111,46 @@ export default {
     buttonState() {
       return this.isLocked ? 'unlock' : 'lock';
     },
+    currentUserMembershipInProject() {
+      return this.projectMembers?.find((member) => member?.user?.id === this.user.id);
+    },
+    userAccessLevel() {
+      return this.currentUserMembershipInProject?.accessLevel?.integerValue || 0;
+    },
+    hasMaintainerAccess() {
+      return this.userAccessLevel >= ACCESS_LEVEL_MAINTAINER_INTEGER;
+    },
+    hasDeveloperAccess() {
+      return this.userAccessLevel >= ACCESS_LEVEL_DEVELOPER_INTEGER;
+    },
+    isLockAuthor() {
+      return this.pathLock.user?.id === this.user.id;
+    },
+    hasPermission() {
+      return this.canPushCode && this.hasDeveloperAccess;
+    },
+    canDestroyExactLock() {
+      return this.hasMaintainerAccess || (this.isLockAuthor && this.hasPermission);
+    },
     isDisabled() {
       return (
         this.pathLock.isUpstreamLock ||
         this.pathLock.isDownstreamLock ||
-        !this.canAdminLocks ||
-        !this.canPushCode ||
+        (this.pathLock.isExactLock && !this.canDestroyExactLock) ||
+        !this.hasPermission ||
         this.isUpdating
       );
     },
     getExactLockTooltip() {
-      if (!this.canAdminLocks) {
+      if (!this.hasPermission) {
         return sprintf(__('Locked by %{locker}. You do not have permission to unlock this'), {
           locker: this.locker,
         });
       }
-      return this.pathLock.user?.id === this.user.id
-        ? ''
-        : sprintf(__('Locked by %{locker}'), { locker: this.locker });
+      return this.isLockAuthor ? '' : sprintf(__('Locked by %{locker}'), { locker: this.locker });
     },
     getUpstreamLockTooltip() {
-      const additionalPhrase = this.canAdminLocks
+      const additionalPhrase = this.hasPermission
         ? __('Unlock that directory in order to unlock this')
         : __('You do not have permission to unlock it');
       return sprintf(__('%{locker} has a lock on "%{path}". %{additionalPhrase}'), {
@@ -134,7 +160,7 @@ export default {
       });
     },
     getDownstreamLockTooltip() {
-      const additionalPhrase = this.canAdminLocks
+      const additionalPhrase = this.hasPermission
         ? __('Unlock this in order to proceed')
         : __('You do not have permission to unlock it');
       return sprintf(
@@ -149,7 +175,7 @@ export default {
       );
     },
     tooltipText() {
-      if (!this.canPushCode) {
+      if (!this.hasPermission && !this.hasPathLocks) {
         return __('You do not have permission to lock this');
       }
       if (this.pathLock.isDownstreamLock) {

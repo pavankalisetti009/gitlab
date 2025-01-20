@@ -20,3 +20,5 @@ class RemoveWorkItemAccessLevelFromWorkItem < Elastic::Migration
     'work_item_access_level'
   end
 end
+
+RemoveWorkItemAccessLevelFromWorkItem.prepend ::Elastic::MigrationObsolete

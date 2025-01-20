@@ -77,7 +77,27 @@ export const userPermissionsMock = {
   __typename: 'ProjectPermissions',
 };
 
-export const projectMock = {
+const getProjectMembersWithAccessLevel = (accessLevel = 30) => {
+  return {
+    __typename: 'MemberInterfaceConnection',
+    nodes: [
+      {
+        __typename: 'ProjectMember',
+        id: 'gid://gitlab/ProjectMember/685',
+        accessLevel: {
+          __typename: 'AccessLevel',
+          integerValue: accessLevel,
+        },
+        user: {
+          __typename: 'UserCore',
+          id: 'gid://gitlab/User/1',
+        },
+      },
+    ],
+  };
+};
+
+export const getProjectMockWithSpecifiedAccessLevel = (accessLevel) => ({
   __typename: 'Project',
   id: 'gid://gitlab/Project/7',
   userPermissions: userPermissionsMock,
@@ -100,7 +120,10 @@ export const projectMock = {
   repository: {
     empty: false,
   },
-};
+  projectMembers: getProjectMembersWithAccessLevel(accessLevel),
+});
+
+export const projectMock = getProjectMockWithSpecifiedAccessLevel();
 
 export const exactDirectoryLock = {
   __typename: 'PathLock',
