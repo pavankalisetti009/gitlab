@@ -6,7 +6,6 @@ module Search
     include Search::Worker
     include Gitlab::ExclusiveLeaseHelpers
     prepend ::Geo::SkipSecondary
-    prepend ::Elastic::IndexingControl
 
     data_consistency :always
 

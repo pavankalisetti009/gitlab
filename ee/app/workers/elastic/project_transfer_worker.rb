@@ -4,7 +4,6 @@ module Elastic
   class ProjectTransferWorker
     include ApplicationWorker
     include Search::Worker
-    prepend IndexingControl
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed

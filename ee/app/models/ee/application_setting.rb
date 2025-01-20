@@ -297,7 +297,6 @@ module EE
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
-      after_commit :resume_elasticsearch_indexing
     end
 
     class_methods do
@@ -650,12 +649,6 @@ module EE
         .from("(SELECT) as projects") # SELECT from "nothing" since the EXISTS queries have all the conditions.
         .merge(indexed_namespaces.or(indexed_projects))
         .exists?
-    end
-
-    def resume_elasticsearch_indexing
-      return false unless saved_changes['elasticsearch_pause_indexing'] == [true, false]
-
-      ElasticIndexingControlWorker.perform_async
     end
 
     def update_personal_access_tokens_lifetime

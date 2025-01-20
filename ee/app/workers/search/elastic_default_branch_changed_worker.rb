@@ -5,7 +5,6 @@ module Search
     include ApplicationWorker
     include Search::Worker
     include Gitlab::EventStore::Subscriber
-    prepend ::Elastic::IndexingControl
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed

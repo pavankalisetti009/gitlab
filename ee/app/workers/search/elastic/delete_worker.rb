@@ -5,7 +5,6 @@ module Search
     class DeleteWorker
       include ApplicationWorker
       include Search::Worker
-      prepend ::Elastic::IndexingControl
       prepend ::Geo::SkipSecondary
 
       sidekiq_options retry: 3
