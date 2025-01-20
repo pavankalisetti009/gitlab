@@ -5,6 +5,8 @@ module Mutations
     class Create < BaseMutation
       graphql_name 'VulnerabilityCreate'
 
+      include Gitlab::InternalEventsTracking
+
       authorize :admin_vulnerability
 
       argument :project, ::Types::GlobalIDType[::Project],
@@ -72,6 +74,17 @@ module Mutations
           current_user,
           params: params
         ).execute
+
+        if result.success?
+          track_internal_event(
+            'manually_create_vulnerability',
+            user: current_user,
+            project: project,
+            additional_properties: {
+              label: 'graphql'
+            }
+          )
+        end
 
         {
           vulnerability: result.payload[:vulnerability],
