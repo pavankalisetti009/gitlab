@@ -322,7 +322,9 @@ To use Docker-in-Docker with TLS enabled in Kubernetes:
    default:
      image: docker:24.0.5
      services:
-       - docker:24.0.5-dind
+       - name: docker:24.0.5-dind
+         variables:
+           HEALTHCHECK_TCP_PORT: "2376"
      before_script:
        - docker info
 
@@ -388,7 +390,9 @@ For example:
    default:
      image: docker:24.0.5
      services:
-       - docker:24.0.5-dind
+       - name: docker:24.0.5-dind
+         variables:
+           HEALTHCHECK_TCP_PORT: "2375"
      before_script:
        - docker info
 
