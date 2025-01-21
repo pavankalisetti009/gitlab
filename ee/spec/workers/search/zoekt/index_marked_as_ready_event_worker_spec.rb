@@ -72,12 +72,4 @@ RSpec.describe Search::Zoekt::IndexMarkedAsReadyEventWorker, feature_category: :
       end
     end
   end
-
-  context 'when zoekt_index_marked_as_ready_event is not enabled' do
-    before do
-      stub_feature_flags(zoekt_index_marked_as_ready_event: false)
-    end
-
-    it_behaves_like 'ignores the published event'
-  end
 end
