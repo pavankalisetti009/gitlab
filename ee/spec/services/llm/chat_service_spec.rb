@@ -100,6 +100,13 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
             let(:feature_enabled_by_namespace_ids) { [] }
           end
         end
+
+        context 'when thread is in the option' do
+          let!(:thread) { create(:ai_conversation_thread, user: user) }
+          let(:options) { { content: content, thread: thread } }
+
+          it_behaves_like 'schedules completion worker'
+        end
       end
 
       context 'when user is not part of the group' do

@@ -14,10 +14,17 @@ module Ai
       validates :conversation_type, :user_id, presence: true
 
       scope :expired, -> { where(last_updated_at: ...30.days.ago) }
+      scope :for_conversation_type, ->(conversation_type) { where(conversation_type: conversation_type) }
 
       enum conversation_type: { duo_chat: 1 }
 
       before_create :populate_organization
+
+      def to_new_thread!
+        self.class.create!(
+          attributes.slice(*%w[user_id organization_id conversation_type])
+        )
+      end
 
       private
 

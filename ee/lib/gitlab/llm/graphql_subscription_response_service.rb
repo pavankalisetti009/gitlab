@@ -13,7 +13,8 @@ module Gitlab
 
       def response_message
         @response_message ||= begin
-          data = options.slice(*%i[request_id type chunk_id role ai_action client_subscription_id agent_version_id])
+          data = options.slice(*%i[request_id type chunk_id role ai_action client_subscription_id agent_version_id
+            thread])
           data[:role] ||= AiMessage::ROLE_ASSISTANT
           data.merge!(
             user: user,

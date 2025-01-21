@@ -28,7 +28,7 @@ module Gitlab
         end
 
         def response_options
-          prompt_message.to_h.slice(:request_id, :client_subscription_id, :ai_action, :agent_version_id)
+          prompt_message.to_h.slice(:request_id, :client_subscription_id, :ai_action, :agent_version_id, :thread)
         end
 
         def tracking_context

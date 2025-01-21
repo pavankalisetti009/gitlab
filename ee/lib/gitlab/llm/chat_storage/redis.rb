@@ -69,13 +69,13 @@ module Gitlab
           clear_memoization(:messages)
         end
 
-        private
-
-        attr_reader :user, :agent_version_id
-
         def current_thread
           # no-op
         end
+
+        private
+
+        attr_reader :user, :agent_version_id
 
         def cache_data(data)
           with_redis do |redis|
