@@ -366,6 +366,24 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
       end
     end
 
+    context 'when the MR has already been set to automerge' do
+      let!(:merge_request) do
+        create(:merge_request,
+          :on_train,
+          source_project: project,
+          source_branch: 'feature',
+          target_project: project,
+          target_branch: 'master')
+      end
+
+      it 'returns conflict with message' do
+        subject
+
+        expect(response).to have_gitlab_http_status(:conflict)
+        expect(json_response['message']).to eq("Merge request is already set to Auto-Merge")
+      end
+    end
+
     context 'when the service object fails' do
       let(:user) { reporter }
 

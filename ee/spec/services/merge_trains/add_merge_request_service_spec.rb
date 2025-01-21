@@ -60,6 +60,17 @@ RSpec.describe MergeTrains::AddMergeRequestService, feature_category: :continuou
     end
   end
 
+  shared_examples 'it is already added to the merge train' do
+    it 'returns error' do
+      expect(subject.error?).to be(true)
+      expect(subject.message).to be("Merge request is already set to Auto-Merge")
+    end
+
+    it 'leaves the existing car intact' do
+      expect { subject }.not_to change { merge_request.merge_train_car }
+    end
+  end
+
   describe '#execute' do
     subject { service.execute }
 
@@ -81,6 +92,14 @@ RSpec.describe MergeTrains::AddMergeRequestService, feature_category: :continuou
       let(:user) { maintainer }
 
       it_behaves_like 'succeeds to add to merge train'
+    end
+
+    context 'when the merge request is already set to auto-merge' do
+      before do
+        service.execute
+      end
+
+      it_behaves_like 'it is already added to the merge train'
     end
 
     context 'when pipeline succeeds is true' do
