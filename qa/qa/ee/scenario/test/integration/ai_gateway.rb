@@ -8,7 +8,8 @@ module QA
           class AiGateway < QA::Scenario::Test::Instance::All
             tags :ai_gateway
 
-            pipeline_mappings test_on_omnibus: %w[ai-gateway]
+            pipeline_mappings test_on_omnibus: %w[ai-gateway],
+              test_on_omnibus_nightly: %w[update-minor-ee-ai-components]
           end
         end
       end
