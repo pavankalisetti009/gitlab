@@ -665,6 +665,23 @@ FactoryBot.define do
       end
     end
 
+    trait :with_cve do
+      transient do
+        cve_value { "CVE-2021-44228" }
+      end
+
+      after(:build) do |finding, evaluator|
+        identifier = build(
+          :vulnerabilities_identifier,
+          project: finding.project,
+          external_id: evaluator.cve_value,
+          name: evaluator.cve_value
+        )
+
+        finding.identifiers = [identifier]
+      end
+    end
+
     trait :with_cluster_image_scanning_scanning_metadata do
       transient do
         location_image { "alpine:3.7" }

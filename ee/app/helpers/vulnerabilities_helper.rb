@@ -114,9 +114,27 @@ module VulnerabilitiesHelper
     data[:ai_resolution_available] = finding.ai_resolution_available?
     data[:ai_resolution_enabled] = finding.ai_resolution_enabled?
     data[:belongs_to_public_project] = vulnerability.project.public?
-    data[:epss_score] = finding.cve_enrichment&.epss_score
-    data[:is_known_exploit] = finding.cve_enrichment&.is_known_exploit
+    data[:cve_enrichment] = cve_enrichment(finding)
+    data[:cvss] = cvss(finding)
     data
+  end
+
+  def cve_enrichment(finding)
+    return unless finding.cve_enrichment
+
+    {
+      epss_score: finding.cve_enrichment.epss_score,
+      is_known_exploit: finding.cve_enrichment.is_known_exploit
+    }
+  end
+
+  def cvss(finding)
+    return [] unless finding.advisory&.cvss_v3
+
+    [{
+      overall_score: finding.advisory.cvss_v3.overall_score,
+      version: finding.advisory.cvss_v3.version
+    }]
   end
 
   def vulnerability_scan_data?(vulnerability)

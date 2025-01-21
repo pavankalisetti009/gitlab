@@ -49,7 +49,7 @@ module Namespaces
 
       def order
         result.sort_by do |member|
-          [member.membershipable_class, member.membershipable_id, member.membership_type, member.username]
+          [member.membershipable_class, member.membershipable_id, member.membership_type, member.username || '']
         end
       end
 

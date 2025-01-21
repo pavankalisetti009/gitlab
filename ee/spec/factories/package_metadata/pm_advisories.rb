@@ -16,5 +16,6 @@ FactoryBot.define do
       ]
     end
     urls { Array.new(2) { FFaker::Internet.uri("https") } }
+    cve { identifiers[0]['name'] }
   end
 end

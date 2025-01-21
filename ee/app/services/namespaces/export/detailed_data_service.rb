@@ -21,12 +21,15 @@ module Namespaces
           'Username' => ->(member) { member.username },
           'Email' => ->(member) { member.email },
           'Path' => ->(member) { member.membershipable_path },
+          'Group or project name' => ->(member) { member.membershipable_name },
           'Type' => ->(member) { member.membershipable_type },
           'Role' => ->(member) { member.role },
+          'Role type' => ->(member) { member.role_type },
           'Membership type' => ->(member) { member.membership_type },
+          'Membership status' => ->(member) { member.membership_status },
           'Membership source' => ->(member) { member.membership_source },
           'Access granted' => ->(member) { member.access_granted },
-          'Access expired' => ->(member) { member.access_expired },
+          'Access expiration' => ->(member) { member.access_expiration },
           'Last activity' => ->(member) { member.last_activity }
         }
       end
