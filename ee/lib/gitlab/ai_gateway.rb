@@ -51,6 +51,8 @@ module Gitlab
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{service.access_token(user)}",
         'Content-Type' => 'application/json',
+        'X-Gitlab-Is-Team-Member' =>
+          (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s,
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency
         'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s

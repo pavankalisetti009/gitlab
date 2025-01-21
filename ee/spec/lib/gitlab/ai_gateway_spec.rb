@@ -102,6 +102,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
     let(:agent) { nil }
     let(:lsp_version) { nil }
+    let(:standard_context) { instance_double(::Gitlab::Tracking::StandardContext) }
+    let(:is_team_member) { false }
     let(:cloud_connector_headers) do
       {
         'X-Gitlab-Host-Name' => 'hostname',
@@ -121,6 +123,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Feature-Enablement-Type' => enablement_type,
         'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(','),
         'Content-Type' => 'application/json',
+        'X-Gitlab-Is-Team-Member' => is_team_member.to_s,
         'X-Request-ID' => an_instance_of(String),
         'X-Gitlab-Rails-Send-Start' => an_instance_of(String),
         'x-gitlab-enabled-feature-flags' => an_instance_of(String)
@@ -135,6 +138,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
       )
+      allow(::Gitlab::Tracking::StandardContext).to receive(:new).and_return(standard_context)
+      allow(standard_context).to receive(:gitlab_team_member?).with(user&.id).and_return(is_team_member)
     end
 
     it { is_expected.to match(expected_headers) }
@@ -184,6 +189,12 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       let(:enablement_type) { '' }
 
       it { is_expected.to match(expected_headers.merge('X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '')) }
+    end
+
+    context 'when user is a GitLab team member' do
+      let(:is_team_member) { true }
+
+      it { is_expected.to match(expected_headers) }
     end
   end
 
