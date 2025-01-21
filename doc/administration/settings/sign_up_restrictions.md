@@ -123,6 +123,10 @@ you will be charged overages for the five additional users.
 
 ## User cap
 
+DETAILS:
+**Tier:** Premium, Ultimate
+**Offering:** GitLab Self-Managed
+
 The user cap is the maximum number of billable users who can sign up or be added to a subscription
 without administrator approval. After the user cap is reached, users who sign up or are
 added must be [approved](../moderate_users.md#approve-or-reject-a-user-sign-up)
