@@ -9,8 +9,8 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
   let_it_be(:group) { create(:group) }
   let_it_be(:other_group) { create(:group) }
   let_it_be(:ultimate_license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be(:non_billable_member_role) { create(:member_role, :guest, namespace: nil, read_code: true) }
-  let_it_be(:billable_member_role) { create(:member_role, :guest, namespace: nil, read_vulnerability: true) }
+  let_it_be(:non_billable_member_role) { create(:member_role, :instance, :non_billable) }
+  let_it_be(:billable_member_role) { create(:member_role, :instance, :billable) }
   let_it_be(:users_with_membership) { create_list(:user, 2) }
   let(:existing_members) { source.members_and_requesters.where(user_id: users_with_membership).to_a }
 

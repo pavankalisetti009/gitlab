@@ -6,7 +6,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
   let_it_be(:current_user) { create(:admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be(:billable_member_role) { create(:member_role, :guest, namespace: nil, read_vulnerability: true) }
+  let_it_be(:billable_member_role) { create(:member_role, :instance, :billable) }
 
   let(:status) { :approved }
   let(:skip_authorization) { false }
