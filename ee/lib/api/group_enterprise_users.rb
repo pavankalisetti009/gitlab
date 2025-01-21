@@ -58,6 +58,22 @@ module API
 
         present user, with: ::API::Entities::UserPublic
       end
+
+      desc 'Disable two factor authentication for an enterprise user'
+      params do
+        requires :user_id, type: Integer, desc: 'ID of user account.'
+      end
+      patch ":id/enterprise_users/:user_id/disable_two_factor" do
+        user = user_group.enterprise_users.find(declared_params[:user_id])
+
+        result = TwoFactor::DestroyService.new(current_user, user: user, group: user_group).execute
+
+        if result[:status] == :success
+          no_content!
+        else
+          bad_request!(result[:message])
+        end
+      end
     end
   end
 end

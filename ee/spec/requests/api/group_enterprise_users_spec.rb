@@ -348,4 +348,52 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
       end
     end
   end
+
+  describe 'PATCH /groups/:id/enterprise_users/:user_id/disable_two_factor', :saas do
+    before do
+      stub_licensed_features(domain_verification: true)
+    end
+
+    let_it_be(:enterprise_user_of_the_group_with_two_factor_enabled) do
+      create(:enterprise_user, :two_factor, :with_namespace, enterprise_group: enterprise_group)
+    end
+
+    subject(:disable_enterprise_user_two_factor) do
+      patch api("/groups/#{group_id}/enterprise_users/#{user_id}/disable_two_factor", current_user)
+    end
+
+    include_examples 'authentication and authorization requirements'
+
+    context 'when the enterprise user has two-factor authentication enabled' do
+      let(:user_id) { enterprise_user_of_the_group_with_two_factor_enabled.id }
+
+      it 'disables 2FA for the user' do
+        expect { disable_enterprise_user_two_factor }.to change {
+          enterprise_user_of_the_group_with_two_factor_enabled.reload.two_factor_enabled?
+        }.from(true).to(false)
+        expect(response).to have_gitlab_http_status(:no_content)
+      end
+    end
+
+    context 'when the enterprise user does not have two-factor authentication enabled' do
+      it 'returns 400 Bad request' do
+        disable_enterprise_user_two_factor
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']).to eq(
+          '400 Bad request - Two-factor authentication is not enabled for this user')
+      end
+    end
+
+    context 'when user_id does not refer to an enterprise user of the group' do
+      let(:user_id) { enterprise_user_of_another_group.id }
+
+      it 'returns 404 Not found' do
+        disable_enterprise_user_two_factor
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 Not found')
+      end
+    end
+  end
 end
