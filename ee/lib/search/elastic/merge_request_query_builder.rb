@@ -12,6 +12,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
 
         if Feature.enabled?(:search_mr_filter_source_branch, options[:current_user])
           query_hash = ::Search::Elastic::Filters.by_source_branch(query_hash: query_hash, options: options)
@@ -19,10 +20,6 @@ module Search
 
         if Feature.enabled?(:search_mr_filter_target_branch, options[:current_user])
           query_hash = ::Search::Elastic::Filters.by_target_branch(query_hash: query_hash, options: options)
-        end
-
-        if Feature.enabled?(:search_mr_filter_author, options[:current_user])
-          query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
         end
 
         if Feature.enabled?(:hide_merge_requests_from_banned_users) # rubocop: disable Gitlab/FeatureFlagWithoutActor -- existing flag
