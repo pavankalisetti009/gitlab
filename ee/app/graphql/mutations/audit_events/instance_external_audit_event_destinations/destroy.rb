@@ -14,7 +14,16 @@ module Mutations
 
         def resolve(id:)
           destination = find_object(id)
-          audit(destination, action: :destroy) if destination.destroy
+          paired_destination = destination.stream_destination
+
+          if destination.destroy
+            audit(destination, action: :destroy)
+
+            if Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
+              :instance)
+              paired_destination&.destroy
+            end
+          end
 
           {
             instance_external_audit_event_destination: nil,

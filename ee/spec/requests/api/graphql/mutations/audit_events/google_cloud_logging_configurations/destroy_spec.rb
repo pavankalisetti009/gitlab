@@ -76,6 +76,14 @@ RSpec.describe 'Destroy Google Cloud logging configuration', feature_category: :
           )
         end
       end
+
+      context 'when paired destination exists' do
+        let(:paired_model) do
+          create(:audit_events_group_external_streaming_destination, :gcp, legacy_destination_ref: config.id)
+        end
+
+        it_behaves_like 'deletes paired destination', :config
+      end
     end
 
     context 'when current user is a group maintainer' do
