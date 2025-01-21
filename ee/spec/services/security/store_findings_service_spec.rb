@@ -13,7 +13,6 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
   let_it_be(:security_finding_4) { build(:ci_reports_security_finding, uuid: nil) }
   let_it_be(:deduplicated_finding_uuids) { [security_finding_1.uuid, security_finding_3.uuid] }
   let_it_be(:security_scanner) { build(:ci_reports_security_scanner) }
-  let_it_be(:multiple_artifact_allowed) { false }
   let_it_be(:report) do
     build(
       :ci_reports_security_report,
@@ -23,9 +22,7 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
   end
 
   describe '#execute' do
-    let(:service_object) do
-      described_class.new(security_scan, scanner, report, deduplicated_finding_uuids, multiple_artifact_allowed)
-    end
+    let(:service_object) { described_class.new(security_scan, scanner, report, deduplicated_finding_uuids) }
 
     subject(:store_findings) { service_object.execute }
 
@@ -40,18 +37,6 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
 
       it 'does not create new findings in database' do
         expect { store_findings }.not_to change(Security::Finding, :count)
-      end
-
-      context 'with multiple_artifact_allowed set to true' do
-        let_it_be(:multiple_artifact_allowed) { true }
-
-        it 'does not return error message' do
-          expect(store_findings).to include(status: :success)
-        end
-
-        it 'does create new findings in database' do
-          expect { store_findings }.to change(Security::Finding, :count).by(3)
-        end
       end
     end
 
