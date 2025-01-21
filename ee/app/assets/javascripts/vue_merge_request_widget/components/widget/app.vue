@@ -1,7 +1,25 @@
 <script>
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { n__ } from '~/locale';
+import violationsCountQuery from 'ee/merge_requests/reports/queries/violations_count.query.graphql';
 import CEWidgetApp from '~/vue_merge_request_widget/components/widget/app.vue';
 
 export default {
+  apollo: {
+    violationsCount: {
+      query: violationsCountQuery,
+      variables() {
+        return {
+          iid: `${this.mr.iid}`,
+          projectPath: this.mr.targetProjectFullPath,
+        };
+      },
+      update: (d) => d.project?.mergeRequest?.policyViolations?.violationsCount,
+      skip() {
+        return this.glFeatures.mrReportsTab && !this.mr.hasPolicies;
+      },
+    },
+  },
   components: {
     MrBrowserPerformanceWidget: () =>
       import('ee/vue_merge_request_widget/widgets/browser_performance/index.vue'),
@@ -17,9 +35,13 @@ export default {
     MrLicenseComplianceWidget: () =>
       import('ee/vue_merge_request_widget/widgets/license_compliance/index.vue'),
   },
-
   extends: CEWidgetApp,
-
+  mixins: [glFeatureFlagsMixin()],
+  data() {
+    return {
+      violationsCount: null,
+    };
+  },
   computed: {
     licenseComplianceWidget() {
       return this.mr?.enabledReports?.licenseScanning ? 'MrLicenseComplianceWidget' : undefined;
@@ -60,6 +82,26 @@ export default {
         this.securityReportsWidget,
         this.accessibilityWidget,
       ].filter((w) => w);
+    },
+    collapsedSummaryText() {
+      if (this.mr.hasPolicies && this.violationsCount !== null) {
+        return n__('%d policy violations', '%d policy violations', this.violationsCount);
+      }
+
+      return CEWidgetApp.computed.collapsedSummaryText.call(this);
+    },
+    statusIcon() {
+      if (this.mr.hasPolicies && this.violationsCount !== null) {
+        return this.violationsCount > 0 ? 'failed' : 'success';
+      }
+
+      return CEWidgetApp.computed.statusIcon.call(this);
+    },
+    isLoadingSummary() {
+      return (
+        this.$apollo.queries.violationsCount.loading ||
+        CEWidgetApp.computed.isLoadingSummary.call(this)
+      );
     },
   },
 

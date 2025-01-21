@@ -48,3 +48,4 @@
   = javascript_tag do
     :plain
       window.gl.mrWidgetData.reportsTabPath = '#{reports_project_merge_request_path(@project, @merge_request)}';
+      window.gl.mrWidgetData.hasPolicies = #{@project.security_policies.enabled.exists?}
