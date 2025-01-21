@@ -21,7 +21,6 @@ RSpec.describe 'Update Epic', :js, feature_category: :portfolio_management do
   before do
     stub_licensed_features(epics: true)
     stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
-    stub_feature_flags(todos_vue_application: false)
   end
 
   context 'when user who is not a group member displays the epic' do
@@ -98,7 +97,7 @@ RSpec.describe 'Update Epic', :js, feature_category: :portfolio_management do
 
         visit dashboard_todos_path
 
-        expect(page).to have_selector('.todos-list .todo', count: 0)
+        expect(page).to have_selector('ul[data-testid=todo-item-list-container] li', count: 0)
 
         sign_in(mentioned)
 
@@ -107,9 +106,9 @@ RSpec.describe 'Update Epic', :js, feature_category: :portfolio_management do
         within_testid('todos-shortcut-button') do
           expect(page).to have_content '1'
         end
-        expect(page).to have_selector('.todos-list .todo', count: 1)
-        within first('.todo') do
-          expect(page).to have_content "#{epic.reload.title} · #{epic.group.name} #{epic.to_reference}"
+        expect(page).to have_selector('ul[data-testid=todo-item-list-container] li', count: 1)
+        within first('ul[data-testid=todo-item-list-container] li') do
+          expect(page).to have_content(/#{epic.reload.title} · #{epic.group.full_name}/)
         end
       end
 

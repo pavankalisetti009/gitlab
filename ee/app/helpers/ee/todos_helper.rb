@@ -9,21 +9,9 @@ module EE
       super + [{ id: 'Epic', text: s_('Todos|Epic') }]
     end
 
-    override :todo_author_display?
-    def todo_author_display?(todo)
-      super && !todo.merge_train_removed?
-    end
-
     override :show_todo_state?
     def show_todo_state?(todo)
       super || (todo.target.is_a?(Epic) && todo.target.state == 'closed')
-    end
-
-    override :todo_action_name
-    def todo_action_name(todo)
-      return s_('Todos|has added you as an approver') if todo.action == ::Todo::ADDED_APPROVER
-
-      super
     end
 
     override :todo_groups_requiring_saml_reauth

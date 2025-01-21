@@ -26,58 +26,6 @@ RSpec.describe ::TodosHelper do
     end
   end
 
-  describe '#todo_author_display?' do
-    using RSpec::Parameterized::TableSyntax
-
-    let!(:todo) { create(:todo) }
-
-    subject { helper.todo_author_display?(todo) }
-
-    where(:action, :result) do
-      ::Todo::MERGE_TRAIN_REMOVED | false
-      ::Todo::ASSIGNED            | true
-    end
-
-    with_them do
-      before do
-        todo.action = action
-      end
-
-      it { is_expected.to eq(result) }
-    end
-  end
-
-  describe '#todo_target_state_pill' do
-    subject { helper.todo_target_state_pill(todo) }
-
-    shared_examples 'a rendered state pill' do |attr|
-      it 'returns expected html' do
-        aggregate_failures do
-          expect(subject).to have_css(attr[:css])
-          expect(subject).to have_content(attr[:state].capitalize)
-        end
-      end
-    end
-
-    shared_examples 'no state pill' do
-      specify { expect(subject).to eq(nil) }
-    end
-
-    context 'in epic todo' do
-      let(:todo) { create(:todo, target: create(:epic)) }
-
-      it_behaves_like 'no state pill'
-
-      context 'with closed epic' do
-        before do
-          todo.target.update!(state: 'closed')
-        end
-
-        it_behaves_like 'a rendered state pill', css: '.badge-info', state: 'closed'
-      end
-    end
-  end
-
   describe '#show_todo_state?' do
     let(:closed_epic) { create(:epic, state: 'closed') }
     let(:todo) { create(:todo, target: closed_epic) }
@@ -175,25 +123,6 @@ RSpec.describe ::TodosHelper do
       end
 
       it { expect(helper.todo_target_path_anchor(todo)).to eq(nil) }
-    end
-  end
-
-  describe '#todo_action_name' do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:merge_request) { create(:merge_request) }
-    let_it_be(:todo) { create(:todo, target: merge_request, user: user) }
-
-    where(:action, :expected_action_name) do
-      ::Todo::ADDED_APPROVER | s_('Todos|has added you as an approver')
-    end
-
-    with_them do
-      before do
-        todo.action = action
-      end
-
-      it { expect(helper.todo_action_name(todo)).to eq(expected_action_name) }
     end
   end
 
