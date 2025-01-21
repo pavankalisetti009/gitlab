@@ -78,21 +78,21 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
   end
 
   context 'when selecting `linked_work_items`' do
-    let_it_be(:related_work_item) do
-      create(:work_item, :task, project: project).tap { |wi| create(:work_item_link, source_id: issue.id, target: wi) }
+    let_it_be(:related_work_item) { create(:work_item, :task, project: project) }
+    let_it_be(:blocked_work_item) { create(:work_item, :task, project: project) }
+    let_it_be(:blocking_work_item) { create(:work_item, :task, project: project) }
+
+    let_it_be(:related_link) { create(:work_item_link, source_id: issue.id, target: related_work_item) }
+
+    let_it_be(:blocking_link) do
+      create(:work_item_link, source: blocking_work_item, target_id: issue.id, link_type: 'blocks')
     end
 
-    let_it_be(:blocked_work_item) do
-      create(:work_item, :task, project: project)
-        .tap { |wi| create(:work_item_link, source_id: issue.id, target: wi, link_type: 'blocks') }
+    let_it_be(:blocked_link) do
+      create(:work_item_link, source_id: issue.id, target: blocked_work_item, link_type: 'blocks')
     end
 
-    let_it_be(:blocking_work_item) do
-      create(:work_item, :task, project: project)
-        .tap { |wi| create(:work_item_link, source: wi, target_id: issue.id, link_type: 'blocks') }
-    end
-
-    let(:issue_fields) { ['linkedWorkItems { nodes { id } }'] }
+    let(:issue_fields) { ['linkedWorkItems { nodes { workItem { id } } }'] }
 
     before do
       project.add_developer(current_user)
@@ -102,37 +102,45 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
       post_graphql(query, current_user: current_user)
 
       expect(issue_data['linkedWorkItems']['nodes']).to contain_exactly(
-        { 'id' => related_work_item.to_global_id.to_s },
-        { 'id' => blocked_work_item.to_global_id.to_s },
-        { 'id' => blocking_work_item.to_global_id.to_s }
+        { 'workItem' => { 'id' => related_work_item.to_global_id.to_s } },
+        { 'workItem' => { 'id' => blocked_work_item.to_global_id.to_s } },
+        { 'workItem' => { 'id' => blocking_work_item.to_global_id.to_s } }
       )
     end
 
     shared_examples 'linked work items filtered by link type' do
-      let(:issue_fields) { ["linkedWorkItems(filter: #{link_type}) { nodes { id } }"] }
+      let(:issue_fields) { ["linkedWorkItems(filter: #{type_filter}) { nodes { linkId linkType workItem { id } } }"] }
 
       it 'filters work items' do
         post_graphql(query, current_user: current_user)
 
         expect(issue_data['linkedWorkItems']['nodes']).to contain_exactly(
-          { 'id' => result_work_item.to_global_id.to_s }
+          'linkId' => expected_link.to_global_id.to_s,
+          'linkType' => link_type,
+          'workItem' => { 'id' => expected_work_item.to_global_id.to_s }
         )
       end
     end
 
     it_behaves_like 'linked work items filtered by link type' do
-      let(:link_type) { 'RELATED' }
-      let(:result_work_item) { related_work_item }
+      let(:type_filter) { 'RELATED' }
+      let(:link_type) { 'relates_to' }
+      let(:expected_link) { related_link }
+      let(:expected_work_item) { related_work_item }
     end
 
     it_behaves_like 'linked work items filtered by link type' do
-      let(:link_type) { 'BLOCKED_BY' }
-      let(:result_work_item) { blocking_work_item }
+      let(:type_filter) { 'BLOCKED_BY' }
+      let(:link_type) { 'is_blocked_by' }
+      let(:expected_link) { blocking_link }
+      let(:expected_work_item) { blocking_work_item }
     end
 
     it_behaves_like 'linked work items filtered by link type' do
-      let(:link_type) { 'BLOCKS' }
-      let(:result_work_item) { blocked_work_item }
+      let(:type_filter) { 'BLOCKS' }
+      let(:link_type) { 'blocks' }
+      let(:expected_link) { blocked_link }
+      let(:expected_work_item) { blocked_work_item }
     end
   end
 end
