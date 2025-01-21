@@ -6,7 +6,9 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, :public) }
   let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
-  let_it_be(:finding) { create(:vulnerabilities_finding, :with_pipeline, project: project, severity: :high) }
+  let_it_be(:finding) { create(:vulnerabilities_finding, :with_pipeline, :with_cve, project: project, severity: :high) }
+  let_it_be(:advisory) { create(:pm_advisory, cve: finding.cve_value) }
+  let_it_be(:cve_enrichment_object) { create(:pm_cve_enrichment, cve: finding.cve_value) }
 
   let(:vulnerability) { create(:vulnerability, title: "My vulnerability", project: project, findings: [finding]) }
 
@@ -268,6 +270,9 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
 
             See vulnerability [#{vulnerability.id}|http://localhost/#{project.full_path}/-/security/vulnerabilities/#{vulnerability.id}] for any Solution details.
 
+            h3. Identifiers:
+
+            * [CVE-2021-44228|http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234]
 
             h3. Links:
 
@@ -411,11 +416,37 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         ai_resolution_available: finding.ai_resolution_available?,
         ai_resolution_enabled: finding.ai_resolution_enabled?,
         belongs_to_public_project: vulnerability.project.public?,
-        epss_score: finding.cve_enrichment&.epss_score,
-        is_known_exploit: finding.cve_enrichment&.is_known_exploit
+        cve_enrichment: {
+          epss_score: cve_enrichment_object.epss_score,
+          is_known_exploit: cve_enrichment_object.is_known_exploit
+        },
+        cvss: [{
+          overall_score: advisory.cvss_v3.overall_score,
+          version: advisory.cvss_v3.version
+        }]
       )
 
       expect(subject[:location]['blob_path']).to match(kind_of(String))
+    end
+
+    context 'when there is no CVE enrichment' do
+      before do
+        allow(finding).to receive(:cve_enrichment).and_return(nil)
+      end
+
+      it 'returns nil for cve_enrichment' do
+        expect(subject[:cve_enrichment]).to be_nil
+      end
+    end
+
+    context 'when there is no CVSS data' do
+      before do
+        allow(finding).to receive(:advisory).and_return(nil)
+      end
+
+      it 'returns an empty array for cvss' do
+        expect(subject[:cvss]).to eq([])
+      end
     end
 
     context 'when there is no file' do

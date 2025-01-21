@@ -347,6 +347,13 @@ module Vulnerabilities
     end
     strong_memoize_attr :cve_enrichment
 
+    def advisory
+      return unless cve_value
+
+      PackageMetadata::Advisory.find_by(cve: cve_value)
+    end
+    strong_memoize_attr :advisory
+
     def build_evidence_request(data)
       return if data.nil?
 
