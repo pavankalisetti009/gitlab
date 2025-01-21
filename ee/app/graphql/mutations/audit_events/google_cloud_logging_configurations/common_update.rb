@@ -5,6 +5,7 @@ module Mutations
     module GoogleCloudLoggingConfigurations
       module CommonUpdate
         extend ActiveSupport::Concern
+        include ::AuditEvents::LegacyDestinationSyncHelper
 
         AUDIT_EVENT_COLUMNS = [:google_project_id_name, :client_email, :private_key, :log_id_name, :name].freeze
 
@@ -52,6 +53,7 @@ module Mutations
 
           if config.update(config_attributes)
             audit_update(config)
+            update_stream_destination(legacy_destination_model: config)
             [config, []]
           else
             [nil, Array(config.errors)]
