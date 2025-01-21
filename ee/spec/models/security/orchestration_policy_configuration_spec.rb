@@ -3405,6 +3405,14 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       it { is_expected.to be_truthy }
     end
 
+    context 'when pipeline execution schedule policy has changed' do
+      before do
+        create(:security_policy, :pipeline_execution_schedule_policy, security_orchestration_policy_configuration: configuration)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
     context 'when vulnerability management policy has changed' do
       before do
         create(:security_policy,

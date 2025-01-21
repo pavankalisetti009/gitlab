@@ -102,6 +102,16 @@ FactoryBot.define do
         }
       end
     end
+
+    trait :pipeline_execution_schedule_policy do
+      type { Security::Policy.types[:pipeline_execution_schedule_policy] }
+      content do
+        {
+          content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
+          schedule: { cadence: '0 0 * * *' }
+        }
+      end
+    end
   end
 
   factory :scan_execution_policy,

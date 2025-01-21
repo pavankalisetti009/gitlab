@@ -660,6 +660,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:security_pipeline_execution_policies_schedule
+  :worker_name: Security::PipelineExecutionPolicies::ScheduleWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:security_policies_report_security_policies_metrics
   :worker_name: Security::Policies::ReportSecurityPoliciesMetricsWorker
   :feature_category: :security_policy_management
@@ -2624,6 +2633,15 @@
   :tags: []
 - :name: security_persist_security_policies
   :worker_name: Security::PersistSecurityPoliciesWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: security_pipeline_execution_policies_run_schedule
+  :worker_name: Security::PipelineExecutionPolicies::RunScheduleWorker
   :feature_category: :security_policy_management
   :has_external_dependencies: false
   :urgency: :low
