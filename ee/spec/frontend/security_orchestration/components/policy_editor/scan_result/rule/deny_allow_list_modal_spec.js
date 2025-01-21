@@ -22,11 +22,8 @@ describe('DenyAllowListModal', () => {
     },
   ];
 
-  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {}, ...options } = {}) => {
     wrapper = mountExtended(DenyAllowListModal, {
-      directives: {
-        GlTooltip: createMockDirective('gl-tooltip'),
-      },
       propsData,
       provide: {
         parsedSoftwareLicenses: [],
@@ -37,6 +34,7 @@ describe('DenyAllowListModal', () => {
           template: RENDER_ALL_SLOTS_TEMPLATE,
         }),
       },
+      ...options,
     });
   };
 
@@ -120,6 +118,9 @@ describe('DenyAllowListModal', () => {
         createComponent({
           provide: {
             parsedSoftwareLicenses: parsedLicenses,
+          },
+          directives: {
+            GlTooltip: createMockDirective('gl-tooltip'),
           },
           propsData: {
             licenses: [...LICENSES.map((license) => ({ license }))],

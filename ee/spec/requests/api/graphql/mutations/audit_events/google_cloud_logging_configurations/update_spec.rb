@@ -6,6 +6,8 @@ RSpec.describe 'Update Google Cloud logging configuration', feature_category: :a
   include GraphqlHelpers
 
   let_it_be_with_reload(:config) { create(:google_cloud_logging_configuration) }
+  let_it_be_with_reload(:destination) { config }
+
   let_it_be(:group) { config.group }
   let_it_be(:owner) { create(:user) }
   let_it_be(:updated_google_project_id_name) { 'updated-project' }
@@ -68,6 +70,32 @@ RSpec.describe 'Update Google Cloud logging configuration', feature_category: :a
             'errors' => ['error message']
           )
         end
+      end
+
+      context 'when updating a legacy destination' do
+        let(:stream_destination) do
+          create(:audit_events_group_external_streaming_destination, :gcp, group: group,
+            legacy_destination_ref: config.id)
+        end
+
+        it_behaves_like 'updates a streaming destination',
+          :config,
+          proc {
+            {
+              legacy: {
+                "log_id_name" => updated_log_id_name,
+                "client_email" => updated_client_email,
+                "google_project_id_name" => updated_google_project_id_name,
+                "name" => updated_destination_name
+              },
+              streaming: {
+                "logIdName" => updated_log_id_name,
+                "clientEmail" => updated_client_email,
+                "googleProjectIdName" => updated_google_project_id_name,
+                "name" => updated_destination_name
+              }
+            }
+          }
       end
     end
 

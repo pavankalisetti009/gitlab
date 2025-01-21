@@ -87,6 +87,7 @@ namespace :admin do
         scope '/replication' do
           get '/', to: 'nodes#index'
           get '/:replicable_name_plural', to: 'replicables#index', as: 'site_replicables'
+          get '/:replicable_name_plural/:replicable_id', to: 'replicables#show', as: 'replicable_details'
         end
       end
     end

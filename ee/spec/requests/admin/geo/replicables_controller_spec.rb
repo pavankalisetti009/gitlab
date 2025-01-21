@@ -10,7 +10,7 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
   let_it_be(:primary_node) { create(:geo_node) }
   let_it_be(:secondary_node) { create(:geo_node, :secondary) }
 
-  let(:replicable_class) { Gitlab::Geo.replication_enabled_replicator_classes[0] }
+  let(:replicable_class) { Gitlab::Geo.replication_enabled_replicator_classes.sample }
 
   before do
     enable_admin_mode!(admin)
@@ -36,8 +36,6 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
     context 'with a valid license' do
       before do
         stub_licensed_features(geo: true)
-        allow(::Gitlab::Geo::Replicator).to receive(:for_replicable_name)
-          .with(replicable_class.replicable_name).and_return(replicable_class)
 
         get url
       end
@@ -76,8 +74,6 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
     context 'with a valid license' do
       before do
         stub_licensed_features(geo: true)
-        allow(::Gitlab::Geo::Replicator).to receive(:for_replicable_name)
-          .with(replicable_class.replicable_name).and_return(replicable_class)
       end
 
       where(:current_node) { [nil, lazy { primary_node }, lazy { secondary_node }] }
@@ -99,6 +95,67 @@ RSpec.describe Admin::Geo::ReplicablesController, :geo, feature_category: :geo_r
             else
               expect(response.body).not_to include("geo-current-site-id")
             end
+          end
+        end
+      end
+    end
+  end
+
+  describe 'GET /admin/geo/sites/:id/replicables/:replicable_name_plural/:replicable_id' do
+    let(:base_url) { "/admin/geo/sites/#{secondary_node.id}/replication" }
+    let(:url) do
+      replicable_name = replicable_class.replicable_name_plural
+      # rubocop:disable Rails/SaveBang -- This is not creating a record but a factory.
+      # See Rubocop issue: https://github.com/thoughtbot/factory_bot/issues/1620
+      model_record = create(factory_name(replicable_class.model))
+      # rubocop:enable Rails/SaveBang
+
+      "#{base_url}/#{replicable_name}/#{model_record.id}"
+    end
+
+    it_behaves_like 'license required'
+
+    context 'with a valid license' do
+      before do
+        stub_licensed_features(geo: true)
+      end
+
+      where(:current_node) { [nil, lazy { primary_node }, lazy { secondary_node }] }
+
+      with_them do
+        context 'valid replicable params' do
+          it 'renders show template' do
+            get url
+
+            expect(response).to render_template :show
+          end
+        end
+
+        context 'invalid replicable id' do
+          it 'renders 404' do
+            get "#{base_url}/#{replicable_class.replicable_name_plural}/invalid_id"
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'invalid replicable_name' do
+          it 'renders 404' do
+            get "#{base_url}/invalid_names/1"
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'with feature flag :geo_replicables_show_view off' do
+          before do
+            stub_feature_flags(geo_replicables_show_view: false)
+          end
+
+          it 'renders 404' do
+            get url
+
+            expect(response).to have_gitlab_http_status(:not_found)
           end
         end
       end

@@ -31,6 +31,8 @@ RSpec.describe 'Update an instance external audit event destination', feature_ca
 
   let_it_be(:current_user) { admin }
 
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
+
   shared_examples 'a mutation that does not update destination' do
     it 'does not update the destination' do
       expect { post_graphql_mutation(mutation, current_user: current_user) }
@@ -101,6 +103,28 @@ RSpec.describe 'Update an instance external audit event destination', feature_ca
 
         it_behaves_like 'a mutation that returns top-level errors',
           errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
+      end
+
+      context 'when updating a legacy destination' do
+        let(:stream_destination) do
+          create(:audit_events_instance_external_streaming_destination, :http,
+            legacy_destination_ref: destination.id)
+        end
+
+        it_behaves_like 'updates a streaming destination',
+          :destination,
+          proc {
+            {
+              legacy: {
+                "destination_url" => destination_url,
+                "name" => name
+              },
+              streaming: {
+                "url" => destination_url,
+                "name" => name
+              }
+            }
+          }
       end
     end
 

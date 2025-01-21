@@ -8,6 +8,7 @@ module Mutations
           graphql_name 'AuditEventsInstanceAmazonS3ConfigurationUpdate'
 
           include ::AuditEvents::Changes
+          include ::AuditEvents::LegacyDestinationSyncHelper
 
           COLUMNS_TO_AUDIT = [:access_key_xid, :secret_access_key, :bucket_name, :aws_region, :name].freeze
 
@@ -51,6 +52,7 @@ module Mutations
 
             if config.update(config_attributes)
               audit_update(config)
+              update_stream_destination(legacy_destination_model: config)
               { instance_amazon_s3_configuration: config, errors: [] }
             else
               { instance_amazon_s3_configuration: nil, errors: Array(config.errors) }

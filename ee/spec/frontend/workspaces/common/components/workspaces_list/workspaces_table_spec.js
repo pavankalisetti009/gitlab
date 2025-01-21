@@ -71,8 +71,6 @@ describe('workspaces/common/components/workspaces_list/workspaces_table.vue', ()
       },
       stubs: {
         UpdateWorkspaceMutation: UpdateWorkspaceMutationStub,
-        // Addition of `tbody-transition-props` in `gl-table-lite` makes the tbody a Vue 'transition-group' component
-        'transition-group': false,
       },
     });
   };

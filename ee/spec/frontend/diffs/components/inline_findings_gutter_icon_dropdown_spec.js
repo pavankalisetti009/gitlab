@@ -5,7 +5,6 @@ import Vuex from 'vuex';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import inlineFindingsGutterIconDropdown from 'ee/diffs/components/inline_findings_gutter_icon_dropdown.vue';
 import inlineFindingsDropdown from 'ee/diffs/components/inline_findings_dropdown.vue';
-import { stubTransition } from 'helpers/stub_transition';
 import { ignoreConsoleMessages } from 'helpers/console_watcher';
 import {
   fiveCodeQualityFindings,
@@ -33,7 +32,6 @@ const createComponent = (
   const payload = {
     propsData: props,
     store,
-    transition: stubTransition(),
   };
   wrapper = mountExtended(inlineFindingsGutterIconDropdown, payload);
 };

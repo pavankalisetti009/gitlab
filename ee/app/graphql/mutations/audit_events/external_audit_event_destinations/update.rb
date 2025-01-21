@@ -7,6 +7,7 @@ module Mutations
         graphql_name 'ExternalAuditEventDestinationUpdate'
 
         include ::AuditEvents::Changes
+        include ::AuditEvents::LegacyDestinationSyncHelper
 
         UPDATE_EVENT_NAME = 'update_event_streaming_destination'
 
@@ -34,7 +35,10 @@ module Mutations
           destination_attributes = { destination_url: destination_url,
                                      name: name }.compact
 
-          audit_update(destination) if destination.update(destination_attributes)
+          if destination.update(destination_attributes)
+            audit_update(destination)
+            update_stream_destination(legacy_destination_model: destination)
+          end
 
           {
             external_audit_event_destination: (destination if destination.persisted?),
