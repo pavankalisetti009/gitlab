@@ -25,6 +25,11 @@ module EE
           resolver: ::Resolvers::Ai::UserAvailableFeaturesResolver,
           experiment: { milestone: '17.6' },
           description: 'List of available features for AI chat.'
+
+        field :code_suggestions_contexts, [::GraphQL::Types::String],
+          resolver: ::Resolvers::Ai::UserCodeSuggestionsContextsResolver,
+          experiment: { milestone: '17.9' },
+          description: 'List of additional contexts enabled for Code Suggestions.'
       end
     end
   end
