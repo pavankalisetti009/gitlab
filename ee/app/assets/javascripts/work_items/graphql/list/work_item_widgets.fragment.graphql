@@ -15,6 +15,7 @@ fragment WorkItemWidgets on WorkItemWidget {
       nodes {
         linkId
         linkType
+        workItemState
       }
     }
   }

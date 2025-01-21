@@ -27,7 +27,8 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         {
           user: current_user,
           event: event_name,
-          branch_name: 'main'
+          branch_name: 'main',
+          namespace_path: nil
         }
       end
 
@@ -65,7 +66,8 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       let(:expected_event_hash) do
         {
           user: current_user,
-          event: event_name
+          event: event_name,
+          namespace_path: nil
         }
       end
 
@@ -91,11 +93,26 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       let(:expected_event_hash) do
         {
           user: current_user,
-          event: event_name
+          event: event_name,
+          namespace_path: nil
         }
       end
 
       include_examples 'common event tracking for', Ai::DuoChatEvent
+
+      context 'with clickhouse not available' do
+        before do
+          allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
+        end
+
+        it 'stores event to postgres' do
+          expect_next_instance_of(Ai::DuoChatEvent, expected_event_hash) do |instance|
+            expect(instance).to receive(:store_to_pg).once
+          end
+
+          track_event
+        end
+      end
     end
   end
 end

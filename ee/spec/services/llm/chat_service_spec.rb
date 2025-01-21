@@ -24,7 +24,11 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
       stub_application_setting(use_clickhouse_for_analytics: true)
 
       expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
-                                                .with('request_duo_chat_response', hash_including(user: user))
+                                                .with('request_duo_chat_response', hash_including(
+                                                  user: user,
+                                                  project: project,
+                                                  namespace: project&.namespace
+                                                ))
                                                 .and_call_original
 
       described_class.new(user, resource, options).execute
@@ -37,7 +41,10 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
 
       it 'tracks AI metric' do
         expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
-                                                  .with('request_duo_chat_response', hash_including(user: user))
+                                                  .with('request_duo_chat_response', hash_including(
+                                                    user: user,
+                                                    project: project,
+                                                    namespace: project&.namespace))
                                                   .and_call_original
 
         described_class.new(user, resource, options).execute
