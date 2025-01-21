@@ -82,6 +82,19 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
     end
   end
 
+  describe '.expired' do
+    let!(:expired_now) { create(:dependency_list_export, expires_at: Time.zone.now) }
+    let!(:expired_recently) { create(:dependency_list_export, expires_at: 1.hour.ago) }
+    let!(:expiring_soon) { create(:dependency_list_export, expires_at: 1.hour.from_now) }
+    let!(:not_set) { create(:dependency_list_export, expires_at: nil) }
+
+    subject(:expired) { described_class.expired }
+
+    it 'returns only expired exports', :freeze_time do
+      expect(expired).to match_array([expired_now, expired_recently])
+    end
+  end
+
   describe '#status' do
     subject(:dependency_list_export) { create(:dependency_list_export, project: project) }
 
