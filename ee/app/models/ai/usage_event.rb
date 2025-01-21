@@ -13,7 +13,8 @@ module Ai
       end
     end
 
-    REQUIRED_ATTRIBUTES = %w[user user_id organization organization_id namespace_path timestamp event].freeze
+    REQUIRED_ATTRIBUTES = %w[user user_id organization organization_id personal_namespace_id namespace_path timestamp
+      event].freeze
 
     def initialize(attributes = {})
       hash = attributes.with_indifferent_access

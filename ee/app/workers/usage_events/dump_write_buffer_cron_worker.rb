@@ -13,12 +13,22 @@ module UsageEvents
     MAX_RUNTIME = 200.seconds
     BATCH_SIZE = 1000
 
+    MODELS = [Ai::DuoChatEvent, Ai::CodeSuggestionEvent].freeze
+
     def perform
       total_inserted_rows = 0
 
+      @current_model = MODELS.first
+      current_model_index = 0
+
       status = loop_with_runtime_limit(MAX_RUNTIME) do
         inserted_rows = process_next_batch
-        break :processed if inserted_rows == 0
+        if inserted_rows == 0
+          break :processed if @current_model == MODELS.last
+
+          current_model_index += 1
+          @current_model = MODELS[current_model_index]
+        end
 
         total_inserted_rows += inserted_rows
       end
@@ -33,25 +43,19 @@ module UsageEvents
 
     def process_next_batch
       valid_attributes = next_batch.filter_map do |attributes|
-        event = Ai::CodeSuggestionEvent.new(attributes)
+        event = @current_model.new(attributes)
         next unless event.valid?
 
         event.attributes.compact
       end
 
-      res = insert_rows(valid_attributes)
+      res = @current_model.insert_all(valid_attributes, unique_by: %i[id timestamp]) unless valid_attributes.empty?
 
       res ? res.rows.size : 0
     end
 
     def next_batch
-      Ai::UsageEventWriteBuffer.pop(Ai::CodeSuggestionEvent.name, BATCH_SIZE)
-    end
-
-    def insert_rows(valid_attributes)
-      return if valid_attributes.empty?
-
-      Ai::CodeSuggestionEvent.insert_all(valid_attributes, unique_by: %i[id timestamp])
+      Ai::UsageEventWriteBuffer.pop(@current_model.name, BATCH_SIZE)
     end
   end
 end
