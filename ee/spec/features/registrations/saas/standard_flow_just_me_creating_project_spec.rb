@@ -30,27 +30,59 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
   end
 
   context 'when template was selected' do
-    it 'creates a project from given template', :sidekiq_inline do
-      regular_sign_up
+    context 'when your_work_projects_vue feature flag is enabled' do
+      it 'creates a project from given template', :sidekiq_inline do
+        regular_sign_up
 
-      expect_to_see_welcome_form
-      expect_to_send_iterable_request
+        expect_to_see_welcome_form
+        expect_to_send_iterable_request
 
-      fills_in_welcome_form
-      click_on 'Continue'
+        fills_in_welcome_form
+        click_on 'Continue'
 
-      expect_to_see_group_and_project_creation_form
+        expect_to_see_group_and_project_creation_form
 
-      fills_in_group_and_project_creation_form
-      selects_project_template
-      click_on 'Create project'
+        fills_in_group_and_project_creation_form
+        selects_project_template
+        click_on 'Create project'
 
-      expect_to_be_in_learn_gitlab
+        expect_to_be_in_learn_gitlab
 
-      visit root_path
-      click_on 'Test Project'
+        visit root_path
+        click_on 'Member'
+        click_on 'Test Project'
 
-      expect(page).to have_content("Initialized from 'NodeJS Express' project template")
+        expect(page).to have_content("Initialized from 'NodeJS Express' project template")
+      end
+    end
+
+    context 'when your_work_projects_vue feature flag is disabled' do
+      before do # rubocop:disable Gitlab/RSpec/AvoidSetup -- we need to disable this feature flag just for this spec
+        stub_feature_flags(your_work_projects_vue: false)
+      end
+
+      it 'creates a project from given template', :sidekiq_inline do
+        regular_sign_up
+
+        expect_to_see_welcome_form
+        expect_to_send_iterable_request
+
+        fills_in_welcome_form
+        click_on 'Continue'
+
+        expect_to_see_group_and_project_creation_form
+
+        fills_in_group_and_project_creation_form
+        selects_project_template
+        click_on 'Create project'
+
+        expect_to_be_in_learn_gitlab
+
+        visit root_path
+        click_on 'Test Project'
+
+        expect(page).to have_content("Initialized from 'NodeJS Express' project template")
+      end
     end
   end
 

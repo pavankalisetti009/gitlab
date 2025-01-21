@@ -68,22 +68,45 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
         end
 
         context 'when adjourned_deletion_for_projects_and_groups is not enabled at the namespace level (free project)' do
-          before do
-            sign_in user
-            visit edit_project_path(project)
+          context 'when your_work_projects_vue feature flag is enabled' do
+            before do
+              sign_in user
+              visit edit_project_path(project)
+            end
+
+            it 'deletes project delayed and is not restorable', :freeze_time do
+              expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains. There is no going back.")
+
+              click_button "Delete project"
+
+              expect(page).not_to have_content(/This project can be restored/)
+
+              confirm_deletion(project)
+              click_link 'Inactive'
+
+              expect(page).not_to have_content(project.name_with_namespace)
+            end
           end
 
-          it 'deletes project delayed and is not restorable', :freeze_time do
-            expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains. There is no going back.")
+          context 'when your_work_projects_vue feature flag is disabled' do
+            before do
+              stub_feature_flags(your_work_projects_vue: false)
+              sign_in user
+              visit edit_project_path(project)
+            end
 
-            click_button "Delete project"
+            it 'deletes project delayed and is not restorable', :freeze_time do
+              expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains. There is no going back.")
 
-            expect(page).not_to have_content(/This project can be restored/)
+              click_button "Delete project"
 
-            confirm_deletion(project)
-            click_link 'Pending deletion'
+              expect(page).not_to have_content(/This project can be restored/)
 
-            expect(page).not_to have_content(project.name_with_namespace)
+              confirm_deletion(project)
+              click_link 'Pending deletion'
+
+              expect(page).not_to have_content(project.name_with_namespace)
+            end
           end
         end
       end
