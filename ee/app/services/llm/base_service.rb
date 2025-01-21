@@ -66,7 +66,8 @@ module Llm
         ai_action: action_name,
         user: user,
         context: ::Gitlab::Llm::AiMessageContext.new(resource: resource, user_agent: attributes[:user_agent]),
-        additional_context: ::Gitlab::Llm::AiMessageAdditionalContext.new(attributes[:additional_context])
+        additional_context: ::Gitlab::Llm::AiMessageAdditionalContext.new(attributes[:additional_context]),
+        thread: attributes[:thread]
       }.merge(attributes)
       ::Gitlab::Llm::AiMessage.for(action: action_name).new(message_attributes)
     end

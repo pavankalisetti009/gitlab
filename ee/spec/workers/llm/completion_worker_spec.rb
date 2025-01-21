@@ -7,6 +7,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:resource) { create(:issue, project: project) }
+  let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
 
   let(:user_agent) { 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }
   let(:options) { { 'key' => 'value' } }
@@ -14,7 +15,8 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
 
   let(:prompt_message) do
     build(:ai_message,
-      user: user, resource: resource, ai_action: ai_action_name, request_id: 'uuid', user_agent: user_agent
+      user: user, resource: resource, ai_action: ai_action_name, request_id: 'uuid', user_agent: user_agent,
+      thread: thread
     )
   end
 
@@ -33,7 +35,8 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
           user: user,
           resource: resource,
           request_id: 'uuid',
-          ai_action: ai_action_name
+          ai_action: ai_action_name,
+          thread: thread
         ),
         options
       ) do |instance|

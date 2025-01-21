@@ -30,6 +30,16 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
         expect(expired_threads).to contain_exactly(old_thread)
       end
     end
+
+    describe '.for_conversation_type' do
+      subject(:threads) { described_class.for_conversation_type(:duo_chat) }
+
+      let_it_be(:duo_chat_thread) { create(:ai_conversation_thread, conversation_type: :duo_chat) }
+
+      it 'returns threads' do
+        expect(threads).to contain_exactly(duo_chat_thread)
+      end
+    end
   end
 
   describe 'callbacks' do

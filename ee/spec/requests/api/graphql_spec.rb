@@ -21,6 +21,8 @@ RSpec.describe 'GraphQL', feature_category: :api do
       let(:token) { create(:personal_access_token, user: user) }
 
       context 'when the personal access token has ai_features scope' do
+        let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
+
         before do
           token.update!(scopes: [:ai_features])
         end
@@ -30,7 +32,7 @@ RSpec.describe 'GraphQL', feature_category: :api do
             expect(service).to receive(:execute)
               .and_return(ServiceResponse.success(
                 payload: {
-                  ai_message: instance_double(::Gitlab::Llm::AiMessage, request_id: 'abc123')
+                  ai_message: instance_double(::Gitlab::Llm::AiMessage, request_id: 'abc123', thread: thread)
                 }
               ))
           end
@@ -39,6 +41,7 @@ RSpec.describe 'GraphQL', feature_category: :api do
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(graphql_mutation_response(:ai_action)['requestId']).to eq('abc123')
+          expect(graphql_mutation_response(:ai_action)['threadId']).to eq(thread.to_global_id.to_s)
           expect(graphql_mutation_response(:ai_action)['errors']).to eq([])
         end
 

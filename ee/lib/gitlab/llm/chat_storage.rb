@@ -9,11 +9,12 @@ module Gitlab
       POSTGRESQL_STORAGE = "postgresql"
       REDIS_STORAGE = "redis"
 
-      delegate :messages, to: :read_storage
+      delegate :messages, :current_thread, to: :read_storage
 
-      def initialize(user, agent_version_id = nil)
+      def initialize(user, agent_version_id = nil, thread = nil)
         @user = user
         @agent_version_id = agent_version_id
+        @thread = thread
       end
 
       def add(message)
@@ -68,7 +69,7 @@ module Gitlab
 
       private
 
-      attr_reader :user, :agent_version_id
+      attr_reader :user, :agent_version_id, :thread
 
       def storage_class(type)
         "Gitlab::Llm::ChatStorage::#{type.camelize}".constantize
@@ -88,7 +89,8 @@ module Gitlab
       end
 
       def postgres_storage
-        @postgres_storage ||= storage_class(POSTGRESQL_STORAGE).new(user, agent_version_id)
+        @postgres_storage ||= storage_class(POSTGRESQL_STORAGE)
+          .new(user, agent_version_id, thread)
       end
 
       def redis_storage

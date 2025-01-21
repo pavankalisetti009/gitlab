@@ -23,8 +23,9 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
   end
 
   let_it_be(:agent_version_id) { 1 }
+  let(:thread) { nil }
 
-  subject(:storage) { described_class.new(user, agent_version_id) }
+  subject(:storage) { described_class.new(user, agent_version_id, thread) }
 
   describe '#add' do
     let(:message) { build(:ai_chat_message, payload) }
@@ -118,6 +119,36 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
 
       updated_message = storage.messages.find { |m| m.id == message.id }
       expect(updated_message.extras['resource_content']).to eq('test content')
+    end
+  end
+
+  describe '#current_thread' do
+    subject(:current_thread) { storage.current_thread }
+
+    context 'when thread is specified' do
+      let(:thread) { create(:ai_conversation_thread, user: user) }
+
+      it 'returns the specified thread' do
+        expect(current_thread).to eq(thread)
+      end
+    end
+
+    context 'when thread is not specified' do
+      context 'when no threads exist for the user' do
+        it 'returns a new thread' do
+          expect { current_thread }.to change { user.ai_conversation_threads.count }.by(1)
+
+          expect(current_thread).to be_an_instance_of ::Ai::Conversation::Thread
+        end
+      end
+
+      context 'when a thread exists for the user' do
+        let!(:existing_thread) { create(:ai_conversation_thread, user: user) }
+
+        it 'returns the latest thread' do
+          expect(current_thread).to eq(existing_thread)
+        end
+      end
     end
   end
 end

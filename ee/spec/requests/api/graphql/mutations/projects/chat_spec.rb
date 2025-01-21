@@ -9,7 +9,8 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:current_user) { create(:user, developer_of: [project, group]) }
   let_it_be(:resource) { create(:issue, project: project) }
-  let(:params) { { chat: { resource_id: resource&.to_gid, content: "summarize" } } }
+  let_it_be(:thread) { create(:ai_conversation_thread, user: current_user) }
+  let(:params) { { chat: { resource_id: resource&.to_gid, content: "summarize" }, thread_id: thread.to_gid } }
 
   let(:mutation) do
     graphql_mutation(:ai_action, params) do
@@ -61,7 +62,8 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
           user: current_user,
           resource: resource,
           ai_action: :chat,
-          content: "summarize"),
+          content: "summarize",
+          thread: thread),
         hash_including(referer_url: nil)
       )
 
@@ -76,7 +78,8 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
           user: current_user,
           resource: resource,
           ai_action: :chat,
-          content: "summarize"),
+          content: "summarize",
+          thread: thread),
         hash_including(referer_url: nil)
       )
 
@@ -95,7 +98,8 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
           user: current_user,
           resource: resource,
           ai_action: :chat,
-          content: "summarize"),
+          content: "summarize",
+          thread: thread),
         hash_including(referer_url: nil)
       )
 

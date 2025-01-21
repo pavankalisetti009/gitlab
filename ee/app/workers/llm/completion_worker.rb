@@ -21,6 +21,7 @@ module Llm
           project = resource.project if resource.respond_to?(:project)
           hash['context']['project'] = project.to_gid if project
           hash['context']['resource'] &&= hash['context']['resource'].to_gid
+          hash['thread_id'] = hash['thread'].id if hash['thread']
         end
       end
 
@@ -30,6 +31,10 @@ module Llm
         message_hash['context'] = begin
           message_hash['context']['resource'] &&= resource(message_hash)
           ::Gitlab::Llm::AiMessageContext.new(message_hash['context'])
+        end
+
+        if message_hash['thread_id']
+          message_hash['thread'] = message_hash['user'].ai_conversation_threads.find(message_hash['thread_id'])
         end
         # rubocop: enable Gitlab/NoFindInWorkers
 
