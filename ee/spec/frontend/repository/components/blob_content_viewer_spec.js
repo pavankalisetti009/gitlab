@@ -175,7 +175,7 @@ describe('Blob content viewer component', () => {
             pushCode: canPushCode,
             downloadCode: canDownloadCode,
             empty,
-            path: 'locked_file.js',
+            path: 'some/path/locked_file.js',
           });
 
           expect(findBlobButtonGroup().props('canLock')).toBe(canLock);

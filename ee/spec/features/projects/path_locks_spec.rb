@@ -10,6 +10,7 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
   let(:tree_path) { project_tree_path(project, project.repository.root_ref) }
 
   before do
+    stub_feature_flags(blob_overflow_menu: false)
     project.add_maintainer(user)
     sign_in(user)
 

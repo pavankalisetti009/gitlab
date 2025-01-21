@@ -107,7 +107,7 @@ export const getProjectMockWithSpecifiedAccessLevel = (accessLevel) => ({
       {
         __typename: 'PathLock',
         id: 'gid://gitlab/PathLock/2',
-        path: 'locked_file.js',
+        path: 'some/path/locked_file.js',
         user: {
           id: 'gid://gitlab/User/1',
           username: 'root',
