@@ -1038,7 +1038,8 @@ GEM
     io-console (0.8.0)
     io-event (1.6.5)
     ipaddress (0.8.3)
-    irb (1.14.3)
+    irb (1.15.0)
+      pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jaeger-client (1.1.0)
@@ -1452,6 +1453,8 @@ GEM
       google-protobuf (>= 3.25.3)
     plist (3.7.0)
     png_quantizator (0.2.1)
+    pp (0.6.2)
+      prettyprint
     premailer (1.23.0)
       addressable
       css_parser (>= 1.12.0)
@@ -1460,6 +1463,7 @@ GEM
       actionmailer (>= 3)
       net-smtp
       premailer (~> 1.7, >= 1.7.9)
+    prettyprint (0.2.0)
     prime (0.1.2)
       forwardable
       singleton
@@ -1484,7 +1488,7 @@ GEM
       pry (>= 0.13.0)
       tty-markdown
       tty-prompt
-    psych (5.2.2)
+    psych (5.2.3)
       date
       stringio
     public_suffix (6.0.1)
@@ -1568,7 +1572,7 @@ GEM
       msgpack (>= 0.4.3)
       optimist (>= 3.0.0)
     rchardet (1.8.0)
-    rdoc (6.10.0)
+    rdoc (6.11.0)
       psych (>= 4.0.0)
     re2 (2.7.0)
       mini_portile2 (~> 2.8.5)
