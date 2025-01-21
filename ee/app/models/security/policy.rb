@@ -31,6 +31,9 @@ module Security
 
     has_many :projects, through: :security_policy_project_links
 
+    has_many :security_pipeline_execution_project_schedules, class_name: 'Security::PipelineExecutionProjectSchedule',
+      foreign_key: :security_policy_id, inverse_of: :security_policy
+
     enum type: {
       approval_policy: 0,
       scan_execution_policy: 1,
@@ -104,12 +107,17 @@ module Security
       transaction do
         security_policy_project_links.for_project(project).first_or_create!
         link_policy_rules_project!(project)
+
+        if type_pipeline_execution_schedule_policy? && Feature.enabled?(:scheduled_pipeline_execution_policies, project)
+          security_pipeline_execution_project_schedules.for_project(project).first_or_create!
+        end
       end
     end
 
     def unlink_project!(project)
       transaction do
         security_policy_project_links.for_project(project).delete_all
+        security_pipeline_execution_project_schedules.for_project(project).delete_all
         unlink_policy_rules_project!(project)
       end
     end
@@ -215,6 +223,12 @@ module Security
 
     def delete_scan_execution_policy_rules
       scan_execution_policy_rules.delete_all(:delete_all)
+    end
+
+    def delete_security_pipeline_execution_project_schedules
+      security_pipeline_execution_project_schedules.each_batch do |batch|
+        batch.delete_all
+      end
     end
 
     def edit_path

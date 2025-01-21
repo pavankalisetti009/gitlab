@@ -10,6 +10,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     it { is_expected.to have_many(:approval_policy_rules) }
     it { is_expected.to have_many(:security_policy_project_links) }
     it { is_expected.to have_many(:projects).through(:security_policy_project_links) }
+    it { is_expected.to have_many(:security_pipeline_execution_project_schedules) }
 
     it do
       is_expected.to validate_uniqueness_of(:security_orchestration_policy_configuration_id).scoped_to(%i[type
@@ -136,6 +137,42 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       expect { policy.link_project!(project) }.to not_change { Security::PolicyProjectLink.count }
         .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
     end
+
+    context 'when policy is a pipeline execution schedule policy' do
+      let_it_be(:policy) do
+        create(
+          :security_policy,
+          :pipeline_execution_schedule_policy,
+          content: {
+            content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
+            schedule: {
+              cadence: '0 * * * *',
+              timezone: 'Europe/Berlin'
+            }
+          }
+        )
+      end
+
+      it 'creates a new schedule with the right attributes' do
+        expect { policy.link_project!(project) }.to change { Security::PolicyProjectLink.count }.by(1)
+        .and change { Security::PipelineExecutionProjectSchedule.count }.by(1)
+
+        schedule = policy.security_pipeline_execution_project_schedules.first
+
+        expect(schedule.project).to eq(project)
+        expect(schedule.security_policy).to eq(policy)
+      end
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(scheduled_pipeline_execution_policies: false)
+        end
+
+        it 'does not create a link' do
+          expect { policy.link_project!(project) }.not_to change { Security::PipelineExecutionProjectSchedule.count }
+        end
+      end
+    end
   end
 
   describe '#unlink_project!' do
@@ -160,6 +197,20 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       expect { policy.unlink_project!(project) }
         .to not_change { Security::PolicyProjectLink.count }
         .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+    end
+
+    context 'when policy is a pipeline execution schedule policy' do
+      let_it_be(:policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+
+      before do
+        create(:security_policy_project_link, project: project, security_policy: policy)
+        create(:security_pipeline_execution_project_schedule, project: project, security_policy: policy)
+      end
+
+      it 'removes the schedule' do
+        expect { policy.unlink_project!(project) }.to change { Security::PolicyProjectLink.count }.by(-1)
+        .and change { Security::PipelineExecutionProjectSchedule.count }.by(-1)
+      end
     end
   end
 
@@ -510,6 +561,26 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     it 'does not delete ScanExecutionPolicyRule from other policies' do
       expect { policy.delete_scan_execution_policy_rules }.not_to change { other_policy_rule.reload }
+    end
+  end
+
+  describe '#delete_security_pipeline_execution_project_schedules' do
+    let_it_be(:policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+    let_it_be(:other_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+    let_it_be(:other_schedule) { create(:security_pipeline_execution_project_schedule, security_policy: other_policy) }
+
+    before do
+      create_list(:security_pipeline_execution_project_schedule, 3, security_policy: policy)
+    end
+
+    it 'deletes all associated PipelineExecutionProjectSchedule' do
+      expect { policy.delete_security_pipeline_execution_project_schedules }.to change {
+        Security::PipelineExecutionProjectSchedule.count
+      }.by(-3)
+    end
+
+    it 'does not delete PipelineExecutionProjectSchedule from other policies' do
+      expect { policy.delete_security_pipeline_execution_project_schedules }.not_to change { other_schedule.reload }
     end
   end
 

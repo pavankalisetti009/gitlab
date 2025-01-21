@@ -152,6 +152,7 @@ module Security
       yaml_differs_from_db?(security_policies.type_approval_policy, scan_result_policies) ||
         yaml_differs_from_db?(security_policies.type_scan_execution_policy, scan_execution_policy) ||
         yaml_differs_from_db?(security_policies.type_pipeline_execution_policy, pipeline_execution_policy) ||
+        yaml_differs_from_db?(security_policies.type_pipeline_execution_schedule_policy, pipeline_execution_schedule_policy) ||
         yaml_differs_from_db?(security_policies.type_vulnerability_management_policy, vulnerability_management_policy)
     end
 
