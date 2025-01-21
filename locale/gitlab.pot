@@ -58354,6 +58354,9 @@ msgstr ""
 msgid "This link points to external content"
 msgstr ""
 
+msgid "This link will expire in %{number} days."
+msgstr ""
+
 msgid "This link will redirect you to %{url}. If this URL looks wrong, please go back or close this window. Do you want to continue?"
 msgstr ""
 

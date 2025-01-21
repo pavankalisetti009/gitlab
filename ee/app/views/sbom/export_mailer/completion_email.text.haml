@@ -1,3 +1,4 @@
 = _('The dependency list export has been completed.')
 = _('Follow the link below to download the export.')
 = dependencies_export_download_url(@export)
+= _('This link will expire in %{number} days.') % { number: @expiration_days }

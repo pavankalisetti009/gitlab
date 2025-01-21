@@ -3,3 +3,4 @@
   - download_link = link_to('', dependencies_export_download_url(@export))
   - tag = tag_pair(download_link, :link_start, :link_end)
   = safe_format(_('%{link_start}Click here%{link_end} to download the export.'), tag)
+  = _('This link will expire in %{number} days.') % { number: @expiration_days }

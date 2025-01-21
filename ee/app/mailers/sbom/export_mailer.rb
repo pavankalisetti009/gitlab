@@ -9,6 +9,7 @@ module Sbom
 
     def completion_email(export, group)
       @export = export
+      @expiration_days = Dependencies::DependencyListExport::EXPIRES_AFTER.in_days.to_i
 
       mail_with_locale(
         to: export.author.notification_email_for(group),
