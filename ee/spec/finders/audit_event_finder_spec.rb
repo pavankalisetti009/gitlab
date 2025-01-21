@@ -352,4 +352,151 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
       end
     end
   end
+
+  describe 'offset optimization' do
+    let_it_be(:many_events) { create_list(:audit_event, 10) }
+
+    describe 'feature flag behavior' do
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(audit_events_api_offset_optimization: false)
+        end
+
+        it 'does not use offset optimization even with high page number' do
+          params = { page: 101, per_page: 1 }
+
+          expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
+
+          described_class.new(level: level, params: params, optimize_offset: true).execute
+        end
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(audit_events_api_offset_optimization: true)
+        end
+
+        it 'does not use optimization for keyset pagination' do
+          params = { page: 101, per_page: 1, pagination: 'keyset' }
+
+          expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
+
+          described_class.new(level: level, params: params, optimize_offset: true).execute
+        end
+
+        it 'does not use optimization for low page numbers' do
+          params = { page: 1, per_page: 10 }
+
+          expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
+
+          described_class.new(level: level, params: params, optimize_offset: true).execute
+        end
+
+        it 'uses optimization for high page numbers' do
+          params = { page: 101, per_page: 10 }
+
+          expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+            .to receive(:new)
+            .with(hash_including(
+              page: 101,
+              per_page: 10,
+              scope: kind_of(ActiveRecord::Relation)
+            ))
+            .and_call_original
+
+          described_class.new(level: level, params: params, optimize_offset: true).execute
+        end
+
+        context 'with filters' do
+          let(:base_params) { { page: 101, per_page: 10 } }
+
+          it 'uses optimization with created_after filter and returns correct results' do
+            created_time = project_audit_event.created_at
+            params = base_params.merge(created_after: created_time)
+
+            expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+              .to receive(:new)
+              .with(hash_including(page: 101, per_page: 10))
+              .and_call_original
+
+            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+
+            expect(results).to all(have_attributes(created_at: be > created_time))
+          end
+
+          it 'uses optimization with entity_type filter and returns correct results' do
+            params = base_params.merge(entity_type: 'User')
+
+            expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+              .to receive(:new)
+              .with(hash_including(page: 101, per_page: 10))
+              .and_call_original
+
+            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+
+            expect(results).to all(have_attributes(entity_type: 'User'))
+          end
+
+          it 'uses optimization with author_id filter and returns correct results' do
+            params = base_params.merge(author_id: user.id)
+
+            expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+              .to receive(:new)
+              .with(hash_including(page: 101, per_page: 10))
+              .and_call_original
+
+            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+
+            expect(results).to all(have_attributes(author_id: user.id))
+          end
+
+          it 'uses optimization with multiple filters combined and returns correct results' do
+            created_time = project_audit_event.created_at
+            params = base_params.merge(
+              created_after: created_time,
+              entity_type: 'User',
+              author_id: user.id
+            )
+
+            expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+              .to receive(:new)
+              .with(hash_including(page: 101, per_page: 10))
+              .and_call_original
+
+            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+
+            aggregate_failures do
+              expect(results).to all(have_attributes(
+                entity_type: 'User',
+                author_id: user.id
+              ))
+              expect(results).to all(have_attributes(created_at: be > created_time))
+            end
+          end
+
+          it 'returns same results with and without optimization' do
+            params = base_params.merge(
+              created_after: project_audit_event.created_at,
+              entity_type: 'User',
+              author_id: user.id
+            )
+
+            optimized_results = described_class.new(
+              level: level,
+              params: params,
+              optimize_offset: true
+            ).execute.to_a
+
+            unoptimized_results = described_class.new(
+              level: level,
+              params: params,
+              optimize_offset: false
+            ).execute.to_a
+
+            expect(optimized_results).to match_array(unoptimized_results)
+          end
+        end
+      end
+    end
+  end
 end
