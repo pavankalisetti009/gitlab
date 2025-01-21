@@ -31,7 +31,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
   end
 
   describe 'enums' do
-    it { is_expected.to define_enum_for(:status).with_values(pass: 0, fail: 1) }
+    it { is_expected.to define_enum_for(:status).with_values(pass: 0, fail: 1, pending: 2) }
   end
 
   describe 'factory' do

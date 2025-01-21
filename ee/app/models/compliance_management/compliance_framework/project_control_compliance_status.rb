@@ -10,7 +10,8 @@ module ComplianceManagement
 
       enum status: {
         pass: 0,
-        fail: 1
+        fail: 1,
+        pending: 2
       }
 
       validates :project_id, uniqueness: { scope: :compliance_requirements_control_id }
