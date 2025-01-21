@@ -22917,7 +22917,8 @@ CREATE TABLE vulnerability_user_mentions (
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
     note_id bigint,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_0105942303 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE vulnerability_user_mentions_id_seq
