@@ -3,6 +3,7 @@
 class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
   before_action :check_license!
   before_action :set_replicator_class, only: :index
+  before_action :set_replicator_with_id, only: :show
   before_action :load_node_data, only: [:index]
 
   def index
@@ -22,10 +23,25 @@ class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
     end
   end
 
+  def show
+    render_404 unless Feature.enabled?(:geo_replicables_show_view, current_user)
+  end
+
   def set_replicator_class
     replicable_name = params[:replicable_name_plural].singularize
 
     @replicator_class = Gitlab::Geo::Replicator.for_replicable_name(replicable_name)
+  rescue NotImplementedError
+    render_404
+  end
+
+  def set_replicator_with_id
+    replicable_id = params[:replicable_id].to_i
+    return render_404 if replicable_id <= 0
+
+    replicable_name = params[:replicable_name_plural].singularize
+
+    @replicator = Gitlab::Geo::Replicator.for_replicable_params(replicable_name:, replicable_id:)
   rescue NotImplementedError
     render_404
   end
