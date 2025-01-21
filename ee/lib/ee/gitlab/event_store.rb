@@ -204,8 +204,8 @@ module EE
           store.subscribe ::Search::Zoekt::NodeWithNegativeUnclaimedStorageEventWorker,
             to: ::Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent
 
-          store.subscribe ::Search::Zoekt::IndexMarkedAsReadyEventWorker, to: ::Search::Zoekt::IndexMarkedAsReadyEvent,
-            if: ->(_) { ::Feature.enabled?(:zoekt_index_marked_as_ready_event, ::Feature.current_request) }
+          store.subscribe ::Search::Zoekt::IndexMarkedAsReadyEventWorker,
+            to: ::Search::Zoekt::IndexMarkedAsReadyEvent
         end
 
         def subscribe_to_members_added_event(store)
