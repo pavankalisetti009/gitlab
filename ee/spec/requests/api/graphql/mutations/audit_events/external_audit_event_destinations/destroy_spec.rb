@@ -21,6 +21,8 @@ RSpec.describe 'Destroy an external audit event destination', feature_category: 
 
   let(:mutation_response) { graphql_mutation_response(:external_audit_event_destination_destroy) }
 
+  subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
+
   shared_examples 'a mutation that does not destroy a destination' do
     it 'does not destroy the destination' do
       expect { post_graphql_mutation(mutation, current_user: owner) }
@@ -73,6 +75,14 @@ RSpec.describe 'Destroy an external audit event destination', feature_category: 
           .to change { AuditEvent.count }.by(1)
 
         expect(AuditEvent.last.details[:custom_message]).to match(/Destroy event streaming destination/)
+      end
+
+      context 'when paired destination exists' do
+        let(:paired_model) do
+          create(:audit_events_group_external_streaming_destination, :http, legacy_destination_ref: destination.id)
+        end
+
+        it_behaves_like 'deletes paired destination', :destination
       end
     end
 

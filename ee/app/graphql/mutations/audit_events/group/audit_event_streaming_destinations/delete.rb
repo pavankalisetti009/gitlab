@@ -13,8 +13,16 @@ module Mutations
 
           def resolve(id:)
             config = authorized_find!(id: id)
+            paired_destination = config.legacy_destination
+            if config.destroy
+              audit(config, action: :deleted)
 
-            audit(config, action: :deleted) if config.destroy
+              if Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
+                :instance)
+                paired_destination&.destroy
+              end
+            end
+
             { errors: Array(config.errors) }
           end
         end

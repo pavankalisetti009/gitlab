@@ -53,6 +53,14 @@ RSpec.describe 'Delete instance Amazon S3 configuration', feature_category: :aud
           expect(mutation_response).to include('errors' => ['error message'])
         end
       end
+
+      context 'when paired destination exists' do
+        let(:paired_model) do
+          create(:audit_events_instance_external_streaming_destination, :aws, legacy_destination_ref: config.id)
+        end
+
+        it_behaves_like 'deletes paired destination', :config
+      end
     end
 
     context 'when current user is not admin' do
