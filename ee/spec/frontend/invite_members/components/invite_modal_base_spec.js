@@ -4,7 +4,6 @@ import VueApollo from 'vue-apollo';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { stubTransition } from 'helpers/stub_transition';
 import ContentTransition from '~/invite_members/components/content_transition.vue';
 import CEInviteModalBase from '~/invite_members/components/invite_modal_base.vue';
 import EEInviteModalBase from 'ee/invite_members/components/invite_modal_base.vue';
@@ -92,7 +91,6 @@ describe('EEInviteModalBase', () => {
           template:
             '<div><slot name="modal-title"></slot><slot></slot><slot name="modal-footer"></slot></div>',
         }),
-        transition: stubTransition(),
       },
       listeners: {
         submit: (...args) => listenerSpy('submit', ...args),

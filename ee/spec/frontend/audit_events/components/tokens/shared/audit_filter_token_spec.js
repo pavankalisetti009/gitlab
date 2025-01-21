@@ -1,6 +1,7 @@
 import { nextTick } from 'vue';
-import { GlLoadingIcon, GlAvatar } from '@gitlab/ui';
+import { GlLoadingIcon, GlAvatar, GlFilteredSearchToken } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import { stubComponent } from 'helpers/stub_component';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import AuditFilterToken from 'ee/audit_events/components/tokens/shared/audit_filter_token.vue';
 import { createAlert } from '~/alert';
@@ -51,12 +52,12 @@ describe('AuditFilterToken', () => {
           ...props,
         },
         stubs: {
-          GlFilteredSearchToken: {
+          GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
             template: `<div data-testid="filtered-search-token">
-            <div class="view"><slot name="view"></slot></div>
-            <div class="suggestions"><slot name="suggestions"></slot></div>
-          </div>`,
-          },
+              <div class="view"><slot name="view"></slot></div>
+              <div class="suggestions"><slot name="suggestions"></slot></div>
+            </div>`,
+          }),
         },
       }),
     );
