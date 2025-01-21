@@ -148,6 +148,8 @@ module API
             present paginate(whole_merge_train), with: EE::API::Entities::MergeTrains::Car
           elsif response.reason == :forbidden
             unauthorized!
+          elsif response.reason == :conflict
+            conflict!(response.message)
           else
             bad_request!(response.message)
           end

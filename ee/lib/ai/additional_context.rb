@@ -4,6 +4,15 @@ module Ai
   module AdditionalContext
     CODE_SUGGESTIONS_CONTEXT_TYPES = { file: 'file', snippet: 'snippet' }.freeze
 
+    # Unlike Duo Chat, Code Suggestions additional context categories are NOT connected to unit primitives
+    # The Code Suggestions unit primitives are `complete_code` and `generate_code`
+    # The Code Suggestions additional context categories are simply controlled through Feature Flags
+    CODE_SUGGESTIONS_CONTEXT_CATEGORIES = [
+      :repository_xray,
+      :open_tabs,
+      :imports
+    ].freeze
+
     # Introducing new types requires adding `include_*_context` unit primitives as well.
     #
     # First, decide whether a unit primitive is part of Duo Pro or Duo Enterprise.

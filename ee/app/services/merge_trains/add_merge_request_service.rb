@@ -12,6 +12,10 @@ module MergeTrains
         return ServiceResponse.error(reason: :forbidden, message: "Merge request cannot be merged by current user")
       end
 
+      if @merge_request.auto_merge_enabled?
+        return ServiceResponse.error(reason: :conflict, message: "Merge request is already set to Auto-Merge")
+      end
+
       @merge_request.update!(squash: params[:squash]) if params[:squash]
 
       strategy = AutoMergeService::STRATEGY_MERGE_TRAIN
