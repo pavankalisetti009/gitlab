@@ -48,6 +48,26 @@ RSpec.describe Ai::NotesForAiFinder, feature_category: :duo_chat do
             expect(finder).to contain_exactly(note, internal_note)
           end
         end
+
+        context 'when there are support_bot notes for the noteable' do
+          let_it_be(:bot_note) do
+            create(:note, author: Users::Internal.support_bot, noteable: issue, project: issue.project)
+          end
+
+          it 'returns an array including the support bot note' do
+            expect(finder).to contain_exactly(note, bot_note)
+          end
+        end
+
+        context 'when there are system notes for the noteable' do
+          let_it_be(:system_note) do
+            create(:note, system: true, noteable: issue, project: issue.project)
+          end
+
+          it 'returns an array not including the system note' do
+            expect(finder).to contain_exactly(note)
+          end
+        end
       end
     end
   end
