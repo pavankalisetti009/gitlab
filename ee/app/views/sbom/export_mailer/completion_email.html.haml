@@ -1,6 +1,6 @@
 %p{ style: 'font-size:18px; text-align:center;  line-height:30px;' }
-  = _('The dependency list export has been completed.')
+  = _('The dependency list was succesfully exported.')
   - download_link = link_to('', dependencies_export_download_url(@export))
   - tag = tag_pair(download_link, :link_start, :link_end)
-  = safe_format(_('%{link_start}Click here%{link_end} to download the export.'), tag)
+  = safe_format(_('%{link_start}Download the export%{link_end}.'), tag)
   = _('This link will expire in %{number} days.') % { number: @expiration_days }

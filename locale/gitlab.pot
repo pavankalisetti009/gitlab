@@ -1074,10 +1074,10 @@ msgstr ""
 msgid "%{linkStart}View%{linkEnd} powered by GLQL"
 msgstr ""
 
-msgid "%{link_start}Click here%{link_end} to download the export."
+msgid "%{link_start}Communication Preference Center%{link_end}."
 msgstr ""
 
-msgid "%{link_start}Communication Preference Center%{link_end}."
+msgid "%{link_start}Download the export%{link_end}."
 msgstr ""
 
 msgid "%{link}How to use SSH keys%{link_end}?"
@@ -57012,7 +57012,7 @@ msgstr ""
 msgid "The dependency list details information about the components used within your project."
 msgstr ""
 
-msgid "The dependency list export has been completed."
+msgid "The dependency list was succesfully exported."
 msgstr ""
 
 msgid "The deployment of this job to %{environmentLink} did not succeed."
