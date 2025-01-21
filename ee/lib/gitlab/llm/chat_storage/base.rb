@@ -15,7 +15,8 @@ module Gitlab
         # sufficient.
         MAX_TEXT_LIMIT = 20_000
 
-        def initialize(user, agent_version_id = nil)
+        def initialize(user, agent_version_id = nil, thread = nil)
+          @thread = thread
           @agent_version_id = agent_version_id
           @user = user
         end
@@ -38,7 +39,7 @@ module Gitlab
 
         private
 
-        attr_reader :user, :agent_version_id
+        attr_reader :user, :agent_version_id, :thread
 
         def dump_message(message)
           # Message is stored only partially. Some data might be missing after reloading from storage.

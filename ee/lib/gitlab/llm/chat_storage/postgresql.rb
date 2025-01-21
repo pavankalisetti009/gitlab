@@ -4,6 +4,8 @@ module Gitlab
   module Llm
     class ChatStorage
       class Postgresql < Base
+        DEFAULT_CONVERSATION_TYPE = :duo_chat
+
         def add(message)
           data = dump_message(message)
 
@@ -41,7 +43,7 @@ module Gitlab
         strong_memoize_attr :messages
 
         def clear!
-          @current_thread = create_thread
+          @current_thread = current_thread.to_new_thread!
           clear_memoization(:messages)
         end
 
@@ -50,14 +52,18 @@ module Gitlab
           clear_memoization(:messages)
         end
 
-        private
-
         def current_thread
-          @current_thread ||= user.ai_conversation_threads.last || create_thread
+          @current_thread ||= thread || find_default_thread || create_default_thread
         end
 
-        def create_thread
-          user.ai_conversation_threads.create!(conversation_type: :duo_chat)
+        private
+
+        def find_default_thread
+          user.ai_conversation_threads.for_conversation_type(DEFAULT_CONVERSATION_TYPE).last
+        end
+
+        def create_default_thread
+          user.ai_conversation_threads.create!(conversation_type: DEFAULT_CONVERSATION_TYPE)
         end
       end
     end

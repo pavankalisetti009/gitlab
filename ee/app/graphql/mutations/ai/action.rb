@@ -28,6 +28,15 @@ module Mutations
         required: false,
         description: "Global ID of the project the user is acting on."
 
+      argument :conversation_type, Types::Ai::Conversations::Threads::ConversationTypeEnum,
+        required: false,
+        description: 'Conversation type of the thread.'
+
+      argument :thread_id, ::Types::GlobalIDType[::Ai::Conversation::Thread],
+        required: false,
+        description: 'Global Id of the existing thread to continue the conversation. ' \
+          'If it is not specified, a new thread will be created for the specified conversation_type.'
+
       # We need to re-declare the `errors` because we want to allow ai_features token to work for this
       field :errors, [GraphQL::Types::String],
         null: false,
@@ -38,6 +47,11 @@ module Mutations
         scopes: [:api, :ai_features],
         null: true,
         description: 'ID of the request.'
+
+      field :thread_id, ::Types::GlobalIDType[::Ai::Conversation::Thread],
+        scopes: [:api, :ai_features],
+        null: true,
+        description: 'Global Id of the thread.'
 
       def self.authorization_scopes
         super + [:ai_features]
@@ -78,13 +92,19 @@ module Mutations
 
         options[:referer_url] = context[:request].headers["Referer"] if method == :chat
         options[:user_agent] = context[:request].headers["User-Agent"]
+        thread = find_thread(options.delete(:thread_id)) || create_thread(options.delete(:conversation_type))
+        options[:thread] = thread if thread
 
         response = Llm::ExecuteMethodService.new(current_user, resource, method, options).execute
 
         if response.error?
           { errors: [response.message] }
         else
-          { request_id: response[:ai_message].request_id, errors: [] }
+          {
+            request_id: response[:ai_message].request_id,
+            thread_id: response[:ai_message].thread&.to_global_id,
+            errors: []
+          }
         end
       end
 
@@ -95,6 +115,22 @@ module Mutations
         return find_commit_in_project(resource_id, project_id) if resource_id.model_class == Commit
 
         resource_id.then { |id| authorized_find!(id: id) }
+      end
+
+      def find_thread(thread_id)
+        return unless thread_id
+
+        current_user.ai_conversation_threads.find(thread_id.model_id)
+      rescue ActiveRecord::RecordNotFound
+        raise Gitlab::Graphql::Errors::ArgumentError, "Thread #{thread_id.model_id} is not found."
+      end
+
+      def create_thread(conversation_type)
+        return unless conversation_type
+
+        current_user.ai_conversation_threads.create!(conversation_type: conversation_type)
+      rescue ActiveRecord::RecordNotSaved, ArgumentError
+        raise Gitlab::Graphql::Errors::ArgumentError, "Failed to create a thread for #{conversation_type}."
       end
 
       def check_feature_flag_enabled!(method)
@@ -125,7 +161,8 @@ module Mutations
       end
 
       def extract_method_params!(attributes)
-        options = attributes.extract!(:client_subscription_id, :platform_origin, :project_id)
+        options = attributes.extract!(:client_subscription_id, :platform_origin, :project_id,
+          :conversation_type, :thread_id)
         methods = methods(attributes.transform_values(&:to_h))
 
         # At this point, we only have one method since we filtered it in `#ready?`

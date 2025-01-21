@@ -7,13 +7,15 @@ module Gitlab
       CLEAR_HISTORY_MESSAGE = '/clear'
 
       def save!
-        storage = ChatStorage.new(user, agent_version_id)
+        storage = ChatStorage.new(user, agent_version_id, thread)
 
         if content == CLEAR_HISTORY_MESSAGE
           storage.clear!
         else
           storage.add(self)
         end
+
+        self.thread = storage.current_thread
       end
 
       def conversation_reset?

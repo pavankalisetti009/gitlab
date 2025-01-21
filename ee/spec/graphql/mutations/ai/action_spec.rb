@@ -244,6 +244,67 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       it_behaves_like 'an AI action when feature flag disabled'
     end
 
+    context 'when conversation type is specified' do
+      let_it_be(:organization) { create(:organization) }
+      let_it_be(:user) { create(:user, organizations: [organization]) }
+
+      let(:input) { { chat: { resource_id: resource_id }, conversation_type: 'duo_chat' } }
+      let(:expected_method) { :chat }
+      let(:expected_options) do
+        { referer_url: "foobar", user_agent: "user-agent", thread: instance_of(Ai::Conversation::Thread) }
+      end
+
+      let(:expected_thread_id) { user.ai_conversation_threads.last.to_global_id }
+
+      it_behaves_like 'an AI action'
+      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
+
+      it 'creates a thread' do
+        resource.project.add_developer(user)
+
+        expect { subject }.to change { user.ai_conversation_threads.count }.by(1)
+      end
+
+      context 'when it fails to create a thread' do
+        let(:input) { { chat: { resource_id: resource_id }, conversation_type: 'unknown' } }
+
+        it 'returns error' do
+          resource.project.add_developer(user)
+
+          expect { subject }.to raise_error(Gitlab::Graphql::Errors::ArgumentError,
+            "Failed to create a thread for unknown.")
+        end
+      end
+    end
+
+    context 'when thread id is specified' do
+      let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
+
+      let(:input) { { chat: { resource_id: resource_id }, thread_id: thread.to_global_id } }
+      let(:expected_method) { :chat }
+      let(:expected_options) { { referer_url: "foobar", user_agent: "user-agent", thread: thread } }
+      let(:expected_thread_id) { thread.to_global_id }
+
+      it_behaves_like 'an AI action'
+      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
+
+      it 'does not create a thread' do
+        resource.project.add_developer(user)
+
+        expect { subject }.not_to change { user.ai_conversation_threads.count }
+      end
+
+      context 'when thread is not found' do
+        let_it_be(:thread) { create(:ai_conversation_thread, user: create(:user)) }
+
+        it 'returns error' do
+          resource.project.add_developer(user)
+
+          expect { subject }.to raise_error(Gitlab::Graphql::Errors::ArgumentError, "Thread #{thread.id} is not found.")
+        end
+      end
+    end
+
     context 'when input is set for feature in self-managed' do
       let(:input) { { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' } }
       let(:expected_method) { :summarize_comments }
