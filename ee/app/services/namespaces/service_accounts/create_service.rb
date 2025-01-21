@@ -22,7 +22,7 @@ module Namespaces
 
       override :username_prefix
       def username_prefix
-        "service_account_#{namespace.type.downcase}_#{namespace.id}"
+        "#{User::SERVICE_ACCOUNT_PREFIX}_#{namespace.type.downcase}_#{namespace.id}"
       end
 
       override :default_user_params
