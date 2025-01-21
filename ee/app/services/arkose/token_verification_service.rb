@@ -51,7 +51,7 @@ module Arkose
         private_key: AntiAbuse::IdentityVerification::Settings.arkose_private_api_key,
         session_token: session_token
       }
-      data.merge!({ email_address: user.email, log_data: user.id.to_s }) if user
+      data[:log_data] = user.id.to_s if user
 
       Gitlab::Json.generate(data)
     end
