@@ -62,6 +62,18 @@ RSpec.shared_context 'with duo features disabled and ai chat available for self-
   end
 end
 
+RSpec.shared_context 'with duo features always off for self-managed' do
+  include_context 'with duo pro self-managed addon'
+
+  before do
+    allow(Gitlab).to receive(:org_or_com?).and_return(false)
+    stub_application_setting(duo_features_enabled: false)
+    stub_licensed_features(ai_chat: true)
+    stub_application_setting(lock_duo_features_enabled: true)
+    stub_licensed_features(ai_chat: true)
+  end
+end
+
 RSpec.shared_context 'with duo features enabled and ai chat available for group on SaaS' do
   include_context 'with duo pro addon'
 
