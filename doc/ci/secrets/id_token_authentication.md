@@ -1,5 +1,5 @@
 ---
-stage: Govern
+stage: Software Supply Chain Security
 group: Pipeline Security
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 ---
@@ -8,7 +8,7 @@ info: To determine the technical writer assigned to the Stage/Group associated w
 
 DETAILS:
 **Tier:** Free, Premium, Ultimate
-**Offering:** GitLab.com, Self-managed, GitLab Dedicated
+**Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/356986) in GitLab 15.7.
 
@@ -95,7 +95,7 @@ The token also includes custom claims provided by GitLab:
   "user_email": "sample-user@example.com",
   "user_identities": [
       {"provider": "github", "extern_uid": "2435223452345"},
-      {"provider": "bitbucket", "extern_uid": "john.smith"},
+      {"provider": "bitbucket", "extern_uid": "john.smith"}
   ],
   "pipeline_id": "574",
   "pipeline_source": "push",
@@ -150,7 +150,7 @@ manual_authentication:
 
 DETAILS:
 **Tier:** Premium, Ultimate
-**Offering:** GitLab.com, Self-managed, GitLab Dedicated
+**Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 You can use ID tokens to automatically fetch secrets from HashiCorp Vault with the
 [`secrets`](../yaml/index.md#secrets) keyword.
