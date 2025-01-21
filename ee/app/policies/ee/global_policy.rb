@@ -74,6 +74,10 @@ module EE
         ::Gitlab::CurrentSettings.duo_features_enabled?
       end
 
+      condition(:ai_features_not_banned) do
+        !::Gitlab::CurrentSettings.lock_duo_features_enabled?
+      end
+
       condition(:user_allowed_to_use_glab_ask_git_command) do
         @user.allowed_to_use?(:glab_ask_git_command, licensed_feature: :glab_ask_git_command)
       end
@@ -207,7 +211,7 @@ module EE
         code_suggestions_licensed & ai_features_enabled & code_suggestions_enabled_for_user
       end.enable :access_code_suggestions
 
-      rule { ai_features_enabled & duo_chat_enabled_for_user }.enable :access_duo_chat
+      rule { duo_chat_enabled_for_user & ai_features_not_banned }.enable :access_duo_chat
 
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
 

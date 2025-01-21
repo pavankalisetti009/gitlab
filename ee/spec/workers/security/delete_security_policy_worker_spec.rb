@@ -43,6 +43,21 @@ RSpec.describe Security::DeleteSecurityPolicyWorker, feature_category: :security
       end
     end
 
+    context 'when the policy type is pipeline_execution_schedule_policy' do
+      let_it_be(:policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+      let_it_be(:schedule) { create(:security_pipeline_execution_project_schedule, security_policy: policy) }
+
+      before do
+        allow_next_found_instance_of(Security::Policy) do |security_policy|
+          allow(security_policy).to receive(:delete)
+        end
+      end
+
+      it 'deletes the security policy and associated records' do
+        expect { perform }.to change { Security::PipelineExecutionProjectSchedule.count }.by(-1)
+      end
+    end
+
     context 'when the security policy exists' do
       it 'deletes the security policy and associated records' do
         expect { perform }.to change { ApprovalProjectRule.count }.by(-1)

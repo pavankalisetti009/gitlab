@@ -694,17 +694,17 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     end
 
     context 'when not on .org or .com' do
-      where(:duo_features_enabled, :duo_pro_seat_assigned, :duo_chat_enabled_for_user) do
-        true | true | be_allowed(policy)
+      where(:lock_duo_features_enabled, :duo_pro_seat_assigned, :duo_chat_enabled_for_user) do
+        true | true | be_disallowed(policy)
         true  |  false |  be_disallowed(policy)
         false |  false |  be_disallowed(policy)
-        false |  true  |  be_disallowed(policy)
+        false |  true  |  be_allowed(policy)
       end
 
       with_them do
         before do
           allow(::Gitlab).to receive(:org_or_com?).and_return(false)
-          stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
+          stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
           duo_chat_service_data = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
           allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_chat).and_return(
             duo_chat_service_data

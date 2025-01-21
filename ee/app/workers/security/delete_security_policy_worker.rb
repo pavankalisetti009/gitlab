@@ -18,6 +18,7 @@ module Security
         Security::Policy.transaction do
           policy.delete_approval_policy_rules
           policy.delete_scan_execution_policy_rules
+          policy.delete_security_pipeline_execution_project_schedules
 
           policy.delete
         end

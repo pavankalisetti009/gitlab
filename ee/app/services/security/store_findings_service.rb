@@ -5,22 +5,21 @@ module Security
   class StoreFindingsService < ::BaseService
     BATCH_SIZE = 50
 
-    attr_reader :security_scan, :report, :deduplicated_finding_uuids, :multiple_artifacts_allowed
+    attr_reader :security_scan, :report, :deduplicated_finding_uuids
 
-    def self.execute(security_scan, scanner, report, deduplicated_finding_uuids, multiple_artifacts_allowed)
-      new(security_scan, scanner, report, deduplicated_finding_uuids, multiple_artifacts_allowed).execute
+    def self.execute(security_scan, scanner, report, deduplicated_finding_uuids)
+      new(security_scan, scanner, report, deduplicated_finding_uuids).execute
     end
 
-    def initialize(security_scan, scanner, report, deduplicated_finding_uuids, multiple_artifacts_allowed)
+    def initialize(security_scan, scanner, report, deduplicated_finding_uuids)
       @security_scan = security_scan
       @scanner = scanner
       @report = report
       @deduplicated_finding_uuids = deduplicated_finding_uuids
-      @multiple_artifacts_allowed = multiple_artifacts_allowed
     end
 
     def execute
-      return error('Findings are already stored!') if already_stored? && !multiple_artifacts_allowed
+      return error('Findings are already stored!') if already_stored?
 
       store_findings
       success

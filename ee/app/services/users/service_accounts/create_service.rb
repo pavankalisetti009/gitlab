@@ -25,13 +25,13 @@ module Users
       def username_and_email_generator
         Gitlab::Utils::UsernameAndEmailGenerator.new(
           username_prefix: username_prefix,
-          email_domain: "noreply.#{Gitlab.config.gitlab.host}"
+          email_domain: User::NOREPLY_EMAIL_DOMAIN
         )
       end
       strong_memoize_attr :username_and_email_generator
 
       def username_prefix
-        'service_account'
+        User::SERVICE_ACCOUNT_PREFIX
       end
 
       def can_create_service_account?
