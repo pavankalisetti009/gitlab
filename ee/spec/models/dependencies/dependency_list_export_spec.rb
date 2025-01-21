@@ -220,14 +220,20 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
   end
 
   describe '#send_completion_email!' do
+    let(:message_delivery) { instance_double(ActionMailer::MessageDelivery) }
+
     subject(:send_completion_email!) { export.send_completion_email! }
+
+    def expect_completion_email_with(arg)
+      expect(Sbom::ExportMailer).to receive(:completion_email).with(export, arg).and_return(message_delivery)
+      expect(message_delivery).to receive(:deliver_now)
+    end
 
     context 'when exportable is a project' do
       let(:export) { create(:dependency_list_export, project: project) }
 
       it 'passes project.group as second argument' do
-        expect(Sbom::ExportMailer).to receive(:completion_email).with(export, project.group)
-
+        expect_completion_email_with(project.group)
         send_completion_email!
       end
     end
@@ -236,8 +242,7 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       let(:export) { create(:dependency_list_export, group: group, project: nil) }
 
       it 'passes group as second argument' do
-        expect(Sbom::ExportMailer).to receive(:completion_email).with(export, group)
-
+        expect_completion_email_with(group)
         send_completion_email!
       end
     end
