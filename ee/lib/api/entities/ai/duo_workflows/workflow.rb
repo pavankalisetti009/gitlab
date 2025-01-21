@@ -10,6 +10,7 @@ module API
           expose :agent_privileges
           expose :agent_privileges_names
           expose :workflow_definition
+          expose :status_name, as: :status
 
           def agent_privileges_names
             object.agent_privileges.map do |privilege|

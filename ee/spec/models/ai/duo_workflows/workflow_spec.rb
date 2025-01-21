@@ -97,13 +97,15 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
 
   describe 'state transitions' do
     using RSpec::Parameterized::TableSyntax
-    where(:status, :can_start, :can_pause, :can_resume, :can_finish, :can_drop, :can_stop, :can_retry) do
-      0 | true  | false | false | false | true  | true  | false
-      1 | false | true  | false | true  | true  | true  | true
-      2 | false | false | true  | false | true  | true  | false
-      3 | false | false | false | false | false | false | false
-      4 | false | false | false | false | false | false | true
-      5 | false | false | false | false | false | false | true
+    where(:status, :can_start, :can_pause, :can_resume, :can_finish, :can_drop, :can_stop, :can_retry,
+      :can_require_input) do
+      0 | true  | false | false | false | true  | true  | false | false
+      1 | false | true  | false | true  | true  | true  | true  | true
+      2 | false | false | true  | false | true  | true  | false | false
+      3 | false | false | false | false | false | false | false | false
+      4 | false | false | false | false | false | false | true  | false
+      5 | false | false | false | false | false | false | true  | false
+      6 | false | false | true  | false | true  | true  | false | false
     end
 
     with_them do

@@ -104,7 +104,7 @@ module API
                 namespace :events do
                   params do
                     requires :id, type: Integer, desc: 'The ID of the workflow'
-                    requires :event_type, type: String, values: %w[response message pause stop resume],
+                    requires :event_type, type: String, values: ::Ai::DuoWorkflows::Event.event_types.keys,
                       desc: 'The type of event'
                     requires :message, type: String, desc: "Message from the human"
                   end
