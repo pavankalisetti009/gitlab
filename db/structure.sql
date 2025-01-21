@@ -26538,6 +26538,9 @@ ALTER TABLE ONLY chat_teams
 ALTER TABLE approval_project_rules_users
     ADD CONSTRAINT check_26058e3982 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE status_check_responses
+    ADD CONSTRAINT check_29114cce9c CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
 
