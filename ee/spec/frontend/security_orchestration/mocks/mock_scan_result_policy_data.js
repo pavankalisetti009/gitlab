@@ -383,20 +383,14 @@ rules:
     branch_type: protected
     licenses:
       allowed:
-        - license:
-            value: mit
-            text: MIT
-          exceptions: []
-        - license:
-            value: npm
-            text: NPM
-          exceptions:
-            - file: pkg:npm40angular/animation
-              fullPath: 12.3.1
-              value: pkg:npm40angular/animation@12.3.1
-            - file: pkg:npm/foobar
-              fullPath: 12.3.1
-              value: pkg:npm/foobar@12.3.1
+        - name: MIT
+          packages: []
+        - name: NPM
+          packages:
+            excluding:
+              purls:
+                - pkg:npm40angular/animation
+                - pkg:npm40angular/animation@12.3.1
 actions:
   - type: require_approval
     approvals_required: 1

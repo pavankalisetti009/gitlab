@@ -3,10 +3,7 @@ import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import {
-  ALLOWED,
-  DENIED,
-} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   BOT_MESSAGE_TYPE,
   fromYaml,
@@ -116,14 +113,14 @@ export default {
     capitalizedCriteriaMessage(message) {
       return capitalizeFirstCharacter(message.trim());
     },
-    showBranchExceptions(exceptions) {
-      return exceptions?.length > 0;
+    showItems(items) {
+      return items?.length > 0;
     },
     mapApproversToArray(index) {
       return mapApproversToArray(this.actionApprovers[index]);
     },
     getDenyAllowList(licenses) {
-      return licenses[ALLOWED] || licenses[DENIED] || [];
+      return parseAllowDenyLicenseList({ licenses }).licenses;
     },
     showDenyAllowList(licenses = {}) {
       return this.showLicenseExcludePackages && this.getDenyAllowList(licenses).length > 0;
@@ -173,7 +170,7 @@ export default {
           :key="idx"
           class="gl-pt-5"
         >
-          <gl-sprintf :message="summary">
+          <gl-sprintf v-if="showItems(licenses)" :message="summary">
             <template #licenses>
               <toggle-list data-testid="licences-list" class="gl-mb-2" :items="licenses" />
             </template>
@@ -184,7 +181,7 @@ export default {
             :items="getDenyAllowList(denyAllowList)"
           />
           <toggle-list
-            v-if="showBranchExceptions(branchExceptions)"
+            v-if="showItems(branchExceptions)"
             class="gl-mb-2"
             :items="branchExceptions"
           />
