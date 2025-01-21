@@ -59181,9 +59181,6 @@ msgstr ""
 msgid "Todos|(removed)"
 msgstr ""
 
-msgid "Todos|Added"
-msgstr ""
-
 msgid "Todos|Added approver"
 msgstr ""
 
@@ -59191,12 +59188,6 @@ msgid "Todos|Alert"
 msgstr ""
 
 msgid "Todos|All"
-msgstr ""
-
-msgid "Todos|Any Action"
-msgstr ""
-
-msgid "Todos|Any Type"
 msgstr ""
 
 msgid "Todos|Approval required"
@@ -59306,9 +59297,6 @@ msgstr[1] ""
 msgid "Todos|Member access request"
 msgstr ""
 
-msgid "Todos|Member access requested"
-msgstr ""
-
 msgid "Todos|Mentioned"
 msgstr ""
 
@@ -59325,9 +59313,6 @@ msgid "Todos|Nothing left to do. High five!"
 msgstr ""
 
 msgid "Todos|OKR checkin requested"
-msgstr ""
-
-msgid "Todos|Pipelines"
 msgstr ""
 
 msgid "Todos|Raw text search is not currently supported"
