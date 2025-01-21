@@ -4,21 +4,16 @@ module Gitlab
   module Metrics
     module SliConfig
       def self.registered_classes
-        @registered_classes ||= []
+        @registered_classes ||= {}
       end
 
       def self.enabled_slis
-        @enabled_slis ||= SliConfig.registered_classes.filter_map(&:call)
+        SliConfig.registered_classes.filter_map { |_, fn| fn.call }
       end
 
-      # reset_slis! is a helper method to clear the evaluated SLI classes for testing purposes only
-      def self.reset_slis!
-        @enabled_slis = nil
-      end
-
-      def self.register(klass, is_runtime_enabled)
-        SliConfig.registered_classes << -> do
-          return unless is_runtime_enabled.call
+      def self.register(klass, is_runtime_enabled_block)
+        SliConfig.registered_classes[klass.to_s] = -> do
+          return unless is_runtime_enabled_block.call
 
           Gitlab::AppLogger.info "Gitlab::Metrics::SliConfig: enabling #{self}"
           klass

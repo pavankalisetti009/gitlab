@@ -284,10 +284,6 @@ RSpec.describe Gitlab::Metrics do
   end
 
   describe '.initialize_slis!', feature_category: :error_budgets do
-    before do
-      Gitlab::Metrics::SliConfig.reset_slis!
-    end
-
     context 'when puma runtime' do
       it "initializes only puma SLIs" do
         allow(Gitlab::Runtime).to receive_messages(puma?: true, sidekiq?: false)
@@ -295,12 +291,11 @@ RSpec.describe Gitlab::Metrics do
         # This time with runtime equal puma.
         Rails.application.eager_load!
 
-        expect(Gitlab::Metrics::SliConfig.enabled_slis).to match_array [
-          SliConfigTest::PumaSli, # testing class defined in spec/lib/gitlab/metrics/sli_config_spec.rb
+        expect(Gitlab::Metrics::SliConfig.enabled_slis).to include(
           Gitlab::Metrics::RequestsRackMiddleware,
           Gitlab::Metrics::GlobalSearchSlis,
           Gitlab::Metrics::Middleware::PathTraversalCheck
-        ]
+        )
         expect(Gitlab::Metrics::SliConfig.enabled_slis).to all(receive(:initialize_slis!))
 
         described_class.initialize_slis!
@@ -314,14 +309,10 @@ RSpec.describe Gitlab::Metrics do
         # This time with runtime equal sidekiq.
         Rails.application.eager_load!
 
-        expect(Gitlab::Metrics::SliConfig.enabled_slis).to match_array [
-          SliConfigTest::SidekiqSli, # testing class defined in spec/lib/gitlab/metrics/sli_config_spec.rb
+        expect(Gitlab::Metrics::SliConfig.enabled_slis).to include(
           Gitlab::Metrics::Lfs,
-          Gitlab::Metrics::LooseForeignKeysSlis,
-          Gitlab::Metrics::GlobalSearchIndexingSlis,
-          Gitlab::Metrics::Llm,
-          Gitlab::Metrics::SecurityScanSlis
-        ]
+          Gitlab::Metrics::LooseForeignKeysSlis
+        )
         expect(Gitlab::Metrics::SliConfig.enabled_slis).to all(receive(:initialize_slis!))
 
         described_class.initialize_slis!

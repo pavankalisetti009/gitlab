@@ -17,10 +17,6 @@ module SliConfigTest
 end
 
 RSpec.describe Gitlab::Metrics::SliConfig, feature_category: :error_budgets do
-  before do
-    described_class.reset_slis!
-  end
-
   describe '.enabled_slis' do
     context 'when runtime is puma' do
       specify do
