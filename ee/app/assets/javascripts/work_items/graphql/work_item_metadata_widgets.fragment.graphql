@@ -54,6 +54,7 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
       nodes {
         linkId
         linkType
+        workItemState
       }
     }
   }
