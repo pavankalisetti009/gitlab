@@ -213,26 +213,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
           assert_names_in_query(build, with: %w[filters:not_author])
         end
       end
-
-      context 'when search_mr_filter_author flag is false' do
-        before do
-          stub_feature_flags(search_mr_filter_author: false)
-        end
-
-        it 'does not apply filters' do
-          assert_names_in_query(build, without: %w[filters:author filters:not_author])
-        end
-
-        context 'when author_username options are provided' do
-          let(:options) do
-            base_options.merge(author_username: user.username, not_author_username: user.username)
-          end
-
-          it 'does not apply filters' do
-            assert_names_in_query(build, without: %w[filters:author filters:not_author])
-          end
-        end
-      end
     end
 
     describe 'labels' do
