@@ -165,19 +165,20 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         end
       end
 
-      context 'when right at the limit for notification' do
+      context 'when just before the limit enforcement' do
         before do
-          set_ci_minutes_used(group, 15)
+          group.shared_runners_minutes_limit = 1_000
+          set_ci_minutes_used(group, 999)
         end
 
         describe '#show_callout?' do
           it 'has warning notification' do
             expect(subject.show_callout?(user)).to be true
-            expect(subject.text).to match(%r{.*\shas 5 / 20 \(25%\) shared runner compute minutes remaining})
-            expect(subject.style).to eq :warning
+            expect(subject.text).to match(%r{.*\shas 1 / 1000 \(0%\) shared runner compute minutes remaining})
+            expect(subject.style).to eq :danger
           end
 
-          it_behaves_like 'dismissible alert', :warning
+          it_behaves_like 'dismissible alert', :danger
         end
 
         describe '#running_out?' do
@@ -194,7 +195,7 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
 
         describe '#stage_percentage' do
           it 'provides percentage for current alert level' do
-            expect(subject.stage_percentage).to eq 25
+            expect(subject.stage_percentage).to eq 5
           end
         end
       end

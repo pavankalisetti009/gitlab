@@ -53,7 +53,7 @@ module Ci
       end
 
       def percentage
-        context.percent_total_minutes_remaining.to_i
+        context.percent_total_minutes_remaining.round
       end
 
       def eligible_for_notifications?
@@ -99,11 +99,12 @@ module Ci
       end
 
       def calculate_notification_stage
-        if percentage <= PERCENTAGES[:exceeded]
+        precise_percentage = context.percent_total_minutes_remaining
+        if precise_percentage <= PERCENTAGES[:exceeded]
           :exceeded
-        elsif percentage <= PERCENTAGES[:danger]
+        elsif precise_percentage <= PERCENTAGES[:danger]
           :danger
-        elsif percentage <= PERCENTAGES[:warning]
+        elsif precise_percentage <= PERCENTAGES[:warning]
           :warning
         end
       end
