@@ -5,29 +5,94 @@ module Search
     class SchedulingService
       include Gitlab::Loggable
 
-      TASKS = %i[
-        adjust_indices_reserved_storage_bytes
+      CONFIG = {
+        adjust_indices_reserved_storage_bytes: {
+          period: 10.minutes,
+          if: -> { Index.should_be_reserved_storage_bytes_adjusted.exists? },
+          dispatch: { event: AdjustIndicesReservedStorageBytesEvent }
+        },
+        indices_to_evict_check: {
+          period: 10.minutes,
+          if: -> { Index.pending_eviction.exists? },
+          dispatch: { event: IndexToEvictEvent }
+        },
+        index_mismatched_watermark_check: {
+          period: 10.minutes,
+          if: -> {
+            Search::Zoekt::Index.with_mismatched_watermark_levels
+              .or(Search::Zoekt::Index.negative_reserved_storage_bytes).exists?
+          },
+          dispatch: { event: IndexWatermarkChangedEvent }
+        },
+        index_should_be_marked_as_orphaned_check: {
+          period: 10.minutes,
+          if: -> { Index.should_be_marked_as_orphaned.exists? },
+          dispatch: { event: OrphanedIndexEvent }
+        },
+        index_should_be_marked_as_pending_eviction_check: {
+          if: -> { Index.should_be_pending_eviction.exists? },
+          dispatch: { event: IndexMarkPendingEvictionEvent }
+        },
+        index_to_delete_check: {
+          period: 10.minutes,
+          if: -> { Index.should_be_deleted.exists? },
+          dispatch: { event: IndexMarkedAsToDeleteEvent }
+        },
+        lost_nodes_check: {
+          period: 10.minutes,
+          if: -> {
+            !Rails.env.development? && Node.marking_lost_enabled? && Node.lost.exists?
+          },
+          dispatch: {
+            event: LostNodeEvent,
+            data: -> {
+              { zoekt_node_id: Node.lost.limit(1).select(:id).last.id }
+            }
+          }
+        },
+        mark_indices_as_ready: {
+          if: -> { Index.initializing.with_all_finished_repositories.exists? },
+          dispatch: { event: IndexMarkedAsReadyEvent }
+        },
+        remove_expired_subscriptions: {
+          if: -> { ::Gitlab::Saas.feature_available?(:exact_code_search) },
+          execute: -> { EnabledNamespace.destroy_namespaces_with_expired_subscriptions! }
+        },
+        repo_should_be_marked_as_orphaned_check: {
+          period: 10.minutes,
+          if: -> { Search::Zoekt::Repository.should_be_marked_as_orphaned.exists? },
+          dispatch: { event: OrphanedRepoEvent }
+        },
+        repo_to_index_check: {
+          period: 10.minutes,
+          if: -> { Search::Zoekt::Repository.pending.exists? },
+          dispatch: { event: RepoToIndexEvent }
+        },
+        repo_to_delete_check: {
+          period: 10.minutes,
+          if: -> { ::Search::Zoekt::Repository.should_be_deleted.exists? },
+          dispatch: { event: RepoMarkedAsToDeleteEvent }
+        },
+        update_index_used_storage_bytes: {
+          if: -> { Index.with_stale_used_storage_bytes_updated_at.exists? },
+          dispatch: { event: UpdateIndexUsedStorageBytesEvent }
+        },
+        update_replica_states: {
+          period: 2.minutes,
+          if: -> { Feature.enabled? :zoekt_replica_state_updates, Feature.current_request },
+          execute: -> { ReplicaStateService.execute }
+        }
+      }.freeze
+
+      TASKS = (%i[
         auto_index_self_managed
         dot_com_rollout
         eviction
-        index_mismatched_watermark_check
-        index_should_be_marked_as_orphaned_check
-        index_should_be_marked_as_pending_eviction_check
-        index_to_delete_check
-        indices_to_evict_check
         initial_indexing
-        lost_nodes_check
-        mark_indices_as_ready
         node_assignment
         node_with_negative_unclaimed_storage_bytes_check
-        remove_expired_subscriptions
-        repo_should_be_marked_as_orphaned_check
-        repo_to_delete_check
-        repo_to_index_check
         update_index_used_bytes
-        update_index_used_storage_bytes
-        update_replica_states
-      ].freeze
+      ] + CONFIG.keys).freeze
 
       BUFFER_FACTOR = 3
 
@@ -57,9 +122,14 @@ module Search
 
       def execute
         raise ArgumentError, "Unknown task: #{task.inspect}" unless TASKS.include?(task)
-        raise NotImplementedError unless respond_to?(task, true)
 
-        send(task) # rubocop:disable GitlabSecurity/PublicSend -- We control the list of tasks in the source code
+        if CONFIG.key?(task)
+          execute_config_task(task)
+        elsif respond_to?(task, true)
+          send(task) # rubocop:disable GitlabSecurity/PublicSend -- We control the list of tasks in the source code
+        else
+          raise NotImplementedError, "Task #{task} is not implemented."
+        end
       end
 
       def cache_key
@@ -67,6 +137,27 @@ module Search
       end
 
       private
+
+      def execute_config_task(task_name)
+        config = CONFIG[task_name]
+
+        # Check `if` condition, default to true if not provided
+        if config[:if]&.call == false
+          logger.info(build_structured_payload(task: task_name, message: "Condition not met"))
+          return false
+        end
+
+        execute_every(config[:period]) do
+          unless config[:execute] || config[:dispatch]
+            raise NotImplementedError, "No execute block or dispatch defined for task #{task_name}"
+          end
+
+          # Call the execute block if provided
+          config[:execute].call if config[:execute]
+
+          dispatch(config[:dispatch][:event], &config[:dispatch][:data]) if config[:dispatch]
+        end
+      end
 
       def execute_every(period)
         # We don't want any delay interval in development environments,
@@ -201,14 +292,6 @@ module Search
       end
       # rubocop:enable CodeReuse/ActiveRecord
 
-      def remove_expired_subscriptions
-        return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
-
-        execute_every 10.minutes do
-          Search::Zoekt::EnabledNamespace.destroy_namespaces_with_expired_subscriptions!
-        end
-      end
-
       # rubocop: disable Metrics/AbcSize -- After removal of FFs metrics will be fine
       def node_assignment
         return false if Feature.disabled?(:zoekt_node_assignment, Feature.current_request)
@@ -287,18 +370,6 @@ module Search
         end
       end
 
-      # indices that don't have zoekt_repositories are already in `ready` state
-      def mark_indices_as_ready
-        execute_every 10.minutes do
-          unless Index.initializing.with_all_finished_repositories.exists?
-            logger.info(build_structured_payload(task: task, message: 'Nothing to move to ready'))
-            break
-          end
-
-          Gitlab::EventStore.publish(IndexMarkedAsReadyEvent.new(data: {}))
-        end
-      end
-
       def initial_indexing
         ::Search::Zoekt::Index.pending.ordered.limit(INITIAL_INDEXING_LIMIT).each do |index|
           dispatch InitialIndexingEvent do
@@ -320,89 +391,8 @@ module Search
         end
       end
 
-      def update_replica_states
-        return false if Feature.disabled?(:zoekt_replica_state_updates, Feature.current_request)
-
-        execute_every 2.minutes do
-          ReplicaStateService.execute
-        end
-      end
-
       # This task name is deprecated
       def update_index_used_bytes; end
-
-      def update_index_used_storage_bytes
-        dispatch UpdateIndexUsedStorageBytesEvent, if: -> { Index.with_stale_used_storage_bytes_updated_at.exists? }
-      end
-
-      def index_should_be_marked_as_orphaned_check
-        execute_every 10.minutes do
-          dispatch OrphanedIndexEvent, if: -> { Index.should_be_marked_as_orphaned.exists? }
-        end
-      end
-
-      def index_should_be_marked_as_pending_eviction_check
-        execute_every 10.minutes do
-          dispatch IndexMarkPendingEvictionEvent, if: -> { Index.should_be_pending_eviction.exists? }
-        end
-      end
-
-      def index_to_delete_check
-        execute_every 10.minutes do
-          dispatch IndexMarkedAsToDeleteEvent, if: -> { Index.should_be_deleted.exists? }
-        end
-      end
-
-      def repo_should_be_marked_as_orphaned_check
-        execute_every 10.minutes do
-          dispatch OrphanedRepoEvent, if: -> { Search::Zoekt::Repository.should_be_marked_as_orphaned.exists? }
-        end
-      end
-
-      def repo_to_delete_check
-        execute_every 10.minutes do
-          dispatch RepoMarkedAsToDeleteEvent, if: -> { ::Search::Zoekt::Repository.should_be_deleted.exists? }
-        end
-      end
-
-      def repo_to_index_check
-        dispatch RepoToIndexEvent, if: -> { Search::Zoekt::Repository.pending.exists? }
-      end
-
-      def indices_to_evict_check
-        dispatch IndexToEvictEvent, if: -> { Index.pending_eviction.exists? }
-      end
-
-      def index_mismatched_watermark_check
-        execute_every 10.minutes do
-          dispatch IndexWatermarkChangedEvent, if: -> {
-            Search::Zoekt::Index.with_mismatched_watermark_levels
-              .or(Search::Zoekt::Index.negative_reserved_storage_bytes).exists?
-          }
-        end
-      end
-
-      def lost_nodes_check
-        return false if Rails.env.development?
-        return false unless Node.marking_lost_enabled?
-
-        lost_node = Node.lost.limit(1).select(:id).last
-        return false unless lost_node
-
-        execute_every 10.minutes do
-          dispatch LostNodeEvent do
-            { zoekt_node_id: lost_node.id }
-          end
-        end
-      end
-
-      def adjust_indices_reserved_storage_bytes
-        execute_every 10.minutes do
-          dispatch AdjustIndicesReservedStorageBytesEvent, if: -> {
-            Index.should_be_reserved_storage_bytes_adjusted.exists?
-          }
-        end
-      end
 
       # Publishes an event to the event store if the given condition is met.
       #

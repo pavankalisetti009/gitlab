@@ -30,6 +30,14 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
+  describe 'TASKS' do
+    it 'includes the keys from CONFIG' do
+      described_class::CONFIG.each_key do |key|
+        expect(described_class::TASKS.include?(key)).to be_truthy
+      end
+    end
+  end
+
   describe '.execute' do
     let(:task) { :foo }
 
@@ -488,7 +496,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       it 'does not publish any event' do
         expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
-                                                'message' => 'Nothing to move to ready' })
+                                                'message' => 'Condition not met' })
         expect { execute_task }.not_to publish_event(Search::Zoekt::IndexMarkedAsReadyEvent)
       end
     end
@@ -614,7 +622,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       it 'does not publish any event' do
         expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
-                                                'message' => 'Nothing to dispatch' })
+                                                'message' => 'Condition not met' })
         expect { execute_task }.not_to publish_event(Search::Zoekt::OrphanedIndexEvent)
       end
     end
