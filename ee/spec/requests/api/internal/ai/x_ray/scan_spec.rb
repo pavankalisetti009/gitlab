@@ -12,6 +12,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
   let(:ai_gateway_token) { 'ai gateway token' }
   let(:instance_uuid) { "uuid-not-set" }
+  let(:gitlab_team_member) { false }
   let(:global_user_id) { "user-id" }
   let(:hostname) { "localhost" }
   let(:headers) { {} }
@@ -44,6 +45,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         "Content-Type" => ["application/json"],
         "X-Gitlab-Host-Name" => [hostname],
         "X-Gitlab-Instance-Id" => [instance_uuid],
+        "X-Gitlab-Is-Team-Member" => [gitlab_team_member.to_s],
         "X-Gitlab-Realm" => [gitlab_realm],
         "X-Gitlab-Global-User-Id" => [global_user_id],
         "X-Gitlab-Version" => [Gitlab.version_info.to_s],
