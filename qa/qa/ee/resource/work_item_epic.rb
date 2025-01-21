@@ -16,12 +16,13 @@ module QA
           :iid,
           :title,
           :description,
-          :labels,
+          :label_ids,
           :is_fixed,
           :confidential,
           :author,
           :start_date,
-          :due_date
+          :due_date,
+          :parent_id
 
         def initialize
           @title = "WI-Epic-#{SecureRandom.hex(8)}"
@@ -92,14 +93,6 @@ module QA
                     startDate
                   }
               }
-              ... on WorkItemWidgetStartAndDueDate
-              {
-                type
-                rollUp
-                isFixed
-                dueDate
-                startDate
-              }
               ... on WorkItemWidgetLabels
               {
                 type
@@ -127,6 +120,10 @@ module QA
                     id
                     name
                   }
+                }
+                parent
+                {
+                  id
                 }
               }
               ... on WorkItemWidgetColor
@@ -187,14 +184,9 @@ module QA
                 descriptionWidget: {
                   description: "#{@description}"
                 }
-                confidential: #{@confidential}
-                startAndDueDateWidget: {
-                  dueDate: "#{@due_date}"
-                  isFixed: #{@is_fixed}
-                  startDate: "#{@start_date}"
-                }
+                #{mutation_params}
                 workItemTypeId: "#{get_work_item_type_id}"
-                }) {
+              }) {
                 workItem {
                   #{gql_attributes}
                 }
@@ -307,6 +299,30 @@ module QA
           api_post_to(api_post_path, mutation)
         end
 
+        # Add award emoji
+        #
+        # @param [String] name
+        # @return [Hash]
+        def award_emoji(name)
+          mutation = <<~GQL
+            mutation {
+              workItemUpdate(input: {
+                id: "#{gid}"
+                awardEmojiWidget: {
+                  action: ADD
+                  name: "#{name}"
+                }
+              }) {
+              workItem {
+                #{gql_attributes}
+              }
+              errors
+              }
+            }
+          GQL
+          api_post_to(api_post_path, mutation)
+        end
+
         def child_items
           reload! if api_response.nil?
 
@@ -341,6 +357,12 @@ module QA
           reload! if api_response.nil?
 
           get_widget('START_AND_DUE_DATE')&.dig(:is_fixed)
+        end
+
+        def parent_id
+          reload! if api_response.nil?
+
+          get_widget('HIERARCHY')&.dig(:parent, :id)&.split('/')&.last
         end
 
         # Return subset of variable date fields for comparing work item epics with legacy epics
@@ -397,11 +419,47 @@ module QA
 
         protected
 
+        # Return available parameters formatted to be used in a GraphQL query
+        #
+        # @return [String]
+        def mutation_params
+          params = %(confidential: #{@confidential})
+
+          if defined?(@due_date) && defined?(@start_date)
+            params += %(
+            startAndDueDateWidget: {
+              dueDate: "#{@due_date}"
+              isFixed: #{@is_fixed}
+              startDate: "#{@start_date}"
+            })
+          end
+
+          if defined?(@parent_id)
+            params += %(
+            hierarchyWidget: {
+              parentId: "gid://gitlab/WorkItem/#{@parent_id}"
+            })
+          end
+
+          if defined?(@label_ids)
+            ids = @label_ids.map do |label_id|
+              "gid://gitlab/Label/#{label_id}"
+            end
+
+            params += %(
+            labelsWidget: {
+              labelIds: #{ids}
+            })
+          end
+
+          params
+        end
+
         # Return subset of fields for comparing work item epics to legacy epics
         #
         # @return [Hash]
         def comparable
-          reload! unless api_response.nil?
+          reload! if api_response.nil?
 
           api_resource[:state] = convert_graphql_state_to_legacy_state(api_resource[:state])
           api_resource[:labels] = get_widget('LABELS')&.dig(:labels, :nodes)

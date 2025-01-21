@@ -15,8 +15,16 @@ module QA
             description: "Import test iteration for group #{source_group.name}")
         end
 
-        let(:source_epics) { source_group.epics }
-        let(:imported_epics) { imported_group.epics }
+        let(:source_epics) { source_group.work_item_epics }
+        let(:imported_epics) { imported_group.work_item_epics }
+
+        let(:label_one) do
+          create(:group_label, api_client: source_admin_api_client, group: source_group, title: 'label one')
+        end
+
+        let(:label_two) do
+          create(:group_label, api_client: source_admin_api_client, group: source_group, title: 'label two')
+        end
 
         # Find epic by title
         #
@@ -30,13 +38,16 @@ module QA
         before do
           create(:license, license: Runtime::Env.ee_license, api_client: source_admin_api_client)
 
-          parent_epic = create(:epic, api_client: source_admin_api_client, group: source_group, title: 'Parent epic')
-          child_epic = create(:epic,
+          parent_epic = create(:work_item_epic,
+            api_client: source_admin_api_client,
+            group: source_group,
+            title: 'Parent epic')
+          child_epic = create(:work_item_epic,
             :confidential,
             api_client: source_admin_api_client,
             group: source_group,
             title: 'Child epic',
-            labels: 'label1,label2',
+            label_ids: [label_one.id, label_two.id],
             parent_id: parent_epic.id)
 
           child_epic.award_emoji("thumbsup")

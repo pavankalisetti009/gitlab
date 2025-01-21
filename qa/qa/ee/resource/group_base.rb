@@ -37,6 +37,9 @@ module QA
                     workItems {
                       nodes {
                         id
+                        iid
+                        title
+                        description
                         workItemType {
                           name
                         }
@@ -50,10 +53,14 @@ module QA
           nodes = response.dig(:work_items, :nodes)
           nodes.map do |node|
             WorkItemEpic.init do |resource|
+              resource.api_client = api_client
               resource.group = self
               # `id` field format: "gid://gitlab/WorkItem/:id"
               resource.id = node[:id].rpartition('/')[2]
-            end.reload!
+              resource.iid = node[:iid]
+              resource.title = node[:title]
+              resource.description = node[:description]
+            end
           end
         end
 
