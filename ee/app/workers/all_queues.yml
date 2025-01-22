@@ -2397,6 +2397,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: search_zoekt_index_mark_as_pending_eviction_event
+  :worker_name: Search::Zoekt::IndexMarkAsPendingEvictionEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: search_zoekt_index_marked_as_ready_event
   :worker_name: Search::Zoekt::IndexMarkedAsReadyEventWorker
   :feature_category: :global_search

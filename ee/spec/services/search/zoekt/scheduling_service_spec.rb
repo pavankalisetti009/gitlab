@@ -800,17 +800,37 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let(:task) { :indices_to_evict_check }
     let_it_be(:another_index) { create(:zoekt_index) }
 
-    context 'when critical_watermark_exceeded indices do not exist' do
+    context 'when pending_eviction indices do not exist' do
       it 'does not publishes an IndexToEvictEvent' do
         expect { execute_task }.not_to publish_event(Search::Zoekt::IndexToEvictEvent)
       end
     end
 
-    context 'when critical_watermark_exceeded indices exist' do
+    context 'when pending_eviction indices exist' do
       it 'publishes an IndexToEvictEvent' do
-        create(:zoekt_index, watermark_level: :critical_watermark_exceeded)
+        create(:zoekt_index, state: :pending_eviction)
 
         expect { execute_task }.to publish_event(Search::Zoekt::IndexToEvictEvent).with({})
+      end
+    end
+  end
+
+  describe '#index_should_be_marked_as_pending_eviction_check' do
+    let(:task) { :index_should_be_marked_as_pending_eviction_check }
+
+    context 'when no indices are returned from the pending_eviction scope' do
+      it 'does not publish an IndexMarkPendingEvictionEvent' do
+        allow(Search::Zoekt::Index).to receive_message_chain(:should_be_pending_eviction, :exists?).and_return(false)
+
+        expect { execute_task }.not_to publish_event(Search::Zoekt::IndexMarkPendingEvictionEvent)
+      end
+    end
+
+    context 'when indices are returned from the pending eviction scope' do
+      it 'publishes an IndexMarkPendingEvictionEvent' do
+        allow(Search::Zoekt::Index).to receive_message_chain(:should_be_pending_eviction, :exists?).and_return(true)
+
+        expect { execute_task }.to publish_event(Search::Zoekt::IndexMarkPendingEvictionEvent).with({})
       end
     end
   end

@@ -12,7 +12,7 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_nodes, :zoekt_indices], 10.minutes
 
-      BATCH_SIZE = 1_000
+      MAX_INDICES_TO_EVICT = 1_000
 
       def handle_event(event)
         node_ids = event.data[:node_ids]
@@ -31,21 +31,20 @@ module Search
           total_reserved_bytes = 0
           index_ids_to_evict = []
 
-          node.indices.not_critical_watermark_exceeded.find_each do |index|
+          node.indices.not_pending_eviction.find_each do |index|
             total_reserved_bytes += index.reserved_storage_bytes if index.reserved_storage_bytes > 0
 
             index_ids_to_evict << index.id
 
-            break if total_reserved_bytes >= unclaimed_storage_bytes.abs
+            if total_reserved_bytes >= unclaimed_storage_bytes.abs || index_ids_to_evict.size >= MAX_INDICES_TO_EVICT
+              break
+            end
           end
 
-          indices = Search::Zoekt::Index.id_in(index_ids_to_evict).limit(BATCH_SIZE)
-          updated_count = indices.update_all(watermark_level: :critical_watermark_exceeded)
-          log_extra_metadata_on_done(:indices_updated_count, updated_count)
+          indices = node.indices.id_in(index_ids_to_evict).limit(MAX_INDICES_TO_EVICT)
+          updated_count = indices.update_all(state: :pending_eviction)
 
-          Gitlab::EventStore.publish(
-            Search::Zoekt::IndexToEvictEvent.new(data: {})
-          )
+          log_extra_metadata_on_done(:indices_updated_count, updated_count)
         end
       end
     end

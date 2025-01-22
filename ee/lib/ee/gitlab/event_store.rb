@@ -171,6 +171,9 @@ module EE
         end
 
         def subscribe_to_zoekt_events(store)
+          store.subscribe ::Search::Zoekt::IndexMarkAsPendingEvictionEventWorker,
+            to: ::Search::Zoekt::IndexMarkPendingEvictionEvent
+
           store.subscribe ::Search::Zoekt::OrphanedIndexEventWorker,
             to: ::Search::Zoekt::OrphanedIndexEvent
 

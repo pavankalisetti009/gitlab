@@ -12,6 +12,7 @@ module Search
         eviction
         index_mismatched_watermark_check
         index_should_be_marked_as_orphaned_check
+        index_should_be_marked_as_pending_eviction_check
         index_to_delete_check
         indices_to_evict_check
         initial_indexing
@@ -340,6 +341,12 @@ module Search
         end
       end
 
+      def index_should_be_marked_as_pending_eviction_check
+        execute_every 10.minutes do
+          dispatch IndexMarkPendingEvictionEvent, if: -> { Index.should_be_pending_eviction.exists? }
+        end
+      end
+
       def index_to_delete_check
         execute_every 10.minutes do
           dispatch IndexMarkedAsToDeleteEvent, if: -> { Index.should_be_deleted.exists? }
@@ -369,7 +376,7 @@ module Search
       end
 
       def indices_to_evict_check
-        dispatch IndexToEvictEvent, if: -> { Index.should_be_evicted.exists? }
+        dispatch IndexToEvictEvent, if: -> { Index.pending_eviction.exists? }
       end
 
       def index_mismatched_watermark_check
