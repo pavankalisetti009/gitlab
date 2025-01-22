@@ -32,7 +32,7 @@ RSpec.describe Gitlab::Auth::GroupSaml::AuthHash, feature_category: :system_acce
       let(:raw_info_attr) { {} }
 
       it 'returns an empty array' do
-        expect(saml_auth_hash.groups).to match_array([])
+        expect(saml_auth_hash.groups).to be_empty
       end
     end
   end

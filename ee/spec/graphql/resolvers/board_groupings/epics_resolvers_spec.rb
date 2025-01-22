@@ -45,7 +45,7 @@ RSpec.describe Resolvers::BoardGroupings::EpicsResolver do
       it 'does not return epics' do
         result = resolve_board_epics(board)
 
-        expect(result).to match_array([])
+        expect(result).to be_empty
       end
     end
 
@@ -112,7 +112,7 @@ RSpec.describe Resolvers::BoardGroupings::EpicsResolver do
         result = resolve_board_epics(
           group_board, { issue_filters: { epic_wildcard_id: 'NONE' } })
 
-        expect(result).to match_array([])
+        expect(result).to be_empty
       end
     end
 

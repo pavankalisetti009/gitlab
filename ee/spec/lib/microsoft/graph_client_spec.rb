@@ -79,7 +79,7 @@ RSpec.describe Microsoft::GraphClient, :aggregate_failures, feature_category: :s
               response_status: 404
             )
 
-            expect(client.user_group_membership_object_ids('user_id')).to match_array([])
+            expect(client.user_group_membership_object_ids('user_id')).to be_empty
           end
         end
       end
