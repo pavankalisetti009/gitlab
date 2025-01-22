@@ -99,6 +99,16 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
         it 'returns success answer' do
           expect(tool.execute.content).to eq('successful response')
         end
+
+        context 'when user input is blank' do
+          before do
+            allow(tool).to receive(:input_blank?).and_return(true)
+          end
+
+          it 'accepts blank input and returns success answer' do
+            expect(tool.execute.content).to eq('successful response')
+          end
+        end
       end
 
       context 'when response contains script tags' do

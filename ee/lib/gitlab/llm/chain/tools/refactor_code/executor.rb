@@ -76,6 +76,10 @@ module Gitlab
 
             private
 
+            def allow_blank_message?
+              false
+            end
+
             override :context_options
             def context_options
               { libraries: context.libraries }

@@ -86,6 +86,17 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
       end
 
+      context 'when user input is blank' do
+        before do
+          allow(tool).to receive(:input_blank?).and_return(true)
+        end
+
+        it 'accepts blank input and performs the troubleshooting' do
+          expect(tool).to receive(:request).and_return('Troubleshooting response')
+          expect(tool.execute.content).to eq('Troubleshooting response')
+        end
+      end
+
       it 'performs the troubleshooting' do
         expect(tool).to receive(:request).and_return('Troubleshooting response')
         expect(tool.execute.content).to eq('Troubleshooting response')

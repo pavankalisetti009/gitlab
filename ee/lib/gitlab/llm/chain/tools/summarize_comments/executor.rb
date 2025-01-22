@@ -93,6 +93,10 @@ module Gitlab
 
             private
 
+            def allow_blank_message?
+              true
+            end
+
             def notes_to_summarize
               notes_content = +""
               input_content_limit = provider_prompt_class::MAX_CHARACTERS - PROMPT_TEMPLATE.size

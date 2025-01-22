@@ -111,6 +111,10 @@ module Gitlab
 
             private
 
+            def allow_blank_message?
+              true
+            end
+
             def unit_primitive
               'troubleshoot_job'
             end

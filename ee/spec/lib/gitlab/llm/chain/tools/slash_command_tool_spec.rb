@@ -22,9 +22,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SlashCommandTool, feature_category: :d
     end.new(context: context, options: {})
   end
 
-  context 'without ai_request implemented' do
-    it 'raises not implemented error' do
-      expect { tool.execute }.to raise_error(NotImplementedError)
-    end
+  it 'raises not implemented error without ai_request implemented' do
+    expect { tool.execute }.to raise_error(NotImplementedError)
+  end
+
+  it 'raises not implemented error without allow_blank_message implemented' do
+    expect { tool.send(:allow_blank_message?) }.to raise_error(NotImplementedError)
   end
 end
