@@ -146,13 +146,27 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
     let_it_be(:source) { sub_group_1 }
 
     include_context 'with multiple users in a group with custom roles'
+
     it_behaves_like 'returns expected member role abilities'
+
+    context 'when an array of group IDs is passed instead of objects' do
+      let(:groups_list) { [sub_group_1.id, sub_group_2.id] }
+
+      it_behaves_like 'returns expected member role abilities'
+    end
   end
 
   context 'when multiple groups are invited with custom roles' do
     let_it_be(:source) { sub_group_1 }
 
     include_context 'with a user in multiple groups with custom role'
+
     it_behaves_like 'returns expected member role abilities for the user'
+
+    context 'when an array of group IDs is passed instead of objects' do
+      let(:groups_list) { [sub_group_1.id, sub_group_2.id] }
+
+      it_behaves_like 'returns expected member role abilities for the user'
+    end
   end
 end
