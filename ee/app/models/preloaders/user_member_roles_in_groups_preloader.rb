@@ -24,11 +24,11 @@ module Preloaders
     private
 
     def abilities_for_user_grouped_by_group(group_ids)
-      groups = Group.where(id: group_ids)
+      @group_relation = Group.where(id: group_ids)
 
-      ::Preloaders::GroupRootAncestorPreloader.new(groups).execute
+      ::Preloaders::GroupRootAncestorPreloader.new(group_relation).execute
 
-      groups_with_traversal_ids = groups.filter_map do |group|
+      groups_with_traversal_ids = group_relation.filter_map do |group|
         next unless group.custom_roles_enabled?
 
         [group.id, Arel.sql("ARRAY[#{group.traversal_ids.join(',')}]")]
@@ -108,12 +108,14 @@ module Preloaders
 
     def custom_role_for_group_link_enabled?
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        groups.any? { |group| ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, group.root_ancestor) }
+        group_relation.any? do |group|
+          ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, group.root_ancestor)
+        end
       else
         ::Feature.enabled?(:assign_custom_roles_to_group_links_sm, :instance)
       end
     end
 
-    attr_reader :groups, :user
+    attr_reader :groups, :group_relation, :user
   end
 end
