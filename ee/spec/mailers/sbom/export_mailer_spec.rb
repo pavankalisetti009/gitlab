@@ -13,10 +13,10 @@ RSpec.describe Sbom::ExportMailer, feature_category: :dependency_management do
     subject(:email) { described_class.completion_email(export, export.project.group) }
 
     it 'creates an email notifying of export completion', :aggregate_failures do
-      expect(email).to have_subject(_("Dependency list export"))
-      expect(email).to have_body_text(_('The dependency list was successfully exported.'))
+      expect(email).to have_subject(s_('Dependencies|Dependency list export'))
+      expect(email).to have_body_text(s_('Dependencies|The dependency list was successfully exported.'))
       expect(email).to have_body_text(%r{api/v4/dependency_list_exports/\d+/download})
-      expect(email).to have_body_text(format(_('This link will expire in %{number} days.'), number: 7))
+      expect(email).to have_body_text(format(s_('Dependencies|This link will expire in %{number} days.'), number: 7))
       expect(email).to be_delivered_to([export.author.notification_email_for(export.project.group)])
     end
   end

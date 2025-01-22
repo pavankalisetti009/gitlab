@@ -13,7 +13,7 @@ module Sbom
 
       mail_with_locale(
         to: export.author.notification_email_for(group),
-        subject: _("Dependency list export")
+        subject: s_('Dependencies|Dependency list export')
       )
     end
   end

@@ -1077,9 +1077,6 @@ msgstr ""
 msgid "%{link_start}Communication Preference Center%{link_end}."
 msgstr ""
 
-msgid "%{link_start}Download the export%{link_end}."
-msgstr ""
-
 msgid "%{link}How to use SSH keys%{link_end}?"
 msgstr ""
 
@@ -19295,6 +19292,9 @@ msgid_plural "Dependencies|%d vulnerabilities detected"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Dependencies|%{link_start}Download the export%{link_end}."
+msgstr ""
+
 msgid "Dependencies|%{locationCount} location"
 msgid_plural "Dependencies|%{locationCount} locations"
 msgstr[0] ""
@@ -19320,6 +19320,9 @@ msgstr ""
 msgid "Dependencies|Component name"
 msgstr ""
 
+msgid "Dependencies|Dependency list export"
+msgstr ""
+
 msgid "Dependencies|Direct dependents"
 msgstr ""
 
@@ -19333,6 +19336,9 @@ msgid "Dependencies|Export as JSON"
 msgstr ""
 
 msgid "Dependencies|Filtering unavailable"
+msgstr ""
+
+msgid "Dependencies|Follow the link below to download the export."
 msgstr ""
 
 msgid "Dependencies|Learn more about direct dependents"
@@ -19365,6 +19371,12 @@ msgstr ""
 msgid "Dependencies|Software Bill of Materials (SBOM) based on the latest successful scan of each project."
 msgstr ""
 
+msgid "Dependencies|The dependency list was succesfully exported."
+msgstr ""
+
+msgid "Dependencies|The dependency list was successfully exported."
+msgstr ""
+
 msgid "Dependencies|The location includes the lock file. For transitive dependencies a list of its direct dependents is shown."
 msgstr ""
 
@@ -19389,6 +19401,9 @@ msgstr ""
 msgid "Dependencies|This group exceeds the maximum number of sub-groups of 600. We cannot accurately display a project list at this time. Please access a sub-group dependency list to view this information or see the %{linkStart}dependency list help %{linkEnd} page to learn more."
 msgstr ""
 
+msgid "Dependencies|This link will expire in %{number} days."
+msgstr ""
+
 msgid "Dependencies|Toggle vulnerability list"
 msgstr ""
 
@@ -19411,9 +19426,6 @@ msgid "Dependency Scanning"
 msgstr ""
 
 msgid "Dependency list"
-msgstr ""
-
-msgid "Dependency list export"
 msgstr ""
 
 msgid "DependencyProxy|%{docLinkStart}See the documentation%{docLinkEnd} for other ways to store Docker images in Dependency Proxy cache."
@@ -24721,9 +24733,6 @@ msgid "Folder/%{name}"
 msgstr ""
 
 msgid "Follow"
-msgstr ""
-
-msgid "Follow the link below to download the export."
 msgstr ""
 
 msgid "Followed Users' Activity"
@@ -57012,12 +57021,6 @@ msgstr ""
 msgid "The dependency list details information about the components used within your project."
 msgstr ""
 
-msgid "The dependency list was succesfully exported."
-msgstr ""
-
-msgid "The dependency list was successfully exported."
-msgstr ""
-
 msgid "The deployment of this job to %{environmentLink} did not succeed."
 msgstr ""
 
@@ -58355,9 +58358,6 @@ msgid "This license has already expired."
 msgstr ""
 
 msgid "This link points to external content"
-msgstr ""
-
-msgid "This link will expire in %{number} days."
 msgstr ""
 
 msgid "This link will redirect you to %{url}. If this URL looks wrong, please go back or close this window. Do you want to continue?"
