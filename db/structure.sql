@@ -8907,7 +8907,8 @@ ALTER SEQUENCE badges_id_seq OWNED BY badges.id;
 CREATE TABLE banned_users (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL
+    user_id bigint NOT NULL,
+    projects_deleted boolean DEFAULT false NOT NULL
 );
 
 CREATE SEQUENCE batched_background_migration_job_transition_logs_id_seq
