@@ -18,10 +18,7 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
       session_token: an_instance_of(String)
     }
 
-    if user
-      body[:log_data] = an_instance_of(String)
-      body[:email_address] = an_instance_of(String)
-    end
+    body[:log_data] = an_instance_of(String) if user
 
     body
   end
