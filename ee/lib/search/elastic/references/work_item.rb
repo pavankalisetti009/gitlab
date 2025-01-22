@@ -111,8 +111,7 @@ module Search
             data['correct_work_item_type_id'] = target.correct_work_item_type_id
           end
 
-          if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request) &&
-              ::Elastic::DataMigrationService.migration_has_finished?(:add_notes_to_work_items)
+          if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
             data = populate_notes(target, data)
           end
 
