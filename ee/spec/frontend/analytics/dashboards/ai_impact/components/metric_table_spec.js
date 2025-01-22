@@ -19,7 +19,7 @@ import {
 import FlowMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/dora_metrics.query.graphql';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/ai_impact/graphql/vulnerabilities.query.graphql';
-import AiCodeContributorsMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_code_contributors_metrics.query.graphql';
+import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_table.vue';
 import {
   SUPPORTED_FLOW_METRICS,
@@ -73,7 +73,7 @@ describe('Metric table', () => {
         [FlowMetricsQuery, flowMetricsRequest],
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
-        [AiCodeContributorsMetricsQuery, aiMetricsRequest],
+        [AiMetricsQuery, aiMetricsRequest],
       ],
       {},
       {
@@ -93,7 +93,7 @@ describe('Metric table', () => {
         [FlowMetricsQuery, flowMetricsRequest],
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
-        [AiCodeContributorsMetricsQuery, aiMetricsRequest],
+        [AiMetricsQuery, aiMetricsRequest],
       ],
       {},
       {
@@ -135,6 +135,7 @@ describe('Metric table', () => {
   const vulnerabilityCriticalTestId = 'ai-impact-metric-vulnerability-critical';
   const codeSuggestionsUsageRateTestId = 'ai-impact-metric-code-suggestions-usage-rate';
   const codeSuggestionsAcceptanceRateTestId = 'ai-impact-metric-code-suggestions-acceptance-rate';
+  const duoChatUsageRateTestId = 'ai-impact-metric-duo-chat-usage-rate';
 
   const findTableRow = (rowTestId) => wrapper.findByTestId(rowTestId);
   const findMetricTableCell = (rowTestId) => findTableRow(rowTestId).findComponent(MetricTableCell);
@@ -167,6 +168,7 @@ describe('Metric table', () => {
     ${VULNERABILITY_METRICS.CRITICAL}              | ${vulnerabilityCriticalTestId}         | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${codeSuggestionsUsageRateTestId}      | ${''}        | ${''}
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${codeSuggestionsAcceptanceRateTestId} | ${''}        | ${''}
+    ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${duoChatUsageRateTestId}              | ${''}        | ${''}
   `('for the $identifier table row', ({ identifier, testId, requestPath, trackingProperty }) => {
     beforeEach(() => {
       createWrapper();
@@ -188,6 +190,7 @@ describe('Metric table', () => {
     ${VULNERABILITY_METRICS.CRITICAL}              | ${'Critical vulnerabilities over time'} | ${vulnerabilityCriticalTestId}
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions usage'}             | ${codeSuggestionsUsageRateTestId}
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}   | ${codeSuggestionsAcceptanceRateTestId}
+    ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Unique users'}             | ${duoChatUsageRateTestId}
   `('for the $identifier table row', ({ name, testId }) => {
     describe('when loading data', () => {
       beforeEach(() => {

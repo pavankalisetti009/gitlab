@@ -34,6 +34,8 @@ export const extractGraphqlAiData = ({
   codeSuggestionsContributorsCount = null,
   codeSuggestionsAcceptedCount = null,
   codeSuggestionsShownCount = null,
+  duoChatContributorsCount = null,
+  duoAssignedUsersCount = null,
 } = {}) => {
   const codeSuggestionsUsageRate = calculateRate({
     numerator: codeSuggestionsContributorsCount,
@@ -43,6 +45,11 @@ export const extractGraphqlAiData = ({
   const codeSuggestionsAcceptanceRate = calculateRate({
     numerator: codeSuggestionsAcceptedCount,
     denominator: codeSuggestionsShownCount,
+  });
+
+  const duoChatUsageRate = calculateRate({
+    numerator: duoChatContributorsCount,
+    denominator: duoAssignedUsersCount,
   });
 
   return {
@@ -60,6 +67,14 @@ export const extractGraphqlAiData = ({
       tooltip: generateMetricTableTooltip({
         numerator: codeSuggestionsAcceptedCount,
         denominator: codeSuggestionsShownCount,
+      }),
+    },
+    [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
+      identifier: AI_METRICS.DUO_CHAT_USAGE_RATE,
+      value: duoChatUsageRate ?? '-',
+      tooltip: generateMetricTableTooltip({
+        numerator: duoChatContributorsCount,
+        denominator: duoAssignedUsersCount,
       }),
     },
   };

@@ -4,7 +4,9 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsContributorsCount: 0,
   codeContributorsCount: 10,
   codeSuggestionsAcceptedCount: 0,
-  codeSuggestionsShownCount: 20
+  codeSuggestionsShownCount: 20,
+  duoChatContributorsCount: 0,
+  duoAssignedUsersCount: 50
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -17,6 +19,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
     "tooltip": "0/10",
     "value": 0,
   },
+  "duo_chat_usage_rate": {
+    "identifier": "duo_chat_usage_rate",
+    "tooltip": "0/50",
+    "value": 0,
+  },
 }
 `;
 
@@ -24,7 +31,9 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsContributorsCount: 2,
   codeContributorsCount: undefined,
   codeSuggestionsAcceptedCount: 3,
-  codeSuggestionsShownCount: undefined
+  codeSuggestionsShownCount: undefined,
+  duoChatContributorsCount: 4,
+  duoAssignedUsersCount: undefined
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -37,6 +46,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
     "tooltip": "No data",
     "value": "-",
   },
+  "duo_chat_usage_rate": {
+    "identifier": "duo_chat_usage_rate",
+    "tooltip": "No data",
+    "value": "-",
+  },
 }
 `;
 
@@ -44,7 +58,9 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsContributorsCount: 5,
   codeContributorsCount: 10,
   codeSuggestionsAcceptedCount: 3,
-  codeSuggestionsShownCount: 4
+  codeSuggestionsShownCount: 4,
+  duoChatContributorsCount: 7,
+  duoAssignedUsersCount: 8
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -57,6 +73,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
     "tooltip": "5/10",
     "value": 50,
   },
+  "duo_chat_usage_rate": {
+    "identifier": "duo_chat_usage_rate",
+    "tooltip": "7/8",
+    "value": 87.5,
+  },
 }
 `;
 
@@ -64,7 +85,9 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsContributorsCount: undefined,
   codeContributorsCount: 5,
   codeSuggestionsAcceptedCount: undefined,
-  codeSuggestionsShownCount: 4
+  codeSuggestionsShownCount: 4,
+  duoChatContributorsCount: undefined,
+  duoAssignedUsersCount: 3
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -74,6 +97,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   },
   "code_suggestions_usage_rate": {
     "identifier": "code_suggestions_usage_rate",
+    "tooltip": "No data",
+    "value": "-",
+  },
+  "duo_chat_usage_rate": {
+    "identifier": "duo_chat_usage_rate",
     "tooltip": "No data",
     "value": "-",
   },
