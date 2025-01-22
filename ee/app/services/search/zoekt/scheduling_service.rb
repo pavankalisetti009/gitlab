@@ -361,11 +361,7 @@ module Search
 
       def repo_to_delete_check
         execute_every 10.minutes do
-          Search::Zoekt::Repository.should_be_deleted.each_batch do |batch|
-            dispatch RepoMarkedAsToDeleteEvent do
-              { zoekt_repo_ids: batch.pluck_primary_key }
-            end
-          end
+          dispatch RepoMarkedAsToDeleteEvent, if: -> { ::Search::Zoekt::Repository.should_be_deleted.exists? }
         end
       end
 

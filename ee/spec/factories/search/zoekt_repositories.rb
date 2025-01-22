@@ -12,4 +12,8 @@ FactoryBot.define do
       project { association(:project_with_repo) }
     end
   end
+
+  trait :orphaned do
+    state { Search::Zoekt::Repository.state_value(:orphaned) }
+  end
 end

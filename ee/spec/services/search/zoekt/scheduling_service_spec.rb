@@ -678,17 +678,15 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let(:task) { :repo_to_delete_check }
 
     it 'publishes an RepoMarkedAsToDeleteEvent with repos that should be deleted' do
-      stubbed_orphaned_repos = Search::Zoekt::Repository.all
+      expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_deleted, :exists?).and_return(true)
+      expect { execute_task }.to publish_event(Search::Zoekt::RepoMarkedAsToDeleteEvent).with({})
+    end
 
-      expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_deleted,
-        :each_batch).and_yield(stubbed_orphaned_repos)
-      expect(stubbed_orphaned_repos).to receive(:pluck_primary_key).and_return([4, 5, 6])
-
-      expected_data = { zoekt_repo_ids: [4, 5, 6] }
-
-      expect { execute_task }
-        .to publish_event(Search::Zoekt::RepoMarkedAsToDeleteEvent)
-        .with(expected_data)
+    context 'when no repositories exist in should_be_deleted scope' do
+      it 'does not publish an event' do
+        expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_deleted, :exists?).and_return(false)
+        expect { execute_task }.not_to publish_event(Search::Zoekt::RepoMarkedAsToDeleteEvent)
+      end
     end
   end
 
