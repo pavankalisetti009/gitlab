@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::PopulateDenormalizedColumnsForSbomOccurrences, schema: 20230721095222, feature_category: :dependency_management do
+RSpec.describe Gitlab::BackgroundMigration::PopulateDenormalizedColumnsForSbomOccurrences, schema: 20231220225325, feature_category: :dependency_management do
   before(:all) do
     # This migration will not work if a sec database is configured. It should be finalized and removed prior to
     # sec db rollout.
