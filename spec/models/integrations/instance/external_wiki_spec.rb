@@ -2,6 +2,6 @@
 
 require 'spec_helper'
 
-RSpec.describe Integrations::ExternalWiki, feature_category: :integrations do
+RSpec.describe Integrations::Instance::ExternalWiki, feature_category: :integrations do
   it_behaves_like Integrations::Base::ExternalWiki
 end
