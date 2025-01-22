@@ -2,6 +2,8 @@
 import { GlBadge, GlTooltipDirective } from '@gitlab/ui';
 import { __, sprintf } from '~/locale';
 import ApprovalsCountCe from '~/merge_requests/components/approval_count.vue';
+import { TYPENAME_USER } from '~/graphql_shared/constants';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 
 export default {
   components: {
@@ -23,6 +25,11 @@ export default {
     },
   },
   computed: {
+    approvedByCurrentUser() {
+      const userID = convertToGraphQLId(TYPENAME_USER, gon.current_user_id || '');
+
+      return this.mergeRequest.approvedBy?.nodes.some((u) => u.id === userID);
+    },
     approvalText() {
       if (this.fullText) {
         if (this.mergeRequest.approved) {
@@ -40,15 +47,21 @@ export default {
       }`;
     },
     tooltipTitle() {
-      return sprintf(__('Required approvals (%{approvals_given} of %{required} given)'), {
-        approvals_given: this.mergeRequest.approvalsRequired - this.mergeRequest.approvalsLeft,
-        required: this.mergeRequest.approvalsRequired,
-      });
+      return sprintf(
+        this.approvedByCurrentUser
+          ? __("Required approvals (%{approvals_given} of %{required} given, you've approved)")
+          : __('Required approvals (%{approvals_given} of %{required} given)'),
+        {
+          approvals_given: this.mergeRequest.approvalsRequired - this.mergeRequest.approvalsLeft,
+          required: this.mergeRequest.approvalsRequired,
+        },
+      );
     },
     badgeVariant() {
       return this.mergeRequest.approved ? 'success' : 'muted';
     },
     badgeIcon() {
+      if (this.mergeRequest.approved && this.approvedByCurrentUser) return 'approval-solid';
       if (this.mergeRequest.approved) return 'check-circle';
 
       return this.mergeRequest.approvalsRequired - this.mergeRequest.approvalsLeft > 0
@@ -65,7 +78,7 @@ export default {
     v-gl-tooltip.viewport.top="tooltipTitle"
     :aria-label="tooltipTitle"
     :icon="badgeIcon"
-    icon-optically-aligned
+    :icon-optically-aligned="badgeIcon !== 'approval-solid'"
     :variant="badgeVariant"
     data-testid="mr-appovals"
   >

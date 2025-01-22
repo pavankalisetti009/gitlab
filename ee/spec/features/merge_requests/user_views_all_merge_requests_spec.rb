@@ -30,7 +30,7 @@ RSpec.describe 'User views all merge requests', :js, feature_category: :code_rev
       merge_request.approvals.create!(user: user)
       sign_in(user)
       visit(project_merge_requests_path(project, state: :all))
-      expect(page.all('[data-testid="mr-appovals"]').any? { |item| item["aria-label"] == "Required approvals (1 of 2 given)" }).to be true
+      expect(page.all('[data-testid="mr-appovals"]').any? { |item| item["aria-label"] == "Required approvals (1 of 2 given, you've approved)" }).to be true
     end
   end
 end
