@@ -20,7 +20,6 @@ FactoryBot.define do
     desired_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     actual_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     deployment_resource_version { 2 }
-    max_hours_before_termination { 24 }
 
     project_ref { 'main' }
     devfile_path { '.devfile.yaml' }

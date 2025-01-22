@@ -53,7 +53,9 @@ module Types
         deprecated: { reason: 'Field is not used', milestone: '17.5' }
 
       field :max_hours_before_termination, GraphQL::Types::Int,
-        null: false, description: 'Number of hours until the workspace automatically terminates.'
+        null: false,
+        description: 'Number of hours until the workspace automatically terminates.',
+        deprecated: { reason: 'Field is not used', milestone: '17.9' }
 
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/510078 - Remove in 19.0
       field :devfile_ref, GraphQL::Types::String,
@@ -113,6 +115,10 @@ module Types
 
       def editor
         'webide'
+      end
+
+      def max_hours_before_termination
+        ::RemoteDevelopment::WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
       end
     end
   end
