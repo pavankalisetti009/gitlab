@@ -47,6 +47,14 @@ module Types
 
       field :updated_at, Types::TimeType, null: false,
         description: 'Timestamp of the last update to any mutable remote development agent config property.'
+
+      def max_hours_before_termination_limit
+        120
+      end
+
+      def default_max_hours_before_termination
+        24
+      end
     end
   end
 end

@@ -10,11 +10,10 @@ module RemoteDevelopment
 
     include Sortable
 
+    ignore_column :max_hours_before_termination, remove_with: '17.11', remove_after: '2025-03-20'
+    ignore_column :default_max_hours_before_termination, remove_with: '17.11', remove_after: '2025-03-20'
+
     UNLIMITED_QUOTA = -1
-    MIN_HOURS_BEFORE_TERMINATION = 1
-    # NOTE: see the following issue for the reasoning behind this value being the hard maximum termination limit:
-    #      https://gitlab.com/gitlab-org/gitlab/-/issues/471994
-    MAX_HOURS_BEFORE_TERMINATION = 8760
 
     belongs_to :agent,
       class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :remote_development_agent_config
@@ -38,16 +37,6 @@ module RemoteDevelopment
     validates :workspaces_quota, numericality: { only_integer: true, greater_than_or_equal_to: UNLIMITED_QUOTA }
     validates :workspaces_per_user_quota,
       numericality: { only_integer: true, greater_than_or_equal_to: UNLIMITED_QUOTA }
-    validates :max_hours_before_termination_limit,
-      numericality: {
-        only_integer: true, greater_than_or_equal_to: :default_max_hours_before_termination,
-        less_than_or_equal_to: MAX_HOURS_BEFORE_TERMINATION
-      }
-    validates :default_max_hours_before_termination,
-      numericality: {
-        only_integer: true, greater_than_or_equal_to: MIN_HOURS_BEFORE_TERMINATION,
-        less_than_or_equal_to: :max_hours_before_termination_limit
-      }
     validates :allow_privilege_escalation, inclusion: { in: [true, false] }
     validates :use_kubernetes_user_namespaces, inclusion: { in: [true, false] }
     validates :default_runtime_class, 'remote_development/default_runtime_class': true
