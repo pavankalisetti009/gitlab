@@ -22,12 +22,6 @@ export default {
       },
     };
   },
-  methods: {
-    onInput(value) {
-      this.form.enableMemberPromotionManagement = value;
-      this.$emit('form-value-change', { name: 'enableMemberPromotionManagement', value });
-    },
-  },
 };
 </script>
 <template>
@@ -51,7 +45,7 @@ export default {
       </gl-sprintf>
     </gl-alert>
     <signup-checkbox
-      :value="form.enableMemberPromotionManagement"
+      v-model="form.enableMemberPromotionManagement"
       name="application_setting[enable_member_promotion_management]"
       :label="s__('ApplicationSettings|Approve role promotions')"
       :disabled="!canDisableMemberPromotionManagement"
@@ -60,7 +54,6 @@ export default {
           'ApplicationSettings|Require admin approval when a non-billable user is moving into a billable role.',
         )
       "
-      @input="onInput($event)"
     />
   </div>
 </template>

@@ -15,7 +15,6 @@ describe('SeatControlsMemberPromotionManagement', () => {
         enableMemberPromotionManagement: true,
         canDisableMemberPromotionManagement: false,
         rolePromotionRequestsPath: '/admin/role_promotion',
-
         ...provide,
       },
     });
@@ -25,18 +24,6 @@ describe('SeatControlsMemberPromotionManagement', () => {
     mountComponent();
 
     expect(findSignupCheckbox().props('value')).toBe(true);
-  });
-
-  it('will re-emit value changes from SignupCheckbox', () => {
-    mountComponent();
-
-    findSignupCheckbox().vm.$emit('input', false);
-    findSignupCheckbox().vm.$emit('input', true);
-
-    expect(wrapper.emitted('form-value-change')).toEqual([
-      [{ name: 'enableMemberPromotionManagement', value: false }],
-      [{ name: 'enableMemberPromotionManagement', value: true }],
-    ]);
   });
 
   describe('prevent disabling setting', () => {

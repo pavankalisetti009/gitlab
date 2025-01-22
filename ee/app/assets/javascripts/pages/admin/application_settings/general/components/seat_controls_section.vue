@@ -173,9 +173,7 @@ export default {
       :label="s__('ApplicationSettings|Role Promotions')"
       label-for="role-promotions"
     >
-      <seat-controls-member-promotion-management
-        @form-value-change="$emit('form-value-change', $event)"
-      />
+      <seat-controls-member-promotion-management />
     </gl-form-group>
   </div>
 </template>
