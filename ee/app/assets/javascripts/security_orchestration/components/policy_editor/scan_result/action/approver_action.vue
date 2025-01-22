@@ -2,7 +2,6 @@
 import { GlAlert, GlFormInput, GlIcon, GlPopover, GlSprintf } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   APPROVER_TYPE_DICT,
   APPROVER_TYPE_LIST_ITEMS,
@@ -33,7 +32,6 @@ export default {
     ApproverSelectionWrapper,
     SectionLayout,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceId'],
   props: {
     errors: {
@@ -88,17 +86,11 @@ export default {
     approvalsRequired() {
       return this.initAction.approvals_required;
     },
-    hasMultipleApproversActionsEnabled() {
-      return this.glFeatures.multipleApprovalActions;
-    },
     humanizedTemplate() {
       return this.isWarnType ? WARN_TEMPLATE : getDefaultHumanizedTemplate(this.approvalsRequired);
     },
     isApproverFieldValid() {
       return this.errors.every((error) => error.field !== 'approvers_ids');
-    },
-    selectedErrors() {
-      return this.hasMultipleApproversActionsEnabled ? this.actionErrors : this.errors;
     },
   },
   created() {
@@ -172,8 +164,7 @@ export default {
       this.handleUpdateApprovers(newApprovers);
     },
     errorKey(error) {
-      const key = this.hasMultipleApproversActionsEnabled ? 'index' : 'message';
-      return error[key];
+      return error.index;
     },
   },
 };
@@ -182,7 +173,7 @@ export default {
 <template>
   <div>
     <gl-alert
-      v-for="(error, index) in selectedErrors"
+      v-for="(error, index) in actionErrors"
       :key="errorKey(error)"
       :class="{ 'gl-mb-3': index === errors.length - 1 }"
       :dismissible="false"

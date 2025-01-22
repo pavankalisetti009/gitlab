@@ -204,10 +204,7 @@ describe('ApproverAction', () => {
         title: 'Error without index',
         message: 'Something went wrong without index',
       };
-      createWrapper(
-        { errors: [error, error2, errorWithoutIndex], actionIndex: 1 },
-        { glFeatures: { multipleApprovalActions: true } },
-      );
+      createWrapper({ errors: [error, error2, errorWithoutIndex], actionIndex: 1 });
 
       const allAlerts = findAllAlerts();
       expect(allAlerts).toHaveLength(2);
