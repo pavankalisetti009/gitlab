@@ -33,6 +33,8 @@ module CloudConnector
         # requires a different set of probes to be executed.
         if ::Gitlab::Ai::SelfHosted::AiGateway.required?
           ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
+        elsif ::Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
+          self_hosted_probes
         else
           default_probes
         end
@@ -45,6 +47,13 @@ module CloudConnector
           CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_URL),
           CloudConnector::StatusChecks::Probes::AccessProbe.new,
           CloudConnector::StatusChecks::Probes::TokenProbe.new,
+          CloudConnector::StatusChecks::Probes::EndToEndProbe.new(@user)
+        ]
+      end
+
+      def self_hosted_probes
+        [
+          CloudConnector::StatusChecks::Probes::HostProbe.new(::Gitlab::AiGateway.self_hosted_url),
           CloudConnector::StatusChecks::Probes::EndToEndProbe.new(@user)
         ]
       end

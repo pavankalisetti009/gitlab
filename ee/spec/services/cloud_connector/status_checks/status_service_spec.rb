@@ -14,7 +14,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
     subject(:service) { described_class.new(user: user) }
 
     context 'when no probes are passed' do
-      it 'created default probes' do
+      it 'creates default probes' do
         service_probes = service.probes
 
         expect(service_probes.count).to eq(6)
@@ -43,6 +43,29 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
         expect(service_probes[2]).to be_an_instance_of(
           CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe
         )
+      end
+    end
+
+    context 'when CLOUD_CONNECTOR_SELF_SIGN_TOKENS is set' do
+      let(:ai_gateway_url) { 'http://localhost:5002' }
+      let(:local_host_probe) { instance_double(CloudConnector::StatusChecks::Probes::HostProbe) }
+
+      before do
+        stub_env('CLOUD_CONNECTOR_SELF_SIGN_TOKENS', 'true')
+
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(ai_gateway_url)
+      end
+
+      it 'uses a different set of probes' do
+        expect(CloudConnector::StatusChecks::Probes::HostProbe).to(
+          receive(:new).with(ai_gateway_url).and_return(local_host_probe)
+        )
+
+        service_probes = service.probes
+
+        expect(service_probes.count).to eq(2)
+        expect(service_probes[0]).to be(local_host_probe)
+        expect(service_probes[1]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
       end
     end
   end
