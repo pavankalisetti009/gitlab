@@ -4,8 +4,9 @@ require 'spec_helper'
 
 RSpec.describe 'gitlab:seed:group_seed rake task', :silence_stdout, feature_category: :groups_and_projects do
   let(:username) { 'group_seed' }
-  let!(:user) { create(:user, username: username, organizations: [create(:organization, :default)]) }
-  let(:task_params) { [2, username] }
+  let!(:organization) { create(:organization) }
+  let!(:user) { create(:user, username: username, organizations: [organization]) }
+  let(:task_params) { [2, username, organization.path] }
 
   before do
     Rake.application.rake_require('tasks/gitlab/seed/group_seed')
