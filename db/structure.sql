@@ -34440,6 +34440,8 @@ CREATE INDEX index_vulnerability_state_transitions_on_author_id ON vulnerability
 
 CREATE INDEX index_vulnerability_state_transitions_on_project_id ON vulnerability_state_transitions USING btree (project_id);
 
+CREATE INDEX index_vulnerability_state_transitions_resolved_activity ON vulnerability_state_transitions USING btree (created_at, vulnerability_id) WHERE (to_state = 3);
+
 CREATE INDEX index_vulnerability_statistics_on_latest_pipeline_id ON vulnerability_statistics USING btree (latest_pipeline_id);
 
 CREATE INDEX index_vulnerability_statistics_on_letter_grade ON vulnerability_statistics USING btree (letter_grade);
