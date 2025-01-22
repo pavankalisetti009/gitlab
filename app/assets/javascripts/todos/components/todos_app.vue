@@ -325,7 +325,7 @@ export default {
         <transition-group
           v-else
           name="todos"
-          tag="ul"
+          tag="ol"
           data-testid="todo-item-list-container"
           class="gl-m-0 gl-border-collapse gl-list-none gl-p-0"
           @mouseenter="startedInteracting"
