@@ -16,7 +16,7 @@ module Ai
       scope :expired, -> { where(last_updated_at: ...30.days.ago) }
       scope :for_conversation_type, ->(conversation_type) { where(conversation_type: conversation_type) }
 
-      enum conversation_type: { duo_chat: 1 }
+      enum conversation_type: { duo_chat: 1, duo_code_review: 2 }
 
       before_create :populate_organization
 

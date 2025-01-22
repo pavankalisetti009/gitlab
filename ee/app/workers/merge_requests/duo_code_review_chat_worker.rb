@@ -31,8 +31,8 @@ module MergeRequests
     def prepare_prompt_message(note)
       author = note.author
 
-      # Reset chat to not mix context
-      prompt_message = save_prompt_message(author, ::Gitlab::Llm::AiMessage::ROLE_USER, note, '/reset')
+      thread = author.ai_conversation_threads.create!(conversation_type: :duo_code_review)
+      prompt_message = nil
 
       note.discussion.notes.each do |note|
         # We skip notes that are not mentioning the bot as we don't need it included
@@ -46,20 +46,21 @@ module MergeRequests
             ::Gitlab::Llm::AiMessage::ROLE_USER
           end
 
-        prompt_message = save_prompt_message(author, role, note, note.note)
+        prompt_message = save_prompt_message(author, role, note, note.note, thread)
       end
 
       prompt_message
     end
 
-    def save_prompt_message(user, role, resource, content)
+    def save_prompt_message(user, role, resource, content, thread)
       prompt_message = ::Gitlab::Llm::ChatMessage
         .new(
           ai_action: 'chat',
           user: user,
           content: content,
           role: role,
-          context: ::Gitlab::Llm::AiMessageContext.new(resource: resource)
+          context: ::Gitlab::Llm::AiMessageContext.new(resource: resource),
+          thread: thread
         )
 
       prompt_message.save!
