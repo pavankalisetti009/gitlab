@@ -258,4 +258,63 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
       end
     end
   end
+
+  describe '#admin_users_data_attributes', saas: false do
+    let_it_be(:users) { create_list(:user, 2) }
+    let(:license) { build_stubbed(:license) }
+
+    subject(:attributes) { helper.admin_users_data_attributes(users) }
+
+    before do
+      stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
+      allow(License).to receive(:current).and_return(license)
+      allow(helper).to receive(:current_user).and_return(build_stubbed(:admin))
+    end
+
+    shared_examples 'includes parent class data' do
+      it 'includes data from parent class' do
+        expect(attributes[:users]).to be_present
+        expect(attributes[:paths]).to be_present
+      end
+    end
+
+    context 'when below license seat limit' do
+      before do
+        allow(license).to receive(:restricted_user_count).and_return(10)
+        allow(::User).to receive_message_chain(:billable, :limit, :count).and_return(5)
+      end
+
+      it 'includes correct seat limit status' do
+        expect(attributes[:is_at_seats_limit]).to eq('false')
+      end
+
+      it_behaves_like 'includes parent class data'
+    end
+
+    context 'when at license seat limit' do
+      before do
+        allow(license).to receive(:restricted_user_count).and_return(10)
+        allow(::User).to receive_message_chain(:billable, :limit, :count).and_return(10)
+      end
+
+      it 'includes correct seat limit status' do
+        expect(attributes[:is_at_seats_limit]).to eq('true')
+      end
+
+      it_behaves_like 'includes parent class data'
+    end
+
+    context 'when exceeding license seat limit' do
+      before do
+        allow(license).to receive(:restricted_user_count).and_return(10)
+        allow(::User).to receive_message_chain(:billable, :limit, :count).and_return(15)
+      end
+
+      it 'includes correct seat limit status' do
+        expect(attributes[:is_at_seats_limit]).to eq('true')
+      end
+
+      it_behaves_like 'includes parent class data'
+    end
+  end
 end

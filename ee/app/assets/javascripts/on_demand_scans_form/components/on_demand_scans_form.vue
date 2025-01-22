@@ -421,8 +421,8 @@ export default {
             :description="runnerTagsDescription"
           >
             <runner-tags
+              v-if="canEditRunnerTags"
               v-model="selectedTags"
-              :can-edit-runner-tags="canEditRunnerTags"
               :project-path="projectPath"
               @error="showGeneralErrors"
             />

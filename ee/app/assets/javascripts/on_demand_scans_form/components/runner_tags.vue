@@ -20,11 +20,6 @@ export default {
     RunnerTagsDropdown,
   },
   props: {
-    canEditRunnerTags: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     projectPath: {
       type: String,
       required: true,
@@ -39,11 +34,6 @@ export default {
     return {
       selected: [],
     };
-  },
-  computed: {
-    isRunnerTagsDisabled() {
-      return !this.canEditRunnerTags;
-    },
   },
   methods: {
     emitErrorMessage(error) {
@@ -71,7 +61,6 @@ export default {
     <runner-tags-dropdown
       toggle-class="gl-w-full !gl-mb-1 gl-mt-4"
       :block="true"
-      :disabled="isRunnerTagsDisabled"
       :empty-tags-list-placeholder="$options.i18n.noRunnerTagsText"
       :namespace-path="projectPath"
       :value="value"
