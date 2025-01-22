@@ -821,6 +821,8 @@
   - 1
 - - search_zoekt_task_failed_event
   - 1
+- - search_zoekt_update_index_used_storage_bytes_event
+  - 1
 - - secrets_management_provision_project_secrets_manager
   - 1
 - - security_configuration_set_group_secret_push_protection

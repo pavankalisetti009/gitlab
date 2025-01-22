@@ -72,6 +72,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
                   .and change { index_zoekt_task.zoekt_repository.index_file_count }.to(1)
                     .and change { index_zoekt_task.zoekt_repository.size_bytes }.to(582790)
                       .and change { index_zoekt_task.zoekt_repository.retries_left }.from(2).to(10)
+                        .and change { index_zoekt_task.zoekt_repository.zoekt_index.last_indexed_at }.to(Time.current)
           end
         end
       end
