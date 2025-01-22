@@ -4881,6 +4881,9 @@ msgstr ""
 msgid "AdminUsers|The user will not receive any notifications"
 msgstr ""
 
+msgid "AdminUsers|There are no more seats left in your subscription. New users cannot be approved for this instance."
+msgstr ""
+
 msgid "AdminUsers|To confirm, type %{projectName}"
 msgstr ""
 
