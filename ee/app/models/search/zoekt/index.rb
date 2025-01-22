@@ -10,6 +10,7 @@ module Search
 
       DEFAULT_RESERVED_STORAGE_BYTES = 1.gigabyte.freeze
       DEFAULT_USED_STORAGE_BYTES = 1.kilobyte.freeze
+      EVICTION_STATES = %i[evicted pending_eviction].freeze
       SEARCHEABLE_STATES = %i[ready].freeze
       SHOULD_BE_DELETED_STATES = %i[orphaned pending_deletion].freeze
       STORAGE_IDEAL_PERCENT_USED = 0.4
@@ -34,6 +35,8 @@ module Search
         initializing: 2,
         ready: 10,
         reallocating: 20,
+        pending_eviction: 220,
+        evicted: 225,
         orphaned: 230,
         pending_deletion: 240
       }
@@ -82,8 +85,8 @@ module Search
         where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: SHOULD_BE_DELETED_STATES)
       end
 
-      scope :should_be_evicted, -> do
-        critical_watermark_exceeded.where.not(replica: nil)
+      scope :should_be_pending_eviction, -> do
+        critical_watermark_exceeded.where.not(state: EVICTION_STATES + SHOULD_BE_DELETED_STATES)
       end
 
       scope :should_be_deleted, -> do

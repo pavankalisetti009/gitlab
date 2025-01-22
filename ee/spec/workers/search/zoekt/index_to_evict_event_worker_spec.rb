@@ -14,7 +14,7 @@ RSpec.describe Search::Zoekt::IndexToEvictEventWorker, :zoekt_settings_enabled, 
   end
 
   it_behaves_like 'an idempotent worker' do
-    context 'when no indices are returned by critical_watermark_exceeded scope' do
+    context 'when no indices are pending_eviction' do
       it 'does nothing' do
         expect { consume_event(subscriber: described_class, event: event) }.not_to change {
           ::Search::Zoekt::Replica.count
@@ -22,37 +22,46 @@ RSpec.describe Search::Zoekt::IndexToEvictEventWorker, :zoekt_settings_enabled, 
       end
     end
 
-    context 'when indices are returned by critical_watermark_exceeded scope' do
-      let_it_be(:indices) { create_list(:zoekt_index, 3, watermark_level: :critical_watermark_exceeded) }
+    context 'when indices pending_eviction' do
+      let_it_be_with_reload(:idx1) { create(:zoekt_index, :pending_eviction) }
+      let_it_be_with_reload(:idx2) { create(:zoekt_index, :pending_eviction) }
+      let_it_be_with_reload(:idx3) { create(:zoekt_index, :pending_eviction) }
 
-      it 'deletes associated replicas and logs metadata with deleted count' do
+      it 'deletes associated replicas and logs metadata with deletedØ count' do
         expect_next_instance_of(described_class) do |instance|
-          expect(instance).to receive(:log_extra_metadata_on_done).with(:replicas_deleted_count, 3)
+          expect(instance).to receive(:log_hash_metadata_on_done)
+            .with({ replicas_deleted_count: 3, indices_updated_count: 3 })
         end
 
-        expect { consume_event(subscriber: described_class, event: event) }.to change {
-          ::Search::Zoekt::Replica.count
-        }.by(-3)
+        expect { consume_event(subscriber: described_class, event: event) }
+          .to change { ::Search::Zoekt::Replica.count }.by(-3)
+          .and change { idx1.reload.state }.from('pending_eviction').to('evicted')
+          .and change { idx2.reload.state }.from('pending_eviction').to('evicted')
+          .and change { idx3.reload.state }.from('pending_eviction').to('evicted')
+          .and not_change { healthy_index.reload.state }
       end
 
       it 'processes in batches' do
         stub_const("#{described_class}::BATCH_SIZE", 2)
 
         expect_next_instance_of(described_class) do |instance|
-          expect(instance).to receive(:log_extra_metadata_on_done).with(:replicas_deleted_count, 2)
+          expect(instance).to receive(:log_hash_metadata_on_done)
+            .with({ replicas_deleted_count: 2, indices_updated_count: 2 })
         end
 
-        expect { consume_event(subscriber: described_class, event: event) }.to change {
-          ::Search::Zoekt::Replica.count
-        }.by(-2)
+        expect { consume_event(subscriber: described_class, event: event) }
+        .to change { ::Search::Zoekt::Replica.count }.by(-2)
+        .and change { idx1.reload.state }.from('pending_eviction').to('evicted')
+        .and change { idx2.reload.state }.from('pending_eviction').to('evicted')
 
         expect_next_instance_of(described_class) do |instance|
-          expect(instance).to receive(:log_extra_metadata_on_done).with(:replicas_deleted_count, 1)
+          expect(instance).to receive(:log_hash_metadata_on_done)
+            .with({ replicas_deleted_count: 1, indices_updated_count: 1 })
         end
 
-        expect { consume_event(subscriber: described_class, event: event) }.to change {
-          ::Search::Zoekt::Replica.count
-        }.by(-1)
+        expect { consume_event(subscriber: described_class, event: event) }
+          .to change { ::Search::Zoekt::Replica.count }.by(-1)
+          .and change { idx3.reload.state }.from('pending_eviction').to('evicted')
       end
     end
   end
