@@ -1,5 +1,5 @@
-import { GlButton } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlButton } from '@gitlab/ui';
+import { shallowMount, createWrapper as createWrapperWithUtil } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
@@ -9,6 +9,7 @@ import * as aiUtils from 'ee/ai/utils';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
+import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import VulnerabilityActionsDropdown from 'ee/vulnerabilities/components/vulnerability_actions_dropdown.vue';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
@@ -16,7 +17,12 @@ import Header, { CLIENT_SUBSCRIPTION_ID } from 'ee/vulnerabilities/components/he
 import ResolutionAlert from 'ee/vulnerabilities/components/resolution_alert.vue';
 import StatusDescription from 'ee/vulnerabilities/components/status_description.vue';
 import StateModal from 'ee/vulnerabilities/components/state_modal.vue';
-import { FEEDBACK_TYPES, VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
+import {
+  FEEDBACK_TYPES,
+  VULNERABILITY_STATE_OBJECTS,
+  VULNERABILITY_STATE_MODAL_ID,
+  VULNERABILITY_SEVERITY_MODAL_ID,
+} from 'ee/vulnerabilities/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsersMockHelper from 'helpers/user_mock_data_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -120,14 +126,20 @@ describe('Vulnerability Header', () => {
   const findStatusDescription = () => wrapper.findComponent(StatusDescription);
   const findChangeStatusButton = () => wrapper.findComponent(GlButton);
   const findStateModal = () => wrapper.findComponent(StateModal);
+  const findEditVulnerabilityDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
 
   const changeStatus = async ({ action, dismissalReason, comment }) => {
-    findChangeStatusButton().vm.$emit('click');
+    wrapper.vm.$emit(BV_SHOW_MODAL, VULNERABILITY_STATE_MODAL_ID);
     await nextTick();
     findStateModal().vm.$emit('change', { action, dismissalReason, comment });
   };
 
-  const createWrapper = ({ vulnerability = {}, apolloProvider, glAbilities }) => {
+  const createWrapper = ({
+    vulnerability = {},
+    apolloProvider,
+    glAbilities,
+    vulnerabilitySeverityOverride = true,
+  }) => {
     wrapper = shallowMount(Header, {
       apolloProvider,
       directives: {
@@ -147,6 +159,12 @@ describe('Vulnerability Header', () => {
           resolveVulnerabilityWithAi: true,
           ...glAbilities,
         },
+        glFeatures: {
+          vulnerabilitySeverityOverride,
+        },
+      },
+      stubs: {
+        GlDisclosureDropdown,
       },
     });
   };
@@ -254,118 +272,179 @@ describe('Vulnerability Header', () => {
     });
   });
 
-  describe('state modal', () => {
-    beforeEach(() => {
+  // "Edit vulnerability" dropdown when ff `vulnerability_severity_override` is enabled
+  describe('"Edit vulnerability" dropdown', () => {
+    it.each`
+      index | name                 | modal
+      ${0}  | ${'Change status'}   | ${VULNERABILITY_STATE_MODAL_ID}
+      ${1}  | ${'Change severity'} | ${VULNERABILITY_SEVERITY_MODAL_ID}
+    `('contains a "$name" item that opens the $modal on click', ({ index, name, modal }) => {
       createWrapper({ vulnerability: getVulnerability() });
+      const rootWrapper = createWrapperWithUtil(wrapper.vm.$root);
+
+      const dropdownItem = wrapper
+        .findAllComponents(GlDisclosureDropdownItem)
+        .at(index)
+        .props('item');
+
+      expect(dropdownItem.text).toBe(name);
+
+      dropdownItem.action();
+
+      expect(rootWrapper.emitted(BV_SHOW_MODAL)[0]).toStrictEqual([modal]);
     });
 
-    it('renders enabled "Change status" button', () => {
-      const button = findChangeStatusButton();
-      expect(button.text()).toBe('Change status');
-      expect(button.props('disabled')).toBe(false);
-    });
-
-    it('renders the disabled change status button when user can not admin the vulnerability', () => {
+    it('disables "Change state" when user cannot admin vulnerability', () => {
       createWrapper({ vulnerability: getVulnerability({ canAdmin: false }) });
 
-      expect(findChangeStatusButton().props('disabled')).toBe(true);
+      expect(findEditVulnerabilityDropdown().props('items')).toMatchObject([
+        {
+          text: 'Change status',
+          action: expect.any(Function),
+          extraAttrs: {
+            disabled: true,
+          },
+        },
+        {
+          text: 'Change severity',
+          action: expect.any(Function),
+        },
+      ]);
     });
+  });
 
-    it('checks that button and modal are connected', () => {
-      const buttonModalDirective = getBinding(findChangeStatusButton().element, 'gl-modal');
-      const modalId = findStateModal().props('modalId');
+  describe('state modal', () => {
+    // "Change status" button when ff `vulnerability_severity_override` is disabled
+    describe('change status button', () => {
+      const featureFlags = {
+        vulnerabilitySeverityOverride: false,
+      };
 
-      expect(buttonModalDirective.value).toBe('vulnerability-state-modal');
-      expect(modalId).toBe('vulnerability-state-modal');
-    });
+      beforeEach(() => {
+        createWrapper({
+          vulnerability: getVulnerability(),
+          ...featureFlags,
+        });
+      });
 
-    it('passes props to state drawer', () => {
-      createWrapper({
-        vulnerability: getVulnerability({
+      it('renders enabled "Change status" button', () => {
+        const button = findChangeStatusButton();
+        expect(button.text()).toBe('Change status');
+        expect(button.props('disabled')).toBe(false);
+      });
+
+      it('renders the disabled change status button when user can not admin the vulnerability', () => {
+        createWrapper({
+          vulnerability: getVulnerability({ canAdmin: false }),
+          ...featureFlags,
+        });
+
+        expect(findChangeStatusButton().props('disabled')).toBe(true);
+      });
+
+      it('checks that button and modal are connected', () => {
+        const buttonModalDirective = getBinding(findChangeStatusButton().element, 'gl-modal');
+        const modalId = findStateModal().props('modalId');
+
+        expect(buttonModalDirective.value).toBe(VULNERABILITY_STATE_MODAL_ID);
+        expect(modalId).toBe(VULNERABILITY_STATE_MODAL_ID);
+      });
+
+      it('passes props to state drawer', () => {
+        createWrapper({
+          vulnerability: getVulnerability({
+            state: 'dismissed',
+            stateTransitions: [{ comment: 'test comment', dismissalReason: 'mitigating_control' }],
+          }),
+        });
+
+        expect(findStateModal().props()).toMatchObject({
           state: 'dismissed',
-          stateTransitions: [{ comment: 'test comment', dismissalReason: 'mitigating_control' }],
-        }),
-      });
-
-      expect(findStateModal().props()).toMatchObject({
-        state: 'dismissed',
-        dismissalReason: 'mitigating_control',
-        comment: 'test comment',
+          dismissalReason: 'mitigating_control',
+          comment: 'test comment',
+        });
       });
     });
 
-    describe.each`
-      payload                  | queryName                          | expected
-      ${{ action: 'dismiss' }} | ${'vulnerabilityDismiss'}          | ${'dismissed'}
-      ${{ action: 'confirm' }} | ${'vulnerabilityConfirm'}          | ${'confirmed'}
-      ${{ action: 'resolve' }} | ${'vulnerabilityResolve'}          | ${'resolved'}
-      ${{ action: 'revert' }}  | ${'vulnerabilityRevertToDetected'} | ${'detected'}
-    `('state drawer change', ({ payload, queryName, expected }) => {
-      describe('when API call is successful', () => {
-        beforeEach(() => {
-          const apolloProvider = createApolloProvider([
-            vulnerabilityStateMutations[payload.action],
-            jest
-              .fn()
-              .mockResolvedValue(getVulnerabilityStatusMutationResponse(queryName, expected)),
-          ]);
+    // modal behavior whether ff is true or false
+    describe.each([true, false])('when vulnerability_severity_override is %s', (value) => {
+      const featureFlags = {
+        vulnerabilitySeverityOverride: value,
+      };
 
-          createWrapper({ apolloProvider });
-        });
+      describe.each`
+        payload                  | queryName                          | expected
+        ${{ action: 'dismiss' }} | ${'vulnerabilityDismiss'}          | ${'dismissed'}
+        ${{ action: 'confirm' }} | ${'vulnerabilityConfirm'}          | ${'confirmed'}
+        ${{ action: 'resolve' }} | ${'vulnerabilityResolve'}          | ${'resolved'}
+        ${{ action: 'revert' }}  | ${'vulnerabilityRevertToDetected'} | ${'detected'}
+      `('state drawer change', ({ payload, queryName, expected }) => {
+        describe('when API call is successful', () => {
+          beforeEach(() => {
+            const apolloProvider = createApolloProvider([
+              vulnerabilityStateMutations[payload.action],
+              jest
+                .fn()
+                .mockResolvedValue(getVulnerabilityStatusMutationResponse(queryName, expected)),
+            ]);
 
-        it('status badge is loading during GraphQL call', async () => {
-          await changeStatus(payload);
-          await nextTick();
+            createWrapper({ apolloProvider, ...featureFlags });
+          });
 
-          expect(findStatusBadge().props('loading')).toBe(true);
-        });
+          it('status badge is loading during GraphQL call', async () => {
+            await changeStatus(payload);
+            await nextTick();
 
-        it(`emits the updated vulnerability properly - ${payload.action}`, async () => {
-          await changeStatus(payload);
+            expect(findStatusBadge().props('loading')).toBe(true);
+          });
 
-          await waitForPromises();
-          expect(wrapper.emitted('vulnerability-state-change')[0][0]).toMatchObject({
-            state: expected,
+          it(`emits the updated vulnerability properly - ${payload.action}`, async () => {
+            await changeStatus(payload);
+
+            await waitForPromises();
+            expect(wrapper.emitted('vulnerability-state-change')[0][0]).toMatchObject({
+              state: expected,
+            });
+          });
+
+          it(`emits an event when the state is changed - ${payload.action}`, async () => {
+            await changeStatus(payload);
+
+            await waitForPromises();
+            expect(wrapper.emitted()['vulnerability-state-change']).toHaveLength(1);
+          });
+
+          it('status badge is not loading after GraphQL call', async () => {
+            await changeStatus(payload);
+            await waitForPromises();
+
+            expect(findStatusBadge().props('loading')).toBe(false);
           });
         });
 
-        it(`emits an event when the state is changed - ${payload.action}`, async () => {
-          await changeStatus(payload);
-
-          await waitForPromises();
-          expect(wrapper.emitted()['vulnerability-state-change']).toHaveLength(1);
-        });
-
-        it('status badge is not loading after GraphQL call', async () => {
-          await changeStatus(payload);
-          await waitForPromises();
-
-          expect(findStatusBadge().props('loading')).toBe(false);
-        });
-      });
-
-      describe('when API call fails', () => {
-        beforeEach(() => {
-          const apolloProvider = createApolloProvider([
-            vulnerabilityStateMutations[payload.action],
-            jest.fn().mockRejectedValue({
-              data: {
-                [queryName]: {
-                  errors: [{ message: 'Something went wrong' }],
-                  vulnerability: {},
+        describe('when API call fails', () => {
+          beforeEach(() => {
+            const apolloProvider = createApolloProvider([
+              vulnerabilityStateMutations[payload.action],
+              jest.fn().mockRejectedValue({
+                data: {
+                  [queryName]: {
+                    errors: [{ message: 'Something went wrong' }],
+                    vulnerability: {},
+                  },
                 },
-              },
-            }),
-          ]);
+              }),
+            ]);
 
-          createWrapper({ apolloProvider });
-        });
+            createWrapper({ apolloProvider, ...featureFlags });
+          });
 
-        it('shows an error message', async () => {
-          await changeStatus(payload);
+          it('shows an error message', async () => {
+            await changeStatus(payload);
 
-          await waitForPromises();
-          expect(createAlert).toHaveBeenCalledTimes(1);
+            await waitForPromises();
+            expect(createAlert).toHaveBeenCalledTimes(1);
+          });
         });
       });
     });

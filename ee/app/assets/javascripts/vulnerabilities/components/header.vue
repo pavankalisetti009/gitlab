@@ -1,6 +1,7 @@
 <script>
-import { GlModalDirective, GlTooltipDirective, GlButton } from '@gitlab/ui';
+import { GlModalDirective, GlTooltipDirective, GlButton, GlDisclosureDropdown } from '@gitlab/ui';
 import { v4 as uuidv4 } from 'uuid';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
@@ -8,6 +9,7 @@ import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_USER, TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
+import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 import axios from '~/lib/utils/axios_utils';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
@@ -16,7 +18,12 @@ import UsersCache from '~/lib/utils/users_cache';
 import { s__ } from '~/locale';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
-import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
+import {
+  VULNERABILITY_STATE_OBJECTS,
+  FEEDBACK_TYPES,
+  VULNERABILITY_STATE_MODAL_ID,
+  VULNERABILITY_SEVERITY_MODAL_ID,
+} from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
@@ -48,6 +55,7 @@ export default {
   name: 'VulnerabilityHeader',
   components: {
     GlButton,
+    GlDisclosureDropdown,
     StatusBadge,
     ResolutionAlert,
     StatusDescription,
@@ -59,7 +67,7 @@ export default {
     GlTooltip: GlTooltipDirective,
     GlModal: GlModalDirective,
   },
-  mixins: [glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
   props: {
     vulnerability: {
       type: Object,
@@ -100,6 +108,9 @@ export default {
         this.glAbilities.resolveVulnerabilityWithAi && this.vulnerability.aiResolutionAvailable
       );
     },
+    showSeverityModal() {
+      return this.glFeatures.vulnerabilitySeverityOverride;
+    },
     canExplainWithAi() {
       return (
         this.glAbilities.explainVulnerabilityWithAi && this.vulnerability.aiExplanationAvailable
@@ -122,6 +133,19 @@ export default {
     },
     vulnerabilityGraphqlId() {
       return convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerability.id);
+    },
+    editVulnerabilityActions() {
+      return [
+        {
+          text: s__('SecurityReports|Change status'),
+          action: () => this.$root.$emit(BV_SHOW_MODAL, VULNERABILITY_STATE_MODAL_ID),
+          extraAttrs: { disabled: this.disabledChangeState },
+        },
+        {
+          text: s__('SecurityReports|Change severity'),
+          action: () => this.$root.$emit(BV_SHOW_MODAL, VULNERABILITY_SEVERITY_MODAL_ID),
+        },
+      ];
     },
   },
   watch: {
@@ -303,8 +327,8 @@ export default {
       this.errorAlert = createAlert({ message: error });
     },
   },
-  stateModalId: 'vulnerability-state-modal',
-  severityModalId: 'vulnerability-severity-modal',
+  VULNERABILITY_STATE_MODAL_ID,
+  VULNERABILITY_SEVERITY_MODAL_ID,
 };
 </script>
 
@@ -331,20 +355,32 @@ export default {
       </div>
 
       <div class="detail-page-header-actions gl-flex gl-flex-wrap gl-items-center gl-gap-3">
-        <gl-button
-          v-gl-modal="$options.stateModalId"
-          :disabled="disabledChangeState || isLoadingVulnerability"
-          data-testid="change-status-btn"
-          >{{ s__('SecurityReports|Change status') }}</gl-button
-        >
+        <template v-if="showSeverityModal">
+          <gl-disclosure-dropdown
+            :toggle-text="__('Edit vulnerability')"
+            :items="editVulnerabilityActions"
+            :loading="isLoadingVulnerability"
+          />
+          <severity-modal
+            :modal-id="$options.VULNERABILITY_SEVERITY_MODAL_ID"
+            :severity="vulnerability.severity"
+          />
+        </template>
+        <template v-else>
+          <gl-button
+            v-gl-modal="$options.VULNERABILITY_STATE_MODAL_ID"
+            :disabled="disabledChangeState || isLoadingVulnerability"
+            data-testid="change-status-btn"
+            >{{ s__('SecurityReports|Change status') }}</gl-button
+          >
+        </template>
         <state-modal
-          :modal-id="$options.stateModalId"
+          :modal-id="$options.VULNERABILITY_STATE_MODAL_ID"
           :state="vulnerability.state"
           :dismissal-reason="dismissalReason"
           :comment="latestComment"
           @change="changeVulnerabilityState"
         />
-        <severity-modal :modal-id="$options.severityModalId" :severity="vulnerability.severity" />
         <vulnerability-actions-dropdown
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"

@@ -21781,6 +21781,9 @@ msgstr ""
 msgid "Edit video description"
 msgstr ""
 
+msgid "Edit vulnerability"
+msgstr ""
+
 msgid "Edit wiki page"
 msgstr ""
 
@@ -52447,6 +52450,9 @@ msgid "SecurityReports|All tools"
 msgstr ""
 
 msgid "SecurityReports|CVSS v%{version}:"
+msgstr ""
+
+msgid "SecurityReports|Change severity"
 msgstr ""
 
 msgid "SecurityReports|Change status"
