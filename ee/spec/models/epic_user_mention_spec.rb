@@ -2,11 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe EpicUserMention do
+RSpec.describe EpicUserMention, feature_category: :team_planning do
   describe 'associations' do
     it { is_expected.to belong_to(:epic) }
     it { is_expected.to belong_to(:note) }
   end
 
-  it_behaves_like 'has user mentions'
+  it_behaves_like 'has user mentions' do
+    let_it_be(:mentionable_key) { 'epic_id' }
+    let_it_be(:mentionable) { create(:epic) }
+  end
 end

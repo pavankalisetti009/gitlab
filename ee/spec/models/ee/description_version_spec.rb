@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DescriptionVersion do
+RSpec.describe DescriptionVersion, feature_category: :team_planning do
   describe 'associations' do
     it { is_expected.to belong_to :epic }
   end
@@ -20,7 +20,7 @@ RSpec.describe DescriptionVersion do
 
     before do
       create(:description_version, issue: issue)
-      create(:description_version)
+      create(:description_version, :issue)
 
       previous_version
       current_version

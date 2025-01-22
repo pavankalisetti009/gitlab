@@ -32,7 +32,7 @@ RSpec.shared_examples DescriptionDiffActions do
 
         context 'when description version is from another issuable' do
           it 'returns 404' do
-            other_version = create(:description_version)
+            other_version = create(:description_version, :issue)
 
             get_description_diff(version_id: other_version)
 
@@ -42,7 +42,7 @@ RSpec.shared_examples DescriptionDiffActions do
 
         context 'when start_version_id is from another issuable' do
           it 'returns 404' do
-            other_version = create(:description_version)
+            other_version = create(:description_version, :issue)
 
             get_description_diff(version_id: version_3, start_version_id: other_version)
 

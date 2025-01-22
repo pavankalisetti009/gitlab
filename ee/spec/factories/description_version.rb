@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-FactoryBot.define do
+FactoryBot.modify do
   factory :description_version do
-    description { generate(:title) }
-
-    after(:build) do |description_version|
-      description_version.issue = create(:issue) unless description_version.issuable
+    trait :epic do
+      association :epic
     end
   end
 end
