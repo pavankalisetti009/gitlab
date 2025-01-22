@@ -524,17 +524,13 @@ module Gitlab
       strong_memoize_attr :issue_aggregations
 
       def merge_request_aggregations
-        if ::Elastic::DataMigrationService.migration_has_finished?(:reindex_merge_requests_to_backfill_label_ids)
-          options = base_options.merge(aggregation: true, klass: MergeRequest)
+        options = base_options.merge(aggregation: true, klass: MergeRequest)
 
-          merge_requests_query = ::Search::Elastic::MergeRequestQueryBuilder.build(query: query, options: options)
-          results = ::Gitlab::Search::Client.execute_search(query: merge_requests_query, options: options) do |response|
-            ::Search::Elastic::ResponseMapper.new(response, options)
-          end
-          ::Gitlab::Search::AggregationParser.call(results.aggregations)
-        else
-          []
+        merge_requests_query = ::Search::Elastic::MergeRequestQueryBuilder.build(query: query, options: options)
+        results = ::Gitlab::Search::Client.execute_search(query: merge_requests_query, options: options) do |response|
+          ::Search::Elastic::ResponseMapper.new(response, options)
         end
+        ::Gitlab::Search::AggregationParser.call(results.aggregations)
       end
       strong_memoize_attr :merge_request_aggregations
 

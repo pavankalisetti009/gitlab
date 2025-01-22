@@ -11,3 +11,5 @@ class ReindexMergeRequestsToBackfillLabelIds < Elastic::Migration
   NEW_SCHEMA_VERSION = 24_08
   UPDATE_BATCH_SIZE = 100
 end
+
+ReindexMergeRequestsToBackfillLabelIds.prepend ::Elastic::MigrationObsolete

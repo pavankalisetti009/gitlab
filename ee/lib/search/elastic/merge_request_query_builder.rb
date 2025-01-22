@@ -13,6 +13,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_label_ids(query_hash: query_hash, options: options)
 
         if Feature.enabled?(:search_mr_filter_source_branch, options[:current_user])
           query_hash = ::Search::Elastic::Filters.by_source_branch(query_hash: query_hash, options: options)
@@ -26,11 +27,7 @@ module Search
           query_hash = ::Search::Elastic::Filters.by_not_hidden(query_hash: query_hash, options: options)
         end
 
-        if ::Elastic::DataMigrationService.migration_has_finished?(:reindex_merge_requests_to_backfill_label_ids)
-          query_hash = ::Search::Elastic::Filters.by_label_ids(query_hash: query_hash, options: options)
-
-          return ::Search::Elastic::Aggregations.by_label_ids(query_hash: query_hash) if options[:aggregation]
-        end
+        return ::Search::Elastic::Aggregations.by_label_ids(query_hash: query_hash) if options[:aggregation]
 
         query_hash = ::Search::Elastic::Formats.source_fields(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Formats.size(query_hash: query_hash, options: options)
