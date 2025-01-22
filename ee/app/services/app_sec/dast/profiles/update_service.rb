@@ -15,7 +15,7 @@ module AppSec
 
           build_auditors!
 
-          ApplicationRecord.transaction do
+          Gitlab::Database::SecApplicationRecord.transaction do
             dast_profile.update!(update_params)
 
             if tag_list?

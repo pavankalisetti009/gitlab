@@ -14,7 +14,9 @@ RSpec.describe Gitlab::Ingestion::BulkInsertableTask do
       Class.new(Security::Ingestion::AbstractTask) do
         include Gitlab::Ingestion::BulkInsertableTask
 
-        self.model = Class.new(ApplicationRecord) { self.table_name = 'vulnerability_occurrence_identifiers' }
+        self.model = Class.new(Gitlab::Database::SecApplicationRecord) do
+          self.table_name = 'vulnerability_occurrence_identifiers'
+        end
         self.unique_by = %i[occurrence_id identifier_id].freeze
 
         def attributes
