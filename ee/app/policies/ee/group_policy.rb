@@ -614,24 +614,38 @@ module EE
         enable :admin_cicd_variables
       end
 
-      rule { custom_role_enables_admin_compliance_framework & compliance_framework_available }.policy do
+      rule { custom_role_enables_admin_compliance_framework }.policy do
         enable :admin_compliance_framework
-      end
-
-      rule { custom_role_enables_admin_compliance_framework & group_level_compliance_pipeline_available }.policy do
         enable :admin_compliance_pipeline_configuration
-      end
-
-      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & group_level_compliance_dashboard_enabled }.policy do
         enable :read_compliance_dashboard
-      end
-
-      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & group_level_compliance_adherence_report_enabled }.policy do
         enable :read_compliance_adherence_report
+        enable :read_compliance_violations_report
       end
 
-      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & group_level_compliance_violations_report_enabled }.policy do
+      rule { custom_role_enables_read_compliance_dashboard }.policy do
+        enable :read_compliance_dashboard
+        enable :read_compliance_adherence_report
         enable :read_compliance_violations_report
+      end
+
+      rule { ~compliance_framework_available }.policy do
+        prevent :admin_compliance_framework
+      end
+
+      rule { ~group_level_compliance_pipeline_available }.policy do
+        prevent :admin_compliance_pipeline_configuration
+      end
+
+      rule { ~group_level_compliance_dashboard_enabled }.policy do
+        prevent :read_compliance_dashboard
+      end
+
+      rule { ~group_level_compliance_adherence_report_enabled }.policy do
+        prevent :read_compliance_adherence_report
+      end
+
+      rule { ~group_level_compliance_violations_report_enabled }.policy do
+        prevent :read_compliance_violations_report
       end
 
       rule { custom_role_enables_remove_group & has_parent }.policy do
