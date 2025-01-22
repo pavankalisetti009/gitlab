@@ -67973,11 +67973,10 @@ msgstr ""
 msgid "mrWidget|%{boldStart}Merging!%{boldEnd} We're almost there…"
 msgstr ""
 
-msgid "mrWidget|%{dangerStart}%{rules} rule can't be approved%{dangerEnd}"
-msgstr ""
-
-msgid "mrWidget|%{dangerStart}%{rules} rules can't be approved%{dangerEnd}"
-msgstr ""
+msgid "mrWidget|%{dangerStart}1 rule can't be approved%{dangerEnd}"
+msgid_plural "mrWidget|%{dangerStart}%{count} rules can't be approved%{dangerEnd}"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "mrWidget|%{mergeError}."
 msgstr ""
@@ -67994,11 +67993,10 @@ msgstr ""
 msgid "mrWidget|%{metricsLinkStart} Memory %{metricsLinkEnd} usage is %{emphasisStart} unchanged %{emphasisEnd} at %{memoryFrom}MB"
 msgstr ""
 
-msgid "mrWidget|%{rules} invalid rule has been approved automatically"
-msgstr ""
-
-msgid "mrWidget|%{rules} invalid rules have been approved automatically"
-msgstr ""
+msgid "mrWidget|1 invalid rule has been approved automatically"
+msgid_plural "mrWidget|%{count} invalid rules have been approved automatically"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "mrWidget|A new merge train has started and this merge request is the first of the queue."
 msgstr ""
