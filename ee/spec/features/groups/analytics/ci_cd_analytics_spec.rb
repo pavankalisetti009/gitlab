@@ -130,21 +130,4 @@ RSpec.describe 'Group CI/CD Analytics', :js, feature_category: :value_stream_man
       expect(toggle[:class].include?('is-checked')).to be(false)
     end
   end
-
-  describe 'when dora_charts_forecast is disabled' do
-    before do
-      stub_licensed_features(group_ci_cd_analytics: true, dora4_analytics: true)
-      stub_feature_flags(dora_charts_forecast: false)
-      group.add_reporter(user)
-      sign_in(user)
-      visit group_analytics_ci_cd_analytics_path(group)
-      wait_for_requests
-    end
-
-    it 'can not toggle data forecasting' do
-      click_link('Deployment frequency')
-
-      expect(page).not_to have_css(forecast_toggle_selector)
-    end
-  end
 end
