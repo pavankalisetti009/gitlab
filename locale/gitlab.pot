@@ -30747,12 +30747,6 @@ msgstr ""
 msgid "InviteMembersModal| To get more members, the owner of this top-level group can %{trialLinkStart}start a trial%{trialLinkEnd} or %{upgradeLinkStart}upgrade%{upgradeLinkEnd} to a paid tier."
 msgstr ""
 
-msgid "InviteMembersModal|%{linkStart}Read more%{linkEnd} about access expiration"
-msgstr ""
-
-msgid "InviteMembersModal|%{linkStart}Read more%{linkEnd} about role permissions. You can change this later. Invited members are limited to this role or their current group role, whichever is lower."
-msgstr ""
-
 msgid "InviteMembersModal|Access expiration date (optional)"
 msgstr ""
 
@@ -30771,6 +30765,9 @@ msgstr ""
 msgid "InviteMembersModal|During your trial, you can invite as many members to %{groupName} as you like. When the trial ends, you'll have a maximum of %{dashboardLimit} members on the Free tier. To get more members, %{linkStart}upgrade to a paid plan%{linkEnd}."
 msgstr ""
 
+msgid "InviteMembersModal|From this date onward, the user can no longer access the group or project. Learn more about %{linkStart}access%{linkEnd}."
+msgstr ""
+
 msgid "InviteMembersModal|GitLab is better with colleagues!"
 msgstr ""
 
@@ -30784,6 +30781,9 @@ msgid "InviteMembersModal|Invite a group"
 msgstr ""
 
 msgid "InviteMembersModal|Invite members"
+msgstr ""
+
+msgid "InviteMembersModal|Invited members are limited to this role or their current group role, whichever is higher. Learn more about %{linkStart}roles%{linkEnd}."
 msgstr ""
 
 msgid "InviteMembersModal|Inviting a group %{linkStart}adds its members to your group%{linkEnd}, including members who join after the invite. This might put your group over the free %{count} user limit."
