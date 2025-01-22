@@ -28,28 +28,35 @@ class InstanceSecurityDashboard
     projects.non_archived.limit(limit).pluck_primary_key
   end
 
+  # rubocop: disable CodeReuse/ActiveRecord -- Avoid unnecessary coupling between Project scopes and the InstanceSecurityDashboard.
   def projects
     Project.where(id: visible_users_security_dashboard_projects)
            .with_feature_available_for_user(:security_and_compliance, user)
-           .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485658')
   end
+  # rubocop: enable CodeReuse/ActiveRecord
 
   def vulnerability_reads
-    return Vulnerabilities::Read.none if projects.empty?
+    project_ids = non_archived_project_ids
 
-    Vulnerabilities::Read.for_projects(projects)
+    return Vulnerabilities::Read.none if project_ids.empty?
+
+    Vulnerabilities::Read.for_projects(project_ids, true)
   end
 
   def vulnerability_scanners
-    return Vulnerabilities::Scanner.none if projects.empty?
+    project_ids = non_archived_project_ids
 
-    Vulnerabilities::Scanner.for_projects(projects)
+    return Vulnerabilities::Scanner.none if project_ids.empty?
+
+    Vulnerabilities::Scanner.for_projects(project_ids)
   end
 
   def vulnerability_historical_statistics
-    return Vulnerabilities::HistoricalStatistic.none if projects.empty?
+    project_ids = non_archived_project_ids
 
-    Vulnerabilities::HistoricalStatistic.for_project(projects)
+    return Vulnerabilities::HistoricalStatistic.none if project_ids.empty?
+
+    Vulnerabilities::HistoricalStatistic.for_project(project_ids)
   end
 
   def has_projects?
@@ -66,6 +73,7 @@ class InstanceSecurityDashboard
 
   attr_reader :project_ids
 
+  # rubocop: disable CodeReuse/ActiveRecord -- Tech debt to be addressed in separate issue.
   def duo_enabled_project
     projects
       .includes(:project_setting)
@@ -97,4 +105,5 @@ class InstanceSecurityDashboard
   def authorized_access_levels
     Gitlab::Access.vulnerability_access_levels
   end
+  # rubocop: enable CodeReuse/ActiveRecord
 end
