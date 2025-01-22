@@ -35,8 +35,9 @@ module Mutations
 
         argument :max_hours_before_termination,
           GraphQL::Types::Int,
-          required: true,
-          description: 'Maximum hours the workspace can exist before it is automatically terminated.'
+          required: false,
+          description: 'Maximum hours the workspace can exist before it is automatically terminated.',
+          deprecated: { reason: 'Field is not used', milestone: '17.9' }
 
         argument :project_id,
           ::Types::GlobalIDType[::Project],

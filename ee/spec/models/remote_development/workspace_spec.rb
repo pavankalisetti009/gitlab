@@ -5,12 +5,10 @@ require 'spec_helper'
 # rubocop:disable RSpec/ MultipleMemoizedHelpers -- this is a complex model, it requires many helpers for thorough testing
 RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
-  let(:agent_max_hours_before_termination_limit) { 8760 }
   let(:workspaces_agent_config_enabled) { true }
   let(:workspaces_per_user_quota) { 10 }
   let(:workspaces_quota) { 10 }
   let(:agent_dns_zone) { 'workspace.me' }
-  let(:workspace_max_hours_before_termination) { agent_config.max_hours_before_termination_limit }
   let(:workspace_timestamps) { { responded_to_agent_at: nil, desired_state_updated_at: nil } }
   let(:workspaces_agent_config_version) { nil }
   let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
@@ -19,7 +17,6 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
     config = create(
       :workspaces_agent_config,
       agent: agent,
-      max_hours_before_termination_limit: agent_max_hours_before_termination_limit,
       workspaces_per_user_quota: workspaces_per_user_quota,
       workspaces_quota: workspaces_quota,
       dns_zone: agent_dns_zone,
@@ -42,7 +39,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
       personal_access_token: personal_access_token, desired_state: desired_state,
       responded_to_agent_at: workspace_timestamps[:responded_to_agent_at],
       desired_state_updated_at: workspace_timestamps[:desired_state_updated_at],
-      actual_state: actual_state, max_hours_before_termination: workspace_max_hours_before_termination,
+      actual_state: actual_state,
       workspaces_agent_config_version: agent_config.versions.size
     )
   end
@@ -374,39 +371,6 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
           expect(workspace.errors.full_messages).to include(
             'Workspaces agent config version must be greater than or equal to 0'
           )
-        end
-      end
-    end
-
-    context 'on max_hours_before_termination' do
-      context 'when max_hours_before_termination is greater than the agent max_hours_before_termination limit' do
-        context 'when it is created' do
-          let(:workspace_max_hours_before_termination) { agent_config.max_hours_before_termination_limit + 1 }
-
-          it 'returns errors' do
-            message = "must be below or equal to #{agent_config.max_hours_before_termination_limit}"
-            expect(workspace).not_to be_valid
-            expect(workspace.errors[:max_hours_before_termination]).to include(message)
-          end
-        end
-
-        context 'when it is updated' do
-          it "does not return errors" do
-            workspace.save!
-            agent_config.update!(max_hours_before_termination_limit: workspace_max_hours_before_termination - 1)
-            workspace.update!(desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
-            workspace.valid?
-            expect(workspace.errors[:max_hours_before_termination]).to be_blank
-          end
-        end
-      end
-
-      context 'when max_hours_before_termination is less than agent max_hours_before_termination limit' do
-        it "is passes the validation" do
-          workspace.workspaces_agent_config_version = 1
-          workspace.save(validate: false) # rubocop:disable Rails/SaveBang -- intentional to test validation
-          workspace.valid?
-          expect(workspace.errors[:max_hours_before_termination]).to be_blank
         end
       end
     end

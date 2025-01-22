@@ -45,7 +45,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       agent: agent,
       user: user,
       project: project,
-      max_hours_before_termination: 24,
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       project_ref: project_ref,
       devfile_path: devfile_path,

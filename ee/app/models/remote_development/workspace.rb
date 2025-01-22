@@ -10,6 +10,7 @@ module RemoteDevelopment
     columns_changing_default :desired_config_generator_version
 
     ignore_column :devfile_ref, remove_with: '17.8', remove_after: '2025-01-08'
+    ignore_column :max_hours_before_termination, remove_with: '17.11', remove_after: '2025-03-20'
 
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
@@ -51,10 +52,6 @@ module RemoteDevelopment
 
     validate :enforce_permanent_termination
     validate :enforce_quotas, if: ->(workspace) do
-      workspace.new_record? && workspaces_agent_config
-    end
-
-    validate :validate_max_hours_before_termination, if: ->(workspace) do
       workspace.new_record? && workspaces_agent_config
     end
 
@@ -175,14 +172,6 @@ module RemoteDevelopment
       # indicates that the corresponding PaperTrail reified version of the model should be used.
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
       self.workspaces_agent_config_version = agent.unversioned_latest_workspaces_agent_config.versions.size
-    end
-
-    def validate_max_hours_before_termination
-      agent_termination_limit = workspaces_agent_config.max_hours_before_termination_limit
-      return true if max_hours_before_termination <= agent_termination_limit
-
-      errors.add(:max_hours_before_termination, "must be below or equal to #{agent_termination_limit}")
-      false
     end
 
     def validate_workspaces_agent_config_version_is_within_range
