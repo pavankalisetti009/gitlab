@@ -1,4 +1,5 @@
 <script>
+import { v4 as uuidv4 } from 'uuid';
 import { GlButton, GlBadge } from '@gitlab/ui';
 import { CONTENT_EDITOR_PASTE } from '~/vue_shared/constants';
 import { updateText } from '~/lib/utils/text_markdown';
@@ -7,6 +8,8 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import markdownEditorEventHub from '~/vue_shared/components/markdown/eventhub';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
+
+const CLIENT_SUBSCRIPTION_ID = uuidv4();
 
 export default {
   components: {
@@ -24,6 +27,7 @@ export default {
             resourceId: this.resourceId,
             userId: this.userId,
             htmlResponse: false,
+            clientSubscriptionId: CLIENT_SUBSCRIPTION_ID,
           };
         },
         result({ data: { aiCompletionResponse } }) {
@@ -74,6 +78,7 @@ export default {
               sourceBranch: this.sourceBranch,
               targetBranch: this.targetBranch,
             },
+            clientSubscriptionId: CLIENT_SUBSCRIPTION_ID,
           },
         },
       });

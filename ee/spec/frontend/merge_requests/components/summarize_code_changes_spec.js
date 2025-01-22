@@ -14,6 +14,9 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 
 jest.mock('~/lib/utils/text_markdown');
 jest.mock('~/vue_shared/components/markdown/eventhub');
+jest.mock('uuid', () => ({
+  v4: () => 'uuidv4',
+}));
 
 Vue.use(VueApollo);
 
@@ -59,7 +62,17 @@ describe('Merge request summarize code changes', () => {
 
     await waitForPromises();
 
-    expect(aiActionMutationHandler).toHaveBeenCalled();
+    expect(aiActionMutationHandler).toHaveBeenCalledWith({
+      input: {
+        summarizeNewMergeRequest: {
+          resourceId: 'gid://gitlab/Project/1',
+          sourceProjectId: '1',
+          sourceBranch: 'test-source-branch',
+          targetBranch: 'test-target-branch',
+        },
+        clientSubscriptionId: 'uuidv4',
+      },
+    });
   });
 
   it('sets button as loading on click', async () => {
