@@ -9,7 +9,7 @@ module Gitlab
           extend ::Gitlab::Utils::Override
 
           def perform
-            return input_blank_message(command) if input_blank_for_ide?
+            return input_blank_message(command) if input_blank? && !allow_blank_message?
 
             content = request(&streamed_request_handler(StreamedAnswer.new))
 
@@ -100,21 +100,34 @@ module Gitlab
             "The code is written in #{language.name} and stored as #{filename}"
           end
 
-          def input_blank_for_ide?
+          def input_blank?
             return unless command
 
-            SlashCommand::VS_CODE_EXTENSION == command.platform_origin &&
-              command.user_input.blank? &&
-              context.current_file[:selected_text].blank?
+            command.user_input.blank? && context.current_file[:selected_text].blank?
+          end
+
+          def allow_blank_message?
+            raise NotImplementedError
           end
 
           def input_blank_message(command)
-            content = format(s_("AI|Your request does not seem to contain code to %{action}. " \
-              "To %{human_name} select the lines of code in your editor " \
-              "and then type the command %{command_name} in the chat. " \
-              "You may add additional instructions after this command. If you have no code to select, " \
-              "you can also simply add the code after the command."),
-              action: self.class::ACTION, human_name: self.class::HUMAN_NAME.downcase, command_name: command.name)
+            platform = if command.platform_origin == SlashCommand::VS_CODE_EXTENSION
+                         'editor'
+                       else
+                         'browser'
+                       end
+
+            content = format(
+              s_("AI|Your request does not seem to contain code to %{action}. " \
+                "To %{human_name} select the lines of code in your %{platform} " \
+                "and then type the command %{command_name} in the chat. " \
+                "You may add additional instructions after this command. If you have no code to select, " \
+                "you can also simply add the code after the command."),
+              action: self.class::ACTION,
+              human_name: self.class::HUMAN_NAME.downcase,
+              command_name: command.name,
+              platform: platform
+            )
 
             Answer.new(status: :not_executed, context: context, content: content, tool: nil)
           end

@@ -70,6 +70,10 @@ module Gitlab
 
             private
 
+            def allow_blank_message?
+              false
+            end
+
             def authorize
               Utils::ChatAuthorizer.context(context: context).allowed?
             end
