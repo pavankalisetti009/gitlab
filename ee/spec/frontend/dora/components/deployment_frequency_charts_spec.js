@@ -1,5 +1,5 @@
 import { mount, shallowMount } from '@vue/test-utils';
-import { GlAlert, GlBadge, GlLink } from '@gitlab/ui';
+import { GlAlert, GlLink } from '@gitlab/ui';
 import { DATA_VIZ_BLUE_500, GRAY_50 } from '@gitlab/ui/src/tokens/build/js/tokens';
 import MockAdapter from 'axios-mock-adapter';
 import last180DaysData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_180_days.json';
@@ -109,7 +109,6 @@ describe('deployment_frequency_charts.vue', () => {
   const findValueStreamMetrics = () => wrapper.findComponent(ValueStreamMetrics);
   const findCiCdAnalyticsCharts = () => wrapper.findComponent(CiCdAnalyticsCharts);
   const findDataForecastToggle = () => wrapper.findByTestId('data-forecast-toggle');
-  const findExperimentBadge = () => wrapper.findComponent(GlBadge);
   const findForecastFeedbackAlert = () => wrapper.findByTestId('forecast-feedback');
   const findForecastFeedbackLink = () => findForecastFeedbackAlert().findComponent(GlLink);
   const getChartData = () => findCiCdAnalyticsCharts().props().charts;
@@ -309,14 +308,11 @@ describe('deployment_frequency_charts.vue', () => {
     });
   });
 
-  describe('with doraChartsForecast=true', () => {
+  describe('Data forecasting', () => {
     const mountOpts = {
       provide: {
         projectPath: 'test/project',
         contextId,
-        glFeatures: {
-          doraChartsForecast: true,
-        },
       },
       stubs: {
         ValueStreamMetrics: true,
@@ -325,16 +321,11 @@ describe('deployment_frequency_charts.vue', () => {
 
     beforeEach(async () => {
       mock = new MockAdapter(axios);
-      window.gon = { features: { doraChartsForecast: true } };
 
       setupDefaultMockTimePeriods();
 
       createComponent(mountOpts, mount);
       await axios.waitForAll();
-    });
-
-    it('renders the "Experiment" badge', () => {
-      expect(findExperimentBadge().html()).toHaveText(DeploymentFrequencyCharts.i18n.badgeTitle);
     });
 
     it.each`

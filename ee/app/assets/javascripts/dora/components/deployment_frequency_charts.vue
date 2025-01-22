@@ -1,5 +1,5 @@
 <script>
-import { GlToggle, GlBadge, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlToggle, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
@@ -9,12 +9,11 @@ import SafeHtml from '~/vue_shared/directives/safe_html';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { ALL_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
 import { createAlert } from '~/alert';
-import { __, s__, sprintf } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { spriteIcon } from '~/lib/utils/common_utils';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
 import { DEFAULT_SELECTED_CHART } from '~/vue_shared/components/ci_cd_analytics/constants';
-import glFeaturesFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { PROMO_URL } from '~/constants';
 import DoraChartHeader from './dora_chart_header.vue';
 import {
@@ -51,7 +50,6 @@ export default {
     DoraChartHeader,
     ValueStreamMetrics,
     GlToggle,
-    GlBadge,
     GlAlert,
     GlSprintf,
     GlLink,
@@ -60,7 +58,6 @@ export default {
   directives: {
     SafeHtml,
   },
-  mixins: [glFeaturesFlagMixin()],
   inject: {
     projectPath: {
       type: String,
@@ -90,7 +87,6 @@ export default {
   i18n: {
     showForecast: s__('DORA4Metrics|Show forecast'),
     forecast: s__('DORA4Metrics|Forecast'),
-    badgeTitle: __('Experiment'),
     confirmationTitle: s__('DORA4Metrics|Accept testing terms of use?'),
     confirmationBtnText: s__('DORA4Metrics|Accept testing terms'),
     confirmationHtmlMessage: sprintf(
@@ -326,7 +322,7 @@ export default {
           <div class="gl-font-bold">{{ value }}</div>
         </div>
       </template>
-      <template v-if="glFeatures.doraChartsForecast" #extend-button-group>
+      <template #extend-button-group>
         <div class="gl-flex gl-items-center">
           <gl-toggle
             :value="showForecast"
@@ -335,7 +331,6 @@ export default {
             data-testid="data-forecast-toggle"
             @change="onToggleForecast"
           />
-          <gl-badge variant="neutral" class="gl-ml-3">{{ $options.i18n.badgeTitle }}</gl-badge>
         </div>
       </template>
       <template #alerts>
