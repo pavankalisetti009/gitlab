@@ -26,6 +26,9 @@ module Security
       foreign_key: 'security_policy_id', inverse_of: :security_policy
     has_many :security_policy_project_links, class_name: 'Security::PolicyProjectLink',
       foreign_key: :security_policy_id, inverse_of: :security_policy
+    has_one :security_pipeline_execution_policy_config_link,
+      class_name: 'Security::PipelineExecutionPolicyConfigLink',
+      foreign_key: :security_policy_id, inverse_of: :security_policy
 
     has_many :projects, through: :security_policy_project_links
 
