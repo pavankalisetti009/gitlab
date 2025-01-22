@@ -322,23 +322,23 @@ export default {
     <div>
       <div class="gl-flex gl-flex-col">
         <gl-loading-icon v-if="isLoading && showSpinnerWhileLoading" size="lg" class="gl-mt-5" />
-        <ul
+        <transition-group
           v-else
+          name="todos"
+          tag="ul"
           data-testid="todo-item-list-container"
           class="gl-m-0 gl-border-collapse gl-list-none gl-p-0"
           @mouseenter="startedInteracting"
           @mouseleave="stoppedInteracting"
         >
-          <transition-group name="todos">
-            <todo-item
-              v-for="todo in todos"
-              :key="todo.id"
-              :todo="todo"
-              :current-user-id="currentUserId"
-              @change="handleItemChanged"
-            />
-          </transition-group>
-        </ul>
+          <todo-item
+            v-for="todo in todos"
+            :key="todo.id"
+            :todo="todo"
+            :current-user-id="currentUserId"
+            @change="handleItemChanged"
+          />
+        </transition-group>
 
         <todos-empty-state v-if="showEmptyState" :is-filtered="isFiltered" />
 
