@@ -53,7 +53,11 @@ module WorkItems
 
         # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- the query already uses the batch limited in 100 items
         def update_parents(work_items)
-          parent_ids = WorkItems::ParentLink.for_children(work_items).pluck(:work_item_parent_id)
+          descendants = ::Gitlab::WorkItems::WorkItemHierarchy.new(work_items).descendants
+          parent_ids = WorkItems::ParentLink
+            .for_children(work_items)
+            .where.not(work_item_parent_id: descendants)
+            .pluck(:work_item_parent_id)
           return if parent_ids.blank?
 
           ::WorkItems::RolledupDates::UpdateMultipleRolledupDatesWorker.perform_async(parent_ids)
