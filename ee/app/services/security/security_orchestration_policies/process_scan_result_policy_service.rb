@@ -35,9 +35,21 @@ module Security
         track_internal_event('check_multiple_approval_actions_for_approval_policy', project: project)
       end
 
+      def track_approval_rule_creation(rule_type)
+        track_internal_event(
+          'create_approval_rule_from_merge_request_approval_policy',
+          project: project,
+          additional_properties: {
+            label: rule_type # Type of the Merge Request Approval Policy
+          }
+        )
+      end
+
       def create_new_approval_rules
         policy[:rules]&.first(Security::ScanResultPolicy::RULES_LIMIT)&.each_with_index do |rule, rule_index|
           next unless rule_type_allowed?(rule[:type])
+
+          track_approval_rule_creation(rule[:type])
 
           if approval_actions.empty?
             process_rule(rule, rule_index)
