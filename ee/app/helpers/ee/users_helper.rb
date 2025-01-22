@@ -17,6 +17,13 @@ module EE
       super && !::Gitlab::CurrentSettings.personal_access_tokens_disabled?
     end
 
+    override :admin_users_data_attributes
+    def admin_users_data_attributes(users)
+      super.merge({
+        is_at_seats_limit: at_seats_limit?.to_s
+      })
+    end
+
     def user_badges_in_admin_section(user)
       super(user).tap do |badges|
         badges << { text: s_('AdminUsers|Auditor'), variant: 'neutral' } if user.auditor?
@@ -66,6 +73,17 @@ module EE
     override :preload_project_associations
     def preload_project_associations(projects)
       ActiveRecord::Associations::Preloader.new(records: projects, associations: :invited_groups).call
+    end
+
+    def at_seats_limit?
+      return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) # only available for SM instances
+      return false unless ::Gitlab::CurrentSettings.seat_control_block_overages?
+
+      licensed_seats = License.current.restricted_user_count
+
+      return false unless licensed_seats.present? && licensed_seats.nonzero?
+
+      ::User.billable.limit(licensed_seats).count >= licensed_seats
     end
   end
 end
