@@ -60,8 +60,6 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
         end
 
         it 'creates and returns a dependency_list_export' do
-          expect(::Dependencies::CreateExportService).to receive(:new).with(*args).and_call_original
-
           create_dependency_list_export
 
           expect(response).to have_gitlab_http_status(:created)
@@ -69,6 +67,22 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response).to have_key('has_finished')
           expect(json_response).to have_key('self')
           expect(json_response).to have_key('download')
+        end
+
+        context 'when export creation fails' do
+          before do
+            allow_next_instance_of(Dependencies::CreateExportService) do |service|
+              error = ServiceResponse.error(message: ['validation error'])
+              allow(service).to receive(:execute).and_return(error)
+            end
+          end
+
+          it 'returns and error message and status code from the service' do
+            create_dependency_list_export
+
+            expect(response).to have_gitlab_http_status(:unprocessable_entity)
+            expect(json_response['message']).to eq(['validation error'])
+          end
         end
       end
     end
@@ -178,10 +192,6 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
         end
 
         it 'fetches and returns a dependency_list_export' do
-          expect(::Dependencies::FetchExportService).to receive(:new)
-          .with(dependency_list_export.id)
-          .and_call_original
-
           fetch_dependency_list_export
 
           expect(response).to have_gitlab_http_status(:ok)
@@ -195,14 +205,10 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           let(:dependency_list_export) { create(:dependency_list_export, author: user, project: project) }
 
           it 'sets polling and returns accepted' do
-            expect(::Dependencies::FetchExportService).to receive(:new)
-            .with(dependency_list_export.id)
-            .and_call_original
-            expect(::Gitlab::PollingInterval).to receive(:set_api_header).and_call_original
-
             fetch_dependency_list_export
 
             expect(response).to have_gitlab_http_status(:accepted)
+            expect(response.headers[Gitlab::PollingInterval::HEADER_NAME]).to match(/\d+/)
           end
         end
       end
@@ -251,10 +257,6 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
         end
 
         it 'returns file content' do
-          expect(::Dependencies::FetchExportService).to receive(:new)
-          .with(dependency_list_export.id)
-          .and_call_original
-
           download_dependency_list_export
 
           expect(response).to have_gitlab_http_status(:ok)
@@ -266,10 +268,6 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           let(:dependency_list_export) { create(:dependency_list_export, author: user, project: project) }
 
           it 'returns 404' do
-            expect(::Dependencies::FetchExportService).to receive(:new)
-            .with(dependency_list_export.id)
-            .and_call_original
-
             download_dependency_list_export
 
             expect(response).to have_gitlab_http_status(:not_found)

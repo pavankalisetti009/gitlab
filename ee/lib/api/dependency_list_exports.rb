@@ -9,6 +9,20 @@ module API
       authenticate!
     end
 
+    helpers do
+      def find_export
+        ::Dependencies::DependencyListExport.find_by_id(params[:export_id].to_i)
+      end
+
+      def present_created_export(result)
+        if result.success?
+          present result.payload[:dependency_list_export], with: EE::API::Entities::DependencyListExport
+        else
+          render_api_error!(result.message, :unprocessable_entity)
+        end
+      end
+    end
+
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       params do
         requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the project'
@@ -17,9 +31,9 @@ module API
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_project
 
-        dependency_list_export = ::Dependencies::CreateExportService.new(user_project, current_user).execute
+        result = ::Dependencies::CreateExportService.new(user_project, current_user).execute
 
-        present dependency_list_export, with: EE::API::Entities::DependencyListExport
+        present_created_export(result)
       end
     end
 
@@ -31,9 +45,9 @@ module API
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_group
 
-        dependency_list_export = ::Dependencies::CreateExportService.new(user_group, current_user).execute
+        result = ::Dependencies::CreateExportService.new(user_group, current_user).execute
 
-        present dependency_list_export, with: EE::API::Entities::DependencyListExport
+        present_created_export(result)
       end
     end
 
@@ -48,10 +62,11 @@ module API
         organization = find_organization!(params[:id])
         authorize! :read_dependency, organization
 
-        export = ::Dependencies::CreateExportService
+        result = ::Dependencies::CreateExportService
           .new(organization, current_user)
           .execute
-        present export, with: EE::API::Entities::DependencyListExport
+
+        present_created_export(result)
       end
     end
 
@@ -68,10 +83,10 @@ module API
 
         authorize! :read_dependency, user_pipeline
 
-        dependency_list_export = ::Dependencies::CreateExportService.new(
+        result = ::Dependencies::CreateExportService.new(
           user_pipeline, current_user, params[:export_type]).execute
 
-        present dependency_list_export, with: EE::API::Entities::DependencyListExport
+        present_created_export(result)
       end
     end
 
@@ -80,8 +95,7 @@ module API
     end
     desc 'Get a dependency list export'
     get 'dependency_list_exports/:export_id' do
-      dependency_list_export = ::Dependencies::FetchExportService
-      .new(params[:export_id].to_i).execute
+      dependency_list_export = find_export
 
       authorize! :read_dependency_list_export, dependency_list_export
 
@@ -95,8 +109,7 @@ module API
 
     desc 'Download a dependency list export'
     get 'dependency_list_exports/:export_id/download' do
-      dependency_list_export = ::Dependencies::FetchExportService
-      .new(params[:export_id].to_i).execute
+      dependency_list_export = find_export
 
       authorize! :read_dependency_list_export, dependency_list_export
 
