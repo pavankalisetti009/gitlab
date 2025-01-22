@@ -53,7 +53,7 @@ RSpec.describe ComplianceManagement::FrameworkPolicy, feature_category: :complia
 
     context 'when user is a guest with admin_compliance_framework custom permission' do
       let_it_be(:user) { create(:user) }
-      let_it_be(:member_role) { create(:member_role, :guest, namespace: group, admin_compliance_framework: true) }
+      let_it_be(:member_role) { create(:member_role, :guest, :admin_compliance_framework, namespace: group) }
       let_it_be(:member) { create(:group_member, :guest, group: group, user: user, member_role: member_role) }
 
       context 'when custom_roles feature is disabled' do

@@ -3889,7 +3889,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     context 'for a member role with admin_compliance_framework true' do
-      let(:member_role_abilities) { { admin_compliance_framework: true } }
+      let(:member_role_abilities) { { read_compliance_dashboard: true, admin_compliance_framework: true } }
 
       let(:allowed_abilities) do
         [

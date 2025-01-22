@@ -3011,7 +3011,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         }
       end
 
-      let(:member_role_abilities) { { admin_compliance_framework: true } }
+      let(:member_role_abilities) { { read_compliance_dashboard: true, admin_compliance_framework: true } }
 
       let(:allowed_abilities) do
         [
