@@ -136,9 +136,14 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         end
       end
 
-      context 'when add_notes_to_work_items migration is not complete' do
+      it 'includes notes or notes_internal', :aggregate_failures do
+        expect(indexed_json).to include(:notes_internal)
+        expect(indexed_json).to include(:notes)
+      end
+
+      context 'when feature flag search_work_items_index_notes is false' do
         before do
-          set_elasticsearch_migration_to :add_notes_to_work_items, including: false
+          stub_feature_flags(search_work_items_index_notes: false)
         end
 
         it 'does not include notes or notes_internal', :aggregate_failures do
@@ -147,36 +152,14 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         end
       end
 
-      context 'when add_notes_to_work_items migration is completed' do
-        before do
-          set_elasticsearch_migration_to :add_notes_to_work_items, including: true
-        end
-
-        it 'includes notes or notes_internal', :aggregate_failures do
-          expect(indexed_json).to include(:notes_internal)
-          expect(indexed_json).to include(:notes)
-        end
-
-        context 'when feature flag search_work_items_index_notes is false' do
-          before do
-            stub_feature_flags(search_work_items_index_notes: false)
-          end
-
-          it 'does not include notes or notes_internal', :aggregate_failures do
-            expect(indexed_json).not_to include(:notes_internal)
-            expect(indexed_json).not_to include(:notes)
-          end
-        end
-      end
-
       context 'when add_issues_access_level_in_work_item_index migration is not complete' do
         before do
           set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: false
         end
 
-        it 'does not include issues_access_level, notes or correct_work_item_type_id' do
+        it 'does not include issues_access_level or correct_work_item_type_id' do
           expect(indexed_json)
-            .to match(expected_hash.except(:issues_access_level, :notes_internal, :notes, :correct_work_item_type_id))
+            .to match(expected_hash.except(:issues_access_level, :correct_work_item_type_id))
         end
       end
     end
