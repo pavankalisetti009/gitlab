@@ -580,18 +580,26 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
-  describe '#update_index_used_bytes' do
-    let(:task) { :update_index_used_bytes }
+  describe '#update_index_used_storage_bytes' do
+    let(:task) { :update_index_used_storage_bytes }
     let_it_be(:index) { create(:zoekt_index, :ready) }
     let_it_be(:repo) { create(:zoekt_repository, zoekt_index: index) }
     let_it_be(:another_repo) { create(:zoekt_repository, zoekt_index: index) }
 
-    it 'resizes ready indices used_storage_bytes' do
-      expect do
-        execute_task
-      end.to change {
-        index.reload.used_storage_bytes
-      }.from(0).to(repo.size_bytes + another_repo.size_bytes)
+    context 'when indices exists in with_stale_used_storage_bytes_updated_at' do
+      it 'publishes an UpdateIndexUsedStorageBytesEvent' do
+        expect(Search::Zoekt::Index).to receive_message_chain(:with_stale_used_storage_bytes_updated_at, :exists?)
+          .and_return(true)
+        expect { execute_task }.to publish_event(Search::Zoekt::UpdateIndexUsedStorageBytesEvent).with({})
+      end
+    end
+
+    context 'when no indices exist in with_stale_used_storage_bytes_updated_at' do
+      it 'does not publish an event' do
+        expect(Search::Zoekt::Index).to receive_message_chain(:with_stale_used_storage_bytes_updated_at, :exists?)
+          .and_return(false)
+        expect { execute_task }.not_to publish_event(Search::Zoekt::UpdateIndexUsedStorageBytesEvent)
+      end
     end
   end
 
@@ -634,7 +642,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
     end
 
-    context 'when no indices exist in should_be_deleed_scope' do
+    context 'when no indices exist in should_be_deleted_scope' do
       it 'does not publish an event' do
         expect(Search::Zoekt::Index).to receive_message_chain(:should_be_deleted, :exists?).and_return(false)
 
