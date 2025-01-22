@@ -152,6 +152,7 @@ module EE
       has_many :approval_policy_rules,
         class_name: 'Security::ApprovalPolicyRule',
         through: :approval_policy_rule_project_links
+      has_many :security_pipeline_execution_config_links, class_name: 'Security::PipelineExecutionPolicyConfigLink'
 
       has_many :project_aliases
 
