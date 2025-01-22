@@ -251,7 +251,8 @@ RSpec.describe API::MergeRequests, feature_category: :source_code_management do
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['assignees'].pluck('name')).to match_array([user.name, user2.name])
-          expect(json_response.dig('assignee', 'name')).to eq(user.name)
+          # "main" assignee is selected randomly from the assignees list
+          expect(json_response.dig('assignee', 'name')).to be_in([user.name, user2.name])
         end
       end
 
