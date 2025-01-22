@@ -40,10 +40,7 @@ module Elastic
         # Schema version. The format is Date.today.strftime('%y_%m')
         # Please update if you're changing the schema of the document
         data['schema_version'] = SCHEMA_VERSION
-
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_label_ids_to_merge_request)
-          data['label_ids'] = target.label_ids.map(&:to_s)
-        end
+        data['label_ids'] = target.label_ids.map(&:to_s)
 
         if ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_merge_requests)
           data['traversal_ids'] = target.project.elastic_namespace_ancestry

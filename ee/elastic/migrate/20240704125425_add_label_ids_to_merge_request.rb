@@ -11,3 +11,5 @@ class AddLabelIdsToMergeRequest < Elastic::Migration
     { label_ids: { type: 'keyword' } }
   end
 end
+
+AddLabelIdsToMergeRequest.prepend ::Elastic::MigrationObsolete
