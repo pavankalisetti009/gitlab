@@ -21,6 +21,7 @@ import { visitUrl } from '~/lib/utils/url_utility';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import PreScanVerificationConfigurator from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_configurator.vue';
 import DastProfilesConfigurator from 'ee/security_configuration/dast_profiles/dast_profiles_configurator/dast_profiles_configurator.vue';
+import RunnerTags from 'ee/on_demand_scans_form/components/runner_tags.vue';
 
 import {
   siteProfiles,
@@ -84,6 +85,7 @@ describe('OnDemandScansForm', () => {
   const findDastProfilesConfigurator = () => wrapper.findComponent(DastProfilesConfigurator);
   const findPreScanVerificationConfigurator = () =>
     wrapper.findComponent(PreScanVerificationConfigurator);
+  const findRunnerTags = () => wrapper.findComponent(RunnerTags);
 
   const hasSiteProfileAttributes = () => {
     expect(findDastProfilesConfigurator().props('savedProfiles')).toEqual(dastScan);
@@ -543,20 +545,20 @@ describe('OnDemandScansForm', () => {
     });
   });
 
-  describe('editing rights for regular users', () => {
-    it('should be disabled for non-administrative users', () => {
-      createComponent(
-        {
-          provide: {
-            canEditRunnerTags: false,
-          },
-        },
-        false,
-      );
+  describe('runner tags', () => {
+    const RESTRICTED_MESSAGE = 'Only project owners and maintainers can select runner tags';
 
-      expect(findRunnerTagsFormGroup().text()).toContain(
-        'Only project owners and maintainers can select runner tags',
-      );
+    it.each`
+      description                           | canEditRunnerTags | shouldShowTags | shouldShowMessage
+      ${'when user has edit permissions'}   | ${true}           | ${true}        | ${false}
+      ${'when user lacks edit permissions'} | ${false}          | ${false}       | ${true}
+    `('$description', ({ canEditRunnerTags, shouldShowTags, shouldShowMessage }) => {
+      createComponent({
+        provide: { canEditRunnerTags },
+      });
+
+      expect(findRunnerTags().exists()).toBe(shouldShowTags);
+      expect(findRunnerTagsFormGroup().text().includes(RESTRICTED_MESSAGE)).toBe(shouldShowMessage);
     });
   });
 });

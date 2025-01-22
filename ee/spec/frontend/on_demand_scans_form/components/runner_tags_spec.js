@@ -76,20 +76,4 @@ describe('RunnersTag', () => {
       expect(wrapper.emitted('input')).toEqual([[['development, linux', 'macos']]]);
     });
   });
-
-  describe('editing rights for regular users', () => {
-    it.each`
-      canEditRunnerTags | expectedResult
-      ${false}          | ${true}
-      ${true}           | ${false}
-    `(
-      'should be disabled for non-administrative users',
-      async ({ canEditRunnerTags, expectedResult }) => {
-        createComponent({ canEditRunnerTags });
-        await waitForPromises();
-
-        expect(findDropdown().props('disabled')).toBe(expectedResult);
-      },
-    );
-  });
 });
