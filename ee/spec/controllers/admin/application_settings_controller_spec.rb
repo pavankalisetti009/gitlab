@@ -478,10 +478,10 @@ RSpec.describe Admin::ApplicationSettingsController do
     end
   end
 
-  describe '#advanced_search', feature_category: :global_search do
+  describe '#search', feature_category: :global_search do
     before do
       sign_in(admin)
-      @request.env['HTTP_REFERER'] = advanced_search_admin_application_settings_path
+      request.env['HTTP_REFERER'] = search_admin_application_settings_path
     end
 
     context 'with check search version is compatability' do
@@ -494,14 +494,14 @@ RSpec.describe Admin::ApplicationSettingsController do
       it 'does not alert when version is compatible' do
         allow(helper).to receive(:supported_version?).and_return(true)
 
-        get :advanced_search
+        get :search
         expect(assigns[:search_error_if_version_incompatible]).to be_falsey
       end
 
       it 'alerts when version is incompatible' do
         allow(::Gitlab::Elastic::Helper.default).to receive(:supported_version?).and_return(false)
 
-        get :advanced_search
+        get :search
         expect(assigns[:search_error_if_version_incompatible]).to be_truthy
       end
     end
@@ -516,26 +516,26 @@ RSpec.describe Admin::ApplicationSettingsController do
 
       it 'warns when NOT using index aliases' do
         allow(helper).to receive(:alias_missing?).and_return true
-        get :advanced_search
+        get :search
         expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_truthy
       end
 
       it 'does NOT warn when using index aliases' do
         allow(helper).to receive(:alias_missing?).and_return false
-        get :advanced_search
+        get :search
         expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_falsy
       end
 
       it 'does NOT blow up if elasticsearch is unreachable' do
         allow(helper).to receive(:alias_missing?).and_raise(::Elasticsearch::Transport::Transport::ServerError, 'boom')
-        get :advanced_search
+        get :search
         expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_falsy
         expect(response).to have_gitlab_http_status(:ok)
       end
 
       it 'does NOT warn when default index does not exist' do
         allow(helper).to receive_messages(alias_missing?: true, index_exists?: false)
-        get :advanced_search
+        get :search
         expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_falsey
       end
     end
@@ -549,25 +549,25 @@ RSpec.describe Admin::ApplicationSettingsController do
 
       it 'warns when outdated code mappings are used' do
         allow(helper).to receive(:get_meta).and_return('created_by' => '15.4.9')
-        get :advanced_search
+        get :search
         expect(assigns[:search_outdated_code_analyzer_detected]).to be_truthy
       end
 
       it 'warns when meta field is not present' do
         allow(helper).to receive(:get_meta).and_return(nil)
-        get :advanced_search
+        get :search
         expect(assigns[:search_outdated_code_analyzer_detected]).to be_truthy
       end
 
       it 'does NOT warn when using new mappings' do
         allow(helper).to receive(:get_meta).and_return('created_by' => '15.5.0')
-        get :advanced_search
+        get :search
         expect(assigns[:search_outdated_code_analyzer_detected]).to be_falsey
       end
 
       it 'does NOT blow up if elasticsearch is unreachable' do
         allow(helper).to receive(:get_meta).and_raise(::Elasticsearch::Transport::Transport::ServerError, 'boom')
-        get :advanced_search
+        get :search
         expect(assigns[:search_outdated_code_analyzer_detected]).to be_falsey
         expect(response).to have_gitlab_http_status(:ok)
       end
@@ -595,7 +595,7 @@ RSpec.describe Admin::ApplicationSettingsController do
           allow(migration_1).to receive(:obsolete?).and_return(true)
           allow(migration_2).to receive(:obsolete?).and_return(false)
 
-          get :advanced_search
+          get :search
           expect(assigns[:elasticsearch_pending_obsolete_migrations]).to eq([migration_1])
           expect(assigns[:elasticsearch_warn_if_obsolete_migrations]).to be_truthy
         end
@@ -604,7 +604,7 @@ RSpec.describe Admin::ApplicationSettingsController do
           allow(migration_1).to receive(:obsolete?).and_return(false)
           allow(migration_2).to receive(:obsolete?).and_return(false)
 
-          get :advanced_search
+          get :search
           expect(assigns[:elasticsearch_pending_obsolete_migrations]).to eq([])
         end
       end
@@ -615,7 +615,7 @@ RSpec.describe Admin::ApplicationSettingsController do
         end
 
         it 'does not alert' do
-          get :advanced_search
+          get :search
           expect(assigns[:elasticsearch_warn_if_obsolete_migrations]).to be_falsey
         end
       end
@@ -633,9 +633,9 @@ RSpec.describe Admin::ApplicationSettingsController do
           elasticsearch_search: true
         }
 
-        patch :advanced_search, params: { application_setting: settings }
+        patch :search, params: { application_setting: settings }
 
-        expect(response).to redirect_to(advanced_search_admin_application_settings_path)
+        expect(response).to redirect_to(search_admin_application_settings_path)
         settings.except(:elasticsearch_url).each do |setting, value|
           expect(ApplicationSetting.current.public_send(setting)).to eq(value)
         end
@@ -649,7 +649,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       let!(:task) { create(:elastic_reindexing_task) }
 
       it 'assigns last elasticsearch reindexing task' do
-        get :advanced_search
+        get :search
 
         expect(assigns(:last_elasticsearch_reindexing_task)).to eq(task)
         expect(response.body).to have_selector('[role="alert"]', text: /Status: starting/)
@@ -665,7 +665,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       end
 
       it 'does not update the elasticsearch_aws_secret_access_key setting' do
-        expect { patch :advanced_search, params: { application_setting: settings } }
+        expect { patch :search, params: { application_setting: settings } }
           .not_to change { ApplicationSetting.current.reload.elasticsearch_aws_secret_access_key }
       end
     end

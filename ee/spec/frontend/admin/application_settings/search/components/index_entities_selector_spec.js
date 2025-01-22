@@ -3,12 +3,12 @@ import MockAdapter from 'axios-mock-adapter';
 import { GlAlert, GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import IndexEntitiesSelector from 'ee/admin/application_settings/advanced_search/components/index_entities_selector.vue';
+import IndexEntitiesSelector from 'ee/admin/application_settings/search/components/index_entities_selector.vue';
 import {
   NO_RESULTS_TEXT,
   SEARCH_QUERY_TOO_SHORT,
   ENTITIES_FETCH_ERROR,
-} from 'ee/admin/application_settings/advanced_search/constants';
+} from 'ee/admin/application_settings/search/constants';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { entities, projectsMock } from '../mock_data';

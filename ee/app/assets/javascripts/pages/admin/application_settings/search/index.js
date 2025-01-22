@@ -2,7 +2,7 @@ import $ from 'jquery';
 import {
   initNamespacesIndexingRestrictions,
   initProjectsIndexingRestrictions,
-} from 'ee/admin/application_settings/advanced_search/init_indexing_restrictions';
+} from 'ee/admin/application_settings/search/init_indexing_restrictions';
 
 const onLimitCheckboxChange = (checked, $limitByNamespaces, $limitByProjects) => {
   $limitByNamespaces.toggleClass('hidden', !checked);

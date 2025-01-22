@@ -14,7 +14,7 @@ module EE
 
             insert_item_after(:general_settings, service_accounts_menu_item)
             insert_item_after(:service_accounts, roles_and_permissions_menu_item)
-            insert_item_after(:roles_and_permissions, advanced_search_menu_item)
+            insert_item_after(:roles_and_permissions, search_menu_item)
             insert_item_after(:admin_reporting, templates_menu_item)
             insert_item_after(:admin_ci_cd, security_and_compliance_menu_item)
             insert_item_after(:security_and_compliance_menu_item, analytics_menu_item)
@@ -55,17 +55,15 @@ module EE
               !gitlab_com_subscription?
           end
 
-          def advanced_search_menu_item
-            unless ::License.feature_available?(:elastic_search)
-              return ::Sidebars::NilMenuItem.new(item_id: :advanced_search)
-            end
+          def search_menu_item
+            return ::Sidebars::NilMenuItem.new(item_id: :search) unless ::License.feature_available?(:elastic_search)
 
             ::Sidebars::MenuItem.new(
               title: _('Search'),
-              link: advanced_search_admin_application_settings_path,
-              active_routes: { path: 'admin/application_settings#advanced_search' },
-              item_id: :advanced_search,
-              container_html_options: { testid: 'admin-settings-advanced-search-link' }
+              link: search_admin_application_settings_path,
+              active_routes: { path: 'admin/application_settings#search' },
+              item_id: :search,
+              container_html_options: { testid: 'admin-settings-search-link' }
             )
           end
 

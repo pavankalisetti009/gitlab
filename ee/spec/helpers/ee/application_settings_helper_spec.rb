@@ -244,7 +244,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'returns correctly checked checkboxes' do
-      helper.gitlab_ui_form_for(application_setting, url: advanced_search_admin_application_settings_path) do |form|
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
         result = helper.zoekt_settings_checkboxes(form)
         expect(result[0]).to have_checked_field("Delete offline nodes automatically after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
         expect(result[1]).not_to have_checked_field('Index all the namespaces', with: 1)
@@ -264,7 +264,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'returns correct inputs' do
-      helper.gitlab_ui_form_for(application_setting, url: advanced_search_admin_application_settings_path) do |form|
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
         result = helper.zoekt_settings_inputs(form)
         expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
         expect(result[1]).to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')

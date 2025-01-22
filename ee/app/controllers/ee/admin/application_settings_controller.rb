@@ -12,29 +12,29 @@ module EE
       prepended do
         include MicrosoftApplicationActions
 
-        before_action :elasticsearch_reindexing_task, only: [:advanced_search]
-        before_action :elasticsearch_reindexing_state, only: [:advanced_search]
-        before_action :elasticsearch_index_settings, only: [:advanced_search]
-        before_action :elasticsearch_warn_if_not_using_aliases, only: [:advanced_search]
-        before_action :elasticsearch_warn_if_obsolete_migrations, only: [:advanced_search]
-        before_action :elasticsearch_pending_obsolete_migrations, only: [:advanced_search]
-        before_action :search_error_if_version_incompatible, only: [:advanced_search]
-        before_action :search_outdated_code_analyzer_detected, only: [:advanced_search]
+        before_action :elasticsearch_reindexing_task, only: [:search]
+        before_action :elasticsearch_reindexing_state, only: [:search]
+        before_action :elasticsearch_index_settings, only: [:search]
+        before_action :elasticsearch_warn_if_not_using_aliases, only: [:search]
+        before_action :elasticsearch_warn_if_obsolete_migrations, only: [:search]
+        before_action :elasticsearch_pending_obsolete_migrations, only: [:search]
+        before_action :search_error_if_version_incompatible, only: [:search]
+        before_action :search_outdated_code_analyzer_detected, only: [:search]
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
         before_action :find_or_initialize_microsoft_application, only: [:general]
         before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
-        before_action :indexing_status, only: [:advanced_search]
+        before_action :indexing_status, only: [:search]
 
         before_action :push_frontend_license_features, only: [:general]
 
         feature_category :plan_provisioning, [:seat_link_payload]
         feature_category :source_code_management, [:templates]
-        feature_category :global_search, [:advanced_search]
+        feature_category :global_search, [:search]
         feature_category :software_composition_analysis, [:security_and_compliance]
         feature_category :consumables_cost_management, [:namespace_storage]
         feature_category :product_analytics, [:analytics]
-        urgency :low, [:advanced_search, :seat_link_payload]
+        urgency :low, [:search, :seat_link_payload]
 
         def elasticsearch_reindexing_task
           @last_elasticsearch_reindexing_task = ::Search::Elastic::ReindexingTask.last
@@ -109,7 +109,7 @@ module EE
         end
       end
 
-      EE_VALID_SETTING_PANELS = %w[advanced_search templates security_and_compliance namespace_storage].freeze
+      EE_VALID_SETTING_PANELS = %w[search templates security_and_compliance namespace_storage].freeze
 
       EE_VALID_SETTING_PANELS.each do |action|
         define_method(action) { perform_update if submitted? }
