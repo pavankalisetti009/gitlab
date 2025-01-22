@@ -83,7 +83,7 @@ export default {
         },
       };
 
-      return queryTypes[this.namespaceType] || queryTypes[NAMESPACE_GROUP];
+      return queryTypes[this.namespaceType];
     },
     fetchErrorMessage() {
       return sprintf(
