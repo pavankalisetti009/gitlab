@@ -218,10 +218,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
     describe 'labels' do
       let_it_be(:label) { create(:label, project: authorized_project) }
 
-      before do
-        set_elasticsearch_migration_to(:reindex_merge_requests_to_backfill_label_ids, including: true)
-      end
-
       it 'does not include labels filter by default' do
         assert_names_in_query(build, without: %w[filters:label_ids])
       end
@@ -231,16 +227,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
 
         it 'applies label filters' do
           assert_names_in_query(build, with: %w[filters:label_ids])
-        end
-
-        context 'when the migration is not finished' do
-          before do
-            set_elasticsearch_migration_to(:reindex_merge_requests_to_backfill_label_ids, including: false)
-          end
-
-          it 'does not include labels filter' do
-            assert_names_in_query(build, without: %w[filters:label_ids])
-          end
         end
       end
     end
