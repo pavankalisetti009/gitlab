@@ -57,8 +57,7 @@ module Search
         # iid field can be added here as lenient option will pardon format errors, like integer out of range.
         fields = %w[iid^3 title^2 description]
 
-        return fields unless Feature.enabled?(:advanced_search_work_item_uses_note_fields,
-          options[:current_user]) && ::Elastic::DataMigrationService.migration_has_finished?(:add_notes_to_work_items)
+        return fields unless Feature.enabled?(:advanced_search_work_item_uses_note_fields, options[:current_user])
 
         fields + %w[notes notes_internal]
       end
