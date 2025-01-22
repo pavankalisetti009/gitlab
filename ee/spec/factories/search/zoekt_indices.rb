@@ -53,6 +53,10 @@ FactoryBot.define do
     state { ::Search::Zoekt::Index.state_value(:pending_deletion) }
   end
 
+  trait :pending_eviction do
+    state { ::Search::Zoekt::Index.state_value(:pending_eviction) }
+  end
+
   trait :negative_reserved_storage_bytes do
     reserved_storage_bytes { -100 }
   end

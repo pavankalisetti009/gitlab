@@ -55,6 +55,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Search::Zoekt::AdjustIndicesReservedStorageBytesEvent,
         Search::Zoekt::IndexMarkedAsReadyEvent,
         Search::Zoekt::IndexMarkedAsToDeleteEvent,
+        Search::Zoekt::IndexMarkPendingEvictionEvent,
         Search::Zoekt::IndexToEvictEvent,
         Search::Zoekt::IndexWatermarkChangedEvent,
         Search::Zoekt::InitialIndexingEvent,

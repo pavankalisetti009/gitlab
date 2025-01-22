@@ -245,15 +245,27 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '.should_be_evicted' do
+    describe '.should_be_pending_eviction' do
       let_it_be(:idx_healthy) { create(:zoekt_index, :healthy) }
       let_it_be(:idx_critical_watermark_exceeded) { create(:zoekt_index, :critical_watermark_exceeded) }
-      let_it_be(:idx_critical_watermark_exceeded_no_replica) do
-        create(:zoekt_index, :critical_watermark_exceeded, zoekt_replica_id: nil)
+      let_it_be(:idx_pending_eviction) do
+        create(:zoekt_index, :critical_watermark_exceeded, state: :pending_eviction)
+      end
+
+      let_it_be(:idx_evicted) do
+        create(:zoekt_index, :critical_watermark_exceeded, state: :evicted)
+      end
+
+      let_it_be(:idx_orphaned) do
+        create(:zoekt_index, :critical_watermark_exceeded, state: :orphaned)
+      end
+
+      let_it_be(:idx_pending_deletion) do
+        create(:zoekt_index, :critical_watermark_exceeded, state: :pending_deletion)
       end
 
       it 'returns indices that are idx_critical_watermark_exceeded that contain zoekt_replica_id' do
-        expect(described_class.should_be_evicted).to match_array([idx_critical_watermark_exceeded])
+        expect(described_class.should_be_pending_eviction).to match_array([idx_critical_watermark_exceeded])
       end
     end
 
