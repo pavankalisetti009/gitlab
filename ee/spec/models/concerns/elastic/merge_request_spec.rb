@@ -31,7 +31,8 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
     expect(described_class.elastic_search('term1 | term2 | term3', options: options).total_count).to eq(2)
     expect(described_class.elastic_search(described_class.last.to_reference, options: options).total_count).to eq(1)
     expect(described_class.elastic_search('term3', options: options).total_count).to eq(0)
-    expect(described_class.elastic_search('term3', options: { search_level: 'global', project_ids: :any, public_and_internal_projects: true }).total_count).to eq(1)
+    expect(described_class.elastic_search('term3',
+      options: { search_level: 'global', project_ids: :any, public_and_internal_projects: true }).total_count).to eq(1)
   end
 
   it 'names elasticsearch queries' do
@@ -79,14 +80,10 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
       merge_request.project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
     end
 
-    it 'does not include label_ids, traversal_ids or assignee_ids if add_label_ids_to_merge_request is not finished' do
-      set_elasticsearch_migration_to :add_label_ids_to_merge_request, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids', 'traversal_ids', 'assignee_ids'))
-    end
-
     it 'does not include traversal_ids or assignee_ids if add_traversal_ids_to_merge_requests is not finished' do
       set_elasticsearch_migration_to :add_traversal_ids_to_merge_requests, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('traversal_ids', 'assignee_ids'))
+      expect(merge_request.__elasticsearch__.as_indexed_json)
+        .to eq(expected_hash.except('traversal_ids', 'assignee_ids'))
     end
 
     it 'does not include assignee_ids if add_assignees_to_merge_requests is not finished' do
@@ -104,7 +101,8 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
     allow(merge_request.project).to receive(:project_feature).and_return(nil)
 
     expect { merge_request.__elasticsearch__.as_indexed_json }.not_to raise_error
-    expect(merge_request.__elasticsearch__.as_indexed_json['merge_requests_access_level']).to eq(ProjectFeature::PRIVATE)
+    expect(merge_request.__elasticsearch__.as_indexed_json['merge_requests_access_level'])
+      .to eq(ProjectFeature::PRIVATE)
   end
 
   it_behaves_like 'no results when the user cannot read cross project' do

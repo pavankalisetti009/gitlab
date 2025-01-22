@@ -24,6 +24,7 @@ module Search
         repo_to_delete_check
         repo_to_index_check
         update_index_used_bytes
+        update_index_used_storage_bytes
         update_replica_states
       ].freeze
 
@@ -326,10 +327,11 @@ module Search
         end
       end
 
-      def update_index_used_bytes
-        execute_every 5.minutes do
-          Search::Zoekt::Index.update_used_storage_bytes!
-        end
+      # This task name is deprecated
+      def update_index_used_bytes; end
+
+      def update_index_used_storage_bytes
+        dispatch UpdateIndexUsedStorageBytesEvent, if: -> { Index.with_stale_used_storage_bytes_updated_at.exists? }
       end
 
       def index_should_be_marked_as_orphaned_check

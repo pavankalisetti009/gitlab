@@ -44,7 +44,10 @@ module Search
             repo.size_bytes = size_bytes if size_bytes
             repo.index_file_count = index_file_count if index_file_count
             repo.retries_left = Repository.columns_hash['retries_left'].default
+            index = repo.zoekt_index
+            index.last_indexed_at = repo.indexed_at if repo.indexed_at > index.last_indexed_at
             repo.save!
+            index.save!
           end
 
           task.done!

@@ -30,6 +30,36 @@ FactoryBot.define do
     # this trait can be used only for self-managed
     trait(:instance) { namespace { nil } }
 
+    trait(:billable) do
+      base_access_level { Gitlab::Access::GUEST }
+
+      transient do
+        billable_role { Gitlab::CustomRoles::Definition.all.reject { |_k, v| v[:skip_seat_consumption] }.values.last }
+      end
+
+      after(:build) do |member_role, evaluator|
+        next unless evaluator.billable_role
+
+        member_role.send(:"#{evaluator.billable_role[:name]}=", true)
+      end
+    end
+
+    trait(:non_billable) do
+      base_access_level { Gitlab::Access::GUEST }
+
+      transient do
+        non_billable_role do
+          Gitlab::CustomRoles::Definition.all.select { |_k, v| v[:skip_seat_consumption] }.values.last
+        end
+      end
+
+      after(:build) do |member_role, evaluator|
+        next unless evaluator.non_billable_role
+
+        member_role.send(:"#{evaluator.non_billable_role[:name]}=", true)
+      end
+    end
+
     transient do
       without_any_permissions { false }
     end

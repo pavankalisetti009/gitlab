@@ -76,6 +76,7 @@ module Search
       scope :should_be_reserved_storage_bytes_adjusted, -> { overprovisioned.ready.or(high_watermark_exceeded) }
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
       scope :preload_node, -> { includes(:node) }
+      scope :with_stale_used_storage_bytes_updated_at, -> { where('last_indexed_at >= used_storage_bytes_updated_at') }
       scope :negative_reserved_storage_bytes, -> { where('reserved_storage_bytes < 0') }
       scope :should_be_marked_as_orphaned, -> do
         where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: SHOULD_BE_DELETED_STATES)
@@ -103,20 +104,6 @@ module Search
             ELSE #{watermark_levels[:critical_watermark_exceeded]}
           END != watermark_level
         SQL
-      end
-
-      def self.update_used_storage_bytes!
-        all.find_each do |zoekt_index|
-          sum_for_index = 0
-
-          Search::Zoekt::Repository.where(zoekt_index_id: zoekt_index.id).each_batch do |repo_batch|
-            sum_for_index += repo_batch.sum(:size_bytes)
-          end
-          used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
-          next if used_storage_bytes == zoekt_index.used_storage_bytes
-
-          zoekt_index.update!(used_storage_bytes: used_storage_bytes)
-        end
       end
 
       def update_reserved_storage_bytes!

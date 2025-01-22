@@ -138,6 +138,22 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.with_stale_used_storage_bytes_updated_at' do
+      let_it_be(:time) { Time.zone.now }
+      let_it_be(:idx) { create(:zoekt_index) }
+      let_it_be(:idx_2) { create(:zoekt_index, :stale_used_storage_bytes_updated_at) }
+      let_it_be(:idx_3) do
+        create(:zoekt_index, used_storage_bytes_updated_at: time, last_indexed_at: time - 5.seconds)
+      end
+
+      subject(:results) { described_class.with_stale_used_storage_bytes_updated_at }
+
+      it 'returns all the indices whose used_storage_bytes_updated_at is less than last_indexed_at' do
+        expect(results).to include idx, idx_2
+        expect(results).not_to include idx_3
+      end
+    end
+
     describe '.should_be_reserved_storage_bytes_adjusted' do
       let_it_be(:overprovisioned_pending) { create(:zoekt_index, :overprovisioned) }
       let_it_be(:overprovisioned_ready) { create(:zoekt_index, :overprovisioned, :ready) }
@@ -341,32 +357,6 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
         expect(mismatched_indices).to be_empty
       end
-    end
-  end
-
-  describe '.update_used_storage_bytes!' do
-    let_it_be(:idx) { create(:zoekt_index, used_storage_bytes: 10) }
-    let_it_be(:idx_empty_repos) { create(:zoekt_index) }
-    let_it_be(:idx_without_repos) { create(:zoekt_index) }
-    let_it_be(:idx_correct_used_storage_bytes) { create(:zoekt_index, used_storage_bytes: 90) }
-    let_it_be(:idx_out_of_scope) { create(:zoekt_index, used_storage_bytes: 10) }
-    let(:scope_indices) { [idx, idx_empty_repos, idx_without_repos, idx_correct_used_storage_bytes] }
-    let(:scope) { described_class.id_in(scope_indices) }
-
-    before do
-      create_list(:zoekt_repository, 3, zoekt_index: idx, size_bytes: 20)
-      create_list(:zoekt_repository, 3, zoekt_index: idx_empty_repos, size_bytes: 0)
-      create_list(:zoekt_repository, 3, zoekt_index: idx_correct_used_storage_bytes, size_bytes: 30)
-      create_list(:zoekt_repository, 3, zoekt_index: idx_out_of_scope, size_bytes: 20)
-    end
-
-    it 'updates scoped indices with the sum of size_bytes for all associated repositories' do
-      expect(idx_out_of_scope.used_storage_bytes).to eq 10
-      expect(scope_indices.map { |i| i.reload.used_storage_bytes }).to eq [10, 0, 0, 90]
-      scope.update_used_storage_bytes!
-      expected = [60, described_class::DEFAULT_USED_STORAGE_BYTES, described_class::DEFAULT_USED_STORAGE_BYTES, 90]
-      expect(scope_indices.map { |i| i.reload.used_storage_bytes }).to eq expected
-      expect(idx_out_of_scope.used_storage_bytes).to eq 10
     end
   end
 

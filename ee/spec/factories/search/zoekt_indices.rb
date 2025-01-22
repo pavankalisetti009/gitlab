@@ -56,4 +56,9 @@ FactoryBot.define do
   trait :negative_reserved_storage_bytes do
     reserved_storage_bytes { -100 }
   end
+
+  trait :stale_used_storage_bytes_updated_at do
+    used_storage_bytes_updated_at { 4.minutes.ago }
+    last_indexed_at { Time.now }
+  end
 end
