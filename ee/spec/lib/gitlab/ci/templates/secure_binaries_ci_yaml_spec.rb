@@ -7,6 +7,10 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
 
   specify { expect(template).not_to be_nil }
 
+  def extract_rules_conditional(dict)
+    dict['rules'][0]['if']
+  end
+
   describe 'template content' do
     let(:secure_binaries) { YAML.safe_load(template.content) }
     let(:secure_binaries_analyzers) { secure_binaries["variables"]["SECURE_BINARIES_ANALYZERS"].split(%r{\s*,\s*}) }
@@ -37,9 +41,9 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
       end
 
       it 'filters the secure binary analyzers by the API Security image name' do
-        only_variables = secure_binaries[api_security_image_name]["only"]["variables"][0]
+        rules_conditional = extract_rules_conditional(secure_binaries[api_security_image_name])
         filter_expr = "$SECURE_BINARIES_ANALYZERS =~ /\\b#{api_security_image_name}\\b/"
-        expect(only_variables).to include(filter_expr)
+        expect(rules_conditional).to include(filter_expr)
       end
     end
 
@@ -68,9 +72,9 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
       end
 
       it 'filters the secure binary analyzers by the API Security image name' do
-        only_variables = secure_binaries[api_security_latest_image_name]["only"]["variables"][0]
+        rules_conditional = extract_rules_conditional(secure_binaries[api_security_latest_image_name])
         filter_expr = "$SECURE_BINARIES_ANALYZERS =~ /\\b#{api_security_latest_image_name}\\b/"
-        expect(only_variables).to include(filter_expr)
+        expect(rules_conditional).to include(filter_expr)
       end
     end
 
@@ -99,9 +103,9 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
       end
 
       it 'filters the secure binary analyzers by the DAST API image name' do
-        only_variables = secure_binaries[dast_api_image_name]["only"]["variables"][0]
+        rules_conditional = extract_rules_conditional(secure_binaries[dast_api_image_name])
         filter_expr = "$SECURE_BINARIES_ANALYZERS =~ /\\b#{dast_api_image_name}\\b/"
-        expect(only_variables).to include(filter_expr)
+        expect(rules_conditional).to include(filter_expr)
       end
     end
 
@@ -130,9 +134,9 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
       end
 
       it 'filters the secure binary analyzers by the DAST API image name' do
-        only_variables = secure_binaries[dast_api_latest_image_name]["only"]["variables"][0]
+        rules_conditional = extract_rules_conditional(secure_binaries[dast_api_latest_image_name])
         filter_expr = "$SECURE_BINARIES_ANALYZERS =~ /\\b#{dast_api_latest_image_name}\\b/"
-        expect(only_variables).to include(filter_expr)
+        expect(rules_conditional).to include(filter_expr)
       end
     end
 
@@ -161,9 +165,9 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
       end
 
       it 'filters the secure binary analyzers by the API Fuzzing image name' do
-        only_variables = secure_binaries[api_fuzzing_image_name]["only"]["variables"][0]
+        rules_conditional = extract_rules_conditional(secure_binaries[api_fuzzing_image_name])
         filter_expr = "$SECURE_BINARIES_ANALYZERS =~ /\\b#{api_fuzzing_image_name}\\b/"
-        expect(only_variables).to include(filter_expr)
+        expect(rules_conditional).to include(filter_expr)
       end
     end
 
@@ -192,9 +196,9 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
       end
 
       it 'filters the secure binary analyzers by the API Fuzzing image name' do
-        only_variables = secure_binaries[api_fuzzing_latest_image_name]["only"]["variables"][0]
+        rules_conditional = extract_rules_conditional(secure_binaries[api_fuzzing_latest_image_name])
         filter_expr = "$SECURE_BINARIES_ANALYZERS =~ /\\b#{api_fuzzing_latest_image_name}\\b/"
-        expect(only_variables).to include(filter_expr)
+        expect(rules_conditional).to include(filter_expr)
       end
     end
   end
@@ -233,7 +237,7 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
 
     describe 'dast' do
       let_it_be(:build_name) { 'dast' }
-      let_it_be(:version) { 2 }
+      let_it_be(:version) { 5 }
 
       it_behaves_like 'an offline image download job'
     end
