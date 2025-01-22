@@ -352,6 +352,54 @@ If you encounter any issues after making these changes, try regenerating your AW
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### Application Security Testing analyzers major version update
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/513417).
+
+</div>
+
+The Application Security Testing stage will be bumping the major versions of its analyzers in
+tandem with the GitLab 18.0 release.
+
+If you are not using the default included templates, or have pinned your analyzer versions, you
+must update your CI/CD job definition to either remove the pinned version or update
+the latest major version.
+
+Users of GitLab 17.0 to GitLab 15.11 will continue to experience analyzer updates until the
+release of GitLab 18.0, after which all newly fixed bugs and released features will be
+released only in the new major version of the analyzers.
+
+We do not backport bugs and features to deprecated versions as per our maintenance policy. As
+required, security patches will be backported within the latest 3 minor releases.
+
+Specifically, the following analyzers are being deprecated and will no longer be updated after
+the GitLab 18.0 release:
+
+- Advanced SAST: version 1
+- Container Scanning: version 7
+- Dependency Scanning: version 0
+- Gemnasium: [all versions](https://gitlab.com/gitlab-org/gitlab/-/issues/501308)
+- DAST: version 5
+- DAST API: version 4
+- Fuzz API: version 4
+- IaC Scanning: version 5
+- Pipeline Secret Detection: version 6
+- Static Application Security Testing (SAST): version 5 of [all analyzers](https://docs.gitlab.com/ee/user/application_security/sast/analyzers/)
+  - `kics`
+  - `kubesec`
+  - `pmd-apex`
+  - `semgrep`
+  - `sobelow`
+  - `spotbugs`
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### Behavior change for Upcoming and Started milestone filters
 
 <div class="deprecation-notes">
