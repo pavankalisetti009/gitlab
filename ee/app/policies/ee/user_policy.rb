@@ -20,7 +20,7 @@ module EE
       end
 
       condition(:disable_private_profiles, scope: :global) do
-        ::License.feature_available?(:disable_private_profiles) && ::Feature.enabled?(:disallow_private_profiles) &&
+        ::License.feature_available?(:disable_private_profiles) &&
           !::Gitlab::CurrentSettings.current_application_settings.make_profile_private
       end
 

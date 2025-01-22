@@ -2946,33 +2946,22 @@ RSpec.describe User, feature_category: :system_access do
     let_it_be(:user_public_profile) { create(:user, private_profile: false) }
     let_it_be(:user_private_profile) { create(:user, private_profile: true) }
 
-    where(:user, :disable_private_profiles?, :disallow_private_profiles?, :make_profile_private?, :private_profile?) do
-      ref(:user_private_profile) | true | true | true | true
-      ref(:user_public_profile)  | true | true | true | false
-      ref(:user_private_profile) | true | true | false | false
-      ref(:user_public_profile) | true | true | false | false
+    where(:user, :disable_private_profiles?, :make_profile_private?, :private_profile?) do
+      ref(:user_private_profile) | true  | true  | true
+      ref(:user_public_profile)  | true  | true  | false
+      ref(:user_private_profile) | true  | false | false
+      ref(:user_public_profile)  | true  | false | false
 
-      ref(:user_private_profile) | true | false | true | true
-      ref(:user_public_profile)  | true | false | true | false
-      ref(:user_private_profile) | true | false | false | true
-      ref(:user_public_profile) | true | false | false | false
-
-      ref(:user_private_profile) | false | true | true | true
-      ref(:user_public_profile)  | false | true | true | false
-      ref(:user_private_profile) | false | true | false | true
-      ref(:user_public_profile) | false | true | false | false
-
-      ref(:user_private_profile) | false | false | true | true
-      ref(:user_public_profile)  | false | false | true | false
-      ref(:user_private_profile) | false | false | false | true
-      ref(:user_public_profile) | false | false | false | false
+      ref(:user_private_profile) | false | true  | true
+      ref(:user_public_profile)  | false | true  | false
+      ref(:user_private_profile) | false | false | true
+      ref(:user_public_profile)  | false | false | false
     end
 
     with_them do
       before do
         stub_application_setting(make_profile_private: make_profile_private?)
         stub_licensed_features(disable_private_profiles: disable_private_profiles?)
-        stub_feature_flags(disallow_private_profiles: disallow_private_profiles?)
       end
 
       specify { expect(user.private_profile?).to eq(private_profile?) }

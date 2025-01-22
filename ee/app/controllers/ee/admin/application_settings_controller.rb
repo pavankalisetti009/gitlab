@@ -183,7 +183,7 @@ module EE
           attrs << :maintenance_mode_message
         end
 
-        if License.feature_available?(:disable_private_profiles) && ::Feature.enabled?(:disallow_private_profiles)
+        if License.feature_available?(:disable_private_profiles)
           attrs << :make_profile_private
         end
 
@@ -227,7 +227,7 @@ module EE
       end
 
       def push_disable_private_profiles_feature
-        push_licensed_feature(:disable_private_profiles) if ::Feature.enabled?(:disallow_private_profiles)
+        push_licensed_feature(:disable_private_profiles)
       end
 
       private
