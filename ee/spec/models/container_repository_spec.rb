@@ -9,7 +9,7 @@ RSpec.describe ContainerRepository, feature_category: :geo_replication do
   end
 
   describe '.replicables_for_current_secondary' do
-    let_it_be(:secondary) { create(:geo_node, :secondary) }
+    let(:secondary) { create(:geo_node, :secondary) }
 
     let_it_be(:synced_group) { create(:group) }
     let_it_be(:nested_group) { create(:group, parent: synced_group) }

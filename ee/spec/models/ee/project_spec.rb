@@ -5113,7 +5113,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   end
 
   describe '.selective_sync_scope' do
-    let_it_be(:node) { create(:geo_node, :secondary) }
+    let(:node) { create(:geo_node, :secondary) }
+
     let_it_be(:group_1) { create(:group) }
     let_it_be(:group_2) { create(:group) }
     let_it_be(:nested_group_1) { create(:group, parent: group_1) }

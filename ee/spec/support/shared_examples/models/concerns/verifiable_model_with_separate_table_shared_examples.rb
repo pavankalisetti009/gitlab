@@ -18,6 +18,7 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
 
   context 'on a primary node' do
     let(:primary) { create(:geo_node, :primary) }
+    let(:secondary) { create(:geo_node, :secondary) }
     let(:verifiable_model_class) { verifiable_model_record.class }
 
     before do
@@ -81,7 +82,7 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
 
       context 'when site is not primary' do
         before do
-          stub_secondary_site
+          stub_current_geo_node(secondary)
         end
 
         it_behaves_like 'does not create verification details'
@@ -89,7 +90,6 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
 
       context 'when verification is not enabled' do
         before do
-          stub_primary_site
           stub_dummy_verification_feature_flag(replicator_class: replicator_class.name, enabled: false)
         end
 
