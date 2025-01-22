@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountDistinctProjectIdsWithResolvedVulnerabilitiesMetric, feature_category: :service_ping do
+RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountDistinctProjectIdsWithResolvedVulnerabilitiesActivityMetric, feature_category: :service_ping do
   let(:start) { 30.days.ago.to_fs(:db) }
   let(:finish) { 2.days.ago.to_fs(:db) }
 
@@ -18,24 +18,22 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountDistinctProjectIds
   ::Enums::Vulnerability::REPORT_TYPES.each do |report_type, enum|
     describe report_type do
       let(:expected_query) do
-        "SELECT COUNT(*) FROM (" \
-          "SELECT DISTINCT \"vulnerability_reads\".\"project_id\" FROM " \
+        "SELECT COUNT(DISTINCT \"vulnerability_reads\".\"project_id\") FROM " \
           "\"vulnerability_reads\" INNER JOIN vulnerability_state_transitions\n                  " \
           "ON vulnerability_state_transitions.vulnerability_id = vulnerability_reads.vulnerability_id " \
           "WHERE \"vulnerability_state_transitions\".\"to_state\" = 3 AND " \
           "\"vulnerability_reads\".\"report_type\" = #{enum} AND " \
-          "\"vulnerability_state_transitions\".\"created_at\" BETWEEN '#{start}' AND '#{finish}' " \
-          "GROUP BY \"vulnerability_reads\".\"project_id\") subquery"
+          "\"vulnerability_state_transitions\".\"created_at\" BETWEEN '#{start}' AND '#{finish}'"
       end
 
       before do
         create(:vulnerability, :with_read, :resolved, report_type,
-          :with_state_transition, to_state: :resolved,  created_at: 7.days.ago, project: project_with_two_resolutions)
+          :with_state_transition, to_state: :resolved, created_at: 7.days.ago, project: project_with_two_resolutions)
         create(:vulnerability, :with_read, :resolved, report_type,
-          :with_state_transition, to_state: :resolved,  created_at: 7.days.ago, project: project_with_two_resolutions)
+          :with_state_transition, to_state: :resolved, created_at: 7.days.ago, project: project_with_two_resolutions)
 
         create(:vulnerability, :with_read, :resolved, report_type,
-          :with_state_transition, to_state: :resolved,  created_at: 7.days.ago, project: project_with_one_resolution)
+          :with_state_transition, to_state: :resolved, created_at: 7.days.ago, project: project_with_one_resolution)
 
         create(:vulnerability, :with_read, :detected, report_type, created_at: 7.days.ago,
           project: project_with_no_resolutions)
