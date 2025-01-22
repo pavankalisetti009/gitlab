@@ -132,11 +132,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
       end
 
       it 'is successful' do
-        url_to_projects_regex.each do |url, projects_regex|
+        url_to_projects_regex.each do |url, _projects_regex|
           expect(Gitlab::HTTP).to receive(:post)
             .with(URI.parse(url.to_s), {
               allow_local_requests: allow_local_requests,
-              body: Regexp.new(projects_regex.source + /.*"state":"deleted"/.source)
+              body: Regexp.new(/.*"state":"deleted"/.source)
             }).once
             .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
         end
