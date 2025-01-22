@@ -8907,7 +8907,8 @@ ALTER SEQUENCE badges_id_seq OWNED BY badges.id;
 CREATE TABLE banned_users (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL
+    user_id bigint NOT NULL,
+    projects_deleted boolean DEFAULT false NOT NULL
 );
 
 CREATE SEQUENCE batched_background_migration_job_transition_logs_id_seq
@@ -23320,7 +23321,7 @@ CREATE TABLE workspaces (
     cluster_agent_id bigint NOT NULL,
     desired_state_updated_at timestamp with time zone NOT NULL,
     responded_to_agent_at timestamp with time zone,
-    max_hours_before_termination smallint NOT NULL,
+    max_hours_before_termination smallint DEFAULT 8760 NOT NULL,
     name text NOT NULL,
     namespace text NOT NULL,
     desired_state text NOT NULL,

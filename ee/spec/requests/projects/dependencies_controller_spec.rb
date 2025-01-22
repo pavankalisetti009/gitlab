@@ -63,6 +63,25 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
               .not_to exceed_query_limit(control_count)
           end
 
+          context 'with component name filter' do
+            context 'when component_names param is present' do
+              let(:params) { { component_names: [occurrences.last.name] } }
+
+              it 'returns data based on filtered sbom occurrences' do
+                expect(json_response['dependencies']).to match_array(
+                  hash_including('occurrence_id' => occurrences.last.id))
+              end
+            end
+
+            context 'when component_names param is empty' do
+              let(:params) { { component_names: [] } }
+
+              it 'returns all dependencies' do
+                expect(json_response['dependencies'].count).to eq(occurrences.count)
+              end
+            end
+          end
+
           context 'with source types filter' do
             let_it_be(:os_occurrence) { create(:sbom_occurrence, :os_occurrence, project: project) }
             let_it_be(:registry_occurrence) { create(:sbom_occurrence, :registry_occurrence, project: project) }

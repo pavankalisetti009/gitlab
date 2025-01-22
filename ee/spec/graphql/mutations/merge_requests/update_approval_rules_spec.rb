@@ -69,7 +69,7 @@ RSpec.describe Mutations::MergeRequests::UpdateApprovalRule, feature_category: :
 
         context "when user is not part of the project" do
           it 'fails' do
-            expect(mutated_approval_rule.users).to match_array([])
+            expect(mutated_approval_rule.users).to be_empty
           end
         end
       end

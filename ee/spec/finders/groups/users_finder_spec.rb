@@ -105,7 +105,7 @@ RSpec.describe Groups::UsersFinder, feature_category: :user_management do
         group = create(:group)
         finder = described_class.new(saml_user1, group, { include_saml_users: true, include_service_accounts: true })
 
-        expect(finder.execute).to match_array([])
+        expect(finder.execute).to be_empty
       end
     end
   end

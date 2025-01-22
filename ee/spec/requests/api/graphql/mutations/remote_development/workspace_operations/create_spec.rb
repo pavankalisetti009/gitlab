@@ -55,7 +55,6 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     {
       desired_state: desired_state,
       editor: 'webide',
-      max_hours_before_termination: 24,
       cluster_agent_id: agent.to_global_id.to_s,
       project_id: workspace_project.to_global_id.to_s,
       project_ref: 'main',

@@ -275,7 +275,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     {
       desired_state: states::RUNNING,
       editor: "webide",
-      max_hours_before_termination: 24,
       cluster_agent_id: cluster_agent_gid,
       project_id: workspace_project.to_global_id.to_s,
       project_ref: project_ref,

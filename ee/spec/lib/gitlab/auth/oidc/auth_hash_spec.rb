@@ -31,7 +31,7 @@ RSpec.describe Gitlab::Auth::Oidc::AuthHash, feature_category: :system_access do
 
     context 'when empty' do
       it 'returns empty array' do
-        expect(auth_hash_groups).to match_array([])
+        expect(auth_hash_groups).to be_empty
       end
     end
 
@@ -39,7 +39,7 @@ RSpec.describe Gitlab::Auth::Oidc::AuthHash, feature_category: :system_access do
       let(:raw_info) { {} }
 
       it 'returns empty array' do
-        expect(auth_hash_groups).to match_array([])
+        expect(auth_hash_groups).to be_empty
       end
     end
   end

@@ -4,8 +4,6 @@ module EE
   module GroupsHelper
     extend ::Gitlab::Utils::Override
     include ::Gitlab::Utils::StrongMemoize
-    include ::GitlabSubscriptions::CodeSuggestionsHelper
-    include ::GitlabSubscriptions::HandRaiseLeadsHelper
     include ::Nav::GitlabDuoSettingsPage
 
     def size_limit_message_for_group(group)

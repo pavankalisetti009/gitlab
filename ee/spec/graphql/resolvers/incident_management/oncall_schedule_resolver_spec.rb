@@ -35,7 +35,7 @@ RSpec.describe Resolvers::IncidentManagement::OncallScheduleResolver do
     end
 
     it 'by no iids' do
-      expect(resolve_oncall_schedules(iids: [])).to match_array([])
+      expect(resolve_oncall_schedules(iids: [])).to be_empty
     end
   end
 
