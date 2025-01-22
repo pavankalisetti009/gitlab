@@ -123,5 +123,46 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'wikis', feature_category: :globa
         expect(wiki_containers).to contain_exactly(parent_group, sub_group, group_project, project_1)
       end
     end
+
+    describe 'searches with various characters in wiki', :aggregate_failures do
+      let_it_be(:page_prefix) { SecureRandom.hex(8) }
+
+      before do
+        code_examples.values.uniq.each do |page_content|
+          page_title = "#{page_prefix}-#{Digest::SHA256.hexdigest(page_content)}"
+          project_1.wiki.create_page(page_title, page_content)
+        end
+
+        text_examples.values.uniq.each do |page_content|
+          page_title = "#{page_prefix}-#{Digest::SHA256.hexdigest(page_content)}"
+          project_1.wiki.create_page(page_title, page_content)
+        end
+
+        project_1.wiki.index_wiki_blobs
+        ensure_elasticsearch_index!
+      end
+
+      include_context 'with code examples' do
+        it 'finds all examples in wiki' do
+          code_examples.each do |search_term, page_content|
+            page_title = "#{page_prefix}-#{Digest::SHA256.hexdigest(page_content)}.md"
+            expect(search_for(search_term)).to include(page_title), "failed to find #{search_term} in wiki"
+          end
+        end
+      end
+
+      include_context 'with text examples' do
+        it 'finds all examples in wiki' do
+          text_examples.each do |search_term, page_content|
+            page_title = "#{page_prefix}-#{Digest::SHA256.hexdigest(page_content)}.md"
+            expect(search_for(search_term)).to include(page_title), "failed to find #{search_term} in wiki"
+          end
+        end
+      end
+
+      def search_for(term)
+        described_class.new(user, term, limit_project_ids).objects('wiki_blobs').map(&:path)
+      end
+    end
   end
 end
