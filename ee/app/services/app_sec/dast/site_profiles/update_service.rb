@@ -31,7 +31,7 @@ module AppSec
             )
           })
 
-          ApplicationRecord.transaction do
+          Gitlab::Database::SecApplicationRecord.transaction do
             remove_secret_variables! if should_remove_secret_variables?(params)
 
             if target_url = params.delete(:target_url)
