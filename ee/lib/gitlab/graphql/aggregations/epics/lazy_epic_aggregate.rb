@@ -35,10 +35,6 @@ module Gitlab
 
           private
 
-          def state_key
-            :lazy_epic_aggregate
-          end
-
           def initial_state
             {
               pending_ids: Set.new,

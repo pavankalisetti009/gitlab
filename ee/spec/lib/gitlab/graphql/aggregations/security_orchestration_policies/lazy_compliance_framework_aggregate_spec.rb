@@ -17,6 +17,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
 
   let(:policy_type) { :scan_result_policies }
   let(:query_ctx) { { current_user: current_user } }
+  let(:state_key) { lazy_aggregate.state_key }
 
   subject(:lazy_aggregate) { described_class.new(query_ctx, framework, policy_type) }
 
@@ -27,18 +28,22 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
     end
 
     context 'when there is pending_framework' do
-      let(:query_ctx) do
-        {
-          lazy_compliance_framework_in_policies_aggregate: {
-            pending_frameworks: [other_framework],
-            loaded_objects: {}
-          }
-        }
+      let(:result) do
+        described_class.new(
+          {
+            state_key => {
+              pending_frameworks: [other_framework],
+              loaded_objects: {}
+            }
+          },
+          framework,
+          policy_type
+        )
       end
 
-      it 'uses lazy_compliance_framework_in_policies_aggregate to collect aggregates' do
-        expect(lazy_aggregate.lazy_state[:pending_frameworks]).to match_array [other_framework, framework]
-        expect(lazy_aggregate.object).to eq framework
+      it 'uses the state_key to collect aggregates' do
+        expect(result.lazy_state[:pending_frameworks]).to match_array [other_framework, framework]
+        expect(result.object).to eq framework
       end
     end
   end

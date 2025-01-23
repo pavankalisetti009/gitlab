@@ -19,6 +19,8 @@ module Gitlab
         # @param object [Object] the object to be lazily loaded from the data source
         # @param block [Proc] an optional block to execute when the object ID is resolved
         def initialize(query_ctx, object, &block)
+          raise NameError, "Anonymous classes are not allowed" if self.class.name.nil? || self.class.name.empty?
+
           @object = object
           @query_ctx = query_ctx
           @block = block
@@ -41,6 +43,13 @@ module Gitlab
           result
         end
 
+        # Returns a unique key to identify the state for this object in the query context.
+        #
+        # @return [Symbol] the key used to store state in the query context
+        def state_key
+          self.class.name.underscore.to_sym
+        end
+
         private
 
         # Prepares the state required for lazy loading in the query context.
@@ -48,13 +57,6 @@ module Gitlab
         def setup_state
           @query_ctx[state_key] ||= initial_state
           @lazy_state = query_ctx[state_key]
-        end
-
-        # Returns a unique key to identify the state for this object in the query context.
-        #
-        # @return [Symbol] the key used to store state in the query context
-        def state_key
-          self.class.name&.underscore&.to_sym
         end
 
         # Returns the set of objects queued for loading.

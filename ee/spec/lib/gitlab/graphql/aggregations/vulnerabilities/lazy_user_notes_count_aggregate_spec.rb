@@ -7,20 +7,22 @@ RSpec.describe Gitlab::Graphql::Aggregations::Vulnerabilities::LazyUserNotesCoun
     {}
   end
 
+  let(:state_key) { lazy_aggregate.state_key }
+
   let(:vulnerability) { create(:vulnerability) }
+
+  subject(:lazy_aggregate) { described_class.new(query_ctx, vulnerability) }
 
   describe '#initialize' do
     it 'adds the vulnerability to the lazy state' do
-      subject = described_class.new(query_ctx, vulnerability)
-
-      expect(subject.lazy_state[:pending_vulnerability_ids]).to match [vulnerability.id]
-      expect(subject.vulnerability).to match vulnerability
+      expect(lazy_aggregate.lazy_state[:pending_vulnerability_ids]).to match [vulnerability.id]
+      expect(lazy_aggregate.vulnerability).to match vulnerability
     end
 
     context 'when there are existing pending_vulnerability_ids' do
       subject(:result) do
         described_class.new(
-          { lazy_user_notes_count_aggregate: {
+          { state_key => {
             pending_vulnerability_ids: pending_ids_set,
             loaded_objects: {}
           } },
@@ -31,7 +33,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::Vulnerabilities::LazyUserNotesCoun
       let(:pending_ids_set) { [10, 20, 30].to_set }
       let(:expected_ids) { pending_ids_set.dup.add(vulnerability.id) }
 
-      it 'uses lazy_user_notes_count_aggregate to collect aggregates' do
+      it 'uses state_key to collect aggregates' do
         expect(result.lazy_state[:pending_vulnerability_ids]).to match_array expected_ids
         expect(result.vulnerability).to match vulnerability
       end
@@ -39,10 +41,8 @@ RSpec.describe Gitlab::Graphql::Aggregations::Vulnerabilities::LazyUserNotesCoun
   end
 
   describe '#execute' do
-    subject { described_class.new(query_ctx, vulnerability) }
-
     before do
-      subject.instance_variable_set(:@lazy_state, fake_state)
+      lazy_aggregate.instance_variable_set(:@lazy_state, fake_state)
     end
 
     context 'if the record has already been loaded' do
@@ -53,7 +53,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::Vulnerabilities::LazyUserNotesCoun
       it 'does not make the query again' do
         expect(::Note).not_to receive(:user)
 
-        subject.execute
+        lazy_aggregate.execute
       end
     end
 
@@ -77,13 +77,13 @@ RSpec.describe Gitlab::Graphql::Aggregations::Vulnerabilities::LazyUserNotesCoun
       it 'makes the query' do
         expect(::Note).to receive_message_chain(:user, :count_for_vulnerability_id).with([vulnerability.id, other_vulnerability.id])
 
-        subject.execute
+        lazy_aggregate.execute
       end
 
       it 'clears the pending IDs' do
-        subject.execute
+        lazy_aggregate.execute
 
-        expect(subject.lazy_state[:pending_vulnerability_ids]).to be_empty
+        expect(lazy_aggregate.lazy_state[:pending_vulnerability_ids]).to be_empty
       end
     end
   end

@@ -15,10 +15,6 @@ module Gitlab
 
           private
 
-          def state_key
-            :lazy_user_notes_count_aggregate
-          end
-
           def initial_state
             {
               pending_vulnerability_ids: Set.new,
