@@ -35,7 +35,7 @@ RSpec.describe 'Dashboard todos', feature_category: :notifications do
     end
 
     it 'has todo present' do
-      expect(page).to have_selector('ol[data-testid="todo-item-list-container"] > li', count: 1)
+      expect(page).to have_selector('ol[data-testid="todo-item-list"] > li', count: 1)
       expect(page).to have_selector('a', text: user.to_reference)
     end
   end
