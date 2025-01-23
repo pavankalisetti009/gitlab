@@ -2838,6 +2838,9 @@ msgstr ""
 msgid "Access granted"
 msgstr ""
 
+msgid "Access levels should either both be present or both be nil"
+msgstr ""
+
 msgid "Access requests"
 msgstr ""
 
