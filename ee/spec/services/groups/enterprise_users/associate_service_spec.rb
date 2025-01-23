@@ -392,6 +392,22 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
           include_examples 'does not mark the user as an enterprise user as ownership of the email cannot be proved'
         end
       end
+
+      context "for a service account user with a custom email address matching the group's verified domain" do
+        let(:user) do
+          create(
+            :user,
+            :service_account,
+            email: "example@#{verified_domain.domain}",
+            provisioned_by_group_id: group.id
+          )
+        end
+
+        include_examples(
+          'does not mark the user as an enterprise user of the group',
+          'The user does not match the "Enterprise User" definition for the group'
+        )
+      end
     end
   end
 end
