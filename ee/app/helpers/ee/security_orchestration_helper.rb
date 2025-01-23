@@ -146,4 +146,15 @@ module EE::SecurityOrchestrationHelper
 
     policy_types_map.fetch(policy_type.to_s, s_("SecurityOrchestration|New policy"))
   end
+
+  def security_configurations_preventing_project_deletion(project)
+    return ::Security::OrchestrationPolicyConfiguration.none unless ::Feature.enabled?(
+      :reject_security_policy_project_deletion, project)
+
+    unless project.licensed_feature_available?(:security_orchestration_policies)
+      return ::Security::OrchestrationPolicyConfiguration.none
+    end
+
+    ::Security::OrchestrationPolicyConfiguration.for_management_project(project)
+  end
 end

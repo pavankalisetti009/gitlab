@@ -1003,9 +1003,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
             security_policy_management_project: project)
         end
 
-        let(:error_message) do
-          'Project cannot be deleted because it is linked as Security Policy Project'
-        end
+        let(:error_message) { 'Project cannot be deleted because it is linked as a security policy project' }
 
         it 'alerts' do
           delete_project

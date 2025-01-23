@@ -1112,6 +1112,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         form_path: project_path(project),
         confirm_phrase: project.path_with_namespace,
         is_fork: 'false',
+        is_security_policy_project: "false",
         issues_count: '0',
         merge_requests_count: '0',
         forks_count: '0',
@@ -1136,6 +1137,26 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
       it 'returns expected hash' do
         expect(subject).to match(base_button_data.merge(button_text: 'Delete project immediately'))
+      end
+    end
+
+    describe 'when it is a security policy project' do
+      subject { helper.project_delete_delayed_button_data(project, is_security_policy_project: true) }
+
+      it 'returns expected hash' do
+        expect(subject).to match({
+          button_text: 'Delete project',
+          restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
+          delayed_deletion_date: '2025-02-09',
+          form_path: project_path(project),
+          confirm_phrase: project.path_with_namespace,
+          is_fork: 'false',
+          is_security_policy_project: "true",
+          issues_count: '0',
+          merge_requests_count: '0',
+          forks_count: '0',
+          stars_count: '0'
+        })
       end
     end
   end

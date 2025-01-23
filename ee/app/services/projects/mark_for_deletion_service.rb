@@ -2,12 +2,14 @@
 
 module Projects
   class MarkForDeletionService < BaseService
+    include EE::SecurityOrchestrationHelper # rubocop: disable Cop/InjectEnterpriseEditionModule -- EE-only concern
+
     def execute
       return success if project.marked_for_deletion_at?
       return error('Cannot mark project for deletion: feature not supported') unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
 
       if reject_security_policy_project_deletion?
-        return error(_('Project cannot be deleted because it is linked as Security Policy Project'))
+        return error(s_('SecurityOrchestration|Project cannot be deleted because it is linked as a security policy project'))
       end
 
       result = ::Projects::UpdateService.new(
@@ -60,10 +62,7 @@ module Projects
     end
 
     def reject_security_policy_project_deletion?
-      return false unless ::Feature.enabled?(:reject_security_policy_project_deletion, project)
-      return false unless project.licensed_feature_available?(:security_orchestration_policies)
-
-      ::Security::OrchestrationPolicyConfiguration.for_management_project(project).exists?
+      security_configurations_preventing_project_deletion(project).exists?
     end
   end
 end

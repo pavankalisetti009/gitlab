@@ -2113,7 +2113,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
             delete api("/projects/#{project.id}", user)
 
             expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response["message"]).to eq('Project cannot be deleted because it is linked as Security Policy Project')
+            expect(json_response["message"]).to eq('Project cannot be deleted because it is linked as a security policy project')
           end
 
           context 'with feature disabled' do

@@ -583,4 +583,50 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       it_behaves_like '#max_active_scan_result_policies_reached for source'
     end
   end
+
+  describe '#security_configurations_preventing_project_deletion' do
+    let_it_be(:project) { create(:project) }
+
+    subject(:preventing_configurations) { helper.security_configurations_preventing_project_deletion(project) }
+
+    before do
+      stub_licensed_features(security_orchestration_policies: true)
+    end
+
+    context 'when there are no preventing configurations' do
+      it 'returns an empty relation' do
+        expect(preventing_configurations).to be_empty
+      end
+    end
+
+    context 'when there are preventing configurations' do
+      let_it_be(:config) do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+      end
+
+      it 'returns the preventing configurations' do
+        expect(preventing_configurations).to contain_exactly(config)
+      end
+
+      context 'when security orchestration policies are not available' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it 'returns an empty relation' do
+          expect(preventing_configurations).to be_empty
+        end
+      end
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(reject_security_policy_project_deletion: false)
+        end
+
+        it 'returns an empty relation' do
+          expect(preventing_configurations).to be_empty
+        end
+      end
+    end
+  end
 end
