@@ -24,10 +24,9 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
       let(:trial_widget_attribute_keys) { [:trial_widget_data_attrs] }
 
       before do
-        build(
-          :gitlab_subscription,
-          :active_trial, :free, namespace: group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
-        )
+        build(:gitlab_subscription, :active_trial, :free, namespace: group)
+
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
       end
 
       it { is_expected.to match_array(trial_widget_attribute_keys) }
