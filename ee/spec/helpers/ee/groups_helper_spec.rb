@@ -246,14 +246,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#immediately_remove_group_message' do
-    subject { helper.immediately_remove_group_message(group) }
-
-    it 'returns the message related to immediate deletion' do
-      expect(subject).to match(/permanently remove.*#{group.path}.*immediately/)
-    end
-  end
-
   describe '#show_discover_group_security?' do
     using RSpec::Parameterized::TableSyntax
 

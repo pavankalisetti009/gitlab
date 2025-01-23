@@ -27,7 +27,9 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
 
     shared_examples 'delayed deletion that is restorable' do
       it 'deletes project delayed and is restorable', :freeze_time do
-        expect(page).to have_content("This action deletes #{project_to_delete.path_with_namespace} on #{deletion_date} and everything this project contains.")
+        deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
+
+        expect(page).to have_content("This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on #{deletion_date}.")
 
         click_button "Delete project"
 
@@ -75,7 +77,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
             end
 
             it 'deletes project delayed and is not restorable', :freeze_time do
-              expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains. There is no going back.")
+              expect(page).to have_content("This action will permanently delete this project, including all its resources.")
 
               click_button "Delete project"
 
@@ -96,7 +98,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
             end
 
             it 'deletes project delayed and is not restorable', :freeze_time do
-              expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains. There is no going back.")
+              expect(page).to have_content("This action will permanently delete this project, including all its resources.")
 
               click_button "Delete project"
 
@@ -131,7 +133,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
       end
 
       it 'deletes project immediately', :sidekiq_inline do
-        expect(page).to have_content("This action deletes #{project.path_with_namespace} and everything this project contains. There is no going back.")
+        expect(page).to have_content("This action will permanently delete this project, including all its resources.")
 
         click_button "Delete project"
 

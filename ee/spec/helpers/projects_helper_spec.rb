@@ -562,8 +562,10 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:feature_available) { true }
 
       specify do
+        deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
         deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
-        expect(subject).to eq "This action deletes <code>#{project.path_with_namespace}</code> on #{deletion_date} and everything this project contains."
+
+        expect(subject).to eq "This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on <strong>#{deletion_date}</strong>."
       end
     end
 
@@ -571,8 +573,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:feature_available) { false }
 
       specify do
-        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
-        expect(subject).to eq "This action deletes <code>#{project.path_with_namespace}</code> on #{deletion_date} and everything this project contains. <strong>There is no going back.</strong>"
+        expect(subject).to eq "This action will permanently delete this project, including all its resources."
       end
     end
   end
@@ -1077,15 +1078,35 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
   end
 
-  describe '#project_delete_delayed_button_data', time_travel_to: '2025-02-02' do
+  describe '#delete_immediately_message' do
+    subject { helper.delete_immediately_message(project) }
+
     before do
-      stub_application_setting(deletion_adjourned_period: 7)
+      allow(project).to receive(:adjourned_deletion?).and_return(allowed)
     end
 
-    subject { helper.project_delete_delayed_button_data(project) }
+    describe 'when adjourned deletion is not available' do
+      let(:allowed) { false }
 
-    it 'returns expected hash' do
-      expect(subject).to match({
+      it 'returns correct message' do
+        expect(subject).to eq "This action will permanently delete this project, including all its resources."
+      end
+    end
+
+    describe 'when adjourned deletion is available' do
+      let(:allowed) { true }
+
+      it 'returns correct message' do
+        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
+
+        expect(subject).to eq "This project is scheduled for deletion on <strong>#{deletion_date}</strong>. This action will permanently delete this project, including all its resources, <strong>immediately</strong>. This action cannot be undone."
+      end
+    end
+  end
+
+  describe '#project_delete_delayed_button_data', time_travel_to: '2025-02-02' do
+    let(:base_button_data) do
+      {
         restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
         delayed_deletion_date: '2025-02-09',
         form_path: project_path(project),
@@ -1095,7 +1116,27 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         merge_requests_count: '0',
         forks_count: '0',
         stars_count: '0'
-      })
+      }
+    end
+
+    before do
+      stub_application_setting(deletion_adjourned_period: 7)
+    end
+
+    describe 'with default button text' do
+      subject { helper.project_delete_delayed_button_data(project) }
+
+      it 'returns expected hash' do
+        expect(subject).to match(base_button_data.merge(button_text: 'Delete project'))
+      end
+    end
+
+    describe 'with custom button text' do
+      subject { helper.project_delete_delayed_button_data(project, 'Delete project immediately') }
+
+      it 'returns expected hash' do
+        expect(subject).to match(base_button_data.merge(button_text: 'Delete project immediately'))
+      end
     end
   end
 

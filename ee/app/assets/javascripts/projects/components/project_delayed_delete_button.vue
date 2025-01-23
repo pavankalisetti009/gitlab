@@ -46,6 +46,10 @@ export default {
       type: Number,
       required: true,
     },
+    buttonText: {
+      type: String,
+      required: true,
+    },
   },
 
   strings: {
@@ -64,6 +68,7 @@ export default {
     :merge-requests-count="mergeRequestsCount"
     :forks-count="forksCount"
     :stars-count="starsCount"
+    :button-text="buttonText"
   >
     <template #modal-footer>
       <p class="gl-mb-0 gl-mt-3 gl-flex gl-items-center gl-text-subtle">

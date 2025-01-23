@@ -20,6 +20,7 @@ describe('Project delayed delete modal', () => {
     mergeRequestsCount: 2,
     forksCount: 3,
     starsCount: 4,
+    buttonText: 'Delete project',
   };
 
   const findLearnMoreLink = () => wrapper.findComponent(GlLink);
@@ -62,6 +63,7 @@ describe('Project delayed delete modal', () => {
         issuesCount: defaultProps.issuesCount,
         mergeRequestsCount: defaultProps.mergeRequestsCount,
         starsCount: defaultProps.starsCount,
+        buttonText: defaultProps.buttonText,
       });
     });
   });

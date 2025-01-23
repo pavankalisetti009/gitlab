@@ -55,7 +55,7 @@ RSpec.describe 'projects/edit' do
     subject { rendered }
 
     it { is_expected.not_to have_link(_('Archive project')) }
-    it { is_expected.not_to have_text(_('Delete this project')) }
+    it { is_expected.not_to have_text(_('Delete project')) }
 
     context 'when the user can archive projects' do
       let(:can_archive_projects) { true }
@@ -66,7 +66,7 @@ RSpec.describe 'projects/edit' do
     context 'when the user can remove projects' do
       let(:can_remove_projects) { true }
 
-      it { is_expected.to have_text(_('Delete this project')) }
+      it { is_expected.to have_text(_('Delete project')) }
     end
   end
 
