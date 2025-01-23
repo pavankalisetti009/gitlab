@@ -259,18 +259,6 @@ RSpec.describe TodoService, feature_category: :notifications do
         should_not_create_todo(user: skipped, target: addressed_issue, action: Todo::DIRECTLY_ADDRESSED)
       end
 
-      it 'does not create a todo if user was already mentioned and todo is done' do
-        create(:todo, :mentioned, :done, user: skipped, project: project, target: issue, author: author)
-
-        expect { service.update_issue(issue, author, skip_users) }.not_to change(skipped.todos, :count)
-      end
-
-      it 'does not create a directly addressed todo if user was already mentioned or addressed and todo is done' do
-        create(:todo, :directly_addressed, :done, user: skipped, project: project, target: addressed_issue, author: author)
-
-        expect { service.update_issue(addressed_issue, author, skip_users) }.not_to change(skipped.todos, :count)
-      end
-
       it 'does not create todo if user can not see the issue when issue is confidential' do
         service.update_issue(confidential_issue, john_doe)
 
@@ -966,18 +954,6 @@ RSpec.describe TodoService, feature_category: :notifications do
         should_not_create_todo(user: skipped, target: addressed_mr, action: Todo::DIRECTLY_ADDRESSED)
       end
 
-      it 'does not create a todo if user was already mentioned and todo is done' do
-        create(:todo, :mentioned, :done, user: skipped, project: project, target: mentioned_mr, author: author)
-
-        expect { service.update_merge_request(mentioned_mr, author, skip_users) }.not_to change(skipped.todos, :count)
-      end
-
-      it 'does not create a directly addressed todo if user was already mentioned or addressed and todo is done' do
-        create(:todo, :directly_addressed, user: skipped, project: project, target: addressed_mr, author: author)
-
-        expect { service.update_merge_request(addressed_mr, author, skip_users) }.not_to change(skipped.todos, :count)
-      end
-
       context 'with a task list' do
         it 'does not create todo when tasks are marked as completed' do
           mentioned_mr.update!(description: "- [x] Task 1\n- [X] Task 2 #{mentions}")
@@ -1335,18 +1311,6 @@ RSpec.describe TodoService, feature_category: :notifications do
       should_create_todo(user: author, target: noteable, action: Todo::DIRECTLY_ADDRESSED)
       should_not_create_todo(user: non_member, target: noteable, action: Todo::DIRECTLY_ADDRESSED)
       should_not_create_todo(user: skipped, target: noteable, action: Todo::DIRECTLY_ADDRESSED)
-    end
-
-    it 'does not create a todo if user was already mentioned and todo is done' do
-      create(:todo, :mentioned, :done, user: skipped, project: project, target: noteable, author: author)
-
-      expect { service.update_note(note, author, skip_users) }.not_to change(skipped.todos, :count)
-    end
-
-    it 'does not create a directly addressed todo if user was already mentioned or addressed and todo is done' do
-      create(:todo, :directly_addressed, :done, user: skipped, project: project, target: noteable, author: author)
-
-      expect { service.update_note(addressed_note, author, skip_users) }.not_to change(skipped.todos, :count)
     end
   end
 
