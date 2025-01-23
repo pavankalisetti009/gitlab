@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_category: :duo_chat do
+RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:request_id) { 'uuid' }
@@ -27,30 +27,15 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
 
   let_it_be(:agent_version_id) { 1 }
   let(:message) { build(:ai_chat_message, payload) }
-  let(:redis_storage) { Gitlab::Llm::ChatStorage::Redis.new(user, agent_version_id) }
   let(:postgres_storage) { Gitlab::Llm::ChatStorage::Postgresql.new(user, agent_version_id) }
 
   subject { described_class.new(user, agent_version_id) }
 
   describe '#add' do
-    it 'stores the message in both Redis and PostgreSQL' do
+    it 'stores the message in PostgreSQL' do
       subject.add(message)
 
       expect(postgres_storage.messages).to include(message)
-      expect(redis_storage.messages).to include(message)
-    end
-
-    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
-      before do
-        stub_feature_flags(duo_chat_storage_postgresql_write: false)
-      end
-
-      it 'does not stores the message in PostgreSQL' do
-        subject.add(message)
-
-        expect(postgres_storage.messages).to be_empty
-        expect(redis_storage.messages).to include(message)
-      end
     end
   end
 
@@ -65,13 +50,8 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
       subject.add(another_message)
     end
 
-    it 'updates message extras in both Redis and PostgreSQL storages' do
+    it 'updates message extras in PostgreSQL storage' do
       subject.update_message_extras(message.request_id, key, resource_content)
-
-      expect(redis_storage.messages.find { |m| m.request_id == message.request_id }.extras[key])
-        .to eq(resource_content)
-      expect(redis_storage.messages.find { |m| m.request_id == another_message.request_id })
-        .to eq(another_message)
 
       expect(postgres_storage.messages.find { |m| m.request_id == message.request_id }.extras[key])
         .to eq(resource_content)
@@ -96,45 +76,15 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
         end.to raise_error(ArgumentError, "The key #{key} is not supported")
       end
     end
-
-    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
-      before do
-        stub_feature_flags(duo_chat_storage_postgresql_write: false)
-      end
-
-      it 'only updates Redis storage' do
-        subject.update_message_extras(message.request_id, key, resource_content)
-
-        expect(redis_storage.messages.find { |m| m.request_id == message.request_id }.extras[key])
-          .to eq(resource_content)
-        expect(postgres_storage.messages.find { |m| m.request_id == message.request_id }.extras[key])
-          .to be_nil
-      end
-    end
   end
 
   describe '#set_has_feedback' do
-    it 'updates the feedback flag in both Redis and PostgreSQL' do
+    it 'updates the feedback flag in PostgreSQL' do
       subject.add(message)
       subject.set_has_feedback(message)
 
       expect(subject.messages.find { |m| m.id == message.id }.extras['has_feedback']).to be(true)
-      expect(redis_storage.messages.first.extras['has_feedback']).to be true
       expect(postgres_storage.messages.first.extras['has_feedback']).to be true
-    end
-
-    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
-      before do
-        stub_feature_flags(duo_chat_storage_postgresql_write: false)
-      end
-
-      it 'does not updates the feedback flag in PostgreSQL' do
-        subject.add(message)
-        subject.set_has_feedback(message)
-
-        expect(redis_storage.messages.first.extras['has_feedback']).to be true
-        expect(postgres_storage.messages).to be_empty
-      end
     end
   end
 
@@ -259,27 +209,11 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
       subject.add(build(:ai_chat_message, payload.merge(content: '/reset', role: 'user', request_id: '3')))
     end
 
-    it 'clears messages from both Redis and PostgreSQL' do
+    it 'clears messages from PostgreSQL' do
       subject.clear!
 
       expect(subject.messages).to be_empty
-      expect(redis_storage.messages).to be_empty
       expect(postgres_storage.messages).to be_empty
-    end
-
-    context 'when feature flag duo_chat_storage_postgresql_write is disabled' do
-      before do
-        stub_feature_flags(duo_chat_storage_postgresql_read: false)
-        stub_feature_flags(duo_chat_storage_postgresql_write: false)
-      end
-
-      it 'clears messages from PostgreSQL' do
-        subject.clear!
-
-        expect(subject.messages).to be_empty
-        expect(redis_storage.messages).to be_empty
-        expect(postgres_storage.messages).not_to be_empty
-      end
     end
   end
 
@@ -306,16 +240,4 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
   end
 
   it_behaves_like '#messages_up_to'
-
-  context 'when feature flag duo_chat_storage_postgresql_read is disabled' do
-    before do
-      stub_feature_flags(duo_chat_storage_postgresql_read: false)
-    end
-
-    it_behaves_like '#messages'
-    it_behaves_like '#messages_by'
-    it_behaves_like '#last_conversation'
-    it_behaves_like '.last_conversation'
-    it_behaves_like '#messages_up_to'
-  end
 end

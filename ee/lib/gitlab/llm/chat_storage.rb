@@ -7,19 +7,13 @@ module Gitlab
 
       SUPPORTED_EXTRAS = ['resource_content'].freeze
       POSTGRESQL_STORAGE = "postgresql"
-      REDIS_STORAGE = "redis"
 
-      delegate :messages, :current_thread, to: :read_storage
+      delegate :messages, :current_thread, :add, :set_has_feedback, :clear!, to: :postgres_storage
 
       def initialize(user, agent_version_id = nil, thread = nil)
         @user = user
         @agent_version_id = agent_version_id
         @thread = thread
-      end
-
-      def add(message)
-        postgres_storage.add(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
-        redis_storage.add(message)
       end
 
       def update_message_extras(request_id, key, value)
@@ -29,13 +23,7 @@ module Gitlab
         return unless message
 
         message.extras[key] = value
-        postgres_storage.update_message_extras(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
-        redis_storage.update(message)
-      end
-
-      def set_has_feedback(message)
-        postgres_storage.set_has_feedback(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
-        redis_storage.set_has_feedback(message)
+        postgres_storage.update_message_extras(message)
       end
 
       def messages_by(filters = {})
@@ -62,11 +50,6 @@ module Gitlab
         idx ? all.first(idx + 1) : []
       end
 
-      def clear!
-        postgres_storage.clear! if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
-        redis_storage.clear!
-      end
-
       private
 
       attr_reader :user, :agent_version_id, :thread
@@ -82,19 +65,9 @@ module Gitlab
         true
       end
 
-      def read_storage
-        return postgres_storage if ::Feature.enabled?(:duo_chat_storage_postgresql_read, user)
-
-        redis_storage
-      end
-
       def postgres_storage
         @postgres_storage ||= storage_class(POSTGRESQL_STORAGE)
           .new(user, agent_version_id, thread)
-      end
-
-      def redis_storage
-        @redis_storage ||= storage_class(REDIS_STORAGE).new(user, agent_version_id)
       end
     end
   end
