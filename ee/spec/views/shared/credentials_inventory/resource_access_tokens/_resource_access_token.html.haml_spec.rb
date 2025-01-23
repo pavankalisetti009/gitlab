@@ -43,8 +43,35 @@ RSpec.describe('shared/credentials_inventory/resource_access_tokens/_resource_ac
       expect(rendered).to have_text(project_access_token.created_at.to_date)
     end
 
-    it 'shows the link to revoke the token' do
-      expect(rendered).to have_link('Revoke')
+    describe 'revoke button' do
+      context 'when token is revoked' do
+        let_it_be(:project_access_token) do
+          create(:personal_access_token, user: project_member.user, scopes: %w[read_repository api], revoked: true)
+        end
+
+        it 'shows revoked badge' do
+          expect(rendered).not_to have_link('Revoke')
+          expect(rendered).to have_text(s_('CredentialsInventory|Revoked'))
+        end
+      end
+
+      context 'when token is expired' do
+        let_it_be(:project_access_token) do
+          create(:personal_access_token, user: project_member.user, scopes: %w[read_repository api],
+            expires_at: 1.day.ago)
+        end
+
+        it 'shows expired badge' do
+          expect(rendered).not_to have_link('Revoke')
+          expect(rendered).to have_text(s_('CredentialsInventory|Expired'))
+        end
+      end
+
+      context 'when token is active' do
+        it 'shows the link to revoke the token' do
+          expect(rendered).to have_link(s_('CredentialsInventory|Revoke'))
+        end
+      end
     end
 
     context 'for last used date' do

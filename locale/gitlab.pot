@@ -17189,6 +17189,9 @@ msgstr ""
 msgid "CredentialsInventory|Expiration date"
 msgstr ""
 
+msgid "CredentialsInventory|Expired"
+msgstr ""
+
 msgid "CredentialsInventory|GPG Keys"
 msgstr ""
 
@@ -17208,6 +17211,9 @@ msgid "CredentialsInventory|Personal access tokens"
 msgstr ""
 
 msgid "CredentialsInventory|Project and group access tokens"
+msgstr ""
+
+msgid "CredentialsInventory|Revoke"
 msgstr ""
 
 msgid "CredentialsInventory|Revoked"
