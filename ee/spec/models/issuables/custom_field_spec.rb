@@ -88,6 +88,43 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       end
     end
 
+    describe '#number_of_fields_per_namespace' do
+      let_it_be(:group) { create(:group) }
+
+      before_all do
+        create(:custom_field, namespace: group)
+      end
+
+      before do
+        stub_const("#{described_class}::MAX_FIELDS", 2)
+      end
+
+      subject(:custom_field) { build(:custom_field, namespace: group) }
+
+      it { is_expected.to be_valid }
+
+      context 'when group is over the limit' do
+        before_all do
+          create(:custom_field, namespace: group)
+        end
+
+        shared_examples 'an invalid record' do
+          it 'returns a validation error' do
+            expect(custom_field).not_to be_valid
+            expect(custom_field.errors[:namespace]).to include('can only have a maximum of 2 custom fields.')
+          end
+        end
+
+        it_behaves_like 'an invalid record'
+
+        context 'when creating an archived field' do
+          subject(:custom_field) { build(:custom_field, :archived, namespace: group) }
+
+          it_behaves_like 'an invalid record'
+        end
+      end
+    end
+
     describe '#number_of_active_fields_per_namespace' do
       let_it_be(:group) { create(:group) }
 
