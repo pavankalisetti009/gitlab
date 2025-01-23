@@ -33,7 +33,9 @@ describe('WorkItemDevelopment EE', () => {
 
   const workItemSuccessQueryHandler = jest
     .fn()
-    .mockResolvedValue(workItemByIidResponseFactory({ canUpdate: true }));
+    .mockResolvedValue(
+      workItemByIidResponseFactory({ canUpdate: true, customFieldsWidgetPresent: false }),
+    );
 
   const devWidgetWithMRListOnly = workItemDevelopmentResponse({
     developmentItems: workItemDevelopmentFragmentResponse({
