@@ -28,7 +28,9 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateProjectService, feature_c
           it 'adds the framework association' do
             expect { update_framework }.to change {
               project.reload.compliance_management_frameworks
-            }.from([]).to([framework1, framework2])
+            }.from([]).to(
+              match_array([framework1, framework2])
+            )
           end
 
           it 'logs audit events' do
@@ -55,7 +57,11 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateProjectService, feature_c
           it 'adds and removes framework associations' do
             expect { update_framework }.to change {
               project.reload.compliance_management_frameworks
-            }.from([framework2, framework3, framework4]).to([framework1, framework2])
+            }.from(
+              match_array([framework2, framework3, framework4])
+            ).to(
+              match_array([framework1, framework2])
+            )
           end
 
           it 'logs audit events' do
