@@ -54,6 +54,7 @@ module Search
 
       def parse_zoekt_search_result(result, project)
         ref = project.default_branch_or_main
+
         if multi_match
           multi_match.blobs_for_project(result, project, ref)
         else
@@ -169,11 +170,7 @@ module Search
           return [{}, @blobs_count, 0]
         end
 
-        total_count = if multi_match
-                        response.ngram_match_count.clamp(0, ZOEKT_COUNT_LIMIT)
-                      else
-                        response.match_count.clamp(0, ZOEKT_COUNT_LIMIT)
-                      end
+        total_count = response.match_count.clamp(0, ZOEKT_COUNT_LIMIT)
 
         results = zoekt_extract_result_pages(response, per_page: per_page, page_limit: page_limit)
         [results, total_count, response.file_count]
@@ -190,34 +187,41 @@ module Search
       # @param page_limit [Integer] maximum number of pages we parse
       # @return [Hash<Integer, Array<Hash>>] results hash with pages as keys (zero-based)
       def zoekt_extract_result_pages(response, per_page:, page_limit:)
-        if multi_match
-          results = multi_match.zoekt_extract_result_pages_multi_match(response, per_page, page_limit)
-        else
-          results = {}
-          i = 0
-          response.each_file do |file|
-            project_id = file[:RepositoryID].to_i
+        return multi_match.zoekt_extract_result_pages_multi_match(response, per_page, page_limit) if multi_match
 
-            cont = file[:LineMatches].each do |match|
-              current_page = i / per_page
-              break false if current_page == page_limit
+        results = {}
+        page = 0
+        response.each_file do |file|
+          project_id = file[:RepositoryID].to_i
 
-              results[current_page] ||= []
-              results[current_page] << {
-                project_id: project_id,
-                content: [match[:Before], match[:Line], match[:After]].compact.map do |l|
-                  Base64.decode64(l)
-                end.join,
-                line: match[:LineNumber],
-                path: file[:FileName]
-              }
-              i += 1
-            end
-            break unless cont
+          file[:LineMatches].each do |match|
+            current_page = page / per_page
+            break if current_page == page_limit
+
+            results[current_page] ||= []
+            results[current_page] << build_result(file, match, project_id)
+            page += 1
           end
+
+          break if page / per_page == page_limit
         end
 
         results
+      end
+
+      def build_result(file, match, project_id)
+        {
+          project_id: project_id,
+          content: decode_content(match),
+          line: match[:LineNumber],
+          path: file[:FileName]
+        }
+      end
+
+      def decode_content(match)
+        [:Before, :Line, :After].filter_map do |part|
+          Base64.decode64(match[part]) if match[part]
+        end.join
       end
 
       def zoekt_search_and_wrap(query, per_page:, page: 1, preload_method: nil, &blk)

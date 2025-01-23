@@ -84,7 +84,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       post_graphql(query, current_user: current_user)
 
       expect(graphql_data_at(:blobSearch, :fileCount)).to eq(1)
-      expect(graphql_data_at(:blobSearch, :matchCount)).to eq(2)
+      expect(graphql_data_at(:blobSearch, :matchCount)).to eq(1)
       expect(graphql_data_at(:blobSearch, :perPage)).to eq(20)
       expect(graphql_data_at(:blobSearch, :searchType)).to eq('ZOEKT')
       expect(graphql_data_at(:blobSearch, :searchLevel)).to eq('GROUP')
