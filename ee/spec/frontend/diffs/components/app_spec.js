@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import getMRCodequalityAndSecurityReports from 'ee_else_ce/diffs/components/graphql/get_mr_codequality_and_security_reports.query.graphql';
 import { TEST_HOST } from 'spec/test_constants';
 import App, { FINDINGS_POLL_INTERVAL } from '~/diffs/components/app.vue';
+import DiffFile from '~/diffs/components/diff_file.vue';
 import store from '~/mr_notes/stores';
 import { pinia } from '~/pinia/instance';
 
@@ -17,6 +18,7 @@ import {
   SASTErrorHandler,
   codeQualityErrorAndParsed,
   requestError,
+  SAST_REPORT_DATA,
 } from './mocks/queries';
 
 const TEST_ENDPOINT = `${TEST_HOST}/diff/endpoint`;
@@ -26,12 +28,14 @@ Vue.use(VueApollo);
 
 describe('diffs/components/app', () => {
   let fakeApollo;
+  let wrapper;
 
-  const createComponent = (
+  const createComponent = ({
     props = {},
     baseConfig = {},
     queryHandler = codeQualityNewErrorsHandler,
-  ) => {
+    extendStore = () => {},
+  } = {}) => {
     store.reset();
     store.getters.isNotesFetched = false;
     store.getters.getNoteableData = {
@@ -63,9 +67,11 @@ describe('diffs/components/app', () => {
       ...baseConfig,
     });
 
+    extendStore(store);
+
     fakeApollo = createMockApollo([[getMRCodequalityAndSecurityReports, queryHandler]]);
 
-    shallowMount(App, {
+    wrapper = shallowMount(App, {
       apolloProvider: fakeApollo,
       propsData: {
         endpointCoverage: `${TEST_HOST}/diff/endpointCoverage`,
@@ -77,6 +83,7 @@ describe('diffs/components/app', () => {
       },
       mocks: {
         $store: store,
+        // DiffFile,
       },
       pinia,
     });
@@ -84,11 +91,10 @@ describe('diffs/components/app', () => {
 
   describe('EE codequality diff', () => {
     it('polls Code Quality data via GraphQL and not via REST when codequalityReportAvailable is true', async () => {
-      createComponent(
-        { shouldShow: true, codequalityReportAvailable: true },
-        {},
-        codeQualityErrorAndParsed,
-      );
+      createComponent({
+        props: { shouldShow: true, codequalityReportAvailable: true },
+        queryHandler: codeQualityErrorAndParsed,
+      });
       await waitForPromises();
       expect(codeQualityErrorAndParsed).toHaveBeenCalledTimes(1);
       jest.advanceTimersByTime(FINDINGS_POLL_INTERVAL);
@@ -97,23 +103,13 @@ describe('diffs/components/app', () => {
     });
 
     it('does not poll Code Quality data via GraphQL when codequalityReportAvailable is false', async () => {
-      createComponent(
-        { shouldShow: true, codequalityReportAvailable: false },
-        {},
-        codeQualityErrorAndParsed,
-      );
+      createComponent({ props: { shouldShow: true, codequalityReportAvailable: false } });
       await waitForPromises();
-      expect(codeQualityErrorAndParsed).toHaveBeenCalledTimes(0);
+      expect(codeQualityNewErrorsHandler).toHaveBeenCalledTimes(0);
     });
 
     it('stops polling when newErrors in response are defined', async () => {
-      createComponent(
-        {
-          shouldShow: true,
-          codequalityReportAvailable: true,
-        },
-        {},
-      );
+      createComponent({ props: { shouldShow: true, codequalityReportAvailable: true } });
 
       await waitForPromises();
 
@@ -124,18 +120,17 @@ describe('diffs/components/app', () => {
     });
 
     it('does not fetch code quality data when endpoint is blank', () => {
-      createComponent({ shouldShow: false, endpointCodequality: '' }, {});
+      createComponent({ props: { shouldShow: false, endpointCodequality: '' } });
       expect(codeQualityNewErrorsHandler).not.toHaveBeenCalled();
     });
   });
 
   describe('EE SAST diff', () => {
     it('polls SAST data when sastReportAvailable is true', async () => {
-      createComponent(
-        { shouldShow: true, sastReportAvailable: true },
-        {},
-        SASTParsingAndParsedHandler,
-      );
+      createComponent({
+        props: { shouldShow: true, sastReportAvailable: true },
+        queryHandler: SASTParsingAndParsedHandler,
+      });
       await waitForPromises();
 
       expect(SASTParsingAndParsedHandler).toHaveBeenCalledTimes(1);
@@ -145,14 +140,10 @@ describe('diffs/components/app', () => {
     });
 
     it('stops polling when sastReport status is PARSED', async () => {
-      createComponent(
-        {
-          shouldShow: true,
-          sastReportAvailable: true,
-        },
-        {},
-        SASTParsedHandler,
-      );
+      createComponent({
+        props: { shouldShow: true, sastReportAvailable: true },
+        queryHandler: SASTParsedHandler,
+      });
 
       await waitForPromises();
 
@@ -163,7 +154,10 @@ describe('diffs/components/app', () => {
     });
 
     it('stops polling on request error', async () => {
-      createComponent({ shouldShow: true, sastReportAvailable: true }, {}, requestError);
+      createComponent({
+        props: { shouldShow: true, sastReportAvailable: true },
+        queryHandler: requestError,
+      });
       await waitForPromises();
 
       expect(requestError).toHaveBeenCalledTimes(1);
@@ -173,7 +167,10 @@ describe('diffs/components/app', () => {
     });
 
     it('stops polling on response status error', async () => {
-      createComponent({ shouldShow: true, sastReportAvailable: true }, {}, SASTErrorHandler);
+      createComponent({
+        props: { shouldShow: true, sastReportAvailable: true },
+        queryHandler: SASTErrorHandler,
+      });
       await waitForPromises();
 
       expect(SASTErrorHandler).toHaveBeenCalledTimes(1);
@@ -183,8 +180,32 @@ describe('diffs/components/app', () => {
     });
 
     it('does not fetch SAST data when sastReportAvailable is false', () => {
-      createComponent({ shouldShow: false }, {});
+      createComponent({ props: { shouldShow: false } });
       expect(codeQualityNewErrorsHandler).not.toHaveBeenCalled();
+    });
+
+    it('passes the SAST report-data to the diff component', async () => {
+      createComponent({
+        props: {
+          shouldShow: true,
+          sastReportAvailable: true,
+        },
+        baseConfig: {
+          viewDiffsFileByFile: true,
+        },
+        queryHandler: SASTParsedHandler,
+        extendStore: (notesStore) => {
+          Object.assign(notesStore.getters, {
+            'diffs/flatBlobsList': [{ type: 'blob', fileHash: '123' }],
+            'diffs/isVirtualScrollingEnabled': false,
+            'diffs/diffFiles': [{ file_hash: '123' }],
+          });
+        },
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.findComponent(DiffFile).props('sastData')).toEqual(SAST_REPORT_DATA);
     });
   });
 });
