@@ -799,6 +799,14 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: false)
       end
 
+      # Post Decomposition this won't work as these tables will be in seperate DB's, but we'll clean this up
+      # with the flag.
+      around do |ex|
+        ::Gitlab::Database::QueryAnalyzers::GitlabSchemasValidateConnection.with_suppressed do
+          ex.run
+        end
+      end
+
       let(:subgroup) { create(:group, parent: group) }
       let(:group_project) { build(:project, namespace: group) }
       let(:subgroup_project) { build(:project, namespace: subgroup) }
