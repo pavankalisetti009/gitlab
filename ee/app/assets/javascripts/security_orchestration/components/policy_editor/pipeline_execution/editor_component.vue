@@ -1,6 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import { debounce } from 'lodash';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import { setUrlFragment, queryToObject } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -20,7 +21,6 @@ import EditorLayout from '../editor_layout.vue';
 import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
-import SkipCiSelector from './skip_ci_selector.vue';
 import { createPolicyObject, getInitialPolicy } from './utils';
 import {
   CONDITIONS_LABEL,

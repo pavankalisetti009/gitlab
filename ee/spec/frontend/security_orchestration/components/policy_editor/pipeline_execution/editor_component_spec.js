@@ -6,7 +6,7 @@ import EditorComponent from 'ee/security_orchestration/components/policy_editor/
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/rule_section.vue';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
-import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/skip_ci_selector.vue';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,

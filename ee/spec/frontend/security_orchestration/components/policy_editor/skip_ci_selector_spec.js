@@ -1,5 +1,5 @@
 import { GlToggle } from '@gitlab/ui';
-import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/skip_ci_selector.vue';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/user_select.vue';
 
