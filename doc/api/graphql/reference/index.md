@@ -9857,6 +9857,26 @@ Input type: `TagCreateInput`
 | <a id="mutationtagcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationtagcreatetag"></a>`tag` | [`Tag`](#tag) | Tag after mutation. |
 
+### `Mutation.tagDelete`
+
+Input type: `TagDeleteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtagdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtagdeletename"></a>`name` | [`String!`](#string) | Name of the tag. |
+| <a id="mutationtagdeleteprojectpath"></a>`projectPath` | [`ID!`](#id) | Project full path the branch is associated with. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtagdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtagdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationtagdeletetag"></a>`tag` | [`Tag`](#tag) | Tag after mutation. |
+
 ### `Mutation.terraformStateDelete`
 
 Input type: `TerraformStateDeleteInput`
