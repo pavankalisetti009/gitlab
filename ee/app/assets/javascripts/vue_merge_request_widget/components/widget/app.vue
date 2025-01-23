@@ -66,6 +66,8 @@ export default {
     },
 
     securityReportsWidget() {
+      if (this.glFeatures.mrReportsTab && !this.mr.pipelineIid) return undefined;
+
       return this.mr.canReadVulnerabilities ? 'MrSecurityWidgetEE' : 'MrSecurityWidgetCE';
     },
 

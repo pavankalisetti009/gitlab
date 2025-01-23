@@ -151,6 +151,8 @@ export default {
       return axios.get(this.licenseComplianceCollapsedPath).then((res) => {
         this.licenseComplianceData.collapsed = res.data;
 
+        this.$emit('loaded', this.newLicenses);
+
         return {
           ...res,
           data: res.data,

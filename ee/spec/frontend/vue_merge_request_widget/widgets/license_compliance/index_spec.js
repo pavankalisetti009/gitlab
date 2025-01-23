@@ -74,6 +74,16 @@ describe('License Compliance extension', () => {
     mock.restore();
   });
 
+  it('emits loaded event', async () => {
+    mockApi(licenseComparisonPathCollapsed, HTTP_STATUS_OK, licenseComplianceNewLicenses);
+
+    createComponent();
+
+    await waitForPromises();
+
+    expect(wrapper.emitted('loaded')[0]).toContain(4);
+  });
+
   describe('summary', () => {
     it('displays loading text', () => {
       mockApi(licenseComparisonPathCollapsed, HTTP_STATUS_OK, licenseComplianceNewLicenses);

@@ -165,6 +165,7 @@ export default {
             },
             (statusCheck) => this.retryStatusCheck(statusCheck),
           );
+          this.$emit('loaded', this.collapsedData.failed.length);
         },
         errorCallback: (e) => {
           this.loadingState = undefined;

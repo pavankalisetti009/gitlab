@@ -162,7 +162,12 @@ describe('MR Widget App', () => {
       `('when violations count is $violationsCount', ({ violationsCount, title, icon }) => {
         beforeEach(async () => {
           createComponent({
-            mr: { hasPolicies: true, iid: 1, targetProjectFullPath: 'gitlab-org' },
+            mr: {
+              hasPolicies: true,
+              iid: 1,
+              targetProjectFullPath: 'gitlab-org',
+              testResultsPath: '/test-results',
+            },
             mrReportsTab: true,
             violationsCount,
           });

@@ -34,6 +34,17 @@ describe('Load performance widget', () => {
     mock = new MockAdapter(axios);
   });
 
+  it('emits loaded event', async () => {
+    mock.onGet(DEFAULT_LOAD_PERFORMANCE.head_path).reply(HTTP_STATUS_OK, headLoadPerformance, {});
+    mock.onGet(DEFAULT_LOAD_PERFORMANCE.base_path).reply(HTTP_STATUS_OK, baseLoadPerformance, {});
+
+    createComponent();
+
+    await waitForPromises();
+
+    expect(wrapper.emitted('loaded')[1]).toContain(1);
+  });
+
   describe('summary', () => {
     it('should render loading text', () => {
       createComponent();
