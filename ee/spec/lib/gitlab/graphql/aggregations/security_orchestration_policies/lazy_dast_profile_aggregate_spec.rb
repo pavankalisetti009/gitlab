@@ -18,16 +18,18 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
   let(:dast_profile) { dast_site_profile }
   let(:other_dast_profile) { other_dast_site_profile }
 
+  let(:state_key) { lazy_aggregate.state_key }
+
+  subject(:lazy_aggregate) { described_class.new(query_ctx, dast_profile) }
+
   describe '#initialize' do
     it 'adds the dast_profile to the lazy state' do
-      subject = described_class.new(query_ctx, dast_profile)
-
-      expect(subject.lazy_state[:dast_pending_profiles]).to eq [dast_profile]
-      expect(subject.dast_profile).to eq dast_profile
+      expect(lazy_aggregate.lazy_state[:dast_pending_profiles]).to eq [dast_profile]
+      expect(lazy_aggregate.dast_profile).to eq dast_profile
     end
 
-    it 'uses lazy_dast_profile_in_policies_aggregate to collect aggregates' do
-      subject = described_class.new({ lazy_dast_profile_in_policies_aggregate: { dast_pending_profiles: [other_dast_profile], loaded_objects: {} } }, dast_profile)
+    it 'uses state_key to collect aggregates' do
+      subject = described_class.new({ state_key => { dast_pending_profiles: [other_dast_profile], loaded_objects: {} } }, dast_profile)
 
       expect(subject.lazy_state[:dast_pending_profiles]).to match_array [other_dast_profile, dast_profile]
       expect(subject.dast_profile).to eq dast_profile
@@ -39,10 +41,8 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
   end
 
   describe '#execute' do
-    subject { described_class.new(query_ctx, dast_profile) }
-
     before do
-      subject.instance_variable_set(:@lazy_state, fake_state)
+      lazy_aggregate.instance_variable_set(:@lazy_state, fake_state)
     end
 
     context 'if the record has already been loaded' do
@@ -53,7 +53,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
       it 'does not make the query again' do
         expect(::Security::OrchestrationPolicyConfiguration).not_to receive(:for_project)
 
-        subject.execute
+        lazy_aggregate.execute
       end
     end
 
@@ -78,7 +78,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
 
       context 'when Dast Site profile is provided' do
         it 'makes the query' do
-          expect(subject.execute).to eq(['Dast Site Name'])
+          expect(lazy_aggregate.execute).to eq(['Dast Site Name'])
         end
       end
 
@@ -87,14 +87,14 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
         let(:other_dast_profile) { other_dast_scanner_profile }
 
         it 'makes the query' do
-          expect(subject.execute).to eq(['Dast Scanner Name'])
+          expect(lazy_aggregate.execute).to eq(['Dast Scanner Name'])
         end
       end
 
       it 'clears the pending IDs' do
-        subject.execute
+        lazy_aggregate.execute
 
-        expect(subject.lazy_state[:dast_pending_profiles]).to be_empty
+        expect(lazy_aggregate.lazy_state[:dast_pending_profiles]).to be_empty
       end
     end
   end

@@ -18,10 +18,6 @@ module Gitlab
 
           private
 
-          def state_key
-            :lazy_dast_profile_in_policies_aggregate
-          end
-
           def initial_state
             {
               dast_pending_profiles: [],

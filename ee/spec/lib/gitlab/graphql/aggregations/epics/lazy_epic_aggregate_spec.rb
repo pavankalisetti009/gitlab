@@ -9,9 +9,13 @@ RSpec.describe Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate do
     {}
   end
 
+  let(:state_key) { lazy_aggregate.state_key }
+
   let(:epic_id) { 37 }
   let(:epic_iid) { 18 }
   let(:child_epic_id) { 38 }
+
+  subject(:lazy_aggregate) { described_class.new(query_ctx, epic_id, WEIGHT_SUM) }
 
   describe '#initialize' do
     it 'requires either :weight_sum, :health_status_sum or :count as a facet', :aggregate_failures do
@@ -37,7 +41,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate do
     it 'adds the epic_id to lazy state' do
       described_class.new(query_ctx, epic_id, COUNT)
 
-      expect(query_ctx[:lazy_epic_aggregate][:pending_ids]).to match [epic_id]
+      expect(query_ctx[state_key][:pending_ids]).to match [epic_id]
     end
 
     it 'adds facets to lazy state' do
@@ -45,7 +49,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate do
       described_class.new(query_ctx, epic_id, WEIGHT_SUM)
       described_class.new(query_ctx, epic_id, HEALTH_STATUS_SUM)
 
-      expect(query_ctx[:lazy_epic_aggregate][:facets]).to match_array [COUNT, WEIGHT_SUM, HEALTH_STATUS_SUM]
+      expect(query_ctx[state_key][:facets]).to match_array [COUNT, WEIGHT_SUM, HEALTH_STATUS_SUM]
     end
   end
 
@@ -83,9 +87,9 @@ RSpec.describe Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate do
 
       let(:fake_data) do
         {
-            epic_id => [{ epic_state_id: OPENED_EPIC_STATE, issues_count: 2, issues_weight_sum: 5, parent_id: nil, issues_state_id: OPENED_ISSUE_STATE, issues_at_risk: 1, issues_needs_attention: 2, issues_on_track: 3 }],
-            child_epic_id => [{ epic_state_id: CLOSED_EPIC_STATE, issues_count: 4, issues_weight_sum: 17, parent_id: epic_id, issues_state_id: CLOSED_ISSUE_STATE, issues_at_risk: 1, issues_needs_attention: 2, issues_on_track: 3 }],
-            other_epic_id => [{ epic_state_id: OPENED_EPIC_STATE, issues_count: 0, issues_weight_sum: 0, parent_id: nil, issues_state_id: nil, issues_at_risk: nil, issues_needs_attention: nil, issues_on_track: nil }] # represents an epic with no parent and no issues
+          epic_id => [{ epic_state_id: OPENED_EPIC_STATE, issues_count: 2, issues_weight_sum: 5, parent_id: nil, issues_state_id: OPENED_ISSUE_STATE, issues_at_risk: 1, issues_needs_attention: 2, issues_on_track: 3 }],
+          child_epic_id => [{ epic_state_id: CLOSED_EPIC_STATE, issues_count: 4, issues_weight_sum: 17, parent_id: epic_id, issues_state_id: CLOSED_ISSUE_STATE, issues_at_risk: 1, issues_needs_attention: 2, issues_on_track: 3 }],
+          other_epic_id => [{ epic_state_id: OPENED_EPIC_STATE, issues_count: 0, issues_weight_sum: 0, parent_id: nil, issues_state_id: nil, issues_at_risk: nil, issues_needs_attention: nil, issues_on_track: nil }] # represents an epic with no parent and no issues
         }
       end
 

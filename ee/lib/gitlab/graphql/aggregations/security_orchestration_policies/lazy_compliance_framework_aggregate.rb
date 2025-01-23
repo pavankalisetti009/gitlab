@@ -19,10 +19,6 @@ module Gitlab
 
           private
 
-          def state_key
-            :lazy_compliance_framework_in_policies_aggregate
-          end
-
           def initial_state
             {
               pending_frameworks: [],
