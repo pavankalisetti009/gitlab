@@ -230,21 +230,10 @@ describe('DetailsDrawer component', () => {
 
       expect(findDenyAllowViewList().exists()).toBe(true);
       expect(findDenyAllowViewList().props('items')).toEqual([
-        { license: { text: 'MIT', value: 'mit' }, exceptions: [] },
+        { license: { value: 'MIT', text: 'MIT' }, exceptions: [] },
         {
-          license: { text: 'NPM', value: 'npm' },
-          exceptions: [
-            {
-              file: 'pkg:npm40angular/animation',
-              fullPath: '12.3.1',
-              value: 'pkg:npm40angular/animation@12.3.1',
-            },
-            {
-              file: 'pkg:npm/foobar',
-              fullPath: '12.3.1',
-              value: 'pkg:npm/foobar@12.3.1',
-            },
-          ],
+          license: { value: 'NPM', text: 'NPM' },
+          exceptions: ['pkg:npm40angular/animation', 'pkg:npm40angular/animation@12.3.1'],
         },
       ]);
     });
