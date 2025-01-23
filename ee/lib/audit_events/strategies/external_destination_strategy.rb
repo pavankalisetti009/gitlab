@@ -58,15 +58,9 @@ module AuditEvents
       end
 
       def track_audit_event
-        return unless Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter::KNOWN_EVENTS.include? audit_operation
+        return unless audit_operation.in?(INTERNAL_EVENTS)
 
-        if audit_operation.in?(INTERNAL_EVENTS)
-          track_internal_event("trigger_audit_event", additional_properties: { label: audit_operation })
-        else
-          Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter.count(audit_operation)
-        end
-      rescue Redis::CannotConnectError => e
-        Gitlab::ErrorTracking.log_exception(e)
+        track_internal_event("trigger_audit_event", additional_properties: { label: audit_operation })
       end
 
       def request_body

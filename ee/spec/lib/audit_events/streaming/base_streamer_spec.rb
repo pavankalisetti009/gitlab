@@ -124,26 +124,16 @@ RSpec.describe AuditEvents::Streaming::BaseStreamer, feature_category: :audit_ev
     using RSpec::Parameterized::TableSyntax
 
     context 'with different audit operations' do
-      where(:operation, :internal, :counter_called) do
-        'delete_epic'       | true | false
-        'delete_issue'      | true | false
-        'project_created'   | false | true
-        'unknown_operation' | false | false
+      where(:operation, :internal) do
+        'delete_epic'       | true
+        'delete_issue'      | true
+        'project_created'   | false
+        'unknown_operation' | false
       end
       with_them do
         let(:event_type) { operation }
 
         it 'tracks the event appropriately' do
-          if counter_called
-            expect(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter)
-              .to receive(:count)
-              .with(operation)
-          else
-            expect(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter)
-              .not_to receive(:count)
-              .with(operation)
-          end
-
           expectation = expect { track_audit_event }
           if internal
             expectation.to trigger_internal_events('trigger_audit_event')
@@ -153,24 +143,6 @@ RSpec.describe AuditEvents::Streaming::BaseStreamer, feature_category: :audit_ev
             expectation.not_to trigger_internal_events('trigger_audit_event')
           end
         end
-      end
-    end
-
-    context 'when Redis connection fails' do
-      let(:event_type) { 'project_created' }
-
-      before do
-        allow(Gitlab::UsageDataCounters::StreamingAuditEventTypeCounter)
-          .to receive(:count)
-          .with(event_type)
-          .and_raise(Redis::CannotConnectError)
-      end
-
-      it 'logs the exception' do
-        expect(Gitlab::ErrorTracking).to receive(:log_exception)
-          .with(instance_of(Redis::CannotConnectError))
-
-        track_audit_event
       end
     end
   end

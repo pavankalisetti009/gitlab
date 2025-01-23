@@ -44,8 +44,6 @@ RSpec.describe AuditEvents::Strategies::ExternalDestinationStrategy, feature_cat
 
         include_examples 'streams audit events to external destination'
 
-        include_examples 'redis connection failure for audit event counter'
-
         include_examples 'audit event external destination http post error'
       end
 
