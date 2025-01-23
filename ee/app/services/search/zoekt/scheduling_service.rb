@@ -361,9 +361,7 @@ module Search
       end
 
       def repo_to_index_check
-        execute_every 10.minutes do
-          dispatch RepoToIndexEvent, if: -> { Search::Zoekt::Repository.pending.exists? }
-        end
+        dispatch RepoToIndexEvent, if: -> { Search::Zoekt::Repository.pending.exists? }
       end
 
       def indices_to_evict_check
