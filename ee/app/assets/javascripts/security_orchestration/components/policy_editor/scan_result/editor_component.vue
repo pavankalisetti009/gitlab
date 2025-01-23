@@ -93,9 +93,6 @@ export default {
     approverActionTooltip: s__(
       'SecurityOrchestration|Merge request approval policies allow a maximum of 5 approver actions.',
     ),
-    approverSingleActionTooltip: s__(
-      'SecurityOrchestration|Merge request approval policies allow a maximum of 1 approver action.',
-    ),
     botActionTooltip: s__(
       'SecurityOrchestration|Merge request approval policies allow a maximum 1 bot message action.',
     ),
@@ -208,9 +205,6 @@ export default {
     };
   },
   computed: {
-    hasMultipleApproversActionsEnabled() {
-      return this.glFeatures.multipleApprovalActions;
-    },
     actionError() {
       const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
       if (actionErrors.length) {
@@ -525,20 +519,16 @@ export default {
         return !this.hasWarnAction && this.botActions.length > 0;
       }
 
-      const maxApproverActionCount = this.hasMultipleApproversActionsEnabled
-        ? MAX_ALLOWED_APPROVER_ACTION_LENGTH
-        : 1;
-
-      return !this.hasWarnAction && this.approversActions.length >= maxApproverActionCount;
+      return (
+        !this.hasWarnAction && this.approversActions.length >= MAX_ALLOWED_APPROVER_ACTION_LENGTH
+      );
     },
     customFilterSelectorTooltip(filter) {
       if (filter.value === BOT_MESSAGE_TYPE) {
         return this.$options.i18n.botActionTooltip;
       }
 
-      return this.hasMultipleApproversActionsEnabled
-        ? this.$options.i18n.approverActionTooltip
-        : this.$options.i18n.approverSingleActionTooltip;
+      return this.$options.i18n.approverActionTooltip;
     },
   },
 };

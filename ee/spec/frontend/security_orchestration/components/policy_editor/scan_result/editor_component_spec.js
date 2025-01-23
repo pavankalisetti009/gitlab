@@ -436,7 +436,7 @@ describe('EditorComponent', () => {
           ).toBe('Merge request approval policies allow a maximum 1 bot message action.');
           expect(
             findScanFilterSelector().props('shouldDisableFilter')({ value: REQUIRE_APPROVAL_TYPE }),
-          ).toBe(true);
+          ).toBe(false);
           expect(findScanFilterSelector().props('filters')).toEqual([
             { value: REQUIRE_APPROVAL_TYPE, text: 'Require Approvers' },
             { value: BOT_MESSAGE_TYPE, text: 'Send bot message' },
@@ -449,7 +449,7 @@ describe('EditorComponent', () => {
           expect(findScanFilterSelector().exists()).toBe(true);
           expect(
             findScanFilterSelector().props('customFilterTooltip')({ value: REQUIRE_APPROVAL_TYPE }),
-          ).toBe('Merge request approval policies allow a maximum of 1 approver action.');
+          ).toBe('Merge request approval policies allow a maximum of 5 approver actions.');
           expect(findScanFilterSelector().props('filters')).toEqual([
             { text: 'Require Approvers', value: REQUIRE_APPROVAL_TYPE },
             { text: 'Send bot message', value: BOT_MESSAGE_TYPE },
@@ -514,15 +514,10 @@ describe('EditorComponent', () => {
           expect(findAllActionSections()).toHaveLength(5);
         });
 
-        describe('multiple approval actions when ff enabled', () => {
-          it('allows to add multiple approver actions when ff is enabled', () => {
+        describe('multiple approval actions', () => {
+          it('allows to add multiple approver actions', () => {
             factoryWithExistingPolicy({
               policy: mockDefaultBranchesScanResultObject,
-              provide: {
-                glFeatures: {
-                  multipleApprovalActions: true,
-                },
-              },
             });
 
             expect(findScanFilterSelector().exists()).toBe(true);

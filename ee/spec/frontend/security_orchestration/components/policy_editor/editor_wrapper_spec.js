@@ -280,8 +280,7 @@ describe('EditorWrapper component', () => {
 
     describe('error handling', () => {
       const createError = (cause) => ({ message: 'There was an error', cause });
-      const approverCause = { field: 'approvers_ids' };
-      const approverCauseMultipleAction = { field: 'actions' };
+      const approverCause = { field: 'actions' };
       const branchesCause = { field: 'branches' };
       const unknownCause = { field: 'unknown' };
 
@@ -297,18 +296,17 @@ describe('EditorWrapper component', () => {
         await waitForPromises();
         await nextTick();
         expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([
-          ['action', '0', 'approvers_ids', [approverCause]],
+          ['action', '0', 'actions', [approverCause]],
         ]);
         expect(findErrorAlert().exists()).toBe(false);
       });
 
-      it('passes down an error with the cause of `action` and does not display an error when ff is enabled', async () => {
-        const error = createError([approverCauseMultipleAction]);
+      it('passes down an error with the cause of `action` and does not display an error', async () => {
+        const error = createError([approverCause]);
         goToPolicyMR.mockRejectedValue(error);
         factory({
           provide: {
             assignedPolicyProject: existingAssignedPolicyProject,
-            glFeatures: { multipleApprovalActions: true },
           },
         });
         await findScanExecutionPolicyEditor().vm.$emit('save', {
@@ -319,7 +317,7 @@ describe('EditorWrapper component', () => {
         await waitForPromises();
         await nextTick();
         expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([
-          ['action', '0', 'actions', [approverCauseMultipleAction]],
+          ['action', '0', 'actions', [approverCause]],
         ]);
         expect(findErrorAlert().exists()).toBe(false);
       });
@@ -374,7 +372,7 @@ describe('EditorWrapper component', () => {
         });
         await waitForPromises();
         expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([
-          ['action', '0', 'approvers_ids', [approverCause]],
+          ['action', '0', 'actions', [approverCause]],
         ]);
         const alert = findErrorAlert();
         expect(alert.exists()).toBe(true);
