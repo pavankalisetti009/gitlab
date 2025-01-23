@@ -42,7 +42,7 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
 
         dependency_list_export.file = tempfile
         dependency_list_export.file.filename = final_export_filename
-        dependency_list_export.save!
+        dependency_list_export.store_file_now!
         dependency_list_export.finish!
       rescue StandardError => error
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(error)
