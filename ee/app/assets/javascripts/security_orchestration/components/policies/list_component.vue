@@ -387,6 +387,7 @@ export default {
     statusDisabled: __('The policy is disabled'),
     groupTypeLabel: s__('SecurityOrchestration|This group'),
     projectTypeLabel: s__('SecurityOrchestration|This project'),
+    openPolicyActionsDropdown: s__('SecurityOrchestration|Open policy actions dropdown'),
   },
   BREAKING_CHANGES_POPOVER_CONTENTS,
 };
@@ -483,6 +484,8 @@ export default {
               placement="bottom-end"
               class="-gl-my-3"
               :disabled="isPolicyInherited(item.source)"
+              :toggle-text="$options.i18n.openPolicyActionsDropdown"
+              text-sr-only
             />
           </span>
         </gl-button-group>
