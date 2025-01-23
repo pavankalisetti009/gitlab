@@ -16,6 +16,7 @@ import {
   policyBodyToYaml,
   policyToYaml,
 } from 'ee/security_orchestration/components/policy_editor/utils';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
@@ -68,6 +69,7 @@ export default {
     exceedingActionsMessage: s__(
       'SecurityOrchestration|Policy has reached the maximum of %{actionsCount} %{actions}',
     ),
+    configurationTitle: s__('SecurityOrchestration|Additional configuration'),
   },
   apollo: {
     projectsCount: {
@@ -89,6 +91,7 @@ export default {
     },
   },
   components: {
+    SkipCiSelector,
     DisabledSection,
     GlButton,
     GlEmptyState,
@@ -155,6 +158,11 @@ export default {
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
     const { hasParsingError } = parsingError;
 
+    const hasSkipCi = 'skip_ci' in policy;
+    if (!hasSkipCi && this.glFeatures.securityPoliciesSkipCi) {
+      policy.skip_ci = { allowed: true, allowlist: { users: [] } };
+    }
+
     return {
       parsingError,
       projectsCount: 0,
@@ -173,6 +181,9 @@ export default {
     };
   },
   computed: {
+    hasSkipCiConfiguration() {
+      return this.glFeatures.securityPoliciesSkipCi;
+    },
     actionSectionError() {
       return this.specificActionSectionError || this.$options.i18n.ACTION_SECTION_DISABLE_ERROR;
     },
@@ -393,6 +404,16 @@ export default {
             </gl-button>
           </span>
         </div>
+      </disabled-section>
+    </template>
+
+    <template v-if="hasSkipCiConfiguration" #settings>
+      <disabled-section :disabled="false">
+        <template #title>
+          <h4>{{ $options.i18n.configurationTitle }}</h4>
+        </template>
+
+        <skip-ci-selector :skip-ci-configuration="policy.skip_ci" @changed="handleUpdateProperty" />
       </disabled-section>
     </template>
 

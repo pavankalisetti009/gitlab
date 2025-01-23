@@ -10,6 +10,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import {
   SCAN_EXECUTION_DEFAULT_POLICY_WITH_SCOPE,
@@ -122,6 +123,7 @@ describe('EditorComponent', () => {
   const findOverloadWarningModal = () => wrapper.findComponent(OverloadWarningModal);
   const findDisabledAction = () => wrapper.findByTestId('disabled-action');
   const findDisabledRule = () => wrapper.findByTestId('disabled-rule');
+  const findSkipCiSelector = () => wrapper.findComponent(SkipCiSelector);
 
   const selectScheduleRule = async () => {
     await findRuleSection().vm.$emit('changed', buildDefaultScheduleRule());
@@ -142,7 +144,9 @@ describe('EditorComponent', () => {
         ${NAMESPACE_TYPES.PROJECT} | ${SCAN_EXECUTION_DEFAULT_POLICY}
       `('should render default policy for a $namespaceType', ({ namespaceType, manifest }) => {
         factory({ provide: { namespaceType } });
+
         expect(findPolicyEditorLayout().props('policy')).toEqual(manifest);
+        expect(findSkipCiSelector().exists()).toBe(false);
       });
     });
 
@@ -653,6 +657,46 @@ enabled: true`;
         );
         expect(findAllActionBuilders()).toHaveLength(1);
       });
+    });
+  });
+
+  describe('skip ci configuration', () => {
+    it('renders skip ci configuration', () => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesSkipCi: true,
+          },
+        },
+      });
+
+      expect(findSkipCiSelector().exists()).toBe(true);
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({
+        allowed: true,
+        allowlist: { users: [] },
+      });
+    });
+
+    it('renders existing skip ci configuration', () => {
+      const skipCi = {
+        allowed: false,
+        allowlist: {
+          users: [{ id: 1 }, { id: 2 }],
+        },
+      };
+
+      factoryWithExistingPolicy({
+        policy: {
+          skip_ci: skipCi,
+        },
+        provide: {
+          glFeatures: {
+            securityPoliciesSkipCi: true,
+          },
+        },
+      });
+
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual(skipCi);
     });
   });
 
