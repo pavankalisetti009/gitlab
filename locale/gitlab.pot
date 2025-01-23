@@ -7261,9 +7261,6 @@ msgstr ""
 msgid "ApplicationSettings|Hard"
 msgstr ""
 
-msgid "ApplicationSettings|Invitations above seat count are blocked"
-msgstr ""
-
 msgid "ApplicationSettings|Invitations do not require administrator approval"
 msgstr ""
 
@@ -7354,9 +7351,6 @@ msgid "ApplicationSettings|To enable Registration Features, first enable optiona
 msgstr ""
 
 msgid "ApplicationSettings|Upload denylist file"
-msgstr ""
-
-msgid "ApplicationSettings|User cap"
 msgstr ""
 
 msgid "ApplicationSettings|Users added beyond this limit require administrator approval. Leave blank for unlimited."

@@ -7,8 +7,8 @@ import {
   GlFormInput,
   GlSprintf,
 } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 import SeatControlsMemberPromotionManagement from 'ee_component/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
 
@@ -24,58 +24,76 @@ export default {
     HelpPageLink,
     SeatControlsMemberPromotionManagement,
   },
-  inject: ['licensedUserCount', 'promotionManagementAvailable'],
-  props: {
-    value: {
-      type: Object,
-      required: true,
-    },
-  },
+  mixins: [glFeatureFlagMixin()],
+  inject: ['licensedUserCount', 'newUserSignupsCap', 'promotionManagementAvailable', 'seatControl'],
   data() {
     return {
-      form: {
-        ...this.value,
-      },
+      userCap: this.newUserSignupsCap,
+      seatControlSettings: this.seatControl,
     };
   },
   computed: {
-    isUserCapDisabled() {
-      return parseInt(this.form.seatControl, 10) !== SEAT_CONTROL.USER_CAP;
+    hasUserCapBeenIncreased() {
+      if (this.hasUserCapChangedFromUnlimitedToLimited) return false;
+      if (this.hasUserCapChangedFromLimitedToUnlimited) return true;
+
+      const oldValueAsInteger = parseInt(this.newUserSignupsCap, 10);
+      const newValueAsInteger = parseInt(this.userCap, 10);
+
+      return newValueAsInteger > oldValueAsInteger;
+    },
+    hasUserCapChangedFromLimitedToUnlimited() {
+      return !this.isOldUserCapUnlimited && this.isNewUserCapUnlimited;
+    },
+    hasUserCapChangedFromUnlimitedToLimited() {
+      return this.isOldUserCapUnlimited && !this.isNewUserCapUnlimited;
+    },
+    isBlockOveragesEnabled() {
+      return this.seatControlSettings === SEAT_CONTROL.BLOCK_OVERAGES;
+    },
+    isNewUserCapUnlimited() {
+      // The current value of User Cap is unlimited if no value is provided in the field
+      return this.userCap === '';
+    },
+    isOldUserCapUnlimited() {
+      // The previous/initial value of User Cap is unlimited if it was empty
+      return this.newUserSignupsCap === '';
+    },
+    isUserCapEnabled() {
+      return parseInt(this.seatControlSettings, 10) === SEAT_CONTROL.USER_CAP;
+    },
+    shouldShowSeatControlSection() {
+      // This actually refers to a licensed feature. See https://gitlab.com/gitlab-org/gitlab/-/issues/322460
+      return Boolean(this.glFeatures.seatControl);
+    },
+    shouldVerifyUsersAutoApproval() {
+      if (this.isBlockOveragesEnabled) return false;
+
+      return this.hasUserCapBeenIncreased;
     },
   },
   methods: {
-    handleSeatControlChange(seatControl) {
-      this.form.userCap = seatControl !== SEAT_CONTROL.USER_CAP ? '' : this.form.userCap;
-      this.$emit('input', { ...this.form, userCap: this.form.userCap, seatControl });
+    handleSeatControlSettingsChange(seatControl) {
+      this.seatControlSettings = seatControl;
+      this.userCap = this.isUserCapEnabled ? this.userCap : '';
+      this.$emit('checkUsersAutoApproval', this.shouldVerifyUsersAutoApproval);
     },
     handleUserCapChange(userCap) {
-      this.$emit('input', { ...this.form, userCap });
+      this.userCap = userCap;
+      this.$emit('checkUsersAutoApproval', this.shouldVerifyUsersAutoApproval);
     },
-  },
-  i18n: {
-    seatControlsLabel: s__('ApplicationSettings|Seat controls'),
-    restrictedAccessLabel: s__('ApplicationSettings|Restricted access'),
-    restrictedHelpText: s__('ApplicationSettings|Invitations above seat count are blocked'),
-    userCapLabel: s__('ApplicationSettings|Set user cap'),
-    userCapHelpText: s__(
-      'ApplicationSettings|By setting a user cap, any user who is added or requests access in excess of the user cap must be approved by an admin',
-    ),
-    openAccessLabel: s__('ApplicationSettings|Open access'),
-    openAccessHelpText: s__(
-      'ApplicationSettings|Invitations do not require administrator approval',
-    ),
   },
   SEAT_CONTROL,
 };
 </script>
 
 <template>
-  <div>
+  <div v-if="shouldShowSeatControlSection">
     <gl-form-group :label="s__('ApplicationSettings|Seat controls')" label-for="seat-controls">
       <gl-form-radio-group
-        v-model="form.seatControl"
+        :checked="seatControl"
         name="application_setting[seat_control]"
-        @change="handleSeatControlChange"
+        @change="handleSeatControlSettingsChange"
       >
         <gl-form-radio
           :value="$options.SEAT_CONTROL.BLOCK_OVERAGES"
@@ -100,19 +118,19 @@ export default {
         <div class="gl-ml-6 gl-mt-3">
           <gl-form-group data-testid="user-cap-group">
             <gl-form-input
-              v-model="form.userCap"
+              v-model="userCap"
               type="text"
               name="application_setting[new_user_signups_cap]"
               data-testid="user-cap-input"
-              :disabled="isUserCapDisabled"
-              @change="handleUserCapChange"
+              :disabled="!isUserCapEnabled"
+              @input="handleUserCapChange"
             />
             <input
               type="hidden"
               name="application_setting[new_user_signups_cap]"
               data-testid="user-cap-input-hidden"
-              :disabled="!isUserCapDisabled"
-              :value="form.userCap"
+              :disabled="isUserCapEnabled"
+              :value="userCap"
             />
             <small class="form-text text-muted">
               {{

@@ -26,6 +26,7 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
     it 'does push :disable_private_profiles license feature' do
       expect_next_instance_of(described_class) do |instance|
         expect(instance).to receive(:push_licensed_feature).with(:password_complexity)
+        expect(instance).to receive(:push_licensed_feature).with(:seat_control)
         expect(instance).to receive(:push_licensed_feature).with(:disable_private_profiles)
       end
 

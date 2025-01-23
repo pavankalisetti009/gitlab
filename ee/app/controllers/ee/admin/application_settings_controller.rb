@@ -20,14 +20,13 @@ module EE
         before_action :elasticsearch_pending_obsolete_migrations, only: [:advanced_search]
         before_action :search_error_if_version_incompatible, only: [:advanced_search]
         before_action :search_outdated_code_analyzer_detected, only: [:advanced_search]
-        before_action :push_password_complexity_feature, only: [:general]
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
         before_action :find_or_initialize_microsoft_application, only: [:general]
         before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
         before_action :indexing_status, only: [:advanced_search]
 
-        before_action :push_disable_private_profiles_feature, only: [:general]
+        before_action :push_frontend_license_features, only: [:general]
 
         feature_category :plan_provisioning, [:seat_link_payload]
         feature_category :source_code_management, [:templates]
@@ -226,10 +225,6 @@ module EE
           ::Feature.disabled?(:product_analytics_admin_settings, :instance)
       end
 
-      def push_disable_private_profiles_feature
-        push_licensed_feature(:disable_private_profiles)
-      end
-
       private
 
       override :valid_setting_panels
@@ -237,8 +232,10 @@ module EE
         super + EE_VALID_SETTING_PANELS
       end
 
-      def push_password_complexity_feature
+      def push_frontend_license_features
         push_licensed_feature(:password_complexity)
+        push_licensed_feature(:seat_control)
+        push_licensed_feature(:disable_private_profiles)
       end
 
       def new_license
