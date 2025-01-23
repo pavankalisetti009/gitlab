@@ -19,3 +19,4 @@ tiers:
 performance_indicator_type:
 - smau
 - customer_health_score
+- leading_indicator
