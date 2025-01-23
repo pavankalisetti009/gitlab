@@ -5,6 +5,7 @@ import DrawerLayout from 'ee/security_orchestration/components/policy_drawer/dra
 import Tags from 'ee/security_orchestration/components/policy_drawer/scan_execution/humanized_actions/tags.vue';
 import ToggleList from 'ee/security_orchestration/components/policy_drawer/toggle_list.vue';
 import Variables from 'ee/security_orchestration/components/policy_drawer/scan_execution/humanized_actions/variables.vue';
+import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/skip_ci_configuration.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
@@ -14,6 +15,8 @@ import {
   mockNoActionsScanExecutionManifest,
   mockMultipleActionsScanExecutionManifest,
   mockCiVariablesWithTagsScanExecutionManifest,
+  mockProjectScanExecutionWithConfigurationPolicy,
+  mockScanExecutionPolicyManifestWithWrapper,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
 describe('DetailsDrawer component', () => {
@@ -23,7 +26,7 @@ describe('DetailsDrawer component', () => {
     yaml: 'test yaml',
   };
 
-  const createComponent = (policy = {}) => {
+  const createComponent = (policy = {}, provide = {}) => {
     wrapper = shallowMountExtended(DetailsDrawer, {
       propsData: {
         policy: {
@@ -31,7 +34,7 @@ describe('DetailsDrawer component', () => {
           ...policy,
         },
       },
-      provide: { namespaceType: NAMESPACE_TYPES.PROJECT, namespacePath: 'gitlab-org' },
+      provide: { namespaceType: NAMESPACE_TYPES.PROJECT, namespacePath: 'gitlab-org', ...provide },
       stubs: { GlSprintf },
     });
   };
@@ -43,6 +46,8 @@ describe('DetailsDrawer component', () => {
   const findTags = () => wrapper.findComponent(Tags);
   const findToggleList = () => wrapper.findComponent(ToggleList);
   const findVariables = () => wrapper.findComponent(Variables);
+  const findConfigurationRow = () => wrapper.findByTestId('policy-configuration');
+  const findSkipCiConfiguration = () => wrapper.findComponent(SkipCiConfiguration);
 
   describe('template', () => {
     it('renders the drawer layout', () => {
@@ -54,6 +59,7 @@ describe('DetailsDrawer component', () => {
         policyScope: defaultPolicy.policyScope,
         type: 'Scan execution',
       });
+      expect(findConfigurationRow().exists()).toBe(false);
     });
 
     it('renders copy informing when there are no actions', () => {
@@ -118,6 +124,32 @@ describe('DetailsDrawer component', () => {
 
       expect(findDrawerLayout().exists()).toBe(true);
       expect(findDrawerLayout().props('description')).toBe('');
+    });
+  });
+
+  describe('configuration', () => {
+    it('renders default configuration row if there is no configuration in policy', () => {
+      createComponent(mockScanExecutionPolicyManifestWithWrapper, {
+        glFeatures: { securityPoliciesSkipCi: true },
+      });
+
+      expect(findConfigurationRow().exists()).toBe(true);
+      expect(findSkipCiConfiguration().props('configuration')).toEqual({
+        allowed: true,
+        allowlist: { users: [] },
+      });
+    });
+
+    it('renders configuration row when there is a configuration', () => {
+      createComponent(mockProjectScanExecutionWithConfigurationPolicy, {
+        glFeatures: { securityPoliciesSkipCi: true },
+      });
+
+      expect(findConfigurationRow().exists()).toBe(true);
+      expect(findSkipCiConfiguration().props('configuration')).toEqual({
+        allowed: true,
+        allowlist: { users: [] },
+      });
     });
   });
 });

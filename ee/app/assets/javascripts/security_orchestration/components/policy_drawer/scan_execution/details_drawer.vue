@@ -1,9 +1,11 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/skip_ci_configuration.vue';
 import { fromYaml } from '../../policy_editor/scan_execution/lib';
 import { ACTIONS } from '../../policy_editor/constants';
-import { SUMMARY_TITLE } from '../constants';
+import { CONFIGURATION_TITLE, SUMMARY_TITLE } from '../constants';
 import ToggleList from '../toggle_list.vue';
 import InfoRow from '../info_row.vue';
 import DrawerLayout from '../drawer_layout.vue';
@@ -17,12 +19,14 @@ export default {
     scanExecution: s__('SecurityOrchestration|Scan execution'),
     summary: SUMMARY_TITLE,
     ruleMessage: s__('SecurityOrchestration|And scans to be performed:'),
+    configuration: CONFIGURATION_TITLE,
   },
   HUMANIZED_ACTION_COMPONENTS: {
     [ACTIONS.tags]: Tags,
     [ACTIONS.variables]: Variables,
   },
   components: {
+    SkipCiConfiguration,
     ToggleList,
     Tags,
     Variables,
@@ -30,6 +34,7 @@ export default {
     DrawerLayout,
     InfoRow,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     policy: {
       type: Object,
@@ -37,6 +42,9 @@ export default {
     },
   },
   computed: {
+    hasSkipCiConfiguration() {
+      return this.glFeatures.securityPoliciesSkipCi;
+    },
     actions() {
       return this.parsedYaml?.actions || [];
     },
@@ -57,6 +65,9 @@ export default {
     },
     parsedYaml() {
       return fromYaml({ manifest: this.policy.yaml }).policy;
+    },
+    configuration() {
+      return this.parsedYaml.skip_ci || { allowed: true, allowlist: { users: [] } };
     },
   },
   methods: {
@@ -109,6 +120,13 @@ export default {
             </li>
           </ul>
         </section>
+      </info-row>
+      <info-row
+        v-if="hasSkipCiConfiguration"
+        data-testid="policy-configuration"
+        :label="$options.i18n.configuration"
+      >
+        <skip-ci-configuration :configuration="configuration" />
       </info-row>
     </template>
   </drawer-layout>

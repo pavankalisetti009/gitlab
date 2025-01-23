@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlLoadingIcon, GlIcon } from '@gitlab/ui';
-import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/skip_ci_configuration.vue';
+import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/skip_ci_configuration.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import getUsersByUserIdsOrUsernames from 'ee/graphql_shared/queries/get_users_by_user_ids_or_usernames.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
