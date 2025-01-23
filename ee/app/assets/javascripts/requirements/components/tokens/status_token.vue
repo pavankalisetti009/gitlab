@@ -9,24 +9,24 @@ export default {
       value: 'satisfied',
       text: __('Satisfied'),
       icon: 'status-success',
-      iconClass: 'gl-text-green-700',
       containerClass: 'gl-bg-green-100 gl-text-default',
+      variant: 'success',
     },
     {
       id: 2,
       value: 'failed',
       text: __('Failed'),
       icon: 'status-failed',
-      iconClass: 'gl-text-red-700',
       containerClass: 'gl-bg-red-100 gl-text-default',
+      variant: 'danger',
     },
     {
       id: 3,
       value: 'missing',
       text: __('Missing'),
       icon: 'status-waiting',
-      iconClass: 'gl-text-default',
       containerClass: 'gl-bg-gray-100 gl-text-default',
+      variant: 'current',
     },
   ],
   components: {
@@ -61,7 +61,7 @@ export default {
         variant="search-value"
         :class="['gl-flex', activeStatus.containerClass]"
       >
-        <gl-icon :name="activeStatus.icon" :class="activeStatus.iconClass" />
+        <gl-icon :name="activeStatus.icon" :variant="activeStatus.variant" />
         <div class="gl-ml-2">{{ activeStatus.text }}</div>
       </gl-token>
     </template>
@@ -72,7 +72,7 @@ export default {
         :value="status.value"
       >
         <div class="gl-flex">
-          <gl-icon :name="status.icon" :class="status.iconClass" />
+          <gl-icon :name="status.icon" :variant="status.variant" />
           <div class="gl-ml-2">{{ status.text }}</div>
         </div>
       </gl-filtered-search-suggestion>
