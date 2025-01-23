@@ -12,7 +12,6 @@ import MrWidgetAutoMergeEnabled from '~/vue_merge_request_widget/components/stat
 import MergeChecks from '~/vue_merge_request_widget/components/merge_checks.vue';
 import ReadyToMerge from '~/vue_merge_request_widget/components/states/ready_to_merge.vue';
 import Loading from '~/vue_merge_request_widget/components/loading.vue';
-import MrWidgetJiraAssociationMissing from './components/states/mr_widget_jira_association_missing.vue';
 import MrWidgetPolicyViolation from './components/states/mr_widget_policy_violation.vue';
 import MrWidgetGeoSecondaryNode from './components/states/mr_widget_secondary_geo_node.vue';
 import WidgetContainer from './components/widget/app.vue';
@@ -24,7 +23,6 @@ export default {
     WidgetContainer,
     MrWidgetGeoSecondaryNode,
     MrWidgetPolicyViolation,
-    MrWidgetJiraAssociationMissing,
     MrWidgetAlertMessage,
     MrWidgetSuggestPipeline,
     MrWidgetMigrateJenkins,
