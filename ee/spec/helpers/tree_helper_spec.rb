@@ -21,6 +21,12 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
 
     subject { helper.vue_tree_header_app_data(project, repository, sha, pipeline) }
 
+    it 'returns new_workspace_path' do
+      expect(helper.vue_tree_header_app_data(project, repository, sha, pipeline)).to include(
+        new_workspace_path: new_remote_development_workspace_path
+      )
+    end
+
     context 'when alternative_kerberos_url? is true' do
       let(:gitlab_kerberos_url) { Gitlab.config.build_gitlab_kerberos_url }
       let(:repo_kerberos_url) { "#{gitlab_kerberos_url}/#{project.full_path}.git" }

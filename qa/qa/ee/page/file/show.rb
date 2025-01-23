@@ -14,7 +14,7 @@ module QA
               include QA::Page::Component::ConfirmModal
 
               # These two lock button elements are used for locking at directory level
-              view 'ee/app/helpers/ee/lock_helper.rb' do
+              view 'ee/app/assets/javascripts/repository/components/lock_directory_button.vue' do
                 element 'lock-button'
                 element 'disabled-lock-button'
               end
