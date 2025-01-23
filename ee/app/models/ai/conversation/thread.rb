@@ -15,6 +15,7 @@ module Ai
 
       scope :expired, -> { where(last_updated_at: ...30.days.ago) }
       scope :for_conversation_type, ->(conversation_type) { where(conversation_type: conversation_type) }
+      scope :ordered, -> { order(last_updated_at: :desc) }
 
       enum conversation_type: { duo_chat: 1 }
 

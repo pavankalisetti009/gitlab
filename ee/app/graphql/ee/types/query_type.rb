@@ -107,6 +107,11 @@ module EE
           description: 'Instance level external audit event destinations.',
           resolver: ::Resolvers::AuditEvents::InstanceExternalAuditEventDestinationsResolver
 
+        field :ai_conversation_threads, ::Types::Ai::Conversations::ThreadType.connection_type,
+          resolver: ::Resolvers::Ai::Conversations::ThreadsResolver,
+          experiment: { milestone: '17.9' },
+          description: 'List conversation threads of AI features.'
+
         field :ai_messages, ::Types::Ai::MessageType.connection_type,
           resolver: ::Resolvers::Ai::ChatMessagesResolver,
           experiment: { milestone: '16.1' },

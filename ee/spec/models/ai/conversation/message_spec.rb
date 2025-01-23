@@ -27,9 +27,8 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
       let(:message2) { create(:ai_conversation_message, thread: thread) }
       let(:other_message) { create(:ai_conversation_message) }
 
-      it 'returns messages for the specified thread ordered by id' do
+      it 'returns messages for the specified thread' do
         expect(messages_for_thread).to match_array([message1, message2])
-        expect(messages_for_thread).not_to include(other_message)
       end
     end
 
@@ -41,6 +40,17 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
 
       it 'returns message with the specified message_xid' do
         expect(for_message_xid).to eq([message_with_xid])
+      end
+    end
+
+    describe '.ordered' do
+      subject(:messages) { described_class.ordered }
+
+      let!(:message1) { create(:ai_conversation_message) }
+      let!(:message2) { create(:ai_conversation_message) }
+
+      it 'returns messages ordered by id' do
+        expect(messages).to eq([message1, message2])
       end
     end
   end
