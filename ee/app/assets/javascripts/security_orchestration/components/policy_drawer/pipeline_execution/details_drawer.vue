@@ -12,7 +12,7 @@ import {
 import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
 import DrawerLayout from '../drawer_layout.vue';
 import InfoRow from '../info_row.vue';
-import SkipCiConfiguration from './skip_ci_configuration.vue';
+import SkipCiConfiguration from '../skip_ci_configuration.vue';
 
 export default {
   i18n: {
