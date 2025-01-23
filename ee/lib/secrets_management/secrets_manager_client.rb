@@ -84,6 +84,10 @@ module SecretsManagement
       )
     end
 
+    def delete_kv_secret(mount_path, secret_path)
+      make_request(:delete, "#{mount_path}/metadata/#{secret_path}")
+    end
+
     def get_policy(name)
       policy = read_raw_policy name
       return AclPolicy.new(name) if policy.nil?

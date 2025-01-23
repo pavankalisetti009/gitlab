@@ -43,6 +43,15 @@ module SecretsManagement
       expect(stored_data["custom_metadata"]).to include(metadata)
     end
 
+    def expect_project_secret_not_to_exist(project, name)
+      expect(ProjectSecret.from_name(project, name)).to be_nil
+    end
+
+    def expect_kv_secret_not_to_exist(mount_path, path)
+      expect(secrets_manager_client.read_secret_metadata(mount_path, path)).to be_nil
+      expect(secrets_manager_client.read_kv_secret_value(mount_path, path)).to be_nil
+    end
+
     def secrets_manager_client
       TestClient.new
     end
