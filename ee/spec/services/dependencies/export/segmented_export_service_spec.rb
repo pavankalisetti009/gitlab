@@ -90,6 +90,8 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
       allow(Dependencies::DestroyExportWorker).to receive(:perform_in)
     end
 
+    it_behaves_like 'large segmented file export'
+
     it 'creates the file for the export and marks the export as finished' do
       expect { finalise_export }.to change { export.file.file }.from(nil)
                                 .and change { export.finished? }.to(true)
