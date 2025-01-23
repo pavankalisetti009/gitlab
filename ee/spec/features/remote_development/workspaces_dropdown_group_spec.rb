@@ -94,7 +94,9 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
         # Asserts the workspace state is correctly displayed
         expect_workspace_state_indicator(workspace.actual_state)
 
-        click_button('Actions')
+        within_testid('workspace-actions-dropdown') do
+          click_button('Actions')
+        end
 
         # Asserts that all workspace actions are visible
         expect(page).to have_button('Stop')

@@ -7,6 +7,7 @@ module EE
     override :vue_tree_header_app_data
     def vue_tree_header_app_data(project, repository, ref, pipeline)
       super.merge({
+        new_workspace_path: new_remote_development_workspace_path,
         kerberos_url: alternative_kerberos_url? ? project.kerberos_url_to_repo : ''
       })
     end

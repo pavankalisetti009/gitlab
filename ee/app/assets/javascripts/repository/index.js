@@ -6,12 +6,9 @@ import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_m
 import initTree from '~/repository';
 import CodeOwners from '../vue_shared/components/code_owners/code_owners.vue';
 
-export default () => {
-  const { router, data, apolloProvider, projectPath } = initTree();
-
+const initPathLocks = (data, router) => {
   if (data.pathLocksAvailable) {
     const toggleBtn = document.querySelector('a.js-path-lock');
-
     if (!toggleBtn) return;
 
     toggleBtn.addEventListener('click', async (e) => {
@@ -24,10 +21,7 @@ export default () => {
           : __('Are you sure you want to unlock this directory?');
 
       const confirmed = await confirmAction(message);
-
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       toggleBtn.setAttribute('disabled', 'disabled');
 
@@ -44,29 +38,36 @@ export default () => {
         });
     });
   }
+};
 
-  const initCodeOwnersApp = () => {
-    const codeOwnersEl = document.querySelector('#js-code-owners');
-    if (!codeOwnersEl) {
-      return false;
-    }
-    const { branch, canViewBranchRules, branchRulesPath } = codeOwnersEl.dataset;
-    return new Vue({
-      el: codeOwnersEl,
-      router,
-      apolloProvider,
-      render(h) {
-        return h(CodeOwners, {
-          props: {
-            filePath: this.$route.params.path,
-            projectPath,
-            branch,
-            canViewBranchRules,
-            branchRulesPath,
-          },
-        });
-      },
-    });
-  };
-  initCodeOwnersApp();
+const initCodeOwnersApp = (router, apolloProvider, projectPath) => {
+  const codeOwnersEl = document.querySelector('#js-code-owners');
+  if (!codeOwnersEl) return null;
+
+  const { branch, canViewBranchRules, branchRulesPath } = codeOwnersEl.dataset;
+  return new Vue({
+    el: codeOwnersEl,
+    router,
+    apolloProvider,
+    render(h) {
+      return h(CodeOwners, {
+        props: {
+          filePath: this.$route.params.path,
+          projectPath,
+          branch,
+          canViewBranchRules,
+          branchRulesPath,
+        },
+      });
+    },
+  });
+};
+
+export default () => {
+  const { router, data, apolloProvider, projectPath } = initTree();
+
+  if (!gon.features.blobRepositoryVueHeaderApp) {
+    initPathLocks(data, router);
+  }
+  initCodeOwnersApp(router, apolloProvider, projectPath);
 };

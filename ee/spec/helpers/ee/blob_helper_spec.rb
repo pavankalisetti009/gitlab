@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe BlobHelper do
+RSpec.describe BlobHelper, feature_category: :source_code_management do
   include TreeHelper
   include FakeBlobHelpers
 
@@ -60,6 +60,22 @@ RSpec.describe BlobHelper do
       expect(by_instance).to be_nil
       expect(by_popular).to be_present
       expect(by_other).to be_present
+    end
+  end
+
+  describe '#vue_blob_header_app_data' do
+    let(:blob) { fake_blob(path: 'file.md', size: 2.megabytes) }
+    let(:project) { build_stubbed(:project) }
+    let(:ref) { 'main' }
+    let(:breadcrumb_data) { { title: 'README.md', 'is-last': true } }
+
+    it 'returns data related to blob header app' do
+      allow(helper).to receive_messages(selected_branch: ref, current_user: nil,
+        breadcrumb_data_attributes: breadcrumb_data)
+
+      expect(helper.vue_blob_header_app_data(project, blob, ref)).to include({
+        new_workspace_path: new_remote_development_workspace_path
+      })
     end
   end
 

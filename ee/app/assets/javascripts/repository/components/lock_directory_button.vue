@@ -21,6 +21,7 @@ export default {
     modalTitle: __('Lock directory?'),
     actionPrimary: {
       text: __('Ok'),
+      attributes: { variant: 'confirm', 'data-testid': 'confirm-ok-button' },
     },
     actionCancel: {
       text: __('Cancel'),

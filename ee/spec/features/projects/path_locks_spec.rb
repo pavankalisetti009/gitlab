@@ -27,9 +27,9 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
     find('.js-path-lock').click
     wait_for_requests
 
-    accept_gl_confirm('Are you sure you want to lock this directory?')
+    accept_gl_confirm('Are you sure you want to lock this directory?', button_text: 'Ok')
 
-    expect(page).to have_link('Unlock')
+    expect(page).to have_button('Unlock')
   end
 
   it 'locking files' do
