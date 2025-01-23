@@ -40,7 +40,37 @@ RSpec.describe API::ServiceAccounts, :with_current_organization, :aggregate_fail
             expect(response).to have_gitlab_http_status(:created)
             expect(json_response['username']).to eq(params[:username])
             expect(json_response['name']).to eq(params[:name])
-            expect(json_response.keys).to match_array(%w[id name username])
+            expect(json_response['email']).to start_with('service_account')
+            expect(response).to match_response_schema('public_api/v4/user/service_account', dir: 'ee')
+          end
+
+          context 'when specifying a custom email address' do
+            let(:email) { 'service_account@example.com' }
+
+            before do
+              post api("/service_accounts", admin, admin_mode: true),
+                params: params.merge(email: email)
+            end
+
+            it "sets to correct email" do
+              expect(response).to have_gitlab_http_status(:created)
+              expect(json_response['username']).to eq(params[:username])
+              expect(json_response['name']).to eq(params[:name])
+              expect(json_response['email']).to eq(email)
+              expect(response).to match_response_schema('public_api/v4/user/service_account', dir: 'ee')
+            end
+
+            context 'when user with the email already exists' do
+              before do
+                post api("/service_accounts", admin, admin_mode: true),
+                  params: params.merge(email: email)
+              end
+
+              it 'returns error' do
+                expect(response).to have_gitlab_http_status(:bad_request)
+                expect(json_response['message']).to include('Email has already been taken')
+              end
+            end
           end
 
           context 'when user with the username already exists' do
@@ -111,7 +141,7 @@ RSpec.describe API::ServiceAccounts, :with_current_organization, :aggregate_fail
         it 'returns 200 status service account users list' do
           expect(response).to have_gitlab_http_status(:ok)
 
-          expect(response).to match_response_schema('public_api/v4/user/safes')
+          expect(response).to match_response_schema('public_api/v4/user/service_accounts', dir: 'ee')
           expect(json_response.size).to eq(2)
 
           expect_paginated_array_response(service_account_auser.id, service_account_buser.id)

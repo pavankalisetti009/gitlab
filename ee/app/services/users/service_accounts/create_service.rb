@@ -65,7 +65,7 @@ module Users
       end
 
       def email
-        username_and_email_generator.email
+        params[:email] || username_and_email_generator.email
       end
 
       def username
