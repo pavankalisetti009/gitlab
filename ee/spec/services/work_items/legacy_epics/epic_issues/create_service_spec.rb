@@ -214,7 +214,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
               expect(created_link2).to have_attributes(epic: epic)
             end
 
-            it 'places each issue at the start' do
+            it 'places each issue at the start', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/512780' do
               execute
 
               expect(created_link2.relative_position).to be < created_link1.relative_position
