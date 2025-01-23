@@ -64,6 +64,14 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
           it { is_expected.to be(false) }
         end
 
+        context 'when a paid plan is bought mid-trial and the trial has just ended' do
+          before do
+            allow(GitlabSubscriptions::Trials).to receive(:namespace_with_mid_trial_premium?).and_return(true)
+          end
+
+          it { is_expected.to be(false) }
+        end
+
         context 'when trial ended more than 10 days ago' do
           let(:add_on_purchase) do
             build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: group,

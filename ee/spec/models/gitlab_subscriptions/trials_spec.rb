@@ -165,4 +165,41 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       it { is_expected.to be false }
     end
   end
+
+  describe '.namespace_with_mid_trial_premium?', :saas do
+    let_it_be(:free_namespace) { create(:group) }
+    let_it_be(:premium_namespace) { create(:group_with_plan, plan: :premium_plan) }
+
+    let(:namespace) { premium_namespace }
+
+    subject(:execute) { described_class.namespace_with_mid_trial_premium?(namespace, Date.current) }
+
+    context 'when with mid-trial premium history record' do
+      before do
+        create(
+          :gitlab_subscription_history, :update,
+          namespace: namespace, hosted_plan: premium_namespace.actual_plan
+        )
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'when namespace is on a free plan' do
+        let(:namespace) { free_namespace }
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when without mid-trial premium history record' do
+      before do
+        create(
+          :gitlab_subscription_history, :update,
+          namespace: free_namespace, hosted_plan: premium_namespace.actual_plan
+        )
+      end
+
+      it { is_expected.to be(false) }
+    end
+  end
 end

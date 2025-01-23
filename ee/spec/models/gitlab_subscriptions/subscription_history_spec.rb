@@ -4,11 +4,12 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category: :seat_cost_management do
   let_it_be(:group1) { create(:group_with_plan, plan: :premium_plan) }
+  let_it_be(:group2) { create(:group_with_plan, plan: :premium_plan) }
+  let_it_be(:free_plan) { create(:free_plan) }
 
   it { is_expected.to belong_to(:hosted_plan).class_name('Plan').inverse_of(:gitlab_subscription_histories) }
 
   describe 'relation to a namespace' do
-    let_it_be(:group2) { create(:group_with_plan, plan: :premium_plan) }
     let_it_be(:history1) { create(:gitlab_subscription_history, namespace: group1) }
     let_it_be(:history2) { create(:gitlab_subscription_history, namespace: group2) }
 
@@ -21,8 +22,52 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category
     end
   end
 
+  describe 'scopes' do
+    describe '.transitioning_to_plan_after' do
+      let(:plan) { group1.actual_plan }
+      let(:date) { 2.days.ago }
+
+      subject(:transitioning_to_plan_after) do
+        described_class.transitioning_to_plan_after(plan, date)
+      end
+
+      context 'when change_type is updated' do
+        let_it_be(:subscription_history) do
+          create(
+            :gitlab_subscription_history, :update,
+            namespace: group1, hosted_plan: group1.actual_plan, created_at: 1.day.ago
+          )
+        end
+
+        it { expect(transitioning_to_plan_after).to eq([subscription_history]) }
+
+        context 'when plan is different' do
+          let(:plan) { free_plan }
+
+          it { expect(transitioning_to_plan_after).to eq([]) }
+        end
+
+        context 'when created_at is before the date' do
+          let(:date) { Date.current }
+
+          it { expect(transitioning_to_plan_after).to eq([]) }
+        end
+      end
+
+      context 'when change_type is destroyed' do
+        before do
+          create(
+            :gitlab_subscription_history, :destroyed,
+            namespace: group1, hosted_plan: group1.actual_plan, created_at: 1.day.ago
+          )
+        end
+
+        it { expect(transitioning_to_plan_after).to eq([]) }
+      end
+    end
+  end
+
   describe '.latest_updated_history_by_hosted_plan_id', :freeze_time do
-    let_it_be(:hosted_plan) { create(:free_plan) }
     let_it_be(:namespace1) { create(:namespace) }
     let_it_be(:namespace2) { create(:namespace) }
     let(:namespace_ids) { [namespace1.id, namespace2.id] }
@@ -32,15 +77,15 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category
     before_all do
       create(
         :gitlab_subscription_history, :update,
-        namespace: namespace1, hosted_plan: hosted_plan, created_at: 1.day.ago.beginning_of_day
+        namespace: namespace1, hosted_plan: free_plan, created_at: 1.day.ago.beginning_of_day
       )
       create(
         :gitlab_subscription_history, :update,
-        namespace: namespace1, hosted_plan: hosted_plan, created_at: 2.days.ago.beginning_of_day
+        namespace: namespace1, hosted_plan: free_plan, created_at: 2.days.ago.beginning_of_day
       )
       create(
         :gitlab_subscription_history, :update,
-        namespace: namespace2, hosted_plan: hosted_plan, created_at: 3.days.ago.beginning_of_day
+        namespace: namespace2, hosted_plan: free_plan, created_at: 3.days.ago.beginning_of_day
       )
       create(:gitlab_subscription_history, :update, namespace: namespace1, hosted_plan: create(:ultimate_plan))
     end
@@ -74,7 +119,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category
       let_it_be(:namespace3) { create(:namespace) }
 
       before_all do
-        create(:gitlab_subscription_history, :destroyed, namespace: create(:namespace), hosted_plan: hosted_plan)
+        create(:gitlab_subscription_history, :destroyed, namespace: create(:namespace), hosted_plan: free_plan)
       end
 
       it 'excludes destroyed subscription histories' do

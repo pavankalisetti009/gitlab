@@ -40,7 +40,11 @@ module GitlabSubscriptions
 
       def eligible_expired_trial?
         GitlabSubscriptions::Trials.namespace_plan_eligible?(namespace) &&
-          !user_dismissed_widget?
+          !user_dismissed_widget? &&
+          !GitlabSubscriptions::Trials.namespace_with_mid_trial_premium?(
+            namespace,
+            duo_enterprise_trial_add_on_purchase.started_at
+          )
       end
 
       def duo_enterprise_status

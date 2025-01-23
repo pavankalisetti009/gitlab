@@ -47,6 +47,14 @@ module GitlabSubscriptions
       last_seat_refresh_at
     ].freeze
 
+    scope :transitioning_to_plan_after, ->(plan, date) do
+      where(
+        change_type: change_types[:gitlab_subscription_updated],
+        hosted_plan: plan,
+        created_at: date.beginning_of_day..Time.current
+      )
+    end
+
     def self.latest_updated_history_by_hosted_plan_id(hosted_plan_id, scoped_namespace_ids)
       arel_table
         .project(arel_table[:namespace_id], arel_table[:created_at].maximum.as('last_created_at'))
