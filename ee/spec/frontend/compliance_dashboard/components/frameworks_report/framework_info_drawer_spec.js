@@ -222,16 +222,19 @@ describe('FrameworkInfoDrawer component', () => {
         });
 
         describe('load more button', () => {
+          const secondPageResponse = makeProjectsListResponse();
+          secondPageResponse.namespace.projects.nodes =
+            secondPageResponse.namespace.projects.nodes.map((node) => ({
+              ...node,
+              id: `gid://gitlab/Project/${node.id}-page-2`,
+            }));
+
+          beforeEach(() => {});
           it('renders when we have next page in list', () => {
             expect(findLoadMoreButton().exists()).toBe(true);
           });
 
           it('clicking button loads next page', async () => {
-            const secondPageResponse = makeProjectsListResponse();
-            secondPageResponse.namespace.projects.nodes.forEach((node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.id = `gid://gitlab/Project/${node.id}-page-2`;
-            });
             projectsInNamespaceResolverMock.mockResolvedValueOnce({
               data: secondPageResponse,
             });
@@ -245,7 +248,6 @@ describe('FrameworkInfoDrawer component', () => {
           });
 
           it('does not render when we do not have next page', async () => {
-            const secondPageResponse = makeProjectsListResponse();
             secondPageResponse.namespace.projects.pageInfo.hasNextPage = false;
 
             createComponent({
