@@ -5829,6 +5829,9 @@ msgid_plural "All projects in %{groupsLength} groups:"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "All projects in authentication log"
+msgstr ""
+
 msgid "All projects selected"
 msgstr ""
 
@@ -27352,6 +27355,9 @@ msgid "Group name must start with a letter, digit, emoji, or underscore."
 msgstr ""
 
 msgid "Group navigation"
+msgstr ""
+
+msgid "Group or project"
 msgstr ""
 
 msgid "Group overview content"
