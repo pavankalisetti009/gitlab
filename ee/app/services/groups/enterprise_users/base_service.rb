@@ -47,13 +47,19 @@ module Groups
           (@group.paid? && @group.gitlab_subscription.start_date >= Date.new(2021, 2, 1))
       end
 
-      # The "Enterprise User" definition: https://about.gitlab.com/handbook/support/workflows/gitlab-com_overview.html#enterprise-users
+      # The "Enterprise User" definition: https://handbook.gitlab.com/handbook/support/workflows/gitlab-com_overview/#enterprise-users
+      #
+      # Only include human users to avoid claiming service accounts, project bots, and other user types
+      # as enterprise users, even when they have a custom email address matching the domain.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/451032
       def user_matches_the_enterprise_user_definition_for_the_group?
-        @group.owner_of_email?(@user.email) && (
-          user_was_created_2021_02_01_or_later? ||
-          user_has_saml_or_scim_identity_tied_to_group? ||
-          user_provisioned_by_group? ||
-          user_group_member_and_group_subscription_was_purchased_or_renewed_2021_02_01_or_later?)
+        @user.human? && @group.owner_of_email?(@user.email) &&
+          (
+            user_was_created_2021_02_01_or_later? ||
+            user_has_saml_or_scim_identity_tied_to_group? ||
+            user_provisioned_by_group? ||
+            user_group_member_and_group_subscription_was_purchased_or_renewed_2021_02_01_or_later?
+          )
       end
     end
   end

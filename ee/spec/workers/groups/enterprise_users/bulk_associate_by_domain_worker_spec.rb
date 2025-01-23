@@ -14,6 +14,7 @@ RSpec.describe Groups::EnterpriseUsers::BulkAssociateByDomainWorker, :saas, feat
     shared_examples 'does not do anything' do
       it 'does not do anything', :aggregate_failures do
         expect(User).not_to receive(:select).and_call_original
+        expect(User).not_to receive(:human).and_call_original
         expect(User).not_to receive(:with_email_domain).and_call_original
         expect(User).not_to receive(:excluding_enterprise_users_of_group).and_call_original
         expect(User).not_to receive(:each_batch).and_call_original
@@ -28,6 +29,7 @@ RSpec.describe Groups::EnterpriseUsers::BulkAssociateByDomainWorker, :saas, feat
     shared_examples 'bulk perform async Groups::EnterpriseUsers::AssociateWorker' do
       it 'bulk perform async Groups::EnterpriseUsers::AssociateWorker', :aggregate_failures do
         expect(User).to receive(:select).with(:id).and_call_original
+        expect(User).to receive(:human).and_call_original
         expect(User).to receive(:with_email_domain).with(pages_domain.domain).and_call_original
         expect(User).to receive(:excluding_enterprise_users_of_group).with(pages_domain.root_group).and_call_original
         expect(User).to receive(:each_batch).with(of: 100).and_call_original
@@ -131,6 +133,16 @@ RSpec.describe Groups::EnterpriseUsers::BulkAssociateByDomainWorker, :saas, feat
           ).tap do |user|
             user.user_detail.destroy!
           end
+        end
+
+        let!(:service_account_with_the_specified_domain) do
+          create(
+            :user,
+            :service_account,
+            provisioned_by_group_id: root_group.id,
+            enterprise_group_id: nil,
+            email: "service_account@#{pages_domain.domain}"
+          )
         end
 
         context 'when domain_verification feature is not available for the group' do

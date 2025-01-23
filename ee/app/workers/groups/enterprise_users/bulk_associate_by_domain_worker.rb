@@ -18,6 +18,7 @@ module Groups
         return unless group.domain_verification_available?
 
         User.select(:id)
+          .human
           .with_email_domain(pages_domain.domain)
           .each_batch(of: 100) do |users|
             ::Groups::EnterpriseUsers::AssociateWorker.bulk_perform_async( # rubocop:disable Scalability/BulkPerformWithContext
