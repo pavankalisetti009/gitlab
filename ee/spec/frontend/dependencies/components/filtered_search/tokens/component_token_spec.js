@@ -82,6 +82,8 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
       provide: {
         ...additionalInjections,
         groupFullPath: 'secure',
+        namespaceType: 'group',
+        projectFullPath: undefined,
       },
       propsData: {
         config: {

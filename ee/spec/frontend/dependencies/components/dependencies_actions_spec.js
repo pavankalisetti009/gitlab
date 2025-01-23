@@ -1,7 +1,6 @@
 import { GlSorting } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import DependenciesActions from 'ee/dependencies/components/dependencies_actions.vue';
-import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue';
 import createStore from 'ee/dependencies/store';
 import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
 import { SORT_FIELDS } from 'ee/dependencies/store/modules/list/constants';
@@ -14,20 +13,24 @@ describe('DependenciesActions component', () => {
   let wrapper;
   const { namespace } = DEPENDENCY_LIST_TYPES.all;
 
-  const objectBasicProp = {
-    namespaceType: 'project',
-  };
-
-  const factory = ({ propsData, provide } = {}) => {
+  const factory = ({ propsData, provide, glFeatures = { projectComponentFilter: true } } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
     wrapper = shallowMountExtended(DependenciesActions, {
       store,
-      propsData: { ...propsData },
+      propsData: {
+        namespace,
+        ...propsData,
+      },
       provide: {
-        ...objectBasicProp,
+        namespaceType: 'group',
         ...provide,
+        glFeatures,
+      },
+      stubs: {
+        GroupDependenciesFilteredSearch: true,
+        ProjectDependenciesFilteredSearch: true,
       },
     });
   };
@@ -35,35 +38,47 @@ describe('DependenciesActions component', () => {
   const findSorting = () => wrapper.findComponent(GlSorting);
   const emitSortByChange = (value) => findSorting().vm.$emit('sortByChange', value);
 
-  beforeEach(async () => {
-    factory({
-      propsData: { namespace },
-    });
-    store.state[namespace].endpoint = `${TEST_HOST}/dependencies.json`;
-    jest.spyOn(urlUtility, 'updateHistory');
-    await nextTick();
-  });
+  describe('Filtered Search', () => {
+    describe.each`
+      namespaceType | componentName
+      ${'group'}    | ${'GroupDependenciesFilteredSearch'}
+      ${'project'}  | ${'ProjectDependenciesFilteredSearch'}
+    `('with namespaceType set to $namespaceType', ({ namespaceType, componentName }) => {
+      it('renders the correct filtered search component', () => {
+        factory({
+          provide: { namespaceType },
+        });
 
-  it('dispatches the right setSortField action on clicking each item in the dropdown', () => {
-    Object.keys(SORT_FIELDS).forEach((field) => {
-      emitSortByChange(field);
-    });
-
-    expect(store.dispatch.mock.calls).toEqual(
-      expect.arrayContaining(
-        Object.keys(SORT_FIELDS).map((field) => [`${namespace}/setSortField`, field]),
-      ),
-    );
-  });
-
-  describe('with namespaceType set to group', () => {
-    beforeEach(async () => {
-      factory({
-        propsData: { namespace },
-        provide: { namespaceType: 'group' },
+        expect(wrapper.findComponent({ name: componentName }).exists()).toBe(true);
       });
+    });
+
+    describe('when feature flag "projectComponentFilter" is disabled', () => {
+      it('does not render filtered search component', () => {
+        factory({
+          provide: { namespaceType: 'project' },
+          glFeatures: { projectComponentFilter: false },
+        });
+        expect(wrapper.findComponent({ name: 'ProjectDependenciesFilteredSearch' }).exists()).toBe(
+          false,
+        );
+        expect(wrapper.findComponent({ name: 'GroupDependenciesFilteredSearch' }).exists()).toBe(
+          false,
+        );
+      });
+    });
+  });
+
+  describe('Sorting', () => {
+    beforeEach(async () => {
+      factory();
       store.state[namespace].endpoint = `${TEST_HOST}/dependencies.json`;
+      jest.spyOn(urlUtility, 'updateHistory');
       await nextTick();
+    });
+
+    it('renders the tooltip', () => {
+      expect(findSorting().props('sortDirectionToolTip')).toBe('Sort direction');
     });
 
     it('dispatches the right setSortField action on clicking each item in the dropdown', () => {
@@ -76,23 +91,16 @@ describe('DependenciesActions component', () => {
           Object.keys(SORT_FIELDS).map((field) => [`${namespace}/setSortField`, field]),
         ),
       );
-      expect(urlUtility.updateHistory).toHaveBeenCalledTimes(4);
+    });
+
+    it('dispatches the toggleSortOrder action on clicking the sort order button', () => {
+      findSorting().vm.$emit('sortDirectionChange');
+
+      expect(store.dispatch).toHaveBeenCalledWith(`${namespace}/toggleSortOrder`);
+      expect(urlUtility.updateHistory).toHaveBeenCalledTimes(1);
       expect(urlUtility.updateHistory).toHaveBeenCalledWith({
         url: `${TEST_HOST}/`,
       });
-    });
-
-    it('renders a filtered-search input', () => {
-      expect(wrapper.findComponent(GroupDependenciesFilteredSearch).exists()).toBe(true);
-    });
-  });
-
-  it('dispatches the toggleSortOrder action on clicking the sort order button', () => {
-    findSorting().vm.$emit('sortDirectionChange');
-    expect(store.dispatch).toHaveBeenCalledWith(`${namespace}/toggleSortOrder`);
-    expect(urlUtility.updateHistory).toHaveBeenCalledTimes(1);
-    expect(urlUtility.updateHistory).toHaveBeenCalledWith({
-      url: `${TEST_HOST}/`,
     });
   });
 });

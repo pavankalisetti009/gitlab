@@ -12,7 +12,8 @@ module DependenciesHelper
       vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
       sbom_reports_errors: sbom_report_ingestion_errors(pipeline).to_json,
       latest_successful_scan_path: (project_pipeline_path(project, pipeline) if pipeline),
-      scan_finished_at: pipeline&.finished_at
+      scan_finished_at: pipeline&.finished_at,
+      project_full_path: project.full_path
     })
   end
 

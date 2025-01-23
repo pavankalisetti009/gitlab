@@ -23,6 +23,7 @@ export default (namespaceType) => {
     latestSuccessfulScanPath,
     scanFinishedAt,
     groupFullPath,
+    projectFullPath,
   } = el.dataset;
 
   const store = createStore();
@@ -40,11 +41,12 @@ export default (namespaceType) => {
     belowGroupLimit: parseBoolean(belowGroupLimit),
     latestSuccessfulScanPath,
     scanFinishedAt,
+    groupFullPath,
+    projectFullPath,
   };
 
   if (namespaceType === NAMESPACE_GROUP) {
     provide.locationsEndpoint = locationsEndpoint;
-    provide.groupFullPath = groupFullPath;
   }
 
   const props = {
