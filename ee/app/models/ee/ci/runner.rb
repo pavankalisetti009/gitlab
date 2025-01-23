@@ -9,6 +9,12 @@ module EE
 
       prepended do
         has_one :cost_settings, class_name: 'Ci::Minutes::CostSetting', foreign_key: :runner_id, inverse_of: :runner
+        has_many :hosted_runner_monthly_usages,
+          class_name: 'Ci::Minutes::GitlabHostedRunnerMonthlyUsage',
+          inverse_of: :runner
+        has_many :instance_runner_monthly_usages,
+          class_name: 'Ci::Minutes::InstanceRunnerMonthlyUsage',
+          inverse_of: :runner
 
         scope :with_top_running_builds_of_runner_type, ->(runner_type) do
           most_active_runners(->(relation) { relation.where(runner_type: runner_type) })

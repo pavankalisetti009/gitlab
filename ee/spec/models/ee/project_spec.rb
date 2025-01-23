@@ -103,6 +103,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to have_many(:project_control_compliance_statuses) }
 
+    it { is_expected.to have_many(:instance_runner_monthly_usages).class_name('Ci::Minutes::InstanceRunnerMonthlyUsage') }
+    it { is_expected.to have_many(:hosted_runner_monthly_usages).class_name('Ci::Minutes::GitlabHostedRunnerMonthlyUsage') }
+
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
         {

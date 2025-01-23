@@ -208,6 +208,8 @@ module EE
       has_many :observability_traces, class_name: 'Observability::TracesIssuesConnection'
 
       has_many :security_exclusions, class_name: 'Security::ProjectSecurityExclusion'
+      has_many :instance_runner_monthly_usages, class_name: 'Ci::Minutes::InstanceRunnerMonthlyUsage', inverse_of: :project
+      has_many :hosted_runner_monthly_usages, class_name: 'Ci::Minutes::GitlabHostedRunnerMonthlyUsage', inverse_of: :project
 
       has_many :project_control_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'

@@ -12,6 +12,18 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     allow(::Gitlab::CurrentSettings).to receive(:shared_runners_minutes) { shared_runners_minutes }
   end
 
+  it do
+    is_expected.to have_many(:instance_runner_monthly_usages)
+    .class_name('Ci::Minutes::InstanceRunnerMonthlyUsage')
+    .inverse_of(:runner)
+  end
+
+  it do
+    is_expected.to have_many(:hosted_runner_monthly_usages)
+    .class_name('Ci::Minutes::GitlabHostedRunnerMonthlyUsage')
+    .inverse_of(:runner)
+  end
+
   describe 'ci associations' do
     it 'has one cost setting' do
       is_expected.to have_one(:cost_settings)

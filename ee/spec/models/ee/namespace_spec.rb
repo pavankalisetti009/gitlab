@@ -45,6 +45,18 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:duo_availability).to(:namespace_settings) }
   it { is_expected.to delegate_method(:security_policy_management_project).to(:security_orchestration_policy_configuration) }
 
+  it do
+    is_expected.to have_many(:instance_runner_monthly_usages)
+    .class_name('Ci::Minutes::InstanceRunnerMonthlyUsage')
+    .inverse_of(:root_namespace)
+  end
+
+  it do
+    is_expected.to have_many(:hosted_runner_monthly_usages)
+    .class_name('Ci::Minutes::GitlabHostedRunnerMonthlyUsage')
+    .inverse_of(:root_namespace)
+  end
+
   shared_examples 'plan helper' do |namespace_plan|
     let(:namespace) { create(:namespace_with_plan, plan: "#{plan_name}_plan") }
 
