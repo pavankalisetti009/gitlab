@@ -65,6 +65,12 @@ export default {
     destinationTitle() {
       return this.item.name;
     },
+    filterTooltipLink() {
+      if (this.isInstance) {
+        return this.$options.i18n.FILTER_TOOLTIP_ADMIN_LINK;
+      }
+      return this.$options.i18n.FILTER_TOOLTIP_GROUP_LINK;
+    },
   },
   methods: {
     toggleEditMode() {
@@ -117,7 +123,7 @@ export default {
         <gl-popover :target="item.id" data-testid="filter-popover">
           <gl-sprintf :message="$options.i18n.FILTER_TOOLTIP_LABEL">
             <template #link="{ content }">
-              <gl-link :href="$options.i18n.FILTER_TOOLTIP_LINK" target="_blank">
+              <gl-link :href="filterTooltipLink" target="_blank">
                 {{ content }}
               </gl-link>
             </template>
