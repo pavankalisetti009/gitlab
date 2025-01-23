@@ -78,8 +78,7 @@ module EE
               attrs = attrs.except(:delete_unconfirmed_users_attributes)
             end
 
-            unless License.feature_available?(:disable_private_profiles) &&
-                ::Feature.enabled?(:disallow_private_profiles)
+            unless License.feature_available?(:disable_private_profiles)
               attrs = attrs.except(:make_profile_private)
             end
 

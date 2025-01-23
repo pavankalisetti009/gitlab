@@ -471,6 +471,7 @@ DETAILS:
 **Status:** Experiment
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/421310) in GitLab 17.1 [with a flag](../../administration/feature_flags.md) named `disallow_private_profiles`. Disabled by default.
+> - [Generally Available](https://gitlab.com/gitlab-org/gitlab/-/issues/427400) in GitLab 17.9. Feature flag `disallow_private_profiles` removed.
 
 FLAG:
 The availability of this feature is controlled by a feature flag.
