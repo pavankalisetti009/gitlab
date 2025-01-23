@@ -7,8 +7,10 @@ import {
   GlIntersperse,
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import { s__ } from '~/locale';
-import componentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
+import { s__, sprintf } from '~/locale';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from 'ee/dependencies/constants';
+import groupComponentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
+import projectComponentsQuery from 'ee/dependencies/graphql/project_components.query.graphql';
 
 export default {
   components: {
@@ -18,7 +20,7 @@ export default {
     GlLoadingIcon,
     GlIntersperse,
   },
-  inject: ['groupFullPath'],
+  inject: ['namespaceType', 'groupFullPath', 'projectFullPath'],
   props: {
     config: {
       type: Object,
@@ -69,24 +71,48 @@ export default {
         data: this.active ? null : this.selectedComponentNames,
       };
     },
+    componentsQueryType() {
+      const queryTypes = {
+        [NAMESPACE_GROUP]: {
+          query: groupComponentsQuery,
+          fullPath: this.groupFullPath,
+        },
+        [NAMESPACE_PROJECT]: {
+          query: projectComponentsQuery,
+          fullPath: this.projectFullPath,
+        },
+      };
+
+      return queryTypes[this.namespaceType] || queryTypes[NAMESPACE_GROUP];
+    },
+    fetchErrorMessage() {
+      return sprintf(
+        s__(
+          'Dependencies|There was an error fetching the components for this %{namespaceType}. Please try again later.',
+        ),
+        { namespaceType: this.namespaceType },
+      );
+    },
   },
   apollo: {
     components: {
-      query: componentsQuery,
+      query() {
+        return this.componentsQueryType.query;
+      },
       debounce: 300,
       variables() {
         return {
           name: this.searchTerm,
-          fullPath: this.groupFullPath,
+          fullPath: this.componentsQueryType.fullPath,
         };
       },
       update(data) {
         // Remove __typename
-        return data.group?.components?.map(({ id, name }) => ({ name, id }));
+        return data[this.namespaceType]?.components?.map(({ id, name }) => ({ name, id }));
       },
       error() {
         createAlert({
-          message: this.$options.i18n.fetchErrorMessage,
+          message: this.fetchErrorMessage,
         });
       },
       skip() {
@@ -111,11 +137,6 @@ export default {
         this.searchTerm = token.data.toLowerCase();
       }
     },
-  },
-  i18n: {
-    fetchErrorMessage: s__(
-      'Dependencies|There was an error fetching the components for this group. Please try again later.',
-    ),
   },
 };
 </script>

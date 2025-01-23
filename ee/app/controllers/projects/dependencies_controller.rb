@@ -6,6 +6,10 @@ module Projects
     include GovernUsageProjectTracking
     include Gitlab::InternalEventsTracking
 
+    before_action only: :index do
+      push_frontend_feature_flag(:project_component_filter, project)
+    end
+
     before_action :authorize_read_dependency_list!
 
     feature_category :dependency_management

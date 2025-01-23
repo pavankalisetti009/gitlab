@@ -4,8 +4,8 @@ import { GlSorting } from '@gitlab/ui';
 import { mapActions, mapState } from 'vuex';
 import { __ } from '~/locale';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
-import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue';
-import { NAMESPACE_PROJECT } from '../constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { NAMESPACE_PROJECT, NAMESPACE_GROUP } from '../constants';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import { SORT_FIELDS, SORT_ASCENDING } from '../store/modules/list/constants';
 
@@ -16,8 +16,12 @@ export default {
   name: 'DependenciesActions',
   components: {
     GlSorting,
-    GroupDependenciesFilteredSearch,
+    GroupDependenciesFilteredSearch: () =>
+      import('ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue'),
+    ProjectDependenciesFilteredSearch: () =>
+      import('ee/dependencies/components/filtered_search/project_dependencies_filtered_search.vue'),
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     namespace: {
@@ -48,8 +52,17 @@ export default {
         value: key,
       }));
     },
-    isProjectNamespace() {
-      return this.namespaceType === NAMESPACE_PROJECT;
+    isSupportedNamespace() {
+      if (this.namespaceType === NAMESPACE_GROUP) {
+        return true;
+      }
+
+      return this.glFeatures.projectComponentFilter && this.namespaceType === NAMESPACE_PROJECT;
+    },
+    dependenciesFilteredSearchComponent() {
+      return this.namespaceType === NAMESPACE_PROJECT
+        ? 'ProjectDependenciesFilteredSearch'
+        : 'GroupDependenciesFilteredSearch';
     },
   },
   methods: {
@@ -74,8 +87,9 @@ export default {
   <div
     class="gl-flex gl-items-start gl-border-t-1 gl-border-default gl-bg-gray-10 gl-p-5 gl-border-t-solid"
   >
-    <group-dependencies-filtered-search
-      v-if="!isProjectNamespace"
+    <component
+      :is="dependenciesFilteredSearchComponent"
+      v-if="isSupportedNamespace"
       class="gl-mr-3 gl-min-w-0 gl-grow"
     />
     <gl-sorting
