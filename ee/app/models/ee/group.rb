@@ -733,7 +733,9 @@ module EE
       if ::Feature.enabled?(:use_namespace_historical_statistics_for_group_security_dashboard, self)
         ::Vulnerabilities::NamespaceHistoricalStatistic.for_namespace_and_descendants(self)
       else
+        # We'll remove this cross join when we remove the feature flag.
         ::Vulnerabilities::HistoricalStatistic.for_project(projects_for_group_and_its_subgroups_without_deleted)
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486216')
       end
     end
 
