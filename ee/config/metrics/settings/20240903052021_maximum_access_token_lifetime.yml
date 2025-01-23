@@ -9,6 +9,8 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164841
 time_frame: none
 data_source: database
 instrumentation_class: MaximumAccessTokenLifetimeEnabledMetric
+performance_indicator_type: 
+- lighthouse
 data_category: optional
 tiers:
 - ultimate
