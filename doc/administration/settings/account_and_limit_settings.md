@@ -442,7 +442,7 @@ By default, new users can create top-level groups. GitLab administrators can pre
 
 - In GitLab 15.5 and later, use either:
   - The GitLab UI with the steps in this section.
-  - The [Application settings API](../../api/settings.md#change-application-settings).
+  - The [Application settings API](../../api/settings.md#update-application-settings).
 - In GitLab 15.4 and earlier, modify a [configuration file](../../administration/user_settings.md#prevent-users-from-creating-top-level-groups).
 
 1. On the left sidebar, at the bottom, select **Admin**.
