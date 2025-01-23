@@ -1157,7 +1157,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       false | { pages: { path_prefix: 'foo' } } | {}
       true | { pages: { path_prefix: 'foo' } } | { path_prefix: 'foo' }
       true | { pages: { path_prefix: nil } } | { path_prefix: '' }
-      true | { pages: { path_prefix: 'foo' } } | { path_prefix: 'foo' }
+      true | { pages: { path_prefix: 'foo' }, publish: 'public' } | { path_prefix: 'foo', publish: 'public' }
       true | { pages: { path_prefix: '$CI_COMMIT_BRANCH' } } | { path_prefix: 'master' }
       true | { pages: { path_prefix: 'foo', expire_in: '1d' } } | { path_prefix: 'foo', expire_in: '1d' }
       true | { pages: { path_prefix: 'foo', expire_in: 'never' } } | { path_prefix: 'foo', expire_in: 'never' }
