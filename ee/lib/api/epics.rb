@@ -2,6 +2,7 @@
 
 module API
   class Epics < ::API::Base
+    include APIGuard
     include PaginationParams
 
     EPICS_TAG = %w[epics].freeze
@@ -11,6 +12,10 @@ module API
     before do
       authenticate_non_get!
       authorize_epics_feature!
+    end
+
+    allow_access_with_scope :ai_workflows, if: ->(request) do
+      request.get? || request.head? || request.post? || request.put?
     end
 
     helpers ::API::Helpers::EpicsHelpers

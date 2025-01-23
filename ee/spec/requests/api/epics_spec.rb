@@ -55,6 +55,18 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
     end
   end
 
+  shared_examples 'ai_workflows scope' do
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      let(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+
+      it 'is successful' do
+        epic_action
+
+        expect(response).to have_gitlab_http_status(expected_status)
+      end
+    end
+  end
+
   shared_context 'with labels' do
     before do
       create(:label_link, label: label, target: epic)
@@ -152,6 +164,12 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           expect(json_response.first['labels'].pluck('name')).to match_array([label.title, label_1.title, label_2.title])
           expect(json_response.last['labels'].first).to match_schema('/public_api/v4/label_basic')
         end
+      end
+
+      it_behaves_like 'ai_workflows scope' do
+        subject(:epic_action) { get api(url, oauth_access_token: oauth_token) }
+
+        let(:expected_status) { :ok }
       end
     end
 
@@ -638,6 +656,12 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       end
 
       it_behaves_like 'response with extra date fields'
+
+      it_behaves_like 'ai_workflows scope' do
+        subject(:epic_action) { get api(url, oauth_access_token: oauth_token) }
+
+        let(:expected_status) { :ok }
+      end
     end
   end
 
@@ -826,6 +850,12 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
                 .to include('No matching epic found. Make sure that you are adding a valid epic URL.')
             end
           end
+        end
+
+        it_behaves_like 'ai_workflows scope' do
+          subject(:epic_action) { post api(url, oauth_access_token: oauth_token), params: { title: 'new epic' } }
+
+          let(:expected_status) { :created }
         end
       end
 
@@ -1160,6 +1190,12 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
             expect(result.start_date_is_fixed).to eq(false)
           end
+        end
+
+        it_behaves_like 'ai_workflows scope' do
+          subject(:epic_action) { put api(url, oauth_access_token: oauth_token), params: { title: 'updated epic' } }
+
+          let(:expected_status) { :ok }
         end
       end
     end
