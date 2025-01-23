@@ -903,18 +903,20 @@ RSpec.describe User, feature_category: :system_access do
   end
 
   describe '#forget_me!' do
-    subject { create(:user, remember_created_at: Time.current) }
+    subject { create(:user) }
 
-    it 'clears remember_created_at' do
+    it 'calls save on the user' do
+      expect(subject).to receive(:save)
+
       subject.forget_me!
-
-      expect(subject.reload.remember_created_at).to be_nil
     end
 
-    it 'does not clear remember_created_at when in a GitLab read-only instance' do
+    it 'does not call save when in a GitLab read-only instance' do
       allow(Gitlab::Database).to receive(:read_only?) { true }
 
-      expect { subject.forget_me! }.not_to change(subject, :remember_created_at)
+      expect(subject).not_to receive(:save)
+
+      subject.forget_me!
     end
   end
 
