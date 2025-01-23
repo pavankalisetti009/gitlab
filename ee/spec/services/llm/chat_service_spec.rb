@@ -33,23 +33,6 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
 
       described_class.new(user, resource, options).execute
     end
-
-    context 'when move_ai_tracking_to_instrumentation_layer is disabled' do
-      before do
-        stub_feature_flags(move_ai_tracking_to_instrumentation_layer: false)
-      end
-
-      it 'tracks AI metric' do
-        expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
-                                                  .with('request_duo_chat_response', hash_including(
-                                                    user: user,
-                                                    project: project,
-                                                    namespace: project&.namespace))
-                                                  .and_call_original
-
-        described_class.new(user, resource, options).execute
-      end
-    end
   end
 
   shared_examples 'returns a missing resource error' do

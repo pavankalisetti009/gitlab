@@ -28,9 +28,7 @@ module EE
           context_hash[:event] = event_name
           context_hash[:namespace_path] ||= build_traversal_path(context_hash)
 
-          if ::Feature.enabled?(:move_ai_tracking_to_instrumentation_layer, context_hash[:user])
-            context_hash = filter_attributes(context_hash, matched_model)
-          end
+          context_hash = filter_attributes(context_hash, matched_model)
 
           matched_model.new(context_hash)
         end

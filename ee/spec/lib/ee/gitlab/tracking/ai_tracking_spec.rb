@@ -12,7 +12,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
     let(:event_name) { 'some_unknown_event' }
 
     before do
-      stub_feature_flags(move_ai_tracking_to_instrumentation_layer: false)
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
     end
 
@@ -23,15 +22,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
     end
 
     shared_examples 'common event tracking for' do |model_class|
-      let(:expected_event_hash) do
-        {
-          user: current_user,
-          event: event_name,
-          branch_name: 'main',
-          namespace_path: nil
-        }
-      end
-
       context 'when clickhouse is disabled for analytics' do
         before do
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
