@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { map } from 'lodash';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -87,16 +87,6 @@ describe('WorkItemDevelopment EE', () => {
     }),
   });
 
-  const devWidgetWithWithAllDevItems = workItemDevelopmentResponse({
-    developmentItems: workItemDevelopmentFragmentResponse({
-      mrNodes: workItemDevelopmentMRNodes,
-      willAutoCloseByMergeRequest: true,
-      featureFlagNodes: workItemDevelopmentFeatureFlagNodes,
-      branchNodes: workItemRelatedBranchNodes,
-      relatedMergeRequests: map(workItemDevelopmentMRNodes, 'mergeRequest'),
-    }),
-  });
-
   const devWidgetsuccessQueryHandler = jest.fn().mockResolvedValue(devWidgetWithMRListOnly);
 
   const devWidgetSuccessQueryHandlerWithOnlyMRList = jest
@@ -119,22 +109,16 @@ describe('WorkItemDevelopment EE', () => {
     .fn()
     .mockResolvedValue(devWidgetWithNoDevItems);
 
-  const devWidgetSuccessQueryHandlerWithAllDevItemsList = jest
-    .fn()
-    .mockResolvedValue(devWidgetWithWithAllDevItems);
-
   const workItemDevelopmentUpdatedSubscriptionHandler = jest
     .fn()
     .mockResolvedValue({ data: { workItemUpdated: null } });
 
   const createComponent = ({
-    mountFn = mountExtended,
     workItemId = 'gid://gitlab/WorkItem/1',
     workItemIid = '1',
     workItemFullPath = 'full-path',
     workItemType = 'Issue',
     workItemQueryHandler = workItemSuccessQueryHandler,
-    workItemsAlphaEnabled = true,
     workItemDevelopmentQueryHandler = devWidgetsuccessQueryHandler,
   } = {}) => {
     mockApollo = createMockApollo([
@@ -143,7 +127,7 @@ describe('WorkItemDevelopment EE', () => {
       [workItemDevelopmentUpdatedSubscription, workItemDevelopmentUpdatedSubscriptionHandler],
     ]);
 
-    wrapper = mountFn(WorkItemDevelopment, {
+    wrapper = shallowMountExtended(WorkItemDevelopment, {
       apolloProvider: mockApollo,
       directives: {
         GlModal: createMockDirective('gl-modal'),
@@ -155,11 +139,6 @@ describe('WorkItemDevelopment EE', () => {
         workItemFullPath,
         workItemType,
       },
-      provide: {
-        glFeatures: {
-          workItemsAlpha: workItemsAlphaEnabled,
-        },
-      },
       stubs: {
         WorkItemCreateBranchMergeRequestModal: true,
       },
@@ -167,90 +146,6 @@ describe('WorkItemDevelopment EE', () => {
   };
 
   const findRelationshipList = () => wrapper.findComponent(WorkItemDevelopmentRelationshipList);
-  const findCreateMRButton = () => wrapper.findByTestId('create-mr-button');
-  const findCreateBranchButton = () => wrapper.findByTestId('create-branch-button');
-
-  describe('when the list of MRs is empty but there is a Feature Flag list', () => {
-    it(`hides 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
-      createComponent({
-        workItemsAlphaEnabled: true,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-
-    it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
-      createComponent({
-        workItemsAlphaEnabled: false,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-  });
-
-  describe('when the list of Feature Flag is empty but there is a MR list', () => {
-    it(`hides 'Create MR' and 'Create branch' buttons when flag enabled`, async () => {
-      createComponent({
-        workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithOnlyMRList,
-        workItemsAlphaEnabled: true,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-
-    it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
-      createComponent({
-        workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithOnlyMRList,
-        workItemsAlphaEnabled: false,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-  });
-
-  describe('when both the list of Feature flags and MRs are empty', () => {
-    it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
-      createComponent({
-        workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithFlagListOnly,
-        workItemsAlphaEnabled: false,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-  });
-
-  describe('when both the list of Feature flags and MRs exist', () => {
-    it(`hides 'Create MR' and 'Create branch' buttons when flag disabled`, async () => {
-      createComponent({
-        workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithAllDevItemsList,
-        workItemsAlphaEnabled: false,
-      });
-      await waitForPromises();
-
-      expect(findCreateMRButton().exists()).toBe(false);
-      expect(findCreateBranchButton().exists()).toBe(false);
-    });
-  });
-
-  it('should not show the widget when any of the dev item is not available', async () => {
-    createComponent({
-      mountFn: shallowMountExtended,
-      workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithNoDevItem,
-    });
-    await waitForPromises();
-
-    expect(findRelationshipList().exists()).toBe(false);
-  });
 
   it.each`
     description        | successQueryResolveHandler
@@ -262,7 +157,6 @@ describe('WorkItemDevelopment EE', () => {
     'should show the relationship list when there is only a list of $description',
     async ({ successQueryResolveHandler }) => {
       createComponent({
-        mountFn: shallowMountExtended,
         workItemDevelopmentQueryHandler: successQueryResolveHandler,
       });
       await waitForPromises();
@@ -270,4 +164,13 @@ describe('WorkItemDevelopment EE', () => {
       expect(findRelationshipList().exists()).toBe(true);
     },
   );
+
+  it('should not show the widget when any of the dev item is not available', async () => {
+    createComponent({
+      workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithNoDevItem,
+    });
+    await waitForPromises();
+
+    expect(findRelationshipList().exists()).toBe(false);
+  });
 });
