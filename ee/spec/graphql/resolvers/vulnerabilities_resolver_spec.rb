@@ -389,6 +389,38 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       it 'only returns vulnerabilities with matching identifier_name alone' do
         is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
       end
+
+      context 'when vulnerable is a group' do
+        let(:vulnerable) { group }
+
+        context 'when the group has more vulnerabilities than the max' do
+          let(:error_msg) { 'Group has more than 20k vulnerabilities.' }
+          let(:max) { group.vulnerabilities.count - 1 }
+
+          before do
+            stub_const(
+              'Resolvers::VulnerabilityFilterable::MAX_VULNERABILITY_COUNT_GROUP_SUPPORT',
+              max
+            )
+
+            allow(::Security::ProjectStatistics).to receive(:sum_vulnerability_count_for_group)
+                                                      .with(group).and_return(group.vulnerabilities.count)
+          end
+
+          it 'raises an error' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
+              subject
+            end
+            expect(::Security::ProjectStatistics).to have_received(:sum_vulnerability_count_for_group).once
+          end
+        end
+
+        context 'when the group has fewer vulnerabilities than the max' do
+          it 'only returns vulnerabilities with matching identifier_name alone' do
+            is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
+          end
+        end
+      end
     end
 
     describe 'before and after cursors' do
