@@ -1,5 +1,7 @@
 <script>
+import { unescape } from 'lodash';
 import { GlLink, GlSprintf, GlAlert } from '@gitlab/ui';
+import { sanitize } from '~/lib/dompurify';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
@@ -28,6 +30,8 @@ export default {
       'AiPowered|To make it easier to configure GitLab Duo, the settings have moved to a more visible location. To access them, go to ',
     ),
     movedAlertButton: s__('AiPowered|View GitLab Duo settings'),
+    groupSettingsPath: unescape(sanitize(__('Settings &gt; GitLab Duo'), { ALLOWED_TAGS: [] })),
+    globalSettingsPath: unescape(sanitize(__('Admin Area &gt; GitLab Duo'), { ALLOWED_TAGS: [] })),
   },
   inject: [
     'duoAvailability',
@@ -56,7 +60,9 @@ export default {
   },
   computed: {
     movedAlertDescription() {
-      const path = this.isGroup ? 'Settings > GitLab Duo' : 'Admin Area > GitLab Duo';
+      const path = this.isGroup
+        ? this.$options.i18n.groupSettingsPath
+        : this.$options.i18n.globalSettingsPath;
       return `${this.$options.i18n.movedAlertDescriptionText}%{linkStart}${path}%{linkEnd}.`;
     },
   },
