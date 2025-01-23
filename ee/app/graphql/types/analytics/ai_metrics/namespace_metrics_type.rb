@@ -7,6 +7,7 @@ module Types
       # rubocop: disable GraphQL/ExtractType -- no value for now
       class NamespaceMetricsType < BaseObject
         graphql_name 'AiMetrics'
+        description "Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise only."
 
         field :code_contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors.',
