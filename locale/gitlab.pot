@@ -36320,9 +36320,6 @@ msgstr ""
 msgid "MlModelRegistry|No logged parameters"
 msgstr ""
 
-msgid "MlModelRegistry|No registered versions"
-msgstr ""
-
 msgid "MlModelRegistry|No runs associated with this model"
 msgstr ""
 
@@ -36418,11 +36415,6 @@ msgstr ""
 
 msgid "MlModelRegistry|folder name"
 msgstr ""
-
-msgid "MlModelRegistry|· %d version"
-msgid_plural "MlModelRegistry|· %d versions"
-msgstr[0] ""
-msgstr[1] ""
 
 msgid "Mock an external CI integration."
 msgstr ""
