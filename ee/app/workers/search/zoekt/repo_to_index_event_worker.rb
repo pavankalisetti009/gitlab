@@ -17,6 +17,19 @@ module Search
         return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
         Repository.pending.limit(BATCH_SIZE).create_bulk_tasks
+
+        reemit_event
+      end
+
+      private
+
+      def reemit_event
+        return if Feature.disabled?(:zoekt_reemit_events, Feature.current_request)
+        return unless Repository.pending.exists?
+
+        Gitlab::EventStore.publish(
+          Search::Zoekt::RepoToIndexEvent.new(data: {})
+        )
       end
     end
   end

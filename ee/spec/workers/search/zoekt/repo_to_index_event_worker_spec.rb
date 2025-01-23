@@ -25,13 +25,54 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
         allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return true
       end
 
-      it 'creates indexing tasks for Search::Zoekt::Repository' do
-        batch_size = 2
-        create_list(:zoekt_repository, batch_size + 1)
-        stub_const("Search::Zoekt::RepoToIndexEventWorker::BATCH_SIZE", batch_size)
-        expect do
-          consume_event(subscriber: described_class, event: event)
-        end.to change { Search::Zoekt::Task.count }.from(0).to(batch_size)
+      context 'with repositories within batch size' do
+        it 'creates indexing tasks for Search::Zoekt::Repository without re-emitting event' do
+          batch_size = 2
+          create_list(:zoekt_repository, batch_size, state: :pending)
+          stub_const("#{described_class}::BATCH_SIZE", batch_size)
+
+          expect(Gitlab::EventStore).not_to receive(:publish)
+
+          expect do
+            consume_event(subscriber: described_class, event: event)
+          end.to change { Search::Zoekt::Task.count }.from(0).to(batch_size)
+        end
+      end
+
+      context 'with more repositories than batch size' do
+        before do
+          stub_const("#{described_class}::BATCH_SIZE", 2)
+          create_list(:zoekt_repository, 5, state: :pending)
+        end
+
+        context 'when zoekt_reemit_events feature flag is enabled' do
+          it 'processes batch size and schedules another event' do
+            expect(Gitlab::EventStore).to receive(:publish).with(
+              an_object_having_attributes(
+                class: Search::Zoekt::RepoToIndexEvent,
+                data: {}
+              )
+            )
+
+            expect do
+              consume_event(subscriber: described_class, event: event)
+            end.to change { Search::Zoekt::Task.count }.by(2)
+          end
+        end
+
+        context 'when zoekt_reemit_events feature flag is disabled' do
+          before do
+            stub_feature_flags(zoekt_reemit_events: false)
+          end
+
+          it 'processes batch size without scheduling another event' do
+            expect(Gitlab::EventStore).not_to receive(:publish)
+
+            expect do
+              consume_event(subscriber: described_class, event: event)
+            end.to change { Search::Zoekt::Task.count }.by(2)
+          end
+        end
       end
     end
   end
