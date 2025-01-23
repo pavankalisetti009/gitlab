@@ -4,6 +4,7 @@ module Issuables
   class CustomField < ApplicationRecord
     include Gitlab::SQL::Pattern
 
+    MAX_FIELDS = 100
     MAX_ACTIVE_FIELDS = 50
     MAX_ACTIVE_FIELDS_PER_TYPE = 10
     MAX_SELECT_OPTIONS = 50
@@ -28,6 +29,7 @@ module Issuables
     }
 
     validate :namespace_is_root_group
+    validate :number_of_fields_per_namespace
     validate :number_of_active_fields_per_namespace
     validate :number_of_active_fields_per_namespace_per_type
     validate :selectable_field_type_with_select_options
@@ -90,9 +92,19 @@ module Issuables
       errors.add(:namespace, _('must be a root group.'))
     end
 
+    def number_of_fields_per_namespace
+      return if namespace.nil?
+      return unless self.class.of_namespace(namespace).id_not_in(id).count >= MAX_FIELDS
+
+      errors.add(
+        :namespace,
+        format(_('can only have a maximum of %{limit} custom fields.'), limit: MAX_FIELDS)
+      )
+    end
+
     def number_of_active_fields_per_namespace
       return if namespace.nil? || !active?
-      return unless self.class.active.of_namespace(namespace).where.not(id: id).count >= MAX_ACTIVE_FIELDS
+      return unless self.class.active.of_namespace(namespace).id_not_in(id).count >= MAX_ACTIVE_FIELDS
 
       errors.add(
         :namespace,
