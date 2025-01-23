@@ -64,6 +64,12 @@ module EE
         class_name: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping',
         foreign_key: 'namespace_id',
         inverse_of: :namespace
+      has_many :hosted_runner_monthly_usages,
+        class_name: 'Ci::Minutes::GitlabHostedRunnerMonthlyUsage',
+        inverse_of: :root_namespace
+      has_many :instance_runner_monthly_usages,
+        class_name: 'Ci::Minutes::InstanceRunnerMonthlyUsage',
+        inverse_of: :root_namespace
 
       scope :include_gitlab_subscription, -> { includes(:gitlab_subscription) }
       scope :include_gitlab_subscription_with_hosted_plan, -> { includes(gitlab_subscription: :hosted_plan) }
