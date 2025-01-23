@@ -13,12 +13,18 @@ module API
 
     resource :service_accounts do
       desc 'Create a service account user. Available only for instance admins.' do
-        success Entities::UserSafe
+        success Entities::ServiceAccount
+        failure [
+          { code: 400, message: '400 Bad request' },
+          { code: 401, message: '401 Unauthorized' },
+          { code: 403, message: '403 Forbidden' }
+        ]
       end
 
       params do
         optional :name, type: String, desc: 'Name of the user'
         optional :username, type: String, desc: 'Username of the user'
+        optional :email, type: String, desc: 'Custom email address for the user'
       end
 
       post feature_category: :user_management do
@@ -27,7 +33,7 @@ module API
         ).execute
 
         if response.status == :success
-          present response.payload[:user], with: ::API::Entities::UserSafe, current_user: current_user
+          present response.payload[:user], with: Entities::ServiceAccount, current_user: current_user
         elsif response.reason == :forbidden
           forbidden!(response.message)
         else
@@ -37,7 +43,7 @@ module API
 
       desc 'Get list of service account users. Available only for instance admins' do
         detail 'Get list of service account users'
-        success Entities::UserSafe
+        success Entities::ServiceAccount
         failure [
           { code: 400, message: '400 Bad request' },
           { code: 401, message: '401 Unauthorized' },
@@ -60,7 +66,7 @@ module API
 
         users = users.reorder(params[:order_by] => params[:sort])
 
-        present paginate_with_strategies(users), with: Entities::UserSafe
+        present paginate_with_strategies(users), with: Entities::ServiceAccount
       end
       # rubocop: enable CodeReuse/ActiveRecord
     end

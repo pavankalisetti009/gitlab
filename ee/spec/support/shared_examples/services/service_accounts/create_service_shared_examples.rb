@@ -24,10 +24,13 @@ RSpec.shared_examples 'service account creation with customized params' do
 
   let_it_be(:organization) { create(:organization) }
   let_it_be(:username_prefix) { "service_account" }
+  let_it_be(:email) { "service_account@example.com" }
+
   let(:params) do
     {
       name: 'John Doe',
       username: 'test',
+      email: email,
       organization_id: organization.id,
       composite_identity_enforced: true
     }
@@ -49,6 +52,7 @@ RSpec.shared_examples 'service account creation with customized params' do
 
     expect(user.username).to eq(params[:username])
     expect(user.name).to eq(params[:name])
+    expect(user.email).to eq(params[:email])
   end
 
   context 'when username is not supplied' do
@@ -103,6 +107,25 @@ RSpec.shared_examples 'service account creation with customized params' do
 
       expect(result.status).to eq(:error)
       expect(result.message).to eq('Username has already been taken')
+    end
+  end
+
+  context 'when email is not supplied' do
+    let_it_be(:params) do
+      {
+        name: 'John Doe',
+        organization_id: organization.id
+      }
+    end
+
+    it 'sets auto generated email' do
+      result = service.execute
+      user = result.payload[:user]
+
+      expect(result.status).to eq(:success)
+      expect(user.username).to start_with(username_prefix)
+      expect(user.name).to eq(params[:name])
+      expect(user.email).to start_with('service_account')
     end
   end
 end
