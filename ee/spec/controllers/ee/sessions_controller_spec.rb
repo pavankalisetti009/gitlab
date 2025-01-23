@@ -87,6 +87,40 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
 
         get(:new, params: { user: { login: 'foo@bar.com' } })
       end
+
+      it 'creates audit event with unknown login when login param is nil' do
+        expect(::Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with('unknown').and_call_original
+
+        get(:new, params: { user: { login: nil } })
+      end
+
+      it 'creates audit event with unknown login when login param is empty' do
+        expect(::Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with('unknown').and_call_original
+
+        get(:new, params: { user: { login: '' } })
+      end
+
+      it 'creates audit event with login when user exists' do
+        expect(::Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with('test@example.com').and_call_original
+
+        get(:new, params: { user: { login: 'test@example.com' } })
+      end
+
+      context 'when 2FA login fails' do
+        let(:user) { create(:user, :two_factor) }
+
+        before do
+          # We create an initial request to authenticate the user, creating a session, to test the 2FA failure
+          post(:create, params: { user: { login: user.username, password: user.password } })
+          session[:otp_user_id] = user.id
+        end
+
+        it 'creates failed authentication audit event for invalid OTP' do
+          expect(::Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with(user).and_call_original
+
+          get(:new, params: { user: { login: user.login, otp_attempt: 'invalid' } })
+        end
+      end
     end
   end
 
