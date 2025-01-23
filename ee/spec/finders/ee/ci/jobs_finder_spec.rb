@@ -132,5 +132,25 @@ RSpec.describe Ci::JobsFinder, '#execute', feature_category: :continuous_integra
         end
       end
     end
+
+    context 'when current user is not an admin' do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:pending_job) { create(:ci_build, :pending) }
+      let_it_be(:running_job) { create(:ci_build, :running) }
+      let_it_be(:successful_job) { create(:ci_build, :success) }
+
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      it { is_expected.to be_empty }
+
+      context 'with admin custom role with read_admin_cicd enabled' do
+        let_it_be(:role) { create(:member_role, :admin, :read_admin_cicd) }
+        let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: current_user) }
+
+        it { is_expected.to match_array([pending_job, running_job, successful_job]) }
+      end
+    end
   end
 end
