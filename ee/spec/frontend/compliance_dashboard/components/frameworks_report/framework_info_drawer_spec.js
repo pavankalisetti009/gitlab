@@ -10,7 +10,6 @@ import {
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
-import { cacheConfig } from 'ee/compliance_dashboard/graphql/client';
 import projectsInNamespaceWithFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/graphql/projects_in_namespace_with_framework.query.graphql';
 import { shallowMountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { createFramework, mockPageInfo } from 'ee_jest/compliance_dashboard/mock_data';
@@ -24,11 +23,9 @@ describe('FrameworkInfoDrawer component', () => {
   let wrapper;
 
   function createMockApolloProvider({ projectsInNamespaceResolverMock }) {
-    return createMockApollo(
-      [[projectsInNamespaceWithFrameworkQuery, projectsInNamespaceResolverMock]],
-      {},
-      { cacheConfig },
-    );
+    return createMockApollo([
+      [projectsInNamespaceWithFrameworkQuery, projectsInNamespaceResolverMock],
+    ]);
   }
 
   const $toast = {
@@ -221,11 +218,22 @@ describe('FrameworkInfoDrawer component', () => {
         });
 
         describe('load more button', () => {
+          const secondPageResponse = makeProjectsListResponse();
+          secondPageResponse.namespace.projects.nodes =
+            secondPageResponse.namespace.projects.nodes.map((node) => ({
+              ...node,
+              id: `gid://gitlab/Project/${node.id}-page-2`,
+            }));
+
+          beforeEach(() => {});
           it('renders when we have next page in list', () => {
             expect(findLoadMoreButton().exists()).toBe(true);
           });
 
           it('clicking button loads next page', async () => {
+            projectsInNamespaceResolverMock.mockResolvedValueOnce({
+              data: secondPageResponse,
+            });
             await findLoadMoreButton().trigger('click');
             await waitForPromises();
             expect(projectsInNamespaceResolverMock).toHaveBeenCalledWith(
@@ -236,7 +244,6 @@ describe('FrameworkInfoDrawer component', () => {
           });
 
           it('does not render when we do not have next page', async () => {
-            const secondPageResponse = makeProjectsListResponse();
             secondPageResponse.namespace.projects.pageInfo.hasNextPage = false;
 
             createComponent({
