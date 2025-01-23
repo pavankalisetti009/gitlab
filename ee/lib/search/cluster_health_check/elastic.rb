@@ -26,9 +26,11 @@ module Search
 
         return false unless metrics
 
-        log_utilization(metrics)
+        healthy = !metrics[:cluster_status_red]
 
-        !metrics[:cluster_status_red]
+        log_utilization(metrics) unless healthy
+
+        healthy
       end
 
       def log_utilization(metrics)
