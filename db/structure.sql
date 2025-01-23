@@ -26497,6 +26497,9 @@ ALTER TABLE security_scans
 ALTER TABLE vulnerability_scanners
     ADD CONSTRAINT check_37608c9db5 CHECK ((char_length(vendor) <= 255)) NOT VALID;
 
+ALTER TABLE vulnerability_finding_links
+    ADD CONSTRAINT check_3dd0293472 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE vulnerability_findings_remediations
     ADD CONSTRAINT check_65e61a488a CHECK ((project_id IS NOT NULL)) NOT VALID;
 
