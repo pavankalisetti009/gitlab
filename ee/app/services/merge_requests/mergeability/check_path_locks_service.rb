@@ -45,12 +45,16 @@ module MergeRequests
       delegate :project, :changed_paths, :author_id, to: :merge_request
 
       def contains_locked_paths?
-        project.path_locks.for_paths(changed_paths.map(&:path)).not_for_users(author_id).exists?
+        return false unless project.path_locks.exists?
+
+        paths = changed_paths.map(&:path).uniq
+        project.path_locks.for_paths(paths).not_for_users(author_id).exists?
       end
 
       def check_inactive?
-        !project.licensed_feature_available?(:file_locks) ||
-          merge_request.target_branch != project.default_branch
+        return true unless project.licensed_feature_available?(:file_locks)
+
+        merge_request.target_branch != project.default_branch
       end
       strong_memoize_attr :check_inactive?
     end
