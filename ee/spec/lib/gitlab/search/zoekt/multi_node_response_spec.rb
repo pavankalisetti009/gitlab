@@ -70,12 +70,6 @@ RSpec.describe ::Gitlab::Search::Zoekt::MultiNodeResponse, feature_category: :gl
     end
   end
 
-  describe '#ngram_match_count' do
-    it 'returns the total number of matches' do
-      expect(zoekt_response.ngram_match_count).to eq(50)
-    end
-  end
-
   describe '#each_file' do
     it 'merges results from all nodes' do
       result = []

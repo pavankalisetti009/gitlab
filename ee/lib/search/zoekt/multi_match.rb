@@ -29,33 +29,39 @@ module Search
       end
 
       def zoekt_extract_result_pages_multi_match(response, per_page, page_limit)
-        i = 0
+        page = 0
         results = {}
         response.each_file do |file|
-          current_page = i / per_page
-          break false if current_page == page_limit
+          current_page = page / per_page
+          break if current_page == page_limit
 
           results[current_page] ||= []
           chunks, match_count = chunks_for_each_file_with_limited_match_count(
             file[:LineMatches],
             file[:FileName],
-            file[:Language]&.downcase)
+            file[:Language]&.downcase
+          )
 
-          results[current_page] << {
-            path: file[:FileName],
-            project_id: file[:RepositoryID].to_i,
-            chunks: chunks,
-            match_count_total: file[:LineMatches].inject(0) { |sum, line| sum + line[:LineFragments].count },
-            match_count: match_count,
-            language: file[:Language]
-          }
-          i += 1
+          project_id = file[:RepositoryID].to_i
+          results[current_page] << build_result(file, chunks, match_count, project_id)
+          page += 1
         end
 
         results
       end
 
       private
+
+      def build_result(file, chunks, match_count, project_id)
+        {
+          path: file[:FileName],
+          project_id: project_id,
+          chunks: chunks,
+          match_count_total: file[:LineMatches].inject(0) { |sum, line| sum + line[:LineFragments].count },
+          match_count: match_count,
+          language: file[:Language]
+        }
+      end
 
       def chunks_for_each_file_with_limited_match_count(linematches, file_name, language)
         chunks = []
