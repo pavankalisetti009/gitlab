@@ -3647,6 +3647,9 @@ msgstr ""
 msgid "Adjust how frequently the GitLab UI polls for updates."
 msgstr ""
 
+msgid "Admin Area &gt; GitLab Duo"
+msgstr ""
+
 msgid "Admin Mode"
 msgstr ""
 
@@ -53526,6 +53529,9 @@ msgid "Setting enforced"
 msgstr ""
 
 msgid "Settings"
+msgstr ""
+
+msgid "Settings &gt; GitLab Duo"
 msgstr ""
 
 msgid "Settings for the License Compliance feature"
