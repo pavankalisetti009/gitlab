@@ -19,61 +19,7 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
   describe '#eligible_for_widget?' do
     subject(:eligible_for_widget) { presenter.eligible_for_widget? }
 
-    context 'when trial is active' do
-      before do
-        build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group,
-          trial_starts_on: Time.current, trial_ends_on: trial_duration.days.from_now)
-      end
-
-      it { is_expected.to be(true) }
-    end
-
-    context 'when trial is active and group is paid' do
-      before do
-        build(:gitlab_subscription, :ultimate_trial_paid_customer, namespace: group,
-          trial_starts_on: Time.current, trial_ends_on: trial_duration.days.from_now)
-      end
-
-      it { is_expected.to be(true) }
-    end
-
-    context 'when trial has just ended and group is unpaid' do
-      before do
-        build(:gitlab_subscription, :free, :expired_trial, namespace: group,
-          trial_starts_on: (trial_duration + 5).days.ago,
-          trial_ends_on: 5.days.ago)
-      end
-
-      it { is_expected.to be(true) }
-
-      context 'when widget is dismissed' do
-        let(:user) do
-          build(:user, group_callouts: [
-            build(:group_callout, group: group, feature_name: described_class::EXPIRED_TRIAL_WIDGET)
-          ])
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
-
-    context 'when trial ended more than 10 days ago' do
-      before do
-        build(:gitlab_subscription, :free, :expired_trial, namespace: group,
-          trial_starts_on: (trial_duration + 11).days.ago,
-          trial_ends_on: 11.days.ago)
-      end
-
-      it { is_expected.to be(false) }
-    end
-
-    context 'when group is on a paid plan' do
-      before do
-        build(:gitlab_subscription, :premium, namespace: group)
-      end
-
-      it { is_expected.to be(false) }
-    end
+    it { is_expected.to be(false) }
 
     context 'when duo enterprise is available' do
       before do
@@ -82,12 +28,28 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
       end
 
       context 'when trial is active' do
+        before do
+          build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when trial is active and group is paid' do
+        before do
+          build(:gitlab_subscription, :ultimate_trial_paid_customer, namespace: group)
+        end
+
         it { is_expected.to be(true) }
       end
 
       context 'when trial has just ended and group is unpaid' do
         let(:add_on_purchase) do
           build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: group)
+        end
+
+        before do
+          build(:gitlab_subscription, :free, :expired_trial, namespace: group)
         end
 
         it { is_expected.to be(true) }
@@ -101,15 +63,15 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
 
           it { is_expected.to be(false) }
         end
-      end
 
-      context 'when trial ended more than 10 days ago' do
-        let(:add_on_purchase) do
-          build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: group,
-            started_at: (trial_duration + 11).days.ago, expires_on: 11.days.ago)
+        context 'when trial ended more than 10 days ago' do
+          let(:add_on_purchase) do
+            build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: group,
+              started_at: (trial_duration + 11).days.ago, expires_on: 11.days.ago)
+          end
+
+          it { is_expected.to be(false) }
         end
-
-        it { is_expected.to be(false) }
       end
     end
   end
