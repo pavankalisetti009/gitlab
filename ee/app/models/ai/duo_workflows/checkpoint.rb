@@ -11,6 +11,14 @@ module Ai
       validates :thread_ts, presence: true
       validates :checkpoint, presence: true
       validates :metadata, presence: true
+
+      after_save :touch_workflow
+
+      private
+
+      def touch_workflow
+        workflow.touch
+      end
     end
   end
 end
