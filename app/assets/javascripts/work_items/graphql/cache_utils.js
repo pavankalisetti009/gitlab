@@ -209,6 +209,7 @@ export const addHierarchyChildren = ({ cache, id, workItem, childrenIds }) => {
   cache.writeQuery({
     ...queryArgs,
     data: produce(sourceData, (draftState) => {
+      const widget = findHierarchyWidgets(draftState?.workItem.widgets);
       const newChildren = findHierarchyWidgetChildren(workItem);
 
       const existingChildren = findHierarchyWidgetChildren(draftState?.workItem);
@@ -224,6 +225,8 @@ export const addHierarchyChildren = ({ cache, id, workItem, childrenIds }) => {
           existingChildren.unshift(item);
         }
       }
+      widget.hasChildren = childrenToAdd?.length > 0;
+      widget.count += childrenToAdd.length;
     }),
   });
 };
