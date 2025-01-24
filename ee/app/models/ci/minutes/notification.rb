@@ -53,7 +53,7 @@ module Ci
       end
 
       def percentage
-        context.percent_total_minutes_remaining.to_i
+        context.percent_total_minutes_remaining
       end
 
       def eligible_for_notifications?
@@ -141,7 +141,7 @@ module Ci
           namespace_name: context.namespace_name,
           current_balance: current_balance,
           total: total,
-          percentage: percentage
+          percentage: percentage.round
         }
       end
     end

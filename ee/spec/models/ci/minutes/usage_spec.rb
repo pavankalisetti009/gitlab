@@ -120,12 +120,13 @@ RSpec.describe Ci::Minutes::Usage, feature_category: :hosted_runners do
     subject { usage.percent_total_minutes_remaining }
 
     where(:total_minutes_used, :monthly_minutes, :purchased_minutes, :result) do
-      0   | 0   | 0 | 0
-      10  | 0   | 0 | 0
-      0   | 70  | 30 | 100
-      60  | 70  | 30 | 40
-      100 | 70  | 30 | 0
-      120 | 70  | 30 | 0
+      0   | 0    | 0  | 0
+      10  | 0    | 0  | 0
+      0   | 70   | 30 | 100
+      60  | 70   | 30 | 40
+      100 | 70   | 30 | 0
+      120 | 70   | 30 | 0
+      995 | 1000 | 0  | 0.5
     end
 
     with_them do

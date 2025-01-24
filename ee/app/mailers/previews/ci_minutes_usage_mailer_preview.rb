@@ -6,6 +6,6 @@ class CiMinutesUsageMailerPreview < ActionMailer::Preview
   end
 
   def limit_warning
-    ::CiMinutesUsageMailer.notify_limit(Group.last.root_ancestor, %w[bob@example.com], 8000, 10000, 20, 25)
+    ::CiMinutesUsageMailer.notify_limit(Group.last.root_ancestor, %w[bob@example.com], 2025, 10000, 20.25, 25)
   end
 end

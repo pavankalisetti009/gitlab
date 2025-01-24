@@ -27,7 +27,7 @@ module Ci
       def percent_total_minutes_remaining
         return 0 unless quota_enabled?
 
-        100 * total_minutes_remaining.to_i / quota.total
+        100 * total_minutes_remaining.to_f / quota.total.to_f
       end
 
       def current_balance
