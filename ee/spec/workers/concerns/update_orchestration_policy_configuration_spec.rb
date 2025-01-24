@@ -163,7 +163,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         it 'deletes existing rule schedules', :freeze_time do
           execute
 
-          Security::OrchestrationPolicyRuleSchedule.all.each do |rule_schedule|
+          Security::OrchestrationPolicyRuleSchedule.all.find_each do |rule_schedule|
             expect(rule_schedule.created_at).to eq(Time.current)
           end
         end

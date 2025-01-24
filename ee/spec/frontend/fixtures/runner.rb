@@ -116,7 +116,7 @@ RSpec.describe 'Runner EE (JavaScript fixtures)', feature_category: :fleet_visib
       before do
         stub_licensed_features(runner_performance_insights: true)
 
-        Ci::Build.all.each { |build| ::Ci::InstanceRunnerFailedJobs.track(build) }
+        Ci::Build.all.find_each { |build| ::Ci::InstanceRunnerFailedJobs.track(build) }
       end
 
       it "#{fixtures_path}#{query_name}.json", :aggregate_failures do
