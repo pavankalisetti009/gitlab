@@ -70,7 +70,6 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
       let(:elasticsearch) { true }
       let(:opensearch) { false }
       let(:elastic_migration_done) { true }
-      let(:opensearch_migration_done) { false }
 
       before do
         allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
@@ -81,9 +80,6 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
         allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
           .with(:add_embedding_to_work_items)
           .and_return(elastic_migration_done)
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
-          .with(:add_embedding_to_work_items_opensearch)
-          .and_return(opensearch_migration_done)
       end
 
       context 'for project level work item' do
@@ -154,12 +150,11 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
         describe 'vector support' do
           using RSpec::Parameterized::TableSyntax
 
-          where(:elasticsearch, :elastic_migration_done, :opensearch, :opensearch_migration_done, :vectors_supported) do
-            true  | true  | false | false | true
-            true  | false | false | false | false
-            false | false | false | false | false
-            false | false | true  | true  | true
-            false | false | true  | false | false
+          where(:elasticsearch, :elastic_migration_done, :opensearch, :vectors_supported) do
+            true  | true  | false | true
+            true  | false | false | false
+            false | false | false | false
+            false | false | true  | true
           end
 
           with_them do
@@ -282,7 +277,6 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
       let(:elasticsearch) { true }
       let(:opensearch) { false }
       let(:elastic_migration_done) { true }
-      let(:opensearch_migration_done) { false }
 
       before do
         allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
@@ -293,9 +287,6 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
         allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
           .with(:add_embedding_to_work_items)
           .and_return(elastic_migration_done)
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
-          .with(:add_embedding_to_work_items_opensearch)
-          .and_return(opensearch_migration_done)
       end
 
       context 'for project level work item' do
@@ -358,12 +349,11 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
         describe 'vector support' do
           using RSpec::Parameterized::TableSyntax
 
-          where(:elasticsearch, :elastic_migration_done, :opensearch, :opensearch_migration_done, :vectors_supported) do
-            true  | true  | false | false | true
-            true  | false | false | false | false
-            false | false | false | false | false
-            false | false | true  | true  | true
-            false | false | true  | false | false
+          where(:elasticsearch, :elastic_migration_done, :opensearch, :vectors_supported) do
+            true  | true  | false | true
+            true  | false | false | false
+            false | false | false | false
+            false | false | true  | true
           end
 
           with_them do
