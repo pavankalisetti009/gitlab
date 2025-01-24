@@ -85,6 +85,22 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
               'dependency_scanning')
           end
 
+          context 'with cyclonedx from a container scanning job' do
+            let_it_be(:cyclonedx_cs_build) { create(:ee_ci_build, pipeline: pipeline) }
+            let_it_be(:cyclonedx_cs_artifact) do
+              create(:ee_ci_job_artifact, :cyclonedx_container_scanning, job: cyclonedx_cs_build)
+            end
+
+            it 'does not execute container scanning cyclonedx artifact' do
+              store_group_of_artifacts
+
+              expect(Security::StoreGroupedScansService).not_to have_received(:execute)
+                .with([cyclonedx_cs_artifact], pipeline, 'container_scanning')
+              expect(Security::StoreGroupedScansService).to have_received(:execute)
+                .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
+            end
+          end
+
           context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
             before do
               stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
