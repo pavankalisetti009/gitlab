@@ -51,7 +51,7 @@ module Epics
                           when Epic
                             [::WorkItems::LegacyEpics::EpicLinks::CreateService, moving_object]
                           when EpicIssue
-                            [EpicIssues::CreateService, moving_object.issue]
+                            [::WorkItems::LegacyEpics::EpicIssues::CreateService, moving_object.issue]
                           end
 
       return unless service.present?

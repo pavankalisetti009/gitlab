@@ -151,6 +151,26 @@ RSpec.describe API::EpicIssues, feature_category: :portfolio_management do
           let(:url) { "/groups/#{group.path}/epics/#{confidential_epic.iid}/issues/#{confidential_issue.id}" }
           let(:request) { post api(url, user) }
         end
+      end
+
+      context 'when the request is correct' do
+        before do
+          # TODO: remove threshold after epic-work item sync
+          # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+          group.add_guest(user)
+        end
+
+        it 'returns 201 status and is successful' do
+          expect { post api(url, user) }.to change { EpicIssue.count }.by(1)
+
+          epic_issue = EpicIssue.last
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(response).to match_response_schema('public_api/v4/epic_issue_link', dir: 'ee')
+          expect(epic_issue.issue).to eq(issue)
+          expect(epic_issue.epic).to eq(epic)
+        end
 
         context 'when issue project is not under the epic group' do
           before do
@@ -161,34 +181,15 @@ RSpec.describe API::EpicIssues, feature_category: :portfolio_management do
             other_project.add_developer(user)
           end
 
-          it 'returns an error' do
-            post api(url, user)
+          it 'returns 201 status and is successful' do
+            expect { post api(url, user) }.to change { EpicIssue.count }.by(1)
 
-            expect(response).to have_gitlab_http_status(:not_found)
-            expect(json_response).to eq('message' => 'No matching issue found. Make sure that you are adding a valid issue URL.')
+            epic_issue = EpicIssue.last
+
+            expect(response).to have_gitlab_http_status(:created)
+            expect(epic_issue.issue).to eq(issue)
+            expect(epic_issue.epic).to eq(epic)
           end
-        end
-      end
-
-      context 'when the request is correct' do
-        before do
-          group.add_guest(user)
-          post api(url, user)
-        end
-
-        it 'returns 201 status' do
-          expect(response).to have_gitlab_http_status(:created)
-        end
-
-        it 'matches the response schema' do
-          expect(response).to match_response_schema('public_api/v4/epic_issue_link', dir: 'ee')
-        end
-
-        it 'assigns the issue to the epic' do
-          epic_issue = EpicIssue.last
-
-          expect(epic_issue.issue).to eq(issue)
-          expect(epic_issue.epic).to eq(epic)
         end
       end
     end

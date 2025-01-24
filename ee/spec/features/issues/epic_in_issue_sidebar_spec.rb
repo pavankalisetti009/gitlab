@@ -131,6 +131,10 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
 
   context 'when epics available' do
     before do
+      # TODO: remove threshold after epic-work item sync
+      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
+
       stub_licensed_features(epics: true)
 
       sign_in(user)

@@ -810,8 +810,9 @@ module EE
 
       # Special case to allow support bot assigning service desk
       # issues to epics in private groups using quick actions
-      rule { support_bot & has_project_with_service_desk_enabled }.policy do
+      rule { support_bot & epics_available & has_project_with_service_desk_enabled }.policy do
         enable :read_epic
+        enable :read_issue
         enable :read_epic_iid
       end
 

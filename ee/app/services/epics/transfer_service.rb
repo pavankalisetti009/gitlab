@@ -71,7 +71,7 @@ module Epics
     def create_epic_issue_link(issue, epic)
       link_params = { target_issuable: issue, skip_epic_dates_update: true }
 
-      EpicIssues::CreateService.new(epic, current_user, link_params).execute
+      ::WorkItems::LegacyEpics::EpicIssues::CreateService.new(epic, current_user, link_params).execute
     end
 
     def destroy_epic_issue_link(issue, epic)

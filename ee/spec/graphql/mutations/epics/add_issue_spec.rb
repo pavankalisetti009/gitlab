@@ -34,15 +34,15 @@ RSpec.describe Mutations::Epics::AddIssue, feature_category: :portfolio_manageme
 
       context 'when the epic has reached max child limit' do
         let(:expected_error) do
-          _('cannot be linked to the epic. This epic already has maximum number of child issues & epics.')
+          _('parent already has maximum number of children')
         end
 
         before do
-          stub_const("EE::Epic::MAX_CHILDREN_COUNT", 2)
+          stub_const("WorkItems::ParentLink::MAX_CHILDREN", 2)
         end
 
         it 'raises an error' do
-          create_list(:epic, 2, parent: epic, group: group)
+          create_list(:epic, 2, :with_work_item_parent, parent: epic, group: group)
 
           expect(subject[:errors][0]).to include(expected_error)
         end
@@ -57,6 +57,7 @@ RSpec.describe Mutations::Epics::AddIssue, feature_category: :portfolio_manageme
 
       it 'returns error if the issue is already assigned to the epic' do
         issue.update!(epic: epic)
+        create(:parent_link, work_item: WorkItem.find(issue.id), work_item_parent: epic.work_item)
 
         expect(subject[:errors]).to match_array(['Issue(s) already assigned'])
       end

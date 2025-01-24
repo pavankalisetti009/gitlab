@@ -186,6 +186,10 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
       let(:epic_widget) { find_by_testid('sidebar-epic') }
 
       before do
+        # TODO: remove threshold after epic-work item sync
+        # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+
         stub_licensed_features(epics: true)
         group.add_owner(user)
 

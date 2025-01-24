@@ -38,7 +38,7 @@ module Mutations
       private
 
       def create_epic_issue(epic, issue)
-        ::EpicIssues::CreateService.new(epic, current_user, { target_issuable: issue }).execute
+        ::WorkItems::LegacyEpics::EpicIssues::CreateService.new(epic, current_user, { target_issuable: issue }).execute
       end
 
       def find_epic_issue(epic, issue)

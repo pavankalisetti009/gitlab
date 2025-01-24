@@ -61,7 +61,7 @@ RSpec.describe Mutations::Issues::SetEpic do
           it 'returns an error with appropriate message' do
             group.add_reporter(current_user)
 
-            expect(subject[:errors].first).to include("Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again")
+            expect(subject[:errors].first).to include("cannot assign a non-confidential issue to a confidential parent. Make the issue confidential and try again.")
           end
         end
 
@@ -69,7 +69,7 @@ RSpec.describe Mutations::Issues::SetEpic do
           let(:mock_service) { double('service', execute: { status: :error, message: 'failed to assign epic' }) }
 
           it 'returns an error with appropriate message' do
-            expect(EpicIssues::CreateService).to receive(:new).and_return(mock_service)
+            expect(::WorkItems::LegacyEpics::EpicIssues::CreateService).to receive(:new).and_return(mock_service)
 
             expect(subject[:errors].first).to include('failed to assign epic')
           end

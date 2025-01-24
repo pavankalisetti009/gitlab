@@ -18,6 +18,12 @@ module EE
       end
 
       rule { is_epic & ~related_epics_available }.prevent :admin_work_item_link
+
+      # Special case to allow support bot assigning service desk
+      # work item parents in private groups using quick actions
+      rule { support_bot & service_desk_enabled }.policy do
+        enable :admin_parent_link
+      end
     end
   end
 end

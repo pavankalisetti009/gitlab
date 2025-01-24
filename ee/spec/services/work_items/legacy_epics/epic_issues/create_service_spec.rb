@@ -15,6 +15,12 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
     let_it_be(:issue3) { create(:issue, project: project) }
     let_it_be(:valid_reference) { issue.to_reference(full: true) }
     let_it_be(:epic, reload: true) { create(:epic, group: group) }
+    let(:expected_issue_system_note_action) { 'relate_to_parent' }
+    let(:expected_epic_system_note_action) { 'relate_to_child' }
+    let(:expected_issue_system_note) { "added #{epic.work_item.to_reference(issue.project)} as parent epic" }
+    let(:epic_system_note) { Note.where(noteable_id: epic.work_item.id, noteable_type: 'Issue').last }
+    let(:expected_noteable_type) { 'Issue' }
+    let(:expected_epic_system_note) { "added #{issue.to_reference(epic.group)} as child issue" }
 
     def assign_issue(references)
       params = { issuable_references: references }
@@ -57,24 +63,23 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
 
         it 'creates a note for epic correctly' do
           subject
-          note = Note.where(noteable_id: epic.work_item.id).last
 
-          expect(note.note).to eq("added #{issue.to_reference(epic.group)} as child issue")
-          expect(note.author).to eq(user)
-          expect(note.project).to be_nil
-          expect(note.noteable_type).to eq('Issue')
-          expect(note.system_note_metadata.action).to eq('relate_to_child')
+          expect(epic_system_note.note).to eq(expected_epic_system_note)
+          expect(epic_system_note.author).to eq(user)
+          expect(epic_system_note.project).to be_nil
+          expect(epic_system_note.noteable_type).to eq(expected_noteable_type)
+          expect(epic_system_note.system_note_metadata.action).to eq(expected_epic_system_note_action)
         end
 
         it 'creates a note for issue correctly' do
           subject
-          note = Note.find_by(noteable_id: issue.id)
+          note = Note.find_by(noteable_id: issue.id, noteable_type: 'Issue')
 
-          expect(note.note).to eq("added #{epic.work_item.to_reference(issue.project)} as parent epic")
+          expect(note.note).to eq(expected_issue_system_note)
           expect(note.author).to eq(user)
           expect(note.project).to eq(issue.project)
           expect(note.noteable_type).to eq('Issue')
-          expect(note.system_note_metadata.action).to eq('relate_to_parent')
+          expect(note.system_note_metadata.action).to eq(expected_issue_system_note_action)
         end
       end
     end
@@ -117,6 +122,31 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
 
       context 'when user has permissions to link the issue' do
         let_it_be(:user) { guest }
+
+        context 'when work_item_epics_ssot is disabled' do
+          before do
+            stub_feature_flags(work_item_epics_ssot: false)
+          end
+
+          it 'calls the legacy service' do
+            expect_next_instance_of(::EpicIssues::CreateService, epic, user,
+              issuable_references: references) do |service|
+              expect(service).to receive(:execute)
+            end.and_call_original
+
+            expect { execute }.to change { EpicIssue.count }.by(1)
+              .and change { WorkItems::ParentLink.count }.by(1)
+          end
+
+          it_behaves_like 'returns success' do
+            let(:expected_issue_system_note_action) { 'issue_added_to_epic' }
+            let(:expected_epic_system_note_action) { 'epic_issue_added' }
+            let(:expected_epic_system_note) { "added issue #{issue.to_reference(epic.group)}" }
+            let(:expected_issue_system_note) { "added to epic #{epic.to_reference(issue.project)}" }
+            let(:epic_system_note) { Note.find_by(noteable_id: epic.id, noteable_type: 'Epic') }
+            let(:expected_noteable_type) { 'Epic' }
+          end
+        end
 
         context 'when the reference list is empty' do
           let(:references) { [] }
@@ -361,7 +391,8 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
         it 'creates a note correctly for the new epic' do
           execute
 
-          note = Note.find_by(system: true, noteable_type: 'Issue', noteable_id: another_epic.work_item.id)
+          note = Note.find_by(system: true, noteable_type: expected_noteable_type,
+            noteable_id: another_epic.work_item.id)
 
           expect(note.note).to eq("added #{issue.to_reference(epic.group)} as child issue")
           expect(note.system_note_metadata.action).to eq('relate_to_child')
@@ -370,7 +401,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
         it 'creates a note correctly for the issue' do
           execute
 
-          note = Note.find_by(system: true, noteable_type: 'Issue', noteable_id: issue.id)
+          note = Note.find_by(system: true, noteable_type: expected_noteable_type, noteable_id: issue.id)
 
           expect(note.note).to eq("added #{another_epic.work_item.to_reference(issue.project)} as parent epic")
           expect(note.system_note_metadata.action).to eq('relate_to_parent')

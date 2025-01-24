@@ -7,6 +7,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
   let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:owner) { create(:user) }
+  let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be(:group) do
     create(:group, :public).tap do |g|
       g.add_guest(guest)
@@ -15,6 +16,8 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
       g.add_owner(owner)
     end
   end
+
+  let_it_be(:project) { create(:project, group: group) }
 
   def permissions(user, work_item)
     described_class.new(user, work_item)
@@ -57,6 +60,25 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
         :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
         :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
       )
+    end
+
+    context 'when user is support bot and service desk is enabled' do
+      before do
+        allow(::Gitlab::Email::IncomingEmail).to receive_messages(enabled?: true, supports_wildcard?: true)
+        allow_next_found_instance_of(Project) do |instance|
+          allow(instance).to receive(:service_desk_enabled?).and_return(true)
+        end
+      end
+
+      it 'allow support_bot to admin_parent_link and read work_item' do
+        expect(permissions(support_bot, work_item)).to be_allowed(:admin_parent_link, :read_work_item)
+      end
+    end
+
+    context 'when user is support bot and service desk is disabled' do
+      it 'does not allow support_bot to admin_parent_link' do
+        expect(permissions(support_bot, work_item)).to be_disallowed(:admin_parent_link)
+      end
     end
 
     context 'when related_epics feature is available' do

@@ -124,7 +124,7 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
               let(:mock_service) { double('service', execute: { status: :error, message: 'failed to assign epic' }) }
 
               it 'assigns the issue passed to the provided epic' do
-                expect(EpicIssues::CreateService).to receive(:new).and_return(mock_service)
+                expect(::WorkItems::LegacyEpics::EpicIssues::CreateService).to receive(:new).and_return(mock_service)
 
                 expect { service.execute }.to raise_error(EE::Issues::BaseService::EpicAssignmentError, 'failed to assign epic')
               end

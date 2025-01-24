@@ -33,6 +33,9 @@ RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
   shared_examples 'bulk edit epic' do |context|
     before do
       enable_bulk_update(context)
+      # TODO: remove threshold after epic-work item sync
+      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(250)
     end
 
     context 'epic', :js do

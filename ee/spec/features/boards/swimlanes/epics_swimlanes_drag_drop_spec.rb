@@ -50,6 +50,12 @@ RSpec.describe 'epics swimlanes', :js, feature_category: :team_planning do
     let_it_be(:epic_issue2) { create(:epic_issue, epic: epic2, issue: issue2) }
     let_it_be(:epic_issue3) { create(:epic_issue, epic: epic2, issue: issue3) }
 
+    before do
+      # TODO: remove threshold after epic-work item sync
+      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(150)
+    end
+
     it 'between epics' do
       wait_for_board_cards(1, 2)
       wait_for_board_cards_in_first_epic(0, 1)
@@ -67,10 +73,6 @@ RSpec.describe 'epics swimlanes', :js, feature_category: :team_planning do
     end
 
     it 'from epic to unassigned issues lane' do
-      # TODO: remove threshold after epic-work item sync
-      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(109)
-
       wait_for_board_cards(1, 2)
       wait_for_board_cards_in_second_epic(1, 1)
 

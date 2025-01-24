@@ -169,6 +169,35 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
     end
   end
 
+  describe '.find_or_initialize_from_parent_link' do
+    let_it_be(:work_item) { create(:work_item, :issue, project: project) }
+    let_it_be(:parent_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+    let_it_be(:parent_link) { create(:parent_link, work_item_parent: parent_work_item, work_item: work_item) }
+
+    subject(:epic_issue) { described_class.find_or_initialize_from_parent_link(parent_link) }
+
+    context 'when epic issue does not exist' do
+      it 'initializes a new epic issue with correct attributes', :aggregate_failures do
+        expect(epic_issue.issue_id).to eq(work_item.id)
+        expect(epic_issue.epic).to eq(parent_work_item.synced_epic)
+        expect(epic_issue.work_item_parent_link).to eq(parent_link)
+      end
+    end
+
+    context 'when epic issue already exists' do
+      let_it_be(:existing_epic_issue) do
+        create(:epic_issue, issue: Issue.find(work_item.id), epic: parent_work_item.synced_epic)
+      end
+
+      it 'finds the existing epic issue and updates its attributes', :aggregate_failures do
+        expect(epic_issue.id).to eq(existing_epic_issue.id)
+        expect(epic_issue.issue_id).to eq(work_item.id)
+        expect(epic_issue.epic).to eq(parent_work_item.synced_epic)
+        expect(epic_issue.work_item_parent_link).to eq(parent_link)
+      end
+    end
+  end
+
   describe '#update_cached_metadata' do
     it 'schedules cache update for epic when new issue is added' do
       expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic.id]).once

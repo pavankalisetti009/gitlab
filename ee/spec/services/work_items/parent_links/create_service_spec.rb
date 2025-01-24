@@ -16,6 +16,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
     let(:link_service_class) { nil }
     let(:params) { { issuable_references: [child_work_item], synced_work_item: synced_work_item_param } }
+    let(:legacy_model) { nil }
 
     subject(:create_link) { described_class.new(parent_work_item, user, params).execute }
 
@@ -39,9 +40,6 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
     shared_examples 'creates parent link only' do |system_notes_count: 2|
       it 'creates parent links' do
-        allow(::EpicIssues::CreateService).to receive(:new).and_call_original
-        expect(::EpicIssues::CreateService).not_to receive(:new)
-
         expect { create_link }.to change { WorkItems::ParentLink.count }.by(1)
                               .and change { Note.count }.by(system_notes_count)
                               .and not_change { EpicIssue.count }
@@ -67,13 +65,14 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     shared_examples 'link creation with failures' do
       context 'when creating legacy epic link fails' do
         before do
-          if link_service_class
-            allow_next_instance_of(link_service_class) do |instance|
-              allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
+          errors = ActiveModel::Errors.new(legacy_child).tap { |e| e.add(:base, 'Some error') }
+
+          if legacy_model
+            allow_next_instance_of(legacy_model) do |instance|
+              allow(instance).to receive_messages(save: false, errors: errors)
             end
           end
 
-          errors = ActiveModel::Errors.new(legacy_child).tap { |e| e.add(:base, 'Some error') }
           allow(legacy_child).to receive_messages(save: false, errors: errors)
         end
 
@@ -231,7 +230,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
           end
 
           it_behaves_like 'link creation with failures' do
-            let(:link_service_class) { ::EpicIssues::CreateService }
+            let(:legacy_model) { EpicIssue }
             let(:legacy_child) { child_issue }
             let(:relationship) { :epic }
           end

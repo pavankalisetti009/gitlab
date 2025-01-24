@@ -177,6 +177,10 @@ RSpec.describe 'Epic Issues', :js, feature_category: :portfolio_management do
       end
 
       it 'user can add new issues to the epic' do
+        # TODO: remove threshold after epic-work item sync
+        # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
+
         references = issue_to_add.to_reference(full: true)
 
         add_issues(references)
@@ -267,6 +271,10 @@ RSpec.describe 'Epic Issues', :js, feature_category: :portfolio_management do
     end
 
     it 'user can add new issues to the epic' do
+      # TODO: remove threshold after epic-work item sync
+      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
+
       references = issue_to_add.to_reference(full: true)
 
       add_issues(references)
