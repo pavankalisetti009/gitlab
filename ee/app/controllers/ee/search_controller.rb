@@ -64,7 +64,7 @@ module EE
       params.require(:search)
 
       # Cache the response on the frontend
-      cache_for = ::Gitlab.com? ? 5.minutes : 1.minute
+      cache_for = ::Gitlab::Saas.feature_available?(:advanced_search) ? 5.minutes : 1.minute
       expires_in cache_for
 
       if search_term_valid?
@@ -95,7 +95,7 @@ module EE
     end
 
     def track_search_paid?
-      if ::Gitlab.com?
+      if ::Gitlab::Saas.feature_available?(:advanced_search)
         search_service.use_elasticsearch?
       else
         License.feature_available?(:elastic_search)
