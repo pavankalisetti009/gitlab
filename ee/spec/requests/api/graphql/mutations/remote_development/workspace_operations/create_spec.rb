@@ -36,6 +36,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   end
 
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+  let(:devfile_path) { '.devfile.yaml' }
 
   let(:mutation_expected_varaiables) do
     [
@@ -58,8 +59,11 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
       cluster_agent_id: agent.to_global_id.to_s,
       project_id: workspace_project.to_global_id.to_s,
       project_ref: 'main',
-      devfile_path: '.devfile.yaml',
-      variables: mutation_expected_varaiables
+      devfile_path: devfile_path,
+      variables: [
+        { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
+        { key: 'VAR2', value: 'value 2', type: 'ENVIRONMENT' }
+      ]
     }
   end
 
@@ -130,16 +134,47 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     end
 
     context 'when workspace project and agent project ARE in the same root namespace' do
-      it 'creates the workspace' do
-        expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
-          stub_service_response
+      shared_examples 'successful create' do
+        it 'creates the workspace with expected args' do
+          expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
+            stub_service_response
+          end
+
+          post_graphql_mutation(mutation, current_user: user)
+
+          expect_graphql_errors_to_be_empty
+
+          expect(mutation_response.fetch('workspace')['name']).to eq(created_workspace['name'])
         end
+      end
 
-        post_graphql_mutation(mutation, current_user: user)
+      context 'when all required arguments are present' do
+        it_behaves_like 'successful create'
+      end
 
-        expect_graphql_errors_to_be_empty
+      context 'when devfile_path is nil' do
+        let(:devfile_path) { nil }
 
-        expect(mutation_response.fetch('workspace')['name']).to eq(created_workspace['name'])
+        it_behaves_like 'successful create'
+      end
+
+      context 'when devfile_path is not present' do
+        let(:devfile_path) { nil }
+        let(:mutation_args) { all_mutation_args.except(:devfile_path) }
+
+        it_behaves_like 'successful create'
+      end
+
+      context 'when project_ref is not present and devfile_ref is present' do
+        let(:mutation_args) { all_mutation_args.except(:project_ref).merge(devfile_ref: 'main') }
+
+        it_behaves_like 'successful create'
+      end
+
+      context 'when project_ref and devfile_ref are both present' do
+        let(:mutation_args) { all_mutation_args.merge(devfile_ref: 'main1') }
+
+        it_behaves_like 'successful create'
       end
 
       context "when the agent project no longer exists under the namespace it is mapped to" do

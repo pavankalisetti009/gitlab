@@ -59,6 +59,7 @@ module Mutations
         argument :devfile_path,
           GraphQL::Types::String,
           required: false,
+          default_value: nil,
           description: 'Project path containing the devfile used to configure the workspace. ' \
             'If not provided, the GitLab default devfile is used.'
 
