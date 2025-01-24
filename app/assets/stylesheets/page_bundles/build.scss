@@ -221,7 +221,7 @@
   align-items: flex-start;
 
   &:hover {
-    background-color: rgba($white, 0.2);
+    background-color: var(--gl-color-alpha-light-8);
   }
 
   .arrow {

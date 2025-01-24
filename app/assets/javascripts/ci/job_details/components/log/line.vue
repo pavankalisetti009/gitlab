@@ -69,7 +69,7 @@ export default {
         class: [
           'js-log-line',
           'job-log-line',
-          { 'gl-bg-gray-700': isHighlighted || applyHashHighlight },
+          { 'gl-bg-alpha-light-8': isHighlighted || applyHashHighlight },
         ],
       },
       [

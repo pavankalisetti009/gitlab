@@ -70,7 +70,7 @@ export default {
 <template>
   <div
     class="js-log-line job-log-line-header job-log-line"
-    :class="{ 'gl-bg-gray-700': isHighlighted || applyHashHighlight }"
+    :class="{ 'gl-bg-alpha-light-8': isHighlighted || applyHashHighlight }"
     role="button"
     @click="handleOnClick"
   >
