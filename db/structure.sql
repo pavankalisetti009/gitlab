@@ -26563,6 +26563,9 @@ ALTER TABLE p_ci_pipeline_variables
 ALTER TABLE terraform_state_versions
     ADD CONSTRAINT check_84142902f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE approval_merge_request_rules
+    ADD CONSTRAINT check_90caab37e0 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sbom_occurrences_vulnerabilities
     ADD CONSTRAINT check_a02e48df9c CHECK ((project_id IS NOT NULL)) NOT VALID;
 
