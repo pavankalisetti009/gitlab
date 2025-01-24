@@ -36,7 +36,7 @@ export default {
 <template>
   <gl-card class="gl-h-full gl-pt-0" header-class="gl-border-0 gl-pb-0" body-class="gl-pt-0">
     <template #header>
-      <img :src="svg" />
+      <img :src="svg" role="presentation" />
       <h2 class="gl-mb-3 gl-text-lg">{{ $options.i18n[section].title }}</h2>
       <p class="gl-mb-6 gl-text-subtle">{{ $options.i18n[section].description }}</p>
     </template>
