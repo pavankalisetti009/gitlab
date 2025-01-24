@@ -1530,6 +1530,7 @@ lib/gitlab/checks/**
 /app/workers/stuck_ci_jobs_worker.rb
 /app/workers/update_external_pull_requests_worker.rb
 /lib/api/commit_statuses.rb
+/app/assets/javascripts/editor/schema/ci.json
 /ee/app/finders/merge_trains_finder.rb
 /ee/app/services/auto_merge/add_to_merge_train_when_pipeline_succeeds_service.rb
 /ee/app/services/auto_merge/merge_train_service.rb
