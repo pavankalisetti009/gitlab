@@ -21,6 +21,7 @@ export default {
     {
       key: 'label',
       label: '',
+      isRowHeader: true,
       tdClass: `${DEFAULT_TD_CLASSES} gl-w-13`,
     },
     {

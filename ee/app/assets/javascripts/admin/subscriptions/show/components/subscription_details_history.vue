@@ -6,6 +6,13 @@ import { detailsLabels, subscriptionTable } from '../constants';
 import { getLicenseTypeLabel } from '../utils';
 
 const tdAttr = (_, key) => ({ 'data-testid': `subscription-cell-${kebabCase(key)}` });
+// eslint-disable-next-line max-params
+const thAttr = (_, key, _item, type) => {
+  if (type !== 'head') {
+    return tdAttr(_, key);
+  }
+  return {};
+};
 const tdClassHighlight = '!gl-bg-blue-50';
 
 export default {
@@ -40,7 +47,8 @@ export default {
         {
           key: 'name',
           label: detailsLabels.name,
-          tdAttr,
+          thAttr,
+          isRowHeader: true,
           tdClass: this.cellClass,
         },
         {
