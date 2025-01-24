@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_cache, feature_category: :value_stream_management do
+RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_shared_state, feature_category: :value_stream_management do
   let_it_be(:organization) { create(:organization) }
   let(:job) { described_class.new }
   let(:perform) { job.perform }
@@ -86,7 +86,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_cache
     end
 
     it 'inserts all rows by attribute groups' do
-      expect(Ai::DuoChatEvent).to receive(:insert_all).twice.and_call_original
+      expect(Ai::DuoChatEvent).to receive(:upsert_all).twice.and_call_original
       expect(perform).to eq({ status: :processed, inserted_rows: 3 })
     end
   end
