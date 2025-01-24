@@ -20,6 +20,8 @@ module EE
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Create
         mount_mutation ::Mutations::Issuables::CustomFields::Create, experiment: { milestone: '17.6' }
         mount_mutation ::Mutations::Issuables::CustomFields::Update, experiment: { milestone: '17.6' }
+        mount_mutation ::Mutations::Issuables::CustomFields::Archive, experiment: { milestone: '17.9' }
+        mount_mutation ::Mutations::Issuables::CustomFields::Unarchive, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Issues::SetIteration
         mount_mutation ::Mutations::Issues::SetWeight
         mount_mutation ::Mutations::Issues::SetEpic,
