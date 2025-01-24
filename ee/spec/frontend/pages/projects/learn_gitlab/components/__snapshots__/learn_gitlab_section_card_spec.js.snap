@@ -8,6 +8,7 @@ exports[`Learn GitLab Section Card renders correctly 1`] = `
     class="gl-border-0 gl-card-header gl-pb-0"
   >
     <img
+      role="presentation"
       src="workspace.svg"
     />
     <h2
