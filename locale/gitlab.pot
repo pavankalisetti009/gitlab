@@ -15251,6 +15251,9 @@ msgstr ""
 msgid "Confirm your email address"
 msgstr ""
 
+msgid "Confirmation"
+msgstr ""
+
 msgid "Confirmation email sent to %{email}"
 msgstr ""
 
