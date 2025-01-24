@@ -121,20 +121,21 @@ RSpec.shared_examples 'gets registries for' do |args|
       'lastSyncFailure' => registry.last_sync_failure,
       'retryAt' => registry.retry_at,
       'lastSyncedAt' => registry.last_synced_at,
-      'createdAt' => registry.created_at.iso8601
+      'createdAt' => registry.created_at.iso8601,
+      'forceToRedownload' => registry.try(:force_to_redownload),
+      'missingOnPrimary' => registry.try(:missing_on_primary),
+      'checksumMismatch' => registry.checksum_mismatch,
+      'verificationChecksumMismatched' => registry.verification_checksum_mismatched,
+      'modelRecordId' => registry.model_record_id,
+      'verificationChecksum' => registry.verification_checksum,
+      'verificationFailure' => registry.verification_failure,
+      'verificationRetryCount' => registry.verification_retry_count,
+      'verificationStartedAt' => registry.verification_started_at,
+      'verificationState' => registry.verification_state_name.to_s.gsub('verification_', '').upcase
     }
 
-    verification_data_to_registry_hash(data, registry)
-  end
+    return data unless verification_enabled
 
-  def verification_data_to_registry_hash(data, registry)
-    data['verificationChecksum'] = registry.verification_checksum
-    data['verificationFailure'] = registry.verification_failure
-    data['verificationRetryCount'] = registry.verification_retry_count
-    data['verificationStartedAt'] = registry.verification_started_at
-    data['verificationState'] = registry.verification_state_name.to_s.gsub('verification_', '').upcase
-    data['verifiedAt'] = registry.verified_at if verification_enabled
-    data['verificationRetryAt'] = registry.verification_retry_at if verification_enabled
-    data
+    data.merge({ 'verifiedAt' => registry.verified_at, 'verificationRetryAt' => registry.verification_retry_at })
   end
 end
