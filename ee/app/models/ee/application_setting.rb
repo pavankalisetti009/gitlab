@@ -26,8 +26,8 @@ module EE
       jsonb_accessor :search,
         global_search_code_enabled: [:boolean, { default: true }],
         global_search_commits_enabled: [:boolean, { default: true }],
-        global_search_wiki_enabled: [:boolean, { default: true }],
-        global_search_snippet_titles_enabled: [:boolean, { default: true }]
+        global_search_epics_enabled: [:boolean, { default: true }],
+        global_search_wiki_enabled: [:boolean, { default: true }]
 
       jsonb_accessor :zoekt_settings,
         zoekt_auto_delete_lost_nodes: [:boolean, { default: true }],
@@ -68,12 +68,10 @@ module EE
         elasticsearch_indexed_file_size_limit_kb: [:integer, { default: 1024 }],
         elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }]
 
-      validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
-
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
-
+      validates :search, json_schema: { filename: 'application_setting_search' }
+      validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
       validates :integrations, json_schema: { filename: "application_setting_integrations" }
-
       validates :elasticsearch, json_schema: { filename: "application_setting_elasticsearch" }
 
       jsonb_accessor :cluster_agents,
@@ -282,7 +280,6 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-      validates :search, json_schema: { filename: 'application_setting_search' }
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
 
