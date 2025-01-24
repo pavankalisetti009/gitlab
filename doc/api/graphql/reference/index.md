@@ -33576,7 +33576,7 @@ Returns [`PipelineAnalytics`](#pipelineanalytics).
 | ---- | ---- | ----------- |
 | <a id="projectpipelineanalyticsfromtime"></a>`fromTime` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. Start of the requested time frame. Defaults to the pipelines started in the past week. |
 | <a id="projectpipelineanalyticsref"></a>`ref` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.5. **Status**: Experiment. Branch that triggered the pipeline. |
-| <a id="projectpipelineanalyticssource"></a>`source` **{warning-solid}** | [`PipelineCiSources`](#pipelinecisources) | **Introduced** in GitLab 17.5. **Status**: Experiment. Source of the pipeline. |
+| <a id="projectpipelineanalyticssource"></a>`source` **{warning-solid}** | [`CiPipelineCiSources`](#cipipelinecisources) | **Introduced** in GitLab 17.5. **Status**: Experiment. Source of the pipeline. |
 | <a id="projectpipelineanalyticstotime"></a>`toTime` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. End of the requested time frame. Defaults to pipelines started before the current date. |
 
 ##### `Project.pipelineCounts`
@@ -39308,6 +39308,24 @@ CI_JOB_TOKEN policy.
 | <a id="cijobtokenscopepoliciesread_secure_files"></a>`READ_SECURE_FILES` | Read Secure Files. |
 | <a id="cijobtokenscopepoliciesread_terraform_state"></a>`READ_TERRAFORM_STATE` | Read Terraform State. |
 
+### `CiPipelineCiSources`
+
+Ci Pipeline Ci sources enum.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="cipipelinecisourcesapi"></a>`API` | Pipeline created by an API event. |
+| <a id="cipipelinecisourceschat"></a>`CHAT` | Pipeline created by a chat event. |
+| <a id="cipipelinecisourcesexternal"></a>`EXTERNAL` | Pipeline created by an external event. |
+| <a id="cipipelinecisourcesexternal_pull_request_event"></a>`EXTERNAL_PULL_REQUEST_EVENT` | Pipeline created by an external pull request event. |
+| <a id="cipipelinecisourcesmerge_request_event"></a>`MERGE_REQUEST_EVENT` | Pipeline created by a merge request event. |
+| <a id="cipipelinecisourcespipeline"></a>`PIPELINE` | Pipeline created by a pipeline event. |
+| <a id="cipipelinecisourcespush"></a>`PUSH` | Pipeline created by a push event. |
+| <a id="cipipelinecisourcesschedule"></a>`SCHEDULE` | Pipeline created by a schedule event. |
+| <a id="cipipelinecisourcestrigger"></a>`TRIGGER` | Pipeline created by a trigger event. |
+| <a id="cipipelinecisourcesunknown"></a>`UNKNOWN` | Pipeline created by an unknown event. |
+| <a id="cipipelinecisourcesweb"></a>`WEB` | Pipeline created by a web event. |
+
 ### `CiRunnerAccessLevel`
 
 | Value | Description |
@@ -41217,24 +41235,6 @@ Package type of a package protection rule resource.
 | <a id="pipelineanalyticsjobstatusfailed"></a>`FAILED` | Job that failed. |
 | <a id="pipelineanalyticsjobstatusother"></a>`OTHER` | Job that was canceled or skipped. |
 | <a id="pipelineanalyticsjobstatussuccess"></a>`SUCCESS` | Job that succeeded. |
-
-### `PipelineCiSources`
-
-Pipeline CI sources.
-
-| Value | Description |
-| ----- | ----------- |
-| <a id="pipelinecisourcesapi"></a>`API` | Pipeline created by an API event. |
-| <a id="pipelinecisourceschat"></a>`CHAT` | Pipeline created by a chat event. |
-| <a id="pipelinecisourcesexternal"></a>`EXTERNAL` | Pipeline created by an external event. |
-| <a id="pipelinecisourcesexternal_pull_request_event"></a>`EXTERNAL_PULL_REQUEST_EVENT` | Pipeline created by an external pull request event. |
-| <a id="pipelinecisourcesmerge_request_event"></a>`MERGE_REQUEST_EVENT` | Pipeline created by a merge request event. |
-| <a id="pipelinecisourcespipeline"></a>`PIPELINE` | Pipeline created by a pipeline event. |
-| <a id="pipelinecisourcespush"></a>`PUSH` | Pipeline created by a push event. |
-| <a id="pipelinecisourcesschedule"></a>`SCHEDULE` | Pipeline created by a schedule event. |
-| <a id="pipelinecisourcestrigger"></a>`TRIGGER` | Pipeline created by a trigger event. |
-| <a id="pipelinecisourcesunknown"></a>`UNKNOWN` | Pipeline created by an unknown event. |
-| <a id="pipelinecisourcesweb"></a>`WEB` | Pipeline created by a web event. |
 
 ### `PipelineConfigSourceEnum`
 
