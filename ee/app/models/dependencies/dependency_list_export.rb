@@ -2,6 +2,7 @@
 module Dependencies
   class DependencyListExport < Gitlab::Database::SecApplicationRecord
     include FileStoreMounter
+    include EachBatch
 
     MAX_EXPORT_DURATION = 24.hours
 
@@ -25,6 +26,8 @@ module Dependencies
       dependency_list: 0,
       sbom: 1
     }
+
+    scope :expired, -> { where(expires_at: ..Time.zone.now) }
 
     state_machine :status, initial: :created do
       state :created, value: 0
