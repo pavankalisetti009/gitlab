@@ -141,6 +141,7 @@ export default {
         :invalid-feedback="invalidFeedback"
       >
         <gl-form-input
+          id="verification_code"
           v-model="verificationCode"
           name="verification_code"
           :autofocus="true"
