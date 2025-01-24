@@ -23,6 +23,7 @@ import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
+import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 
 Vue.use(VueApollo);
 
@@ -65,6 +66,7 @@ describe('FrameworksTable component', () => {
   const findCopyIdAction = () => wrapper.findByTestId('action-copy-id');
   const findDeleteActionTooltip = () => wrapper.findByTestId('delete-tooltip');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
+  const findBadge = () => wrapper.findComponent(FrameworkBadge);
 
   const toggleSidebar = async () => {
     findTableRow(rowCheckIndex).trigger('click');
@@ -441,6 +443,27 @@ describe('FrameworksTable component', () => {
     });
   });
 
+  describe('framework badge', () => {
+    it('sets popover mode to edit in top-level group', () => {
+      wrapper = createComponent({
+        frameworks,
+        isLoading: false,
+      });
+
+      expect(findBadge().props('popoverMode')).toBe('edit');
+    });
+
+    it('sets popover mode to details in subgroup', () => {
+      wrapper = createComponent({
+        frameworks,
+        isLoading: false,
+        groupPath: SUBGROUP_PATH,
+      });
+
+      expect(findBadge().props('popoverMode')).toBe('details');
+    });
+  });
+
   describe('when opened in a subgroup', () => {
     const subgroupFrameworksResponse = createComplianceFrameworksReportResponse({
       count: 2,
@@ -466,6 +489,10 @@ describe('FrameworksTable component', () => {
     it('renders only copy id action in action dropdown', () => {
       expect(findActionsDropdownItems()).toHaveLength(1);
       expect(findActionsDropdownItems().at(0).text()).toBe('Copy ID: 1');
+    });
+
+    it('sets framework badge popover mode to details', () => {
+      expect(findBadge().props('popoverMode')).toBe('details');
     });
   });
 });

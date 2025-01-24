@@ -87,6 +87,7 @@ describe('Project component', () => {
       expect(findComplianceFrameworkBadge().props()).toMatchObject({
         framework: { color, description, name },
         showDefault: false,
+        popoverMode: 'details',
       });
     });
   });

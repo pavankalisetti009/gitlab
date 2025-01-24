@@ -32,15 +32,45 @@ describe('FrameworkBadge component', () => {
     });
   };
 
-  describe('default behavior', () => {
-    it('renders edit link by default', () => {
-      wrapper = createComponent({ framework: complianceFramework });
+  describe('popover modes', () => {
+    it('renders edit button in edit mode', () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'edit' });
 
       expect(findCtaButton().text()).toBe('Edit the framework');
     });
 
-    it('emits edit event when edit link is clicked', async () => {
-      wrapper = createComponent({ framework: complianceFramework });
+    it('renders view details button in details mode', () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'details' });
+
+      expect(findCtaButton().text()).toBe('View the framework details');
+    });
+
+    it('renders disabled view details button in disabled mode', () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'disabled' });
+
+      const button = findCtaButton();
+      expect(button.text()).toBe('View the framework details');
+      expect(button.props('disabled')).toBe(true);
+    });
+
+    it('shows disabled message in disabled mode', () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'disabled' });
+
+      expect(findTooltip().text()).toContain(
+        'Only group owners and maintainers can view the framework details',
+      );
+    });
+
+    it('does not render popover in hidden mode', () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'hidden' });
+
+      expect(findTooltip().exists()).toBe(false);
+    });
+  });
+
+  describe('navigation behavior', () => {
+    it('navigates to edit page when edit button is clicked', async () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'edit' });
 
       await findCtaButton().vm.$emit('click', new MouseEvent('click'));
       expect(routerPushMock).toHaveBeenCalledWith({
@@ -51,14 +81,8 @@ describe('FrameworkBadge component', () => {
       });
     });
 
-    it('renders view details link when showEdit prop set to false', () => {
-      wrapper = createComponent({ framework: complianceFramework, showEdit: false });
-
-      expect(findCtaButton().text()).toBe('View the framework details');
-    });
-
-    it('emits view details event when view details is clicked', async () => {
-      wrapper = createComponent({ framework: complianceFramework, showEdit: false });
+    it('navigates to framework details when view details is clicked', async () => {
+      wrapper = createComponent({ framework: complianceFramework, popoverMode: 'details' });
 
       await findCtaButton().vm.$emit('click', new MouseEvent('click'));
       expect(routerPushMock).toHaveBeenCalledWith({
@@ -69,6 +93,21 @@ describe('FrameworkBadge component', () => {
       });
     });
 
+    it('navigates to viewDetailsUrl when provided', async () => {
+      const viewDetailsUrl = 'http://example.com/framework-details';
+      wrapper = createComponent({
+        framework: complianceFramework,
+        popoverMode: 'details',
+        viewDetailsUrl,
+      });
+
+      await findCtaButton().vm.$emit('click', new MouseEvent('click'));
+      expect(visitUrl).toHaveBeenCalledWith(viewDetailsUrl);
+      expect(routerPushMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('label rendering', () => {
     it('renders the framework label', () => {
       wrapper = createComponent({ framework: complianceFramework });
 
@@ -112,29 +151,17 @@ describe('FrameworkBadge component', () => {
       expect(findLabel().props('title')).toEqual(complianceFramework.name);
     });
 
-    it('does not render the popover when showPopover prop is false', () => {
-      wrapper = createComponent({ framework: complianceFramework, showPopover: false });
-
-      expect(findTooltip().exists()).toBe(false);
-    });
-
     it('renders closeable label when closeable is true', () => {
       wrapper = createComponent({ framework: complianceFramework, closeable: true });
 
       expect(findLabel().props('showCloseButton')).toBe(true);
     });
 
-    it('navigates to viewDetailsUrl when provided', async () => {
-      const viewDetailsUrl = 'http://example.com/framework-details';
-      wrapper = createComponent({
-        framework: complianceFramework,
-        showEdit: false,
-        viewDetailsUrl,
-      });
+    it('emits close event when label close button is clicked', async () => {
+      wrapper = createComponent({ framework: complianceFramework, closeable: true });
 
-      await findCtaButton().vm.$emit('click', new MouseEvent('click'));
-      expect(visitUrl).toHaveBeenCalledWith(viewDetailsUrl);
-      expect(routerPushMock).not.toHaveBeenCalled();
+      await findLabel().vm.$emit('close');
+      expect(wrapper.emitted('close')).toHaveLength(1);
     });
   });
 });

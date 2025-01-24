@@ -32,6 +32,7 @@ describe('ComplianceInfo', () => {
       propsData: {
         projectPath,
         complianceCenterPath: `${projectPath}-/security/compliance_dashboard/frameworks`,
+        canViewDashboard: true,
         ...props,
       },
     });
@@ -39,40 +40,58 @@ describe('ComplianceInfo', () => {
   };
 
   describe('when compliance frameworks exist', () => {
-    beforeEach(async () => {
-      await createComponent({
-        apolloMock: jest.fn().mockResolvedValue({ data: mockComplianceFrameworks }),
+    describe('when user can view dashboard', () => {
+      beforeEach(async () => {
+        await createComponent({
+          apolloMock: jest.fn().mockResolvedValue({ data: mockComplianceFrameworks }),
+          props: { canViewDashboard: true },
+        });
+      });
+
+      it('renders the heading', () => {
+        expect(findHeading().text()).toBe('Compliance frameworks applied');
+      });
+
+      it('renders a FrameworkBadge for each framework with details mode', () => {
+        expect(findFrameworkBadges()).toHaveLength(2);
+        expect(frameworkBadgeAtIndex(0).props()).toMatchObject({
+          framework: {
+            id: 'gid://gitlab/ComplianceManagement::Framework/1',
+            name: 'Framework 1',
+            color: '#009966',
+            default: false,
+          },
+          popoverMode: 'details',
+          viewDetailsUrl:
+            'http://test.host/mock/project/path/-/security/compliance_dashboard/frameworks?id=1',
+        });
+
+        expect(frameworkBadgeAtIndex(1).props()).toMatchObject({
+          framework: {
+            id: 'gid://gitlab/ComplianceManagement::Framework/2',
+            name: 'Framework 2',
+            color: '#336699',
+            default: true,
+          },
+          popoverMode: 'details',
+          viewDetailsUrl:
+            'http://test.host/mock/project/path/-/security/compliance_dashboard/frameworks?id=2',
+        });
       });
     });
 
-    it('renders the heading', () => {
-      expect(findHeading().text()).toBe('Compliance frameworks applied');
-    });
-
-    it('renders a FrameworkBadge for each framework', () => {
-      expect(findFrameworkBadges()).toHaveLength(2);
-      expect(frameworkBadgeAtIndex(0).props()).toMatchObject({
-        framework: {
-          id: 'gid://gitlab/ComplianceManagement::Framework/1',
-          name: 'Framework 1',
-          color: '#009966',
-          default: false,
-        },
-        showEdit: false,
-        viewDetailsUrl:
-          'http://test.host/mock/project/path/-/security/compliance_dashboard/frameworks?id=1',
+    describe('when user cannot view dashboard', () => {
+      beforeEach(async () => {
+        await createComponent({
+          apolloMock: jest.fn().mockResolvedValue({ data: mockComplianceFrameworks }),
+          props: { canViewDashboard: false },
+        });
       });
 
-      expect(frameworkBadgeAtIndex(1).props()).toMatchObject({
-        framework: {
-          id: 'gid://gitlab/ComplianceManagement::Framework/2',
-          name: 'Framework 2',
-          color: '#336699',
-          default: true,
-        },
-        showEdit: false,
-        viewDetailsUrl:
-          'http://test.host/mock/project/path/-/security/compliance_dashboard/frameworks?id=2',
+      it('renders framework badges in disabled mode', () => {
+        findFrameworkBadges().wrappers.forEach((badge) => {
+          expect(badge.props('popoverMode')).toBe('disabled');
+        });
       });
     });
   });

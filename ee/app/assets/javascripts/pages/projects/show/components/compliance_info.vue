@@ -18,6 +18,10 @@ export default {
       type: String,
       required: true,
     },
+    canViewDashboard: {
+      type: Boolean,
+      required: true,
+    },
   },
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -69,7 +73,7 @@ export default {
       v-for="(framework, index) in complianceFrameworks"
       :key="framework.id"
       class="gl-mb-2 gl-mr-2 gl-inline-block gl-cursor-pointer"
-      :show-edit="false"
+      :popover-mode="canViewDashboard ? 'details' : 'disabled'"
       :framework="framework"
       :data-testid="`framework-badge-${index}`"
       :view-details-url="getViewDetailsUrl(framework.id)"

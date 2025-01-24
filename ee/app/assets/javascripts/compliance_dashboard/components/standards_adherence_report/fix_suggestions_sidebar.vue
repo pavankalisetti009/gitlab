@@ -189,7 +189,7 @@ export default {
         <span v-for="framework in project.complianceFrameworks.nodes" :key="framework.id">
           <framework-badge
             :framework="framework"
-            show-edit
+            popover-mode="edit"
             class="gl-mr-2 gl-mt-3 gl-inline-block"
           />
         </span>

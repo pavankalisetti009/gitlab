@@ -418,7 +418,7 @@ export default {
           v-for="framework in complianceFrameworks"
           :key="framework.id"
           closeable
-          :show-edit="isFrameworkEditingEnabled"
+          :popover-mode="isFrameworkEditingEnabled ? 'edit' : 'details'"
           class="gl-my-2 gl-mr-2 gl-inline-block"
           :framework="framework"
           @close="handleItemDelete(id, framework.id, complianceFrameworks)"

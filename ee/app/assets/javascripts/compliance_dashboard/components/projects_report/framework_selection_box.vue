@@ -156,7 +156,7 @@ export default {
     <template v-if="$scopedSlots.toggle" #toggle><slot name="toggle"></slot></template>
     <template #list-item="{ item }">
       <div class="gl-mr-2">
-        <framework-badge :show-popover="false" :framework="getFrameworkById(item.value)" />
+        <framework-badge popover-mode="hidden" :framework="getFrameworkById(item.value)" />
       </div>
     </template>
     <template #footer>

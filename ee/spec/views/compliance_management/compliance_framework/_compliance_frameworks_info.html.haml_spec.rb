@@ -11,37 +11,40 @@ RSpec.describe 'compliance_management/compliance_framework/_compliance_framework
   end
 
   before do
-    allow(view).to receive(:show_compliance_frameworks_info?).and_return(show_compliance_frameworks_info)
+    allow(view).to receive(:show_compliance_frameworks_info?).with(project).and_return(show_compliance_frameworks_info)
     allow(view).to receive(:can?).with(anything, :read_compliance_adherence_report,
-      project).and_return(can_read_compliance_report)
+      project).and_return(can_view_dashboard)
   end
 
   context 'when compliance frameworks info is enabled and user has permissions' do
     let(:show_compliance_frameworks_info) { true }
-    let(:can_read_compliance_report) { true }
+    let(:can_view_dashboard) { true }
 
     it 'renders the #js-compliance-info element with correct data' do
       render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
       expect(rendered).to have_selector('#js-compliance-info')
       expect(rendered).to have_selector("[data-project-path='#{project.full_path}']")
       expect(rendered).to have_selector("[data-compliance-center-path='#{compliance_center_path(project)}']")
+      expect(rendered).to have_selector("[data-can-view-dashboard]")
     end
   end
 
   context 'when compliance frameworks info is enabled but user do not have permissions' do
     let(:show_compliance_frameworks_info) { true }
-    let(:can_read_compliance_report) { false }
+    let(:can_view_dashboard) { false }
 
-    it 'does not render the #js-compliance-info element' do
+    it 'renders the #js-compliance-info element with correct data' do
       render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
-
-      expect(rendered).not_to have_selector('#js-compliance-info')
+      expect(rendered).to have_selector('#js-compliance-info')
+      expect(rendered).to have_selector("[data-project-path='#{project.full_path}']")
+      expect(rendered).to have_selector("[data-compliance-center-path='#{compliance_center_path(project)}']")
+      expect(rendered).not_to have_selector("[data-can-view-dashboard]")
     end
   end
 
   context 'when compliance frameworks info is disabled' do
     let(:show_compliance_frameworks_info) { false }
-    let(:can_read_compliance_report) { true }
+    let(:can_view_dashboard) { true }
 
     it 'does not render the #js-compliance-info element' do
       render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
@@ -52,7 +55,7 @@ RSpec.describe 'compliance_management/compliance_framework/_compliance_framework
 
   context 'when compliance frameworks info is enabled but no frameworks exist' do
     let(:show_compliance_frameworks_info) { true }
-    let(:can_read_compliance_report) { true }
+    let(:can_view_dashboard) { true }
 
     before do
       allow(project).to receive(:compliance_framework_settings).and_return([])
