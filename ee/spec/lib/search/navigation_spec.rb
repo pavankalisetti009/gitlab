@@ -14,8 +14,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
     let(:search_navigation) { described_class.new(user: user, project: project, group: group, options: options) }
 
     before do
-      allow(search_navigation).to receive(:can?).and_return(true)
-      allow(search_navigation).to receive(:tab_enabled_for_project?).and_return(false)
+      allow(search_navigation).to receive_messages(can?: true, tab_enabled_for_project?: false)
     end
 
     subject(:tabs) { search_navigation.tabs }
