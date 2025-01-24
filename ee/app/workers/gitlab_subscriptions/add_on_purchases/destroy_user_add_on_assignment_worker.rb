@@ -14,7 +14,7 @@ module GitlabSubscriptions
         @root_namespace_id = root_namespace_id
         @user_id = user_id
 
-        return unless user && add_on_purchase && assignment
+        return unless [user, add_on_purchase, assignment].all?(&:present?)
 
         GitlabSubscriptions::Duo::BulkUnassignService.new(
           add_on_purchase: add_on_purchase,

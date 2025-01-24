@@ -31,13 +31,13 @@ module Gitlab
         def assign_duo_seat
           return if existing_add_on_assignment?
 
-          ::GitlabSubscriptions::AddOnPurchases::CreateUserAddOnAssignmentWorker.perform_async(group.id, user.id)
+          ::GitlabSubscriptions::AddOnPurchases::CreateUserAddOnAssignmentWorker.perform_async(user.id, group.id)
         end
 
         def unassign_duo_seat
           return unless existing_add_on_assignment?
 
-          ::GitlabSubscriptions::AddOnPurchases::DestroyUserAddOnAssignmentWorker.perform_async(group.id, user.id)
+          ::GitlabSubscriptions::AddOnPurchases::DestroyUserAddOnAssignmentWorker.perform_async(user.id, group.id)
         end
 
         def group_names_from_saml
