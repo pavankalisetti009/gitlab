@@ -41004,6 +41004,9 @@ msgstr ""
 msgid "Password confirmation"
 msgstr ""
 
+msgid "Password is required."
+msgstr ""
+
 msgid "Password of the Jenkins server."
 msgstr ""
 
@@ -62204,6 +62207,9 @@ msgid "Username or email"
 msgstr ""
 
 msgid "Username or primary email"
+msgstr ""
+
+msgid "Username or primary email is required."
 msgstr ""
 
 msgid "Username:"
