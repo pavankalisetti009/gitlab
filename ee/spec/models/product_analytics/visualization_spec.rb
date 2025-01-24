@@ -17,6 +17,24 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   let(:dashboards) { project.product_analytics_dashboards(user) }
   let(:num_builtin_visualizations) { 14 }
   let(:num_custom_visualizations) { 2 }
+  let(:project_vsd_available_visualizations) do
+    %w[
+      dora_chart
+      usage_overview
+      change_failure_rate_over_time
+      deployment_frequency_over_time
+      lead_time_for_changes_over_time
+      time_to_restore_service_over_time
+      vsd_dora_metrics_table
+      vsd_lifecycle_metrics_table
+      vsd_security_metrics_table
+    ]
+  end
+
+  let(:group_only_visualizations) { %w[dora_performers_score dora_projects_comparison] }
+  let(:group_vsd_available_visualizations) do
+    [].concat(group_only_visualizations, project_vsd_available_visualizations)
+  end
 
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
@@ -63,8 +81,17 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       subject { described_class.for(container: project, user: user) }
 
       it 'returns all visualizations stored in the project as well as built-in ones' do
-        expect(subject.count).to eq(num_builtin_visualizations + num_custom_visualizations)
+        available_visualizations_count = num_builtin_visualizations +
+          num_custom_visualizations + project_vsd_available_visualizations.length
+
+        expect(subject.count).to eq(available_visualizations_count)
         expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
+      end
+
+      it 'returns the available project vsd visualizations' do
+        expect(subject.map(&:slug)).to include(*project_vsd_available_visualizations)
+
+        expect(subject.map(&:slug)).not_to include(*group_only_visualizations)
       end
 
       context 'when a custom dashboard pointer project is configured' do
@@ -78,7 +105,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
 
         it 'returns custom visualizations from pointer project' do
           # :with_product_analytics_custom_visualization adds another visualization
-          expected_visualizations_count = num_builtin_visualizations + 1
+          expected_visualizations_count = num_builtin_visualizations + 1 + project_vsd_available_visualizations.length
 
           expect(subject.count).to eq(expected_visualizations_count)
           expect(subject.map(&:slug)).to include('example_custom_visualization')
@@ -106,7 +133,9 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
 
         it 'returns all visualizations stored in the project but no built in product analytics visualizations' do
-          expect(subject.count).to eq(num_custom_visualizations)
+          available_visualizations_count = num_custom_visualizations + project_vsd_available_visualizations.length
+
+          expect(subject.count).to eq(available_visualizations_count)
           expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
         end
       end
@@ -118,7 +147,11 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       subject { described_class.for(container: group, user: user) }
 
       it 'returns built in visualizations' do
-        expect(subject.map(&:slug)).to match_array([])
+        expect(subject.map(&:slug)).to match_array(group_vsd_available_visualizations)
+      end
+
+      it 'returns the group only visualizations' do
+        expect(subject.map(&:slug)).to include(*group_only_visualizations)
       end
 
       context 'when group value stream dashboard is not available' do
@@ -131,6 +164,16 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
       end
 
+      context 'when the VSD dashboard editor feature is disabled' do
+        before do
+          stub_feature_flags(vsd_visualizations_in_analytics_dashboard_editor: false)
+        end
+
+        it 'does not include built in visualizations for VSD' do
+          expect(subject.map(&:slug)).not_to match_array(group_vsd_available_visualizations)
+        end
+      end
+
       context 'when a custom configuration project is defined' do
         let_it_be(:config_project) { create(:project, :with_product_analytics_custom_visualization, group: group) }
 
@@ -139,7 +182,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
 
         it 'returns builtin and custom visualizations' do
-          expected_visualizations = ['example_custom_visualization']
+          expected_visualizations = [].concat(['example_custom_visualization'], group_vsd_available_visualizations)
 
           expect(subject.map(&:slug)).to match_array(expected_visualizations)
         end
