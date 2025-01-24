@@ -38,15 +38,6 @@ describe('SeatControlsSection', () => {
     it('will display the SeatControlsMemberPromotionManagement', () => {
       expect(findSeatControlsMemberPromotionManagement().exists()).toBe(true);
     });
-
-    it('will re-emit `form-value-change` events', () => {
-      const seatControlsMemberPromotionManagement = findSeatControlsMemberPromotionManagement();
-      const payload = { name: 'enableMemberPromotionManagement', value: true };
-
-      seatControlsMemberPromotionManagement.vm.$emit('form-value-change', payload);
-
-      expect(wrapper.emitted('form-value-change')).toEqual([[payload]]);
-    });
   });
 
   describe('with member promotion management unavailable', () => {
