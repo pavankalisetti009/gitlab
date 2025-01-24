@@ -1,0 +1,9 @@
+---
+name: create_and_use_ci_pipeline_bots
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/404931
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/179899
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/516256
+milestone: '17.9'
+group: group::pipeline execution
+type: wip
+default_enabled: false

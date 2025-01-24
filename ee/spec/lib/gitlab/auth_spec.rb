@@ -147,6 +147,25 @@ RSpec.describe Gitlab::Auth, :use_clean_rails_memory_store_caching, feature_cate
             )
           end
         end
+
+        context 'when the build author is a ci_pipeline_bot' do
+          let_it_be(:pipeline_bot) { create(:user, :ci_pipeline_bot) }
+
+          before do
+            build.update!(user: pipeline_bot)
+          end
+
+          it 'recognises project level pipeline_bot access token' do
+            project.add_maintainer(build.user)
+
+            expect(subject).to have_attributes(
+              actor: build.user,
+              project: build.project,
+              type: :build,
+              authentication_abilities: described_class.build_authentication_abilities
+            )
+          end
+        end
       end
     end
   end

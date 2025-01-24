@@ -52,7 +52,11 @@ module EE
 
       override :allowed_user_type?
       def allowed_user_type?
-        super || service_account?
+        super || service_account? || pipeline_bot?
+      end
+
+      def pipeline_bot?
+        user_params[:user_type]&.to_sym == :ci_pipeline_bot
       end
 
       def service_account?

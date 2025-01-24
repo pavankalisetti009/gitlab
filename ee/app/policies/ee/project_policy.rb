@@ -12,6 +12,8 @@ module EE
       desc "User is a security policy bot on the project"
       condition(:security_policy_bot) { user&.security_policy_bot? && team_member? }
 
+      condition(:ci_pipeline_bot) { user&.ci_pipeline_bot? && team_member? }
+
       with_scope :subject
       condition(:repository_mirrors_enabled) { @subject.feature_available?(:repository_mirrors) }
 
@@ -612,6 +614,7 @@ module EE
         enable :manage_project_security_exclusions
         enable :read_project_security_exclusions
         enable :manage_security_settings
+        enable :admin_ci_pipeline_bots
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -980,6 +983,10 @@ module EE
         enable :create_pipeline
         enable :create_bot_pipeline
         enable :build_download_code
+      end
+
+      rule { ci_pipeline_bot & can?(:developer_access) }.policy do
+        enable :create_bot_pipeline
       end
 
       desc "SPP project access to read policy config for pipeline execution policy"
