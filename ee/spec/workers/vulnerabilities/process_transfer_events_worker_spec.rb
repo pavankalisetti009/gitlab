@@ -6,7 +6,9 @@ RSpec.describe Vulnerabilities::ProcessTransferEventsWorker, feature_category: :
   let_it_be(:old_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :with_vulnerability, group: group) }
+  let_it_be(:vulnerability_statistic) { create(:vulnerability_statistic, :grade_f, project: project) }
   let_it_be(:other_project) { create(:project, :with_vulnerability, group: group) }
+  let_it_be(:other_vulnerability_statistic) { create(:vulnerability_statistic, :grade_f, project: other_project) }
   let_it_be(:project_without_vulnerabilities) { create(:project, group: group) }
 
   let(:project_event) do
@@ -37,8 +39,11 @@ RSpec.describe Vulnerabilities::ProcessTransferEventsWorker, feature_category: :
 
       it_behaves_like 'subscribes to event'
 
-      it 'enqueues a vulnerability reads namespace id update job for the project id' do
+      it 'enqueues a vulnerability reads and statistics traversal ids update job for the project id' do
         expect(Vulnerabilities::UpdateNamespaceIdsOfVulnerabilityReadsWorker).to receive(:bulk_perform_async).with(
+          [[project.id]]
+        )
+        expect(Vulnerabilities::UpdateTraversalIdsOfVulnerabilityStatisticWorker).to receive(:bulk_perform_async).with(
           [[project.id]]
         )
 
@@ -58,6 +63,14 @@ RSpec.describe Vulnerabilities::ProcessTransferEventsWorker, feature_category: :
 
         use_event
       end
+
+      it 'enqueues a vulnerability stat traversal ids update job for each project id belonging in the group' do
+        expect(Vulnerabilities::UpdateTraversalIdsOfVulnerabilityStatisticWorker).to receive(:bulk_perform_async).with(
+          match_array([[project.id], [other_project.id]])
+        )
+
+        use_event
+      end
     end
   end
 
@@ -67,8 +80,9 @@ RSpec.describe Vulnerabilities::ProcessTransferEventsWorker, feature_category: :
     context 'when a project transfered event is published', :sidekiq_inline do
       let(:event) { project_event }
 
-      it 'enqueues a vulnerability reads namespace id update job for the project id' do
+      it 'does not enqueue jobs to update traversal ids in vulnerability reads and statistics' do
         expect(Vulnerabilities::UpdateNamespaceIdsOfVulnerabilityReadsWorker).not_to receive(:bulk_perform_async)
+        expect(Vulnerabilities::UpdateTraversalIdsOfVulnerabilityStatisticWorker).not_to receive(:bulk_perform_async)
 
         use_event
       end
