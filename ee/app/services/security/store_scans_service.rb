@@ -47,7 +47,7 @@ module Security
     strong_memoize_attr :grouped_report_artifacts
 
     def reassigned_grouped_report_artifacts
-      grouped_report_artifacts['cyclonedx']&.each do |artifact|
+      grouped_report_artifacts['cyclonedx']&.filter(&:security_report)&.each do |artifact|
         (grouped_report_artifacts[artifact.security_report.type.to_s] ||= []) << artifact
       end
       grouped_report_artifacts.delete('cyclonedx')
