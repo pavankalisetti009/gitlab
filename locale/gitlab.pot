@@ -52701,6 +52701,9 @@ msgstr ""
 msgid "Select all"
 msgstr ""
 
+msgid "Select all vulnerabilities"
+msgstr ""
+
 msgid "Select an assignee"
 msgstr ""
 
@@ -52846,6 +52849,9 @@ msgid "Select timezone"
 msgstr ""
 
 msgid "Select type"
+msgstr ""
+
+msgid "Select vulnerability"
 msgstr ""
 
 msgid "Selected"
