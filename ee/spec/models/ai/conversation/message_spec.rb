@@ -56,27 +56,15 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
   end
 
   describe 'callbacks' do
-    describe 'before_validation :populate_organization_id' do
-      let_it_be(:organization) { create(:organization) }
+    describe 'before_create :populate_organization_id' do
+      let(:organization) { create(:organization) }
       let(:user) { create(:user, organizations: [organization]) }
+      let(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
 
-      it 'sets organization_id from user namespace' do
-        thread = Ai::Conversation::Thread.create!(user: user, conversation_type: :duo_chat)
+      it 'sets organization_id from thread' do
         message = described_class.create!(thread: thread, content: 'message', role: 'user')
 
         expect(message.organization_id).to eq(user.organizations.first.id)
-      end
-
-      context 'when user has no namespace' do
-        let_it_be(:organization) { create(:organization, :default) }
-        let(:user) { create(:user) }
-
-        it 'sets default organization_id' do
-          thread = Ai::Conversation::Thread.create!(user: user, conversation_type: :duo_chat)
-          message = described_class.create!(thread: thread, content: 'message', role: 'user')
-
-          expect(message.organization_id).to eq(Organizations::Organization::DEFAULT_ORGANIZATION_ID)
-        end
       end
     end
   end

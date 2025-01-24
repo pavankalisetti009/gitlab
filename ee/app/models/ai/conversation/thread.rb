@@ -31,7 +31,7 @@ module Ai
 
       def populate_organization
         self.organization_id ||= user.organizations.first&.id ||
-          Organizations::Organization::DEFAULT_ORGANIZATION_ID
+          Organizations::Organization.first.id
       end
     end
   end

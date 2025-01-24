@@ -54,25 +54,24 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
   end
 
   describe 'callbacks' do
-    describe 'before_validation :populate_organization_id' do
+    describe 'before_create :populate_organization_id' do
       let_it_be(:organization) { create(:organization) }
 
       let(:user) { create(:user, organizations: [organization]) }
 
-      it 'sets organization_id from user namespace' do
+      it 'assigns organization_id from user organization' do
         thread = described_class.create!(user: user, conversation_type: :duo_chat)
 
         expect(thread.organization_id).to eq(user.organizations.first.id)
       end
 
-      context 'when user has no namespace' do
-        let_it_be(:organization) { create(:organization, :default) }
-        let(:user) { create(:user) }
+      context 'when user is not assigned to an organization' do
+        let(:user) { create(:user, organizations: []) }
 
-        it 'sets defautl organization_id' do
+        it 'assigns organization_id from first found organization' do
           thread = described_class.create!(user: user, conversation_type: :duo_chat)
 
-          expect(thread.organization_id).to eq(Organizations::Organization::DEFAULT_ORGANIZATION_ID)
+          expect(thread.organization_id).to eq(Organizations::Organization.first.id)
         end
       end
     end
