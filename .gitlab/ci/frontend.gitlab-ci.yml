@@ -445,7 +445,6 @@ jest vue3 check quarantined predictive:
     expire_in: 31d
     when: always
     paths:
-      - tmp/tests/frontend/jest_stdout
       - tmp/tests/frontend/jest_stderr
       - tmp/tests/frontend/jest_results.json
 
