@@ -19,7 +19,7 @@ class CiMinutesUsageMailer < ApplicationMailer
     @namespace = namespace
     @current_balance = current_balance
     @total = total
-    @percentage = percentage
+    @percentage = percentage.round
 
     mail_with_locale(
       bcc: recipients,
