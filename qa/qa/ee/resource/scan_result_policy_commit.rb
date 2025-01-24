@@ -34,18 +34,18 @@ module QA
         def api_post_body
           <<~GQL
             mutation {
-                scanExecutionPolicyCommit(
-                   input: {
-                    name: "#{policy_name}",
-                    fullPath: "#{full_path}",
-                    operationMode: #{mode},
-                    policyYaml: "#{policy_yaml.to_yaml}"
-                  }
-                ) {
-                  branch
-                  errors
+              scanExecutionPolicyCommit(
+                input: {
+                  name: "#{policy_name}",
+                  fullPath: "#{full_path}",
+                  operationMode: #{mode},
+                  policyYaml: "#{policy_yaml.to_yaml}"
                 }
+              ) {
+                branch
+                errors
               }
+            }
           GQL
         end
 

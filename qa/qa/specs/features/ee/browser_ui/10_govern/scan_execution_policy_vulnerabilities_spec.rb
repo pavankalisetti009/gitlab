@@ -51,6 +51,7 @@ module QA
       end
 
       after do
+        scan_execution_policy_project.unassign_security_policy_project # unlink so group can be cleaned up
         runner.remove_via_api!
       end
 
