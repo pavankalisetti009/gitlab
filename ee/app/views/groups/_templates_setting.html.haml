@@ -6,7 +6,7 @@
   expanded: expanded) do |c|
   - c.with_description do
     = _('Select a repository containing templates for common files.')
-    = link_to _('What templates can I create?'), help_page_path('user/group/custom_project_templates.md', anchor: 'which-projects-are-available-as-templates'), target: '_blank', rel: 'noopener noreferrer'
+    = link_to _('What templates can I create?'), help_page_path('user/group/manage.md', anchor: 'group-file-templates'), target: '_blank', rel: 'noopener noreferrer'
   - c.with_body do
     = gitlab_ui_form_for @group, url: group_path, html: { class: 'fieldset-form' } do |f|
       = form_errors(@group)
