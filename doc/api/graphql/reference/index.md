@@ -19255,6 +19255,8 @@ Extra metadata for AI message.
 
 ### `AiMetrics`
 
+Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise only.
+
 #### Fields
 
 | Name | Type | Description |
