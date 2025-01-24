@@ -245,9 +245,6 @@ export const mockProjectScanResultPolicy = {
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: false,
   actionApprovers: [],
-  userApprovers: [],
-  allGroupApprovers: [],
-  roleApprovers: [],
   ...POLICY_SCOPE_MOCK,
   source: {
     __typename: 'ProjectSecurityPolicySource',
@@ -266,9 +263,6 @@ export const mockGroupScanResultPolicy = {
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: mockDefaultBranchesScanResultObject.enabled,
   actionApprovers: [],
-  userApprovers: [],
-  allGroupApprovers: [],
-  roleApprovers: [],
   ...POLICY_SCOPE_MOCK,
   source: {
     __typename: 'GroupSecurityPolicySource',

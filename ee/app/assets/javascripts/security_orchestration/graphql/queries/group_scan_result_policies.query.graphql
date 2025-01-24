@@ -32,17 +32,6 @@ query groupScanResultPolicies(
             name
           }
         }
-        userApprovers {
-          id
-          name
-          webUrl
-        }
-        allGroupApprovers {
-          id
-          fullPath
-          webUrl
-        }
-        roleApprovers
         policyScope {
           ...PolicyScope
         }
