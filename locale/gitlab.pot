@@ -25068,6 +25068,9 @@ msgstr ""
 msgid "Generate site and private keys at"
 msgstr ""
 
+msgid "Generated QR Code"
+msgstr ""
+
 msgid "Generated files are collapsed by default. To change this behavior, edit the %{tagStart}.gitattributes%{tagEnd} file. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
