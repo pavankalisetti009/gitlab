@@ -49,6 +49,7 @@ import {
   DAST_SCANNERS_PARSING_ERROR,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/rules';
+import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
@@ -671,10 +672,9 @@ enabled: true`;
       });
 
       expect(findSkipCiSelector().exists()).toBe(true);
-      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({
-        allowed: true,
-        allowlist: { users: [] },
-      });
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual(
+        DEFAULT_SKIP_SI_CONFIGURATION,
+      );
     });
 
     it('renders existing skip ci configuration', () => {

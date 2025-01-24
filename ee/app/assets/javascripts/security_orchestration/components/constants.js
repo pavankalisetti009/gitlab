@@ -48,3 +48,5 @@ export const POLICY_TYPE_COMPONENT_OPTIONS = {
 };
 
 export const POLICIES_LIST_CONTAINER_CLASS = '.js-security-policies-container-wrapper';
+
+export const DEFAULT_SKIP_SI_CONFIGURATION = { allowed: true, allowlist: { users: [] } };
