@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_category: :user_management do
-  describe '#execute' do
+  describe '#execute', :sidekiq_inline do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
     let(:auth_hash) do
@@ -50,18 +50,22 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
 
         it_behaves_like 'does not call the assignment workers'
 
-        context 'when groups have an associated SAML group link' do
-          before do
+        context 'when groups have an associated SAML group link and meet worker conditions' do
+          before_all do
             create(:saml_group_link, group: group, saml_group_name: 'Duo', assign_duo_seats: true)
+            group.add_developer(user)
           end
 
-          context 'when there is no existing seat assignment' do
-            it 'calls the user seat assignment worker' do
-              expect(::GitlabSubscriptions::AddOnPurchases::CreateUserAddOnAssignmentWorker)
-                .to receive(:perform_async).with(group.id, user.id)
+          before do
+            allow(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async)
+            stub_saas_features(gitlab_duo_saas_only: true)
+          end
 
-              execute
-            end
+          it 'assigns one seat' do
+            expect { execute }
+              .to change {
+                user.assigned_add_ons.for_active_add_on_purchase_ids(add_on_purchase.id).count
+              }.from(0).to(1)
           end
 
           context 'when the feature flag is disabled' do
@@ -83,11 +87,11 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
               create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: add_on_purchase)
             end
 
-            it 'call the destroy user seat assignment worker' do
-              expect(::GitlabSubscriptions::AddOnPurchases::DestroyUserAddOnAssignmentWorker)
-                .to receive(:perform_async).with(group.id, user.id)
-
-              execute
+            it 'unassigns one seat' do
+              expect { execute }
+                .to change {
+                  user.assigned_add_ons.for_active_add_on_purchase_ids(add_on_purchase.id).count
+                }.from(1).to(0)
             end
 
             context 'when the feature flag is disabled' do
