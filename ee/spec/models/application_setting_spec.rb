@@ -48,11 +48,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.fetch_observability_alerts_from_cloud).to eq(true) }
     it { expect(setting.global_search_code_enabled).to be(true) }
     it { expect(setting.global_search_commits_enabled).to be(true) }
+    it { expect(setting.global_search_epics_enabled).to be(true) }
+    it { expect(setting.global_search_issues_enabled).to be(true) }
     it { expect(setting.global_search_merge_requests_enabled).to be(true) }
-    it { expect(setting.global_search_work_items_enabled).to be(true) }
-    it { expect(setting.global_search_wiki_enabled).to be(true) }
-    it { expect(setting.global_search_users_enabled).to be(true) }
     it { expect(setting.global_search_snippet_titles_enabled).to be(true) }
+    it { expect(setting.global_search_users_enabled).to be(true) }
+    it { expect(setting.global_search_wiki_enabled).to be(true) }
   end
 
   describe 'validations' do
