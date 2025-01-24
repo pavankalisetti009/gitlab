@@ -19374,7 +19374,7 @@ msgstr ""
 msgid "Dependencies|The dependency list was succesfully exported."
 msgstr ""
 
-msgid "Dependencies|The dependency list was successfully exported."
+msgid "Dependencies|The dependency list was successfully exported for %{exportable}."
 msgstr ""
 
 msgid "Dependencies|The location includes the lock file. For transitive dependencies a list of its direct dependents is shown."

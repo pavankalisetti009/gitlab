@@ -49,6 +49,29 @@ module DependenciesHelper
     expose_url(api_v4_dependency_list_exports_download_path(export_id: export.id))
   end
 
+  def exportable_link(export)
+    exportable = export.exportable
+
+    link_text = case exportable
+                when ::Project, ::Group
+                  exportable.full_name
+                when ::Organizations::Organization
+                  exportable.name
+                when ::Ci::Pipeline
+                  "##{exportable.id}"
+                end
+
+    url = Gitlab::UrlBuilder.build(exportable)
+
+    link = link_to(link_text, url)
+
+    exportable_type = exportable.class.name.demodulize.underscore
+
+    # rubocop:disable Rails/OutputSafety -- url helper output is safe
+    "#{exportable_type} #{link}".html_safe
+    # rubocop:enable Rails/OutputSafety
+  end
+
   private
 
   def shared_dependencies_data

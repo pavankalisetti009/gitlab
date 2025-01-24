@@ -220,37 +220,22 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
   end
 
   describe '#send_completion_email!' do
+    let_it_be(:export) { build_stubbed(:dependency_list_export) }
+
     let(:message_delivery) { instance_double(ActionMailer::MessageDelivery) }
 
     subject(:send_completion_email!) { export.send_completion_email! }
 
-    def expect_completion_email_with(arg)
-      expect(Sbom::ExportMailer).to receive(:completion_email).with(export, arg).and_return(message_delivery)
+    it 'delivers email using Sbom::ExportMailer' do
+      expect(Sbom::ExportMailer).to receive(:completion_email).with(export).and_return(message_delivery)
       expect(message_delivery).to receive(:deliver_now)
+
+      send_completion_email!
     end
 
-    context 'when exportable is a project' do
-      let(:export) { create(:dependency_list_export, project: project) }
-
-      it 'passes project.group as second argument' do
-        expect_completion_email_with(project.group)
-        send_completion_email!
-      end
-    end
-
-    context 'when exportable is a group' do
-      let(:export) { create(:dependency_list_export, group: group, project: nil) }
-
-      it 'passes group as second argument' do
-        expect_completion_email_with(group)
-        send_completion_email!
-      end
-    end
-
-    context 'when exportable is a pipeline' do
-      let(:export) { create(:dependency_list_export, pipeline: pipeline, project: pipeline.project) }
-
+    context 'when email delivery is disabled' do
       it 'does not send email' do
+        allow(export).to receive(:email_delivery_enabled?).and_return(false)
         expect(Sbom::ExportMailer).not_to receive(:completion_email)
 
         send_completion_email!

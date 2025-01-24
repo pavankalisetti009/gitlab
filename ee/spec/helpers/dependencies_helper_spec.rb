@@ -114,4 +114,41 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
       )
     end
   end
+
+  describe '#exportable_link' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:exportable_link) { helper.exportable_link(export) }
+
+    context 'when exportable is a project' do
+      let(:project) { build_stubbed(:project) }
+      let(:export) { build_stubbed(:dependency_list_export, project: project) }
+
+      it { is_expected.to eq("project <a href=\"#{project_url(project)}\">#{project.full_name}</a>") }
+    end
+
+    context 'when exportable is a group' do
+      let(:group) { build_stubbed(:group) }
+      let(:export) { build_stubbed(:dependency_list_export, group: group, project: nil) }
+
+      it { is_expected.to eq("group <a href=\"#{group_url(group)}\">#{group.full_name}</a>") }
+    end
+
+    context 'when exportable is an organization' do
+      let(:organization) { build_stubbed(:organization) }
+      let(:export) { build_stubbed(:dependency_list_export, organization: organization, project: nil) }
+
+      it { is_expected.to eq("organization <a href=\"#{organization_url(organization)}\">#{organization.name}</a>") }
+    end
+
+    context 'when exportable is a pipeline' do
+      let(:pipeline) { build_stubbed(:ci_pipeline) }
+      let(:export) { build_stubbed(:dependency_list_export, pipeline: pipeline, project: pipeline.project) }
+
+      it 'returns correct link text' do
+        is_expected.to eq("pipeline <a href=\"#{project_pipeline_url(pipeline.project,
+          pipeline)}\">##{pipeline.id}</a>")
+      end
+    end
+  end
 end

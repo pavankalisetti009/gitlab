@@ -1,5 +1,5 @@
 %p{ style: 'font-size:18px; text-align:center;  line-height:1.4;' }
-  = s_('Dependencies|The dependency list was successfully exported.')
+  = s_('Dependencies|The dependency list was successfully exported for %{exportable}.') % { exportable: exportable_link(@export) }
   - download_link = link_to('', dependencies_export_download_url(@export))
   - tag = tag_pair(download_link, :link_start, :link_end)
   = safe_format(s_('Dependencies|%{link_start}Download the export%{link_end}.'), tag)

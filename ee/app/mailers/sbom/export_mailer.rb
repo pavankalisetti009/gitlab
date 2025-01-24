@@ -7,9 +7,18 @@ module Sbom
 
     layout 'mailer'
 
-    def completion_email(export, group)
+    def completion_email(export)
       @export = export
       @expiration_days = Dependencies::DependencyListExport::EXPIRES_AFTER.in_days.to_i
+
+      exportable = export.exportable
+
+      group = case exportable
+              when ::Project
+                exportable.group
+              when ::Group
+                exportable
+              end
 
       mail_with_locale(
         to: export.author.notification_email_for(group),

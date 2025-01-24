@@ -86,16 +86,7 @@ module Dependencies
     def send_completion_email!
       return unless email_delivery_enabled?
 
-      group = case exportable
-              when ::Project
-                exportable.group
-              when ::Group
-                exportable
-              end
-
-      return unless group
-
-      Sbom::ExportMailer.completion_email(self, group).deliver_now
+      Sbom::ExportMailer.completion_email(self).deliver_now
     end
 
     def schedule_export_deletion
