@@ -15637,7 +15637,16 @@ msgstr ""
 msgid "ContainerRegistry|Disabled - tags will not be automatically deleted."
 msgstr ""
 
+msgid "ContainerRegistry|Docker build command"
+msgstr ""
+
 msgid "ContainerRegistry|Docker connection error"
+msgstr ""
+
+msgid "ContainerRegistry|Docker login command"
+msgstr ""
+
+msgid "ContainerRegistry|Docker push command"
 msgstr ""
 
 msgid "ContainerRegistry|Edit cleanup rules"
