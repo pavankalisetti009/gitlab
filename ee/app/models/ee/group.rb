@@ -703,9 +703,7 @@ module EE
     end
 
     def vulnerabilities
-      ::Vulnerability.where(
-        project: ::Project.for_group_and_its_subgroups(self).without_deleted
-      ).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486216')
+      ::Vulnerability.where(id: Vulnerabilities::Read.by_group(self).select(:vulnerability_id).unarchived)
     end
 
     def vulnerability_reads

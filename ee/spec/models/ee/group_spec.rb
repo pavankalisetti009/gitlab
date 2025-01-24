@@ -709,13 +709,13 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let(:subgroup_project) { create(:project, namespace: subgroup) }
     let(:archived_project) { create(:project, :archived, namespace: group) }
     let(:deleted_project) { create(:project, pending_delete: true, namespace: group) }
-    let!(:group_vulnerability) { create(:vulnerability, project: group_project) }
-    let!(:subgroup_vulnerability) { create(:vulnerability, project: subgroup_project) }
-    let!(:archived_vulnerability) { create(:vulnerability, project: archived_project) }
-    let!(:deleted_vulnerability) { create(:vulnerability, project: deleted_project) }
+    let!(:group_vulnerability) { create(:vulnerability_read, project: group_project).vulnerability }
+    let!(:subgroup_vulnerability) { create(:vulnerability_read, project: subgroup_project).vulnerability }
+    let!(:archived_vulnerability) { create(:vulnerability_read, project: archived_project).vulnerability }
+    let!(:deleted_vulnerability) { create(:vulnerability_read, project: deleted_project).vulnerability }
 
-    it 'returns vulnerabilities for all non-deleted projects in the group and its subgroups' do
-      is_expected.to contain_exactly(group_vulnerability, subgroup_vulnerability, archived_vulnerability)
+    it 'returns vulnerabilities for all non-archived projects in the group and its subgroups' do
+      is_expected.to contain_exactly(group_vulnerability, subgroup_vulnerability, deleted_vulnerability)
     end
   end
 
