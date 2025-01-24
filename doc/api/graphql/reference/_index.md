@@ -23674,6 +23674,7 @@ A software dependency used by a project.
 | <a id="dependencypackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
 | <a id="dependencyversion"></a>`version` | [`String`](#string) | Version of the dependency. |
+| <a id="dependencyvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 ### `DependencyProxyBlob`
 
@@ -28565,7 +28566,8 @@ Represents the Geo sync and verification state of an LFS object.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="licensename"></a>`name` | [`String!`](#string) | Name of the license. |
-| <a id="licenseurl"></a>`url` | [`String!`](#string) | License URL in relation to SPDX. |
+| <a id="licensespdxidentifier"></a>`spdxIdentifier` | [`String`](#string) | Name of the SPDX identifier. |
+| <a id="licenseurl"></a>`url` | [`String`](#string) | License URL in relation to SPDX. |
 
 ### `LicenseHistoryEntry`
 
@@ -28609,6 +28611,7 @@ Represents an entry from the Cloud License history.
 | ---- | ---- | ----------- |
 | <a id="locationblobpath"></a>`blobPath` | [`String`](#string) | HTTP URI path to view the input file in GitLab. |
 | <a id="locationpath"></a>`path` | [`String`](#string) | Path, relative to the root of the repository, of the filewhich was analyzed to detect the dependency. |
+| <a id="locationtoplevel"></a>`topLevel` | [`Boolean`](#boolean) | Is top level dependency. |
 
 ### `MLCandidateLinks`
 
