@@ -53,6 +53,11 @@ module ProductAnalytics
       duo_usage_rate_over_time
     ].freeze
 
+    VISUALIZATIONS_FOR_GROUP_ONLY = %w[
+      dora_performers_score
+      dora_projects_comparison
+    ].freeze
+
     def self.for(container:, user:)
       config_project =
         container.analytics_dashboards_configuration_project ||
@@ -149,28 +154,38 @@ module ProductAnalytics
       "#{ProductAnalytics::Dashboard::DASHBOARD_ROOT_LOCATION}/visualizations/#{data}.yaml"
     end
 
-    def self.load_visualizations(visualization_names, directory)
-      visualization_names.map do |name|
+    def self.skip_for_project_namespace?(name)
+      VISUALIZATIONS_FOR_GROUP_ONLY.include?(name)
+    end
+
+    def self.load_visualizations(visualization_names, directory, is_project)
+      visualization_names.filter_map do |name|
         config = File.read(Rails.root.join(directory, "#{name}.yaml"))
+
+        next if is_project && skip_for_project_namespace?(name)
 
         new(config: config, slug: name)
       end
     end
 
-    def self.product_analytics_visualizations
-      load_visualizations(PRODUCT_ANALYTICS_VISUALIZATIONS, PRODUCT_ANALYTICS_PATH)
+    def self.product_analytics_visualizations(is_project = false)
+      load_visualizations(PRODUCT_ANALYTICS_VISUALIZATIONS, PRODUCT_ANALYTICS_PATH, is_project)
     end
 
-    def self.value_stream_dashboard_visualizations
-      load_visualizations(VALUE_STREAM_DASHBOARD_VISUALIZATIONS, VALUE_STREAM_DASHBOARD_PATH)
+    def self.value_stream_dashboard_visualizations(is_project = false)
+      load_visualizations(VALUE_STREAM_DASHBOARD_VISUALIZATIONS, VALUE_STREAM_DASHBOARD_PATH, is_project)
     end
 
     def self.builtin_visualizations(container, user)
+      is_project = container.is_a?(Project)
+
       visualizations = []
 
       if container.product_analytics_enabled? && container.product_analytics_onboarded?(user)
-        visualizations << product_analytics_visualizations
+        visualizations << product_analytics_visualizations(is_project)
       end
+
+      visualizations << value_stream_dashboard_visualizations(is_project) if container.vsd_dashboard_editor_enabled?
 
       visualizations.flatten
     end
