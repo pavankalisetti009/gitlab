@@ -79,8 +79,7 @@ module Search
       end
 
       def work_item_embeddings_opensearch?
-        Gitlab::Elastic::Helper.default.vectors_supported?(:opensearch) &&
-          ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items_opensearch)
+        Gitlab::Elastic::Helper.default.vectors_supported?(:opensearch)
       end
     end
   end

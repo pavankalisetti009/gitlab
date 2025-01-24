@@ -23,7 +23,6 @@ RSpec/BeEq:
     - 'ee/spec/controllers/projects/settings/operations_controller_spec.rb'
     - 'ee/spec/controllers/projects/settings/repository_controller_spec.rb'
     - 'ee/spec/controllers/projects_controller_spec.rb'
-    - 'ee/spec/elastic/migrate/20241017094601_add_embedding_to_work_items_opensearch_spec.rb'
     - 'ee/spec/features/admin/admin_emails_spec.rb'
     - 'ee/spec/features/admin/admin_settings_spec.rb'
     - 'ee/spec/features/admin/users/users_spec.rb'

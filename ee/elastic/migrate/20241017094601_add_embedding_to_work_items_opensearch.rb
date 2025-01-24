@@ -21,3 +21,5 @@ end
 def helper
   @helper ||= Gitlab::Elastic::Helper.default
 end
+
+AddEmbeddingToWorkItemsOpensearch.prepend ::Elastic::MigrationObsolete
