@@ -26550,6 +26550,9 @@ ALTER TABLE vulnerability_scanners
 ALTER TABLE vulnerability_finding_links
     ADD CONSTRAINT check_3dd0293472 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE epic_user_mentions
+    ADD CONSTRAINT check_4865a37c73 CHECK ((group_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE vulnerability_findings_remediations
     ADD CONSTRAINT check_65e61a488a CHECK ((project_id IS NOT NULL)) NOT VALID;
 
