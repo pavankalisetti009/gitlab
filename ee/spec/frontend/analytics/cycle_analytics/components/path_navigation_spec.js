@@ -78,5 +78,10 @@ describe('Group PathNavigation', () => {
         );
       });
     });
+
+    it('passes correct settings to popover', () => {
+      expect(firstPopover().props('placement')).toBe('bottom');
+      expect(firstPopover().props('triggers')).toBeUndefined();
+    });
   });
 });
