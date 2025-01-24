@@ -51,7 +51,11 @@ module Ci
     end
 
     def comparer_class
-      Gitlab::Ci::Reports::Security::VulnerabilityReportsComparer
+      if feature_flag_disabled?(project)
+        Gitlab::Ci::Reports::Security::VulnerabilityReportsComparer
+      else
+        Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer
+      end
     end
 
     def serializer_class
@@ -63,16 +67,28 @@ module Ci
       # until `Security::StoreFindingsService` is complete
       return :parsing unless ready_to_send_to_finder?(pipeline)
 
-      Security::PipelineVulnerabilitiesFinder.new(
-        pipeline: pipeline,
-        params: { report_type: [params[:report_type]], scope: 'all' }
-      ).execute
+      if pipeline.nil? || feature_flag_disabled?(project)
+        Security::PipelineVulnerabilitiesFinder.new(
+          pipeline: pipeline,
+          params: { report_type: [params[:report_type]], scope: 'all' }
+        ).execute
+      else
+        findings = Security::FindingsFinder.new(
+          pipeline,
+          params: {
+            report_type: [params[:report_type]],
+            scope: 'all',
+            limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
+          }
+        ).execute
+        Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings)
+      end
     end
 
     private
 
     def ready_to_send_to_finder?(pipeline)
-      return true if pipeline.nil? || feature_flag_disabled?(pipeline)
+      return true if pipeline.nil? || feature_flag_disabled?(project)
       return true if report_type_ingested?(pipeline, params[:report_type])
       return false if ingesting_security_scans_for?(pipeline)
 
@@ -83,8 +99,8 @@ module Ci
       ).not_in_terminal_state.any?
     end
 
-    def feature_flag_disabled?(pipeline)
-      Feature.disabled?(:migrate_mr_security_widget_to_security_findings_table, pipeline.project)
+    def feature_flag_disabled?(project)
+      Feature.disabled?(:migrate_mr_security_widget_to_security_findings_table, project)
     end
 
     def report_type_ingested?(pipeline, report_type)
