@@ -221,6 +221,9 @@ export default {
     canMarkNoteAsInternal() {
       return this.workItem?.userPermissions?.markNoteAsInternal;
     },
+    canUpdate() {
+      return this.workItem?.userPermissions?.updateWorkItem;
+    },
     showInternalNoteCheckbox() {
       return this.canMarkNoteAsInternal && this.isNewDiscussion;
     },
@@ -400,7 +403,7 @@ export default {
               >{{ commentButtonTextComputed }}
             </gl-button>
             <work-item-state-toggle
-              v-if="isNewDiscussion"
+              v-if="isNewDiscussion && canUpdate"
               :work-item-id="workItemId"
               :work-item-iid="workItemIid"
               :work-item-state="workItemState"
