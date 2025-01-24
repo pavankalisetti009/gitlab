@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_management do
+RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, namespace: group) }
   let_it_be_with_reload(:pipeline) { create(:ci_pipeline, project: project) }

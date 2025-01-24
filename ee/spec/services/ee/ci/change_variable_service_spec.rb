@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::ChangeVariableService, feature_category: :secrets_management do
+RSpec.describe Ci::ChangeVariableService, feature_category: :ci_variables do
   subject(:execute) { service.execute }
 
   let_it_be(:user) { create(:user) }

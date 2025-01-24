@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'User with admin_cicd_variables custom role', feature_category: :secrets_management do
+RSpec.describe 'User with admin_cicd_variables custom role', feature_category: :ci_variables do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
