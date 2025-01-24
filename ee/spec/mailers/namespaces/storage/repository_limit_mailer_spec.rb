@@ -1,0 +1,29 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Namespaces::Storage::RepositoryLimitMailer, feature_category: :consumables_cost_management do
+  include NamespacesHelper
+  include EmailSpec::Matchers
+
+  let(:recipients) { %w[bob@example.com john@example.com] }
+  let(:project) { build_stubbed(:project) }
+
+  describe '#notify_out_of_storage' do
+    it 'creates an email message for a project', :aggregate_failures do
+      mail = described_class.notify_out_of_storage(project_name: project.name, recipients: recipients)
+
+      expect(mail).to have_subject "Action required: #{project.name} is read-only"
+      expect(mail).to bcc_to recipients
+      expect(mail).to have_text(
+        "You have consumed all available storage and you can't push " \
+          "or add large files to #{project.name}"
+      )
+
+      expect(mail).to have_text(
+        "To remove the read-only state, reduce git repository and git LFS storage. " \
+          "For more information contact support."
+      )
+    end
+  end
+end
