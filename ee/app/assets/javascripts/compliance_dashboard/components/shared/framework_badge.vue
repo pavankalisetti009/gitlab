@@ -22,20 +22,16 @@ export default {
       required: false,
       default: true,
     },
-    showPopover: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     closeable: {
       type: Boolean,
       required: false,
       default: false,
     },
-    showEdit: {
-      type: Boolean,
-      required: false,
-      default: true,
+    popoverMode: {
+      type: String,
+      required: true,
+      default: 'details',
+      validator: (value) => ['details', 'hidden', 'edit', 'disabled'].includes(value),
     },
     viewDetailsUrl: {
       type: String,
@@ -46,6 +42,18 @@ export default {
   computed: {
     showDefaultBadge() {
       return this.showDefault && this.framework.default;
+    },
+    isEditMode() {
+      return this.popoverMode === 'edit';
+    },
+    isDetailsMode() {
+      return this.popoverMode === 'details';
+    },
+    isDisabled() {
+      return this.popoverMode === 'disabled';
+    },
+    showPopover() {
+      return this.popoverMode !== 'hidden';
     },
     frameworkName() {
       const maxLength = 30;
@@ -86,6 +94,9 @@ export default {
     default: s__('ComplianceFrameworks|default'),
     edit: s__('ComplianceReport|Edit the framework'),
     viewDetails: s__('ComplianceReport|View the framework details'),
+    disabledText: s__(
+      'ComplianceReport|Only group owners and maintainers can view the framework details',
+    ),
   },
 };
 </script>
@@ -102,7 +113,7 @@ export default {
       </div>
       <div class="gl-text-left">
         <gl-button
-          v-if="showEdit"
+          v-if="isEditMode"
           category="secondary"
           size="small"
           variant="confirm"
@@ -111,16 +122,19 @@ export default {
         >
           {{ $options.i18n.edit }}
         </gl-button>
-        <gl-button
-          v-else
-          category="secondary"
-          size="small"
-          variant="confirm"
-          class="gl-text-sm"
-          @click="viewFrameworkDetails"
-        >
-          {{ $options.i18n.viewDetails }}
-        </gl-button>
+        <template v-else>
+          <div v-if="isDisabled" class="gl-mb-3">{{ $options.i18n.disabledText }}</div>
+          <gl-button
+            category="secondary"
+            size="small"
+            variant="confirm"
+            class="gl-mb-2 gl-text-sm"
+            :disabled="isDisabled"
+            @click="viewFrameworkDetails"
+          >
+            {{ $options.i18n.viewDetails }}
+          </gl-button>
+        </template>
       </div>
     </gl-popover>
     <span ref="label">

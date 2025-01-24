@@ -13,7 +13,7 @@ const apolloProvider = new VueApollo({
 const initComplianceInfo = () => {
   const complianceInfoEl = document.getElementById('js-compliance-info');
   if (!complianceInfoEl) return false;
-  const { projectPath, complianceCenterPath } = complianceInfoEl.dataset;
+  const { projectPath, complianceCenterPath, canViewDashboard } = complianceInfoEl.dataset;
   return new Vue({
     el: complianceInfoEl,
     apolloProvider,
@@ -22,6 +22,7 @@ const initComplianceInfo = () => {
         props: {
           projectPath,
           complianceCenterPath,
+          canViewDashboard,
         },
       });
     },

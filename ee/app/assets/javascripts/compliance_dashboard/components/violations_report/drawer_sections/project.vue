@@ -67,7 +67,7 @@ export default {
         v-if="hasComplianceFramework"
         :framework="complianceFramework"
         :show-default="false"
-        :show-edit="isFrameworkEditEnabled"
+        :popover-mode="isFrameworkEditEnabled ? 'edit' : 'details'"
         class="gl-ml-3"
       />
     </div>

@@ -255,7 +255,7 @@ export default {
       @row-clicked="toggleDrawer"
     >
       <template #cell(frameworkName)="{ item }">
-        <framework-badge :framework="item" :show-edit="isTopLevelGroup" />
+        <framework-badge :framework="item" :popover-mode="isTopLevelGroup ? 'edit' : 'details'" />
       </template>
       <template #cell(associatedProjects)="{ item: { projects } }">
         <div

@@ -474,7 +474,7 @@ describe('ProjectsTable component', () => {
         .at(COMPLIANCE_FRAMEWORK_COLUMN_IDX)
         .findComponent(FrameworkBadge);
 
-      expect(badge.props('showEdit')).toBe(false);
+      expect(badge.props('popoverMode')).toBe('details');
     });
 
     it('does not render framework selection if no frameworks', async () => {

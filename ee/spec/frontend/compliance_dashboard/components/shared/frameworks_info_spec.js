@@ -63,14 +63,13 @@ describe('ComplianceFrameworksInfo', () => {
           closeable: false,
           framework: frameworks[0],
           showDefault: true,
-          showEdit: true,
-          showPopover: true,
+          popoverMode: 'edit',
         });
       });
 
-      it('passes showEditSingleFramework prop to Badge component', () => {
+      it('passes correct popover mode prop to Badge component', () => {
         createComponent({ frameworks: [frameworks[0]], showEditSingleFramework: false });
-        expect(badge().props('showEdit')).toBe(false);
+        expect(badge().props('popoverMode')).toBe('details');
       });
     });
 

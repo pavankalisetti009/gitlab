@@ -40,6 +40,9 @@ export default {
     isSingleFrameworkApplied() {
       return this.frameworks.length === 1;
     },
+    popoverMode() {
+      return this.showEditSingleFramework ? 'edit' : 'details';
+    },
   },
   methods: {
     showFrameworkDetails(id) {
@@ -74,7 +77,7 @@ export default {
           <framework-badge
             :framework="framework"
             class="gl-mb-3 gl-mr-2 gl-inline-block"
-            :show-popover="false"
+            popover-mode="hidden"
           />
         </div>
       </gl-popover>
@@ -91,7 +94,7 @@ export default {
       v-else-if="isSingleFrameworkApplied"
       class="gl-mt-3"
       data-testid="single-framework-label"
-      :show-edit="showEditSingleFramework"
+      :popover-mode="popoverMode"
       :framework="frameworks[0]"
     />
   </div>
