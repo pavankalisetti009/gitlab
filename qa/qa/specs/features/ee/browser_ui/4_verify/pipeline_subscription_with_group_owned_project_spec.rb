@@ -16,7 +16,7 @@ module QA
 
       let(:downstream_project) do
         create(:project,
-          name: 'project-with-pipeline-subscription',
+          name: 'downstream-project-for-subscription',
           description: 'Project with CI subscription',
           group: group)
       end
@@ -27,6 +27,8 @@ module QA
         [downstream_project, upstream_project].each do |project|
           add_ci_file(project)
         end
+
+        Flow::Pipeline.wait_for_pipeline_creation_via_api(project: downstream_project)
 
         Flow::Login.sign_in
         downstream_project.visit!
@@ -43,28 +45,18 @@ module QA
       context 'when upstream project new tag pipeline finishes' do
         it 'triggers pipeline in downstream project',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347998' do
-          # Downstream project should have one pipeline at this time
-          Support::Waiter.wait_until { downstream_project.pipelines.size == 1 }
-
-          create(:tag, project: upstream_project, ref: upstream_project.default_branch, name: tag_name)
-
           downstream_project.visit!
 
-          Support::Waiter.wait_until(sleep_interval: 3) do
-            QA::Runtime::Logger.info 'Waiting for upstream pipeline to succeed.'
-            new_pipeline = upstream_project.pipelines.find { |pipeline| pipeline[:ref] == tag_name }
-            new_pipeline&.dig(:status) == 'success'
-          end
+          Runtime::Logger.info "Creating tag #{tag_name} for #{upstream_project.name}."
+          create(:tag, project: upstream_project, ref: upstream_project.default_branch, name: tag_name)
+          Flow::Pipeline.wait_for_pipeline_creation_via_api(project: downstream_project, size: 2)
 
-          Page::Project::Menu.perform(&:go_to_pipelines)
+          expect(upstream_project).to have_pipeline_with_ref(tag_name),
+            "No pipeline with ref #{tag_name} was created for #{upstream_project.name}."
 
-          # Downstream project must have 2 pipelines at this time
-          expect { downstream_project.pipelines.size }.to eventually_eq(2), "There are currently #{downstream_project.pipelines.size} pipelines in downstream project."
-
-          # expect new downstream pipeline to also succeed
-          Page::Project::Pipeline::Index.perform do |index|
-            expect(index.wait_for_latest_pipeline(status: 'Passed')).to be_truthy, 'Downstream pipeline did not succeed as expected.'
-          end
+          expect do
+            downstream_project.latest_pipeline[:status]
+          end.to eventually_eq('success').within(max_duration: 300), 'Downstream pipeline did not succeed as expected.'
         end
       end
 

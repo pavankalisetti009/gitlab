@@ -19,15 +19,15 @@ module QA
       before do
         add_ci_file(downstream_project, downstream_ci_file)
         add_ci_file(upstream_project, upstream_ci_file)
+        Flow::Pipeline.wait_for_pipeline_creation_via_api(project: upstream_project)
+        Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: upstream_project, status: 'success')
 
         Flow::Login.sign_in
-        upstream_project.visit!
-        Flow::Pipeline.visit_latest_pipeline(status: 'Passed')
+        upstream_project.visit_latest_pipeline
       end
 
       after do
         runner.remove_via_api!
-        [upstream_project, downstream_project].each(&:remove_via_api!)
       end
 
       it(
@@ -35,11 +35,9 @@ module QA
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/358064'
       ) do
         Page::Project::Pipeline::Show.perform do |show|
-          expect(show).to have_passed
           expect(show).not_to have_job(downstream_job_name)
 
           show.expand_linked_pipeline
-
           expect(show).to have_job(downstream_job_name)
         end
       end
