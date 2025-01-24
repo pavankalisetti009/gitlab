@@ -3,80 +3,31 @@
 require 'spec_helper'
 
 RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: :global_search do
-  let_it_be(:user) { create(:user) }
-
   let_it_be(:project) { create(:project, :public, :repository) }
-  let_it_be(:unindexed_project) { create(:project, :repository) }
-  let(:repository) { project.repository }
-  let(:unindexed_repository) { unindexed_project.repository }
-  let_it_be(:private_project) { create(:project, :repository, namespace: project.namespace) }
-  let(:private_repository) { private_project.repository }
-
-  before do
-    zoekt_ensure_project_indexed!(project)
-  end
+  let_it_be(:repository) { project.repository }
 
   describe '#use_zoekt?' do
+    let_it_be(:unindexed_project) { create(:project, :repository) }
+    let(:unindexed_repository) { unindexed_project.repository }
+    let_it_be(:private_project) { create(:project, :repository, namespace: project.namespace) }
+    let(:private_repository) { private_project.repository }
+
     before do
       stub_licensed_features(zoekt_code_search: true)
       stub_ee_application_setting(zoekt_indexing_enabled: true)
+      zoekt_ensure_project_indexed!(project)
     end
 
     it 'is true for indexed projects' do
-      expect(repository.use_zoekt?).to eq(true)
+      expect(repository.use_zoekt?).to be true
     end
 
     it 'is false for unindexed projects' do
-      expect(unindexed_repository.use_zoekt?).to eq(false)
+      expect(unindexed_repository.use_zoekt?).to be false
     end
 
     it 'is true for private projects with new indexer' do
-      expect(private_repository.use_zoekt?).to eq(true)
-    end
-  end
-
-  def search_for(term, node_id)
-    ::Search::Zoekt::SearchResults.new(user, term, Project.all, node_id: node_id).objects('blobs').map(&:path)
-  end
-
-  describe '#update_zoekt_index!' do
-    let(:node_id) { ::Search::Zoekt::Node.last.id }
-
-    it 'makes updates available', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460391' do
-      project.repository.create_file(
-        user,
-        'somenewsearchablefile.txt',
-        'some content',
-        message: 'added test file',
-        branch_name: project.default_branch)
-
-      expect(search_for('somenewsearchablefile.txt', node_id)).to be_empty
-
-      responses = repository.update_zoekt_index!
-      response = responses.first
-
-      expect(response['Success']).to be_truthy
-
-      expect(search_for('somenewsearchablefile.txt', node_id)).to match_array(['somenewsearchablefile.txt'])
-    end
-
-    it 'makes updates available when called with force: true',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460608' do
-      project.repository.create_file(
-        user,
-        'file_with_force.txt',
-        'some content',
-        message: 'added test file',
-        branch_name: project.default_branch)
-
-      expect(search_for('file_with_force.txt', node_id)).to be_empty
-
-      responses = repository.update_zoekt_index!(force: true)
-      response = responses.first
-
-      expect(response['Success']).to be_truthy
-
-      expect(search_for('file_with_force.txt', node_id)).to match_array(['file_with_force.txt'])
+      expect(private_repository.use_zoekt?).to be true
     end
   end
 

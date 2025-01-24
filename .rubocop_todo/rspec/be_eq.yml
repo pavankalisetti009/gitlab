@@ -222,7 +222,6 @@ RSpec/BeEq:
     - 'ee/spec/models/concerns/elastic/snippet_spec.rb'
     - 'ee/spec/models/concerns/geo/verifiable_model_spec.rb'
     - 'ee/spec/models/concerns/identity_verifiable_spec.rb'
-    - 'ee/spec/models/concerns/search/zoekt/searchable_repository_spec.rb'
     - 'ee/spec/models/dast/branch_spec.rb'
     - 'ee/spec/models/dast/site_profile_secret_variable_spec.rb'
     - 'ee/spec/models/dast_site_spec.rb'
