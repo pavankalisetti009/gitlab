@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe ProjectStatistics do
+RSpec.describe ProjectStatistics, feature_category: :source_code_management do
   using RSpec::Parameterized::TableSyntax
 
-  describe '#refresh_storage_size!' do
+  describe '#refresh_storage_size!', feature_category: :consumables_cost_management do
     let_it_be_with_reload(:project) { create(:project) }
     let(:statistics) { project.statistics }
     let(:other_sizes) { 3 }
@@ -56,7 +56,28 @@ RSpec.describe ProjectStatistics do
     end
   end
 
-  describe '#cost_factored_storage_size', :saas do
+  describe '#notify_storage_usage', feature_category: :consumables_cost_management do
+    let_it_be_with_reload(:project) { create(:project) }
+    let(:statistics) { project.statistics }
+
+    context 'when repository_storage_size_components have changed' do
+      it "calls notify_storage_usage and execute the correct service" do
+        expect(::Namespaces::Storage::RepositoryLimit::EmailNotificationService).to receive(:execute).with(project)
+
+        statistics.update!(repository_size: statistics.repository_size + 1)
+      end
+    end
+
+    context 'when repository_storage_size_components did not have changed' do
+      it "does not call notify_storage_usage" do
+        expect(::Namespaces::Storage::RepositoryLimit::EmailNotificationService).not_to receive(:execute)
+
+        statistics.update!(build_artifacts_size: statistics.build_artifacts_size + 1)
+      end
+    end
+  end
+
+  describe '#cost_factored_storage_size', :saas, feature_category: :consumables_cost_management do
     let_it_be(:project) { create(:project) }
     let_it_be(:fork_network) { create(:fork_network, root_project: project) }
 
@@ -142,7 +163,7 @@ RSpec.describe ProjectStatistics do
     end
   end
 
-  describe "cost factored attributes" do
+  describe "cost factored attributes", feature_category: :consumables_cost_management do
     let_it_be(:project) { create(:project) }
     let_it_be(:fork_network) { create(:fork_network, root_project: project) }
 

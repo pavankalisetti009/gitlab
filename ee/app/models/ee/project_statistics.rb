@@ -2,7 +2,17 @@
 
 module EE
   module ProjectStatistics
+    extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
+
+    prepended do
+      after_commit :notify_storage_usage, on: :update, if: -> { repository_storage_size_components_changed? }
+    end
+
+    REPOSITORY_STORAGE_SIZE_COMPONENTS = [
+      :repository_size,
+      :lfs_objects_size
+    ].freeze
 
     def cost_factored_storage_size
       (storage_size * cost_factor).round
@@ -33,6 +43,14 @@ module EE
     end
 
     private
+
+    def repository_storage_size_components_changed?
+      (previous_changes.keys & REPOSITORY_STORAGE_SIZE_COMPONENTS.map(&:to_s)).any?
+    end
+
+    def notify_storage_usage
+      ::Namespaces::Storage::RepositoryLimit::EmailNotificationService.execute(project)
+    end
 
     def cost_factor
       ::Namespaces::Storage::CostFactor.cost_factor_for(project)

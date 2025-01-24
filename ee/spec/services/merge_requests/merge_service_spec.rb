@@ -56,13 +56,14 @@ RSpec.describe MergeRequests::MergeService, feature_category: :source_code_manag
       let(:namespace) { project.namespace }
 
       before do
-        project.update_attribute(:repository_size_limit, 5)
-        project.statistics.update!(repository_size: 6)
         create(:gitlab_subscription, :premium, namespace: namespace)
         create(:namespace_root_storage_statistics, namespace: namespace)
         enforce_namespace_storage_limit(namespace)
         set_enforcement_limit(namespace, megabytes: 10)
         set_used_storage(namespace, megabytes: 7)
+
+        project.update_attribute(:repository_size_limit, 5)
+        project.statistics.update!(repository_size: 6)
       end
 
       it 'does not set an error message' do

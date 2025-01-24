@@ -8,9 +8,9 @@ RSpec.describe Gitlab::GitAccessProject do
   describe 'storage size restrictions' do
     let_it_be(:user) { create(:user) }
 
-    let(:project) { create(:project, :repository) }
+    let(:namespace) { create(:group) }
+    let(:project) { create(:project, :repository, namespace: namespace) }
     let(:repository) { project.repository }
-    let(:namespace) { project.namespace }
     let(:sha_with_2_mb_file) { 'bf12d2567099e26f59692896f73ac819bae45b00' }
     let(:sha_with_smallest_changes) { 'b9238ee5bf1d7359dd3b8c89fd76c1c7f8b75aba' }
     let(:size_checker) { Namespaces::Storage::RootSize.new(namespace) }
@@ -62,10 +62,10 @@ RSpec.describe Gitlab::GitAccessProject do
     end
 
     context 'when namespace storage limits are enforced for a namespace', :saas do
+      let(:namespace) { create(:group_with_plan, :with_root_storage_statistics, plan: :ultimate_plan) }
+
       before do
         enforce_namespace_storage_limit(namespace)
-        create(:gitlab_subscription, :ultimate, namespace: namespace)
-        create(:namespace_root_storage_statistics, namespace: namespace)
       end
 
       context 'when GIT_OBJECT_DIRECTORY_RELATIVE env var is set', :request_store do
@@ -293,15 +293,13 @@ RSpec.describe Gitlab::GitAccessProject do
       end
 
       context 'when pushing to a subgroup project' do
-        let(:group) { create(:group) }
-        let(:subgroup) { create(:group, parent: group) }
+        let(:subgroup) { create(:group, parent: namespace) }
         let(:project) { create(:project, :repository, namespace: subgroup) }
-        let(:namespace) { group }
 
         context 'when the root namespace storage size is above the limit' do
           before do
-            set_enforcement_limit(group, megabytes: 5)
-            set_used_storage(group, megabytes: 6)
+            set_enforcement_limit(namespace, megabytes: 5)
+            set_used_storage(namespace, megabytes: 6)
             create(:namespace_root_storage_statistics, namespace: subgroup)
             set_used_storage(subgroup, megabytes: 1)
           end
