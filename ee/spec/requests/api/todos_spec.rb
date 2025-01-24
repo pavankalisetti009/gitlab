@@ -59,7 +59,11 @@ RSpec.describe API::Todos, feature_category: :notifications do
   end
 
   describe 'POST :id/epics/:epic_iid/todo' do
-    subject { post api("/groups/#{group.id}/epics/#{epic.iid}/todo", user) }
+    def create_todo
+      post api("/groups/#{group.id}/epics/#{epic.iid}/todo", user)
+    end
+
+    subject { create_todo }
 
     context 'when epics feature is disabled' do
       it 'returns 403 forbidden error' do
@@ -91,11 +95,9 @@ RSpec.describe API::Todos, feature_category: :notifications do
       end
 
       it 'returns 304 there already exist a todo on that epic' do
-        stub_feature_flags(multiple_todos: false)
+        create_todo
 
-        create(:todo, project: nil, group: group, user: user, target: epic)
-
-        subject
+        expect { subject }.not_to change { Todo.count }
 
         expect(response).to have_gitlab_http_status(:not_modified)
       end
