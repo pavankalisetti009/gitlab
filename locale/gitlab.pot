@@ -52701,7 +52701,7 @@ msgstr ""
 msgid "Select all"
 msgstr ""
 
-msgid "Select all vulnerabilities"
+msgid "Select all vulnerabilities on current page"
 msgstr ""
 
 msgid "Select an assignee"
