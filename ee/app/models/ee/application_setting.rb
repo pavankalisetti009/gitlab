@@ -283,10 +283,6 @@ module EE
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
 
-      validates :security_policy_scheduled_scans_max_concurrency,
-        presence: true,
-        numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-
       validates :code_creation, json_schema: { filename: 'application_setting_code_creation' }
 
       validates :observability_backend_ssl_verification_enabled,
@@ -345,7 +341,6 @@ module EE
           secret_detection_token_revocation_url: nil,
           secret_detection_token_revocation_token: nil,
           secret_detection_revocation_token_types_url: nil,
-          security_policy_scheduled_scans_max_concurrency: 10000,
           max_number_of_repository_downloads: 0,
           max_number_of_repository_downloads_within_time_period: 0,
           git_rate_limit_users_allowlist: [],

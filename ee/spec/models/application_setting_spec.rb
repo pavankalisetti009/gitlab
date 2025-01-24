@@ -132,12 +132,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .is_less_than_or_equal_to(::Security::ScanResultPolicy::POLICIES_LIMIT)
       end
 
-      it do
-        is_expected.to validate_numericality_of(:security_policy_scheduled_scans_max_concurrency)
-                         .only_integer
-                         .is_greater_than_or_equal_to(0)
-      end
-
       it { expect(described_class).to validate_jsonb_schema(['application_setting_security_policies']) }
     end
 
