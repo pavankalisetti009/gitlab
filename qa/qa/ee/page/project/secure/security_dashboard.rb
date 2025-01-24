@@ -15,7 +15,7 @@ module QA
               element 'vulnerability-status-content'
             end
 
-            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/selection_summary.vue' do
+            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/bulk_change_status.vue' do
               element 'status-listbox'
               element 'change-status-button'
               element 'dismissal-reason-listbox'
