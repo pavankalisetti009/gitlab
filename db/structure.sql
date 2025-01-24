@@ -26530,6 +26530,9 @@ ALTER TABLE web_hook_logs
 ALTER TABLE vulnerability_finding_evidences
     ADD CONSTRAINT check_e8f37f70eb CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE project_relation_exports
+    ADD CONSTRAINT check_f461e3537f CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE approval_merge_request_rule_sources
     ADD CONSTRAINT check_f82666a937 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
