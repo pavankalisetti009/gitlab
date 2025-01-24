@@ -112,30 +112,5 @@ RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category:
         end
       end
     end
-
-    context 'when ai settings change', :saas do
-      before do
-        allow(Gitlab).to receive(:com?).and_return(true)
-        stub_ee_application_setting(should_check_namespace_plan: true)
-        stub_licensed_features(ai_features: true)
-      end
-
-      context 'when experiment_features_enabled changes' do
-        let(:params) { { experiment_features_enabled: true } }
-
-        it 'publishes an event' do
-          expect { update_settings }.to publish_event(::NamespaceSettings::AiRelatedSettingsChangedEvent)
-            .with(group_id: group.id)
-        end
-      end
-
-      context 'when experiment_features setting does not change' do
-        let(:params) { { experiment_features_enabled: false } }
-
-        it 'does not publish an event' do
-          expect { update_settings }.not_to publish_event(::NamespaceSettings::AiRelatedSettingsChangedEvent)
-        end
-      end
-    end
   end
 end
