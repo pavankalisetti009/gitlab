@@ -720,7 +720,7 @@ module EE
       end
 
       ::Vulnerabilities::Scanner.where(project: projects_for_group_and_its_subgroups_without_deleted)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486216')
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/514673')
     end
 
     def vulnerability_historical_statistics
@@ -729,7 +729,7 @@ module EE
       else
         # We'll remove this cross join when we remove the feature flag.
         ::Vulnerabilities::HistoricalStatistic.for_project(projects_for_group_and_its_subgroups_without_deleted)
-          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486216')
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/507551')
       end
     end
 
