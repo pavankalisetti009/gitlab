@@ -18,7 +18,7 @@ module Gitlab
       end
 
       def add(message)
-        postgres_storage.add(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
+        postgres_storage.add(message)
         redis_storage.add(message)
       end
 
@@ -29,12 +29,12 @@ module Gitlab
         return unless message
 
         message.extras[key] = value
-        postgres_storage.update_message_extras(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
+        postgres_storage.update_message_extras(message)
         redis_storage.update(message)
       end
 
       def set_has_feedback(message)
-        postgres_storage.set_has_feedback(message) if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
+        postgres_storage.set_has_feedback(message)
         redis_storage.set_has_feedback(message)
       end
 
@@ -63,7 +63,7 @@ module Gitlab
       end
 
       def clear!
-        postgres_storage.clear! if ::Feature.enabled?(:duo_chat_storage_postgresql_write, user)
+        postgres_storage.clear!
         redis_storage.clear!
       end
 
@@ -83,9 +83,7 @@ module Gitlab
       end
 
       def read_storage
-        return postgres_storage if ::Feature.enabled?(:duo_chat_storage_postgresql_read, user)
-
-        redis_storage
+        postgres_storage
       end
 
       def postgres_storage
