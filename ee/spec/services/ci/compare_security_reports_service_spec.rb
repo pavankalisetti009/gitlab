@@ -27,8 +27,35 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
 
   let(:service) { described_class.new(project, current_user, report_type: scan_type.to_s) }
 
-  def collect_ids(collection)
-    collection.map { |t| t['identifiers'].first['external_id'] }
+  def create_scan_with_findings(scan_type, pipeline, count = 1)
+    scan = create(
+      :security_scan,
+      :latest_successful,
+      project: project,
+      pipeline: pipeline,
+      scan_type: scan_type
+    )
+
+    create_list(
+      :security_finding,
+      count,
+      :with_finding_data,
+      deduplicated: true,
+      scan: scan
+    )
+  end
+
+  before_all do
+    create_scan_with_findings('dependency_scanning', test_pipelines[:with_dependency_scanning_report], 4)
+    create_scan_with_findings('container_scanning', test_pipelines[:with_container_scanning_report], 8)
+    create_scan_with_findings('dast', test_pipelines[:with_dast_report], 20)
+    create_scan_with_findings('sast', test_pipelines[:with_sast_report], 5)
+    create_scan_with_findings('secret_detection', test_pipelines[:with_secret_detection_report])
+    create_scan_with_findings('dependency_scanning', test_pipelines[:with_dependency_scanning_feature_branch], 4)
+    create_scan_with_findings('container_scanning', test_pipelines[:with_container_scanning_feature_branch], 8)
+    create_scan_with_findings('dast', test_pipelines[:with_dast_feature_branch], 20)
+    create_scan_with_findings('sast', test_pipelines[:with_sast_feature_branch], 5)
+    create_scan_with_findings('secret_detection', test_pipelines[:with_secret_detection_feature_branch])
   end
 
   shared_examples_for 'serializes `found_by_pipeline` attribute' do
@@ -57,7 +84,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     let_it_be(:head_pipeline) { test_pipelines[:"with_#{scan_type}_feature_branch"] }
     let(:expected_payload_fields) do
       %w[create_vulnerability_feedback_issue_path create_vulnerability_feedback_merge_request_path
-        create_vulnerability_feedback_dismissal_path create_vulnerability_feedback_issue_path]
+        create_vulnerability_feedback_dismissal_path]
     end
 
     it 'reports status as parsed' do
@@ -70,24 +97,12 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       expect(service.current_user).to eq(current_user)
     end
 
-    it 'reports added vulnerability' do
-      compare_keys = collect_ids(subject[:data]['added'])
-      expect(compare_keys).to match_array(expected_added_keys)
+    it 'reports added vulnerabilities' do
+      expect(subject[:data]['added'].size).to eq(num_added_findings)
     end
 
-    it 'reports fixed dependency scanning vulnerabilities' do
-      compare_keys = collect_ids(subject[:data]['fixed'])
-      expect(compare_keys).to match_array(expected_fixed_keys)
-    end
-
-    context 'with migrate_mr_security_widget_to_security_findings_table disabled' do
-      before do
-        stub_feature_flags(migrate_mr_security_widget_to_security_findings_table: false)
-      end
-
-      it 'does not query the database' do
-        expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
-      end
+    it 'reports fixed vulnerabilities' do
+      expect(subject[:data]['fixed'].size).to eq(num_fixed_findings)
     end
   end
 
@@ -108,6 +123,8 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     end
   end
 
+  # We check for scans in `succeeded` state,
+  # only when migrate_mr_security_widget_to_security_findings_table FF is enabled
   shared_examples_for 'when a pipeline has scan that is not in the `succeeded` state' do
     let_it_be(:base_pipeline) { test_pipelines[:default_base] }
     let_it_be(:head_pipeline) { test_pipelines[:"with_#{scan_type}_feature_branch"] }
@@ -202,10 +219,121 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
   end
 
   describe '#execute' do
-    where(vulnerability_finding_signatures: [true, false])
-    with_them do
+    context 'with migrate_mr_security_widget_to_security_findings_table flag disabled' do
+      where(vulnerability_finding_signatures: [true, false])
+      with_them do
+        before do
+          stub_licensed_features(vulnerability_finding_signatures: vulnerability_finding_signatures)
+          stub_licensed_features(security_dashboard: true, scan_type => true)
+          stub_feature_flags(migrate_mr_security_widget_to_security_findings_table: false)
+        end
+
+        context 'with dependency_scanning' do
+          let_it_be(:scan_type) { :dependency_scanning }
+
+          it_behaves_like 'when only the head pipeline has a report' do
+            let(:num_findings_in_fixture) { 4 }
+          end
+
+          it_behaves_like 'when base and head pipelines have scanning reports' do
+            let(:num_fixed_findings) { 1 }
+            let(:num_added_findings) { 1 }
+
+            it 'does not query the database' do
+              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+            end
+
+            it_behaves_like 'serializes `found_by_pipeline` attribute'
+          end
+
+          it_behaves_like 'when head pipeline has corrupted scanning reports'
+        end
+
+        context 'with container_scanning' do
+          let_it_be(:scan_type) { :container_scanning }
+
+          it_behaves_like 'when only the head pipeline has a report' do
+            let(:num_findings_in_fixture) { 8 }
+          end
+
+          it_behaves_like 'when base and head pipelines have scanning reports' do
+            let(:num_fixed_findings) { 8 }
+            let(:num_added_findings) { 1 }
+
+            it 'does not query the database' do
+              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+            end
+
+            it_behaves_like 'serializes `found_by_pipeline` attribute'
+          end
+
+          it_behaves_like 'when head pipeline has corrupted scanning reports'
+        end
+
+        context 'with dast' do
+          let_it_be(:scan_type) { :dast }
+
+          it_behaves_like 'when only the head pipeline has a report' do
+            let(:num_findings_in_fixture) { 20 }
+          end
+
+          it_behaves_like 'when base and head pipelines have scanning reports' do
+            let(:num_fixed_findings) { 19 }
+            let(:num_added_findings) { 1 }
+
+            it 'does not query the database' do
+              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+            end
+
+            it_behaves_like 'serializes `found_by_pipeline` attribute'
+          end
+        end
+
+        context 'with sast' do
+          let_it_be(:scan_type) { :sast }
+
+          it_behaves_like 'when only the head pipeline has a report' do
+            let(:num_findings_in_fixture) { 5 }
+          end
+
+          it_behaves_like 'when base and head pipelines have scanning reports' do
+            let(:num_fixed_findings) { 1 }
+            let(:num_added_findings) { 1 }
+
+            it 'does not query the database' do
+              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+            end
+
+            it_behaves_like 'serializes `found_by_pipeline` attribute'
+          end
+        end
+
+        context 'with secret detection' do
+          let_it_be(:scan_type) { :secret_detection }
+
+          it_behaves_like 'when only the head pipeline has a report' do
+            let(:num_findings_in_fixture) { 1 }
+          end
+
+          it_behaves_like 'when base and head pipelines have scanning reports' do
+            let(:num_fixed_findings) { 1 }
+            let(:num_added_findings) { 0 }
+            let(:expected_payload_fields) { [] }
+
+            it 'does not query the database' do
+              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+            end
+
+            it 'returns nil for the "added" field' do
+              expect(subject[:data]['added'].first).to be_nil
+            end
+          end
+        end
+      end
+    end
+
+    context 'with migrate_mr_security_widget_to_security_findings_table flag enabled' do
       before do
-        stub_licensed_features(vulnerability_finding_signatures: vulnerability_finding_signatures)
         stub_licensed_features(security_dashboard: true, scan_type => true)
       end
 
@@ -217,12 +345,16 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         end
 
         it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:expected_fixed_keys) { %w[06565b64-486d-4326-b906-890d9915804d] }
-          let(:expected_added_keys) { %w[CVE-2017-5946] }
+          let(:num_fixed_findings) { 4 }
+          let(:num_added_findings) { 4 }
+
+          it 'queries the database' do
+            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          end
+
           it_behaves_like 'serializes `found_by_pipeline` attribute'
         end
 
-        it_behaves_like 'when head pipeline has corrupted scanning reports'
         it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
 
@@ -234,12 +366,16 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         end
 
         it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:expected_fixed_keys) { %w[CVE-2017-16997 CVE-2017-18269 CVE-2018-1000001 CVE-2016-10228 CVE-2010-4052 CVE-2018-18520 CVE-2018-16869 CVE-2018-18311] }
-          let(:expected_added_keys) { %w[CVE-2017-15650] }
+          let(:num_fixed_findings) { 8 }
+          let(:num_added_findings) { 8 }
+
+          it 'queries the database' do
+            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          end
+
           it_behaves_like 'serializes `found_by_pipeline` attribute'
         end
 
-        it_behaves_like 'when head pipeline has corrupted scanning reports'
         it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
 
@@ -251,8 +387,13 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         end
 
         it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:expected_fixed_keys) { %w[10010 10027 10027 10027 10027 10054 10054 10096 10202 10202 10202 10202 20012 20012 20012 20012 90011 90033 90033] }
-          let(:expected_added_keys) { %w[10027] }
+          let(:num_fixed_findings) { 20 }
+          let(:num_added_findings) { 20 }
+
+          it 'queries the database' do
+            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          end
+
           it_behaves_like 'serializes `found_by_pipeline` attribute'
         end
 
@@ -267,8 +408,13 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         end
 
         it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:expected_fixed_keys) { %w[CIPHER_INTEGRITY] }
-          let(:expected_added_keys) { %w[ECB_MODE] }
+          let(:num_fixed_findings) { 5 }
+          let(:num_added_findings) { 5 }
+
+          it 'queries the database' do
+            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          end
+
           it_behaves_like 'serializes `found_by_pipeline` attribute'
         end
 
@@ -283,16 +429,16 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         end
 
         it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:expected_added_keys) { %w[] }
-          let(:expected_fixed_keys) { %w[AWS] }
+          let(:num_fixed_findings) { 0 }
+          let(:num_added_findings) { 1 }
           let(:expected_payload_fields) { [] }
 
-          it 'returns nil for the "added" field' do
-            expect(subject[:data]['added'].first).to be_nil
+          it 'queries the database' do
+            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
           end
-
-          it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
         end
+
+        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
     end
   end

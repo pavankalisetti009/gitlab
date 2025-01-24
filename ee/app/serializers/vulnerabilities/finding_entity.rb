@@ -64,8 +64,10 @@ class Vulnerabilities::FindingEntity < Grape::Entity
     occurrence.present(presenter_class: Vulnerabilities::FindingPresenter).blob_path
   end
 
-  expose :found_by_pipeline, if: ->(finding, _) { finding.respond_to?(:found_by_pipeline) } do
-    expose(:iid) { |finding| finding.found_by_pipeline&.iid }
+  expose :found_by_pipeline, if: ->(finding, _) { finding.respond_to?(:found_by_pipeline) || finding.pipeline&.iid } do
+    expose(:iid) do |finding|
+      finding.respond_to?(:found_by_pipeline) ? finding.found_by_pipeline&.iid : finding.pipeline&.iid
+    end
   end
 
   expose :ai_resolution_enabled?, as: :ai_resolution_enabled, if: ->(finding, _) {
