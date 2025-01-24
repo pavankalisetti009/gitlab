@@ -124,7 +124,7 @@ export default {
           v-if="hmac"
           :aria-label="$options.i18n.sharedSecret"
           name="check-circle-filled"
-          class="gl-text-green-700"
+          class="gl-text-success"
         />
       </template>
       <template #cell(actions)="{ item = {} }">

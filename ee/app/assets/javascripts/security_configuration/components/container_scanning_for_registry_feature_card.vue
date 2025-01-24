@@ -171,7 +171,7 @@ export default {
         >
           <span>
             <gl-icon v-if="enabled" name="check-circle-filled" />
-            <span class="{gl-text-green-700: enabled}">{{ statusText }}</span>
+            <span class="{gl-text-success: enabled}">{{ statusText }}</span>
           </span>
         </div>
       </div>
