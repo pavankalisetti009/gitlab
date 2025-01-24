@@ -439,7 +439,7 @@ jest vue3 check quarantined predictive:
     - "detect-tests"
   script:
     - if [[ -s "$RSPEC_CHANGED_FILES_PATH" ]] || [[ -s "$RSPEC_MATCHING_JS_FILES_PATH" ]]; then run_timed_command "./scripts/frontend/check_jest_vue3_quarantine.js"; fi
-  parallel: 1
+  parallel: 4
   artifacts:
     name: quarantined_tests_output
     expire_in: 31d
@@ -451,6 +451,7 @@ jest vue3 check quarantined predictive:
 jest-with-fixtures vue3 check quarantined predictive:
   extends:
     - jest vue3 check quarantined predictive
+  parallel: 1
   variables:
     JEST_FIXTURE_JOBS_ONLY: 1
 
