@@ -20,7 +20,7 @@ describe('IntegrationSectionGoogleCloudIAM', () => {
   };
 
   const findConfigurations = () => wrapper.findAllComponents(Configuration);
-  const findHeaders = () => wrapper.findAll('h4');
+  const findHeaders = () => wrapper.findAll('h3');
 
   it('shows two headers', () => {
     createComponent();

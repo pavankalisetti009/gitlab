@@ -4,6 +4,7 @@ import { GlAlert, GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import CodeBlockHighlighted from '~/vue_shared/components/code_block_highlighted.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 
 export default {
   components: {
@@ -13,6 +14,7 @@ export default {
     GlSprintf,
     ClipboardButton,
     CodeBlockHighlighted,
+    SettingsSection,
   },
   props: {
     wlifIssuer: {
@@ -66,9 +68,7 @@ gcloud iam workload-identity-pools providers create-oidc "${this.identityProvide
 </script>
 
 <template>
-  <div>
-    <h3>{{ s__('GoogleCloud|2. Set up workload identity federation') }}</h3>
-
+  <settings-section :heading="s__('GoogleCloud|2. Set up workload identity federation')">
     <gl-alert :dismissible="false">
       <gl-sprintf
         :message="
@@ -150,5 +150,5 @@ gcloud iam workload-identity-pools providers create-oidc "${this.identityProvide
         </gl-sprintf>
       </li>
     </ol>
-  </div>
+  </settings-section>
 </template>

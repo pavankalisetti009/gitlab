@@ -5,6 +5,7 @@ import IntegrationSectionGoogleArtifactManagement from 'ee/integrations/edit/com
 import Configuration from '~/integrations/edit/components/sections/configuration.vue';
 import Connection from '~/integrations/edit/components/sections/connection.vue';
 import ConfigurationInstructions from 'ee/integrations/edit/components/google_artifact_management/configuration_instructions.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import EmptyState from 'ee/integrations/edit/components/google_artifact_management/empty_state.vue';
 import { createStore } from '~/integrations/edit/store';
 import { mockIntegrationProps } from '../../mock_data';
@@ -17,7 +18,7 @@ describe('IntegrationSectionGoogleArtifactManagement', () => {
   const findConfigurationInstructions = () => wrapper.findComponent(ConfigurationInstructions);
   const findConfiguration = () => wrapper.findComponent(Configuration);
   const findConnection = () => wrapper.findComponent(Connection);
-  const findTitle = () => wrapper.find('h3');
+  const findTitle = () => wrapper.find('h2');
 
   const createComponent = (customState = {}) => {
     const store = createStore({
@@ -32,6 +33,7 @@ describe('IntegrationSectionGoogleArtifactManagement', () => {
         isValidated: false,
       },
       store,
+      stubs: { SettingsSection },
     });
   };
 

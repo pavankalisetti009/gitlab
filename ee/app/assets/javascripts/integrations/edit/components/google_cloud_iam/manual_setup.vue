@@ -4,6 +4,7 @@ import { __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 
 export default {
   components: {
@@ -14,6 +15,7 @@ export default {
     GlSprintf,
     InviteMembersTrigger: () => import('~/invite_members/components/invite_members_trigger.vue'),
     ClipboardButton,
+    SettingsSection,
   },
   props: {
     wlifIssuer: {
@@ -52,15 +54,14 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-4">
-    <h3>{{ s__('GoogleCloud|1. Connection') }}</h3>
-    <p>
-      {{
-        s__(
-          'GoogleCloud|To connect to a Google Cloud project, it must have a specific configuration of workload identity federation that you can set up in the next step. To improve security, the project should be just for identity management.',
-        )
-      }}
-    </p>
+  <settings-section
+    :heading="s__('GoogleCloud|1. Connection')"
+    :description="
+      s__(
+        'GoogleCloud|To connect to a Google Cloud project, it must have a specific configuration of workload identity federation that you can set up in the next step. To improve security, the project should be just for identity management.',
+      )
+    "
+  >
     <gl-button variant="link" @click="toggleModal">
       {{ s__('GoogleCloud|What if I cannot manage workload identity federation in Google Cloud?') }}
     </gl-button>
@@ -159,5 +160,5 @@ export default {
         </li>
       </ol>
     </gl-modal>
-  </div>
+  </settings-section>
 </template>
