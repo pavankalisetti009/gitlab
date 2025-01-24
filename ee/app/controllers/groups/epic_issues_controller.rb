@@ -18,7 +18,7 @@ class Groups::EpicIssuesController < Groups::ApplicationController
   private
 
   def create_service
-    EpicIssues::CreateService.new(epic, current_user, create_params)
+    ::WorkItems::LegacyEpics::EpicIssues::CreateService.new(epic, current_user, create_params)
   end
 
   def destroy_service

@@ -11,6 +11,6 @@ class Groups::IssuesController < Groups::BulkUpdateController
   def disable_query_limit!
     # As of https://gitlab.com/gitlab-org/gitlab/-/jobs/7162705551, this was
     # exceeding 300 queries
-    Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/390722', new_threshold: 356)
+    Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/390722', new_threshold: 400)
   end
 end

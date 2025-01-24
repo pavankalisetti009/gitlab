@@ -41,6 +41,16 @@ class EpicIssue < ApplicationRecord
     select(selection).in_epic(node.parent_ids)
   end
 
+  def self.find_or_initialize_from_parent_link(parent_link)
+    return unless parent_link.work_item_parent.synced_epic
+
+    epic_issue = EpicIssue.find_or_initialize_by(issue_id: parent_link.work_item.id)
+    epic_issue.epic = parent_link.work_item_parent.synced_epic
+    epic_issue.work_item_parent_link = parent_link
+
+    epic_issue
+  end
+
   def exportable_record?(user)
     Ability.allowed?(user, :read_epic, epic)
   end

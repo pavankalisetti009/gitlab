@@ -181,8 +181,8 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
         end
       end
 
-      it 'allows support_bot to admin_issue_relation' do
-        expect(permissions(support_bot, group_issue)).to be_disallowed(:admin_issue_relation)
+      it 'allows support_bot to admin_issue_relation on project issues, but does not allow it on group issues' do
+        expect(permissions(support_bot, group_issue)).to be_disallowed(:admin_issue_relation, :read_issue)
         expect(permissions(support_bot, public_issue)).to be_allowed(:admin_issue_relation)
         expect(permissions(support_bot, private_issue)).to be_allowed(:admin_issue_relation)
       end
@@ -193,16 +193,16 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
         end
 
         it 'allows it for support_bot', :aggregate_failures do
-          expect(permissions(support_bot, group_issue)).to be_allowed(:admin_issue_relation)
+          expect(permissions(support_bot, group_issue)).to be_allowed(:admin_issue_relation, :read_issue)
         end
       end
     end
 
     context 'when user is support bot and service desk is disabled' do
       it 'does not allow support_bot to admin_issue_relation' do
-        expect(permissions(support_bot, group_issue)).to be_disallowed(:admin_issue_relation)
+        expect(permissions(support_bot, group_issue)).to be_disallowed(:admin_issue_relation, :read_issue)
         expect(permissions(support_bot, public_issue)).to be_disallowed(:admin_issue_relation)
-        expect(permissions(support_bot, private_issue)).to be_disallowed(:admin_issue_relation)
+        expect(permissions(support_bot, private_issue)).to be_disallowed(:admin_issue_relatio)
       end
     end
 

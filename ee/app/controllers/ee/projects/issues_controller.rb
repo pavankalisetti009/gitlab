@@ -14,7 +14,7 @@ module EE
         include GitlabSubscriptions::SeatCountAlert
         include Observability::ObservabilityIssuesHelper
 
-        before_action :disable_query_limiting_ee, only: [:update]
+        before_action :disable_query_limiting_ee, only: [:update, :bulk_update]
         before_action only: [:new, :create] do
           if can?(current_user, :generate_description, project)
             push_licensed_feature(:generate_description, project)
@@ -86,7 +86,7 @@ module EE
       end
 
       def disable_query_limiting_ee
-        ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/issues/4794')
+        ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/438295', new_threshold: 220)
       end
 
       def issue_params

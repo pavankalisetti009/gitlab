@@ -89,7 +89,7 @@ module EE
           result = if work_item.work_item_type.epic?
                      handle_epic_link(parent_link, work_item)
                    else
-                     handle_epic_issue(work_item)
+                     handle_epic_issue(parent_link, work_item)
                    end
 
           return result if result[:status] == :success
@@ -135,17 +135,20 @@ module EE
           end
         end
 
-        def handle_epic_issue(work_item)
+        def handle_epic_issue(parent_link, work_item)
           success_result = { status: :success }
           child_issue = ::Issue.find_by_id(work_item.id)
           return success_result unless child_issue
 
           if sync_epic_link?
-            ::EpicIssues::CreateService.new(
-              issuable.synced_epic,
-              current_user,
-              { target_issuable: child_issue, synced_epic: true }
-            ).execute
+            epic_issue = EpicIssue.find_or_initialize_from_parent_link(parent_link)
+            epic_issue.move_to_start
+
+            if epic_issue.save(touch: false)
+              { status: :success }
+            else
+              { status: :error, message: epic_issue.errors.map(&:message).to_sentence }
+            end
           elsif child_issue.has_epic?
             ::EpicIssues::DestroyService.new(child_issue.epic_issue, current_user, synced_epic: true).execute
           else

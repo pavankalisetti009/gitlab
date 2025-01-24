@@ -122,7 +122,7 @@ module API
 
         create_params = { target_issuable: issue }
 
-        result = ::EpicIssues::CreateService.new(epic, current_user, create_params).execute
+        result = ::WorkItems::LegacyEpics::EpicIssues::CreateService.new(epic, current_user, create_params).execute
 
         if result[:status] == :success
           epic_issue_link = EpicIssue.find_by!(epic: epic, issue: issue)

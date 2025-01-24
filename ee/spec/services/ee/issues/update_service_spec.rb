@@ -356,10 +356,10 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
           group.add_guest(user)
         end
 
-        context 'when EpicIssues::CreateService returns failure', :aggregate_failures do
+        context 'when ::WorkItems::LegacyEpics::EpicIssues::CreateService returns failure', :aggregate_failures do
           it 'does not send usage data for added or changed epic action' do
             link_sevice = double
-            expect(EpicIssues::CreateService).to receive(:new)
+            expect(::WorkItems::LegacyEpics::EpicIssues::CreateService).to receive(:new)
                                                    .with(epic, user, { target_issuable: issue, skip_epic_dates_update: true })
                                                    .and_return(link_sevice)
             expect(link_sevice).to receive(:execute).and_return({ status: :failure })
@@ -375,9 +375,9 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
             expect { update_issue(epic: epic) }.to change { issue.reload.epic }.from(nil).to(epic)
           end
 
-          it 'calls EpicIssues::CreateService' do
+          it 'calls ::WorkItems::LegacyEpics::EpicIssues::CreateService' do
             link_sevice = double
-            expect(EpicIssues::CreateService).to receive(:new)
+            expect(::WorkItems::LegacyEpics::EpicIssues::CreateService).to receive(:new)
               .with(epic, user, { target_issuable: issue, skip_epic_dates_update: true })
               .and_return(link_sevice)
             expect(link_sevice).to receive(:execute).and_return({ status: :success })
@@ -426,7 +426,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
           it 'calls EpicIssues::CreateService' do
             link_sevice = double
-            expect(EpicIssues::CreateService).to receive(:new)
+            expect(::WorkItems::LegacyEpics::EpicIssues::CreateService).to receive(:new)
               .with(epic, user, { target_issuable: issue, skip_epic_dates_update: true })
               .and_return(link_sevice)
             expect(link_sevice).to receive(:execute).and_return({ status: :success })
@@ -493,7 +493,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
             let(:mock_service) { double('service', execute: { status: :error, message: 'failed to assign epic' }) }
 
             it 'assigns the issue passed to the provided epic' do
-              expect(EpicIssues::CreateService).to receive(:new).and_return(mock_service)
+              expect(::WorkItems::LegacyEpics::EpicIssues::CreateService).to receive(:new).and_return(mock_service)
 
               expect { subject }.to raise_error(EE::Issues::BaseService::EpicAssignmentError, 'failed to assign epic')
             end

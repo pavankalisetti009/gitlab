@@ -24,7 +24,7 @@ module EE
 
         link_params = { target_issuable: issue, skip_epic_dates_update: true }
 
-        EpicIssues::CreateService.new(epic, current_user, link_params).execute.tap do |result|
+        ::WorkItems::LegacyEpics::EpicIssues::CreateService.new(epic, current_user, link_params).execute.tap do |result|
           next unless result[:status] == :success
 
           if had_epic

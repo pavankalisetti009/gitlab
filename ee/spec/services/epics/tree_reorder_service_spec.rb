@@ -14,8 +14,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
     let(:epic) { create(:epic, group: group) }
     let(:epic1) { create(:epic, group: group, parent: epic, relative_position: 10) }
     let(:epic2) { create(:epic, group: group, parent: epic, relative_position: 20) }
-    let(:epic_issue1) { create(:epic_issue, epic: epic, issue: issue1, relative_position: 30) }
-    let(:epic_issue2) { create(:epic_issue, epic: epic, issue: issue2, relative_position: 40) }
+    let(:epic_issue1) { create(:epic_issue, :with_parent_link, epic: epic, issue: issue1, relative_position: 30) }
+    let(:epic_issue2) { create(:epic_issue, :with_parent_link, epic: epic, issue: issue2, relative_position: 40) }
 
     let(:relative_position) { 'after' }
     let!(:tree_object_1) { epic1 }
@@ -90,6 +90,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
             before do
+              tree_object_2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
               tree_object_2.update!(epic: epic1)
             end
 
@@ -98,13 +99,14 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             end
 
             it 'creates system notes', :sidekiq_inline do
-              expect { reorder }.to change { Note.system.count }.by(3)
+              expect { reorder }.to change { Note.system.count }.by(2)
             end
           end
 
           context 'when object being moved is from another epic' do
             before do
               other_epic = create(:epic, group: group)
+              epic_issue2.work_item_parent_link.update!(work_item_parent: other_epic.work_item)
               epic_issue2.update!(epic: other_epic)
             end
 
@@ -173,6 +175,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
             before do
+              epic_issue2.work_item_parent_link.update!(work_item_parent: other_epic.work_item)
               epic_issue2.update!(parent: other_epic)
             end
 
@@ -190,7 +193,10 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             let(:another_epic) { create(:epic, group: ancestor) }
 
             before do
+              epic_issue1.work_item_parent_link.update!(work_item_parent: another_epic.work_item)
               epic_issue1.update!(epic: another_epic)
+
+              epic_issue2.work_item_parent_link.update!(work_item_parent: another_epic.work_item)
               epic_issue2.update!(epic: another_epic)
             end
 
@@ -216,6 +222,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
               before do
+                epic_issue2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
                 epic_issue2.update!(epic: epic1)
               end
 
@@ -230,7 +237,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               end
 
               it 'creates system notes', :sidekiq_inline do
-                expect { reorder }.to change { Note.system.count }.by(3)
+                expect { reorder }.to change { Note.system.count }.by(2)
               end
             end
 
@@ -260,15 +267,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
                 context 'when new parent has no children' do
                   before do
+                    epic_issue1.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
                     epic_issue1.update!(epic: old_parent)
-                    create(:parent_link,
-                      work_item_parent: old_parent.work_item, work_item: work_item_1, relative_position: 30
-                    )
 
+                    epic_issue2.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
                     epic_issue2.update!(epic: old_parent)
-                    create(:parent_link,
-                      work_item_parent: old_parent.work_item, work_item: work_item_2, relative_position: 40
-                    )
                   end
 
                   it 'sets a new work item parent' do
@@ -314,10 +317,16 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   end
                 end
 
+                # rubocop:disable RSpec/MultipleMemoizedHelpers -- needed for the context
                 context 'when new parent has children' do
                   let(:adjacent_reference_id) { GitlabSchema.id_from_object(epic_issue1) }
+                  let(:parent_link1) { epic_issue1.work_item_parent_link }
+                  let(:parent_link2) { epic_issue2.work_item_parent_link }
 
                   before do
+                    epic_issue1.work_item_parent_link.update!(work_item_parent: new_parent.work_item)
+                    epic_issue2.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
+
                     epic_issue1.update!(epic: new_parent)
                     epic_issue2.update!(epic: old_parent)
                   end
@@ -326,11 +335,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     let(:relative_position) { 'before' }
 
                     it 'updates the work item parent and sets it after the adjacent item', :aggregate_failures do
-                      parent_link1 = create(:parent_link, work_item_parent: new_parent.work_item,
-                        work_item: work_item_1)
-                      parent_link2 = create(:parent_link, work_item_parent: old_parent.work_item,
-                        work_item: work_item_2)
-
                       expect { reorder }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
                         .and change { work_item_2.reload.work_item_parent }
                         .from(old_parent.work_item).to(new_parent.work_item)
@@ -346,11 +350,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     let(:relative_position) { 'after' }
 
                     it 'updates the work item parent and sets it before the adjacent item' do
-                      parent_link1 = create(:parent_link, work_item_parent: new_parent.work_item,
-                        work_item: work_item_1)
-                      parent_link2 = create(:parent_link, work_item_parent: old_parent.work_item,
-                        work_item: work_item_2)
-
                       expect { reorder }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
                         .and change { work_item_2.reload.work_item_parent }
                           .from(old_parent.work_item).to(new_parent.work_item)
@@ -375,11 +374,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                           moving_object_class: 'EpicIssue' }
                       )
 
-                      parent_link1 = create(:parent_link, work_item_parent: new_parent.work_item,
-                        work_item: work_item_1)
-                      parent_link2 = create(:parent_link, work_item_parent: old_parent.work_item,
-                        work_item: work_item_2)
-
                       expect { reorder }.not_to change { parent_link1.reload.relative_position }
                       expect { reorder }.not_to change { work_item_1.reload.work_item_parent }
                       expect { reorder }.not_to change { parent_link2.reload.relative_position }
@@ -391,6 +385,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   end
                 end
               end
+              # rubocop:enable RSpec/MultipleMemoizedHelpers
 
               context 'when reordering within the same parent' do
                 let(:relative_position) { 'after' }
