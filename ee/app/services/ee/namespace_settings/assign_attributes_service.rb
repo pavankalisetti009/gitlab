@@ -33,8 +33,6 @@ module EE
         )
 
         super
-
-        publish_event
       end
 
       private
@@ -58,20 +56,6 @@ module EE
 
         settings_params.delete(:service_access_tokens_expiration_enforced)
         false
-      end
-
-      def ai_settings_changed?
-        ::NamespaceSettings::AiRelatedSettingsChangedEvent::AI_RELATED_SETTINGS.any? do |setting|
-          group.namespace_settings.changes.key?(setting)
-        end
-      end
-
-      def publish_event
-        return unless ai_settings_changed?
-
-        ::Gitlab::EventStore.publish(
-          ::NamespaceSettings::AiRelatedSettingsChangedEvent.new(data: { group_id: group.id })
-        )
       end
     end
   end

@@ -39,6 +39,7 @@ module EE
         update_cascading_settings
         activate_pending_members
         update_amazon_q_service_account!
+        publish_ai_settings_changed_event
       end
 
       override :before_assignment_hook
@@ -175,6 +176,22 @@ module EE
         return unless params[:duo_availability] == 'never_on'
 
         ::Ai::AmazonQ::ServiceAccountMemberRemoveService.new(current_user, group).execute
+      end
+
+      def publish_ai_settings_changed_event
+        return unless ai_settings_changed?
+
+        ::Gitlab::EventStore.publish(
+          ::NamespaceSettings::AiRelatedSettingsChangedEvent.new(data: { group_id: group.id })
+        )
+      end
+
+      def ai_settings_changed?
+        return false unless group.namespace_settings
+
+        ::NamespaceSettings::AiRelatedSettingsChangedEvent::AI_RELATED_SETTINGS.any? do |setting|
+          group.namespace_settings.saved_change_to_attribute?(setting)
+        end
       end
     end
   end

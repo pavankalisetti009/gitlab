@@ -670,6 +670,52 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
+  context 'when ai settings change', :saas do
+    before do
+      allow(Gitlab).to receive(:com?).and_return(true)
+      stub_ee_application_setting(should_check_namespace_plan: true)
+      stub_licensed_features(ai_features: true)
+      group.add_owner(user)
+    end
+
+    context 'when experiment_features_enabled changes' do
+      let(:params) { { experiment_features_enabled: true } }
+
+      it 'publishes an event after successful update' do
+        expect do
+          update_group(group, user, params)
+        end.to publish_event(::NamespaceSettings::AiRelatedSettingsChangedEvent)
+          .with(group_id: group.id)
+      end
+
+      context 'when update fails' do
+        before do
+          allow(group).to receive(:save).and_return(false)
+        end
+
+        it 'does not publish an event' do
+          expect do
+            update_group(group, user, params)
+          end.not_to publish_event(::NamespaceSettings::AiRelatedSettingsChangedEvent)
+        end
+      end
+    end
+
+    context 'when experiment_features setting does not change' do
+      let(:params) { { experiment_features_enabled: false } }
+
+      before do
+        group.namespace_settings.update!(experiment_features_enabled: false)
+      end
+
+      it 'does not publish an event' do
+        expect do
+          update_group(group, user, params)
+        end.not_to publish_event(::NamespaceSettings::AiRelatedSettingsChangedEvent)
+      end
+    end
+  end
+
   def update_group(group, user, opts)
     Groups::UpdateService.new(group, user, opts).execute
   end
