@@ -6,6 +6,12 @@ module Security
     # vulnerabilities for a project which had been previously
     # detected by the same scanner, and marks them as resolved
     # on the default branch if they were not detected again.
+    # The report_type parameter is optional and currently only used
+    # in the context of the GitLab Sbom Vulnerability Scanner.
+    # These scans create different types of vulnerabilities and
+    # this service must take this criteria into account to avoid
+    # marking vulnerabilities of other types as no longer detected
+    # in some scenarios.
     class MarkAsResolvedService
       include Gitlab::InternalEventsTracking
       include Gitlab::Utils::StrongMemoize
@@ -21,19 +27,21 @@ module Security
         new(...).execute
       end
 
-      def initialize(pipeline, scanner, ingested_ids)
+      def initialize(pipeline, scanner, ingested_ids, report_type = nil)
         @pipeline = pipeline
         @scanner = scanner
         @ingested_ids = ingested_ids
+        @report_type = report_type
         @auto_resolved_count = 0
       end
 
       def execute
         return unless scanner
 
-        vulnerability_reads
-          .by_scanner(scanner)
-          .each_batch(of: BATCH_SIZE) { |batch| process_batch(batch) }
+        vulnerabilities_to_process = vulnerability_reads.by_scanner(scanner)
+        # The report_type is only used with the GitLab Sbom Vulnerability Scanner. See https://gitlab.com/gitlab-org/gitlab/-/issues/516232
+        vulnerabilities_to_process = vulnerabilities_to_process.with_report_types(report_type) if report_type.present?
+        vulnerabilities_to_process.each_batch(of: BATCH_SIZE) { |batch| process_batch(batch) }
 
         if scanner_for_container_scanning?
           process_existing_cvs_vulnerabilities_for_container_scanning
@@ -45,7 +53,7 @@ module Security
       private
 
       attr_accessor :auto_resolved_count
-      attr_reader :pipeline, :scanner, :ingested_ids
+      attr_reader :pipeline, :scanner, :ingested_ids, :report_type
 
       delegate :project, to: :scanner, private: true
       delegate :vulnerability_reads, to: :project, private: true

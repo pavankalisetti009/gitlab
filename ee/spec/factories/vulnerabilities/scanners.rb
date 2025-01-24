@@ -10,5 +10,11 @@ FactoryBot.define do
     name { 'Find Security Bugs' }
     vendor { 'Security Vendor' }
     project
+
+    trait :sbom_scanner do
+      external_id { Gitlab::VulnerabilityScanning::SecurityScanner::EXTERNAL_ID }
+      name { Gitlab::VulnerabilityScanning::SecurityScanner::NAME }
+      vendor { Gitlab::VulnerabilityScanning::SecurityScanner::VENDOR }
+    end
   end
 end
