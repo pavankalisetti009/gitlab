@@ -27,6 +27,11 @@ module EE
             required: false,
             description: 'Input for color widget.'
 
+          argument :custom_fields_widget, [::Types::WorkItems::Widgets::CustomFieldValueInputType],
+            required: false,
+            description: 'Input for custom fields widget.',
+            experiment: { milestone: '17.10' }
+
           argument :vulnerability_id, ::Types::GlobalIDType[::Vulnerability],
             required: false,
             description: 'Input for linking an existing vulnerability to created work item.',

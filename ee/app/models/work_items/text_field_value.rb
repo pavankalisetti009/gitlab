@@ -3,6 +3,7 @@
 module WorkItems
   class TextFieldValue < ApplicationRecord
     include CustomFieldValue
+    include ScalarCustomFieldValue
 
     MAX_LENGTH = 1024
 
