@@ -59,7 +59,19 @@ module Resolvers
         end
 
         def resolve(**args)
+          start_time = Time.current
           results(**args)
+        ensure
+          if ::Gitlab::SafeRequestStore.active?
+            duration = Time.current - start_time - ::Gitlab::Instrumentation::Zoekt.zoekt_call_duration
+            ::Gitlab::Instrumentation::Zoekt.add_call_details(
+              duration: duration,
+              method: context[:request].method,
+              path: context[:request].path,
+              body: context.query.provided_variables
+            )
+            ::Gitlab::Instrumentation::Zoekt.add_graphql_duration(duration)
+          end
         end
 
         private
