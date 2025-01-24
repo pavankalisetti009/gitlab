@@ -667,7 +667,6 @@ RSpec/BeEq:
     - 'spec/initializers/action_cable_spec.rb'
     - 'spec/initializers/carrierwave_performance_patch_spec.rb'
     - 'spec/initializers/doorkeeper_spec.rb'
-    - 'spec/initializers/net_http_patch_spec.rb'
     - 'spec/initializers/postgresql_cte_spec.rb'
     - 'spec/keeps/helpers/groups_spec.rb'
     - 'spec/keeps/helpers/milestones_spec.rb'
