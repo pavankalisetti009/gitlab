@@ -1099,6 +1099,9 @@ msgstr ""
 msgid "%{name} (Busy)"
 msgstr ""
 
+msgid "%{name} checked"
+msgstr ""
+
 msgid "%{name} is already being used for another emoji"
 msgstr ""
 
@@ -1106,6 +1109,9 @@ msgid "%{name} is reserved for %{type} report type"
 msgstr ""
 
 msgid "%{name} is scheduled for %{action}"
+msgstr ""
+
+msgid "%{name} not checked"
 msgstr ""
 
 msgid "%{name}'s avatar"
@@ -1475,6 +1481,9 @@ msgid "%{title} username."
 msgstr ""
 
 msgid "%{title} webhook (for example, `%{example}`)."
+msgstr ""
+
+msgid "%{tooltipText} image"
 msgstr ""
 
 msgid "%{totalCpu} (%{freeSpacePercentage}%{percentSymbol} free)"

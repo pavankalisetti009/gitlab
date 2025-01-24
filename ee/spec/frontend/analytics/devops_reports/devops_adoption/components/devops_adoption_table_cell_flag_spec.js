@@ -9,6 +9,7 @@ describe('DevopsAdoptionTableCellFlag', () => {
     wrapper = shallowMount(DevopsAdoptionTableCellFlag, {
       propsData: {
         enabled: true,
+        name: 'MRs',
         ...props,
       },
     });
