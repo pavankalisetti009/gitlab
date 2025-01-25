@@ -12,7 +12,7 @@ import PolicyDetails from 'ee/approvals/components/security_orchestration/policy
 import {
   mockProjectScanResultPolicy,
   mockProjectWithBranchesScanResultPolicy,
-} from '../../../security_orchestration/mocks/mock_scan_result_policy_data';
+} from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 
 Vue.use(Vuex);
 

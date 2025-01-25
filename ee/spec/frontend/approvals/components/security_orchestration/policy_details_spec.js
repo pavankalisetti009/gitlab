@@ -20,8 +20,14 @@ describe('PolicyDetails', () => {
         vulnerability_states: ['newly_detected'],
       },
     ],
-    actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: ['admin'] }],
-    approvers: [{ __typename: 'UserCore', id: 1, name: 'name' }],
+    actions: [
+      { type: 'require_approval', approvals_required: 1, user_approvers: ['admin'] },
+      { type: 'require_approval', approvals_required: 1, user_approvers: ['admin'] },
+    ],
+    actionApprovers: [
+      { users: [{ id: 1, name: 'username' }], allGroups: [] },
+      { users: [{ id: 2, name: 'username2' }], allGroups: [] },
+    ],
     source: {
       project: {
         fullPath: 'policy/path',
@@ -42,6 +48,7 @@ describe('PolicyDetails', () => {
 
   const findLink = () => wrapper.findComponent(GlLink);
   const findPolicyApprovals = () => wrapper.findComponent(PolicyApprovals);
+  const findAllPolicyApprovals = () => wrapper.findAllComponents(PolicyApprovals);
 
   describe('with isSelected set to true', () => {
     beforeEach(() => {
@@ -51,6 +58,13 @@ describe('PolicyDetails', () => {
     it('renders the text version of the related action and each of the rules', () => {
       const text = wrapper.text();
       expect(findPolicyApprovals().exists()).toBe(true);
+      expect(findAllPolicyApprovals()).toHaveLength(2);
+      expect(findAllPolicyApprovals().at(0).props('approvers')).toEqual([
+        { id: 1, name: 'username' },
+      ]);
+      expect(findAllPolicyApprovals().at(1).props('approvers')).toEqual([
+        { id: 2, name: 'username2' },
+      ]);
       expect(text).toContain('When any security scanner');
       expect(text).toContain('critical');
     });

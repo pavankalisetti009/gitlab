@@ -21,7 +21,7 @@ export const fetchScanResultPolicies = ({ commit }, { fullPath, isGroup = false 
             return {
               ...fromYaml({ manifest: rawPolicy.yaml }),
               isSelected: false,
-              approvers: [...rawPolicy.userApprovers, ...rawPolicy.allGroupApprovers],
+              actionApprovers: rawPolicy.actionApprovers,
               editPath: rawPolicy.editPath,
               source: rawPolicy.source || { project: { fullPath } },
             };

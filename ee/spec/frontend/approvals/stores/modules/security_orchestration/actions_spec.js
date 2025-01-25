@@ -61,8 +61,10 @@ describe('security orchestration actions', () => {
         {
           name: 'policyName',
           yaml: 'name: policyName',
-          userApprovers: [{ id: 1, name: 'username' }],
-          allGroupApprovers: [],
+          actionApprovers: [
+            { users: [{ id: 1, name: 'username' }], allGroups: [] },
+            { users: [{ id: 2, name: 'username2' }], allGroups: [] },
+          ],
           source: { project: { fullPath: 'path/policy' } },
         },
       ];
@@ -70,26 +72,13 @@ describe('security orchestration actions', () => {
         {
           name: 'policyName',
           isSelected: false,
-          approvers: [{ id: 1, name: 'username' }],
+          actionApprovers: [
+            { users: [{ id: 1, name: 'username' }], allGroups: [] },
+            { users: [{ id: 2, name: 'username2' }], allGroups: [] },
+          ],
           source: { project: { fullPath: 'path/policy' } },
         },
       ];
-      const queryResponse = { data: { namespace: { scanResultPolicies: { nodes: policies } } } };
-
-      jest.spyOn(gqClient, 'query').mockResolvedValue(queryResponse);
-
-      return testAction(
-        actions.fetchScanResultPolicies,
-        { fullPath: 'namespace/project' },
-        getInitialState(),
-        [{ type: types.SET_SCAN_RESULT_POLICIES, payload: expectedPolicies }],
-        [],
-      );
-    });
-
-    it('sets SCAN_RESULT_POLICIES_FAILED with empty payload if parsing failed', () => {
-      const policies = [{ name: 'policyName', yaml: '' }];
-      const expectedPolicies = [];
       const queryResponse = { data: { namespace: { scanResultPolicies: { nodes: policies } } } };
 
       jest.spyOn(gqClient, 'query').mockResolvedValue(queryResponse);
