@@ -12,7 +12,8 @@
         %input{ type: 'hidden', name: 'update_section', value: 'js-issue-settings' }
         .row
           .form-group.col-md-9
-            = f.text_area :issues_template, class: "form-control gl-form-input", rows: 3, aria: { labelledby: 'issue-settings-default-template-label'}, data: { testid: 'issue-template-field' }
+            = f.label :issues_template, _('Default description template for issues'), class: 'gl-sr-only'
+            = f.text_area :issues_template, class: "form-control gl-form-input", rows: 3, data: { testid: 'issue-template-field' }
             .gl-text-subtle
               - link = link_to('', help_page_path('user/markdown.md'), target: '_blank', rel: 'noopener noreferrer')
               = safe_format(_('Description parsed with %{link_start}GitLab Flavored Markdown%{link_end}.'), tag_pair(link, :link_start, :link_end))
