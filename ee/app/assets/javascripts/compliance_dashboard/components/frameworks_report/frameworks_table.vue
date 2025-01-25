@@ -14,8 +14,13 @@ import {
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import FrameworkBadge from '../shared/framework_badge.vue';
-import { ROUTE_EDIT_FRAMEWORK, CREATE_FRAMEWORKS_DOCS_URL } from '../../constants';
+import {
+  ROUTE_EDIT_FRAMEWORK,
+  ROUTE_EXPORT_FRAMEWORK,
+  CREATE_FRAMEWORKS_DOCS_URL,
+} from '../../constants';
 import { isTopLevelGroup, convertFrameworkIdToGraphQl } from '../../utils';
 import FrameworkInfoDrawer from './framework_info_drawer.vue';
 import DeleteModal from './edit_framework/components/delete_modal.vue';
@@ -132,6 +137,25 @@ export default {
     editFramework({ id }) {
       this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: getIdFromGraphQLId(id) } });
     },
+    async exportFramework(framework) {
+      try {
+        const frameworkId = getIdFromGraphQLId(framework.id);
+        const downloadUrl = this.$router.resolve({
+          name: ROUTE_EXPORT_FRAMEWORK,
+          params: {
+            id: frameworkId,
+          },
+        }).href;
+        window.location.href = downloadUrl;
+      } catch (error) {
+        this.$toast.show(s__('ComplianceFrameworksReport|Failed to export framework'));
+        Sentry.captureException(error, {
+          tags: {
+            vue_component: 'frameworks_table',
+          },
+        });
+      }
+    },
     getPoliciesList(item) {
       const {
         scanExecutionPolicies,
@@ -196,6 +220,7 @@ export default {
     },
   ],
   i18n: {
+    dropdownTitle: __('Manage framework'),
     noFrameworksFound: s__('ComplianceReport|No frameworks found'),
     editTitle: s__('ComplianceFrameworks|Edit compliance framework'),
     noFrameworksText: s__(
@@ -208,6 +233,7 @@ export default {
       'ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests.',
     ),
     actionEdit: __('Edit'),
+    actionExport: __('Export as a JSON file'),
     actionDelete: __('Delete'),
     toggleText: __('Actions for'),
     deleteButtonLinkedPoliciesDisabledTooltip: s__(
@@ -288,22 +314,32 @@ export default {
           placement="bottom-end"
           no-caret
         >
-          <div class="gl-mx-2">
-            <gl-button
-              v-gl-tooltip.left.viewport
-              data-testid="action-copy-id"
-              :title="$options.i18n.copyIdExplanation"
-              class="!gl-justify-start"
-              category="tertiary"
-              :block="true"
-              @click="copyFrameworkId(item.id)"
-            >
-              {{ $options.i18n.actionCopyId }}: {{ getIdFromGraphQLId(item.id) }}
-            </gl-button>
-          </div>
+          <template #header>
+            <div class="gl-border-b gl-border-b-dropdown gl-p-4">
+              <span class="gl-font-bold">
+                {{ $options.i18n.dropdownTitle }}
+              </span>
+            </div>
+          </template>
+          <template v-if="!isTopLevelGroup">
+            <div class="gl-mx-2">
+              <gl-button
+                v-gl-tooltip.left.viewport
+                data-testid="action-copy-id"
+                :title="$options.i18n.copyIdExplanation"
+                class="!gl-justify-start"
+                category="tertiary"
+                :block="true"
+                @click="copyFrameworkId(item.id)"
+              >
+                {{ $options.i18n.actionCopyId }}: {{ getIdFromGraphQLId(item.id) }}
+              </gl-button>
+            </div>
+          </template>
           <template v-if="isTopLevelGroup">
             <div class="gl-mx-2">
               <gl-button
+                v-if="isTopLevelGroup"
                 data-testid="action-edit"
                 class="!gl-justify-start"
                 category="tertiary"
@@ -313,7 +349,32 @@ export default {
                 {{ $options.i18n.actionEdit }}
               </gl-button>
             </div>
+            <div class="gl-mx-2">
+              <gl-button
+                v-gl-tooltip.left.viewport
+                data-testid="action-copy-id"
+                :title="$options.i18n.copyIdExplanation"
+                class="!gl-justify-start"
+                category="tertiary"
+                :block="true"
+                @click="copyFrameworkId(item.id)"
+              >
+                {{ $options.i18n.actionCopyId }}: {{ getIdFromGraphQLId(item.id) }}
+              </gl-button>
+            </div>
+            <div v-if="isTopLevelGroup" class="gl-mx-2">
+              <gl-button
+                data-testid="action-export"
+                class="!gl-justify-start"
+                category="tertiary"
+                :block="true"
+                @click="exportFramework(item)"
+              >
+                {{ $options.i18n.actionExport }}
+              </gl-button>
+            </div>
             <div
+              v-if="isTopLevelGroup"
               v-gl-tooltip.left.viewport
               class="gl-mx-2"
               data-testid="delete-tooltip"
