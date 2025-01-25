@@ -9,6 +9,7 @@ import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.
 import RolesApp from 'ee/roles_and_permissions/components/app.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
+import RolesExport from 'ee/roles_and_permissions/components/roles_export.vue';
 import { createAlert } from '~/alert';
 import {
   standardRoles,
@@ -33,12 +34,18 @@ describe('Roles app', () => {
     instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
     groupFullPath = 'test-group',
     newRolePath = 'new/role/path',
+    membersPermissionsDetailedExport = true,
+    exportGroupMemberships = true,
   } = {}) => {
     wrapper = shallowMountExtended(RolesApp, {
       apolloProvider: createMockApollo([
         [groupRolesQuery, groupRolesQueryHandler],
         [instanceRolesQuery, instanceRolesQueryHandler],
       ]),
+      provide: {
+        glFeatures: { membersPermissionsDetailedExport },
+        glAbilities: { exportGroupMemberships },
+      },
       propsData: { groupFullPath, newRolePath },
       stubs: { GlSprintf },
       mocks: { $toast: { show: mockToastShow } },
@@ -50,6 +57,7 @@ describe('Roles app', () => {
   const findRolesTable = () => wrapper.findComponent(RolesTable);
   const findRoleCounts = () => wrapper.findByTestId('role-counts');
   const findDeleteModal = () => wrapper.findComponent(DeleteRoleModal);
+  const findRolesExport = () => wrapper.findComponent(RolesExport);
 
   describe('common behavior', () => {
     beforeEach(() => {
@@ -193,6 +201,26 @@ describe('Roles app', () => {
       const button = wrapper.findComponent(GlButton);
 
       expect(button.exists()).toBe(false);
+    });
+  });
+
+  describe('roles export', () => {
+    it('does not show roles export when user does not have the ability to export', () => {
+      createComponent({ exportGroupMemberships: false });
+
+      expect(findRolesExport().exists()).toBe(false);
+    });
+
+    it('does not show roles export when membersPermissionsDetailedExport feature flag is off', () => {
+      createComponent({ membersPermissionsDetailedExport: false });
+
+      expect(findRolesExport().exists()).toBe(false);
+    });
+
+    it('shows roles export when user has ability to export', () => {
+      createComponent({ exportGroupMemberships: true });
+
+      expect(findRolesExport().exists()).toBe(true);
     });
   });
 });

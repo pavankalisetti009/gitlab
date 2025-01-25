@@ -6,7 +6,9 @@ module MemberRolesHelper
   def member_roles_data(group = nil)
     {
       new_role_path: new_role_path(group),
-      group_full_path: group&.full_path
+      group_full_path: group&.full_path,
+      group_id: group&.id,
+      current_user_email: current_user.notification_email_or_default
     }
   end
 

@@ -21,6 +21,8 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
       it 'matches the expected data' do
         expect(data[:new_role_path]).to be_nil
         expect(data[:group_full_path]).to be_nil
+        expect(data[:group_id]).to be_nil
+        expect(data[:current_user_email]).to eq user.notification_email_or_default
       end
 
       context 'with admin member role rights' do
@@ -31,6 +33,8 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         it 'matches the expected data' do
           expect(data[:new_role_path]).to eq new_admin_application_settings_roles_and_permission_path
           expect(data[:group_full_path]).to be_nil
+          expect(data[:group_id]).to be_nil
+          expect(data[:current_user_email]).to eq user.notification_email_or_default
         end
       end
     end
@@ -42,6 +46,8 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         it 'matches the expected data' do
           expect(data[:new_role_path]).to be_nil
           expect(data[:group_full_path]).to eq source.full_path
+          expect(data[:group_id]).to eq source.id
+          expect(data[:current_user_email]).to eq user.notification_email_or_default
         end
 
         context 'with admin member role rights' do
@@ -52,6 +58,8 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           it 'matches the expected data' do
             expect(data[:new_role_path]).to eq new_group_settings_roles_and_permission_path(source)
             expect(data[:group_full_path]).to eq source.full_path
+            expect(data[:group_id]).to eq source.id
+            expect(data[:current_user_email]).to eq user.notification_email_or_default
           end
         end
       end

@@ -3,10 +3,13 @@ import { GlSprintf, GlLink, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import groupRolesQuery from '../graphql/group_roles.query.graphql';
 import instanceRolesQuery from '../graphql/instance_roles.query.graphql';
 import RolesTable from './roles_table.vue';
 import DeleteRoleModal from './delete_role_modal.vue';
+import RolesExport from './roles_export.vue';
 
 export default {
   name: 'RolesApp',
@@ -28,7 +31,9 @@ export default {
     GlButton,
     RolesTable,
     DeleteRoleModal,
+    RolesExport,
   },
+  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
   props: {
     groupFullPath: {
       type: String,
@@ -76,6 +81,12 @@ export default {
     roles() {
       return [...this.defaultRoles, ...this.customRoles];
     },
+    canExportRoles() {
+      // Check that the backend feature is enabled and that the current user can export members.
+      return (
+        this.glFeatures.membersPermissionsDetailedExport && this.glAbilities.exportGroupMemberships
+      );
+    },
   },
   methods: {
     processRoleDeletion() {
@@ -115,9 +126,13 @@ export default {
         </gl-sprintf>
       </span>
 
-      <gl-button v-if="newRolePath" :href="newRolePath" variant="confirm">
-        {{ $options.i18n.newRoleText }}
-      </gl-button>
+      <div class="gl-flex gl-flex-wrap gl-gap-4">
+        <roles-export v-if="canExportRoles" />
+
+        <gl-button v-if="newRolePath" :href="newRolePath" variant="confirm">
+          {{ $options.i18n.newRoleText }}
+        </gl-button>
+      </div>
     </div>
 
     <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />

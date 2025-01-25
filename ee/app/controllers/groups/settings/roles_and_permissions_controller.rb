@@ -13,6 +13,11 @@ module Groups
       before_action :ensure_root_group!
       before_action :ensure_gitlab_com_subscription!
 
+      before_action do
+        push_frontend_feature_flag(:members_permissions_detailed_export, group)
+        push_frontend_ability(ability: :export_group_memberships, resource: group, user: current_user)
+      end
+
       private
 
       def authorize_admin_member_roles!
