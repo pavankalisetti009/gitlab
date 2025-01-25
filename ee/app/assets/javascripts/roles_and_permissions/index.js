@@ -22,13 +22,14 @@ export const initCustomRolesApp = () => {
 
   initPlannerRoleBanner();
 
-  const { groupFullPath, newRolePath } = el.dataset;
+  const { groupFullPath, groupId, newRolePath, currentUserEmail } = el.dataset;
 
   return new Vue({
     el,
     name: 'RolesRoot',
     apolloProvider,
     mixins: [InternalEvents.mixin()],
+    provide: { groupId, currentUserEmail },
     mounted() {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');
     },
