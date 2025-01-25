@@ -13,6 +13,11 @@ module QA
             end
 
             view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
+              'selection_summary.vue' do
+              element 'select-action-listbox'
+            end
+
+            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
               'bulk_change_status.vue' do
               element 'status-listbox'
               element 'change-status-button'
@@ -68,6 +73,13 @@ module QA
 
             def select_state(state)
               retry_until(max_attempts: 3, sleep_interval: 2, message: "Setting status and comment") do
+                if has_element?('select-action-listbox')
+                  click_element('select-action-listbox', wait: 2)
+                  click_element('listbox-item-status')
+                end
+
+                has_element?('change-status-comment-textbox', wait: 2)
+
                 click_element('status-listbox', wait: 5)
                 click_element(:"listbox-item-#{state}", wait: 5)
                 has_element?('change-status-comment-textbox', wait: 2)
