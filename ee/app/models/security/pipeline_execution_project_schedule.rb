@@ -39,6 +39,10 @@ module Security
       save!
     end
 
+    def ci_content
+      security_policy.content["content"]
+    end
+
     private
 
     def timezone

@@ -15,7 +15,8 @@ module Gitlab
 
           delegate :policy_pipelines, :override_policy_stages, :build_policy_pipelines!, :creating_policy_pipeline?,
             :has_execution_policy_pipelines?, :has_overriding_execution_policy_pipelines?, :collect_declared_stages!,
-            :inject_policy_reserved_stages?, :valid_stage?, to: :pipeline_execution_context
+            :inject_policy_reserved_stages?, :valid_stage?, :policy_management_project_access_allowed?,
+            to: :pipeline_execution_context
 
           def pipeline_execution_context
             ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext

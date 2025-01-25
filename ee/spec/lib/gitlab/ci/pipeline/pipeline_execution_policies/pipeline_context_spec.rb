@@ -210,6 +210,36 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
+  describe '#policy_management_project_access_allowed?' do
+    subject { context.policy_management_project_access_allowed? }
+
+    include_context 'with mocked current_policy'
+
+    it { is_expected.to eq(false) }
+
+    context 'with current_policy' do
+      let(:current_policy) { build(:pipeline_execution_policy_config) }
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when scheduled' do
+      let(:command_attributes) do
+        { source: ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE }
+      end
+
+      it { is_expected.to eq(true) }
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(scheduled_pipeline_execution_policies: false)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
   describe '#has_execution_policy_pipelines?' do
     subject { context.has_execution_policy_pipelines? }
 
@@ -286,6 +316,22 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
       it { is_expected.to eq(true) }
     end
+
+    context 'when scheduled' do
+      let(:command_attributes) do
+        { source: ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE }
+      end
+
+      it { is_expected.to eq(true) }
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(scheduled_pipeline_execution_policies: false)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
   end
 
   describe '#valid_stage?' do
@@ -307,6 +353,22 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
           let(:current_policy) { build(:pipeline_execution_policy_config) }
 
           it { is_expected.to eq(true) }
+        end
+
+        context "when scheduled" do
+          let(:command_attributes) do
+            { source: ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE }
+          end
+
+          it { is_expected.to eq(true) }
+
+          context 'with feature disabled' do
+            before do
+              stub_feature_flags(scheduled_pipeline_execution_policies: false)
+            end
+
+            it { is_expected.to eq(false) }
+          end
         end
       end
     end

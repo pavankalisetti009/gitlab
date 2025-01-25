@@ -217,4 +217,13 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
       end
     end
   end
+
+  describe '#ci_content' do
+    subject(:ci_content) { build(:security_pipeline_execution_project_schedule).ci_content }
+
+    it 'returns the security policy CI config content' do
+      expect(ci_content).to eq(
+        'include' => [{ 'project' => 'compliance-project', 'file' => 'compliance-pipeline.yml' }])
+    end
+  end
 end

@@ -39,12 +39,22 @@ module Gitlab
             end
           end
 
+          def policy_management_project_access_allowed?
+            creating_policy_pipeline? || scheduled_execution_policy_pipeline?
+          end
+
           def creating_policy_pipeline?
             current_policy.present?
           end
 
           def has_execution_policy_pipelines?
             policy_pipelines.present?
+          end
+
+          def scheduled_execution_policy_pipeline?
+            return false if Feature.disabled?(:scheduled_pipeline_execution_policies, project)
+
+            command&.source == ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE
           end
 
           def skip_ci_allowed?
@@ -85,12 +95,13 @@ module Gitlab
           # - has_execution_policy_pipelines?: This is the actual pipeline creation mode.
           #   It means that the result pipeline will have PEPs.
           #   We need to inject these stages because some of the policies may use them.
+          # - this is a scheduled PEP pipeline
           def inject_policy_reserved_stages?
-            creating_policy_pipeline? || has_execution_policy_pipelines?
+            creating_policy_pipeline? || has_execution_policy_pipelines? || scheduled_execution_policy_pipeline?
           end
 
           def valid_stage?(stage)
-            return true if creating_policy_pipeline?
+            return true if creating_policy_pipeline? || scheduled_execution_policy_pipeline?
 
             ReservedStagesInjector::STAGES.exclude?(stage)
           end
