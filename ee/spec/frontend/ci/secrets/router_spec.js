@@ -7,7 +7,6 @@ import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import createRouter, { initNavigationGuards } from 'ee/ci/secrets/router';
-import { ENTITY_GROUP } from 'ee/ci/secrets/constants';
 import SecretsApp from 'ee//ci/secrets/components/secrets_app.vue';
 import { getMatchedComponents } from '~/lib/utils/vue3compat/vue_router';
 
@@ -101,12 +100,11 @@ describe('Secrets router', () => {
     entity       | props           | fullPath
     ${'group'}   | ${groupProps}   | ${groupProps.groupPath}
     ${'project'} | ${projectProps} | ${projectProps.projectPath}
-  `('$entity secrets form', ({ entity, props, fullPath }) => {
+  `('$entity secrets form', ({ props, fullPath }) => {
     it('provides the correct props when visiting the index', async () => {
       await createSecretsApp({ route: '/', props, location: defaultLocation });
 
       expect(wrapper.findComponent(SecretsTable).props()).toMatchObject({
-        isGroup: entity === ENTITY_GROUP,
         fullPath,
       });
     });
@@ -115,7 +113,6 @@ describe('Secrets router', () => {
       await createSecretsApp({ route: '/new', props, location: defaultLocation });
 
       expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
-        entity,
         fullPath,
       });
     });
@@ -124,7 +121,6 @@ describe('Secrets router', () => {
       await createSecretsApp({ route: editRoute, props, location: defaultLocation });
 
       expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
-        entity,
         fullPath,
         isEditing: true,
         secretName: 'SECRET_KEY',

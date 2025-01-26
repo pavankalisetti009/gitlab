@@ -11,7 +11,6 @@ export const EDIT_ROUTE_NAME = 'edit';
 export const SCOPED_LABEL_COLOR = '#CBE2F9';
 export const UNSCOPED_LABEL_COLOR = '#DCDCDE';
 
-export const INITIAL_PAGE = 1;
 export const PAGE_SIZE = 10;
 
 export const ENTITY_GROUP = 'group';

@@ -1,27 +1,25 @@
 <script>
 import {
   GlAlert,
-  GlBadge,
   GlButton,
+  GlIcon,
   GlLabel,
   GlLoadingIcon,
   GlSprintf,
   GlTableLite,
-  GlPagination,
+  GlKeysetPagination,
 } from '@gitlab/ui';
-import { updateHistory, getParameterByName, setUrlParams } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
-import getSecretsQuery from '../../graphql/queries/client/get_secrets.query.graphql';
+import getProjectSecretsQuery from '../../graphql/queries/get_project_secrets.query.graphql';
 import getSecretManagerStatusQuery from '../../graphql/queries/get_secret_manager_status.query.graphql';
 import {
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
-  INITIAL_PAGE,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
   POLL_INTERVAL,
@@ -30,41 +28,43 @@ import {
   SECRET_MANAGER_STATUS_INACTIVE,
   SECRET_MANAGER_STATUS_PROVISIONING,
   SECRET_STATUS,
-  UNSCOPED_LABEL_COLOR,
 } from '../../constants';
-import SecretActionsCell from './secret_actions_cell.vue';
+import ActionsCell from './secret_actions_cell.vue';
 
 export default {
   name: 'SecretsTable',
   components: {
+    ActionsCell,
     CrudComponent,
     GlAlert,
-    GlBadge,
     GlButton,
+    GlIcon,
+    GlKeysetPagination,
     GlLabel,
     GlLoadingIcon,
-    GlPagination,
     GlSprintf,
     GlTableLite,
     TimeAgo,
     UserDate,
-    SecretActionsCell,
   },
   props: {
-    isGroup: {
-      type: Boolean,
-      required: true,
-    },
     fullPath: {
       type: String,
       required: true,
+    },
+    pageSize: {
+      type: Number,
+      required: false,
+      default: PAGE_SIZE,
     },
   },
   data() {
     return {
       secretManagerStatus: null,
       secrets: null,
-      page: INITIAL_PAGE,
+      endCursor: null,
+      startCursor: null,
+      secretsCursor: {},
     };
   },
   apollo: {
@@ -98,23 +98,28 @@ export default {
       pollInterval: POLL_INTERVAL,
     },
     secrets: {
-      query: getSecretsQuery,
+      query: getProjectSecretsQuery,
       skip() {
         return (
           !this.secretManagerStatus || !this.secretManagerStatus === SECRET_MANAGER_STATUS_ACTIVE
         );
       },
       variables() {
-        return this.queryVariables;
+        return {
+          projectPath: this.fullPath,
+          limit: this.pageSize,
+          ...this.secretsCursor,
+        };
       },
-      update(data) {
-        if (this.isGroup) {
-          return data.group?.secrets;
-        }
-        return data.project?.secrets;
+      update({ projectSecrets: { edges, pageInfo } }) {
+        this.endCursor = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+        this.startCursor = pageInfo.hasPreviousPage ? pageInfo.startCursor : null;
+        return edges.map((e) => e.node) || [];
       },
       error() {
-        createAlert({ message: __('An error occurred while fetching secrets, please try again.') });
+        createAlert({
+          message: s__('Secrets|An error occurred while fetching secrets. Please try again.'),
+        });
       },
     },
   },
@@ -122,58 +127,37 @@ export default {
     isProvisioning() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
     },
+    hasNextPage() {
+      return this.endCursor !== null;
+    },
+    hasPreviousPage() {
+      return this.startCursor !== null;
+    },
     onSecretsPage() {
       return window.location.pathname.includes('/-/secrets');
     },
-    queryVariables() {
-      return {
-        fullPath: this.fullPath,
-        isGroup: this.isGroup,
-        offset: (this.page - 1) * PAGE_SIZE,
-        limit: PAGE_SIZE,
-      };
-    },
-    secretsCount() {
-      return this.secrets?.count || 0;
-    },
-    secretsNodes() {
-      return this.secrets?.nodes || [];
-    },
     showPagination() {
-      return this.secretsCount > PAGE_SIZE;
+      return this.hasPreviousPage || this.hasNextPage;
     },
-  },
-  created() {
-    this.updateQueryParamsFromUrl();
-
-    window.addEventListener('popstate', this.updateQueryParamsFromUrl);
-  },
-  destroyed() {
-    window.removeEventListener('popstate', this.updateQueryParamsFromUrl);
   },
   methods: {
     getDetailsRoute: (secretName) => ({ name: DETAILS_ROUTE_NAME, params: { secretName } }),
-    getEditRoute: (id) => ({ name: EDIT_ROUTE_NAME, params: { id } }),
-    isScopedLabel(label) {
-      return label.includes('::');
-    },
-    getLabelBackgroundColor(label) {
-      return this.isScopedLabel(label) ? SCOPED_LABEL_COLOR : UNSCOPED_LABEL_COLOR;
-    },
+    getEditRoute: (name) => ({ name: EDIT_ROUTE_NAME, params: { name } }),
     environmentLabelText(environment) {
       const environmentText = convertEnvironmentScope(environment);
       return `${__('env')}::${environmentText}`;
     },
-    updateQueryParamsFromUrl() {
-      this.page = Number(getParameterByName('page')) || INITIAL_PAGE;
+    handleNextPage() {
+      this.secretsCursor = {
+        after: this.endCursor,
+        before: null,
+      };
     },
-    handlePageChange(page) {
-      this.page = page;
-      if (this.onSecretsPage) {
-        updateHistory({
-          url: setUrlParams({ page }),
-        });
-      }
+    handlePrevPage() {
+      this.secretsCursor = {
+        after: null,
+        before: this.startCursor,
+      };
     },
   },
   fields: [
@@ -194,17 +178,12 @@ export default {
       label: s__('Secrets|Created'),
     },
     {
-      key: 'status',
-      label: s__('Secrets|Status'),
-    },
-    {
       key: 'actions',
       label: '',
       tdClass: 'gl-text-right !gl-p-3',
     },
   ],
   NEW_ROUTE_NAME,
-  PAGE_SIZE,
   SCOPED_LABEL_COLOR,
   SECRET_STATUS,
 };
@@ -236,15 +215,15 @@ export default {
         )
       }}
     </gl-alert>
-    <crud-component v-else :title="s__('Secrets|Stored secrets')" icon="lock" :count="secretsCount">
+    <crud-component v-else :title="s__('Secrets|Stored secrets')">
       <template #actions>
         <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
           {{ s__('Secrets|New secret') }}
         </gl-button>
       </template>
 
-      <gl-table-lite :fields="$options.fields" :items="secretsNodes" stacked="md" class="gl-mb-0">
-        <template #cell(name)="{ item: { name, labels, environment } }">
+      <gl-table-lite :fields="$options.fields" :items="secrets" stacked="md" class="gl-mb-0">
+        <template #cell(name)="{ item: { name, branch, environment } }">
           <router-link
             data-testid="secret-details-link"
             :to="getDetailsRoute(name)"
@@ -257,17 +236,14 @@ export default {
             :background-color="$options.SCOPED_LABEL_COLOR"
             scoped
           />
-          <gl-label
-            v-for="label in labels"
-            :key="label"
-            :title="label"
-            :background-color="getLabelBackgroundColor(label)"
-            :scoped="isScopedLabel(label)"
-            class="gl-mr-3 gl-mt-3"
-          />
+          <code>
+            <gl-icon name="branch" :size="12" class="gl-mr-1" />
+            {{ branch }}
+          </code>
         </template>
         <template #cell(lastAccessed)="{ item: { lastAccessed } }">
-          <time-ago :time="lastAccessed" data-testid="secret-last-accessed" />
+          <time-ago v-if="lastAccessed" :time="lastAccessed" data-testid="secret-last-accessed" />
+          <span v-else>{{ __('N/A') }}</span>
         </template>
         <template #cell(expiration)="{ item: { expiration } }">
           <user-date :date="expiration" data-testid="secret-expiration" />
@@ -275,26 +251,19 @@ export default {
         <template #cell(createdAt)="{ item: { createdAt } }">
           <user-date :date="createdAt" data-testid="secret-created-at" />
         </template>
-        <template #cell(status)="{ item: { status } }">
-          <gl-badge
-            :icon="$options.SECRET_STATUS[status].icon"
-            :variant="$options.SECRET_STATUS[status].variant"
-          >
-            {{ $options.SECRET_STATUS[status].text }}
-          </gl-badge>
-        </template>
-        <template #cell(actions)="{ item: { id } }">
-          <secret-actions-cell :details-route="getEditRoute(id)" />
+        <template #cell(actions)="{ item: { name } }">
+          <actions-cell :details-route="getEditRoute(name)" />
         </template>
       </gl-table-lite>
 
       <template v-if="showPagination" #pagination>
-        <gl-pagination
-          :value="page"
-          :per-page="$options.PAGE_SIZE"
-          :total-items="secretsCount"
-          align="center"
-          @input="handlePageChange"
+        <gl-keyset-pagination
+          :has-previous-page="hasPreviousPage"
+          :has-next-page="hasNextPage"
+          :start-cursor="startCursor"
+          :end-cursor="endCursor"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
         />
       </template>
     </crud-component>
