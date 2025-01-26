@@ -34485,6 +34485,9 @@ msgstr ""
 msgid "Maximum requests per minute per group / project"
 msgstr ""
 
+msgid "Maximum requests per period per user"
+msgstr ""
+
 msgid "Maximum requests to the %{api_name} API per %{timeframe} per IP address for unauthenticated requests"
 msgstr ""
 
@@ -46557,6 +46560,9 @@ msgid "Rate limit"
 msgstr ""
 
 msgid "Rate limit access to specified paths."
+msgstr ""
+
+msgid "Rate limit period (in seconds)"
 msgstr ""
 
 msgid "Rate limits can help reduce request volume (like from crawlers or abusive bots)."
