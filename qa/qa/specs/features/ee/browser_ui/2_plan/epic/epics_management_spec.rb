@@ -49,16 +49,17 @@ module QA
         expect(page).to have_content("This is a confidential epic.")
       end
 
-      context 'Resources created via API' do
+      context 'when resources created via API' do
         let(:issue) { create_issue_resource }
         let(:epic) { create_epic_resource(issue.project.group) }
 
-        context 'Visit epic first' do
+        context 'when visit epic first' do
           before do
             epic.visit!
           end
 
-          it 'adds/removes issue to/from epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347983' do
+          it 'adds/removes issue to/from epic',
+            testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347983' do
             if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
               EE::Page::Group::WorkItem::Epic::Show.perform do |show|
                 show.add_child_issue_to_epic(issue)
@@ -99,7 +100,8 @@ module QA
             end
           end
 
-          it 'closes and reopens an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347984' do
+          it 'closes and reopens an epic',
+            testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347984' do
             if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
               EE::Page::Group::WorkItem::Epic::Show.perform do |show|
                 show.close_epic
@@ -128,7 +130,13 @@ module QA
           end
         end
 
-        it 'adds/removes issue to/from epic using quick actions', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347981' do
+        it 'adds/removes issue to/from epic using quick actions',
+          quarantine: {
+            only: { pipeline: %i[staging-canary] },
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/514939',
+            type: :investigating
+          },
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347981' do
           issue.visit!
 
           Page::Project::Issue::Show.perform do |show|
