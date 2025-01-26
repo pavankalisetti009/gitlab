@@ -34320,6 +34320,9 @@ msgstr ""
 msgid "Maximum authenticated API requests per rate limit period per user"
 msgstr ""
 
+msgid "Maximum authenticated requests to %{open}project/:id/jobs%{close} per minute"
+msgstr ""
+
 msgid "Maximum authenticated web requests per rate limit period per user"
 msgstr ""
 
