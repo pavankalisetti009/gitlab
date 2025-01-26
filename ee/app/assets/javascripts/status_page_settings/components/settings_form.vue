@@ -174,7 +174,7 @@ export default {
           label-for="status-page-aws-access-key"
           class="col-8 col-md-9 mb-3 gl-pl-0"
         >
-          <gl-form-input id="status-page-aws-access-key " v-model="awsAccessKey" />
+          <gl-form-input id="status-page-aws-access-key" v-model="awsAccessKey" />
         </gl-form-group>
 
         <gl-form-group
@@ -183,7 +183,7 @@ export default {
           label-for="status-page-aws-secret-access-key"
           class="col-8 col-md-9 mb-3 gl-pl-0"
         >
-          <gl-form-input id="status-page-aws-secret-access-key " v-model="awsSecretKey" />
+          <gl-form-input id="status-page-aws-secret-access-key" v-model="awsSecretKey" />
         </gl-form-group>
         <gl-button
           ref="submitBtn"
