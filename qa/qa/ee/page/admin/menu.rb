@@ -15,7 +15,7 @@ module QA
 
             base.class_eval do
               view 'ee/lib/ee/sidebars/admin/menus/admin_settings_menu.rb' do
-                element 'admin-settings-advanced-search-link'
+                element 'admin-settings-search-link'
                 element 'admin-settings-templates-link'
                 element 'admin-security-and-compliance-link'
               end

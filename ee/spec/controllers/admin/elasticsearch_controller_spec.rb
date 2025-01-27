@@ -16,7 +16,7 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       post :enqueue_index
 
-      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
       expect(response).to redirect_to expected_redirect
     end
   end
@@ -38,7 +38,7 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       expect(controller).to set_flash[:notice].to include('reindexing triggered')
 
-      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
       expect(response).to redirect_to expected_redirect
     end
 
@@ -52,7 +52,7 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       expect(controller).to set_flash[:warning].to include('already in progress')
 
-      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
       expect(response).to redirect_to expected_redirect
     end
 
@@ -64,7 +64,7 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       expect(controller).to set_flash[:alert].to include('Elasticsearch reindexing was not started')
 
-      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
       expect(response).to redirect_to expected_redirect
     end
   end
@@ -82,7 +82,7 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
       expect(task.reload.delete_original_index_at).to be_nil
       expect(controller).to set_flash[:notice].to include('deletion is canceled')
 
-      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
       expect(response).to redirect_to expected_redirect
     end
   end
@@ -108,7 +108,7 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
       expect(Elastic::DataMigrationService.halted_migrations?).to be_falsey
       expect(controller).to set_flash[:notice].to include('Migration has been scheduled to be retried')
 
-      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
       expect(response).to redirect_to expected_redirect
     end
   end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe 'EE-specific admin routing' do
@@ -68,9 +69,13 @@ RSpec.describe 'EE-specific admin routing' do
       expect(patch('/admin/application_settings/templates')).to route_to('admin/application_settings#templates')
     end
 
-    it 'redirects /advanced_search to to #advanced_search' do
-      expect(get('/admin/application_settings/advanced_search')).to route_to('admin/application_settings#advanced_search')
-      expect(patch('/admin/application_settings/advanced_search')).to route_to('admin/application_settings#advanced_search')
+    it 'redirects /advanced_search to #search' do
+      expect(get('/admin/application_settings/search')).to route_to('admin/application_settings#search')
+    end
+
+    it 'redirects /search to #search' do
+      expect(get('/admin/application_settings/search')).to route_to('admin/application_settings#search')
+      expect(patch('/admin/application_settings/search')).to route_to('admin/application_settings#search')
     end
   end
 

@@ -1,6 +1,6 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import IndexEntitiesList from 'ee/admin/application_settings/advanced_search/components/index_entities_list.vue';
+import IndexEntitiesList from 'ee/admin/application_settings/search/components/index_entities_list.vue';
 import { entities } from '../mock_data';
 
 describe('IndexEntitiesList', () => {

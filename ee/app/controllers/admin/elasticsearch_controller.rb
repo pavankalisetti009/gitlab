@@ -61,7 +61,7 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   private
 
   def redirect_path(anchor: 'js-elasticsearch-settings')
-    advanced_search_admin_application_settings_path(anchor: anchor)
+    search_admin_application_settings_path(anchor: anchor)
   end
 
   def trigger_reindexing_params
