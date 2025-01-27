@@ -73,6 +73,8 @@ module Mutations
       end
 
       def resolve(**attributes)
+        started_at = Gitlab::Metrics::System.real_time
+
         verify_rate_limit!
 
         log_conditional_info(
@@ -94,6 +96,7 @@ module Mutations
         options[:user_agent] = context[:request].headers["User-Agent"]
         thread = find_thread(options.delete(:thread_id)) || create_thread(options.delete(:conversation_type))
         options[:thread] = thread if thread
+        options[:started_at] = started_at
 
         response = Llm::ExecuteMethodService.new(current_user, resource, method, options).execute
 

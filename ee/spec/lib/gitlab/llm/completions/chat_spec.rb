@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- there are lots of parameters at play
 RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   include FakeBlobHelpers
 
@@ -18,6 +19,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   let(:ai_request) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
   let(:blob) { fake_blob(path: 'file.md') }
   let(:extra_resource) { { blob: blob } }
+  let(:started_at) { Gitlab::Utils::System.real_time }
   let(:current_file) do
     {
       file_name: 'test.py',
@@ -39,6 +41,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       extra_resource: extra_resource,
       current_file: current_file,
       agent_version_id: agent_version.id,
+      started_at: started_at,
       additional_context: additional_context
     }
   end
@@ -105,6 +108,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
         .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
           extra_resource: extra_resource, request_id: 'uuid', current_file: current_file, agent_version: agent_version,
+          started_at: started_at,
           additional_context: additional_context)
         .and_return(context)
       expect(categorize_service).to receive(:execute)
@@ -254,6 +258,7 @@ client_subscription_id: 'someid' }
         expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource,
             ai_request: ai_request, extra_resource: extra_resource, request_id: 'uuid',
+            started_at: started_at,
             current_file: current_file, agent_version: agent_version, additional_context: additional_context)
           .and_return(context)
         # This is temporarily commented out due to the following production issue:
@@ -439,6 +444,7 @@ client_subscription_id: 'someid' }
         allow(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
             extra_resource: extra_resource, request_id: 'uuid', current_file: current_file,
+            started_at: started_at,
             agent_version: agent_version, additional_context: additional_context)
           .and_return(context)
 
@@ -501,3 +507,4 @@ client_subscription_id: 'someid' }
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers
