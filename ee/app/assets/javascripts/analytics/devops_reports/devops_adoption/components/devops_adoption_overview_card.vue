@@ -83,7 +83,11 @@ export default {
         class="gl-mt-2 gl-flex gl-items-center"
         data-testid="card-meta-row"
       >
-        <devops-adoption-table-cell-flag :enabled="feature.adopted" class="gl-mr-3" />
+        <devops-adoption-table-cell-flag
+          :enabled="feature.adopted"
+          :name="feature.title"
+          class="gl-mr-3"
+        />
         <span class="gl-text-sm gl-text-subtle" data-testid="card-meta-row-title">{{
           feature.title
         }}</span>

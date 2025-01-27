@@ -11,6 +11,7 @@ import {
 import { uniqueId } from 'lodash';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import { __, sprintf } from '~/locale';
 import {
   TABLE_SORT_BY_STORAGE_KEY,
   TABLE_SORT_DESC_STORAGE_KEY,
@@ -138,6 +139,11 @@ export default {
     getGroupAdoptionPath(fullPath) {
       return getGroupAdoptionPath(fullPath);
     },
+    helpIconAltText(tooltipText) {
+      return sprintf(__('%{tooltipText} image'), {
+        tooltipText,
+      });
+    },
   },
 };
 </script>
@@ -161,6 +167,7 @@ export default {
             v-gl-tooltip.hover="header.tooltip"
             class="gl-ml-3"
             data-testid="question-icon"
+            :alt="helpIconAltText(header.tooltip)"
           />
         </div>
       </template>
