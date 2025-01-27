@@ -38,13 +38,15 @@ class SoftwareLicense < ApplicationRecord
     def unsafe_create_policy_for!(
       project:, name:, classification:,
       scan_result_policy_read: nil,
-      approval_policy_rule_id: nil
+      approval_policy_rule_id: nil,
+      custom_software_license: nil
     )
       project.software_license_policies.create!(
         classification: classification,
         software_license: find_or_create_by!(name: name),
         scan_result_policy_read: scan_result_policy_read,
-        approval_policy_rule_id: approval_policy_rule_id
+        approval_policy_rule_id: approval_policy_rule_id,
+        custom_software_license: custom_software_license
       )
     end
   end

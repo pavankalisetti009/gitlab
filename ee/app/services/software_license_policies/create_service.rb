@@ -25,14 +25,15 @@ module SoftwareLicensePolicies
         software_license = SoftwareLicense.find_by_name(params[:name])
 
         # also creates a custom license to allow enabling and disabling the feature flag as needed
-        find_or_create_custom_software_license unless software_license
+        custom_software_license = software_license ? nil : find_or_create_custom_software_license
 
         SoftwareLicense.unsafe_create_policy_for!(
           project: project,
           name: params[:name].strip,
           classification: params[:approval_status],
           scan_result_policy_read: params[:scan_result_policy_read],
-          approval_policy_rule_id: params[:approval_policy_rule_id]
+          approval_policy_rule_id: params[:approval_policy_rule_id],
+          custom_software_license: custom_software_license
         )
       end
     end
@@ -44,7 +45,12 @@ module SoftwareLicensePolicies
       if software_license
         create_software_license_policies_with_software_license(software_license, catalogue_license)
       else
-        create_software_license_policies_with_custom_software_license(find_or_create_custom_software_license)
+        # also creates a software license to allow enabling and disabling the feature flag custom_software_license
+        # as needed.
+        new_software_license = SoftwareLicense.create!(name: params[:name])
+
+        create_software_license_policies_with_custom_software_license(find_or_create_custom_software_license,
+          new_software_license)
       end
     end
 
@@ -58,10 +64,11 @@ module SoftwareLicensePolicies
       )
     end
 
-    def create_software_license_policies_with_custom_software_license(custom_software_license)
+    def create_software_license_policies_with_custom_software_license(custom_software_license, new_software_license)
       project.software_license_policies.create!(
         classification: params[:approval_status],
         custom_software_license: custom_software_license,
+        software_license: new_software_license,
         scan_result_policy_read: params[:scan_result_policy_read],
         approval_policy_rule_id: params[:approval_policy_rule_id]
       )
