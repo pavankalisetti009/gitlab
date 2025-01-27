@@ -716,7 +716,7 @@
   :tags: []
 - :name: cronjob:usage_events_dump_write_buffer_cron
   :worker_name: UsageEvents::DumpWriteBufferCronWorker
-  :feature_category: :database
+  :feature_category: :value_stream_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

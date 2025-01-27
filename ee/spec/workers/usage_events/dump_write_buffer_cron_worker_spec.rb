@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UsageEvents::DumpWriteBufferCronWorker, feature_category: :database do
+RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_cache, feature_category: :database do
   let_it_be(:organization) { create(:organization) }
   let(:job) { described_class.new }
   let(:perform) { job.perform }
@@ -71,6 +71,23 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, feature_category: :databa
           hash_including('user_id' => 1)
         ])
       end
+    end
+  end
+
+  context 'when data contains different sets of attributes' do
+    before do
+      add_to_buffer({ user_id: 1, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id },
+        Ai::DuoChatEvent)
+      add_to_buffer({ user_id: 2, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id },
+        Ai::DuoChatEvent)
+      add_to_buffer(
+        { user_id: 3, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id,
+          namespace_path: '1/2/3/' }, Ai::DuoChatEvent)
+    end
+
+    it 'inserts all rows by attribute groups' do
+      expect(Ai::DuoChatEvent).to receive(:insert_all).twice.and_call_original
+      expect(perform).to eq({ status: :processed, inserted_rows: 3 })
     end
   end
 end

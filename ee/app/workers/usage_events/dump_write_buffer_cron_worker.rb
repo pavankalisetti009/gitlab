@@ -8,7 +8,7 @@ module UsageEvents
     idempotent!
     queue_namespace :cronjob
     data_consistency :delayed
-    feature_category :database
+    feature_category :value_stream_management
 
     MAX_RUNTIME = 200.seconds
     BATCH_SIZE = 1000
@@ -49,9 +49,13 @@ module UsageEvents
         event.attributes.compact
       end
 
-      res = @current_model.insert_all(valid_attributes, unique_by: %i[id timestamp]) unless valid_attributes.empty?
+      grouped_attributes = valid_attributes.group_by(&:keys).values
 
-      res ? res.rows.size : 0
+      grouped_attributes.sum do |attributes|
+        res = @current_model.insert_all(attributes, unique_by: %i[id timestamp]) unless attributes.empty?
+
+        res ? res.rows.size : 0
+      end
     end
 
     def next_batch
