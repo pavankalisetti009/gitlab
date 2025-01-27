@@ -6,10 +6,7 @@ import { s__ } from '~/locale';
 import { ALL_ID as ALL_SEVERITIES_VALUE } from '../../filters/constants';
 import SearchSuggestion from '../components/search_suggestion.vue';
 
-const VALID_VALUES = Object.entries(SEVERITY_LEVELS).map(([id]) => id.toUpperCase());
-
 export default {
-  VALID_VALUES,
   components: {
     GlFilteredSearchToken,
     SearchSuggestion,

@@ -1,5 +1,4 @@
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import { ALL_ID } from '../../filters/constants';
 import StatusToken from './status_token.vue';
 import ActivityToken from './activity_token.vue';
 import SeverityToken from './severity_token.vue';
@@ -24,17 +23,6 @@ export const SEVERITY_TOKEN_DEFINITION = {
   unique: true,
   token: SeverityToken,
   operators: OPERATORS_OR,
-  prepareFilters: (newValues, oldValues) => {
-    // When the user clicks on the selected value (placeholder), the filtered search
-    // empties the selection handler and sends a null value
-    // We don't want to cause a new API call when this happens. Instead
-    // we want to wait until user either destroys the token or selects a new token.
-    if (!newValues) {
-      return oldValues;
-    }
-
-    return newValues.filter((i) => i !== ALL_ID);
-  },
 };
 
 export const ACTIVITY_TOKEN_DEFINITION = {

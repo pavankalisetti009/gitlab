@@ -1,18 +1,13 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
-import Vue, { nextTick } from 'vue';
-import VueRouter from 'vue-router';
+import { nextTick } from 'vue';
 import StatusToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/status_token.vue';
+import { GROUPS } from 'ee/security_dashboard/components/shared/filters/status_filter.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-Vue.use(VueRouter);
-
 describe('Status Token component', () => {
   let wrapper;
-  let router;
 
   const mockConfig = {
     multiSelect: true,
@@ -26,10 +21,7 @@ describe('Status Token component', () => {
     stubs,
     mountFn = shallowMountExtended,
   } = {}) => {
-    router = new VueRouter({ mode: 'history' });
-
     wrapper = mountFn(StatusToken, {
-      router,
       propsData: {
         config: mockConfig,
         value,
@@ -48,7 +40,6 @@ describe('Status Token component', () => {
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
@@ -67,7 +58,7 @@ describe('Status Token component', () => {
   const allOptionsExcept = (value) => {
     const exempt = Array.isArray(value) ? value : [value];
 
-    return StatusToken.GROUPS.flatMap((i) => i.options)
+    return GROUPS.flatMap((i) => i.options)
       .map((i) => i.value)
       .filter((i) => !exempt.includes(i));
   };
@@ -78,6 +69,27 @@ describe('Status Token component', () => {
 
     beforeEach(() => {
       createWrapper();
+    });
+
+    it('transforms the filters correctly (this is triggered by the parent component)', () => {
+      expect(StatusToken.transformFilters(['DETECTED', 'ACCEPTABLE_RISK'])).toEqual({
+        state: ['DETECTED'],
+        dismissalReason: ['ACCEPTABLE_RISK'],
+      });
+
+      expect(StatusToken.transformFilters(['CONFIRMED'])).toEqual({
+        state: ['CONFIRMED'],
+        dismissalReason: [],
+      });
+
+      expect(StatusToken.transformFilters([])).toEqual({
+        state: [],
+        dismissalReason: [],
+      });
+    });
+
+    it('has a defaultValues property', () => {
+      expect(StatusToken.defaultValues).toEqual(['DETECTED', 'CONFIRMED']);
     });
 
     it('shows the label', () => {
@@ -147,39 +159,6 @@ describe('Status Token component', () => {
       expect(isOptionChecked('USED_IN_TESTS')).toBe(true);
       expect(isOptionChecked('DISMISSED')).toBe(false);
     });
-
-    it('emits filters-changed event when a filter is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      // Select 2 states
-      await clickDropdownItem('CONFIRMED', 'RESOLVED');
-      expect(spy).toHaveBeenCalledWith({ dismissalReason: [], state: ['CONFIRMED', 'RESOLVED'] });
-
-      // Select a dismissal reason. It should not unselect the previous states.
-      await clickDropdownItem('ACCEPTABLE_RISK');
-
-      expect(spy).toHaveBeenCalledWith({
-        dismissalReason: ['ACCEPTABLE_RISK'],
-        state: ['CONFIRMED', 'RESOLVED'],
-      });
-    });
-  });
-
-  describe('on clear', () => {
-    beforeEach(async () => {
-      createWrapper({ mountFn: mountExtended, stubs: { QuerystringSync: false } });
-      await nextTick();
-    });
-
-    it('resetting emits filters-changed event and clears the query string', () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      findFilteredSearchToken().vm.$emit('destroy');
-
-      expect(spy).toHaveBeenCalledWith({ dismissalReason: [], state: [] });
-    });
   });
 
   describe('toggle text', () => {
@@ -212,55 +191,6 @@ describe('Status Token component', () => {
     it('shows "Needs triage, Confirmed +1 more" when more than 2 options are selected', async () => {
       await clickDropdownItem('CONFIRMED', 'DETECTED', 'DISMISSED');
       expect(findSlotView().text()).toBe('Needs triage, Confirmed +1 more');
-    });
-  });
-
-  describe('QuerystringSync component', () => {
-    beforeEach(() => {
-      createWrapper({});
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'state',
-        value: StatusToken.DEFAULT_VALUES,
-        defaultValues: ['ALL'],
-        validValues: [
-          'ALL',
-          'DETECTED',
-          'CONFIRMED',
-          'RESOLVED',
-          'DISMISSED',
-          'ACCEPTABLE_RISK',
-          'FALSE_POSITIVE',
-          'MITIGATING_CONTROL',
-          'USED_IN_TESTS',
-          'NOT_APPLICABLE',
-        ],
-      });
-    });
-
-    it('receives ALL_STATUS_VALUE when All Statuses option is clicked', async () => {
-      await clickDropdownItem('ALL');
-
-      expect(findQuerystringSync().props('value')).toEqual(['ALL']);
-    });
-
-    it.each`
-      emitted                      | expected
-      ${['CONFIRMED', 'RESOLVED']} | ${['CONFIRMED', 'RESOLVED']}
-      ${['ALL']}                   | ${['ALL']}
-    `('restores selected items - $emitted', async ({ emitted, expected }) => {
-      findQuerystringSync().vm.$emit('input', emitted);
-      await nextTick();
-
-      expected.forEach((item) => {
-        expect(isOptionChecked(item)).toBe(true);
-      });
-
-      allOptionsExcept(expected).forEach((item) => {
-        expect(isOptionChecked(item)).toBe(false);
-      });
     });
   });
 });

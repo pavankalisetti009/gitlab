@@ -1,30 +1,39 @@
 <script>
 import { GlFilteredSearchToken, GlDropdownDivider, GlDropdownSectionHeader } from '@gitlab/ui';
-import { VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
+import { VULNERABILITY_STATE_OBJECTS, DISMISSAL_REASONS } from 'ee/vulnerabilities/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__, n__ } from '~/locale';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import QuerystringSync from '../../filters/querystring_sync.vue';
 import { GROUPS } from '../../filters/status_filter.vue';
 import { ALL_ID as ALL_STATUS_VALUE } from '../../filters/constants';
-import eventHub from '../event_hub';
 
 const { detected, confirmed } = VULNERABILITY_STATE_OBJECTS;
 
 const ALL_DISMISSED_VALUE = GROUPS[1].options[0].value;
 const DISMISSAL_REASON_VALUES = GROUPS[1].options.slice(1).map(({ value }) => value);
-const OPTIONS = [...GROUPS[0].options, ...GROUPS[1].options];
+
+const dismissalReasonKeys = Object.keys(DISMISSAL_REASONS);
 
 export default {
-  DEFAULT_VALUES: [detected.searchParamValue, confirmed.searchParamValue],
-  VALID_VALUES: OPTIONS.map(({ value }) => value),
-  CLEAR_VALUES: [ALL_STATUS_VALUE],
-  GROUPS,
+  defaultValues: [detected.searchParamValue, confirmed.searchParamValue],
+  transformFilters: (filters) => {
+    const dismissalReason = filters.filter((value) =>
+      dismissalReasonKeys.includes(value.toLowerCase()),
+    );
+
+    const state = filters.filter(
+      (value) => !dismissalReasonKeys.includes(value.toLowerCase()) && value !== ALL_STATUS_VALUE,
+    );
+
+    return {
+      state,
+      dismissalReason,
+    };
+  },
   components: {
     GlFilteredSearchToken,
     GlDropdownDivider,
     GlDropdownSectionHeader,
-    QuerystringSync,
     SearchSuggestion,
   },
   props: {
@@ -43,11 +52,10 @@ export default {
     },
   },
   data() {
-    const defaultSelected = this.value.data || this.$options.DEFAULT_VALUES;
+    const defaultSelected = this.value.data || this.$options.defaultValues;
 
     return {
       selectedStatuses: defaultSelected,
-      querySyncValues: defaultSelected,
     };
   },
   computed: {
@@ -81,39 +89,6 @@ export default {
   methods: {
     resetSelected() {
       this.selectedStatuses = [];
-      this.emitFiltersChanged();
-    },
-
-    emitFiltersChanged() {
-      const dismissalReason = this.selectedStatuses.filter((value) =>
-        DISMISSAL_REASON_VALUES.includes(value),
-      );
-
-      const state = this.selectedStatuses.filter(
-        (value) => !DISMISSAL_REASON_VALUES.includes(value) && value !== ALL_STATUS_VALUE,
-      );
-
-      this.querySyncValues = this.selectedStatuses;
-      eventHub.$emit('filters-changed', { state, dismissalReason });
-    },
-
-    updateSelectedFromQS(selected) {
-      if (selected.includes(ALL_STATUS_VALUE)) {
-        this.selectedStatuses = [ALL_STATUS_VALUE];
-      } else if (selected.length > 0) {
-        this.selectedStatuses = selected;
-      } else {
-        // This happens when we clear the token and re-select `Status`
-        // to open the dropdown. At that stage we simply want to wait
-        // for the user to select new statuses.
-        if (!this.value.data) {
-          return;
-        }
-
-        this.selectedStatuses = this.value.data || this.$options.DEFAULT_VALUES;
-      }
-
-      this.emitFiltersChanged();
     },
 
     toggleSelectedStatus(selectedValue) {
@@ -168,51 +143,39 @@ export default {
 </script>
 
 <template>
-  <querystring-sync
-    ref="qs"
-    querystring-key="state"
-    :value="querySyncValues"
-    :valid-values="$options.VALID_VALUES"
-    :default-values="$options.CLEAR_VALUES"
-    @input="updateSelectedFromQS"
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :multi-select-values="selectedStatuses"
+    :value="tokenValue"
+    v-on="$listeners"
+    @select="toggleSelectedStatus"
+    @destroy="resetSelected"
   >
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :multi-select-values="selectedStatuses"
-      :value="tokenValue"
-      v-on="$listeners"
-      @select="toggleSelectedStatus"
-      @destroy="resetSelected"
-      @complete="emitFiltersChanged"
-    >
-      <template #view>
-        <span data-testid="status-token-placeholder">{{ toggleText }}</span>
-      </template>
-      <template #suggestions>
-        <gl-dropdown-section-header>{{ $options.i18n.statusLabel }}</gl-dropdown-section-header>
-        <gl-dropdown-divider />
-        <search-suggestion
-          v-for="status in $options.groups.statusOptions"
-          :key="status.value"
-          :text="status.text"
-          :value="status.value"
-          :selected="isStatusSelected(status.value)"
-          :data-testid="`suggestion-${status.value}`"
-        />
-        <gl-dropdown-divider />
-        <gl-dropdown-section-header>{{
-          $options.i18n.dismissedAsLabel
-        }}</gl-dropdown-section-header>
-        <search-suggestion
-          v-for="status in $options.groups.dismissalReasonOptions"
-          :key="status.value"
-          :text="status.text"
-          :value="status.value"
-          :selected="isStatusSelected(status.value)"
-          :data-testid="`suggestion-${status.value}`"
-        />
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+    <template #view>
+      <span data-testid="status-token-placeholder">{{ toggleText }}</span>
+    </template>
+    <template #suggestions>
+      <gl-dropdown-section-header>{{ $options.i18n.statusLabel }}</gl-dropdown-section-header>
+      <gl-dropdown-divider />
+      <search-suggestion
+        v-for="status in $options.groups.statusOptions"
+        :key="status.value"
+        :text="status.text"
+        :value="status.value"
+        :selected="isStatusSelected(status.value)"
+        :data-testid="`suggestion-${status.value}`"
+      />
+      <gl-dropdown-divider />
+      <gl-dropdown-section-header>{{ $options.i18n.dismissedAsLabel }}</gl-dropdown-section-header>
+      <search-suggestion
+        v-for="status in $options.groups.dismissalReasonOptions"
+        :key="status.value"
+        :text="status.text"
+        :value="status.value"
+        :selected="isStatusSelected(status.value)"
+        :data-testid="`suggestion-${status.value}`"
+      />
+    </template>
+  </gl-filtered-search-token>
 </template>
