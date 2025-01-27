@@ -62822,6 +62822,9 @@ msgstr ""
 msgid "VisibilityLevel|This visibility level is not allowed because a child of %{group_name} has a less restrictive visibility level. %{learn_more_link_start}Learn more%{learn_more_link_end}."
 msgstr ""
 
+msgid "VisibilityLevel|This visibility level is not allowed because the organization has a more restrictive visibility level."
+msgstr ""
+
 msgid "VisibilityLevel|This visibility level is not allowed because the parent group has a more restrictive visibility level."
 msgstr ""
 
