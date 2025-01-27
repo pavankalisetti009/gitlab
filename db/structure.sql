@@ -11867,7 +11867,8 @@ ALTER SEQUENCE dast_profiles_id_seq OWNED BY dast_profiles.id;
 CREATE TABLE dast_profiles_pipelines (
     dast_profile_id bigint NOT NULL,
     ci_pipeline_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_39563bc8de CHECK ((project_id IS NOT NULL))
 );
 
 COMMENT ON TABLE dast_profiles_pipelines IS '{"owner":"group::dynamic analysis","description":"Join table between DAST Profiles and CI Pipelines"}';
