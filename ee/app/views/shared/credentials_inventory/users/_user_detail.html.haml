@@ -1,5 +1,8 @@
 .flex-list
   .flex-row
+  - if user.blank?
+    = render Pajamas::BadgeComponent.new(s_('CredentialsInventory|Deleted user'), variant: :neutral)
+  - else
     = user_avatar_without_link(user: user, size: 32, css_class: 'avatar s32 gl-hidden md:gl-flex')
     .row-main-content
       .row-title.str-truncated-100
