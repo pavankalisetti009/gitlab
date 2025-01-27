@@ -48171,6 +48171,9 @@ msgstr ""
 msgid "Revoked personal access token %{personal_access_token_name}!"
 msgstr ""
 
+msgid "Rich text editor"
+msgstr ""
+
 msgid "RightSidebar|Copy email address"
 msgstr ""
 
