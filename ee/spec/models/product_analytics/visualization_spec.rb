@@ -36,6 +36,18 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     [].concat(group_only_visualizations, project_vsd_available_visualizations)
   end
 
+  let(:ai_impact_available_visualizations) do
+    %w[
+      ai_impact_table
+      ai_impact_lifecycle_metrics_table
+      ai_impact_ai_metrics_table
+      code_suggestions_usage_rate_over_time
+      code_suggestions_acceptance_rate_over_time
+      duo_chat_usage_rate_over_time
+      duo_usage_rate_over_time
+    ]
+  end
+
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(
@@ -54,6 +66,19 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   shared_examples_for 'a valid visualization' do
     it 'returns a valid visualization' do
       expect(dashboard.panels.first.visualization).to be_a(described_class)
+    end
+  end
+
+  shared_examples_for 'shows AI impact visualizations when available' do
+    before do
+      allow(Ability).to receive(:allowed?)
+                    .with(user, :read_enterprise_ai_analytics, anything)
+                    .and_return(true)
+      allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
+    end
+
+    it 'includes built in visualizations for AI impact dashboard' do
+      expect(subject.map(&:slug)).to include(*ai_impact_available_visualizations)
     end
   end
 
@@ -139,6 +164,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
           expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
         end
       end
+
+      it_behaves_like 'shows AI impact visualizations when available'
     end
 
     context 'when resource_parent is a group' do
@@ -187,6 +214,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
           expect(subject.map(&:slug)).to match_array(expected_visualizations)
         end
       end
+
+      it_behaves_like 'shows AI impact visualizations when available'
     end
   end
 
