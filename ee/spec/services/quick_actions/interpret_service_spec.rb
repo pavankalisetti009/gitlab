@@ -52,6 +52,31 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     end
   end
 
+  shared_examples 'copy_metadata command' do
+    it 'fetches issue or merge request and copies labels and milestone if content contains /copy_metadata reference' do
+      source_issuable # populate the issue
+      todo_label # populate this label
+      inreview_label # populate this label
+      _, updates, _ = service.execute(content, issuable)
+
+      expect(updates[:add_label_ids]).to match_array([inreview_label.id, todo_label.id])
+
+      if source_issuable.milestone
+        expect(updates[:milestone_id]).to eq(source_issuable.milestone.id)
+      else
+        expect(updates).not_to have_key(:milestone_id)
+      end
+    end
+
+    it 'returns the copy metadata message' do
+      _, _, message = service.execute("/copy_metadata #{source_issuable.to_reference}", issuable)
+      translated_string = _("Copied labels and milestone from %{source_issuable_to_reference}.")
+      formatted_message = format(translated_string, source_issuable_to_reference: source_issuable.to_reference.to_s)
+
+      expect(message).to eq(formatted_message)
+    end
+  end
+
   describe '#execute' do
     let(:merge_request) { create(:merge_request, source_project: project) }
 
@@ -974,6 +999,38 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
     context 'epic hierarchy commands' do
       it_behaves_like 'execute epic hierarchy commands'
+    end
+
+    context '/copy_metadata command' do
+      let(:another_group) { build(:group) }
+
+      before do
+        stub_licensed_features(epics: true)
+        another_group.add_planner(current_user)
+        group.add_planner(current_user)
+      end
+
+      context "when a work item type epic is passed" do
+        let(:todo_label) { create(:group_label, group: group, title: 'To Do') }
+        let(:inreview_label) { create(:group_label, group: group, title: 'In Review') }
+        let(:milestone) { create(:milestone, :on_group, group: group, title: '9.10') }
+        let(:service) { described_class.new(container: group, current_user: current_user) }
+        let(:source_issuable) do
+          create(:work_item, :epic, namespace: group, milestone: milestone).tap do |wi|
+            wi.labels << [todo_label, inreview_label]
+          end
+        end
+
+        let(:content) { "/copy_metadata #{source_issuable.to_reference(group)}" }
+
+        it_behaves_like 'copy_metadata command' do
+          let(:issuable) { create(:work_item, namespace: group) }
+        end
+
+        it_behaves_like 'failed command' do
+          let(:issuable) { create(:work_item, namespace: another_group) }
+        end
+      end
     end
 
     shared_examples 'weight command' do
