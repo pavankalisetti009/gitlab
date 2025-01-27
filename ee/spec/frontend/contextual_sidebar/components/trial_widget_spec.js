@@ -7,7 +7,6 @@ import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { stopPropagation } from 'ee_jest/admin/test_helpers';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -16,9 +15,7 @@ describe('TrialWidget component', () => {
 
   const findRootElement = () => wrapper.findByTestId('trial-widget-root-element');
   const findWidgetTitle = () => wrapper.findByTestId('widget-title');
-  const findCtaButton = () => wrapper.findByTestId('learn-about-features-btn');
-  const findUpgradeButton = () => wrapper.findByTestId('upgrade-options-btn');
-  const findCTAHandRaiseLeadButton = () => wrapper.findByTestId('cta-hand-raise-lead-btn');
+  const findCTAButton = () => wrapper.findByTestId('widget-cta');
 
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
@@ -70,28 +67,8 @@ describe('TrialWidget component', () => {
         expect(findProgressBar().exists()).toBe(true);
       });
 
-      it('renders the CTA button with correct text', () => {
-        const ctaButton = findCtaButton();
-        expect(ctaButton.exists()).toBe(true);
-        expect(ctaButton.text()).toBe('Learn more');
-      });
-
-      it('renders the CTA link', () => {
-        expect(findCtaButton().attributes('href')).toBe('/discover');
-      });
-
-      it('should track the click learn more link event', () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-        findCtaButton().vm.$emit('click', { stopPropagation });
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          'click_learn_more_link_on_trial_widget',
-          {
-            label: 'gitlab_duo_enterprise',
-          },
-          undefined,
-        );
+      it('renders the CTA button', () => {
+        expect(findCTAButton().exists()).toBe(true);
       });
 
       describe('when under the threshold days', () => {
@@ -99,126 +76,93 @@ describe('TrialWidget component', () => {
           createComponent({ daysRemaining: 20, percentageComplete: 67 });
         });
 
-        it('renders the hand raise modal CTA', () => {
-          expect(findCTAHandRaiseLeadButton().props('buttonText')).toBe('Upgrade');
-        });
-
-        it('should track the click upgrade link event', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          findCTAHandRaiseLeadButton().vm.$emit('click', { stopPropagation });
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            'click_upgrade_link_on_trial_widget',
-            {
-              label: 'gitlab_duo_enterprise',
-            },
-            undefined,
-          );
+        it('renders the CTA button', () => {
+          expect(findCTAButton().exists()).toBe(true);
         });
       });
-    });
 
-    describe('when on the last day of the trial', () => {
-      beforeEach(() => {
-        createComponent({ daysRemaining: 1, percentageComplete: 98 });
-      });
-
-      it('renders the progress bar', () => {
-        expect(findProgressBar().exists()).toBe(true);
-      });
-
-      it('renders the upgrade options text', () => {
-        expect(findCTAHandRaiseLeadButton().props('buttonText')).toBe('Upgrade');
-      });
-    });
-
-    describe('when trial has expired', () => {
-      beforeEach(() => {
-        createComponent({ daysRemaining: 0, percentageComplete: 100 });
-      });
-
-      it('shows correct title and body', () => {
-        expect(wrapper.text()).toContain('Your trial of GitLab Duo Enterprise has ended');
-        expect(wrapper.text()).toContain('See upgrade options');
-      });
-
-      it('renders the progress bar', () => {
-        expect(findProgressBar().exists()).toBe(true);
-      });
-
-      it('renders the upgrade options text', () => {
-        expect(findUpgradeButton().text()).toBe('See upgrade options');
-      });
-
-      it('renders the upgrade options link', () => {
-        expect(findUpgradeButton().attributes('href')).toBe('/purchase');
-      });
-
-      it('renders the dismiss button', () => {
-        expect(findDismissButton().exists()).toBe(true);
-      });
-
-      it('should track the see upgrade options click event', () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-        findUpgradeButton().vm.$emit('click', { stopPropagation });
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          'click_see_upgrade_options_link_on_trial_widget',
-          {
-            label: 'gitlab_duo_enterprise',
-          },
-          undefined,
-        );
-      });
-
-      describe('dismissal', () => {
-        let mockAxios;
-
+      describe('when on the last day of the trial', () => {
         beforeEach(() => {
-          mockAxios = new MockAdapter(axios);
+          createComponent({ daysRemaining: 1, percentageComplete: 98 });
         });
 
-        afterEach(() => {
-          mockAxios.restore();
+        it('renders the progress bar', () => {
+          expect(findProgressBar().exists()).toBe(true);
         });
 
-        it('should close the widget when dismiss is clicked', async () => {
-          mockAxios.onPost(provide.dismissEndpoint).replyOnce(HTTP_STATUS_OK);
-          expect(findRootElement().exists()).toBe(true);
-          findDismissButton().vm.$emit('click');
+        it('renders the CTA button', () => {
+          expect(findCTAButton().exists()).toBe(true);
+        });
+      });
 
-          await waitForPromises();
-          expect(findRootElement().exists()).toBe(false);
+      describe('when trial has expired', () => {
+        beforeEach(() => {
+          createComponent({ daysRemaining: 0, percentageComplete: 100 });
         });
 
-        it('should close the widget and send sentry the exception on backend persistence failure', async () => {
-          mockAxios
-            .onPost(provide.dismissEndpoint)
-            .replyOnce(HTTP_STATUS_BAD_REQUEST, { message: 'bad_request' });
-          expect(findRootElement().exists()).toBe(true);
-          findDismissButton().vm.$emit('click');
-
-          await waitForPromises();
-          expect(findRootElement().exists()).toBe(false);
-          expect(Sentry.captureException).toHaveBeenCalledWith(
-            new Error('Request failed with status code 400'),
-          );
+        it('shows correct body', () => {
+          expect(wrapper.text()).toContain('Your trial of GitLab Duo Enterprise has ended');
         });
 
-        it('should track the dismiss event', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        it('renders the progress bar', () => {
+          expect(findProgressBar().exists()).toBe(true);
+        });
 
-          findDismissButton().vm.$emit('click');
+        it('renders the CTA button', () => {
+          expect(findCTAButton().exists()).toBe(true);
+        });
 
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            'click_dismiss_button_on_trial_widget',
-            {
-              label: 'gitlab_duo_enterprise',
-            },
-            undefined,
-          );
+        it('renders the dismiss button', () => {
+          expect(findDismissButton().exists()).toBe(true);
+        });
+
+        describe('dismissal', () => {
+          let mockAxios;
+
+          beforeEach(() => {
+            mockAxios = new MockAdapter(axios);
+          });
+
+          afterEach(() => {
+            mockAxios.restore();
+          });
+
+          it('should close the widget when dismiss is clicked', async () => {
+            mockAxios.onPost(provide.dismissEndpoint).replyOnce(HTTP_STATUS_OK);
+            expect(findRootElement().exists()).toBe(true);
+            findDismissButton().vm.$emit('click');
+
+            await waitForPromises();
+            expect(findRootElement().exists()).toBe(false);
+          });
+
+          it('should close the widget and send sentry the exception on backend persistence failure', async () => {
+            mockAxios
+              .onPost(provide.dismissEndpoint)
+              .replyOnce(HTTP_STATUS_BAD_REQUEST, { message: 'bad_request' });
+            expect(findRootElement().exists()).toBe(true);
+            findDismissButton().vm.$emit('click');
+
+            await waitForPromises();
+            expect(findRootElement().exists()).toBe(false);
+            expect(Sentry.captureException).toHaveBeenCalledWith(
+              new Error('Request failed with status code 400'),
+            );
+          });
+
+          it('should track the dismiss event', () => {
+            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+            findDismissButton().vm.$emit('click');
+
+            expect(trackEventSpy).toHaveBeenCalledWith(
+              'click_dismiss_button_on_trial_widget',
+              {
+                label: 'gitlab_duo_enterprise',
+              },
+              undefined,
+            );
+          });
         });
       });
     });
@@ -255,8 +199,8 @@ describe('TrialWidget component', () => {
       expect(findProgressBar().exists()).toBe(true);
     });
 
-    it('renders the CTA button with correct text', () => {
-      expect(findCtaButton().text()).toBe('Learn more');
+    it('renders the CTA button', () => {
+      expect(findCTAButton().exists()).toBe(true);
     });
   });
 
@@ -269,7 +213,6 @@ describe('TrialWidget component', () => {
       createComponent({ trialType, daysRemaining: -1, percentageComplete: 110 });
 
       expect(findWidgetTitle().text()).toBe(expiredTitle);
-      expect(findUpgradeButton().text()).toBe('See upgrade options');
     });
 
     it('renders the progress bar', () => {

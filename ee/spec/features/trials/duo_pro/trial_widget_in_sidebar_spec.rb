@@ -63,7 +63,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
           visit group_usage_quotas_path(group)
 
           expect_widget_title_to_be('Your trial of GitLab Duo Pro has ended')
-          expect(page).to have_content('See upgrade options')
+          expect(page).to have_content('Upgrade')
 
           dismiss_widget
 

@@ -1,36 +1,28 @@
 <script>
-import { GlProgressBar, GlButton, GlLink } from '@gitlab/ui';
+import { GlProgressBar, GlButton } from '@gitlab/ui';
 import { snakeCase } from 'lodash';
-import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
 import {
-  DUO_PRO,
   TRIAL_WIDGET_REMAINING_DAYS,
-  TRIAL_WIDGET_LEARN_MORE,
-  TRIAL_WIDGET_UPGRADE_TEXT,
   TRIAL_WIDGET_SEE_UPGRADE_OPTIONS,
   TRIAL_WIDGET_DISMISS,
   TRIAL_WIDGET_CONTAINER_ID,
   TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS,
-  TRIAL_WIDGET_CLICK_UPGRADE,
-  TRIAL_WIDGET_CLICK_LEARN_MORE,
-  TRIAL_WIDGET_CLICK_SEE_UPGRADE,
   TRIAL_WIDGET_CLICK_DISMISS,
   HAND_RAISE_LEAD_ATTRIBUTES,
   TRIAL_TYPES_CONFIG,
 } from './constants';
+import TrialWidgetButton from './trial_widget_button.vue';
 
 export default {
   name: 'TrialWidget',
-
   components: {
     GlProgressBar,
     GlButton,
-    GlLink,
-    HandRaiseLeadButton,
+    TrialWidgetButton,
   },
 
   mixins: [InternalEvents.mixin()],
@@ -39,8 +31,6 @@ export default {
     trialType: { default: '' },
     daysRemaining: { default: 0 },
     percentageComplete: { default: 0 },
-    trialDiscoverPagePath: { default: '' },
-    purchaseNowUrl: { default: '' },
     groupId: { default: '' },
     featureId: { default: '' },
     dismissEndpoint: { default: '' },
@@ -65,77 +55,29 @@ export default {
     currentTrialType() {
       return TRIAL_TYPES_CONFIG[this.trialType];
     },
-
-    isWithinUpgradeThreshold() {
-      return this.daysRemaining < TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS;
-    },
-
     widgetRemainingDays() {
       return sprintf(TRIAL_WIDGET_REMAINING_DAYS, {
         daysLeft: this.daysRemaining,
       });
     },
-
     widgetTitle() {
       return this.currentTrialType.widgetTitle;
     },
-
     expiredWidgetTitleText() {
       return this.currentTrialType.widgetTitleExpiredTrial;
     },
-
-    ctaLink() {
-      return this.isWithinUpgradeThreshold ? this.purchaseNowUrl : this.trialDiscoverPagePath;
-    },
-
-    ctaText() {
-      return this.isWithinUpgradeThreshold ? TRIAL_WIDGET_UPGRADE_TEXT : TRIAL_WIDGET_LEARN_MORE;
-    },
-
-    ctaEventName() {
-      return this.isWithinUpgradeThreshold
-        ? TRIAL_WIDGET_CLICK_UPGRADE
-        : TRIAL_WIDGET_CLICK_LEARN_MORE;
-    },
-
-    ctaUseHandRaiseLead() {
-      return this.isWithinUpgradeThreshold && this.trialType !== DUO_PRO;
-    },
-
-    ctaHandRaiseLeadTracking() {
-      return {
-        category: 'trial_widget',
-        action: 'click_button',
-        label: `${this.trialType}_contact_sales`,
-      };
-    },
-
     isTrialActive() {
       return this.daysRemaining > 0;
     },
-
     isDismissable() {
       return this.groupId && this.featureId && this.dismissEndpoint;
     },
-
     trackingLabel() {
       return snakeCase(this.currentTrialType.name.toLowerCase());
     },
   },
 
   methods: {
-    onCtaClick() {
-      this.trackEvent(this.ctaEventName, {
-        label: this.trackingLabel,
-      });
-    },
-
-    onSeeUpgradeOptionsClick() {
-      this.trackEvent(TRIAL_WIDGET_CLICK_SEE_UPGRADE, {
-        label: this.trackingLabel,
-      });
-    },
-
     handleDismiss() {
       axios
         .post(this.dismissEndpoint, {
@@ -181,27 +123,7 @@ export default {
             <span class="gl-text-sm gl-text-neutral-700">
               {{ widgetRemainingDays }}
             </span>
-            <gl-link
-              v-if="!ctaUseHandRaiseLead"
-              :href="ctaLink"
-              class="gl-text-sm gl-font-bold gl-no-underline hover:gl-no-underline"
-              size="small"
-              data-testid="learn-about-features-btn"
-              :title="ctaText"
-              @click.stop="onCtaClick"
-            >
-              {{ ctaText }}
-            </gl-link>
-            <hand-raise-lead-button
-              v-if="ctaUseHandRaiseLead"
-              :button-attributes="$options.handRaiseLeadAttributes"
-              :button-text="ctaText"
-              :cta-tracking="ctaHandRaiseLeadTracking"
-              glm-content="trial-widget-upgrade-button"
-              data-testid="cta-hand-raise-lead-btn"
-              class="gl-font-bold"
-              @click.stop="onCtaClick"
-            />
+            <trial-widget-button data-testid="widget-cta" />
           </div>
         </div>
       </div>
@@ -216,15 +138,7 @@ export default {
               class="custom-gradient-progress gl-mb-4"
               aria-hidden="true"
             />
-            <gl-link
-              :href="purchaseNowUrl"
-              class="gl-center gl-mb-1 gl-text-sm gl-font-bold gl-text-blue-700 gl-no-underline hover:gl-no-underline"
-              data-testid="upgrade-options-btn"
-              :title="ctaText"
-              @click.stop="onSeeUpgradeOptionsClick"
-            >
-              {{ $options.trialWidget.upgradeOptionsText }}
-            </gl-link>
+            <trial-widget-button data-testid="widget-cta" />
           </div>
         </div>
       </div>
