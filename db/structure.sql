@@ -11327,7 +11327,8 @@ CREATE TABLE compliance_framework_security_policies (
     updated_at timestamp with time zone NOT NULL,
     policy_index smallint NOT NULL,
     project_id bigint,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_473e5b2da9 CHECK ((num_nonnulls(namespace_id, project_id) = 1))
 );
 
 CREATE SEQUENCE compliance_framework_security_policies_id_seq
