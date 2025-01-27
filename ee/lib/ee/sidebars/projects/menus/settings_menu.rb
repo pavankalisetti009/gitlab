@@ -17,7 +17,8 @@ module EE
             repository_menu_item: [
               :admin_push_rules,
               :manage_deploy_tokens,
-              :admin_protected_branch
+              :admin_protected_branch,
+              :manage_protected_tags
             ],
             merge_requests_menu_item: [
               :manage_merge_request_settings

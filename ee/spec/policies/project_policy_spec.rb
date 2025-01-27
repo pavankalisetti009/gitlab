@@ -3113,6 +3113,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it_behaves_like 'custom roles abilities'
     end
+
+    context 'for a member role with `manage_protected_tags` true' do
+      let(:member_role_abilities) { { manage_protected_tags: true } }
+      let(:allowed_abilities) { [:manage_protected_tags] }
+
+      it_behaves_like 'custom roles abilities'
+    end
   end
 
   describe 'permissions for suggested reviewers bot', :saas do
