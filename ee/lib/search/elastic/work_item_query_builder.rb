@@ -7,6 +7,8 @@ module Search
       include Gitlab::Utils::StrongMemoize
 
       DOC_TYPE = 'work_item'
+      # iid field can be added here as lenient option will pardon format errors, like integer out of range.
+      FIELDS = %w[iid^3 title^2 description].freeze
       THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
       def build
@@ -52,14 +54,11 @@ module Search
       end
 
       def fields
-        return options[:fields] if options[:fields]
+        return options[:fields] if options[:fields].presence
 
-        # iid field can be added here as lenient option will pardon format errors, like integer out of range.
-        fields = %w[iid^3 title^2 description]
+        return FIELDS unless Feature.enabled?(:advanced_search_work_item_uses_note_fields, options[:current_user])
 
-        return fields unless Feature.enabled?(:advanced_search_work_item_uses_note_fields, options[:current_user])
-
-        fields + %w[notes notes_internal]
+        FIELDS + %w[notes notes_internal]
       end
 
       def get_authorization_filter(query_hash:, options:)

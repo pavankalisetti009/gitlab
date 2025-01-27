@@ -6,16 +6,12 @@ module Search
       extend ::Gitlab::Utils::Override
 
       DOC_TYPE = 'project'
+      FIELDS = %w[name^10 name_with_namespace^2 path_with_namespace path^9 description].freeze
 
       def build
-        fields = %w[name^10 name_with_namespace^2 path_with_namespace path^9 description]
-        query_hash = if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
-            Feature.enabled?(:search_uses_match_queries, options[:current_user])
-                       ::Search::Elastic::Queries.by_multi_match_query(fields: fields, query: query, options: options)
-                     else
-                       ::Search::Elastic::Queries.by_simple_query_string(fields: fields, query: query, options: options)
-                     end
+        options[:fields] = options[:fields].presence || FIELDS
 
+        query_hash = ::Search::Elastic::Queries.by_full_text(query: query, options: options)
         query_hash = ::Search::Elastic::Filters.by_type(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
