@@ -12,18 +12,20 @@ class AddEmbeddingToWorkItems < Elastic::Migration
   def new_mappings
     work_item_proxy.elasticsearch_8_plus_mappings.merge({ routing: { type: 'text' } })
   end
+
+  private
+
+  def elasticsearch_8_plus?
+    helper.vectors_supported?(:elasticsearch)
+  end
+
+  def helper
+    @helper ||= Gitlab::Elastic::Helper.default
+  end
+
+  def work_item_proxy
+    Search::Elastic::Types::WorkItem
+  end
 end
 
-private
-
-def elasticsearch_8_plus?
-  helper.vectors_supported?(:elasticsearch)
-end
-
-def helper
-  @helper ||= Gitlab::Elastic::Helper.default
-end
-
-def work_item_proxy
-  Search::Elastic::Types::WorkItem
-end
+AddEmbeddingToWorkItems.prepend ::Elastic::MigrationObsolete

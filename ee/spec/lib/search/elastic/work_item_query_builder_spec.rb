@@ -120,8 +120,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       allow(embedding_service).to receive(:execute).and_return(mock_embedding)
       allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
       allow(helper).to receive(:vectors_supported?).and_return(true)
-      allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-        .with(:add_embedding_to_work_items).and_return(true)
     end
 
     context 'when we cannot generate embeddings' do
@@ -245,13 +243,13 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     end
 
     context 'with embeddings not available' do
-      where(:hybrid_work_item_search, :ai_global_switch, :work_item_embedding, :ai_available, :migration_done) do
-        false | false | false | false | false
-        true  | false | false | false | false
-        false | true  | false | false | false
-        false | false | true  | false | false
-        false | false | false | true  | false
-        false | false | false | false | true
+      where(:hybrid_work_item_search, :ai_global_switch, :work_item_embedding, :ai_available) do
+        false | false | false | false
+        true  | false | false | false
+        false | true  | false | false
+        false | false | true  | false
+        false | false | false | true
+        false | false | false | false
       end
 
       with_them do
@@ -260,8 +258,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           stub_feature_flags(ai_global_switch: ai_global_switch)
           stub_feature_flags(elasticsearch_work_item_embedding: work_item_embedding)
           allow(Gitlab::Saas).to receive(:feature_available?).and_return(ai_available)
-          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:add_embedding_to_work_items).and_return(migration_done)
         end
 
         it_behaves_like 'without hybrid search query'
