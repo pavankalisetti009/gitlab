@@ -302,6 +302,10 @@ module EE
         enable :admin_push_rules
       end
 
+      rule { custom_role_enables_manage_protected_tags }.policy do
+        enable :manage_protected_tags
+      end
+
       rule { custom_role_enables_admin_integrations }.policy do
         enable :admin_integrations
       end
