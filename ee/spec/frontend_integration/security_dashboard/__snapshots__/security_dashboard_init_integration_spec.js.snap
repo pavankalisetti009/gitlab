@@ -34,7 +34,7 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
             data-testid="controls"
           >
             <div
-              class="btn-group gl-flex"
+              class="btn-group gl-button-group gl-flex"
               role="group"
             >
               <button
@@ -146,7 +146,7 @@ exports[`Security Dashboard default states sets up instance-level 1`] = `
             data-testid="controls"
           >
             <div
-              class="btn-group gl-flex"
+              class="btn-group gl-button-group gl-flex"
               role="group"
             >
               <button
