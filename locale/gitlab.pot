@@ -9564,6 +9564,21 @@ msgstr ""
 msgid "Blame for binary files is not supported."
 msgstr ""
 
+msgid "Blame|Blame preferences"
+msgstr ""
+
+msgid "Blame|Ignore specific revisions"
+msgstr ""
+
+msgid "Blame|Learn to ignore specific revisions"
+msgstr ""
+
+msgid "Blame|Newer"
+msgstr ""
+
+msgid "Blame|Older"
+msgstr ""
+
 msgid "BlobViewer|If you delete the file, it will be removed from the branch %{branch}."
 msgstr ""
 
