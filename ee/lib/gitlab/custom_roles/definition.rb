@@ -9,7 +9,7 @@ module Gitlab
         attr_accessor :definitions
 
         def all
-          standard.merge(admin)
+          @all_definitions ||= sort(standard.merge(admin))
         end
 
         def admin
@@ -21,6 +21,7 @@ module Gitlab
         end
 
         def load_abilities!
+          @all_definitions = nil
           @standard_definitions = load_definitions(standard_path)
           @admin_definitions = load_definitions(admin_path)
         end
@@ -45,13 +46,17 @@ module Gitlab
             definitions[name] = definition
           end
 
-          definitions
+          sort(definitions)
         end
 
         def load_from_file(path)
           definition = File.read(path)
           definition = YAML.safe_load(definition)
           definition.deep_symbolize_keys
+        end
+
+        def sort(definitions)
+          definitions.sort_by { |_, value| value[:title].downcase }.to_h
         end
       end
     end
