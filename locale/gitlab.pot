@@ -27888,7 +27888,7 @@ msgstr ""
 msgid "GroupSettings|The Auto DevOps pipeline runs if no alternative CI configuration file is found."
 msgstr ""
 
-msgid "GroupSettings|The group from which to source contacts for issues in this group and it's subgroups."
+msgid "GroupSettings|The group from which to source contacts for issues in this group and its subgroups."
 msgstr ""
 
 msgid "GroupSettings|There was a problem updating Auto DevOps pipeline: %{error_messages}."
