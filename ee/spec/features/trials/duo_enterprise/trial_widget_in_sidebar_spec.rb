@@ -53,15 +53,15 @@ RSpec.describe 'Duo Enterprise Trial Widget in Sidebar', :saas, :js, feature_cat
         travel_to(60.days.from_now) do
           visit group_path(group)
 
-          expect_widget_to_have_content('See upgrade options')
+          expect_widget_to_have_content('Upgrade')
 
           dismiss_widget
 
-          expect(page).not_to have_content('See upgrade options')
+          expect(page).not_to have_content('Upgrade')
 
           page.refresh
 
-          expect(page).not_to have_content('See upgrade options')
+          expect(page).not_to have_content('Upgrade')
         end
       end
     end
