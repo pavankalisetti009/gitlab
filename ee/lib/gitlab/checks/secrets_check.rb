@@ -209,16 +209,29 @@ module Gitlab
         @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
       end
 
+      def generate_target_details
+        changes = changes_access.changes
+        old_rev = changes.first&.dig(:oldrev)
+        new_rev = changes.last&.dig(:newrev)
+
+        return project.name if old_rev.nil? || new_rev.nil?
+
+        ::Gitlab::Utils.append_path(
+          ::Gitlab::Routing.url_helpers.root_url,
+          ::Gitlab::Routing.url_helpers.project_compare_path(project, from: old_rev, to: new_rev)
+        )
+      end
+
       def log_audit_event(skip_method)
         branch_name = changes_access.single_change_accesses.first.branch_name
         message = "#{_('Secret push protection skipped via')} #{skip_method} on branch #{branch_name}"
-
         audit_context = {
           name: 'skip_secret_push_protection',
           author: changes_access.user_access.user,
           target: project,
           scope: project,
-          message: message
+          message: message,
+          target_details: generate_target_details
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)

@@ -99,6 +99,9 @@ export default {
       <template #cell(action)="{ value }">
         <html-table-cell :html="value" />
       </template>
+      <template #cell(target)="{ value }">
+        <span class="gl-wrap-anywhere">{{ value }}</span>
+      </template>
       <template #cell(date)="{ value }">
         <user-date :date="value" :date-format="$options.dateTimeFormat" />
       </template>
