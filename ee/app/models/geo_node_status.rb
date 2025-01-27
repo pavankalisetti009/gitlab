@@ -10,10 +10,10 @@ class GeoNodeStatus < ApplicationRecord
   after_initialize :initialize_feature_flags
   before_save :coerce_status_field_values, if: :status_changed?
 
-  attr_accessor :storage_shards
-
-  # Prometheus metrics, no need to store them in the database
-  attr_accessor :event_log_max_id, :repositories_checked_count, :repositories_checked_failed_count
+  # :event_log_max_id, :repositories_checked_count, :repositories_checked_failed_count are Prometheus metrics,
+  # no need to store them in the database
+  attr_accessor :event_log_max_id, :repositories_checked_count, :repositories_checked_failed_count,
+    :storage_shards, :started_at, :timeout
 
   sha_attribute :storage_configuration_digest
 
@@ -110,11 +110,17 @@ class GeoNodeStatus < ApplicationRecord
 
   alternative_status_store_accessor RESOURCE_STATUS_FIELDS
 
-  def self.current_node_status
+  def self.current_node_status(timeout: nil)
     current_node = Gitlab::Geo.current_node
     return unless current_node
 
     status = current_node.find_or_build_status
+
+    if timeout
+      status.started_at = Time.current
+      status.timeout = timeout
+    end
+
     status.load_data_from_current_node
     status.save if Gitlab::Geo.primary?
 
@@ -329,10 +335,10 @@ class GeoNodeStatus < ApplicationRecord
   # checksumming can be enabled separately.
   def load_primary_ssf_replicable_data
     Gitlab::Geo.verification_enabled_replicator_classes.each do |replicator|
-      public_send("#{replicator.replicable_name_plural}_count=", replicator.primary_total_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_checksummed_count=", replicator.checksummed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_checksum_failed_count=", replicator.checksum_failed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_checksum_total_count=", replicator.checksum_total_count) # rubocop:disable GitlabSecurity/PublicSend
+      collect_metric(replicator, :count) { replicator.primary_total_count }
+      collect_metric(replicator, :checksummed_count) { replicator.checksummed_count }
+      collect_metric(replicator, :checksum_failed_count) { replicator.checksum_failed_count }
+      collect_metric(replicator, :checksum_total_count) { replicator.checksum_total_count }
     end
   end
 
@@ -342,13 +348,13 @@ class GeoNodeStatus < ApplicationRecord
   # data to verify.
   def load_secondary_ssf_replicable_data
     Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator|
-      public_send("#{replicator.replicable_name_plural}_count=", replicator.registry_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_registry_count=", replicator.registry_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_synced_count=", replicator.synced_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_failed_count=", replicator.failed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_verified_count=", replicator.verified_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_verification_failed_count=", replicator.verification_failed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_verification_total_count=", replicator.verification_total_count) # rubocop:disable GitlabSecurity/PublicSend
+      collect_metric(replicator, :count) { replicator.registry_count }
+      collect_metric(replicator, :registry_count) { replicator.registry_count }
+      collect_metric(replicator, :synced_count) { replicator.synced_count }
+      collect_metric(replicator, :failed_count) { replicator.failed_count }
+      collect_metric(replicator, :verified_count) { replicator.verified_count }
+      collect_metric(replicator, :verification_failed_count) { replicator.verification_failed_count }
+      collect_metric(replicator, :verification_total_count) { replicator.verification_total_count }
     end
   end
 
@@ -363,5 +369,34 @@ class GeoNodeStatus < ApplicationRecord
 
   def primary_storage_digest
     @primary_storage_digest ||= Gitlab::Geo.primary_node.find_or_build_status.storage_configuration_digest
+  end
+
+  def collect_metric(replicator, metric_name)
+    # If timeout is present, we know this was called from the metrics worker
+    abort_before_query_can_overrun_status_timeout! if timeout
+
+    field_name = "#{replicator.replicable_name_plural}_#{metric_name}"
+    value = yield
+    public_send("#{field_name}=", value) # rubocop:disable GitlabSecurity/PublicSend
+  rescue ActiveRecord::QueryCanceled => e # rubocop:disable Database/RescueQueryCanceled -- required to handle frequent query timeouts
+    Gitlab::ErrorTracking.track_exception(e, extra: { metric: field_name })
+  end
+
+  def abort_before_query_can_overrun_status_timeout!
+    return unless started_at && timeout
+
+    time_elapsed = Time.current - started_at
+    assumed_query_timeout = 10.minutes
+
+    if time_elapsed >= (timeout - assumed_query_timeout)
+      Gitlab::ErrorTracking.track_and_raise_exception(
+        Geo::Errors::StatusTimeoutError.new,
+        extra: {
+          time_elapsed: time_elapsed,
+          timeout: timeout,
+          assumed_query_timeout: assumed_query_timeout
+        }
+      )
+    end
   end
 end

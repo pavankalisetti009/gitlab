@@ -56,6 +56,23 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
       allow_any_instance_of(Geo::NodeStatusRequestService).to receive(:execute).and_return(true)
     end
 
+    context 'when called from metrics worker' do
+      let(:timeout) { 1.hour }
+
+      before do
+        stub_current_geo_node(primary)
+        allow(GeoNodeStatus).to receive(:current_node_status)
+      end
+
+      it 'passes timing parameters to GeoNodeStatus' do
+        subject.execute(
+          timeout:
+        )
+
+        expect(GeoNodeStatus).to have_received(:current_node_status).with(timeout:).once
+      end
+    end
+
     context 'when current node is nil' do
       before do
         stub_current_geo_node(nil)
@@ -71,6 +88,14 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
     context 'when node is the primary' do
       before do
         stub_current_geo_node(primary)
+      end
+
+      it 'calls GeoNodeStatus without timing parameters by default' do
+        allow(GeoNodeStatus).to receive(:current_node_status)
+
+        subject.execute
+
+        expect(GeoNodeStatus).to have_received(:current_node_status).with(timeout: nil).once
       end
 
       it 'updates the cache' do
@@ -153,6 +178,30 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
 
     def metric_value(metric_name, geo_site: secondary)
       Gitlab::Metrics.registry.get(metric_name)&.get({ name: geo_site.name, url: geo_site.name })
+    end
+  end
+
+  describe '#current_node_status' do
+    context 'when called with a timeout' do
+      let(:timeout) { 1.hour }
+
+      it 'calls GeoNodeStatus.current_node_status with the provided timeout' do
+        allow(GeoNodeStatus).to receive(:current_node_status).and_return(nil)
+
+        subject.send(:current_node_status, timeout: timeout)
+
+        expect(GeoNodeStatus).to have_received(:current_node_status).with(timeout: timeout).once
+      end
+    end
+
+    context 'when called without a timeout' do
+      it 'calls GeoNodeStatus.current_node_status with nil timeout' do
+        allow(GeoNodeStatus).to receive(:current_node_status).and_return(nil)
+
+        subject.send(:current_node_status)
+
+        expect(GeoNodeStatus).to have_received(:current_node_status).with(timeout: nil).once
+      end
     end
   end
 end
