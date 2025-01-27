@@ -19,33 +19,31 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe 'default values' do
-    subject(:setting) { described_class.new }
-
-    it { expect(setting.receptive_cluster_agents_enabled).to eq(false) }
+    it { expect(setting.receptive_cluster_agents_enabled).to be false }
     it { expect(setting.security_approval_policies_limit).to eq(5) }
-    it { expect(setting.use_clickhouse_for_analytics).to eq(false) }
-    it { expect(setting.zoekt_auto_delete_lost_nodes).to eq(true) }
-    it { expect(setting.zoekt_auto_index_root_namespace).to eq(false) }
+    it { expect(setting.use_clickhouse_for_analytics).to be false }
+    it { expect(setting.zoekt_auto_delete_lost_nodes).to be true }
+    it { expect(setting.zoekt_auto_index_root_namespace).to be false }
     it { expect(setting.zoekt_cpu_to_tasks_ratio).to eq(1.0) }
-    it { expect(setting.zoekt_indexing_enabled).to eq(false) }
-    it { expect(setting.zoekt_indexing_paused).to eq(false) }
-    it { expect(setting.zoekt_search_enabled).to eq(false) }
+    it { expect(setting.zoekt_indexing_enabled).to be false }
+    it { expect(setting.zoekt_indexing_paused).to be false }
+    it { expect(setting.zoekt_search_enabled).to be false }
     it { expect(setting.scan_execution_policies_action_limit).to be(10) }
-    it { expect(setting.allow_all_integrations).to eq(true) }
+    it { expect(setting.allow_all_integrations).to be true }
     it { expect(setting.allowed_integrations).to eq([]) }
     it { expect(setting.seat_control).to eq(0) }
     it { expect(setting.soft_phone_verification_transactions_daily_limit).to eq(16000) }
-    it { expect(setting.phone_verification_enabled).to eq(true) }
-    it { expect(setting.credit_card_verification_enabled).to eq(true) }
-    it { expect(setting.arkose_labs_enabled).to eq(true) }
-    it { expect(setting.arkose_labs_data_exchange_enabled).to eq(true) }
-    it { expect(setting.ci_requires_identity_verification_on_free_plan).to eq(true) }
+    it { expect(setting.phone_verification_enabled).to be true }
+    it { expect(setting.credit_card_verification_enabled).to be true }
+    it { expect(setting.arkose_labs_enabled).to be true }
+    it { expect(setting.arkose_labs_data_exchange_enabled).to be true }
+    it { expect(setting.ci_requires_identity_verification_on_free_plan).to be true }
     it { expect(setting.secret_detection_service_url).to eq('') }
-    it { expect(setting.secret_detection_service_auth_token).to eq(nil) }
+    it { expect(setting.secret_detection_service_auth_token).to be_nil }
     it { expect(setting.unverified_account_group_creation_limit).to eq(2) }
     it { expect(setting.hard_phone_verification_transactions_daily_limit).to eq(20000) }
-    it { expect(setting.telesign_intelligence_enabled).to eq(true) }
-    it { expect(setting.fetch_observability_alerts_from_cloud).to eq(true) }
+    it { expect(setting.telesign_intelligence_enabled).to be true }
+    it { expect(setting.fetch_observability_alerts_from_cloud).to be true }
     it { expect(setting.global_search_code_enabled).to be(true) }
     it { expect(setting.global_search_commits_enabled).to be(true) }
     it { expect(setting.global_search_epics_enabled).to be(true) }
@@ -71,7 +69,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
       it { is_expected.to validate_numericality_of(:mirror_capacity_threshold).only_integer.is_greater_than(0) }
       it { is_expected.not_to allow_value(nil).for(:mirror_capacity_threshold) }
-      it { is_expected.not_to allow_value(subject.mirror_max_capacity + 1).for(:mirror_capacity_threshold) }
+      it { is_expected.not_to allow_value(setting.mirror_max_capacity + 1).for(:mirror_capacity_threshold) }
       it { is_expected.to allow_value(nil).for(:custom_project_templates_group_id) }
 
       it { is_expected.not_to allow_value(nil).for(:observability_backend_ssl_verification_enabled) }
@@ -87,22 +85,41 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to validate_numericality_of(:search_min_docs_before_rollover).only_integer.is_greater_than(0) }
       it { is_expected.not_to allow_value(nil).for(:search_min_docs_before_rollover) }
 
-      it { is_expected.to validate_numericality_of(:elasticsearch_worker_number_of_shards).only_integer.is_greater_than(0).is_less_than_or_equal_to(Elastic::ProcessBookkeepingService::SHARDS_MAX) }
+      it 'validates elasticsearch_worker_number_of_shards' do
+        is_expected.to validate_numericality_of(:elasticsearch_worker_number_of_shards).only_integer.is_greater_than(0)
+          .is_less_than_or_equal_to(Elastic::ProcessBookkeepingService::SHARDS_MAX)
+      end
+
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_worker_number_of_shards) }
 
-      it { is_expected.to validate_numericality_of(:elasticsearch_indexed_file_size_limit_kb).only_integer.is_greater_than(0) }
+      it 'validates elasticsearch_indexed_file_size_limit_kb' do
+        is_expected.to validate_numericality_of(:elasticsearch_indexed_file_size_limit_kb)
+          .only_integer.is_greater_than(0)
+      end
+
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_indexed_file_size_limit_kb) }
 
-      it { is_expected.to validate_numericality_of(:elasticsearch_indexed_field_length_limit).only_integer.is_greater_than_or_equal_to(0) }
+      it 'validates elasticsearch_indexed_field_length_limit' do
+        is_expected.to validate_numericality_of(:elasticsearch_indexed_field_length_limit)
+          .only_integer.is_greater_than_or_equal_to(0)
+      end
+
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_indexed_field_length_limit) }
 
       it { is_expected.to validate_numericality_of(:elasticsearch_max_bulk_size_mb).only_integer.is_greater_than(0) }
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_max_bulk_size_mb) }
 
-      it { is_expected.to validate_numericality_of(:elasticsearch_max_bulk_concurrency).only_integer.is_greater_than(0) }
+      it 'validates elasticsearch_max_bulk_concurrency' do
+        is_expected.to validate_numericality_of(:elasticsearch_max_bulk_concurrency)
+          .only_integer.is_greater_than(0)
+      end
+
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_max_bulk_concurrency) }
 
-      it { is_expected.to validate_numericality_of(:elasticsearch_client_request_timeout).only_integer.is_greater_than_or_equal_to(0) }
+      it 'validates elasticsearch_client_request_timeout' do
+        is_expected.to validate_numericality_of(:elasticsearch_client_request_timeout)
+          .only_integer.is_greater_than_or_equal_to(0)
+      end
 
       it { is_expected.to allow_value(2).for(:elasticsearch_max_code_indexing_concurrency) }
       it { is_expected.to allow_value(0).for(:elasticsearch_max_code_indexing_concurrency) }
@@ -125,7 +142,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'security policy settings' do
-      it do
+      it 'validates security_approval_policies_limit' do
         is_expected.to validate_numericality_of(:security_approval_policies_limit)
                          .only_integer
                          .is_greater_than_or_equal_to(5)
@@ -149,27 +166,29 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'max_personal_access_token', feature_category: :user_management do
-      context 'extended lifetime is not selected' do
+      context 'when extended lifetime is not selected' do
         before do
           stub_feature_flags(buffered_token_expiration_limit: false)
         end
 
-        it { is_expected.to validate_numericality_of(:max_personal_access_token_lifetime).only_integer.is_greater_than(0).is_less_than_or_equal_to(365).allow_nil }
+        it 'validates max_personal_access_token_lifetime' do
+          is_expected.to validate_numericality_of(:max_personal_access_token_lifetime)
+            .only_integer.is_greater_than(0).is_less_than_or_equal_to(365).allow_nil
+        end
       end
 
-      context 'extended lifetime is selected' do
-        it { is_expected.to validate_numericality_of(:max_personal_access_token_lifetime).only_integer.is_greater_than(0).is_less_than_or_equal_to(400).allow_nil }
+      context 'when extended lifetime is selected' do
+        it 'validates max_personal_access_token_lifetime' do
+          is_expected.to validate_numericality_of(:max_personal_access_token_lifetime)
+            .only_integer.is_greater_than(0).is_less_than_or_equal_to(400).allow_nil
+        end
       end
     end
 
     describe 'new_user_signups', feature_category: :onboarding do
-      let(:seat_control_block_overages) { 2 }
-      let(:seat_control_user_cap) { 1 }
-      let(:seat_control_off) { 0 }
-
       context 'when seat_control is user cap' do
         before do
-          setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1)
+          setting.update!(seat_control: described_class::SEAT_CONTROL_USER_CAP, new_user_signups_cap: 1)
         end
 
         it 'must be an integer' do
@@ -196,7 +215,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
       context 'when seat_control is off' do
         before do
-          setting.update!(seat_control: seat_control_off)
+          setting.update!(seat_control: described_class::SEAT_CONTROL_OFF)
         end
 
         it 'can be nil' do
@@ -221,7 +240,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
       context 'when seat_control is block overages' do
         before do
-          setting.update!(seat_control: seat_control_block_overages)
+          setting.update!(seat_control: described_class::SEAT_CONTROL_BLOCK_OVERAGES)
         end
 
         it 'can be nil' do
@@ -248,18 +267,19 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     describe 'user_seat_management', feature_category: :seat_cost_management do
       it { expect(described_class).to validate_jsonb_schema(['application_setting_user_seat_management']) }
 
-      context 'seat_control' do
-        let(:seat_control_user_cap) { 1 }
-        let(:seat_control_off) { 0 }
-
+      context 'for seat_control' do
         it 'allows update to user cap' do
-          expect { setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1) }.to change { setting.seat_control }.from(seat_control_off).to(seat_control_user_cap)
+          expect { setting.update!(seat_control: described_class::SEAT_CONTROL_USER_CAP, new_user_signups_cap: 1) }
+            .to change { setting.seat_control }
+              .from(described_class::SEAT_CONTROL_OFF).to(described_class::SEAT_CONTROL_USER_CAP)
         end
 
         it 'allows update to off' do
-          setting.update!(seat_control: seat_control_user_cap, new_user_signups_cap: 1)
+          setting.update!(seat_control: described_class::SEAT_CONTROL_USER_CAP, new_user_signups_cap: 1)
 
-          expect { setting.update!(seat_control: seat_control_off, new_user_signups_cap: nil) }.to change { setting.seat_control }.from(seat_control_user_cap).to(seat_control_off)
+          expect { setting.update!(seat_control: described_class::SEAT_CONTROL_OFF, new_user_signups_cap: nil) }
+            .to change { setting.seat_control }
+              .from(described_class::SEAT_CONTROL_USER_CAP).to(described_class::SEAT_CONTROL_OFF)
         end
 
         it 'does not allow update to value > 2' do
@@ -277,27 +297,45 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'git_two_factor', feature_category: :system_access do
-      it { is_expected.to validate_numericality_of(:git_two_factor_session_expiry).only_integer.is_greater_than_or_equal_to(1).is_less_than_or_equal_to(10080) }
+      it 'validates git_two_factor_session_expiry' do
+        is_expected.to validate_numericality_of(:git_two_factor_session_expiry)
+          .only_integer.is_greater_than_or_equal_to(1).is_less_than_or_equal_to(10080)
+      end
+
       it { is_expected.not_to allow_value(nil).for(:git_two_factor_session_expiry) }
 
       # TODO: test feature flag
-      context 'extended lifetime is selected' do
-        it { is_expected.to validate_numericality_of(:max_ssh_key_lifetime).is_greater_than(0).is_less_than_or_equal_to(400).allow_nil }
-        it { is_expected.to validate_numericality_of(:deletion_adjourned_period).is_greater_than(0).is_less_than_or_equal_to(90) }
+      context 'when extended lifetime is selected' do
+        it 'validates max_ssh_key_lifetime' do
+          is_expected.to validate_numericality_of(:max_ssh_key_lifetime)
+            .is_greater_than(0).is_less_than_or_equal_to(400).allow_nil
+        end
+
+        it 'validates deletion_adjourned_period' do
+          is_expected.to validate_numericality_of(:deletion_adjourned_period)
+            .is_greater_than(0).is_less_than_or_equal_to(90)
+        end
       end
 
-      context 'extended lifetime is not selected' do
+      context 'when extended lifetime is not selected' do
         before do
           stub_feature_flags(buffered_token_expiration_limit: false)
         end
 
-        it { is_expected.to validate_numericality_of(:max_ssh_key_lifetime).is_greater_than(0).is_less_than_or_equal_to(365).allow_nil }
-        it { is_expected.to validate_numericality_of(:deletion_adjourned_period).is_greater_than(0).is_less_than_or_equal_to(90) }
+        it 'validates max_ssh_key_lifetime' do
+          is_expected.to validate_numericality_of(:max_ssh_key_lifetime)
+            .is_greater_than(0).is_less_than_or_equal_to(365).allow_nil
+        end
+
+        it 'validates deletion_adjourned_period' do
+          is_expected.to validate_numericality_of(:deletion_adjourned_period)
+            .is_greater_than(0).is_less_than_or_equal_to(90)
+        end
       end
     end
 
     describe 'namespace_storage_forks_cost_factor' do
-      it do
+      it 'validates namespace_storage_forks_cost_factor' do
         is_expected.to validate_numericality_of(:namespace_storage_forks_cost_factor)
           .is_greater_than_or_equal_to(0)
           .is_less_than_or_equal_to(1)
@@ -313,8 +351,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         stub_licensed_features(email_additional_text: true)
       end
 
-      it { is_expected.to allow_value("a" * subject.email_additional_text_character_limit).for(:email_additional_text) }
-      it { is_expected.not_to allow_value("a" * (subject.email_additional_text_character_limit + 1)).for(:email_additional_text) }
+      it { is_expected.to allow_value("a" * setting.email_additional_text_character_limit).for(:email_additional_text) }
+
+      it 'does not allow over text character limit' do
+        is_expected.not_to allow_value("a" * (setting.email_additional_text_character_limit + 1))
+          .for(:email_additional_text)
+      end
     end
 
     describe 'when secret detection token revocation is enabled', feature_category: :secret_detection do
@@ -446,7 +488,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
-    context 'Sentry validations', feature_category: :observability do
+    context 'for Sentry', feature_category: :observability do
       context 'when Sentry is enabled' do
         before do
           setting.sentry_enabled = true
@@ -483,8 +525,15 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'git abuse rate limit validations', feature_category: :insider_threat do
-      it { is_expected.to validate_numericality_of(:max_number_of_repository_downloads).is_greater_than_or_equal_to(0).is_less_than_or_equal_to(10_000) }
-      it { is_expected.to validate_numericality_of(:max_number_of_repository_downloads_within_time_period).is_greater_than_or_equal_to(0).is_less_than_or_equal_to(10.days.to_i) }
+      it 'validates max_number_of_repository_downloads' do
+        is_expected.to validate_numericality_of(:max_number_of_repository_downloads)
+        .is_greater_than_or_equal_to(0).is_less_than_or_equal_to(10_000)
+      end
+
+      it 'validates max_number_of_repository_downloads_within_time_period' do
+        is_expected.to validate_numericality_of(:max_number_of_repository_downloads_within_time_period)
+          .is_greater_than_or_equal_to(0).is_less_than_or_equal_to(10.days.to_i)
+      end
 
       describe 'git_rate_limit_users_allowlist' do
         let_it_be(:user) { create(:user) }
@@ -496,17 +545,17 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
         context 'when maximum length is exceeded' do
           it 'is not valid' do
-            subject.git_rate_limit_users_allowlist = Array.new(101) { |i| "user#{i}" }
+            setting.git_rate_limit_users_allowlist = Array.new(101) { |i| "user#{i}" }
 
-            expect(subject).not_to be_valid
-            expect(subject.errors[:git_rate_limit_users_allowlist]).to include("exceeds maximum length (100 usernames)")
+            expect(setting).not_to be_valid
+            expect(setting.errors[:git_rate_limit_users_allowlist]).to include("exceeds maximum length (100 usernames)")
           end
         end
 
         context 'when attr is not changed' do
           before do
-            subject.git_rate_limit_users_allowlist = [non_existing_record_id]
-            subject.save!(validate: false)
+            setting.git_rate_limit_users_allowlist = [non_existing_record_id]
+            setting.save!(validate: false)
           end
 
           it { is_expected.to be_valid }
@@ -523,17 +572,17 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
         context 'when maximum length is exceeded' do
           it 'is not valid' do
-            subject.git_rate_limit_users_alertlist = Array.new(101)
+            setting.git_rate_limit_users_alertlist = Array.new(101)
 
-            expect(subject).not_to be_valid
-            expect(subject.errors[:git_rate_limit_users_alertlist]).to include('exceeds maximum length (100 user ids)')
+            expect(setting).not_to be_valid
+            expect(setting.errors[:git_rate_limit_users_alertlist]).to include('exceeds maximum length (100 user ids)')
           end
         end
 
         context 'when attr is not changed' do
           before do
-            subject.git_rate_limit_users_alertlist = [non_existing_record_id]
-            subject.save!(validate: false)
+            setting.git_rate_limit_users_alertlist = [non_existing_record_id]
+            setting.save!(validate: false)
           end
 
           it { is_expected.to be_valid }
@@ -544,7 +593,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           let!(:inactive_admin) { create(:admin, :deactivated) }
 
           it 'returns the user ids of the active admins' do
-            expect(subject.git_rate_limit_users_alertlist).to contain_exactly(active_admin.id)
+            expect(setting.git_rate_limit_users_alertlist).to contain_exactly(active_admin.id)
           end
         end
 
@@ -552,11 +601,11 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           let(:alerted_user_ids) { [1, 3, 2] }
 
           before do
-            subject.update_attribute(:git_rate_limit_users_alertlist, alerted_user_ids)
+            setting.update_attribute(:git_rate_limit_users_alertlist, alerted_user_ids)
           end
 
           it 'returns the ordered set of user ids' do
-            expect(subject.git_rate_limit_users_alertlist).to eq([1, 2, 3])
+            expect(setting.git_rate_limit_users_alertlist).to eq([1, 2, 3])
           end
         end
       end
@@ -564,9 +613,9 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       describe 'unique_project_download_limit_enabled' do
         context 'when max_number_of_repository_downloads is 0' do
           before do
-            subject.max_number_of_repository_downloads = 0
-            subject.max_number_of_repository_downloads_within_time_period = 300
-            subject.save!
+            setting.max_number_of_repository_downloads = 0
+            setting.max_number_of_repository_downloads_within_time_period = 300
+            setting.save!
           end
 
           it 'allows project to be indexed' do
@@ -576,9 +625,9 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
         context 'when max_number_of_repository_downloads_within_time_period is 0' do
           before do
-            subject.max_number_of_repository_downloads = 1
-            subject.max_number_of_repository_downloads_within_time_period = 0
-            subject.save!
+            setting.max_number_of_repository_downloads = 1
+            setting.max_number_of_repository_downloads_within_time_period = 0
+            setting.save!
           end
 
           it 'allows project to be indexed' do
@@ -588,9 +637,9 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
         context 'when neither are 0' do
           before do
-            subject.max_number_of_repository_downloads = 1
-            subject.max_number_of_repository_downloads_within_time_period = 300
-            subject.save!
+            setting.max_number_of_repository_downloads = 1
+            setting.max_number_of_repository_downloads_within_time_period = 300
+            setting.save!
           end
 
           it 'allows project to be indexed' do
@@ -655,8 +704,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.not_to allow_value(0).for(:package_metadata_purl_types) }
     end
 
-    context "unconfirmed user deletion", feature_category: :user_management do
-      context 'email confirmation is set to hard' do
+    context "for unconfirmed user deletion", feature_category: :user_management do
+      context 'when email confirmation is set to hard' do
         before do
           stub_application_setting_enum('email_confirmation_setting', 'hard')
         end
@@ -664,7 +713,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it { is_expected.to validate_numericality_of(:unconfirmed_users_delete_after_days).is_greater_than(0) }
       end
 
-      context 'email confirmation is set to soft' do
+      context 'when email confirmation is set to soft' do
         let(:allow_unconfirmed_access_for) { 3 }
 
         before do
@@ -672,10 +721,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           allow(Devise).to receive(:allow_unconfirmed_access_for).and_return(allow_unconfirmed_access_for.days)
         end
 
-        it { is_expected.to validate_numericality_of(:unconfirmed_users_delete_after_days).is_greater_than(allow_unconfirmed_access_for) }
+        it 'validates unconfirmed_users_delete_after_days' do
+          is_expected.to validate_numericality_of(:unconfirmed_users_delete_after_days)
+            .is_greater_than(allow_unconfirmed_access_for)
+        end
       end
 
-      context 'email confirmation is is off' do
+      context 'when email confirmation is is off' do
         before do
           stub_application_setting_enum('email_confirmation_setting', 'off')
         end
@@ -801,7 +853,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       let(:gl_com) { true }
 
       it 'returns true' do
-        is_expected.to eq(true)
+        is_expected.to be true
       end
     end
 
@@ -810,7 +862,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       let(:gl_com) { false }
 
       it 'returns false' do
-        is_expected.to eq(false)
+        is_expected.to be false
       end
     end
 
@@ -819,7 +871,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       let(:gl_com) { true }
 
       it 'returns false' do
-        is_expected.to eq(false)
+        is_expected.to be false
       end
     end
   end
@@ -895,7 +947,11 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it 'strips trailing slashes from URLs' do
       setting.elasticsearch_url = 'http://example.com/, https://example.com:9200/, https://example.com:9200/prefix//'
 
-      expect(setting.elasticsearch_url).to match_array([URI.parse('http://example.com'), URI.parse('https://example.com:9200'), URI.parse('https://example.com:9200/prefix')])
+      expect(setting.elasticsearch_url).to match_array([
+        URI.parse('http://example.com'),
+        URI.parse('https://example.com:9200'),
+        URI.parse('https://example.com:9200/prefix')
+      ])
     end
   end
 
@@ -918,8 +974,22 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it 'ignores them and uses elasticsearch_username and elasticsearch_password settings' do
         expect(setting.elasticsearch_url_with_credentials).to match_array(
           [
-            { scheme: 'http', user: elasticsearch_username, password: elasticsearch_password, host: 'example.com', path: '', port: 80 },
-            { scheme: 'https', user: elasticsearch_username, password: elasticsearch_password, host: 'example.org', path: '', port: 9200 }
+            {
+              scheme: 'http',
+              user: elasticsearch_username,
+              password: elasticsearch_password,
+              host: 'example.com',
+              path: '',
+              port: 80
+            },
+            {
+              scheme: 'https',
+              user: elasticsearch_username,
+              password: elasticsearch_password,
+              host: 'example.org',
+              path: '',
+              port: 9200
+            }
           ])
       end
     end
@@ -967,8 +1037,22 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it 'returns the correct values' do
         expect(setting.elasticsearch_url_with_credentials).to match_array(
           [
-            { scheme: 'http', user: elasticsearch_username, password: elasticsearch_password, host: 'example.com', path: '', port: 80 },
-            { scheme: 'https', user: elasticsearch_username, password: elasticsearch_password, host: 'example.org', path: '', port: 9200 }
+            {
+              scheme: 'http',
+              user: elasticsearch_username,
+              password: elasticsearch_password,
+              host: 'example.com',
+              path: '',
+              port: 80
+            },
+            {
+              scheme: 'https',
+              user: elasticsearch_username,
+              password: elasticsearch_password,
+              host: 'example.org',
+              path: '',
+              port: 9200
+            }
           ])
       end
     end
@@ -1025,13 +1109,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
-    context 'limiting namespaces and projects' do
+    context 'when limiting namespaces and projects' do
       before do
         setting.update!(elasticsearch_indexing: true)
         setting.update!(elasticsearch_limit_indexing: true)
       end
 
-      context 'namespaces' do
+      context 'on namespaces' do
         context 'with personal namespaces' do
           let(:namespaces) { create_list(:namespace, 2) }
           let!(:indexed_namespace) { create :elasticsearch_indexed_namespace, namespace: namespaces.last }
@@ -1092,7 +1176,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         end
       end
 
-      context 'projects' do
+      context 'on projects' do
         let(:projects) { create_list(:project, 2) }
         let!(:indexed_project) { create :elasticsearch_indexed_project, project: projects.last }
 
@@ -1147,7 +1231,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe '#search_using_elasticsearch?', feature_category: :global_search do
     # Constructs a truth table to run the specs against
-    where(indexing: [true, false], searching: [true, false], limiting: [true, false], advanced_global_search_for_limited_indexing: [true, false])
+    where(
+      indexing: [true, false],
+      searching: [true, false],
+      limiting: [true, false],
+      advanced_global_search_for_limited_indexing:
+      [true, false]
+    )
 
     with_them do
       let_it_be(:included_project_container) { create(:elasticsearch_indexed_project) }
@@ -1173,49 +1263,49 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         stub_feature_flags(advanced_global_search_for_limited_indexing: advanced_global_search_for_limited_indexing)
       end
 
-      context 'global scope' do
+      context 'for global scope' do
         let(:scope) { nil }
 
         it { is_expected.to eq(indexing && searching && (!limiting || advanced_global_search_for_limited_indexing)) }
       end
 
-      context 'namespace (in scope)' do
+      context 'for namespace (in scope)' do
         let(:scope) { included_namespace }
 
         it { is_expected.to eq(indexing && searching) }
       end
 
-      context 'namespace (not in scope)' do
+      context 'for namespace (not in scope)' do
         let(:scope) { excluded_namespace }
 
         it { is_expected.to eq(only_when_enabled_globally) }
       end
 
-      context 'project (in scope)' do
+      context 'for project (in scope)' do
         let(:scope) { included_project }
 
         it { is_expected.to eq(indexing && searching) }
       end
 
-      context 'project (not in scope)' do
+      context 'for project (not in scope)' do
         let(:scope) { excluded_project }
 
         it { is_expected.to eq(only_when_enabled_globally) }
       end
 
-      context 'array of projects (all in scope)' do
+      context 'for array of projects (all in scope)' do
         let(:scope) { [included_project] }
 
         it { is_expected.to eq(indexing && searching) }
       end
 
-      context 'array of projects (all not in scope)' do
+      context 'for array of projects (all not in scope)' do
         let(:scope) { [excluded_project] }
 
         it { is_expected.to eq(only_when_enabled_globally) }
       end
 
-      context 'array of projects (some in scope)' do
+      context 'for array of projects (some in scope)' do
         let(:scope) { [included_project, excluded_project] }
 
         it { is_expected.to eq(indexing && searching) }
@@ -1276,7 +1366,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
       describe '#custom_project_template_id' do
         it 'returns nil' do
-          expect(setting.custom_project_templates_group_id).to be nil
+          expect(setting.custom_project_templates_group_id).to be_nil
         end
       end
 
@@ -1289,7 +1379,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe '#instance_review_permitted?', feature_category: :onboarding do
-    subject { setting.instance_review_permitted? }
+    subject(:instance_review_permitted?) { setting.instance_review_permitted? }
 
     context 'for instances with a valid license' do
       before do
@@ -1298,14 +1388,14 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
 
       it 'is not permitted' do
-        expect(subject).to be_falsey
+        expect(instance_review_permitted?).to be_falsey
       end
     end
 
     context 'for instances without a valid license' do
       before do
         allow(License).to receive(:current).and_return(nil)
-        expect(Rails.cache).to receive(:fetch).and_return(
+        allow(Rails.cache).to receive(:fetch).and_return(
           ::ApplicationSetting::INSTANCE_REVIEW_MIN_USERS + users_over_minimum
         )
       end
@@ -1319,7 +1409,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe '#max_personal_access_token_lifetime_from_now', feature_category: :user_management do
-    subject { setting.max_personal_access_token_lifetime_from_now }
+    subject(:max_personal_access_token_lifetime_from_now) { setting.max_personal_access_token_lifetime_from_now }
 
     let(:days_from_now) { nil }
 
@@ -1331,21 +1421,21 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       let(:days_from_now) { 30 }
 
       it 'is a date time' do
-        expect(subject).to be_a Date
+        expect(max_personal_access_token_lifetime_from_now).to be_a Date
       end
 
       it 'is in the future' do
-        expect(subject).to be > Date.current
+        expect(max_personal_access_token_lifetime_from_now).to be > Date.current
       end
 
       it 'is in days_from_now' do
-        expect((subject.to_date - Date.current).to_i).to eq days_from_now
+        expect((max_personal_access_token_lifetime_from_now.to_date - Date.current).to_i).to eq days_from_now
       end
     end
 
     context 'when max_personal_access_token_lifetime is nil' do
       it 'is nil' do
-        expect(subject).to be_nil
+        expect(max_personal_access_token_lifetime_from_now).to be_nil
       end
     end
   end
@@ -1401,12 +1491,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe 'maintenance mode setting', feature_category: :geo_replication do
     it 'defaults to false' do
-      expect(subject.maintenance_mode).to be false
+      expect(setting.maintenance_mode).to be false
     end
   end
 
   describe "#max_ssh_key_lifetime_from_now", :freeze_time, feature_category: :system_access do
-    subject { setting.max_ssh_key_lifetime_from_now }
+    subject(:max_ssh_key_lifetime_from_now) { setting.max_ssh_key_lifetime_from_now }
 
     let(:days_from_now) { nil }
 
@@ -1418,21 +1508,21 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       let(:days_from_now) { 30 }
 
       it 'is a date time' do
-        expect(subject).to be_a Time
+        is_expected.to be_a Time
       end
 
       it 'is in the future' do
-        expect(subject).to be_future
+        is_expected.to be_future
       end
 
       it 'is in days_from_now' do
-        expect(subject.to_date - Date.today).to eq days_from_now
+        expect(max_ssh_key_lifetime_from_now.to_date - Time.zone.today).to eq days_from_now
       end
     end
 
     context 'when max_ssh_key_lifetime is nil' do
       it 'is nil' do
-        expect(subject).to be_nil
+        is_expected.to be_nil
       end
     end
   end
@@ -1450,11 +1540,11 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           stub_application_setting(disable_personal_access_tokens: true)
         end
 
-        it { is_expected.to eq(true) }
+        it { is_expected.to be true }
       end
 
       context 'when personal access tokens are not disabled' do
-        it { is_expected.to eq(false) }
+        it { is_expected.to be false }
       end
     end
   end
@@ -1472,11 +1562,11 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         stub_application_setting(disable_personal_access_tokens: true)
       end
 
-      it { is_expected.to eq(true) }
+      it { is_expected.to be true }
     end
 
     context 'when personal access tokens are enabled' do
-      it { is_expected.to eq(false) }
+      it { is_expected.to be false }
     end
   end
 end
