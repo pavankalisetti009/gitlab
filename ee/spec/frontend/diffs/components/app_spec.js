@@ -8,6 +8,7 @@ import getMRCodequalityAndSecurityReports from 'ee_else_ce/diffs/components/grap
 import { TEST_HOST } from 'spec/test_constants';
 import App, { FINDINGS_POLL_INTERVAL } from '~/diffs/components/app.vue';
 import store from '~/mr_notes/stores';
+import { pinia } from '~/pinia/instance';
 
 import {
   codeQualityNewErrorsHandler,
@@ -77,6 +78,7 @@ describe('diffs/components/app', () => {
       mocks: {
         $store: store,
       },
+      pinia,
     });
   };
 
