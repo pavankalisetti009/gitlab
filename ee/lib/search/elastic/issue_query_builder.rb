@@ -6,8 +6,11 @@ module Search
       extend ::Gitlab::Utils::Override
 
       DOC_TYPE = 'issue'
+      FIELDS = %w[iid^3 title^2 description].freeze
 
       def build
+        options[:fields] = options[:fields].presence || FIELDS
+
         query_hash = build_query_hash(query: query, options: options)
         query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash, options: options)
@@ -41,16 +44,7 @@ module Search
         if query =~ /#(\d+)\z/
           ::Search::Elastic::Queries.by_iid(iid: Regexp.last_match(1), doc_type: DOC_TYPE)
         else
-          # iid field can be added here as lenient option will
-          # pardon format errors, like integer out of range.
-          fields = %w[iid^3 title^2 description]
-
-          if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
-              Feature.enabled?(:search_uses_match_queries, options[:current_user])
-            ::Search::Elastic::Queries.by_multi_match_query(fields: fields, query: query, options: options)
-          else
-            ::Search::Elastic::Queries.by_simple_query_string(fields: fields, query: query, options: options)
-          end
+          ::Search::Elastic::Queries.by_full_text(query: query, options: options)
         end
       end
     end

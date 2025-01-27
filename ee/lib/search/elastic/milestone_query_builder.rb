@@ -6,9 +6,12 @@ module Search
       extend ::Gitlab::Utils::Override
 
       DOC_TYPE = 'milestone'
+      FIELDS = %w[title^2 description].freeze
 
       def build
-        query_hash = build_query_hash(query: query, options: options)
+        options[:fields] = options[:fields].presence || FIELDS
+
+        query_hash = ::Search::Elastic::Queries.by_full_text(query: query, options: options)
         query_hash = ::Search::Elastic::Filters.by_type(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
@@ -25,17 +28,6 @@ module Search
           features: [:issues, :merge_requests],
           authorization_use_traversal_ids: false
         }
-      end
-
-      def build_query_hash(query:, options:)
-        fields = %w[title^2 description]
-
-        if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
-            Feature.enabled?(:search_uses_match_queries, options[:current_user])
-          ::Search::Elastic::Queries.by_multi_match_query(fields: fields, query: query, options: options)
-        else
-          ::Search::Elastic::Queries.by_simple_query_string(fields: fields, query: query, options: options)
-        end
       end
     end
   end
