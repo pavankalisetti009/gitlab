@@ -105,7 +105,7 @@ module Gitlab
             name: @namespace,
             path: @namespace,
             organization: org,
-            visibility_level: ::Featurable::ENABLED
+            visibility_level: org.visibility_level
           }
           response = Groups::CreateService.new(current_user, group_params).execute
           group = response[:group]
@@ -118,7 +118,7 @@ module Gitlab
         def create_org(current_user)
           response = ::Organizations::CreateService.new(
             current_user: current_user,
-            params: { name: @namespace, path: @namespace }
+            params: { name: @namespace, path: @namespace, visibility_level: ::Gitlab::VisibilityLevel::PUBLIC }
           ).execute
           org = response[:organization]
 
