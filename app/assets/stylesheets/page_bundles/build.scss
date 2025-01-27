@@ -229,6 +229,13 @@
   }
 }
 
+.job-log-line-highlight {
+  @apply gl-border-l-solid gl-border-strong gl-border-l-4;
+  // Account for left border size
+  padding-left: $gl-padding-8 - 4px;
+  background-color: var(--gl-color-alpha-light-8);
+}
+
 .loader-animation {
   @include build-loader-animation;
 }
