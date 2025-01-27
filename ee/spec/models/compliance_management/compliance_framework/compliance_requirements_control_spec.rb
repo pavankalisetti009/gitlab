@@ -42,7 +42,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       )
     end
 
-    it { is_expected.to define_enum_for(:control_type).with_values(internal: 0) }
+    it { is_expected.to define_enum_for(:control_type).with_values(internal: 0, external: 1) }
   end
 
   describe '#controls_count_per_requirement' do
@@ -89,6 +89,40 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         expect(new_control.valid?).to be(false)
         expect(new_control.errors.full_messages)
           .to contain_exactly("Compliance requirement cannot have more than 5 controls")
+      end
+    end
+  end
+
+  describe 'secret_token validation' do
+    let_it_be(:compliance_requirement) { create :compliance_requirement }
+    let(:control) do
+      build :compliance_requirements_control,
+        name: 'scanner_sast_running',
+        compliance_requirement: compliance_requirement,
+        control_type: control_type
+    end
+
+    context 'with external control type' do
+      let(:control_type) { :external }
+
+      it 'validates presence' do
+        control.secret_token = nil
+        expect(control).not_to be_valid
+
+        control.secret_token = 'foo'
+        expect(control).to be_valid
+      end
+    end
+
+    context 'with internal control_type' do
+      let(:control_type) { :internal }
+
+      it 'ignores presence' do
+        control.secret_token = nil
+        expect(control).to be_valid
+
+        control.secret_token = 'foo'
+        expect(control).to be_valid
       end
     end
   end
