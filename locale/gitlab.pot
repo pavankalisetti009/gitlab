@@ -16370,7 +16370,7 @@ msgstr ""
 msgid "Copy labels and milestone from %{source_issuable_reference}."
 msgstr ""
 
-msgid "Copy labels and milestone from other issue or merge request in this project"
+msgid "Copy labels and milestone from other work item or merge request in the same namespace"
 msgstr ""
 
 msgid "Copy link"
@@ -23925,10 +23925,10 @@ msgstr ""
 msgid "Failed to find import label for Jira import."
 msgstr ""
 
-msgid "Failed to find issue or merge request"
+msgid "Failed to find users for %{missing}"
 msgstr ""
 
-msgid "Failed to find users for %{missing}"
+msgid "Failed to find work item or merge request"
 msgstr ""
 
 msgid "Failed to format markdown."
