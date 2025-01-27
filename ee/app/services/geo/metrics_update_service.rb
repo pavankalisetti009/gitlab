@@ -4,15 +4,18 @@ module Geo
   class MetricsUpdateService
     METRIC_PREFIX = 'geo_'
 
-    def execute
+    def execute(timeout: nil)
       return unless Gitlab::Geo.enabled?
 
-      current_node_status&.update_cache!
+      status = GeoNodeStatus.current_node_status(timeout:)
+      status&.update_cache!
 
-      send_status_to_primary(current_node, current_node_status) if Gitlab::Geo.secondary?
+      if Gitlab::Geo.secondary?
+        send_status_to_primary(current_node, status)
+      end
 
       if prometheus_enabled?
-        update_prometheus_metrics(current_node, current_node_status)
+        update_prometheus_metrics(current_node, status)
 
         if Gitlab::Geo.primary?
           Gitlab::Geo.secondary_nodes.find_each { |node| update_prometheus_metrics(node, node.status) }
@@ -22,8 +25,8 @@ module Geo
 
     private
 
-    def current_node_status
-      @current_node_status ||= GeoNodeStatus.current_node_status
+    def current_node_status(timeout: nil)
+      @current_node_status ||= GeoNodeStatus.current_node_status(timeout:)
     end
 
     def current_node

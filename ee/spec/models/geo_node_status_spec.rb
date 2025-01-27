@@ -790,5 +790,112 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
         expect(subject.container_repositories_replication_enabled).to eq true
       end
     end
+
+    context 'when a primary metric query times out' do
+      before do
+        stub_current_geo_node(primary)
+        stub_primary_site
+        allow(Gitlab::Geo).to receive(:verification_enabled_replicator_classes)
+                                .and_return([Geo::JobArtifactReplicator])
+        allow(Geo::JobArtifactReplicator).to receive(:primary_total_count)
+                                               .and_raise(ActiveRecord::QueryCanceled.new("ERROR: canceling statement due to statement timeout"))
+        allow(Geo::JobArtifactReplicator).to receive(:checksummed_count)
+                                               .and_return(42)
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+      end
+
+      it 'fails gracefully and continues collecting other metrics', :aggregate_failures do
+        subject # this triggers load_data_from_current_node
+
+        # Failed counts are nil but following metrics are returned normally
+        expect(subject.job_artifacts_count).to be_nil
+        expect(subject.job_artifacts_checksummed_count).to eq(42)
+      end
+
+      it 'calls ErrorTracking for query cancellation errors' do
+        subject # this triggers load_data_from_current_node
+
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception)
+                                           .with(instance_of(ActiveRecord::QueryCanceled), extra: { metric: 'job_artifacts_count' }).once
+      end
+    end
+
+    context 'when a secondary metric query times out' do
+      before do
+        stub_current_geo_node(secondary)
+        stub_secondary_site
+        allow(Gitlab::Geo).to receive(:replication_enabled_replicator_classes)
+                                .and_return([Geo::JobArtifactReplicator])
+        allow(Geo::JobArtifactReplicator).to receive(:registry_count)
+                                               .and_raise(ActiveRecord::QueryCanceled.new("ERROR: canceling statement due to statement timeout"))
+        allow(Geo::JobArtifactReplicator).to receive(:synced_count)
+                                               .and_return(42)
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+      end
+
+      it 'fails gracefully and continues collecting other metrics', :aggregate_failures do
+        subject # this triggers load_data_from_current_node
+
+        # Failed counts are nil but following metrics are returned normally
+        expect(subject.job_artifacts_count).to be_nil
+        expect(subject.job_artifacts_synced_count).to eq(42)
+      end
+
+      it 'calls ErrorTracking for query cancellation errors' do
+        subject # this triggers load_data_from_current_node
+
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception)
+                                           .with(instance_of(ActiveRecord::QueryCanceled), extra: { metric: 'job_artifacts_count' }).once
+      end
+    end
+
+    context 'when approaching job TTL when called from metrics worker' do
+      let(:started_at) { 55.minutes.ago } # With 1 hour TTL and 10 min buffer
+      let(:timeout) { 1.hour }
+
+      before do
+        stub_current_geo_node(primary)
+        stub_primary_site
+        allow(Gitlab::Geo).to receive(:verification_enabled_replicator_classes)
+                                .and_return([Geo::JobArtifactReplicator])
+        allow(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).and_call_original
+      end
+
+      it 'raises error and stops collecting metrics', :aggregate_failures do
+        status = primary.find_or_build_status
+        status.started_at = started_at
+        status.timeout = timeout
+
+        expect { status.load_data_from_current_node }
+          .to raise_error(Geo::Errors::StatusTimeoutError)
+      end
+
+      it 'continues collecting metrics when not from metrics worker' do
+        status = primary.find_or_build_status
+        status.started_at = nil
+        status.timeout = nil
+
+        expect { status.load_data_from_current_node }.not_to raise_error
+      end
+
+      it 'tracks the error before raising' do
+        status = primary.find_or_build_status
+        status.started_at = started_at
+        status.timeout = timeout
+
+        expect { status.load_data_from_current_node }
+          .to raise_error(Geo::Errors::StatusTimeoutError)
+
+        expect(Gitlab::ErrorTracking).to have_received(:track_and_raise_exception)
+                                           .with(
+                                             instance_of(Geo::Errors::StatusTimeoutError),
+                                             extra: hash_including(
+                                               time_elapsed: kind_of(Float),
+                                               timeout: timeout,
+                                               assumed_query_timeout: 10.minutes
+                                             )
+                                           )
+      end
+    end
   end
 end
