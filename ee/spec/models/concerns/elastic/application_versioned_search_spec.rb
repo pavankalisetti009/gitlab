@@ -58,14 +58,14 @@ RSpec.describe Elastic::ApplicationVersionedSearch, feature_category: :global_se
   describe '.associations_needing_elasticsearch_update' do
     context 'when elastic_index_dependents is empty' do
       it 'returns an empty array' do
-        expect(klass.new.associations_needing_elasticsearch_update(['title'])).to match_array []
+        expect(klass.new.associations_needing_elasticsearch_update(['title'])).to be_empty
       end
     end
 
     context 'when updated_attributes does not contains on_change attribute' do
       it 'returns an empty array' do
         klass.elastic_index_dependant_association :widgets, on_change: :name
-        expect(klass.new.associations_needing_elasticsearch_update(['title'])).to match_array []
+        expect(klass.new.associations_needing_elasticsearch_update(['title'])).to be_empty
       end
     end
 
@@ -81,7 +81,7 @@ RSpec.describe Elastic::ApplicationVersionedSearch, feature_category: :global_se
         last_migration = Elastic::DataMigrationService.migrations.last.name_for_key.to_sym
         klass.elastic_index_dependant_association :widgets, on_change: :title, depends_on_finished_migration: last_migration
         set_elasticsearch_migration_to last_migration, including: false
-        expect(klass.new.associations_needing_elasticsearch_update([:title])).to match_array []
+        expect(klass.new.associations_needing_elasticsearch_update([:title])).to be_empty
       end
     end
 

@@ -391,7 +391,7 @@ RSpec.describe User, feature_category: :system_access do
       subject(:with_saml_provider) { described_class.with_saml_provider(saml_provider) }
 
       it 'does not find users without a SAML identity' do
-        expect(with_saml_provider).to match_array([])
+        expect(with_saml_provider).to be_empty
       end
 
       context 'when users have a SAML identity tied to the provider' do
@@ -404,7 +404,7 @@ RSpec.describe User, feature_category: :system_access do
         it 'does not find users with a different SAML provider' do
           provider = create(:saml_provider)
 
-          expect(described_class.with_saml_provider(provider)).to match_array([])
+          expect(described_class.with_saml_provider(provider)).to be_empty
         end
       end
     end
@@ -452,7 +452,7 @@ RSpec.describe User, feature_category: :system_access do
       subject(:with_provisioning_group) { described_class.with_provisioning_group(group) }
 
       it 'does not find users without a provisioning group' do
-        expect(with_provisioning_group).to match_array([])
+        expect(with_provisioning_group).to be_empty
       end
 
       context 'when users have a provisioning group' do
@@ -468,7 +468,7 @@ RSpec.describe User, feature_category: :system_access do
         it 'does not find users with a different SAML provider' do
           group = create(:group)
 
-          expect(described_class.with_provisioning_group(group)).to match_array([])
+          expect(described_class.with_provisioning_group(group)).to be_empty
         end
       end
     end
@@ -1053,7 +1053,7 @@ RSpec.describe User, feature_category: :system_access do
         subject(:available_subgroups) { user.available_subgroups_with_custom_project_templates }
 
         it 'does not return any templates' do
-          expect(available_subgroups).to match_array([])
+          expect(available_subgroups).to be_empty
         end
 
         context 'when feature flag "project_templates_without_min_access" is disabled' do
@@ -2260,7 +2260,7 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       it 'returns empty array if there are user is not have access of reporter or above' do
-        expect(user.zoekt_indexed_namespaces).to match_array([])
+        expect(user.zoekt_indexed_namespaces).to be_empty
       end
     end
 

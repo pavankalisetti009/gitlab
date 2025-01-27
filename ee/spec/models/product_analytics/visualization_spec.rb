@@ -160,7 +160,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
 
         it 'does not include built in visualizations for VSD' do
-          expect(subject.map(&:slug)).to match_array([])
+          expect(subject.map(&:slug)).to be_empty
         end
       end
 
