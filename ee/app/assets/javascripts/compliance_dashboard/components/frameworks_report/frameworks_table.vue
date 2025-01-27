@@ -287,6 +287,19 @@ export default {
           placement="bottom-end"
           no-caret
         >
+          <div class="gl-mx-2">
+            <gl-button
+              v-gl-tooltip.left.viewport
+              data-testid="action-copy-id"
+              :title="$options.i18n.copyIdExplanation"
+              class="!gl-justify-start"
+              category="tertiary"
+              :block="true"
+              @click="copyFrameworkId(item.id)"
+            >
+              {{ $options.i18n.actionCopyId }}: {{ getIdFromGraphQLId(item.id) }}
+            </gl-button>
+          </div>
           <template v-if="isTopLevelGroup">
             <div class="gl-mx-2">
               <gl-button
@@ -307,7 +320,7 @@ export default {
             >
               <gl-button
                 data-testid="action-delete"
-                class="!gl-justify-start"
+                class="!gl-justify-start !gl-border-none"
                 category="tertiary"
                 :block="true"
                 :disabled="shouldDisableDeleteAction(item)"
@@ -317,19 +330,6 @@ export default {
               </gl-button>
             </div>
           </template>
-          <div class="gl-mx-2">
-            <gl-button
-              v-gl-tooltip.left.viewport
-              data-testid="action-copy-id"
-              :title="$options.i18n.copyIdExplanation"
-              class="!gl-justify-start"
-              category="tertiary"
-              :block="true"
-              @click="copyFrameworkId(item.id)"
-            >
-              {{ $options.i18n.actionCopyId }}: {{ getIdFromGraphQLId(item.id) }}
-            </gl-button>
-          </div>
         </gl-disclosure-dropdown>
       </template>
       <template #empty>
