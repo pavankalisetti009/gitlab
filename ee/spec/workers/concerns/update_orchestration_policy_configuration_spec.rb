@@ -69,7 +69,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
       end
 
       it 'updates configuration.configured_at to the current time', :freeze_time do
-        expect { execute }.to change { configuration.configured_at }.from(nil).to(Time.current)
+        expect { execute }.to change { configuration.reload.configured_at }.from(nil).to(Time.current)
       end
 
       it 'executes ComplianceFrameworks::SyncService' do
@@ -121,9 +121,11 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
               expect(Security::SecurityOrchestrationPolicies::ProcessRuleService).not_to receive(:new)
               expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService).not_to receive(:new)
 
-              expect { execute }
-                .to not_change(Security::OrchestrationPolicyRuleSchedule, :count)
-                .and not_change { configuration.reload.configured_at }
+              expect { execute }.to not_change(Security::OrchestrationPolicyRuleSchedule, :count)
+            end
+
+            it 'updates configuration.configured_at to the current time', :freeze_time do
+              expect { execute }.to change { configuration.reload.configured_at }.from(nil).to(Time.current)
             end
           end
 
