@@ -13,10 +13,19 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     allow(described_class).to receive(:logger).and_return(logger)
   end
 
-  shared_examples 'a execute_every task' do
-    it 'uses cache', :clean_gitlab_redis_shared_state do
-      expect(Gitlab::Redis::SharedState).to receive(:with)
+  shared_examples 'a execute_every task' do |opts = {}|
+    let(:redis_spy) { instance_spy(Redis) }
+    let(:period) { opts[:period] }
+
+    it 'uses cache when given a cache period', :clean_gitlab_redis_shared_state do
+      allow(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy)
       service.execute
+
+      if period.present?
+        expect(redis_spy).to have_received(:set).with(service.cache_key, 1, ex: period, nx: true)
+      else
+        expect(redis_spy).not_to have_received(:set).with(service.cache_key, anything, anything)
+      end
     end
 
     context 'when on development environment', :clean_gitlab_redis_shared_state do
@@ -34,6 +43,14 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     it 'includes the keys from CONFIG' do
       described_class::CONFIG.each_key do |key|
         expect(described_class::TASKS.include?(key)).to be_truthy
+      end
+    end
+
+    described_class::CONFIG.each do |key, opts|
+      context "with proper cache period for dispatch task '#{key}'" do
+        let(:task) { key }
+
+        it_behaves_like 'a execute_every task', period: opts[:period]
       end
     end
   end
@@ -92,9 +109,39 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   end
 
   describe '#cache_key' do
-    it 'is formatted correctly based on task name' do
-      %i[foo bar baz].each do |task|
-        expect(described_class.new(task).cache_key).to eq("search/zoekt/scheduling_service:execute_every:#{task}")
+    context 'with tasks that have empty cache periods' do
+      it 'is formatted correctly based on task name' do
+        %i[foo bar baz].each do |task|
+          expect(described_class.new(task).cache_key).to eq("search/zoekt/scheduling_service:execute_every:-:#{task}")
+        end
+      end
+    end
+
+    context 'with tasks that have cache periods configured' do
+      it 'is formatted correctly based on task name and cache period' do
+        %i[adjust_indices_reserved_storage_bytes lost_nodes_check update_replica_states].each do |task|
+          svc = described_class.new(task)
+          expect(svc.cache_key).to eq("search/zoekt/scheduling_service:execute_every:#{svc.cache_period}:#{task}")
+        end
+      end
+    end
+  end
+
+  describe '#cache_period' do
+    context 'with a task from CONFIG' do
+      it 'returns the period when configured' do
+        expect(described_class.new(:adjust_indices_reserved_storage_bytes).cache_period).to eq(10.minutes)
+        expect(described_class.new(:update_replica_states).cache_period).to eq(2.minutes)
+      end
+
+      it 'returns nil when not configured' do
+        expect(described_class.new(:mark_indices_as_ready).cache_period).to be_nil
+      end
+    end
+
+    context 'with a task not from CONFIG' do
+      it 'returns nil' do
+        expect(described_class.new(:foo).cache_period).to be_nil
       end
     end
   end
@@ -162,8 +209,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           expect { execute_task }.not_to change { zoekt_index2.zoekt_enabled_namespace.reload.search }
         end
       end
-
-      it_behaves_like 'a execute_every task'
     end
   end
 
@@ -179,7 +224,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       let_it_be(:subscription) { create(:gitlab_subscription, namespace: group) }
       let_it_be(:root_storage_statistics) { create(:namespace_root_storage_statistics, namespace: group) }
 
-      it_behaves_like 'a execute_every task'
+      it_behaves_like 'a execute_every task', period: 2.hours
 
       context 'when feature flag is disabled' do
         before do

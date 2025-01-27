@@ -133,7 +133,14 @@ module Search
       end
 
       def cache_key
-        [self.class.name.underscore, :execute_every, task].flatten.join(':')
+        period = cache_period.presence || "-"
+        [self.class.name.underscore, :execute_every, period, task].flatten.join(':')
+      end
+
+      def cache_period
+        return unless CONFIG.key?(task)
+
+        CONFIG.dig(task, :period)
       end
 
       private
@@ -141,15 +148,15 @@ module Search
       def execute_config_task(task_name)
         config = CONFIG[task_name]
 
-        # Check `if` condition, default to true if not provided
-        if config[:if]&.call == false
-          logger.info(build_structured_payload(task: task_name, message: "Condition not met"))
-          return false
-        end
-
         execute_every(config[:period]) do
           unless config[:execute] || config[:dispatch]
             raise NotImplementedError, "No execute block or dispatch defined for task #{task_name}"
+          end
+
+          # Check `if` condition, default to true if not provided
+          if config[:if]&.call == false
+            logger.info(build_structured_payload(task: task_name, message: "Condition not met"))
+            break false
           end
 
           # Call the execute block if provided
@@ -163,6 +170,7 @@ module Search
         # We don't want any delay interval in development environments,
         # so lets disable the cache unless we are in production.
         return yield if Rails.env.development?
+        return yield unless period
 
         Gitlab::Redis::SharedState.with do |redis|
           key_set = redis.set(cache_key, 1, ex: period, nx: true)
