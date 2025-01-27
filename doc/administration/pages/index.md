@@ -967,7 +967,7 @@ are deleted:
 
 The total number of file entries (including directories and symlinks) is limited to `200,000` per GitLab Pages website.
 
-You can update the limit in your self-managed instance using the
+You can update the limit in your GitLab Self-Managed instance using the
 [GitLab Rails console](../operations/rails_console.md#starting-a-rails-console-session).
 
 For more information, see [GitLab application limits](../instance_limits.md#number-of-files-per-gitlab-pages-website).
