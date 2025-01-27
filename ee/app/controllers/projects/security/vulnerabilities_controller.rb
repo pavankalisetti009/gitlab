@@ -11,7 +11,6 @@ module Projects
       before_action :authorize_read_vulnerability!, except: [:new]
 
       before_action do
-        push_frontend_feature_flag(:vulnerability_representation_information, project)
         push_frontend_feature_flag(:vulnerability_details_state_modal, project)
       end
 

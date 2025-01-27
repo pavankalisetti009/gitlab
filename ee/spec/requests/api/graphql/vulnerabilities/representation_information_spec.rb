@@ -74,15 +74,4 @@ RSpec.describe 'Query.vulnerabilities.representationInformation', feature_catego
       post_graphql(vulnerabilities_query, current_user: user)
     end.to issue_same_number_of_queries_as(control).or_fewer
   end
-
-  context 'when vulnerability_representation_information is disabled' do
-    before do
-      stub_feature_flags(vulnerability_representation_information: false)
-    end
-
-    it 'does not return representation information' do
-      post_graphql(query, current_user: user)
-      expect(representation_info).to be_nil
-    end
-  end
 end

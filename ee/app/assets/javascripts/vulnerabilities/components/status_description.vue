@@ -61,11 +61,7 @@ export default {
 
     representationInformationAvailable() {
       const { resolvedOnDefaultBranch } = this.vulnerability;
-      return (
-        this.glFeatures.vulnerabilityRepresentationInformation &&
-        resolvedOnDefaultBranch &&
-        this.representationInformation?.resolvedInCommitShaLink
-      );
+      return resolvedOnDefaultBranch && this.representationInformation?.resolvedInCommitShaLink;
     },
 
     time() {
