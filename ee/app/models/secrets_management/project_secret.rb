@@ -19,9 +19,10 @@ module SecretsManagement
     validates :environment, presence: true
     validate :ensure_active_secrets_manager
 
+    delegate :secrets_manager, to: :project
+
     def self.for_project(project)
       secrets_manager = project.secrets_manager
-      client = SecretsManagerClient.new
       client.list_secrets(secrets_manager.ci_secrets_mount_path, secrets_manager.ci_data_path) do |data|
         custom_metadata = data.dig("metadata", "custom_metadata")
 
@@ -37,7 +38,6 @@ module SecretsManagement
 
     def self.from_name(project, name)
       secrets_manager = project.secrets_manager
-      client = SecretsManagerClient.new
       secret = client.read_secret_metadata(secrets_manager.ci_secrets_mount_path, secrets_manager.ci_data_path(name))
 
       return if secret.nil?
@@ -51,11 +51,14 @@ module SecretsManagement
       )
     end
 
+    def self.client
+      @client ||= SecretsManagerClient.new
+    end
+
     def save(value)
       return false unless valid?
 
       client = SecretsManagerClient.new
-      secrets_manager = project.secrets_manager
 
       # The follow API calls are ordered such that they fail closed: first we
       # create the secret and its metadata and then attach policy to it. If we
@@ -87,6 +90,19 @@ module SecretsManagement
       false
     end
 
+    def delete
+      client.delete_kv_secret(
+        secrets_manager.ci_secrets_mount_path,
+        secrets_manager.ci_data_path(name)
+      )
+
+      policy_name = secrets_manager.ci_policy_name(environment, branch)
+      p = client.get_policy(policy_name)
+      p.remove_capability(secrets_manager.ci_full_path(name), "read")
+      p.remove_capability(secrets_manager.ci_metadata_full_path(name), "read")
+      client.set_policy(p)
+    end
+
     def ==(other)
       other.is_a?(self.class) && attributes == other.attributes
     end
@@ -95,6 +111,10 @@ module SecretsManagement
 
     def ensure_active_secrets_manager
       errors.add(:base, 'Project secrets manager is not active.') unless project.secrets_manager&.active?
+    end
+
+    def client
+      self.class.client
     end
   end
 end

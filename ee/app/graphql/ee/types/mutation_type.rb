@@ -64,6 +64,7 @@ module EE
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagerInitialize
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretCreate
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretDelete
         mount_mutation ::Mutations::Security::Finding::CreateIssue
         mount_mutation ::Mutations::Security::Finding::CreateMergeRequest
         mount_mutation ::Mutations::Security::Finding::CreateVulnerability, experiment: { milestone: '17.5' }

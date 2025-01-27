@@ -315,4 +315,50 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
     end
   end
+
+  describe '#delete_kv_secret' do
+    let(:existing_mount_path) { 'secrets' }
+    let(:existing_secret_path) { 'DBPASS' }
+    let(:mount_path) { existing_mount_path }
+    let(:secret_path) { existing_secret_path }
+
+    subject(:call_api) { client.delete_kv_secret(mount_path, secret_path) }
+
+    before do
+      client.enable_secrets_engine(existing_mount_path, 'kv-v2')
+
+      client.create_kv_secret(
+        existing_mount_path,
+        existing_secret_path,
+        'somevalue',
+        {
+          environment: 'staging'
+        }
+      )
+    end
+
+    context 'when the mount path exists' do
+      context 'when the given secret path exists' do
+        it 'deletes the secret permanently' do
+          call_api
+
+          expect_kv_secret_not_to_exist(mount_path, secret_path)
+        end
+      end
+
+      context 'when the given secret path does not exist' do
+        let(:secret_path) { 'SOMETHING_ELSE' }
+
+        it 'does not fail' do
+          expect { call_api }.not_to raise_error
+        end
+      end
+    end
+
+    context 'when the mount path does not exist' do
+      let(:mount_path) { 'something/else' }
+
+      it_behaves_like 'making an invalid API request'
+    end
+  end
 end
