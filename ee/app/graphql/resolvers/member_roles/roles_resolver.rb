@@ -9,7 +9,13 @@ module Resolvers
 
       argument :id, ::Types::GlobalIDType[::MemberRole],
         required: false,
-        description: 'Global ID of the member role to look up.'
+        description: 'Global ID of the member role to look up.',
+        prepare: ->(global_id, _ctx) { global_id.model_id }
+
+      argument :ids, [::Types::GlobalIDType[::MemberRole]],
+        required: false,
+        description: 'Global IDs of the member role to look up.',
+        prepare: ->(global_ids, _ctx) { global_ids.filter_map(&:model_id) }
 
       argument :order_by, ::Types::MemberRoles::OrderByEnum,
         required: false,
@@ -19,10 +25,12 @@ module Resolvers
         required: false,
         description: 'Ordering column. Default is ASC.'
 
-      def resolve_with_lookahead(id: nil, order_by: nil, sort: nil)
+      def resolve_with_lookahead(id: nil, ids: [], order_by: nil, sort: nil)
+        ids.unshift(id) if id.present?
+
         params = {}
         params = { parent: object } if object
-        params[:id] = id.model_id if id.present?
+        params[:id] = ids if ids.present?
         params[:order_by] = order_by.presence || :name
         params[:sort] = sort.present? ? sort.to_sym : :asc
 

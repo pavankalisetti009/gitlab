@@ -5,13 +5,13 @@ require 'spec_helper'
 RSpec.describe 'Query.group_member_role', feature_category: :permissions do
   include GraphqlHelpers
 
-  def member_roles_query(group)
+  def member_roles_query(group, ids = [])
     <<~QUERY
     query {
       group(fullPath: "#{group.full_path}") {
         id
         name
-        memberRoles {
+        memberRoles(ids: #{ids}) {
           nodes {
             id
             name
@@ -107,6 +107,53 @@ RSpec.describe 'Query.group_member_role', feature_category: :permissions do
         create(:member_role, namespace: group)
 
         expect { post_graphql(member_roles_query(group), current_user: user) }.not_to exceed_query_limit(control)
+      end
+
+      context 'with ids as member role argument' do
+        context 'when on SaaS' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: true)
+          end
+
+          context 'with valid member role ids' do
+            before do
+              post_graphql(member_roles_query(group, [member_role.to_global_id.to_s]), current_user: user)
+            end
+
+            it 'returns related group-level member roles' do
+              expect(subject).to match_array([{
+                'id' => member_role.to_global_id.to_s,
+                'name' => member_role.name,
+                'membersCount' => 0,
+                'editPath' => edit_group_settings_roles_and_permission_path(member_role.namespace,
+                  member_role)
+              }])
+            end
+          end
+
+          context 'with invalid member role ids' do
+            before do
+              post_graphql(member_roles_query(group, ["gid://gitlab/MemberRole/#{non_existing_record_id}"]),
+                current_user: user)
+            end
+
+            it 'returns an empty array' do
+              expect(subject).to be_empty
+            end
+          end
+        end
+
+        context 'when on self-managed' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: false)
+
+            post_graphql(member_roles_query(group, [member_role.to_global_id.to_s]), current_user: user)
+          end
+
+          it 'returns an empty array' do
+            expect(subject).to be_empty
+          end
+        end
       end
     end
 
