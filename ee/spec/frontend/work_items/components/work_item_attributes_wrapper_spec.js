@@ -7,7 +7,6 @@ import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
-import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
@@ -59,7 +58,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
   const findWorkItemColor = () => wrapper.findComponent(WorkItemColor);
   const findWorkItemHealthStatus = () => wrapper.findComponent(WorkItemHealthStatus);
   const findWorkItemRolledupDates = () => wrapper.findComponent(WorkItemRolledupDates);
-  const findWorkItemCustomFields = () => wrapper.findComponent(WorkItemCustomFields);
 
   const createComponent = ({
     workItem = workItemQueryResponse.data.workItem,
@@ -298,24 +296,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
       await createComponentWithRolledupDates();
 
       expect(findWorkItemRolledupDates().exists()).toBe(true);
-    });
-  });
-
-  describe('custom fields widget', () => {
-    it.each`
-      description                                                    | customFieldsFeature | hasWidgetData | exists
-      ${'renders when widget flag is enabled and has data'}          | ${true}             | ${true}       | ${true}
-      ${'does not render when flag is disabled'}                     | ${false}            | ${true}       | ${false}
-      ${'does not render when flag is enabled but there is no data'} | ${true}             | ${false}      | ${false}
-    `('$description', async ({ customFieldsFeature, hasWidgetData, exists }) => {
-      const response = workItemResponseFactory({
-        customFieldsWidgetPresent: hasWidgetData,
-      });
-
-      createComponent({ workItem: response.data.workItem, featureFlags: { customFieldsFeature } });
-      await waitForPromises();
-
-      expect(findWorkItemCustomFields().exists()).toBe(exists);
     });
   });
 });
