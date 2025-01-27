@@ -10278,7 +10278,8 @@ CREATE TABLE ci_pipeline_messages (
     pipeline_id bigint NOT NULL,
     partition_id bigint NOT NULL,
     project_id bigint,
-    CONSTRAINT check_58ca2981b2 CHECK ((char_length(content) <= 10000))
+    CONSTRAINT check_58ca2981b2 CHECK ((char_length(content) <= 10000)),
+    CONSTRAINT check_fe8ee122a2 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_pipeline_messages_id_seq
@@ -26533,9 +26534,6 @@ ALTER TABLE approval_merge_request_rule_sources
 
 ALTER TABLE projects
     ADD CONSTRAINT check_fa75869cb1 CHECK ((project_namespace_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE ci_pipeline_messages
-    ADD CONSTRAINT check_fe8ee122a2 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE ONLY ci_build_needs
     ADD CONSTRAINT ci_build_needs_pkey PRIMARY KEY (id);
