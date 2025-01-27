@@ -182,7 +182,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           simple_qs_with_boost = {
             simple_query_string: {
               _name: "work_item:match:search_terms",
-              fields: ["iid^3", "title^2", "description", "notes", "notes_internal"],
+              fields: ["iid^50", "title^2", "description", "notes", "notes_internal"],
               query: query,
               lenient: true,
               default_operator: :and,
