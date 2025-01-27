@@ -169,7 +169,7 @@ export default {
       <gl-form-group
         class="group-name-holder col-sm-12"
         :label="$options.i18n.groupNameLabel"
-        label-for="group_name"
+        :label-for="groupInputAttr('group_name')"
       >
         <gl-form-input
           v-if="groupPersisted && !importGroup"
@@ -219,7 +219,7 @@ export default {
       <gl-form-group
         class="project-name col-sm-12"
         :label="$options.i18n.projectNameLabel"
-        label-for="project_name"
+        label-for="blank_project_name"
       >
         <gl-form-input
           id="blank_project_name"
