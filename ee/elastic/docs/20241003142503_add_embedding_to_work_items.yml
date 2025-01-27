@@ -7,6 +7,6 @@ milestone: '17.5'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163946
 skippable: true
 skip_condition: Must be on Elasticsearch 8+
-obsolete: false
-marked_obsolete_by_url:
-marked_obsolete_in_milestone:
+obsolete: true
+marked_obsolete_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/178357
+marked_obsolete_in_milestone: '17.9'

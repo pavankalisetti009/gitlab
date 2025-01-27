@@ -85,7 +85,6 @@ module Search
         return false if short_query?
         return false unless Feature.enabled?(:ai_global_switch, type: :ops)
         return false unless Gitlab::Saas.feature_available?(:ai_vertex_embeddings)
-        return false unless ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items)
 
         project = Project.find_by_id(options[:project_ids])
         user = options[:current_user]
