@@ -20,15 +20,6 @@ module EE
 
       private
 
-      override :preloads
-      def preloads
-        super.merge(
-          has_jira_vulnerability_issue_creation_enabled: [:jira_imports, :jira_integration],
-          merge_requests_disable_committers_approval: [{ group: :group_merge_request_approval_setting }],
-          ai_xray_reports: [:xray_reports]
-        )
-      end
-
       override :finder_params
       def finder_params(args)
         super(args).merge(args.slice(:aimed_for_deletion, :include_hidden, :marked_for_deletion_on))
