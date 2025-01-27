@@ -14,7 +14,8 @@ module GitlabSubscriptions
 
     def new
       if general_params[:step] == GitlabSubscriptions::Trials::CreateService::TRIAL
-        render :step_namespace
+        render GitlabSubscriptions::Trials::TrialFormComponent
+                 .new(eligible_namespaces: @eligible_namespaces, params: trial_form_params)
       else
         render GitlabSubscriptions::Trials::LeadFormComponent
                  .new(
@@ -59,12 +60,23 @@ module GitlabSubscriptions
         # namespace creation failed
         params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
-        render :step_namespace_failed
+        render GitlabSubscriptions::Trials::TrialFormComponent
+                 .new(
+                   eligible_namespaces: @eligible_namespaces,
+                   params: trial_form_params,
+                   namespace_create_errors: @result.errors.to_sentence
+                 )
       else
         # trial creation failed
         params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
-        render :trial_failed
+        render GitlabSubscriptions::Trials::TrialFormWithErrorsComponent
+                 .new(
+                   eligible_namespaces: @eligible_namespaces,
+                   params: trial_form_params,
+                   reason: @result.reason,
+                   errors: @result.errors
+                 )
       end
     end
 
@@ -81,6 +93,10 @@ module GitlabSubscriptions
       params.permit(
         :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state
       ).to_h.symbolize_keys
+    end
+
+    def trial_form_params
+      ::Onboarding::StatusPresenter.glm_tracking_params(params).merge(params.permit(:new_group_name, :namespace_id)) # rubocop:disable Rails/StrongParams -- method performs strong params
     end
 
     def trial_success_path(namespace)

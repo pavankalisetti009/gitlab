@@ -7,7 +7,7 @@ module QA
         class Select < QA::Page::Base
           include QA::Page::Component::Dropdown
 
-          view 'ee/app/views/gitlab_subscriptions/trials/_select_namespace_form.html.haml' do
+          view 'ee/app/components/gitlab_subscriptions/trials/trial_form_component.html.haml' do
             element 'trial-form'
             element 'start-your-free-trial-button'
           end

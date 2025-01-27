@@ -6,9 +6,11 @@ module GitlabSubscriptions
       include SafeFormatHelper
 
       # @param [errors] possible errors from backend
+      # @param [reason] reason for failure
 
-      def initialize(errors:)
+      def initialize(errors:, reason: nil)
         @errors = errors
+        @reason = reason
       end
 
       def call
@@ -22,17 +24,21 @@ module GitlabSubscriptions
 
       private
 
-      attr_reader :errors
+      attr_reader :errors, :reason
 
       def title
         _("We're sorry, your trial could not be created because our system did not respond successfully.")
       end
 
       def content
-        safe_format(
-          errors_message,
-          tag_pair(support_link, :support_link_start, :support_link_end)
-        )
+        if reason == GitlabSubscriptions::Trials::BaseApplyTrialService::GENERIC_TRIAL_ERROR
+          safe_format(
+            errors_message,
+            tag_pair(support_link, :support_link_start, :support_link_end)
+          )
+        else
+          errors.to_sentence
+        end
       end
 
       def support_link
