@@ -205,7 +205,7 @@ class ProjectPolicy < BasePolicy
   end
 
   with_scope :subject
-  condition(:service_desk_enabled) { @subject.service_desk_enabled? }
+  condition(:service_desk_enabled) { ::Gitlab::ServiceDesk.enabled?(@subject) }
 
   with_scope :subject
   condition(:model_experiments_enabled) do
