@@ -24,23 +24,30 @@ module QA
         # @return [String]
         def api_post_body
           <<~GQL
-             mutation{
-                  securityPolicyProjectCreate(input: { fullPath: "#{full_path}" }) {
-                    project {
-                      id
-                      fullPath
-                      branch: repository {
-                        rootRef
-                      }
-                    }
-                    project {
-                    id
-                    name
-                    }
-                    errors
+            mutation{
+              securityPolicyProjectCreate(input: { fullPath: "#{full_path}" }) {
+                project {
+                  id
+                  fullPath
+                  branch: repository {
+                    rootRef
                   }
                 }
+                errors
+              }
+            }
           GQL
+        end
+
+        def unassign_security_policy_project
+          mutation = <<~GQL
+            mutation {
+              securityPolicyProjectUnassign(input: { fullPath: "#{full_path}" }) {
+                errors
+              }
+            }
+          GQL
+          api_post_to(api_get_path, mutation)
         end
 
         def process_api_response(parsed_response)
