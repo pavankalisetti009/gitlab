@@ -19,6 +19,25 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
   subject { described_class.new(project, user, params) }
 
   describe '#execute' do
+    shared_examples_for 'when an error occurs during the software license creation' do
+      context 'when an error occurs during the software license creation' do
+        before do
+          allow(SoftwareLicense).to receive(:create!).and_raise(
+            ActiveRecord::RecordInvalid.new(SoftwareLicense.new.tap do |r|
+              r.errors.add(:base, 'error')
+            end))
+        end
+
+        it 'returns an error' do
+          result
+
+          expect(result[:status]).to be(:error)
+          expect(result[:message]).to be_present
+          expect(result[:http_status]).to be(400)
+        end
+      end
+    end
+
     context 'when valid parameters are specified' do
       context 'when custom_software_license feature flag is disabled' do
         let(:license_name) { 'MIT' }
@@ -63,6 +82,13 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
 
             result
           end
+
+          it 'sets the software license and does not set the custom software license' do
+            result
+
+            expect(result[:software_license_policy].software_license.name).to eq(license_name)
+            expect(result[:software_license_policy].custom_software_license).to be_nil
+          end
         end
 
         context 'when the software license does not exists' do
@@ -76,6 +102,15 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
 
             result
           end
+
+          it 'sets both the software license and custom software license' do
+            result
+
+            expect(result[:software_license_policy].software_license.name).to eq(license_name)
+            expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
+          end
+
+          it_behaves_like 'when an error occurs during the software license creation'
         end
       end
 
@@ -129,6 +164,9 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
               expect(result[:software_license_policy].name).to eq(params[:name])
               expect(result[:software_license_policy].classification).to eq(params[:approval_status])
               expect(result[:software_license_policy].software_license_spdx_identifier).to be_nil
+              expect(result[:software_license_policy].software_license.name).to eq(license_name)
+              expect(result[:software_license_policy].software_license.spdx_identifier).to be_nil
+              expect(result[:software_license_policy].custom_software_license).to be_nil
             end
           end
         end
@@ -142,7 +180,23 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
 
             result
           end
+
+          it 'creates one software license policy correctly' do
+            result
+            expect(project.software_license_policies.count).to be(1)
+            expect(result[:status]).to be(:success)
+            expect(result[:software_license_policy]).to be_present
+            expect(result[:software_license_policy]).to be_persisted
+            expect(result[:software_license_policy].name).to eq(params[:name])
+            expect(result[:software_license_policy].classification).to eq(params[:approval_status])
+            expect(result[:software_license_policy].software_license_spdx_identifier).to be_nil
+            expect(result[:software_license_policy].software_license.name).to eq(license_name)
+            expect(result[:software_license_policy].software_license.spdx_identifier).to be_nil
+            expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
+          end
         end
+
+        it_behaves_like 'when an error occurs during the software license creation'
       end
     end
 
