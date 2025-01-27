@@ -74,8 +74,12 @@ module Ai
           transition running: :paused
         end
 
+        event :require_input do
+          transition running: :input_required
+        end
+
         event :resume do
-          transition paused: :running
+          transition [:paused, :input_required] => :running
         end
 
         event :retry do
@@ -87,11 +91,11 @@ module Ai
         end
 
         event :drop do
-          transition [:created, :running, :paused] => :failed
+          transition [:created, :running, :paused, :input_required] => :failed
         end
 
         event :stop do
-          transition [:created, :running, :paused] => :stopped
+          transition [:created, :running, :paused, :input_required] => :stopped
         end
 
         state :created, value: 0
@@ -100,6 +104,7 @@ module Ai
         state :finished, value: 3
         state :failed, value: 4
         state :stopped, value: 5
+        state :input_required, value: 6
       end
     end
   end
