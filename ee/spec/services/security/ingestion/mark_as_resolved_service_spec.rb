@@ -80,43 +80,28 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           expect(second_vulnerability.reload).to be_resolved_on_default_branch
         end
 
-        context 'when the representation_information feature flag is enabled' do
-          it 'creates a RepresentationInformation record for the resolved vulnerability' do
-            vulnerability = create(
-              :vulnerability,
-              :sast,
-              project: project,
-              present_on_default_branch: true,
-              resolved_on_default_branch: false,
-              findings: [create(:vulnerabilities_finding, :with_pipeline, project: project,
-                scanner: scanner)]
-            )
+        it 'creates a RepresentationInformation record for the resolved vulnerability' do
+          vulnerability = create(
+            :vulnerability,
+            :sast,
+            project: project,
+            present_on_default_branch: true,
+            resolved_on_default_branch: false,
+            findings: [create(:vulnerabilities_finding, :with_pipeline, project: project,
+              scanner: scanner)]
+          )
 
-            command.execute
+          command.execute
 
-            expect(vulnerability.reload).to be_resolved_on_default_branch
-            representation_info = Vulnerabilities::RepresentationInformation
-                                    .find_or_initialize_by(vulnerability_id: vulnerability.id)
-            representation_info.update!(
-              project_id: vulnerability.project_id,
-              resolved_in_commit_sha: vulnerability.findings.first.sha
-            )
-            expect(representation_info.project_id).to eq(vulnerability.project_id)
-            expect(representation_info.resolved_in_commit_sha).to eq(vulnerability.findings.first.sha)
-          end
-        end
-
-        context 'when the representation_information feature flag is disabled' do
-          before do
-            stub_feature_flags(vulnerability_representation_information: false)
-          end
-
-          it 'does not create a RepresentationInformation record for the resolved vulnerability' do
-            command.execute
-
-            expect(vulnerability.reload).to be_resolved_on_default_branch
-            expect(vulnerability.representation_information).to be_nil
-          end
+          expect(vulnerability.reload).to be_resolved_on_default_branch
+          representation_info = Vulnerabilities::RepresentationInformation
+                                  .find_or_initialize_by(vulnerability_id: vulnerability.id)
+          representation_info.update!(
+            project_id: vulnerability.project_id,
+            resolved_in_commit_sha: vulnerability.findings.first.sha
+          )
+          expect(representation_info.project_id).to eq(vulnerability.project_id)
+          expect(representation_info.resolved_in_commit_sha).to eq(vulnerability.findings.first.sha)
         end
       end
 

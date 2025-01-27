@@ -100,7 +100,6 @@ export default {
     },
     isRepresentationInfoAvailable() {
       return (
-        this.glFeatures.vulnerabilityRepresentationInformation &&
         this.vulnerability.resolvedOnDefaultBranch &&
         this.vulnerability.representationInformation?.resolvedInCommitShaLink
       );

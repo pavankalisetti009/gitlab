@@ -66,17 +66,9 @@ describe('Vulnerability Footer', () => {
       },
     });
 
-  const createWrapper = ({
-    properties,
-    queryHandler,
-    mountOptions,
-    vulnerabilityRepresentationFlag = true,
-  } = {}) => {
+  const createWrapper = ({ properties, queryHandler, mountOptions } = {}) => {
     wrapper = shallowMountExtended(VulnerabilityFooter, {
       propsData: { vulnerability: { ...vulnerability, ...properties } },
-      provide: {
-        glFeatures: { vulnerabilityRepresentationInformation: vulnerabilityRepresentationFlag },
-      },
       apolloProvider: createMockApollo([[vulnerabilityDiscussionsQuery, queryHandler]]),
       ...mountOptions,
     });
@@ -378,7 +370,7 @@ describe('Vulnerability Footer', () => {
         expect(statusDescription().exists()).toBe(false);
       });
 
-      it('should show the status description when the vulnerability is resolved on the default branch and there is respresentation information', () => {
+      it('should show the status description when the vulnerability is resolved on the default branch and there is representation information', () => {
         createWrapper({
           properties: {
             pipeline: null,
@@ -407,28 +399,19 @@ describe('Vulnerability Footer', () => {
     });
 
     it.each`
-      representationInformation                  | resolvedOnDefaultBranch | vulnerabilityRepresentationFlag | shouldIncludeRepresentationInfo
-      ${vulnerability.representationInformation} | ${true}                 | ${true}                         | ${true}
-      ${vulnerability.representationInformation} | ${false}                | ${true}                         | ${false}
-      ${null}                                    | ${true}                 | ${true}                         | ${false}
-      ${null}                                    | ${false}                | ${true}                         | ${false}
-      ${vulnerability.representationInformation} | ${true}                 | ${false}                        | ${false}
-      ${vulnerability.representationInformation} | ${false}                | ${false}                        | ${false}
-      ${null}                                    | ${true}                 | ${false}                        | ${false}
+      representationInformation                  | resolvedOnDefaultBranch | shouldIncludeRepresentationInfo
+      ${vulnerability.representationInformation} | ${true}                 | ${true}
+      ${vulnerability.representationInformation} | ${false}                | ${false}
+      ${null}                                    | ${true}                 | ${false}
+      ${null}                                    | ${false}                | ${false}
     `(
-      'shows representation information: "$shouldIncludeRepresentationInfo" when feature flag is "$vulnerabilityRepresentationFlag", resolvedOnDefaultBranch is "$resolvedOnDefaultBranch" and representationInformation is "$representationInformation"',
-      ({
-        resolvedOnDefaultBranch,
-        vulnerabilityRepresentationFlag,
-        representationInformation,
-        shouldIncludeRepresentationInfo,
-      }) => {
+      'shows representation information: "$shouldIncludeRepresentationInfo" when resolvedOnDefaultBranch is "$resolvedOnDefaultBranch" and representationInformation is "$representationInformation"',
+      ({ resolvedOnDefaultBranch, representationInformation, shouldIncludeRepresentationInfo }) => {
         createWrapper({
           properties: {
             resolvedOnDefaultBranch,
             representationInformation,
           },
-          vulnerabilityRepresentationFlag,
         });
 
         expect(Boolean(statusDescription().props('vulnerability').representationInformation)).toBe(

@@ -30,7 +30,7 @@ describe('Vulnerability status description component', () => {
   // Create a date using the passed-in string, or just use the current time if nothing was passed in.
   const createDate = (value) => (value ? new Date(value) : new Date()).toISOString();
 
-  const createWrapper = (props = {}, vulnerabilityRepresentationInformation = true) => {
+  const createWrapper = (props = {}) => {
     const vulnerability = props.vulnerability || { pipeline: {} };
     // Automatically create the ${v.state}_at property if it doesn't exist. Otherwise, every test would need to create
     // it manually for the component to mount properly.
@@ -43,7 +43,6 @@ describe('Vulnerability status description component', () => {
 
     wrapper = mountExtended(StatusDescription, {
       propsData: { ...props, vulnerability },
-      provide: { glFeatures: { vulnerabilityRepresentationInformation } },
     });
   };
 
@@ -288,21 +287,5 @@ describe('Vulnerability status description component', () => {
         expect(commitShaLink().exists()).toBe(false);
       },
     );
-
-    it('does not show the commitShaLink when the "vulnerabilityRepresentationInformation" feature flag is disabled', () => {
-      createWrapper(
-        {
-          vulnerability: {
-            resolvedOnDefaultBranch: true,
-            representationInformation: {
-              resolvedInCommitShaLink: 'https://gitlab.com/gitlab',
-            },
-          },
-        },
-        false,
-      );
-
-      expect(commitShaLink().exists()).toBe(false);
-    });
   });
 });
