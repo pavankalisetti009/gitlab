@@ -131,11 +131,6 @@ module QA
         end
 
         it 'adds/removes issue to/from epic using quick actions',
-          quarantine: {
-            only: { pipeline: %i[staging-canary] },
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/514939',
-            type: :investigating
-          },
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347981' do
           issue.visit!
 
@@ -149,7 +144,7 @@ module QA
 
           if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
             EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-              expect(show).to have_system_note('added issue')
+              expect(show).to have_system_note(/(added)([\w\-# ]+)(issue)/)
               expect(show).to have_system_note('removed issue')
             end
           else
