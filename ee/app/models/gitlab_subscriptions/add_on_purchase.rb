@@ -12,7 +12,8 @@ module GitlabSubscriptions
     belongs_to :add_on, foreign_key: :subscription_add_on_id, inverse_of: :add_on_purchases
     belongs_to :namespace, optional: true
     belongs_to :organization, class_name: 'Organizations::Organization'
-    has_many :assigned_users, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :add_on_purchase
+    has_many :assigned_users, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :add_on_purchase,
+      dependent: :destroy
     has_many :users, through: :assigned_users
 
     validates :add_on, :expires_on, presence: true

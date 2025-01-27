@@ -122,7 +122,7 @@ module EE
 
       has_many :dependency_list_exports, class_name: 'Dependencies::DependencyListExport', inverse_of: :author
 
-      has_many :assigned_add_ons, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :user
+      has_many :assigned_add_ons, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :user, dependent: :destroy
 
       has_many :created_remote_development_namespace_cluster_agent_mappings,
         class_name: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping',

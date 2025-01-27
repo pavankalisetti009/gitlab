@@ -80,7 +80,7 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:namespace_bans).class_name('Namespaces::NamespaceBan') }
     it { is_expected.to have_many(:dependency_list_exports).class_name('Dependencies::DependencyListExport') }
     it { is_expected.to have_many(:elevated_members).class_name('Member') }
-    it { is_expected.to have_many(:assigned_add_ons).class_name('GitlabSubscriptions::UserAddOnAssignment').inverse_of(:user) }
+    it { is_expected.to have_many(:assigned_add_ons).class_name('GitlabSubscriptions::UserAddOnAssignment').inverse_of(:user).dependent(:destroy) }
     it { is_expected.to have_many(:country_access_logs).class_name('Users::CountryAccessLog').inverse_of(:user) }
     it { is_expected.to have_many(:group_saml_identities).class_name('::Identity') }
     it { is_expected.to have_many(:group_saml_providers).through(:group_saml_identities).source(:saml_provider) }
@@ -3924,6 +3924,12 @@ RSpec.describe User, feature_category: :system_access do
       it 'does not check domain verification' do
         expect(::PagesDomain).not_to receive(:verified)
       end
+    end
+  end
+
+  describe '#destroy' do
+    it_behaves_like 'create audits for user add-on assignments' do
+      let(:entity) { user }
     end
   end
 end

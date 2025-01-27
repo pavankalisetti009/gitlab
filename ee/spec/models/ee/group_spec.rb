@@ -4428,4 +4428,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '#destroy' do
+    it_behaves_like 'create audits for user add-on assignments' do
+      let(:entity) { group }
+    end
+  end
 end

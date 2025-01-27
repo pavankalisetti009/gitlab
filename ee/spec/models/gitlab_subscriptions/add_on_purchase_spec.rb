@@ -20,6 +20,11 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       is_expected.to have_many(:assigned_users)
         .class_name('GitlabSubscriptions::UserAddOnAssignment').inverse_of(:add_on_purchase)
     end
+
+    it do
+      is_expected.to have_many(:assigned_users)
+        .dependent(:destroy).class_name('GitlabSubscriptions::UserAddOnAssignment').inverse_of(:add_on_purchase)
+    end
   end
 
   describe 'validations' do
@@ -887,6 +892,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       lock_key = "gitlab_subscriptions/add_on_purchase:user_refresh:#{add_on_purchase.id}"
 
       expect(add_on_purchase.lock_key_for_refreshing_user_assignments).to eq(lock_key)
+    end
+  end
+
+  describe '#destroy' do
+    it_behaves_like 'create audits for user add-on assignments' do
+      let(:entity) { add_on_purchase }
     end
   end
 end
