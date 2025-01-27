@@ -8,6 +8,7 @@
 
 .form-group
   = f.label :remove_dormant_members, _('Dormant members'), class: 'label-bold'
+  = render('shared/beta_badge', style: 'gl-ml-1 gl-mt-1')
   = f.gitlab_ui_checkbox_component :remove_dormant_members,
     _('Remove dormant members after a period of inactivity'),
     help_text: help_text,
