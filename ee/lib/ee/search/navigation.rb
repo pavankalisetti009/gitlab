@@ -45,21 +45,21 @@ module EE
       override :show_code_search_tab?
       def show_code_search_tab?
         return true if super
-        return false unless project.nil?
+        return false if project
 
-        global_search_code_tab_enabled = ::Feature.enabled?(:global_search_code_tab, user, type: :ops)
-        global_search_with_zoekt_enabled = ::Feature.enabled?(:zoekt_cross_namespace_search, user, type: :ops)
+        global_search_code_enabled = ::Feature.enabled?(:global_search_code_tab, user, type: :ops)
+        global_search_zoekt_enabled = ::Feature.enabled?(:zoekt_cross_namespace_search, user, type: :ops)
 
         zoekt_enabled_for_user = zoekt_enabled? && ::Search::Zoekt.enabled_for_user?(user)
 
         if show_elasticsearch_tabs?
-          return true if group.present?
+          return true if group
 
-          return global_search_code_tab_enabled
+          return global_search_code_enabled
         elsif zoekt_enabled_for_user
           return ::Search::Zoekt.search?(group) if group.present?
 
-          return global_search_code_tab_enabled && global_search_with_zoekt_enabled
+          return global_search_code_enabled && global_search_zoekt_enabled
         end
 
         false
@@ -68,7 +68,6 @@ module EE
       override :show_wiki_search_tab?
       def show_wiki_search_tab?
         return true if super
-
         return false if project
         return false unless show_elasticsearch_tabs?
         return true if group
@@ -88,7 +87,7 @@ module EE
       def show_commits_search_tab?
         return true if super # project search & user can search commits
         return false unless show_elasticsearch_tabs? # advanced search enabled
-        return true if group.present? # group search
+        return true if group # group search
 
         ::Feature.enabled?(:global_search_commits_tab, user, type: :ops) # global search
       end
