@@ -45106,6 +45106,7 @@ Attributes for defining a CI/CD variable.
 | ---- | ---- | ----------- |
 | <a id="civariableinputkey"></a>`key` | [`String!`](#string) | Name of the variable. |
 | <a id="civariableinputvalue"></a>`value` | [`String!`](#string) | Value of the variable. |
+| <a id="civariableinputvariabletype"></a>`variableType` | [`CiVariableType`](#civariabletype) | Type of variable. |
 
 ### `CommitAction`
 
