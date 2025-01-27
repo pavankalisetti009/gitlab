@@ -16,6 +16,27 @@ RSpec.describe AuditEventService, :request_store, feature_category: :audit_event
     allow(Gitlab::RequestContext.instance).to receive(:client_ip).and_return(request_ip_address)
   end
 
+  describe '#initialize' do
+    context 'when scope is valid' do
+      let(:entity) { Gitlab::Audit::InstanceScope.new }
+
+      it 'initializes without error' do
+        expect { described_class.new(user, entity) }.not_to raise_error
+      end
+    end
+
+    context 'with invalid scope' do
+      let(:entity) { create(:user_namespace) }
+
+      it 'raises ArgumentError' do
+        expect { described_class.new(user, entity) }.to raise_error(
+          ArgumentError,
+          "Invalid scope class: Namespaces::UserNamespace"
+        )
+      end
+    end
+  end
+
   describe '#for_member' do
     let(:event) { service.for_member(project_member).security_event }
     let(:event_details) { event[:details] }
