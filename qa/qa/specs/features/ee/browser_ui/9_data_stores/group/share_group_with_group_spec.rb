@@ -31,6 +31,7 @@ module QA
         Flow::Login.sign_in(as: maintainer_user)
 
         Page::Dashboard::Projects.perform do |projects|
+          projects.click_member_tab
           expect(projects).to have_filtered_project_with_access_role(project.name, "Guest")
         end
       end
