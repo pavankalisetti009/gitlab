@@ -1845,6 +1845,13 @@ end
 RSpec.shared_examples 'scan skipped when a commit has special bypass flag' do
   include_context 'secrets check context'
 
+  def generate_test_comparison_path(from_commit, to_commit)
+    ::Gitlab::Utils.append_path(
+      ::Gitlab::Routing.url_helpers.root_url,
+      ::Gitlab::Routing.url_helpers.project_compare_path(project, from: from_commit, to: to_commit)
+    )
+  end
+
   let_it_be(:new_commit) do
     create_commit(
       { '.env' => 'SECRET=glpat-JUST20LETTERSANDNUMB' }, # gitleaks:allow
@@ -1871,12 +1878,57 @@ RSpec.shared_examples 'scan skipped when a commit has special bypass flag' do
     it 'skips the scanning process still' do
       expect { subject.validate! }.not_to raise_error
     end
+
+    it 'generates compare link with oldrev from first commit and newrev from last commit' do
+      test_comparison_path = generate_test_comparison_path(initial_commit, second_commit_with_secret)
+      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
+      expect(AuditEvent.last.details[:target_details])
+        .to eq(test_comparison_path)
+    end
+  end
+
+  context 'when this is the initial commit on a new branch' do
+    let(:changes) do
+      [
+        { newrev: new_commit, ref: 'refs/heads/newbranch' }
+      ]
+    end
+
+    it 'skips the scanning process still' do
+      expect { subject.validate! }.not_to raise_error
+    end
+
+    it 'returns project name in target_details of the AuditEvent' do
+      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
+      expect(AuditEvent.last.details[:target_details])
+        .to eq(project.name)
+    end
+  end
+
+  context 'when this commit is deleting the branch' do
+    let(:changes) do
+      [
+        { oldrev: new_commit, newrev: Gitlab::Git::SHA1_BLANK_SHA, ref: 'refs/heads/deleteme' }
+      ]
+    end
+
+    it 'skips the scanning process still' do
+      expect { subject.validate! }.not_to raise_error
+    end
+
+    it 'does not create an AuditEvent' do
+      expect { subject.validate! }.not_to change { AuditEvent.count }.from(0)
+    end
   end
 
   it 'creates an audit event' do
+    test_comparison_path = generate_test_comparison_path(initial_commit, new_commit)
     expect { subject.validate! }.to change { AuditEvent.count }.by(1)
     expect(AuditEvent.last.details[:custom_message])
       .to eq("Secret push protection skipped via commit message on branch master")
+
+    expect(AuditEvent.last.details[:target_details])
+      .to eq(test_comparison_path)
   end
 
   it_behaves_like 'internal event tracking' do
@@ -1890,6 +1942,13 @@ end
 
 RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push option is passed' do
   include_context 'secrets check context'
+
+  def generate_test_comparison_path(from_commit, to_commit)
+    ::Gitlab::Utils.append_path(
+      ::Gitlab::Routing.url_helpers.root_url,
+      ::Gitlab::Routing.url_helpers.project_compare_path(project, from: from_commit, to: to_commit)
+    )
+  end
 
   let(:changes_access) do
     ::Gitlab::Checks::ChangesAccess.new(
@@ -1929,12 +1988,57 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
     it 'skips the scanning process still' do
       expect { subject.validate! }.not_to raise_error
     end
+
+    it 'generates compare link with oldrev from first commit and newrev from last commit' do
+      test_comparison_path = generate_test_comparison_path(initial_commit, second_commit_with_secret)
+      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
+      expect(AuditEvent.last.details[:target_details])
+        .to eq(test_comparison_path)
+    end
+  end
+
+  context 'when this is the initial commit on a new branch' do
+    let(:changes) do
+      [
+        { newrev: new_commit, ref: 'refs/heads/newbranch' }
+      ]
+    end
+
+    it 'skips the scanning process still' do
+      expect { subject.validate! }.not_to raise_error
+    end
+
+    it 'returns project name in target_details of the AuditEvent' do
+      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
+      expect(AuditEvent.last.details[:target_details])
+        .to eq(project.name)
+    end
+  end
+
+  context 'when this commit is deleting the branch' do
+    let(:changes) do
+      [
+        { oldrev: new_commit, newrev: Gitlab::Git::SHA1_BLANK_SHA, ref: 'refs/heads/deleteme' }
+      ]
+    end
+
+    it 'skips the scanning process still' do
+      expect { subject.validate! }.not_to raise_error
+    end
+
+    it 'does not create an AuditEvent' do
+      expect { subject.validate! }.not_to change { AuditEvent.count }.from(0)
+    end
   end
 
   it 'creates an audit event' do
+    test_comparison_path = generate_test_comparison_path(initial_commit, new_commit)
     expect { subject.validate! }.to change { AuditEvent.count }.by(1)
     expect(AuditEvent.last.details[:custom_message])
       .to eq("Secret push protection skipped via push option on branch master")
+
+    expect(AuditEvent.last.details[:target_details])
+      .to eq(test_comparison_path)
   end
 
   it_behaves_like 'internal event tracking' do
