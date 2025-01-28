@@ -101,14 +101,18 @@ module ConstructSecurityPolicies
 
   def approvers(policy)
     Security::SecurityOrchestrationPolicies::FetchPolicyApproversService
-      .new(policy: policy, container: object, current_user: current_user)
+      .new(policy: policy, container: container, current_user: current_user)
       .execute
   end
 
   def policy_scope(scope_yaml)
     Security::SecurityOrchestrationPolicies::PolicyScopeFetcher
-      .new(policy_scope: scope_yaml, container: object, current_user: current_user)
+      .new(policy_scope: scope_yaml, container: container, current_user: current_user)
       .execute
+  end
+
+  def container
+    object
   end
 
   def edit_path(policy, type)

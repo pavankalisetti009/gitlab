@@ -37,6 +37,12 @@ module Types
         null: false,
         description: 'Timestamp of when the member role was created.'
 
+      field :dependent_security_policies,
+        [::Types::SecurityOrchestration::ApprovalPolicyType],
+        null: true,
+        description: 'Array of security policies dependent on the custom role.',
+        resolver: ::Resolvers::Members::ApprovalPolicyResolver
+
       def members_count
         return object.members_count if object.respond_to?(:members_count)
 

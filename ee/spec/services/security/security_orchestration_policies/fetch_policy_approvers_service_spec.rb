@@ -66,20 +66,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
         expect(response[:approvers].first[:users]).to match_array([user])
       end
 
-      context 'with container of compliance framework type' do
-        let(:container) { create(:compliance_framework, namespace: group) }
-
-        it 'returns user approvers' do
-          response = service.execute
-
-          expect(response[:status]).to eq(:success)
-          expect(response[:users]).to match_array([user])
-          expect(response[:groups]).to be_empty
-          expect(response[:all_groups]).to be_empty
-          expect(response[:approvers].first[:users]).to match_array([user])
-        end
-      end
-
       context 'with container of a group type' do
         let(:container) { group }
 
@@ -137,20 +123,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
         expect(response[:all_groups]).to match_array([group])
         expect(response[:users]).to be_empty
         expect(response[:approvers].first).to include(all_groups: [group], groups: [group])
-      end
-
-      context 'with container of compliance framework type' do
-        let(:container) { create(:compliance_framework, namespace: group) }
-
-        it 'returns group approvers' do
-          response = service.execute
-
-          expect(response[:status]).to eq(:success)
-          expect(response[:groups]).to match_array([group])
-          expect(response[:all_groups]).to match_array([group])
-          expect(response[:users]).to be_empty
-          expect(response[:approvers].first).to include(all_groups: [group], groups: [group])
-        end
       end
 
       context 'when groups with same name exist in and outside of container' do

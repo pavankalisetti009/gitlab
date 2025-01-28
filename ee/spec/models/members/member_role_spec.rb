@@ -480,6 +480,78 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     end
   end
 
+  describe '#dependent_security_policies' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:member_role) { create(:member_role, namespace: namespace) }
+    let_it_be(:policy_configuration) do
+      create(:security_orchestration_policy_configuration, namespace: namespace, project: nil)
+    end
+
+    let_it_be(:security_policy_without_member_role) do
+      create(:security_policy)
+    end
+
+    let_it_be(:security_policy_for_namespace) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: policy_configuration,
+        content: { actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [member_role.id] }] })
+    end
+
+    let_it_be(:security_policy_for_other_namespace) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: create(:security_orchestration_policy_configuration),
+        content: { actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [member_role.id] }] })
+    end
+
+    subject(:dependent_security_policies) { member_role.dependent_security_policies }
+
+    context 'when not on GitLab.com' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it 'returns all policies with custom role' do
+        is_expected.to contain_exactly(security_policy_for_namespace, security_policy_for_other_namespace)
+      end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it 'returns no policies' do
+          is_expected.to be_empty
+        end
+      end
+    end
+
+    context 'when on GitLab.com' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+        stub_licensed_features(security_orchestration_policies: true)
+
+        allow_next_found_instances_of(Security::OrchestrationPolicyConfiguration, 2) do |configuration|
+          allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
+        end
+      end
+
+      it 'returns policies for namespace with custom role' do
+        is_expected.to contain_exactly(security_policy_for_namespace)
+      end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it 'returns no policies' do
+          is_expected.to be_empty
+        end
+      end
+    end
+  end
+
   shared_examples 'ability with the correct `available_from_access_level` attribute' do |policy_class|
     where(:role, :level) { Gitlab::Access.sym_options_with_owner.to_a }
 

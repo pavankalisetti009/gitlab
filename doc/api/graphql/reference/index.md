@@ -19225,6 +19225,7 @@ Represents an admin member role.
 | ---- | ---- | ----------- |
 | <a id="adminmemberrolebaseaccesslevel"></a>`baseAccessLevel` **{warning-solid}** | [`AccessLevel!`](#accesslevel) | **Introduced** in GitLab 16.5. **Status**: Experiment. Base access level for the custom role. |
 | <a id="adminmemberrolecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the member role was created. |
+| <a id="adminmemberroledependentsecuritypolicies"></a>`dependentSecurityPolicies` | [`[ApprovalPolicy!]`](#approvalpolicy) | Array of security policies dependent on the custom role. |
 | <a id="adminmemberroledescription"></a>`description` | [`String`](#string) | Role description. |
 | <a id="adminmemberroledetailspath"></a>`detailsPath` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.4. **Status**: Experiment. URL path to the role details webpage. |
 | <a id="adminmemberroleeditpath"></a>`editPath` **{warning-solid}** | [`String!`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Web UI path to edit the custom role. |
@@ -28308,6 +28309,7 @@ Represents a member role.
 | ---- | ---- | ----------- |
 | <a id="memberrolebaseaccesslevel"></a>`baseAccessLevel` **{warning-solid}** | [`AccessLevel!`](#accesslevel) | **Introduced** in GitLab 16.5. **Status**: Experiment. Base access level for the custom role. |
 | <a id="memberrolecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the member role was created. |
+| <a id="memberroledependentsecuritypolicies"></a>`dependentSecurityPolicies` | [`[ApprovalPolicy!]`](#approvalpolicy) | Array of security policies dependent on the custom role. |
 | <a id="memberroledescription"></a>`description` | [`String`](#string) | Role description. |
 | <a id="memberroledetailspath"></a>`detailsPath` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.4. **Status**: Experiment. URL path to the role details webpage. |
 | <a id="memberroleeditpath"></a>`editPath` **{warning-solid}** | [`String!`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Web UI path to edit the custom role. |
