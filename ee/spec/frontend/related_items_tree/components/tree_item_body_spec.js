@@ -246,9 +246,8 @@ describe('RelatedItemsTree', () => {
             item: { ...mockItem, state: STATUS_OPEN },
           });
 
-          expect(findIssueIcon().attributes('class')).toContain(
-            'issue-token-state-icon-open gl-fill-icon-success',
-          );
+          expect(findIssueIcon().attributes('class')).toContain('issue-token-state-icon');
+          expect(findIssueIcon().attributes('variant')).toBe('success');
         });
 
         it('applies correct icon styling when `item.blocked` value is `true`', () => {
@@ -256,7 +255,7 @@ describe('RelatedItemsTree', () => {
             item: { ...mockItem, blocked: true },
           });
 
-          expect(findIssueIcon().attributes('class')).toContain('gl-text-red-500');
+          expect(findIssueIcon().attributes('variant')).toBe('danger');
         });
 
         it('applies correct icon styling when `item.state` value is `closed`', () => {
@@ -264,9 +263,8 @@ describe('RelatedItemsTree', () => {
             item: { ...mockItem, state: STATUS_CLOSED },
           });
 
-          expect(findIssueIcon().attributes('class')).toContain(
-            'issue-token-state-icon-closed gl-fill-icon-info',
-          );
+          expect(findIssueIcon().attributes('class')).toContain('issue-token-state-icon');
+          expect(findIssueIcon().attributes('variant')).toBe('info');
         });
       });
 
