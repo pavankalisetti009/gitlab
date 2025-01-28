@@ -110,8 +110,14 @@ RSpec.describe SearchService, feature_category: :global_search do
     let(:search) { 'foobar' }
 
     where(:scope, :feature_flag, :enabled, :expected) do
+      'blobs'          | :global_search_code_tab           | false | false
+      'blobs'          | :global_search_code_tab           | true  | true
+      'commits'        | :global_search_commits_tab        | false | false
+      'commits'        | :global_search_commits_tab        | true  | true
       'epics'          | :global_search_epics_tab          | false | false
       'epics'          | :global_search_epics_tab          | true  | true
+      'wiki_blobs'     | :global_search_wiki_tab           | false | false
+      'wiki_blobs'     | :global_search_wiki_tab           | true  | true
     end
 
     with_them do
