@@ -205,10 +205,7 @@ RSpec.describe InstanceSecurityDashboard, feature_category: :vulnerability_manag
 
     context 'when the user cannot read all resources' do
       it 'returns only vulnerability scanners from projects on their dashboard that they can read' do
-        temp_result_variable = subject.vulnerability_historical_statistics
-                                      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140')
-
-        expect(temp_result_variable).to contain_exactly(vulnerability_historical_statistic_1)
+        expect(subject.vulnerability_historical_statistics).to contain_exactly(vulnerability_historical_statistic_1)
       end
     end
 
@@ -216,10 +213,7 @@ RSpec.describe InstanceSecurityDashboard, feature_category: :vulnerability_manag
       let(:user) { create(:auditor) }
 
       it "returns vulnerability scanners from all projects on the user's dashboard" do
-        temp_result_variable = subject.vulnerability_historical_statistics
-                                      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140')
-
-        expect(temp_result_variable).to contain_exactly(vulnerability_historical_statistic_1, vulnerability_historical_statistic_2)
+        expect(subject.vulnerability_historical_statistics).to contain_exactly(vulnerability_historical_statistic_1, vulnerability_historical_statistic_2)
       end
     end
   end
