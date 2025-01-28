@@ -34,7 +34,8 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
           inherited: false,
           namespace: nil,
           project: project
-        }
+        },
+        warnings: []
       }
     ]
   end
@@ -59,6 +60,27 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
           expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq(
             "/#{content[:project]}/-/blob/#{content[:ref]}/#{content[:file]}"
           )
+        end
+
+        it 'does not include warning message' do
+          expect(resolve_scan_policies[0][:warnings]).to be_empty
+        end
+      end
+
+      context 'when referenced project does not exist' do
+        before do
+          allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(nil)
+        end
+
+        let(:content) { { project: 'not_existing_project', file: 'not-existing.yml', ref: 'v1.0.0' } }
+
+        it 'returns an empty string' do
+          expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq("")
+        end
+
+        it 'includes warning message' do
+          expect(resolve_scan_policies[0][:warnings]).to include(
+            'The policy is associated with a non-existing Pipeline configuration file.')
         end
       end
     end

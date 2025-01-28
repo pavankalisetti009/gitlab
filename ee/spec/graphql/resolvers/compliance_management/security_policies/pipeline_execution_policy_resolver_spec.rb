@@ -65,7 +65,8 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
               project: project,
               namespace: nil,
               inherited: false
-            }
+            },
+            warnings: []
           }
         ]
       end

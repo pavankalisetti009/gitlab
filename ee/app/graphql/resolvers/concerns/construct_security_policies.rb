@@ -30,11 +30,12 @@ module ConstructSecurityPolicies
 
   def construct_pipeline_execution_policies(policies)
     policies.map do |policy|
+      warnings = []
       {
         name: policy[:name],
         description: policy[:description],
         edit_path: edit_path(policy, :pipeline_execution_policy),
-        policy_blob_file_path: policy_blob_file_path(policy),
+        policy_blob_file_path: policy_blob_file_path(policy, warnings),
         enabled: policy[:enabled],
         policy_scope: policy_scope(policy[:policy_scope]),
         yaml: YAML.dump(
@@ -46,7 +47,8 @@ module ConstructSecurityPolicies
           project: policy[:project],
           namespace: policy[:namespace],
           inherited: policy[:inherited]
-        }
+        },
+        warnings: warnings
       }
     end
   end
@@ -128,11 +130,21 @@ module ConstructSecurityPolicies
     end
   end
 
-  def policy_blob_file_path(policy)
+  def policy_blob_file_path(policy, warnings)
+    project = pipeline_execution_policy_content_project(policy)
+    if project
+      content_include = policy.dig(:content, :include, 0)
+      file = content_include[:file]
+      ref = content_include[:ref] || project.default_branch_or_main
+      Gitlab::Routing.url_helpers.project_blob_path(project, File.join(ref, file))
+    else
+      warnings << _('The policy is associated with a non-existing Pipeline configuration file.')
+      ""
+    end
+  end
+
+  def pipeline_execution_policy_content_project(policy)
     content_include = policy.dig(:content, :include, 0)
-    project = Project.find_by_full_path(content_include[:project])
-    file = content_include[:file]
-    ref = content_include[:ref] || project.default_branch_or_main
-    Gitlab::Routing.url_helpers.project_blob_path(project, File.join(ref, file))
+    Project.find_by_full_path(content_include[:project])
   end
 end
