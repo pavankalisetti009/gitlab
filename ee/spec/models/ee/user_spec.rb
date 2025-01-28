@@ -294,8 +294,8 @@ RSpec.describe User, feature_category: :system_access do
 
     describe '.guests_with_elevating_role' do
       let(:group) { create(:group) }
-      let(:member_role_elevating) { create(:member_role, :guest, :admin_vulnerability, namespace: group) }
-      let(:member_role_basic) { create(:member_role, :guest, :read_code, namespace: group) }
+      let(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
+      let(:member_role_basic) { create(:member_role, :non_billable, namespace: group) }
       let(:expected_user) { create(:group_member, :guest, source: group, member_role: member_role_elevating).user }
 
       before do
@@ -1319,8 +1319,8 @@ RSpec.describe User, feature_category: :system_access do
     let_it_be(:project_reporter_user) { create(:project_member, :reporter).user }
     let_it_be(:project_guest_user) { create(:project_member, :guest).user }
     let_it_be(:group) { create(:group) }
-    let_it_be(:member_role_elevating) { create(:member_role, :guest, :admin_vulnerability, namespace: group) }
-    let_it_be(:member_role_basic) { create(:member_role, :guest, :read_code, namespace: group) }
+    let_it_be(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
+    let_it_be(:member_role_basic) { create(:member_role, :non_billable, namespace: group) }
     let_it_be(:guest_with_elevated_role) { create(:group_member, :guest, source: group, member_role: member_role_elevating).user }
     let_it_be(:guest_without_elevated_role) { create(:group_member, :guest, source: group, member_role: member_role_basic).user }
     let_it_be(:users_select) { 'SELECT "users".* FROM "users"' }
@@ -1405,8 +1405,8 @@ RSpec.describe User, feature_category: :system_access do
   end
 
   describe '.non_billable_users_for_billable_management' do
-    let_it_be(:non_billable_role) { create(:member_role, :guest, :instance, read_code: true) }
-    let_it_be(:billable_role) { create(:member_role, :guest, :instance, read_vulnerability: true) }
+    let_it_be(:non_billable_role) { create(:member_role, :non_billable, :instance) }
+    let_it_be(:billable_role) { create(:member_role, :billable, :instance) }
 
     let_it_be(:billable_member) do
       create(:group_member, access_level: Gitlab::Access::DEVELOPER)

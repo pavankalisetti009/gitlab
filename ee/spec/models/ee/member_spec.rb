@@ -795,8 +795,8 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
   describe '.elevated_guests scope' do
     let(:group) { create(:group) }
-    let(:member_role_elevating) { create(:member_role, :guest, :admin_vulnerability, namespace: group) }
-    let(:member_role_basic) { create(:member_role, :guest, :read_code, namespace: group) }
+    let(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
+    let(:member_role_basic) { create(:member_role, :non_billable, namespace: group) }
 
     let!(:member1) { create(:group_member, :developer, source: group) }
     let!(:member2) { create(:group_member, :guest, source: group, member_role: member_role_elevating) }
@@ -811,8 +811,8 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
   describe '.with_elevated_guests scope' do
     let(:group) { create(:group) }
-    let(:member_role_elevating) { create(:member_role, :guest, :admin_vulnerability, namespace: group) }
-    let(:member_role_basic) { create(:member_role, :guest, :read_code, namespace: group) }
+    let(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
+    let(:member_role_basic) { create(:member_role, :non_billable, namespace: group) }
 
     let!(:member1) { create(:group_member, :developer, source: group) }
     let!(:member2) { create(:group_member, :guest, source: group, member_role: member_role_elevating) }

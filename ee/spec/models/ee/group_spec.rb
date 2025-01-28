@@ -1412,7 +1412,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
 
     context 'with member roles' do
-      let_it_be(:member_role_elevating) { create(:member_role, :guest, :admin_vulnerability, namespace: group) }
+      let_it_be(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
       let_it_be(:guest_with_role) { create(:group_member, :guest, source: group, member_role: member_role_elevating).user }
 
       it 'includes guests with elevating role assigned' do
