@@ -89,7 +89,7 @@ export default {
 
 <template>
   <div v-if="shouldShowSeatControlSection">
-    <gl-form-group :label="s__('ApplicationSettings|Seat controls')" label-for="seat-controls">
+    <gl-form-group :label="s__('ApplicationSettings|Seat controls')">
       <gl-form-radio-group
         :checked="seatControl"
         name="application_setting[seat_control]"
@@ -106,7 +106,11 @@ export default {
           }}</template>
         </gl-form-radio>
 
-        <gl-form-radio :value="$options.SEAT_CONTROL.USER_CAP" data-testid="seat-controls-user-cap">
+        <gl-form-radio
+          :value="$options.SEAT_CONTROL.USER_CAP"
+          data-testid="seat-controls-user-cap"
+          aria-controls="user-cap-input-group"
+        >
           {{ s__('ApplicationSettings|Set user cap') }}
           <template #help>{{
             s__(
@@ -116,7 +120,7 @@ export default {
         </gl-form-radio>
 
         <div class="gl-ml-6 gl-mt-3">
-          <gl-form-group data-testid="user-cap-group">
+          <gl-form-group id="user-cap-input-group" data-testid="user-cap-group">
             <gl-form-input
               v-model="userCap"
               type="text"
