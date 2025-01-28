@@ -1,7 +1,14 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapGetters, mapActions } from 'vuex';
-import { getDurationOverviewChartData, getDurationChartData } from '../../utils';
+import { mapState, mapGetters } from 'vuex';
+import { __ } from '~/locale';
+import { getDurationChart } from 'ee/api/analytics_api';
+import {
+  getDurationOverviewChartData,
+  getDurationChartData,
+  checkForDataError,
+  alertErrorIfStatusNotOk,
+} from '../../utils';
 import OverviewChart from './overview_chart.vue';
 import StageChart from './stage_chart.vue';
 
@@ -11,10 +18,22 @@ export default {
     OverviewChart,
     StageChart,
   },
+  data() {
+    return {
+      isLoading: false,
+      durationData: [],
+      errorMessage: '',
+    };
+  },
   computed: {
     ...mapState(['selectedStage', 'createdAfter', 'createdBefore']),
-    ...mapGetters(['isOverviewStageSelected']),
-    ...mapState('durationChart', ['durationData', 'isLoading', 'errorMessage']),
+    ...mapGetters([
+      'isOverviewStageSelected',
+      'activeStages',
+      'cycleAnalyticsRequestParams',
+      'namespaceRestApiRequestPath',
+      'currentValueStreamId',
+    ]),
     hasPlottableData() {
       return this.durationData.some(({ data }) => data.length);
     },
@@ -39,7 +58,37 @@ export default {
     this.fetchDurationData();
   },
   methods: {
-    ...mapActions('durationChart', ['fetchDurationData']),
+    fetchDurationData() {
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      Promise.all(
+        this.activeStages.map(({ id, name }) => {
+          return getDurationChart({
+            stageId: id,
+            namespacePath: this.namespaceRestApiRequestPath,
+            valueStreamId: this.currentValueStreamId,
+            params: this.cycleAnalyticsRequestParams,
+          })
+            .then(checkForDataError)
+            .then(({ data }) => ({ id, name, selected: true, data }));
+        }),
+      )
+        .then((data) => {
+          this.durationData = data;
+        })
+        .catch((error) => {
+          this.durationData = [];
+          this.errorMessage = error.message;
+          alertErrorIfStatusNotOk({
+            error,
+            message: __('There was an error while fetching value stream analytics duration data.'),
+          });
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
   },
 };
 </script>
