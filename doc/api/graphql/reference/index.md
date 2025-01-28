@@ -21105,6 +21105,18 @@ CI/CD variables given to a manual job.
 | <a id="ciminutesprojectmonthlyusageproject"></a>`project` | [`Project`](#project) | Project having the recorded usage. |
 | <a id="ciminutesprojectmonthlyusagesharedrunnersduration"></a>`sharedRunnersDuration` | [`Int`](#int) | Total duration (in seconds) of shared runners use by the project for the month. |
 
+### `CiPipelineCreationRequest`
+
+Information about an asynchronous pipeline creation request.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cipipelinecreationrequesterror"></a>`error` | [`String`](#string) | Error message if pipeline creation failed. |
+| <a id="cipipelinecreationrequestpipelineid"></a>`pipelineId` | [`CiPipelineID`](#cipipelineid) | ID of the created pipeline if creation was successful. |
+| <a id="cipipelinecreationrequeststatus"></a>`status` | [`CiPipelineCreationStatus!`](#cipipelinecreationstatus) | Current status of the pipeline creation. |
+
 ### `CiProjectSubscription`
 
 #### Fields
@@ -32629,6 +32641,22 @@ Returns [`[CiConfigVariable!]`](#ciconfigvariable).
 | ---- | ---- | ----------- |
 | <a id="projectciconfigvariablesref"></a>`ref` | [`String!`](#string) | Ref. |
 
+##### `Project.ciPipelineCreationRequest`
+
+Get information about an asynchronous pipeline creation request.
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Returns [`CiPipelineCreationRequest`](#cipipelinecreationrequest).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectcipipelinecreationrequestrequestid"></a>`requestId` | [`String!`](#string) | ID of the pipeline creation request. |
+
 ##### `Project.ciTemplate`
 
 Find a single CI/CD template by name.
@@ -39457,6 +39485,16 @@ Ci Pipeline Ci sources enum.
 | <a id="cipipelinecisourcestrigger"></a>`TRIGGER` | Pipeline created by a trigger event. |
 | <a id="cipipelinecisourcesunknown"></a>`UNKNOWN` | Pipeline created by an unknown event. |
 | <a id="cipipelinecisourcesweb"></a>`WEB` | Pipeline created by a web event. |
+
+### `CiPipelineCreationStatus`
+
+The status of a pipeline creation.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="cipipelinecreationstatusfailed"></a>`FAILED` | The pipeline creation is failed. |
+| <a id="cipipelinecreationstatusin_progress"></a>`IN_PROGRESS` | The pipeline creation is in progress. |
+| <a id="cipipelinecreationstatussucceeded"></a>`SUCCEEDED` | The pipeline creation is succeeded. |
 
 ### `CiRunnerAccessLevel`
 
