@@ -39,6 +39,10 @@ export const FETCH_EXPORT_ERROR_MESSAGE = s__(
   'Dependencies|Error exporting the dependency list. Please reload the page.',
 );
 
+export const EXPORT_STARTED_MESSAGE = s__(
+  'Dependencies|Report export in progress. After the report is generated, an email will be sent with the download link.',
+);
+
 export const DEPENDENCIES_FILENAME = 'dependencies.json';
 export const DEPENDENCIES_CSV_FILENAME = 'dependencies.csv';
 

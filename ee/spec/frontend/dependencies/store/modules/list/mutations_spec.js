@@ -27,6 +27,14 @@ describe('Dependencies mutations', () => {
     });
   });
 
+  describe(types.SET_ASYNC_EXPORT, () => {
+    it('sets if async export is enabled', () => {
+      mutations[types.SET_ASYNC_EXPORT](state, true);
+
+      expect(state.asyncExport).toBe(true);
+    });
+  });
+
   describe(types.SET_FETCHING_IN_PROGRESS, () => {
     it('sets if export is being fetched', () => {
       mutations[types.SET_FETCHING_IN_PROGRESS](state, true);

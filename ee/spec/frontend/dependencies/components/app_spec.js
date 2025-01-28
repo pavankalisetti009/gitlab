@@ -36,6 +36,10 @@ describe('DependenciesApp component', () => {
     vulnerabilitiesEndpoint: `/vulnerabilities`,
     latestSuccessfulScanPath: '/group/project/-/pipelines/1',
     scanFinishedAt: getDateInPast(new Date(), 7),
+    glFeatures: {
+      asynchronousDependencyExportDeliveryForProjects: true,
+      asynchronousDependencyExportDeliveryForGroups: true,
+    },
   };
 
   const basicProps = {
@@ -132,6 +136,7 @@ describe('DependenciesApp component', () => {
         ['setNamespaceType', basicAppProvides.namespaceType],
         ['setPageInfo', expect.anything()],
         ['setSortField', 'severity'],
+        ['setAsyncExport', true],
       ]);
     });
 
