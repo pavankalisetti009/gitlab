@@ -23,18 +23,15 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
   end
 
   describe '.set_secondary_as_primary' do
-    let_it_be(:primary) { create(:geo_node, :primary, name: Gitlab.config.geo.node_name) }
-
+    let!(:primary) { create(:geo_node, :primary) }
     let!(:secondary) { create(:geo_node) }
-
-    let(:execute) do
-      Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
-        subject.set_secondary_as_primary
-      end
-    end
 
     before do
       allow(GeoNode).to receive(:current_node).and_return(secondary)
+      allow_next_instance_of(Gitlab::Geo::CronManager) do |cron_manager|
+        allow(cron_manager).to receive(:enable_all_jobs!).and_return(true)
+      end
+      allow(Gitlab::SidekiqConfig::CronJobInitializer).to receive(:execute).and_return(true)
     end
 
     it 'aborts if the primary node is not set' do
@@ -42,7 +39,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).to receive(:abort).with('The primary Geo site is not set').and_raise('aborted')
 
-      expect { execute }.to raise_error('aborted')
+      expect { subject.set_secondary_as_primary }.to raise_error('aborted')
     end
 
     context 'without secondary geo node' do
@@ -51,7 +48,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       it 'aborts if current node is not identified' do
         expect(subject).to receive(:abort).with('Current node is not identified').and_raise('aborted')
 
-        expect { execute }.to raise_error('aborted')
+        expect { subject.set_secondary_as_primary }.to raise_error('aborted')
       end
     end
 
@@ -61,7 +58,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).not_to receive(:abort)
 
-      expect { execute }.to output(/#{secondary.url} is already the primary Geo site/).to_stdout
+      expect { subject.set_secondary_as_primary }.to output(/#{secondary.url} is already the primary Geo site/).to_stdout
       expect(secondary.reload).to be_primary
       expect(primary.reload).to be_secondary
     end
@@ -69,7 +66,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
     it 'sets the secondary as the primary node' do
       expect(subject).not_to receive(:abort)
 
-      expect { execute }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
+      expect { subject.set_secondary_as_primary }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
       expect(secondary.reload).to be_primary
     end
 
@@ -78,48 +75,23 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).not_to receive(:abort)
 
-      expect { execute }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
+      expect { subject.set_secondary_as_primary }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
       expect(secondary.reload).to be_primary
       expect(secondary.reload).to be_enabled
     end
 
-    it 'loads configuration for all cron jobs' do
-      expect(Sidekiq::Cron::Job).to receive(:load_from_hash!).and_call_original
-
-      execute
-    end
-
     it 'enables all cron jobs' do
-      cronjob1 = instance_double(Sidekiq::Cron::Job, enabled?: false, name: 'laser', disabled?: true)
-      cronjob2 = instance_double(Sidekiq::Cron::Job, enabled?: false, name: 'void', disabled?: true)
-      allow(Sidekiq::Cron::Job).to receive(:all).and_return([cronjob1, cronjob2])
-      allow(Sidekiq::Cron::Job).to receive(:load_from_hash!)
-      expect(cronjob1).to receive(:enable!)
-      expect(cronjob2).to receive(:enable!)
+      expect_next_instance_of(Gitlab::Geo::CronManager) do |cron_manager|
+        expect(cron_manager).to receive(:enable_all_jobs!).and_return(true)
+      end
 
-      execute
+      subject.set_secondary_as_primary
     end
 
-    context 'when EE files are available', if: Gitlab.ee? do
-      it 'configures mirror and geo cron jobs' do
-        expect(Gitlab::Mirror).to receive(:configure_cron_job!)
-        expect(Gitlab::Geo).to receive(:configure_cron_jobs!)
+    it 'executes Gitlab::SidekiqConfig::CronJobInitializer' do
+      expect(Gitlab::SidekiqConfig::CronJobInitializer).to receive(:execute).and_return(true)
 
-        execute
-      end
-
-      context 'for FOSS' do
-        before do
-          allow(GitlabEdition).to receive(:ee?).and_return(false)
-        end
-
-        it 'does not configure mirror and geo cron jobs' do
-          expect(Gitlab::Mirror).not_to receive(:configure_cron_job!)
-          expect(Gitlab::Geo).not_to receive(:configure_cron_jobs!)
-
-          execute
-        end
-      end
+      subject.set_secondary_as_primary
     end
   end
 

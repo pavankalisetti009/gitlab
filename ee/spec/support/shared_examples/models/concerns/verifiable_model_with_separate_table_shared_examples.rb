@@ -110,7 +110,7 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
 
       context 'when all conditions are met for saving verification' do
         before do
-          stub_primary_site
+          stub_current_geo_node(primary)
           stub_dummy_verification_feature_flag(replicator_class: replicator_class.name)
         end
 
