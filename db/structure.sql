@@ -21128,6 +21128,17 @@ CREATE TABLE project_settings (
     CONSTRAINT check_f9df7bcee2 CHECK ((char_length(cube_api_base_url) <= 512))
 );
 
+CREATE VIEW project_snippets_routes_view AS
+ SELECT sn.id,
+    sh.name AS repository_storage,
+    sr.disk_path,
+    r.path AS path_with_namespace,
+    r.name AS name_with_namespace
+   FROM (((snippets sn
+     JOIN snippet_repositories sr ON (((sn.id = sr.snippet_id) AND ((sn.type)::text = 'ProjectSnippet'::text))))
+     JOIN shards sh ON ((sr.shard_id = sh.id)))
+     JOIN routes r ON (((r.source_id = sn.project_id) AND ((r.source_type)::text = 'Project'::text))));
+
 CREATE TABLE project_states (
     id bigint NOT NULL,
     verification_started_at timestamp with time zone,
