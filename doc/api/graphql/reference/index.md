@@ -10233,7 +10233,7 @@ Input type: `TodoRestoreManyInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationtodorestoremanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationtodorestoremanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to restore (a maximum of 50 is supported at once). |
+| <a id="mutationtodorestoremanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to restore (a maximum of 100 is supported at once). |
 
 #### Fields
 
