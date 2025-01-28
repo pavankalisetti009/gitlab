@@ -4,7 +4,16 @@ module Ai
   module AmazonQ
     class << self
       def feature_available?
-        License.feature_available?(:amazon_q) && !duo_features_available?
+        return false unless License.feature_available?(:amazon_q)
+
+        # When this feature flag is enabled, Duo Chat and Code Suggestions become available to a user
+        # and are powered by Q API.
+        # Let's return true when the feature flag is enabled to simplify the development.
+        # But when the feature flag is removed, we may still want to check that Duo Pro or Enterprise is not purchased
+        # to avoid conflicts.
+        return true if ::Feature.enabled?(:amazon_q_chat_and_code_suggestions, :instance)
+
+        !duo_features_available?
       end
 
       def connected?

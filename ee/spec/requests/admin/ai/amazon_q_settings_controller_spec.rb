@@ -7,6 +7,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   # Default organization needed for creating new users
   let_it_be(:default_organization) { create(:organization, :default) }
+  let_it_be(:active_token) { create(:service_access_token, :active, token: JWT.encode({ sub: 'abc123' }, '')) }
 
   let(:admin) { create(:admin) }
   let(:amazon_q_ready) { false }
@@ -49,8 +50,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
   shared_examples 'success when there is a valid identity provider payload' do
     before do
-      jwt = JWT.encode({ sub: 'abc123' }, '')
-      service = instance_double(::CloudConnector::SelfSigned::AvailableServiceData, access_token: jwt)
+      service = ::CloudConnector::SelfManaged::AvailableServiceData.new(:amazon_q_integration, 1.day.ago, [])
 
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_call_original
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:amazon_q_integration)

@@ -64,10 +64,13 @@ module EE
       condition(:code_suggestions_enabled_for_user) do
         next false unless @user
         next true if @user.allowed_to_use?(:code_suggestions)
+        next true if amazon_q_feature_available?(@user, :code_suggestions)
 
-        next false unless ::Ai::FeatureSetting.code_suggestions_self_hosted?
+        if ::Ai::FeatureSetting.code_suggestions_self_hosted?
+          next @user.allowed_to_use?(:code_suggestions, service_name: :self_hosted_models)
+        end
 
-        @user.allowed_to_use?(:code_suggestions, service_name: :self_hosted_models)
+        false
       end
 
       condition(:ai_features_enabled) do
@@ -87,6 +90,8 @@ module EE
       end
 
       condition(:duo_chat_enabled_for_user) do
+        next true if amazon_q_feature_available?(@user, :duo_chat)
+
         if duo_chat_self_hosted?
           self_hosted_models_available_for?(@user)
         else
@@ -247,6 +252,12 @@ module EE
       strong_memoize_with(:custom_role_ability, user) do
         ::Authz::CustomAbility.new(user)
       end
+    end
+
+    def amazon_q_feature_available?(user, feature_name)
+      return false unless ::Feature.enabled?(:amazon_q_chat_and_code_suggestions, user) && ::Ai::AmazonQ.connected?
+
+      user.allowed_to_use?(feature_name, service_name: :amazon_q_integration, licensed_feature: :amazon_q)
     end
   end
 end
