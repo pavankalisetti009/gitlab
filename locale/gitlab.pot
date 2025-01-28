@@ -30360,6 +30360,9 @@ msgstr ""
 msgid "Integrations|Add exclusions"
 msgstr ""
 
+msgid "Integrations|Add integration"
+msgstr ""
+
 msgid "Integrations|All details"
 msgstr ""
 
