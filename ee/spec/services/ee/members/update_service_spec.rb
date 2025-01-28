@@ -205,6 +205,81 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
     end
   end
 
+  context 'with block seat overages enabled for self-managed' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:owner) { create(:user) }
+    let_it_be_with_refind(:group) { create(:group) }
+
+    let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+    let(:available_seats) { 1 }
+    let(:seat_control_block_overages) { 2 }
+    let(:seat_control_off) { 0 }
+
+    let_it_be(:billable_custom_role) do
+      create(:member_role, :instance, :billable)
+    end
+
+    before_all do
+      group.add_owner(owner)
+    end
+
+    before do
+      stub_licensed_features(custom_roles: true)
+      stub_application_setting(seat_control: seat_control_block_overages)
+      allow(License).to receive(:current).and_return(license)
+      allow(License).to receive_message_chain(:current, :seats).and_return(available_seats)
+    end
+
+    it 'allows updating billable members even if there are no seats available' do
+      member = group.add_developer(create(:user))
+      params = { expires_at: 1.day.from_now, source: group }
+
+      result = described_class.new(owner, params).execute(member)
+
+      expect(result[:status]).to eq(:success)
+    end
+
+    it 'rejects promoting members to billable roles when no seats are available' do
+      member = group.add_guest(create(:user))
+      params = { access_level: Gitlab::Access::DEVELOPER, source: group }
+
+      result = described_class.new(owner, params).execute(member)
+
+      expect(result[:status]).to eq(:error)
+      expect(result[:message]).to eq("No seat available")
+      expect(member.reload.access_level).to eq(Gitlab::Access::GUEST)
+    end
+
+    context 'with custom roles' do
+      it 'rejects promoting to a billable custom role when there are no seats available' do
+        member = group.add_guest(create(:user))
+        params = { member_role_id: billable_custom_role.id, source: group }
+
+        result = described_class.new(owner, params).execute(member)
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to eq("No seat available")
+        expect(member.reload.member_role).to be_nil
+      end
+    end
+
+    context 'when setting is disabled' do
+      before do
+        stub_application_setting(seat_control: seat_control_off)
+      end
+
+      it 'allows promoting members even when no seats are available' do
+        member = group.add_guest(create(:user))
+        params = { access_level: Gitlab::Access::DEVELOPER, source: group }
+
+        result = described_class.new(owner, params).execute(member)
+
+        expect(result[:status]).to eq(:success)
+        expect(member.reload.access_level).to eq(Gitlab::Access::DEVELOPER)
+      end
+    end
+  end
+
   context 'when current user can update the given member' do
     let(:current_user) { user }
 
