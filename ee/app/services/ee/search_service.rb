@@ -44,8 +44,14 @@ module EE
     override :global_search_enabled_for_scope?
     def global_search_enabled_for_scope?
       case params[:scope]
+      when 'blobs'
+        ::Feature.enabled?(:global_search_code_tab, current_user, type: :ops)
+      when 'commits'
+        ::Feature.enabled?(:global_search_commits_tab, current_user, type: :ops)
       when 'epics'
         ::Feature.enabled?(:global_search_epics_tab, current_user, type: :ops)
+      when 'wiki_blobs'
+        ::Feature.enabled?(:global_search_wiki_tab, current_user, type: :ops)
       else
         super
       end
