@@ -165,12 +165,7 @@ export default {
     />
 
     <div class="gl-mx-4 gl-mt-4 gl-flex gl-text-sm gl-text-subtle">
-      <gl-icon
-        class="gl-mr-2 gl-mt-2 gl-shrink-0"
-        name="information-o"
-        :size="14"
-        variant="subtle"
-      />
+      <gl-icon class="gl-mr-2 gl-mt-2 gl-shrink-0" name="information-o" :size="16" variant="info" />
 
       <div>
         <p class="gl-mb-2">{{ $options.i18n.formInfo }}</p>
