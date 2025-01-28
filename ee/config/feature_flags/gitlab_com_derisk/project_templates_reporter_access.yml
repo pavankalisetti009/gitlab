@@ -1,9 +1,0 @@
----
-name: project_templates_reporter_access
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/508530
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/176665
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/510983
-milestone: '17.8'
-group: group::source code
-type: gitlab_com_derisk
-default_enabled: false

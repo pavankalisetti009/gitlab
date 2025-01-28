@@ -1117,39 +1117,9 @@ RSpec.describe User, feature_category: :system_access do
           end
         end
 
-        context 'when the access level is reporter' do
-          where(:access_level) do
-            [:reporter]
-          end
-
-          with_them do
-            before do
-              stub_feature_flags(project_templates_without_min_access: false)
-              group_1.add_member(user, access_level)
-              group_2.add_member(user, access_level)
-              group_3.add_member(user, access_level)
-              group_4.add_member(user, access_level)
-            end
-
-            it 'the templates in groups with projects are available' do
-              expect(available_subgroups).to match_array([subgroup_1, subgroup_2, subsubgroup_1, subsubgroup_4])
-            end
-
-            context 'when feature flag "project_templates_reporter_access" is disabled' do
-              before do
-                stub_feature_flags(project_templates_reporter_access: false)
-              end
-
-              it 'returns an empty collection' do
-                expect(available_subgroups).to be_empty
-              end
-            end
-          end
-        end
-
         context 'when the access level is enough' do
           where(:access_level) do
-            [:developer, :maintainer, :owner]
+            [:reporter, :developer, :maintainer, :owner]
           end
 
           with_them do
