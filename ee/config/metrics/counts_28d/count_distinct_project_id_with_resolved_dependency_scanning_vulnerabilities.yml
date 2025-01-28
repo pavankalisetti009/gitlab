@@ -5,6 +5,8 @@ product_group: composition_analysis
 value_type: number
 status: active
 milestone: '17.6'
+performance_indicator_type:
+- lighthouse
 instrumentation_class: CountDistinctProjectIdsWithResolvedVulnerabilitiesActivityMetric
 options:
   report_type: dependency_scanning
