@@ -133,7 +133,22 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     enabled_permission_items.keys
   end
 
+  def dependent_security_policies
+    return Security::Policy.none if security_policies_disabled?
+
+    policies = Security::Policy.for_custom_role(id)
+    return policies unless gitlab_com_subscription?
+
+    policies.for_policy_configuration(namespace.all_descendant_security_orchestration_policy_configurations)
+  end
+
   private
+
+  def security_policies_disabled?
+    return !namespace.licensed_feature_available?(:security_orchestration_policies) if gitlab_com_subscription?
+
+    !License.feature_available?(:security_orchestration_policies)
+  end
 
   def admin_related_permissions
     self.class.all_customizable_admin_permission_keys & permissions.symbolize_keys.keys

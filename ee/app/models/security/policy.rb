@@ -68,6 +68,14 @@ module Security
       where(security_orchestration_policy_configuration: policy_configuration)
     }
 
+    scope :for_policy_configuration, ->(policy_configurations) do
+      where(security_orchestration_policy_configuration: policy_configurations)
+    end
+
+    scope :for_custom_role, ->(custom_role_id) do
+      where("content->'actions' @> ?", [{ role_approvers: [custom_role_id] }].to_json)
+    end
+
     delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
 
     def self.checksum(policy_hash)

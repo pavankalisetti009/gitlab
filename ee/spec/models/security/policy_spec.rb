@@ -122,6 +122,50 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.for_policy_configuration' do
+    let_it_be(:policy_configuration1) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:policy_configuration2) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:policy1) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration1) }
+    let_it_be(:policy2) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration2) }
+
+    it 'returns policies for given policy configuration' do
+      expect(described_class.for_policy_configuration(policy_configuration1)).to contain_exactly(policy1)
+    end
+
+    it 'returns policies for multiple policy configurations' do
+      expect(described_class.for_policy_configuration([policy_configuration1, policy_configuration2]))
+        .to contain_exactly(policy1, policy2)
+    end
+  end
+
+  describe '.for_custom_role' do
+    let_it_be(:custom_role_id) { 123 }
+    let_it_be(:policy_with_role) do
+      create(:security_policy, content: {
+        actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [custom_role_id] }]
+      })
+    end
+
+    let_it_be(:policy_with_different_role) do
+      create(:security_policy, content: {
+        actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [456] }]
+      })
+    end
+
+    let_it_be(:policy_without_role) do
+      create(:security_policy, :require_approval)
+    end
+
+    it 'returns policies that include the specified custom role' do
+      expect(described_class.for_custom_role(custom_role_id)).to contain_exactly(policy_with_role)
+    end
+
+    it 'does not return policies without the specified custom role' do
+      expect(described_class.for_custom_role(custom_role_id))
+        .not_to include(policy_with_different_role, policy_without_role)
+    end
+  end
+
   describe '#link_project!' do
     let_it_be(:project) { create(:project) }
     let_it_be(:policy) { create(:security_policy) }

@@ -67,6 +67,21 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
         end
       end
 
+      context 'when the member role is linked to a security policy' do
+        before do
+          create(:security_policy, content: {
+            actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [member_role.id] }]
+          })
+
+          stub_licensed_features(security_orchestration_policies: true, custom_roles: true)
+        end
+
+        it 'returns error with message' do
+          expect(result).to be_error
+          expect(result.message).to eq('Custom role linked with a security policy.')
+        end
+      end
+
       context 'when failing to destroy the member role' do
         before do
           allow(member_role).to receive(:destroy).and_return(false)

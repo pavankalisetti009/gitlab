@@ -73,6 +73,10 @@ module Gitlab
           def security_policies(configurations)
             ::Security::SecurityPoliciesFinder.new(@current_user, configurations).execute
           end
+
+          def container
+            object.namespace
+          end
         end
       end
     end
