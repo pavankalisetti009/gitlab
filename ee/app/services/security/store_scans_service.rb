@@ -18,8 +18,14 @@ module Security
       # StoreGroupedScansService returns true only when it creates a `security_scans` record.
       # To avoid resource wastage we are skipping the reports ingestion when there are no new scans, but
       # we sync the rules as it might cause inconsistent state if we skip.
-      results = reassigned_grouped_report_artifacts.map do |file_type, artifacts|
+      results = security_report_artifacts.map do |file_type, artifacts|
         StoreGroupedScansService.execute(artifacts, pipeline, file_type)
+      end
+
+      if sbom_report_artifacts.present?
+        results += sbom_report_artifacts.map do |file_type, artifacts|
+          StoreGroupedSbomScansService.execute(artifacts, pipeline, file_type)
+        end
       end
 
       sync_findings_to_approval_rules unless pipeline.default_branch?
@@ -46,15 +52,19 @@ module Security
     end
     strong_memoize_attr :grouped_report_artifacts
 
-    def reassigned_grouped_report_artifacts
-      grouped_report_artifacts['cyclonedx']&.filter(&:security_report)&.each do |artifact|
-        (grouped_report_artifacts[artifact.security_report.type.to_s] ||= []) << artifact
-      end
-      grouped_report_artifacts.delete('cyclonedx')
-
-      grouped_report_artifacts.select { |file_type, _| parse_report_file?(file_type) }
+    def security_report_artifacts
+      grouped_report_artifacts.reject { |file_type| file_type == 'cyclonedx' || !parse_report_file?(file_type) }
     end
-    strong_memoize_attr :reassigned_grouped_report_artifacts
+    strong_memoize_attr :security_report_artifacts
+
+    def sbom_report_artifacts
+      grouped_report_artifacts['cyclonedx']&.each_with_object({}) do |artifact, object|
+        next if artifact.security_report.blank? || !parse_report_file?(artifact.security_report.type.to_s)
+
+        (object[artifact.security_report.type.to_s] ||= []) << artifact
+      end
+    end
+    strong_memoize_attr :sbom_report_artifacts
 
     def security_report_file_types
       if Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports,
