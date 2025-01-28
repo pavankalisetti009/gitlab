@@ -176,6 +176,7 @@ export default {
       class="gl-mb-2"
     >
       <gl-form-input
+        id="verification_code"
         v-model="form.fields.verificationCode.value"
         type="number"
         name="verification_code"
