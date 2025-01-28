@@ -24712,9 +24712,6 @@ msgstr ""
 msgid "Followed users"
 msgstr ""
 
-msgid "Following"
-msgstr ""
-
 msgid "Following tags don't exist"
 msgstr ""
 
