@@ -3,6 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
+  let_it_be(:description_template_name) { 'default' }
+  let_it_be(:template_content) { "some content" }
+  let_it_be(:template_project) do
+    template_files = {
+      ".gitlab/issue_templates/#{description_template_name}.md" => template_content
+    }
+    create(:project, :custom_repo, files: template_files)
+  end
+
   RSpec.shared_examples 'creates work item in container' do |container_type|
     include_context 'with container for work items service', container_type
 
@@ -10,7 +19,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
       subject(:service_result) { service.execute }
 
       before do
-        stub_licensed_features(epics: true, subepics: true, epic_colors: true)
+        stub_licensed_features(epics: true, subepics: true, epic_colors: true, custom_file_templates: true)
       end
 
       context 'when user is not allowed to create a work item in the container' do
@@ -37,6 +46,39 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
           expect(work_item.title).to eq('Awesome work_item')
           expect(work_item.description).to eq('please fix')
           expect(work_item.work_item_type.base_type).to eq('task')
+        end
+
+        context 'when template is set on the instance level' do
+          let(:opts) { { title: 'Awesome work_item', description: description, work_item_type: type } }
+          let(:application_settings) { ::Gitlab::CurrentSettings.current_application_settings }
+
+          before do
+            application_settings.update!(file_template_project_id: template_project.id)
+          end
+
+          context 'when description is blank' do
+            let(:description) { '' }
+
+            it 'creates a work item with the template content' do
+              work_item = service_result[:work_item]
+
+              expect(work_item).to be_persisted
+              expect(work_item).to be_a(::WorkItem)
+              expect(work_item.description).to eq(template_content)
+            end
+          end
+
+          context 'when description is not blank' do
+            let(:description) { 'another content' }
+
+            it 'creates a work item with the template content' do
+              work_item = service_result[:work_item]
+
+              expect(work_item).to be_persisted
+              expect(work_item).to be_a(::WorkItem)
+              expect(work_item.description).to eq(description)
+            end
+          end
         end
 
         it 'calls NewIssueWorker with correct arguments' do
@@ -219,7 +261,10 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
       }
     end
 
-    let(:opts) { { title: 'new title', external_key: 'external_key', confidential: true, work_item_type: type } }
+    let(:opts) do
+      { title: 'new title', external_key: 'external_key', confidential: true, work_item_type: type }
+    end
+
     let(:current_user) { reporter }
 
     before do
