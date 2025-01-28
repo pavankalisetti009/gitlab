@@ -7,7 +7,7 @@ RSpec.describe Mutations::AppSec::Fuzzing::Coverage::Corpus::Create do
 
   let_it_be(:project) { create(:project) }
   let_it_be(:current_user) { create(:user, developer_of: project) }
-  let_it_be(:package) { create(:package, project: project, creator: current_user) }
+  let_it_be(:package) { create(:generic_package, project: project, creator: current_user) }
 
   let(:corpus) { AppSec::Fuzzing::Coverage::Corpus.find_by(user: current_user, project: project) }
 
