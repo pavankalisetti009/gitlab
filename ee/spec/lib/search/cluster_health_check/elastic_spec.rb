@@ -27,8 +27,18 @@ RSpec.describe Search::ClusterHealthCheck::Elastic, feature_category: :global_se
       expect(described_class).not_to be_healthy
     end
 
-    it 'logs the utilization metrics if the feature flag is enabled' do
+    it 'logs the utilization metrics if the cluster is unhealthy' do
+      allow(instance).to receive(:cluster_status_red?).and_return(true)
+
       expect(logger).to receive(:info).with(hash_including('message' => 'Utilization metrics'))
+
+      described_class.healthy?
+    end
+
+    it 'does not log the utilization metrics if the cluster is healthy' do
+      allow(instance).to receive(:cluster_status_red?).and_return(false)
+
+      expect(logger).not_to receive(:info)
 
       described_class.healthy?
     end
