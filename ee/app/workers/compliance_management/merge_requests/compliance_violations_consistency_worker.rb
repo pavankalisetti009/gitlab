@@ -26,7 +26,7 @@ module ComplianceManagement
 
         # rubocop: disable CodeReuse/ActiveRecord
         ::MergeRequests::ComplianceViolation.where('id >= ?', compliance_violation_id).each_batch(of: 100) do |batch|
-          batch.preload(:merge_request).each do |violation|
+          batch.preload(:merge_request).find_each do |violation|
             if over_time?
               save_last_processed_violation_id(violation.id)
               raise TimeoutError

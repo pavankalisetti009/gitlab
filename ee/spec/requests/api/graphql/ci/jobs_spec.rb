@@ -48,7 +48,7 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
       before do
         stub_licensed_features(runner_performance_insights: true)
 
-        Ci::Build.all.each { |build| ::Ci::InstanceRunnerFailedJobs.track(build) }
+        Ci::Build.all.find_each { |build| ::Ci::InstanceRunnerFailedJobs.track(build) }
       end
 
       context 'as RUNNER_SYSTEM_FAILURE' do

@@ -76,7 +76,7 @@ module EE
 
           each_sub_batch do |sub_batch|
             Project.id_in(sub_batch).joins(:namespace).includes(:group)
-                   .where(namespaces: { type: 'Group' }).each do |project|
+                   .where(namespaces: { type: 'Group' }).find_each do |project|
               # Don't create compliance_standards_adherence if root group is not on an ultimate plan.
               if ::Gitlab.com?
                 root_namespace_plan_query = <<~SQL
