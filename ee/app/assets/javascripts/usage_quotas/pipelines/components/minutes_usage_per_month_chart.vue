@@ -62,11 +62,5 @@ export default {
 };
 </script>
 <template>
-  <gl-area-chart
-    class="gl-mb-3"
-    :data="chartData"
-    :option="$options.chartOptions"
-    responsive
-    :width="0"
-  />
+  <gl-area-chart :data="chartData" :option="$options.chartOptions" responsive :width="0" />
 </template>

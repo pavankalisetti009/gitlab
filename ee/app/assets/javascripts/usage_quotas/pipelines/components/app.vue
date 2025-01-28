@@ -253,18 +253,7 @@ export default {
       >.
     </p>
 
-    <gl-loading-icon
-      v-if="isLoadingYearUsageData"
-      class="gl-mt-5"
-      size="lg"
-      data-testid="pipelines-overview-loading-indicator"
-    />
-
-    <gl-alert v-else-if="error" variant="danger" @dismiss="clearError">
-      {{ error }}
-    </gl-alert>
-
-    <section v-else>
+    <section>
       <div v-if="shouldShowBuyAdditionalMinutes" class="gl-flex gl-justify-end gl-py-3">
         <gl-button
           v-if="!shouldShowLimitedAccessModal"
@@ -326,70 +315,69 @@ export default {
       </gl-form-group>
     </div>
 
-    <section class="gl-my-5">
-      <h3 class="gl-heading-3 gl-mb-3">{{ $options.USAGE_BY_MONTH_HEADER }}</h3>
+    <gl-alert v-if="error" variant="danger" @dismiss="clearError">
+      {{ error }}
+    </gl-alert>
 
-      <gl-loading-icon
-        v-if="isLoadingYearUsageData"
-        class="gl-mt-5"
-        size="lg"
-        data-testid="pipelines-by-month-chart-loading-indicator"
-      />
+    <template v-else>
+      <section class="gl-my-5">
+        <h3 class="gl-heading-3 gl-mb-3">{{ $options.USAGE_BY_MONTH_HEADER }}</h3>
 
-      <minutes-usage-per-month
-        v-else
-        :selected-year="selectedYear"
-        :ci-minutes-usage="ciMinutesUsage"
-      />
-    </section>
-
-    <section class="gl-my-5">
-      <h3 class="gl-heading-3">{{ $options.USAGE_BY_PROJECT_HEADER }}</h3>
-
-      <div class="gl-my-3 gl-flex">
-        <gl-form-group :label="s__('UsageQuota|Filter projects data by month')">
-          <gl-collapsible-listbox
-            v-model="selectedMonth"
-            :items="months"
-            :disabled="isLoadingMonthProjectUsageData"
-            data-testid="minutes-usage-month-dropdown"
-          />
-        </gl-form-group>
-      </div>
-
-      <gl-loading-icon
-        v-if="isLoadingMonthProjectUsageData"
-        class="gl-mt-5"
-        size="lg"
-        data-testid="pipelines-by-project-chart-loading-indicator"
-      />
-
-      <template v-else>
-        <gl-alert :dismissible="false" class="gl-my-3" data-testid="project-usage-info-alert">
-          <gl-sprintf
-            :message="
-              s__('UsageQuota|The chart and the table below show usage for %{month} %{year}')
-            "
-          >
-            <template #month>{{ selectedMonthName }}</template>
-            <template #year>{{ selectedYear }}</template>
-          </gl-sprintf>
-        </gl-alert>
-
-        <minutes-usage-per-project
+        <minutes-usage-per-month
           :selected-year="selectedYear"
-          :selected-month="selectedMonth"
-          :projects-ci-minutes-usage="projectsCiMinutesUsage"
+          :ci-minutes-usage="ciMinutesUsage"
+          :is-loading="isLoadingYearUsageData"
+        />
+      </section>
+
+      <section class="gl-my-5">
+        <h3 class="gl-heading-3">{{ $options.USAGE_BY_PROJECT_HEADER }}</h3>
+
+        <div class="gl-my-3 gl-flex">
+          <gl-form-group :label="s__('UsageQuota|Filter projects data by month')">
+            <gl-collapsible-listbox
+              v-model="selectedMonth"
+              :items="months"
+              :disabled="isLoadingMonthProjectUsageData"
+              data-testid="minutes-usage-month-dropdown"
+            />
+          </gl-form-group>
+        </div>
+
+        <gl-loading-icon
+          v-if="isLoadingMonthProjectUsageData"
+          class="gl-mt-5"
+          size="lg"
+          data-testid="pipelines-by-project-chart-loading-indicator"
         />
 
-        <div class="gl-pt-5">
-          <project-list
-            :projects="projects"
-            :page-info="projectsPageInfo"
-            @fetchMore="fetchMoreProjects"
+        <template v-else>
+          <gl-alert :dismissible="false" class="gl-my-3" data-testid="project-usage-info-alert">
+            <gl-sprintf
+              :message="
+                s__('UsageQuota|The chart and the table below show usage for %{month} %{year}')
+              "
+            >
+              <template #month>{{ selectedMonthName }}</template>
+              <template #year>{{ selectedYear }}</template>
+            </gl-sprintf>
+          </gl-alert>
+
+          <minutes-usage-per-project
+            :selected-year="selectedYear"
+            :selected-month="selectedMonth"
+            :projects-ci-minutes-usage="projectsCiMinutesUsage"
           />
-        </div>
-      </template>
-    </section>
+
+          <div class="gl-pt-5">
+            <project-list
+              :projects="projects"
+              :page-info="projectsPageInfo"
+              @fetchMore="fetchMoreProjects"
+            />
+          </div>
+        </template>
+      </section>
+    </template>
   </div>
 </template>

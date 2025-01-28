@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlButton } from '@gitlab/ui';
-import { Wrapper } from '@vue/test-utils'; // eslint-disable-line no-unused-vars
+import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
 import MonthlyUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/monthly_units_usage_summary.vue';
 import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/additional_units_usage_summary.vue';
 import getCiMinutesMonthlySummary from 'ee/usage_quotas/pipelines/graphql/queries/ci_minutes.query.graphql';
@@ -39,12 +39,6 @@ describe('PipelineUsageApp', () => {
 
   const findDescription = () => wrapper.findByTestId('pipelines-description');
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findOverviewLoadingIcon = () =>
-    wrapper.findByTestId('pipelines-overview-loading-indicator');
-  const findByMonthChartLoadingIcon = () =>
-    wrapper.findByTestId('pipelines-by-month-chart-loading-indicator');
-  const findByProjectChartLoadingIcon = () =>
-    wrapper.findByTestId('pipelines-by-project-chart-loading-indicator');
   const findProjectList = () => wrapper.findComponent(ProjectList);
   const findBuyAdditionalMinutesButton = () => wrapper.findComponent(GlButton);
   const findMonthlyUsageOverview = () => wrapper.findComponent(MonthlyUnitsUsageSummary);
@@ -243,16 +237,8 @@ describe('PipelineUsageApp', () => {
       createComponent();
     });
 
-    it('shows loading icon for overview', () => {
-      expect(findOverviewLoadingIcon().exists()).toBe(true);
-    });
-
-    it('shows a loading icon by month chart', () => {
-      expect(findByMonthChartLoadingIcon().exists()).toBe(true);
-    });
-
-    it('shows loading icon for by project chart', () => {
-      expect(findByProjectChartLoadingIcon().exists()).toBe(true);
+    it('passes loading property to minutes-usaage-per-month component', () => {
+      expect(wrapper.findComponent(MinutesUsagePerMonth).props().isLoading).toBe(true);
     });
   });
 
