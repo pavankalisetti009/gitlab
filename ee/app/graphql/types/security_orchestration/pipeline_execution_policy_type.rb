@@ -18,6 +18,10 @@ module Types
       field :policy_blob_file_path, GraphQL::Types::String,
         null: false,
         description: 'Path to the policy file in the project.'
+
+      field :warnings, [String],
+        null: false,
+        description: 'Warnings associated with the policy.'
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end
