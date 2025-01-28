@@ -331,8 +331,7 @@ build the project and execute some Java or Python commands to get the list of de
 other projects, the lock file is parsed to obtain the list of dependencies without needing to build
 the project first.
 
-When a supported dependency file is detected, all dependencies, including transitive dependencies
-are analyzed. There is no limit to the depth of nested or transitive dependencies that are analyzed.
+All direct and transitive dependencies are analyzed, without a limit to the depth of transitive dependencies.
 
 ### Analyzers
 
@@ -636,10 +635,8 @@ To support the following package managers, the GitLab analyzers proceed in two s
 GitLab relies on [`rules:exists`](../../../ci/yaml/index.md#rulesexists) to start the relevant analyzers for the languages detected by the presence of the
 `Supported files` in the repository as shown in the [table above](#supported-languages-and-package-managers).
 
-The current detection logic limits the maximum search depth to two levels. For example, the `gemnasium-dependency_scanning` job is enabled if
+The current detection logic limits the maximum search depth to two directory levels. For example, the `gemnasium-dependency_scanning` job is enabled if
 a repository contains either a `Gemfile.lock`, `api/Gemfile.lock`, or `api/client/Gemfile.lock`, but not if the only supported dependency file is `api/v1/client/Gemfile.lock`.
-
-When a supported dependency file is detected, all dependencies, including transitive dependencies are analyzed. There is no limit to the depth of nested or transitive dependencies that are analyzed.
 
 ### How multiple files are processed
 
