@@ -19060,6 +19060,27 @@ CREATE SEQUENCE project_deploy_tokens_id_seq
 
 ALTER SEQUENCE project_deploy_tokens_id_seq OWNED BY project_deploy_tokens.id;
 
+CREATE TABLE routes (
+    id bigint NOT NULL,
+    source_id bigint NOT NULL,
+    source_type character varying NOT NULL,
+    path character varying NOT NULL,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    name character varying,
+    namespace_id bigint,
+    CONSTRAINT check_af84c6c93f CHECK ((namespace_id IS NOT NULL))
+);
+
+CREATE VIEW project_design_management_routes_view AS
+ SELECT p.id,
+    p.repository_storage,
+    r.path AS path_with_namespace,
+    r.name AS name_with_namespace
+   FROM ((design_management_repositories dr
+     JOIN projects p ON ((dr.project_id = p.id)))
+     JOIN routes r ON (((p.id = r.source_id) AND ((r.source_type)::text = 'Project'::text))));
+
 CREATE TABLE project_error_tracking_settings (
     project_id bigint NOT NULL,
     enabled boolean DEFAULT false NOT NULL,
@@ -19317,18 +19338,6 @@ CREATE SEQUENCE project_repository_storage_moves_id_seq
     CACHE 1;
 
 ALTER SEQUENCE project_repository_storage_moves_id_seq OWNED BY project_repository_storage_moves.id;
-
-CREATE TABLE routes (
-    id bigint NOT NULL,
-    source_id bigint NOT NULL,
-    source_type character varying NOT NULL,
-    path character varying NOT NULL,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    name character varying,
-    namespace_id bigint,
-    CONSTRAINT check_af84c6c93f CHECK ((namespace_id IS NOT NULL))
-);
 
 CREATE VIEW project_routes_view AS
  SELECT p.id,
