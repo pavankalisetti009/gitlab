@@ -11,7 +11,6 @@ export default {
     GlSprintf,
   },
   i18n: {
-    header: s__('ContributionAnalytics|Issues'),
     xAxisTitle: __('User'),
     yAxisTitle: __('Issues closed'),
     emptyDescription: s__('ContributionAnalytics|No issues for the selected time period.'),
@@ -51,19 +50,16 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <div data-testid="issue-content">
-      <h3>{{ $options.i18n.header }}</h3>
-      <div data-testid="description">
-        <gl-sprintf :message="description">
-          <template #createdCount>
-            <strong>{{ formatNumber(createdCount) }}</strong>
-          </template>
-          <template #closedCount>
-            <strong>{{ formatNumber(closedCount) }}</strong>
-          </template>
-        </gl-sprintf>
-      </div>
+  <div data-testid="issue-content">
+    <div data-testid="description">
+      <gl-sprintf :message="description">
+        <template #createdCount>
+          <strong>{{ formatNumber(createdCount) }}</strong>
+        </template>
+        <template #closedCount>
+          <strong>{{ formatNumber(closedCount) }}</strong>
+        </template>
+      </gl-sprintf>
     </div>
 
     <column-chart

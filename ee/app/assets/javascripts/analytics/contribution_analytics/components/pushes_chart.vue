@@ -11,7 +11,6 @@ export default {
     GlSprintf,
   },
   i18n: {
-    header: __('Pushes'),
     xAxisTitle: __('User'),
     yAxisTitle: __('Pushes'),
     emptyDescription: s__('ContributionAnalytics|No pushes for the selected time period.'),
@@ -51,21 +50,16 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <div data-testid="push-content">
-      <h3>{{ $options.i18n.header }}</h3>
-      <div data-testid="description">
-        <gl-sprintf :message="description">
-          <template #pushCount>
-            <strong>{{ n__('%d push', '%d pushes', formatNumber(pushCount)) }}</strong>
-          </template>
-          <template #authorCount>
-            <strong>{{
-              n__('%d contributor', '%d contributors', formatNumber(authorCount))
-            }}</strong>
-          </template>
-        </gl-sprintf>
-      </div>
+  <div data-testid="push-content">
+    <div data-testid="description">
+      <gl-sprintf :message="description">
+        <template #pushCount>
+          <strong>{{ n__('%d push', '%d pushes', formatNumber(pushCount)) }}</strong>
+        </template>
+        <template #authorCount>
+          <strong>{{ n__('%d contributor', '%d contributors', formatNumber(authorCount)) }}</strong>
+        </template>
+      </gl-sprintf>
     </div>
 
     <column-chart

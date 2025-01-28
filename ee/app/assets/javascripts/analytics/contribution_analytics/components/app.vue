@@ -1,7 +1,7 @@
 <script>
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { s__ } from '~/locale';
+import { s__, __ } from '~/locale';
 import {
   filterIssues,
   filterMergeRequests,
@@ -46,6 +46,10 @@ export default {
   i18n: {
     loading: s__('ContributionAnalytics|Loading contribution stats for group members'),
     error: s__('ContributionAnalytics|Failed to load the contribution stats'),
+    pushesHeader: __('Pushes'),
+    mergeRequestsHeader: s__('ContributionAnalytics|Merge requests'),
+    issuesHeader: s__('ContributionAnalytics|Issues'),
+    contributionsPerMemberHeader: s__('ContributionAnalytics|Contributions per group member'),
   },
   data() {
     return {
@@ -121,10 +125,22 @@ export default {
     </gl-alert>
 
     <template v-else>
-      <pushes-chart :pushes="pushes" />
-      <merge-requests-chart :merge-requests="mergeRequests" />
-      <issues-chart :issues="issues" />
-      <group-members-table :contributions="contributions" />
+      <div>
+        <h3>{{ $options.i18n.pushesHeader }}</h3>
+        <pushes-chart :pushes="pushes" />
+      </div>
+      <div>
+        <h3>{{ $options.i18n.mergeRequestsHeader }}</h3>
+        <merge-requests-chart :merge-requests="mergeRequests" />
+      </div>
+      <div>
+        <h3>{{ $options.i18n.issuesHeader }}</h3>
+        <issues-chart :issues="issues" />
+      </div>
+      <div>
+        <h3>{{ $options.i18n.contributionsPerMemberHeader }}</h3>
+        <group-members-table :contributions="contributions" />
+      </div>
     </template>
   </div>
 </template>
