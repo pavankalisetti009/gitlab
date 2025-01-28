@@ -16,6 +16,9 @@ module MergeTrains
 
       validate!
       pipeline_created = create_pipeline! if merge_train_car.requires_new_pipeline? || require_recreate?
+
+      log_running_security_scans
+
       merge! if merge_train_car.mergeable?
 
       success(pipeline_created: pipeline_created.present?)
@@ -165,6 +168,10 @@ module MergeTrains
         .abort(merge_request, error.message, process_next: false)
 
       error(error.message)
+    end
+
+    def log_running_security_scans
+      Gitlab::AppLogger.warn("Security scans running") if merge_request.running_scan_result_policy_violations.any?
     end
   end
 end

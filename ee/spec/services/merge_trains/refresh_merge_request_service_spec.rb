@@ -296,7 +296,39 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       end
 
       context 'when the merge request is the first queue' do
+        let(:policy) { create(:scan_result_policy_read, project: project) }
+
         it_behaves_like 'merges the merge request'
+
+        context 'when a security scan is running' do
+          before do
+            create(:scan_result_policy_violation, :running, project: project, merge_request: merge_request,
+              scan_result_policy_read: policy, violation_data: nil)
+          end
+
+          it 'logs that the scan is running' do
+            project.update!(merge_method: :ff)
+            project.repository.raw_repository.write_ref(merge_request.train_ref_path, pipeline.sha)
+            expect(Gitlab::AppLogger).to receive(:warn).with("Security scans running")
+
+            subject
+          end
+        end
+
+        context 'when no scan is running' do
+          before do
+            create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+              scan_result_policy_read: policy, violation_data: nil)
+          end
+
+          it 'does not log' do
+            project.update!(merge_method: :ff)
+            project.repository.raw_repository.write_ref(merge_request.train_ref_path, pipeline.sha)
+            expect(Gitlab::AppLogger).not_to receive(:warn)
+
+            subject
+          end
+        end
 
         using RSpec::Parameterized::TableSyntax
 
