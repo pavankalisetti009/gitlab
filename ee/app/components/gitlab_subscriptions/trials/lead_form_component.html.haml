@@ -8,16 +8,14 @@
 .gl-flex.gl-flex-col.md:gl-flex-row.gl-items-center.gl-justify-center
   .sm:gl-m-8.gl-max-w-80
     %h2.gl-mt-0
-      - if @group_name.present?
-        = safe_format(s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial on %{group_name}'), group_name: @group_name)
-      - else
-        = s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
+      = title_text
 
     %p.gl-text-subtle.gl-text-lg
       = s_('Trial|Please provide the following information to start your trial.')
 
-    = yield :before_form
+    = before_form_content
 
-    #js-trial-create-lead-form{ data: create_lead_form_data(@eligible_namespaces) }
+    #js-trial-create-lead-form{ data: form_data }
 
-  = render 'trial_illustration'
+  .gl-w-48.gl-m-7
+    = image_tag 'illustrations/saas-trial-illustration.svg', alt: 'Trial illustration', class: 'gl-hidden md:gl-inline'

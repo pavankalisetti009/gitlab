@@ -2,15 +2,6 @@
 
 module GitlabSubscriptions
   module TrialsHelper
-    def create_lead_form_data(eligible_namespaces)
-      submit_path = trials_path(
-        step: GitlabSubscriptions::Trials::CreateService::LEAD,
-        **params.permit(:namespace_id).merge(::Onboarding::StatusPresenter.glm_tracking_attributes(params))
-      )
-
-      _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
-    end
-
     def create_duo_pro_lead_form_data(eligible_namespaces)
       submit_path = trials_duo_pro_path(
         step: GitlabSubscriptions::Trials::CreateDuoProService::LEAD,

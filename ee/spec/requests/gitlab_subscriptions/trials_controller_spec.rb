@@ -31,40 +31,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
     end
   end
 
-  shared_examples 'group_name assignment' do
-    context 'when there is only one eligible namespace' do
-      it 'assigns the group_name to the eligible group name' do
-        request
-
-        expect(assigns(:group_name)).to eq(group_for_trial.name)
-      end
-    end
-
-    context 'when there are multiple eligible namespaces' do
-      before_all do
-        create(:group_with_plan, plan: :free_plan, owners: user)
-      end
-
-      context 'when namespace_id is provided' do
-        it 'assigns the group_name provided from params' do
-          request
-
-          expect(assigns(:group_name)).to eq(group_for_trial.name)
-        end
-      end
-
-      context 'when namespace_id is not provided' do
-        let(:namespace_id) { {} }
-
-        it 'assigns the group_name to nil' do
-          request
-
-          expect(assigns(:group_name)).to be_nil
-        end
-      end
-    end
-  end
-
   describe 'GET new' do
     let_it_be(:group_for_trial) { create(:group_with_plan, plan: :free_plan) }
     let(:namespace_id) { {} }
@@ -85,15 +51,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
       end
 
       it { is_expected.to have_gitlab_http_status(:ok) }
-
-      it_behaves_like 'group_name assignment' do
-        let(:namespace_id) { { namespace_id: group_for_trial.id } }
-        let(:request) { get_new }
-
-        before_all do
-          group_for_trial.add_owner(user)
-        end
-      end
 
       it_behaves_like 'namespace_id is passed'
 
@@ -350,10 +307,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
               'Trial|Please provide the following information to start your trial.'
             )
             expect(response.body).to include(text)
-          end
-
-          it_behaves_like 'group_name assignment' do
-            let(:request) { post_create }
           end
         end
 
