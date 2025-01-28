@@ -11,6 +11,8 @@ import WorkItemCommentForm from '~/work_items/components/notes/work_item_comment
 import WorkItemStateToggle from '~/work_items/components/work_item_state_toggle.vue';
 import MarkdownEditor from '~/vue_shared/components/markdown/markdown_editor.vue';
 
+import { workItemByIidResponseFactory } from 'jest/work_items/mock_data';
+
 jest.mock('~/lib/utils/autosave');
 
 Vue.use(VueApollo);
@@ -18,6 +20,8 @@ Vue.use(VueApollo);
 describe('WorkItemCommentForm', () => {
   let wrapper;
   let measureCommentTemperatureMock;
+  let workItemResponse;
+  let workItemByIidSuccessHandler;
 
   const mockAutosaveKey = 'test-auto-save-key';
   const findMarkdownEditor = () => wrapper.findComponent(MarkdownEditor);
@@ -28,10 +32,16 @@ describe('WorkItemCommentForm', () => {
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     window.gon.current_user_id = 1;
 
+    workItemResponse = workItemByIidResponseFactory({
+      canMarkNoteAsInternal: true,
+      canUpdate: true,
+    });
+    workItemByIidSuccessHandler = jest.fn().mockResolvedValue(workItemResponse);
+
     wrapper = shallowMountExtended(WorkItemCommentForm, {
       apolloProvider: createMockApollo([
         [workItemEmailParticipantsByIidQuery, jest.fn()],
-        [workItemByIidQuery, jest.fn()],
+        [workItemByIidQuery, workItemByIidSuccessHandler],
       ]),
       propsData: {
         workItemId: 'gid://gitlab/WorkItem/1',
@@ -82,7 +92,7 @@ describe('WorkItemCommentForm', () => {
           await waitForPromises();
         };
 
-        beforeEach(() => {
+        beforeEach(async () => {
           createComponent({
             props: {
               initialValue: commentText,
@@ -94,6 +104,8 @@ describe('WorkItemCommentForm', () => {
               },
             },
           });
+
+          await waitForPromises();
           findCommentTemperature().vm.measureCommentTemperature = measureCommentTemperatureMock;
         });
 
