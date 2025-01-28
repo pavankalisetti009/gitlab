@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::VariablesController, feature_category: :secrets_management do
+RSpec.describe Groups::VariablesController, feature_category: :ci_variables do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:variable) { create(:ci_group_variable, group: group, environment_scope: '*') }
