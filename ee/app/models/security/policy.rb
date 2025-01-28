@@ -108,6 +108,7 @@ module Security
         policy.upsert_rule(rule_index, rule_hash)
       end
 
+      policy.update_pipeline_execution_policy_config_link!
       policy
     end
 
@@ -139,6 +140,16 @@ module Security
         unlink_policy_rules_project!(project, deleted_rules)
         link_policy_rules_project!(project, created_rules)
       end
+    end
+
+    def update_pipeline_execution_policy_config_link!
+      return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, namespace)
+      return unless type_pipeline_execution_policy?
+
+      security_pipeline_execution_policy_config_link&.destroy!
+
+      config_project = Project.find_by_full_path(pipeline_execution_ci_config['project'])
+      create_security_pipeline_execution_policy_config_link!(project: config_project) if config_project
     end
 
     def upsert_rule(rule_index, rule_hash)
@@ -271,6 +282,10 @@ module Security
       else
         Gitlab::Routing.url_helpers.edit_project_security_policy_url(project, id: id, type: type)
       end
+    end
+
+    def pipeline_execution_ci_config
+      content&.dig('content', 'include', 0)
     end
 
     private
