@@ -77,10 +77,10 @@ export default (base, props, location) => {
       },
       {
         name: DETAILS_ROUTE_NAME,
-        path: '/:id/details',
+        path: '/:secretName/details',
         component: SecretDetailsWrapper,
-        props: ({ params: { id }, name }) => {
-          return { fullPath, secretId: Number(id), routeName: name };
+        props: ({ params: { secretName }, name }) => {
+          return { fullPath, secretName, routeName: name };
         },
         meta: {
           getBreadcrumbText: ({ id }) => id,
@@ -89,14 +89,14 @@ export default (base, props, location) => {
       },
       {
         name: EDIT_ROUTE_NAME,
-        path: '/:id/edit',
+        path: '/:secretName/edit',
         component: SecretFormWrapper,
-        props: ({ params: { id } }) => {
+        props: ({ params: { secretName } }) => {
           return {
             entity,
             fullPath,
             isEditing: true,
-            secretId: Number(id),
+            secretName,
           };
         },
         meta: {

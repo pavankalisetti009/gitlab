@@ -16,7 +16,7 @@ export default {
     },
     detailsRoute() {
       return {
-        text: String(this.$route.params.id),
+        text: this.$route.params.secretName,
         to: { name: DETAILS_ROUTE_NAME },
       };
     },
@@ -27,8 +27,8 @@ export default {
       // start with link to root on all pages
       const crumbs = [this.rootRoute];
 
-      // add link to secret details if route contains a secret id
-      if (this.$route.params.id) {
+      // add link to secret details if route contains a secret name
+      if (this.$route.params.secretName) {
         crumbs.push(this.detailsRoute);
       }
 

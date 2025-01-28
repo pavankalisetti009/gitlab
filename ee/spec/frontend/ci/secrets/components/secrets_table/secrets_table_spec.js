@@ -191,7 +191,7 @@ describe('SecretsTable component', () => {
       expect(findSecretDetailsLink().text()).toBe(secret.name);
       expect(findSecretDetailsLink().props('to')).toMatchObject({
         name: DETAILS_ROUTE_NAME,
-        params: { id: secret.id },
+        params: { secretName: secret.name },
       });
     });
 
