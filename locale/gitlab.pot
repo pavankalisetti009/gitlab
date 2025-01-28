@@ -24123,6 +24123,9 @@ msgstr ""
 msgid "Failed to update compliance requirement"
 msgstr ""
 
+msgid "Failed to update compliance requirement control. Error: %{error_message}"
+msgstr ""
+
 msgid "Failed to update environment!"
 msgstr ""
 
@@ -37982,6 +37985,9 @@ msgid "Not permitted to reset user feed token"
 msgstr ""
 
 msgid "Not permitted to update requirement"
+msgstr ""
+
+msgid "Not permitted to update requirement control"
 msgstr ""
 
 msgid "Not ready yet. Try again later."
