@@ -9,18 +9,21 @@ module Elastic
     end
 
     def indices(include_migration_index: true)
-      @indices  = curator.indices.map { |info| info['index'] }
-      @indices += [helper.migrations_index_name] if include_migration_index
-      @indices
+      aliases = helper.client.cat.aliases(format: 'json')
+      indices = if aliases.empty?
+                  []
+                else
+                  names = aliases.pluck('index')
+                  helper.client.cat.indices(
+                    index: names, expand_wildcards: 'open', format: 'json', pri: true, bytes: 'gb'
+                  )
+                end.pluck('index')
+
+      indices << helper.migrations_index_name if include_migration_index
+      indices
     end
 
-    def curator
-      @curator = ::Gitlab::Search::IndexCurator.new(
-        ignore_patterns: [/migrations/], force: true, dry_run: false
-      )
-    end
-
-    def setup(multi_index: true)
+    def setup
       clear_tracking!
       benchmark(:delete_indices!) { delete_indices! }
 
@@ -34,8 +37,6 @@ module Elastic
       benchmark(:create_standalone_indices) do
         helper.create_standalone_indices(options: { settings: { number_of_replicas: 0 }, name_suffix: name_suffix })
       end
-
-      benchmark(:curate) { curator.curate! } if multi_index
 
       refresh_elasticsearch_index!
     end
@@ -97,7 +98,7 @@ RSpec.configure do |config|
   # wherever possible.
   config.before(:all, :elastic) do
     helper = Elastic::TestHelpers.new
-    helper.setup(multi_index: false)
+    helper.setup
   end
 
   config.after(:all, :elastic) do
@@ -114,7 +115,7 @@ RSpec.configure do |config|
 
   config.around(:each, :elastic_clean) do |example|
     helper = Elastic::TestHelpers.new
-    helper.setup(multi_index: false)
+    helper.setup
 
     example.run
 
@@ -122,7 +123,7 @@ RSpec.configure do |config|
   end
 
   config.before(:context, :elastic_delete_by_query) do
-    Elastic::TestHelpers.new.setup(multi_index: false)
+    Elastic::TestHelpers.new.setup
   end
 
   config.after(:context, :elastic_delete_by_query) do

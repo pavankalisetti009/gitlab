@@ -66,18 +66,14 @@ module Gitlab
       attr_reader :body, :body_size_bytes, :ref_buffer
 
       def index(ref)
-        submit(ref, index_operation(ref)).tap do |_bytesize|
-          delete_from_rolled_over_indices(alias_name: ref.index_name, ref: ref)
-        end
+        submit(ref, index_operation(ref))
       rescue ::Elastic::Latest::DocumentShouldBeDeletedFromIndexError => e
         logger.warn(error_message: e.message, record_id: e.record_id, error_class: e.class)
         delete(ref)
       end
 
       def upsert(ref)
-        submit(ref, upsert_operation(ref)).tap do |_bytesize|
-          delete_from_rolled_over_indices(alias_name: ref.index_name, ref: ref)
-        end
+        submit(ref, upsert_operation(ref))
       rescue ::Elastic::Latest::DocumentShouldBeDeletedFromIndexError => e
         logger.warn(error_message: e.message, record_id: e.record_id, error_class: e.class)
         delete(ref)
@@ -194,24 +190,6 @@ module Gitlab
         op[:routing] = ref.routing if ref.routing
 
         op
-      end
-
-      def delete_from_rolled_over_indices(alias_name:, ref:)
-        return unless Feature.enabled?(:search_index_curation)
-
-        # Because there is only one write index, we need to iterate over
-        # all other indices and remove the document if it exists.
-        alias_index_targets = client.indices.get_alias(index: alias_name)
-
-        return if alias_index_targets.length <= 1 # SearchCurator hasn't done any rollovers yet
-
-        alias_index_targets.each do |index_name, alias_info|
-          next if alias_info.dig('aliases', alias_name, 'is_write_index')
-
-          delete(ref, index_name: index_name)
-        end
-      rescue StandardError => err
-        logger.error(message: 'delete_from_rollover_failure', error_class: err.class.to_s, error_message: err.message)
       end
 
       def track_routing_missing_error(ref)
