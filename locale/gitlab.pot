@@ -47806,9 +47806,6 @@ msgstr ""
 msgid "Request details"
 msgstr ""
 
-msgid "Request for a Duo Code Review queued."
-msgstr ""
-
 msgid "Request queued for administrator approval."
 msgstr ""
 
@@ -47840,9 +47837,6 @@ msgid "Requested states are invalid"
 msgstr ""
 
 msgid "Requests"
-msgstr ""
-
-msgid "Requests a Duo Code Review"
 msgstr ""
 
 msgid "Requests a review from %{reviewer_users_sentence}."

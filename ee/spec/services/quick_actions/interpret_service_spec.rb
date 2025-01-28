@@ -1497,59 +1497,6 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     end
 
     it_behaves_like 'quick actions that change work item type ee'
-
-    context 'duo_code_review command' do
-      let(:merge_request) { create(:merge_request, reviewers: [user]) }
-      let(:content) { '/duo_code_review' }
-      let(:allowed?) { true }
-      let(:bot_user) { ::Users::Internal.duo_code_review_bot }
-
-      before do
-        allow(merge_request)
-          .to receive(:ai_review_merge_request_allowed?)
-          .with(current_user)
-          .and_return(allowed?)
-      end
-
-      it 'assigns merge request to Duo Code Review bot' do
-        _, updates, message = service.execute(content, merge_request)
-
-        expect(message).to eq _('Request for a Duo Code Review queued.')
-        expect(updates[:reviewer_ids]).to include(bot_user.id)
-      end
-
-      it 'keeps original reviewers assigned' do
-        _, updates = service.execute(content, merge_request)
-
-        expect(updates[:reviewer_ids]).to include(bot_user.id)
-        expect(updates[:reviewer_ids]).to include(user.id)
-      end
-
-      context 'when merge request is asigned to Duo Code Review bot for review' do
-        let(:merge_request) { create(:merge_request, reviewers: [bot_user]) }
-
-        it 'calls ::MergeRequests::RequestReviewService' do
-          expect_next_instance_of(
-            MergeRequests::RequestReviewService,
-            project: merge_request.project, current_user: current_user
-          ) do |service|
-            expect(service).to receive(:execute).with(merge_request, bot_user)
-          end
-
-          service.execute(content, merge_request)
-        end
-      end
-
-      context 'when user is not allowed to execute quick action' do
-        let(:allowed?) { false }
-
-        it 'does not assign merge request to Duo Code Review bot' do
-          _, updates = service.execute(content, merge_request)
-
-          expect(updates).to be_empty
-        end
-      end
-    end
   end
 
   describe '#explain' do
