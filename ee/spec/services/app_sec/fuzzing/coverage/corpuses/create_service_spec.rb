@@ -73,7 +73,7 @@ RSpec.describe AppSec::Fuzzing::Coverage::Corpuses::CreateService do
       end
 
       context 'when a param is incorrect' do
-        let(:package_2) { create(:package) }
+        let(:package_2) { create(:generic_package) }
         let(:params) { { package_id: package_2.id } }
 
         it 'communicates failure', :aggregate_failures do

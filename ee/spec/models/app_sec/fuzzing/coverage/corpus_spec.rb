@@ -23,7 +23,7 @@ RSpec.describe AppSec::Fuzzing::Coverage::Corpus, type: :model do
     end
 
     describe 'package_with_package_file' do
-      let(:package) { create(:package) }
+      let(:package) { create(:generic_package) }
 
       subject(:corpus) { build(:corpus, package: package, project: package.project) }
 
