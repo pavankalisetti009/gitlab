@@ -432,16 +432,34 @@ RSpec.describe User, feature_category: :system_access do
           end
         end
 
-        context 'when there are an active SAML sessions' do
-          before do
+        context 'when there are an active SAML sessions', :freeze_time do
+          it 'returns SAML providers with no session' do
             active_saml_sessions = { saml_provider1.id => Time.current }
             allow(::Gitlab::Auth::GroupSaml::SsoState).to receive(:active_saml_sessions).and_return(active_saml_sessions)
-          end
 
-          it 'returns the expired SAML providers where the session is expired' do
             expect(expired_sso_session_saml_providers).to contain_exactly(saml_provider2)
           end
         end
+
+        context 'when there are expired SAML sessions', :freeze_time do
+          it 'returns the expired SAML providers and SAML providers with no session' do
+            active_saml_sessions = { saml_provider1.id => Time.current - 2.days }
+            allow(::Gitlab::Auth::GroupSaml::SsoState).to receive(:active_saml_sessions).and_return(active_saml_sessions)
+
+            expect(expired_sso_session_saml_providers).to contain_exactly(saml_provider1, saml_provider2)
+          end
+        end
+      end
+    end
+
+    describe '.active_sso_sessions_saml_provider_ids', :freeze_time do
+      subject(:active_sso_sessions_saml_provider_ids) { user.active_sso_sessions_saml_provider_ids }
+
+      it 'returns provider ids of active SAML sessions' do
+        active_saml_sessions = { 1 => Time.current, 2 => Time.current - 2.days }
+        allow(::Gitlab::Auth::GroupSaml::SsoState).to receive(:active_saml_sessions).and_return(active_saml_sessions)
+
+        expect(active_sso_sessions_saml_provider_ids).to contain_exactly(1)
       end
     end
 

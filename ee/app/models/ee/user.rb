@@ -309,7 +309,9 @@ module EE
     end
 
     def active_sso_sessions_saml_provider_ids
-      ::Gitlab::Auth::GroupSaml::SsoState.active_saml_sessions.keys
+      ::Gitlab::Auth::GroupSaml::SsoEnforcer.sessions_time_remaining_for_expiry.each_with_object([]) do |session, result|
+        result << session[:provider_id] if session[:time_remaining] > 0
+      end
     end
 
     def pending_billable_invitations
