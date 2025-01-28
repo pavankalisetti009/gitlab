@@ -5,21 +5,31 @@ module Dependencies
     attr_reader :author, :exportable, :export_type
 
     def initialize(exportable, author, export_type = 'dependency_list')
-      @author = author
       @exportable = exportable
+      @author = author
       @export_type = export_type
     end
 
     def execute
-      dependency_list_export = Dependencies::DependencyListExport.create!(
+      dependency_list_export = create_export
+
+      if dependency_list_export.persisted?
+        Dependencies::ExportWorker.perform_async(dependency_list_export.id)
+
+        ServiceResponse.success(payload: { dependency_list_export: dependency_list_export })
+      else
+        ServiceResponse.error(message: dependency_list_export.errors.full_messages)
+      end
+    end
+
+    private
+
+    def create_export
+      Dependencies::DependencyListExport.create(
         exportable: exportable,
         author: author,
         export_type: export_type
       )
-      Dependencies::ExportWorker.perform_async(dependency_list_export.id)
-      dependency_list_export
-    rescue StandardError
-      nil
     end
   end
 end

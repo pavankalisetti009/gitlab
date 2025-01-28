@@ -73,8 +73,6 @@ module Dependencies
         self.pipeline = value
         # `project_id` is used as sharding key for cells
         self.project = value.project
-      else
-        raise "Can not assign #{value.class} as exportable"
       end
     end
 

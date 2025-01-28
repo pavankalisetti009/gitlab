@@ -205,10 +205,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       expect { export.exportable = pipeline }.to change { export.pipeline }.to(pipeline)
         .and change { export.project }.to(pipeline.project)
     end
-
-    it 'raises when exportable is an unknown type' do
-      expect { export.exportable = nil }.to raise_error(RuntimeError)
-    end
   end
 
   describe '#export_service' do
