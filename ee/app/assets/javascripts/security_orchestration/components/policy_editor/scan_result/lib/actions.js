@@ -101,7 +101,7 @@ export const approversOutOfSync = (action, { user = [], group = [] }) => {
 };
 
 export const WARN_TEMPLATE = s__(
-  'SecurityOrchestration|%{requireStart}Generates a bot comment%{requireEnd} and selected users as the security consultant that developers can reach out for help.',
+  'SecurityOrchestration|%{requireStart}Warn users with a bot comment%{requireEnd} and select users as security consultants that developers may contact for support in addressing violations.',
 );
 
 export const WARN_TEMPLATE_HELP_TITLE = s__('SecurityOrchestration|Who is a consultant?');
