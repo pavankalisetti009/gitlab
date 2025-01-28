@@ -42,7 +42,7 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
         let(:status) { created_status }
 
         before do
-          allow(Dependencies::DestroyExportWorker).to receive(:perform_in)
+          allow(dependency_list_export).to receive(:schedule_export_deletion)
         end
 
         context 'when the export fails' do
@@ -54,7 +54,7 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
             expect { export }.to raise_error('Foo')
                              .and not_change { dependency_list_export.status }
 
-            expect(Dependencies::DestroyExportWorker).not_to have_received(:perform_in)
+            expect(dependency_list_export).not_to have_received(:schedule_export_deletion)
           end
         end
 
@@ -72,11 +72,10 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
             expect(dependency_list_export.file.filename).to eq(expected_filename)
           end
 
-          it 'schedules the export deletion job' do
+          it 'schedules the export deletion' do
             export
 
-            expect(Dependencies::DestroyExportWorker)
-              .to have_received(:perform_in).with(1.hour, dependency_list_export.id)
+            expect(dependency_list_export).to have_received(:schedule_export_deletion)
           end
         end
       end

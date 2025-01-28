@@ -5,6 +5,7 @@ module Dependencies
     include EachBatch
 
     MAX_EXPORT_DURATION = 24.hours
+    EXPIRES_AFTER = 7.days
 
     mount_file_store_uploader AttachmentUploader
 
@@ -80,8 +81,22 @@ module Dependencies
       Dependencies::Export::SegmentedExportService.new(self) # rubocop:disable CodeReuse/ServiceClass -- This interface is expected by segmented export framework
     end
 
+    def send_completion_email!
+      return unless email_delivery_enabled?
+
+      Sbom::ExportMailer.completion_email(self).deliver_now
+    end
+
     def schedule_export_deletion
-      Dependencies::DestroyExportWorker.perform_in(1.hour, id)
+      if email_delivery_enabled?
+        update!(expires_at: EXPIRES_AFTER.from_now)
+      else
+        Dependencies::DestroyExportWorker.perform_in(1.hour, id)
+      end
+    end
+
+    def email_delivery_enabled?
+      email_delivery_enabled_for_group? || email_delivery_enabled_for_project?
     end
 
     def timed_out?
@@ -97,6 +112,14 @@ module Dependencies
     end
 
     private
+
+    def email_delivery_enabled_for_group?
+      exportable.is_a?(::Group) && Feature.enabled?(:asynchronous_dependency_export_delivery_for_groups, exportable)
+    end
+
+    def email_delivery_enabled_for_project?
+      exportable.is_a?(::Project) && Feature.enabled?(:asynchronous_dependency_export_delivery_for_projects, exportable)
+    end
 
     def only_one_exportable
       # When we have a pipeline, it is ok to also have a project. All pipeline exports _should_
