@@ -149,8 +149,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
       context 'when as_indexed_json is blank' do
         before do
-          allow(issue_as_ref).to receive(:as_indexed_json).and_return({})
-          allow(issue_as_ref).to receive(:routing).and_return(nil)
+          allow(issue_as_ref).to receive_messages(as_indexed_json: {}, routing: nil)
         end
 
         it 'logs a warning' do
@@ -255,61 +254,6 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
       end
     end
 
-    context 'when curation has occurred' do
-      before_all do
-        curator = ::Gitlab::Search::IndexCurator.new(ignore_patterns: [/migrations/], force: true, dry_run: false)
-        curator.curate!
-      end
-
-      it 'completes a bulk' do
-        indexer.process(issue_as_ref)
-
-        # The es_client will receive three items in bulk request for a single ref:
-        # 1) The bulk index header, ie: { "index" => { "_index": "gitlab-issues" } }
-        # 2) The payload of the actual document to write index
-        # 3) The delete request for document in rolled over index
-        expect(es_client)
-          .to receive(:bulk)
-            .with(body: [kind_of(String), kind_of(String), kind_of(String)])
-            .and_return({})
-
-        expect(indexer.flush).to be_empty
-      end
-
-      it 'fails all documents on exception' do
-        expect(es_client).to receive(:bulk) { raise 'An exception' }
-
-        indexer.process(issue_as_ref)
-        indexer.process(other_issue_as_ref)
-
-        # Since there are two indices, one rolled over and one active
-        # we can expect to have double the instances of failed refs
-        expect(indexer.flush).to contain_exactly(issue_as_ref, issue_as_ref, other_issue_as_ref, other_issue_as_ref)
-        expect(indexer.failures).to contain_exactly(issue_as_ref, issue_as_ref, other_issue_as_ref, other_issue_as_ref)
-      end
-
-      it 'fails a document correctly on exception after adding an item that exceeded the bulk limit' do
-        bulk_limit_bytes = (issue_as_json_with_times.to_json.bytesize * bulk_limit_overflow_factor).to_i
-        set_bulk_limit(indexer, bulk_limit_bytes)
-        indexer.process(issue_as_ref)
-        allow(es_client).to receive(:bulk).and_return({})
-
-        indexer.process(issue_as_ref)
-
-        expect(es_client).to have_received(:bulk) do |args|
-          body_bytesize = args[:body].sum(&:bytesize)
-          expect(body_bytesize).to be <= bulk_limit_bytes
-        end
-
-        expect(es_client).to receive(:bulk) { raise 'An exception' }
-
-        # Since there are two indices, one rolled over and one active
-        # we can expect to have double the instances of failed refs
-        expect(indexer.flush).to contain_exactly(issue_as_ref, issue_as_ref)
-        expect(indexer.failures).to contain_exactly(issue_as_ref, issue_as_ref)
-      end
-    end
-
     it 'fails documents that elasticsearch refuses to accept' do
       # Indexes with uppercase characters are invalid
       allow(other_issue_as_ref.proxy)
@@ -327,7 +271,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
       expect(search_one(Issue)).to have_attributes(issue_as_json)
     end
 
-    context 'indexing an issue' do
+    context 'when indexing an issue' do
       it 'adds the issue to the index' do
         indexer.process(issue_as_ref)
 
@@ -364,10 +308,10 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
       end
 
       it 'deletes the issue from the index if DocumentShouldBeDeletedFromIndexException is raised' do
-        database_record = issue_as_ref.database_record
-        allow(database_record.__elasticsearch__)
+        db_record = issue_as_ref.database_record
+        allow(db_record.__elasticsearch__)
           .to receive(:as_indexed_json)
-                .and_raise ::Elastic::Latest::DocumentShouldBeDeletedFromIndexError.new(database_record.class.name, database_record.id)
+            .and_raise(::Elastic::Latest::DocumentShouldBeDeletedFromIndexError.new(db_record.class.name, db_record.id))
 
         indexer.process(issue_as_ref)
 
@@ -376,31 +320,6 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
         refresh_index!
 
         expect(search(Issue, '*').size).to eq(0)
-      end
-
-      context 'when aliases are being used' do
-        let(:alias_name) { "gitlab-test-issues" }
-        let(:read_index) { "gitlab-test-issues-20220915-0822" }
-        let(:write_index) { "gitlab-test-issues-20220915-0823" }
-
-        before do
-          allow(es_client).to receive_message_chain(:indices, :get_alias)
-            .with(index: alias_name).and_return(
-              {
-                read_index => { "aliases" => { alias_name => {} } },
-                write_index => { "aliases" => { alias_name => { "is_write_index" => true } } }
-              }
-            )
-        end
-
-        it 'adds a delete op for each read index' do
-          expect(indexer).to receive(:delete).with(issue_as_ref, index_name: read_index)
-          expect(indexer).not_to receive(:delete).with(issue_as_ref, index_name: write_index)
-
-          indexer.process(issue_as_ref)
-
-          expect(indexer.flush).to be_empty
-        end
       end
 
       context 'when there has not been a alias rollover yet' do
@@ -423,23 +342,17 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
         end
       end
 
-      context 'when feature flag `search_index_curation` is disabled' do
-        before do
-          stub_feature_flags(search_index_curation: false)
-        end
+      it 'does not check for alias info or add any delete ops' do
+        expect(es_client).not_to receive(:indices)
+        expect(indexer).not_to receive(:delete)
 
-        it 'does not check for alias info or add any delete ops' do
-          expect(es_client).not_to receive(:indices)
-          expect(indexer).not_to receive(:delete)
+        indexer.process(issue_as_ref)
 
-          indexer.process(issue_as_ref)
-
-          expect(indexer.flush).to be_empty
-        end
+        expect(indexer.flush).to be_empty
       end
     end
 
-    context 'deleting an issue' do
+    context 'when deleting an issue' do
       it 'removes the issue from the index' do
         ensure_elasticsearch_index!
 

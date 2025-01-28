@@ -23,7 +23,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
 
   subject(:indexer) { described_class.new(project, force: force_reindexing) }
 
-  context 'empty project', :elastic do
+  context 'for empty project', :elastic do
     let_it_be_with_reload(:project) { create(:project, :empty_repo) }
 
     it 'updates the index status without running the indexing command' do
@@ -150,47 +150,6 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     context 'when indexing a HEAD commit', :elastic do
       it_behaves_like 'index up to the specified commit'
 
-      context 'when search curation is disabled' do
-        before do
-          stub_feature_flags(search_index_curation: false)
-        end
-
-        it 'runs the indexing command without --search-curation flag' do
-          gitaly_connection_data = {
-            storage: project.repository_storage,
-            limit_file_size: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes
-          }.merge(Gitlab::GitalyClient.connection_data(project.repository_storage))
-
-          expect_popen.with(
-            [
-              TestEnv.indexer_bin_path,
-              "--timeout=#{described_class::TIMEOUT}s",
-              "--visibility-level=#{project.visibility_level}",
-              "--project-id=#{project.id}",
-              "--from-sha=#{expected_from_sha}",
-              "--to-sha=#{to_sha}",
-              "--full-path=#{project.full_path}",
-              "--repository-access-level=#{project.repository_access_level}",
-              "--hashed-root-namespace-id=#{project.namespace.hashed_root_namespace_id}",
-              "--schema-version-blob=2308",
-              "--schema-version-commit=2306",
-              "--archived=#{project.archived}",
-              "--traversal-ids=#{project.namespace_ancestry}",
-              "#{project.repository.disk_path}.git"
-            ],
-            nil,
-            hash_including(
-              'GITALY_CONNECTION_INFO' => gitaly_connection_data.to_json,
-              'ELASTIC_CONNECTION_INFO' => elasticsearch_config.to_json,
-              'RAILS_ENV' => Rails.env,
-              'CORRELATION_ID' => Labkit::Correlation::CorrelationId.current_id
-            )
-          ).and_return(popen_success)
-
-          indexer.run
-        end
-      end
-
       it 'runs the indexing command' do
         gitaly_connection_data = {
           storage: project.repository_storage,
@@ -203,7 +162,6 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
             "--timeout=#{described_class::TIMEOUT}s",
             "--visibility-level=#{project.visibility_level}",
             "--project-id=#{project.id}",
-            '--search-curation',
             "--from-sha=#{expected_from_sha}",
             "--to-sha=#{to_sha}",
             "--full-path=#{project.full_path}",
@@ -251,7 +209,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
 
       it_behaves_like 'index up to the specified commit'
 
-      context 'after reverting a change' do
+      context 'and after reverting a change' do
         let!(:initial_commit) { project.repository.commit('master').sha }
 
         def indexed_commits_for(term)
@@ -321,40 +279,6 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
         project.wiki.create_page('test.md', '# term')
       end
 
-      context 'when search curation is disabled' do
-        before do
-          stub_feature_flags(search_index_curation: false)
-        end
-
-        it 'runs the indexer with the right flags without --search-curation' do
-          expect_popen.with(
-            [
-              TestEnv.indexer_bin_path,
-              "--timeout=#{described_class::TIMEOUT}s",
-              "--visibility-level=#{project.visibility_level}",
-              "--project-id=#{project.id}",
-              "--from-sha=#{expected_from_sha}",
-              "--to-sha=#{to_sha}",
-              "--full-path=#{project.full_path}",
-              '--blob-type=wiki_blob',
-              '--skip-commits',
-              "--wiki-access-level=#{project.wiki_access_level}",
-              "--archived=false",
-              "--schema-version-wiki=#{described_class::WIKI_SCHEMA_VERSION}",
-              "--traversal-ids=#{project.namespace_ancestry}",
-              "#{project.wiki.repository.disk_path}.git"
-            ],
-            nil,
-            hash_including(
-              'ELASTIC_CONNECTION_INFO' => elasticsearch_config.to_json,
-              'RAILS_ENV' => Rails.env
-            )
-          ).and_return(popen_success)
-
-          indexer.run
-        end
-      end
-
       it 'runs the indexer with the right flags' do
         expect_popen.with(
           [
@@ -362,7 +286,6 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
             "--timeout=#{described_class::TIMEOUT}s",
             "--visibility-level=#{project.visibility_level}",
             "--project-id=#{project.id}",
-            '--search-curation',
             "--from-sha=#{expected_from_sha}",
             "--to-sha=#{to_sha}",
             "--full-path=#{project.full_path}",
@@ -426,7 +349,6 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
           "--timeout=#{described_class::TIMEOUT}s",
           "--visibility-level=#{group.visibility_level}",
           "--group-id=#{group.id}",
-          '--search-curation',
           "--from-sha=#{expected_from_sha}",
           "--to-sha=#{to_sha}",
           "--full-path=#{group.full_path}",
@@ -475,16 +397,16 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
   end
 
   context 'when no aws credentials available' do
-    subject { envvars }
+    subject(:env_vars) { envvars }
 
     before do
       allow(Gitlab::Elastic::Client).to receive(:aws_credential_provider).and_return(nil)
     end
 
     it 'credentials env vars will not be included' do
-      expect(subject).not_to include('AWS_ACCESS_KEY_ID')
-      expect(subject).not_to include('AWS_SECRET_ACCESS_KEY')
-      expect(subject).not_to include('AWS_SESSION_TOKEN')
+      expect(env_vars).not_to include('AWS_ACCESS_KEY_ID')
+      expect(env_vars).not_to include('AWS_SECRET_ACCESS_KEY')
+      expect(env_vars).not_to include('AWS_SESSION_TOKEN')
     end
   end
 
@@ -494,13 +416,13 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     let(:session_token) { 'token' }
     let(:credentials) { Aws::Credentials.new(access_key_id, secret_access_key, session_token) }
 
-    subject { envvars }
+    subject(:env_vars) { envvars }
 
     context 'when AWS config is not enabled' do
       it 'credentials env vars will not be included' do
-        expect(subject).not_to include('AWS_ACCESS_KEY_ID')
-        expect(subject).not_to include('AWS_SECRET_ACCESS_KEY')
-        expect(subject).not_to include('AWS_SESSION_TOKEN')
+        expect(env_vars).not_to include('AWS_ACCESS_KEY_ID')
+        expect(env_vars).not_to include('AWS_SECRET_ACCESS_KEY')
+        expect(env_vars).not_to include('AWS_SESSION_TOKEN')
       end
     end
 
@@ -516,7 +438,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
           expect(chain).to receive(:resolve).and_return(credentials)
         end
 
-        expect(subject).to include({
+        expect(env_vars).to include({
           'AWS_ACCESS_KEY_ID' => access_key_id,
           'AWS_SECRET_ACCESS_KEY' => secret_access_key,
           'AWS_SESSION_TOKEN' => session_token
@@ -533,7 +455,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
           expect(Gitlab::Elastic::Client).to receive(:resolve_aws_credentials).and_call_original
           expect(Aws::CredentialProviderChain).not_to receive(:new)
 
-          expect(subject).to include({
+          expect(env_vars).to include({
             'AWS_ACCESS_KEY_ID' => access_key_id,
             'AWS_SECRET_ACCESS_KEY' => secret_access_key,
             'AWS_SESSION_TOKEN' => nil
@@ -547,8 +469,8 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     before do
       stub_ee_application_setting(elasticsearch_indexed_file_size_limit_kb: 1) # 1 KiB limit
 
-      project.repository.create_file(user, 'small_file.txt', 'Small file contents', message: 'small_file.txt', branch_name: 'master')
-      project.repository.create_file(user, 'large_file.txt', 'Large file' * 1000, message: 'large_file.txt', branch_name: 'master')
+      project.repository.create_file(user, 'small_file.txt', 'text', message: 'new file', branch_name: 'master')
+      project.repository.create_file(user, 'large_file.txt', 'text' * 1000, message: 'new file', branch_name: 'master')
 
       index_repository(project)
     end
@@ -557,10 +479,9 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
       files = indexed_file_paths_for('file')
       expect(files).to include('small_file.txt', 'large_file.txt')
 
-      blobs = Repository.elastic_search('large_file', type: 'blob', options: { current_user: user, search_level: 'global' })[:blobs][:results].response
-      large_file_blob = blobs.find do |blob|
-        'large_file.txt' == blob['_source']['blob']['path']
-      end
+      options = { current_user: user, search_level: 'global' }
+      blobs = Repository.elastic_search('large_file', type: 'blob', options: options)[:blobs][:results].response
+      large_file_blob = blobs.find { |blob| 'large_file.txt' == blob['_source']['blob']['path'] }
       expect(large_file_blob['_source']['blob']['content']).to eq('')
     end
   end
@@ -569,7 +490,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     let(:long_path) { "#{'a' * 1000}_file.txt" }
 
     before do
-      project.repository.create_file(user, long_path, 'Large path file contents', message: 'long_path.txt', branch_name: 'master')
+      project.repository.create_file(user, long_path, 'content', message: 'long_path.txt', branch_name: 'master')
 
       index_repository(project)
     end
@@ -636,12 +557,14 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
       before do
         allow(indexer).to receive(:purge_unreachable_commits_from_index?).and_return(true)
         allow_next_instance_of(Elastic::Latest::RepositoryInstanceProxy) do |instance|
-          allow(instance).to receive(:delete_index_for_commits_and_blobs).and_raise Elasticsearch::Transport::Transport::Errors::BadRequest
+          allow(instance).to receive(:delete_index_for_commits_and_blobs)
+            .and_raise Elasticsearch::Transport::Transport::Errors::BadRequest
         end
       end
 
       it 'calls track_exception on Gitlab::ErrorTracking' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(Elasticsearch::Transport::Transport::Errors::BadRequest, group_id: project.group, project_id: project.id)
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          Elasticsearch::Transport::Transport::Errors::BadRequest, group_id: project.group, project_id: project.id)
         indexer.run
       end
     end
@@ -681,15 +604,16 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
         branch = project.wiki.default_branch
 
         change_wiki_and_index(project) do
-          project.wiki.repository.create_file(user, filename_1, '', message: "adding #{filename_1}", branch_name: branch)
-          project.wiki.repository.create_file(user, filename_2, '', message: "adding #{filename_2}", branch_name: branch)
+          project.wiki.repository.create_file(user, filename_1, '', message: "add #{filename_1}", branch_name: branch)
+          project.wiki.repository.create_file(user, filename_2, '', message: "add #{filename_2}",
+            branch_name: branch)
         end
 
         expect(indexed_wiki_paths_for(filename_1)).to include(filename_1)
         expect(indexed_wiki_paths_for(filename_2)).to include(filename_2)
 
         change_wiki_and_index(project) do
-          project.wiki.repository.update_file(user, filename_1, '', message: "#{filename_1} updated", branch_name: branch)
+          project.wiki.repository.update_file(user, filename_1, '', message: "#{filename_1} patch", branch_name: branch)
           project.wiki.repository.delete_file(user, filename_2, message: "remove #{filename_2}", branch_name: branch)
         end
 

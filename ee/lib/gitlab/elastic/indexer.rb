@@ -146,9 +146,7 @@ module Gitlab
         }
 
         # Set AWS environment variables for IAM role authentication if present
-        if Gitlab::CurrentSettings.elasticsearch_config[:aws]
-          vars = build_aws_credentials_env(vars)
-        end
+        vars = build_aws_credentials_env(vars) if Gitlab::CurrentSettings.elasticsearch_config[:aws]
 
         # Users can override default SSL certificate path via SSL_CERT_FILE SSL_CERT_DIR
         vars.merge(ENV.slice('SSL_CERT_FILE', 'SSL_CERT_DIR'))
@@ -163,7 +161,6 @@ module Gitlab
 
         command << "--group-id=#{group.id}" if group
         command << "--project-id=#{project.id}" if project
-        command << '--search-curation' if Feature.enabled?(:search_index_curation)
         command << "--from-sha=#{base_sha}"
         command << "--to-sha=#{to_sha}"
         command << "--full-path=#{container.full_path}"
@@ -223,16 +220,14 @@ module Gitlab
       end
 
       def from_sha
-        strong_memoize(:from_sha) do
-          repository_contains_last_indexed_commit? ? last_commit : repository.empty_tree_id
-        end
+        repository_contains_last_indexed_commit? ? last_commit : repository.empty_tree_id
       end
+      strong_memoize_attr :from_sha
 
       def repository_contains_last_indexed_commit?
-        strong_memoize(:repository_contains_last_indexed_commit) do
-          last_commit.present? && repository.commit(last_commit).present?
-        end
+        last_commit.present? && repository.commit(last_commit).present?
       end
+      strong_memoize_attr :repository_contains_last_indexed_commit?
 
       def last_commit_ancestor_of?(to_sha)
         return true if Gitlab::Git.blank_ref?(from_sha)
@@ -272,7 +267,7 @@ module Gitlab
       end
 
       def update_index_status(to_sha)
-        unless container.class.name.constantize.exists?(id: container.id) # rubocop: disable CodeReuse/ActiveRecord
+        unless container.class.name.constantize.id_in(container.id).exists?
           logger.debug(build_structured_payload(
             message: "Index status not updated. The #{container.class.name.downcase} does not exist.",
             group_id: group&.id,
@@ -294,9 +289,9 @@ module Gitlab
         end
 
         attributes = if index_wiki?
-                       { last_wiki_commit: to_sha, wiki_indexed_at: Time.now }
+                       { last_wiki_commit: to_sha, wiki_indexed_at: Time.zone.now }
                      else
-                       { last_commit: to_sha, indexed_at: Time.now }
+                       { last_commit: to_sha, indexed_at: Time.zone.now }
                      end
 
         @index_status.update!(attributes)
