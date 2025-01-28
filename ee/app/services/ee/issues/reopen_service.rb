@@ -47,17 +47,18 @@ module EE
       # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
       def after_reopen(issue)
-        return super unless work_item.synced_epic
-
-        super
-        # Creating a system note changes `updated_at` for the issue
-        work_item.synced_epic.update_column(:updated_at, issue.updated_at)
         ::Gitlab::EventStore.publish(
           ::WorkItems::WorkItemReopenedEvent.new(data: {
             id: issue.id,
             namespace_id: issue.namespace_id
           })
         )
+
+        return super unless work_item.synced_epic
+
+        super
+        # Creating a system note changes `updated_at` for the issue
+        work_item.synced_epic.update_column(:updated_at, issue.updated_at)
       end
     end
   end
