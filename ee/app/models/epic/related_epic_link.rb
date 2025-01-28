@@ -4,6 +4,7 @@ class Epic::RelatedEpicLink < ApplicationRecord
   include IssuableLink
   include CreatedAtFilterable
   include UpdatedAtFilterable
+  include EachBatch
 
   self.table_name = 'related_epic_links'
 
@@ -11,6 +12,9 @@ class Epic::RelatedEpicLink < ApplicationRecord
   belongs_to :target, class_name: 'Epic'
   belongs_to :related_work_item_link, class_name: 'WorkItems::RelatedWorkItemLink', optional: true,
     foreign_key: :issue_link_id, inverse_of: :related_epic_link
+
+  scope :for_source, ->(item) { where(source_id: item.id) }
+  scope :for_target, ->(item) { where(target_id: item.id) }
 
   scope :with_api_entity_associations, -> do
     preload(

@@ -28,20 +28,20 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
 
   context 'when user does not have permissions' do
     context 'when user cannot read original work item' do
-      let(:current_user) { target_namespace_member }
+      let_it_be(:current_user) { target_namespace_member }
 
       it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
     end
 
     context 'when user cannot create work items in target namespace' do
-      let(:current_user) { source_namespace_member }
+      let_it_be(:current_user) { source_namespace_member }
 
       it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
     end
   end
 
   context 'when user has permission to move work item' do
-    let(:current_user) { namespaces_member }
+    let_it_be(:current_user) { namespaces_member }
 
     context 'when moving a group level work item to same group' do
       let(:target_namespace) { group }
@@ -95,7 +95,6 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
 
       let!(:original_work_item_attrs) do
         {
-          iid: original_work_item.iid,
           project: target_namespace.try(:project),
           namespace: target_namespace,
           work_item_type: original_work_item.work_item_type,
@@ -142,6 +141,34 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
 
         it_behaves_like 'cloneable and moveable widget data'
         it_behaves_like 'cloneable and moveable for ee widget data'
+      end
+
+      context 'with epic work item' do
+        let_it_be_with_reload(:original_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+        before do
+          allow(original_work_item).to receive(:supports_move_and_clone?).and_return(true)
+        end
+
+        it_behaves_like 'cloneable and moveable work item'
+
+        context 'when cleanup original data is enabled' do
+          before do
+            stub_feature_flags(cleanup_data_source_work_item_data: true)
+          end
+
+          it_behaves_like 'cloneable and moveable widget data'
+          it_behaves_like 'cloneable and moveable for ee widget data'
+        end
+
+        context 'when cleanup original data is disabled' do
+          before do
+            stub_feature_flags(cleanup_data_source_work_item_data: false)
+          end
+
+          it_behaves_like 'cloneable and moveable widget data'
+          it_behaves_like 'cloneable and moveable for ee widget data'
+        end
       end
     end
   end

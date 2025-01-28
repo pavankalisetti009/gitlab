@@ -27,20 +27,20 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
 
   context 'when user does not have permissions' do
     context 'when user cannot read original work item' do
-      let(:current_user) { target_namespace_member }
+      let_it_be(:current_user) { target_namespace_member }
 
       it_behaves_like 'fails to transfer work item', 'Cannot clone work item due to insufficient permissions'
     end
 
     context 'when user cannot create work items in target namespace' do
-      let(:current_user) { source_namespace_member }
+      let_it_be(:current_user) { source_namespace_member }
 
       it_behaves_like 'fails to transfer work item', 'Cannot clone work item due to insufficient permissions'
     end
   end
 
   context 'when user has permission to clone work item' do
-    let(:current_user) { namespaces_member }
+    let_it_be(:current_user) { namespaces_member }
 
     context 'without group level work item license' do
       before do
@@ -76,7 +76,6 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
 
       let!(:original_work_item_attrs) do
         {
-          iid: original_work_item.iid,
           project: target_namespace.try(:project),
           namespace: target_namespace,
           work_item_type: original_work_item.work_item_type,
@@ -108,6 +107,18 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
       it_behaves_like 'cloneable and moveable work item'
       it_behaves_like 'cloneable and moveable widget data'
       it_behaves_like 'cloneable and moveable for ee widget data'
+
+      context 'with epic work item' do
+        let_it_be_with_reload(:original_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+        before do
+          allow(original_work_item).to receive(:supports_move_and_clone?).and_return(true)
+        end
+
+        it_behaves_like 'cloneable and moveable work item'
+        it_behaves_like 'cloneable and moveable widget data'
+        it_behaves_like 'cloneable and moveable for ee widget data'
+      end
     end
   end
 end
