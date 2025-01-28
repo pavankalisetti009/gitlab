@@ -6,11 +6,22 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
   end
 
   def work_item_epic(work_item)
+    return unless original_work_item.work_item_type.issue?
+
     work_item.reload.epic
   end
 
   def work_item_vulnerabilities(work_item)
-    work_item.reload.related_vulnerabilities
+    work_item.reload.related_vulnerabilities.map(&:id)
+  end
+
+  def linked_items(work_item)
+    return [] unless original_work_item.work_item_type.epic?
+
+    [
+      IssueLink.for_source(work_item).map(&:target).pluck(:title),
+      IssueLink.for_target(work_item).map(&:source).pluck(:title)
+    ]
   end
 
   let_it_be(:weights_source) do
@@ -20,15 +31,39 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
   end
 
   let_it_be(:epic) do
-    epic = create(:epic, :with_work_item_parent)
-    parent_link = create(:parent_link, work_item: original_work_item, work_item_parent: epic.work_item)
-    create(:epic_issue, issue: original_work_item, epic: epic, work_item_parent_link: parent_link)
-    epic
+    if original_work_item.work_item_type.issue?
+      epic = create(:epic, :with_work_item_parent)
+      parent_link = create(:parent_link, work_item: original_work_item, work_item_parent: epic.work_item)
+      create(:epic_issue, issue: original_work_item, epic: epic, work_item_parent_link: parent_link)
+      epic
+    end
   end
 
   let_it_be(:related_vulnerabilities) do
     vulnerability_links = create_list(:vulnerabilities_issue_link, 2, issue: original_work_item)
-    vulnerability_links.map(&:vulnerability)
+    vulnerability_links.flat_map(&:vulnerability).map(&:id)
+  end
+
+  let_it_be(:related_items) do
+    # related items for non epic WI are covered in FOSS
+    if original_work_item.work_item_type.epic?
+      create(:work_item, :epic_with_legacy_epic, namespace: original_work_item.namespace).tap do |related_wi_epic|
+        create(:related_epic_link, :with_related_work_item_link, source: original_work_item.sync_object,
+          target: related_wi_epic.sync_object, link_type: ::Enums::IssuableLink::TYPE_BLOCKS)
+      end
+
+      create(:work_item, :epic_with_legacy_epic, namespace: original_work_item.namespace).tap do |related_wi_epic|
+        create(:related_epic_link, :with_related_work_item_link, source: related_wi_epic.sync_object,
+          target: original_work_item.sync_object, link_type: ::Enums::IssuableLink::TYPE_BLOCKS)
+      end
+
+      [
+        IssueLink.for_source(original_work_item).map(&:target).pluck(:title),
+        IssueLink.for_target(original_work_item).map(&:source).pluck(:title)
+      ]
+    else
+      []
+    end
   end
 
   let_it_be(:move) { WorkItems::DataSync::MoveService }
@@ -37,11 +72,12 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
   # rubocop: disable Layout/LineLength -- improved readability with one line per widget
   let_it_be(:widgets) do
     [
-      { widget_name: :weights_source,          eval_value: :work_item_weights_source,  expected_data: weights_source,          operations: [move, clone] },
+      # for hierarchy widget, ensure that epic(through epic_issue) is being copied to the new work item
+      { widget: :hierarchy,    assoc_name: :epic,                    eval_value: :work_item_epic,            expected: epic,                    operations: [move, clone] },
+      { widget: :weight,       assoc_name: :weights_source,          eval_value: :work_item_weights_source,  expected: weights_source,          operations: [move, clone] },
+      { widget: :linked_items, assoc_name: :linked_work_items,       eval_value: :linked_items,              expected: related_items,           operations: [move] },
       # these are non widget associations, but we can test these the same way
-      { widget_name: :related_vulnerabilities, eval_value: :work_item_vulnerabilities, expected_data: related_vulnerabilities, operations: [move] },
-      # for hierarchy widget, ensure that epic(though epic_issue) is being copied to the new work item
-      { widget_name: :epic,                    eval_value: :work_item_epic,            expected_data: epic,                    operations: [move, clone] }
+      {                        assoc_name: :related_vulnerabilities, eval_value: :work_item_vulnerabilities, expected: related_vulnerabilities, operations: [move] }
     ]
   end
   # rubocop: enable Layout/LineLength
