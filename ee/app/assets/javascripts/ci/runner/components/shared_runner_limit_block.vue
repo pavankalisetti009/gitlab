@@ -56,9 +56,8 @@ export default {
     <gl-button
       v-if="subscriptionsMoreMinutesUrl"
       variant="danger"
-      category="primary"
+      category="secondary"
       :href="subscriptionsMoreMinutesUrl"
-      class="btn-inverted"
     >
       {{ __('Purchase more minutes') }}
     </gl-button>
