@@ -440,6 +440,70 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
 
         it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
       end
+
+      describe 'order of findings' do
+        let(:head_pipeline) { create(:ee_ci_pipeline, :with_sast_report, project: project) }
+        let(:base_pipeline) { test_pipelines[:default_base] }
+        let(:scan_type) { 'sast' }
+
+        let(:scan) do
+          create(
+            :security_scan,
+            :latest_successful,
+            project: project,
+            pipeline: head_pipeline,
+            scan_type: scan_type
+          )
+        end
+
+        let!(:medium_finding) do
+          create(
+            :security_finding,
+            :with_finding_data,
+            deduplicated: true,
+            severity: Enums::Vulnerability.severity_levels[:medium],
+            scan: scan
+          )
+        end
+
+        let!(:high_finding) do
+          create(
+            :security_finding,
+            :with_finding_data,
+            deduplicated: true,
+            severity: Enums::Vulnerability.severity_levels[:high],
+            scan: scan
+          )
+        end
+
+        let!(:critical_finding) do
+          create(
+            :security_finding,
+            :with_finding_data,
+            deduplicated: true,
+            severity: Enums::Vulnerability.severity_levels[:critical],
+            scan: scan
+          )
+        end
+
+        it 'returns findings in decreasing order of severity' do
+          added_findings_ids = subject[:data]['added'].pluck("id")
+
+          expect(added_findings_ids[0]).to eq(critical_finding.id)
+          expect(added_findings_ids[1]).to eq(high_finding.id)
+          expect(added_findings_ids[2]).to eq(medium_finding.id)
+        end
+
+        it 'returns findings in decreasing order with no more than MAX_FINDINGS_COUNT findings' do
+          stub_const("Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT", 2)
+
+          added_findings_ids = subject[:data]['added'].pluck("id")
+
+          expect(added_findings_ids.count).to eq(2)
+          expect(added_findings_ids[0]).to eq(critical_finding.id)
+          expect(added_findings_ids[1]).to eq(high_finding.id)
+        end
+      end
     end
   end
 end

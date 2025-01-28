@@ -29,6 +29,16 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
     }
   end
 
+  context 'when the pipeline is nil' do
+    let(:pipeline) { nil }
+
+    describe '#execute' do
+      subject { service_object.execute }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
   context 'when the pipeline does not have security findings' do
     describe '#execute' do
       subject { service_object.execute }

@@ -49,6 +49,8 @@ module Security
       # Kaminari increments the LIMIT on the outer relation query by 1 to
       # determine if there are further pages to load. See https://github.com/kaminari/kaminari/blob/13b59ce7ab4e3d0e3072272251de734f918d5f8f/kaminari-activerecord/lib/kaminari/activerecord/active_record_relation_methods.rb#L83-L101
 
+      return Security::Finding.none unless pipeline
+
       lateral_relation = Security::Finding
         .where('"security_findings"."scan_id" = "security_scans"."id"') # rubocop:disable CodeReuse/ActiveRecord
         .where('"security_findings"."severity" = "severities"."severity"') # rubocop:disable CodeReuse/ActiveRecord
