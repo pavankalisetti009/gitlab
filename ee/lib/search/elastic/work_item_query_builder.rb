@@ -8,7 +8,7 @@ module Search
 
       DOC_TYPE = 'work_item'
       # iid field can be added here as lenient option will pardon format errors, like integer out of range.
-      FIELDS = %w[iid^3 title^2 description].freeze
+      FIELDS = %w[iid^50 title^2 description].freeze
       THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
       def build
