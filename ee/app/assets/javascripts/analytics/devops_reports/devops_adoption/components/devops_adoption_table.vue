@@ -44,7 +44,8 @@ const thClass = ['!gl-bg-white', 'gl-text-subtle'];
 
 const fieldOptions = {
   thClass,
-  thAttr: { 'data-testid': 'headers' },
+  // eslint-disable-next-line max-params
+  thAttr: (value, key, item, type) => (type === 'head' ? { 'data-testid': 'headers' } : {}),
   formatter,
   sortable: true,
   sortByFormatted: true,
@@ -103,6 +104,7 @@ export default {
           key: 'name',
           label: I18N_GROUP_COL_LABEL,
           ...fieldOptions,
+          isRowHeader: true,
           thClass: ['gl-w-30', ...thClass],
         },
         ...this.cols.map((item) => ({
