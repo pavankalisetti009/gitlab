@@ -49,7 +49,7 @@ module Users
           username: username,
           user_type: :service_account,
           external: true,
-          skip_confirmation: true, # Bot users should always have their emails confirmed.
+          skip_confirmation: skip_confirmation,
           organization_id: params[:organization_id],
           avatar: params[:avatar].presence,
           composite_identity_enforced: !!params[:composite_identity_enforced],
@@ -78,6 +78,19 @@ module Users
 
       def private_profile
         params[:private_profile] || false
+      end
+
+      # Skip confirmation only for auto-generated email address.
+      # Custom addresses should go through confirmation if
+      # enabled for the instance.
+      def skip_confirmation
+        return true if auto_generated_email_address?
+
+        Gitlab::CurrentSettings.email_confirmation_setting_off?
+      end
+
+      def auto_generated_email_address?
+        email == username_and_email_generator.email
       end
 
       def error(message, reason)

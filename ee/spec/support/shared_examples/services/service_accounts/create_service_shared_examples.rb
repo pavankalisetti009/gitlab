@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'service account creation success' do
+  before do
+    # Even when email confirmation is enabled, service accounts with
+    # auto-generated email addresses will be confirmed.
+    stub_application_setting_enum('email_confirmation_setting', 'hard')
+  end
+
   it 'creates a service account successfully', :aggregate_failures do
     result = service.execute
 
@@ -36,15 +42,38 @@ RSpec.shared_examples 'service account creation with customized params' do
     }
   end
 
-  it 'creates a service account successfully', :aggregate_failures do
-    result = service.execute
-    user = service.execute.payload[:user]
+  context 'when email confirmation is off' do
+    before do
+      stub_application_setting_enum('email_confirmation_setting', 'off')
+    end
 
-    expect(result.status).to eq(:success)
-    expect(user.confirmed?).to eq(true)
-    expect(user.user_type).to eq('service_account')
-    expect(user.external).to eq(true)
-    expect(user.composite_identity_enforced?).to eq(true)
+    it 'creates a service account successfully', :aggregate_failures do
+      result = service.execute
+      user = service.execute.payload[:user]
+
+      expect(result.status).to eq(:success)
+      expect(user.confirmed?).to eq(true)
+      expect(user.user_type).to eq('service_account')
+      expect(user.external).to eq(true)
+      expect(user.composite_identity_enforced?).to eq(true)
+    end
+  end
+
+  context 'when email confirmation is on' do
+    before do
+      stub_application_setting_enum('email_confirmation_setting', 'hard')
+    end
+
+    it 'creates a service account successfully', :aggregate_failures do
+      result = service.execute
+      user = service.execute.payload[:user]
+
+      expect(result.status).to eq(:success)
+      expect(user.confirmed?).to eq(false)
+      expect(user.user_type).to eq('service_account')
+      expect(user.external).to eq(true)
+      expect(user.composite_identity_enforced?).to eq(true)
+    end
   end
 
   it 'sets user attributes according to supplied params' do
