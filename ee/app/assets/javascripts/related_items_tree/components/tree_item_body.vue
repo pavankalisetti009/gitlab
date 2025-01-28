@@ -122,13 +122,11 @@ export default {
       }
       return this.isOpen ? 'issues' : 'issue-closed';
     },
-    stateIconClass() {
+    stateIconVariant() {
       if (this.isBlocked && this.isOpen) {
-        return 'gl-text-red-500';
+        return 'danger';
       }
-      return this.isOpen
-        ? 'issue-token-state-icon-open gl-fill-icon-success'
-        : 'issue-token-state-icon-closed gl-fill-icon-info';
+      return this.isOpen ? 'success' : 'info';
     },
     itemId() {
       return this.itemReference.split(this.item.pathIdSeparator).pop();
@@ -225,10 +223,10 @@ export default {
           <div class="item-title gl-mb-0 gl-flex gl-py-1">
             <gl-icon
               ref="stateIconMd"
-              class="gl-mr-3 gl-block"
-              :class="stateIconClass"
+              class="issue-token-state-icon gl-mr-3 gl-block"
               :name="stateIconName"
               :aria-label="stateText"
+              :variant="stateIconVariant"
             />
             <state-tooltip
               :get-target-ref="() => $refs.stateIconMd"
