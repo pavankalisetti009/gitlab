@@ -1,9 +1,0 @@
----
-name: duo_chat_storage_postgresql_write
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/501145
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/174181
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/506874
-milestone: '17.7'
-group: group::duo chat
-type: gitlab_com_derisk
-default_enabled: false
