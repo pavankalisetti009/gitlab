@@ -62,6 +62,15 @@ module Security
         def scope_changed?
           diff.key?(:policy_scope)
         end
+
+        def content_changed?
+          diff.key?(:content)
+        end
+
+        def content_project_changed?
+          content_changed? &&
+            diff[:content].from&.dig(:include, 0, :project) != diff[:content].to&.dig(:include, 0, :project)
+        end
       end
     end
   end

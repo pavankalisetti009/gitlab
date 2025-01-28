@@ -122,5 +122,61 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
                                       }.to(rule_content_3)
       end
     end
+
+    context 'when the content of pipeline execution policy gets updated' do
+      let_it_be(:old_config_project) { create(:project, :empty_repo) }
+      let_it_be(:new_config_project) { create(:project, :empty_repo) }
+      let_it_be(:db_policy) do
+        create(:security_policy, :pipeline_execution_policy, name: 'Policy',
+          content: {
+            pipeline_config_strategy: 'inject_ci',
+            content: { include: [{ project: old_config_project.full_path, file: 'file.yml' }] }
+          })
+      end
+
+      let(:yaml_policy) do
+        {
+          name: 'Updated Policy',
+          content: { include: [{ project: new_config_project.full_path, file: 'file.yml' }] }
+        }
+      end
+
+      before do
+        db_policy.update_pipeline_execution_policy_config_link!
+      end
+
+      context 'when project in the content gets updated' do
+        it 'updates the policy config links' do
+          expect { service.execute }.to change { db_policy.reload.security_pipeline_execution_policy_config_link }
+          expect(db_policy.security_pipeline_execution_policy_config_link.project).to eq(new_config_project)
+        end
+      end
+
+      context 'when file in the content gets updated' do
+        let(:yaml_policy) do
+          {
+            name: 'Updated Policy',
+            content: { include: [{ project: old_config_project.full_path, file: 'new_file.yml' }] }
+          }
+        end
+
+        it 'does not update the policy config links' do
+          expect { service.execute }.not_to change { db_policy.reload.security_pipeline_execution_policy_config_link }
+        end
+      end
+
+      context 'when ref in the content gets updated' do
+        let(:yaml_policy) do
+          {
+            name: 'Updated Policy',
+            content: { include: [{ project: old_config_project.full_path, file: 'file.yml', ref: 'develop' }] }
+          }
+        end
+
+        it 'does not update the policy config links' do
+          expect { service.execute }.not_to change { db_policy.reload.security_pipeline_execution_policy_config_link }
+        end
+      end
+    end
   end
 end

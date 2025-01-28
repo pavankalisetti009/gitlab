@@ -294,7 +294,27 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     context "with pipeline execution policies" do
       include_examples 'upserts policy', :pipeline_execution_policy, nil do
-        let(:policy_hash) { build(:pipeline_execution_policy, name: "foobar") }
+        let_it_be(:config_project, reload: true) { create(:project, :empty_repo) }
+        let(:policy_hash) do
+          build(:pipeline_execution_policy,
+            name: "foobar",
+            content: { include: [{ project: config_project.full_path, file: 'compliance-pipeline.yml' }] })
+        end
+
+        it 'creates a new link to the config project' do
+          expect { upsert! }.to change { Security::PipelineExecutionPolicyConfigLink.count }.by(1)
+          expect(Security::PipelineExecutionPolicyConfigLink.last.project).to eq config_project
+        end
+
+        context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
+          before do
+            stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
+          end
+
+          it 'does not create a new link to the config project' do
+            expect { upsert! }.not_to change { Security::PipelineExecutionPolicyConfigLink.count }
+          end
+        end
       end
     end
 
@@ -815,6 +835,92 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
 
       it_behaves_like 'a valid url for policy type', 'vulnerability_management_policy'
+    end
+  end
+
+  describe '#update_pipeline_execution_policy_config_link!' do
+    subject(:update_links) { policy.update_pipeline_execution_policy_config_link! }
+
+    let_it_be(:config_project, reload: true) { create(:project, :empty_repo) }
+    let(:policy) do
+      create(:security_policy, :pipeline_execution_policy, content: {
+        content: { include: [{ project: config_project.full_path, file: 'compliance-pipeline.yml' }] },
+        pipeline_config_strategy: 'inject_ci'
+      })
+    end
+
+    it 'creates a new link if one does not exist' do
+      expect { update_links }.to change { Security::PipelineExecutionPolicyConfigLink.count }.by(1)
+      expect(policy.reload.security_pipeline_execution_policy_config_link.project).to eq config_project
+    end
+
+    it 'does not create a duplicate link' do
+      update_links
+
+      expect { policy.update_pipeline_execution_policy_config_link! }
+        .not_to change { Security::PipelineExecutionPolicyConfigLink.count }.from(1)
+    end
+
+    context 'when policy was previously linked to another project' do
+      let_it_be(:other_config_project) { create(:project, :empty_repo) }
+
+      before do
+        create(:security_pipeline_execution_policy_config_link, security_policy: policy, project: other_config_project)
+      end
+
+      it 'replaces the link' do
+        update_links
+
+        expect(policy.reload.security_pipeline_execution_policy_config_link.project).to eq config_project
+      end
+    end
+
+    context 'when the linked config project does not exist' do
+      before do
+        config_project.destroy!
+      end
+
+      it 'does not create any link' do
+        expect { update_links }.not_to change { Security::PipelineExecutionPolicyConfigLink.count }
+      end
+    end
+
+    %i[approval_policy scan_execution_policy vulnerability_management_policy].each do |type|
+      context "when policy is #{type}" do
+        let(:policy) { create(:security_policy, type) }
+
+        it { expect  { update_links }.not_to change { Security::PipelineExecutionPolicyConfigLink.count } }
+      end
+    end
+
+    context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
+      before do
+        stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
+      end
+
+      it 'does not create a new link to the config project' do
+        expect { update_links }.not_to change { Security::PipelineExecutionPolicyConfigLink.count }
+      end
+    end
+  end
+
+  describe '#pipeline_execution_ci_config' do
+    subject(:ci_config) { policy.pipeline_execution_ci_config }
+
+    let(:policy) { build(:security_policy, :pipeline_execution_policy) }
+
+    it 'returns CI config path' do
+      expect(ci_config).to eq({ "project" => 'compliance-project', "file" => "compliance-pipeline.yml" })
+    end
+
+    context 'when policy does not include a CI config' do
+      %i[approval_policy scan_execution_policy vulnerability_management_policy].each do |type|
+        context "when policy is #{type}" do
+          let(:policy) { build(:security_policy, type) }
+
+          it { is_expected.to be_nil }
+        end
+      end
     end
   end
 end

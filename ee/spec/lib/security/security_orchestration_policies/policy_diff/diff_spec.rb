@@ -76,6 +76,47 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::Diff, featur
     end
   end
 
+  describe '#content_changed?' do
+    it 'returns true when content is changed' do
+      diff.add_policy_field(:content, nil, {})
+
+      expect(diff.content_changed?).to be true
+    end
+
+    it 'returns false when content is not changed' do
+      diff.add_policy_field(:field1, 'old', 'new')
+
+      expect(diff.content_changed?).to be false
+    end
+  end
+
+  describe '#content_project_changed?' do
+    it 'returns true when project in the content is changed from nil' do
+      diff.add_policy_field(:content, nil, { include: [{ project: 'new' }] })
+
+      expect(diff.content_project_changed?).to be true
+    end
+
+    it 'returns true when project in the content is changed from other project' do
+      diff.add_policy_field(:content, { include: [{ project: 'old' }] }, { include: [{ project: 'new' }] })
+
+      expect(diff.content_project_changed?).to be true
+    end
+
+    it 'returns false when other field in the content is not changed' do
+      diff.add_policy_field(:content, { include: [{ project: 'old', file: 'old' }] },
+        { include: [{ project: 'old', file: 'new' }] })
+
+      expect(diff.content_project_changed?).to be false
+    end
+
+    it 'returns false when other field is changed' do
+      diff.add_policy_field(:field1, 'old', 'new')
+
+      expect(diff.content_project_changed?).to be false
+    end
+  end
+
   describe '#any_changes?' do
     let(:diff) { described_class.new }
 

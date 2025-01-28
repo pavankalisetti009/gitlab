@@ -14,6 +14,7 @@ module Security
           policy = update_policy_attributes!(policy_changes.db_policy, policy_changes.yaml_policy)
 
           update_policy_rules(policy, diff.rules_diff)
+          policy.update_pipeline_execution_policy_config_link! if policy_changes.diff.content_project_changed?
         end
       end
 

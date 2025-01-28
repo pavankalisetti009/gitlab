@@ -78,6 +78,7 @@ FactoryBot.define do
       content { { approval_settings: { prevent_approval_by_author: true } } }
     end
 
+    trait :approval_policy
     trait :scan_execution_policy do
       type { Security::Policy.types[:scan_execution_policy] }
       content { { actions: [{ scan: 'secret_detection' }], skip_ci: { allowed: true } } }
