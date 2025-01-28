@@ -82,7 +82,7 @@ export default () => {
             ? true
             : parseBoolean(rawFilterParams.show_milestones),
         isShowingLabels: rawFilterParams.show_labels
-          ? parseBoolean(rawFilterParams.show_milestones)
+          ? parseBoolean(rawFilterParams.show_labels)
           : false,
         presetType,
         isProgressTrackingActive:
