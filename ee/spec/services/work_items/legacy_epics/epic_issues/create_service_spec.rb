@@ -123,31 +123,6 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
       context 'when user has permissions to link the issue' do
         let_it_be(:user) { guest }
 
-        context 'when epic_issues_through_work_item_service is disabled' do
-          before do
-            stub_feature_flags(epic_issues_through_work_item_service: false)
-          end
-
-          it 'calls the legacy service' do
-            expect_next_instance_of(::EpicIssues::CreateService, epic, user,
-              issuable_references: references) do |service|
-              expect(service).to receive(:execute)
-            end.and_call_original
-
-            expect { execute }.to change { EpicIssue.count }.by(1)
-              .and change { WorkItems::ParentLink.count }.by(1)
-          end
-
-          it_behaves_like 'returns success' do
-            let(:expected_issue_system_note_action) { 'issue_added_to_epic' }
-            let(:expected_epic_system_note_action) { 'epic_issue_added' }
-            let(:expected_epic_system_note) { "added issue #{issue.to_reference(epic.group)}" }
-            let(:expected_issue_system_note) { "added to epic #{epic.to_reference(issue.project)}" }
-            let(:epic_system_note) { Note.find_by(noteable_id: epic.id, noteable_type: 'Epic') }
-            let(:expected_noteable_type) { 'Epic' }
-          end
-        end
-
         context 'when the reference list is empty' do
           let(:references) { [] }
 
