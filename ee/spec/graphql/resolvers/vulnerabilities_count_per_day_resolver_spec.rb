@@ -66,55 +66,23 @@ RSpec.describe Resolvers::VulnerabilitiesCountPerDayResolver, feature_category: 
           group.add_maintainer(current_user)
         end
 
-        context 'when using namespace based historical statistics' do
-          before do
-            stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: true)
-          end
+        it 'fetches historical vulnerability data from the start date to the end date' do
+          travel_to(Date.new(2019, 10, 31)) do
+            create(:vulnerability_namespace_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, namespace: group)
+            create(:vulnerability_namespace_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, namespace: group)
+            create(:vulnerability_namespace_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, namespace: group)
 
-          it 'fetches historical vulnerability data from the start date to the end date' do
-            travel_to(Date.new(2019, 10, 31)) do
-              create(:vulnerability_namespace_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, namespace: group)
-              create(:vulnerability_namespace_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, namespace: group)
-              create(:vulnerability_namespace_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, namespace: group)
+            expected_history = [
+              { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
+              { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
+              { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
+              { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
+              { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
+              { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
+              { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
+            ].as_json
 
-              expected_history = [
-                { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
-                { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
-                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
-                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
-                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
-                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
-                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
-              ].as_json
-
-              expect(ordered_history.as_json).to match_array(expected_history)
-            end
-          end
-        end
-
-        context 'when using project based historical statistics' do
-          before do
-            stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: false)
-          end
-
-          it 'fetches historical vulnerability data from the start date to the end date' do
-            travel_to(Date.new(2019, 10, 31)) do
-              create(:vulnerability_historical_statistic, date: start_date + 1.day, total: 2, critical: 1, high: 1, project: project)
-              create(:vulnerability_historical_statistic, date: start_date + 2.days, total: 3, critical: 2, high: 1, project: project)
-              create(:vulnerability_historical_statistic, date: start_date + 4.days, total: 1, critical: 1, high: 0, project: project_2)
-
-              expected_history = [
-                { 'total' => 0, 'critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date },
-                { 'total' => 2, 'critical' => 1, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 1.day },
-                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 2.days },
-                { 'total' => 3, 'critical' => 2, 'high' => 1, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 3.days },
-                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 4.days },
-                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => start_date + 5.days },
-                { 'total' => 1, 'critical' => 1, 'high' => 0, 'medium' => 0, 'low' => 0, 'unknown' => 0, 'info' => 0, 'date' => end_date }
-              ].as_json
-
-              expect(ordered_history.as_json).to match_array(expected_history)
-            end
+            expect(ordered_history.as_json).to match_array(expected_history)
           end
         end
       end

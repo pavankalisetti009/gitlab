@@ -32,24 +32,8 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
         visit_group_value_streams_dashboard(group)
       end
 
-      context 'when using project based historical statistics' do
-        before do
-          stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: false)
-        end
-
-        it_behaves_like 'renders metrics comparison tables' do
-          let(:panel_title) { "#{group.name} group" }
-        end
-      end
-
-      context 'when using namespace based historical statistics' do
-        before do
-          stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: true)
-        end
-
-        it_behaves_like 'renders metrics comparison tables' do
-          let(:panel_title) { "#{group.name} group" }
-        end
+      it_behaves_like 'renders metrics comparison tables' do
+        let(:panel_title) { "#{group.name} group" }
       end
 
       it_behaves_like 'renders contributor count'
@@ -62,24 +46,8 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
         visit_group_value_streams_dashboard(group)
       end
 
-      context 'when using project based historical statistics' do
-        before do
-          stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: false)
-        end
-
-        it_behaves_like 'renders metrics comparison tables' do
-          let(:panel_title) { "#{group.name} group" }
-        end
-      end
-
-      context 'when using namespace based historical statistics' do
-        before do
-          stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: true)
-        end
-
-        it_behaves_like 'renders metrics comparison tables' do
-          let(:panel_title) { "#{group.name} group" }
-        end
+      it_behaves_like 'renders metrics comparison tables' do
+        let(:panel_title) { "#{group.name} group" }
       end
 
       it_behaves_like 'does not render contributor count'

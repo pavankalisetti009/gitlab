@@ -790,70 +790,32 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   end
 
   describe '#vulnerability_historical_statistics' do
-    context 'when using project based historical statistics' do
-      subject do
-        group.vulnerability_historical_statistics
-      end
-
-      before do
-        stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: false)
-      end
-
-      # Post Decomposition this won't work as these tables will be in seperate DB's, but we'll clean this up
-      # with the flag.
-      around do |ex|
-        ::Gitlab::Database::QueryAnalyzers::GitlabSchemasValidateConnection.with_suppressed do
-          ex.run
-        end
-      end
-
-      let(:subgroup) { create(:group, parent: group) }
-      let(:group_project) { build(:project, namespace: group) }
-      let(:subgroup_project) { build(:project, namespace: subgroup) }
-      let(:archived_project) { build(:project, :archived, namespace: group) }
-      let(:deleted_project) { build(:project, pending_delete: true, namespace: group) }
-      let!(:group_vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: group_project) }
-      let!(:subgroup_vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: subgroup_project) }
-      let!(:archived_vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: archived_project) }
-      let!(:deleted_vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: deleted_project) }
-
-      it 'returns vulnerability historical statistics for all non-archived, non-deleted projects in the group and its subgroups' do
-        is_expected.to contain_exactly(group_vulnerability_historical_statistic, subgroup_vulnerability_historical_statistic)
-      end
+    let(:date_1) { Date.new(2020, 8, 10) }
+    let(:root_group) { build(:group, traversal_ids: [1]) }
+    let(:group) { create(:group, parent: root_group, traversal_ids: [1, 2]) }
+    let(:sub_group) { create(:group, parent: group, traversal_ids: [1, 2, 3]) }
+    let!(:root_vulnerability_namespace_historical_statistic) do
+      create(:vulnerability_namespace_historical_statistic, namespace: root_group, date: date_1,
+        traversal_ids: root_group.traversal_ids)
     end
 
-    context 'when using namespace based historical statistics' do
-      before do
-        stub_feature_flags(use_namespace_historical_statistics_for_group_security_dashboard: true)
-      end
+    let!(:group_vulnerability_namespace_historical_statistic) do
+      create(:vulnerability_namespace_historical_statistic, namespace: group, date: date_1,
+        traversal_ids: group.traversal_ids)
+    end
 
-      let(:date_1) { Date.new(2020, 8, 10) }
-      let(:root_group) { build(:group, traversal_ids: [1]) }
-      let(:group) { create(:group, parent: root_group, traversal_ids: [1, 2]) }
-      let(:sub_group) { create(:group, parent: group, traversal_ids: [1, 2, 3]) }
-      let!(:root_vulnerability_namespace_historical_statistic) do
-        create(:vulnerability_namespace_historical_statistic, namespace: root_group, date: date_1,
-          traversal_ids: root_group.traversal_ids)
-      end
+    let!(:sub_group_vulnerability_namespace_historical_statistic) do
+      create(:vulnerability_namespace_historical_statistic, namespace: sub_group, date: date_1,
+        traversal_ids: sub_group.traversal_ids)
+    end
 
-      let!(:group_vulnerability_namespace_historical_statistic) do
-        create(:vulnerability_namespace_historical_statistic, namespace: group, date: date_1,
-          traversal_ids: group.traversal_ids)
-      end
+    subject do
+      root_group.vulnerability_historical_statistics
+    end
 
-      let!(:sub_group_vulnerability_namespace_historical_statistic) do
-        create(:vulnerability_namespace_historical_statistic, namespace: sub_group, date: date_1,
-          traversal_ids: sub_group.traversal_ids)
-      end
-
-      subject do
-        root_group.vulnerability_historical_statistics
-      end
-
-      it 'returns vulnerability namespace historical statistics for the group and its subgroup' do
-        is_expected.to contain_exactly(root_vulnerability_namespace_historical_statistic,
-          group_vulnerability_namespace_historical_statistic, sub_group_vulnerability_namespace_historical_statistic)
-      end
+    it 'returns vulnerability namespace historical statistics for the group and its subgroup' do
+      is_expected.to contain_exactly(root_vulnerability_namespace_historical_statistic,
+        group_vulnerability_namespace_historical_statistic, sub_group_vulnerability_namespace_historical_statistic)
     end
   end
 
