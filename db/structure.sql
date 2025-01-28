@@ -6947,6 +6947,11 @@ CREATE TABLE ai_testing_terms_acceptances (
     CONSTRAINT check_5efe98894e CHECK ((char_length(user_email) <= 255))
 );
 
+CREATE TABLE ai_user_metrics (
+    user_id bigint NOT NULL,
+    last_duo_activity_on date NOT NULL
+);
+
 CREATE TABLE ai_vectorizable_files (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -26214,6 +26219,9 @@ ALTER TABLE ONLY ai_settings
 ALTER TABLE ONLY ai_testing_terms_acceptances
     ADD CONSTRAINT ai_testing_terms_acceptances_pkey PRIMARY KEY (user_id);
 
+ALTER TABLE ONLY ai_user_metrics
+    ADD CONSTRAINT ai_user_metrics_pkey PRIMARY KEY (user_id);
+
 ALTER TABLE ONLY ai_vectorizable_files
     ADD CONSTRAINT ai_vectorizable_files_pkey PRIMARY KEY (id);
 
@@ -41064,6 +41072,9 @@ ALTER TABLE ONLY board_group_recent_visits
 
 ALTER TABLE ONLY relation_import_trackers
     ADD CONSTRAINT fk_rails_ca9bd1ef8a FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_user_metrics
+    ADD CONSTRAINT fk_rails_cafde02a0c FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY boards_epic_board_positions
     ADD CONSTRAINT fk_rails_cb4563dd6e FOREIGN KEY (epic_board_id) REFERENCES boards_epic_boards(id) ON DELETE CASCADE;
