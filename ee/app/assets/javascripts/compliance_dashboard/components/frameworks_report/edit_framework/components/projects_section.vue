@@ -1,6 +1,6 @@
 <script>
 import { GlLink, GlLoadingIcon, GlTable, GlIcon, GlSprintf } from '@gitlab/ui';
-import VisibilityIcon from '~/vue_shared/components/visibility_icon.vue';
+import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
 
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import { i18n } from '../constants';
@@ -16,7 +16,7 @@ export default {
     GlTable,
     GlIcon,
     GlSprintf,
-    VisibilityIcon,
+    VisibilityIconButton,
   },
   props: {
     complianceFramework: {
@@ -73,7 +73,7 @@ export default {
     >
       <template #cell(name)="{ item }">
         <gl-link data-testid="project-link" :href="item.webUrl">{{ item.name }}</gl-link>
-        <visibility-icon
+        <visibility-icon-button
           v-if="item.visibility"
           class="gl-ml-2"
           :visibility-level="item.visibility"
