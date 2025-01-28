@@ -1,3 +1,4 @@
+import { GlLoadingIcon } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
@@ -20,16 +21,42 @@ describe('MinutesUsagePerMonth', () => {
     });
   };
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   const findNoMinutesAlert = () => wrapper.findComponent(NoMinutesAlert);
   const findMinutesByNamespace = () => wrapper.findByTestId('minutes-by-namespace');
   const findSharedRunnerByNamespace = () => wrapper.findByTestId('shared-runner-by-namespace');
+  const findSharedRunnersLoadingIndicator = () =>
+    wrapper.findByTestId('pipelines-shared-runners-chart-loading-indicator');
+  const findMinutesLoadingIndicator = () =>
+    wrapper.findByTestId('pipelines-minutes-chart-loading-indicator');
 
-  it('does not render NoMinutesAlert if there are compute minutes', () => {
-    expect(findNoMinutesAlert().exists()).toBe(false);
+  describe('when isLoading prop is true', () => {
+    beforeEach(() => {
+      createComponent({ props: { isLoading: true } });
+    });
+
+    it('renders 2 loading-icon when isLoading is true', () => {
+      expect(wrapper.findAllComponents(GlLoadingIcon).length).toBe(2);
+      expect(findMinutesLoadingIndicator().exists()).toBe(true);
+      expect(findSharedRunnersLoadingIndicator().exists()).toBe(true);
+    });
+
+    it('does not render NoMinutesAlert if isLoading prop is true', () => {
+      expect(findNoMinutesAlert().exists()).toBe(false);
+    });
+  });
+
+  describe('with compute minutes', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('does not render loading-icon', () => {
+      expect(wrapper.findAllComponents(GlLoadingIcon).length).toBe(0);
+    });
+
+    it('does not render NoMinutesAlert if there are compute minutes', () => {
+      expect(findNoMinutesAlert().exists()).toBe(false);
+    });
   });
 
   describe('with no compute minutes', () => {
@@ -43,6 +70,10 @@ describe('MinutesUsagePerMonth', () => {
       };
 
       createComponent({ props });
+    });
+
+    it('does not render loading-icon', () => {
+      expect(wrapper.findAllComponents(GlLoadingIcon).length).toBe(0);
     });
 
     it('does not render compute charts', () => {
@@ -73,6 +104,10 @@ describe('MinutesUsagePerMonth', () => {
 
     it('does not render Shared Runners charts', () => {
       expect(findSharedRunnerByNamespace().exists()).toBe(false);
+    });
+
+    it('renders NoMinutesAlert', () => {
+      expect(findNoMinutesAlert().exists()).toBe(true);
     });
   });
 });

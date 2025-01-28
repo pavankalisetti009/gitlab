@@ -74,7 +74,5 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-mt-4">
-    <gl-area-chart :data="chartData" :option="$options.chartOptions" :width="0" responsive />
-  </div>
+  <gl-area-chart :data="chartData" :option="$options.chartOptions" :width="0" responsive />
 </template>

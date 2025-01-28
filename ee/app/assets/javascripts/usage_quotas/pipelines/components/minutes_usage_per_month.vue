@@ -1,5 +1,5 @@
 <script>
-import { GlTab, GlTabs } from '@gitlab/ui';
+import { GlLoadingIcon, GlTab, GlTabs } from '@gitlab/ui';
 import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import {
   CI_CD_MINUTES_USAGE,
@@ -18,6 +18,7 @@ export default {
     SharedRunnerUsageMonthChart,
     NoMinutesAlert,
     HelpPopover,
+    GlLoadingIcon,
     GlTab,
     GlTabs,
   },
@@ -30,6 +31,11 @@ export default {
     selectedYear: {
       type: Number,
       required: true,
+    },
+    isLoading: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   computed: {
@@ -52,7 +58,14 @@ export default {
 <template>
   <gl-tabs>
     <gl-tab :title="$options.CI_CD_MINUTES_USAGE">
-      <no-minutes-alert v-if="!hasCiMinutes" />
+      <div
+        v-if="isLoading"
+        class="chart-placeholder-height gl-flex gl-items-center gl-justify-center"
+      >
+        <gl-loading-icon size="lg" data-testid="pipelines-minutes-chart-loading-indicator" />
+      </div>
+
+      <no-minutes-alert v-else-if="!hasCiMinutes" />
       <minutes-usage-per-month-chart
         v-else
         :selected-year="selectedYear"
@@ -67,7 +80,15 @@ export default {
           <help-popover :options="$options.SHARED_RUNNER_POPOVER_OPTIONS" />
         </div>
       </template>
-      <no-minutes-alert v-if="!hasSharedRunnersMinutes" />
+
+      <div
+        v-if="isLoading"
+        class="chart-placeholder-height gl-flex gl-items-center gl-justify-center"
+      >
+        <gl-loading-icon size="lg" data-testid="pipelines-shared-runners-chart-loading-indicator" />
+      </div>
+
+      <no-minutes-alert v-else-if="!hasSharedRunnersMinutes" />
       <shared-runner-usage-month-chart
         v-else
         :selected-year="selectedYear"
@@ -77,3 +98,9 @@ export default {
     </gl-tab>
   </gl-tabs>
 </template>
+
+<style>
+.chart-placeholder-height {
+  height: calc(400px + 1rem);
+}
+</style>

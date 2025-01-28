@@ -76,7 +76,6 @@ export default {
 </script>
 <template>
   <gl-column-chart
-    class="gl-mb-3"
     responsive
     :width="0"
     :bars="chartData"
