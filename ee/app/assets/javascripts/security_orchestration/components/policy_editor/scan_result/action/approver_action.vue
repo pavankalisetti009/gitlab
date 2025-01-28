@@ -188,10 +188,13 @@ export default {
       :show-remove-button="false"
     >
       <template #content>
-        <div class="gl-mb-3 gl-ml-5 gl-flex gl-items-center">
+        <div
+          class="gl-mb-3 gl-ml-5"
+          :class="{ 'gl-flex': !isWarnType, 'gl-items-center': !isWarnType }"
+        >
           <gl-sprintf :message="humanizedTemplate">
             <template #require="{ content }">
-              <strong class="gl-mr-3">{{ content }}</strong>
+              <strong>{{ content }}</strong>
             </template>
 
             <template #approvalsRequired>
@@ -200,7 +203,7 @@ export default {
                 :value="approvalsRequired"
                 data-testid="approvals-required-input"
                 type="number"
-                class="gl-mr-3 !gl-w-11"
+                class="gl-mx-3 !gl-w-11"
                 :min="1"
                 :max="100"
                 @update="handleUpdateApprovalsRequired"

@@ -165,7 +165,7 @@ describe('ApproverAction', () => {
 
     it('renders the message', () => {
       expect(findSectionLayout().text()).toContain(
-        'Generates a bot comment and selected users as the security consultant that developers can reach out for help.',
+        'Warn users with a bot comment and select users as security consultants that developers may contact for support in addressing violations.',
       );
     });
 
