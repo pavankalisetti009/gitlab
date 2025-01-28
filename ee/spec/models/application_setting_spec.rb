@@ -1479,44 +1479,4 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to eq(false) }
     end
   end
-
-  describe '#cloud_connector_keys' do
-    subject(:cc_keys) { setting.cloud_connector_keys }
-
-    context 'with no keys stored' do
-      it 'returns an empty array when the setting is nil' do
-        expect(cc_keys).to eq([])
-      end
-
-      it 'considers an empty key set to be valid' do
-        expect(setting).to be_valid
-      end
-    end
-
-    context 'with keys stored' do
-      before do
-        setting.update_attribute(:cloud_connector_keys, key_data)
-      end
-
-      context 'and the keys are valid' do
-        let(:key_data) { [OpenSSL::PKey::RSA.new(2048).public_key.to_pem] }
-
-        it 'returns an array of keys' do
-          expect(cc_keys).to eq(key_data)
-        end
-
-        it 'passes validation' do
-          expect(setting).to be_valid
-        end
-      end
-
-      context 'and the keys are invalid' do
-        let(:key_data) { ['invalid key data'] }
-
-        it 'fails validation' do
-          expect(setting).not_to be_valid
-        end
-      end
-    end
-  end
 end

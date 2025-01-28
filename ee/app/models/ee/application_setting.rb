@@ -289,9 +289,6 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-      encrypts :cloud_connector_keys
-      validates :cloud_connector_keys, rsa_key: true, allow_nil: true
-
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
     end
 
@@ -303,7 +300,6 @@ module EE
         super.merge(
           allow_group_owners_to_manage_ldap: true,
           automatic_purchased_storage_allocation: false,
-          cloud_connector_keys: [],
           custom_project_templates_group_id: nil,
           dashboard_limit_enabled: false,
           dashboard_limit: 0,
