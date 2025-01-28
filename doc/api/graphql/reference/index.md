@@ -10482,6 +10482,30 @@ Input type: `UpdateComplianceRequirementInput`
 | <a id="mutationupdatecompliancerequirementerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationupdatecompliancerequirementrequirement"></a>`requirement` | [`ComplianceRequirement`](#compliancerequirement) | Compliance requirement after updation. |
 
+### `Mutation.updateComplianceRequirementsControl`
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `UpdateComplianceRequirementsControlInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationupdatecompliancerequirementscontrolclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationupdatecompliancerequirementscontrolid"></a>`id` | [`ComplianceManagementComplianceFrameworkComplianceRequirementsControlID!`](#compliancemanagementcomplianceframeworkcompliancerequirementscontrolid) | Global ID of the compliance requirement control to update. |
+| <a id="mutationupdatecompliancerequirementscontrolparams"></a>`params` | [`ComplianceRequirementsControlInput!`](#compliancerequirementscontrolinput) | Parameters to update the compliance requirement control with. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationupdatecompliancerequirementscontrolclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationupdatecompliancerequirementscontrolerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationupdatecompliancerequirementscontrolrequirementscontrol"></a>`requirementsControl` | [`ComplianceRequirementsControl`](#compliancerequirementscontrol) | Compliance requirement control after updation. |
+
 ### `Mutation.updateContainerExpirationPolicy`
 
 Input type: `UpdateContainerExpirationPolicyInput`
@@ -42918,6 +42942,12 @@ For example: "#fefefe".
 A `ComplianceManagementComplianceFrameworkComplianceRequirementID` is a global ID. It is encoded as a string.
 
 An example `ComplianceManagementComplianceFrameworkComplianceRequirementID` is: `"gid://gitlab/ComplianceManagement::ComplianceFramework::ComplianceRequirement/1"`.
+
+### `ComplianceManagementComplianceFrameworkComplianceRequirementsControlID`
+
+A `ComplianceManagementComplianceFrameworkComplianceRequirementsControlID` is a global ID. It is encoded as a string.
+
+An example `ComplianceManagementComplianceFrameworkComplianceRequirementsControlID` is: `"gid://gitlab/ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl/1"`.
 
 ### `ComplianceManagementFrameworkID`
 
