@@ -64,10 +64,10 @@ module EE
       end
 
       def check_seats!
-        root_namespace = source.root_ancestor
+        return unless ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.block_seat_overages?(source)
 
-        return unless root_namespace.block_seat_overages?
-        return if root_namespace.seats_available_for?(invites, params[:access_level], params[:member_role_id])
+        return if ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.seats_available_for?(source,
+          invites, params[:access_level], params[:member_role_id])
 
         notify_owners(invites)
 

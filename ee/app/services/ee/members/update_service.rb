@@ -58,13 +58,12 @@ module EE
       private
 
       def seats_available_for?(members)
-        root_namespace = source.root_ancestor
-
-        return true unless root_namespace.block_seat_overages?
+        return true unless ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.block_seat_overages?(source)
 
         user_ids = members.map(&:user_id)
-
-        root_namespace.seats_available_for?(user_ids, params[:access_level], params[:member_role_id])
+        ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.seats_available_for?(source,
+          user_ids, params[:access_level], params[:member_role_id]
+        )
       end
 
       override :has_update_permissions?

@@ -619,6 +619,80 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     end
   end
 
+  context 'with block seat overages enabled for self-managed' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:owner) { create(:user) }
+    let_it_be_with_refind(:group) { create(:group) }
+    let_it_be_with_refind(:project) { create(:project, group: group) }
+
+    let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+    let(:available_seats) { 1 }
+    let(:seat_control_block_overages) { 2 }
+    let(:seat_control_off) { 0 }
+
+    before_all do
+      project.add_maintainer(user)
+    end
+
+    before do
+      group.add_owner(owner)
+      stub_licensed_features(custom_roles: true)
+      stub_application_setting(seat_control: seat_control_block_overages)
+      allow(License).to receive(:current).and_return(license)
+      allow(License).to receive_message_chain(:current, :seats).and_return(available_seats)
+    end
+
+    it 'adds guest users even if there are no seats available' do
+      params[:access_level] = Gitlab::Access::GUEST
+
+      expect { execute_service }.to change { project.members.count }.by(2)
+    end
+
+    it 'rejects members with billable roles when no seats are available' do
+      params[:access_level] = Gitlab::Access::DEVELOPER
+
+      expect { execute_service }.not_to change { project.members.count }
+      expect(execute_service[:status]).to eq(:error)
+      expect(execute_service[:reason]).to eq(:seat_limit_exceeded_error)
+    end
+
+    context 'with custom roles' do
+      it 'rejects members with a billable custom role when there are no seats available' do
+        custom_role = create(:member_role, :instance, :billable)
+        params[:member_role_id] = custom_role.id
+
+        expect { execute_service }.not_to change { project.members.count }
+        expect(execute_service[:status]).to eq(:error)
+        expect(execute_service[:reason]).to eq(:seat_limit_exceeded_error)
+      end
+    end
+
+    context 'when license excludes guests from active count' do
+      let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+      let(:invites) { ['email@example.com'] }
+
+      it 'rejects guest user invite even if there are seats available' do
+        params[:access_level] = Gitlab::Access::GUEST
+
+        expect { execute_service }.not_to change { project.members.count }
+        expect(execute_service[:status]).to eq(:error)
+        expect(execute_service[:reason]).to eq(:seat_limit_exceeded_error)
+      end
+    end
+
+    context 'when setting is disabled' do
+      before do
+        stub_application_setting(seat_control: seat_control_off)
+      end
+
+      it 'adds members even when no seats are available' do
+        params[:access_level] = Gitlab::Access::DEVELOPER
+
+        expect { execute_service }.to change { project.members.count }.by(2)
+      end
+    end
+  end
+
   context 'with skip_authorization param' do
     before do
       params[:access_level] = Gitlab::Access::OWNER
