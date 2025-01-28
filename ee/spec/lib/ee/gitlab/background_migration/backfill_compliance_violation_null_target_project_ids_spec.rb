@@ -87,11 +87,6 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillComplianceViolationNullTarge
   end
 
   let!(:mr_compliance_violation_2) do
-    merge_requests_compliance_violations.create!(title: 'No Target Project', merge_request_id: merge_request_2.id,
-      violating_user_id: violating_user.id, reason: 2)
-  end
-
-  let!(:mr_compliance_violation_3) do
     merge_requests_compliance_violations.create!(title: 'Wrong Target Project', target_project_id: project_2.id,
       merge_request_id: merge_request_3.id, violating_user_id: violating_user.id, reason: 2)
   end
@@ -100,16 +95,16 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillComplianceViolationNullTarge
     it 'runs without error' do
       migration = described_class.new(
         start_id: mr_compliance_violation_1.id,
-        end_id: mr_compliance_violation_3.id,
+        end_id: mr_compliance_violation_2.id,
         batch_table: :merge_requests_compliance_violations,
         batch_column: :id,
         sub_batch_size: 10,
         pause_ms: 0,
         connection: connection
       )
-      expect { migration.perform }.to change { mr_compliance_violation_2.reload.target_project_id }
-        .from(nil).to(merge_request_2.target_project_id)
-        .and(not_change { mr_compliance_violation_3.reload.target_project_id }.from(project_2.id))
+      expect { migration.perform }.to not_change {
+        mr_compliance_violation_2.reload.target_project_id
+      }.from(project_2.id)
       expect(merge_requests_compliance_violations.find_by_id(mr_compliance_violation_1.id).target_project_id)
         .to eq(merge_request_1.target_project_id)
     end

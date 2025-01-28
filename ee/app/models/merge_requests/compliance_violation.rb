@@ -31,6 +31,7 @@ module MergeRequests
 
     belongs_to :violating_user, class_name: 'User'
     belongs_to :merge_request
+    belongs_to :target_project, class_name: 'Project', optional: false
 
     validates :violating_user, presence: true
     validates :merge_request,
