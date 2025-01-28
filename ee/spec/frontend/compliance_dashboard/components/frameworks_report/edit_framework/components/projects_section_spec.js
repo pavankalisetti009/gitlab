@@ -1,7 +1,7 @@
 import { GlTable, GlLink } from '@gitlab/ui';
 
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
-import VisibilityIcon from '~/vue_shared/components/visibility_icon.vue';
+import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -61,7 +61,7 @@ describe('Projects section', () => {
     it.each(Object.keys(projects))('has the correct visibility icon for row %s', (idx) => {
       const frameworkProjects = findTableRowData(idx).wrappers.map((d) => d);
 
-      const visibilityIcon = frameworkProjects[0].findComponent(VisibilityIcon);
+      const visibilityIcon = frameworkProjects[0].findComponent(VisibilityIconButton);
       expect(visibilityIcon.props('visibilityLevel')).toMatch(projects[idx].visibility);
     });
 
