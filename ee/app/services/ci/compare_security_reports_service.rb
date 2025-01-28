@@ -67,7 +67,7 @@ module Ci
       # until `Security::StoreFindingsService` is complete
       return :parsing unless ready_to_send_to_finder?(pipeline)
 
-      if pipeline.nil? || feature_flag_disabled?(project)
+      if feature_flag_disabled?(project)
         Security::PipelineVulnerabilitiesFinder.new(
           pipeline: pipeline,
           params: { report_type: [params[:report_type]], scope: 'all' }

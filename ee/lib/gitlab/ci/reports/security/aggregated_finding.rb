@@ -13,7 +13,7 @@ module Gitlab
           end
 
           def created_at
-            @pipeline.created_at
+            @pipeline&.created_at
           end
         end
       end

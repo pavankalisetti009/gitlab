@@ -12,5 +12,13 @@ RSpec.describe Gitlab::Ci::Reports::Security::AggregatedFinding, feature_categor
     it "returns the pipeline's created_at" do
       expect(aggregated_finding.created_at).to eq(pipeline.created_at)
     end
+
+    context 'when pipeline is nil' do
+      let(:pipeline) { nil }
+
+      it 'returns nil' do
+        expect(aggregated_finding.created_at).to be_nil
+      end
+    end
   end
 end
