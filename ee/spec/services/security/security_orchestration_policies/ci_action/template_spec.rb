@@ -205,17 +205,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         let_it_be(:ci_variables) { { 'SAST_DISABLED' => nil } }
         let_it_be(:template_name) { 'Jobs/SAST' }
 
-        let(:expected_jobs) do
-          [
-            :"sast-0",
-            :"bandit-sast-0",
-            :"eslint-sast-0",
-            :"security-code-scan-sast-0",
-            :"gosec-sast-0",
-            *expected_jobs_with_excluded_variable_rules
-          ]
-        end
-
         let(:expected_jobs_with_excluded_variable_rules) do
           [
             :"kubesec-sast-0",
@@ -229,19 +218,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         it 'returns prepared CI configuration for SAST' do
           expected_jobs = [
             :"sast-0",
-            :"bandit-sast-0",
-            :"brakeman-sast-0",
-            :"eslint-sast-0",
-            :"flawfinder-sast-0",
             :"kubesec-sast-0",
             :"gitlab-advanced-sast-0",
-            :"gosec-sast-0",
-            :"mobsf-android-sast-0",
-            :"mobsf-ios-sast-0",
-            :"nodejs-scan-sast-0",
-            :"phpcs-security-audit-sast-0",
             :"pmd-apex-sast-0",
-            :"security-code-scan-sast-0",
             :"semgrep-sast-0",
             :"sobelow-sast-0",
             :"spotbugs-sast-0"
