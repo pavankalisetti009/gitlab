@@ -117,6 +117,13 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             end
           end
 
+          context 'with packager filter' do
+            it_behaves_like 'it can filter dependencies', :package_managers do
+              let(:filter_value) { ['nuget'] }
+              let(:expected_results) { [occurrences[3]] }
+            end
+          end
+
           shared_examples 'it can sort dependencies' do |sort|
             subject { json_response['dependencies'].pluck('occurrence_id') }
 
