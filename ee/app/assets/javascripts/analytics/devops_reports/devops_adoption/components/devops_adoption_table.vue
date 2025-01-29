@@ -164,13 +164,15 @@ export default {
       <template v-for="header in tableHeaderFields" #[headerSlotName(header.key)]>
         <div :key="header.key" class="gl-flex gl-items-center">
           <span>{{ header.label }}</span>
-          <help-icon
+          <gl-button
             v-if="header.tooltip"
-            v-gl-tooltip.hover="header.tooltip"
+            v-gl-tooltip="header.tooltip"
+            variant="link"
             class="gl-ml-3"
-            data-testid="question-icon"
-            :alt="helpIconAltText(header.tooltip)"
-          />
+            :aria-label="header.tooltip"
+          >
+            <help-icon data-testid="question-icon" :alt="helpIconAltText(header.tooltip)" />
+          </gl-button>
         </div>
       </template>
 

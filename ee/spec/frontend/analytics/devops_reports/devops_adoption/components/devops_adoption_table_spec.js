@@ -80,7 +80,7 @@ describe('DevopsAdoptionTable', () => {
 
           if (expected) {
             it('includes a tooltip', () => {
-              const icon = headerWrapper.findComponent(GlIcon);
+              const icon = headerWrapper.findComponent(GlButton);
               const tooltip = getBinding(icon.element, 'gl-tooltip');
 
               expect(tooltip).toBeDefined();
