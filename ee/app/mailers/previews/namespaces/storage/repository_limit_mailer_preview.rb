@@ -9,6 +9,13 @@ module Namespaces
           recipients: %w[bob@example.com]
         )
       end
+
+      def limit_warning
+        RepositoryLimitMailer.notify_limit_warning(
+          project_name: Project.last.name,
+          recipients: %w[bob@example.com]
+        )
+      end
     end
   end
 end

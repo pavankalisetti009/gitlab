@@ -18,12 +18,18 @@ module Namespaces
         def execute
           return if ::Namespaces::Storage::Enforcement.enforce_limit?(root_ancestor)
           return unless root_ancestor.root_storage_size.subject_to_high_limit?
-          return unless notification_level == :error
 
-          RepositoryLimitMailer.notify_out_of_storage(
-            project_name: project.name,
-            recipients: root_ancestor.owners_emails
-          ).deliver_later
+          if notification_level == :error
+            RepositoryLimitMailer.notify_out_of_storage(
+              project_name: project.name,
+              recipients: root_ancestor.owners_emails
+            ).deliver_later
+          elsif notification_level == :warning
+            RepositoryLimitMailer.notify_limit_warning(
+              project_name: project.name,
+              recipients: root_ancestor.owners_emails
+            ).deliver_later
+          end
         end
 
         private
