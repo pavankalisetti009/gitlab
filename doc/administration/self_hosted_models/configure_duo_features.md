@@ -124,6 +124,7 @@ To configure a self-hosted model:
 Prerequisites:
 
 - You must be an administrator.
+- You must have a Duo Enterprise license add-on.
 
 ### View configured features
 
