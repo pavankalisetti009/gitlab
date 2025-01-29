@@ -319,6 +319,7 @@ module EE
         enable :read_jobs_statistics
         enable :read_runner_usage
         enable :admin_push_rules
+        enable :admin_security_testing
       end
 
       rule { (admin | maintainer) & group_analytics_dashboards_available & ~has_parent }.policy do
@@ -572,6 +573,21 @@ module EE
 
       rule { custom_role_enables_admin_vulnerability }.policy do
         enable :admin_vulnerability
+      end
+
+      rule { custom_role_enables_admin_security_testing }.policy do
+        enable :admin_security_testing
+      end
+
+      rule { security_dashboard_enabled & can?(:admin_security_testing) }.policy do
+        enable :access_security_and_compliance
+        enable :read_security_configuration
+        enable :read_group_security_dashboard
+        enable :read_security_resource
+      end
+
+      rule { pre_receive_secret_detection_available & can?(:admin_security_testing) }.policy do
+        enable :enable_pre_receive_secret_detection
       end
 
       rule { custom_role_enables_admin_group_member }.policy do
