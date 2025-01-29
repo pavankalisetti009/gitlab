@@ -138,7 +138,11 @@ export default {
                   href="https://docs.aws.amazon.com/AmazonS3/latest/dev/HostingWebsiteOnS3Setup.html"
                 >
                   <span>{{ $options.i18n.bucket.linkText }}</span>
-                  <gl-icon name="external-link" class="vertical-align-middle" />
+                  <gl-icon
+                    name="external-link"
+                    :aria-label="__('(external link)')"
+                    class="vertical-align-middle"
+                  />
                 </gl-link>
               </template>
             </gl-sprintf>
@@ -161,7 +165,11 @@ export default {
               <template #docsLink>
                 <gl-link href="https://github.com/aws/aws-sdk-ruby#configuration" target="_blank">
                   <span>{{ $options.i18n.region.linkText }}</span>
-                  <gl-icon name="external-link" class="vertical-align-middle" />
+                  <gl-icon
+                    name="external-link"
+                    :aria-label="__('(external link)')"
+                    class="vertical-align-middle"
+                  />
                 </gl-link>
               </template>
             </gl-sprintf>
