@@ -13,6 +13,7 @@ module EE
   #     include_hidden: boolean
   #     filter_expired_saml_session_projects: boolean
   module ProjectsFinder
+    include ::Projects::Filterable
     extend ::Gitlab::Utils::Override
 
     private
@@ -26,18 +27,6 @@ module EE
       collection = by_marked_for_deletion_on(collection)
       collection = by_saml_sso_session(collection)
       by_aimed_for_deletion(collection)
-    end
-
-    def by_saml_sso_session(projects)
-      return projects unless filter_expired_saml_session_projects?
-
-      projects.by_not_in_root_id(current_user.expired_sso_session_saml_providers.select(:group_id))
-    end
-
-    def filter_expired_saml_session_projects?
-      return false if current_user.nil? || current_user.can_read_all_resources?
-
-      params.fetch(:filter_expired_saml_session_projects, false)
     end
 
     def by_plans(collection)
