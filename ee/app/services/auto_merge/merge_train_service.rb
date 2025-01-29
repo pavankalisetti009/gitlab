@@ -61,21 +61,8 @@ module AutoMerge
       end
     end
 
-    override :available_for?
-    def available_for?(merge_request)
-      super do
-        next false unless merge_request.project.merge_trains_enabled?
-
-        pipeline = merge_request.diff_head_pipeline
-        next false unless pipeline
-
-        # When pipelines are not required to succeed, we also allow blocked and
-        # canceling pipelines, because otherwise the only merge action would be an immediate merge.
-        pipeline.complete? ||
-          (!merge_request.only_allow_merge_if_pipeline_succeeds? && (pipeline.canceling? || pipeline.blocked?))
-      end
-    end
-
+    # availability_details are responsible for validating whether the service is available_for a merge request and sets
+    # an unavailable_reason if it is not
     override :availability_details
     def availability_details(merge_request)
       super do
@@ -86,6 +73,8 @@ module AutoMerge
         pipeline = merge_request.diff_head_pipeline
         next AvailabilityCheck.new(unavailable_reason: :missing_diff_head_pipeline) unless pipeline
 
+        # When pipelines are not required to succeed, we also allow blocked and
+        # canceling pipelines, because otherwise the only merge action would be an immediate merge.
         if pipeline.complete? ||
             (!merge_request.only_allow_merge_if_pipeline_succeeds? && (pipeline.canceling? || pipeline.blocked?))
           next AvailabilityCheck.new(unavailable_reason: nil)

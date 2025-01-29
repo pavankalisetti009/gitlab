@@ -26,12 +26,8 @@ module AutoMerge
       merge_train_service = AutoMerge::MergeTrainService.new(project, merge_request.merge_user)
 
       unless merge_train_service.available_for?(merge_request)
-        if Feature.enabled?(:auto_merge_train_elaborate_abort_msg, project)
-          return abort(merge_request,
-            process_abort_message(merge_train_service.availability_details(merge_request)))
-        end
-
-        return abort(merge_request, 'this merge request cannot be added to the merge train')
+        abort_message = process_abort_message(merge_train_service.availability_details(merge_request))
+        return abort(merge_request, abort_message)
       end
 
       merge_train_service.execute(merge_request)
@@ -58,15 +54,8 @@ module AutoMerge
       end
     end
 
-    def available_for?(merge_request)
-      super do
-        next false unless merge_request.has_ci_enabled?
-        next false if merge_request.mergeable? && !merge_request.diff_head_pipeline_considered_in_progress?
-
-        merge_request.project.merge_trains_enabled?
-      end
-    end
-
+    # availability_details are responsible for validating whether the service is available_for a merge request and sets
+    # an unavailable_reason if it is not
     override :availability_details
     def availability_details(merge_request)
       super do

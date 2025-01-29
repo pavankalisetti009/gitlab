@@ -11,14 +11,8 @@ module AutoMerge
       end
 
       def available_for?(merge_request)
-        if Feature.enabled?(:auto_merge_train_elaborate_abort_msg, project)
-          strong_memoize("available_for_#{merge_request.id}") do
-            availability_details(merge_request).available?
-          end
-        else
-          super do
-            yield if block_given?
-          end
+        strong_memoize("available_for_#{merge_request.id}") do
+          availability_details(merge_request).available?
         end
       end
 

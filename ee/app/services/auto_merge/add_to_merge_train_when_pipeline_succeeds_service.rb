@@ -15,12 +15,9 @@ module AutoMerge
       merge_train_service = AutoMerge::MergeTrainService.new(project, merge_request.merge_user)
 
       unless merge_train_service.available_for?(merge_request)
-        if Feature.enabled?(:auto_merge_train_elaborate_abort_msg, project)
-          return abort(merge_request,
-            process_abort_message(merge_train_service.availability_details(merge_request)))
-        end
 
-        return abort(merge_request, 'this merge request cannot be added to the merge train')
+        abort_message = process_abort_message(merge_train_service.availability_details(merge_request))
+        return abort(merge_request, abort_message)
       end
 
       merge_train_service.execute(merge_request)
