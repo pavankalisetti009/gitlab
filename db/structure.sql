@@ -15852,9 +15852,10 @@ CREATE TABLE merge_requests_compliance_violations (
     reason smallint NOT NULL,
     severity_level smallint DEFAULT 0 NOT NULL,
     merged_at timestamp with time zone,
-    target_project_id bigint NOT NULL,
+    target_project_id bigint,
     title text,
-    target_branch text
+    target_branch text,
+    CONSTRAINT check_860e317e6f CHECK ((target_project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE merge_requests_compliance_violations_id_seq
