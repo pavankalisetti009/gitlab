@@ -19,6 +19,78 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
 
     subject(:tabs) { search_navigation.tabs }
 
+    context 'for commits tab' do
+      context 'when project search' do
+        let(:project) { project_double }
+        let(:group) { nil }
+
+        where(:tab_enabled_for_project, :condition) do
+          true  | true
+          false | false
+        end
+
+        with_them do
+          before do
+            allow(search_navigation).to receive(:tab_enabled_for_project?).and_return(tab_enabled_for_project)
+          end
+
+          it 'data item condition is set correctly' do
+            expect(tabs[:commits][:condition]).to eq(condition)
+          end
+        end
+      end
+
+      context 'when group search' do
+        let(:project) { nil }
+        let(:group) { group_double }
+
+        where(:feature_flag, :show_elasticsearch_tabs, :condition) do
+          true  | true  | true
+          true  | false | false
+          false | true  | true
+          false | false | false
+        end
+
+        with_them do
+          let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
+
+          before do
+            stub_feature_flags(global_search_commits_tab: feature_flag)
+          end
+
+          it 'data item condition is set correctly' do
+            expect(tabs[:commits][:condition]).to eq(condition)
+          end
+        end
+      end
+
+      context 'when global search' do
+        let(:project) { nil }
+        let(:group) { nil }
+
+        where(:feature_flag, :show_elasticsearch_tabs, :condition) do
+          true  | true  | true
+          false | true  | false
+          false | false | false
+          true  | false | false
+          false | nil   | false
+          true  | nil   | false
+        end
+
+        with_them do
+          let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
+
+          before do
+            stub_feature_flags(global_search_commits_tab: feature_flag)
+          end
+
+          it 'data item condition is set correctly' do
+            expect(tabs[:commits][:condition]).to eq(condition)
+          end
+        end
+      end
+    end
+
     context 'for epics tab' do
       context 'when project search' do
         let(:project) { project_double }

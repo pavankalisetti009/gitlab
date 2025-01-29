@@ -83,6 +83,15 @@ module EE
 
         ::Feature.enabled?(:global_search_epics_tab, user, type: :ops)
       end
+
+      override :show_commits_search_tab?
+      def show_commits_search_tab?
+        return true if super # project search & user can search commits
+        return false unless show_elasticsearch_tabs? # advanced search enabled
+        return true if group.present? # group search
+
+        ::Feature.enabled?(:global_search_commits_tab, user, type: :ops) # global search
+      end
     end
   end
 end
