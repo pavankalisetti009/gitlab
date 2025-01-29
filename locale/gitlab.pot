@@ -67669,6 +67669,9 @@ msgstr ""
 msgid "failed to assign runner to project"
 msgstr ""
 
+msgid "failed to change severity of security finding: %{message}"
+msgstr ""
+
 msgid "failed to destroy runner project"
 msgstr ""
 
