@@ -70,6 +70,7 @@ module EE
         mount_mutation ::Mutations::Security::Finding::CreateVulnerability, experiment: { milestone: '17.5' }
         mount_mutation ::Mutations::Security::Finding::Dismiss
         mount_mutation ::Mutations::Security::Finding::RevertToDetected
+        mount_mutation ::Mutations::Security::Finding::SeverityOverride
         mount_mutation ::Mutations::Vulnerabilities::Create
         mount_mutation ::Mutations::Vulnerabilities::BulkDismiss
         mount_mutation ::Mutations::Vulnerabilities::RemoveAllFromProject
