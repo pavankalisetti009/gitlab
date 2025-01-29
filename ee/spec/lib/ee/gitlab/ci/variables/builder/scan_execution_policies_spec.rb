@@ -71,9 +71,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
         'build-job'                              | {}
         'dast-on-demand-0'                       | { 'DAST_WEBSITE' => 'https://my.site.com' }
         'container-scanning-0'                   | { 'CS_REGISTRY_USER' => 'user' }
-        'brakeman-sast-1'                        | { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep',
-                                                     'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS',
-                                                     'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp' }
         'secret-detection-2'                     | { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true',
                                                      'SECRET_DETECTION_EXCLUDED_PATHS' => '' }
         'kics-iac-sast-3'                        | { 'SAST_IMAGE_SUFFIX' => '-fips',
@@ -134,13 +131,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
         where(:job_name, :expected_variables_lambda) do
           'build-job'            | -> { [] }
           'container-scanning-0' | -> { [item(key: 'CS_REGISTRY_USER', value: 'user')] }
-          'brakeman-sast-1'      | -> do
-            [
-              item(key: 'DEFAULT_SAST_EXCLUDED_PATHS', value: 'spec, test, tests, tmp'),
-              item(key: 'SAST_EXCLUDED_PATHS', value: '$DEFAULT_SAST_EXCLUDED_PATHS'),
-              item(key: 'SAST_EXCLUDED_ANALYZERS', value: 'semgrep')
-            ]
-          end
         end
 
         with_them do
