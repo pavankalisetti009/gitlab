@@ -1,7 +1,6 @@
 <script>
-import { GlLoadingIcon, GlModalDirective, GlTooltipDirective, GlButton } from '@gitlab/ui';
+import { GlModalDirective, GlTooltipDirective, GlButton } from '@gitlab/ui';
 import { v4 as uuidv4 } from 'uuid';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
@@ -22,7 +21,6 @@ import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } fr
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
 import VulnerabilityActionsDropdown from './vulnerability_actions_dropdown.vue';
-import VulnerabilityStateDropdown from './vulnerability_state_dropdown.vue';
 import StateModal from './state_modal.vue';
 
 export const CREATE_MR_AI_ACTION = {
@@ -48,20 +46,18 @@ export const CLIENT_SUBSCRIPTION_ID = uuidv4();
 export default {
   name: 'VulnerabilityHeader',
   components: {
-    GlLoadingIcon,
     GlButton,
     StatusBadge,
     ResolutionAlert,
     StatusDescription,
     StateModal,
-    VulnerabilityStateDropdown,
     VulnerabilityActionsDropdown,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
     GlModal: GlModalDirective,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
+  mixins: [glAbilitiesMixin()],
   props: {
     vulnerability: {
       type: Object,
@@ -101,9 +97,6 @@ export default {
       return (
         this.glAbilities.resolveVulnerabilityWithAi && this.vulnerability.aiResolutionAvailable
       );
-    },
-    showStateModal() {
-      return this.glFeatures.vulnerabilityDetailsStateModal;
     },
     canExplainWithAi() {
       return (
@@ -335,32 +328,19 @@ export default {
       </div>
 
       <div class="detail-page-header-actions gl-flex gl-flex-wrap gl-items-center gl-gap-3">
-        <template v-if="showStateModal">
-          <gl-button
-            v-gl-modal="$options.modalId"
-            :disabled="disabledChangeState || isLoadingVulnerability"
-            data-testid="change-status-btn"
-            >{{ s__('SecurityReports|Change status') }}</gl-button
-          >
-          <state-modal
-            :modal-id="$options.modalId"
-            :state="vulnerability.state"
-            :dismissal-reason="dismissalReason"
-            :comment="latestComment"
-            @change="changeVulnerabilityState"
-          />
-        </template>
-        <template v-else>
-          <label class="gl-mb-0">{{ __('Status') }}</label>
-          <gl-loading-icon v-if="isLoadingVulnerability" size="sm" class="gl-inline" />
-          <vulnerability-state-dropdown
-            v-else
-            :state="vulnerability.state"
-            :dismissal-reason="dismissalReason"
-            :disabled="disabledChangeState"
-            @change="changeVulnerabilityState"
-          />
-        </template>
+        <gl-button
+          v-gl-modal="$options.modalId"
+          :disabled="disabledChangeState || isLoadingVulnerability"
+          data-testid="change-status-btn"
+          >{{ s__('SecurityReports|Change status') }}</gl-button
+        >
+        <state-modal
+          :modal-id="$options.modalId"
+          :state="vulnerability.state"
+          :dismissal-reason="dismissalReason"
+          :comment="latestComment"
+          @change="changeVulnerabilityState"
+        />
         <vulnerability-actions-dropdown
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"
