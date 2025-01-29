@@ -123,7 +123,8 @@ module Gitlab
                 .execute(command.source,
                   content: policy.content,
                   pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
-                  merge_request: command.merge_request, # This is for supporting merge request pipelines
+                  merge_request: command.merge_request, # This is for supporting merge request pipelines,
+                  schedule: command.schedule,
                   ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
                   # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
                 )

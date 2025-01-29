@@ -672,6 +672,31 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  context 'when running from a schedule' do
+    let(:opts) { { schedule: schedule } }
+    let(:schedule) { create(:ci_pipeline_schedule, project: project, owner: user) }
+
+    let(:namespace_policy_content) do
+      {
+        namespace_policy_job: {
+          rules: [{ if: '$SCHEDULE_VARIABLE == "schedule"' }],
+          script: 'namespace script'
+        }
+      }
+    end
+
+    before do
+      schedule.variables << create(:ci_pipeline_schedule_variable, key: 'SCHEDULE_VARIABLE', value: 'schedule')
+    end
+
+    it 'creates pipeline with namespace_policy_job', :aggregate_failures do
+      expect { execute }.to change { Ci::Build.count }
+
+      stages = execute.payload.stages
+      expect(stages.find_by(name: 'test').builds.map(&:name)).to include('namespace_policy_job')
+    end
+  end
+
   context 'when both Scan Execution Policy and Pipeline Execution Policy are applied on the project' do
     let(:scan_execution_policy) do
       build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }])
