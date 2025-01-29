@@ -42057,6 +42057,9 @@ msgstr ""
 msgid "Pipelines|Explore CI/CD Catalog"
 msgstr ""
 
+msgid "Pipelines|Failed jobs"
+msgstr ""
+
 msgid "Pipelines|Failed to update. Please reload page to update the list of artifacts."
 msgstr ""
 
@@ -42214,6 +42217,9 @@ msgid "Pipelines|There are no merge trains for the %{branch} target branch in %{
 msgstr ""
 
 msgid "Pipelines|There was a problem fetching the pipeline iid."
+msgstr ""
+
+msgid "Pipelines|There was a problem fetching the pipeline stage jobs."
 msgstr ""
 
 msgid "Pipelines|There was a problem with loading the pipeline data."
@@ -55015,6 +55021,9 @@ msgstr ""
 msgid "Stage"
 msgstr ""
 
+msgid "Stage: %{stageName}"
+msgstr ""
+
 msgid "Standard"
 msgstr ""
 
@@ -57711,9 +57720,6 @@ msgid "There was a problem fetching the job token scope value"
 msgstr ""
 
 msgid "There was a problem fetching the keep latest artifacts setting."
-msgstr ""
-
-msgid "There was a problem fetching the pipeline stage jobs."
 msgstr ""
 
 msgid "There was a problem fetching the pipeline summary."
