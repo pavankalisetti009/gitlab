@@ -66,6 +66,7 @@ describe('Value Stream Analytics mutations', () => {
     ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'deleteValueStreamError'}  | ${null}
     ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'deleteValueStreamError'}  | ${null}
     ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'selectedValueStream'}     | ${null}
+    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'stages'}                  | ${[]}
     ${types.INITIALIZE_VALUE_STREAM_SUCCESS}     | ${'isLoading'}               | ${false}
     ${types.REQUEST_STAGE_COUNTS}                | ${'stageCounts'}             | ${{}}
     ${types.RECEIVE_STAGE_COUNTS_ERROR}          | ${'stageCounts'}             | ${{}}
