@@ -1,18 +1,17 @@
 import { nextTick } from 'vue';
 import { GlAlert, GlFormInput } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import CustomStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_fields.vue';
 import CustomStageEventField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_field.vue';
 import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_label_field.vue';
 import StageFieldActions from 'ee/analytics/cycle_analytics/components/create_value_stream_form/stage_field_actions.vue';
-import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
   customStageEvents as stageEvents,
   labelStartEvent,
   labelEndEvent,
   customStageEndEvents as endEvents,
 } from '../../mock_data';
-import { emptyState, emptyErrorsState, firstLabel } from './mock_data';
+import { emptyState, firstLabel } from './mock_data';
 
 const formatStartEventOpts = (_events) =>
   _events
@@ -28,32 +27,25 @@ const startEventOptions = formatStartEventOpts(stageEvents);
 const endEventOptions = formatEndEventOpts(stageEvents);
 
 describe('CustomStageFields', () => {
-  function createComponent({
-    stage = emptyState,
-    errors = emptyErrorsState,
-    stubs = {},
-    props = {},
-  } = {}) {
-    return extendedWrapper(
-      shallowMount(CustomStageFields, {
-        propsData: {
-          stage,
-          errors,
-          stageEvents,
-          index: 0,
-          totalStages: 3,
-          stageLabel: 'Stage 1',
-          ...props,
-        },
-        stubs: {
-          'labels-selector': false,
-          ...stubs,
-        },
-      }),
-    );
-  }
-
   let wrapper = null;
+
+  const createComponent = ({ stage = emptyState, errors = {}, stubs = {}, props = {} } = {}) => {
+    wrapper = shallowMountExtended(CustomStageFields, {
+      propsData: {
+        stage,
+        errors,
+        stageEvents,
+        index: 0,
+        totalStages: 3,
+        stageLabel: 'Stage 1',
+        ...props,
+      },
+      stubs: {
+        'labels-selector': false,
+        ...stubs,
+      },
+    });
+  };
 
   const findName = (index = 0) => wrapper.findByTestId(`custom-stage-name-${index}`);
   const findFormError = () => wrapper.findComponent(GlAlert);
@@ -70,7 +62,7 @@ describe('CustomStageFields', () => {
   const findStageFieldActions = () => wrapper.findComponent(StageFieldActions);
 
   beforeEach(() => {
-    wrapper = createComponent();
+    createComponent();
   });
 
   describe.each([
@@ -106,9 +98,44 @@ describe('CustomStageFields', () => {
     });
   });
 
+  describe('Name field', () => {
+    it('will display name field in a valid state', () => {
+      expect(findName().attributes('state')).toBe('true');
+      expect(findName().attributes('invalid-feedback')).toBeUndefined();
+      expect(findNameField().attributes('state')).toBe('true');
+    });
+
+    describe('invalid state', () => {
+      beforeEach(() => {
+        createComponent({ errors: { name: ['Please enter a name'] } });
+      });
+
+      it('will display name field in an invalid state', () => {
+        expect(findNameField().attributes('state')).toBeUndefined();
+        expect(findName().attributes('state')).toBeUndefined();
+        expect(findName().attributes('invalid-feedback')).toBe('Please enter a name');
+      });
+
+      it.each`
+        field            | finder                 | expectedProps
+        ${'Start event'} | ${findStartEventField} | ${{ identifierError: '', isIdentifierValid: true }}
+        ${'End event'}   | ${findEndEventField}   | ${{ identifierError: '', isIdentifierValid: true }}
+      `('will display $field in a valid state', ({ finder, expectedProps }) => {
+        expect(finder().props()).toMatchObject(expectedProps);
+      });
+    });
+  });
+
   describe('Start event', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      createComponent();
+    });
+
+    it('will display start event in a valid state', () => {
+      expect(findStartEventField().props()).toMatchObject({
+        identifierError: '',
+        isIdentifierValid: true,
+      });
     });
 
     it('selects the correct start events for the start events dropdown', () => {
@@ -119,9 +146,35 @@ describe('CustomStageFields', () => {
       expect(findStartEventField().props('eventsList')).not.toEqual(endEventOptions);
     });
 
+    describe('invalid state', () => {
+      beforeEach(() => {
+        createComponent({ errors: { startEventIdentifier: ['Select a start event'] } });
+      });
+
+      it('will display start event in an invalid state', () => {
+        expect(findStartEventField().props()).toMatchObject({
+          identifierError: 'Select a start event',
+          isIdentifierValid: false,
+        });
+      });
+
+      it('will display name field in a valid state', () => {
+        expect(findName().attributes('state')).toBe('true');
+        expect(findName().attributes('invalid-feedback')).toBeUndefined();
+        expect(findNameField().attributes('state')).toBe('true');
+      });
+
+      it('will display end event in a valid state', () => {
+        expect(findEndEventField().props()).toMatchObject({
+          identifierError: '',
+          isIdentifierValid: true,
+        });
+      });
+    });
+
     describe('start event label', () => {
       beforeEach(() => {
-        wrapper = createComponent({
+        createComponent({
           stage: {
             startEventIdentifier: labelStartEvent.identifier,
           },
@@ -129,7 +182,10 @@ describe('CustomStageFields', () => {
       });
 
       it('will display the start event label field if a label event is selected', () => {
-        expect(findStartEventLabelField().exists()).toEqual(true);
+        expect(findStartEventLabelField().props()).toMatchObject({
+          labelError: '',
+          isLabelValid: true,
+        });
       });
 
       it('will emit the `input` event when the start event label field when selected', () => {
@@ -149,6 +205,38 @@ describe('CustomStageFields', () => {
         await nextTick();
         expect(findFormError().text()).toBe(message);
       });
+
+      describe('invalid state', () => {
+        beforeEach(() => {
+          createComponent({
+            stage: {
+              startEventIdentifier: labelStartEvent.identifier,
+            },
+            errors: { startEventLabelId: ['Select a start event label'] },
+          });
+        });
+
+        it('will display the start event label field in an invalid state', () => {
+          expect(findStartEventLabelField().props()).toMatchObject({
+            labelError: 'Select a start event label',
+            isLabelValid: false,
+          });
+        });
+
+        it('will display name field in a valid state', () => {
+          expect(findName().attributes('state')).toBe('true');
+          expect(findName().attributes('invalid-feedback')).toBeUndefined();
+          expect(findNameField().attributes('state')).toBe('true');
+        });
+
+        it.each`
+          field            | finder                 | expectedProps
+          ${'Start event'} | ${findStartEventField} | ${{ identifierError: '', isIdentifierValid: true }}
+          ${'End event'}   | ${findEndEventField}   | ${{ identifierError: '', isIdentifierValid: true }}
+        `('will display $field in a valid state', ({ finder, expectedProps }) => {
+          expect(finder().props()).toMatchObject(expectedProps);
+        });
+      });
     });
   });
 
@@ -160,7 +248,14 @@ describe('CustomStageFields', () => {
     const allowedEndEventOpts = formatEndEventOpts(possibleEndEvents);
 
     beforeEach(() => {
-      wrapper = createComponent();
+      createComponent();
+    });
+
+    it('will display end event in a valid state', () => {
+      expect(findEndEventField().props()).toMatchObject({
+        identifierError: '',
+        isIdentifierValid: true,
+      });
     });
 
     it('selects the end events based on the start event', () => {
@@ -171,9 +266,35 @@ describe('CustomStageFields', () => {
       expect(findEndEventField().props('eventsList')).not.toEqual(startEventOptions);
     });
 
+    describe('invalid state', () => {
+      beforeEach(() => {
+        createComponent({ errors: { endEventIdentifier: ['Select a start event first'] } });
+      });
+
+      it('will display end event in an invalid state', () => {
+        expect(findEndEventField().props()).toMatchObject({
+          identifierError: 'Select a start event first',
+          isIdentifierValid: false,
+        });
+      });
+
+      it('will display name field in a valid state', () => {
+        expect(findName().attributes('state')).toBe('true');
+        expect(findName().attributes('invalid-feedback')).toBeUndefined();
+        expect(findNameField().attributes('state')).toBe('true');
+      });
+
+      it('will display start event in a valid state', () => {
+        expect(findStartEventField().props()).toMatchObject({
+          identifierError: '',
+          isIdentifierValid: true,
+        });
+      });
+    });
+
     describe('end event label', () => {
       beforeEach(() => {
-        wrapper = createComponent({
+        createComponent({
           stage: {
             startEventIdentifier: labelStartEvent.identifier,
             endEventIdentifier: labelEndEvent.identifier,
@@ -182,7 +303,10 @@ describe('CustomStageFields', () => {
       });
 
       it('will display the end event label field if a label event is selected', () => {
-        expect(findEndEventLabelField().exists()).toEqual(true);
+        expect(findEndEventLabelField().props()).toMatchObject({
+          labelError: '',
+          isLabelValid: true,
+        });
       });
 
       it('will emit the `input` event when the start event label field when selected', () => {
@@ -202,6 +326,39 @@ describe('CustomStageFields', () => {
         await nextTick();
         expect(findFormError().text()).toBe(message);
       });
+
+      describe('invalid state', () => {
+        beforeEach(() => {
+          createComponent({
+            stage: {
+              startEventIdentifier: labelStartEvent.identifier,
+              endEventIdentifier: labelEndEvent.identifier,
+            },
+            errors: { endEventLabelId: ['Select an end event label'] },
+          });
+        });
+
+        it('will display the end event label field in an invalid state', () => {
+          expect(findEndEventLabelField().props()).toMatchObject({
+            labelError: 'Select an end event label',
+            isLabelValid: false,
+          });
+        });
+
+        it('will display name field in a valid state', () => {
+          expect(findName().attributes('state')).toBe('true');
+          expect(findName().attributes('invalid-feedback')).toBeUndefined();
+          expect(findNameField().attributes('state')).toBe('true');
+        });
+
+        it.each`
+          field            | finder                 | expectedProps
+          ${'Start event'} | ${findStartEventField} | ${{ identifierError: '', isIdentifierValid: true }} | ${'Start event label'} | ${findStartEventLabelField} | ${{ labelError: '', isLabelValid: true }}
+          ${'End event'}   | ${findEndEventField}   | ${{ identifierError: '', isIdentifierValid: true }}
+        `('will display $field in a valid state', ({ finder, expectedProps }) => {
+          expect(finder().props()).toMatchObject(expectedProps);
+        });
+      });
     });
   });
 
@@ -212,7 +369,7 @@ describe('CustomStageFields', () => {
 
     describe('with only 1 stage', () => {
       beforeEach(() => {
-        wrapper = createComponent({ props: { totalStages: 1 } });
+        createComponent({ props: { totalStages: 1 } });
       });
 
       it('does not display the stage actions component', () => {
@@ -223,7 +380,7 @@ describe('CustomStageFields', () => {
 
   describe('Editing', () => {
     beforeEach(() => {
-      wrapper = createComponent({
+      createComponent({
         stage: {
           name: 'lol',
           startEventIdentifier: labelStartEvent.identifier,

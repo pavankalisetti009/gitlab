@@ -63,7 +63,7 @@ export const initializeFormData = ({ fields, errors }) => {
     ? defaultErrors
     : {
         ...defaultErrors,
-        endEventIdentifier: !fields?.startEventIdentifier ? [ERRORS.START_EVENT_REQUIRED] : [],
+        endEventIdentifier: !fields?.startEventIdentifier ? [ERRORS.SELECT_START_EVENT_FIRST] : [],
       };
   return {
     fields: {
@@ -118,7 +118,8 @@ export const validateStage = (currentStage, allStageNames = []) => {
       newErrors.endEventIdentifier = [ERRORS.END_EVENT_REQUIRED];
     }
   } else {
-    newErrors.endEventIdentifier = [ERRORS.START_EVENT_REQUIRED];
+    newErrors.startEventIdentifier = [ERRORS.START_EVENT_REQUIRED];
+    newErrors.endEventIdentifier = [ERRORS.SELECT_START_EVENT_FIRST];
   }
   return newErrors;
 };

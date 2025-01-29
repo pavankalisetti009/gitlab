@@ -37,10 +37,10 @@ export default {
       type: Boolean,
       required: true,
     },
-    hasLabelError: {
+    isLabelValid: {
       type: Boolean,
       required: false,
-      default: false,
+      default: true,
     },
     labelError: {
       type: String,
@@ -124,7 +124,7 @@ export default {
         v-if="requiresLabel"
         :data-testid="fieldName"
         :label="fieldLabel"
-        :state="hasLabelError"
+        :state="isLabelValid"
         :invalid-feedback="labelError"
       >
         <gl-collapsible-listbox
@@ -142,6 +142,7 @@ export default {
               data-testid="listbox-toggle-btn"
               block
               button-text-classes="gl-w-full gl-flex gl-justify-between"
+              :class="{ 'gl-shadow-inner-1-red-500': !isLabelValid }"
               :loading="loading"
             >
               <div v-if="selectedLabel">

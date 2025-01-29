@@ -63,7 +63,8 @@ export const ERRORS = {
   MAX_LENGTH: sprintf(s__('CreateValueStreamForm|Maximum length %{maxLength} characters'), {
     maxLength: NAME_MAX_LENGTH,
   }),
-  START_EVENT_REQUIRED: s__('CreateValueStreamForm|Please select a start event first'),
+  SELECT_START_EVENT_FIRST: s__('CreateValueStreamForm|Please select a start event first'),
+  START_EVENT_REQUIRED: s__('CreateValueStreamForm|Please select a start event'),
   END_EVENT_REQUIRED: s__('CreateValueStreamForm|Please select an end event'),
   STAGE_NAME_EXISTS: s__('CreateValueStreamForm|Stage name already exists'),
   INVALID_EVENT_PAIRS: s__(
