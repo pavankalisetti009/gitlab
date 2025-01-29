@@ -9,5 +9,8 @@ module Security
       inverse_of: :security_pipeline_execution_policy_config_link
 
     validates :security_policy, uniqueness: { scope: :project_id }
+
+    scope :for_project, ->(project) { where(project: project) }
+    scope :including_policies, -> { includes(:security_policy) }
   end
 end

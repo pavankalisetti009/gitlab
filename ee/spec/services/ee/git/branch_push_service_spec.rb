@@ -257,5 +257,54 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it_behaves_like 'does not enqueue the X-Ray worker'
       end
     end
+
+    describe 'Pipeline execution policy metadata sync' do
+      let(:feature_licensed) { true }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: feature_licensed)
+      end
+
+      context 'without any security_pipeline_execution_policy_config_link' do
+        it 'does not run the worker' do
+          expect(Security::SyncLinkedPipelineExecutionPolicyConfigsWorker).not_to receive(:perform_async)
+        end
+      end
+
+      context 'with security_pipeline_execution_policy_config_link' do
+        before do
+          create(:security_pipeline_execution_policy_config_link, project: project)
+        end
+
+        it 'runs a worker' do
+          expect(Security::SyncLinkedPipelineExecutionPolicyConfigsWorker)
+            .to receive(:perform_async)
+                  .with(project.id, user.id, oldrev, newrev, ref)
+                  .ordered
+
+          subject.execute
+        end
+
+        context 'when feature is not licensed' do
+          let(:feature_licensed) { false }
+
+          it 'does not run the worker' do
+            expect(Security::SyncLinkedPipelineExecutionPolicyConfigsWorker).not_to receive(:perform_async)
+          end
+        end
+
+        context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
+          before do
+            stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
+          end
+
+          it 'does not run the worker' do
+            expect(Security::SyncLinkedPipelineExecutionPolicyConfigsWorker).not_to receive(:perform_async)
+
+            subject.execute
+          end
+        end
+      end
+    end
   end
 end
