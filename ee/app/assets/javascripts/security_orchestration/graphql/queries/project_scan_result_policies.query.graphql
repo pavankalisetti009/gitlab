@@ -35,17 +35,6 @@ query projectScanResultPolicies(
             name
           }
         }
-        userApprovers {
-          id
-          name
-          webUrl
-        }
-        allGroupApprovers {
-          id
-          fullPath
-          webUrl
-        }
-        roleApprovers
         source {
           ...SecurityPolicySource
         }
