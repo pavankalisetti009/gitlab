@@ -45,26 +45,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
       service.execute(merge_request)
     end
 
-    shared_examples 'default msg when abort_msg flag disabled' do
-      context 'when auto_merge_train_elaborate_abort_msg is false' do
-        before do
-          stub_feature_flags(auto_merge_train_elaborate_abort_msg: false)
-        end
-
-        it 'aborts auto merge with the default message' do
-          stub_feature_flags(auto_merge_train_elaborate_abort_msg: false)
-
-          expect(service).to receive(:abort).once.and_call_original
-
-          expect(SystemNoteService)
-            .to receive(:abort_add_to_merge_train_when_checks_pass).once
-            .with(merge_request, project, user, 'this merge request cannot be added to the merge train')
-
-          process
-        end
-      end
-    end
-
     context 'when the merge request has ci enabled' do
       context 'when the latest pipeline in the merge request has succeeded' do
         before do
@@ -94,8 +74,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
               process
             end
-
-            include_examples "default msg when abort_msg flag disabled"
           end
 
           context 'when mergeability checks do not pass' do
@@ -125,8 +103,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
               process
             end
-
-            include_examples "default msg when abort_msg flag disabled"
           end
 
           context 'when merge trains not enabled' do
@@ -143,8 +119,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
               process
             end
-
-            include_examples "default msg when abort_msg flag disabled"
           end
 
           context 'when diff head pipeline considered in progress' do
@@ -161,8 +135,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
               process
             end
-
-            include_examples "default msg when abort_msg flag disabled"
           end
 
           context 'when MergeTrainService is not available_for mr but reason is unknown' do
@@ -180,8 +152,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
               process
             end
-
-            include_examples "default msg when abort_msg flag disabled"
           end
         end
 
@@ -311,44 +281,6 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
       end
 
       it { is_expected.to be(false) }
-    end
-
-    context "when auto_merge_train_elaborate_abort_msg is false" do
-      before do
-        stub_feature_flags(auto_merge_train_elaborate_abort_msg: false)
-      end
-
-      context 'when merge trains option is disabled' do
-        before do
-          allow(merge_request.project).to receive(:merge_trains_enabled?).and_return(false)
-        end
-
-        it { is_expected.to be(false) }
-      end
-
-      context 'when the MR does not have ci enabled' do
-        before do
-          allow(merge_request).to receive(:has_ci_enabled?).and_return(false)
-        end
-
-        it { is_expected.to be(false) }
-      end
-
-      context 'when merge request is not mergeable' do
-        before do
-          merge_request.update!(title: merge_request.draft_title)
-        end
-
-        it { is_expected.to be(true) }
-      end
-
-      context 'when the user does not have permission to merge' do
-        before do
-          allow(merge_request).to receive(:can_be_merged_by?).and_return(false)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
   end
 
