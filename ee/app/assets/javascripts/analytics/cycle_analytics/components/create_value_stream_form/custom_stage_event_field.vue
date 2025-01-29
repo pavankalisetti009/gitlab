@@ -33,10 +33,10 @@ export default {
       required: false,
       default: false,
     },
-    hasIdentifierError: {
+    isIdentifierValid: {
       type: Boolean,
       required: false,
-      default: false,
+      default: true,
     },
     identifierError: {
       type: String,
@@ -77,7 +77,7 @@ export default {
     class="gl-mr-2 gl-w-1/2"
     :data-testid="fieldName"
     :label="fieldLabel"
-    :state="hasIdentifierError"
+    :state="isIdentifierValid"
     :invalid-feedback="identifierError"
   >
     <gl-collapsible-listbox
@@ -85,6 +85,7 @@ export default {
       :selected="selectedValue"
       :disabled="disabled"
       :toggle-text="toggleText"
+      :toggle-class="{ 'gl-shadow-inner-1-red-500': !isIdentifierValid }"
       block
       @select="itemSelected"
     />

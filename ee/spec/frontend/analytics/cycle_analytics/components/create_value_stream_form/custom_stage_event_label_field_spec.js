@@ -28,7 +28,6 @@ const defaultProps = {
   eventType,
   fieldLabel,
   requiresLabel: true,
-  labelError,
 };
 
 describe('CustomStageEventLabelField', () => {
@@ -78,8 +77,13 @@ describe('CustomStageEventLabelField', () => {
     });
 
     it('renders the form group', () => {
-      expect(findEventLabelField().exists()).toBe(true);
-      expect(findEventLabelField().attributes('label')).toBe(fieldLabel);
+      expect(findEventLabelField().attributes()).toMatchObject({
+        label: fieldLabel,
+        state: 'true',
+        'invalid-feedback': '',
+      });
+
+      expect(findToggleButton().classes()).not.toContain('gl-shadow-inner-1-red-500');
     });
 
     it('renders with no selected label', () => {
@@ -198,15 +202,19 @@ describe('CustomStageEventLabelField', () => {
     beforeEach(() => {
       wrapper = createComponent({
         props: {
-          hasLabelError: true,
+          isLabelValid: false,
           labelError,
         },
       });
     });
 
     it('sets the form group error state', () => {
-      expect(findEventLabelField().attributes('state')).toBe('true');
+      expect(findEventLabelField().attributes('state')).toBeUndefined();
       expect(findEventLabelField().attributes('invalid-feedback')).toBe(labelError);
+    });
+
+    it('sets the listbox toggle button error state', () => {
+      expect(findToggleButton().classes()).toContain('gl-shadow-inner-1-red-500');
     });
   });
 });

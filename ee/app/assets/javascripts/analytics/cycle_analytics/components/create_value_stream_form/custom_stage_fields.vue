@@ -75,8 +75,8 @@ export default {
       const { id: value = null } = event;
       this.$emit('input', { field, value });
     },
-    hasFieldErrors(key) {
-      return !Object.keys(this.errors).length || this.errors[key]?.length < 1;
+    isFieldValid(key) {
+      return !this.errors[key]?.length;
     },
     fieldErrorMessage(key) {
       return this.errors[key]?.join('\n');
@@ -97,7 +97,7 @@ export default {
       <div class="gl-mr-2 gl-grow">
         <gl-form-group
           :label="stageLabel"
-          :state="hasFieldErrors('name')"
+          :state="isFieldValid('name')"
           :invalid-feedback="fieldErrorMessage('name')"
           :data-testid="`custom-stage-name-${index}`"
         >
@@ -106,6 +106,7 @@ export default {
             v-model.trim="stage.name"
             :name="`custom-stage-name-${index}`"
             :placeholder="$options.i18n.FORM_FIELD_STAGE_NAME_PLACEHOLDER"
+            :state="isFieldValid('name')"
             required
             @input="$emit('input', { field: 'name', value: $event })"
           />
@@ -120,7 +121,7 @@ export default {
             :initial-value="stage.startEventIdentifier"
             :events-list="startEvents"
             :identifier-error="fieldErrorMessage('startEventIdentifier')"
-            :has-identifier-error="hasFieldErrors('startEventIdentifier')"
+            :is-identifier-valid="isFieldValid('startEventIdentifier')"
             @update-identifier="$emit('input', { field: 'startEventIdentifier', value: $event })"
           />
           <custom-stage-event-label-field
@@ -130,7 +131,7 @@ export default {
             :field-label="$options.i18n.FORM_FIELD_START_EVENT_LABEL"
             :requires-label="startEventRequiresLabel"
             :label-error="fieldErrorMessage('startEventLabelId')"
-            :has-label-error="hasFieldErrors('startEventLabelId')"
+            :is-label-valid="isFieldValid('startEventLabelId')"
             @update-label="onSelectLabel('startEventLabelId', $event)"
             @error="setFormError"
           />
@@ -145,7 +146,7 @@ export default {
             :initial-value="stage.endEventIdentifier"
             :events-list="endEvents"
             :identifier-error="fieldErrorMessage('endEventIdentifier')"
-            :has-identifier-error="hasFieldErrors('endEventIdentifier')"
+            :is-identifier-valid="isFieldValid('endEventIdentifier')"
             @update-identifier="$emit('input', { field: 'endEventIdentifier', value: $event })"
           />
           <custom-stage-event-label-field
@@ -155,7 +156,7 @@ export default {
             :field-label="$options.i18n.FORM_FIELD_END_EVENT_LABEL"
             :requires-label="endEventRequiresLabel"
             :label-error="fieldErrorMessage('endEventLabelId')"
-            :has-label-error="hasFieldErrors('endEventLabelId')"
+            :is-label-valid="isFieldValid('endEventLabelId')"
             @update-label="onSelectLabel('endEventLabelId', $event)"
             @error="setFormError"
           />

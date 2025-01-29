@@ -126,9 +126,30 @@ describe('validateStage', () => {
   });
 
   describe('event fields', () => {
-    it(`returns "${ERRORS.START_EVENT_REQUIRED}" with a end event set, but no start event`, () => {
+    it(`returns "${ERRORS.START_EVENT_REQUIRED}" and "${ERRORS.SELECT_START_EVENT_FIRST}" with no events set`, () => {
+      const result = validateStage(defaultFields);
+
+      expectFieldError({
+        result,
+        error: ERRORS.START_EVENT_REQUIRED,
+        field: 'startEventIdentifier',
+      });
+
+      expectFieldError({
+        result,
+        error: ERRORS.SELECT_START_EVENT_FIRST,
+        field: 'endEventIdentifier',
+      });
+    });
+
+    it(`returns "${ERRORS.SELECT_START_EVENT_FIRST}" with an end event set, but no start event`, () => {
       const result = validateStage({ ...defaultFields, endEventIdentifier: 'end-event' });
-      expectFieldError({ result, error: ERRORS.START_EVENT_REQUIRED, field: 'endEventIdentifier' });
+
+      expectFieldError({
+        result,
+        error: ERRORS.SELECT_START_EVENT_FIRST,
+        field: 'endEventIdentifier',
+      });
     });
 
     it(`returns "${ERRORS.END_EVENT_REQUIRED}" with a start event and no end event set`, () => {

@@ -48,8 +48,12 @@ describe('CustomStageEventField', () => {
 
   describe('Event collapsible listbox', () => {
     it('renders the listbox', () => {
-      expect(findEventField().exists()).toBe(true);
-      expect(findEventField().attributes('label')).toBe(fieldLabel);
+      expect(findEventField().attributes()).toMatchObject({
+        label: fieldLabel,
+        state: 'true',
+        'invalid-feedback': '',
+      });
+
       expect(findCollapsibleListbox().attributes('disabled')).toBeUndefined();
       expect(findCollapsibleListbox().props('toggleText')).toBe(defaultDropdownText);
     });
@@ -79,14 +83,20 @@ describe('CustomStageEventField', () => {
   describe('with an event field error', () => {
     beforeEach(() => {
       wrapper = createComponent({
-        hasIdentifierError: true,
+        isIdentifierValid: false,
         identifierError,
       });
     });
 
     it('sets the form group error state', () => {
-      expect(findEventField().attributes('state')).toBe('true');
+      expect(findEventField().attributes('state')).toBeUndefined();
       expect(findEventField().attributes('invalid-feedback')).toBe(identifierError);
+    });
+
+    it('sets the listbox error state', () => {
+      expect(findCollapsibleListbox().props('toggleClass')).toEqual({
+        'gl-shadow-inner-1-red-500': true,
+      });
     });
   });
 });
