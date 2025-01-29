@@ -3956,6 +3956,27 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it_behaves_like 'custom roles abilities'
       end
 
+      context 'for a custom role with the `admin_security_testing` ability' do
+        let(:member_role_abilities) { { admin_security_testing: true } }
+        let(:licensed_features) do
+          { security_dashboard: true,
+            pre_receive_secret_detection: true,
+            group_level_compliance_dashboard: true }
+        end
+
+        let(:allowed_abilities) do
+          [
+            :access_security_and_compliance,
+            :read_security_configuration,
+            :read_group_security_dashboard,
+            :read_security_resource,
+            :enable_pre_receive_secret_detection
+          ]
+        end
+
+        it_behaves_like 'custom roles abilities'
+      end
+
       context 'when compliance framework feature is unavailable' do
         before do
           create_member_role(group_member_guest)

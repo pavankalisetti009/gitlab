@@ -456,6 +456,55 @@ module EE
         enable :create_on_demand_dast_scan
       end
 
+      rule { security_dashboard_enabled & can?(:maintainer_access) }.policy do
+        enable :admin_security_testing
+      end
+
+      rule { custom_role_enables_admin_security_testing }.policy do
+        enable :admin_security_testing
+      end
+
+      rule { security_dashboard_enabled & can?(:admin_security_testing) }.policy do
+        enable :access_security_and_compliance
+        enable :read_security_configuration
+        enable :read_project_security_dashboard
+        enable :read_security_resource
+
+        # create scanner configuration
+        enable :push_code
+        enable :download_code
+        enable :read_merge_request
+        enable :create_merge_request_from
+      end
+
+      rule { pre_receive_secret_detection_available & can?(:admin_security_testing) }.policy do
+        enable :read_pre_receive_secret_detection_info
+        enable :enable_pre_receive_secret_detection
+        enable :read_project_security_exclusions
+      end
+
+      rule { container_scanning_for_registry_available & can?(:admin_security_testing) }.policy do
+        enable :enable_container_scanning_for_registry
+      end
+
+      rule { coverage_fuzzing_enabled & can?(:admin_security_testing) }.policy do
+        enable :read_coverage_fuzzing
+        enable :create_coverage_fuzzing_corpus
+      end
+
+      rule { security_scans_api_enabled & can?(:admin_security_testing) }.policy do
+        enable :access_security_scans_api
+      end
+
+      rule { on_demand_scans_enabled & can?(:admin_security_testing) }.policy do
+        enable :read_on_demand_dast_scan
+        enable :create_on_demand_dast_scan
+        enable :edit_on_demand_dast_scan
+
+        enable :read_project_runners # read runner tags when creating scan
+        enable :create_pipeline # run a scan
+      end
+
       rule { security_dashboard_enabled & security_policy_bot }.policy do
         enable :create_vulnerability_state_transition
       end
