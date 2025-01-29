@@ -10,8 +10,6 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import groupProjectsQuery from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
 import instanceProjectsQuery from 'ee/security_dashboard/graphql/queries/instance_projects.query.graphql';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import QuerystringSync from '../../filters/querystring_sync.vue';
-import eventHub from '../event_hub';
 
 const QUERIES = {
   [DASHBOARD_TYPE_GROUP]: groupProjectsQuery,
@@ -23,7 +21,6 @@ export default {
     GlFilteredSearchToken,
     SearchSuggestion,
     GlLoadingIcon,
-    QuerystringSync,
   },
   inject: ['groupFullPath', 'dashboardType'],
   props: {
@@ -62,16 +59,13 @@ export default {
     selectedProjects() {
       return this.projects.filter(({ rawId }) => this.selectedProjectIds.includes(rawId));
     },
-    selectedProjectNames() {
-      return this.selectedProjects.map(({ name }) => name);
-    },
     tokenValue() {
       return {
         ...this.value,
         // when the token is active (dropdown is open), we set the value to null to prevent an UX issue
         // in which only the last selected item is being displayed.
         // more information: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2381
-        data: this.active ? null : this.selectedProjectNames,
+        data: this.active ? null : this.selectedProjectIds,
       };
     },
     toggleText() {
@@ -115,7 +109,6 @@ export default {
     },
     resetSelected() {
       this.selectedProjectIds = [];
-      this.emitFiltersChanged();
     },
     isProjectSelected(rawProjectId) {
       return this.selectedProjectIds.some((id) => id === rawProjectId);
@@ -126,17 +119,6 @@ export default {
       } else {
         this.selectedProjectIds.push(rawProjectId);
       }
-    },
-    onComplete() {
-      this.emitFiltersChanged();
-    },
-    emitFiltersChanged() {
-      // the dropdown shows a list of project names but we need to emit the project ids for filtering
-      eventHub.$emit('filters-changed', { projectId: [...this.selectedProjectIds] });
-    },
-    updateSelectedFromQS(ids) {
-      this.selectedProjectIds = ids.map((id) => Number(id));
-      this.emitFiltersChanged();
     },
     setSearchTerm: debounce(function debouncedSetSearchTerm({ data }) {
       // when the user is doing a search, we receive a string. If they
@@ -161,38 +143,31 @@ export default {
 </script>
 
 <template>
-  <querystring-sync
-    querystring-key="projectId"
-    :value="selectedProjectIds"
-    @input="updateSelectedFromQS"
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :multi-select-values="selectedProjectIds"
+    :value="tokenValue"
+    v-on="$listeners"
+    @destroy="resetSelected"
+    @select="toggleSelectedProject"
+    @input="setSearchTerm"
   >
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :multi-select-values="selectedProjectIds"
-      :value="tokenValue"
-      v-on="$listeners"
-      @complete="onComplete"
-      @destroy="resetSelected"
-      @select="toggleSelectedProject"
-      @input="setSearchTerm"
-    >
-      <template #view>
-        {{ toggleText }}
+    <template #view>
+      {{ toggleText }}
+    </template>
+    <template #suggestions>
+      <gl-loading-icon v-if="isLoadingProjects" size="sm" />
+      <template v-else>
+        <search-suggestion
+          v-for="project in projects"
+          :key="project.id"
+          :value="project.rawId"
+          :text="project.name"
+          :selected="isProjectSelected(project.rawId)"
+          :data-testid="`suggestion-${project.rawId}`"
+        />
       </template>
-      <template #suggestions>
-        <gl-loading-icon v-if="isLoadingProjects" size="sm" />
-        <template v-else>
-          <search-suggestion
-            v-for="project in projects"
-            :key="project.id"
-            :value="project.rawId"
-            :text="project.name"
-            :selected="isProjectSelected(project.rawId)"
-            :data-testid="`suggestion-${project.rawId}`"
-          />
-        </template>
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+    </template>
+  </gl-filtered-search-token>
 </template>

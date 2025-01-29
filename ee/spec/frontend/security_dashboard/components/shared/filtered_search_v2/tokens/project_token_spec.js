@@ -6,21 +6,17 @@ import {
   GlIcon,
   GlLoadingIcon,
 } from '@gitlab/ui';
-import VueRouter from 'vue-router';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import { DASHBOARD_TYPE_GROUP } from 'ee/security_dashboard/constants';
 import getProjects from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 
 Vue.use(VueApollo);
-Vue.use(VueRouter);
 
 jest.mock('~/alert');
 
@@ -46,7 +42,6 @@ const TEST_GROUP = 'secure';
 describe('ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue', () => {
   let wrapper;
   let handlerMocks;
-  let router;
 
   const createMockApolloProvider = ({ handlers = {} } = {}) => {
     const defaultHandlers = {
@@ -87,10 +82,7 @@ describe('ee/security_dashboard/components/shared/filtered_search_v2/tokens/proj
     handlers = {},
     mountFn = shallowMountExtended,
   } = {}) => {
-    router = new VueRouter({ mode: 'history' });
-
     wrapper = mountFn(ProjectToken, {
-      router,
       propsData: {
         config: {
           multiSelect: true,
@@ -123,7 +115,6 @@ describe('ee/security_dashboard/components/shared/filtered_search_v2/tokens/proj
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const findSlotView = () => wrapper.findByTestId('slot-view');
   const findSlotSuggestions = () => wrapper.findByTestId('slot-suggestions');
@@ -231,22 +222,6 @@ describe('ee/security_dashboard/components/shared/filtered_search_v2/tokens/proj
 
         expect(findSlotView().text()).toBe(`${TEST_PROJECTS[0].name} +1 more`);
       });
-
-      it(`emits the selected project's IDs without the GraphQL prefix`, async () => {
-        const spy = jest.fn();
-        eventHub.$on('filters-changed', spy);
-
-        const expectedIds = TEST_PROJECTS.map((project) => project.rawId);
-
-        await selectProject(TEST_PROJECTS[0]);
-        await selectProject(TEST_PROJECTS[1]);
-
-        findFilteredSearchToken().vm.$emit('complete');
-
-        expect(spy).toHaveBeenCalledWith({
-          projectId: expectedIds,
-        });
-      });
     });
   });
 
@@ -264,29 +239,6 @@ describe('ee/security_dashboard/components/shared/filtered_search_v2/tokens/proj
     it('shows an error message', () => {
       expect(createAlert).toHaveBeenCalledWith({
         message: 'There was an error fetching the projects for this group. Please try again later.',
-      });
-    });
-  });
-
-  describe('QuerystringSync component', () => {
-    beforeEach(() => {
-      createComponent({ propsData: { value: { data: [1, 2] } } });
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'projectId',
-        value: [1, 2],
-      });
-    });
-
-    it('emits an event when input event is emitted', () => {
-      const projectIds = [1, 2];
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-      findQuerystringSync().vm.$emit('input', projectIds);
-      expect(spy).toHaveBeenCalledWith({
-        projectId: projectIds,
       });
     });
   });
