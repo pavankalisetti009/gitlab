@@ -89,7 +89,6 @@ Prerequisites:
 To configure a self-hosted model:
 
 1. On the left sidebar, at the bottom, select **Admin**.
-1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **GitLab Duo**.
 1. In the **GitLab Duo** section, select **Change configuration**.
 1. Under **Self-hosted AI models**, select **Turn on self-hosted models**.
