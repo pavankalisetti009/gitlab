@@ -1,5 +1,6 @@
 - add_to_breadcrumbs _('Geo Sites'), admin_geo_nodes_path
 - add_page_specific_style 'page_bundles/admin/geo_replicable'
+- page_title @replicator_class.replicable_title_plural
 
 = render "admin/geo/shared/replication_nav"
 #js-geo-replicable{ data: { "geo-replicable-empty-svg-path" => image_path("illustrations/empty-state/empty-geo-md.svg"),

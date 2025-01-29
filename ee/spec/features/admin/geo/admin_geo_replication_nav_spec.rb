@@ -17,25 +17,7 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
     stub_geo_setting(registry_replication: { enabled: true })
   end
 
-  shared_examples 'active sidebar link' do |link_name|
-    before do
-      visit path
-      wait_for_requests
-    end
-
-    it 'has active class' do
-      navigation_link = page.find('a', text: link_name)
-      expect(navigation_link[:class]).to include('active')
-    end
-  end
-
   describe 'visit admin/geo/replication/*' do
-    Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
-      it_behaves_like 'active sidebar link', replicator_class.replicable_title_plural do
-        let(:path) { admin_geo_replicables_path(replicable_name_plural: replicator_class.replicable_name_plural) }
-      end
-    end
-
     it 'displays enabled replicator replication details nav links' do
       visit admin_geo_replicables_path(replicable_name_plural: 'project_repositories')
 
@@ -46,7 +28,7 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
       end
     end
 
-    it 'displays the correct breadcrumbs' do
+    it 'displays the correct breadcrumbs for the project repositories page' do
       visit admin_geo_replicables_path(replicable_name_plural: 'project_repositories')
 
       breadcrumbs = page.all(:css, '.gl-breadcrumb-list > li')
@@ -54,7 +36,20 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
       expect(breadcrumbs.length).to eq(3)
       expect(breadcrumbs[0].text).to eq('Admin area')
       expect(breadcrumbs[1].text).to eq('Geo Sites')
-      expect(breadcrumbs[2].text).to eq('Geo Replication')
+      expect(breadcrumbs[2].text).to eq('Project Repositories')
+    end
+
+    it 'displays the correct breadcrumbs for the project repository details page' do
+      visit replicable_details_admin_geo_node_path(id: secondary_node, replicable_name_plural: 'project_repositories',
+        replicable_id: 1)
+
+      breadcrumbs = page.all(:css, '.gl-breadcrumb-list > li')
+
+      expect(breadcrumbs.length).to eq(4)
+      expect(breadcrumbs[0].text).to eq('Admin area')
+      expect(breadcrumbs[1].text).to eq('Geo Sites')
+      expect(breadcrumbs[2].text).to eq('Project Repositories')
+      expect(breadcrumbs[3].text).to eq('1')
     end
   end
 end
