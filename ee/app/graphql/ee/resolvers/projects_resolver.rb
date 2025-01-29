@@ -22,7 +22,9 @@ module EE
 
       override :finder_params
       def finder_params(args)
-        super(args).merge(args.slice(:aimed_for_deletion, :include_hidden, :marked_for_deletion_on))
+        super(args)
+          .merge(args.slice(:aimed_for_deletion, :include_hidden, :marked_for_deletion_on))
+          .merge(filter_expired_saml_session_projects: true)
       end
     end
   end

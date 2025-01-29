@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProjectsFinder do
+RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
   describe '#execute', :saas do
     let_it_be(:user) { create(:user) }
     let_it_be(:ultimate_project) { create_project(:ultimate_plan) }
@@ -65,76 +65,8 @@ RSpec.describe ProjectsFinder do
       it { is_expected.to contain_exactly(ultimate_project, ultimate_project2, premium_project, no_plan_project) }
     end
 
-    context 'filter by SAML SSO session' do
-      let(:params) { { filter_expired_saml_session_projects: true } }
+    it_behaves_like 'projects finder with SAML session filtering' do
       let(:finder) { described_class.new(current_user: current_user, params: params) }
-
-      let_it_be(:current_user) { user }
-
-      let_it_be(:root_group1) do
-        create(:group, saml_provider: create(:saml_provider), developers: current_user) do |group|
-          create_saml_identity(group, current_user)
-        end
-      end
-
-      let_it_be(:root_group2) do
-        create(:group, saml_provider: create(:saml_provider))
-      end
-
-      let_it_be(:private_root_group) do
-        create(:group, :private, saml_provider: create(:saml_provider), developers: current_user) do |group|
-          create_saml_identity(group, current_user)
-        end
-      end
-
-      let_it_be(:project1) { create(:project, :public, group: root_group1) }
-      let_it_be(:project2) { create(:project, :public, group: root_group2) }
-      let_it_be(:private_project) { create(:project, :private, group: private_root_group) }
-      let_it_be(:all_projects) { [project1, project2, private_project] }
-
-      subject(:projects) { finder.execute.id_in(all_projects).to_a }
-
-      context 'when the current user is nil' do
-        let_it_be(:current_user) { nil }
-
-        it 'includes public SAML projects' do
-          expect(projects).to contain_exactly(project1, project2)
-        end
-      end
-
-      shared_examples 'includes all SAML projects' do
-        specify do
-          expect(projects).to match_array(all_projects)
-        end
-      end
-
-      context 'when the current user is an admin', :enable_admin_mode do
-        let_it_be(:current_user) { create(:admin) }
-
-        it_behaves_like 'includes all SAML projects'
-      end
-
-      context 'when the current user has no active SAML sessions' do
-        it 'filters out the SAML member projects' do
-          expect(projects).to contain_exactly(project2)
-        end
-      end
-
-      context 'when filter_expired_saml_session_projects param is false' do
-        let(:params) { { filter_expired_saml_session_projects: false } }
-
-        it_behaves_like 'includes all SAML projects'
-      end
-
-      context 'when the current user has active SAML sessions' do
-        before do
-          active_saml_sessions = { root_group1.saml_provider.id => Time.current,
-                                   private_root_group.saml_provider.id => Time.current }
-          allow(::Gitlab::Auth::GroupSaml::SsoState).to receive(:active_saml_sessions).and_return(active_saml_sessions)
-        end
-
-        it_behaves_like 'includes all SAML projects'
-      end
     end
 
     context 'filter by hidden' do
@@ -190,10 +122,6 @@ RSpec.describe ProjectsFinder do
     end
 
     private
-
-    def create_saml_identity(group, current_user)
-      create(:group_saml_identity, saml_provider: group.saml_provider, user: current_user)
-    end
 
     def create_project(plan, visibility = :public)
       create(:project, visibility, namespace: create(:group_with_plan, plan: plan))

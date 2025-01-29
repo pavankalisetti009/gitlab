@@ -13,6 +13,8 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
     create(:project, marked_for_deletion_at: marked_for_deletion_on, group: group, developers: current_user)
   end
 
+  let_it_be(:path) { %i[projects nodes] }
+
   let(:filters) { {} }
 
   let(:query) do
@@ -30,7 +32,7 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
 
     it 'returns data' do
       expect(graphql_errors).to be_nil
-      expect(graphql_data_at(:projects, :nodes)).to be_present
+      expect(graphql_data_at(*path)).to be_present
     end
   end
 
@@ -45,7 +47,7 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
 
     it 'returns the expected projects' do
       post_graphql(query, current_user: current_user)
-      returned_projects = graphql_data_at(:projects, :nodes)
+      returned_projects = graphql_data_at(*path)
 
       returned_ids = returned_projects.pluck('id')
       returned_marked_for_deletion_on = returned_projects.pluck('markedForDeletionOn')
@@ -54,4 +56,6 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
       expect(returned_marked_for_deletion_on).to contain_exactly(marked_for_deletion_on.iso8601)
     end
   end
+
+  it_behaves_like 'projects graphql query with SAML session filtering'
 end
