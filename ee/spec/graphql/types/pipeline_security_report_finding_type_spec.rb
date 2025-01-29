@@ -572,6 +572,35 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
     end
   end
 
+  describe 'severity' do
+    let(:query_for_test) do
+      %(
+        uuid
+        severity
+      )
+    end
+
+    it 'returns the security findings severity when no vulnerability exists' do
+      expect(get_findings_from_response(subject).first['severity']).to eq(sast_findings.first.severity.upcase)
+    end
+
+    context 'when there is a related vulnerability' do
+      let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+      let_it_be(:vulnerability_finding) do
+        create(:vulnerabilities_finding, project: project, vulnerability: vulnerability, uuid: sast_findings.first.uuid)
+      end
+
+      let(:severity) do
+        get_findings_from_response(subject).first['severity']
+      end
+
+      it 'returns the severity of the vulnerability for the security finding' do
+        expect(severity.capitalize).to eq(vulnerability.severity.capitalize)
+        expect(sast_findings.first.severity).not_to eq(vulnerability.severity) # verify the actual values are different
+      end
+    end
+  end
+
   def create_vulnerability_from_security_finding(project, security_finding)
     finding = create(:vulnerabilities_finding, project: project, uuid: security_finding.uuid)
     create(:vulnerability,
