@@ -20,7 +20,9 @@ module CodeSuggestions
       end
 
       def prompt
-        if self_hosted?
+        if Feature.enabled?(:amazon_q_chat_and_code_suggestions, current_user) && ::Ai::AmazonQ.connected?
+          amazon_q_prompt
+        elsif self_hosted?
           self_hosted_prompt
         else
           saas_prompt
@@ -40,6 +42,10 @@ module CodeSuggestions
         else
           saas_primary_model_class.new(params, current_user)
         end
+      end
+
+      def amazon_q_prompt
+        CodeSuggestions::Prompts::CodeCompletion::AmazonQ.new(params, current_user)
       end
     end
   end
