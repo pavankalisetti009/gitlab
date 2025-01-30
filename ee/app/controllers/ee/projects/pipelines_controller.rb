@@ -10,6 +10,9 @@ module EE
         include GovernUsageProjectTracking
 
         before_action :authorize_read_licenses!, only: [:licenses, :license_count]
+        before_action do
+          push_frontend_feature_flag(:vulnerability_report_type_scanner_filter)
+        end
 
         feature_category :software_composition_analysis, [:licenses, :license_count]
         feature_category :vulnerability_management, [:security]
