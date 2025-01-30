@@ -84,7 +84,7 @@ export default {
       return this.sbomReportsErrors.length > 0;
     },
     asyncExportEnabled() {
-      return this.asyncExportEnabledForProject || this.asynchronousExportEnabledForGroup;
+      return this.asyncExportEnabledForProject || this.asyncExportEnabledForGroup;
     },
     asyncExportEnabledForProject() {
       return (

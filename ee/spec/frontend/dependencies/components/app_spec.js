@@ -119,6 +119,37 @@ describe('DependenciesApp component', () => {
     expect(findHeader().exists()).toBe(true);
   };
 
+  describe('asyncExport', () => {
+    describe.each`
+      namespaceType             | projectFlag | groupFlag | result
+      ${NAMESPACE_PROJECT}      | ${true}     | ${false}  | ${true}
+      ${NAMESPACE_PROJECT}      | ${false}    | ${true}   | ${false}
+      ${NAMESPACE_PROJECT}      | ${false}    | ${false}  | ${false}
+      ${NAMESPACE_GROUP}        | ${true}     | ${false}  | ${false}
+      ${NAMESPACE_GROUP}        | ${false}    | ${true}   | ${true}
+      ${NAMESPACE_GROUP}        | ${false}    | ${false}  | ${false}
+      ${NAMESPACE_ORGANIZATION} | ${true}     | ${true}   | ${false}
+    `('feature flag logic', ({ namespaceType, projectFlag, groupFlag, result }) => {
+      beforeEach(() => {
+        factory({
+          provide: {
+            namespaceType,
+            glFeatures: {
+              asynchronousDependencyExportDeliveryForProjects: projectFlag,
+              asynchronousDependencyExportDeliveryForGroups: groupFlag,
+            },
+          },
+        });
+      });
+
+      it('shows a tooltip for a CSV export', () => {
+        expect(store.dispatch.mock.calls).toEqual(
+          expect.arrayContaining([['setAsyncExport', result]]),
+        );
+      });
+    });
+  });
+
   describe('on creation', () => {
     beforeEach(() => {
       mock = new MockAdapter(axios);
