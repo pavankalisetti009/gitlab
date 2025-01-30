@@ -41955,6 +41955,9 @@ msgstr ""
 msgid "Pipelines|Editor"
 msgstr ""
 
+msgid "Pipelines|Expires"
+msgstr ""
+
 msgid "Pipelines|Explore CI components in the CI/CD Catalog to see if they suit your requirements."
 msgstr ""
 
@@ -60202,7 +60205,13 @@ msgstr ""
 msgid "Triggerer"
 msgstr ""
 
+msgid "Trigger|By default, trigger tokens never expire if no expiration date is selected."
+msgstr ""
+
 msgid "Trigger|Description"
+msgstr ""
+
+msgid "Trigger|Expiration Date"
 msgstr ""
 
 msgid "Trigger|Trigger description"
