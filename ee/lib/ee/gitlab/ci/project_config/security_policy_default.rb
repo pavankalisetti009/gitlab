@@ -15,6 +15,8 @@ module EE
             }
           }.freeze
 
+          # Scan Execution Policies is a feature that works in parallel with Pipeline Execution Policies.
+          # Even if there are PEPs with `override_project_ci`, we want SEPs to still be applied.
           override :content
           def content
             # We merge the security scans with the pipeline configuration in ee/lib/ee/gitlab/ci/config_ee.rb.
@@ -41,6 +43,8 @@ module EE
           strong_memoize_attr :source
 
           private
+
+          attr_reader :pipeline_policy_context
 
           def has_pipeline_execution_policies_defined?
             pipeline_policy_context&.has_execution_policy_pipelines?

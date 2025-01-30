@@ -53,19 +53,5 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::EvaluateP
         expect(pipeline.errors[:base]).to include(a_string_including('Pipeline execution policy error: some error'))
       end
     end
-
-    context 'when policy should not be enforced for a source' do
-      Enums::Ci::Pipeline.dangling_sources.each_key do |source|
-        context "when source is #{source}" do
-          let(:source) { source }
-
-          it 'does not set execution_policy_pipelines' do
-            expect(pipeline_policy_context).not_to receive(:build_policy_pipelines!)
-
-            step.perform!
-          end
-        end
-      end
-    end
   end
 end

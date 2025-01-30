@@ -137,13 +137,13 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       EOY
     end
 
-    let(:has_overriding_policy_pipelines) { false }
+    let(:apply_config_override) { false }
 
     before do
       command.pipeline_policy_context = instance_double(
         Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
         has_execution_policy_pipelines?: true,
-        has_overriding_execution_policy_pipelines?: has_overriding_policy_pipelines
+        applying_config_override?: apply_config_override
       )
     end
 
@@ -160,7 +160,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       let_it_be(:project) { create(:project, :auto_devops_disabled) }
 
       let(:blob) { fake_blob(path: '.gitlab-ci.yml', data: project_content) }
-      let(:has_overriding_policy_pipelines) { true }
+      let(:apply_config_override) { true }
 
       let(:project_content) do
         <<~EOY
