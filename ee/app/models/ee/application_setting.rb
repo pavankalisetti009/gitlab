@@ -18,6 +18,8 @@ module EE
       SEAT_CONTROL_USER_CAP = 1
       SEAT_CONTROL_BLOCK_OVERAGES = 2
 
+      ERROR_NO_SEATS_AVAILABLE = 'NO_SEATS_AVAILABLE'
+
       belongs_to :file_template_project, class_name: "Project"
 
       jsonb_accessor :clickhouse,

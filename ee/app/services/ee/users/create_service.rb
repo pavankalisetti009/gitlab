@@ -7,8 +7,7 @@ module EE
 
       override :execute
       def execute
-        message = _('There are no more seats left in your subscription. New users cannot be added to this instance.')
-        user.errors.add(:base, message) unless seats_available?
+        return error(EE::ApplicationSetting::ERROR_NO_SEATS_AVAILABLE, {}) unless seats_available?
 
         super
       end
