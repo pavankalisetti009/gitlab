@@ -15686,6 +15686,12 @@ msgstr ""
 msgid "ContainerRegistry|Minimum role allowed to push"
 msgstr ""
 
+msgid "ContainerRegistry|Minimum role to delete: "
+msgstr ""
+
+msgid "ContainerRegistry|Minimum role to push: "
+msgstr ""
+
 msgid "ContainerRegistry|Missing or insufficient permission, delete button disabled"
 msgstr ""
 
@@ -15899,6 +15905,9 @@ msgid "ContainerRegistry|This image repository will be deleted. %{linkStart}Lear
 msgstr ""
 
 msgid "ContainerRegistry|This project's cleanup policy for tags is not enabled."
+msgstr ""
+
+msgid "ContainerRegistry|This tag is protected"
 msgstr ""
 
 msgid "ContainerRegistry|To widen your search, change or remove the filters above."
