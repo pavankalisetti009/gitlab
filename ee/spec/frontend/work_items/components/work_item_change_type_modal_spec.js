@@ -3,6 +3,7 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 
 import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/namespace_work_item_types.query.graphql.json';
+import namespaceWorkItemTypesWithOKRsQueryResponse from 'test_fixtures/graphql/work_items/okrs/namespace_work_item_types.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -16,10 +17,8 @@ import {
   WORK_ITEM_TYPE_VALUE_TASK,
   WORK_ITEM_WIDGETS_NAME_MAP,
   WORK_ITEM_TYPE_VALUE_ISSUE,
-  WORK_ITEM_TYPE_ENUM_KEY_RESULT,
-  WORK_ITEM_TYPE_VALUE_KEY_RESULT,
-  WORK_ITEM_TYPE_ENUM_ISSUE,
   WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_VALUE_KEY_RESULT,
 } from '~/work_items/constants';
 
 import { workItemChangeTypeWidgets, promoteToEpicMutationResponse } from '../mock_data';
@@ -29,15 +28,21 @@ describe('WorkItemChangeTypeModal component', () => {
 
   let wrapper;
   const graphqlError = 'GraphQL error';
-  // Progress is missing as there is no WorkItemWidgetDefinitionProgress
-  // So, the work_items.rb is not generating progress data in fixture
-  // This is till we figure out why progress is not being added in the fixture data
-  namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes
-    .find((item) => item.name === WORK_ITEM_TYPE_VALUE_KEY_RESULT)
-    .widgetDefinitions.push({
-      type: 'PROGRESS',
-    });
-  const typesQuerySuccessHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse);
+  const keyResultTypeId =
+    namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+      (item) => item.name === WORK_ITEM_TYPE_VALUE_KEY_RESULT,
+    ).id;
+
+  const issueTypeId = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+    (item) => item.name === WORK_ITEM_TYPE_VALUE_ISSUE,
+  ).id;
+
+  const namespaceWorkItemTypesQuerySuccessHandler = jest
+    .fn()
+    .mockResolvedValue(namespaceWorkItemTypesQueryResponse);
+  const namespaceWorkItemTypesWithOKRsQuerySuccessHandler = jest
+    .fn()
+    .mockResolvedValue(namespaceWorkItemTypesWithOKRsQueryResponse);
   const noDesignQueryHandler = jest.fn().mockResolvedValue({
     data: {
       workItem: {
@@ -81,6 +86,7 @@ describe('WorkItemChangeTypeModal component', () => {
     widgets = [],
     workItemType = WORK_ITEM_TYPE_VALUE_TASK,
     promoteToEpicMutationHandler = promoteToEpicMutationSuccessHandler,
+    typesQuerySuccessHandler = namespaceWorkItemTypesQuerySuccessHandler,
   } = {}) => {
     wrapper = mountExtended(WorkItemChangeTypeModal, {
       apolloProvider: createMockApollo([
@@ -96,6 +102,13 @@ describe('WorkItemChangeTypeModal component', () => {
         widgets,
         workItemType,
         workItemIid: '1',
+        getEpicWidgetDefinitions: typesQuerySuccessHandler,
+        allowedWorkItemTypesEE: [
+          {
+            text: 'Epic (Promote to group)',
+            value: WORK_ITEM_TYPE_ENUM_EPIC,
+          },
+        ],
       },
       provide: {
         hasOkrsFeature: true,
@@ -115,28 +128,35 @@ describe('WorkItemChangeTypeModal component', () => {
   const findChangeTypeModal = () => wrapper.findComponent(GlModal);
   const findGlFormSelect = () => wrapper.findComponent(GlFormSelect);
   const findWarningAlert = () => wrapper.findByTestId('change-type-warning-message');
-  const findEpicTypeOption = () => findGlFormSelect().findAll('option').at(4);
+  const findEpicTypeOption = () => findGlFormSelect().findAll('option').at(2);
 
-  beforeEach(async () => {
-    createComponent();
-    await waitForPromises();
-  });
-
-  it('renders epic type as select option when work item type is an issue', () => {
+  it('renders epic type as select option when work item type is an issue', async () => {
     createComponent({ workItemType: WORK_ITEM_TYPE_VALUE_ISSUE });
 
-    expect(findGlFormSelect().findAll('option')).toHaveLength(5);
+    await waitForPromises();
+
+    expect(findGlFormSelect().findAll('option')).toHaveLength(3);
     expect(findEpicTypeOption().text()).toBe('Epic (Promote to group)');
   });
 
+  it('renders objective and key result types as select options', async () => {
+    createComponent({
+      workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
+      typesQuerySuccessHandler: namespaceWorkItemTypesWithOKRsQuerySuccessHandler,
+    });
+
+    await waitForPromises();
+
+    expect(findGlFormSelect().findAll('option')).toHaveLength(5);
+  });
+
   describe('when widget data has difference', () => {
-    // These are possible use cases of conflicts among project level work items
+    // These are possible use cases of conflicts among issues EE widgets
     // Other widgets are shared between all the work item types
     it.each`
-      widgetType                              | widgetData                             | workItemType                       | typeTobeConverted                 | expectedString
-      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_VALUE_ISSUE}      | ${WORK_ITEM_TYPE_ENUM_KEY_RESULT} | ${'Iteration'}
-      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_VALUE_ISSUE}      | ${WORK_ITEM_TYPE_ENUM_KEY_RESULT} | ${'Weight'}
-      ${WORK_ITEM_WIDGETS_NAME_MAP.PROGRESS}  | ${workItemChangeTypeWidgets.PROGRESS}  | ${WORK_ITEM_TYPE_VALUE_KEY_RESULT} | ${WORK_ITEM_TYPE_ENUM_ISSUE}      | ${'Progress'}
+      widgetType                              | widgetData                             | workItemType                  | typeTobeConverted           | expectedString
+      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_VALUE_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Iteration'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_VALUE_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Weight'}
     `(
       'shows warning message in case of $widgetType widget',
       async ({ workItemType, widgetData, typeTobeConverted, expectedString }) => {
@@ -202,6 +222,33 @@ describe('WorkItemChangeTypeModal component', () => {
         await waitForPromises();
 
         expect(wrapper.emitted('error')[0][0]).toEqual(expectedErrorMessage);
+      },
+    );
+  });
+
+  describe('when okrs are enabled', () => {
+    // These are possible use cases of conflicts among OKR widgets
+    it.each`
+      widgetType                              | widgetData                             | workItemType                       | typeTobeConverted  | expectedString
+      ${WORK_ITEM_WIDGETS_NAME_MAP.MILESTONE} | ${workItemChangeTypeWidgets.MILESTONE} | ${WORK_ITEM_TYPE_VALUE_ISSUE}      | ${keyResultTypeId} | ${'Milestone'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.PROGRESS}  | ${workItemChangeTypeWidgets.PROGRESS}  | ${WORK_ITEM_TYPE_VALUE_KEY_RESULT} | ${issueTypeId}     | ${'Progress'}
+    `(
+      'shows warning message in case of $widgetType widget',
+      async ({ workItemType, widgetData, typeTobeConverted, expectedString }) => {
+        createComponent({
+          workItemType,
+          widgets: [widgetData],
+          typesQuerySuccessHandler: namespaceWorkItemTypesWithOKRsQuerySuccessHandler,
+        });
+
+        await waitForPromises();
+
+        findGlFormSelect().vm.$emit('change', typeTobeConverted);
+
+        await nextTick();
+
+        expect(findWarningAlert().text()).toContain(expectedString);
+        expect(findChangeTypeModal().props('actionPrimary').attributes.disabled).toBe(false);
       },
     );
   });

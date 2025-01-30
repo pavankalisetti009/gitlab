@@ -200,6 +200,20 @@ export const workItemChangeTypeWidgets = {
     updatedAt: '2024-12-05T16:24:56Z',
     __typename: 'WorkItemWidgetProgress',
   },
+  MILESTONE: {
+    type: 'MILESTONE',
+    __typename: 'WorkItemWidgetMilestone',
+    milestone: {
+      __typename: 'Milestone',
+      id: 'gid://gitlab/Milestone/30',
+      title: 'v4.0',
+      state: 'active',
+      expired: false,
+      startDate: '2022-10-17',
+      dueDate: '2022-10-24',
+      webPath: '123',
+    },
+  },
 };
 
 export const promoteToEpicMutationResponse = {

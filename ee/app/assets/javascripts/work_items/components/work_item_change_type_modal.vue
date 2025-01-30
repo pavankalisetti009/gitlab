@@ -5,10 +5,11 @@ import { visitUrl } from '~/lib/utils/url_utility';
 import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_type_modal.vue';
 import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
 import {
-  WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_VALUE_ISSUE,
   WORK_ITEM_TYPE_VALUE_EPIC,
   WIDGET_TYPE_WEIGHT,
+  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_VALUE_ISSUE,
+  WIDGET_TYPE_ASSIGNEES,
 } from '~/work_items/constants';
 
 export default {
@@ -116,6 +117,12 @@ export default {
           return widget.editable === true;
         }
         return true;
+      });
+      // The workItemTypes query is not fetching assignees widget, so we need to add it manually in frontend
+      // Need to fix this in the backend
+      updatedWidgetDefinitions.push({
+        type: WIDGET_TYPE_ASSIGNEES,
+        __typename: 'WorkItemWidgetDefinitionAssignees',
       });
 
       return updatedWidgetDefinitions;
