@@ -92,6 +92,9 @@ module EE
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyCreatedEvent
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyDeletedEvent
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyUpdatedEvent
+
+          store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
+          store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent
         end
 
         def register_threat_insights_subscribers(store)

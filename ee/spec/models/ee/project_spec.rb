@@ -97,6 +97,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to have_many(:software_licenses) }
     it { is_expected.to have_many(:custom_software_licenses) }
+    it { is_expected.to have_many(:approval_policies).through(:security_policy_project_links).source(:security_policy) }
 
     it { is_expected.to have_many(:security_exclusions).class_name('Security::ProjectSecurityExclusion') }
 

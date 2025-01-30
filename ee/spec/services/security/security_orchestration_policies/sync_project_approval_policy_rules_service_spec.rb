@@ -602,4 +602,52 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
       end
     end
   end
+
+  describe '#protected_branch_ids' do
+    let(:security_policy) { create(:security_policy) }
+    let(:service) { described_class.new(project: project, security_policy: security_policy) }
+    let(:policy_branches_service) { instance_double(Security::SecurityOrchestrationPolicies::PolicyBranchesService) }
+
+    let(:approval_policy_rule) do
+      build(:approval_policy_rule, content: {
+        branches: %w[main release],
+        branch_type: 'protected'
+      })
+    end
+
+    before do
+      allow(Security::SecurityOrchestrationPolicies::PolicyBranchesService)
+        .to receive(:new)
+        .with(project: project)
+        .and_return(policy_branches_service)
+    end
+
+    subject(:protected_branch_ids) do
+      service.protected_branch_ids(approval_policy_rule)
+    end
+
+    context 'when there are matching protected branches' do
+      let!(:protected_branch_main) { create(:protected_branch, project: project, name: 'main') }
+      let!(:protected_branch_release) { create(:protected_branch, project: project, name: 'release') }
+      let!(:protected_branch_dev) { create(:protected_branch, project: project, name: 'development') }
+
+      before do
+        allow(policy_branches_service)
+          .to receive(:scan_result_branches)
+          .and_return(%w[main release])
+      end
+
+      it { is_expected.to contain_exactly(protected_branch_main.id, protected_branch_release.id) }
+    end
+
+    context 'when there are no matching protected branches' do
+      before do
+        allow(policy_branches_service)
+          .to receive(:scan_result_branches)
+          .and_return(['feature'])
+      end
+
+      it { is_expected.to be_empty }
+    end
+  end
 end
