@@ -7,7 +7,7 @@ module ClickHouse
     idempotent!
     queue_namespace :cronjob
     data_consistency :delayed
-    feature_category :database
+    feature_category :value_stream_management
 
     TABLES = [
       Ai::CodeSuggestionEvent,

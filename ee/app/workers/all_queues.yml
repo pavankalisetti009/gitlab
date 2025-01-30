@@ -14,7 +14,7 @@
   :tags: []
 - :name: click_house_buffer_sync:click_house_dump_write_buffer
   :worker_name: ClickHouse::DumpWriteBufferWorker
-  :feature_category: :database
+  :feature_category: :value_stream_management
   :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
@@ -149,7 +149,7 @@
   :tags: []
 - :name: cronjob:click_house_code_suggestion_events_cron
   :worker_name: ClickHouse::CodeSuggestionEventsCronWorker
-  :feature_category: :database
+  :feature_category: :value_stream_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
@@ -158,7 +158,7 @@
   :tags: []
 - :name: cronjob:click_house_dump_all_write_buffers_cron
   :worker_name: ClickHouse::DumpAllWriteBuffersCronWorker
-  :feature_category: :database
+  :feature_category: :value_stream_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

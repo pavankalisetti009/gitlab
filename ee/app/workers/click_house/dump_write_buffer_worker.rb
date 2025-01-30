@@ -9,7 +9,7 @@ module ClickHouse
     idempotent!
     queue_namespace :click_house_buffer_sync
     data_consistency :delayed
-    feature_category :database
+    feature_category :value_stream_management
     loggable_arguments 0
 
     MAX_RUNTIME = 200.seconds

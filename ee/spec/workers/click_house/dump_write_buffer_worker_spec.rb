@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ClickHouse::DumpWriteBufferWorker, feature_category: :database do
+RSpec.describe ClickHouse::DumpWriteBufferWorker, feature_category: :value_stream_management do
   let(:job) { described_class.new }
   let(:perform) { job.perform(table_name) }
   let(:table_name) { 'code_suggestion_usages' }
