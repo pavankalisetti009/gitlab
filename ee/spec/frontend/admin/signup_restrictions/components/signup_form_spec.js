@@ -1,11 +1,11 @@
 import { nextTick } from 'vue';
 import { GlButton, GlModal } from '@gitlab/ui';
+import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
+import SeatControlSection from 'ee_component/pages/admin/application_settings/general/components/seat_control_section.vue';
+import { stubComponent } from 'helpers/stub_component';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { mockData } from 'jest/admin/signup_restrictions/mock_data';
 import SignupForm from '~/pages/admin/application_settings/general/components/signup_form.vue';
-import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
-import SeatControlsSection from 'ee_component/pages/admin/application_settings/general/components/seat_controls_section.vue';
-import { stubComponent } from 'helpers/stub_component';
 
 describe('SignUpRestrictionsApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -14,7 +14,7 @@ describe('SignUpRestrictionsApp', () => {
 
   const findForm = () => wrapper.findByTestId('form');
   const findModal = () => wrapper.findComponent(GlModal);
-  const findSeatControlsSection = () => wrapper.findComponent(SeatControlsSection);
+  const findSeatControlSection = () => wrapper.findComponent(SeatControlSection);
   const findAutoApprovePendingUsersField = () =>
     wrapper.find('[name="application_setting[auto_approve_pending_users]"]');
   const findFormSubmitButton = () => findForm().findComponent(GlButton);
@@ -91,7 +91,7 @@ describe('SignUpRestrictionsApp', () => {
           stubs: { GlButton, GlModal: stubComponent(GlModal) },
         });
 
-        findSeatControlsSection().vm.$emit('checkUsersAutoApproval', true);
+        findSeatControlSection().vm.$emit('checkUsersAutoApproval', true);
 
         findFormSubmitButton().trigger('click');
 

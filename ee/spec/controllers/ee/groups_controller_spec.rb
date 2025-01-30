@@ -687,7 +687,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
       end
     end
 
-    context 'when seat controls are specified', :saas do
+    context 'when seat control is specified', :saas do
       context 'authenticated as group owner' do
         before do
           group.add_owner(user)

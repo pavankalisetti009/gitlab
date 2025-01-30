@@ -371,7 +371,7 @@ RSpec.describe 'Admin updates EE-only settings' do
       expect(current_settings.new_user_signups_cap).to be_nil
 
       page.within('#js-signup-settings') do
-        find_by_testid('seat-controls-user-cap').click
+        find_by_testid('seat-control-user-cap').click
         fill_in 'application_setting[new_user_signups_cap]', with: 5
 
         click_button 'Save changes'
@@ -392,7 +392,7 @@ RSpec.describe 'Admin updates EE-only settings' do
       it 'changes the user cap to unlimited' do
         page.within('#js-signup-settings') do
           fill_in 'application_setting[new_user_signups_cap]', with: nil
-          find_by_testid("seat-controls-open-access").click
+          find_by_testid("seat-control-open-access").click
 
           click_button 'Save changes'
 
@@ -409,7 +409,7 @@ RSpec.describe 'Admin updates EE-only settings' do
         it 'displays a modal confirmation when removing the cap' do
           page.within('#js-signup-settings') do
             fill_in 'application_setting[new_user_signups_cap]', with: nil
-            find_by_testid("seat-controls-open-access").click
+            find_by_testid("seat-control-open-access").click
 
             click_button 'Save changes'
           end
@@ -476,9 +476,9 @@ RSpec.describe 'Admin updates EE-only settings' do
               fill_in 'application_setting[new_user_signups_cap]', with: user_cap_default - 1
             when :changed_from_limited_to_unlimited
               fill_in 'application_setting[new_user_signups_cap]', with: nil
-              find_by_testid("seat-controls-open-access").click
+              find_by_testid("seat-control-open-access").click
             when :changed_from_unlimited_to_limited
-              find_by_testid('seat-controls-user-cap').click
+              find_by_testid('seat-control-user-cap').click
               fill_in 'application_setting[new_user_signups_cap]', with: user_cap_default
             end
 

@@ -77,7 +77,7 @@ module EE
         ::Gitlab::Json.generate(group_amazon_q_settings_view_model_data.deep_transform_keys { |k| k.to_s.camelize(:lower) })
       end
 
-      def seat_controls_disabled_help_text(group)
+      def seat_control_disabled_help_text(group)
         if ::Feature.enabled?(:block_seat_overages, group, type: :beta)
           _("Restricted access and user cap cannot be turned on. The group or one of its subgroups or projects is shared externally.")
         else

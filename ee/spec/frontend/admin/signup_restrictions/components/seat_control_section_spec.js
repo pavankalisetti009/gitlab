@@ -1,22 +1,22 @@
 import { nextTick } from 'vue';
 import { GlFormRadioGroup, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import SeatControlsMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
-import SeatControlsSection from 'ee/pages/admin/application_settings/general/components/seat_controls_section.vue';
+import SeatControlMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_control_member_promotion_management.vue';
+import SeatControlSection from 'ee/pages/admin/application_settings/general/components/seat_control_section.vue';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 
-describe('SeatControlsSection', () => {
+describe('SeatControlSection', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const findSeatControlSettings = () => wrapper.findComponent(GlFormRadioGroup);
-  const findSeatControlsMemberPromotionManagement = () =>
-    wrapper.findComponent(SeatControlsMemberPromotionManagement);
+  const findSeatControlMemberPromotionManagement = () =>
+    wrapper.findComponent(SeatControlMemberPromotionManagement);
   const findUserCapInput = () => wrapper.findByTestId('user-cap-input');
   const findUserCapHiddenInput = () => wrapper.findByTestId('user-cap-input-hidden');
 
   const mountComponent = ({ provide = {} } = {}) => {
-    wrapper = shallowMountExtended(SeatControlsSection, {
+    wrapper = shallowMountExtended(SeatControlSection, {
       provide: {
         licensedUserCount: 0,
         newUserSignupsCap: '',
@@ -35,16 +35,16 @@ describe('SeatControlsSection', () => {
       mountComponent({ provide: { promotionManagementAvailable: true } });
     });
 
-    it('will display the SeatControlsMemberPromotionManagement', () => {
-      expect(findSeatControlsMemberPromotionManagement().exists()).toBe(true);
+    it('will display the SeatControlMemberPromotionManagement', () => {
+      expect(findSeatControlMemberPromotionManagement().exists()).toBe(true);
     });
   });
 
   describe('with member promotion management unavailable', () => {
-    it('will not display SeatControlsMemberPromotionManagement', () => {
+    it('will not display SeatControlMemberPromotionManagement', () => {
       mountComponent({ provide: { promotionManagementAvailable: false } });
 
-      expect(findSeatControlsMemberPromotionManagement().exists()).toBe(false);
+      expect(findSeatControlMemberPromotionManagement().exists()).toBe(false);
     });
   });
 

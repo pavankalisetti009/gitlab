@@ -148,7 +148,7 @@ RSpec.describe Admin::ApplicationSettingsController do
     end
 
     context 'for sign-up restrictions' do
-      context 'with seat controls' do
+      context 'with seat control' do
         context 'and member promotion management' do
           let(:settings) do
             { enable_member_promotion_management: true }

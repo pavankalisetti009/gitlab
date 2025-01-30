@@ -23,4 +23,4 @@
       help_text: _("Invitations do not require administrator approval"),
       label_options: { data: { testid: 'seat-control-off-radio' } }
   - if group.shared_externally?
-    .form-text.gl-text-subtle= seat_controls_disabled_help_text(group)
+    .form-text.gl-text-subtle= seat_control_disabled_help_text(group)
