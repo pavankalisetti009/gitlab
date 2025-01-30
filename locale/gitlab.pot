@@ -1021,6 +1021,9 @@ msgstr ""
 msgid "%{labelStart}Project:%{labelEnd} %{project}"
 msgstr ""
 
+msgid "%{labelStart}Report Type:%{labelEnd} %{reportType}"
+msgstr ""
+
 msgid "%{labelStart}Scanner:%{labelEnd} %{scanner}"
 msgstr ""
 
@@ -47734,6 +47737,9 @@ msgid "Reports|Metrics reports: %{strong_start}%{numberOfChanges}%{strong_end} %
 msgstr ""
 
 msgid "Reports|New"
+msgstr ""
+
+msgid "Reports|Report Type"
 msgstr ""
 
 msgid "Reports|See test results while the pipeline is running"
