@@ -160,7 +160,8 @@ module Search
                        query,
                        num: ZOEKT_COUNT_LIMIT,
                        targets: zoekt_targets,
-                       search_mode: search_mode
+                       search_mode: search_mode,
+                       use_proxy: Feature.enabled?(:zoekt_search_proxy, current_user)
                      )
                    end
 
