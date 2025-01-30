@@ -95,7 +95,8 @@ module Security
           any_merge_request_commits,
           license_scanning_violations,
           error_messages,
-          comparison_pipelines
+          comparison_pipelines,
+          additional_info
         ].compact.join("\n")
       end
 
@@ -252,6 +253,18 @@ module Security
         :exclamation: **Errors**
 
         #{errors.map { |error| "- #{error.message}" }.join("\n")}
+        MARKDOWN
+      end
+
+      def additional_info
+        return unless Feature.enabled?(:security_policy_approval_warn_mode, project) && details.warn_mode_policies.any?
+
+        <<~MARKDOWN
+        :information: **Additional information**
+
+        Review the following policies to understand requirements and identify policy owners for support:
+
+        #{details.warn_mode_policies.map { |policy| "- [#{policy.name}](#{policy.edit_path})" }.join("\n")}
         MARKDOWN
       end
 

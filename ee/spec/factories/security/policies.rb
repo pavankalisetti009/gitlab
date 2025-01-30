@@ -74,6 +74,15 @@ FactoryBot.define do
       content { { actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }] } }
     end
 
+    trait :warn_mode do
+      content do
+        { actions: [
+          { type: 'require_approval', approvals_required: 0, user_approvers: %w[owner] },
+          { type: 'send_bot_message', enabled: true }
+        ] }
+      end
+    end
+
     trait :with_approval_settings do
       content { { approval_settings: { prevent_approval_by_author: true } } }
     end

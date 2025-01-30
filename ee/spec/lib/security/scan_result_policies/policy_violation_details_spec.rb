@@ -26,6 +26,18 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       security_orchestration_policy_configuration: security_orchestration_policy_configuration)
   end
 
+  let_it_be(:policy_warn_mode) do
+    create(:scan_result_policy_read, project: project,
+      security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+  end
+
+  let(:warn_mode_db_policy) do
+    create(:security_policy, :warn_mode, policy_index: 3, name: 'Warn mode',
+      security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+  end
+
+  let(:warn_mode_policy_rule) { create(:approval_policy_rule, security_policy: warn_mode_db_policy) }
+
   let_it_be(:approver_rule_policy1) do
     create(:report_approver_rule, :scan_finding, merge_request: merge_request,
       scan_result_policy_read: policy1, name: 'Policy 1')
@@ -39,6 +51,11 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
   let_it_be_with_reload(:approver_rule_policy3) do
     create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
       scan_result_policy_read: policy3, name: 'Policy 3')
+  end
+
+  let_it_be_with_reload(:approver_rule_policy_warn_mode) do
+    create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
+      scan_result_policy_read: policy_warn_mode, name: 'Warn mode')
   end
 
   let_it_be(:uuid) { SecureRandom.uuid }
@@ -74,17 +91,63 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       { 'violations' => { 'any_merge_request' => { 'commits' => true } } }
     end
 
-    where(:policy, :name, :report_type, :data, :status, :is_warning) do
-      ref(:policy1) | 'Policy 1' | 'scan_finding'      | ref(:scan_finding_violation_data)      | :failed | false
-      ref(:policy2) | 'Policy 2' | 'license_scanning'  | ref(:license_scanning_violation_data)  | :failed | false
-      ref(:policy3) | 'Policy 3' | 'any_merge_request' | ref(:any_merge_request_violation_data) | :failed | false
-      ref(:policy1) | 'Policy 1' | 'scan_finding'      | ref(:scan_finding_violation_data)      | :warn | true
+    let(:normal_db_policy) do
+      create(:security_policy, policy_index: 1,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let(:warn_mode_policy_rule) { create(:approval_policy_rule, security_policy: warn_mode_db_policy) }
+    let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+    where(:policy, :name, :report_type, :data, :status, :is_warning, :policy_rule, :is_warn_mode) do
+      [
+        [
+          ref(:policy1),
+          'Policy 1',
+          'scan_finding',
+          ref(:scan_finding_violation_data),
+          :failed,
+          false,
+          ref(:normal_policy_rule),
+          false
+        ],
+        [
+          ref(:policy2),
+          'Policy 2',
+          'license_scanning',
+          ref(:license_scanning_violation_data),
+          :failed,
+          false,
+          ref(:normal_policy_rule),
+          false
+        ],
+        [
+          ref(:policy3),
+          'Policy 3',
+          'any_merge_request',
+          ref(:any_merge_request_violation_data),
+          :failed,
+          false,
+          ref(:normal_policy_rule),
+          false
+        ],
+        [
+          ref(:policy1),
+          'Policy 1',
+          'scan_finding',
+          ref(:scan_finding_violation_data),
+          :warn,
+          true,
+          ref(:warn_mode_policy_rule),
+          true
+        ]
+      ]
     end
 
     with_them do
       before do
         create(:scan_result_policy_violation, status, project: project, merge_request: merge_request,
-          scan_result_policy_read: policy, violation_data: data)
+          scan_result_policy_read: policy, violation_data: data, approval_policy_rule: policy_rule)
       end
 
       it 'has correct attributes', :aggregate_failures do
@@ -97,6 +160,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         expect(violation.scan_result_policy_id).to eq policy.id
         expect(violation.warning).to eq is_warning
         expect(violation.status).to eq status.to_s
+        expect(violation.warn_mode).to eq is_warn_mode
       end
     end
 
@@ -130,6 +194,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         scan_result_policy_read: policy2)
     end
 
+    let(:warn_mode_policy_rule) { create(:approval_policy_rule, security_policy: warn_mode_db_policy) }
+
     before do
       create(:scan_result_policy_violation, project: project, merge_request: merge_request,
         scan_result_policy_read: policy3)
@@ -137,9 +203,15 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         scan_result_policy_read: policy3, name: 'Other')
       create(:report_approver_rule, :scan_finding, merge_request: merge_request,
         scan_result_policy_read: policy3, name: 'Other 2')
+      create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+        scan_result_policy_read: policy_warn_mode, approval_policy_rule: warn_mode_policy_rule)
     end
 
     it { is_expected.to contain_exactly 'Policy', 'Other' }
+
+    it 'excludes warn mode policies' do
+      expect(fail_closed_policies).not_to include('Warn mode')
+    end
 
     context 'when filtered by report_type' do
       subject(:fail_closed_policies) { details.fail_closed_policies(:license_scanning) }
@@ -160,6 +232,18 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
 
       it('is excluded') { is_expected.to contain_exactly 'Other' }
     end
+
+    context 'when security_policy_approval_warn_mode feature flag is disabled' do
+      before do
+        stub_feature_flags(security_policy_approval_warn_mode: false)
+      end
+
+      it 'includes warn mode policies' do
+        expect(fail_closed_policies).to include('Warn mode')
+      end
+
+      it { is_expected.to contain_exactly 'Policy', 'Other', 'Warn mode' }
+    end
   end
 
   describe '#fail_open_policies' do
@@ -176,9 +260,65 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         scan_result_policy_read: policy3, name: 'Other')
       create(:report_approver_rule, :scan_finding, merge_request: merge_request,
         scan_result_policy_read: policy3, name: 'Other 2')
+      create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+        scan_result_policy_read: policy_warn_mode, approval_policy_rule: warn_mode_policy_rule)
     end
 
     it { is_expected.to contain_exactly 'Other' }
+
+    context 'when security_policy_approval_warn_mode feature flag is disabled' do
+      before do
+        stub_feature_flags(security_policy_approval_warn_mode: false)
+      end
+
+      it 'includes warn mode policies' do
+        expect(fail_open_policies).to contain_exactly 'Other', 'Warn mode'
+      end
+    end
+  end
+
+  describe '#warn_mode_policies' do
+    subject(:warn_mode_policies) { details.warn_mode_policies }
+
+    let(:normal_db_policy) do
+      create(:security_policy, policy_index: 1,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+    context 'when there are a mix of policy types' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy1, approval_policy_rule: warn_mode_policy_rule)
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy2, approval_policy_rule: normal_policy_rule)
+      end
+
+      it 'returns only warn mode policies' do
+        expect(warn_mode_policies).to contain_exactly(warn_mode_db_policy)
+      end
+    end
+
+    context 'when there are multiple warn mode policies' do
+      let(:another_warn_mode_db_policy) do
+        create(:security_policy, :warn_mode, policy_index: 2,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:another_warn_policy_rule) { create(:approval_policy_rule, security_policy: another_warn_mode_db_policy) }
+
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy1, approval_policy_rule: warn_mode_policy_rule)
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy3, approval_policy_rule: another_warn_policy_rule)
+      end
+
+      it 'returns all warn mode policies' do
+        expect(warn_mode_policies).to contain_exactly(warn_mode_db_policy, another_warn_mode_db_policy)
+      end
+    end
   end
 
   describe 'scan finding violations' do

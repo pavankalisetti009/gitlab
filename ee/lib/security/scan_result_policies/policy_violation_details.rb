@@ -5,7 +5,8 @@ module Security
     class PolicyViolationDetails
       include Gitlab::Utils::StrongMemoize
 
-      Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, :warning, :status, keyword_init: true)
+      Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, :warning, :status, :warn_mode,
+        :security_policy, keyword_init: true)
       ViolationError = Struct.new(:report_type, :error, :data, :message, :warning, keyword_init: true)
       ScanFindingViolation = Struct.new(:name, :report_type, :severity, :location, :path, keyword_init: true)
       AnyMergeRequestViolation = Struct.new(:name, :commits, keyword_init: true)
@@ -61,7 +62,9 @@ module Security
             scan_result_policy_id: rule.scan_result_policy_id,
             data: violation.violation_data,
             warning: violation.warn?,
-            status: violation.status
+            status: violation.status,
+            security_policy: violation.security_policy,
+            warn_mode: violation.security_policy&.warn_mode?
           )
         end
       end
@@ -77,6 +80,10 @@ module Security
       def fail_closed_policies(report_type = nil)
         filtered_violations = violations.reject(&:warning)
 
+        if Feature.enabled?(:security_policy_approval_warn_mode, project)
+          filtered_violations = filtered_violations.reject(&:warn_mode)
+        end
+
         if report_type
           filtered_violations = filtered_violations.select { |violation| violation.report_type == report_type.to_s }
         end
@@ -85,9 +92,19 @@ module Security
       end
 
       def fail_open_policies
-        violations.select(&:warning).pluck(:name).compact.uniq.sort # rubocop:disable CodeReuse/ActiveRecord -- Pluck used on hashes
+        filtered_violations = violations.select(&:warning)
+
+        if Feature.enabled?(:security_policy_approval_warn_mode, project)
+          filtered_violations = filtered_violations.reject(&:warn_mode)
+        end
+
+        filtered_violations.pluck(:name).compact.uniq.sort # rubocop:disable CodeReuse/ActiveRecord -- Pluck used on hashes
       end
       strong_memoize_attr :fail_open_policies
+
+      def warn_mode_policies
+        violations.select(&:warn_mode).filter_map(&:security_policy)
+      end
 
       def new_scan_finding_violations
         uuids = extract_from_violation_data(%w[violations scan_finding uuids newly_detected])
