@@ -42,7 +42,7 @@ RSpec.describe CiMinutesUsageMailer do
   describe '#notify_limit' do
     let(:current_balance) { 2_025 }
     let(:total) { 10_000 }
-    let(:percent) { 20 }
+    let(:percent) { 20.25 }
     let(:stage_percentage) { 25 }
 
     let(:subject_text) do
