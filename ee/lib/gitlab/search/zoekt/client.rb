@@ -22,22 +22,13 @@ module Gitlab
         def search(query, num:, project_ids:, node_id:, search_mode:)
           start = Time.current
 
-          q = format_query(query, search_mode: search_mode)
-
-          payload = {
-            Q: q,
-            Opts: {
-              TotalMaxMatchCount: num,
-              NumContextLines: CONTEXT_LINES_COUNT
-            }
-          }
-
           # Safety net because Zoekt will match all projects if you provide
           # an empty array.
           raise 'Not possible to search without at least one project specified' if project_ids.blank?
           raise 'Global search is not supported' if project_ids == :any
 
-          payload[:RepoIDs] = project_ids
+          payload = build_search_payload(query, num: num, search_mode: search_mode, project_ids: project_ids)
+
           path = '/api/search'
           target_node = node(node_id)
           raise 'Node can not be found' unless target_node
@@ -53,7 +44,9 @@ module Gitlab
           add_request_details(start_time: start, path: path, body: payload)
         end
 
-        def search_multi_node(query, num:, targets:, search_mode:)
+        def search_multi_node(query, num:, targets:, search_mode:, use_proxy: false)
+          return search_zoekt_proxy(query, num: num, targets: targets, search_mode: search_mode) if use_proxy
+
           if targets.size > MAXIMUM_THREADS
             raise ArgumentError, "Too many targets #{targets.size}, maximum allowed #{MAXIMUM_THREADS}"
           end
@@ -69,6 +62,26 @@ module Gitlab
           end
 
           Gitlab::Search::Zoekt::MultiNodeResponse.new threads.each(&:join).map(&:value).to_h
+        end
+
+        def search_zoekt_proxy(query, num:, targets:, search_mode:)
+          start = Time.current
+          path = '/indexer/proxy_search'
+
+          payload = build_search_payload(query, num: num, search_mode: search_mode)
+          payload[:ForwardTo] = targets.map do |node_id, project_ids|
+            target_node = node(node_id)
+            { Endpoint: "#{target_node.search_base_url}/api/search", RepoIds: project_ids }
+          end
+
+          # Unless a node is specified, prefer the node with the most projects
+          node_id ||= targets.max_by { |_zkt_node_id, project_ids| project_ids.length }.first
+
+          response = zoekt_indexer_post(path, payload, node_id)
+          log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
+          Gitlab::Search::Zoekt::Response.new parse_response(response)
+        ensure
+          add_request_details(start_time: start, path: path, body: payload)
         end
 
         def index(project, node_id, force: false, callback_payload: {})
@@ -156,6 +169,18 @@ module Gitlab
             username: username,
             password: password
           }.compact
+        end
+
+        def build_search_payload(query, num:, search_mode:, project_ids: nil)
+          {
+            Q: format_query(query, search_mode: search_mode),
+            Opts: {
+              TotalMaxMatchCount: num,
+              NumContextLines: CONTEXT_LINES_COUNT
+            }
+          }.tap do |payload|
+            payload[:RepoIds] = project_ids if project_ids.present?
+          end
         end
 
         def indexing_payload(project, force:, callback_payload:)

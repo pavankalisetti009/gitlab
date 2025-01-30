@@ -119,6 +119,36 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
           described_class.new(user, query, limit_projects, node_id: node_id,
             modes: { regex: param_regex_mode }).objects('blobs')
         end
+
+        context 'when a node id is not specified' do
+          let(:stubbed_response) do
+            instance_double(Gitlab::Search::Zoekt::Response, error_message: 'noop', failure?: true)
+          end
+
+          it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
+            expect(Gitlab::Search::Zoekt::Client).to receive(:search_multi_node).with(
+              query,
+              hash_including(use_proxy: true, search_mode: search_mode_sent_to_client)
+            ).and_return(stubbed_response)
+
+            described_class.new(user, query, limit_projects, modes: { regex: param_regex_mode }).objects('blobs')
+          end
+
+          context 'when feature flag "zoekt_search_proxy" is disabled' do
+            before do
+              stub_feature_flags(zoekt_search_proxy: false)
+            end
+
+            it 'does not use proxy' do
+              expect(Gitlab::Search::Zoekt::Client).to receive(:search_multi_node).with(
+                query,
+                hash_including(use_proxy: false, search_mode: search_mode_sent_to_client)
+              ).and_return(stubbed_response)
+
+              described_class.new(user, query, limit_projects, modes: { regex: param_regex_mode }).objects('blobs')
+            end
+          end
+        end
       end
 
       context 'when modes is not passed' do

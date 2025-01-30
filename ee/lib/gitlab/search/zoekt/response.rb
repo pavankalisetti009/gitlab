@@ -15,11 +15,11 @@ module Gitlab
         end
 
         def failure?
-          !!error_message
+          error_message.present?
         end
 
         def error_message
-          parsed_response[:Error]
+          parsed_response[:Error] || parsed_response[:error]
         end
 
         def result
