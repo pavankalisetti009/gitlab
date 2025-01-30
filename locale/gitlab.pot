@@ -11446,6 +11446,15 @@ msgstr ""
 msgid "Cannot make the epic confidential if it contains non-confidential issues"
 msgstr ""
 
+msgid "Cannot mark the %{work_item_type} as duplicate of itself."
+msgstr ""
+
+msgid "Cannot mark this %{work_item_type} as a duplicate because referenced item was not found."
+msgstr ""
+
+msgid "Cannot mark this %{work_item_type} as duplicate due to insufficient permissions."
+msgstr ""
+
 msgid "Cannot merge"
 msgstr ""
 
@@ -12643,7 +12652,7 @@ msgstr ""
 msgid "Closed this %{quick_action_target}."
 msgstr ""
 
-msgid "Closed this issue. Marked as related to, and a duplicate of, %{duplicate_param}."
+msgid "Closed this %{work_item_type}. Marked as related to, and a duplicate of, %{duplicate_param}."
 msgstr ""
 
 msgid "Closed: %{closed}"
@@ -12652,7 +12661,7 @@ msgstr ""
 msgid "Closes this %{quick_action_target}."
 msgstr ""
 
-msgid "Closes this issue. Marks as related to, and a duplicate of, %{duplicate_reference}."
+msgid "Closes this %{work_item_type}. Marks as related to, and a duplicate of, %{duplicate_param}."
 msgstr ""
 
 msgid "Closing %{issuableType}..."
@@ -24041,7 +24050,13 @@ msgstr ""
 msgid "Failed to make repository read-only: %{reason}"
 msgstr ""
 
-msgid "Failed to mark this issue as a duplicate because referenced issue was not found."
+msgid "Failed to mark the %{work_item_type} as duplicate of itself."
+msgstr ""
+
+msgid "Failed to mark this %{work_item_type} as a duplicate because referenced item was not found."
+msgstr ""
+
+msgid "Failed to mark this %{work_item_type} as duplicate due to insufficient permissions."
 msgstr ""
 
 msgid "Failed to measure the comment temperature. Please try again."
