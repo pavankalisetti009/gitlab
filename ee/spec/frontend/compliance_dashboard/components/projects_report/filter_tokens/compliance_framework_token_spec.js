@@ -20,7 +20,7 @@ describe('ComplianceFrameworks', () => {
   };
 
   const value = {
-    data: 'Some framework 1',
+    data: "Auditor's framework 1",
     operator: '=',
   };
 

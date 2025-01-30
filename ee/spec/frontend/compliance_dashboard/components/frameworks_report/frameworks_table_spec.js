@@ -332,7 +332,9 @@ describe('FrameworksTable component', () => {
     it('renders dropdown with actions for each framework', () => {
       expect(findActionsDropdowns()).toHaveLength(frameworks.length);
       expect(findActionsDropdowns().at(0).props('icon')).toBe('ellipsis_v');
-      expect(findActionsDropdowns().at(0).props('toggleText')).toBe('Actions for Some framework 1');
+      expect(findActionsDropdowns().at(0).props('toggleText')).toBe(
+        "Actions for Auditor's framework 1",
+      );
     });
 
     it('dropdown has three actions', () => {
