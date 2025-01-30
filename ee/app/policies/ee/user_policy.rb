@@ -3,6 +3,7 @@
 module EE
   module UserPolicy
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
 
     prepended do
       condition(:updating_name_disabled_for_users, scope: :global) do
@@ -19,10 +20,7 @@ module EE
         ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
       end
 
-      condition(:disable_private_profiles, scope: :global) do
-        ::License.feature_available?(:disable_private_profiles) &&
-          !::Gitlab::CurrentSettings.current_application_settings.make_profile_private
-      end
+      condition(:profiles_can_be_made_private, scope: :global) { profiles_can_be_made_private? }
 
       rule { can?(:update_user) }.enable :update_name
 
@@ -32,7 +30,18 @@ module EE
 
       rule { personal_access_tokens_disabled }.prevent :create_user_personal_access_token
 
-      rule { disable_private_profiles & ~admin }.prevent :make_profile_private
+      rule { ~profiles_can_be_made_private & ~admin }.prevent :make_profile_private
+    end
+
+    def profiles_can_be_made_private?
+      return true unless ::License.feature_available?(:disable_private_profiles)
+
+      ::Gitlab::CurrentSettings.make_profile_private
+    end
+
+    override :private_profile?
+    def private_profile?
+      profiles_can_be_made_private? && super
     end
   end
 end

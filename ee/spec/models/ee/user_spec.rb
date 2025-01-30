@@ -2941,34 +2941,6 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
-  describe '#private_profile?' do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:user_public_profile) { create(:user, private_profile: false) }
-    let_it_be(:user_private_profile) { create(:user, private_profile: true) }
-
-    where(:user, :disable_private_profiles?, :make_profile_private?, :private_profile?) do
-      ref(:user_private_profile) | true  | true  | true
-      ref(:user_public_profile)  | true  | true  | false
-      ref(:user_private_profile) | true  | false | false
-      ref(:user_public_profile)  | true  | false | false
-
-      ref(:user_private_profile) | false | true  | true
-      ref(:user_public_profile)  | false | true  | false
-      ref(:user_private_profile) | false | false | true
-      ref(:user_public_profile)  | false | false | false
-    end
-
-    with_them do
-      before do
-        stub_application_setting(make_profile_private: make_profile_private?)
-        stub_licensed_features(disable_private_profiles: disable_private_profiles?)
-      end
-
-      specify { expect(user.private_profile?).to eq(private_profile?) }
-    end
-  end
-
   describe "#privatized_by_abuse_automation?" do
     let(:user) { build(:user, private_profile: true, name: 'ghost-123-456') }
 
