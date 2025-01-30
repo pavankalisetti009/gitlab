@@ -2,7 +2,7 @@
 
 class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
   before_action :check_license!
-  before_action :set_replicator_class, only: :index
+  before_action :set_replicator_class, only: [:index, :show]
   before_action :set_replicator_with_id, only: :show
   before_action :load_node_data, only: [:index]
 
