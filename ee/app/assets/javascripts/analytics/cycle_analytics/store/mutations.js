@@ -192,6 +192,7 @@ export default {
     state.isDeletingValueStream = false;
     state.deleteValueStreamError = null;
     state.selectedValueStream = null;
+    state.stages = [];
   },
   [types.SET_SELECTED_VALUE_STREAM](state, valueStream) {
     state.selectedValueStream = convertObjectPropsToCamelCase(valueStream, { deep: true });
