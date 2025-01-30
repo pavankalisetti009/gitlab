@@ -24,6 +24,11 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
     create(:vulnerabilities_identifier, project: project_2, external_type: 'cwe', name: 'CWE-24')
     create(:vulnerabilities_identifier, project: project, external_type: 'cwe', name: 'CWE-25')
     create(:vulnerabilities_identifier, project: other_project, external_type: 'cwe', name: 'CWE-26')
+
+    create(:vulnerability_statistic, project: project)
+    create(:vulnerability_statistic, project: project_2)
+    create(:vulnerability_statistic, project: project)
+    create(:vulnerability_statistic, project: other_project)
   end
 
   describe '#resolve' do
@@ -68,6 +73,17 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
 
         it 'fetches matching identifier names' do
           expect(search_results).to contain_exactly('CWE-23', 'CWE-24', 'CWE-25')
+        end
+
+        context 'when flags that solve cross-joins are disabled' do
+          before do
+            stub_feature_flags(sum_vulnerability_count_for_group_using_vulnerability_statistics: false)
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it 'fetches matching identifier names' do
+            expect(search_results).to contain_exactly('CWE-23', 'CWE-24', 'CWE-25')
+          end
         end
 
         it_behaves_like 'handles invalid search input'

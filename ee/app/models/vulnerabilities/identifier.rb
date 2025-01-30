@@ -55,13 +55,23 @@ module Vulnerabilities
     end
 
     def self.search_identifier_name_in_group(group, search_pattern)
+      if Feature.enabled?(:search_identifier_name_in_group_using_vulnerability_statistics, group)
+        project_ids = ::Vulnerabilities::Statistic.by_group(group).unarchived.select(:project_id)
+        return where(project_id: project_ids)
+          .distinct
+          .where("name ILIKE ?", ["%", sanitize_sql_like(search_pattern), "%"].join)
+          .order(:name)
+          .limit(SEARCH_RESULTS_LIMIT)
+          .pluck(:name)
+      end
+
       # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- there is a limit
       where(project_id: group.all_project_ids)
         .distinct
         .where("name ILIKE ?", ["%", sanitize_sql_like(search_pattern), "%"].join)
         .order(:name)
         .limit(SEARCH_RESULTS_LIMIT)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/510091')
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/515039')
         .pluck(:name)
       # rubocop:enable Database/AvoidUsingPluckWithoutLimit
     end
