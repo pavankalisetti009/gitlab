@@ -8,8 +8,8 @@ module EE
 
       BUY_PIPELINE_MINUTES_NOTIFICATION_DOT = 'buy_pipeline_minutes_notification_dot'
 
-      override :admin_runners_data_attributes
-      def admin_runners_data_attributes
+      override :admin_runners_app_data
+      def admin_runners_app_data
         attributes = super
 
         if License.feature_available?(:runner_performance_insights)
