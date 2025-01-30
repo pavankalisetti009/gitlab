@@ -66,6 +66,11 @@ export default {
       required: false,
       default: false,
     },
+    showValidation: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
 
   data() {
@@ -114,11 +119,9 @@ export default {
       if (!this.formData.name || this.formData.name.length > maxNameLength) {
         return this.$options.i18n.titleInputInvalid;
       }
-
       if (RESERVED_NAMES.includes(this.formData.name.toLowerCase())) {
         return this.$options.i18n.nameInputReserved(this.formData.name);
       }
-
       return '';
     },
 
@@ -129,22 +132,14 @@ export default {
     },
 
     isValidColor() {
-      return validateHexColor(this.formData.color);
+      return Boolean(this.formData.color) && validateHexColor(this.formData.color);
     },
 
     isValidName() {
-      if (this.formData.name === null) {
-        return null;
-      }
-
-      return this.nameFeedbackMessage === '';
+      return Boolean(this.formData.name) && this.nameFeedbackMessage === '';
     },
 
     isValidDescription() {
-      if (this.formData.description === null) {
-        return null;
-      }
-
       return Boolean(this.formData.description);
     },
 
@@ -177,6 +172,22 @@ export default {
     expandPipelineConfig() {
       return Boolean(this.formData.pipelineConfigurationFullPath);
     },
+
+    isNameFeedbackVisible() {
+      return this.getValidationState(this.isValidName);
+    },
+
+    isDescriptionFeedbackVisible() {
+      return this.getValidationState(this.isValidDescription);
+    },
+
+    isPipelineConfigurationFeedbackVisible() {
+      return this.getValidationState(this.isValidPipelineConfiguration);
+    },
+
+    isColorFeedbackVisible() {
+      return this.getValidationState(this.isValidColor);
+    },
   },
 
   watch: {
@@ -193,12 +204,6 @@ export default {
         }
       },
     },
-    isValid: {
-      handler() {
-        this.$emit('valid', this.isValid);
-      },
-      immediate: true,
-    },
   },
 
   methods: {
@@ -212,6 +217,10 @@ export default {
 
     handleOnDismissMaintenanceMode() {
       this.maintenanceModeDismissed = true;
+    },
+
+    getValidationState(state) {
+      return this.showValidation ? state : true;
     },
   },
 
@@ -232,7 +241,7 @@ export default {
       <gl-form-group
         :label="$options.i18n.titleInputLabel"
         label-for="name-input"
-        :state="isValidName"
+        :state="isNameFeedbackVisible"
         :invalid-feedback="nameFeedbackMessage"
         data-testid="name-input-group"
       >
@@ -240,7 +249,7 @@ export default {
           id="name-input"
           v-model="formData.name"
           name="name"
-          :state="isValidName"
+          :state="isNameFeedbackVisible"
           data-testid="name-input"
         />
       </gl-form-group>
@@ -249,14 +258,14 @@ export default {
         :label="$options.i18n.descriptionInputLabel"
         label-for="description-input"
         :invalid-feedback="$options.i18n.descriptionInputInvalid"
-        :state="isValidDescription"
+        :state="isDescriptionFeedbackVisible"
         data-testid="description-input-group"
       >
         <gl-form-textarea
           id="description-input"
           v-model="formData.description"
           name="description"
-          :state="isValidDescription"
+          :state="isDescriptionFeedbackVisible"
           data-testid="description-input"
           :no-resize="false"
           :rows="5"
@@ -265,7 +274,7 @@ export default {
       <color-picker
         v-model="formData.color"
         :label="$options.i18n.colorInputLabel"
-        :state="isValidColor"
+        :state="isColorFeedbackVisible"
       />
       <gl-accordion :auto-collapse="false" :header-level="1">
         <gl-accordion-item
@@ -277,7 +286,7 @@ export default {
             v-if="pipelineConfigurationFullPathEnabled && pipelineConfigurationEnabled"
             label-for="pipeline-configuration-input"
             :invalid-feedback="pipelineConfigurationFeedbackMessage"
-            :state="isValidPipelineConfiguration"
+            :state="isPipelineConfigurationFeedbackVisible"
             data-testid="pipeline-configuration-input-group"
           >
             <template #description>
@@ -351,7 +360,7 @@ export default {
               id="pipeline-configuration-input"
               v-model="formData.pipelineConfigurationFullPath"
               name="pipeline_configuration_full_path"
-              :state="isValidPipelineConfiguration"
+              :state="isPipelineConfigurationFeedbackVisible"
               data-testid="pipeline-configuration-input"
             />
           </gl-form-group>

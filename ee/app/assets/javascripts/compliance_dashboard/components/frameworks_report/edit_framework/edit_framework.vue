@@ -67,7 +67,7 @@ export default {
       formData: initialiseFormData(),
       requirements: [],
       originalName: '',
-      isBasicInformationValid: true,
+      showValidation: false,
       isSaving: false,
       isDeleting: false,
       hasMigratedPipeline: false,
@@ -188,9 +188,6 @@ export default {
     graphqlId() {
       return this.$route.params.id ? convertFrameworkIdToGraphQl(this.$route.params.id) : null;
     },
-    disableSubmitBtn() {
-      return !this.isBasicInformationValid;
-    },
     shouldRenderPolicySection() {
       return !this.isNewFramework && this.featureSecurityPoliciesEnabled;
     },
@@ -257,9 +254,15 @@ export default {
       }
     },
     async onSubmit() {
-      this.isSaving = true;
+      this.showValidation = true;
       this.errorMessage = '';
+
+      if (!this.$refs.basicInformation?.isValid) {
+        return;
+      }
+
       try {
+        this.isSaving = true;
         const params = getSubmissionParams(
           this.formData,
           this.pipelineConfigurationFullPathEnabled,
@@ -597,10 +600,11 @@ export default {
       <gl-form @submit.prevent="onSubmit">
         <basic-information-section
           v-if="formData"
+          ref="basicInformation"
           v-model="formData"
           :is-expanded="isNewFramework"
           :has-migrated-pipeline="hasMigratedPipeline"
-          @valid="isBasicInformationValid = $event"
+          :show-validation="showValidation"
         />
 
         <requirements-section
@@ -627,7 +631,6 @@ export default {
             variant="confirm"
             class="js-no-auto-disable"
             data-testid="submit-btn"
-            :disabled="disableSubmitBtn"
           >
             {{ saveButtonText }}
           </gl-button>
