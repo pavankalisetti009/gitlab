@@ -30,6 +30,10 @@ export const ACTION_SECTION_DISABLE_ERROR = s__(
   'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the actions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
 );
 
+export const RULES_SECTION_DISABLE_ERROR = s__(
+  'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the rules in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
+);
+
 export const CONDITION_SECTION_DISABLE_ERROR = s__(
   'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the conditions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
 );

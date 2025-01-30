@@ -51958,6 +51958,9 @@ msgstr ""
 msgid "SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the conditions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax."
 msgstr ""
 
+msgid "SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the rules in rule mode. To resolve the issue, switch to YAML mode and fix the syntax."
+msgstr ""
+
 msgid "SecurityOrchestration|The following branches do not exist on this development project: %{branches}. Please review all protected branches to ensure the values are accurate before updating this policy."
 msgstr ""
 
