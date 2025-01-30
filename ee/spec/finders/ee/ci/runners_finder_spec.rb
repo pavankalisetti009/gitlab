@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Ci::RunnersFinder, '#execute', feature_category: :fleet_visibility do
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, group: group) }
+
   subject(:execute) do
     described_class.new(current_user: user, params: params).execute
   end
@@ -12,8 +15,6 @@ RSpec.describe Ci::RunnersFinder, '#execute', feature_category: :fleet_visibilit
 
     context 'with sort param equal to most_active_desc' do
       let_it_be(:admin) { create(:user, :admin) }
-      let_it_be(:group) { create(:group) }
-      let_it_be(:project) { create(:project, group: group) }
       let_it_be(:instance_runners) { create_list(:ci_runner, 3) }
       let_it_be(:group_runners) { create_list(:ci_runner, 3, :group, groups: [group]) }
 
@@ -114,6 +115,30 @@ RSpec.describe Ci::RunnersFinder, '#execute', feature_category: :fleet_visibilit
           end
         end
       end
+    end
+  end
+
+  context 'when current user is not an admin' do
+    let(:params) { {} }
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:instance_runner) { create(:ci_runner) }
+    let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
+    let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project]) }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+    end
+
+    it 'raises Gitlab::Access::AccessDeniedError' do
+      expect { execute }.to raise_error(Gitlab::Access::AccessDeniedError)
+    end
+
+    context 'with admin custom role with read_admin_cicd enabled' do
+      let_it_be(:role) { create(:member_role, :admin, :read_admin_cicd) }
+      let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: user) }
+
+      it { is_expected.to match_array([instance_runner, group_runner, project_runner]) }
     end
   end
 end

@@ -11,8 +11,8 @@ RSpec.describe EE::Ci::RunnersHelper, feature_category: :fleet_visibility do
     allow(helper).to receive(:current_user).and_return(user)
   end
 
-  describe '#admin_runners_data_attributes' do
-    subject(:data_attributes) { helper.admin_runners_data_attributes }
+  describe '#admin_runners_app_data' do
+    subject(:data_attributes) { helper.admin_runners_app_data }
 
     it 'has no runner_dashboard_path if runner_performance_insights feature is not licensed' do
       expect(data_attributes[:runner_dashboard_path]).to be_nil

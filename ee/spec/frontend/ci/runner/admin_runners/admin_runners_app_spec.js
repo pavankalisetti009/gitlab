@@ -33,6 +33,12 @@ describe('AdminRunnersApp', () => {
   let cacheConfig;
   let localMutations;
 
+  const defaultProps = {
+    registrationToken: mockRegistrationToken,
+    newRunnerPath,
+    canAdminRunners: true,
+  };
+
   const findRunnerDashboardLink = () => wrapper.findComponent(RunnerDashboardLink);
   const findRunnerRows = () => wrapper.findComponent(RunnerList).findAll('tr');
 
@@ -48,8 +54,7 @@ describe('AdminRunnersApp', () => {
     wrapper = mountExtended(AdminRunnersApp, {
       apolloProvider: createMockApollo(handlers, {}, cacheConfig),
       propsData: {
-        registrationToken: mockRegistrationToken,
-        newRunnerPath,
+        ...defaultProps,
         ...props,
       },
       provide: {
