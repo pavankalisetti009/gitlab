@@ -26617,6 +26617,9 @@ msgstr ""
 msgid "GlobalSearch|Merge requests"
 msgstr ""
 
+msgid "GlobalSearch|Merge requests I'm working on"
+msgstr ""
+
 msgid "GlobalSearch|Merge requests I've created"
 msgstr ""
 
