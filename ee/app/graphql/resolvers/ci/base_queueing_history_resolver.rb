@@ -7,11 +7,11 @@ module Resolvers
 
       argument :from_time, Types::TimeType,
         required: false,
-        description: 'Start of the requested time frame. Defaults to three hours ago.'
+        description: 'Start of the requested time. Defaults to three hours ago.'
 
       argument :to_time, Types::TimeType,
         required: false,
-        description: 'End of the requested time frame. Defaults to the current time.'
+        description: 'End of the requested time. Defaults to the current time.'
 
       def resolve(lookahead:, from_time: nil, to_time: nil, runner_type: nil, owner_namespace: nil)
         result = ::Ci::Runners::CollectQueueingHistoryService.new(current_user: current_user,

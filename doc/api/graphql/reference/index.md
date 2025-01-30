@@ -380,9 +380,9 @@ Returns [`QueueingDelayHistory`](#queueingdelayhistory).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="queryciqueueinghistoryfromtime"></a>`fromTime` | [`Time`](#time) | Start of the requested time frame. Defaults to three hours ago. |
+| <a id="queryciqueueinghistoryfromtime"></a>`fromTime` | [`Time`](#time) | Start of the requested time. Defaults to three hours ago. |
 | <a id="queryciqueueinghistoryrunnertype"></a>`runnerType` | [`CiRunnerType`](#cirunnertype) | Filter jobs by the type of runner that executed them. |
-| <a id="queryciqueueinghistorytotime"></a>`toTime` | [`Time`](#time) | End of the requested time frame. Defaults to the current time. |
+| <a id="queryciqueueinghistorytotime"></a>`toTime` | [`Time`](#time) | End of the requested time. Defaults to the current time. |
 
 ### `Query.ciVariables`
 
@@ -25745,8 +25745,8 @@ Returns [`QueueingDelayHistory`](#queueingdelayhistory).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="groupciqueueinghistoryfromtime"></a>`fromTime` | [`Time`](#time) | Start of the requested time frame. Defaults to three hours ago. |
-| <a id="groupciqueueinghistorytotime"></a>`toTime` | [`Time`](#time) | End of the requested time frame. Defaults to the current time. |
+| <a id="groupciqueueinghistoryfromtime"></a>`fromTime` | [`Time`](#time) | Start of the requested time. Defaults to three hours ago. |
+| <a id="groupciqueueinghistorytotime"></a>`toTime` | [`Time`](#time) | End of the requested time. Defaults to the current time. |
 
 ##### `Group.ciVariables`
 
@@ -31989,6 +31989,24 @@ Returns [`TestSuite`](#testsuite).
 | <a id="pipelineanalyticsyearpipelinessuccessful"></a>`yearPipelinesSuccessful` | [`[Int!]`](#int) | Total yearly successful pipeline count. |
 | <a id="pipelineanalyticsyearpipelinestotals"></a>`yearPipelinesTotals` | [`[Int!]`](#int) | Total yearly pipeline count. |
 
+#### Fields with arguments
+
+##### `PipelineAnalytics.timeSeries`
+
+Pipeline analytics shown over time based on the specified filter. Data is aggregated in UTC, with adaptive resolution: hourly for 7-day windows or less, daily for longer periods.
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Returns [`[PipelineAnalyticsPeriod!]`](#pipelineanalyticsperiod).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelineanalyticstimeseriesperiod"></a>`period` | [`AnalyticsAggregationPeriod!`](#analyticsaggregationperiod) | Periodicity of aggregated data. |
+
 ### `PipelineAnalyticsPeriod`
 
 #### Fields
@@ -31996,7 +32014,7 @@ Returns [`TestSuite`](#testsuite).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="pipelineanalyticsperioddurationstatistics"></a>`durationStatistics` **{warning-solid}** | [`CiDurationStatistics`](#cidurationstatistics) | **Introduced** in GitLab 17.5. **Status**: Experiment. Pipeline duration statistics. |
-| <a id="pipelineanalyticsperiodlabel"></a>`label` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.5. **Status**: Experiment. Label for the data point. |
+| <a id="pipelineanalyticsperiodlabel"></a>`label` **{warning-solid}** | [`Date`](#date) | **Introduced** in GitLab 17.5. **Status**: Experiment. Data point label (UTC time). |
 
 #### Fields with arguments
 
@@ -33873,10 +33891,10 @@ Returns [`PipelineAnalytics`](#pipelineanalytics).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectpipelineanalyticsfromtime"></a>`fromTime` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. Start of the requested time frame. Defaults to the pipelines started in the past week. |
+| <a id="projectpipelineanalyticsfromtime"></a>`fromTime` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. Start of the requested time (in UTC). Defaults to the pipelines started in the past week. |
 | <a id="projectpipelineanalyticsref"></a>`ref` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.5. **Status**: Experiment. Branch that triggered the pipeline. |
 | <a id="projectpipelineanalyticssource"></a>`source` **{warning-solid}** | [`CiPipelineCiSources`](#cipipelinecisources) | **Introduced** in GitLab 17.5. **Status**: Experiment. Source of the pipeline. |
-| <a id="projectpipelineanalyticstotime"></a>`toTime` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. End of the requested time frame. Defaults to pipelines started before the current date. |
+| <a id="projectpipelineanalyticstotime"></a>`toTime` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. End of the requested time (in UTC). Defaults to the pipelines started before the current date. |
 
 ##### `Project.pipelineCounts`
 
@@ -39337,6 +39355,14 @@ Alert status values.
 | <a id="alertmanagementstatusignored"></a>`IGNORED` | No action will be taken. |
 | <a id="alertmanagementstatusresolved"></a>`RESOLVED` | The problem has been addressed. |
 | <a id="alertmanagementstatustriggered"></a>`TRIGGERED` | Investigation has not started. |
+
+### `AnalyticsAggregationPeriod`
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="analyticsaggregationperiodday"></a>`DAY` | Daily aggregation. |
+| <a id="analyticsaggregationperiodmonth"></a>`MONTH` | Monthly aggregation. |
+| <a id="analyticsaggregationperiodweek"></a>`WEEK` | Weekly aggregation. |
 
 ### `ApiFuzzingScanMode`
 
