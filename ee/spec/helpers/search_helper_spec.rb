@@ -381,8 +381,7 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   describe '.search_navigation_json' do
     context 'when all options enabled' do
       before do
-        allow(self).to receive_messages(current_user: build(:user), can?: true, project_search_tabs?: true,
-          feature_flag_tab_enabled?: true)
+        allow(self).to receive_messages(current_user: build(:user), can?: true, project_search_tabs?: true)
         allow(search_service).to receive_messages(show_elasticsearch_tabs?: true, show_epics?: true,
           show_snippets?: true)
         @project = nil
