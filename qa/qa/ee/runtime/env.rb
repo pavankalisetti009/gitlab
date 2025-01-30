@@ -22,7 +22,9 @@ module QA
         end
 
         def elasticsearch_url
-          ENV.fetch('ELASTIC_URL', 'http://elastic68:9200')
+          ENV.fetch('ELASTIC_URL')
+        rescue KeyError
+          raise 'Please provide ELASTIC_URL for the environment you are running the tests'
         end
       end
     end
