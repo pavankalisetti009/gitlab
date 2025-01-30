@@ -610,15 +610,8 @@ module EE
     def seats_available_for?(invites, access_level, member_role_id)
       return true unless gitlab_subscription
 
-      nonbillable = if member_role_id
-                      custom_role = MemberRole.find_by_id(member_role_id)
-                      custom_role && !custom_role.occupies_seat?
-                    else
-                      access_level == ::Gitlab::Access::MINIMAL_ACCESS ||
-                        (access_level == ::Gitlab::Access::GUEST && exclude_guests?)
-                    end
-
-      return true if nonbillable
+      return true if ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.non_billable_member?(
+        access_level, member_role_id, exclude_guests?)
 
       billable_ids = billed_user_ids[:user_ids].map(&:to_s)
 
