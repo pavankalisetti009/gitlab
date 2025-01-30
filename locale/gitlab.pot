@@ -38208,6 +38208,9 @@ msgstr ""
 msgid "Notification setting - %{notification_title}"
 msgstr ""
 
+msgid "Notification setting - Custom"
+msgstr ""
+
 msgid "Notification settings saved"
 msgstr ""
 
