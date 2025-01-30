@@ -49740,6 +49740,9 @@ msgstr ""
 msgid "Save application"
 msgstr ""
 
+msgid "Save change"
+msgstr ""
+
 msgid "Save changes"
 msgstr ""
 
@@ -63150,10 +63153,22 @@ msgstr ""
 msgid "VulnerabilityManagement|A verified true-positive vulnerability"
 msgstr ""
 
+msgid "VulnerabilityManagement|Add reason for severity change (Required)"
+msgstr ""
+
 msgid "VulnerabilityManagement|Add vulnerability finding"
 msgstr ""
 
 msgid "VulnerabilityManagement|An unverified non-confirmed finding"
+msgstr ""
+
+msgid "VulnerabilityManagement|Change severity"
+msgstr ""
+
+msgid "VulnerabilityManagement|Change the severity of this vulnerability. Only this vulnerability will be affected."
+msgstr ""
+
+msgid "VulnerabilityManagement|Comment is required."
 msgstr ""
 
 msgid "VulnerabilityManagement|Could not process %{issueReference}: %{errorMessage}."
@@ -63204,13 +63219,22 @@ msgstr ""
 msgid "VulnerabilityManagement|Select a method"
 msgstr ""
 
+msgid "VulnerabilityManagement|Select a severity"
+msgstr ""
+
 msgid "VulnerabilityManagement|Select a severity level"
 msgstr ""
 
 msgid "VulnerabilityManagement|Select a status"
 msgstr ""
 
+msgid "VulnerabilityManagement|Severity"
+msgstr ""
+
 msgid "VulnerabilityManagement|Severity is a required field"
+msgstr ""
+
+msgid "VulnerabilityManagement|Severity is required."
 msgstr ""
 
 msgid "VulnerabilityManagement|Something went wrong while creating vulnerability"
