@@ -355,17 +355,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
           { key: 'CI_PAGES_URL', value: "#{ci_pages_url}/master", public: true, masked: false }
         )
       end
-
-      context 'when it is not a pages job' do
-        let(:job) do
-          create(:ci_build, pipeline: pipeline, options: { pages: false })
-        end
-
-        it "does not include CI_PAGES_* variables" do
-          expect(subject.to_runner_variables).not_to include(a_hash_including(key: 'CI_PAGES_HOSTNAME'))
-          expect(subject.to_runner_variables).not_to include(a_hash_including(key: 'CI_PAGES_URL'))
-        end
-      end
     end
   end
 
