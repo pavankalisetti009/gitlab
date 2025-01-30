@@ -34,6 +34,7 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
   end
 
   before do
+    stub_feature_flags(new_project_creation_form: false)
     sign_in(admin_user)
   end
 

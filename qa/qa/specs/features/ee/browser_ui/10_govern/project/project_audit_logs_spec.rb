@@ -3,7 +3,10 @@
 module QA
   RSpec.describe(
     'Govern',
-    product_group: :compliance
+    product_group: :compliance,
+    feature_flag: {
+      name: 'new_project_creation_form'
+    }
   ) do
     shared_examples 'audit event' do |expected_events|
       it 'logs audit events for UI operations' do
@@ -21,6 +24,7 @@ module QA
       let(:user) { Runtime::User::Store.additional_test_user }
 
       before do
+        Runtime::Feature.disable(:new_project_creation_form)
         sign_in
       end
 

@@ -2,7 +2,9 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'Project templates', product_group: :source_code do
+    describe 'Project templates', product_group: :source_code, feature_flag: {
+      name: 'new_project_creation_form'
+    } do
       let!(:group) { create(:group) }
 
       let(:sandbox) { group.sandbox }
@@ -32,6 +34,7 @@ module QA
       end
 
       before do
+        Runtime::Feature.disable(:new_project_creation_form)
         Resource::Repository::ProjectPush.fabricate! do |push|
           push.project = template_project
           push.files = files

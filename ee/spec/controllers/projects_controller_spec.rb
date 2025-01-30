@@ -11,6 +11,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
   let_it_be(:public_project) { create(:project, :public, :repository, namespace: group) }
 
   before do
+    stub_feature_flags(new_project_creation_form: false)
     project.add_maintainer(user)
     sign_in(user)
   end

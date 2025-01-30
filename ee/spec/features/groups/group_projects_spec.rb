@@ -7,6 +7,7 @@ RSpec.describe 'Group projects page', feature_category: :groups_and_projects do
   let(:group) { create :group }
 
   before do
+    stub_feature_flags(new_project_creation_form: false)
     group.add_owner(user)
 
     sign_in(user)

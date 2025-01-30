@@ -212,6 +212,10 @@ RSpec.describe 'Admin::AuditLogs', :js, feature_category: :audit_events do
     end
 
     describe 'impersonated events' do
+      before do
+        stub_feature_flags(new_project_creation_form: false)
+      end
+
       it 'show impersonation details' do
         visit admin_user_path(user)
 

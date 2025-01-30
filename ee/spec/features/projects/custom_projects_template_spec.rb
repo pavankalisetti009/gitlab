@@ -9,6 +9,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
     let_it_be(:projects) { create_list(:project, 3, :public, :metrics_dashboard_enabled, namespace: group) }
 
     before do
+      stub_feature_flags(new_project_creation_form: false)
       stub_ee_application_setting(custom_project_templates_group_id: group.id)
     end
 
@@ -135,6 +136,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
     let!(:template) { create(:project, namespace: template_subgroup) }
 
     before do
+      stub_feature_flags(new_project_creation_form: false)
       stub_licensed_features(custom_project_templates: true)
       group.add_owner(user)
       group.update!(custom_project_templates_group_id: template_subgroup.id)
