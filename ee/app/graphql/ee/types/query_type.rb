@@ -255,6 +255,13 @@ module EE
           null: true,
           fallback_value: [],
           description: 'Get the list of all the compliance requirement controls.'
+
+        field :duo_settings, ::Types::Ai::DuoSettings::DuoSettingsType,
+          null: true,
+          fallback_value: {},
+          description: 'Get GitLab Duo settings',
+          resolver: ::Resolvers::Ai::DuoSettings::DuoSettingsResolver,
+          experiment: { milestone: '17.9' }
       end
 
       def vulnerability(id:)
