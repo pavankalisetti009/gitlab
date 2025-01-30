@@ -54,25 +54,31 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
                 stub_application_setting(gitlab_dedicated_instance: true)
               end
 
-              it_behaves_like 'skips sending requests to the SDS'
+              it_behaves_like 'skips sending requests to the SDS' do
+                let(:is_dedicated) { true }
+              end
             end
 
             context 'when instance is GitLab.com' do
-              # this is the happy path (as FFs are enabled by default)
-              it_behaves_like 'sends requests to the SDS'
+              it_behaves_like 'skips sending requests to the SDS'
 
-              context 'when `use_secret_detection_service` feature flag is disabled' do
-                before do
-                  stub_feature_flags(use_secret_detection_service: false)
+              context 'when `use_secret_detection_service` feature flag is enabled' do
+                # this is the happy path (as FFs are enabled by default)
+                it_behaves_like 'sends requests to the SDS' do
+                  let(:sds_ff_enabled) { true }
+
+                  before do
+                    stub_feature_flags(use_secret_detection_service: true)
+                  end
                 end
-
-                it_behaves_like 'skips sending requests to the SDS'
               end
             end
           end
 
           context 'when SDS should not be called (Self-Managed)' do
-            it_behaves_like 'skips sending requests to the SDS'
+            it_behaves_like 'skips sending requests to the SDS' do
+              let(:saas_feature_enabled) { false }
+            end
           end
 
           context 'when deleting the branch' do
@@ -105,6 +111,17 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             it_behaves_like 'diff scan passed'
             it_behaves_like 'scan detected secrets in diffs'
             it_behaves_like 'detects secrets with special characters in diffs'
+
+            it 'tracks and recovers errors when getting diff' do
+              expect(repository).to receive(:diff_blobs).and_raise(::GRPC::InvalidArgument)
+              expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(::GRPC::InvalidArgument))
+              expect(secret_detection_logger).to receive(:error)
+                .once
+                .with({ "message" => error_messages[:invalid_input_error], "class" => "Gitlab::Checks::SecretsCheck" })
+
+              allow(secret_detection_logger).to receive(:info)
+              expect { secrets_check.validate! }.not_to raise_error
+            end
 
             context 'when the protocol is web' do
               subject(:secrets_check) { described_class.new(changes_access_web) }
@@ -193,7 +210,8 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
         expect(data_content).to receive(:valid_encoding?).and_return(false)
 
         expect(secret_detection_logger).to receive(:warn)
-          .with(message: format(log_messages[:invalid_encoding], { encoding: original_encoding }))
+          .with({ "message" => format(log_messages[:invalid_encoding], { encoding: original_encoding }),
+            "class" => "Gitlab::Checks::SecretsCheck" })
 
         result = secrets_check.send(:build_payload, invalid_datum)
         expect(result).to be_nil

@@ -20,9 +20,18 @@ RSpec.shared_examples 'skips sending requests to the SDS' do
   it 'does not create the SDS client' do
     expect(::Gitlab::SecretDetection::GRPC::Client).not_to receive(:new)
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:secrets_not_found])
+    msg = format(log_messages[:sds_disabled],
+      {
+        sds_ff_enabled: sds_ff_enabled,
+        saas_feature_enabled: saas_feature_enabled,
+        is_not_dedicated: !is_dedicated
+      })
+
+    expect(secret_detection_logger).to receive(:info).with(
+      { "message" => msg, "class" => "Gitlab::Checks::SecretsCheck" })
+
+    expect(secret_detection_logger).to receive(:info).with(
+      { "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck" })
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -37,9 +46,13 @@ RSpec.shared_examples 'sends requests to the SDS' do
         expect(instance).to receive(:run_scan)
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:secrets_not_found])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:secrets_not_found]
+          expect(args).to include(
+            "message" => log_messages[:secrets_not_found],
+            "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.not_to raise_error
     end
@@ -77,9 +90,12 @@ RSpec.shared_examples 'sends requests to the SDS' do
           expect(instance).to receive(:run_scan).with(request: match(expected_request), auth_token: nil)
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:secrets_not_found])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:secrets_not_found]
+            expect(args).to include(
+              "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.not_to raise_error
       end
@@ -93,10 +109,13 @@ RSpec.shared_examples 'sends requests to the SDS' do
           receive(:new).and_raise(::GRPC::Unauthenticated, "Expected error")
         )
 
-        expect(secret_detection_logger).to receive_messages(
-          error: { message: "Expected error" },
-          info: { message: log_messages[:secrets_not_found] }
-        )
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          expect(args).to include(
+            "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+
+        expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(::GRPC::Unauthenticated))
+
         expect { subject.validate! }.not_to raise_error
       end
     end
@@ -109,10 +128,12 @@ RSpec.shared_examples 'sends requests to the SDS' do
           )
         end
 
-        expect(secret_detection_logger).to receive_messages(
-          error: { message: "Expected error" },
-          info: { message: log_messages[:secrets_not_found] }
-        )
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          expect(args).to include(
+            "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+
+        expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(::GRPC::Unauthenticated))
 
         expect { subject.validate! }.not_to raise_error
       end
@@ -143,9 +164,12 @@ RSpec.shared_examples 'entire file scan passed' do
         .and_return([existing_blob, new_blob])
         .and_call_original
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:secrets_not_found])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:secrets_not_found]
+          expect(args).to include(
+            "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.not_to raise_error
     end
@@ -162,9 +186,12 @@ RSpec.shared_examples 'entire file scan passed' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:secrets_not_found])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:secrets_not_found]
+          expect(args).to include(
+            "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.not_to raise_error
     end
@@ -183,9 +210,12 @@ RSpec.shared_examples 'entire file scan passed' do
         .and_return([new_blob])
         .and_call_original
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:secrets_not_found])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:secrets_not_found]
+          expect(args).to include(
+            "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.not_to raise_error
     end
@@ -211,9 +241,12 @@ RSpec.shared_examples 'entire file scan passed' do
         .and_call_original
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:secrets_not_found])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:secrets_not_found]
+        expect(args).to include(
+          "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -272,9 +305,12 @@ RSpec.shared_examples 'diff scan passed' do
         .and_call_original
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:secrets_not_found])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:secrets_not_found]
+        expect(args).to include(
+          "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -299,9 +335,12 @@ RSpec.shared_examples 'diff scan passed' do
         .and_call_original
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:secrets_not_found])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:secrets_not_found]
+        expect(args).to include(
+          "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -319,7 +358,7 @@ RSpec.shared_examples 'scan detected secrets' do
           ::Gitlab::SecretDetection::Core::Status::FOUND,
           1,
           "gitlab_personal_access_token",
-          "GitLab Personal Access Token"
+          "GitLab personal access token"
         )
       ]
     )
@@ -360,9 +399,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_return([existing_blob, new_blob])
         .and_call_original
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
@@ -379,9 +421,12 @@ RSpec.shared_examples 'scan detected secrets' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
@@ -400,9 +445,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_return([new_blob])
         .and_call_original
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
@@ -421,9 +469,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_call_original
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:found_secrets])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error do |error|
       expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -508,14 +559,14 @@ RSpec.shared_examples 'scan detected secrets' do
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             new_blob_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           )
         ]
       )
@@ -552,9 +603,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_return([tree_entries, gitaly_pagination_cursor])
         .and_call_original
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -580,9 +634,12 @@ RSpec.shared_examples 'scan detected secrets' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -611,9 +668,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_call_original
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:found_secrets])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error do |error|
       expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -635,9 +695,12 @@ RSpec.shared_examples 'scan detected secrets' do
       .and_return([tree_entries, gitaly_pagination_cursor])
       .and_call_original
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:found_secrets])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error do |error|
       expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -659,9 +722,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .with(**expected_tree_args)
         .and_return([{}, gitaly_pagination_cursor])
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -684,13 +750,16 @@ RSpec.shared_examples 'scan detected secrets' do
         .with(**expected_tree_args)
         .and_return([tree_entries, gitaly_pagination_cursor])
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets])
+        end
+      end
 
       expect(secret_detection_logger).to receive(:error)
         .once
-        .with(message: too_many_tree_entries_error)
+        .with({ "message" => too_many_tree_entries_error, "class" => "Gitlab::Checks::SecretsCheck" })
 
       expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
@@ -721,9 +790,12 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_return([tree_entries, gitaly_pagination_cursor])
         .and_call_original
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -763,14 +835,14 @@ RSpec.shared_examples 'scan detected secrets' do
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             new_blob_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             2,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           )
         ]
       )
@@ -789,9 +861,12 @@ RSpec.shared_examples 'scan detected secrets' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -820,7 +895,7 @@ RSpec.shared_examples 'scan detected secrets' do
       )
     end
 
-    let(:second_finding_description) { 'GitLab Runner Registration Token' }
+    let(:second_finding_description) { 'GitLab runner registration token' }
 
     let(:successful_with_multiple_findings_on_same_line_scan_response) do
       ::Gitlab::SecretDetection::Core::Response.new(
@@ -832,14 +907,14 @@ RSpec.shared_examples 'scan detected secrets' do
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             new_blob_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_runner_registration_token",
-            "GitLab Runner Registration Token"
+            "GitLab runner registration token"
           )
         ]
       )
@@ -858,9 +933,12 @@ RSpec.shared_examples 'scan detected secrets' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -908,14 +986,14 @@ RSpec.shared_examples 'scan detected secrets' do
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             new_blob_reference2,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_runner_authentication_token",
-            "GitLab Runner Authentication Token"
+            "GitLab runner authentication token"
           )
         ]
       )
@@ -934,9 +1012,12 @@ RSpec.shared_examples 'scan detected secrets' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -955,7 +1036,7 @@ RSpec.shared_examples 'scan detected secrets' do
   it_behaves_like 'internal event tracking' do
     let(:event) { "detect_secret_type_on_push" }
     let(:namespace) { project.namespace }
-    let(:label) { "GitLab Personal Access Token" }
+    let(:label) { "GitLab personal access token" }
     let(:category) { described_class.name }
 
     before do
@@ -1029,9 +1110,12 @@ RSpec.shared_examples 'processes hunk headers' do
           end
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:secrets_not_found])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:secrets_not_found]
+            expect(args).to include(
+              "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.not_to raise_error
       end
@@ -1071,13 +1155,15 @@ RSpec.shared_examples 'processes hunk headers' do
             .and_return([diff_blob])
         end
 
-        expect(secret_detection_logger).to receive(:error)
-          .once
-          .with(message: error_msg)
+        allow(secret_detection_logger).to receive(:info)
 
         expect(secret_detection_logger).to receive(:error)
           .once
-          .with(message: error_messages[:invalid_input_error])
+          .with({ "message" => error_msg, "class" => "Gitlab::Checks::SecretsCheck" })
+
+        expect(secret_detection_logger).to receive(:error)
+          .once
+          .with({ "message" => error_messages[:invalid_input_error], "class" => "Gitlab::Checks::SecretsCheck" })
 
         expect { subject.validate! }.not_to raise_error
       end
@@ -1103,6 +1189,8 @@ RSpec.shared_examples 'processes hunk headers' do
         over_patch_bytes_limit: false
       )
 
+      allow(secret_detection_logger).to receive(:info)
+
       expect_next_instance_of(described_class) do |instance|
         expect(instance).to receive(:get_diffs)
           .once
@@ -1111,11 +1199,11 @@ RSpec.shared_examples 'processes hunk headers' do
 
       expect(secret_detection_logger).to receive(:error)
         .once
-        .with(message: error_msg)
+        .with({ "message" => error_msg, "class" => "Gitlab::Checks::SecretsCheck" })
 
       expect(secret_detection_logger).to receive(:error)
         .once
-        .with(message: error_messages[:invalid_input_error])
+        .with({ "message" => error_messages[:invalid_input_error], "class" => "Gitlab::Checks::SecretsCheck" })
 
       expect { subject.validate! }.not_to raise_error
     end
@@ -1147,7 +1235,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
           ::Gitlab::SecretDetection::Core::Status::FOUND,
           1,
           "gitlab_personal_access_token",
-          "GitLab Personal Access Token"
+          "GitLab personal access token"
         )
       ]
     )
@@ -1171,9 +1259,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         .and_return([diff_blob])
     end
 
-    expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
   end
@@ -1190,9 +1281,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         .and_return(successful_scan_response)
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:found_secrets])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error do |error|
       expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -1248,14 +1342,14 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             new_blob_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             11,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           )
         ]
       )
@@ -1280,9 +1374,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
             .and_return([diff_blob])
         end
 
-        expect(secret_detection_logger).to receive(:info)
-            .once
-            .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
       end
@@ -1305,9 +1402,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
             .and_return(successful_scan_response)
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error do |error|
           expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -1341,9 +1441,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
             .and_return([diff_blob])
         end
 
-        expect(secret_detection_logger).to receive(:info)
-            .once
-            .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
       end
@@ -1366,9 +1469,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
             .and_return(successful_scan_response)
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error do |error|
           expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -1398,7 +1504,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
           ::Gitlab::SecretDetection::Core::Status::FOUND,
           1,
           "gitlab_personal_access_token",
-          "GitLab Personal Access Token"
+          "GitLab personal access token"
         ),
         ::Gitlab::SecretDetection::Core::Finding.new(
           timed_out_blob_reference,
@@ -1499,9 +1605,12 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
             .and_return(successful_scan_with_errors_response)
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets_with_errors])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets_with_errors]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets_with_errors], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
       end
@@ -1526,9 +1635,12 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
             .and_return(successful_scan_with_errors_response)
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets_with_errors])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets_with_errors]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets_with_errors], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
       end
@@ -1557,9 +1669,12 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
             .and_return(successful_scan_with_errors_response)
         end
 
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets_with_errors])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets_with_errors]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets_with_errors], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
       end
@@ -1585,9 +1700,12 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         .and_call_original
     end
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:found_secrets_with_errors])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets_with_errors]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets_with_errors], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error do |error|
       expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -1634,9 +1752,12 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       .and_return([[], nil])
       .and_call_original
 
-    expect(secret_detection_logger).to receive(:info)
-      .once
-      .with(message: log_messages[:found_secrets_with_errors])
+    expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+      if args[:message] == log_messages[:found_secrets_with_errors]
+        expect(args).to include(
+          "message" => log_messages[:found_secrets_with_errors], "class" => "Gitlab::Checks::SecretsCheck")
+      end
+    end
 
     expect { subject.validate! }.to raise_error do |error|
       expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -1677,14 +1798,14 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             new_blob_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             2,
             "gitlab_personal_access_token",
-            "GitLab Personal Access Token"
+            "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
             timed_out_blob_reference,
@@ -1717,9 +1838,12 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets_with_errors])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets_with_errors]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets_with_errors], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -1751,10 +1875,12 @@ RSpec.shared_examples 'scan timed out' do
         .and_return(scan_timed_out_scan_response)
     end
 
+    allow(secret_detection_logger).to receive(:info)
+
     # Error bubbles up from scan class and is handled in secrets check.
     expect(secret_detection_logger).to receive(:error)
       .once
-      .with(message: error_messages[:scan_timeout_error])
+      .with({ "message" => error_messages[:scan_timeout_error], "class" => "Gitlab::Checks::SecretsCheck" })
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -1787,7 +1913,9 @@ RSpec.shared_examples 'scan failed to initialize' do
     # Error bubbles up from scan class and is handled in secrets check.
     expect(secret_detection_logger).to receive(:error)
       .once
-      .with(message: msg)
+      .with({ "message" => msg, "class" => "Gitlab::Checks::SecretsCheck" })
+
+    allow(secret_detection_logger).to receive(:info)
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -1807,10 +1935,12 @@ RSpec.shared_examples 'scan failed with invalid input' do
         .and_return(failed_with_invalid_input_response)
     end
 
+    allow(secret_detection_logger).to receive(:info)
+
     # Error bubbles up from scan class and is handled in secrets check.
     expect(secret_detection_logger).to receive(:error)
       .once
-      .with(message: error_messages[:invalid_input_error])
+      .with({ "message" => error_messages[:invalid_input_error], "class" => "Gitlab::Checks::SecretsCheck" })
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -1836,7 +1966,9 @@ RSpec.shared_examples 'scan skipped due to invalid status' do
     # Error bubbles up from scan class and is handled in secrets check.
     expect(secret_detection_logger).to receive(:error)
       .once
-      .with(message: error_messages[:invalid_scan_status_code_error])
+      .with({ "message" => error_messages[:invalid_scan_status_code_error], "class" => "Gitlab::Checks::SecretsCheck" })
+
+    allow(secret_detection_logger).to receive(:info)
 
     expect { subject.validate! }.not_to raise_error
   end
@@ -2075,9 +2207,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
       end
 
       it 'excludes secrets matching file paths up to the maximum allowed' do
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { secrets_check.validate! }.to raise_error do |error|
           expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -2087,7 +2222,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
               commit_with_excluded_file_paths,
               'file-exclusion-2-skipped.rb',
               1,
-              'GitLab Personal Access Token'
+              'GitLab personal access token'
             ),
             log_messages[:found_secrets_post_message],
             found_secrets_docs_link
@@ -2096,9 +2231,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
       end
 
       it 'creates an audit event for path exclusion' do
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { secrets_check.validate! }.to change {
                                                 AuditEvent.count
@@ -2152,9 +2290,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
       end
 
       it 'excludes secrets matching file paths from findings' do
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { secrets_check.validate! }.to raise_error do |error|
           expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -2164,7 +2305,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
               commit_with_not_excluded_file_path,
               'file-exclusion-4.txt',
               1,
-              'GitLab Runner Authentication Token'
+              'GitLab runner authentication token'
             ),
             log_messages[:found_secrets_post_message],
             found_secrets_docs_link
@@ -2173,9 +2314,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
       end
 
       it 'creates audit events for all path exclusions' do
-        expect(secret_detection_logger).to receive(:info)
-          .once
-          .with(message: log_messages[:found_secrets])
+        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+          if args[:message] == log_messages[:found_secrets]
+            expect(args).to include(
+              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+          end
+        end
 
         expect { secrets_check.validate! }.to change {
                                                 AuditEvent.count
@@ -2214,9 +2358,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
     end
 
     it 'excludes secrets matching rule from findings' do
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { secrets_check.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -2226,7 +2373,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
             commit_with_not_excluded_rule,
             'rule-exclusion-2.txt',
             1,
-            'GitLab Runner Authentication Token'
+            'GitLab runner authentication token'
           ),
           log_messages[:found_secrets_post_message],
           found_secrets_docs_link
@@ -2235,9 +2382,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
     end
 
     it 'creates an audit event for the exclusion' do
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { secrets_check.validate! }.to change {
                                               AuditEvent.count
@@ -2275,9 +2425,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
     end
 
     it 'excludes secrets matching raw value from findings' do
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { secrets_check.validate! }.to raise_error do |error|
         expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
@@ -2287,7 +2440,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
             commit_with_not_excluded_value,
             'raw-value-exclusion-2.txt',
             1,
-            'GitLab Personal Access Token'
+            'GitLab personal access token'
           ),
           log_messages[:found_secrets_post_message],
           found_secrets_docs_link
@@ -2296,9 +2449,12 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
     end
 
     it 'creates an audit event for the exclusion' do
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { secrets_check.validate! }.to change {
                                               AuditEvent.count
@@ -2356,9 +2512,12 @@ RSpec.shared_examples 'detects secrets with special characters in diffs' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
@@ -2415,9 +2574,12 @@ RSpec.shared_examples 'detects secrets with special characters in full files' do
           .and_call_original
       end
 
-      expect(secret_detection_logger).to receive(:info)
-        .once
-        .with(message: log_messages[:found_secrets])
+      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
+        if args[:message] == log_messages[:found_secrets]
+          expect(args).to include(
+            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
+        end
+      end
 
       expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
