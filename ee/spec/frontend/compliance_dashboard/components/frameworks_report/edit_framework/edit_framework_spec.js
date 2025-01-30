@@ -91,6 +91,9 @@ describe('Edit Framework Form', () => {
   const findRequirementsSection = () => wrapper.findComponent(RequirementsSection);
   const findPipelineMigrationPopup = () =>
     extendedWrapper(createWrapper(document.body)).find('[data-testid="pipeline-migration-popup"]');
+  const findNameInput = () => wrapper.findByLabelText('Name');
+  const findDescriptionInput = () => wrapper.findByLabelText('Description');
+  const findColorInput = () => wrapper.find('input[type="color"]');
 
   const invalidFeedback = (input) =>
     input.closest('[role=group]').querySelector('.invalid-feedback')?.textContent ?? '';
@@ -114,7 +117,6 @@ describe('Edit Framework Form', () => {
       },
       propsData,
       stubs: {
-        ColorPicker: true,
         PoliciesSection: true,
         ProjectsSection: true,
         DeleteModal: stubComponent(DeleteModal, {
@@ -135,53 +137,88 @@ describe('Edit Framework Form', () => {
     });
   }
 
-  it('renders the loading icon', () => {
-    wrapper = createComponent(shallowMountExtended);
-    expect(findLoadingIcon().exists()).toBe(true);
+  const submitForm = async () => {
+    const form = wrapper.find('form');
+    await form.trigger('submit');
+  };
+
+  const fillAndSubmitForm = async (formData = {}) => {
+    const defaultData = {
+      name: 'Test Framework',
+      description: 'Test Description',
+      color: '#FF0000',
+    };
+    const data = { ...defaultData, ...formData };
+
+    await findNameInput().setValue(data.name);
+    await findDescriptionInput().setValue(data.description);
+    await findColorInput().setValue(data.color);
+
+    if (data.pipelineConfigurationFullPath) {
+      const pipelineInput = wrapper.findByTestId('pipeline-configuration-input');
+      await pipelineInput.setValue(data.pipelineConfigurationFullPath);
+    }
+
+    await nextTick();
+    await submitForm();
+  };
+
+  beforeEach(() => {
+    gon.suggested_label_colors = {
+      '#000000': 'Black',
+      '#0033CC': 'UA blue',
+      '#428BCA': 'Moderate blue',
+      '#44AD8E': 'Lime green',
+    };
   });
-
-  it('renders error if loading fails', async () => {
-    wrapper = createComponent(shallowMountExtended);
-
-    await waitForPromises();
-    expect(findError().exists()).toBe(true);
-  });
-
-  it('does not attempt to load framework if no id provided in url', async () => {
-    const queryFn = jest.fn();
-    wrapper = createComponent(shallowMountExtended, {
-      requestHandlers: [[getComplianceFrameworkQuery, queryFn]],
-      routeParams: {},
+  describe('Rendering', () => {
+    it('renders the loading icon', () => {
+      wrapper = createComponent(shallowMountExtended);
+      expect(findLoadingIcon().exists()).toBe(true);
     });
 
-    await waitForPromises();
-    expect(queryFn).not.toHaveBeenCalled();
-  });
+    it('renders error if loading fails', async () => {
+      wrapper = createComponent(shallowMountExtended);
 
-  it('loads framework if id provided in url', async () => {
-    wrapper = createComponent(mountExtended, {
-      requestHandlers: [
-        [
-          getComplianceFrameworkQuery,
-          () => ({ ...createComplianceFrameworksReportResponse(), default: true }),
+      await waitForPromises();
+      expect(findError().exists()).toBe(true);
+    });
+
+    it('does not attempt to load framework if no id provided in url', async () => {
+      const queryFn = jest.fn();
+      wrapper = createComponent(shallowMountExtended, {
+        requestHandlers: [[getComplianceFrameworkQuery, queryFn]],
+        routeParams: {},
+      });
+
+      await waitForPromises();
+      expect(queryFn).not.toHaveBeenCalled();
+    });
+
+    it('loads framework if id provided in url', async () => {
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [
+          [
+            getComplianceFrameworkQuery,
+            () => ({ ...createComplianceFrameworksReportResponse(), default: true }),
+          ],
         ],
-      ],
+      });
+
+      await waitForPromises();
+      const values = Object.fromEntries(new FormData(wrapper.find('form').element));
+
+      expect(values).toStrictEqual({
+        name: "Auditor's framework 1",
+        description: 'This is a framework 1',
+        pipeline_configuration_full_path: '',
+        // JSDOM issue, checking manually:
+        // default: true,
+      });
+
+      expect(wrapper.find('input[name="default"]').attributes('value')).toBe('true');
     });
-
-    await waitForPromises();
-    const values = Object.fromEntries(new FormData(wrapper.find('form').element));
-
-    expect(values).toStrictEqual({
-      name: "Auditor's framework 1",
-      description: 'This is a framework 1',
-      pipeline_configuration_full_path: '',
-      // JSDOM issue, checking manually:
-      // default: true,
-    });
-
-    expect(wrapper.find('input[name="default"]').attributes('value')).toBe('true');
   });
-
   describe('Security policies migration', () => {
     describe('popup when saving framework', () => {
       beforeEach(() => {
@@ -205,9 +242,7 @@ describe('Edit Framework Form', () => {
           await pipelineInput.setValue('.compliance.yml@flightjs/flight');
           await waitForPromises();
 
-          const form = wrapper.find('form');
-
-          await form.trigger('submit');
+          await submitForm();
           await waitForPromises();
 
           expect(findPipelineMigrationPopup().exists()).toBe(false);
@@ -239,8 +274,7 @@ describe('Edit Framework Form', () => {
           const pipelineInput = findPipelineInput();
           await pipelineInput.setValue('.compliance.yml@flightjs/flight');
           await waitForPromises();
-          const form = wrapper.find('form');
-          await form.trigger('submit');
+          await fillAndSubmitForm();
           await waitForPromises();
 
           const { display, visibility, opacity } = window.getComputedStyle(
@@ -255,9 +289,7 @@ describe('Edit Framework Form', () => {
         it('no popup after without pipeline', async () => {
           jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(true);
 
-          const form = wrapper.find('form');
-
-          await form.trigger('submit');
+          await submitForm();
           await waitForPromises();
           expect(findPipelineMigrationPopup().exists()).toBe(false);
         });
@@ -290,26 +322,33 @@ describe('Edit Framework Form', () => {
   });
 
   describe('Validation', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       wrapper = createComponent();
+      await waitForPromises();
     });
 
-    it('validates required fields', async () => {
-      const nameInput = wrapper.findByLabelText('Name');
-      const descriptionInput = wrapper.findByLabelText('Description');
-
-      await nameInput.setValue('');
-      await descriptionInput.setValue('');
-
-      expect(invalidFeedback(nameInput.element)).toContain('is required');
-      expect(invalidFeedback(descriptionInput.element)).toContain('is required');
+    it('does not show validation feedback initially', () => {
+      expect(findNameInput().attributes('state')).toBe(undefined);
+      expect(findDescriptionInput().attributes('state')).toBe(undefined);
     });
 
-    it('validates length of name field', async () => {
-      const nameInput = wrapper.findByLabelText('Name');
+    it('validates required fields after form submission', async () => {
+      await fillAndSubmitForm({ name: '', description: '' });
 
-      await nameInput.setValue('a'.repeat(256));
-      expect(invalidFeedback(nameInput.element)).toContain('less than 255');
+      await submitForm();
+      await nextTick();
+
+      expect(invalidFeedback(findNameInput().element)).toContain('is required');
+      expect(invalidFeedback(findDescriptionInput().element)).toContain('is required');
+    });
+
+    it('validates length of name field after form submission', async () => {
+      await fillAndSubmitForm({ name: 'a'.repeat(256) });
+
+      await submitForm();
+      await nextTick();
+
+      expect(invalidFeedback(findNameInput().element)).toContain('less than 255');
     });
 
     it.each`
@@ -317,15 +356,17 @@ describe('Edit Framework Form', () => {
       ${'foo.yml@bar/baz'}          | ${'Configuration not found'}
       ${'foobar'}                   | ${'Invalid format'}
     `(
-      'sets the correct invalid message for pipeline',
+      'validates pipeline configuration after form submission',
       async ({ pipelineConfigurationFullPath, message }) => {
         jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
 
-        const pipelineInput = findPipelineInput();
-        await pipelineInput.setValue(pipelineConfigurationFullPath);
-        await waitForPromises();
+        await fillAndSubmitForm({ pipelineConfigurationFullPath });
 
-        expect(invalidFeedback(pipelineInput.element)).toBe(message);
+        const form = wrapper.find('form');
+        await form.trigger('submit');
+        await nextTick();
+
+        expect(invalidFeedback(findPipelineInput().element)).toBe(message);
       },
     );
   });
@@ -356,8 +397,7 @@ describe('Edit Framework Form', () => {
     });
     await waitForPromises();
 
-    const form = wrapper.find('form');
-    await form.trigger('submit');
+    await fillAndSubmitForm();
     await waitForPromises();
     expect(stubHandlers.find((handler) => handler[0] === mutation)[1]).toHaveBeenCalled();
 
@@ -383,8 +423,7 @@ describe('Edit Framework Form', () => {
     const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
     await waitForPromises();
 
-    const form = wrapper.find('form');
-    await form.trigger('submit');
+    await fillAndSubmitForm();
     await waitForPromises();
     expect(trackEventSpy).toHaveBeenCalledWith(
       'create_compliance_framework',
@@ -449,8 +488,7 @@ describe('Edit Framework Form', () => {
       expect(wrapper.vm.requirements).toEqual(requirementsData);
       expect(createRequirementMutationMock).not.toHaveBeenCalled();
 
-      const form = wrapper.find('form');
-      await form.trigger('submit');
+      await fillAndSubmitForm();
       await waitForPromises();
 
       expect(createFrameworkMutationMock).toHaveBeenCalledTimes(1);
@@ -992,6 +1030,25 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(shallowMountExtended);
       await waitForPromises();
       expect(wrapper.findComponent(ProjectsSection).exists()).toBe(true);
+    });
+  });
+
+  describe('Submit button', () => {
+    beforeEach(async () => {
+      wrapper = createComponent(mountExtended);
+      await waitForPromises();
+    });
+
+    it('is enabled with empty form', () => {
+      const submitButton = wrapper.findByTestId('submit-btn');
+      expect(submitButton.props('disabled')).toBe(false);
+    });
+
+    it('remains enabled with invalid form data', async () => {
+      await fillAndSubmitForm({ name: '' });
+
+      const submitButton = wrapper.findByTestId('submit-btn');
+      expect(submitButton.props('disabled')).toBe(false);
     });
   });
 });

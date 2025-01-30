@@ -57,39 +57,40 @@ describe('Basic information section', () => {
 
   it.each([['Name'], ['Description']])('has valid state initially', (fieldName) => {
     const input = wrapper.findByLabelText(fieldName);
-
-    expect(invalidFeedback(input.element)).toContain('');
+    expect(invalidFeedback(input.element)).toBe('');
   });
 
   it.each([['Name'], ['Description']])(
-    'validates required state for field %s',
+    'validates required state for field %s when showValidation is true',
     async (fieldName) => {
+      createComponent({ showValidation: true });
       const input = wrapper.findByLabelText(fieldName);
       await input.setValue('');
 
       expect(invalidFeedback(input.element)).toContain('is required');
-
-      expect(wrapper.emitted('valid').at(-1)).toStrictEqual([false]);
     },
   );
 
-  it.each([['default'], ['dEfAuLt'], ['default']])('rejects %s as framework name', async (name) => {
-    const input = wrapper.findByLabelText('Name');
+  it.each([['default'], ['dEfAuLt'], ['Default']])(
+    'rejects %s as framework name when showValidation is true',
+    async (name) => {
+      createComponent({ showValidation: true });
+      const input = wrapper.findByLabelText('Name');
+      await input.setValue(name);
 
-    await input.setValue(name);
-
-    expect(invalidFeedback(input.element)).toContain('is a reserved word');
-    expect(wrapper.emitted('valid').at(-1)).toStrictEqual([false]);
-  });
+      expect(invalidFeedback(input.element)).toContain('is a reserved word');
+    },
+  );
 
   it.each`
     pipelineConfigurationFullPath | message
     ${'foo.yml@bar/baz'}          | ${'Configuration not found'}
     ${'foobar'}                   | ${'Invalid format'}
   `(
-    'sets the correct invalid message for pipeline',
+    'sets the correct invalid message for pipeline when showValidation is true',
     async ({ pipelineConfigurationFullPath, message }) => {
       jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
+      createComponent({ showValidation: true });
 
       const pipelineInput = findPipelineInput();
       await pipelineInput.setValue(pipelineConfigurationFullPath);
