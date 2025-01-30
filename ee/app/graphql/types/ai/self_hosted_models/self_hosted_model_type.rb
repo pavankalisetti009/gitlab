@@ -3,8 +3,7 @@
 module Types
   module Ai
     module SelfHostedModels
-      # rubocop: disable Graphql/AuthorizeTypes -- authorization in resolver/mutation
-      class SelfHostedModelType < ::Types::BaseObject
+      class SelfHostedModelType < ::Types::BaseObject # rubocop: disable Graphql/AuthorizeTypes -- authorization in resolver/mutation
         graphql_name 'AiSelfHostedModel'
         description 'Self-hosted LLM servers'
 
@@ -22,6 +21,8 @@ module Types
         field :model, String, null: false, description: 'AI model deployed.'
         field :model_display_name, String, null: false, description: 'Display name of the AI model deployed.'
         field :name, String, null: false, description: 'Deployment name of the self-hosted model.'
+        field :release_state, ::Types::Ai::SelfHostedModels::ReleaseStateEnum, null: false,
+          description: 'GitLab release status of the model.'
         field :updated_at, Types::TimeType, null: true, description: 'Timestamp of last update.'
 
         field :feature_settings,
@@ -36,8 +37,11 @@ module Types
         def model_display_name
           ::Admin::Ai::SelfHostedModelsHelper::MODEL_NAME_MAPPER[object.model] || object.model.humanize
         end
+
+        def release_state
+          ::Types::Ai::SelfHostedModels::ReleaseStateEnum.values[object.release_state].value
+        end
       end
-      # rubocop: enable Graphql/AuthorizeTypes
     end
   end
 end
