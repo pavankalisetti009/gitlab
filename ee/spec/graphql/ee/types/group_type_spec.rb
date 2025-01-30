@@ -216,8 +216,13 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     let_it_be(:project) { create(:project, namespace: group) }
     let_it_be(:user) { create(:user) }
     let_it_be(:other_user) { create(:user) }
+
     let_it_be(:identifier) do
       create(:vulnerabilities_identifier, project: project, external_type: 'cwe', name: 'CWE-23')
+    end
+
+    let_it_be(:vulnerability_statistic) do
+      create(:vulnerability_statistic, project: project)
     end
 
     let(:query) do
@@ -242,6 +247,18 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
       it 'returns the matching search result' do
         results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
         expect(results).to contain_exactly(identifier.name)
+      end
+
+      context 'when flags that solve cross-joins are disabled' do
+        before do
+          stub_feature_flags(sum_vulnerability_count_for_group_using_vulnerability_statistics: false)
+          stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+        end
+
+        it 'returns the matching search result' do
+          results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
+          expect(results).to contain_exactly(identifier.name)
+        end
       end
     end
 

@@ -246,6 +246,11 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
       let_it_be(:subgroup_project_1) { create(:project, group: subgroup) }
       let_it_be(:other_group_project) { create(:project, group: other_group) }
 
+      let_it_be(:group_project_1_stat) { create(:vulnerability_statistic, project: group_project_1) }
+      let_it_be(:group_project_2_stat) { create(:vulnerability_statistic, project: group_project_2) }
+      let_it_be(:subgroup_project_1_stat) { create(:vulnerability_statistic, project: subgroup_project_1) }
+      let_it_be(:other_group_project_stat) { create(:vulnerability_statistic, project: other_group_project) }
+
       let_it_be(:identifier) do
         create(:vulnerabilities_identifier, name: 'CVE-2023-1234-o',
           external_type: 'cve', external_id: 'CVE-2023-1234-o', project: other_group_project)
@@ -270,6 +275,17 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
           result = described_class.search_identifier_name_in_group(group, "-123")
           expect(result).to contain_exactly("CVE-2023-1234", 'CWE-1234')
         end
+
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "returns matching identifiers for the group" do
+            result = described_class.search_identifier_name_in_group(group, "-123")
+            expect(result).to contain_exactly("CVE-2023-1234", 'CWE-1234')
+          end
+        end
       end
 
       context "when searching with a case-insensitive match" do
@@ -277,12 +293,34 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
           result = described_class.search_identifier_name_in_group(group, "cve")
           expect(result).to contain_exactly("CVE-2023-1234", "CVE-2019-10086")
         end
+
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "returns matching identifiers regardless of case" do
+            result = described_class.search_identifier_name_in_group(group, "cve")
+            expect(result).to contain_exactly("CVE-2023-1234", "CVE-2019-10086")
+          end
+        end
       end
 
       context "when there are no matches" do
         it "returns an empty array" do
           result = described_class.search_identifier_name_in_group(group, "Nonexistent")
           expect(result).to be_empty
+        end
+
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "returns an empty array" do
+            result = described_class.search_identifier_name_in_group(group, "Nonexistent")
+            expect(result).to be_empty
+          end
         end
       end
 
@@ -292,6 +330,19 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
           expect(result).to eq(%w[CVE-2023-1234 CWE-1234])
         end
 
+        # rubocop:disable RSpec/RepeatedExampleGroupDescription -- to be removed when doing the flag cleanup
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "returns all matching identifiers sorted by name" do
+            result = described_class.search_identifier_name_in_group(group, "1234")
+            expect(result).to eq(%w[CVE-2023-1234 CWE-1234])
+          end
+        end
+        # rubocop:enable RSpec/RepeatedExampleGroupDescription
+
         it "returns only distinct matching identifier names" do
           create(:vulnerabilities_identifier, name: 'CWE-1234',
             external_type: 'custom scanner', external_id: 'custom scanner', project: group_project_1)
@@ -299,12 +350,39 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
           result = described_class.search_identifier_name_in_group(group, "1234")
           expect(result).to contain_exactly("CVE-2023-1234", 'CWE-1234')
         end
+
+        # rubocop:disable RSpec/RepeatedExampleGroupDescription -- to be removed when doing the flag cleanup
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "returns only distinct matching identifier names" do
+            create(:vulnerabilities_identifier, name: 'CWE-1234',
+              external_type: 'custom scanner', external_id: 'custom scanner', project: group_project_1)
+
+            result = described_class.search_identifier_name_in_group(group, "1234")
+            expect(result).to contain_exactly("CVE-2023-1234", 'CWE-1234')
+          end
+        end
+        # rubocop:enable RSpec/RepeatedExampleGroupDescription
       end
 
       context "when searching in a subgroup" do
         it "does not return identifiers from parent groups" do
           result = described_class.search_identifier_name_in_group(subgroup, "cve")
           expect(result).to contain_exactly("CVE-2019-10086")
+        end
+
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "does not return identifiers from parent groups" do
+            result = described_class.search_identifier_name_in_group(subgroup, "cve")
+            expect(result).to contain_exactly("CVE-2019-10086")
+          end
         end
       end
 
@@ -318,6 +396,17 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
         it "limits the results" do
           result = described_class.search_identifier_name_in_group(group, "1")
           expect(result.size).to eq(limit)
+        end
+
+        context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
+          before do
+            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
+          end
+
+          it "limits the results" do
+            result = described_class.search_identifier_name_in_group(group, "1")
+            expect(result.size).to eq(limit)
+          end
         end
       end
     end
