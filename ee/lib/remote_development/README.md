@@ -867,6 +867,68 @@ allow them to be specified as a new field in the defaults declaration:
       end
 ```
 
+### Settings that depend on other settings
+
+Often, one setting depends on another setting being generated in the settings railway. By default, if a requested setting
+depends on another requested setting, then **both** settings need to be queried. For example:
+
+```ruby
+# I really only care about setting_2, but setting_2 depends on setting_1 :/
+Foo::Settings.get([:setting_1, :setting_2]).find(:setting_2)
+```
+
+To work around this, you can establish dependencies in the relevant `SettingsInitializer`, such
+that the `requested_setting_names` will automatically include all relevant settings. For example:
+
+```ruby
+# In relevant SettingsInitializer --------------------------------------
+def self.init(context)
+  context => { requested_setting_names: Array => requested_setting_names }
+
+  requested_setting_names = Gitlab::Fp::Settings::SettingsDependencyResolver.resolve(
+    requested_setting_names,
+    { setting_2: [:setting_1] } # setting_2 depends on setting_1
+  )
+  context[:requested_setting_names] = requested_setting_names
+  
+  # ... rest of settings initializer ...
+end
+
+# In relevant module asking for settings -------------------------------
+# Now I only need to reference what I care about :)
+Foo::Settings.get([:setting_2]).fetch(:setting_2)
+```
+
+#### Enforcing mutually dependent settings
+
+As an alternative to the `SettingsDependencyResolver`, you can also enforce that a set of settings are always requested
+together, using the `mutually_dependent_settings_groups` option of the `DefaultSettingsParser`. For example:
+
+```ruby
+# In relevant SettingsInitializer --------------------------------------
+def self.init(context)
+  context => { requested_setting_names: Array => requested_setting_names }
+
+  context[:settings], context[:setting_types] = Gitlab::Fp::Settings::DefaultSettingsParser.parse(
+    module_name: "Test Settings",
+    requested_setting_names: requested_setting_names,
+    default_settings: DefaultSettings.default_settings,
+    mutually_dependent_settings_groups: [
+      [:setting_1, :setting_2]
+    ]
+  )
+
+  context
+end
+
+# In relevant module asking for settings -------------------------------
+# This will blow up! :(
+Foo::Settings.get([:setting_2]).fetch(:setting_2)
+
+# You MUST ask for :setting_1 AND :setting_2 because of `mutually_dependent_settings_groups`
+Foo::Settings.get([:setting_1, :setting_2]).fetch(:setting_2)
+```
+
 ### Usage of ENV vars to override settings at the instance level
 
 **All settings should eventually be configurable via the Web UI (and optionally GraphQL API)**
