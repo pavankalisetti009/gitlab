@@ -26594,6 +26594,9 @@ ALTER TABLE vulnerability_finding_evidences
 ALTER TABLE project_relation_exports
     ADD CONSTRAINT check_f461e3537f CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE vulnerability_finding_signatures
+    ADD CONSTRAINT check_f4ab9ffc5a CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE approval_merge_request_rule_sources
     ADD CONSTRAINT check_f82666a937 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
