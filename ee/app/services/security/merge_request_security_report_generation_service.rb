@@ -22,8 +22,8 @@ module Security
     def execute
       return report unless report_available?
 
-      set_states_of!(added_findings)
-      set_states_of!(fixed_findings)
+      set_states_and_severities_of!(added_findings)
+      set_states_and_severities_of!(fixed_findings)
 
       report
     end
@@ -36,18 +36,25 @@ module Security
       report[:status] == :parsed
     end
 
-    def set_states_of!(findings)
-      findings.each { |finding| finding['state'] = state_for(finding['uuid']) }
+    def set_states_and_severities_of!(findings)
+      findings.each do |finding|
+        finding['state'] = state_for(finding['uuid'])
+        finding['severity'] = severity_for(finding)
+      end
     end
 
     def state_for(uuid)
-      existing_vulnerabilities[uuid] || DEFAULT_FINDING_STATE
+      existing_vulnerabilities[uuid]&.dig(:state) || DEFAULT_FINDING_STATE
+    end
+
+    def severity_for(finding)
+      existing_vulnerabilities[finding['uuid']]&.dig(:severity) || finding['severity']
     end
 
     def existing_vulnerabilities
       @existing_vulnerabilities ||= Vulnerability.with_findings_by_uuid(finding_uuids)
-                                                 .pluck(:uuid, :state) # rubocop:disable CodeReuse/ActiveRecord
-                                                 .to_h
+        .pluck(:uuid, :severity, :state) # rubocop:disable CodeReuse/ActiveRecord -- specific use case
+        .to_h { |uuid, severity, state| [uuid, { severity: severity, state: state }] }
     end
 
     def finding_uuids
