@@ -13,7 +13,8 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
   let_it_be(:user) { create(:user, developer_of: project) }
   let(:current_policy) { nil }
   let(:policy_pipelines) { [] }
-  let(:pipeline) { build(:ci_pipeline, source: 'push', project: project, ref: 'master', user: user) }
+  let(:source) { 'push' }
+  let(:pipeline) { build(:ci_pipeline, source: source, project: project, ref: 'master', user: user) }
   let(:command_attributes) { {} }
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
@@ -194,6 +195,20 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
         expect(context.policy_pipelines).to be_empty
       end
     end
+
+    context 'with a dangling source' do
+      Enums::Ci::Pipeline.dangling_sources.each_key do |source|
+        context "when source is #{source}" do
+          let(:source) { source }
+
+          it 'does not add it to the policy_pipelines' do
+            perform
+
+            expect(context.policy_pipelines).to be_empty
+          end
+        end
+      end
+    end
   end
 
   describe '#creating_policy_pipeline?' do
@@ -279,6 +294,16 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
         it { is_expected.to eq(true) }
 
+        context 'with a dangling source' do
+          Enums::Ci::Pipeline.dangling_sources.each_key do |source|
+            context "when source is #{source}" do
+              let(:source) { source }
+
+              it { is_expected.to eq(false) }
+            end
+          end
+        end
+
         context 'when feature flag "policies_always_override_project_ci" is disabled' do
           before do
             stub_feature_flags(policies_always_override_project_ci: false)
@@ -293,6 +318,30 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
           end
         end
       end
+    end
+  end
+
+  describe '#applying_config_override?' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject { context.applying_config_override? }
+
+    where(:has_overriding_policies, :creating_policy_pipeline, :expected_result) do
+      true  | true  | false
+      true  | false | true
+      false | true  | false
+      false | false | false
+    end
+
+    with_them do
+      before do
+        allow(context).to receive_messages(
+          has_overriding_execution_policy_pipelines?: has_overriding_policies,
+          creating_policy_pipeline?: creating_policy_pipeline
+        )
+      end
+
+      it { is_expected.to eq(expected_result) }
     end
   end
 

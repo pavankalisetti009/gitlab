@@ -71,6 +71,10 @@ module Gitlab
             end
           end
 
+          def applying_config_override?
+            has_overriding_execution_policy_pipelines? && !creating_policy_pipeline?
+          end
+
           def collect_declared_stages!(new_stages)
             return unless creating_policy_pipeline?
             return unless current_policy.strategy_override_project_ci?
@@ -111,6 +115,9 @@ module Gitlab
           attr_reader :project, :command, :current_policy
 
           def policies
+            return [] if command&.source.blank?
+            return [] if Enums::Ci::Pipeline.dangling_sources.key?(command.source&.to_sym)
+
             ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies.new(project).configs
           end
           strong_memoize_attr :policies

@@ -25,8 +25,6 @@ module EE
 
               override :perform!
               def perform!
-                return if pipeline.dangling?
-
                 command.pipeline_policy_context.build_policy_pipelines!(pipeline.partition_id) do |error_message|
                   break error("Pipeline execution policy error: #{error_message}", failure_reason: :config_error)
                 end

@@ -11,17 +11,19 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
   let(:triggered_for_branch) { true }
   let(:ref) { 'master' }
   let(:has_execution_policy_pipelines) { false }
+  let(:has_overriding_execution_policy_pipelines) { false }
+  let(:creating_policy_pipeline) { false }
   let(:pipeline_policy_context) do
     Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project)
   end
 
   before do
-    allow(pipeline_policy_context).to(
-      receive(:has_overriding_execution_policy_pipelines?).and_return(false)
-    )
-
-    allow(pipeline_policy_context).to(
-      receive(:has_execution_policy_pipelines?).and_return(has_execution_policy_pipelines)
+    allow(pipeline_policy_context.pipeline_execution_context).to(
+      receive_messages(
+        has_overriding_execution_policy_pipelines?: has_overriding_execution_policy_pipelines,
+        has_execution_policy_pipelines?: has_execution_policy_pipelines,
+        creating_policy_pipeline?: creating_policy_pipeline
+      )
     )
   end
 
@@ -93,6 +95,12 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
 
             context 'when pipeline source is parent pipeline' do
               let(:source) { :parent_pipeline }
+
+              it_behaves_like 'does not include compliance pipeline configuration content'
+            end
+
+            context 'with overriding execution policies' do
+              let(:has_overriding_execution_policy_pipelines) { true }
 
               it_behaves_like 'does not include compliance pipeline configuration content'
             end
@@ -184,6 +192,15 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
         expect(config.source).to eq(:pipeline_execution_policy_forced)
         expect(config.content).to eq(expected_content)
       end
+
+      context 'with overriding execution policies' do
+        let(:has_overriding_execution_policy_pipelines) { true }
+
+        it 'includes dummy job to force the pipeline creation' do
+          expect(config.source).to eq(:pipeline_execution_policy_forced)
+          expect(config.content).to eq(expected_content)
+        end
+      end
     end
 
     context 'when policies should be enforced' do
@@ -262,6 +279,15 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
         it 'does not include security policies default pipeline configuration content' do
           expect(config.source).to eq(:auto_devops_source)
         end
+
+        context 'with overriding policies' do
+          let(:has_execution_policy_pipelines) { true }
+          let(:has_overriding_execution_policy_pipelines) { true }
+
+          it 'includes security policies default pipeline configuration content' do
+            expect(config.source).to eq(:security_policies_default_source)
+          end
+        end
       end
 
       context 'when auto devops is not enabled' do
@@ -300,5 +326,58 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
         end
       end
     end
+  end
+
+  shared_examples_for 'config source with overriding execution policies' do |source|
+    it 'uses the defined source' do
+      expect(config.source).to eq(source)
+    end
+
+    context 'with overriding policies' do
+      let(:has_execution_policy_pipelines) { true }
+      let(:has_overriding_execution_policy_pipelines) { true }
+
+      it 'uses the pipeline_execution_policy_forced source' do
+        expect(config.source).to eq(:pipeline_execution_policy_forced)
+      end
+
+      context 'when creating policy pipeline' do
+        let(:creating_policy_pipeline) { true }
+
+        it 'uses the defined source' do
+          expect(config.source).to eq(source)
+        end
+      end
+    end
+  end
+
+  context 'when config is Bridge' do
+    let(:bridge) { build_stubbed(:ci_bridge) }
+
+    before do
+      allow(bridge).to receive(:yaml_for_downstream).and_return('the-yaml')
+    end
+
+    it_behaves_like 'config source with overriding execution policies', :bridge_source
+  end
+
+  context 'when config is Parameter' do
+    let(:content) do
+      <<~CICONFIG
+        ---
+        stages:
+        - dast
+      CICONFIG
+    end
+
+    it_behaves_like 'config source with overriding execution policies', :parameter_source
+  end
+
+  context 'when config is Auto-Devops' do
+    before do
+      allow(project).to receive(:auto_devops_enabled?).and_return(true)
+    end
+
+    it_behaves_like 'config source with overriding execution policies', :auto_devops_source
   end
 end

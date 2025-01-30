@@ -12,13 +12,13 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
   let(:context_user) { user }
   let(:context) { Gitlab::Ci::Config::External::Context.new(**context_params) }
   let(:project_file) { described_class.new(params, context) }
-  let(:pipeline_config) { nil }
+  let(:pipeline_policy_context) { nil }
   let(:context_params) do
     {
       project: context_project,
       sha: project.commit.sha,
       user: context_user,
-      pipeline_config: pipeline_config
+      pipeline_policy_context: pipeline_policy_context
     }
   end
 
@@ -39,11 +39,6 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
 
       let(:params) { { file: 'pipeline-execution-policy.yml', project: project.full_path } }
       let(:creating_policy_pipeline) { true }
-      let(:pipeline_config) do
-        instance_double(Gitlab::Ci::ProjectConfig,
-          internal_include_prepended?: true,
-          pipeline_policy_context: pipeline_policy_context)
-      end
 
       around do |example|
         create_and_delete_files(project,
