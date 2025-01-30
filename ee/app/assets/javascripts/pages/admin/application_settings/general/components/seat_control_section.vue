@@ -10,7 +10,7 @@ import {
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
-import SeatControlsMemberPromotionManagement from 'ee_component/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
+import SeatControlMemberPromotionManagement from 'ee_component/pages/admin/application_settings/general/components/seat_control_member_promotion_management.vue';
 
 export default {
   name: 'SeatControlsSection',
@@ -22,7 +22,7 @@ export default {
     GlFormInput,
     GlSprintf,
     HelpPageLink,
-    SeatControlsMemberPromotionManagement,
+    SeatControlMemberPromotionManagement,
   },
   mixins: [glFeatureFlagMixin()],
   inject: ['licensedUserCount', 'newUserSignupsCap', 'promotionManagementAvailable', 'seatControl'],
@@ -97,7 +97,7 @@ export default {
       >
         <gl-form-radio
           :value="$options.SEAT_CONTROL.BLOCK_OVERAGES"
-          data-testid="seat-controls-restricted-access"
+          data-testid="seat-control-restricted-access"
         >
           {{ s__('ApplicationSettings|Restricted access') }}
           <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
@@ -106,11 +106,7 @@ export default {
           }}</template>
         </gl-form-radio>
 
-        <gl-form-radio
-          :value="$options.SEAT_CONTROL.USER_CAP"
-          data-testid="seat-controls-user-cap"
-          aria-controls="user-cap-input-group"
-        >
+        <gl-form-radio :value="$options.SEAT_CONTROL.USER_CAP" data-testid="seat-control-user-cap">
           {{ s__('ApplicationSettings|Set user cap') }}
           <template #help>{{
             s__(
@@ -163,7 +159,7 @@ export default {
           </gl-form-group>
         </div>
 
-        <gl-form-radio :value="$options.SEAT_CONTROL.OFF" data-testid="seat-controls-open-access">
+        <gl-form-radio :value="$options.SEAT_CONTROL.OFF" data-testid="seat-control-open-access">
           {{ s__('ApplicationSettings|Open access') }}
           <template #help>{{
             s__('ApplicationSettings|Invitations do not require administrator approval')
@@ -177,7 +173,7 @@ export default {
       :label="s__('ApplicationSettings|Role Promotions')"
       label-for="role-promotions"
     >
-      <seat-controls-member-promotion-management />
+      <seat-control-member-promotion-management />
     </gl-form-group>
   </div>
 </template>

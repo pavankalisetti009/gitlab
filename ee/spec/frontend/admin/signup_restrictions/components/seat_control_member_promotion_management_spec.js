@@ -1,16 +1,16 @@
 import { GlAlert } from '@gitlab/ui';
-import SeatControlsMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_controls_member_promotion_management.vue';
+import SeatControlMemberPromotionManagement from 'ee/pages/admin/application_settings/general/components/seat_control_member_promotion_management.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SignupCheckbox from '~/pages/admin/application_settings/general/components/signup_checkbox.vue';
 
-describe('SeatControlsMemberPromotionManagement', () => {
+describe('SeatControlMemberPromotionManagement', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const findSignupCheckbox = () => wrapper.findComponent(SignupCheckbox);
 
   const mountComponent = ({ provide = {} } = {}) => {
-    wrapper = shallowMountExtended(SeatControlsMemberPromotionManagement, {
+    wrapper = shallowMountExtended(SeatControlMemberPromotionManagement, {
       provide: {
         enableMemberPromotionManagement: true,
         canDisableMemberPromotionManagement: false,

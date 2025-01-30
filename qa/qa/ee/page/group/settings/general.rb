@@ -41,7 +41,7 @@ module QA
                   element 'save-changes-button'
                 end
 
-                view 'ee/app/views/groups/_seat_controls_setting.html.haml' do
+                view 'ee/app/views/groups/_seat_control_setting.html.haml' do
                   element 'seat-control-user-cap-radio'
                   element 'user-cap-limit-field'
                 end
