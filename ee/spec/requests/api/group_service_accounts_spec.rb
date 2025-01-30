@@ -604,12 +604,13 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
   describe 'POST /personal_access_tokens/:token_id/rotate' do
     let(:token) { create(:personal_access_token, user: service_account_user) }
+    let(:params) { nil }
+    let(:path) do
+      "/groups/#{group_id}/service_accounts/#{service_account_user.id}/personal_access_tokens/#{token.id}/rotate"
+    end
 
     subject(:perform_request) do
-      post api(
-        "/groups/#{group_id}/service_accounts/#{service_account_user.id}/personal_access_tokens/#{token.id}/rotate",
-        user
-      )
+      post(api(path, user), params: params)
     end
 
     context 'when the feature is licensed' do
@@ -631,6 +632,19 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response['token']).not_to eq(token.token)
             expect(json_response['expires_at']).to eq((Date.today + 1.week).to_s)
+          end
+
+          context 'when expiry is defined' do
+            let(:expiry_date) { Date.today + 1.month }
+            let(:params) { { expires_at: expiry_date } }
+
+            it "allows owner to rotate token", :freeze_time do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['token']).not_to eq(token.token)
+              expect(json_response['expires_at']).to eq(expiry_date.to_s)
+            end
           end
 
           context 'when service raises an error' do
