@@ -147,14 +147,15 @@ module EE
       end
 
       rule { admin }.policy do
-        enable :read_licenses
         enable :destroy_licenses
+        enable :manage_subscription
+        enable :read_admin_subscription
         enable :read_all_geo
         enable :read_all_workspaces
-        enable :manage_subscription
-        enable :read_jobs_statistics
-        enable :read_runner_usage
         enable :read_cloud_connector_status
+        enable :read_jobs_statistics
+        enable :read_licenses
+        enable :read_runner_usage
       end
 
       rule { admin & user_allowed_to_manage_self_hosted_models_settings }.policy do
@@ -227,6 +228,12 @@ module EE
       rule { custom_role_enables_read_admin_cicd }.policy do
         enable :access_admin_area
         enable :read_admin_cicd
+      end
+
+      rule { custom_role_enables_read_admin_subscription }.policy do
+        enable :read_admin_subscription
+        enable :read_billable_member
+        enable :read_licenses
       end
     end
 

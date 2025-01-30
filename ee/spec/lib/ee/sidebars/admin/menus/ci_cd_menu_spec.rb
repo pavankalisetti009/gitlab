@@ -12,7 +12,7 @@ RSpec.describe Sidebars::Admin::Menus::CiCdMenu, feature_category: :navigation d
     subject(:render?) { menu.render? }
 
     before do
-      allow(user).to receive(:can_admin_all_resources?).and_return(false)
+      allow(user).to receive(:can?).and_call_original
       allow(user).to receive(:can?).with(:access_admin_area).and_return(can_access_admin_area)
     end
 

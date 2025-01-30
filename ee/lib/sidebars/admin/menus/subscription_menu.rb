@@ -28,6 +28,11 @@ module Sidebars
         def active_routes
           { controller: :subscriptions }
         end
+
+        override :render_with_abilities
+        def render_with_abilities
+          super + %i[read_admin_subscription]
+        end
       end
     end
   end

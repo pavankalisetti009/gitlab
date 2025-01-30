@@ -292,14 +292,6 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       ]
     end
 
-    let_it_be(:link_to_admin_dashboard) do
-      { title: s_('Navigation|Admin area'), link: '/admin', icon: 'admin' }
-    end
-
-    let_it_be(:link_to_admin_cicd) do
-      { title: s_('Navigation|Admin area'), link: '/admin/runners', icon: 'admin' }
-    end
-
     subject(:sidebar_context) do
       helper.super_sidebar_context(user, group: nil, project: nil, panel: panel, panel_type: panel_type)
     end
@@ -317,30 +309,31 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
 
       context 'when user is allowed to access_admin_area' do
-        let(:with_link_to_admin_dashboard) { [*public_links_for_user, link_to_admin_dashboard] }
-        let(:with_link_to_admin_cicd) { [*public_links_for_user, link_to_admin_cicd] }
-        let(:without_link_to_admin_area) { public_links_for_user }
-
-        where(:read_admin_dashboard_ff, :read_admin_cicd_ff, :links) do
-          false | false | ref(:without_link_to_admin_area)
-          true  | false | ref(:with_link_to_admin_dashboard)
-          false | true  | ref(:with_link_to_admin_cicd)
-          true  | true  | ref(:with_link_to_admin_dashboard)
+        where(:admin_ability, :link) do
+          nil                      | nil
+          :admin_unknown           | '/admin'
+          :read_admin_cicd         | '/admin/runners'
+          :read_admin_dashboard    | '/admin'
+          :read_admin_subscription | '/admin/subscription'
         end
 
         with_them do
           before do
+            allow_next_instance_of(::Authz::Admin) do |instance|
+              allow(instance).to receive(:permitted).and_return([admin_ability]) if admin_ability
+            end
+
             allow(user).to receive(:can?).and_call_original
-
-            allow(user).to receive(:can?).with(:access_admin_area).and_return(true)
+            allow(user).to receive(:can?).with(admin_ability).and_return(true) if admin_ability
             allow(user).to receive(:can_admin_all_resources?).and_return(false)
-
-            stub_feature_flags(custom_ability_read_admin_dashboard: read_admin_dashboard_ff)
-            stub_feature_flags(custom_ability_read_admin_cicd: read_admin_cicd_ff)
           end
 
           it 'returns the correct links' do
-            expect(sidebar_context[:context_switcher_links]).to eq(links)
+            if link
+              expect(sidebar_context[:context_switcher_links]).to include(hash_including(link: link))
+            else
+              expect(sidebar_context[:context_switcher_links]).not_to include(hash_including(link: '/admin'))
+            end
           end
         end
       end

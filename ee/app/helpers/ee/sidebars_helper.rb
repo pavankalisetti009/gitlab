@@ -3,6 +3,7 @@
 module EE
   module SidebarsHelper
     extend ::Gitlab::Utils::Override
+    include ::Gitlab::Utils::StrongMemoize
 
     override :project_sidebar_context_data
     def project_sidebar_context_data(project, user, current_ref, **args)
@@ -75,28 +76,34 @@ module EE
 
     private
 
+    def custom_role_grants_admin_access?
+      return false unless current_user
+
+      ::Authz::Admin.new(current_user).permitted.any?
+    end
+    strong_memoize_attr :custom_role_grants_admin_access?
+
     override :display_admin_area_link?
     def display_admin_area_link?
       return true if super
 
-      if ::Feature.disabled?(:custom_ability_read_admin_dashboard, current_user) &&
-          ::Feature.disabled?(:custom_ability_read_admin_cicd, current_user)
-        return false
-      end
-
-      current_user&.can?(:access_admin_area)
+      custom_role_grants_admin_access?
     end
 
     override :admin_area_link
     def admin_area_link
-      has_access_to_dashboard = ::Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
+      return super unless custom_role_grants_admin_access?
+      return super if current_user.can?(:read_admin_dashboard)
 
-      # if user does not have access to /admin (dashboard) but has access to /admin/runners then link them  there
-      if ::Feature.enabled?(:custom_ability_read_admin_cicd, current_user) && !has_access_to_dashboard
-        return admin_runners_path
+      # If user does not have access to /admin (dashboard) but has access to other admin resources
+      # then link them to the first one they have access to
+      if current_user.can?(:read_admin_cicd)
+        admin_runners_path
+      elsif current_user.can?(:read_admin_subscription)
+        admin_subscription_path
+      else
+        super
       end
-
-      super
     end
 
     def super_sidebar_default_pins(panel_type)
