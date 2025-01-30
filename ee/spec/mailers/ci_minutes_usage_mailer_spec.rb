@@ -40,8 +40,8 @@ RSpec.describe CiMinutesUsageMailer do
   end
 
   describe '#notify_limit' do
-    let(:current_balance) { 800 }
-    let(:total) { 1000 }
+    let(:current_balance) { 2_025 }
+    let(:total) { 10_000 }
     let(:percent) { 20 }
     let(:stage_percentage) { 25 }
 
@@ -49,7 +49,7 @@ RSpec.describe CiMinutesUsageMailer do
       "Action required: Less than #{stage_percentage}% of compute minutes remain for #{namespace.name}"
     end
 
-    let(:body_text) { "has #{current_balance} / #{total} (#{percent}%) shared runner compute minutes remaining" }
+    let(:body_text) { "has 2,025 / 10,000 (20%) shared runner compute minutes remaining" }
 
     subject { described_class.notify_limit(namespace, recipients, current_balance, total, percent, stage_percentage) }
 

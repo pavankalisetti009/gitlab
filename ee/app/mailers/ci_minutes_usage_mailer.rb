@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class CiMinutesUsageMailer < ApplicationMailer
+  include ActionView::Helpers::NumberHelper
+
   helper EmailsHelper
   helper NamespacesHelper
 
@@ -17,8 +19,8 @@ class CiMinutesUsageMailer < ApplicationMailer
 
   def notify_limit(namespace, recipients, current_balance, total, percentage, stage_percentage)
     @namespace = namespace
-    @current_balance = current_balance
-    @total = total
+    @current_balance = number_with_delimiter(current_balance)
+    @total = number_with_delimiter(total)
     @percentage = percentage.round
 
     mail_with_locale(
