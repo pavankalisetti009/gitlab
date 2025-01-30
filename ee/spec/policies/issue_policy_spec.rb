@@ -176,7 +176,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       before do
         allow(::Gitlab::Email::IncomingEmail).to receive(:enabled?).and_return(true)
         allow(::Gitlab::Email::IncomingEmail).to receive(:supports_wildcard?).and_return(true)
-        allow(::Gitlab::ServiceDesk).to receive(:enabled?).and_return(true)
+        allow(::ServiceDesk).to receive(:enabled?).and_return(true)
       end
 
       it 'allows support_bot to admin_issue_relation on project issues, but does not allow it on group issues' do

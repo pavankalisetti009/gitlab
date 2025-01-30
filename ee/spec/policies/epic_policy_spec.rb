@@ -394,7 +394,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
         let_it_be(:user) { Users::Internal.support_bot }
 
         before do
-          allow(Gitlab::ServiceDesk).to receive(:supported?).and_return(true)
+          allow(::ServiceDesk).to receive(:supported?).and_return(true)
         end
 
         context 'when group has at least one project with service desk enabled' do

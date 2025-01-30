@@ -23,7 +23,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     insert_infrastructure_google_cloud_nav
     insert_infrastructure_aws_nav
     project.update!(service_desk_enabled: true)
-    allow(Gitlab::ServiceDesk).to receive(:supported?).and_return(true)
+    allow(::ServiceDesk).to receive(:supported?).and_return(true)
 
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(product_analytics: true)

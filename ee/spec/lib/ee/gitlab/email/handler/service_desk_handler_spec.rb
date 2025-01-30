@@ -22,7 +22,7 @@ RSpec.describe Gitlab::Email::Handler::ServiceDeskHandler, feature_category: :se
     let_it_be(:project) { create(:project, :repository, :private, group: group, path: 'test', service_desk_enabled: true) }
 
     before do
-      allow(Gitlab::ServiceDesk).to receive(:supported?).and_return(true)
+      allow(::ServiceDesk).to receive(:supported?).and_return(true)
     end
 
     context 'when everything is fine' do
