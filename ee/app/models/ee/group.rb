@@ -44,7 +44,9 @@ module EE
       accepts_nested_attributes_for :analytics_dashboards_pointer, allow_destroy: true
       accepts_nested_attributes_for :value_stream_dashboard_aggregation, update_only: true
       has_one :analytics_dashboards_configuration_project, through: :analytics_dashboards_pointer, source: :target_project
+      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_one :index_status, class_name: 'Elastic::GroupIndexStatus', foreign_key: :namespace_id, dependent: :destroy
+      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       has_one :google_cloud_platform_workload_identity_federation_integration, class_name: 'Integrations::GoogleCloudPlatform::WorkloadIdentityFederation'
       has_many :external_audit_event_destinations, class_name: "AuditEvents::ExternalAuditEventDestination", foreign_key: 'namespace_id'
       has_many :external_audit_event_streaming_destinations, class_name: "AuditEvents::Group::ExternalStreamingDestination", foreign_key: 'group_id'
@@ -55,7 +57,7 @@ module EE
         foreign_key: 'namespace_id',
         inverse_of: :group
 
-      has_many :ldap_group_links, foreign_key: 'group_id', dependent: :destroy
+      has_many :ldap_group_links, foreign_key: 'group_id', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :saml_group_links, foreign_key: 'group_id'
       has_many :hooks, class_name: 'GroupHook'
 

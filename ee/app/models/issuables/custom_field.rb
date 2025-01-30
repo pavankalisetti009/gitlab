@@ -14,7 +14,9 @@ module Issuables
     belongs_to :namespace
     belongs_to :created_by, class_name: 'User', optional: true
     belongs_to :updated_by, class_name: 'User', optional: true
+    # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
     has_many :select_options, -> { order(:position, :id) }, dependent: :delete_all, autosave: true,
+      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       class_name: 'Issuables::CustomFieldSelectOption', inverse_of: :custom_field
     has_many :work_item_type_custom_fields, class_name: 'WorkItems::TypeCustomField'
     has_many :work_item_types, -> { order(:name) },

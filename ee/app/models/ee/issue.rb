@@ -141,7 +141,9 @@ module EE
       has_many :observability_traces, class_name: 'Observability::TracesIssuesConnection', inverse_of: :issue
 
       has_one :sync_object, class_name: 'Epic', foreign_key: 'issue_id', inverse_of: :sync_object
+      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_one :synced_epic, class_name: 'Epic', foreign_key: 'issue_id', inverse_of: :work_item, dependent: :destroy
+      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
       validates :weight, allow_nil: true, numericality: { greater_than_or_equal_to: 0 }
       validate :validate_confidential_epic

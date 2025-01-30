@@ -6,7 +6,9 @@ module WorkItems
       extend ActiveSupport::Concern
 
       included do
+        # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
         has_many :own_subscriptions, dependent: :destroy, class_name: 'Subscription', as: :subscribable
+        # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
         has_many :subscriptions, as: :subscribable do
           def load_target
             return super unless proxy_association.owner.unified_associations?

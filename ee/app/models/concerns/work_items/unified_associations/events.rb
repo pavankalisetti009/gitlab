@@ -7,9 +7,13 @@ module WorkItems
 
       included do
         has_many :own_events, ->(record) { where(target_type: [record.class.name, record.class.base_class.name].uniq) },
+          # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
           foreign_key: :target_id, inverse_of: :target, class_name: 'Event', dependent: :delete_all
+        # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
         has_many :events, ->(record) { where(target_type: [record.class.name, record.class.base_class.name].uniq) },
+          # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
           foreign_key: :target_id, inverse_of: :target, class_name: 'Event', dependent: :delete_all do
+          # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
           def load_target
             return super unless proxy_association.owner.unified_associations?
 

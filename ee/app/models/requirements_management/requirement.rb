@@ -24,7 +24,9 @@ module RequirementsManagement
     # but to sync the other way around, we require a temporary `dependent: :destroy`
     # See https://gitlab.com/gitlab-org/gitlab/-/issues/323779 for details.
     # This will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/329432
+    # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
     belongs_to :requirement_issue, class_name: 'Issue', foreign_key: :issue_id, dependent: :destroy
+    # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
     validates :project, presence: true
     validates :requirement_issue, presence: true, on: [:create, :update]

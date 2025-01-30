@@ -83,9 +83,9 @@ module EE
       has_many :zoekt_repositories, class_name: '::Search::Zoekt::Repository', inverse_of: :project
       has_one :secrets_manager, class_name: '::SecretsManagement::ProjectSecretsManager'
 
-      has_many :approvers, as: :target, dependent: :destroy
+      has_many :approvers, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :approver_users, through: :approvers, source: :user
-      has_many :approver_groups, as: :target, dependent: :destroy
+      has_many :approver_groups, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :approval_rules, class_name: 'ApprovalProjectRule', extend: FilterByBranch
       # NOTE: This was added to avoid N+1 queries when we load list of MergeRequests
       has_many :regular_or_any_approver_approval_rules, -> { regular_or_any_approver.order(rule_type: :desc, id: :asc) }, class_name: 'ApprovalProjectRule', extend: FilterByBranch
@@ -99,14 +99,14 @@ module EE
 
       # the rationale behind vulnerabilities and vulnerability_findings can be found here:
       # https://gitlab.com/gitlab-org/gitlab/issues/10252#terminology
-      has_many :vulnerabilities, dependent: :destroy
+      has_many :vulnerabilities, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :vulnerability_reads, class_name: 'Vulnerabilities::Read'
       has_many :vulnerability_feedback, class_name: 'Vulnerabilities::Feedback'
       has_many :vulnerability_historical_statistics, class_name: 'Vulnerabilities::HistoricalStatistic'
       has_many :vulnerability_findings,
         class_name: 'Vulnerabilities::Finding',
         inverse_of: :project,
-        dependent: :destroy do
+        dependent: :destroy do # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
           def lock_for_confirmation!(id)
             where(vulnerability_id: nil).lock.find(id)
           end
@@ -135,7 +135,7 @@ module EE
         class_name: 'Security::ScanResultPolicyRead',
         foreign_key: 'project_id',
         inverse_of: :project,
-        dependent: :delete_all
+        dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :scan_result_policy_violations,
         class_name: 'Security::ScanResultPolicyViolation',
         foreign_key: 'project_id',
