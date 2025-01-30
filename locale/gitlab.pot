@@ -299,6 +299,11 @@ msgid_plural "%d findings must be resolved"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d findings"
+msgid_plural "%d findings"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d fork"
 msgid_plural "%d forks"
 msgstr[0] ""

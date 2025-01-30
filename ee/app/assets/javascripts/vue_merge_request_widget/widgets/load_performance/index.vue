@@ -81,6 +81,8 @@ export default {
             this.baseMetrics = response.data;
           }
 
+          this.$emit('loaded', this.compareLoadPerformanceMetrics().degraded.length);
+
           return response;
         });
       });

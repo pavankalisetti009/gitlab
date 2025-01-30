@@ -66,6 +66,12 @@ describe('Status checks extension', () => {
     mock.reset();
   });
 
+  it('emits loaded event', async () => {
+    await setupWithResponse(HTTP_STATUS_OK, pendingAndFailedChecks);
+
+    expect(wrapper.emitted('loaded')[0]).toContain(1);
+  });
+
   describe('summary', () => {
     describe('when loading', () => {
       beforeEach(() => {

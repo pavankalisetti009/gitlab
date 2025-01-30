@@ -38,6 +38,21 @@ describe('Browser performance widget', () => {
     mock.restore();
   });
 
+  it('emits loaded event', async () => {
+    mock
+      .onGet(DEFAULT_BROWSER_PERFORMANCE.head_path)
+      .reply(HTTP_STATUS_OK, headBrowserPerformance, {});
+    mock
+      .onGet(DEFAULT_BROWSER_PERFORMANCE.base_path)
+      .reply(HTTP_STATUS_OK, baseBrowserPerformance, {});
+
+    createComponent();
+
+    await waitForPromises();
+
+    expect(wrapper.emitted('loaded')[1]).toContain(2);
+  });
+
   describe('summary', () => {
     it('should render loading text', () => {
       mock

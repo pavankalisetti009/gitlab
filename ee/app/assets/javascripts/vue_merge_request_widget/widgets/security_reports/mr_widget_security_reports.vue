@@ -267,6 +267,8 @@ export default {
               [reportType]: report,
             };
 
+            this.$emit('loaded', added.length);
+
             return {
               headers,
               status,
