@@ -9,6 +9,7 @@ export const MOCK_GRAPHQL_REGISTRY_CLASS = 'DESIGNS_REGISTRY';
 export const MOCK_BASIC_GRAPHQL_DATA = [
   {
     name: 'test 1',
+    modelRecordId: 1,
     id: 'git/1',
     state: 'PENDING',
     lastSyncedAt: new Date().toString(),
@@ -16,6 +17,7 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
   },
   {
     name: 'test 2',
+    modelRecordId: 2,
     id: 'git/2',
     state: 'SYNCED',
     lastSyncedAt: null,
@@ -39,3 +41,5 @@ export const MOCK_BASIC_GRAPHQL_QUERY_RESPONSE = {
     },
   },
 };
+
+export const MOCK_REPLICABLE_BASE_PATH = '/admin/geo/sites/2/replication/project_repositories';

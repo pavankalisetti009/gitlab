@@ -1,7 +1,8 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlLink } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { __, s__ } from '~/locale';
 import { ACTION_TYPES } from '../constants';
@@ -19,9 +20,12 @@ export default {
   },
   components: {
     GlButton,
+    GlLink,
     GeoReplicableTimeAgo,
     GeoReplicableStatus,
   },
+  mixins: [glFeatureFlagsMixin()],
+  inject: ['replicableBasePath'],
   props: {
     name: {
       type: String,
@@ -29,6 +33,10 @@ export default {
     },
     registryId: {
       type: [String, Number],
+      required: true,
+    },
+    modelRecordId: {
+      type: Number,
       required: true,
     },
     syncStatus: {
@@ -65,6 +73,9 @@ export default {
         },
       ];
     },
+    detailsPath() {
+      return `${this.replicableBasePath}/${this.modelRecordId}`;
+    },
   },
   methods: {
     ...mapActions(['initiateReplicableAction']),
@@ -80,7 +91,12 @@ export default {
       data-testid="replicable-item-header"
     >
       <geo-replicable-status :status="syncStatus" />
-      <span class="gl-font-bold">{{ name }}</span>
+
+      <gl-link v-if="glFeatures.geoReplicablesShowView" class="gl-font-bold" :href="detailsPath">{{
+        name
+      }}</gl-link>
+      <span v-else class="gl-font-bold">{{ name }}</span>
+
       <div>
         <gl-button
           data-testid="geo-resync-item"

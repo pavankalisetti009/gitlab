@@ -1,13 +1,18 @@
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import { GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import GeoReplicableStatus from 'ee/geo_replicable/components/geo_replicable_status.vue';
 import GeoReplicableTimeAgo from 'ee/geo_replicable/components/geo_replicable_time_ago.vue';
 import { ACTION_TYPES } from 'ee/geo_replicable/constants';
 import { getStoreConfig } from 'ee/geo_replicable/store';
-import { MOCK_BASIC_GRAPHQL_DATA, MOCK_REPLICABLE_TYPE } from '../mock_data';
+import {
+  MOCK_BASIC_GRAPHQL_DATA,
+  MOCK_REPLICABLE_TYPE,
+  MOCK_REPLICABLE_BASE_PATH,
+} from '../mock_data';
 
 Vue.use(Vuex);
 
@@ -21,6 +26,7 @@ describe('GeoReplicableItem', () => {
 
   const defaultProps = {
     name: mockReplicable.name,
+    modelRecordId: mockReplicable.modelRecordId,
     registryId: mockReplicable.id,
     syncStatus: mockReplicable.state,
     lastSynced: mockReplicable.lastSyncedAt,
@@ -42,7 +48,7 @@ describe('GeoReplicableItem', () => {
         ...defaultProps,
         ...props,
       },
-      provide: { glFeatures: { ...featureFlags } },
+      provide: { replicableBasePath: MOCK_REPLICABLE_BASE_PATH, glFeatures: { ...featureFlags } },
     });
   };
 
@@ -52,6 +58,7 @@ describe('GeoReplicableItem', () => {
   const findResyncButton = () => wrapper.findByTestId('geo-resync-item');
   const findReverifyButton = () => wrapper.findByTestId('geo-reverify-item');
   const findReplicableItemNoLinkText = () => findReplicableItemHeader().find('span');
+  const findReplicableDetailsLink = () => wrapper.findComponent(GlLink);
   const findReplicableItemTimeAgos = () => wrapper.findAllComponents(GeoReplicableTimeAgo);
   const findReplicableTimeAgosDateStrings = () =>
     findReplicableItemTimeAgos().wrappers.map((w) => w.props('dateString'));
@@ -72,16 +79,44 @@ describe('GeoReplicableItem', () => {
         expect(findReplicableItemSyncStatus().exists()).toBe(true);
       });
 
-      it('renders title as plain text', () => {
-        expect(findReplicableItemNoLinkText().text()).toBe(mockReplicable.name);
-      });
-
       it(`${showResyncAction ? 'does' : 'does not'} render Resync Button`, () => {
         expect(findResyncButton().exists()).toBe(showResyncAction);
       });
 
       it(`${showReverifyAction ? 'does' : 'does not'} render Reverify Button`, () => {
         expect(findReverifyButton().exists()).toBe(showReverifyAction);
+      });
+    });
+  });
+
+  describe('list item title', () => {
+    describe('when geoReplicablesShowView is false', () => {
+      beforeEach(() => {
+        createComponent(null, null, { geoReplicablesShowView: false });
+      });
+
+      it('renders as plain text', () => {
+        expect(findReplicableItemNoLinkText().text()).toBe(mockReplicable.name);
+      });
+
+      it('does not render a link', () => {
+        expect(findReplicableDetailsLink().exists()).toBe(false);
+      });
+    });
+
+    describe('when geoReplicablesShowView is true', () => {
+      beforeEach(() => {
+        createComponent(null, null, { geoReplicablesShowView: true });
+      });
+
+      it('does not render as plain text', () => {
+        expect(findReplicableItemNoLinkText().exists()).toBe(false);
+      });
+
+      it('renders a link', () => {
+        expect(findReplicableDetailsLink().attributes('href')).toBe(
+          `${MOCK_REPLICABLE_BASE_PATH}/${mockReplicable.modelRecordId}`,
+        );
       });
     });
   });
