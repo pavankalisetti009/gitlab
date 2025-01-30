@@ -254,7 +254,8 @@ module EE
         field :security_policy_project_linked_groups,
           ::Types::GroupType.connection_type,
           null: true,
-          description: 'Groups linked to the project, when used as Security Policy Project.'
+          description: 'Groups linked to the project, when used as Security Policy Project.',
+          resolver: ::Resolvers::Security::SecurityPolicyProjectLinkedGroupsResolver
 
         field :security_policy_project_suggestions,
           ::Types::ProjectType.connection_type,
