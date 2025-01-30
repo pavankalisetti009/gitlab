@@ -15428,7 +15428,8 @@ CREATE TABLE merge_request_context_commits (
     merge_request_id bigint,
     trailers jsonb DEFAULT '{}'::jsonb NOT NULL,
     project_id bigint,
-    CONSTRAINT check_1dc6b5f2ac CHECK ((merge_request_id IS NOT NULL))
+    CONSTRAINT check_1dc6b5f2ac CHECK ((merge_request_id IS NOT NULL)),
+    CONSTRAINT check_777e62d390 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE merge_request_context_commits_id_seq
