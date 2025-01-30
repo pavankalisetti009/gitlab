@@ -49,6 +49,18 @@ module Security
         sync_merge_request_rules
       end
 
+      def protected_branch_ids(approval_policy_rule)
+        service = Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
+        applicable_branches = service.scan_result_branches([approval_policy_rule.content.deep_symbolize_keys])
+        protected_branches = project.all_protected_branches.select do |protected_branch|
+          applicable_branches.any? { |branch| protected_branch.matches?(branch) }
+        end
+
+        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- protected branches will be limited
+        protected_branches.pluck(:id)
+        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
+      end
+
       private
 
       attr_accessor :project, :security_policy
@@ -249,18 +261,6 @@ module Security
         return [] unless role_approvers
 
         role_approvers.select { |role| role.is_a?(Integer) }
-      end
-
-      def protected_branch_ids(approval_policy_rule)
-        service = Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
-        applicable_branches = service.scan_result_branches([approval_policy_rule.content.deep_symbolize_keys])
-        protected_branches = project.all_protected_branches.select do |protected_branch|
-          applicable_branches.any? { |branch| protected_branch.matches?(branch) }
-        end
-
-        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- protected branches will be limited
-        protected_branches.pluck(:id)
-        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
       end
 
       def applies_to_all_protected_branches?(approval_policy_rule)

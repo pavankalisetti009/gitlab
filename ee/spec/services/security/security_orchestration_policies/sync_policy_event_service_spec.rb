@@ -85,5 +85,78 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
         it_behaves_like 'when policy scope does not match compliance_framework'
       end
     end
+
+    context 'with protected branches event' do
+      let(:protected_branch) { create(:protected_branch, project: project) }
+
+      let(:sync_service) do
+        instance_double(Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolicyRulesService)
+      end
+
+      before do
+        allow(Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolicyRulesService)
+          .to receive(:new)
+          .and_return(sync_service)
+
+        allow(sync_service).to receive(:update_rules)
+      end
+
+      context 'when event is ProtectedBranchCreatedEvent' do
+        let(:event) do
+          Repositories::ProtectedBranchCreatedEvent.new(data: {
+            parent_id: project.id,
+            parent_type: 'project',
+            protected_branch_id: protected_branch.id
+          })
+        end
+
+        context 'when there are no affected rules' do
+          it 'does nothing' do
+            expect(sync_service).not_to receive(:update_rules)
+          end
+        end
+
+        context 'when there are affected rules' do
+          let(:rules) do
+            create_list(:approval_policy_rule, 2, security_policy: security_policy)
+          end
+
+          before do
+            allow(sync_service).to receive(:protected_branch_ids).with(rules.first).and_return([protected_branch.id])
+            allow(sync_service).to receive(:protected_branch_ids).with(rules.last).and_return([])
+          end
+
+          it 'updates the rules' do
+            execute
+
+            expect(sync_service).to have_received(:update_rules).with([rules.first])
+          end
+        end
+      end
+
+      context 'when event is ProtectedBranchDestroyedEvent' do
+        let(:event) do
+          Repositories::ProtectedBranchDestroyedEvent.new(data: { parent_id: project.id, parent_type: 'project' })
+        end
+
+        context 'when there are no affected rules' do
+          it 'does nothing' do
+            expect(sync_service).not_to receive(:update_rules)
+          end
+        end
+
+        context 'when there are affected rules' do
+          let!(:rules) do
+            create_list(:approval_policy_rule, 2, security_policy: security_policy)
+          end
+
+          it 'updates the rules' do
+            execute
+
+            expect(sync_service).to have_received(:update_rules).with(rules)
+          end
+        end
+      end
+    end
   end
 end
