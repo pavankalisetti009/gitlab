@@ -23,8 +23,14 @@ module Gitlab
                 indexed_self_hosted_models[model] || []
               end
 
-              new(feature_setting, valid_models: valid_models)
+              valid_models = valid_models.filter(&:ga?) unless beta_models_enabled?
+
+              new(feature_setting, valid_models: valid_models.sort_by(&:name))
             end
+          end
+
+          def beta_models_enabled?
+            ::Ai::TestingTermsAcceptance.has_accepted?
           end
         end
 

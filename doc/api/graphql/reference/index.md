@@ -19448,6 +19448,7 @@ Self-hosted LLM servers.
 | <a id="aiselfhostedmodelmodel"></a>`model` | [`String!`](#string) | AI model deployed. |
 | <a id="aiselfhostedmodelmodeldisplayname"></a>`modelDisplayName` | [`String!`](#string) | Display name of the AI model deployed. |
 | <a id="aiselfhostedmodelname"></a>`name` | [`String!`](#string) | Deployment name of the self-hosted model. |
+| <a id="aiselfhostedmodelreleasestate"></a>`releaseState` | [`AiSelfHostedModelReleaseState!`](#aiselfhostedmodelreleasestate) | GitLab release status of the model. |
 | <a id="aiselfhostedmodelupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of last update. |
 
 ### `AiUsageData`
@@ -39171,6 +39172,16 @@ Types of messages returned from AI features.
 | Value | Description |
 | ----- | ----------- |
 | <a id="aimessagetypetool"></a>`TOOL` | Tool selection message. |
+
+### `AiSelfHostedModelReleaseState`
+
+GitLab release state of the model.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="aiselfhostedmodelreleasestatebeta"></a>`BETA` | Beta status. |
+| <a id="aiselfhostedmodelreleasestateexperimental"></a>`EXPERIMENTAL` | Experimental status. |
+| <a id="aiselfhostedmodelreleasestatega"></a>`GA` | GA status. |
 
 ### `AiUsageCodeSuggestionEvent`
 

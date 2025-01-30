@@ -14,6 +14,14 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
     it { is_expected.to allow_value('http://gitlab.com/s').for(:endpoint) }
     it { is_expected.not_to allow_value('javascript:alert(1)').for(:endpoint) }
 
+    describe '#ga_models' do
+      let_it_be(:beta_model) { create(:ai_self_hosted_model, name: 'Beta model', model: :codellama) }
+      let_it_be(:ga_model) { create(:ai_self_hosted_model, name: 'GA model', model: :mistral) }
+
+      it { expect(described_class.ga_models).not_to include(beta_model) }
+      it { expect(described_class.ga_models).to match_array([ga_model]) }
+    end
+
     describe '#api_token' do
       let(:token) { 'random_token' }
 
@@ -38,6 +46,20 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
 
       it 'coerces null values to empty string' do
         expect(self_hosted_model.identifier).to eq('')
+      end
+    end
+
+    describe '#release_state' do
+      subject(:self_hosted_model) { build(:ai_self_hosted_model, model: :deepseekcoder) }
+
+      it 'returns release state of model' do
+        expect(self_hosted_model.release_state).to eq('BETA')
+      end
+    end
+
+    describe '#ga?' do
+      it 'returns true if the model is in GA' do
+        expect(self_hosted_model.ga?).to be(true)
       end
     end
   end

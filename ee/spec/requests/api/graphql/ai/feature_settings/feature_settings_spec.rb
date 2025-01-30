@@ -27,6 +27,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
               name
               model
               modelDisplayName
+              releaseState
             }
             validModels {
               nodes {
@@ -34,6 +35,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                 name
                 model
                 modelDisplayName
+                releaseState
               }
             }
           }
@@ -103,6 +105,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                   name
                   model
                   modelDisplayName
+                  releaseState
                 }
                 validModels {
                   nodes {
@@ -110,6 +113,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                     name
                     model
                     modelDisplayName
+                    releaseState
                   }
                 }
               }
@@ -170,14 +174,15 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     }
   end
 
-  def generate_self_hosted_data(self_hosted)
-    return unless self_hosted
+  def generate_self_hosted_data(self_hosted_model)
+    return unless self_hosted_model
 
     {
-      'id' => self_hosted.to_global_id.to_s,
-      'name' => self_hosted.name,
-      'model' => self_hosted.model,
-      'modelDisplayName' => model_name_mapper[self_hosted.model]
+      'id' => self_hosted_model.to_global_id.to_s,
+      'name' => self_hosted_model.name,
+      'model' => self_hosted_model.model,
+      'modelDisplayName' => model_name_mapper[self_hosted_model.model],
+      'releaseState' => self_hosted_model.release_state
     }
   end
 end

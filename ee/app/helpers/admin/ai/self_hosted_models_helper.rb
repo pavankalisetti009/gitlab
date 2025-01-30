@@ -17,14 +17,23 @@ module Admin
 
       def model_choices_as_options
         model_options =
-          ::Ai::SelfHostedModel.models.map do |name, _|
+          ::Ai::SelfHostedModel.models.filter_map do |name, _|
+            release_state = ::Ai::SelfHostedModel::MODELS_RELEASE_STATE[name.to_sym]
+
+            next if release_state == ::Ai::SelfHostedModel::RELEASE_STATE_BETA && !beta_models_enabled?
+
             {
               modelValue: name.upcase,
-              modelName: MODEL_NAME_MAPPER[name] || name.humanize
+              modelName: MODEL_NAME_MAPPER[name] || name.humanize,
+              releaseState: release_state
             }
           end
 
         model_options.sort_by { |option| option[:modelName] }
+      end
+
+      def beta_models_enabled?
+        ::Ai::TestingTermsAcceptance.has_accepted?
       end
     end
   end

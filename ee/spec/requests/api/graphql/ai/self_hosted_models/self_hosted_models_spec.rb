@@ -26,14 +26,15 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
   let(:model_name_mapper) { ::Admin::Ai::SelfHostedModelsHelper::MODEL_NAME_MAPPER }
 
   let :expected_data do
-    self_hosted_models.map do |self_hosted|
+    self_hosted_models.map do |self_hosted_model|
       {
-        "id" => self_hosted.to_global_id.to_s,
-        "name" => self_hosted.name,
-        "model" => self_hosted.model,
-        "modelDisplayName" => model_name_mapper[self_hosted.model],
-        "endpoint" => self_hosted.endpoint,
-        "hasApiToken" => self_hosted.api_token.present?
+        "id" => self_hosted_model.to_global_id.to_s,
+        "name" => self_hosted_model.name,
+        "model" => self_hosted_model.model,
+        "modelDisplayName" => model_name_mapper[self_hosted_model.model],
+        "endpoint" => self_hosted_model.endpoint,
+        "hasApiToken" => self_hosted_model.api_token.present?,
+        "releaseState" => self_hosted_model.release_state
       }
     end
   end
@@ -51,6 +52,7 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
             modelDisplayName
             endpoint
             hasApiToken
+            releaseState
           }
         }
       }
@@ -62,10 +64,25 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
   context 'when user has the required authorization' do
     let(:expect_to_be_authorized) { true }
 
-    it 'returns the self-hosted model data' do
-      request
+    context 'when user has accepted the testing terms' do
+      before do
+        ::Ai::TestingTermsAcceptance.create!(user_id: current_user.id, user_email: current_user.email)
+      end
 
-      expect(ai_self_hosted_models_data).to include(*expected_data)
+      it 'returns all self-hosted models' do
+        request
+
+        expect(ai_self_hosted_models_data).to include(*expected_data)
+      end
+    end
+
+    context 'when user has not accepted the testing terms' do
+      it 'does not return beta models' do
+        request
+
+        expected_data.reject! { |model| model['releaseState'] == 'BETA' }
+        expect(ai_self_hosted_models_data).to match_array(expected_data)
+      end
     end
 
     it_behaves_like 'performs the right authorization'
@@ -97,6 +114,7 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
               modelDisplayName
               endpoint
               apiToken
+              releaseState
             }
           }
         }
@@ -110,7 +128,8 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
           "model" => self_hosted_models.first.model,
           "modelDisplayName" => model_name_mapper[self_hosted_models.first.model],
           "endpoint" => self_hosted_models.first.endpoint,
-          "apiToken" => self_hosted_models.first.api_token }
+          "apiToken" => self_hosted_models.first.api_token,
+          "releaseState" => self_hosted_models.first.release_state }
       ]
     end
 
