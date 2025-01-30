@@ -303,7 +303,7 @@ describe('ComplianceFrameworksReport component', () => {
         default: false,
         description: 'This is a framework 1',
         id: 'gid://gitlab/ComplianceManagement::Framework/1',
-        name: 'Some framework 1',
+        name: "Auditor's framework 1",
         pipelineConfigurationFullPath: null,
       });
     });

@@ -16,7 +16,7 @@ export default {
   },
   computed: {
     title() {
-      return sprintf(i18n.deleteModalTitle, { framework: this.name });
+      return sprintf(i18n.deleteModalTitle, { framework: this.name }, false);
     },
   },
   methods: {

@@ -275,7 +275,7 @@ export const createFramework = ({
   options,
 } = {}) => ({
   id: `gid://gitlab/ComplianceManagement::Framework/${id}`,
-  name: `Some framework ${id}`,
+  name: `Auditor's framework ${id}`,
   default: isDefault,
   description: `This is a framework ${id}`,
   color: `#3cb37${id}`,

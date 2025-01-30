@@ -174,7 +174,11 @@ export default {
     title() {
       return this.isNewFramework
         ? this.$options.i18n.addFrameworkTitle
-        : sprintf(this.$options.i18n.editFrameworkTitle, { frameworkName: this.originalName });
+        : sprintf(
+            this.$options.i18n.editFrameworkTitle,
+            { frameworkName: this.originalName },
+            false,
+          );
     },
     saveButtonText() {
       return this.isNewFramework
@@ -277,7 +281,7 @@ export default {
         this.isSaving = false;
       }
     },
-    naviagteNewFramework() {
+    navigateNewFramework() {
       this.$router.push({
         name: ROUTE_NEW_FRAMEWORK_SUCCESS,
       });
@@ -291,7 +295,7 @@ export default {
     },
     handleMutationSuccess() {
       if (this.isNewFramework) {
-        this.naviagteNewFramework();
+        this.navigateNewFramework();
       }
       this.showMigrationPopup = false;
     },
