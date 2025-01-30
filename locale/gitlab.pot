@@ -16868,6 +16868,9 @@ msgstr ""
 msgid "Create new label"
 msgstr ""
 
+msgid "Create new project"
+msgstr ""
+
 msgid "Create new..."
 msgstr ""
 
@@ -41439,6 +41442,9 @@ msgstr ""
 msgid "Personal access tokens"
 msgstr ""
 
+msgid "Personal namespaces"
+msgstr ""
+
 msgid "Personal projects"
 msgstr ""
 
@@ -44537,6 +44543,9 @@ msgstr ""
 msgid "ProjectMaintenance|You will receive an email notification when the process is complete. To remove old versions from the repository, run housekeeping."
 msgstr ""
 
+msgid "ProjectNew|What do you want to create?"
+msgstr ""
+
 msgid "ProjectOverview|Create new fork"
 msgstr ""
 
@@ -45544,6 +45553,12 @@ msgstr[1] ""
 msgid "ProjectsNew|(optional)"
 msgstr ""
 
+msgid "ProjectsNew|A personal project"
+msgstr ""
+
+msgid "ProjectsNew|A project within a group"
+msgstr ""
+
 msgid "ProjectsNew|Allows you to immediately clone this project’s repository. Skip this if you plan to push up an existing repository."
 msgstr ""
 
@@ -45553,7 +45568,16 @@ msgstr ""
 msgid "ProjectsNew|Analyze your source code for known security vulnerabilities."
 msgstr ""
 
+msgid "ProjectsNew|Available only for projects within groups"
+msgstr ""
+
+msgid "ProjectsNew|Choose a group"
+msgstr ""
+
 msgid "ProjectsNew|Connect your external repository to GitLab CI/CD."
+msgstr ""
+
+msgid "ProjectsNew|Contact an administrator to enable options for importing your project"
 msgstr ""
 
 msgid "ProjectsNew|Contact an administrator to enable options for importing your project."
@@ -45578,6 +45602,9 @@ msgid "ProjectsNew|Create new project"
 msgstr ""
 
 msgid "ProjectsNew|Description format"
+msgstr ""
+
+msgid "ProjectsNew|Direct transfer projects with a top-level Group"
 msgstr ""
 
 msgid "ProjectsNew|Enable Static Application Security Testing (SAST)"
@@ -45608,6 +45635,9 @@ msgid "ProjectsNew|Might break existing functionality with other repositories or
 msgstr ""
 
 msgid "ProjectsNew|Migrate your data from an external source like GitHub, Bitbucket, or another instance of GitLab."
+msgstr ""
+
+msgid "ProjectsNew|Migrate your data from another GitLab instance."
 msgstr ""
 
 msgid "ProjectsNew|More templates are available after sign-up."

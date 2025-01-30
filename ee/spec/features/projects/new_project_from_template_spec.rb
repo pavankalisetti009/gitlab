@@ -6,6 +6,7 @@ RSpec.describe 'New project from template', :js, feature_category: :source_code_
   let(:user) { create(:user) }
 
   before do
+    stub_feature_flags(new_project_creation_form: false)
     stub_licensed_features(custom_project_templates: true)
 
     sign_in(user)
