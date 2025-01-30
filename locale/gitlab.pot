@@ -15605,6 +15605,9 @@ msgstr ""
 msgid "ContainerRegistry|Edit cleanup rules"
 msgstr ""
 
+msgid "ContainerRegistry|Edit protection rule"
+msgstr ""
+
 msgid "ContainerRegistry|Enable cleanup policy"
 msgstr ""
 
