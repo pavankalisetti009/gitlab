@@ -220,10 +220,13 @@ export const hasConflictingKeys = (rules = []) => {
  * Check if object has invalid keys in structure
  * @param object
  * @param allowedValues list of allowed values
+ * @param useValues use values instead of keys
  * @returns {boolean} true if object is invalid
  */
-export const hasInvalidKey = (object, allowedValues) => {
-  return !Object.keys(object).every((item) => allowedValues.includes(item));
+export const hasInvalidKey = (object, allowedValues, useValues = false) => {
+  const itemsFn = useValues ? Object.values : Object.keys;
+
+  return !itemsFn(object).every((item) => allowedValues.includes(item));
 };
 
 /**
