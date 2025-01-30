@@ -7,9 +7,7 @@ module GitlabSubscriptions
 
       override :initialize
       def initialize(uid:, trial_user_information:)
-        if Feature.enabled?(:pass_add_on_name_for_trial_requests, Feature.current_request)
-          trial_user_information[:add_on_name] = 'code_suggestions'
-        end
+        trial_user_information[:add_on_name] = 'code_suggestions'
 
         super
       end
