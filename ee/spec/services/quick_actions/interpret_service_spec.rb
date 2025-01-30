@@ -1795,4 +1795,68 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       it_behaves_like 'explain epic hierarchy commands'
     end
   end
+
+  context '/duplicate command' do
+    before do
+      stub_licensed_features(epics: true)
+      group.add_developer(current_user)
+    end
+
+    context 'when canonical item is an epic' do
+      let(:duplicate_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+      context 'when epic work item' do
+        context 'with reference' do
+          it_behaves_like 'duplicate command' do
+            let(:content) { "/duplicate #{duplicate_item.to_reference(project, full: true)}" }
+            let(:issuable) { issue }
+          end
+        end
+
+        context 'with url' do
+          it_behaves_like 'duplicate command' do
+            let(:content) { "/duplicate #{Gitlab::UrlBuilder.build(duplicate_item)}" }
+            let(:issuable) { issue }
+          end
+        end
+      end
+
+      context 'when legacy epic' do
+        context 'with reference' do
+          it_behaves_like 'duplicate command' do
+            let(:content) { "/duplicate #{duplicate_item.sync_object.to_reference(project, full: true)}" }
+            let(:issuable) { issue }
+          end
+        end
+
+        context 'with url' do
+          it_behaves_like 'duplicate command' do
+            let(:content) { "/duplicate #{Gitlab::UrlBuilder.build(duplicate_item.sync_object)}" }
+            let(:issuable) { issue }
+          end
+        end
+      end
+    end
+
+    context 'when duplicate item is an epic work item' do
+      let(:canonical_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let(:duplicate_item) { issue }
+
+      let(:service) { described_class.new(container: group, current_user: current_user) }
+
+      context 'with reference' do
+        it_behaves_like 'duplicate command' do
+          let(:content) { "/duplicate #{duplicate_item.to_reference(group)}" }
+          let(:issuable) { canonical_item }
+        end
+      end
+
+      context 'with url' do
+        it_behaves_like 'duplicate command' do
+          let(:content) { "/duplicate #{Gitlab::UrlBuilder.build(duplicate_item)}" }
+          let(:issuable) { canonical_item }
+        end
+      end
+    end
+  end
 end
