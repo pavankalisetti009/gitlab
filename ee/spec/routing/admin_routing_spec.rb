@@ -6,7 +6,8 @@ RSpec.describe 'EE-specific admin routing' do
   describe Admin::Geo::ReplicablesController, 'routing' do
     Gitlab::Geo.replication_enabled_replicator_classes.map(&:replicable_name_plural).each do |replicable_name_plural|
       it "routes /admin/geo/replication/#{replicable_name_plural} to replicables#index" do
-        expect(get("/admin/geo/replication/#{replicable_name_plural}")).to route_to('admin/geo/replicables#index', replicable_name_plural: replicable_name_plural)
+        expect(get("/admin/geo/replication/#{replicable_name_plural}"))
+          .to route_to('admin/geo/replicables#index', replicable_name_plural: replicable_name_plural)
       end
     end
   end
@@ -81,17 +82,20 @@ RSpec.describe 'EE-specific admin routing' do
 
   describe Admin::ApplicationSettings::RolesAndPermissionsController, 'routing' do
     it 'routes to the new member role' do
-      expect(get('/admin/application_settings/roles_and_permissions/new')).to route_to('admin/application_settings/roles_and_permissions#new')
+      expect(get('/admin/application_settings/roles_and_permissions/new'))
+        .to route_to('admin/application_settings/roles_and_permissions#new')
     end
   end
 
   describe Admin::ApplicationSettings::ServiceAccountsController, 'routing' do
     it 'routes to service accounts' do
-      expect(get('/admin/application_settings/service_accounts')).to route_to('admin/application_settings/service_accounts#index')
+      expect(get('/admin/application_settings/service_accounts'))
+        .to route_to('admin/application_settings/service_accounts#index')
     end
 
     it 'routes to the vue route' do
-      expect(get('/admin/application_settings/service_accounts/access_tokens')).to route_to('admin/application_settings/service_accounts#index', vueroute: 'access_tokens')
+      expect(get('/admin/application_settings/service_accounts/access_tokens'))
+        .to route_to('admin/application_settings/service_accounts#index', vueroute: 'access_tokens')
     end
   end
 end
