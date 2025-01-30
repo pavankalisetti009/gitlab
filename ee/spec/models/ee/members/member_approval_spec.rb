@@ -8,7 +8,7 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
 
   describe '.create_or_update_approval' do
     let_it_be(:requested_user) { create(:user) }
-    let_it_be(:member_role) { create(:member_role, :read_code) }
+    let_it_be(:member_role) { create(:member_role, :non_billable) }
     let(:attributes) do
       {
         new_access_level: Gitlab::Access::MAINTAINER,
@@ -125,7 +125,7 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
 
         context 'when updating existing approval' do
           context 'when updating member_role' do
-            let(:member_role) { create(:member_role, :guest, :read_vulnerability, :instance) }
+            let(:member_role) { create(:member_role, :billable, :instance) }
 
             it 'updates member role' do
               member_approval.member_role_id = member_role.id

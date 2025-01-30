@@ -32,7 +32,7 @@ RSpec.describe ::EE::API::Entities::BillableMembership, feature_category: :seat_
   end
 
   context 'with custom role' do
-    let(:role) { create(:member_role, :developer, :admin_merge_request) }
+    let(:role) { create(:member_role, :developer, :billable) }
     let(:membership) { create(:group_member, :developer, member_role: role) }
     let(:custom_role) { { id: role.id, name: role.name } }
     let(:role_name) { role.name }

@@ -37,15 +37,15 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
   shared_examples 'billable_role_change? with member_role_id' do |role_sym, without_billable_role, with_billable_role|
     let(:plan) { License::ULTIMATE_PLAN }
 
-    context 'when member_role is read_code' do
-      let(:member_role) { create(:member_role, role_sym, :read_code, namespace: namespace) }
+    context 'when member_role is non billable' do
+      let(:member_role) { create(:member_role, role_sym, :non_billable, namespace: namespace) }
       let(:member_role_id) { member_role.id }
 
       it { is_expected.to eq(without_billable_role) }
     end
 
-    context 'when member_role is read_vulnerability' do
-      let(:member_role) { create(:member_role, role_sym, :read_vulnerability, namespace: namespace) }
+    context 'when member_role is billable' do
+      let(:member_role) { create(:member_role, role_sym, :billable, namespace: namespace) }
       let(:member_role_id) { member_role.id }
 
       it { is_expected.to eq(with_billable_role) }
