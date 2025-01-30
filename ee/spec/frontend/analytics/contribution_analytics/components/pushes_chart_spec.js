@@ -23,7 +23,7 @@ describe('Contribution Analytics Pushes Chart', () => {
 
   it('renders the empty description when there is no table data', () => {
     createWrapper([]);
-    expect(findDescription()).toBe(wrapper.vm.$options.i18n.emptyDescription);
+    expect(findDescription()).toBe('No pushes for the selected time period.');
   });
 
   it('renders the description based on the table data', () => {

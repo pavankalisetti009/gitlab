@@ -11,7 +11,6 @@ export default {
     GlSprintf,
   },
   i18n: {
-    header: s__('ContributionAnalytics|Merge requests'),
     xAxisTitle: __('User'),
     yAxisTitle: __('Merge Requests created'),
     emptyDescription: s__('ContributionAnalytics|No merge requests for the selected time period.'),
@@ -56,22 +55,19 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <div data-testid="merge-request-content">
-      <h3>{{ $options.i18n.header }}</h3>
-      <div data-testid="description">
-        <gl-sprintf :message="description">
-          <template #createdCount>
-            <strong>{{ formatNumber(createdCount) }}</strong>
-          </template>
-          <template #mergedCount>
-            <strong>{{ formatNumber(mergedCount) }}</strong>
-          </template>
-          <template #closedCount>
-            <strong>{{ formatNumber(closedCount) }}</strong>
-          </template>
-        </gl-sprintf>
-      </div>
+  <div data-testid="merge-request-content">
+    <div data-testid="description">
+      <gl-sprintf :message="description">
+        <template #createdCount>
+          <strong>{{ formatNumber(createdCount) }}</strong>
+        </template>
+        <template #mergedCount>
+          <strong>{{ formatNumber(mergedCount) }}</strong>
+        </template>
+        <template #closedCount>
+          <strong>{{ formatNumber(closedCount) }}</strong>
+        </template>
+      </gl-sprintf>
     </div>
 
     <column-chart
