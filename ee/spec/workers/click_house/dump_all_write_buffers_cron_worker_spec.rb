@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ClickHouse::DumpAllWriteBuffersCronWorker, feature_category: :database do
+RSpec.describe ClickHouse::DumpAllWriteBuffersCronWorker, feature_category: :value_stream_management do
   let(:job) { described_class.new }
 
   context 'when ClickHouse is disabled for analytics' do

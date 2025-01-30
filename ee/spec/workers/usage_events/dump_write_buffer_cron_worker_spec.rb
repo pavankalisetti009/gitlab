@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_cache, feature_category: :database do
+RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_cache, feature_category: :value_stream_management do
   let_it_be(:organization) { create(:organization) }
   let(:job) { described_class.new }
   let(:perform) { job.perform }
