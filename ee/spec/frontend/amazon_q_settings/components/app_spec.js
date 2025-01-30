@@ -10,8 +10,8 @@ import {
   GlFormRadio,
   GlSprintf,
 } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import axios from '~/lib/utils/axios_utils';
 import DisconnectSuccessAlert from 'ee/amazon_q_settings/components/disconnect_success_alert.vue';
 import DisconnectWarningModal from 'ee/amazon_q_settings/components/disconnect_warning_modal.vue';
@@ -19,16 +19,19 @@ import App from 'ee/amazon_q_settings/components/app.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { createAndSubmitForm } from '~/lib/utils/create_and_submit_form';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import { stubComponent } from 'helpers/stub_component';
 
 jest.mock('~/lib/utils/create_and_submit_form');
 jest.mock('~/lib/logger');
 
 const TEST_SUBMIT_URL = '/foo/submit/url';
 const TEST_DISCONNECT_URL = '/foo/disconnect/url';
+const TEST_AMAZON_Q_VALID_ROLE_ARN = 'arn:aws:iam::123456789012:role/valid-role';
+const TEST_AMAZON_Q_INVALID_ROLE_ARN = 'arn:aws:iam::test:role/invalid-role';
 const TEST_AMAZON_Q_SETTINGS = {
   ready: true,
   availability: 'default_on',
-  roleArn: 'aws:role:arn',
+  roleArn: TEST_AMAZON_Q_VALID_ROLE_ARN,
 };
 
 describe('ee/amazon_q_settings/components/app.vue', () => {
@@ -36,7 +39,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
   let mock;
 
   const createWrapper = (props = {}) => {
-    wrapper = shallowMount(App, {
+    wrapper = shallowMountExtended(App, {
       propsData: {
         submitUrl: TEST_SUBMIT_URL,
         disconnectUrl: TEST_DISCONNECT_URL,
@@ -50,6 +53,9 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
       stubs: {
         GlFormInputGroup,
         GlSprintf,
+        GlFormGroup: stubComponent(GlFormGroup, {
+          props: ['state', 'invalidFeedback', 'validFeedback', 'description'],
+        }),
       },
     });
   };
@@ -249,34 +255,91 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
       });
       expect(findSaveWarningLink().text()).toEqual('AWS Customer Agreement');
     });
+  });
 
-    describe('when submitting', () => {
-      let event;
+  describe('form validations', () => {
+    const event = new Event('submit');
+    const emitSubmitForm = () => findForm().vm.$emit('submit', event);
 
-      beforeEach(async () => {
-        event = new Event('submit');
-        jest.spyOn(event, 'preventDefault');
+    beforeEach(() => {
+      createWrapper();
+      jest.spyOn(event, 'preventDefault');
+    });
 
-        setArn('aws:test:value');
+    it('does not show any validations on load', () => {
+      expect(findArnFormGroup().props('state')).toBeNull();
+    });
+
+    describe("when IAM role's ARN is empty", () => {
+      beforeEach(() => {
+        setArn('');
+        emitSubmitForm();
+      });
+
+      it('shows "required" validation error', () => {
+        expect(findArnFormGroup().props()).toMatchObject({
+          invalidFeedback: 'This field is required',
+          state: false,
+        });
+      });
+
+      it('does not submit form', () => {
+        expect(createAndSubmitForm).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("when IAM role's ARN is invalid", () => {
+      beforeEach(() => {
+        setArn(TEST_AMAZON_Q_INVALID_ROLE_ARN);
+        emitSubmitForm();
+      });
+
+      it('shows "invalid" validation error', () => {
+        expect(findArnFormGroup().props()).toMatchObject({
+          invalidFeedback: "IAM role's ARN is not valid",
+          state: false,
+        });
+      });
+
+      it('does not submit form', () => {
+        expect(createAndSubmitForm).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when form is valid', () => {
+      beforeEach(() => {
+        setArn(TEST_AMAZON_Q_VALID_ROLE_ARN);
         setAvailability('default_off');
-
-        await nextTick();
-
-        findForm().vm.$emit('submit', event);
+        emitSubmitForm();
       });
 
       it('prevents default', () => {
         expect(event.preventDefault).toHaveBeenCalled();
       });
 
-      it('triggers submit form', () => {
+      it('submits form', () => {
         expect(createAndSubmitForm).toHaveBeenCalledTimes(1);
         expect(createAndSubmitForm).toHaveBeenCalledWith({
           url: TEST_SUBMIT_URL,
           data: {
             availability: 'default_off',
-            role_arn: 'aws:test:value',
+            role_arn: TEST_AMAZON_Q_VALID_ROLE_ARN,
           },
+        });
+      });
+    });
+
+    describe("when IAM role's ARN is valid and field loses focus", () => {
+      beforeEach(() => {
+        setArn(TEST_AMAZON_Q_VALID_ROLE_ARN);
+        findArnField().vm.$emit('focus');
+      });
+
+      it('shows "valid" validation message', () => {
+        expect(findArnFormGroup().props()).toMatchObject({
+          invalidFeedback: '',
+          validFeedback: "IAM role's ARN is valid",
+          state: true,
         });
       });
     });
@@ -358,7 +421,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
 
       it('after loading, shows success state', async () => {
         expect(findDisconnectSuccess().exists()).toBe(false);
-        expect(findArnField().attributes('value')).toBe('aws:role:arn');
+        expect(findArnField().attributes('value')).toBe(TEST_AMAZON_Q_VALID_ROLE_ARN);
         expect(findStatusFormGroup().exists()).toBe(true);
 
         await axios.waitForAll();
