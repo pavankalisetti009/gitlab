@@ -10,7 +10,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'contains duo_features_enabled parameters' do
-      expect(visible_attributes).to include(*%i[duo_features_enabled lock_duo_features_enabled duo_availability])
+      expect(visible_attributes).to include(*%i[duo_features_enabled lock_duo_features_enabled duo_availability enabled_expanded_logging])
     end
 
     it 'contains zoekt parameters' do

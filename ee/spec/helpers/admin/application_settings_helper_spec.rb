@@ -8,11 +8,13 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   let(:duo_availability) { :default_off }
   let(:instance_level_ai_beta_features_enabled) { false }
   let(:disabled_direct_code_suggestions) { false }
+  let(:enabled_expanded_logging) { true }
   let(:code_suggestions_service) { instance_double(CloudConnector::AvailableServices) }
 
   before do
     stub_ee_application_setting(duo_availability: duo_availability)
     stub_ee_application_setting(instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled)
+    stub_ee_application_setting(enabled_expanded_logging: enabled_expanded_logging)
     stub_ee_application_setting(disabled_direct_code_suggestions: disabled_direct_code_suggestions)
     allow(CloudConnector::AvailableServices)
       .to receive(:find_by_name).with(:code_suggestions).and_return(code_suggestions_service)
@@ -80,6 +82,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             duo_availability: duo_availability.to_s,
             experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
             are_experiment_settings_allowed: expected_experiments_visible_value.to_s,
+            enabled_expanded_logging: enabled_expanded_logging.to_s,
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             self_hosted_models_enabled: terms_accepted.to_s,
             ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
