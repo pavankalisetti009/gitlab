@@ -11,11 +11,6 @@ export default {
     UnconfiguredSecurityRule,
     GlSkeletonLoader,
   },
-  inject: {
-    coverageCheckHelpPagePath: {
-      default: '',
-    },
-  },
   computed: {
     ...mapState({
       rules: (state) => state.approvals.rules,
@@ -28,10 +23,7 @@ export default {
       return [
         {
           name: COVERAGE_CHECK_NAME,
-          description: s__(
-            'SecurityApprovals|Requires approval for decreases in test coverage. %{linkStart}Learn more%{linkEnd}.',
-          ),
-          docsPath: this.coverageCheckHelpPagePath,
+          description: s__('SecurityApprovals|Requires approval for decreases in test coverage.'),
         },
       ];
     },
