@@ -12,8 +12,8 @@ RSpec.describe Sidebars::Admin::Menus::AdminOverviewMenu, feature_category: :nav
 
       context 'when user is allowed to access_admin_area' do
         before do
+          allow(user).to receive(:can?).and_call_original
           allow(user).to receive(:can?).with(:access_admin_area).and_return(true)
-          allow(user).to receive(:can_admin_all_resources?).and_return(false)
         end
 
         context 'when custom_ability_read_admin_dashboard FF is enabled' do
@@ -34,11 +34,6 @@ RSpec.describe Sidebars::Admin::Menus::AdminOverviewMenu, feature_category: :nav
       end
 
       context 'when user can not access admin area' do
-        before do
-          allow(user).to receive(:can?).with(:access_admin_area).and_return(false)
-          allow(user).to receive(:can_admin_all_resources?).and_return(false)
-        end
-
         it 'does not render' do
           expect(admin_overview_menu.render?).to be(false)
         end

@@ -79,10 +79,13 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
     end
   end
 
-  describe '#cloud_license_view_data' do
+  describe '#cloud_license_view_data', :enable_admin_mode do
+    let(:current_user) { build(:admin) }
+
     before do
       allow(helper).to receive(:subscription_portal_manage_url).and_return('subscriptions_manage_url')
       allow(helper).to receive(:new_trial_url).and_return('new_trial_url')
+      allow(helper).to receive(:current_user).and_return(current_user)
     end
 
     context 'when there is a current license' do
@@ -114,6 +117,16 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
                                                        license_remove_path: admin_license_path,
                                                        congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
                                                        license_usage_file_path: admin_license_usage_export_path(format: :csv) })
+      end
+    end
+
+    context 'when the current user cannot destroy licenses' do
+      before do
+        allow(current_user).to receive(:can?).with(:destroy_licenses).and_return(false)
+      end
+
+      it 'returns the data for the view without the license_remove_path set' do
+        expect(helper.cloud_license_view_data).to include(license_remove_path: '')
       end
     end
   end

@@ -76,6 +76,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   it { is_expected.to be_disallowed(:read_all_workspaces) }
   it { is_expected.to be_disallowed(:manage_subscription) }
   it { is_expected.to be_disallowed(:read_cloud_connector_status) }
+  it { is_expected.to be_disallowed(:read_admin_subscription) }
 
   context 'when admin mode enabled', :enable_admin_mode do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_licenses) }
@@ -84,6 +85,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_all_workspaces) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_cloud_connector_status) }
+    it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_subscription) }
   end
 
   context 'when admin mode disabled' do
@@ -93,6 +95,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_all_workspaces) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_cloud_connector_status) }
+    it { expect(described_class.new(admin, [user])).to be_disallowed(:read_admin_subscription) }
   end
 
   shared_examples 'analytics policy' do |action|
@@ -882,8 +885,9 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
   context 'custom permissions' do
     where(:custom_ability, :enabled_permissions) do
-      :read_admin_dashboard | %i[read_admin_dashboard access_admin_area]
-      :read_admin_cicd      | %i[read_admin_cicd access_admin_area]
+      :read_admin_cicd         | %i[read_admin_cicd access_admin_area]
+      :read_admin_dashboard    | %i[read_admin_dashboard access_admin_area]
+      :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
     end
 
     with_them do

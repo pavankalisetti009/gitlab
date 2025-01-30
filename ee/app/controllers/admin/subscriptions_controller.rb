@@ -6,4 +6,6 @@ class Admin::SubscriptionsController < Admin::ApplicationController
 
   feature_category :plan_provisioning
   urgency :low
+
+  authorize! :read_admin_subscription, only: :show
 end
