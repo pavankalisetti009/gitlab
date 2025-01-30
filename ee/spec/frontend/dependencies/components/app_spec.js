@@ -142,7 +142,7 @@ describe('DependenciesApp component', () => {
         });
       });
 
-      it('shows a tooltip for a CSV export', () => {
+      it('sets correct value for asyncExport', () => {
         expect(store.dispatch.mock.calls).toEqual(
           expect.arrayContaining([['setAsyncExport', result]]),
         );
