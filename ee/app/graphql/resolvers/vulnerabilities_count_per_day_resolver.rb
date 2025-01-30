@@ -27,7 +27,6 @@ module Resolvers
 
       vulnerable
         .vulnerability_historical_statistics
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140')
         .grouped_by_date
         .aggregated_by_date
         .between_dates(args[:start_date], args[:end_date])
