@@ -312,6 +312,7 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
       let(:issue_id) { issue.id }
 
+      # rubocop:disable Layout/LineLength -- table formatting
       where(:description, :search_highlight, :expected) do
         'test' | { ref(:issue_id) => { description: ['gitlabelasticsearch→test←gitlabelasticsearch'] } } | "<mark>test</mark>"
         '<span style="color: blue;">this test should not be blue</span>' | { ref(:issue_id) => { description: ['<span style="color: blue;">this gitlabelasticsearch→test←gitlabelasticsearch should not be blue</span>'] } } | "this <mark>test</mark> should not be blue"
@@ -321,6 +322,7 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         '<img src="https://random.foo.com/test.png" width="128" height="128" />some image' | { ref(:issue_id) => { description: ['<img src="https://random.foo.com/gitlabelasticsearch→test←gitlabelasticsearch.png" width="128" height="128" />some image'] } } | 'some image'
         '<h2 data-sourcepos="11:1-11:26" dir="auto"><a id="user-content-additional-information" class="anchor" href="#additional-information" aria-hidden="true"></a>Additional information test:</h2><textarea data-update-url="/freepascal.org/fpc/source/-/issues/6163.json" dir="auto" data-testid="textarea" class="hidden js-task-list-field"></textarea>' | { ref(:issue_id) => { description: ['<h2 data-sourcepos="11:1-11:26" dir="auto"><a id="user-content-additional-information" class="anchor" href="#additional-information" aria-hidden="true"></a>Additional information gitlabelasticsearch→test←gitlabelasticsearch:</h2><textarea data-update-url="/freepascal.org/fpc/source/-/issues/6163.json" dir="auto" data-testid="textarea" class="hidden js-task-list-field"></textarea>'] } } | "<a class='anchor' href='#additional-information'></a>Additional information <mark>test</mark>:"
       end
+      # rubocop:enable Layout/LineLength
 
       with_them do
         it 'sanitizes, truncates, and highlights the search term' do
@@ -388,7 +390,8 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
 
       it 'returns items in order' do
-        expect(Gitlab::Json.parse(search_navigation_json).keys).to eq(%w[projects blobs issues merge_requests wiki_blobs commits notes milestones users snippet_titles])
+        expect(Gitlab::Json.parse(search_navigation_json).keys)
+          .to eq(%w[projects blobs issues merge_requests wiki_blobs commits notes milestones users snippet_titles])
       end
     end
   end
@@ -397,12 +400,14 @@ RSpec.describe SearchHelper, feature_category: :global_search do
     using RSpec::Parameterized::TableSyntax
 
     context 'with data' do
+      # rubocop:disable Layout/LineLength -- table formatting
       where(:scope, :label, :data, :search, :active_scope, :type) do
         "projects"       | "Projects"                | { testid: 'projects-tab' } | nil                  | "projects"        | nil
         "snippet_titles" | "Snippets"                | nil                        | { snippets: "test" } | "code"            | nil
         "projects"       | "Projects"                | { testid: 'projects-tab' } | nil                  | "issue"           | "issue"
         "snippet_titles" | "Snippets"                | nil                        | { snippets: "test" } | "snippet_titles"  | nil
       end
+      # rubocop:enable Layout/LineLength
 
       with_them do
         it 'converts correctly' do

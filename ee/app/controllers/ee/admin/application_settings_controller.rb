@@ -134,21 +134,19 @@ module EE
           required_ci_templates: :required_instance_ci_template,
           disable_name_update_for_users: :updating_name_disabled_for_users,
           package_forwarding: [:npm_package_requests_forwarding,
-                               :lock_npm_package_requests_forwarding,
-                               :pypi_package_requests_forwarding,
-                               :lock_pypi_package_requests_forwarding,
-                               :maven_package_requests_forwarding,
-                               :lock_maven_package_requests_forwarding],
+            :lock_npm_package_requests_forwarding,
+            :pypi_package_requests_forwarding,
+            :lock_pypi_package_requests_forwarding,
+            :maven_package_requests_forwarding,
+            :lock_maven_package_requests_forwarding],
           default_branch_protection_restriction_in_groups: :group_owners_can_manage_default_branch_protection,
           group_ip_restriction: :globally_allowed_ips,
           service_accounts: [:service_access_tokens_expiration_enforced,
-                             :allow_top_level_group_owners_to_create_service_accounts],
+            :allow_top_level_group_owners_to_create_service_accounts],
           disable_personal_access_tokens: :disable_personal_access_tokens,
           integrations_allow_list: :allowed_integrations_raw
         }.each do |license_feature, attribute_names|
-          if License.feature_available?(license_feature)
-            attrs += Array.wrap(attribute_names)
-          end
+          attrs += Array.wrap(attribute_names) if License.feature_available?(license_feature)
         end
 
         if License.feature_available?(:git_two_factor_enforcement) && ::Feature.enabled?(:two_factor_for_cli)
@@ -158,9 +156,7 @@ module EE
         # Remove the inline rubocop disablement of Metrics/PerceivedComplexity when we can move
         # pre_receive_secret_detection_enabled to the simple License feature => attribute name
         # hash above.
-        if License.feature_available?(:pre_receive_secret_detection)
-          attrs << :pre_receive_secret_detection_enabled
-        end
+        attrs << :pre_receive_secret_detection_enabled if License.feature_available?(:pre_receive_secret_detection)
 
         if License.feature_available?(:admin_merge_request_approvers_rules)
           attrs += EE::ApplicationSettingsHelper.merge_request_appovers_rules_attributes
@@ -182,9 +178,7 @@ module EE
           attrs << :maintenance_mode_message
         end
 
-        if License.feature_available?(:disable_private_profiles)
-          attrs << :make_profile_private
-        end
+        attrs << :make_profile_private if License.feature_available?(:disable_private_profiles)
 
         attrs << :new_user_signups_cap
         attrs << :seat_control
