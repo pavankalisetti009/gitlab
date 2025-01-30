@@ -196,4 +196,32 @@ RSpec.describe UserPolicy do
       it_behaves_like 'changing a user', :make_profile_private
     end
   end
+
+  describe ':read_user_profile' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user_public_profile) { create(:user, private_profile: false) }
+    let_it_be(:user_private_profile) { create(:user, private_profile: true) }
+
+    where(:user, :disable_private_profiles?, :make_profile_private?, :allowed?) do
+      ref(:user_private_profile) | true  | true  | false
+      ref(:user_private_profile) | true  | false | true
+      ref(:user_private_profile) | false | true  | false
+      ref(:user_private_profile) | false | false | false
+
+      ref(:user_public_profile)  | true  | true  | true
+      ref(:user_public_profile)  | true  | false | true
+      ref(:user_public_profile)  | false | true  | true
+      ref(:user_public_profile)  | false | false | true
+    end
+
+    with_them do
+      before do
+        stub_licensed_features(disable_private_profiles: disable_private_profiles?)
+        stub_application_setting(make_profile_private: make_profile_private?)
+      end
+
+      it { is_expected.to(allowed? ? be_allowed(:read_user_profile) : be_disallowed(:read_user_profile)) }
+    end
+  end
 end
