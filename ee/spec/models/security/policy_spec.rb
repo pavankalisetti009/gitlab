@@ -967,4 +967,83 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
   end
+
+  describe '#warn_mode?' do
+    subject(:warn_mode) { policy.warn_mode? }
+
+    context 'when content is nil' do
+      let(:policy) { build(:security_policy, content: nil) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when actions are not present' do
+      let(:policy) { build(:security_policy, content: {}) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when actions are present' do
+      context 'with no require_approval actions' do
+        let(:policy) { build(:security_policy, content: { actions: [{ type: 'other_action' }] }) }
+
+        it { is_expected.to be false }
+      end
+
+      context 'with require_approval actions' do
+        context 'when all require_approval actions have approvals_required set to 0' do
+          let(:policy) do
+            build(:security_policy, content: {
+              actions: [
+                { type: 'require_approval', approvals_required: 0 },
+                { type: 'require_approval', approvals_required: 0 }
+              ]
+            })
+          end
+
+          it { is_expected.to be true }
+        end
+
+        context 'when at least one require_approval action has approvals_required greater than 0' do
+          let(:policy) do
+            build(:security_policy, content: {
+              actions: [
+                { type: 'require_approval', approvals_required: 0 },
+                { type: 'require_approval', approvals_required: 1 }
+              ]
+            })
+          end
+
+          it { is_expected.to be false }
+        end
+
+        context 'when mixed with other action types' do
+          let(:policy) do
+            build(:security_policy, content: {
+              actions: [
+                { type: 'require_approval', approvals_required: 0 },
+                { type: 'other_action' },
+                { type: 'require_approval', approvals_required: 0 }
+              ]
+            })
+          end
+
+          it { is_expected.to be true }
+        end
+
+        context 'when only other action types are present' do
+          let(:policy) do
+            build(:security_policy, content: {
+              actions: [
+                { type: 'other_action' },
+                { type: 'another_action' }
+              ]
+            })
+          end
+
+          it { is_expected.to be false }
+        end
+      end
+    end
+  end
 end

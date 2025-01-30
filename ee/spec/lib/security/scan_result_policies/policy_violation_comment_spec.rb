@@ -261,12 +261,12 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
             name: 'AWS API key')
         end
 
-        def build_violation_details(report_type, data, policy_read: policy, name: 'Policy')
+        def build_violation_details(report_type, data, policy_read: policy, name: 'Policy', policy_rule: nil)
           project_rule = create(:approval_project_rule, project: project, scan_result_policy_read: policy_read)
           create(:report_approver_rule, report_type, merge_request: merge_request, approval_project_rule: project_rule,
             scan_result_policy_read: policy_read, name: name)
           create(:scan_result_policy_violation, project: project, merge_request: merge_request,
-            scan_result_policy_read: policy_read, violation_data: data)
+            scan_result_policy_read: policy_read, violation_data: data, approval_policy_rule: policy_rule)
         end
 
         it { is_expected.not_to include described_class::VIOLATIONS_BLOCKING_TITLE }
@@ -457,6 +457,65 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           context 'when no pipeline ids are present' do
             it 'does not show comparison pipelines block' do
               expect(body).not_to include 'Comparison pipelines'
+            end
+          end
+        end
+
+        describe '#additional_info' do
+          subject(:body) { comment.body }
+
+          let(:warn_mode_db_policy) do
+            create(:security_policy, :warn_mode, policy_index: 0,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          context 'when there are no warn mode policies' do
+            before do
+              build_violation_details(:any_merge_request, { violations: { any_merge_request: { commits: true } } })
+            end
+
+            it 'does not include the section' do
+              expect(body).not_to include('Additional information')
+            end
+          end
+
+          context 'when there are warn mode policies' do
+            let_it_be(:warn_mode_policy_read) do
+              create(:scan_result_policy_read, project: project,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            let_it_be(:warn_mode_db_policy) do
+              create(:security_policy, :warn_mode, policy_index: 0,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            let_it_be(:warn_mode_policy_rule) do
+              create(:approval_policy_rule, security_policy: warn_mode_db_policy)
+            end
+
+            before do
+              build_violation_details(:any_merge_request, { violations: { any_merge_request: { commits: true } } },
+                policy_read: warn_mode_policy_read, policy_rule: warn_mode_policy_rule)
+            end
+
+            it 'includes information about warn mode policies' do
+              expect(body).to include('Additional information')
+              expect(body).to include(
+                'Review the following policies to understand requirements and identify policy owners for support:')
+              expect(body).to include(
+                "[#{warn_mode_policy_rule.security_policy.name}](#{warn_mode_policy_rule.security_policy.edit_path})"
+              )
+            end
+
+            context 'when the feature flag is disabled' do
+              before do
+                stub_feature_flags(security_policy_approval_warn_mode: false)
+              end
+
+              it 'does not include the section' do
+                expect(body).not_to include('Additional information')
+              end
             end
           end
         end

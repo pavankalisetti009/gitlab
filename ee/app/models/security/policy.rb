@@ -284,6 +284,18 @@ module Security
       content&.dig('content', 'include', 0)
     end
 
+    def warn_mode?
+      actions = content&.dig('actions')
+      return false unless actions
+
+      require_approval_actions = actions.select do |action|
+        action['type'] == Security::ScanResultPolicy::REQUIRE_APPROVAL
+      end
+      require_approval_actions.present? && require_approval_actions.all? do |action|
+        action['approvals_required'] == 0
+      end
+    end
+
     private
 
     def link_policy_rules_project!(project, policy_rules = approval_policy_rules.undeleted)
