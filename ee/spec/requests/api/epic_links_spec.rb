@@ -197,7 +197,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           group.add_guest(user)
           # TODO: remove threshold after epic-work item sync
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
         end
 
         it 'returns 201 status' do
@@ -214,7 +214,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           group.add_reporter(user)
           # TODO: remove threshold after epic-work item sync
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(132)
         end
 
         it 'returns 201 status' do

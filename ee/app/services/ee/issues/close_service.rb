@@ -39,18 +39,17 @@ module EE
 
       override :after_close
       def after_close(issue, closed_via: nil, notifications: true, system_note: true)
+        return super unless issue.synced_epic
+
+        super
+        # Creating a system note changes `updated_at` for the issue
+        issue.synced_epic.update_column(:updated_at, issue.updated_at)
         ::Gitlab::EventStore.publish(
           ::WorkItems::WorkItemClosedEvent.new(data: {
             id: issue.id,
             namespace_id: issue.namespace_id
           })
         )
-
-        return super unless issue.synced_epic
-
-        super
-        # Creating a system note changes `updated_at` for the issue
-        issue.synced_epic.update_column(:updated_at, issue.updated_at)
       end
     end
   end

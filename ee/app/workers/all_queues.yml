@@ -1308,42 +1308,6 @@
   :weight: 1
   :idempotent: true
   :tags: []
-- :name: clusters_agents_auto_flow_work_items_closed_event
-  :worker_name: Clusters::Agents::AutoFlow::WorkItems::ClosedEventWorker
-  :feature_category: :deployment_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-- :name: clusters_agents_auto_flow_work_items_created_event
-  :worker_name: Clusters::Agents::AutoFlow::WorkItems::CreatedEventWorker
-  :feature_category: :deployment_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-- :name: clusters_agents_auto_flow_work_items_reopened_event
-  :worker_name: Clusters::Agents::AutoFlow::WorkItems::ReopenedEventWorker
-  :feature_category: :deployment_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-- :name: clusters_agents_auto_flow_work_items_updated_event
-  :worker_name: Clusters::Agents::AutoFlow::WorkItems::UpdatedEventWorker
-  :feature_category: :deployment_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
 - :name: compliance_management_chain_of_custody_report
   :worker_name: ComplianceManagement::ChainOfCustodyReportWorker
   :feature_category: :compliance_management

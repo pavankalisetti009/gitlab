@@ -112,7 +112,7 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
       it 'redirects to an epic' do
         # TODO: restore threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
         trigger_change_type('Epic (Promote to group)')
 
         # wait for epic widget definitions

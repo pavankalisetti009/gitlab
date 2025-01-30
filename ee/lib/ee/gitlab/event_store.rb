@@ -73,7 +73,6 @@ module EE
 
           register_threat_insights_subscribers(store)
           register_security_policy_subscribers(store)
-          register_autoflow_subscribers(store)
 
           subscribe_to_epic_events(store)
           subscribe_to_external_issue_links_events(store)
@@ -236,21 +235,6 @@ module EE
 
         def subscribe_to_merge_events(store)
           store.subscribe ::MergeRequests::ProcessMergeAuditEventWorker, to: ::MergeRequests::MergedEvent
-        end
-
-        def register_autoflow_subscribers(store)
-          store.subscribe ::Clusters::Agents::AutoFlow::WorkItems::CreatedEventWorker,
-            to: ::WorkItems::WorkItemCreatedEvent,
-            if: ->(event) { ::Clusters::Agents::AutoFlow.issue_events_enabled?(event.data[:id]) }
-          store.subscribe ::Clusters::Agents::AutoFlow::WorkItems::UpdatedEventWorker,
-            to: ::WorkItems::WorkItemUpdatedEvent,
-            if: ->(event) { ::Clusters::Agents::AutoFlow.issue_events_enabled?(event.data[:id]) }
-          store.subscribe ::Clusters::Agents::AutoFlow::WorkItems::ClosedEventWorker,
-            to: ::WorkItems::WorkItemClosedEvent,
-            if: ->(event) { ::Clusters::Agents::AutoFlow.issue_events_enabled?(event.data[:id]) }
-          store.subscribe ::Clusters::Agents::AutoFlow::WorkItems::ReopenedEventWorker,
-            to: ::WorkItems::WorkItemReopenedEvent,
-            if: ->(event) { ::Clusters::Agents::AutoFlow.issue_events_enabled?(event.data[:id]) }
         end
       end
     end
