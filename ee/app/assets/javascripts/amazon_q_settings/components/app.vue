@@ -19,6 +19,7 @@ import { logError } from '~/lib/logger';
 import { createAlert } from '~/alert';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import { awsIamRoleArnRegex } from '~/lib/utils/regexp';
 import DisconnectSuccessAlert from './disconnect_success_alert.vue';
 import DisconnectWarningModal from './disconnect_warning_modal.vue';
 
@@ -94,6 +95,7 @@ export default {
       isDisconnecting: false,
       isDisconnectWarningVisible: false,
       isDisconnectSuccessVisible: false,
+      isValidated: false,
     };
   },
   computed: {
@@ -109,6 +111,22 @@ export default {
         role_arn: this.roleArn,
       };
     },
+    isRoleArnValid() {
+      return awsIamRoleArnRegex.test(this.roleArn);
+    },
+
+    invalidFeedback() {
+      if (!this.roleArn) {
+        return this.$options.I18N_IAM_ROLE_ARN_REQUIRED_LABEL;
+      }
+
+      if (!this.isRoleArnValid) {
+        return this.$options.I18N_IAM_ROLE_ARN_INVALID;
+      }
+
+      return '';
+    },
+
     roleArnDisabled() {
       return this.isSubmitting || this.ready;
     },
@@ -138,7 +156,17 @@ export default {
     },
   },
   methods: {
+    markValidated() {
+      this.isValidated = true;
+    },
     submit() {
+      this.isValidated = true;
+
+      if (!this.isRoleArnValid) {
+        this.isSubmitting = false;
+        return;
+      }
+
       try {
         this.isSubmitting = true;
 
@@ -196,6 +224,9 @@ export default {
     'AmazonQ|Within your AWS account, create an IAM role for Amazon Q and the relevant identity provider. %{helpStart}Learn how to create an IAM role%{helpEnd}.',
   ),
   I18N_IAM_ROLE_ARN_LABEL: s__("AmazonQ|IAM role's ARN"),
+  I18N_IAM_ROLE_ARN_REQUIRED_LABEL: s__('AmazonQ|This field is required'),
+  I18N_IAM_ROLE_ARN_VALID: s__("AmazonQ|IAM role's ARN is valid"),
+  I18N_IAM_ROLE_ARN_INVALID: s__("AmazonQ|IAM role's ARN is not valid"),
   I18N_SAVE_ACKNOWLEDGE: s__(
     'AmazonQ|I understand that by selecting Save changes, GitLab creates a service account for Amazon Q and sends its credentials to AWS. Use of the Amazon Q Developer capabilities as part of GitLab Duo with Amazon Q is governed by the %{helpStart}AWS Customer Agreement%{helpEnd} or other written agreement between you and AWS governing your use of AWS services.',
   ),
@@ -264,15 +295,22 @@ export default {
         </li>
       </ol>
     </gl-form-group>
-    <gl-form-group :label="$options.I18N_IAM_ROLE_ARN_LABEL">
+    <gl-form-group
+      :label="$options.I18N_IAM_ROLE_ARN_LABEL"
+      :state="isValidated ? isRoleArnValid : null"
+      :invalid-feedback="invalidFeedback"
+      :valid-feedback="$options.I18N_IAM_ROLE_ARN_VALID"
+    >
       <div class="gl-flex">
         <gl-form-input
           v-model="roleArn"
+          :state="!isValidated || isRoleArnValid"
           type="text"
           width="lg"
           name="aws_role"
           :disabled="roleArnDisabled"
           :placeholder="$options.INPUT_PLACEHOLDER_ARN"
+          @focus="markValidated"
         />
         <gl-button
           v-if="ready"
@@ -302,7 +340,13 @@ export default {
       availabilityWarning
     }}</gl-alert>
     <div class="gl-flex">
-      <gl-button type="submit" variant="confirm" category="primary" :loading="isSubmitting">
+      <gl-button
+        type="submit"
+        variant="confirm"
+        category="primary"
+        :loading="isSubmitting"
+        class="js-no-auto-disable"
+      >
         {{ s__('AmazonQ|Save changes') }}
       </gl-button>
     </div>
