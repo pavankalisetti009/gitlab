@@ -43,6 +43,7 @@ module ComplianceManagement
       validate :validate_internal_expression, if: :internal?
       validate :controls_count_per_requirement
 
+      validates :external_url, presence: true, addressable_url: true, if: :external?
       validates :name, uniqueness: { scope: :compliance_requirement_id }
       validates :secret_token, presence: true, if: :external?
 
