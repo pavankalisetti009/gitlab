@@ -37925,6 +37925,9 @@ msgstr ""
 msgid "No runner executable"
 msgstr ""
 
+msgid "No seats left in subscription"
+msgstr ""
+
 msgid "No service accounts"
 msgstr ""
 
@@ -57632,9 +57635,6 @@ msgstr ""
 msgid "There are no matching files"
 msgstr ""
 
-msgid "There are no more seats left in your subscription. New users cannot be added to this instance."
-msgstr ""
-
 msgid "There are no open epics"
 msgstr ""
 
@@ -66213,6 +66213,9 @@ msgid "You have successfully purchased %{product}. You'll receive a receipt by e
 msgstr ""
 
 msgid "You have unsaved changes"
+msgstr ""
+
+msgid "You have used all seats in your subscription, so you cannot add new users."
 msgstr ""
 
 msgid "You left the \"%{membershipable_human_name}\" %{source_type}."

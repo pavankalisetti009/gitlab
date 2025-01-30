@@ -198,8 +198,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
 
           click_button 'Create user'
 
-          expect(page).to have_content('There are no more seats left in your subscription. ' \
-            'New users cannot be added to this instance.')
+          expect(page).to have_content('You have used all seats in your subscription, so you cannot add new users.')
         end
       end
     end

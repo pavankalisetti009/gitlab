@@ -99,7 +99,7 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
 
         it 'returns an error' do
           expect(service.execute).to have_attributes(
-            message: 'There are no more seats left in your subscription. New users cannot be added to this instance.',
+            message: 'NO_SEATS_AVAILABLE',
             status: :error
           )
         end
