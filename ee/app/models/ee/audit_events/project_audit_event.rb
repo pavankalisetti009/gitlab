@@ -3,9 +3,8 @@
 module EE
   module AuditEvents
     module ProjectAuditEvent
-      extend ActiveSupport::Concern
-      extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
+      include ::AuditEvents::CommonAuditEventStreamable
 
       attr_accessor :root_group_entity_id
       attr_writer :project

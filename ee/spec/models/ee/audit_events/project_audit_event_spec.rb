@@ -54,4 +54,6 @@ RSpec.describe ::AuditEvents::ProjectAuditEvent, type: :model, feature_category:
       expect(event.root_group_entity_id).to eq(root_group.id)
     end
   end
+
+  it_behaves_like 'streaming audit event model'
 end
