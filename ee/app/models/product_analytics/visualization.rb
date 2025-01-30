@@ -176,6 +176,10 @@ module ProductAnalytics
       load_visualizations(VALUE_STREAM_DASHBOARD_VISUALIZATIONS, VALUE_STREAM_DASHBOARD_PATH, is_project)
     end
 
+    def self.ai_impact_dashboard_visualizations(is_project = false)
+      load_visualizations(AI_IMPACT_DASHBOARD_VISUALIZATIONS, AI_IMPACT_DASHBOARD_PATH, is_project)
+    end
+
     def self.builtin_visualizations(container, user)
       is_project = container.is_a?(Project)
 
@@ -186,6 +190,10 @@ module ProductAnalytics
       end
 
       visualizations << value_stream_dashboard_visualizations(is_project) if container.vsd_dashboard_editor_enabled?
+
+      if container.ai_impact_dashboard_available_for?(user)
+        visualizations << ai_impact_dashboard_visualizations(is_project)
+      end
 
       visualizations.flatten
     end
