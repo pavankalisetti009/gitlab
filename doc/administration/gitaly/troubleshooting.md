@@ -280,7 +280,7 @@ The following references are read-only:
 To mirror-push branches and tags only, and avoid attempting to mirror-push protected refs, run:
 
 ```shell
-git push origin +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
+git push origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'
 ```
 
 Any other namespaces that the administrator wants to push can be included there as well via additional patterns.
