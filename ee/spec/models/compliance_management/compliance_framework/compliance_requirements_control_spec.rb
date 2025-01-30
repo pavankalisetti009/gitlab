@@ -93,13 +93,55 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     end
   end
 
+  describe 'external_url validation' do
+    let_it_be(:compliance_requirement) { create :compliance_requirement }
+    let(:control) do
+      build :compliance_requirements_control,
+        name: 'scanner_sast_running',
+        compliance_requirement: compliance_requirement,
+        control_type: control_type,
+        secret_token: 'psssst'
+    end
+
+    context 'with external control type' do
+      let(:control_type) { :external }
+
+      it 'validates presence' do
+        control.external_url = nil
+        expect(control).not_to be_valid
+
+        control.external_url = 'udp://example.com:1701'
+        expect(control).not_to be_valid
+
+        control.external_url = 'https://example.com/bar'
+        expect(control).to be_valid
+
+        control.external_url = 'https://localhost:1337/bar'
+        expect(control).to be_valid
+      end
+    end
+
+    context 'with internal control_type' do
+      let(:control_type) { :internal }
+
+      it 'ignores presence' do
+        control.external_url = nil
+        expect(control).to be_valid
+
+        control.external_url = ' '
+        expect(control).to be_valid
+      end
+    end
+  end
+
   describe 'secret_token validation' do
     let_it_be(:compliance_requirement) { create :compliance_requirement }
     let(:control) do
       build :compliance_requirements_control,
         name: 'scanner_sast_running',
         compliance_requirement: compliance_requirement,
-        control_type: control_type
+        control_type: control_type,
+        external_url: FFaker::Internet.unique.http_url
     end
 
     context 'with external control type' do

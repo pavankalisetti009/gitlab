@@ -11437,7 +11437,9 @@ CREATE TABLE compliance_requirements_controls (
     expression text,
     encrypted_secret_token bytea,
     encrypted_secret_token_iv bytea,
-    CONSTRAINT check_110c87ed8d CHECK ((char_length(expression) <= 255))
+    external_url text,
+    CONSTRAINT check_110c87ed8d CHECK ((char_length(expression) <= 255)),
+    CONSTRAINT check_5020dd6745 CHECK ((char_length(external_url) <= 1024))
 );
 
 CREATE SEQUENCE compliance_requirements_controls_id_seq
