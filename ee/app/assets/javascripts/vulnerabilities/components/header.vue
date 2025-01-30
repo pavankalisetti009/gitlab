@@ -22,6 +22,7 @@ import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
 import VulnerabilityActionsDropdown from './vulnerability_actions_dropdown.vue';
 import StateModal from './state_modal.vue';
+import SeverityModal from './severity_modal.vue';
 
 export const CREATE_MR_AI_ACTION = {
   name: s__('ciReport|Resolve with merge request'),
@@ -51,6 +52,7 @@ export default {
     ResolutionAlert,
     StatusDescription,
     StateModal,
+    SeverityModal,
     VulnerabilityActionsDropdown,
   },
   directives: {
@@ -301,7 +303,8 @@ export default {
       this.errorAlert = createAlert({ message: error });
     },
   },
-  modalId: 'vulnerability-state-modal',
+  stateModalId: 'vulnerability-state-modal',
+  severityModalId: 'vulnerability-severity-modal',
 };
 </script>
 
@@ -329,18 +332,19 @@ export default {
 
       <div class="detail-page-header-actions gl-flex gl-flex-wrap gl-items-center gl-gap-3">
         <gl-button
-          v-gl-modal="$options.modalId"
+          v-gl-modal="$options.stateModalId"
           :disabled="disabledChangeState || isLoadingVulnerability"
           data-testid="change-status-btn"
           >{{ s__('SecurityReports|Change status') }}</gl-button
         >
         <state-modal
-          :modal-id="$options.modalId"
+          :modal-id="$options.stateModalId"
           :state="vulnerability.state"
           :dismissal-reason="dismissalReason"
           :comment="latestComment"
           @change="changeVulnerabilityState"
         />
+        <severity-modal :modal-id="$options.severityModalId" :severity="vulnerability.severity" />
         <vulnerability-actions-dropdown
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"
