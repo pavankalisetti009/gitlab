@@ -5,9 +5,7 @@ module RemoteDevelopment
     module Create
       class PreFlattenDevfileValidator
         include Messages
-
-        # We must ensure that devfiles are not created with a schema version different than the required version
-        REQUIRED_DEVFILE_SCHEMA_VERSION = '2.2.0'
+        include RemoteDevelopmentConstants
 
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
