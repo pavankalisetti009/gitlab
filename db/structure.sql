@@ -9124,7 +9124,8 @@ CREATE TABLE boards (
     hide_backlog_list boolean DEFAULT false NOT NULL,
     hide_closed_list boolean DEFAULT false NOT NULL,
     iteration_id bigint,
-    iteration_cadence_id bigint
+    iteration_cadence_id bigint,
+    CONSTRAINT check_a60857cc50 CHECK ((num_nonnulls(group_id, project_id) = 1))
 );
 
 CREATE TABLE boards_epic_board_labels (
