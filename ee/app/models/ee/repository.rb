@@ -131,7 +131,7 @@ module EE
       root_ref = find_remote_root_ref(remote_url, authorization)
       change_head(root_ref) if root_ref.present?
     rescue ::Gitlab::Git::Repository::NoRepository => e
-      ::Gitlab::AppLogger.error("Error updating root ref for repository #{full_path} (#{container.id}): #{e.message}.")
+      ::Gitlab::AppLogger.info("Error updating root ref for repository #{full_path} (#{container.id}): #{e.message}.")
       nil
     end
 

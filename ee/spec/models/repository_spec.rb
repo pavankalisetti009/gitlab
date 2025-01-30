@@ -370,12 +370,28 @@ RSpec.describe Repository, feature_category: :source_code_management do
         .not_to change { project.default_branch }
     end
 
-    it 'does not raise error when repository does not exist' do
-      allow(repository).to receive(:find_remote_root_ref)
-        .with(url, auth)
-        .and_raise(Gitlab::Git::Repository::NoRepository)
+    context 'when project repo is missing' do
+      before do
+        allow(repository).to receive(:find_remote_root_ref)
+          .with(url, auth)
+          .and_raise(Gitlab::Git::Repository::NoRepository)
+      end
 
-      expect { repository.update_root_ref(url, auth) }.not_to raise_error
+      it 'logs a message' do
+        expect(Gitlab::AppLogger)
+          .to receive(:info)
+          .with(/Error updating root ref for repository/)
+
+        repository.update_root_ref(url, auth)
+      end
+
+      it 'returns nil when NoRepository exception is raised' do
+        expect(repository.update_root_ref(url, auth)).to be_nil
+      end
+
+      it 'does not raise error' do
+        expect { repository.update_root_ref(url, auth) }.not_to raise_error
+      end
     end
 
     def stub_find_remote_root_ref(repository, ref:)
