@@ -58,6 +58,12 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
         track_event
       end
+
+      it 'triggers last_duo_activity_on update' do
+        expect(Ai::UserMetrics).to receive(:refresh_last_activity_on).with(current_user).and_call_original
+
+        track_event
+      end
     end
 
     context 'for code suggestion event' do

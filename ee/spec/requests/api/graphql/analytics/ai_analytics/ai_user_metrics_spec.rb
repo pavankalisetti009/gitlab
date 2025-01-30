@@ -84,6 +84,25 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
         expect(ai_user_metrics).to be_nil
       end
     end
+
+    context 'with lastDuoActivityOn query', :freeze_time do
+      let_it_be(:current_user_metrics) do
+        create(:ai_user_metrics, last_duo_activity_on: 5.days.ago, user: current_user)
+      end
+
+      let(:fields) do
+        ['user { id lastDuoActivityOn }']
+      end
+
+      it 'returns lastDuoActivityOn' do
+        expect(ai_user_metrics['nodes']).to eq([{
+          'user' => {
+            'id' => current_user.to_global_id.to_s,
+            'lastDuoActivityOn' => 5.days.ago.to_date.to_s
+          }
+        }])
+      end
+    end
   end
 
   context 'for group' do
