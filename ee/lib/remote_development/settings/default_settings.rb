@@ -3,6 +3,8 @@
 module RemoteDevelopment
   module Settings
     class DefaultSettings
+      include RemoteDevelopmentConstants
+
       UNDEFINED = nil
 
       # When updating DEFAULT_DEVFILE_YAML, update the user facing doc as well.
@@ -13,8 +15,8 @@ module RemoteDevelopment
       # which will disrupt local development since gitlab-workspaces-tools does not support
       # that architecture yet and thus the workspace won't start.
       # This will be fixed in https://gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools/-/issues/12
-      DEFAULT_DEVFILE_YAML = <<~DEVFILE
-        schemaVersion: 2.2.0
+      DEFAULT_DEVFILE_YAML = <<~DEVFILE.freeze
+        schemaVersion: #{REQUIRED_DEVFILE_SCHEMA_VERSION}
         components:
           - name: development-environment
             attributes:
