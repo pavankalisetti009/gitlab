@@ -24,10 +24,10 @@
       "type": "string"
     },
     "cve_value": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "cwe_value": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
       "type": "date-time"
@@ -63,7 +63,7 @@
       }
     },
     "dismissal_reason": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "required": [
