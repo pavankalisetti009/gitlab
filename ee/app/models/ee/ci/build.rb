@@ -200,16 +200,16 @@ module EE
       def pages
         return {} unless pages_generator?
 
-        super.merge(expand_pages_base_variables)
+        super.merge(expand_pages_variables)
       end
       strong_memoize_attr :pages
 
       private
 
-      def expand_pages_base_variables
+      def expand_pages_variables
         pages_config.tap do |pages_options|
           pages_options[:path_prefix] = ExpandVariables.expand(pages_options[:path_prefix].to_s, -> {
-            pages_base_variables.sort_and_expand_all
+            base_variables.sort_and_expand_all
           })
         end
       end
