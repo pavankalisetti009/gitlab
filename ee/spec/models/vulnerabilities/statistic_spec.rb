@@ -174,9 +174,15 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
     end
 
     context 'when there is no vulnerability_statistic record available for the project of given pipeline' do
-      it 'creates a new record with the `latest_pipeline_id` attribute is set' do
+      before do
+        project.update!(archived: true)
+      end
+
+      it 'creates a new record where latest_pipeline_id, archived, and traversal_ids are set' do
         expect { set_latest_pipeline }.to change { project.reload.vulnerability_statistic }.from(nil).to(an_instance_of(described_class))
                                       .and change { project.vulnerability_statistic&.pipeline }.from(nil).to(pipeline)
+                                      .and change { project.vulnerability_statistic&.archived }.from(nil).to(project.archived)
+                                      .and change { project.vulnerability_statistic&.traversal_ids }.from(nil).to(project.namespace.traversal_ids)
       end
     end
   end

@@ -81,8 +81,8 @@ module Vulnerabilities
       private
 
       UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE = <<~SQL
-        INSERT INTO %<table_name>s AS target (project_id, latest_pipeline_id, letter_grade, created_at, updated_at)
-          VALUES (%{project_id}, %<latest_pipeline_id>d, %<letter_grade>d, now(), now())
+        INSERT INTO %<table_name>s AS target (project_id, archived, traversal_ids, latest_pipeline_id, letter_grade, created_at, updated_at)
+          VALUES (%{project_id}, %{archived}, %{traversal_ids}, %<latest_pipeline_id>d, %<letter_grade>d, now(), now())
         ON CONFLICT (project_id)
           DO UPDATE SET
             latest_pipeline_id = %<latest_pipeline_id>d, updated_at = now()
@@ -91,10 +91,15 @@ module Vulnerabilities
       private_constant :UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE
 
       def upsert_latest_pipeline_id_sql(pipeline)
+        project = pipeline.project
+        traversal_ids_sql = "'{#{project.namespace.traversal_ids.join(', ')}}'"
+
         format(
           UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE,
           table_name: table_name,
-          project_id: pipeline.project.id,
+          project_id: project.id,
+          archived: project.archived,
+          traversal_ids: traversal_ids_sql,
           latest_pipeline_id: pipeline.id,
           letter_grade: letter_grades[:a]
         )
