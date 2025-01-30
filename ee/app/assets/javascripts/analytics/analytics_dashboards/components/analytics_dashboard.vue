@@ -139,7 +139,13 @@ export default {
       return this.showAnonUserFilter || this.showDateRangeFilter;
     },
     showDateRangeFilter() {
-      return isDashboardFilterEnabled(this.currentDashboard?.filters?.dateRange);
+      return isDashboardFilterEnabled(this.dateRangeFilter);
+    },
+    dateRangeFilter() {
+      return this.currentDashboard?.filters?.dateRange;
+    },
+    dateRangeLimit() {
+      return this.dateRangeFilter.numberOfDaysLimit || 0;
     },
     showAnonUserFilter() {
       return isDashboardFilterEnabled(this.currentDashboard?.filters?.excludeAnonymousUsers);
@@ -495,7 +501,7 @@ export default {
             :default-option="filters.dateRangeOption"
             :start-date="filters.startDate"
             :end-date="filters.endDate"
-            :date-range-limit="0"
+            :date-range-limit="dateRangeLimit"
             @change="setDateRangeFilter"
           />
           <anon-users-filter

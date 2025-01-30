@@ -65,7 +65,7 @@
           "$ref": "#/definitions/DashboardFilter"
         },
         "dateRange": {
-          "$ref": "#/definitions/DashboardFilter"
+          "$ref": "#/definitions/DateRangeFilter"
         }
       },
       "title": "DashboardFilters"
@@ -76,6 +76,18 @@
       "properties": {
         "enabled": {
           "type": "boolean"
+        }
+      }
+    },
+    "DateRangeFilter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "numberOfDaysLimit": {
+          "type": "number"
         }
       }
     },

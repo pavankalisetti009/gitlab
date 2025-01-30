@@ -978,6 +978,11 @@ describe('AnalyticsDashboard', () => {
         });
       });
 
+      it('sets the date range limit based on config if it exists', async () => {
+        await setupDashboardWithFilters({ dateRange: { enabled: true, numberOfDaysLimit: 99 } });
+        expect(findDateRangeFilter().props('dateRangeLimit')).toBe(99);
+      });
+
       it('sets the panel filters', () => {
         expect(findAllPanels().at(0).props('filters')).toMatchObject({
           dateRangeOption: defaultFilters.dateRangeOption,
