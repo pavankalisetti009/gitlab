@@ -173,6 +173,7 @@ export default {
                   :users="rule.reviewers"
                   :root-path="relativeUrlRoot"
                   :is-editable="userPermissions.adminMergeRequest"
+                  :can-rerequest="userPermissions.adminMergeRequest"
                   @request-review="(data) => $emit('request-review', data)"
                   @remove-reviewer="(data) => $emit('remove-reviewer', data)"
                 />
