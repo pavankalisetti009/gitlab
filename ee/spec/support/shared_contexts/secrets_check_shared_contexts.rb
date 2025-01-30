@@ -146,8 +146,16 @@ RSpec.shared_context 'secrets check context' do
   # Used for mocking calls to logger.
   let(:secret_detection_logger) { instance_double(::Gitlab::SecretDetectionLogger) }
 
+  # Used for the flags or state necessary to use the SDS - used to test logging
+  let(:sds_ff_enabled) { false }
+  let(:saas_feature_enabled) { true }
+  let(:is_dedicated) { false }
+
   before do
     allow(::Gitlab::SecretDetectionLogger).to receive(:build).and_return(secret_detection_logger)
+
+    # The SDS is not the primary use case currently so we don't need to call it by default
+    stub_feature_flags(use_secret_detection_service: false)
 
     # This fixes a regression when testing locally because scanning in subprocess using the
     # parallel gem calls `Kernel.at_exit` hook in gitaly_setup.rb when a subprocess is killed
@@ -183,10 +191,10 @@ RSpec.shared_context 'secret detection error and log messages context' do
   # Log messages with formatting
   let(:finding_path) { '.env' }
   let(:finding_line_number) { 1 }
-  let(:finding_description) { 'GitLab Personal Access Token' }
+  let(:finding_description) { 'GitLab personal access token' }
   let(:another_finding_path) { 'test.txt' }
   let(:another_finding_line_number) { 2 }
-  let(:another_finding_description) { 'GitLab Runner Authentication Token' }
+  let(:another_finding_description) { 'GitLab runner authentication token' }
   let(:finding_message_header) { format(log_messages[:finding_message_occurrence_header], { sha: new_commit }) }
   let(:another_finding_message_header) do
     format(log_messages[:finding_message_occurrence_header], { sha: another_new_commit })

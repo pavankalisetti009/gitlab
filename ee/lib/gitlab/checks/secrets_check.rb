@@ -3,8 +3,9 @@
 module Gitlab
   module Checks
     class SecretsCheck < ::Gitlab::Checks::BaseBulkChecker
-      include Gitlab::InternalEventsTracking
-      include Gitlab::Utils::StrongMemoize
+      include ::Gitlab::InternalEventsTracking
+      include ::Gitlab::Utils::StrongMemoize
+      include ::Gitlab::Loggable
 
       ERROR_MESSAGES = {
         failed_to_scan_regex_error: "\n    - Failed to scan blob(id: %{payload_id}) due to regex error.",
@@ -33,7 +34,10 @@ module Gitlab
         finding_message: "\n\nSecret leaked in blob: %{payload_id}" \
                          "\n  -- line:%{line_number} | %{description}",
         found_secrets_footer: "\n--------------------------------------------------\n\n",
-        invalid_encoding: "Could not convert data to UTF-8 from %{encoding}"
+        invalid_encoding: "Could not convert data to UTF-8 from %{encoding}",
+        sds_disabled: "SDS is disabled: FF: %{sds_ff_enabled}, SaaS: %{saas_feature_enabled}, " \
+                      "Non-Dedicated: %{is_not_dedicated}",
+        invalid_log_level: "Unknown log level %{log_level} for message: %{message}"
       }.freeze
 
       PAYLOAD_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
@@ -98,7 +102,7 @@ module Gitlab
                 )
             rescue StandardError => e # Currently we want to catch and simply log errors
               @sds_client = nil
-              secret_detection_logger.error(e.message)
+              ::Gitlab::ErrorTracking.track_exception(e)
             end
           end
         end
@@ -135,14 +139,18 @@ module Gitlab
           log_applied_exclusions_audit_events(response.applied_exclusions)
 
           # Handle the response depending on the status returned.
-          format_response(response)
+          response = format_response(response)
 
+          # Wait for the thread to complete up until we time out, returns `nil` on timeout
+          thread&.join(logger.time_left)
+
+          response
         # TODO: Perhaps have a separate message for each and better logging?
         rescue ::Gitlab::SecretDetection::Core::Scanner::RulesetParseError,
           ::Gitlab::SecretDetection::Core::Scanner::RulesetCompilationError => e
 
           message = format(ERROR_MESSAGES[:scan_initialization_error], { error_msg: e.message })
-          secret_detection_logger.error(message: message)
+          secret_detection_logger.error(build_structured_payload(message:))
         ensure
           # clean up the thread
           thread&.exit
@@ -174,9 +182,20 @@ module Gitlab
       end
 
       def use_secret_detection_service?
-        Feature.enabled?(:use_secret_detection_service, project) &&
-          ::Gitlab::Saas.feature_available?(:secret_detection_service) &&
-          !::Gitlab::CurrentSettings.gitlab_dedicated_instance
+        return @should_use_sds unless @should_use_sds.nil?
+
+        sds_ff_enabled = Feature.enabled?(:use_secret_detection_service, project)
+        saas_feature_enabled = ::Gitlab::Saas.feature_available?(:secret_detection_service)
+        is_not_dedicated = !::Gitlab::CurrentSettings.gitlab_dedicated_instance
+
+        @should_use_sds = sds_ff_enabled && saas_feature_enabled && is_not_dedicated
+
+        unless @should_use_sds
+          msg = format(LOG_MESSAGES[:sds_disabled], { sds_ff_enabled:, saas_feature_enabled:, is_not_dedicated: })
+          secret_detection_logger.info(build_structured_payload(message: msg))
+        end
+
+        @should_use_sds
       end
 
       ###############
@@ -359,7 +378,7 @@ module Gitlab
 
           diffs.concat(filtered_diffs)
         rescue GRPC::InvalidArgument => e
-          secret_detection_logger.error(message: e.message)
+          ::Gitlab::ErrorTracking.track_exception(e)
         end
         diffs
       end
@@ -408,7 +427,10 @@ module Gitlab
 
         if invalid_hunk
           secret_detection_logger.error(
-            message: "Could not process hunk header: #{invalid_hunk.strip}, skipped parsing diff: #{diff.right_blob_id}"
+            build_structured_payload(
+              message:
+              "Could not process hunk header: #{invalid_hunk.strip}, skipped parsing diff: #{diff.right_blob_id}"
+            )
           )
           return []
         end
@@ -494,12 +516,14 @@ module Gitlab
         case response.status
         when ::Gitlab::SecretDetection::Core::Status::NOT_FOUND
           # No secrets found, we log and skip the check.
-          secret_detection_logger.info(message: LOG_MESSAGES[:secrets_not_found])
+          secret_detection_logger.info(build_structured_payload(message: LOG_MESSAGES[:secrets_not_found]))
         when ::Gitlab::SecretDetection::Core::Status::FOUND
           # One or more secrets found, generate message with findings and fail check.
           message = build_secrets_found_message(results)
 
-          secret_detection_logger.info(message: LOG_MESSAGES[:found_secrets])
+          secret_detection_logger.info(
+            build_structured_payload(message: LOG_MESSAGES[:found_secrets])
+          )
 
           raise ::Gitlab::GitAccess::ForbiddenError, message
         when ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS
@@ -507,20 +531,28 @@ module Gitlab
           # generate a message with findings and errors, and fail the check.
           message = build_secrets_found_message(results, with_errors: true)
 
-          secret_detection_logger.info(message: LOG_MESSAGES[:found_secrets_with_errors])
+          secret_detection_logger.info(
+            build_structured_payload(message: LOG_MESSAGES[:found_secrets_with_errors])
+          )
 
           raise ::Gitlab::GitAccess::ForbiddenError, message
         when ::Gitlab::SecretDetection::Core::Status::SCAN_TIMEOUT
           # Entire scan timed out, we log and skip the check for now.
-          secret_detection_logger.error(message: ERROR_MESSAGES[:scan_timeout_error])
+          secret_detection_logger.error(
+            build_structured_payload(message: ERROR_MESSAGES[:scan_timeout_error])
+          )
         when ::Gitlab::SecretDetection::Core::Status::INPUT_ERROR
           # Scan failed due to invalid input. We skip the check because of an input error
           # which could be due to not having anything to scan.
-          secret_detection_logger.error(message: ERROR_MESSAGES[:invalid_input_error])
+          secret_detection_logger.error(
+            build_structured_payload(message: ERROR_MESSAGES[:invalid_input_error])
+          )
         else
           # Invalid status returned by the scanning service/gem, we don't
           # know how to handle that, so nothing happens and we skip the check.
-          secret_detection_logger.error(message: ERROR_MESSAGES[:invalid_scan_status_code_error])
+          secret_detection_logger.error(
+            build_structured_payload(message: ERROR_MESSAGES[:invalid_scan_status_code_error])
+          )
         end
       end
 
@@ -620,7 +652,9 @@ module Gitlab
           # about the detected secrets even without a commit sha/file path information.
           unless cursor.next_cursor.empty?
             secret_detection_logger.error(
-              message: format(ERROR_MESSAGES[:too_many_tree_entries_error], { sha: revision })
+              build_structured_payload(
+                message: format(ERROR_MESSAGES[:too_many_tree_entries_error], { sha: revision })
+              )
             )
           end
 
@@ -715,7 +749,7 @@ module Gitlab
         # ignore the response for now
         _ = sds_client.run_scan(request: request, auth_token: sds_auth_token)
       rescue StandardError => e # Currently we want to catch and simply log errors
-        secret_detection_logger.error(message: e.message)
+        ::Gitlab::ErrorTracking.track_exception(e)
       end
 
       # Expects an array of either Hashes or ScanRequest::Payloads
@@ -737,7 +771,9 @@ module Gitlab
 
         unless datum[:data].valid_encoding?
           log_msg = format(LOG_MESSAGES[:invalid_encoding], { encoding: original_encoding })
-          secret_detection_logger.warn(message: log_msg)
+          secret_detection_logger.warn(
+            build_structured_payload(message: log_msg)
+          )
           return
         end
 
