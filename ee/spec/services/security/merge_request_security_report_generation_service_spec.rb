@@ -21,8 +21,8 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, feature_ca
     context 'when the given report type is valid' do
       using RSpec::Parameterized::TableSyntax
 
-      let_it_be(:confirmed_finding) { create(:vulnerabilities_finding, :confirmed) }
-      let_it_be(:dismissed_finding) { create(:vulnerabilities_finding, :dismissed) }
+      let_it_be(:confirmed_finding) { create(:vulnerabilities_finding, :confirmed, severity: :critical) }
+      let_it_be(:dismissed_finding) { create(:vulnerabilities_finding, :dismissed, severity: :medium) }
 
       let(:new_uuid) { SecureRandom.uuid }
       let(:confirmed_uuid) { confirmed_finding.uuid }
@@ -57,7 +57,7 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, feature_ca
                   'id' => nil,
                   'name' => 'Test vulnerability 2',
                   'uuid' => confirmed_uuid,
-                  'severity' => 'critical'
+                  'severity' => 'low'
                 }
               ],
               'fixed' => [
@@ -114,7 +114,7 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, feature_ca
                     'id' => nil,
                     'name' => 'Test vulnerability 3',
                     'uuid' => dismissed_uuid,
-                    'severity' => 'low',
+                    'severity' => 'medium',
                     'state' => 'dismissed'
                   }
                 ]

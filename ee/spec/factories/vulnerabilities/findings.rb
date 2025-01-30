@@ -177,7 +177,7 @@ FactoryBot.define do
 
     trait :confirmed do
       after(:create) do |finding|
-        create(:vulnerability, :confirmed, project: finding.project, findings: [finding])
+        create(:vulnerability, :confirmed, project: finding.project, findings: [finding], severity: finding.severity)
       end
     end
 
@@ -191,7 +191,7 @@ FactoryBot.define do
       with_dismissal_feedback
 
       after(:create) do |finding|
-        create(:vulnerability, :dismissed, project: finding.project, findings: [finding])
+        create(:vulnerability, :dismissed, project: finding.project, findings: [finding], severity: finding.severity)
       end
     end
 
