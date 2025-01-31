@@ -2,7 +2,7 @@
 
 .form-group#js-seat-control
   %h5
-    = _("Seat controls")
+    = _("Seat control")
   - if ::Feature.enabled?(:block_seat_overages, group, type: :beta)
     %div
       = f.gitlab_ui_radio_component :seat_control, :block_overages, render('groups/restricted_access_label'),

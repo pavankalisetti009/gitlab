@@ -610,7 +610,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
 
       it 'is not visible' do
-        expect(page).not_to have_content('Seat controls')
+        expect(page).not_to have_content('Seat control')
         expect(page).not_to have_content('Restricted access')
         expect(page).not_to have_content('Set user cap')
       end
@@ -627,7 +627,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         it 'is not visible' do
-          expect(page).not_to have_content('Seat controls')
+          expect(page).not_to have_content('Seat control')
           expect(page).not_to have_content('Restricted access')
           expect(page).not_to have_content('Set user cap')
         end
@@ -639,7 +639,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         it 'is visible' do
-          expect(page).to have_content('Seat controls')
+          expect(page).to have_content('Seat control')
           expect(page).to have_content('Set user cap')
           expect(page).to have_content('Restricted access')
         end
@@ -746,7 +746,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           it 'shows user cap, but not restricted access' do
             visit edit_group_path(group)
 
-            expect(page).to have_content('Seat controls')
+            expect(page).to have_content('Seat control')
             expect(page).not_to have_content('Restricted access')
             expect(page).to have_content('Set user cap')
           end
