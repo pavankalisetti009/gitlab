@@ -37,11 +37,6 @@ module Resolvers
       private
 
       def validate_args(args)
-        if object.is_a?(::Project) && Feature.disabled?(:vulnerability_filtering_by_identifier, object, type: :beta)
-          raise ::Gitlab::Graphql::Errors::ArgumentError,
-            'Feature flag `vulnerability_filtering_by_identifier` is disabled for the project.'
-        end
-
         if object.is_a?(::Group) && Feature.disabled?(:vulnerability_filtering_by_identifier_group, object,
           type: :beta)
           raise ::Gitlab::Graphql::Errors::ArgumentError,

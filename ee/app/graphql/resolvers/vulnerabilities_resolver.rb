@@ -32,11 +32,9 @@ module Resolvers
 
     argument :identifier_name, GraphQL::Types::String,
       required: false,
-      experiment: { milestone: '17.6' },
-      description: 'Filter vulnerabilities by identifier name. Applicable on project ' \
-                   'level when feature flag `vulnerability_filtering_by_identifier` is ' \
-                   'enabled. Applicable on group level when feature flag `vulnerability_filtering_by_identifier_group` is enabled. Ignored when applied on instance security' \
-                   'dashboard queries.'
+      description: 'Filter vulnerabilities by identifier name. Applicable on group ' \
+                   'level when feature flag `vulnerability_filtering_by_identifier_group` is enabled. ' \
+                   'Ignored when applied on instance security dashboard queries.'
 
     argument :scanner, [GraphQL::Types::String],
       required: false,

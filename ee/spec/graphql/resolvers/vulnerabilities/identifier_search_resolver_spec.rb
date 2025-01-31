@@ -100,9 +100,6 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
         end
 
         it_behaves_like 'handles invalid search input'
-        it_behaves_like 'handles a disabled feature flag' do
-          let(:feature_flag) { :vulnerability_filtering_by_identifier }
-        end
       end
     end
 
@@ -111,16 +108,6 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
 
       context 'with a group' do
         let(:obj) { group }
-
-        it 'returns resource not available' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable) do
-            search_results
-          end
-        end
-      end
-
-      context 'with a project' do
-        let(:obj) { project }
 
         it 'returns resource not available' do
           expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable) do
