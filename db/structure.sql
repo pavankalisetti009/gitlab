@@ -16004,7 +16004,8 @@ CREATE TABLE ml_candidate_metadata (
     value text NOT NULL,
     project_id bigint,
     CONSTRAINT check_6b38a286a5 CHECK ((char_length(name) <= 255)),
-    CONSTRAINT check_9453f4a8e9 CHECK ((char_length(value) <= 5000))
+    CONSTRAINT check_9453f4a8e9 CHECK ((char_length(value) <= 5000)),
+    CONSTRAINT check_b964e2ac27 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ml_candidate_metadata_id_seq
