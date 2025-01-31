@@ -141,7 +141,8 @@
     "introduced_by_mr",
     "milestone",
     "name",
-    "project_ability"
+    "project_ability",
+    "title"
   ],
   "not": {
     "properties": {

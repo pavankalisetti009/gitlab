@@ -12,7 +12,7 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
   let_it_be(:subgroup) { create(:group, parent: root_group) }
   let_it_be(:member_root, reload: true) { create(:group_member, :reporter, group: root_group, user: user) }
   let_it_be(:member_subgroup, reload: true) { create(:group_member, :reporter, group: subgroup, user: user) }
-  let_it_be(:permissions) { [{ name: 'Read code', description: match(/.+/) }] }
+  let_it_be(:permissions) { [{ name: 'View repository code', description: match(/.+/) }] }
 
   let(:current_user) { user }
 
