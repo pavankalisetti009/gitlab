@@ -57,6 +57,8 @@ module EE
         push_frontend_feature_flag(:search_mr_filter_source_branch, current_user)
       end
 
+      before_action :sso_enforcement_redirect, only: [:show]
+
       after_action :run_index_integrity_worker, only: :show, if: :no_results_for_group_or_project_blobs_advanced_search?
     end
 
@@ -138,6 +140,19 @@ module EE
         *permitted_filter_params,
         not: permitted_filter_params
       ))
+    end
+
+    def sso_enforcement_redirect
+      # redirection should occur for group searches only
+      return unless search_service.level == 'group' && ::Feature.enabled?(:search_group_sso_redirect, current_user)
+
+      search_group = search_service.group
+      return unless search_group
+
+      redirect = ::Gitlab::Auth::GroupSaml::SsoEnforcer.access_restricted?(resource: search_group, user: current_user)
+      return unless redirect
+
+      redirect_to sso_group_saml_providers_url(search_group, { redirect: request.fullpath })
     end
   end
 end

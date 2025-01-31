@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe SearchController, type: :request, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group) { create(:group, maintainers: user) }
 
   let(:project) { create(:project, :public, :repository, :wiki_repo, name: 'awesome project', group: group) }
   let(:projects) { create_list(:project, 5, :public, :repository, :wiki_repo) }
@@ -39,12 +39,68 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
   end
 
   describe 'GET /search' do
+    before do
+      login_as(user)
+    end
+
+    describe 'SSO enforcement' do
+      before do
+        allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?).and_return(true)
+      end
+
+      context 'for global level search' do
+        let(:params) { { search: 'title', scope: 'issues' } }
+
+        it 'does not redirect user to sso sign-in' do
+          send_search_request(params)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'for group level search' do
+        let(:params) { { group_id: group.id, search: 'title', scope: 'issues' } }
+
+        it 'redirects user to sso sign-in' do
+          # this mock handles multiple calls
+          # 1. loading `@group` from params[:group_id]
+          # 2. in the sso_enforcement_redirect method
+          allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?)
+            .with(resource: group, user: user).and_return(false, true)
+
+          send_search_request(params)
+
+          expect(response).to have_gitlab_http_status(:redirect)
+          expect(response).to redirect_to(sso_group_saml_providers_url(group, { redirect: request.fullpath }))
+        end
+
+        context 'when search_group_sso_redirect feature flag is not enabled' do
+          before do
+            stub_feature_flags(search_group_sso_redirect: false)
+          end
+
+          it 'does not redirect user to sso sign-in' do
+            send_search_request(params)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+        end
+      end
+
+      context 'for project level search' do
+        let(:params) { { project_id: project.id, search: 'title', scope: 'issues' } }
+
+        it 'does not redirect user to sso sign-in' do
+          send_search_request(params)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+    end
+
     context 'when elasticsearch is enabled', :elastic, :sidekiq_inline do
       before do
         stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-        project.add_maintainer(user)
-
-        login_as(user)
       end
 
       let(:creation_traits) { [] }
@@ -174,7 +230,7 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
         end
       end
 
-      describe 'search index integrity', :elastic do
+      describe 'search index integrity' do
         context 'when project is present and group is not present' do
           let(:params) { { search: 'test', scope: 'blobs', project_id: project.id } }
 
