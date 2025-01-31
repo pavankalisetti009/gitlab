@@ -899,20 +899,33 @@ module EE
         enable :read_dependency
       end
 
-      rule { custom_role_enables_admin_compliance_framework & compliance_framework_available }.policy do
+      rule { custom_role_enables_admin_compliance_framework }.policy do
         enable :admin_compliance_framework
-      end
-
-      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & project_level_compliance_dashboard_enabled }.policy do
         enable :read_compliance_dashboard
-      end
-
-      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & project_level_compliance_adherence_report_enabled }.policy do
         enable :read_compliance_adherence_report
+        enable :read_compliance_violations_report
       end
 
-      rule { (custom_role_enables_admin_compliance_framework | custom_role_enables_read_compliance_dashboard) & project_level_compliance_violations_report_enabled }.policy do
+      rule { custom_role_enables_read_compliance_dashboard }.policy do
+        enable :read_compliance_dashboard
+        enable :read_compliance_adherence_report
         enable :read_compliance_violations_report
+      end
+
+      rule { ~compliance_framework_available }.policy do
+        prevent :admin_compliance_framework
+      end
+
+      rule { ~project_level_compliance_dashboard_enabled }.policy do
+        prevent :read_compliance_dashboard
+      end
+
+      rule { ~project_level_compliance_adherence_report_enabled }.policy do
+        prevent :read_compliance_adherence_report
+      end
+
+      rule { ~project_level_compliance_violations_report_enabled }.policy do
+        prevent :read_compliance_violations_report
       end
 
       rule { custom_role_enables_manage_deploy_tokens }.policy do
