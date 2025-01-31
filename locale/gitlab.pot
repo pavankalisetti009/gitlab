@@ -50715,7 +50715,7 @@ msgstr ""
 msgid "Searching by both author and message is currently not supported."
 msgstr ""
 
-msgid "Seat controls"
+msgid "Seat control"
 msgstr ""
 
 msgid "Seats"
