@@ -285,21 +285,49 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
   end
 
   describe 'pending_migrations' do
-    let(:pending_migration1) { subject.migrations[1] }
-    let(:pending_migration2) { subject.migrations[2] }
+    let_it_be(:pending_migration1) { described_class.migrations[1] }
+    let_it_be(:pending_migration2) { described_class.migrations[2] }
 
-    before do
+    before_all do
       pending_migration1.save!(completed: false)
       pending_migration2.save!(completed: false)
     end
 
-    after do
+    after(:all) do
       # reset migration index to prevent flakiness
       described_class.mark_all_as_completed!
     end
 
-    it 'returns only pending migrations' do
-      expect(subject.pending_migrations.map(&:name)).to eq([pending_migration1, pending_migration2].map(&:name))
+    subject(:pending_migrations) { described_class.pending_migrations }
+
+    context 'when elasticsearch_indexing is enabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: true)
+      end
+
+      it 'returns only pending migrations' do
+        expected = [pending_migration1, pending_migration2].map(&:name)
+
+        expect(described_class.pending_migrations.map(&:name)).to eq(expected)
+      end
+
+      it 'does not include pending migrations which are skipped' do
+        allow_next_instance_of(Elastic::MigrationRecord) do |m|
+          allow(m).to receive(:skip?).and_return(true)
+        end
+
+        expect(described_class.pending_migrations.map(&:name)).to eq([])
+      end
+    end
+
+    context 'when elasticsearch_indexing is disabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: false)
+      end
+
+      it 'returns no pending migrations' do
+        expect(described_class.pending_migrations).to eq([])
+      end
     end
   end
 end

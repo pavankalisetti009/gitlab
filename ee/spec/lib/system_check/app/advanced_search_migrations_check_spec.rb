@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe SystemCheck::App::AdvancedSearchMigrationsCheck, feature_category: :global_search do
@@ -86,31 +87,27 @@ RSpec.describe SystemCheck::App::AdvancedSearchMigrationsCheck, feature_category
   end
 
   describe '#pending_migrations_count' do
-    before do
-      allow(Elastic::DataMigrationService).to receive(:migration_files).and_return(migration_files)
-    end
-
     subject { described_class.pending_migrations_count }
 
     context 'with pending migrations' do
       before do
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).with('test_migrate').and_return false
+        allow(Elastic::DataMigrationService).to receive(:pending_migrations).and_return([migration])
       end
 
       it { is_expected.to eq 1 }
-
-      context 'when the migration is skipped' do
-        before do
-          allow(migration).to receive(:skip?).and_return true
-        end
-
-        it { is_expected.to eq 0 }
-      end
     end
 
     context 'without pending migrations' do
       before do
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).with('test_migrate').and_return true
+        allow(Elastic::DataMigrationService).to receive(:pending_migrations).and_return([])
+      end
+
+      it { is_expected.to eq 0 }
+    end
+
+    context 'when pending_migrations returns a nil value' do
+      before do
+        allow(Elastic::DataMigrationService).to receive(:pending_migrations).and_return(nil)
       end
 
       it { is_expected.to eq 0 }
