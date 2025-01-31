@@ -18,7 +18,8 @@
 #      /remote_development/workspace_actions_spec.rb
 
 module QA
-  RSpec.describe 'Create', only: { pipeline: %i[staging staging-canary] }, product_group: :remote_development do
+  RSpec.describe 'Create', only: { pipeline: %i[staging staging-canary] }, product_group: :remote_development,
+    feature_category: :workspaces do
     describe 'Remote Development' do
       include Runtime::Fixtures
 
