@@ -91,9 +91,7 @@ RSpec.describe Vulnerabilities::FindingEntity, feature_category: :vulnerability_
       end
 
       subject do
-        Gitlab::Database.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480731') do
-          entity.as_json
-        end
+        entity.as_json
       end
 
       before do

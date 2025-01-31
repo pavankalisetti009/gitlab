@@ -13,9 +13,6 @@ module Sbom
     belongs_to :source_package, optional: true, inverse_of: :occurrences
 
     has_many :occurrences_vulnerabilities,
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
-      },
       class_name: 'Sbom::OccurrencesVulnerability',
       foreign_key: :sbom_occurrence_id,
       inverse_of: :occurrence

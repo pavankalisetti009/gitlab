@@ -39,15 +39,11 @@ module EE
 
         override :perform
         def perform
-          ::Gitlab::Database.allow_cross_joins_across_databases(
-            url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins'
-          ) do
-            each_sub_batch do |sub_batch|
-              occurrence_ids = sub_batch.pluck(:id).join(', ')
-              query = format(UPDATE_SQL, occurrence_ids: occurrence_ids)
+          each_sub_batch do |sub_batch|
+            occurrence_ids = sub_batch.pluck(:id).join(', ')
+            query = format(UPDATE_SQL, occurrence_ids: occurrence_ids)
 
-              connection.exec_query(query)
-            end
+            connection.exec_query(query)
           end
         end
       end
