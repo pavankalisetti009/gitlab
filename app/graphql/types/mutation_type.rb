@@ -145,6 +145,7 @@ module Types
     mount_mutation Mutations::Todos::MarkDone
     mount_mutation Mutations::Todos::Restore
     mount_mutation Mutations::Todos::MarkAllDone
+    mount_mutation Mutations::Todos::ResolveMany, experiment: { milestone: '17.9' }
     mount_mutation Mutations::Todos::RestoreMany
     mount_mutation Mutations::Todos::Snooze, experiment: { milestone: '17.4' }
     mount_mutation Mutations::Todos::UnSnooze, experiment: { milestone: '17.4' }
