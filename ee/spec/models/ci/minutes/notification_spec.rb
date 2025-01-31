@@ -37,25 +37,6 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
     shared_examples 'dismissible alert' do |stage|
       let_it_be(:feature_id) { "ci_minutes_limit_alert_#{stage}_stage" }
 
-      describe '#callout_data' do
-        it 'generates proper callout data' do
-          dismiss_payload = if injected_group.user_namespace?
-                              {
-                                feature_id: feature_id,
-                                dismiss_endpoint: Rails.application.routes.url_helpers.callouts_path
-                              }
-                            else
-                              {
-                                feature_id: feature_id,
-                                dismiss_endpoint: Rails.application.routes.url_helpers.group_callouts_path,
-                                group_id: injected_group.id
-                              }
-                            end
-
-          expect(subject.callout_data).to eq(dismiss_payload)
-        end
-      end
-
       context 'when the user dismissed the alert under 30 days ago', :freeze_time do
         before do
           allow_dismissal true
@@ -105,8 +86,6 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show_callout?' do
           it 'has warning notification' do
             expect(subject.show_callout?(user)).to be true
-            expect(subject.text).to match(%r{.*\shas 4 / 20 \(20%\) shared runner compute minutes remaining})
-            expect(subject.style).to eq :warning
           end
 
           it_behaves_like 'dismissible alert', :warning
@@ -139,8 +118,6 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show_callout?' do
           it 'has danger notification' do
             expect(subject.show_callout?(user)).to be true
-            expect(subject.text).to match(%r{.*\shas 1 / 20 \(5%\) shared runner compute minutes remaining})
-            expect(subject.style).to eq :danger
           end
 
           it_behaves_like 'dismissible alert', :danger
@@ -174,8 +151,6 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show_callout?' do
           it 'has warning notification' do
             expect(subject.show_callout?(user)).to be true
-            expect(subject.text).to match(%r{.*\shas 1 / 1000 \(0%\) shared runner compute minutes remaining})
-            expect(subject.style).to eq :danger
           end
 
           it_behaves_like 'dismissible alert', :danger
@@ -208,8 +183,6 @@ RSpec.describe Ci::Minutes::Notification, feature_category: :hosted_runners do
         describe '#show_callout?' do
           it 'has exceeded notification' do
             expect(subject.show_callout?(user)).to be true
-            expect(subject.text).to match(/.*\shas reached its shared runner compute minutes quota/)
-            expect(subject.style).to eq :danger
           end
 
           it_behaves_like 'dismissible alert', :exceeded

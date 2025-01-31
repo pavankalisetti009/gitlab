@@ -1,14 +1,5 @@
-- notification = ::Ci::Minutes::Notification.new(local_assigns[:project], local_assigns[:namespace])
+- project = local_assigns[:project]
+- namespace = local_assigns[:namespace]
 - usage_quotas_link_hidden = local_assigns[:usage_quotas_link_hidden]
-- namespace ||= project.namespace
-- return unless notification.show_callout?(current_user)
 
-= render Pajamas::AlertComponent.new(variant: notification.style,
-  alert_options: { class: ['js-minute-limit-banner', (classes if defined? classes)],
-                   data: notification.callout_data.merge({ testid: 'ci-minute-limit-banner' }) }) do |c|
-  - c.with_body do
-    = notification.text
-  - c.with_actions do
-    = link_button_to _('Buy more compute minutes'), buy_additional_minutes_path(namespace), class: 'gl-alert-action', variant: :confirm
-    - unless usage_quotas_link_hidden
-      = link_button_to _('See usage statistics'), usage_quotas_path(namespace.root_ancestor, anchor: 'pipelines-quota-tab'), class: 'gl-alert-action', variant: :secondary
+= render Namespaces::Pipelines::Alerts::SharedRunnersMinutesLimitAlertComponent.new(project: project, namespace: namespace, usage_quotas_link_hidden: usage_quotas_link_hidden, current_user: current_user, classes: (classes if defined? classes))

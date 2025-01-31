@@ -68,14 +68,14 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
   end
 
   context 'when close to the limit' do
-    where(:case_name, :percentage, :minutes_limit, :minutes_used, :minutes_left) do
-      'warning level' | 25 | 1000 | 750 | 250
-      'danger level'  | 5  | 1000 | 950 | 50
+    where(:case_name, :minutes_used, :minutes_limit, :displayed_usage) do
+      'warning level' | 750 | 1000 | '250 / 1,000 (25%)'
+      'danger level'  | 950 | 1000 | '50 / 1,000 (5%)'
     end
 
     with_them do
       let(:message) do
-        "#{group.name} namespace has #{minutes_left} / #{minutes_limit} (#{percentage}%) shared runner " \
+        "#{group.name} namespace has #{displayed_usage} shared runner " \
           "compute minutes remaining. When all compute minutes are used up, no new jobs or pipelines will run " \
           "in this namespace's projects."
       end
