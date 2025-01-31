@@ -1,9 +1,6 @@
-#import "~/graphql_shared/fragments/page_info.fragment.graphql"
-#import "~/merge_requests/list/queries/merge_request.fragment.graphql"
+#import "ee_else_ce/merge_request_dashboard/queries/merge_request_approval.fragment.graphql"
 
-query getGroupMergeRequestsEE(
-  $hideUsers: Boolean = false
-  $isSignedIn: Boolean = false
+query getGroupMergeRequestsApprovalsEE(
   $fullPath: ID!
   $sort: MergeRequestSort
   $state: MergeRequestState
@@ -65,23 +62,9 @@ query getGroupMergeRequestsEE(
       first: $firstPageSize
       last: $lastPageSize
     ) {
-      pageInfo {
-        ...PageInfo
-      }
       nodes {
-        ...MergeRequestFragment
-        reference(full: true)
-        # This data gets loaded through the `mergeRequestApprovals` request,
-        # we are doing it this way to combat timeouts with the approval
-        # data causing the whole merge request list to not render
-        approved @client
-        approvalsRequired @client
-        approvalsLeft @client
-        approvedBy @client {
-          nodes {
-            id
-          }
-        }
+        id
+        ...MergeRequestApprovalFragment
       }
     }
   }
