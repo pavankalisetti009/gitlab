@@ -15,10 +15,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
     RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_3
   end
 
-  let(:previous_desired_config_generator_version) do
-    RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
-  end
-
   let(:agent_config) do
     instance_double(
       "RemoteDevelopment::WorkspacesAgentConfig", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
@@ -185,6 +181,34 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
           end
         end
       end
+    end
+  end
+
+  context "when workspace.desired_config_generator_version is a previous version" do
+    let(:previous_desired_config_generator_version) { 2 }
+
+    let(:desired_config_generator_version) { previous_desired_config_generator_version }
+    let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::FULL }
+    let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
+    let(:expected_include_all_resources) { true }
+
+    before do
+      stub_const(
+        "RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2",
+        Class.new do
+          # @return [Hash]
+          def self.generate_desired_config(_)
+            {}
+          end
+        end
+      )
+    end
+
+    it "includes config_to_apply with all resources included" do
+      allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2)
+        .to(receive(:generate_desired_config)) { generated_config_to_apply }
+
+      expect(returned_value).to eq(expected_returned_value)
     end
   end
 end
