@@ -44,29 +44,39 @@ export default {
   },
   computed: {
     licenseComplianceWidget() {
+      if (!this.isViewingReport('license-compliance')) return undefined;
+
       return this.mr?.enabledReports?.licenseScanning ? 'MrLicenseComplianceWidget' : undefined;
     },
 
     browserPerformanceWidget() {
+      if (!this.isViewingReport('browser-performance')) return undefined;
+
       return this.mr.browserPerformance ? 'MrBrowserPerformanceWidget' : undefined;
     },
 
     loadPerformanceWidget() {
+      if (!this.isViewingReport('load-performance')) return undefined;
+
       return this.mr.loadPerformance ? 'MrLoadPerformanceWidget' : undefined;
     },
 
     metricsWidget() {
+      if (!this.isViewingReport('metrics')) return undefined;
+
       return this.mr.metricsReportsPath ? 'MrMetricsWidget' : undefined;
     },
 
     statusChecksWidget() {
+      if (!this.isViewingReport('status-checks')) return undefined;
+
       return this.mr.apiStatusChecksPath && !this.mr.isNothingToMergeState
         ? 'MrStatusChecksWidget'
         : undefined;
     },
 
     securityReportsWidget() {
-      if (this.glFeatures.mrReportsTab && !this.mr.pipelineIid) return undefined;
+      if (!this.isViewingReport('security-reports')) return undefined;
 
       return this.mr.canReadVulnerabilities ? 'MrSecurityWidgetEE' : 'MrSecurityWidgetCE';
     },

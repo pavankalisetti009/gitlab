@@ -23,6 +23,7 @@ resources :merge_requests, only: [], constraints: { id: /\d+/ } do
 
     scope action: :show do
       get :reports, to: 'merge_requests#reports', defaults: { tab: 'reports' }
+      get '/reports(/*vueroute)', to: 'merge_requests#reports', defaults: { tab: 'reports' }
     end
   end
 
