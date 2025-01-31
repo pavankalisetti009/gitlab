@@ -13,7 +13,7 @@ module WorkItems
         end
 
         def execute
-          if legacy_epic.group.work_item_epics_ssot_enabled?
+          if ::Feature.enabled?(:epic_issues_through_work_item_service, legacy_epic.group)
             @existing_epic_issue_ids = EpicIssue.in_epic(legacy_epic.id)
               .for_issue(referenced_child_work_items.map(&:id)).pluck_primary_key
 
