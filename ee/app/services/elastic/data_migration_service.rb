@@ -76,6 +76,8 @@ module Elastic
       end
 
       def pending_migrations
+        return [] unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+
         migrations(exclude_skipped: true).select do |migration|
           !migration_has_finished?(migration.name_for_key)
         end
