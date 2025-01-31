@@ -138,6 +138,19 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.ordered_by_used_storage_updated_at' do
+      let_it_be(:zoekt_index_3) { create(:zoekt_index) }
+
+      subject(:results) { described_class.ordered_by_used_storage_updated_at }
+
+      it 'returns all indices in ascending order by used_storage_bytes_updated_at' do
+        zoekt_index.update!(used_storage_bytes_updated_at: 10.minutes.ago)
+        zoekt_index_2.update!(used_storage_bytes_updated_at: 5.hours.ago)
+        zoekt_index_3.update!(used_storage_bytes_updated_at: 2.minutes.ago)
+        expect(results.pluck(:id)).to eq([zoekt_index_2.id, zoekt_index.id, zoekt_index_3.id])
+      end
+    end
+
     describe '.with_stale_used_storage_bytes_updated_at' do
       let_it_be(:time) { Time.zone.now }
       let_it_be(:idx) { create(:zoekt_index) }
