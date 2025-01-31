@@ -51,6 +51,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::Milestones::MilestoneUpdatedEvent,
         ::WorkItems::BulkUpdatedEvent,
         ::Users::ActivityEvent,
+        Sbom::VulnerabilitiesCreatedEvent,
         Sbom::SbomIngestedEvent,
         Search::Zoekt::AdjustIndicesReservedStorageBytesEvent,
         Search::Zoekt::IndexMarkedAsReadyEvent,

@@ -49,6 +49,7 @@ module EE
           store.subscribe ::Search::Zoekt::TaskFailedEventWorker, to: ::Search::Zoekt::TaskFailedEvent
           store.subscribe ::PackageMetadata::GlobalAdvisoryScanWorker, to: ::PackageMetadata::IngestedAdvisoryEvent
           store.subscribe ::Sbom::ProcessVulnerabilitiesWorker, to: ::Sbom::SbomIngestedEvent
+          store.subscribe ::Sbom::CreateOccurrencesVulnerabilitiesWorker, to: ::Sbom::VulnerabilitiesCreatedEvent
           store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::NamespaceSettings::AiRelatedSettingsChangedEvent
           store.subscribe ::Security::RefreshProjectPoliciesWorker,
             to: ::ProjectAuthorizations::AuthorizationsChangedEvent,

@@ -2298,6 +2298,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: sbom_create_occurrences_vulnerabilities
+  :worker_name: Sbom::CreateOccurrencesVulnerabilitiesWorker
+  :feature_category: :software_composition_analysis
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: sbom_process_transfer_events
   :worker_name: Sbom::ProcessTransferEventsWorker
   :feature_category: :dependency_management
