@@ -65,6 +65,26 @@ RSpec.describe Search::Zoekt::UpdateIndexUsedStorageBytesEventWorker, feature_ca
         stub_const("#{described_class}::BATCH_SIZE", 2)
       end
 
+      it 'updates used_storage_bytes by order of when they were last updated' do
+        older_time = 3.days.ago
+        middle_time = 2.days.ago
+        newer_time = 1.day.ago
+
+        idx.update!(used_storage_bytes_updated_at: older_time)
+        idx2.update!(used_storage_bytes_updated_at: middle_time)
+        idx_correct_used_storage_bytes.update!(used_storage_bytes_updated_at: newer_time)
+
+        expect(indices.map { |i| i.reload.used_storage_bytes }).to eq [10, 10, 0, 0, 90, 10]
+        consume_event(subscriber: described_class, event: event)
+
+        expected = [60, 10, 0, 0, 90, 10]
+        expect(indices.map { |i| i.reload.used_storage_bytes }).to eq expected
+
+        consume_event(subscriber: described_class, event: event)
+        expected = [60, 10, default_used_storage_bytes, default_used_storage_bytes, 90, 10]
+        expect(indices.map { |i| i.reload.used_storage_bytes }).to eq expected
+      end
+
       context 'when zoekt_reemit_events feature flag is enabled' do
         it 'processes only up to the batch size and schedules another event' do
           expect(Gitlab::EventStore).to receive(:publish).with(

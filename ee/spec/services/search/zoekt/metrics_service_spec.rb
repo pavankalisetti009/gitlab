@@ -67,4 +67,26 @@ RSpec.describe ::Search::Zoekt::MetricsService, feature_category: :global_search
       execute
     end
   end
+
+  describe '#indices_metrics' do
+    let(:metric) { :indices_metrics }
+
+    before do
+      allow(logger).to receive(:info) # avoid a flaky test if there are multiple zoekt nodes
+    end
+
+    it 'logs info for zoekt indices' do
+      allow(::Search::Zoekt::Index).to receive_message_chain(
+        :with_stale_used_storage_bytes_updated_at, :count
+      ).and_return(8675309)
+
+      expect(logger).to receive(:info).with(a_hash_including(
+        'class' => described_class.name,
+        'meta.zoekt.with_stale_used_storage_bytes_updated_at' => 8675309,
+        'metric' => :indices_metrics
+      ))
+
+      execute
+    end
+  end
 end

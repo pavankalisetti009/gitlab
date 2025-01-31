@@ -12,12 +12,14 @@ module Search
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices, :zoekt_repositories], 10.minutes
 
       BATCH_SIZE = 100
+      REPOSITORY_BATCH_SIZE = 10_000
 
       def handle_event(_event)
-        Index.with_stale_used_storage_bytes_updated_at.limit(BATCH_SIZE).each do |zoekt_index|
+        indices = Index.with_stale_used_storage_bytes_updated_at.ordered_by_used_storage_updated_at
+        indices.limit(BATCH_SIZE).each do |zoekt_index|
           sum_for_index = 0
 
-          Repository.for_zoekt_indices(zoekt_index).each_batch do |repo_batch|
+          Repository.for_zoekt_indices(zoekt_index).each_batch(of: REPOSITORY_BATCH_SIZE) do |repo_batch|
             sum_for_index += repo_batch.sum(:size_bytes)
           end
           used_storage_bytes = sum_for_index == 0 ? Index::DEFAULT_USED_STORAGE_BYTES : sum_for_index

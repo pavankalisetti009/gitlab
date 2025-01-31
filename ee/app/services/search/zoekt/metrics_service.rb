@@ -7,6 +7,7 @@ module Search
 
       METRICS = %i[
         node_metrics
+        indices_metrics
       ].freeze
 
       def self.execute(metric)
@@ -47,6 +48,16 @@ module Search
 
           logger.info(log_data)
         end
+      end
+
+      def indices_metrics
+        log_data = build_structured_payload(
+          'meta.zoekt.with_stale_used_storage_bytes_updated_at' => Index.with_stale_used_storage_bytes_updated_at.count,
+          message: 'Reporting metrics',
+          metric: :indices_metrics
+        )
+
+        logger.info(log_data)
       end
 
       def logger
