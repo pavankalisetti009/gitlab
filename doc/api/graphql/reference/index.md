@@ -8065,6 +8065,30 @@ Input type: `NamespaceDeleteRemoteDevelopmentClusterAgentMappingInput`
 | <a id="mutationnamespacedeleteremotedevelopmentclusteragentmappingclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationnamespacedeleteremotedevelopmentclusteragentmappingerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
+### `Mutation.namespaceSettingsUpdate`
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `NamespaceSettingsUpdateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationnamespacesettingsupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationnamespacesettingsupdatefullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the namespace the settings belong to. |
+| <a id="mutationnamespacesettingsupdatepipelinevariablesdefaultrole"></a>`pipelineVariablesDefaultRole` | [`PipelineVariablesDefaultRoleType`](#pipelinevariablesdefaultroletype) | Indicates the default minimum role required to override pipeline variables in the namespace. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationnamespacesettingsupdatecicdsettings"></a>`ciCdSettings` | [`CiCdSettings!`](#cicdsettings) | Namespace CI/CD settings after mutation. |
+| <a id="mutationnamespacesettingsupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationnamespacesettingsupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
 ### `Mutation.noteConvertToThread`
 
 Convert a standard comment to a resolvable thread.
@@ -20887,6 +20911,14 @@ Represents a component usage in a project.
 | <a id="cicatalogresourceversionreadmehtml"></a>`readmeHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `readme`. |
 | <a id="cicatalogresourceversionreleasedat"></a>`releasedAt` **{warning-solid}** | [`Time`](#time) | **Introduced** in GitLab 16.7. **Status**: Experiment. Timestamp of when the version was released. |
 
+### `CiCdSettings`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicdsettingspipelinevariablesdefaultrole"></a>`pipelineVariablesDefaultRole` | [`String`](#string) | Indicates the default minimum role required to override pipeline variables in the namespace. |
+
 ### `CiConfig`
 
 #### Fields
@@ -25487,6 +25519,7 @@ GPG signature for a signed commit.
 | <a id="groupamazons3configurations"></a>`amazonS3Configurations` | [`AmazonS3ConfigurationTypeConnection`](#amazons3configurationtypeconnection) | Amazon S3 configurations that receive audit events belonging to the group. (see [Connections](#connections)) |
 | <a id="groupautodevopsenabled"></a>`autoDevopsEnabled` | [`Boolean`](#boolean) | Indicates whether Auto DevOps is enabled for all projects within this group. |
 | <a id="groupavatarurl"></a>`avatarUrl` | [`String`](#string) | Avatar URL of the group. |
+| <a id="groupcicdsettings"></a>`ciCdSettings` **{warning-solid}** | [`CiCdSettings`](#cicdsettings) | **Introduced** in GitLab 17.9. **Status**: Experiment. Namespace CI/CD settings for the namespace. |
 | <a id="groupcontainerrepositoriescount"></a>`containerRepositoriesCount` | [`Int!`](#int) | Number of container repositories in the group. |
 | <a id="groupcontainslockedprojects"></a>`containsLockedProjects` | [`Boolean`](#boolean) | Includes at least one project where the repository size exceeds the limit. This only applies to namespaces under Project limit enforcement. |
 | <a id="groupcreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp of the group creation. |
@@ -30671,6 +30704,7 @@ Product analytics events for a specific month and year.
 | <a id="namespaceactualsizelimit"></a>`actualSizeLimit` | [`Float`](#float) | The actual storage size limit (in bytes) based on the enforcement type of either repository or namespace. This limit is agnostic of enforcement type. |
 | <a id="namespaceadditionalpurchasedstoragesize"></a>`additionalPurchasedStorageSize` | [`Float`](#float) | Additional storage purchased for the root namespace in bytes. |
 | <a id="namespaceallowedcustomstatuses"></a>`allowedCustomStatuses` **{warning-solid}** | [`WorkItemWidgetCustomStatusConnection`](#workitemwidgetcustomstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed custom statuses for the namespace. |
+| <a id="namespacecicdsettings"></a>`ciCdSettings` **{warning-solid}** | [`CiCdSettings`](#cicdsettings) | **Introduced** in GitLab 17.9. **Status**: Experiment. Namespace CI/CD settings for the namespace. |
 | <a id="namespacecontainslockedprojects"></a>`containsLockedProjects` | [`Boolean`](#boolean) | Includes at least one project where the repository size exceeds the limit. This only applies to namespaces under Project limit enforcement. |
 | <a id="namespacecrossprojectpipelineavailable"></a>`crossProjectPipelineAvailable` | [`Boolean!`](#boolean) | Indicates if the cross_project_pipeline feature is available for the namespace. |
 | <a id="namespacedescription"></a>`description` | [`String`](#string) | Description of the namespace. |
@@ -41732,6 +41766,17 @@ Pipeline security report finding sort values.
 | <a id="pipelinestatusenumsuccess"></a>`SUCCESS` | Pipeline completed successfully. |
 | <a id="pipelinestatusenumwaiting_for_callback"></a>`WAITING_FOR_CALLBACK` | Pipeline is waiting for an external action. |
 | <a id="pipelinestatusenumwaiting_for_resource"></a>`WAITING_FOR_RESOURCE` | A resource (for example, a runner) that the pipeline requires to run is unavailable. |
+
+### `PipelineVariablesDefaultRoleType`
+
+Pipeline variables minimum override roles.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="pipelinevariablesdefaultroletypedeveloper"></a>`DEVELOPER` | Developer. |
+| <a id="pipelinevariablesdefaultroletypemaintainer"></a>`MAINTAINER` | Maintainer. |
+| <a id="pipelinevariablesdefaultroletypeno_one_allowed"></a>`NO_ONE_ALLOWED` | No one allowed. |
+| <a id="pipelinevariablesdefaultroletypeowner"></a>`OWNER` | Owner. |
 
 ### `PolicyProjectCreatedStatus`
 
