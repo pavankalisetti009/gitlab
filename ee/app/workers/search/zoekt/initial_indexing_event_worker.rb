@@ -36,15 +36,15 @@ module Search
       end
 
       def create_repositories(namespace:, index:)
-        if index.metadata['project_id_from'].blank?
-          create_repositories_with_scope(namespace: namespace, index: index)
-        else
-          create_repositories_for_project_range(namespace: namespace, index: index)
+        if index.metadata['project_namespace_id_from'].present?
+          return create_repositories_for_project_range(namespace: namespace, index: index)
         end
+
+        create_repositories_with_scope(namespace: namespace, index: index)
       end
 
       def create_repositories_for_project_range(namespace:, index:)
-        range_ids = determine_project_id_range(index)
+        range_ids = determine_project_namespaces_id_range(index)
         create_repositories_with_scope(namespace: namespace, index: index) { |scope| scope.id_in(range_ids) }
       end
 
@@ -52,9 +52,10 @@ module Search
         number_of_inserts = 0
         fully_inserted = true
 
-        ::Namespace.by_root_id(namespace.id).project_namespaces.each_batch(of: BATCH_SIZE) do |project_namespaces_batch|
+        project_namespaces = ::Namespace.by_root_id(namespace.id).project_namespaces
+        project_namespaces = yield(project_namespaces) if block_given?
+        project_namespaces.each_batch(of: BATCH_SIZE) do |project_namespaces_batch|
           scope = ::Project.by_project_namespace(project_namespaces_batch.select(:id))
-          scope = yield(scope) if block_given?
 
           project_ids = scope.without_zoekt_repositories.pluck_primary_key
           next if project_ids.empty?
@@ -71,10 +72,10 @@ module Search
         fully_inserted
       end
 
-      def determine_project_id_range(index)
-        return (index.metadata['project_id_from']..) if index.metadata['project_id_to'].blank?
+      def determine_project_namespaces_id_range(index)
+        return (index.metadata['project_namespace_id_from']..) if index.metadata['project_namespace_id_to'].blank?
 
-        index.metadata['project_id_from']..index.metadata['project_id_to']
+        index.metadata['project_namespace_id_from']..index.metadata['project_namespace_id_to']
       end
 
       def insert_repositories(index:, project_ids:)
