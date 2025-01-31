@@ -125,9 +125,7 @@ module Search
           if target.project.present?
             data['archived'] = target.project.archived?
             data['project_visibility_level'] = target.project.visibility_level
-            if ::Elastic::DataMigrationService.migration_has_finished?(:add_issues_access_level_in_work_item_index)
-              data['issues_access_level'] = target.project.issues_access_level
-            end
+            data['issues_access_level'] = target.project.issues_access_level
           end
 
           data['assignee_id'] = safely_read_attribute_for_elasticsearch(target, :issue_assignee_user_ids)
