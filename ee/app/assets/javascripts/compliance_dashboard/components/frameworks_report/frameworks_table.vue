@@ -189,8 +189,9 @@ export default {
     {
       key: 'action',
       label: __('Action'),
-      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
-      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
+      thAlignRight: true,
+      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap',
+      tdClass: 'md:gl-max-w-26 !gl-text-right gl-cursor-pointer',
       sortable: false,
     },
   ],
