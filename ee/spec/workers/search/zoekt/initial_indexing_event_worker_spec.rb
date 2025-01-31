@@ -17,15 +17,14 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
   before do
     [namespace, namespace.children.first, namespace.children.first.children.first].each do |n|
       create(:project, namespace: n)
-      # Create project whose id falls in between the project_id_from and project_id_to that don't belong to namespace
-      create(:project)
+      create(:project_namespace)
     end
   end
 
   it_behaves_like 'subscribes to event'
 
   it_behaves_like 'an idempotent worker' do
-    context 'when metadata does not have project_id_from and project_id_to' do
+    context 'when metadata does not have project_namespace_id_from and project_namespace_id_to' do
       it 'creates pending zoekt_repositories for each project move the index to initializing' do
         expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
         expect { consume_event(subscriber: described_class, event: event) }
@@ -35,16 +34,20 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
       end
     end
 
-    context 'when metadata has project_id_from and project_id_to' do
-      let(:project_id_from) { namespace.all_project_ids.first.id }
-      let(:project_id_to) { namespace.all_project_ids.second.id }
-      let(:expected_project_ids) { namespace.all_project_ids.where(id: project_id_from..project_id_to).pluck(:id) }
-
-      before do
-        zoekt_index.update!(metadata: { project_id_from: project_id_from, project_id_to: project_id_to })
+    context 'when metadata has project_namespace_id_from and project_namespace_id_to' do
+      let(:pn_id_from) { project_namespace_ids_for_namespace(namespace).first }
+      let(:pn_id_to) { project_namespace_ids_for_namespace(namespace).second }
+      let(:expected_project_ids) do
+        Namespaces::ProjectNamespace.where(id: pn_id_from..pn_id_to).filter_map do |p_ns|
+          p_ns.project.id if p_ns.project.root_ancestor == namespace
+        end
       end
 
-      it 'creates pending zoekt_repositories for project_ids of range project_id_from and project_id_to' do
+      before do
+        zoekt_index.update!(metadata: { project_namespace_id_from: pn_id_from, project_namespace_id_to: pn_id_to })
+      end
+
+      it 'creates pending zoekt_repositories for projects whose project_namespace is in range (pn_id_from..pn_id_to)' do
         expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
         expect { consume_event(subscriber: described_class, event: event) }
           .to change { zoekt_index.reload.state }.from('pending').to('initializing')
@@ -53,7 +56,7 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
       end
 
       context 'when number of projects is larger than the batch size' do
-        let(:first_project_id) { expected_project_ids.min }
+        let(:first_project_id) { Namespaces::ProjectNamespace.find(pn_id_from).project.id }
 
         before do
           stub_const("#{described_class}::BATCH_SIZE", 1)
@@ -70,15 +73,19 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
       end
     end
 
-    context 'when metadata has only project_id_from' do
-      let(:project_id_from) { namespace.all_project_ids.second.id }
-      let(:expected_project_ids) { namespace.all_project_ids.where(id: project_id_from..).pluck(:id) }
-
-      before do
-        zoekt_index.update!(metadata: { project_id_from: project_id_from })
+    context 'when metadata has only project_namespace_id_from' do
+      let(:pn_id_from) { project_namespace_ids_for_namespace(namespace).first }
+      let(:expected_project_ids) do
+        Namespaces::ProjectNamespace.where(id: pn_id_from..).filter_map do |p_ns|
+          p_ns.project.id if p_ns.project.root_ancestor == namespace
+        end
       end
 
-      it 'creates pending zoekt_repositories for all project_ids from project_id_from' do
+      before do
+        zoekt_index.update!(metadata: { project_namespace_id_from: pn_id_from })
+      end
+
+      it 'creates pending zoekt_repositories for projects whose project_namespace is in range (pn_id_from..)' do
         expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
         expect { consume_event(subscriber: described_class, event: event) }
           .to change { zoekt_index.reload.state }.from('pending').to('initializing')
@@ -116,5 +123,9 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
 
   def zoekt_repositories_for_index(index)
     Search::Zoekt::Repository.where(zoekt_index_id: index.id)
+  end
+
+  def project_namespace_ids_for_namespace(namespace)
+    Namespaces::ProjectNamespace.select { |pn| pn.root_ancestor == namespace }.map(&:id).sort
   end
 end
