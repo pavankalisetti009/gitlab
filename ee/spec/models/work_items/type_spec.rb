@@ -62,6 +62,16 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
           end
         end
       end
+
+      context 'when custom_fields_feature is disabled' do
+        before do
+          stub_feature_flags(custom_fields_feature: false)
+        end
+
+        it 'does not return custom fields widget' do
+          expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::CustomFields)
+        end
+      end
     end
 
     where(feature_widget: WorkItems::Type::LICENSED_WIDGETS.transform_values { |v| Array(v) }.to_a)

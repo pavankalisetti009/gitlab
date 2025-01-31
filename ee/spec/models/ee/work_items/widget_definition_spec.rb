@@ -33,7 +33,8 @@ RSpec.describe WorkItems::WidgetDefinition, feature_category: :team_planning do
         ::WorkItems::Widgets::Development,
         ::WorkItems::Widgets::CrmContacts,
         ::WorkItems::Widgets::EmailParticipants,
-        ::WorkItems::Widgets::CustomStatus
+        ::WorkItems::Widgets::CustomStatus,
+        ::WorkItems::Widgets::CustomFields
       )
     end
 

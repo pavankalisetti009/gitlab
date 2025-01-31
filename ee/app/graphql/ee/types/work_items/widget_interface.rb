@@ -24,7 +24,8 @@ module EE
             ::WorkItems::Widgets::Progress => ::Types::WorkItems::Widgets::ProgressType,
             ::WorkItems::Widgets::RequirementLegacy => ::Types::WorkItems::Widgets::RequirementLegacyType,
             ::WorkItems::Widgets::TestReports => ::Types::WorkItems::Widgets::TestReportsType,
-            ::WorkItems::Widgets::Color => ::Types::WorkItems::Widgets::ColorType
+            ::WorkItems::Widgets::Color => ::Types::WorkItems::Widgets::ColorType,
+            ::WorkItems::Widgets::CustomFields => ::Types::WorkItems::Widgets::CustomFieldsType
           }.freeze
 
           orphan_types(*type_mappings.values)
