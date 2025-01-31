@@ -3,6 +3,27 @@ import { FINDINGS_STATUS_PARSED } from '~/diffs/components/app.vue';
 const mockError = new Error('mockedRequestError');
 export const requestError = jest.fn().mockRejectedValue(mockError);
 
+export const SAST_REPORT_DATA = {
+  added: {
+    identifiers: {
+      name: 'Improper Limitation of a Pathname to a Restricted Directory',
+      externalId: 'cwe-126',
+      externalType: 'cwe',
+      url: 'https://owasp.org/www-community/attacks/Path_Traversal',
+    },
+    uuid: '1',
+    title: "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+    description:
+      "Found request data in a call to 'open'. An attacker can manipulate this input to access files outside the intended\n" +
+      'directory. ',
+    state: 'needs triage',
+    severity: '1',
+    foundByPipelineIid: '1',
+    location: {},
+    details: {},
+  },
+};
+
 export const codeQualityErrorAndParsed = jest
   .fn()
   .mockResolvedValueOnce({
@@ -274,7 +295,7 @@ export const SASTParsedHandler = jest.fn().mockResolvedValue({
         },
         sastReport: {
           status: FINDINGS_STATUS_PARSED,
-          report: null,
+          report: SAST_REPORT_DATA,
         },
       },
     },
