@@ -92,32 +92,39 @@ export default {
           }
           const { content } = aiCompletionResponse;
           if (content) {
+            let jsonResponse;
             const regex = /<temperature_rating>\s*(\{.*?\})\s*<\/temperature_rating>/s;
             const match = content.match(regex);
 
+            try {
+              if (match) {
+                jsonResponse = JSON.parse(match[1]);
+              } else {
+                jsonResponse = JSON.parse(content);
+              }
+            } catch (e) {
+              logError(e);
+              createAlert({
+                message: __(
+                  'An error occured while parsing comment temperature. Please try again.',
+                ),
+              });
+            }
+
             this.isMeasuring = false;
-            if (match) {
-              try {
-                const { rating, issues } = JSON.parse(match[1]);
-                const alreadyHadHighTemp = this.commentTemperatureIssues.length > 0;
-                if (rating === 1) {
-                  this.save();
-                  return;
-                }
-                this.commentTemperatureIssues = issues;
-                scrollToElement(this.$el);
-                if (alreadyHadHighTemp) {
-                  this.trackEvent(COMMENT_TEMPERATURE_EVENTS.REPEATED_HIGH_TEMP);
-                } else {
-                  this.trackEvent(COMMENT_TEMPERATURE_EVENTS.HIGH_TEMP);
-                }
-              } catch (e) {
-                logError(e);
-                createAlert({
-                  message: __(
-                    'An error occured while parsing comment temperature. Please try again.',
-                  ),
-                });
+            if (jsonResponse) {
+              const { rating, issues } = jsonResponse;
+              const alreadyHadHighTemp = this.commentTemperatureIssues.length > 0;
+              if (rating === 1) {
+                this.save();
+                return;
+              }
+              this.commentTemperatureIssues = issues;
+              scrollToElement(this.$el);
+              if (alreadyHadHighTemp) {
+                this.trackEvent(COMMENT_TEMPERATURE_EVENTS.REPEATED_HIGH_TEMP);
+              } else {
+                this.trackEvent(COMMENT_TEMPERATURE_EVENTS.HIGH_TEMP);
               }
             }
 
