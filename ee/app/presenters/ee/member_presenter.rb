@@ -49,7 +49,7 @@ module EE
           occupies_seat: member_role.occupies_seat,
           permissions: member_role.enabled_permission_items.values.map do |permission|
             {
-              name: permission[:name].humanize,
+              name: permission[:title],
               description: permission[:description]
             }
           end
