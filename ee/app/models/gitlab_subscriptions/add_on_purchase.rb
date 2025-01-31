@@ -13,7 +13,7 @@ module GitlabSubscriptions
     belongs_to :namespace, optional: true
     belongs_to :organization, class_name: 'Organizations::Organization'
     has_many :assigned_users, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :add_on_purchase,
-      dependent: :destroy
+      dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
     has_many :users, through: :assigned_users
 
     validates :add_on, :expires_on, presence: true

@@ -27,9 +27,9 @@ module EE
 
       belongs_to :iteration, foreign_key: 'sprint_id', inverse_of: :merge_requests
 
-      has_many :approvers, as: :target, dependent: :delete_all
+      has_many :approvers, as: :target, dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :approver_users, through: :approvers, source: :user
-      has_many :approver_groups, as: :target, dependent: :delete_all
+      has_many :approver_groups, as: :target, dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :status_check_responses, class_name: 'MergeRequests::StatusCheckResponse', inverse_of: :merge_request
       has_many :approval_rules, class_name: 'ApprovalMergeRequestRule', inverse_of: :merge_request do
         def applicable_to_branch(branch)
@@ -52,7 +52,9 @@ module EE
         inverse_of: :merge_request
       has_many :approval_merge_request_rule_sources, through: :approval_rules
       has_many :approval_project_rules, through: :approval_merge_request_rule_sources
+      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_one :merge_train_car, class_name: 'MergeTrains::Car', inverse_of: :merge_request, dependent: :destroy
+      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
       has_many :blocks_as_blocker,
         class_name: 'MergeRequestBlock',

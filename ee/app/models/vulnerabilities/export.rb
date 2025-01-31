@@ -19,7 +19,7 @@ module Vulnerabilities
     belongs_to :organization, class_name: 'Organizations::Organization'
 
     has_many :export_parts, class_name: 'Vulnerabilities::Export::Part', foreign_key: 'vulnerability_export_id',
-      dependent: :destroy, inverse_of: :vulnerability_export
+      dependent: :destroy, inverse_of: :vulnerability_export # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
 
     mount_file_store_uploader AttachmentUploader
 

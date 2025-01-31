@@ -69,14 +69,18 @@ module EE
       belongs_to :due_date_sourcing_epic, class_name: 'Epic'
       belongs_to :parent, class_name: "Epic"
       has_many :children, class_name: "Epic", foreign_key: :parent_id
+      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       belongs_to :work_item, foreign_key: 'issue_id', inverse_of: :synced_epic, dependent: :destroy
+      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       belongs_to :sync_object, foreign_key: 'issue_id', class_name: 'WorkItem', inverse_of: :sync_object
 
       has_internal_id :iid, scope: :group
 
       has_many :epic_issues
       has_many :issues, through: :epic_issues
+      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :user_mentions, class_name: "EpicUserMention", dependent: :delete_all
+      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       has_many :boards_epic_user_preferences, class_name: 'Boards::EpicUserPreference', inverse_of: :epic
       has_many :epic_board_positions, class_name: 'Boards::EpicBoardPosition', foreign_key: :epic_id, inverse_of: :epic
 

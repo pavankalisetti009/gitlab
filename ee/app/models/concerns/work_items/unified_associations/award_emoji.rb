@@ -6,11 +6,13 @@ module WorkItems
       extend ActiveSupport::Concern
 
       included do
+        # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
         has_many :own_award_emoji, as: :awardable, inverse_of: :awardable, class_name: 'AwardEmoji', dependent: :destroy
+        # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
         has_many :award_emoji, -> {
           includes(:user).order(:id)
-        }, as: :awardable, inverse_of: :awardable, dependent: :destroy do
+        }, as: :awardable, inverse_of: :awardable, dependent: :destroy do # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
           def find(*args)
             return super unless proxy_association.owner.unified_associations?
             return super if block_given?

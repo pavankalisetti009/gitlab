@@ -12,10 +12,10 @@ module Search
 
       has_many :indices, class_name: '::Search::Zoekt::Index',
         foreign_key: :zoekt_enabled_namespace_id, inverse_of: :zoekt_enabled_namespace,
-        dependent: :nullify
+        dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :nodes, through: :indices
 
-      has_many :replicas, dependent: :destroy,
+      has_many :replicas, dependent: :destroy, # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
         foreign_key: :zoekt_enabled_namespace_id, inverse_of: :zoekt_enabled_namespace
 
       validate :only_root_namespaces_can_be_indexed

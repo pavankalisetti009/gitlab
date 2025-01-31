@@ -10,7 +10,9 @@ class GeoNode < ApplicationRecord
   # Array of repository storages to synchronize for selective sync by shards
   serialize :selective_sync_shards, Array
 
+  # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
   belongs_to :oauth_application, class_name: 'Doorkeeper::Application', dependent: :destroy, autosave: true
+  # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
   has_many :geo_node_namespace_links
   has_many :namespaces, through: :geo_node_namespace_links
