@@ -56924,6 +56924,9 @@ msgstr ""
 msgid "TestHooks|Ensure the project has releases."
 msgstr ""
 
+msgid "TestHooks|Ensure the project has vulnerabilities."
+msgstr ""
+
 msgid "TestHooks|Ensure the wiki is enabled and has pages."
 msgstr ""
 
