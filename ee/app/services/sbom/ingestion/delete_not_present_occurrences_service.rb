@@ -17,10 +17,7 @@ module Sbom
       def execute
         return if has_failed_sbom_jobs?
 
-        ::Gitlab::Database.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins') do
-          not_present_occurrences.each_batch(of: DELETE_BATCH_SIZE) { |occurrences, _| occurrences.delete_all }
-        end
+        not_present_occurrences.each_batch(of: DELETE_BATCH_SIZE) { |occurrences, _| occurrences.delete_all }
       end
 
       private
