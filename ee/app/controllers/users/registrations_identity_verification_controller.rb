@@ -29,8 +29,7 @@ module Users
       end
 
       track_arkose_challenge_result
-      risk_profile = ::IdentityVerification::UserRiskProfile.new(@user)
-      risk_profile.assume_high_risk_if_phone_verification_limit_exceeded!
+      @user.assume_high_risk_if_phone_verification_limit_exceeded!
 
       redirect_to action: :show
     end

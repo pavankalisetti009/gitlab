@@ -263,12 +263,14 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
     end
 
     describe 'phone verification service daily transaction limit check' do
-      it 'is executed' do
-        expect_next_instance_of(IdentityVerification::UserRiskProfile) do |instance|
-          expect(instance).to receive(:assume_high_risk_if_phone_verification_limit_exceeded!)
-        end
-
+      it 'sets high risk attribute when phone verification limit is exceeded' do
+        allow(Gitlab::ApplicationRateLimiter).to receive(:peek)
+          .with(:soft_phone_verification_transactions_limit, scope: nil)
+          .and_return(true)
         create_user
+        expect(
+          User.last.custom_attributes.find_by_value('Phone verification daily transaction limit exceeded')
+        ).not_to be_nil
       end
     end
 
