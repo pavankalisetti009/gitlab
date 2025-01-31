@@ -11063,6 +11063,9 @@ msgstr ""
 msgid "CICD|Add an existing project to the scope"
 msgstr ""
 
+msgid "CICD|Added from log."
+msgstr ""
+
 msgid "CICD|Additional permissions"
 msgstr ""
 
