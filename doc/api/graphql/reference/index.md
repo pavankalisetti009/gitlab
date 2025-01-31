@@ -10308,6 +10308,29 @@ Input type: `TodoMarkDoneInput`
 | <a id="mutationtodomarkdoneerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationtodomarkdonetodo"></a>`todo` | [`Todo!`](#todo) | Requested to-do item. |
 
+### `Mutation.todoResolveMany`
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `TodoResolveManyInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtodoresolvemanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtodoresolvemanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to process (a maximum of 100 is supported at once). |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtodoresolvemanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtodoresolvemanyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationtodoresolvemanytodos"></a>`todos` | [`[Todo!]!`](#todo) | Updated to-do items. |
+
 ### `Mutation.todoRestore`
 
 Input type: `TodoRestoreInput`
@@ -10336,7 +10359,7 @@ Input type: `TodoRestoreManyInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationtodorestoremanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationtodorestoremanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to restore (a maximum of 100 is supported at once). |
+| <a id="mutationtodorestoremanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to process (a maximum of 100 is supported at once). |
 
 #### Fields
 
