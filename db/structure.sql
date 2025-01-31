@@ -16054,7 +16054,8 @@ CREATE TABLE milestones (
     start_date date,
     cached_markdown_version integer,
     group_id bigint,
-    lock_version integer DEFAULT 0 NOT NULL
+    lock_version integer DEFAULT 0 NOT NULL,
+    CONSTRAINT check_08e9c27987 CHECK ((num_nonnulls(group_id, project_id) = 1))
 );
 
 CREATE SEQUENCE milestones_id_seq
