@@ -151,17 +151,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           expect(indexed_json).not_to include(:notes)
         end
       end
-
-      context 'when add_issues_access_level_in_work_item_index migration is not complete' do
-        before do
-          set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: false
-        end
-
-        it 'does not include issues_access_level or correct_work_item_type_id' do
-          expect(indexed_json)
-            .to match(expected_hash.except(:issues_access_level, :correct_work_item_type_id))
-        end
-      end
     end
   end
 
