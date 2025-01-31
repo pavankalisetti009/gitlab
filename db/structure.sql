@@ -16102,7 +16102,8 @@ CREATE TABLE ml_experiment_metadata (
     value text NOT NULL,
     project_id bigint,
     CONSTRAINT check_112fe5002d CHECK ((char_length(name) <= 255)),
-    CONSTRAINT check_a91c633d68 CHECK ((char_length(value) <= 5000))
+    CONSTRAINT check_a91c633d68 CHECK ((char_length(value) <= 5000)),
+    CONSTRAINT check_ca9b8315ef CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ml_experiment_metadata_id_seq
