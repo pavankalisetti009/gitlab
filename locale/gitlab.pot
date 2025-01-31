@@ -7365,7 +7365,7 @@ msgstr ""
 msgid "ApplicationSettings|Save changes"
 msgstr ""
 
-msgid "ApplicationSettings|Seat controls"
+msgid "ApplicationSettings|Seat control"
 msgstr ""
 
 msgid "ApplicationSettings|See %{linkStart}password policy guidelines%{linkEnd}."

@@ -89,7 +89,7 @@ export default {
 
 <template>
   <div v-if="shouldShowSeatControlSection">
-    <gl-form-group :label="s__('ApplicationSettings|Seat controls')">
+    <gl-form-group :label="s__('ApplicationSettings|Seat control')">
       <gl-form-radio-group
         :checked="seatControl"
         name="application_setting[seat_control]"
