@@ -202,6 +202,9 @@ describe('AiCommentTemperature', () => {
         `Foo bar <temperature_rating>\n{"rating": 2, "issues": ${JSON.stringify(issues)}}\n</temperature_rating> blah-blah`,
         `Foo bar\n<temperature_rating>{"rating": 2, "issues": ${JSON.stringify(issues)}}</temperature_rating>\nblah-blah`,
         `Foo bar\n<temperature_rating>\n{"rating": 2, "issues": ${JSON.stringify(issues)}}\n</temperature_rating>\nblah-blah`,
+        `{"rating": 2, "issues": ${JSON.stringify(issues)}}`,
+        `{"rating": 2,"issues": ${JSON.stringify(issues)}}`,
+        `{"rating": 2, "issues": ${JSON.stringify(issues)}}\n`,
       ])('correctly unwraps the response data from "%s"', async (string) => {
         mockSubscription.next({
           data: {
