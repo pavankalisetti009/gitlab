@@ -1019,6 +1019,20 @@ graph TB
 PlantUML integration is enabled on GitLab.com. To make PlantUML available in self-managed
 installation of GitLab, a GitLab administrator [must enable it](../administration/integration/plantuml.md).
 
+After you enable PlantUML, diagram delimiters `@startuml`/`@enduml` aren't required, as these
+are replaced by the `plantuml` block. For example:
+
+````markdown
+```plantuml
+Bob -> Alice : hello
+Alice -> Bob : hi
+```
+````
+
+You can include or embed a PlantUML diagram from separate files in the repository using
+the `::include` directive.
+For more information, see [Include diagtram files](../administration/integration/plantuml.md#include-diagram-files).
+
 ### Kroki
 
 To make Kroki available in GitLab, a GitLab administrator must enable it.
@@ -1626,6 +1640,35 @@ To use includes from separate wiki pages or external URLs, administrators can en
 ```markdown
 <!-- define application setting wiki_asciidoc_allow_uri_includes to true to allow content to be read from URI -->
 ::include{file=https://example.org/installation.md}
+```
+
+### Use includes in code blocks
+
+You can use the `::include` directive inside code blocks to add content from files in your repository.
+For example, if your repository contains a file `javascript_code.js`:
+
+```javascript
+var s = "JavaScript syntax highlighting";
+alert(s);
+```
+
+You can include it in your Markdown file:
+
+````markdown
+Our script contains:
+
+```javascript
+::include{file=javascript_code.js}
+```
+````
+
+The content renders as:
+
+Our script contains:
+
+```javascript
+var s = "JavaScript syntax highlighting";
+alert(s);
 ```
 
 ## Escape characters
