@@ -369,6 +369,16 @@ msgid_plural "%d layers"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d line added"
+msgid_plural "%d lines added"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "%d line removed"
+msgid_plural "%d lines removed"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d matching branch"
 msgid_plural "%d matching branches"
 msgstr[0] ""
