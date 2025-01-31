@@ -17,7 +17,7 @@ module Search
       def exact_search_query
         return query if keyword.blank?
 
-        exact_search_query = "\"#{RE2::Regexp.escape(keyword)}\""
+        exact_search_query = RE2::Regexp.escape(keyword)
         return exact_search_query if filters.empty?
 
         "#{exact_search_query} #{filters.join(' ')}"

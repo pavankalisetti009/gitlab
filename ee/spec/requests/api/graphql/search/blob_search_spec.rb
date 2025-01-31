@@ -72,7 +72,9 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
     end
 
     context 'when search term is invalid' do
-      let(:query) { graphql_query_for(:blobSearch, { search: '*', group_id: "gid://gitlab/Group/#{group.id}" }) }
+      let(:query) do
+        graphql_query_for(:blobSearch, { search: '*', group_id: "gid://gitlab/Group/#{group.id}", regex: true })
+      end
 
       it 'raises error parsing regexp: missing argument to repetition operator' do
         post_graphql(query, current_user: current_user)

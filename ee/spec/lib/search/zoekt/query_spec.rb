@@ -25,20 +25,21 @@ RSpec.describe Search::Zoekt::Query, feature_category: :global_search do
     using RSpec::Parameterized::TableSyntax
 
     where(:query, :result) do
-      ''                         | %q()
-      'test'                     | %q("test")
-      '"foo"'                    | %q("\"foo\"")
-      'lang:ruby    test'        | %q("test" lang:ruby)
-      'case:no test'             | %q("test" case:no)
-      'foo:bar test'             | %q("foo\:bar\ test")
-      'test    case:auto'        | %q("test" case:auto)
-      'case:no test f:dummy.rb'  | %q("test" case:no f:dummy.rb)
-      'case:no test -f:dummy.rb' | %q("test" case:no -f:dummy.rb)
-      'case:no file:dummy test'  | %q("test" case:no file:dummy)
-      'case:no -file:dummy test' | %q("test" case:no -file:dummy)
-      'test case:no file:dummy'  | %q("test" case:no file:dummy)
-      'test sym:foo'             | %q("test" sym:foo)
-      'sym:foo'                  | %q(sym:foo)
+      ''                              | ''
+      'test'                          | 'test'
+      '^test.*\b\d+(a|b)[0-9]\sa{3}$' | %q(\^test\.\*\\\b\\\d\+\\(a\|b\\)\[0\-9\]\\\sa\{3\}\$)
+      '"foo"'                         | %q(\"foo\")
+      'lang:ruby    test'             | 'test lang:ruby'
+      'case:no test'                  | 'test case:no'
+      'foo:bar test'                  | 'foo\:bar\ test'
+      'test    case:auto'             | 'test case:auto'
+      'case:no test f:dummy.rb'       | 'test case:no f:dummy.rb'
+      'case:no test -f:dummy.rb'      | 'test case:no -f:dummy.rb'
+      'case:no file:dummy test'       | 'test case:no file:dummy'
+      'case:no -file:dummy test'      | 'test case:no -file:dummy'
+      'test case:no file:dummy'       | 'test case:no file:dummy'
+      'test sym:foo'                  | 'test sym:foo'
+      'sym:foo'                       | 'sym:foo'
     end
 
     with_them do
