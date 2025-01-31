@@ -89,7 +89,7 @@ RSpec.describe Releases::UpdateService, feature_category: :release_orchestration
           result = service.execute
           release.reload
 
-          expect(release.milestones).to match_array([])
+          expect(release.milestones).to be_empty
           expect(result[:milestones_updated]).to be_truthy
         end
       end
@@ -104,7 +104,7 @@ RSpec.describe Releases::UpdateService, feature_category: :release_orchestration
           service.execute
           release.reload
 
-          expect(release.milestones).to match_array([])
+          expect(release.milestones).to be_empty
         end
       end
     end

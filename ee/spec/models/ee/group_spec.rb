@@ -1787,7 +1787,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       shared_examples 'returns empty array' do
         it do
-          expect(group.billed_shared_group_members(exclude_guests: true)).to match_array([])
+          expect(group.billed_shared_group_members(exclude_guests: true)).to be_empty
         end
       end
 

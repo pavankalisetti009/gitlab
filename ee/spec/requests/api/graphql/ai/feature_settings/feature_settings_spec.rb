@@ -144,7 +144,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
         it 'returns the expected response' do
           post_graphql(query, current_user: current_user)
 
-          expect(ai_feature_settings_data).to match_array([])
+          expect(ai_feature_settings_data).to be_empty
         end
       end
     end

@@ -14,6 +14,6 @@ RSpec.shared_examples_for 'a panel without placeholders' do
                      .select { |item| item.is_a?(::Sidebars::NilMenuItem) }
                      .map(&:item_id)
 
-    expect(nil_items).to match_array([])
+    expect(nil_items).to be_empty
   end
 end

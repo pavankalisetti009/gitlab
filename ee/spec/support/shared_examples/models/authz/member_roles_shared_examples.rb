@@ -88,7 +88,7 @@ RSpec.shared_examples 'returns expected member role abilities' do
         end
 
         it 'returns empty array' do
-          expect(result[source.id]).to match_array([])
+          expect(result[source.id]).to be_empty
         end
       end
 
@@ -98,7 +98,7 @@ RSpec.shared_examples 'returns expected member role abilities' do
         end
 
         it 'returns empty array' do
-          expect(result[source.id]).to match_array([])
+          expect(result[source.id]).to be_empty
         end
       end
     end
@@ -116,7 +116,7 @@ RSpec.shared_examples 'returns expected member role abilities' do
         end
 
         it 'returns empty array' do
-          expect(result[source.id]).to match_array([])
+          expect(result[source.id]).to be_empty
         end
       end
     end
@@ -182,7 +182,7 @@ RSpec.shared_examples 'returns expected member role abilities for the user' do
         end
 
         it 'returns empty array' do
-          expect(result[source.id]).to match_array([])
+          expect(result[source.id]).to be_empty
         end
       end
     end
@@ -200,7 +200,7 @@ RSpec.shared_examples 'returns expected member role abilities for the user' do
         end
 
         it 'returns empty array' do
-          expect(result[source.id]).to match_array([])
+          expect(result[source.id]).to be_empty
         end
       end
     end
