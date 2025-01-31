@@ -51,7 +51,7 @@ module Security
 
         measure_and_log(:policy_creation) do
           configuration
-            .applicable_scan_result_policies_with_real_index(project) do |policy, policy_idx, real_policy_idx|
+            .applicable_scan_result_policies_with_real_index(project) do |policy, real_policy_idx, policy_idx|
             Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyService.new(
               project: project,
               policy_configuration: configuration,
