@@ -126,6 +126,83 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
       end
     end
 
+    context 'with multiple policies' do
+      let(:policies) do
+        {
+          scan_execution_policy: [],
+          scan_result_policy:
+          [
+            {
+              name: 'CS critical policy',
+              description: 'This policy with CS for critical policy',
+              enabled: true,
+              rules: [
+                { type: 'scan_finding', branches: %w[production], vulnerabilities_allowed: 0,
+                  severity_levels: %w[critical], scanners: %w[container_scanning],
+                  vulnerability_states: %w[newly_detected] }
+              ],
+              actions: [
+                { type: 'require_approval', approvals_required: 1, user_approvers: %w[admin] }
+              ]
+            },
+            {
+              name: 'Disabled policy',
+              description: 'This policy with CS for critical policy',
+              enabled: false,
+              rules: [
+                { type: 'scan_finding', branches: %w[production], vulnerabilities_allowed: 0,
+                  severity_levels: %w[critical], scanners: %w[container_scanning],
+                  vulnerability_states: %w[newly_detected] }
+              ],
+              actions: [
+                { type: 'require_approval', approvals_required: 1, user_approvers: %w[admin] }
+              ]
+            },
+            {
+              name: 'DS critical policy',
+              description: 'This policy with DS for critical policy',
+              enabled: true,
+              rules: [
+                { type: 'scan_finding', branches: %w[production], vulnerabilities_allowed: 0,
+                  severity_levels: %w[critical], scanners: %w[dependency_scanning],
+                  vulnerability_states: %w[newly_detected] }
+              ],
+              actions: [
+                { type: 'require_approval', approvals_required: 1, user_approvers: %w[admin] }
+              ]
+            }
+          ]
+        }
+      end
+
+      it_behaves_like 'when policy is applicable based on the policy scope configuration' do
+        it 'calls service with correct policy_index and real_policy_index' do
+          expect_next_instance_of(
+            Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyService,
+            project: configuration.project,
+            policy_configuration: configuration,
+            policy: active_scan_result_policies[0],
+            policy_index: 0,
+            real_policy_index: 0
+          ) do |service|
+            expect(service).to receive(:execute)
+          end
+          expect_next_instance_of(
+            Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyService,
+            project: configuration.project,
+            policy_configuration: configuration,
+            policy: active_scan_result_policies[1],
+            policy_index: 1,
+            real_policy_index: 2
+          ) do |service|
+            expect(service).to receive(:execute)
+          end
+
+          worker.perform(configuration.project_id, configuration.id)
+        end
+      end
+    end
+
     context 'without transaction' do
       it 'does not wrap the execution within transaction' do
         expect(Security::OrchestrationPolicyConfiguration).not_to receive(:transaction).and_yield
