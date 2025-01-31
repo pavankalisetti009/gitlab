@@ -78,6 +78,7 @@ module EE
         :duo_features_enabled,
         :lock_duo_features_enabled,
         :duo_availability,
+        :enabled_expanded_logging,
         :zoekt_auto_delete_lost_nodes,
         :zoekt_auto_index_root_namespace,
         :zoekt_cpu_to_tasks_ratio,

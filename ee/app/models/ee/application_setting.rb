@@ -618,6 +618,20 @@ module EE
       end
     end
 
+    def enabled_expanded_logging
+      ::Feature.enabled?(:expanded_ai_logging)
+    end
+
+    def enabled_expanded_logging=(value)
+      return if value == enabled_expanded_logging
+
+      if value
+        ::Feature.enable(:expanded_ai_logging)
+      else
+        ::Feature.disable(:expanded_ai_logging)
+      end
+    end
+
     def seat_control_user_cap?
       return false unless License.feature_available?(:seat_control) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency as it's not used for Registration features
 

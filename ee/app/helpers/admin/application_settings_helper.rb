@@ -6,6 +6,7 @@ module Admin
 
     delegate :duo_availability,
       :instance_level_ai_beta_features_enabled,
+      :enabled_expanded_logging,
       to: :'Gitlab::CurrentSettings.current_application_settings'
 
     def ai_powered_testing_agreement
@@ -80,6 +81,7 @@ module Admin
       {
         duo_availability: duo_availability.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+        enabled_expanded_logging: enabled_expanded_logging.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
