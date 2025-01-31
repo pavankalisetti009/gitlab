@@ -37,7 +37,6 @@ module RemoteDevelopment
           #       actual Remote Development entry in ::Gitlab::CurrentSettings.
           default_branch_name: [UNDEFINED, String],
           default_devfile_yaml: [DEFAULT_DEVFILE_YAML, String],
-          default_max_hours_before_termination: [24, Integer],
           default_resources_per_workspace_container: [{}, Hash],
           default_runtime_class: ["", String],
           full_reconciliation_interval_seconds: [3600, Integer],
@@ -45,7 +44,6 @@ module RemoteDevelopment
           image_pull_secrets: [[], Array],
           labels: [{}, Hash],
           max_active_hours_before_stop: [36, Integer],
-          max_hours_before_termination_limit: [120, Integer],
           max_resources_per_workspace: [{}, Hash],
           max_stopped_hours_before_termination: [744, Integer],
           network_policy_egress: [[{

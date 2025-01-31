@@ -6,35 +6,29 @@ RSpec.describe ::RemoteDevelopment::Settings, feature_category: :workspaces do #
   subject(:settings_module) { described_class }
 
   context "when there is no override" do
-    before do
-      # Ensure the test doesn't fail if the setting's env var happens to be set in current environment
-      stub_env("GITLAB_REMOTE_DEVELOPMENT_MAX_HOURS_BEFORE_TERMINATION_LIMIT", nil)
-    end
-
     it "uses default value" do
-      expect(settings_module.get_single_setting(:max_hours_before_termination_limit)).to eq(120)
       expect(settings_module.get_single_setting(:default_branch_name)).to be_nil
     end
   end
 
   context "when there is an env var override" do
     before do
-      stub_env("GITLAB_REMOTE_DEVELOPMENT_MAX_HOURS_BEFORE_TERMINATION_LIMIT", "42")
+      stub_env("GITLAB_REMOTE_DEVELOPMENT_MAX_ACTIVE_HOURS_BEFORE_STOP", "46")
     end
 
     it "uses the env var override value and casts it" do
-      expect(settings_module.get_single_setting(:max_hours_before_termination_limit)).to eq(42)
+      expect(settings_module.get_single_setting(:max_active_hours_before_stop)).to eq(46)
     end
   end
 
   context "when there is an env var override and production env" do
     before do
-      stub_env("GITLAB_REMOTE_DEVELOPMENT_MAX_HOURS_BEFORE_TERMINATION_LIMIT", "42")
+      stub_env("GITLAB_REMOTE_DEVELOPMENT_MAX_ACTIVE_HOURS_BEFORE_STOP", "46")
       allow(Rails).to receive_message_chain(:env, :production?) { true }
     end
 
     it "does not use the env var override value and use default value" do
-      expect(settings_module.get_single_setting(:max_hours_before_termination_limit)).to eq(120)
+      expect(settings_module.get_single_setting(:max_active_hours_before_stop)).to eq(36)
     end
   end
 

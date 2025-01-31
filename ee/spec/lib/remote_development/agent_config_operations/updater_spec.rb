@@ -42,11 +42,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:default_resources_per_workspace_container) { {} }
   let(:max_resources_per_workspace) { {} }
 
-  let(:default_max_hours_before_termination) { 24 }
-  let(:default_max_hours_before_termination_present) { false }
-  let(:max_hours_before_termination_limit) { 120 }
-  let(:max_hours_before_termination_limit_present) { false }
-
   let(:max_active_hours_before_stop) { 36 }
   let(:max_active_hours_before_stop_present) { false }
   let(:max_stopped_hours_before_termination) { 744 }
@@ -79,14 +74,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
     remote_development_config['default_resources_per_workspace_container'] = default_resources_per_workspace_container
     remote_development_config['max_resources_per_workspace'] = max_resources_per_workspace
-
-    if default_max_hours_before_termination_present
-      remote_development_config['default_max_hours_before_termination'] = default_max_hours_before_termination
-    end
-
-    if max_hours_before_termination_limit_present
-      remote_development_config['max_hours_before_termination_limit'] = max_hours_before_termination_limit
-    end
 
     if max_active_hours_before_stop_present
       remote_development_config['max_active_hours_before_stop'] = max_active_hours_before_stop
@@ -138,7 +125,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         config_instance = agent.reload.unversioned_latest_workspaces_agent_config
         expect(config_instance.allow_privilege_escalation).to eq(allow_privilege_escalation)
         expect(config_instance.annotations.deep_symbolize_keys).to eq(annotations)
-        expect(config_instance.default_max_hours_before_termination).to eq(default_max_hours_before_termination)
         expect(config_instance.default_resources_per_workspace_container.deep_symbolize_keys)
           .to eq(default_resources_per_workspace_container)
         expect(config_instance.default_runtime_class).to eq(default_runtime_class)
@@ -147,7 +133,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         expect(config_instance.gitlab_workspaces_proxy_namespace).to eq(gitlab_workspaces_proxy_namespace)
         expect(config_instance.labels.deep_symbolize_keys).to eq(labels)
         expect(config_instance.max_active_hours_before_stop).to eq(max_active_hours_before_stop)
-        expect(config_instance.max_hours_before_termination_limit).to eq(max_hours_before_termination_limit)
         expect(config_instance.max_resources_per_workspace.deep_symbolize_keys).to eq(max_resources_per_workspace)
         expect(config_instance.max_stopped_hours_before_termination).to eq(max_stopped_hours_before_termination)
         expect(config_instance.network_policy_egress.map(&:deep_symbolize_keys)).to eq(network_policy_egress)
@@ -212,15 +197,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
             end
 
             let(:network_policy) { network_policy_with_egress }
-
-            it_behaves_like 'successful update'
-          end
-
-          context 'when default and max_hours_before_termination are explicitly specified in the config passed' do
-            let(:default_max_hours_before_termination_present) { true }
-            let(:max_hours_before_termination_limit_present) { true }
-            let(:default_max_hours_before_termination) { 20 }
-            let(:max_hours_before_termination_limit) { 220 }
 
             it_behaves_like 'successful update'
           end

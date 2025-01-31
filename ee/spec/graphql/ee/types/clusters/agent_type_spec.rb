@@ -88,10 +88,10 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
             remoteDevelopmentClusterAgents(filter: AVAILABLE) {
               nodes {
                 remoteDevelopmentAgentConfig {
-                  defaultMaxHoursBeforeTermination
+                  workspacesPerUserQuota
                 }
                 workspacesAgentConfig {
-                  defaultMaxHoursBeforeTermination
+                  workspacesPerUserQuota
                 }
               }
             }
@@ -117,13 +117,13 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
 
       context 'when user is logged in' do
         let(:current_user) { user }
-        let(:expected_default_max_hours_before_termination) do
-          workspaces_agent_config.default_max_hours_before_termination
+        let(:expected_workspaces_per_user_quota) do
+          workspaces_agent_config.workspaces_per_user_quota
         end
 
         it 'returns associated workspaces agent config' do
           expect(remote_development_agent_config_result).to eq(
-            'defaultMaxHoursBeforeTermination' => expected_default_max_hours_before_termination
+            'workspacesPerUserQuota' => expected_workspaces_per_user_quota
           )
         end
       end
@@ -136,13 +136,13 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
 
     context 'when user is logged in' do
       let(:current_user) { user }
-      let(:expected_default_max_hours_before_termination) do
-        workspaces_agent_config.default_max_hours_before_termination
+      let(:expected_workspaces_per_user_quota) do
+        workspaces_agent_config.workspaces_per_user_quota
       end
 
       it 'returns associated workspaces agent config' do
         expect(workspaces_agent_config_result).to eq(
-          'defaultMaxHoursBeforeTermination' => expected_default_max_hours_before_termination
+          'workspacesPerUserQuota' => expected_workspaces_per_user_quota
         )
       end
     end

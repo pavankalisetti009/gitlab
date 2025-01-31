@@ -19,8 +19,6 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
     ]
   end
 
-  let(:default_max_hours_before_termination_default_value) { 24 }
-  let(:max_hours_before_termination_limit_default_value) { 120 }
   let(:allow_privilege_escalation) { false }
   let(:use_kubernetes_user_namespaces) { false }
   let(:default_runtime_class) { "" }
@@ -198,16 +196,6 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       expect(config.max_resources_per_workspace).to eq(default_max_resources_per_workspace)
     end
 
-    it 'when default_max_hours_before_termination is not specified explicitly' do
-      expect(config).to be_valid
-      expect(config.default_max_hours_before_termination).to eq(default_max_hours_before_termination_default_value)
-    end
-
-    it 'when max_hours_before_termination_limit is not specified explicitly' do
-      expect(config).to be_valid
-      expect(config.max_hours_before_termination_limit).to eq(max_hours_before_termination_limit_default_value)
-    end
-
     it 'when default_resources_per_workspace_container is nil' do
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
       config.max_resources_per_workspace = nil
@@ -224,21 +212,6 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
 
     it 'allows numerical values for workspaces_per_user_quota greater or equal to -1' do
       is_expected.to validate_numericality_of(:workspaces_per_user_quota).only_integer.is_greater_than_or_equal_to(-1)
-    end
-
-    it 'allows numerical values for max_hours_before_termination_limit greater or equal to' \
-      'default_max_hours_before_termination and less than or equal to 8760' do
-      is_expected.to validate_numericality_of(:max_hours_before_termination_limit)
-                       .only_integer
-                       .is_less_than_or_equal_to(8760)
-                       .is_greater_than_or_equal_to(default_max_hours_before_termination_default_value)
-    end
-
-    it 'allows numerical values for default_max_hours_before_termination greater or equal to 1' \
-      'and less than or equal to max_hours_before_termination_limit' do
-      is_expected.to validate_numericality_of(:default_max_hours_before_termination)
-                       .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
-                       .is_greater_than_or_equal_to(1)
     end
 
     it 'allows numerical values for max_active_hours_before_stop greater or equal to 1' do

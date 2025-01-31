@@ -36,10 +36,12 @@ module Types
         null: false, description: 'Maximum number of workspaces per user.'
 
       field :default_max_hours_before_termination, GraphQL::Types::Int, null: false,
-        description: 'Default max hours before worksapce termination of the workspaces agent config.'
+        description: 'Default max hours before workspace termination of the workspaces agent config.',
+        deprecated: { reason: 'Field is not used', milestone: '17.9' }
 
       field :max_hours_before_termination_limit, GraphQL::Types::Int, null: false,
-        description: 'Max hours before worksapce termination limit of the workspaces agent config.'
+        description: 'Max hours before workspace termination limit of the workspaces agent config.',
+        deprecated: { reason: 'Field is not used', milestone: '17.9' }
 
       field :allow_privilege_escalation, GraphQL::Types::Boolean,
         null: false, description: 'Allow privilege escalation.'
@@ -63,6 +65,14 @@ module Types
 
       field :updated_at, Types::TimeType, null: false,
         description: 'Timestamp of the last update to any mutable workspaces agent config property.'
+
+      def max_hours_before_termination_limit
+        120
+      end
+
+      def default_max_hours_before_termination
+        24
+      end
     end
   end
 end

@@ -30,8 +30,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
                   dnsZone
                   workspacesPerUserQuota
                   workspacesQuota
-                  defaultMaxHoursBeforeTermination
-                  maxHoursBeforeTerminationLimit
                 }
               }
             }
@@ -178,9 +176,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
         "networkPolicyEnabled" => true,
         "dnsZone" => dns_zone,
         "workspacesPerUserQuota" => workspaces_per_user_quota,
-        "workspacesQuota" => workspaces_quota,
-        "defaultMaxHoursBeforeTermination" => 24,
-        "maxHoursBeforeTerminationLimit" => 120
+        "workspacesQuota" => workspaces_quota
       }
     expect(
       graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :workspacesAgentConfig)
