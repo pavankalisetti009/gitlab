@@ -487,32 +487,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         subject
       end
     end
-
-    describe "prompt conciseness feature flag" do
-      before do
-        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
-
-        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
-          allow(instance).to receive(:execute).and_return(answer)
-        end
-      end
-
-      it 'pushes conciseness FF to AI Gateway when enabled' do
-        stub_feature_flags(conciseness_prompt_change: true)
-
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag).with(:conciseness_prompt_change, user)
-
-        subject
-      end
-
-      it "doesn't push conciseness FF to AI Gateway when disabled" do
-        stub_feature_flags(conciseness_prompt_change: false)
-
-        expect(::Gitlab::AiGateway).not_to receive(:push_feature_flag).with(:conciseness_prompt_change, user)
-
-        subject
-      end
-    end
   end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers
