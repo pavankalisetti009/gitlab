@@ -1,27 +1,31 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'cloneable and moveable for ee widget data' do
-  def work_item_weights_source(work_item)
+  def wi_weights_source(work_item)
     work_item.reload.weights_source&.slice(:rolled_up_weight, :rolled_up_completed_weight)
   end
 
-  def work_item_epic(work_item)
+  def wi_epic(work_item)
     return unless original_work_item.work_item_type.issue?
 
     work_item.reload.epic
   end
 
-  def work_item_vulnerabilities(work_item)
+  def wi_vulnerabilities(work_item)
     work_item.reload.related_vulnerabilities.map(&:id)
   end
 
-  def linked_items(work_item)
+  def wi_linked_items(work_item)
     return [] unless original_work_item.work_item_type.epic?
 
     [
       IssueLink.for_source(work_item).map(&:target).pluck(:title),
       IssueLink.for_target(work_item).map(&:source).pluck(:title)
     ]
+  end
+
+  def wi_pending_escalations(work_item)
+    work_item.reload.pending_escalations
   end
 
   let_it_be(:weights_source) do
@@ -66,6 +70,16 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
     end
   end
 
+  let_it_be(:pending_escalations) do
+    if original_work_item.project.present?
+      project = original_work_item.project
+      policy = create(:incident_management_escalation_policy, project: project)
+      create_list(:incident_management_pending_issue_escalation, 3, issue: work_item, project: project, policy: policy)
+    end
+
+    []
+  end
+
   let_it_be(:move) { WorkItems::DataSync::MoveService }
   let_it_be(:clone) { WorkItems::DataSync::CloneService }
 
@@ -73,11 +87,12 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
   let_it_be(:widgets) do
     [
       # for hierarchy widget, ensure that epic(through epic_issue) is being copied to the new work item
-      { widget: :hierarchy,    assoc_name: :epic,                    eval_value: :work_item_epic,            expected: epic,                    operations: [move, clone] },
-      { widget: :weight,       assoc_name: :weights_source,          eval_value: :work_item_weights_source,  expected: weights_source,          operations: [move, clone] },
-      { widget: :linked_items, assoc_name: :linked_work_items,       eval_value: :linked_items,              expected: related_items,           operations: [move] },
+      { widget: :hierarchy,    assoc_name: :epic,                    eval_value: :wi_epic,                expected: epic,                    operations: [move, clone] },
+      { widget: :weight,       assoc_name: :weights_source,          eval_value: :wi_weights_source,      expected: weights_source,          operations: [move, clone] },
+      { widget: :linked_items, assoc_name: :linked_work_items,       eval_value: :wi_linked_items,        expected: related_items,           operations: [move] },
       # these are non widget associations, but we can test these the same way
-      {                        assoc_name: :related_vulnerabilities, eval_value: :work_item_vulnerabilities, expected: related_vulnerabilities, operations: [move] }
+      {                        assoc_name: :related_vulnerabilities, eval_value: :wi_vulnerabilities,     expected: related_vulnerabilities, operations: [move] },
+      {                        assoc_name: :pending_escalations,     eval_value: :wi_pending_escalations, expected: pending_escalations,     operations: [move] }
     ]
   end
   # rubocop: enable Layout/LineLength

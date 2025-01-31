@@ -21,7 +21,7 @@ RSpec.describe WorkItems::DataSync::NonWidgets::RelatedVulnerabilities, feature_
       let(:params) { { operation: :clone } }
 
       it 'does not copy related vulnerabilities data' do
-        expect { callback.after_save_commit }.not_to change { target_work_item.related_vulnerabilities }
+        expect { callback.after_save_commit }.not_to change { target_work_item.related_vulnerabilities.count }
       end
     end
 
