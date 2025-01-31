@@ -32410,6 +32410,9 @@ msgstr ""
 msgid "Job|Download"
 msgstr ""
 
+msgid "Job|Download SAST report"
+msgstr ""
+
 msgid "Job|Duration"
 msgstr ""
 
@@ -32528,6 +32531,9 @@ msgid "Job|There was a problem retrying the failed job."
 msgstr ""
 
 msgid "Job|These artifacts are the latest. They will not be deleted (even if expired) until newer artifacts are available."
+msgstr ""
+
+msgid "Job|This artifact contains SAST scan results in JSON format."
 msgstr ""
 
 msgid "Job|This job failed because the necessary resources were not successfully created."
