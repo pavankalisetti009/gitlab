@@ -11,7 +11,9 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
   let(:limit_projects) { Project.id_in(project_1.id) }
   let(:node_id) { ::Search::Zoekt::Node.last.id }
   let(:filters) { {} }
-  let(:results) { described_class.new(user, query, limit_projects, node_id: node_id, filters: filters) }
+  let(:results) do
+    described_class.new(user, query, limit_projects, node_id: node_id, filters: filters, modes: { regex: true })
+  end
 
   before do
     zoekt_ensure_project_indexed!(project_1)
@@ -43,7 +45,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
         per_page: described_class::DEFAULT_PER_PAGE,
         project_ids: [project_1.id],
         max_per_page: described_class::DEFAULT_PER_PAGE * 2,
-        search_mode: :exact,
+        search_mode: :regex,
         multi_match: false
       ).and_call_original
 
@@ -425,18 +427,18 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
     using RSpec::Parameterized::TableSyntax
 
     where(:query, :multi_match, :regex_mode, :expected_count) do
-      'use.*egex' | true | false | 5
-      'use.*egex' | true | true  | 5
-      'use.*egex' | false | false | 5
+      'use.*egex' | true  | false | 0
+      'use.*egex' | true  | true  | 5
+      'use.*egex' | false | false | 0
       'use.*egex' | false | true  | 5
-      'asdfg' | true  | false   | 0
-      'asdfg' | true  | true    | 0
-      'asdfg' | false | false   | 0
-      'asdfg' | false | true    | 0
-      '# good' | true | false | 134
-      '# good' | true | true | 564
-      '# good' | false | false | 134
-      '# good' | false | true | 564
+      'asdfg'     | true  | false | 0
+      'asdfg'     | true  | true  | 0
+      'asdfg'     | false | false | 0
+      'asdfg'     | false | true  | 0
+      '# good'    | true  | false | 134
+      '# good'    | true  | true  | 564
+      '# good'    | false | false | 134
+      '# good'    | false | true  | 564
     end
 
     with_them do
