@@ -171,3 +171,5 @@ export const ACTION_LISTBOX_ITEMS = () => {
 };
 
 export const DISABLED_BOT_MESSAGE_ACTION = { ...buildAction(BOT_MESSAGE_TYPE), enabled: false };
+
+export const ROLE_PERMISSION_TO_APPROVE_MRS = 'ADMIN_MERGE_REQUEST';

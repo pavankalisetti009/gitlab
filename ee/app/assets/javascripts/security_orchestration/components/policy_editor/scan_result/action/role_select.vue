@@ -1,9 +1,10 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { convertToTitleCase } from '~/lib/utils/text_utility';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { ROLE_PERMISSION_TO_APPROVE_MRS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import groupCustomRoles from 'ee/security_orchestration/graphql/queries/group_custom_roles.query.graphql';
 import projectCustomRoles from 'ee/security_orchestration/graphql/queries/project_custom_roles.query.graphql';
 import { isGroup } from 'ee/security_orchestration/components/utils';
@@ -14,9 +15,16 @@ export default {
     standardRoleText: s__('SecurityOrchestration|Standard roles'),
     customRoleText: s__('SecurityOrchestration|Custom roles'),
     dropdownSubheader: s__('SecurityOrchestration|Choose specific role'),
+    customRoleDisclaimer: s__(
+      'SecurityOrchestration|Only custom roles with the permission to approve merge requests are shown',
+    ),
   },
   components: {
     GlCollapsibleListbox,
+    GlIcon,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: ['roleApproverTypes', 'namespacePath', 'namespaceType'],
@@ -30,10 +38,16 @@ export default {
       },
       update(data = {}) {
         return (
-          data[this.namespaceType]?.memberRoles?.nodes.map(({ id, name }) => ({
-            text: name,
-            value: getIdFromGraphQLId(id),
-          })) || []
+          data[this.namespaceType]?.memberRoles?.nodes
+            .filter(({ enabledPermissions }) =>
+              enabledPermissions?.edges.some(
+                ({ node = {} }) => node.value === ROLE_PERMISSION_TO_APPROVE_MRS,
+              ),
+            )
+            .map(({ id, name }) => ({
+              text: name,
+              value: getIdFromGraphQLId(id),
+            })) || []
         );
       },
       skip() {
@@ -59,8 +73,11 @@ export default {
     };
   },
   computed: {
+    hasCustomRoleFeatureFlag() {
+      return this.glFeatures.securityPolicyCustomRoles;
+    },
     hasCustomRoles() {
-      return this.customRoles.length && this.glFeatures.securityPolicyCustomRoles;
+      return this.customRoles.length && this.hasCustomRoleFeatureFlag;
     },
     hasValidRoles() {
       return this.$apollo.loading || this.existingApprovers.every(this.isRoleValid);
@@ -110,14 +127,22 @@ export default {
 </script>
 
 <template>
-  <gl-collapsible-listbox
-    :items="items"
-    block
-    is-check-centered
-    multiple
-    :toggle-class="[{ '!gl-shadow-inner-1-red-500': !state }]"
-    :selected="existingApprovers"
-    :toggle-text="toggleText"
-    @select="handleSelectedRoles"
-  />
+  <div class="gl-flex">
+    <gl-collapsible-listbox
+      :items="items"
+      is-check-centered
+      multiple
+      :toggle-class="[{ '!gl-shadow-inner-1-red-500': !state }]"
+      :selected="existingApprovers"
+      :toggle-text="toggleText"
+      @select="handleSelectedRoles"
+    />
+    <gl-icon
+      v-if="hasCustomRoleFeatureFlag"
+      v-gl-tooltip
+      name="information-o"
+      class="gl-ml-3 gl-mt-3 gl-text-blue-500"
+      :title="$options.i18n.customRoleDisclaimer"
+    />
+  </div>
 </template>

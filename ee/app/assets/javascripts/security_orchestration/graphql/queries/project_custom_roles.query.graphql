@@ -5,6 +5,13 @@ query projectCustomRoles($fullPath: ID!) {
       nodes {
         id
         name
+        enabledPermissions {
+          edges {
+            node {
+              value
+            }
+          }
+        }
       }
     }
     __typename

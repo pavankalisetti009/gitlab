@@ -51838,6 +51838,9 @@ msgid_plural "SecurityOrchestration|On runners with the tags:"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "SecurityOrchestration|Only custom roles with the permission to approve merge requests are shown"
+msgstr ""
+
 msgid "SecurityOrchestration|Only overriding settings and bot message will take effect"
 msgstr ""
 

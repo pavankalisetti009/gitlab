@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -26,8 +26,30 @@ describe('RoleSelect component', () => {
   const defaultCustomRole = {
     id: 'gid://gitlab/MemberRole/1',
     name: 'Custom (Gitlab Org - 24)',
+    enabledPermissions: { edges: [{ node: { value: 'ADMIN_MERGE_REQUEST' } }] },
     __typename: 'MemberRole',
   };
+
+  const multipleDefaultCustomRole = [
+    defaultCustomRole,
+    {
+      id: 'gid://gitlab/MemberRole/2',
+      name: 'Custom (Gitlab Org - 25)',
+      enabledPermissions: { edges: [{ node: { value: 'ADMIN_PROTECTED_BRANCHES' } }] },
+      __typename: 'MemberRole',
+    },
+    {
+      id: 'gid://gitlab/MemberRole/3',
+      name: 'Custom (Gitlab Org - 26)',
+      enabledPermissions: {
+        edges: [
+          { node: { value: 'ADMIN_PROTECTED_BRANCHES' } },
+          { node: { value: 'ADMIN_MERGE_REQUEST' } },
+        ],
+      },
+      __typename: 'MemberRole',
+    },
+  ];
 
   const createCustomRolesHandlerSuccess = ({ type = 'Project', nodes = [defaultCustomRole] }) =>
     jest.fn().mockResolvedValue({
@@ -45,6 +67,10 @@ describe('RoleSelect component', () => {
   const mockProjectCustomRolesHandlerEmpty = createCustomRolesHandlerSuccess({ nodes: [] });
 
   const mockGroupCustomRolesHandlerSuccess = createCustomRolesHandlerSuccess({ type: 'Group' });
+
+  const mockProjectMultipleCustomRolesHandlerSuccess = createCustomRolesHandlerSuccess({
+    nodes: multipleDefaultCustomRole,
+  });
 
   const createMockApolloProvider = (customHandlers) => {
     Vue.use(VueApollo);
@@ -79,6 +105,7 @@ describe('RoleSelect component', () => {
   };
 
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findIcon = () => wrapper.findComponent(GlIcon);
 
   describe('default', () => {
     beforeEach(() => {
@@ -161,6 +188,7 @@ describe('RoleSelect component', () => {
     describe('without securityPolicyCustomRoles feature flag', () => {
       it('does not retrieve custom roles', () => {
         createComponent();
+        expect(findIcon().exists()).toBe(false);
         expect(mockProjectCustomRolesHandlerSuccess).not.toHaveBeenCalled();
         expect(mockGroupCustomRolesHandlerSuccess).not.toHaveBeenCalled();
       });
@@ -168,6 +196,11 @@ describe('RoleSelect component', () => {
 
     describe('with securityPolicyCustomRoles feature flag', () => {
       describe('default', () => {
+        it('shows the help icon', () => {
+          createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
+          expect(findIcon().exists()).toBe(true);
+        });
+
         it('retrieves the project custom roles', () => {
           createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
           expect(mockProjectCustomRolesHandlerSuccess).toHaveBeenCalled();
@@ -202,6 +235,21 @@ describe('RoleSelect component', () => {
           await waitForPromises();
           expect(findListbox().props('items')).toEqual([
             { text: 'Standard roles', options: expect.any(Array) },
+          ]);
+        });
+
+        it('only shows custom roles with approver permissions', async () => {
+          createComponent({
+            handlers: { projectCustomRoles: mockProjectMultipleCustomRolesHandlerSuccess },
+            provide: { glFeatures: { securityPolicyCustomRoles: true } },
+          });
+          await waitForPromises();
+          const customRolesWithApproverPermissions = findListbox()
+            .props('items')[1]
+            .options.map(({ text }) => text);
+          expect(customRolesWithApproverPermissions).toEqual([
+            'Custom (Gitlab Org - 24)',
+            'Custom (Gitlab Org - 26)',
           ]);
         });
       });
