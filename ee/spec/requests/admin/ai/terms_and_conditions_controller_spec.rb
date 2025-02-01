@@ -28,59 +28,31 @@ RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feat
     end
   end
 
-  describe 'GET #index' do
+  describe 'POST #toggle_beta_models' do
     subject :perform_request do
-      get admin_ai_terms_and_conditions_url
+      post toggle_beta_models_admin_ai_self_hosted_models_path
     end
 
-    it 'loads terms and conditions' do
-      perform_request
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to render_template('admin/ai/terms_and_conditions/index')
-    end
-
-    context 'when user has already accepted the terms' do
+    context 'if a testing terms acceptance record exists' do
       before do
-        allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+        create(:ai_testing_terms_acceptances, user_id: admin.id, user_email: admin.email)
       end
 
-      it 'redirects to self-hosted models index' do
-        perform_request
+      it 'destroys the record' do
+        expect(::Ai::SelfHostedModels::TestingTermsAcceptance::DestroyService).to receive(:new)
+          .with(instance_of(::Ai::TestingTermsAcceptance)).and_call_original
 
-        expect(response).to redirect_to(admin_ai_self_hosted_models_url)
+        expect { perform_request }.to change { ::Ai::TestingTermsAcceptance.count }.by(-1)
       end
     end
 
-    it_behaves_like 'returns 404'
-  end
+    context 'if a testing terms acceptance record does not exist' do
+      it 'creates the record' do
+        expect(::Ai::SelfHostedModels::TestingTermsAcceptance::CreateService).to receive(:new)
+          .with(admin).and_call_original
 
-  describe 'POST #create' do
-    let(:audit_context) do
-      {
-        name: 'self_hosted_model_terms_accepted',
-        author: admin,
-        scope: be_an_instance_of(Gitlab::Audit::InstanceScope),
-        target: admin,
-        message: "Self-hosted model usage terms accepted by user #{admin.id}"
-      }
-    end
-
-    subject :perform_request do
-      post admin_ai_terms_and_conditions_url
-    end
-
-    it 'saves the acceptance' do
-      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
-
-      expect { perform_request }.to change { ::Ai::TestingTermsAcceptance.count }.by(1)
-
-      acceptance = ::Ai::TestingTermsAcceptance.last
-
-      expect(acceptance.user_id).to eq(admin.id)
-      expect(acceptance.user_email).to eq(admin.email)
-
-      expect(response).to redirect_to(admin_ai_self_hosted_models_url)
+        expect { perform_request }.to change { ::Ai::TestingTermsAcceptance.count }.by(1)
+      end
     end
 
     it_behaves_like 'returns 404'

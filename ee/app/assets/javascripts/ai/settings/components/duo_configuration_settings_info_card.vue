@@ -10,7 +10,7 @@ export default {
     duoConfigurationSettingsTitle: __('GitLab Duo'),
     duoChangeConfigurationButtonText: s__('AiPowered|Change configuration'),
     experimentAndBetaFeaturesText: s__('AiPowered|Experiment and beta features'),
-    selfHostedModelsText: s__('AiPowered|Self-hosted models'),
+    betaSelfHostedModelsText: s__('AiPowered|Beta self-hosted models'),
     directConnectionsText: s__('AiPowered|Direct connections'),
     enabledText: __('Enabled'),
     defaultOnText: s__('AiPowered|On by default'),
@@ -28,7 +28,7 @@ export default {
     duoAvailability: {},
     directCodeSuggestionsEnabled: { default: false },
     experimentFeaturesEnabled: {},
-    selfHostedModelsEnabled: { default: false },
+    betaSelfHostedModelsEnabled: { default: false },
     areExperimentSettingsAllowed: {},
   },
   computed: {
@@ -77,8 +77,8 @@ export default {
           :is-enabled="directCodeSuggestionsEnabled"
         />
         <duo-configuration-settings-row
-          :duo-configuration-settings-row-type-title="$options.i18n.selfHostedModelsText"
-          :is-enabled="selfHostedModelsEnabled"
+          :duo-configuration-settings-row-type-title="$options.i18n.betaSelfHostedModelsText"
+          :is-enabled="betaSelfHostedModelsEnabled"
         />
       </section>
     </template>

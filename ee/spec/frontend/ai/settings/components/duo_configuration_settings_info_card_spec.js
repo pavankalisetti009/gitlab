@@ -16,7 +16,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
     duoAvailability = AVAILABILITY_OPTIONS.DEFAULT_ON,
     directCodeSuggestionsEnabled = true,
     experimentFeaturesEnabled = true,
-    selfHostedModelsEnabled = true,
+    betaSelfHostedModelsEnabled = true,
     areExperimentSettingsAllowed = true,
   } = {}) => {
     wrapper = shallowMountExtended(DuoConfigurationSettingsInfoCard, {
@@ -27,7 +27,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
         duoAvailability,
         directCodeSuggestionsEnabled,
         experimentFeaturesEnabled,
-        selfHostedModelsEnabled,
+        betaSelfHostedModelsEnabled,
         areExperimentSettingsAllowed,
       },
     });
@@ -36,6 +36,8 @@ describe('DuoConfigurationSettingsInfoCard', () => {
   const findCard = () => wrapper.findAllComponents(GlCard);
   const findConfigurationButton = () => wrapper.findComponent(GlButton);
   const findDuoConfigurationRows = () => wrapper.findAllComponents(DuoConfigurationSettingsRow);
+  const findDuoConfigurationRowTitlePropByRowIdx = (idx) =>
+    findDuoConfigurationRows().at(idx).props('duoConfigurationSettingsRowTypeTitle');
   const findDuoConfigurationSettingsInfo = () =>
     wrapper.findByTestId('duo-configuration-settings-info');
   const findConfigurationStatus = () => wrapper.findByTestId('configuration-status');
@@ -74,12 +76,18 @@ describe('DuoConfigurationSettingsInfoCard', () => {
   describe('DuoConfigurationSettingsRow rendering', () => {
     it('renders all rows for self-managed instance', () => {
       createComponent({ isSaaS: false });
+
       expect(findDuoConfigurationRows()).toHaveLength(3);
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toEqual('Experiment and beta features');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toEqual('Direct connections');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toEqual('Beta self-hosted models');
     });
 
     it('renders fewer rows for SaaS instance', () => {
       createComponent({ isSaaS: true });
+
       expect(findDuoConfigurationRows()).toHaveLength(1);
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toEqual('Experiment and beta features');
     });
 
     it('passes correct props to configuration rows', () => {
