@@ -18,7 +18,7 @@ jest.mock('~/alert');
 let wrapper;
 let axiosMock;
 
-const aiTermsAndConditionsPath = '/admin/ai/self_hosted_models/terms_and_condition';
+const toggleBetaModelsPath = '/admin/ai/self_hosted_models/terms_and_condition';
 
 const createComponent = ({ props = {}, provide = {} } = {}) => {
   wrapper = shallowMount(AiAdminSettings, {
@@ -30,8 +30,8 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
     },
     provide: {
       disabledDirectConnectionMethod: false,
-      selfHostedModelsEnabled: false,
-      aiTermsAndConditionsPath,
+      betaSelfHostedModelsEnabled: false,
+      toggleBetaModelsPath,
       ...provide,
     },
   });
@@ -75,23 +75,24 @@ describe('AiAdminSettings', () => {
       });
     });
 
-    describe('when the ai models setting is enabled', () => {
+    describe('when the beta models setting has changed', () => {
       beforeEach(() => {
         axiosMock = new MockAdapter(axios);
         jest.spyOn(axios, 'post');
 
-        createComponent({ provide: { selfHostedModelsEnabled: true } });
+        createComponent({ provide: { betaSelfHostedModelsEnabled: true } });
       });
 
       afterEach(() => {
         axiosMock.restore();
       });
 
-      it('triggers a post request to persist the setting', async () => {
+      it('triggers a post request to persist the change', async () => {
+        await findAiModelsForm().vm.$emit('change', false);
         await findAiCommonSettings().vm.$emit('submit', {});
         await waitForPromises();
 
-        expect(axios.post).toHaveBeenCalledWith(aiTermsAndConditionsPath);
+        expect(axios.post).toHaveBeenCalledWith(toggleBetaModelsPath);
       });
     });
 

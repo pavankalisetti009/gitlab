@@ -84,8 +84,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             are_experiment_settings_allowed: expected_experiments_visible_value.to_s,
             enabled_expanded_logging: enabled_expanded_logging.to_s,
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
-            self_hosted_models_enabled: terms_accepted.to_s,
-            ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
+            beta_self_hosted_models_enabled: terms_accepted.to_s,
+            toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path,
             duo_pro_visible: expected_duo_pro_visible_value
           }
         end
@@ -200,7 +200,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         duo_availability: 'default_off',
         direct_code_suggestions_enabled: 'false',
         experiment_features_enabled: 'true',
-        self_hosted_models_enabled: 'true',
+        beta_self_hosted_models_enabled: 'true',
         are_experiment_settings_allowed: 'true',
         duo_add_on_start_date: nil,
         duo_add_on_end_date: nil

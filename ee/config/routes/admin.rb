@@ -55,7 +55,7 @@ namespace :admin do
   namespace :ai do
     resources :self_hosted_models, only: [:index], path: 'self_hosted_models(/*vueroute)' do
       collection do
-        resources :terms_and_conditions, only: [:index, :create]
+        post 'toggle_beta_models', to: 'terms_and_conditions#toggle_beta_models'
       end
     end
 

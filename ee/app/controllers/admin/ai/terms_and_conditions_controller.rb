@@ -10,34 +10,20 @@ module Admin
 
       before_action :ensure_feature_enabled!
 
-      def index
-        redirect_to admin_ai_self_hosted_models_url if ::Ai::TestingTermsAcceptance.has_accepted?
-      end
+      def toggle_beta_models
+        testing_terms_acceptance = ::Ai::TestingTermsAcceptance.find_by_user_id(current_user.id)
 
-      def create
-        ::Ai::TestingTermsAcceptance.create!(user_id: current_user.id, user_email: current_user.email)
-
-        audit_event(current_user)
-
-        redirect_to admin_ai_self_hosted_models_url, notice: _("Successfully accepted GitLab Testing Terms")
+        if testing_terms_acceptance
+          ::Ai::SelfHostedModels::TestingTermsAcceptance::DestroyService.new(testing_terms_acceptance).execute
+        else
+          ::Ai::SelfHostedModels::TestingTermsAcceptance::CreateService.new(current_user).execute
+        end
       end
 
       private
 
       def ensure_feature_enabled!
         render_404 unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
-      end
-
-      def audit_event(user)
-        audit_context = {
-          name: 'self_hosted_model_terms_accepted',
-          author: user,
-          scope: Gitlab::Audit::InstanceScope.new,
-          target: user,
-          message: "Self-hosted model usage terms accepted by user #{user.id}"
-        }
-
-        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

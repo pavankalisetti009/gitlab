@@ -25,7 +25,7 @@ describe('AiModelsForm', () => {
   };
 
   beforeEach(() => {
-    createComponent({ injectedProps: { selfHostedModelsEnabled: true } });
+    createComponent({ injectedProps: { betaSelfHostedModelsEnabled: true } });
   });
 
   const findTitle = () => wrapper.find('h3').text();
@@ -39,62 +39,40 @@ describe('AiModelsForm', () => {
   });
 
   it('has the correct label', () => {
-    expect(findCheckboxLabel().text()).toBe('Turn on self-hosted models');
+    expect(findCheckboxLabel().text()).toBe('Use beta self-hosted models features');
   });
 
-  describe('when self-hosted models have been enabled', () => {
+  describe('help text', () => {
+    it('renders the correct text', () => {
+      expect(findCheckboxHelpText().text().replace(/\s+/g, ' ')).toMatch(
+        'Enabling this feature is your acceptance of the GitLab Testing Agreement',
+      );
+    });
+
+    it('links to the testing agreement', () => {
+      expect(findTestingAgreementLink().attributes('path')).toBe(
+        '/handbook/legal/testing-agreement/',
+      );
+    });
+  });
+
+  describe('when beta self-hosted models have been enabled', () => {
     beforeEach(() => {
-      createComponent({ injectedProps: { selfHostedModelsEnabled: true } });
+      createComponent({ injectedProps: { betaSelfHostedModelsEnabled: true } });
     });
 
     it('renders the checkbox checked', () => {
       expect(findCheckbox().attributes('checked')).toBeDefined();
     });
-
-    it('disables the checkbox', () => {
-      expect(findCheckbox().attributes('disabled')).toBeDefined();
-    });
-
-    describe('help text', () => {
-      it('renders the correct text', () => {
-        expect(findCheckboxHelpText().text().replace(/\s+/g, ' ')).toMatch(
-          'You have turned on self-hosted AI models and agreed to the GitLab Testing Agreement',
-        );
-      });
-
-      it('links to the testing agreement', () => {
-        expect(findTestingAgreementLink().attributes('path')).toBe(
-          '/handbook/legal/testing-agreement/',
-        );
-      });
-    });
   });
 
-  describe('when self-hosted models have not been enabled', () => {
+  describe('when beta self-hosted models have not been enabled', () => {
     beforeEach(() => {
-      createComponent({ injectedProps: { selfHostedModelsEnabled: false } });
+      createComponent({ injectedProps: { betaSelfHostedModelsEnabled: false } });
     });
 
     it('renders the checkbox unchecked', () => {
       expect(findCheckbox().attributes('checked')).toBeUndefined();
-    });
-
-    it('does not disable the checkbox', () => {
-      expect(findCheckbox().attributes('disabled')).toBeUndefined();
-    });
-
-    describe('help text', () => {
-      it('renders the correct text', () => {
-        expect(findCheckboxHelpText().text().replace(/\s+/g, ' ')).toMatch(
-          'By turning on self-hosted AI models, you agree to the GitLab Testing Agreement',
-        );
-      });
-
-      it('links to the testing agreement', () => {
-        expect(findTestingAgreementLink().attributes('path')).toBe(
-          '/handbook/legal/testing-agreement/',
-        );
-      });
     });
   });
 });

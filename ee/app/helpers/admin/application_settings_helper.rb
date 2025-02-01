@@ -44,7 +44,7 @@ module Admin
         duo_availability: duo_availability,
         direct_code_suggestions_enabled: ::Gitlab::CurrentSettings.disabled_direct_code_suggestions.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
-        self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
+        beta_self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s
       }.merge(duo_add_on_data)
     end
@@ -76,7 +76,7 @@ module Admin
     def ai_settings_helper_data
       code_suggestions_purchased = CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
       disabled_direct_code_suggestions = ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
-      self_hosted_models_enabled = ::Ai::TestingTermsAcceptance.has_accepted?
+      beta_self_hosted_models_enabled = ::Ai::TestingTermsAcceptance.has_accepted?
 
       {
         duo_availability: duo_availability.to_s,
@@ -85,8 +85,8 @@ module Admin
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
-        self_hosted_models_enabled: self_hosted_models_enabled.to_s,
-        ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path
+        beta_self_hosted_models_enabled: beta_self_hosted_models_enabled.to_s,
+        toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path
       }
     end
 

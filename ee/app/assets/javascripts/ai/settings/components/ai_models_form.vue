@@ -7,12 +7,9 @@ export default {
   name: 'AiModelsForm',
   i18n: {
     title: s__('AiPowered|Self-hosted AI models'),
-    checkBoxLabel: s__('AiPowered|Turn on self-hosted models'),
+    checkBoxLabel: s__('AiPowered|Use beta self-hosted models features'),
     checkboxHelpText: s__(
-      'AiPowered|By turning on self-hosted AI models, you agree to the %{linkStart}GitLab Testing Agreement%{linkEnd}. This action cannot be reversed.',
-    ),
-    selfHostedModelsEnabledHelpText: s__(
-      'AiPowered|You have turned on self-hosted AI models and agreed to the %{linkStart}GitLab Testing Agreement%{linkEnd}. This action cannot be reversed.',
+      'AiPowered|Enabling this feature is your acceptance of the %{linkStart}GitLab Testing Agreement%{linkEnd}.',
     ),
   },
   components: {
@@ -21,21 +18,16 @@ export default {
     PromoPageLink,
     GlFormCheckbox,
   },
-  inject: ['selfHostedModelsEnabled'],
+  inject: ['betaSelfHostedModelsEnabled'],
   testingAgreementPath: '/handbook/legal/testing-agreement/',
   data() {
     return {
-      aiModelsEnabled: this.selfHostedModelsEnabled,
+      aiModelsEnabled: this.betaSelfHostedModelsEnabled,
     };
   },
   methods: {
     checkBoxChanged(value) {
       this.$emit('change', value);
-    },
-    checkBoxHelpText() {
-      return this.selfHostedModelsEnabled
-        ? this.$options.i18n.selfHostedModelsEnabledHelpText
-        : this.$options.i18n.checkboxHelpText;
     },
   },
 };
@@ -43,16 +35,12 @@ export default {
 <template>
   <div>
     <h3 class="gl-text-base">{{ $options.i18n.title }}</h3>
-    <gl-form-checkbox
-      v-model="aiModelsEnabled"
-      :disabled="selfHostedModelsEnabled"
-      @change="checkBoxChanged"
-    >
+    <gl-form-checkbox v-model="aiModelsEnabled" @change="checkBoxChanged">
       <span data-testid="ai-models-checkbox-label"
         >{{ $options.i18n.checkBoxLabel }} <gl-icon name="lock" variant="subtle"
       /></span>
       <template #help>
-        <gl-sprintf :message="checkBoxHelpText()">
+        <gl-sprintf :message="$options.i18n.checkboxHelpText">
           <template #link="{ content }">
             <promo-page-link
               :path="$options.testingAgreementPath"

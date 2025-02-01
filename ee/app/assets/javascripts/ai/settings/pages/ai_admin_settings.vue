@@ -21,7 +21,7 @@ export default {
       'An error occurred while retrieving your settings. Reload the page to try again.',
     ),
   },
-  inject: ['disabledDirectConnectionMethod', 'selfHostedModelsEnabled', 'aiTermsAndConditionsPath'],
+  inject: ['disabledDirectConnectionMethod', 'betaSelfHostedModelsEnabled', 'toggleBetaModelsPath'],
   props: {
     redirectPath: {
       type: String,
@@ -38,15 +38,18 @@ export default {
     return {
       isLoading: false,
       disabledConnection: this.disabledDirectConnectionMethod,
-      aiModelsEnabled: this.selfHostedModelsEnabled,
+      aiModelsEnabled: this.betaSelfHostedModelsEnabled,
     };
   },
   computed: {
     hasFormChanged() {
       return (
         this.disabledConnection !== this.disabledDirectConnectionMethod ||
-        this.aiModelsEnabled !== this.selfHostedModelsEnabled
+        this.hasAiModelsFormChanged
       );
+    },
+    hasAiModelsFormChanged() {
+      return this.aiModelsEnabled !== this.betaSelfHostedModelsEnabled;
     },
   },
   methods: {
@@ -60,7 +63,7 @@ export default {
           disabled_direct_code_suggestions: this.disabledConnection,
         });
 
-        if (this.aiModelsEnabled) {
+        if (this.hasAiModelsFormChanged) {
           await this.updateAiModelsSetting();
         }
 
@@ -78,7 +81,7 @@ export default {
     },
     async updateAiModelsSetting() {
       await axios
-        .post(this.aiTermsAndConditionsPath)
+        .post(this.toggleBetaModelsPath)
         .catch((error) => {
           this.onError(error);
         })
