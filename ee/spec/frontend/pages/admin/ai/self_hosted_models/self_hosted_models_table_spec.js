@@ -94,19 +94,18 @@ describe('SelfHostedModelsTable', () => {
     });
 
     it('renders self-hosted model entries', () => {
-      expect(findTableRows().length).toEqual(3);
+      const modelRow = findNthTableRow(1);
 
-      const firstModel = findNthTableRow(0);
-
-      const firstModelTextContent = firstModel
+      const modelRowText = modelRow
         .findAll('td')
         .wrappers.map((cell) => cell.text().replace(/\u200E/g, '')); // Remove U+200E left-to-right marks added by the GlTruncate component
 
-      expect(firstModelTextContent).toContain('mock-self-hosted-model-1');
-      expect(firstModelTextContent).toContain('Code Llama');
-      expect(firstModelTextContent).toContain('https://mock-endpoint-1.com');
-      expect(firstModelTextContent).toContain('provider/some-model-1');
-      expect(firstModel.find('[data-testid="check-circle-icon"]').exists()).toBe(true);
+      expect(findTableRows()).toHaveLength(3);
+      expect(modelRowText).toContain('mock-self-hosted-model-2');
+      expect(modelRowText).toContain('Mistral');
+      expect(modelRowText).toContain('https://mock-endpoint-2.com');
+      expect(modelRowText).toContain('provider/some-model-2');
+      expect(modelRow.find('[data-testid="check-circle-icon"]').exists()).toBe(true);
     });
 
     describe('bedrock model entries', () => {
@@ -117,6 +116,15 @@ describe('SelfHostedModelsTable', () => {
 
         expect(bedrockModelName).toBe('mock-bedrock-self-hosted-model');
         expect(bedrockModelEndpoint).toBe('--');
+      });
+    });
+
+    describe('beta model entries', () => {
+      it('renders a beta badge in the row', () => {
+        const betaModelCell = findNthTableRow(0).findAll('td').at(1);
+
+        expect(betaModelCell.text()).toContain('Code Llama');
+        expect(betaModelCell.find('.gl-badge-content').text()).toContain('Beta');
       });
     });
 

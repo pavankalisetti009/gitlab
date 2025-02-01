@@ -1,11 +1,12 @@
 <script>
-import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
+import { RELEASE_STATES } from '../../self_hosted_models/constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import ModelSelectDropdown from '../../custom_models/shared/model_select_dropdown.vue';
 
 const PROVIDERS = {
   DISABLED: 'disabled',
@@ -14,10 +15,9 @@ const PROVIDERS = {
 };
 
 export default {
-  name: 'ModelSelectDropdown',
+  name: 'FeatureSettingsModelSelector',
   components: {
-    GlCollapsibleListbox,
-    GlButton,
+    ModelSelectDropdown,
   },
   props: {
     aiFeatureSetting: {
@@ -51,11 +51,22 @@ export default {
     };
   },
   computed: {
-    dropdownItems() {
-      const modelOptions = this.compatibleModels.map(({ name, modelDisplayName, id }) => ({
-        value: id,
-        text: `${name} (${modelDisplayName})`,
-      }));
+    listItems() {
+      const gaModels = this.compatibleModels.filter(
+        ({ releaseState }) => releaseState === RELEASE_STATES.GA,
+      );
+      const betaModels = this.compatibleModels.filter(
+        ({ releaseState }) => releaseState === RELEASE_STATES.BETA,
+      );
+
+      // sort compatible models by releaseState
+      const modelOptions = [...gaModels, ...betaModels].map(
+        ({ name, modelDisplayName, id, releaseState }) => ({
+          value: id,
+          text: `${name} (${modelDisplayName})`,
+          releaseState,
+        }),
+      );
 
       // Add an option to disable the feature
       const disableOption = {
@@ -76,6 +87,9 @@ export default {
     },
     selectedModel() {
       return this.compatibleModels.find((m) => m.id === this.selfHostedModelId);
+    },
+    selectedOptionItem() {
+      return this.listItems.find((item) => item.value === this.selectedOption);
     },
     dropdownToggleText() {
       if (this.provider === PROVIDERS.DISABLED) {
@@ -161,23 +175,12 @@ export default {
 };
 </script>
 <template>
-  <gl-collapsible-listbox
-    class="md:gl-w-31"
-    :selected="selectedOption"
-    :items="dropdownItems"
-    :toggle-text="dropdownToggleText"
-    :header-text="s__('AdminAIPoweredFeatures|Compatible models')"
-    :loading="isSaving"
-    category="primary"
-    block
+  <model-select-dropdown
+    :selected-option="selectedOptionItem"
+    :items="listItems"
+    :dropdown-toggle-text="dropdownToggleText"
+    :is-loading="isSaving"
+    is-feature-setting-dropdown
     @select="onSelect"
-  >
-    <template #footer>
-      <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
-        <gl-button data-testid="add-self-hosted-model-button" category="tertiary" to="new">
-          {{ s__('AdminAIPoweredFeatures|Add self-hosted model') }}
-        </gl-button>
-      </div>
-    </template>
-  </gl-collapsible-listbox>
+  />
 </template>

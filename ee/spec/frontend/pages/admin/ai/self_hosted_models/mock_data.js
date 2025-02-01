@@ -35,6 +35,7 @@ export const mockSelfHostedModelsList = [
     endpoint: 'https://mock-endpoint-1.com',
     identifier: 'provider/some-model-1',
     hasApiToken: true,
+    releaseState: 'BETA',
     featureSettings: {
       nodes: [
         {
@@ -50,8 +51,9 @@ export const mockSelfHostedModelsList = [
     model: 'mistral',
     modelDisplayName: 'Mistral',
     endpoint: 'https://mock-endpoint-2.com',
-    identifier: '',
+    identifier: 'provider/some-model-2',
     hasApiToken: true,
+    releaseState: 'GA',
     featureSettings: {
       nodes: [],
     },
@@ -64,6 +66,7 @@ export const mockSelfHostedModelsList = [
     endpoint: BEDROCK_DUMMY_ENDPOINT,
     identifier: 'bedrock/example-model',
     hasApiToken: false,
+    releaseState: 'GA',
     featureSettings: {
       nodes: [],
     },
@@ -79,10 +82,10 @@ export const mockModelConnectionTestInput = {
 };
 
 export const SELF_HOSTED_MODEL_OPTIONS = [
-  { modelValue: 'CODEGEMMA', modelName: 'CodeGemma' },
-  { modelValue: 'CODELLAMA', modelName: 'Code-Llama' },
-  { modelValue: 'CODESTRAL', modelName: 'Codestral' },
-  { modelValue: 'MISTRAL', modelName: 'Mistral' },
-  { modelValue: 'DEEPSEEKCODER', modelName: 'Deepseek Coder' },
-  { modelValue: 'LLAMA3', modelName: 'Llama 3' },
+  { modelValue: 'CODEGEMMA', modelName: 'CodeGemma', releaseState: 'BETA' },
+  { modelValue: 'CODELLAMA', modelName: 'Code-Llama', releaseState: 'BETA' },
+  { modelValue: 'CODESTRAL', modelName: 'Codestral', releaseState: 'GA' },
+  { modelValue: 'MISTRAL', modelName: 'Mistral', releaseState: 'GA' },
+  { modelValue: 'DEEPSEEKCODER', modelName: 'Deepseek Coder', releaseState: 'BETA' },
+  { modelValue: 'LLAMA3', modelName: 'Llama 3', releaseState: 'BETA' },
 ];

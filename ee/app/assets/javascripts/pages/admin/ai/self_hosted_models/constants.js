@@ -10,3 +10,8 @@ export const SELF_HOSTED_MODEL_PLATFORMS = {
 
 // Temporary dummy endpoint for bedrock models
 export const BEDROCK_DUMMY_ENDPOINT = 'http://bedrockselfhostedmodel.com';
+
+export const RELEASE_STATES = {
+  GA: 'GA',
+  BETA: 'BETA',
+};

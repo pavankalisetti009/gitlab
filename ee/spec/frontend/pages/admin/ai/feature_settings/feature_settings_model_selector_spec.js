@@ -1,14 +1,16 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlToast } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
+import { GlToast } from '@gitlab/ui';
+import { shallowMount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import ModelSelectDropdown from 'ee/pages/admin/ai/feature_settings/components/model_select_dropdown.vue';
+import FeatureSettingsModelSelector from 'ee/pages/admin/ai/feature_settings/components/feature_settings_model_selector.vue';
+import ModelSelectDropdown from 'ee/pages/admin/ai/custom_models/shared/model_select_dropdown.vue';
 import updateAiFeatureSetting from 'ee/pages/admin/ai/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { createAlert } from '~/alert';
+import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { license } from 'ee_jest/admin/subscriptions/show/mock_data';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
 
@@ -17,7 +19,7 @@ Vue.use(GlToast);
 
 jest.mock('~/alert');
 
-describe('ModelSelectDropdown', () => {
+describe('FeatureSettingsModelSelector', () => {
   let wrapper;
 
   const mockAiFeatureSetting = mockAiFeatureSettings[0];
@@ -56,91 +58,90 @@ describe('ModelSelectDropdown', () => {
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
-    wrapper = mount(ModelSelectDropdown, {
-      apolloProvider: mockApollo,
-      propsData: {
-        aiFeatureSetting: mockAiFeatureSetting,
-        license: license.ULTIMATE,
-        ...props,
-      },
-      mocks: {
-        $toast: {
-          show: jest.fn(),
+    wrapper = extendedWrapper(
+      shallowMount(FeatureSettingsModelSelector, {
+        apolloProvider: mockApollo,
+        propsData: {
+          aiFeatureSetting: mockAiFeatureSetting,
+          license: license.ULTIMATE,
+          ...props,
         },
-      },
-    });
+        mocks: {
+          $toast: {
+            show: jest.fn(),
+          },
+        },
+      }),
+    );
   };
 
-  const findSelectDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findSelectDropdownButtonText = () => wrapper.find('[class="gl-new-dropdown-button-text"]');
-  const findButton = () => wrapper.find('[data-testid="add-self-hosted-model-button"]');
+  const findFeatureSettingsModelSelector = () =>
+    wrapper.findComponent(FeatureSettingsModelSelector);
+  const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
+  const findDropdownToggleText = () => findModelSelectDropdown().props('dropdownToggleText');
 
-  it('renders the dropdown component', () => {
+  it('renders the component', () => {
     createComponent();
 
-    expect(findSelectDropdown().exists()).toBe(true);
+    expect(findFeatureSettingsModelSelector().exists()).toBe(true);
   });
 
-  it('renders a list of select options', () => {
-    createComponent();
+  describe('.listItems', () => {
+    it('contains a list of options sorted by release state', () => {
+      createComponent();
 
-    const modelOptions = findSelectDropdown().props('items');
+      const modelOptions = findModelSelectDropdown().props('items');
 
-    expect(modelOptions.map((model) => model.text)).toEqual([
-      'Model 1 (Mistral)',
-      'Model 2 (Code Llama)',
-      'Model 3 (CodeGemma)',
-      'GitLab AI Vendor',
-      'Disabled',
-    ]);
-  });
-
-  it('does not return Gitlab AI Vendor option for an offline license', () => {
-    createComponent({
-      props: {
-        license: license.ULTIMATE_OFFLINE,
-      },
+      expect(modelOptions.map(({ text, releaseState }) => [text, releaseState])).toEqual([
+        ['Model 1 (Mistral)', 'GA'],
+        ['Model 4 (GPT)', 'GA'],
+        ['Model 5 (Claude 3)', 'GA'],
+        ['Model 2 (Code Llama)', 'BETA'],
+        ['Model 3 (CodeGemma)', 'BETA'],
+        ['GitLab AI Vendor'],
+        ['Disabled'],
+      ]);
     });
 
-    const modelOptions = findSelectDropdown().props('items');
+    it('does not return Gitlab AI Vendor option for an offline license', () => {
+      createComponent({
+        props: {
+          license: license.ULTIMATE_OFFLINE,
+        },
+      });
 
-    expect(modelOptions.map((model) => model.text)).toEqual([
-      'Model 1 (Mistral)',
-      'Model 2 (Code Llama)',
-      'Model 3 (CodeGemma)',
-      'Disabled',
-    ]);
+      const modelOptions = findModelSelectDropdown().props('items');
+      expect(modelOptions.map(({ text, releaseState }) => [text, releaseState])).toEqual([
+        ['Model 1 (Mistral)', 'GA'],
+        ['Model 4 (GPT)', 'GA'],
+        ['Model 5 (Claude 3)', 'GA'],
+        ['Model 2 (Code Llama)', 'BETA'],
+        ['Model 3 (CodeGemma)', 'BETA'],
+        ['Disabled'],
+      ]);
 
-    expect(findSelectDropdownButtonText().text()).toBe('Select a self-hosted model');
-  });
-
-  it('renders a button to add a self-hosted model', () => {
-    createComponent();
-
-    expect(findButton().text()).toBe('Add self-hosted model');
+      expect(findDropdownToggleText()).toBe('Select a self-hosted model');
+    });
   });
 
   describe('when an update is saving', () => {
-    it('renders the loading state', async () => {
+    it('updates the loading state', async () => {
       createComponent();
 
-      await findSelectDropdownButtonText().trigger('click');
-      await findSelectDropdown().vm.$emit('select', 'disabled');
+      await findModelSelectDropdown().vm.$emit('select', 'disabled');
 
-      expect(findSelectDropdown().props('loading')).toBe(true);
+      expect(findModelSelectDropdown().props('isLoading')).toBe(true);
     });
   });
 
-  describe('Updating the feature setting', () => {
+  describe('updating the feature setting', () => {
     beforeEach(() => {
       createComponent();
     });
 
     describe('with a vendored model', () => {
-      it('calls the update mutation with the right input', async () => {
-        await findSelectDropdown().vm.$emit('select', 'vendored');
-
-        await waitForPromises();
+      it('calls the update mutation with the right input', () => {
+        findModelSelectDropdown().vm.$emit('select', 'vendored');
 
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
@@ -153,10 +154,8 @@ describe('ModelSelectDropdown', () => {
     });
 
     describe('with a self-hosted model', () => {
-      it('calls the update mutation with the right input', async () => {
-        await findSelectDropdown().vm.$emit('select', 1);
-
-        await waitForPromises();
+      it('calls the update mutation with the right input', () => {
+        findModelSelectDropdown().vm.$emit('select', 1);
 
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
@@ -169,10 +168,8 @@ describe('ModelSelectDropdown', () => {
     });
 
     describe('disabling the feature', () => {
-      it('calls the update mutation with the right input', async () => {
-        await findSelectDropdown().vm.$emit('select', 'disabled');
-
-        await waitForPromises();
+      it('calls the update mutation with the right input', () => {
+        findModelSelectDropdown().vm.$emit('select', 'disabled');
 
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
@@ -184,9 +181,8 @@ describe('ModelSelectDropdown', () => {
       });
     });
 
-    it('displays a success toast', async () => {
-      await findSelectDropdownButtonText().trigger('click');
-      await findSelectDropdown().vm.$emit('select', 1);
+    it('triggers a success toast', async () => {
+      findModelSelectDropdown().vm.$emit('select', 1);
 
       await waitForPromises();
 
@@ -196,8 +192,7 @@ describe('ModelSelectDropdown', () => {
     });
 
     it('refreshes self-hosted models and feature settings data', async () => {
-      await findSelectDropdownButtonText().trigger('click');
-      await findSelectDropdown().vm.$emit('select', 1);
+      findModelSelectDropdown().vm.$emit('select', 1);
 
       await waitForPromises();
 
@@ -206,14 +201,14 @@ describe('ModelSelectDropdown', () => {
     });
 
     describe('when the feature state is changed', () => {
-      it('displays the correct text on the dropdown button', async () => {
-        expect(findSelectDropdownButtonText().text()).toBe('GitLab AI Vendor');
+      it('updates the dropdown toggle text', async () => {
+        expect(findDropdownToggleText()).toBe('GitLab AI Vendor');
 
-        await findSelectDropdown().vm.$emit('select', 'disabled');
+        findModelSelectDropdown().vm.$emit('select', 'disabled');
 
         await waitForPromises();
 
-        expect(findSelectDropdownButtonText().text()).toBe('Disabled');
+        expect(findDropdownToggleText()).toBe('Disabled');
       });
     });
 
@@ -221,12 +216,11 @@ describe('ModelSelectDropdown', () => {
       it('displays the selected deployment name and model', async () => {
         const selectedModel = mockSelfHostedModels[0];
 
-        await findSelectDropdownButtonText().trigger('click');
-        await findSelectDropdown().vm.$emit('select', selectedModel.id);
+        findModelSelectDropdown().vm.$emit('select', selectedModel.id);
 
         await waitForPromises();
 
-        expect(findSelectDropdownButtonText().text()).toBe(
+        expect(findDropdownToggleText()).toBe(
           `${selectedModel.name} (${selectedModel.modelDisplayName})`,
         );
       });
@@ -253,17 +247,19 @@ describe('ModelSelectDropdown', () => {
         ],
       });
 
-      await findSelectDropdownButtonText().trigger('click');
-      await findSelectDropdown().vm.$emit('select', selectedModel.id);
+      findModelSelectDropdown().vm.$emit('select', selectedModel.id);
 
       await waitForPromises();
     });
 
     it('does not update the selected option', () => {
-      expect(findSelectDropdownButtonText().text()).toBe('GitLab AI Vendor');
+      expect(findModelSelectDropdown().props('selectedOption')).toEqual({
+        text: 'GitLab AI Vendor',
+        value: 'vendored',
+      });
     });
 
-    it('displays an error message', () => {
+    it('triggers an error message', () => {
       expect(createAlert).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Codegemma is incompatible with the Duo Chat feature',
