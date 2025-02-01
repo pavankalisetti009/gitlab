@@ -11,9 +11,10 @@ import {
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
-import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
+import { NAMESPACE_GROUP, NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
 import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
 import DependenciesActions from './dependencies_actions.vue';
 import SbomReportsErrorsAlert from './sbom_reports_errors_alert.vue';
@@ -35,6 +36,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'hasDependencies',
     'emptyStateSvgPath',
@@ -81,8 +83,22 @@ export default {
     showSbomReportsErrors() {
       return this.sbomReportsErrors.length > 0;
     },
+    asyncExportEnabled() {
+      return this.asyncExportEnabledForProject || this.asyncExportEnabledForGroup;
+    },
+    asyncExportEnabledForProject() {
+      return (
+        this.isProjectNamespace && this.glFeatures.asynchronousDependencyExportDeliveryForProjects
+      );
+    },
+    asyncExportEnabledForGroup() {
+      return this.isGroupNamespace && this.glFeatures.asynchronousDependencyExportDeliveryForGroups;
+    },
     isProjectNamespace() {
       return this.namespaceType === NAMESPACE_PROJECT;
+    },
+    isGroupNamespace() {
+      return this.namespaceType === NAMESPACE_GROUP;
     },
     isOrganizationNamespace() {
       return this.namespaceType === NAMESPACE_ORGANIZATION;
@@ -106,6 +122,7 @@ export default {
     this.setNamespaceType(this.namespaceType);
     this.setPageInfo(this.pageInfo);
     this.setSortField(SORT_FIELD_SEVERITY);
+    this.setAsyncExport(this.asyncExportEnabled);
   },
   methods: {
     ...mapActions([
@@ -115,6 +132,7 @@ export default {
       'setPageInfo',
       'setSortField',
       'setCurrentList',
+      'setAsyncExport',
     ]),
     ...mapActions({
       fetchExport(dispatch) {

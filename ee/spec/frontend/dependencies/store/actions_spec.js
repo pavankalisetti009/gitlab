@@ -34,6 +34,7 @@ describe('Dependencies actions', () => {
     actionName                         | payload
     ${'setDependenciesEndpoint'}       | ${TEST_HOST}
     ${'setExportDependenciesEndpoint'} | ${TEST_HOST}
+    ${'setAsyncExport'}                | ${true}
     ${'setNamespaceType'}              | ${NAMESPACE_ORGANIZATION}
     ${'setNamespaceType'}              | ${NAMESPACE_GROUP}
     ${'setNamespaceType'}              | ${NAMESPACE_PROJECT}

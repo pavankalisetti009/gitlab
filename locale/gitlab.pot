@@ -19426,6 +19426,9 @@ msgstr ""
 msgid "Dependencies|Projects"
 msgstr ""
 
+msgid "Dependencies|Report export in progress. After the report is generated, an email will be sent with the download link."
+msgstr ""
+
 msgid "Dependencies|Search or filter dependencies..."
 msgstr ""
 

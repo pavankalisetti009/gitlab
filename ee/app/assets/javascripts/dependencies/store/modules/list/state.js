@@ -6,6 +6,7 @@ export default () => ({
   vulnerabilityInfo: {},
   vulnerabilityItemsLoading: [],
   fetchingInProgress: false,
+  asyncExport: false,
   initialized: false,
   isLoading: false,
   errorLoading: false,

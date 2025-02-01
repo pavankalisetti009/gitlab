@@ -7,6 +7,7 @@ module Groups
 
     before_action only: :index do
       push_frontend_feature_flag(:group_level_dependencies_filtering_by_packager, group)
+      push_frontend_feature_flag(:asynchronous_dependency_export_delivery_for_groups, group)
     end
 
     before_action :authorize_read_dependency_list!

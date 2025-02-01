@@ -15,12 +15,13 @@ import {
   DEPENDENCIES_FILENAME,
   LICENSES_FETCH_ERROR_MESSAGE,
   VULNERABILITIES_FETCH_ERROR_MESSAGE,
+  EXPORT_STARTED_MESSAGE,
 } from 'ee/dependencies/store/modules/list/constants';
 import * as types from 'ee/dependencies/store/modules/list/mutation_types';
 import getInitialState from 'ee/dependencies/store/modules/list/state';
 import { TEST_HOST } from 'helpers/test_constants';
 import testAction from 'helpers/vuex_action_helper';
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_INFO } from '~/alert';
 import download from '~/lib/utils/downloader';
 import {
   HTTP_STATUS_CREATED,
@@ -421,6 +422,7 @@ describe('Dependencies actions', () => {
     beforeEach(() => {
       state = getInitialState();
       state.exportEndpoint = `${TEST_HOST}/dependency_list_exports`;
+      state.asyncExport = true;
       mock = new MockAdapter(axios);
     });
 
@@ -443,7 +445,7 @@ describe('Dependencies actions', () => {
           .replyOnce(HTTP_STATUS_CREATED, mockResponseExportEndpoint);
       });
 
-      it('sets SET_FETCHING_IN_PROGRESS and dispatches downloadExport', () =>
+      it('shows loading spinner then creates alert for export email', () =>
         testAction(
           actions.fetchExport,
           undefined,
@@ -453,14 +455,44 @@ describe('Dependencies actions', () => {
               type: 'SET_FETCHING_IN_PROGRESS',
               payload: true,
             },
-          ],
-          [
             {
-              type: 'downloadExport',
-              payload: mockResponseExportEndpoint.self,
+              type: 'SET_FETCHING_IN_PROGRESS',
+              payload: false,
             },
           ],
-        ));
+          [],
+        ).then(() => {
+          expect(createAlert).toHaveBeenCalledTimes(1);
+          expect(createAlert).toHaveBeenCalledWith({
+            message: EXPORT_STARTED_MESSAGE,
+            variant: VARIANT_INFO,
+          });
+        }));
+
+      describe('when async export is disabled', () => {
+        beforeEach(() => {
+          state.asyncExport = false;
+        });
+
+        it('sets SET_FETCHING_IN_PROGRESS and dispatches downloadExport', () =>
+          testAction(
+            actions.fetchExport,
+            undefined,
+            state,
+            [
+              {
+                type: 'SET_FETCHING_IN_PROGRESS',
+                payload: true,
+              },
+            ],
+            [
+              {
+                type: 'downloadExport',
+                payload: mockResponseExportEndpoint.self,
+              },
+            ],
+          ));
+      });
     });
 
     describe('on success with status other than created (201)', () => {

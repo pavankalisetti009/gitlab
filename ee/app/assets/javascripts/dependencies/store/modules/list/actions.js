@@ -1,4 +1,4 @@
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_INFO } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import {
   convertObjectPropsToCamelCase,
@@ -16,6 +16,7 @@ import {
   FETCH_ERROR_MESSAGE,
   FETCH_ERROR_MESSAGE_WITH_DETAILS,
   FETCH_EXPORT_ERROR_MESSAGE,
+  EXPORT_STARTED_MESSAGE,
   LICENSES_FETCH_ERROR_MESSAGE,
   VULNERABILITIES_FETCH_ERROR_MESSAGE,
 } from './constants';
@@ -31,6 +32,8 @@ export const setExportDependenciesEndpoint = ({ commit }, payload) =>
 export const setNamespaceType = ({ commit }, payload) => commit(types.SET_NAMESPACE_TYPE, payload);
 
 export const setInitialState = ({ commit }, payload) => commit(types.SET_INITIAL_STATE, payload);
+
+export const setAsyncExport = ({ commit }, payload) => commit(types.SET_ASYNC_EXPORT, payload);
 
 export const setPageInfo = ({ commit }, payload) => commit(types.SET_PAGE_INFO, payload);
 
@@ -143,7 +146,12 @@ export const fetchExport = ({ state, commit, dispatch }) => {
     .post(state.exportEndpoint)
     .then((response) => {
       if (response?.status === HTTP_STATUS_CREATED) {
-        dispatch('downloadExport', response?.data?.self);
+        if (state.asyncExport) {
+          commit(types.SET_FETCHING_IN_PROGRESS, false);
+          createAlert({ message: EXPORT_STARTED_MESSAGE, variant: VARIANT_INFO });
+        } else {
+          dispatch('downloadExport', response?.data?.self);
+        }
       } else {
         throw new Error(__('Invalid server response'));
       }

@@ -8,6 +8,7 @@ module Projects
 
     before_action only: :index do
       push_frontend_feature_flag(:project_component_filter, project)
+      push_frontend_feature_flag(:asynchronous_dependency_export_delivery_for_projects, project)
     end
 
     before_action :authorize_read_dependency_list!
