@@ -3,6 +3,7 @@ import {
   GlTable,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlExperimentBadge,
   GlIcon,
   GlLink,
   GlSearchBoxByType,
@@ -14,7 +15,7 @@ import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
-import { BEDROCK_DUMMY_ENDPOINT } from '../constants';
+import { BEDROCK_DUMMY_ENDPOINT, RELEASE_STATES } from '../constants';
 import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disclosure_item.vue';
 
 export default {
@@ -23,6 +24,7 @@ export default {
     GlTable,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
+    GlExperimentBadge,
     GlIcon,
     GlLink,
     GlSearchBoxByType,
@@ -126,6 +128,9 @@ export default {
     getModelEndpointText(endpoint) {
       return endpoint === BEDROCK_DUMMY_ENDPOINT ? '--' : endpoint;
     },
+    isBetaModel(model) {
+      return model.releaseState === RELEASE_STATES.BETA;
+    },
   },
   apollo: {
     selfHostedModels: {
@@ -178,7 +183,10 @@ export default {
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"
           ><rect y="6" :width="item.loaderWidth.model" height="36" rx="10" />
         </gl-skeleton-loader>
-        <span v-else>{{ item.modelDisplayName }}</span>
+        <div v-else>
+          {{ item.modelDisplayName }}
+          <gl-experiment-badge v-if="isBetaModel(item)" type="beta" />
+        </div>
       </template>
       <template #cell(endpoint)="{ item }">
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"

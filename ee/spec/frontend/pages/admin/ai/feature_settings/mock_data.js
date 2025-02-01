@@ -1,7 +1,39 @@
 export const mockSelfHostedModels = [
-  { id: 1, name: 'Model 1', model: 'mistral', modelDisplayName: 'Mistral' },
-  { id: 2, name: 'Model 2', model: 'codellama', modelDisplayName: 'Code Llama' },
-  { id: 3, name: 'Model 3', model: 'codegemma', modelDisplayName: 'CodeGemma' },
+  {
+    id: 1,
+    name: 'Model 1',
+    model: 'mistral',
+    modelDisplayName: 'Mistral',
+    releaseState: 'GA',
+  },
+  {
+    id: 2,
+    name: 'Model 2',
+    model: 'codellama',
+    modelDisplayName: 'Code Llama',
+    releaseState: 'BETA',
+  },
+  {
+    id: 3,
+    name: 'Model 3',
+    model: 'codegemma',
+    modelDisplayName: 'CodeGemma',
+    releaseState: 'BETA',
+  },
+  {
+    id: 4,
+    name: 'Model 4',
+    model: 'gpt',
+    modelDisplayName: 'GPT',
+    releaseState: 'GA',
+  },
+  {
+    id: 5,
+    name: 'Model 5',
+    model: 'claude_3',
+    modelDisplayName: 'Claude 3',
+    releaseState: 'GA',
+  },
 ];
 
 export const mockAiFeatureSettings = [
@@ -30,6 +62,7 @@ export const mockAiFeatureSettings = [
       id: 2,
       name: 'Model 2',
       model: 'codellama',
+      releaseState: 'BETA',
     },
     validModels: { nodes: mockSelfHostedModels },
   },

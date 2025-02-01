@@ -4,13 +4,13 @@ import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
-import ModelSelectDropdown from './model_select_dropdown.vue';
+import FeatureSettingsModelSelector from './feature_settings_model_selector.vue';
 
 export default {
   name: 'FeatureSettingsTable',
   components: {
     GlTableLite,
-    ModelSelectDropdown,
+    FeatureSettingsModelSelector,
     GlSkeletonLoader,
   },
   i18n: {
@@ -132,7 +132,11 @@ export default {
       <gl-skeleton-loader v-if="isLoading" :height="46" :width="600">
         <rect y="8" :width="item.loaderWidth.modelName" height="32" rx="10" />
       </gl-skeleton-loader>
-      <model-select-dropdown v-else :ai-feature-setting="item" :license="currentLicense" />
+      <feature-settings-model-selector
+        v-else
+        :ai-feature-setting="item"
+        :license="currentLicense"
+      />
     </template>
   </gl-table-lite>
 </template>

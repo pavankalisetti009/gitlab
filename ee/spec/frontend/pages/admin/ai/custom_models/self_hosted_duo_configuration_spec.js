@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlExperimentBadge, GlButton } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import SelfHostedDuoConfiguration from 'ee/pages/admin/ai/custom_models/self_hosted_duo_configuration.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -27,16 +27,11 @@ describe('SelfHostedDuoConfiguration', () => {
   const findFeatureSettingsTab = () => wrapper.findByTestId('ai-feature-settings-tab');
   const findSelfHostedModelsTab = () => wrapper.findByTestId('self-hosted-models-tab');
   const findAddModelButton = () => wrapper.findComponent(GlButton);
-  const findBetaBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   it('has a title', () => {
     const title = wrapper.findByTestId('self-hosted-title');
 
     expect(title.text()).toBe('Self-hosted models');
-  });
-
-  it('has a beta badge', () => {
-    expect(findBetaBadge().exists()).toBe(true);
   });
 
   it('has a description', () => {

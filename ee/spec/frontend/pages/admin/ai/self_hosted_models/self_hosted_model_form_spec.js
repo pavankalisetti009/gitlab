@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SelfHostedModelForm from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_model_form.vue';
 import TestConnectionButton from 'ee/pages/admin/ai/self_hosted_models/components/test_connection_button.vue';
+import ModelSelectDropdown from 'ee/pages/admin/ai/custom_models/shared/model_select_dropdown.vue';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
 import createSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
 import updateSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
@@ -75,6 +76,7 @@ describe('SelfHostedModelForm', () => {
     });
   });
 
+  // Find elements
   const findGlForm = () => wrapper.findComponent(GlForm);
   const findNameInputField = () => wrapper.findByLabelText('Deployment name', { exact: false });
   const findEndpointInputField = () => wrapper.findByLabelText('Endpoint', { exact: false });
@@ -82,11 +84,12 @@ describe('SelfHostedModelForm', () => {
   const findIdentifierInputField = () =>
     wrapper.findByLabelText('Model identifier', { exact: false });
   const findApiKeyInputField = () => wrapper.findComponent(InputCopyToggleVisibility);
-  const findModelDropDownSelector = () => wrapper.findByTestId('model-dropdown-selector');
+  const findModelDropDownSelector = () => wrapper.findComponent(ModelSelectDropdown);
   const findCreateButton = () => wrapper.find('button[type="submit"]');
   const findCancelButton = () => wrapper.findByText('Cancel');
   const findTestConnectionButton = () => wrapper.findComponent(TestConnectionButton);
 
+  // Find validation messages
   const findNameValidationMessage = () => wrapper.findByText('Please enter a deployment name.');
   const findModelValidationMessage = () => wrapper.findByText('Please select a model.');
   const findEndpointValidationMessage = () => wrapper.findByText('Please enter an endpoint.');
@@ -111,24 +114,24 @@ describe('SelfHostedModelForm', () => {
         expect(findPlatformDropdownSelector().exists()).toBe(true);
       });
 
-      it('renders the model select dropdown', () => {
-        const modelDropdownSelector = findModelDropDownSelector();
+      describe('model select dropdown', () => {
+        it('renders the model select dropdown', () => {
+          expect(findModelDropDownSelector().exists()).toBe(true);
+          expect(findModelDropDownSelector().props('dropdownToggleText')).toEqual('Select model');
+        });
 
-        expect(modelDropdownSelector.props('toggleText')).toEqual('Select model');
+        it('passes it model options sorted by release state', () => {
+          const modelOptions = findModelDropDownSelector().props('items');
 
-        const modelOptions = modelDropdownSelector.props('items');
-        expect(modelOptions.map((model) => model.text)).toEqual([
-          'CodeGemma',
-          'Code-Llama',
-          'Codestral',
-          'Mistral',
-          'Deepseek Coder',
-          'Llama 3',
-        ]);
-      });
-
-      it('renders the model identifier input field', () => {
-        expect(findPlatformDropdownSelector().exists()).toBe(true);
+          expect(modelOptions.map(({ text, releaseState }) => [text, releaseState])).toEqual([
+            ['Codestral', 'GA'],
+            ['Mistral', 'GA'],
+            ['CodeGemma', 'BETA'],
+            ['Code-Llama', 'BETA'],
+            ['Deepseek Coder', 'BETA'],
+            ['Llama 3', 'BETA'],
+          ]);
+        });
       });
     });
 

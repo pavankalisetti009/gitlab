@@ -1,5 +1,5 @@
 <script>
-import { GlTabs, GlTab, GlButton, GlExperimentBadge } from '@gitlab/ui';
+import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import SelfHostedModelsTable from '../self_hosted_models/components/self_hosted_models_table.vue';
@@ -12,7 +12,6 @@ export default {
     GlTabs,
     GlTab,
     GlButton,
-    GlExperimentBadge,
     SelfHostedModelsTable,
     FeatureSettingsTable,
     PageHeading,
@@ -79,10 +78,7 @@ export default {
   <div>
     <page-heading>
       <template #heading>
-        <span class="gl-flex gl-items-center gl-gap-3">
-          <span data-testid="self-hosted-title">{{ $options.i18n.title }}</span>
-          <gl-experiment-badge type="beta" class="!gl-mx-0" />
-        </span>
+        <div data-testid="self-hosted-title">{{ $options.i18n.title }}</div>
       </template>
       <template #description>{{ $options.i18n.description }}</template>
       <template #actions>

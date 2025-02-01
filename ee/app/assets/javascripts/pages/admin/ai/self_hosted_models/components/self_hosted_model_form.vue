@@ -1,8 +1,8 @@
 <script>
 import {
-  GlForm,
   GlButton,
   GlCollapsibleListbox,
+  GlForm,
   GlFormFields,
   GlLink,
   GlSprintf,
@@ -14,7 +14,8 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
-import { SELF_HOSTED_MODEL_PLATFORMS, BEDROCK_DUMMY_ENDPOINT } from '../constants';
+import { SELF_HOSTED_MODEL_PLATFORMS, BEDROCK_DUMMY_ENDPOINT, RELEASE_STATES } from '../constants';
+import ModelSelectDropdown from '../../custom_models/shared/model_select_dropdown.vue';
 import TestConnectionButton from './test_connection_button.vue';
 
 const isBedrockModelIdentifier = (identifier) => identifier.startsWith('bedrock/');
@@ -84,13 +85,14 @@ const bedrockFormFields = {
 export default {
   name: 'SelfHostedModelForm',
   components: {
-    GlForm,
     GlButton,
     GlCollapsibleListbox,
+    GlForm,
     GlFormFields,
     GlLink,
     GlSprintf,
     InputCopyToggleVisibility,
+    ModelSelectDropdown,
     TestConnectionButton,
   },
   inject: ['basePath', 'modelOptions'],
@@ -147,7 +149,10 @@ export default {
       identifier = '',
       apiToken = '',
     } = this.initialFormValues;
-    const modelToUpperCase = model.toUpperCase();
+
+    const selectedModel = this.modelOptions.find(
+      ({ modelValue }) => modelValue === model.toUpperCase(),
+    );
 
     /*
       When an identifier starts with "bedrock/", we can infer it to be a bedrock model.
@@ -164,29 +169,33 @@ export default {
         name,
         endpoint,
         identifier,
-        model: modelToUpperCase,
+        model: selectedModel && selectedModel.modelValue,
       },
       platform,
       apiToken,
-      selectedModel: {
-        modelValue: model || '',
-        modelName:
-          this.modelOptions.find(({ modelValue }) => modelValue === model.toUpperCase())
-            ?.modelName || '',
-      },
+      selectedModel,
       serverValidations: {},
       isSaving: false,
     };
   },
   computed: {
     availableModels() {
-      return this.modelOptions.map((modelOptions) => ({
-        value: modelOptions.modelValue,
-        text: modelOptions.modelName,
+      const gaModels = this.modelOptions.filter(
+        ({ releaseState }) => releaseState === RELEASE_STATES.GA,
+      );
+      const betaModels = this.modelOptions.filter(
+        ({ releaseState }) => releaseState === RELEASE_STATES.BETA,
+      );
+
+      // sort model options by releaseState
+      return [...gaModels, ...betaModels].map(({ modelName, modelValue, releaseState }) => ({
+        value: modelValue,
+        text: modelName,
+        releaseState,
       }));
     },
     dropdownToggleText() {
-      return this.selectedModel.modelName || s__('AdminSelfHostedModels|Select model');
+      return this.selectedModel?.modelName || s__('AdminSelfHostedModels|Select model');
     },
     formFields() {
       const platformFields = this.isApiPlatform ? apiFormFields : bedrockFormFields;
@@ -370,13 +379,11 @@ export default {
         }}
       </template>
       <template #input(model)>
-        <gl-collapsible-listbox
-          data-testid="model-dropdown-selector"
+        <model-select-dropdown
+          :selected-option="selectedModel"
           :items="availableModels"
-          block
-          fluid-width
-          :toggle-text="dropdownToggleText"
-          :selected="selectedModel.modelName"
+          :dropdown-toggle-text="dropdownToggleText"
+          :is-loading="isSaving"
           @select="onSelect"
         />
       </template>
