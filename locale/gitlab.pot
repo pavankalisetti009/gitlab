@@ -30816,6 +30816,9 @@ msgstr ""
 msgid "Invalidated"
 msgstr ""
 
+msgid "Investigate vulnerabilities"
+msgstr ""
+
 msgid "Investigate vulnerability: %{title}"
 msgstr ""
 
