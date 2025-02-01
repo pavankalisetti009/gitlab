@@ -211,7 +211,10 @@ export default {
             "
           />
         </template>
-        <p v-if="showAdditionalApproverText" class="gl-mb-0 gl-ml-0 gl-mt-2 md:gl-ml-3 md:gl-mt-0">
+        <p
+          v-if="showAdditionalApproverText"
+          class="gl-mb-0 gl-ml-0 gl-mt-2 md:gl-mb-2 md:gl-ml-3 md:gl-mt-2"
+        >
           {{ $options.i18n.multipleApproverTypesHumanizedTemplate }}
         </p>
       </gl-form>
