@@ -18,18 +18,16 @@ import UsersCache from '~/lib/utils/users_cache';
 import { s__ } from '~/locale';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
-import {
-  VULNERABILITY_STATE_OBJECTS,
-  FEEDBACK_TYPES,
-  VULNERABILITY_STATE_MODAL_ID,
-  VULNERABILITY_SEVERITY_MODAL_ID,
-} from '../constants';
+import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
 import VulnerabilityActionsDropdown from './vulnerability_actions_dropdown.vue';
 import StateModal from './state_modal.vue';
 import SeverityModal from './severity_modal.vue';
+
+export const VULNERABILITY_STATE_MODAL_ID = 'vulnerability-state-modal';
+export const VULNERABILITY_SEVERITY_MODAL_ID = 'vulnerability-severity-modal';
 
 export const CREATE_MR_AI_ACTION = {
   name: s__('ciReport|Resolve with merge request'),
@@ -357,7 +355,7 @@ export default {
       <div class="detail-page-header-actions gl-flex gl-flex-wrap gl-items-center gl-gap-3">
         <template v-if="showSeverityModal">
           <gl-disclosure-dropdown
-            :toggle-text="__('Edit vulnerability')"
+            :toggle-text="s__('SecurityReports|Edit vulnerability')"
             :items="editVulnerabilityActions"
             :loading="isLoadingVulnerability"
           />

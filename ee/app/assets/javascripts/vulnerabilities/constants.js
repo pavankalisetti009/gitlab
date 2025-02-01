@@ -87,9 +87,6 @@ export const VULNERABILITY_STATE_OBJECTS = {
   },
 };
 
-export const VULNERABILITY_STATE_MODAL_ID = 'vulnerability-state-modal';
-export const VULNERABILITY_SEVERITY_MODAL_ID = 'vulnerability-severity-modal';
-
 export const FEEDBACK_TYPES = {
   ISSUE: FEEDBACK_TYPE_ISSUE,
   MERGE_REQUEST: FEEDBACK_TYPE_MERGE_REQUEST,
