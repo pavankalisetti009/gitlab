@@ -26,7 +26,7 @@ module Geo
       end
 
       def data_type_title
-        _('Git')
+        'Git'
       end
 
       def data_type_sort_order
