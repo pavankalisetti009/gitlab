@@ -98,8 +98,7 @@ module Gitlab
         end
 
         def microsoft_group_sync_available?
-          ::Feature.enabled?(:microsoft_azure_group_sync, group) &&
-            group.saml_group_sync_available? && group.licensed_feature_available?(:microsoft_group_sync) &&
+          group.saml_group_sync_available? && group.licensed_feature_available?(:microsoft_group_sync) &&
             group.system_access_microsoft_application.present? && group.system_access_microsoft_application.enabled?
         end
       end
