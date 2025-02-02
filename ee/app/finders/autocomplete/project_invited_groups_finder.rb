@@ -38,7 +38,7 @@ module Autocomplete
 
       Group.from_union([
         invited_groups.public_to_user(current_user),
-                         invited_groups.for_authorized_group_members(current_user)
+        invited_groups.for_authorized_group_members(current_user)
       ])
     end
 

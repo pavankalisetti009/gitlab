@@ -61,10 +61,10 @@ module Groups
 
     def protected_branch_params(*attrs)
       attrs = ([:name,
-                :allow_force_push,
-                :code_owner_approval_required,
-                { merge_access_levels_attributes: access_level_attributes,
-                  push_access_levels_attributes: access_level_attributes }] + attrs).uniq
+        :allow_force_push,
+        :code_owner_approval_required,
+        { merge_access_levels_attributes: access_level_attributes,
+          push_access_levels_attributes: access_level_attributes }] + attrs).uniq
 
       unless group.licensed_feature_available?(:code_owner_approval_required)
         params[:code_owner_approval_required] = false

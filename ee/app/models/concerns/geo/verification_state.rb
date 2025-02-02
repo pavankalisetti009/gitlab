@@ -21,20 +21,20 @@ module Geo
 
     VERIFICATION_TIMEOUT = 8.hours
     VERIFICATION_METHODS = [:verification_retry_at, :verification_retry_at=,
-                            :verified_at, :verified_at=, :verification_failed?,
-                            :verification_checksum, :verification_checksum=,
-                            :verification_failure, :verification_failure=,
-                            :verification_retry_count, :verification_retry_count=,
-                            :verification_state=, :verification_state,
-                            :verification_started_at=, :verification_started_at,
-                            :verification_started!, :verification_pending!,
-                            :verification_succeeded!, :verification_failed!,
-                            :verification_started?, :verification_succeeded,
-                            :with_verification_state, :verification_started,
-                            :verification_succeeded?, :verification_failed,
-                            :verification_pending, :verification_disabled,
-                            :verification_disabled!, :verification_disabled?,
-                            :verification_pending?].freeze
+      :verified_at, :verified_at=, :verification_failed?,
+      :verification_checksum, :verification_checksum=,
+      :verification_failure, :verification_failure=,
+      :verification_retry_count, :verification_retry_count=,
+      :verification_state=, :verification_state,
+      :verification_started_at=, :verification_started_at,
+      :verification_started!, :verification_pending!,
+      :verification_succeeded!, :verification_failed!,
+      :verification_started?, :verification_succeeded,
+      :with_verification_state, :verification_started,
+      :verification_succeeded?, :verification_failed,
+      :verification_pending, :verification_disabled,
+      :verification_disabled!, :verification_disabled?,
+      :verification_pending?].freeze
 
     included do
       sha_attribute :verification_checksum

@@ -6,7 +6,7 @@ module EE
       extend ::Gitlab::Utils::Override
 
       PROVIDERS_ALLOWED_TO_SKIP_CONFIRMATION = [::Users::BuildService::GROUP_SCIM_PROVIDER,
-                                                ::Users::BuildService::GROUP_SAML_PROVIDER].freeze
+        ::Users::BuildService::GROUP_SAML_PROVIDER].freeze
 
       override :initialize
       def initialize(current_user, params = nil)

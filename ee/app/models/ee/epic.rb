@@ -616,10 +616,10 @@ module EE
 
       select_for_related_epics =
         ::Epic.select(['epics.*', 'related_epic_links.id AS related_epic_link_id',
-                       'related_epic_links.link_type as related_epic_link_type_value',
-                       'related_epic_links.target_id as related_epic_link_source_id',
-                       'related_epic_links.created_at as related_epic_link_created_at',
-                       'related_epic_links.updated_at as related_epic_link_updated_at'])
+          'related_epic_links.link_type as related_epic_link_type_value',
+          'related_epic_links.target_id as related_epic_link_source_id',
+          'related_epic_links.created_at as related_epic_link_created_at',
+          'related_epic_links.updated_at as related_epic_link_updated_at'])
 
       target_epics = select_for_related_epics
         .joins("INNER JOIN related_epic_links ON related_epic_links.target_id = epics.id")
@@ -709,8 +709,8 @@ module EE
       return true if destroyed?
 
       attrs = %w[total_opened_issue_weight total_closed_issue_weight
-                 total_opened_issue_count total_closed_issue_count
-                 parent_id]
+        total_opened_issue_count total_closed_issue_count
+        parent_id]
 
       (previous_changes.keys & attrs).any?
     end

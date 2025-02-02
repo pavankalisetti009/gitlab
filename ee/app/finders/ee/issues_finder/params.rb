@@ -7,8 +7,8 @@ module EE
       extend ::Gitlab::Utils::Override
 
       VALID_HEALTH_STATUS_PARAMS = [::Issue.health_statuses.keys,
-                                    ::IssuableFinder::Params::FILTER_NONE,
-                                    ::IssuableFinder::Params::FILTER_ANY].flatten.freeze
+        ::IssuableFinder::Params::FILTER_NONE,
+        ::IssuableFinder::Params::FILTER_ANY].flatten.freeze
 
       def by_epic?
         params[:epic_id].present?
