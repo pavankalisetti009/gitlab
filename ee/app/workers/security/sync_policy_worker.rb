@@ -30,6 +30,7 @@ module Security
     def handle_create_event(policy)
       return unless policy.enabled
 
+      sync_pipeline_execution_policy_metadata(policy)
       all_projects(policy) do |project|
         ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, {})
       end
@@ -40,6 +41,7 @@ module Security
         event_data[:diff], event_data[:rules_diff]
       )
 
+      sync_pipeline_execution_policy_metadata(policy) if policy_diff.content_changed?
       return unless policy_diff.needs_refresh? || policy_diff.needs_rules_refresh?
 
       all_projects(policy) do |project|
@@ -58,6 +60,21 @@ module Security
       projects.find_each do |project|
         yield(project)
       end
+    end
+
+    def sync_pipeline_execution_policy_metadata(policy)
+      return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, policy.namespace)
+      return unless policy.type_pipeline_execution_policy?
+
+      config_project_id = policy.security_pipeline_execution_policy_config_link&.project_id
+      return unless config_project_id
+
+      ::Security::SyncPipelineExecutionPolicyMetadataWorker
+        .perform_async(
+          config_project_id,
+          policy.security_orchestration_policy_configuration.policy_last_updated_by&.id,
+          policy.content['content'],
+          [policy.id])
     end
   end
 end
