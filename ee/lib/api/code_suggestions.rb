@@ -122,7 +122,10 @@ module API
 
           service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
 
-          unless current_user.allowed_to_use?(:code_suggestions, service_name: task.feature_name)
+          unless current_user.allowed_to_use?(:code_suggestions,
+            service_name: task.feature_name,
+            licensed_feature: task.licensed_feature
+          )
             unauthorized_with_origin_header!
           end
 

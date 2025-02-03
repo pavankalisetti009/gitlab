@@ -5,7 +5,8 @@ module CodeSuggestions
     class Base
       AI_GATEWAY_CONTENT_SIZE = 100_000
 
-      delegate :base_url, :self_hosted?, :feature_setting, :feature_name, :feature_disabled?, to: :model_details
+      delegate :base_url, :self_hosted?, :feature_setting, :feature_name, :feature_disabled?, :licensed_feature,
+        to: :model_details
       delegate :supports_sse_streaming?, to: :client
 
       def initialize(params: {}, unsafe_passthrough_params: {}, current_user: nil, client: nil)

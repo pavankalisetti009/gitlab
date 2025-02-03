@@ -748,6 +748,32 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
         it { is_expected.to duo_chat_enabled_for_user }
       end
     end
+
+    context 'when amazon q is connected' do
+      where(:duo_chat_on_saas, :amazon_q_connected, :allowed_to_use, :ff_enabled, :duo_chat_enabled_for_user) do
+        true  | true  | true  | true  | be_allowed(policy)
+        true  | true  | true  | false | be_disallowed(policy)
+        false | true  | true  | true  | be_allowed(policy)
+        true  | false | true  | true  | be_disallowed(policy)
+        true  | false | false | true  | be_disallowed(policy)
+        true  | true  | false | true  | be_disallowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_on_saas)
+
+          Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
+          stub_licensed_features(ai_chat: true, amazon_q: true)
+          stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
+
+          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat, service_name: :amazon_q_integration,
+            licensed_feature: :amazon_q).and_return(allowed_to_use)
+        end
+
+        it { is_expected.to duo_chat_enabled_for_user }
+      end
+    end
   end
 
   describe 'access_x_ray_on_instance' do
