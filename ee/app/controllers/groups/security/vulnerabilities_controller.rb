@@ -17,6 +17,7 @@ module Groups
         push_frontend_feature_flag(:vulnerability_report_owasp_2021, @group)
         push_frontend_feature_flag(:vulnerability_report_vr_badge, @group, type: :beta)
         push_frontend_feature_flag(:vulnerability_report_vr_filter, @group, type: :beta)
+        push_frontend_feature_flag(:vulnerability_report_filtered_search_v2, @project, type: :wip)
         push_frontend_feature_flag(:vulnerability_report_security_scores, @group, type: :beta)
         push_frontend_feature_flag(:enhanced_vulnerability_bulk_actions, @group, type: :wip)
 

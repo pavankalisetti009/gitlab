@@ -90,7 +90,6 @@ export default {
     resetSelected() {
       this.selectedStatuses = [];
     },
-
     toggleSelectedStatus(selectedValue) {
       const allStatusSelected = selectedValue === ALL_STATUS_VALUE;
       const allDismissedSelected = selectedValue === ALL_DISMISSED_VALUE;
