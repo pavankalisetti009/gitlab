@@ -64866,6 +64866,12 @@ msgstr ""
 msgid "WorkItem|Created %{timeago}"
 msgstr ""
 
+msgid "WorkItem|Creating this %{workItemType} will resolve all threads in"
+msgstr ""
+
+msgid "WorkItem|Creating this %{workItemType} will resolve the thread in"
+msgstr ""
+
 msgid "WorkItem|Custom fields"
 msgstr ""
 
