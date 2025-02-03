@@ -20,6 +20,11 @@ import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_
 import { updateApolloCache } from 'ee/analytics/analytics_dashboards/utils';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import {
+  DATE_RANGE_OPTION_TODAY,
+  DATE_RANGE_OPTION_CUSTOM,
+  DATE_RANGE_OPTION_LAST_7_DAYS,
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import {
   buildDefaultDashboardFilters,
   filtersToQueryParams,
 } from 'ee/analytics/analytics_dashboards/components/filters/utils';
@@ -899,10 +904,6 @@ describe('AnalyticsDashboard', () => {
       return waitForPromises();
     };
 
-    beforeEach(() => {
-      trackEventSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;
-    });
-
     describe('anonymous user filter', () => {
       beforeEach(async () => {
         await setupDashboardWithFilters({ excludeAnonymousUsers: { enabled: true } });
@@ -926,6 +927,10 @@ describe('AnalyticsDashboard', () => {
       });
 
       describe('when filter changes', () => {
+        beforeEach(() => {
+          trackEventSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;
+        });
+
         beforeEach(async () => {
           findAnonUsersFilter().vm.$emit('change', true);
           await waitForPromises();
@@ -957,6 +962,7 @@ describe('AnalyticsDashboard', () => {
         });
       });
     });
+
     describe('date range filter', () => {
       beforeEach(async () => {
         await setupDashboardWithFilters({ dateRange: { enabled: true } });
@@ -981,6 +987,35 @@ describe('AnalyticsDashboard', () => {
       it('sets the date range limit based on config if it exists', async () => {
         await setupDashboardWithFilters({ dateRange: { enabled: true, numberOfDaysLimit: 99 } });
         expect(findDateRangeFilter().props('dateRangeLimit')).toBe(99);
+      });
+
+      it('sets the date range options based on config if it exists', async () => {
+        await setupDashboardWithFilters({
+          dateRange: {
+            enabled: true,
+            options: [DATE_RANGE_OPTION_TODAY, DATE_RANGE_OPTION_CUSTOM],
+          },
+        });
+
+        expect(findDateRangeFilter().props('options')).toEqual([
+          DATE_RANGE_OPTION_TODAY,
+          DATE_RANGE_OPTION_CUSTOM,
+        ]);
+      });
+
+      it('displays a warning when the defaultOption is not in the list of options', async () => {
+        await setupDashboardWithFilters({
+          dateRange: {
+            enabled: true,
+            defaultOption: DATE_RANGE_OPTION_LAST_7_DAYS,
+            options: [DATE_RANGE_OPTION_TODAY, DATE_RANGE_OPTION_CUSTOM],
+          },
+        });
+
+        expect(createAlert).toHaveBeenCalledWith({
+          title: 'Date range filter validation',
+          message: "Default date range '7d' is not included in the list of dateRange options",
+        });
       });
 
       it('sets the panel filters', () => {

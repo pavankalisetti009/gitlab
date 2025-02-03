@@ -1,9 +1,9 @@
 <script>
 import { GlEmptyState, GlSkeletonLoader, GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_WARNING, VARIANT_DANGER } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
 import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
@@ -110,7 +110,7 @@ export default {
         hasError: false,
         visualizations: [],
       },
-      filters: buildDefaultDashboardFilters(window.location.search),
+      filters: null,
       isSaving: false,
       titleValidationError: null,
       backUrl: this.$router.resolve('/').href,
@@ -182,12 +182,20 @@ export default {
     queryParams() {
       return filtersToQueryParams(this.filters);
     },
+    dateRangeOptions() {
+      return this.currentDashboard.filters?.dateRange?.options;
+    },
   },
   watch: {
     initialDashboard({ title: label, userDefined } = {}) {
       this.trackEvent(EVENT_LABEL_VIEWED_DASHBOARD, {
         ...(!this.isNewDashboard && { label }),
       });
+
+      this.filters = buildDefaultDashboardFilters(
+        window.location.search,
+        this.currentDashboard.filters,
+      );
 
       if (userDefined) {
         this.trackEvent(EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD, {
@@ -242,6 +250,8 @@ export default {
       },
       result() {
         this.breadcrumbState.updateName(this.initialDashboard?.title || '');
+
+        this.validateFilters(this.initialDashboard?.filters);
       },
       error(error) {
         const message = [
@@ -381,8 +391,9 @@ export default {
         this.isSaving = false;
       }
     },
-    showError({ error, capture, message, messageLinks, title = '' }) {
+    showError({ error, capture, message, messageLinks, title = '', variant = VARIANT_DANGER }) {
       this.alert = createAlert({
+        variant,
         title,
         message: message || s__('Analytics|Error while saving dashboard'),
         messageLinks,
@@ -393,6 +404,22 @@ export default {
     validateDashboardTitle(newTitle, submitting) {
       if (this.titleValidationError !== null || submitting) {
         this.titleValidationError = newTitle?.length > 0 ? '' : __('This field is required.');
+      }
+    },
+    validateFilters(filters = {}) {
+      if (filters?.dateRange?.enabled && filters?.dateRange.defaultOption) {
+        const {
+          dateRange: { defaultOption, options = [] },
+        } = filters;
+        if (options.length && !options.includes(defaultOption)) {
+          this.showError({
+            title: this.$options.i18n.dateRangeFilterValidationTitle,
+            variant: VARIANT_WARNING,
+            message: sprintf(this.$options.i18n.dateRangeFilterValidationMessage, {
+              defaultOption,
+            }),
+          });
+        }
       }
     },
     panelTestId({ visualization: { slug = '' } }) {
@@ -423,6 +450,10 @@ export default {
   i18n: {
     aiImpactDescriptionLink: s__(
       'Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo seats%{subscriptionLinkEnd}.',
+    ),
+    dateRangeFilterValidationTitle: __('Date range filter validation'),
+    dateRangeFilterValidationMessage: s__(
+      "Analytics|Default date range '%{defaultOption}' is not included in the list of dateRange options",
     ),
   },
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
@@ -502,6 +533,7 @@ export default {
             :start-date="filters.startDate"
             :end-date="filters.endDate"
             :date-range-limit="dateRangeLimit"
+            :options="dateRangeOptions"
             @change="setDateRangeFilter"
           />
           <anon-users-filter

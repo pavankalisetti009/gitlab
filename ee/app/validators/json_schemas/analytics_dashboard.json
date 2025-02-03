@@ -88,6 +88,17 @@
         },
         "numberOfDaysLimit": {
           "type": "number"
+        },
+        "options": {
+          "$ref": "#/definitions/DateRangeFilterOptions"
+        },
+        "defaultOption": {
+          "type": "string",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/DateRangeFilterOptions/items"
+            }
+          ]
         }
       }
     },
@@ -225,6 +236,20 @@
 
       ],
       "title": "Filters"
+    },
+    "DateRangeFilterOptions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "today",
+          "custom",
+          "7d",
+          "30d",
+          "60d",
+          "90d",
+          "180d"
+        ]
+      }
     }
   }
 }
