@@ -3,6 +3,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import GeoReplicableStatus from 'ee/geo_replicable/components/geo_replicable_status.vue';
 import GeoReplicableTimeAgo from 'ee/geo_replicable/components/geo_replicable_time_ago.vue';
@@ -26,7 +27,6 @@ describe('GeoReplicableItem', () => {
 
   const defaultProps = {
     name: mockReplicable.name,
-    modelRecordId: mockReplicable.modelRecordId,
     registryId: mockReplicable.id,
     syncStatus: mockReplicable.state,
     lastSynced: mockReplicable.lastSyncedAt,
@@ -115,7 +115,7 @@ describe('GeoReplicableItem', () => {
 
       it('renders a link', () => {
         expect(findReplicableDetailsLink().attributes('href')).toBe(
-          `${MOCK_REPLICABLE_BASE_PATH}/${mockReplicable.modelRecordId}`,
+          `${MOCK_REPLICABLE_BASE_PATH}/${getIdFromGraphQLId(mockReplicable.id)}`,
         );
       });
     });

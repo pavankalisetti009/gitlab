@@ -32,7 +32,6 @@ export default {
       :key="item.id"
       :name="buildName(item)"
       :registry-id="item.id"
-      :model-record-id="item.modelRecordId"
       :sync-status="item.state.toLowerCase()"
       :last-synced="item.lastSyncedAt"
       :last-verified="item.verifiedAt"

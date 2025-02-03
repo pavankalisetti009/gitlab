@@ -12,7 +12,6 @@ export default (graphQlFieldName, verificationEnabled) => {
           }
           nodes {
             id
-            modelRecordId
             state
             retryCount
             lastSyncFailure

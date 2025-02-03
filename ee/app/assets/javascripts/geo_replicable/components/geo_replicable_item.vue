@@ -3,6 +3,7 @@ import { GlButton, GlLink } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { __, s__ } from '~/locale';
 import { ACTION_TYPES } from '../constants';
@@ -33,10 +34,6 @@ export default {
     },
     registryId: {
       type: [String, Number],
-      required: true,
-    },
-    modelRecordId: {
-      type: Number,
       required: true,
     },
     syncStatus: {
@@ -74,7 +71,7 @@ export default {
       ];
     },
     detailsPath() {
-      return `${this.replicableBasePath}/${this.modelRecordId}`;
+      return `${this.replicableBasePath}/${getIdFromGraphQLId(this.registryId)}`;
     },
   },
   methods: {
