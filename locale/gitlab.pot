@@ -7273,7 +7273,7 @@ msgstr ""
 msgid "ApplicationSettings|Change setting and approve pending users?"
 msgstr ""
 
-msgid "ApplicationSettings|Controlled Access"
+msgid "ApplicationSettings|Controlled access"
 msgstr ""
 
 msgid "ApplicationSettings|Denied domains for sign-ups"

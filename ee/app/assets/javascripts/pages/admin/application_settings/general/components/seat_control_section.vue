@@ -109,7 +109,7 @@ export default {
         </gl-form-radio>
 
         <gl-form-radio :value="$options.SEAT_CONTROL.USER_CAP" data-testid="seat-control-user-cap">
-          {{ s__('ApplicationSettings|Controlled Access') }}
+          {{ s__('ApplicationSettings|Controlled access') }}
           <template #help>{{
             s__(
               'ApplicationSettings|Administrator approval required for new users. Set a user cap for the maximum number of users who can be added without administrator approval.',
