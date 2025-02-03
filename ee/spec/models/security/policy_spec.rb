@@ -321,6 +321,20 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           expect(upserted_policy.name).to eq(policy_hash[:name])
           expect(upserted_rules.count).to be(assoc_name ? 1 : 0)
         end
+
+        context 'when existing policy has metadata persisted' do
+          let!(:existing_policy) do
+            create(:security_policy,
+              policy_type,
+              security_orchestration_policy_configuration: policy_configuration,
+              policy_index: policy_index,
+              metadata: { enforced_scans: ['sast'] })
+          end
+
+          it 'does not overwrite the metadata' do
+            expect { upsert! }.not_to change { existing_policy.reload.metadata }.from('enforced_scans' => ['sast'])
+          end
+        end
       end
     end
 

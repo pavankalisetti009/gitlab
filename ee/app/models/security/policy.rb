@@ -79,12 +79,12 @@ module Security
     end
 
     def self.attributes_from_policy_hash(policy_type, policy_hash, policy_configuration)
+      # NOTE: We don't include `metadata` here because it contains internal information.
       {
         type: policy_type,
         name: policy_hash[:name],
         description: policy_hash[:description],
         enabled: policy_hash[:enabled],
-        metadata: policy_hash.fetch(:metadata, {}),
         scope: policy_hash.fetch(:policy_scope, {}),
         content: policy_hash.slice(*POLICY_CONTENT_FIELDS[policy_type]),
         checksum: checksum(policy_hash),
