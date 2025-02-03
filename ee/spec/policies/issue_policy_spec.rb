@@ -250,7 +250,8 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           expect(permissions(owner, group_issue)).to be_disallowed(
             :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
             :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
-            :mark_note_as_internal, :create_timelog, :destroy_issue, :resolve_note, :admin_note
+            :mark_note_as_internal, :create_timelog, :destroy_issue, :resolve_note, :admin_note,
+            :move_issue, :clone_issue
           )
         end
 
@@ -291,6 +292,12 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
             :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
             :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
             :mark_note_as_internal, :create_timelog, :destroy_issue, :resolve_note, :admin_note
+          )
+
+          # This group issue is actually an epic work item, and for now we only allow move and clone for:
+          # Issue, Incident and Test Case, see Issue#supports_move_and_clone?
+          expect(permissions(owner, group_issue)).to be_disallowed(
+            :move_issue, :clone_issue
           )
         end
 
