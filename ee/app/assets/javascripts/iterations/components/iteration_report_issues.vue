@@ -195,7 +195,7 @@ export default {
       return n__('%d issue', '%d issues', this.issues.count);
     },
     tbodyTrClass() {
-      return this.label.title ? 'gl-bg-gray-10' : undefined;
+      return this.label.title ? 'gl-bg-subtle' : undefined;
     },
   },
   methods: {

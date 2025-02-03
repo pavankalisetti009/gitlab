@@ -2,7 +2,7 @@
 
 exports[`Corpus Upload component renders total size 1`] = `
 <div
-  class="gl-bg-gray-10 gl-flex gl-h-11 gl-items-center gl-justify-between"
+  class="gl-bg-subtle gl-flex gl-h-11 gl-items-center gl-justify-between"
 >
   <div
     class="gl-ml-5"

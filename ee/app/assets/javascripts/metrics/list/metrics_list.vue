@@ -190,7 +190,7 @@ export default {
     </header>
 
     <div
-      class="gl-mt-3 gl-border-b-1 gl-border-t-1 gl-border-default gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
+      class="gl-mt-3 gl-border-b-1 gl-border-t-1 gl-border-default gl-bg-subtle gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
     >
       <filtered-search
         :initial-filter-value="initialFilterValue"

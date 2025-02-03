@@ -372,7 +372,7 @@ export default {
         />
       </div>
 
-      <div class="gl-grow gl-overflow-auto gl-bg-gray-10">
+      <div class="gl-grow gl-overflow-auto gl-bg-subtle">
         <visualization-preview
           data-testid="visualization-previewer"
           :selected-visualization-type="selectedVisualizationType"

@@ -47,7 +47,7 @@ export default {
     :button-link="earlyAccessPath"
     :svg-path="null"
     variant="introduction"
-    class="gl-border-default gl-bg-gray-10"
+    class="gl-border-default gl-bg-subtle"
     @close="dismissBanner"
   >
     <p>

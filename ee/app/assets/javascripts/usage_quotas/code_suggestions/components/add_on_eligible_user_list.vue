@@ -452,7 +452,7 @@ export default {
     </gl-alert>
     <div
       v-if="isAnyUserSelected"
-      class="gl-mt-5 gl-flex gl-items-center gl-justify-between gl-bg-gray-10 gl-p-5"
+      class="gl-mt-5 gl-flex gl-items-center gl-justify-between gl-bg-subtle gl-p-5"
     >
       <span v-safe-html="pluralisedSelectedUsers" data-testid="selected-users-summary"></span>
       <div class="gl-flex gl-gap-3">

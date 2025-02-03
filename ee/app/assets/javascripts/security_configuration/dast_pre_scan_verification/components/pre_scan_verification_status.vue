@@ -58,7 +58,7 @@ export default {
 
 <template>
   <div
-    class="gl-border gl-flex gl-w-full gl-items-center gl-gap-3 gl-rounded-base gl-bg-gray-10 gl-p-5"
+    class="gl-border gl-flex gl-w-full gl-items-center gl-gap-3 gl-rounded-base gl-bg-subtle gl-p-5"
   >
     <pre-scan-verification-icon :status="status" />
 

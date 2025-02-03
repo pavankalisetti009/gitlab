@@ -3,7 +3,7 @@
 exports[`DastProfileSelectorEmptyState renders properly 1`] = `
 <div>
   <div
-    class="gl-bg-gray-10 gl-flex gl-flex-col gl-items-center gl-mb-5 gl-p-6 gl-rounded-small gl-text-center"
+    class="gl-bg-subtle gl-flex gl-flex-col gl-items-center gl-mb-5 gl-p-6 gl-rounded-small gl-text-center"
   >
     <h5
       class="gl-h5 gl-mb-2 gl-mt-0 gl-text-subtle"

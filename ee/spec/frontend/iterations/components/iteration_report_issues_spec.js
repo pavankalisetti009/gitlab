@@ -340,7 +340,7 @@ describe('Iterations report issues', () => {
     });
 
     it('shows table with grey background', () => {
-      expect(findGlTable().attributes('tbody-tr-class')).toBe('gl-bg-gray-10');
+      expect(findGlTable().attributes('tbody-tr-class')).toBe('gl-bg-subtle');
     });
   });
 

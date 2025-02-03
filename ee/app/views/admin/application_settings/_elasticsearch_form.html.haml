@@ -17,7 +17,7 @@
       = form_errors(@application_setting)
 
       %fieldset
-        - component_params = { card_options: { class: 'gl-bg-gray-10 gl-mb-6' } }
+        - component_params = { card_options: { class: 'gl-bg-subtle gl-mb-6' } }
         = render Pajamas::CardComponent.new(**component_params) do |c|
           - c.with_body do
             - halted_migrations = elasticsearch_available && Elastic::DataMigrationService.halted_migrations?

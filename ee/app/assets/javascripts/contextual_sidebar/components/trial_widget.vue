@@ -102,7 +102,7 @@ export default {
   <div
     v-if="!isDismissed"
     :id="$options.trialWidget.containerId"
-    class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-gray-10 gl-pt-4 gl-shadow"
+    class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-subtle gl-pt-4 gl-shadow"
     data-testid="trial-widget-root-element"
   >
     <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">

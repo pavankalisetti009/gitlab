@@ -19,7 +19,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-border gl-mb-5 gl-rounded-base gl-border-default gl-bg-gray-10 gl-p-4">
+  <div class="gl-border gl-mb-5 gl-rounded-base gl-border-default gl-bg-subtle gl-p-4">
     <gl-experiment-badge />
     <gl-sprintf :message="$options.i18n.experimentBadgeText">
       <template #link="{ content }">

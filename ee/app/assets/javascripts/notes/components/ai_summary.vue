@@ -153,7 +153,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="markdown || aiLoading" class="ai-summary-card gl-border gl-rounded-base gl-bg-gray-10">
+  <div v-if="markdown || aiLoading" class="ai-summary-card gl-border gl-rounded-base gl-bg-subtle">
     <div class="gl-border-b gl-rounded-t-base gl-bg-white gl-px-5 gl-py-4">
       <div class="gl-flex gl-items-center gl-gap-3">
         <gl-icon name="tanuki-ai" class="gl-text-purple-600" />

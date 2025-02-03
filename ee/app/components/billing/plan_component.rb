@@ -57,7 +57,7 @@ module Billing
     end
 
     def body_classes
-      base = "gl-bg-gray-10 gl-p-7 gl-border"
+      base = "gl-bg-subtle gl-p-7 gl-border"
 
       return "#{base} gl-rounded-base" if trial?
 

@@ -222,7 +222,7 @@ export default {
 </script>
 <template>
   <section>
-    <div v-if="hasSearch" class="gl-flex gl-gap-4 gl-bg-gray-10 gl-p-4">
+    <div v-if="hasSearch" class="gl-flex gl-gap-4 gl-bg-subtle gl-p-4">
       <gl-search-box-by-click
         class="gl-grow"
         @submit="$emit('search', $event)"

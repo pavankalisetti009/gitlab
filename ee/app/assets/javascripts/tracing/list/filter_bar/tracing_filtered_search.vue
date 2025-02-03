@@ -172,7 +172,7 @@ export default {
 
 <template>
   <div
-    class="gl-border-b-1 gl-border-t-1 gl-border-default gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
+    class="gl-border-b-1 gl-border-t-1 gl-border-default gl-bg-subtle gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
   >
     <filtered-search
       recent-searches-storage-key="recent-tracing-filter-search"

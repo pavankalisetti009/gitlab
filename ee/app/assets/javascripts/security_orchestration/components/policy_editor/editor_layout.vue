@@ -414,7 +414,7 @@ export default {
               </template>
 
               <template #disabled>
-                <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
+                <div class="gl-rounded-base gl-bg-subtle gl-p-6"></div>
               </template>
 
               <scope-section
