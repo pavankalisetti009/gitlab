@@ -2,7 +2,6 @@
 import { GlDisclosureDropdownItem, GlModal } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { sprintf, __ } from '~/locale';
-import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
 import { DEFAULT_BLOB_INFO } from '~/repository/constants';
 
@@ -12,7 +11,6 @@ export default {
     unlock: __('Unlock'),
     modalTitle: __('Lock file?'),
     actionCancel: __('Cancel'),
-    fetchError: __('An error occurred while fetching lock information, please try again.'),
     mutationError: __('An error occurred while editing lock information, please try again.'),
   },
   components: {
@@ -32,23 +30,20 @@ export default {
       type: String,
       required: true,
     },
-  },
-  apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    projectInfo: {
-      query: projectInfoQuery,
-      variables() {
-        return {
-          projectPath: this.projectPath,
-        };
-      },
-      update({ project }) {
-        this.pathLocks = project?.pathLocks || DEFAULT_BLOB_INFO.pathLocks;
-        this.userPermissions = project?.userPermissions;
-      },
-      error() {
-        createAlert({ message: this.$options.i18n.fetchError });
-      },
+    pathLocks: {
+      type: Object,
+      required: false,
+      default: () => DEFAULT_BLOB_INFO.pathLocks,
+    },
+    userPermissions: {
+      type: Object,
+      required: false,
+      default: () => DEFAULT_BLOB_INFO.userPermissions,
+    },
+    isLoading: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {
@@ -56,14 +51,9 @@ export default {
       isUpdating: false,
       isModalVisible: false,
       locked: false,
-      pathLocks: DEFAULT_BLOB_INFO.pathLocks,
-      userPermissions: DEFAULT_BLOB_INFO.userPermissions,
     };
   },
   computed: {
-    isLoading() {
-      return this.$apollo?.queries.projectInfo.loading;
-    },
     lockButtonTitle() {
       return this.isLocked ? this.$options.i18n.unlock : this.$options.i18n.lock;
     },
@@ -112,8 +102,11 @@ export default {
     },
   },
   watch: {
-    isLocked(val) {
-      this.locked = val;
+    isLocked: {
+      immediate: true,
+      handler(val) {
+        this.locked = val;
+      },
     },
   },
   methods: {
