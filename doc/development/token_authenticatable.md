@@ -6,8 +6,8 @@ info: Any user with at least the Maintainer role can merge updates to this conte
 
 # Using the `TokenAuthenticatable` concern
 
-The `TokenAuthenticatable` module is a concern that provides token-based authentication functionality for ActiveRecord models.
-It allows you to easily define authentication tokens for your models.
+The `TokenAuthenticatable` module is a concern that provides token-based authentication functionality for `ActiveRecord` models.
+It allows you to define authentication tokens for your models.
 
 ## Overview
 
@@ -16,7 +16,7 @@ This module provides a flexible way to add token-based authentication to your mo
 It supports three storage strategies:
 
 - `insecure`: the token is stored as-is (not encrypted) in the database
-- `digest`: the SHA256 digets of the token is stored in the database
+- `digest`: the `SHA256` digests of the token is stored in the database
 - `encrypted`: the token is stored encrypted in the database using the AES 256 GCM algorithm
 
 It also supports several options for each storage strategies.
@@ -52,7 +52,7 @@ By default, tokens are stored as-is (not encrypted).
 
 ### Other options
 
-- `unique: false`: Don't enforce tokens to be unique and disables the generation of a `find_by_token_field` (where `token_field` is the attribute name). Default is `true`.
+- `unique: false`: Doesn't enforce token uniqueness and disables the generation of `find_by_token_field` (where `token_field` is the attribute name). Default is `true`.
 - `format_with_prefix: :compute_token_prefix`: Allows to define a prefix for the token. The `#compute_token_prefix` method needs to return a `String`. Default is no prefix.
 - `expires_at: :compute_token_expiration_time`: Allows to define a time when the token should expire.
   The `#compute_token_expiration_time` method needs to return a `Time` object. Default is no expiration.
