@@ -2,6 +2,7 @@
 stage: Foundations
 group: Import and Integrate
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+title: GraphQL API resources
 ---
 
 <!--
@@ -13,8 +14,6 @@ info: To determine the technical writer assigned to the Stage/Group associated w
   Run `bundle exec rake gitlab:graphql:compile_docs`
   or check the `compile_docs` task in `lib/tasks/gitlab/graphql.rake`.
 -->
-
-# GraphQL API resources
 
 This documentation is self-generated based on GitLab current GraphQL schema.
 
