@@ -4511,4 +4511,48 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       let(:entity) { group }
     end
   end
+
+  describe '#ai_review_merge_request_allowed?' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:current_user) { create(:user, developer_of: group) }
+
+    let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+    subject(:ai_review_merge_request_allowed?) { group.ai_review_merge_request_allowed?(current_user) }
+
+    before do
+      # Set up the "happy path" - all conditions return true by default
+      stub_licensed_features(ai_review_mr: true)
+      allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+      allow(authorizer).to receive(:allowed?).and_return(true)
+      allow(Ability).to receive(:allowed?).with(current_user, :access_ai_review_mr, group).and_return(true)
+    end
+
+    # When all conditions are true, the method should return true
+    it { is_expected.to be(true) }
+
+    context 'when feature is not authorized' do
+      before do
+        allow(authorizer).to receive(:allowed?).and_return(false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when user lacks permission' do
+      before do
+        allow(Ability).to receive(:allowed?).with(current_user, :access_ai_review_mr, group).and_return(false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when ai_review_merge_request feature flag is disabled' do
+      before do
+        stub_feature_flags(ai_review_merge_request: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+  end
 end

@@ -329,6 +329,16 @@ module EE
       instance_scim_oauth_access_token
     end
 
+    def ai_review_merge_request_allowed?(user)
+      ::Feature.enabled?(:ai_review_merge_request, user) &&
+        Ability.allowed?(user, :access_ai_review_mr, self) &&
+        ::Gitlab::Llm::FeatureAuthorizer.new(
+          container: self,
+          feature_name: :review_merge_request,
+          user: user
+        ).allowed?
+    end
+
     class_methods do
       def groups_user_can(groups, user, action, same_root: false)
         # If :use_traversal_ids is enabled we can use filter optmization
