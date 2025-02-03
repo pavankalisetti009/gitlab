@@ -7,13 +7,11 @@ module EE
         module CiCdMenu
           extend ::Gitlab::Utils::Override
 
-          override :render?
-          def render?
-            return super if ::Feature.disabled?(:custom_ability_read_admin_cicd, context.current_user)
+          private
 
-            return true if context.current_user&.can?(:access_admin_area)
-
-            super
+          override :render_with_abilities
+          def render_with_abilities
+            super + [:read_admin_cicd]
           end
         end
       end
