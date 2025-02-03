@@ -3,32 +3,38 @@
 module Gitlab
   module CodeOwners
     class UsersLoader
-      def initialize(project, extractor)
+      include Gitlab::Utils::StrongMemoize
+
+      def initialize(project, emails: nil, names: nil)
         @project = project
-        @extractor = extractor
+        @emails = emails
+        @names = names
       end
 
       # Generate a list of all project members who are mentioned in the
       #   CODEOWNERS file, and load them to the matching entry.
       #
       def load_to(entries)
-        members = project.members_among(users)
-
         entries.each do |entry|
           entry.add_matching_users_from(members)
         end
       end
 
+      def members
+        project.members_among(users)
+      end
+      strong_memoize_attr :members
+
       private
 
-      attr_reader :extractor, :project
+      attr_reader :project, :names, :emails
 
       def users
-        return User.none if extractor.references.empty?
+        return User.none if names.blank? && emails.blank?
 
         relations = []
-        relations << User.by_any_email(extractor.emails) if extractor.emails.any?
-        relations << User.by_username(extractor.names) if extractor.names.any?
+        relations << User.by_any_email(emails) if emails.present?
+        relations << User.by_username(names) if names.present?
 
         User.from_union(relations).with_emails
       end

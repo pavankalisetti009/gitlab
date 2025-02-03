@@ -22,8 +22,8 @@ module Gitlab
           owner_lines = entries.map(&:owner_line)
           extractor = Gitlab::CodeOwners::ReferenceExtractor.new(owner_lines)
 
-          UsersLoader.new(@project, extractor).load_to(entries)
-          GroupsLoader.new(@project, extractor).load_to(entries)
+          UsersLoader.new(@project, names: extractor.names, emails: extractor.emails).load_to(entries)
+          GroupsLoader.new(@project, names: extractor.names).load_to(entries)
 
           entries
         end

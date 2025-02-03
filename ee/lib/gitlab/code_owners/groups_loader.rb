@@ -3,35 +3,35 @@
 module Gitlab
   module CodeOwners
     class GroupsLoader
-      def initialize(project, extractor)
+      include Gitlab::Utils::StrongMemoize
+
+      def initialize(project, names: nil)
         @project = project
-        @extractor = extractor
+        @names = names
       end
 
       def load_to(entries)
-        groups = load_groups
         entries.each do |entry|
           entry.add_matching_groups_from(groups)
         end
       end
 
-      private
-
-      attr_reader :extractor, :project
-
-      def load_groups
-        return Group.none if extractor.names.empty?
+      def groups
+        return Group.none if names.blank?
 
         relations = [
-          project.invited_groups.where_full_path_in(extractor.names, preload_routes: false)
+          project.invited_groups.where_full_path_in(names, preload_routes: false)
         ]
         # Include the projects ancestor group(s) if they are listed as owners
-        if project.group
-          relations << project.group.self_and_ancestors.where_full_path_in(extractor.names, preload_routes: false)
-        end
+        relations << project.group.self_and_ancestors.where_full_path_in(names, preload_routes: false) if project.group
 
         Group.from_union(relations).with_route.with_users
       end
+      strong_memoize_attr :groups
+
+      private
+
+      attr_reader :names, :project
     end
   end
 end
