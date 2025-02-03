@@ -1,5 +1,3 @@
-#import "~/merge_request_dashboard/queries/merge_request_approval.fragment.graphql"
-
 fragment MergeRequestApprovalFragment on MergeRequest {
   approved
   approvalsRequired
