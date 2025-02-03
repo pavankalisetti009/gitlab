@@ -42,14 +42,6 @@ RSpec.describe Llm::ReviewMergeRequestService, :saas, feature_category: :code_re
       it { is_expected.to be_error.and have_attributes(message: eq(described_class::INVALID_MESSAGE)) }
     end
 
-    context 'when general feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_global_switch: false)
-      end
-
-      it { is_expected.to be_error.and have_attributes(message: eq(described_class::INVALID_MESSAGE)) }
-    end
-
     context 'when resource is not a merge_request' do
       let(:resource) { create(:epic, group: group) }
 

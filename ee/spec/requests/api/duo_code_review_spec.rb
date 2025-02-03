@@ -93,12 +93,6 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
       it { expect(response).to have_gitlab_http_status(:not_found) }
     end
 
-    context 'when ai_global_switch is disabled' do
-      let(:global_feature_flag_enabled) { false }
-
-      it { expect(response).to have_gitlab_http_status(:not_found) }
-    end
-
     context 'when ai_review_merge_request is disabled' do
       let(:feature_flag_enabled) { false }
 

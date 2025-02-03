@@ -113,7 +113,7 @@ module Gitlab
             feature_category: :code_review_workflow,
             execute_method: ::Llm::ReviewMergeRequestService,
             maturity: :experimental,
-            self_managed: false,
+            self_managed: true,
             internal: true
           },
           glab_ask_git_command: {
