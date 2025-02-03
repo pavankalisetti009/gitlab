@@ -20,13 +20,6 @@ module GitlabSubscriptions
       _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
     end
 
-    def trial_namespace_selector_data(namespaces, namespace_create_errors)
-      namespace_selector_data(namespace_create_errors).merge(
-        any_trial_eligible_namespaces: namespaces.any?.to_s,
-        items: namespace_options_for_listbox(namespaces).to_json
-      )
-    end
-
     def duo_trial_namespace_selector_data(namespaces, namespace_create_errors)
       namespace_selector_data(namespace_create_errors).merge(
         any_trial_eligible_namespaces: namespaces.any?.to_s,
@@ -38,39 +31,12 @@ module GitlabSubscriptions
       ::Gitlab.config.gitlab.host
     end
 
-    def trial_selection_intro_text(namespaces)
-      if namespaces.any?
-        s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
-      else
-        s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
-      end
-    end
-
     def show_tier_badge_for_new_trial?(namespace, user)
       ::Gitlab::Saas.feature_available?(:subscriptions_trials) &&
         !namespace.paid? &&
         namespace.private? &&
         namespace.never_had_trial? &&
         can?(user, :read_billing, namespace)
-    end
-
-    def namespace_options_for_listbox(namespaces)
-      group_options = current_namespaces_for_selector(namespaces)
-      options = [
-        {
-          text: _('New'),
-          options: [
-            {
-              text: _('Create group'),
-              value: '0'
-            }
-          ]
-        }
-      ]
-
-      options.push(text: _('Groups'), options: group_options) unless group_options.empty?
-
-      options
     end
 
     def trial_form_errors_message(result)
