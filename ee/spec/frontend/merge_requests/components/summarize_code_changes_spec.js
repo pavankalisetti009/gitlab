@@ -5,6 +5,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { CONTENT_EDITOR_PASTE } from '~/vue_shared/constants';
 import markdownEditorEventHub from '~/vue_shared/components/markdown/eventhub';
 import { updateText } from '~/lib/utils/text_markdown';
@@ -23,6 +24,8 @@ Vue.use(VueApollo);
 let wrapper;
 let aiResponseSubscriptionHandler;
 let aiActionMutationHandler;
+
+const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
 function createComponent() {
   aiResponseSubscriptionHandler = createMockSubscription();
@@ -158,6 +161,20 @@ describe('Merge request summarize code changes', () => {
         CONTENT_EDITOR_PASTE,
         'AI generated content',
       );
+    });
+  });
+
+  describe('with tracking', () => {
+    it('tracks button render and click', () => {
+      createComponent();
+
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledWith('render_summarize_code_changes', {}, undefined);
+
+      findButton().trigger('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith('click_summarize_code_changes', {}, undefined);
     });
   });
 });
