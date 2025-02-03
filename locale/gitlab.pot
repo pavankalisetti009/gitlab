@@ -10749,9 +10749,6 @@ msgstr ""
 msgid "BulkImport|Import without projects"
 msgstr ""
 
-msgid "BulkImport|Importing projects is a %{docsLinkStart}Beta%{docsLinkEnd} feature."
-msgstr ""
-
 msgid "BulkImport|Importing the group failed."
 msgstr ""
 
@@ -10812,6 +10809,9 @@ msgstr ""
 msgid "BulkImport|Placeholder reassignments completed with errors"
 msgstr ""
 
+msgid "BulkImport|Please note: importing projects is a %{docsLinkStart}beta%{docsLinkEnd} feature."
+msgstr ""
+
 msgid "BulkImport|Please select a parent group."
 msgstr ""
 
@@ -10825,6 +10825,9 @@ msgid "BulkImport|Review results"
 msgstr ""
 
 msgid "BulkImport|Select parent group"
+msgstr ""
+
+msgid "BulkImport|Select the groups and projects you want to import."
 msgstr ""
 
 msgid "BulkImport|Select whether user memberships in groups and projects are imported."
