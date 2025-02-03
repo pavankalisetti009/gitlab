@@ -19,62 +19,51 @@ RSpec.describe TestHooks::ProjectService, feature_category: :code_testing do
       let(:trigger) { 'vulnerability_events' }
       let(:trigger_key) { :vulnerability_hooks }
 
-      it 'executes hook' do
-        freeze_time do
-          expected_data = {
-            object_kind: "vulnerability",
-            object_attributes: {
-              url: "#{project.web_url}/-/security/vulnerabilities/1",
-              title: 'REXML DoS vulnerability',
-              state: 'confirmed',
-              project_id: project.id,
-              location: {
-                'file' => 'Gemfile.lock',
-                'dependency' => { 'package' => { 'name' => 'rexml' }, 'version' => '3.3.1' }
-              },
-              cvss: [
-                {
-                  'vector' => 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H',
-                  'vendor' => 'NVD'
-                }
-              ],
-              severity: 'high',
-              severity_overridden: false,
-              identifiers: [
-                {
-                  name: 'Gemnasium-29dce398-220a-4315-8c84-16cd8b6d9b05',
-                  external_id: '29dce398-220a-4315-8c84-16cd8b6d9b05',
-                  external_type: 'gemnasium',
-                  url: 'https://gitlab.com/gitlab-org/security-products/gemnasium-db/-/blob/master/gem/rexml/CVE-2024-41123.yml'
-                },
-                {
-                  name: 'CVE-2024-41123',
-                  external_id: 'CVE-2024-41123',
-                  external_type: 'cve',
-                  url: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-41123'
-                }
-              ],
-              issues: [
-                {
-                  title: 'REXML ReDoS vulnerability',
-                  url: "#{project.web_url}/-/issues/1",
-                  created_at: Time.current,
-                  updated_at: Time.current
-                }
-              ],
-              report_type: "dependency_scanning",
-              confirmed_at: Time.current,
-              confirmed_by_id: current_user.id,
-              dismissed_at: nil,
-              dismissed_by_id: nil,
-              resolved_on_default_branch: false,
-              created_at: Time.current,
-              updated_at: Time.current
-            }
-          }
+      context 'when there is no Vulnerabilty data' do
+        it 'returns an error' do
+          error_result = { status: :error, message: 'Ensure the project has vulnerabilities.' }
 
-          expect(hook).to receive(:execute).with(expected_data, trigger_key, force: true).and_return(success_result)
-          expect(service.execute).to include(success_result)
+          expect(service.execute).to have_attributes(error_result)
+        end
+      end
+
+      context 'when there is Vulnerabilty data' do
+        it 'builds and returns serialized Vulnerabilty data' do
+          freeze_time do
+            vulnerability = create(:vulnerability, project: project)
+
+            expected_data = {
+              object_kind: "vulnerability",
+              object_attributes: {
+                url: ::Gitlab::Routing.url_helpers.project_security_vulnerability_url(project, vulnerability),
+                title: vulnerability.title,
+                state: 'detected',
+                project_id: project.id,
+                location: nil,
+                cvss: [
+                  {
+                    'vector' => 'CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N',
+                    'vendor' => 'GitLab'
+                  }
+                ],
+                severity: 'high',
+                severity_overridden: false,
+                identifiers: [],
+                issues: [],
+                report_type: "sast",
+                confirmed_at: nil,
+                confirmed_by_id: nil,
+                dismissed_at: nil,
+                dismissed_by_id: nil,
+                resolved_on_default_branch: false,
+                created_at: vulnerability.created_at,
+                updated_at: vulnerability.updated_at
+              }
+            }
+
+            expect(hook).to receive(:execute).with(expected_data, trigger_key, force: true).and_return(success_result)
+            expect(service.execute).to include(success_result)
+          end
         end
       end
     end
