@@ -223,7 +223,9 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    CFPropertyList (3.0.5)
+    CFPropertyList (3.0.7)
+      base64
+      nkf
       rexml
     RedCloth (4.3.4)
     acme-client (2.0.19)

@@ -1,5 +1,5 @@
 [
-{"name":"CFPropertyList","version":"3.0.5","platform":"ruby","checksum":"a78551cd4768d78ebca98488c27e33652ef818be64697a54676d34e6434674a4"},
+{"name":"CFPropertyList","version":"3.0.7","platform":"ruby","checksum":"c45721614aca8d5eb6fa216f2ec28ec38de1a94505e9766a20e98745492c3c4c"},
 {"name":"RedCloth","version":"4.3.4","platform":"ruby","checksum":"5231b2fdd91a933915cba330e5fd1a74025e77b56f57b7404c7191ebf2812297"},
 {"name":"acme-client","version":"2.0.19","platform":"ruby","checksum":"29647ab04cde309503cf553d3f9d0a25dcca6588caca57f55f12d6c8833244f8"},
 {"name":"actioncable","version":"7.1.5.1","platform":"ruby","checksum":"764637b5b2d97b94e412d562c177bfd16b0fd769d55c98846362f5263e8aaa0d"},
