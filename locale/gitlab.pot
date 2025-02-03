@@ -57273,6 +57273,9 @@ msgstr ""
 msgid "The latest pipeline for this merge request has failed."
 msgstr ""
 
+msgid "The legacy Vue-based GitLab Web IDE will be removed in GitLab 18.0."
+msgstr ""
+
 msgid "The license key is invalid."
 msgstr ""
 
@@ -59252,6 +59255,9 @@ msgid "To pass variables to the triggered pipeline, add %{code_start}variables[V
 msgstr ""
 
 msgid "To personalize your GitLab experience, we'd like to know a bit more about you. We won't share this information with anyone."
+msgstr ""
+
+msgid "To prepare for this removal, see %{linkStart}deprecations and removals%{linkEnd}."
 msgstr ""
 
 msgid "To protect this issue's confidentiality, %{linkStart}fork this project%{linkEnd} and set the fork's visibility to private."
