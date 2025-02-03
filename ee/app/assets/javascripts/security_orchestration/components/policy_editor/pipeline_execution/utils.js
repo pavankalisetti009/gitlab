@@ -7,44 +7,49 @@ import { hasInvalidKey } from '../utils';
  * Construct a policy object expected by the policy editor from a yaml manifest.
  * @param {Object} options
  * @param {String}  options.manifest a security policy in yaml form
- * @param {Boolean} options.validateRuleMode if properties should be validated
- * @returns {Object} security policy object and any errors
+ * @returns {Object} security policy
  */
 
-export const fromYaml = ({ manifest, validateRuleMode = false }) => {
-  const error = {};
+export const fromYaml = ({ manifest }) => {
   try {
     const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
 
-    const policy = securityPoliciesNewYamlFormat
+    return securityPoliciesNewYamlFormat
       ? extractPolicyContent({
           manifest,
           type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
           withType: true,
         })
       : safeLoad(manifest, { json: true });
-
-    if (validateRuleMode) {
-      const contentKeys = ['include'];
-      const pipelineConfigStrategies = ['inject_ci', 'override_project_ci'];
-      const hasInvalidPipelineConfigStrategy = (strategy) =>
-        !pipelineConfigStrategies.includes(strategy);
-
-      if (
-        hasInvalidKey(policy.content, contentKeys) ||
-        hasInvalidPipelineConfigStrategy(policy.pipeline_config_strategy)
-      ) {
-        error.actions = true;
-      }
-    }
-
-    return { policy, parsingError: error };
   } catch {
     /**
      * Catch parsing error of safeLoad
      */
-    return { policy: {}, parsingError: { actions: true } };
+    return {};
   }
+};
+
+/**
+ * Validate policy actions and rules keys
+ * @param policy
+ * @returns {Object} errors object. If empty, policy is valid.
+ */
+export const validatePolicy = (policy) => {
+  const error = {};
+
+  const contentKeys = ['include'];
+  const pipelineConfigStrategies = ['inject_ci', 'override_project_ci'];
+  const hasInvalidPipelineConfigStrategy = (strategy) =>
+    !pipelineConfigStrategies.includes(strategy);
+
+  if (
+    hasInvalidKey(policy?.content || {}, contentKeys) ||
+    hasInvalidPipelineConfigStrategy(policy.pipeline_config_strategy)
+  ) {
+    error.actions = true;
+  }
+
+  return error;
 };
 
 /**
@@ -53,7 +58,10 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
  * @returns {Object} security policy object and any errors
  */
 export const createPolicyObject = (manifest) => {
-  return fromYaml({ manifest, validateRuleMode: true });
+  const policy = fromYaml({ manifest });
+  const parsingError = validatePolicy(policy);
+
+  return { policy, parsingError };
 };
 
 export const getInitialPolicy = (defaultPolicy, params = {}) => {
@@ -68,7 +76,7 @@ export const getInitialPolicy = (defaultPolicy, params = {}) => {
     return defaultPolicy;
   }
 
-  const newPolicy = Object.assign(fromYaml({ manifest: defaultPolicy }).policy, {
+  const newPolicy = Object.assign(fromYaml({ manifest: defaultPolicy }), {
     type,
     pipeline_config_strategy: 'override_project_ci',
     policy_scope: { compliance_frameworks: [{ id: Number(frameworkId) }] },

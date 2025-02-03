@@ -49,7 +49,7 @@ export default {
       return this.policy?.policyScope;
     },
     parsedYaml() {
-      return fromYaml({ manifest: this.policy.yaml }).policy;
+      return fromYaml({ manifest: this.policy.yaml });
     },
     configuration() {
       return this.parsedYaml.skip_ci;
