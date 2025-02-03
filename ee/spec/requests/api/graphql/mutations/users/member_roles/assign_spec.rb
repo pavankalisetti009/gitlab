@@ -91,6 +91,16 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
           expect(response_object['memberRole']['id']).to eq(member_role_global_id)
         end
       end
+
+      context 'without custom roles feature' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it_behaves_like 'a mutation that returns a top-level access error',
+          errors: ["The resource that you are attempting to access does not exist or " \
+            "you don't have permission to perform this action"]
+      end
     end
   end
 end
