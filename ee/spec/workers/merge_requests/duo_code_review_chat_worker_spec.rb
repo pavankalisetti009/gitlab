@@ -68,11 +68,6 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
     it 'creates note based on chat response' do
       expect(Gitlab::Llm::ChatMessage)
         .to receive(:new)
-        .with(chat_message_params(::Gitlab::Llm::AiMessage::ROLE_USER, note, '/reset'))
-        .and_call_original
-
-      expect(Gitlab::Llm::ChatMessage)
-        .to receive(:new)
         .with(
           chat_message_params(
             ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
@@ -171,7 +166,8 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
       user: note.author,
       content: content,
       role: role,
-      context: an_object_having_attributes(resource: resource)
+      context: an_object_having_attributes(resource: resource),
+      thread: an_instance_of(::Ai::Conversation::Thread)
     }
   end
 end
