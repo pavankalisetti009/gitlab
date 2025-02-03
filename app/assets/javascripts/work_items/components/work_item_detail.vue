@@ -10,8 +10,8 @@ import {
 import noAccessSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-search-md.svg';
 import DesignDropzone from '~/vue_shared/components/upload_dropzone/upload_dropzone.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { s__ } from '~/locale';
-import { getParameterByName } from '~/lib/utils/url_utility';
+import { s__, __ } from '~/locale';
+import { getParameterByName, updateHistory, removeParams } from '~/lib/utils/url_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
@@ -192,6 +192,7 @@ export default {
       isDesignUploadButtonInViewport: false,
       isDragDataValid: false,
       isAddingNotes: false,
+      info: getParameterByName('resolves_discussion'),
     };
   },
   apollo: {
@@ -414,6 +415,12 @@ export default {
       return {
         'gl-pt-5': !this.updateError && !this.isModal,
       };
+    },
+    flashNoticeMessage() {
+      const numberOfDiscussionsResolved = getParameterByName('resolves_discussion');
+      return numberOfDiscussionsResolved === 'all'
+        ? __('Resolved all discussions.')
+        : __('Resolved 1 discussion.');
     },
     showIntersectionObserver() {
       return !this.isModal && !this.editMode && !this.isDrawer;
@@ -747,6 +754,10 @@ export default {
       this.dragCounter = 0; // Reset drag state
       this.isEmptyStateVisible = false; // Hide dropzone after drop
     },
+    dismissInfo() {
+      this.info = undefined;
+      updateHistory({ url: removeParams(['resolves_discussion']) });
+    },
   },
   WORK_ITEM_TYPE_VALUE_OBJECTIVE,
   WORKSPACE_PROJECT,
@@ -794,6 +805,15 @@ export default {
       @todosUpdated="updateWorkItemCurrentTodosWidgetCache"
     />
     <section class="work-item-view">
+      <gl-alert
+        v-if="info"
+        class="gl-mb-3"
+        variant="info"
+        data-testid="info-alert"
+        @dismiss="dismissInfo"
+      >
+        {{ flashNoticeMessage }}
+      </gl-alert>
       <section v-if="updateError" class="flash-container flash-container-page sticky">
         <gl-alert class="gl-mb-3" variant="danger" @dismiss="updateError = undefined">
           {{ updateError }}
