@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Setting Group Secret Push Protection', feature_category: :secret_detection do
+RSpec.describe 'Setting Group Secret Push Protection', feature_category: :security_testing_configuration do
   include GraphqlHelpers
 
   let(:mutation_name) { 'SetGroupSecretPushProtection' }
