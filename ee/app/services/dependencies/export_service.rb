@@ -2,16 +2,12 @@
 
 module Dependencies
   class ExportService
-    SERIALIZER_SERVICES = {
-      dependency_list: {
-        Organizations::Organization => ExportSerializers::OrganizationDependenciesService,
-        Project => ExportSerializers::ProjectDependenciesService,
-        Group => ExportSerializers::GroupDependenciesService
-      },
-      sbom: {
-        Ci::Pipeline => ExportSerializers::Sbom::PipelineService
-      }
-    }.with_indifferent_access.freeze
+    EXPORTERS = {
+      dependency_list: ::Sbom::Exporters::DependencyListService,
+      sbom: ::Dependencies::ExportSerializers::Sbom::PipelineService,
+      json_array: ::Sbom::Exporters::JsonArrayService,
+      csv: ::Sbom::Exporters::CsvService
+    }.freeze
 
     def self.execute(dependency_list_export)
       new(dependency_list_export).execute
@@ -36,80 +32,64 @@ module Dependencies
 
     def create_export
       dependency_list_export.start!
-
-      if exportable.is_a?(Organizations::Organization)
-        Tempfile.open('dependencies') do |file|
-          serializer = serializer_service.new(dependency_list_export)
-          serializer.each { |item| file << item }
-
-          dependency_list_export.file = file
-          dependency_list_export.file.filename = serializer.filename
-        end
-      else
-        create_export_file
-      end
-
+      write_export_file
       dependency_list_export.finish!
       dependency_list_export.send_completion_email!
-    rescue StandardError, Dependencies::ExportSerializers::Sbom::PipelineService::SchemaValidationError
+    rescue StandardError
       dependency_list_export.reset_state!
 
       raise
     end
 
-    def create_export_file
-      Tempfile.open('json') do |file|
-        file.write(file_content)
+    def write_export_file
+      exporter.generate { |file| dependency_list_export.file = file }
+      dependency_list_export.file.filename = filename
+    end
 
-        dependency_list_export.file = file
-        dependency_list_export.file.filename = filename
+    def exporter
+      EXPORTERS[dependency_list_export.export_type.to_sym].new(dependency_list_export, sbom_occurrences)
+    end
+
+    def sbom_occurrences
+      case exportable
+      when ::Project
+        ::Sbom::DependenciesFinder.new(exportable, params: default_filters).execute
+      when ::Group
+        exportable.sbom_occurrences.order_by_id
+      when ::Organizations::Organization
+        ::Sbom::Occurrence.order_by_id
       end
     end
 
-    def file_content
-      ::Gitlab::Json.dump(exported_object)
+    def default_filters
+      { source_types: default_source_type_filters }
     end
 
-    def exported_object
-      serializer_service.execute(dependency_list_export)
-    end
-
-    def serializer_service
-      SERIALIZER_SERVICES.fetch(dependency_list_export.export_type).fetch(exportable.class)
+    def default_source_type_filters
+      ::Sbom::Source::DEFAULT_SOURCES.keys + [nil]
     end
 
     def filename
-      if dependency_list_export.export_type == 'sbom'
-        sbom_filename
-      else
-        dependency_list_filename
-      end
-    end
-
-    def sbom_filename
-      # Assuming dependency_list_export.export_type is sbom
-      # as we don't support dependency_list export_type for pipeline yet.
       [
-        'gl-',
-        'pipeline-',
+        exportable.class.name.demodulize.underscore,
+        '_',
         exportable.id,
-        '-merged-',
-        Time.current.utc.strftime('%FT%H%M'),
-        '-sbom.',
-        'cdx',
-        '.',
-        'json'
-      ].join
-    end
-
-    def dependency_list_filename
-      [
-        exportable.full_path.parameterize,
         '_dependencies_',
         Time.current.utc.strftime('%FT%H%M'),
         '.',
-        'json'
+        file_extension
       ].join
+    end
+
+    def file_extension
+      case dependency_list_export.export_type
+      when 'sbom'
+        'cdx.json'
+      when 'dependency_list', 'json_array'
+        'json'
+      when 'csv'
+        'csv'
+      end
     end
   end
 end

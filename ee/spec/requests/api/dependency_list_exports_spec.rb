@@ -8,7 +8,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
   let_it_be(:project) { create(:project) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
   let(:export_type) { nil }
-  let(:params) { export_type }
+  let(:params) { { export_type: export_type } }
 
   shared_examples_for 'creating dependency list export' do
     subject(:create_dependency_list_export) { post api(request_path, user), params: params }
@@ -53,12 +53,6 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           stub_licensed_features(dependency_scanning: true, security_dashboard: true)
         end
 
-        let(:args) do
-          args = [exportable, user]
-          args << params[:export_type] if Hash(params)[:export_type]
-          args
-        end
-
         it 'creates and returns a dependency_list_export' do
           create_dependency_list_export
 
@@ -67,6 +61,9 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response).to have_key('has_finished')
           expect(json_response).to have_key('self')
           expect(json_response).to have_key('download')
+
+          created_export = ::Dependencies::DependencyListExport.find(json_response['id'])
+          expect(created_export.export_type).to eq(export_type)
         end
 
         context 'when export creation fails' do
@@ -108,6 +105,9 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response).to have_key('has_finished')
           expect(json_response).to have_key('self')
           expect(json_response).to have_key('download')
+
+          created_export = ::Dependencies::DependencyListExport.find(json_response['id'])
+          expect(created_export.export_type).to eq('csv')
         end
 
         context 'when the `explore_dependencies` feature flag is disabled' do
@@ -129,6 +129,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     let(:request_path) { "/projects/#{project.id}/dependency_list_exports" }
     let(:resource) { project }
     let(:exportable) { project }
+    let(:export_type) { 'dependency_list' }
 
     it_behaves_like 'creating dependency list export'
   end
@@ -137,6 +138,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     let(:request_path) { "/groups/#{group.id}/dependency_list_exports" }
     let(:resource) { group }
     let(:exportable) { group }
+    let(:export_type) { 'json_array' }
 
     it_behaves_like 'creating dependency list export'
   end
@@ -145,7 +147,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     let(:request_path) { "/pipelines/#{pipeline.id}/dependency_list_exports" }
     let(:resource) { project }
     let(:exportable) { pipeline }
-    let(:params) { { export_type: 'sbom' } }
+    let(:export_type) { 'sbom' }
 
     it_behaves_like 'creating dependency list export'
   end

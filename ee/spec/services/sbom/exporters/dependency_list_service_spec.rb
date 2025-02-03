@@ -2,29 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe Dependencies::ExportSerializers::ProjectDependenciesService, feature_category: :dependency_management do
-  describe '.execute' do
-    let(:dependency_list_export) { instance_double(Dependencies::DependencyListExport) }
-
-    subject(:execute) { described_class.execute(dependency_list_export) }
-
-    it 'instantiates a service object and sends execute message to it' do
-      expect_next_instance_of(described_class, dependency_list_export) do |service_object|
-        expect(service_object).to receive(:execute)
-      end
-
-      execute
-    end
-  end
-
-  describe '#execute' do
+RSpec.describe Sbom::Exporters::DependencyListService, feature_category: :dependency_management do
+  describe '#generate' do
     let_it_be(:author) { create(:user) }
     let_it_be(:project) { create(:project, :public, developers: [author]) }
     let_it_be(:dependency_list_export) { create(:dependency_list_export, project: project, author: author) }
+    let_it_be(:sbom_occurrences) { project.sbom_occurrences }
 
-    let(:service_class) { described_class.new(dependency_list_export) }
+    let(:service_class) { described_class.new(dependency_list_export, sbom_occurrences) }
 
-    subject(:dependencies) { service_class.execute.as_json[:dependencies] }
+    subject(:dependencies) { Gitlab::Json.parse(service_class.generate)['dependencies'] }
 
     before do
       stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: true)
@@ -36,9 +23,6 @@ RSpec.describe Dependencies::ExportSerializers::ProjectDependenciesService, feat
 
     context 'when project has dependencies' do
       let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, :with_vulnerabilities, :mit, project: project) }
-      let_it_be(:unexpected_occurrences) do
-        create(:sbom_occurrence, :registry_occurrence, :with_vulnerabilities, project: project)
-      end
 
       def json_dependency(occurrence)
         vulnerabilities = occurrence.vulnerabilities.map do |vulnerability|
@@ -71,16 +55,12 @@ RSpec.describe Dependencies::ExportSerializers::ProjectDependenciesService, feat
       it 'returns expected dependencies' do
         expected_dependencies = occurrences.map { |occurrence| json_dependency(occurrence) }
 
-        expect(dependencies.as_json).to match_array(expected_dependencies)
-      end
-
-      it 'returns data only for DEFAULT_SOURCES' do
-        expect(dependencies.pluck(:name)).not_to include(unexpected_occurrences.component_name)
+        expect(dependencies).to match_array(expected_dependencies)
       end
 
       it 'does not have N+1 queries', :request_store do
         def render
-          entity = described_class.new(dependency_list_export).execute
+          entity = described_class.new(dependency_list_export, sbom_occurrences).generate
           Gitlab::Json.dump(entity)
         end
 

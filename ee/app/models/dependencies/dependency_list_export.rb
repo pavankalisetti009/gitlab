@@ -27,7 +27,9 @@ module Dependencies
 
     enum export_type: {
       dependency_list: 0,
-      sbom: 1
+      sbom: 1,
+      json_array: 2,
+      csv: 3
     }
 
     scope :expired, -> { where(expires_at: ..Time.zone.now) }
