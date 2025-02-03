@@ -865,11 +865,16 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
   describe '#info', :elastic do
     let(:settings) { ::Gitlab::CurrentSettings }
+    let(:helper) { es_helper }
 
     subject(:info) { service.execute(:info) }
 
     before do
       settings.update!(elasticsearch_search: true, elasticsearch_indexing: true)
+
+      allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+      allow(helper).to receive(:get_meta)
+        .and_return({ 'created_by' => '123' })
     end
 
     it 'outputs server version' do
@@ -902,6 +907,12 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
     it 'outputs file size limit' do
       expect(logger).to receive(:info).with(/File size limit:\s+\d+ KiB/)
+
+      info
+    end
+
+    it 'outputs index version' do
+      expect(logger).to receive(:info).with(/Index version:\s+\d+/)
 
       info
     end

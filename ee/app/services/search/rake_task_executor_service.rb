@@ -409,6 +409,7 @@ module Search
     # rubocop: disable Metrics/AbcSize -- existing violations to be refactored in followup work
     def info
       setting = ::ApplicationSetting.current
+      current_index_version = helper.get_meta&.dig('created_by')
 
       logger.info(Rainbow("\nAdvanced Search").yellow)
       logger.info("Server version:\t\t\t" \
@@ -424,6 +425,7 @@ module Search
       logger.info("Indexing restrictions enabled:\t" \
         "#{setting.elasticsearch_limit_indexing? ? Rainbow('yes').yellow : 'no'}")
       logger.info("File size limit:\t\t#{setting.elasticsearch_indexed_file_size_limit_kb} KiB")
+      logger.info("Index version:\t\t\t#{current_index_version}")
       logger.info("Indexing number of shards:\t" \
         "#{::Elastic::ProcessBookkeepingService.active_number_of_shards}")
       logger.info("Max code indexing concurrency:\t" \
