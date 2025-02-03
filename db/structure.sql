@@ -20033,7 +20033,8 @@ CREATE TABLE release_links (
     updated_at timestamp with time zone NOT NULL,
     filepath character varying(128),
     link_type smallint DEFAULT 0,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_959e7fdd89 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE release_links_id_seq
