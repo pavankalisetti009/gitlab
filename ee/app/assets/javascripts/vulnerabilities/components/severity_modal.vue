@@ -43,9 +43,6 @@ export default {
     },
   },
   methods: {
-    show() {
-      this.$refs.modal.show();
-    },
     selectSeverity(value) {
       this.severity = value;
       this.severityValid = true;
@@ -83,7 +80,6 @@ export default {
 </script>
 <template>
   <gl-modal
-    ref="modal"
     size="sm"
     :modal-id="modalId"
     :title="s__('VulnerabilityManagement|Change severity')"
