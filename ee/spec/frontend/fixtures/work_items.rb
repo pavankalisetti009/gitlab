@@ -13,7 +13,7 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
   let(:namespace_work_item_types_query_path) { 'work_items/graphql/namespace_work_item_types.query.graphql' }
 
   before do
-    stub_licensed_features(epics: true, issue_weights: true, iterations: true, okrs: true)
+    stub_licensed_features(epics: true, issue_weights: true, iterations: true, okrs: true, subepics: true)
     stub_feature_flags(okrs_mvc: true)
   end
 
