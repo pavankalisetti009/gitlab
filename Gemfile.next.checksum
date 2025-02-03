@@ -120,7 +120,7 @@
 {"name":"devfile","version":"0.1.1","platform":"ruby","checksum":"ae680ceffd44437f8c7525a02d9b561b02a4d27ea778a2615b7f5e90f964c879"},
 {"name":"devfile","version":"0.1.1","platform":"x86_64-linux","checksum":"bb05af4b34ff71c18c77952d9f75999a96b9ffc01973a9bcab857b49b89544fb"},
 {"name":"device_detector","version":"1.0.0","platform":"ruby","checksum":"b800fb3150b00c23e87b6768011808ac1771fffaae74c3238ebaf2b782947a7d"},
-{"name":"devise","version":"4.9.3","platform":"ruby","checksum":"480638d6c51b97f56da6e28d4f3e2a1b8e606681b316aa594b87c6ab94923488"},
+{"name":"devise","version":"4.9.4","platform":"ruby","checksum":"920042fe5e704c548aa4eb65ebdd65980b83ffae67feb32c697206bfd975a7f8"},
 {"name":"devise-two-factor","version":"4.1.1","platform":"ruby","checksum":"c95f5b07533e62217aaed3c386874d94e2d472fb5f2b6598afe8600fc17a8b95"},
 {"name":"diff-lcs","version":"1.5.0","platform":"ruby","checksum":"49b934001c8c6aedb37ba19daec5c634da27b318a7a3c654ae979d6ba1929b67"},
 {"name":"diffy","version":"3.4.3","platform":"ruby","checksum":"4264b9e7db00d1cd426fcd32e36565779163cedc2340a95b0e6f025e71f9aaa7"},
