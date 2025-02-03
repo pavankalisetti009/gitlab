@@ -10,10 +10,9 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
 import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data';
-import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import getSppLinkedGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 
 jest.mock('~/alert');
 
@@ -29,27 +28,53 @@ describe('BlockGroupBranchModification', () => {
     endCursor: null,
   };
 
-  const defaultHandler = (nodes = createMockGroups(), pageInfo = defaultPageInfo) =>
-    jest.fn().mockResolvedValue({
-      data: {
-        groups: {
-          nodes,
-          pageInfo,
-        },
-      },
-    });
+  const groups = [
+    {
+      id: '1',
+      name: 'group1',
+      fullPath: 'fullPath1',
+      descendantGroups: { nodes: [] },
+      fullName: 'fullName1',
+      avatarUrl: 'avatarUrl1',
+    },
+    {
+      id: '2',
+      name: 'group2',
+      fullPath: 'fullPath2',
+      descendantGroups: { nodes: [] },
+      fullName: 'fullName2',
+      avatarUrl: 'avatarUrl2',
+    },
+    {
+      id: '3',
+      name: 'group2',
+      fullPath: 'fullPath2',
+      descendantGroups: { nodes: [] },
+      fullName: 'fullName2',
+      avatarUrl: 'avatarUrl2',
+    },
+  ];
 
   const createMockApolloProvider = (handler) => {
     Vue.use(VueApollo);
 
     requestHandler = handler;
 
-    return createMockApollo([[getGroupsByIds, handler]]);
+    return createMockApollo([[getSppLinkedGroups, handler]]);
   };
 
-  const createComponent = ({ propsData = {}, handler = defaultHandler() } = {}) => {
+  const createComponent = ({
+    propsData = {},
+    handler = mockLinkedSppItemsResponse({ groups }),
+  } = {}) => {
     wrapper = shallowMountExtended(BlockGroupBranchModification, {
       apolloProvider: createMockApolloProvider(handler),
+      provide: {
+        assignedPolicyProject: {
+          fullPath: 'fullPath',
+        },
+        namespacePath: 'fullPath',
+      },
       propsData: {
         title: 'Best popover',
         enabled: true,
@@ -101,7 +126,13 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('retrieves top-level groups', () => {
-      expect(requestHandler).toHaveBeenCalledWith({ topLevelOnly: true, search: '', after: '' });
+      expect(requestHandler).toHaveBeenCalledWith({
+        topLevelOnly: true,
+        search: '',
+        after: '',
+        fullPath: 'fullPath',
+        includeParentDescendants: false,
+      });
     });
 
     it('renders the except selection dropdown', () => {
@@ -114,23 +145,23 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('retrieves exception groups and uses them for the dropdown text', () => {
-      expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-1, Group-2');
+      expect(findExceptionsDropdown().props('toggleText')).toEqual('fullName1, fullName2');
     });
 
     it('updates the toggle text on selection', async () => {
       createComponent({
         propsData: { enabled: true, exceptions: EXCEPTIONS },
-        handler: defaultHandler(createMockGroups(3)),
       });
       await wrapper.setProps({ enabled: true, exceptions: [...EXCEPTIONS, { id: 3 }] });
       await waitForPromises();
-      expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-1, Group-2 +1 more');
+
+      expect(findExceptionsDropdown().props('toggleText')).toEqual('fullName1, fullName2 +1 more');
     });
 
     it('updates the toggle text on deselection', async () => {
       await wrapper.setProps({ enabled: true, exceptions: [{ id: 2 }] });
       await waitForPromises();
-      expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-2');
+      expect(findExceptionsDropdown().props('toggleText')).toEqual('fullName2');
     });
 
     it('updates the toggle text when disabled', async () => {
@@ -168,7 +199,13 @@ describe('BlockGroupBranchModification', () => {
     it('searches for groups', async () => {
       createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
       await findExceptionsDropdown().vm.$emit('search', 'git');
-      expect(requestHandler).toHaveBeenCalledWith({ search: 'git', topLevelOnly: true, after: '' });
+      expect(requestHandler).toHaveBeenCalledWith({
+        search: 'git',
+        topLevelOnly: true,
+        after: '',
+        fullPath: 'fullPath',
+        includeParentDescendants: false,
+      });
     });
   });
 
@@ -190,20 +227,30 @@ describe('BlockGroupBranchModification', () => {
     it('loads missing groups form  exceptions list', async () => {
       createComponent({
         propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }, { id: 7 }, { id: 8 }] },
-        handler: defaultHandler(createMockGroups(5)),
+        handler: mockLinkedSppItemsResponse({ groups: [createMockGroups(5)] }),
       });
       await waitForPromises();
 
       expect(requestHandler).toHaveBeenCalledTimes(2);
       expect(requestHandler).toHaveBeenNthCalledWith(1, {
-        topLevelOnly: true,
-        search: '',
         after: '',
+        fullPath: 'fullPath',
+        includeParentDescendants: false,
+        search: '',
+        topLevelOnly: true,
       });
       expect(requestHandler).toHaveBeenNthCalledWith(2, {
         after: '',
+        fullPath: 'fullPath',
+        ids: [
+          'gid://gitlab/Group/1',
+          'gid://gitlab/Group/2',
+          'gid://gitlab/Group/7',
+          'gid://gitlab/Group/8',
+        ],
+        includeParentDescendants: false,
+        search: '',
         topLevelOnly: true,
-        ids: [7, 8].map((id) => convertToGraphQLId(TYPENAME_GROUP, id)),
       });
     });
   });
@@ -220,16 +267,22 @@ describe('BlockGroupBranchModification', () => {
     it('makes a query to fetch more groups when there is a next page', async () => {
       createComponent({
         propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
-        handler: defaultHandler(createMockGroups(), { ...defaultPageInfo, hasNextPage: true }),
+        handler: mockLinkedSppItemsResponse({
+          groups: [createMockGroups()],
+          pageInfo: { ...defaultPageInfo, hasNextPage: true },
+        }),
       });
       await waitForPromises();
       findExceptionsDropdown().vm.$emit('bottom-reached');
 
       expect(requestHandler).toHaveBeenCalledTimes(2);
       expect(requestHandler).toHaveBeenNthCalledWith(2, {
-        after: null,
+        after: '',
         topLevelOnly: true,
         search: '',
+        includeParentDescendants: false,
+        fullPath: 'fullPath',
+        ids: ['gid://gitlab/Group/1', 'gid://gitlab/Group/2'],
       });
     });
   });

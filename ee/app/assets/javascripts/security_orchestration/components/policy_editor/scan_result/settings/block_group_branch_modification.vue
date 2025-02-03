@@ -14,7 +14,7 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import getGroupsByIds from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
+import getSppLinkedGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { __, s__ } from '~/locale';
 import {
@@ -33,16 +33,18 @@ export default {
   name: 'BlockGroupBranchModification',
   apollo: {
     groups: {
-      query: getGroupsByIds,
+      query: getSppLinkedGroups,
       variables() {
         return {
+          fullPath: this.assignedPolicyProjectPath,
           topLevelOnly: true,
           search: this.searchValue,
         };
       },
       update(data) {
-        const groups = data.groups?.nodes?.map(createGroupObject) || [];
-        this.pageInfo = data.groups?.pageInfo || {};
+        const groups =
+          data.project?.securityPolicyProjectLinkedGroups?.nodes?.map(createGroupObject) || [];
+        this.pageInfo = data.project?.securityPolicyProjectLinkedGroups?.pageInfo || {};
         return this.joinUniqueGroups(groups);
       },
       async result() {
@@ -67,6 +69,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['assignedPolicyProject', 'namespacePath'],
   props: {
     enabled: {
       type: Boolean,
@@ -88,6 +91,9 @@ export default {
     };
   },
   computed: {
+    assignedPolicyProjectPath() {
+      return this.assignedPolicyProject?.fullPath || this.namespacePath;
+    },
     notLoadedExceptions() {
       const groupIds = this.groups.map((group) => group.id);
       return this.exceptionIds.filter((id) => !groupIds.includes(id));
@@ -150,14 +156,15 @@ export default {
     async getGroupsByIds() {
       try {
         const { data } = await this.$apollo.query({
-          query: getGroupsByIds,
+          query: getSppLinkedGroups,
           variables: {
+            fullPath: this.assignedPolicyProjectPath,
             topLevelOnly: true,
             ids: this.exceptionGraphqlIds,
           },
         });
 
-        return data.groups?.nodes?.map(createGroupObject) || [];
+        return data.project?.securityPolicyProjectLinkedGroups?.nodes?.map(createGroupObject) || [];
       } catch {
         return [];
       }

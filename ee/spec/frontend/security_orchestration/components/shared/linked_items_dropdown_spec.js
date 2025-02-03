@@ -14,8 +14,22 @@ describe('LinkedItemsDropdown', () => {
   let requestHandler;
 
   const groups = [
-    { id: '1', name: 'group1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
-    { id: '2', name: 'group2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
+    {
+      id: '1',
+      name: 'group1',
+      fullPath: 'fullPath1',
+      descendantGroups: { nodes: [] },
+      fullName: 'fullName1',
+      avatarUrl: 'avatarUrl1',
+    },
+    {
+      id: '2',
+      name: 'group2',
+      fullPath: 'fullPath2',
+      descendantGroups: { nodes: [] },
+      fullName: 'fullName2',
+      avatarUrl: 'avatarUrl2',
+    },
   ];
 
   const groupsIds = groups.map(({ id }) => id);
@@ -86,6 +100,7 @@ describe('LinkedItemsDropdown', () => {
         after: null,
         includeParentDescendants: false,
         search: '',
+        topLevelOnly: false,
       });
     });
   });
@@ -181,6 +196,7 @@ describe('LinkedItemsDropdown', () => {
         fullPath: 'gitlab-org',
         includeParentDescendants: true,
         search: '',
+        topLevelOnly: false,
       });
     });
   });

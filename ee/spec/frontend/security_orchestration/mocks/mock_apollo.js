@@ -159,22 +159,27 @@ export const complianceFrameworksResponse = [
   },
 ];
 
-export const mockLinkedSppItemsResponse = ({ projects = [], namespaces = [], groups = [] } = {}) =>
+export const mockLinkedSppItemsResponse = ({
+  projects = [],
+  namespaces = [],
+  groups = [],
+  pageInfo = defaultPageInfo,
+} = {}) =>
   jest.fn().mockResolvedValue({
     data: {
       project: {
         id: '1',
         securityPolicyProjectLinkedProjects: {
           nodes: projects,
-          pageInfo: { ...defaultPageInfo },
+          pageInfo,
         },
         securityPolicyProjectLinkedNamespaces: {
           nodes: namespaces,
-          pageInfo: { ...defaultPageInfo },
+          pageInfo,
         },
         securityPolicyProjectLinkedGroups: {
           nodes: groups,
-          pageInfo: { ...defaultPageInfo },
+          pageInfo,
         },
       },
     },
