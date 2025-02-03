@@ -29,7 +29,6 @@ import {
   WIDGET_TYPE_NOTES,
   WIDGET_TYPE_LINKED_ITEMS,
   WIDGET_TYPE_DESIGNS,
-  LINKED_ITEMS_ANCHOR,
   WORK_ITEM_REFERENCE_CHAR,
   WORK_ITEM_TYPE_VALUE_EPIC,
   WIDGET_TYPE_WEIGHT,
@@ -37,6 +36,7 @@ import {
   STATE_OPEN,
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_MILESTONE,
+  WORK_ITEM_TYPE_VALUE_INCIDENT,
 } from '../constants';
 
 import workItemUpdatedSubscription from '../graphql/work_item_updated.subscription.graphql';
@@ -552,8 +552,12 @@ export default {
       this.error = this.$options.i18n.fetchError;
       document.title = s__('404|Not found');
     },
-    openContextualView({ event, modalWorkItem, context }) {
-      if (!this.contextualViewEnabled || context === LINKED_ITEMS_ANCHOR || this.isDrawer) {
+    openContextualView({ event, modalWorkItem }) {
+      if (
+        !this.contextualViewEnabled ||
+        modalWorkItem.workItemType?.name === WORK_ITEM_TYPE_VALUE_INCIDENT ||
+        this.isDrawer
+      ) {
         return;
       }
       if (event) {
@@ -1069,6 +1073,7 @@ export default {
               :work-item-full-path="workItemFullPath"
               :work-item-type="workItem.workItemType.name"
               :can-admin-work-item-link="canAdminWorkItemLink"
+              :active-child-item-id="activeChildItemId"
               @showModal="openContextualView"
             />
 
