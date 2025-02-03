@@ -35347,8 +35347,6 @@ CREATE INDEX tmp_idx_orphaned_approval_merge_request_rules ON approval_merge_req
 
 CREATE INDEX tmp_idx_orphaned_approval_project_rules ON approval_project_rules USING btree (id) WHERE ((report_type = ANY (ARRAY[2, 4])) AND (security_orchestration_policy_configuration_id IS NULL));
 
-CREATE UNIQUE INDEX tmp_idx_packages_dependencies_on_name_version_pattern ON packages_dependencies USING btree (name, version_pattern) WHERE (project_id IS NULL);
-
 CREATE INDEX tmp_idx_packages_on_project_id_when_mvn_not_pending_destruction ON packages_packages USING btree (project_id) WHERE ((package_type = 1) AND (status <> 4));
 
 CREATE INDEX tmp_index_ci_job_artifacts_on_expire_at_where_locked_unknown ON ci_job_artifacts USING btree (expire_at, job_id) WHERE ((locked = 2) AND (expire_at IS NOT NULL));
@@ -35360,8 +35358,6 @@ CREATE INDEX tmp_index_for_project_namespace_id_migration_on_routes ON routes US
 CREATE UNIQUE INDEX tmp_index_issues_on_tmp_epic_id ON issues USING btree (tmp_epic_id);
 
 CREATE INDEX tmp_index_packages_conan_file_metadata_on_id_for_migration ON packages_conan_file_metadata USING btree (id) WHERE ((package_reference_id IS NULL) AND (conan_package_reference IS NOT NULL));
-
-CREATE INDEX tmp_index_packages_dependencies_on_id_without_project_id ON packages_dependencies USING btree (id) WHERE (project_id IS NULL);
 
 CREATE INDEX tmp_index_pats_on_notification_columns_and_expires_at ON personal_access_tokens USING btree (id) WHERE ((expire_notification_delivered IS TRUE) AND (seven_days_notification_sent_at IS NULL) AND (expires_at IS NOT NULL));
 
