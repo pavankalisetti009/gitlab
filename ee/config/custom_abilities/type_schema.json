@@ -10,11 +10,11 @@
     },
     "name": {
       "type": "string",
-      "description": "Unique identifying name for this custom ability"
+      "description": "Unique name for the custom ability"
     },
     "description": {
       "type": "string",
-      "description": "A human-readable description of this custom ability"
+      "description": "Human readable description of this custom ability"
     },
     "introduced_by_issue": {
       "type": "string",
@@ -39,11 +39,7 @@
     "milestone": {
       "type": "string",
       "description": "Milestone that introduced this custom ability. For example, 15.8",
-      "pattern": "^[0-9]+\\.[0-9]+$"
-    },
-    "admin_ability": {
-      "type": "boolean",
-      "description": "Indicate whether this ability is checked at the admin level."
+      "pattern": "\\A[0-9]+\\.[0-9]+\\z"
     },
     "group_ability": {
       "type": "boolean",
@@ -152,11 +148,6 @@
         ]
       },
       "group_ability": {
-        "enum": [
-          false
-        ]
-      },
-      "admin_ability": {
         "enum": [
           false
         ]

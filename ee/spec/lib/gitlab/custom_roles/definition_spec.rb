@@ -3,60 +3,106 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::CustomRoles::Definition, feature_category: :permissions do
-  yaml_files = Dir.glob(Rails.root.join("ee/config/custom_abilities/*.yml"))
+  standard_yaml_files = Dir.glob(Rails.root.join("ee/config/custom_abilities/*.yml"))
+  admin_yaml_files = Dir.glob(Rails.root.join("ee/config/custom_abilities/admin/*.yml"))
+
+  def defined_abilities(files)
+    files.map { |file| File.basename(file, '.yml').to_sym }
+  end
+
+  let_it_be(:defined_standard_abilities) { defined_abilities(standard_yaml_files) }
+  let_it_be(:defined_admin_abilities) { defined_abilities(admin_yaml_files) }
+  let_it_be(:all_defined_abilities) { defined_standard_abilities + defined_admin_abilities }
 
   describe '.all' do
     subject(:abilities) { described_class.all }
 
-    let_it_be(:defined_abilities) do
-      yaml_files.map do |file|
-        File.basename(file, '.yml').to_sym
-      end
+    it 'returns the defined abilities' do
+      expect(abilities.keys).to match_array(all_defined_abilities)
     end
 
-    context 'when initialized' do
-      it 'does not reload the abilities from the yaml files' do
-        expect(described_class).not_to receive(:load_abilities!)
+    it 'does not have overlapping role names' do
+      admin_abilities = described_class.admin.keys
+      standard_abilities = described_class.standard.keys
 
-        abilities
-      end
-
-      it 'returns the defined abilities' do
-        expect(abilities.keys).to match_array(defined_abilities)
-      end
+      expect(standard_abilities & admin_abilities).to be_empty
     end
 
     context 'when not initialized' do
       before do
-        described_class.instance_variable_set(:@definitions, nil)
+        described_class.instance_variable_set(:@standard_definitions, nil)
+        described_class.instance_variable_set(:@admin_definitions, nil)
       end
 
       it 'reloads the abilities from the yaml files' do
-        expect(described_class).to receive(:load_abilities!)
+        expect(described_class).to receive(:load_definitions)
+          .with(described_class.send(:standard_path)).and_call_original
+        expect(described_class).to receive(:load_definitions)
+          .with(described_class.send(:admin_path)).and_call_original
 
         abilities
       end
 
       it 'returns the defined abilities' do
-        expect(abilities.keys).to match_array(defined_abilities)
+        expect(abilities.keys).to match_array(all_defined_abilities)
       end
     end
   end
 
+  describe '.admin' do
+    subject(:abilities) { described_class.admin }
+
+    it 'returns the defined abilities' do
+      expect(abilities.keys).to match_array(defined_admin_abilities)
+    end
+  end
+
+  describe '.standard' do
+    subject(:abilities) { described_class.standard }
+
+    it 'returns the defined abilities' do
+      expect(abilities.keys).to match_array(defined_standard_abilities)
+    end
+  end
+
+  describe '.load_abilities!' do
+    before do
+      described_class.instance_variable_set(:@standard_definitions, { old: 'ability' })
+      described_class.instance_variable_set(:@admin_definitions, { old: 'ability' })
+    end
+
+    it 'returns the defined abilities' do
+      expect { described_class.load_abilities! }.to change { described_class.admin.keys }
+        .from(%i[old]).to(defined_admin_abilities).and change { described_class.standard.keys }
+        .from(%i[old]).to(defined_standard_abilities)
+    end
+  end
+
   describe 'validations' do
-    def validate(data)
+    let(:validator) { JSONSchemer.schema(Pathname.new(Rails.root.join(validator_path))) }
+
+    def validate(ability_file)
+      data = YAML.load_file(ability_file)
       validator.validate(data).pluck('error')
     end
 
-    let_it_be(:validator) do
-      JSONSchemer.schema(Pathname.new(Rails.root.join('ee/config/custom_abilities/type_schema.json')))
+    describe 'for standard abilities' do
+      let(:validator_path) { 'ee/config/custom_abilities/type_schema.json' }
+
+      standard_yaml_files.each do |ability_file|
+        it "validates #{ability_file}" do
+          expect(validate(ability_file)).to be_empty
+        end
+      end
     end
 
-    yaml_files.each do |ability_file|
-      it "validates #{ability_file}" do
-        data = YAML.load_file(ability_file)
+    describe 'for admin abilities' do
+      let(:validator_path) { 'ee/config/custom_abilities/admin/type_schema.json' }
 
-        expect(validate(data)).to be_empty
+      admin_yaml_files.each do |ability_file|
+        it "validates #{ability_file}" do
+          expect(validate(ability_file)).to be_empty
+        end
       end
     end
   end

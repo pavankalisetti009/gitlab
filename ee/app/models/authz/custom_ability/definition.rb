@@ -27,7 +27,9 @@ module Authz
       end
 
       def admin_ability_enabled?
-        attributes.fetch(:admin_ability, false)
+        return false if group_ability_enabled? || project_ability_enabled?
+
+        exists?
       end
 
       private

@@ -93,23 +93,23 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     end
 
     def all_customizable_standard_permissions
-      MemberRole.all_customizable_permissions.select { |_k, v| !v[:admin_ability] }
+      Gitlab::CustomRoles::Definition.standard
     end
 
     def all_customizable_admin_permissions
-      MemberRole.all_customizable_permissions.select { |_k, v| v[:admin_ability] }
+      Gitlab::CustomRoles::Definition.admin
     end
 
     def all_customizable_project_permissions
-      MemberRole.all_customizable_permissions.select { |_k, v| v[:project_ability] }.keys
+      MemberRole.all_customizable_standard_permissions.select { |_k, v| v[:project_ability] }.keys
     end
 
     def all_customizable_group_permissions
-      MemberRole.all_customizable_permissions.select { |_k, v| v[:group_ability] }.keys
+      MemberRole.all_customizable_standard_permissions.select { |_k, v| v[:group_ability] }.keys
     end
 
     def all_customizable_admin_permission_keys
-      MemberRole.all_customizable_permissions.select { |_k, v| v[:admin_ability] }.keys
+      Gitlab::CustomRoles::Definition.admin.keys
     end
 
     def customizable_permissions_exempt_from_consuming_seat

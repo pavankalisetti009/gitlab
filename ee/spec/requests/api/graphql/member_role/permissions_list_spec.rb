@@ -22,6 +22,33 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
     QUERY
   end
 
+  let(:mock_permissions) do
+    {
+      admin_ability_one: {
+        title: 'Admin something',
+        description: 'Allows admin access to do something.',
+        project_ability: true,
+        available_from_access_level: 50,
+        enabled_for_project_access_levels: [50]
+      },
+      admin_ability_two: {
+        title: 'Admin something else',
+        description: 'Allows admin access to do something else.',
+        requirements: [:read_ability_two],
+        group_ability: true,
+        enabled_for_group_access_levels: [40, 50]
+      },
+      read_ability_two: {
+        title: 'Read something else',
+        description: 'Allows read access to do something else.',
+        group_ability: true,
+        project_ability: true,
+        enabled_for_group_access_levels: [20, 30, 40, 50],
+        enabled_for_project_access_levels: [20, 30, 40, 50]
+      }
+    }
+  end
+
   let(:query) do
     graphql_query_for('memberRolePermissions', fields)
   end
@@ -44,31 +71,9 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
   end
 
   before do
-    allow(MemberRole).to receive(:all_customizable_permissions).and_return(
-      {
-        admin_ability_one: {
-          title: 'Admin something',
-          description: 'Allows admin access to do something.',
-          project_ability: true,
-          available_from_access_level: 50,
-          enabled_for_project_access_levels: [50]
-        },
-        admin_ability_two: {
-          title: 'Admin something else',
-          description: 'Allows admin access to do something else.',
-          requirements: [:read_ability_two],
-          group_ability: true,
-          enabled_for_group_access_levels: [40, 50]
-        },
-        read_ability_two: {
-          title: 'Read something else',
-          description: 'Allows read access to do something else.',
-          group_ability: true,
-          project_ability: true,
-          enabled_for_group_access_levels: [20, 30, 40, 50],
-          enabled_for_project_access_levels: [20, 30, 40, 50]
-        }
-      }
+    allow(MemberRole).to receive_messages(
+      all_customizable_permissions: mock_permissions,
+      all_customizable_standard_permissions: mock_permissions
     )
 
     redefine_enum!
@@ -84,7 +89,7 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
 
   it_behaves_like 'a working graphql query'
 
-  it 'returns all customizable ablities' do
+  it 'returns all customizable ablities', :unlimited_max_formatted_output_length do
     expected_result = [
       { 'availableFor' => ['project'], 'description' => 'Allows admin access to do something.',
         'name' => 'Admin something', 'requirements' => nil, 'value' => 'ADMIN_ABILITY_ONE',
