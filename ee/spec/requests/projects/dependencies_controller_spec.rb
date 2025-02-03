@@ -8,10 +8,12 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
   let_it_be(:project) { create(:project, :repository, :private) }
   let(:params) { {} }
 
-  before do
+  before_all do
     project.add_developer(developer)
     project.add_guest(guest)
+  end
 
+  before do
     sign_in(user)
   end
 
@@ -24,22 +26,35 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
     end
 
     context 'with authorized user' do
+      let(:user) { developer }
+
       context 'when feature is available' do
         before do
           stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: true)
         end
 
         context 'when project has sbom_occurrences' do
-          let(:user) { developer }
+          let_it_be(:registry_occurrence) { create(:sbom_occurrence, :registry_occurrence, project: project) }
+          let_it_be(:occurrences) do
+            [
+              create(:sbom_occurrence, :apache_2, :bundler, highest_severity: :critical, project: project),
+              create(:sbom_occurrence, :mit, :npm, highest_severity: :high, project: project),
+              create(:sbom_occurrence, :mpl_2, :yarn, highest_severity: :low, project: project),
+              create(:sbom_occurrence, :license_without_spdx_id, :nuget, highest_severity: nil, project: project)
+            ]
+          end
 
-          let_it_be(:occurrences) { create_list(:sbom_occurrence, 3, project: project) }
+          let_it_be(:unfiltered_results) do
+            # DEFAULT_SOURCES does not include registry sources
+            project.sbom_occurrences.where.not(id: registry_occurrence.id)
+          end
 
           before do
             get project_dependencies_path(project, **params, format: :json)
           end
 
           it 'returns data based on sbom occurrences' do
-            expected = occurrences.map do |occurrence|
+            expected = unfiltered_results.map do |occurrence|
               {
                 'occurrence_id' => occurrence.id,
                 'vulnerability_count' => occurrence.vulnerability_count,
@@ -47,7 +62,7 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
                 'packager' => occurrence.packager,
                 'version' => occurrence.version,
                 'location' => occurrence.location,
-                'licenses' => [::Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE]
+                'licenses' => occurrence.licenses
               }.deep_stringify_keys
             end
 
@@ -63,115 +78,85 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
               .not_to exceed_query_limit(control_count)
           end
 
-          context 'with component name filter' do
-            context 'when component_names param is present' do
-              let(:params) { { component_names: [occurrences.last.name] } }
+          shared_examples 'it can filter dependencies' do |filter_under_test|
+            subject(:show_dependency_list) { json_response['dependencies'].map(&matcher) }
 
-              it 'returns data based on filtered sbom occurrences' do
-                expect(json_response['dependencies']).to match_array(
-                  hash_including('occurrence_id' => occurrences.last.id))
-              end
+            let(:matcher) { ->(d) { d['occurrence_id'] } }
+            let(:unfiltered_result_ids) { unfiltered_results.map(&:id) }
+
+            context 'when the filter has a valid param' do
+              let(:params) { { filter_under_test => filter_value } }
+
+              it { is_expected.to match_array(expected_results.map(&:id)) }
             end
 
-            context 'when component_names param is empty' do
-              let(:params) { { component_names: [] } }
+            context 'when the filter is blank' do
+              let(:params) { { filter_under_test => [] } }
 
-              it 'returns all dependencies' do
-                expect(json_response['dependencies'].count).to eq(occurrences.count)
-              end
+              it { is_expected.to match_array(unfiltered_result_ids) }
+            end
+
+            context 'when the filter has invalid input' do
+              let(:params) { { filter_under_test => nil } }
+
+              it { is_expected.to match_array(unfiltered_result_ids) }
+            end
+          end
+
+          context 'with component name filter' do
+            it_behaves_like 'it can filter dependencies', :component_names do
+              let(:filter_value) { [occurrences.last.name] }
+              let(:expected_results) { [occurrences.last] }
             end
           end
 
           context 'with source types filter' do
-            let_it_be(:os_occurrence) { create(:sbom_occurrence, :os_occurrence, project: project) }
-            let_it_be(:registry_occurrence) { create(:sbom_occurrence, :registry_occurrence, project: project) }
+            it_behaves_like 'it can filter dependencies', :source_types do
+              let(:filter_value) { [:container_scanning_for_registry] }
+              let(:expected_results) { [registry_occurrence] }
+            end
+          end
 
-            context 'when source_types param is present' do
-              let(:params) { { source_types: [:container_scanning_for_registry] } }
+          shared_examples 'it can sort dependencies' do |sort|
+            subject { json_response['dependencies'].pluck('occurrence_id') }
 
-              it 'returns data based on filtered sbom occurrences' do
-                expect(json_response['dependencies']).to match_array(
-                  hash_including('occurrence_id' => registry_occurrence.id))
-              end
+            let(:sort_param) { sort[:by] }
+            let(:params) { { sort_by: sort_param, page: 1 } }
+
+            context 'in descending order' do
+              let(:params) { super().merge(sort: 'desc') }
+
+              it { is_expected.to eq expected_desc.map(&:id) }
             end
 
-            context 'when source_types param is empty' do
-              let(:params) { { source_types: [] } }
+            context 'in ascending order' do
+              let(:params) { super().merge(sort: 'asc') }
 
-              it 'returns data based on DEFAULT_SOURCES' do
-                expected = ([os_occurrence] + occurrences).map { |o| hash_including('occurrence_id' => o.id) }
-                expect(json_response['dependencies']).to match_array(expected)
-              end
+              it { is_expected.to eq expected_asc.map(&:id) }
             end
           end
 
           context 'when sorted by packager' do
-            let_it_be(:occurrences) do
-              [
-                create(:sbom_occurrence, :bundler, project: project),
-                create(:sbom_occurrence, :npm, project: project),
-                create(:sbom_occurrence, :yarn, project: project)
-              ]
-            end
+            it_behaves_like 'it can sort dependencies', by: 'packager' do
+              let(:bundler) { occurrences[0] }
+              let(:npm) { occurrences[1] }
+              let(:yarn) { occurrences[2] }
+              let(:nugget) { occurrences[3] }
 
-            let(:params) do
-              {
-                sort_by: 'packager',
-                sort: verse,
-                page: 1
-              }
-            end
-
-            context 'in descending order' do
-              let(:verse) { 'desc' }
-
-              it 'returns sorted list' do
-                expect(json_response['dependencies']).to be_sorted(by: :packager, verse: :desc)
-              end
-            end
-
-            context 'in ascending order' do
-              let(:verse) { 'asc' }
-
-              it 'returns sorted list' do
-                expect(json_response['dependencies']).to be_sorted(by: :packager, verse: :asc)
-              end
+              let(:expected_asc) { [bundler, npm, nugget, yarn] }
+              let(:expected_desc) { [yarn, nugget, npm, bundler] }
             end
           end
 
           context 'when sorted by severity' do
-            let_it_be(:critical) { create(:sbom_occurrence, highest_severity: :critical, project: project) }
-            let_it_be(:high) { create(:sbom_occurrence, highest_severity: :high, project: project) }
-            let_it_be(:low) { create(:sbom_occurrence, highest_severity: :low, project: project) }
+            it_behaves_like 'it can sort dependencies', by: 'severity' do
+              let(:critical) { occurrences[0] }
+              let(:high) { occurrences[1] }
+              let(:low) { occurrences[2] }
+              let(:null) { occurrences[3] }
 
-            let(:params) do
-              {
-                sort_by: 'severity',
-                sort: verse,
-                page: 1
-              }
-            end
-
-            context 'in ascending order' do
-              let(:verse) { 'asc' }
-
-              it 'returns sorted list' do
-                nulls = json_response['dependencies'].first(3)
-                sorted = json_response['dependencies'].last(3)
-                expect(sorted.pluck('occurrence_id')).to eq([low.id, high.id, critical.id])
-                expect(nulls.pluck('occurrence_id')).to match_array(occurrences.pluck(:id))
-              end
-            end
-
-            context 'in descending order' do
-              let(:verse) { 'desc' }
-
-              it 'returns sorted list' do
-                sorted = json_response['dependencies'].first(3)
-                nulls = json_response['dependencies'].last(3)
-                expect(sorted.pluck('occurrence_id')).to eq([critical.id, high.id, low.id])
-                expect(nulls.pluck('occurrence_id')).to match_array(occurrences.pluck(:id))
-              end
+              let(:expected_asc) { [null, low, high, critical] }
+              let(:expected_desc) { [critical, high, low, null] }
             end
           end
         end
