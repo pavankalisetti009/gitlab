@@ -20,7 +20,7 @@ RSpec.describe 'User with admin_protected_environments custom role', feature_cat
 
   describe Projects::Settings::CiCdController do
     let(:settings_page_path) { project_settings_ci_cd_path(project) }
-    let(:update_params) { { namespace_id: project.namespace, project_id: project } }
+    let(:update_params) { { project: { ci_cd_settings: { build_timeout_human_readable: '1 hour' } } } }
 
     context 'when user has protected environment access' do
       include_context 'with protected environment value', true
@@ -39,10 +39,10 @@ RSpec.describe 'User with admin_protected_environments custom role', feature_cat
       describe '#PUT update' do
         subject(:update_settings) { put settings_page_path, params: update_params }
 
-        it 'prevents modification of CI/CD settings' do
+        it 'allows modification of CI/CD settings' do
           update_settings
 
-          expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to redirect_to(project_settings_ci_cd_path(project))
         end
       end
     end
