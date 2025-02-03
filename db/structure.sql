@@ -34335,7 +34335,7 @@ CREATE INDEX index_successful_authentication_events_for_metrics ON authenticatio
 
 CREATE UNIQUE INDEX index_suggestions_on_note_id_and_relative_order ON suggestions USING btree (note_id, relative_order);
 
-CREATE INDEX index_system_access_group_microsoft_applications_on_group_id ON system_access_group_microsoft_applications USING btree (group_id);
+CREATE UNIQUE INDEX index_system_access_group_microsoft_applications_on_group_id ON system_access_group_microsoft_applications USING btree (group_id);
 
 CREATE UNIQUE INDEX index_system_access_microsoft_applications_on_namespace_id ON system_access_microsoft_applications USING btree (namespace_id);
 
