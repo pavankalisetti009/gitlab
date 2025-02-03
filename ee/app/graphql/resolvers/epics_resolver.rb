@@ -120,11 +120,13 @@ module Resolvers
         start_date_from_inherited_source: [:start_date_sourcing_milestone, :start_date_sourcing_epic],
         due_date_from_milestones: [:due_date_sourcing_milestone],
         due_date_from_inherited_source: [:due_date_sourcing_milestone, :due_date_sourcing_epic],
-        linked_work_items: [:work_item]
+        linked_work_items: [:work_item],
+        work_item: [:dates_source]
       }
     end
 
     def find_epics(args)
+      Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/501712', new_threshold: 300)
       apply_lookahead(EpicsFinder.new(context[:current_user], args).execute)
     end
 

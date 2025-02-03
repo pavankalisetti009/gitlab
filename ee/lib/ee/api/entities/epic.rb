@@ -5,6 +5,7 @@ module EE
     module Entities
       class Epic < Grape::Entity
         include ::API::Helpers::RelatedResourcesHelpers
+        include ::API::Helpers::Presentable
 
         expose :id, documentation: { type: "integer", example: 123 }
         expose :iid, documentation: { type: "integer", example: 123 }
@@ -44,8 +45,8 @@ module EE
         expose :web_edit_url, # @deprecated
           documentation: { type: "string", example: "http://gitlab.example.com/groups/test/-/epics/4/edit" }
         expose :web_url, documentation: { type: "string", example: "http://gitlab.example.com/groups/test/-/epics/4" }
-        expose :references, documentation: { is_array: true }, with: ::API::Entities::IssuableReferences do |epic|
-          epic
+        expose :references, documentation: { is_array: true } do |epic, options|
+          ::API::Entities::IssuableReferences.represent(epic, group: options[:user_group])
         end
         # reference is deprecated in favour of references
         # Introduced [Gitlab 12.6](https://gitlab.com/gitlab-org/gitlab/merge_requests/20354)
@@ -80,13 +81,10 @@ module EE
         # Calculating the value of subscribed field triggers Markdown
         # processing. We can't do that for multiple epics
         # requests in a single API request.
-        expose :subscribed,
+        expose :subscribed?,
+          as: :subscribed,
           documentation: { type: "boolean", example: true },
-          if: ->(_, options) { options.fetch(:include_subscribed, false) } do |epic, options|
-            user = options[:user]
-
-            user.present? ? epic.subscribed?(user) : false
-          end
+          if: ->(_, options) { options.fetch(:include_subscribed, false) }
 
         def web_url
           ::Gitlab::Routing.url_helpers.group_epic_url(object.group, object)

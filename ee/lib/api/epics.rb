@@ -318,6 +318,9 @@ module API
           :start_date, :end_date
       end
       put ':id/(-/)epics/:epic_iid' do
+        # To present epic dates using WorkItems logic, we need to load the associated WorkItem and
+        # WorkItems::DatesSource
+        Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/501712', new_threshold: 200)
         authorize_can_admin_epic!
 
         # Setting updated_at is allowed only for admins and owners

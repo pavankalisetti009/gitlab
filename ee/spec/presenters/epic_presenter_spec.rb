@@ -105,4 +105,55 @@ RSpec.describe EpicPresenter, feature_category: :portfolio_management do
       expect(presenter.epic_reference(full: true)).to eq "#{epic.parent.group.path}&#{epic.iid}"
     end
   end
+
+  describe '#subscribed?' do
+    it 'returns false when there is no current_user' do
+      presenter = described_class.new(epic, current_user: nil)
+
+      expect(presenter.subscribed?).to be(false)
+    end
+
+    it 'returns false when there is no current_user' do
+      presenter = described_class.new(epic, current_user: epic.author)
+
+      expect(presenter.subscribed?).to be(true)
+    end
+  end
+
+  describe 'use work item logic to present dates' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:epic) { create(:epic, :with_synced_work_item) }
+    let_it_be(:work_items_dates_source) do
+      create(
+        :work_items_dates_source,
+        work_item: epic.work_item,
+        start_date: 1.day.ago,
+        start_date_fixed: 2.days.ago,
+        start_date_is_fixed: true,
+        due_date: 3.days.from_now,
+        due_date_fixed: 4.days.from_now,
+        due_date_is_fixed: false
+      )
+    end
+
+    let(:widget) { epic.work_item.get_widget(:start_and_due_date) }
+
+    where(:field, :result) do
+      :start_date | 2.days.ago.to_date
+      :start_date_fixed | 2.days.ago.to_date
+      :start_date_is_fixed? | true
+      :due_date | 4.days.from_now.to_date
+      :due_date_fixed | 4.days.from_now.to_date
+      :due_date_is_fixed? | true
+    end
+
+    with_them do
+      it "presents epic date field using the work item WorkItems::Widgets::StartAndDueDate logic" do
+        value = presenter.public_send(field)
+
+        expect(value).to eq(result)
+      end
+    end
+  end
 end

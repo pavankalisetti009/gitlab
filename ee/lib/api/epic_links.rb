@@ -74,6 +74,10 @@ module API
         use :child_epic_id
       end
       post ':id/(-/)epics/:epic_iid/epics/:child_epic_id' do
+        # To present epic dates using WorkItems logic, we need to load the associated WorkItem and
+        # WorkItems::DatesSource
+        Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/501712', new_threshold: 200)
+
         authorize_create_epic_tree_relation!
 
         target_child_epic = Epic.find_by_id(declared_params[:child_epic_id])

@@ -117,7 +117,9 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         create_list(:epic, 2, group: subgroup_1, parent_id: epic1.id)
         create_list(:epic, 2, group: subgroup_2, parent_id: epic2.id)
 
-        expect { get api(url, personal_access_token: pat), params: params }.not_to exceed_all_query_limit(control)
+        expect { get api(url, personal_access_token: pat), params: params }
+          .not_to exceed_all_query_limit(control)
+          .with_threshold(50)
         expect(response).to have_gitlab_http_status(:ok)
       end
 
@@ -145,9 +147,9 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           label_2 = create(:group_label)
           create_list(:labeled_epic, 4, group: group, labels: [label_2])
 
-          expect do
-            get api(url, personal_access_token: pat), params: params
-          end.not_to exceed_all_query_limit(control)
+          expect { get api(url, personal_access_token: pat), params: params }
+            .not_to exceed_all_query_limit(control)
+            .with_threshold(15)
         end
 
         it 'returns labels with details' do
@@ -686,7 +688,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       before do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(150)
         stub_licensed_features(epics: true, subepics: true)
         group.add_developer(user)
       end
@@ -913,7 +915,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       it 'creates a new epic with labels param as array' do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(160)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(180)
         params[:labels] = ['label1', 'label2', 'foo, bar', '&,?']
 
         post api(url, user), params: params

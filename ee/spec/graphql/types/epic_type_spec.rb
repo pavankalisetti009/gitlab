@@ -6,6 +6,10 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
   include GraphqlHelpers
   include_context 'includes EpicAggregate constants'
 
+  before do
+    stub_licensed_features(epics: true)
+  end
+
   let(:fields) do
     %i[
       id iid title titleHtml description descriptionHtml confidential state group
@@ -50,10 +54,6 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
   describe 'healthStatus' do
     let_it_be(:object) { create(:epic) }
 
-    before do
-      stub_licensed_features(epics: true)
-    end
-
     context 'when lazy_aggregate_epic_health_statuses enabled' do
       before do
         stub_feature_flags(lazy_aggregate_epic_health_statuses: true)
@@ -82,6 +82,43 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
         resolved_field = resolve_field(:health_status, object)
 
         expect(resolved_field).to be_kind_of(Epics::DescendantCountService)
+      end
+    end
+  end
+
+  describe 'use work item logic to present dates' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:epic) { create(:epic) }
+    let_it_be(:work_items_dates_source) do
+      create(
+        :work_items_dates_source,
+        work_item: epic.work_item,
+        start_date: 1.day.ago,
+        start_date_fixed: 2.days.ago,
+        start_date_is_fixed: true,
+        due_date: 3.days.from_now,
+        due_date_fixed: 4.days.from_now,
+        due_date_is_fixed: false
+      )
+    end
+
+    let(:widget) { epic.work_item.get_widget(:start_and_due_date) }
+
+    where(:field, :result) do
+      :start_date | 2.days.ago.to_date
+      :start_date_fixed | 2.days.ago.to_date
+      :start_date_is_fixed | true
+      :due_date | 4.days.from_now.to_date
+      :due_date_fixed | 4.days.from_now.to_date
+      :due_date_is_fixed | true
+    end
+
+    with_them do
+      it "presents epic date field using the work item WorkItems::Widgets::StartAndDueDate logic" do
+        value = resolve_field(field, epic)
+
+        expect(value).to eq(result)
       end
     end
   end
