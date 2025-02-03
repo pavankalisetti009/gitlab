@@ -20898,6 +20898,12 @@ msgstr ""
 msgid "Designs"
 msgstr ""
 
+msgid "Destination"
+msgstr ""
+
+msgid "Destination path"
+msgstr ""
+
 msgid "Destroy"
 msgstr ""
 
@@ -56110,6 +56116,9 @@ msgid "Source is available"
 msgstr ""
 
 msgid "Source is not available"
+msgstr ""
+
+msgid "Source name"
 msgstr ""
 
 msgid "Source name is required"
