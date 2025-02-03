@@ -223,6 +223,148 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     end
   end
 
+  describe '#allowed_child_types' do
+    let_it_be(:resource_parent) { create(:project) }
+    let_it_be(:issue_type) { described_class.find_by_name('Issue') }
+    let_it_be(:epic_type) { described_class.find_by_name('Epic') }
+    let_it_be(:task_type) { described_class.find_by_name('Task') }
+
+    subject { parent_type.allowed_child_types(authorize: authorized, resource_parent: resource_parent) }
+
+    shared_examples 'allowed child types' do
+      context 'when license authorization is required' do
+        let(:authorized) { true }
+
+        before do
+          stub_licensed_features(features)
+        end
+
+        it 'checks if licensed features are available for the child type' do
+          is_expected.to match_array(expected_child_types)
+        end
+      end
+
+      context 'when license authorization is not required' do
+        let(:authorized) { false }
+
+        it 'does not check for license availability' do
+          is_expected.to match_array(all_child_types)
+        end
+      end
+    end
+
+    context 'when parent type has licensed child types' do
+      let(:parent_type) { epic_type }
+      let(:all_child_types) { [epic_type, issue_type] }
+
+      it_behaves_like 'allowed child types' do
+        let(:features) { { epics: true, subepics: true } }
+        let(:expected_child_types) { [epic_type, issue_type] }
+      end
+
+      it_behaves_like 'allowed child types' do
+        let(:features) { { epics: false, subepics: true } }
+        let(:expected_child_types) { [epic_type] }
+      end
+
+      it_behaves_like 'allowed child types' do
+        let(:parent_type) { epic_type }
+        let(:features) { { epics: true, subepics: false } }
+        let(:expected_child_types) { [issue_type] }
+      end
+
+      it_behaves_like 'allowed child types' do
+        let(:features) { { epics: false, subepics: false } }
+        let(:expected_child_types) { [] }
+      end
+    end
+
+    context 'when parent type does not have licensed child types' do
+      let(:parent_type) { issue_type }
+      let(:all_child_types) { [task_type] }
+
+      it_behaves_like 'allowed child types' do
+        let(:features) { {} }
+        let(:expected_child_types) { all_child_types }
+      end
+    end
+  end
+
+  describe '#allowed_parent_types' do
+    let_it_be(:resource_parent) { create(:project) }
+    let_it_be(:issue_type) { described_class.find_by_name('Issue') }
+    let_it_be(:epic_type) { described_class.find_by_name('Epic') }
+    let_it_be(:task_type) { described_class.find_by_name('Task') }
+
+    subject { child_type.allowed_parent_types(authorize: authorized, resource_parent: resource_parent) }
+
+    shared_examples 'allowed parent types' do
+      context 'when license authorization is required' do
+        let(:authorized) { true }
+
+        before do
+          stub_licensed_features(feature)
+        end
+
+        it 'checks if licensed features are available for the parent type' do
+          is_expected.to match_array(expected_parent_types)
+        end
+      end
+
+      context 'when license authorization is not required' do
+        let(:authorized) { false }
+
+        it 'does not check for license availability' do
+          is_expected.to match_array(supported_parent_types)
+        end
+      end
+    end
+
+    context 'when child type has a licensed parent type' do
+      context 'when child type is issue' do
+        let(:child_type) { issue_type }
+        let(:supported_parent_types) { [epic_type] }
+
+        it_behaves_like 'allowed parent types' do
+          let(:feature) { { epics: true } }
+          let(:expected_parent_types) { supported_parent_types }
+        end
+
+        it_behaves_like 'allowed parent types' do
+          let(:feature) { { epics: false } }
+          let(:expected_parent_types) { [] }
+        end
+      end
+
+      context 'when child type is epic' do
+        let(:child_type) { epic_type }
+        let(:supported_parent_types) { [epic_type] }
+
+        it_behaves_like 'allowed parent types' do
+          let(:feature) { { subepics: true } }
+          let(:expected_parent_types) { supported_parent_types }
+        end
+
+        it_behaves_like 'allowed parent types' do
+          let(:feature) { { subepics: false } }
+          let(:expected_parent_types) { [] }
+        end
+      end
+    end
+
+    context 'when child type does not have a licensed parent type' do
+      let(:child_type) { task_type }
+      let(:supported_parent_types) do
+        [described_class.find_by_name('Incident'), issue_type, described_class.find_by_name('Ticket')]
+      end
+
+      it_behaves_like 'allowed parent types' do
+        let(:feature) { {} }
+        let(:expected_parent_types) { supported_parent_types }
+      end
+    end
+  end
+
   def feature_hash
     available_features = licensed_features - disabled_features
 

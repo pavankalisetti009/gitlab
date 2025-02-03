@@ -23,6 +23,11 @@ module EE
 
       LICENSED_TYPES = { epic: :epics, objective: :okrs, key_result: :okrs, requirement: :requirements }.freeze
 
+      LICENSED_HIERARCHY_TYPES = {
+        issue: { parent: { epic: :epics } },
+        epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics } }
+      }.freeze
+
       class_methods do
         extend ::Gitlab::Utils::Override
 
@@ -83,6 +88,19 @@ module EE
         ee_base_types -= %w[objective key_result] unless project && ::Feature.enabled?(:okrs_mvc, project)
 
         super + ee_base_types
+      end
+
+      override :authorized_types
+      def authorized_types(types, resource_parent, relation)
+        licenses_for_relation = LICENSED_HIERARCHY_TYPES[base_type.to_sym].try(:[], relation)
+        return super unless licenses_for_relation
+
+        types.select do |type|
+          license_name = licenses_for_relation[type.base_type.to_sym]
+          next type unless license_name
+
+          resource_parent&.licensed_feature_available?(license_name)
+        end
       end
     end
   end
