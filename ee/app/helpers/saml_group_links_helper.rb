@@ -10,7 +10,6 @@ module SamlGroupLinksHelper
 
   # For SaaS only. Self-managed configures add-on groups in the configuration file.
   def duo_seat_assignment_available?(group)
-    return false unless Feature.enabled?(:saml_groups_duo_add_on_assignment, group)
     return false unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
     return false if group.has_parent?
 
